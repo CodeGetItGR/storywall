@@ -1,0 +1,86 @@
+'use client'
+
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { Home, Wrench, Bell, User, Plus, LayoutDashboard, Heart } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { CURRENT_USER_ID, getUser } from '@/lib/mock-data'
+import Avatar from '@/components/ui/avatar'
+
+const navItems = [
+  { href: '/feed', icon: Home, label: 'Home' },
+  { href: '/tools', icon: Wrench, label: 'Tools' },
+  { href: '/manage', icon: LayoutDashboard, label: 'Manage' },
+  { href: '/notifications', icon: Bell, label: 'Notifications' },
+  { href: '/profile', icon: User, label: 'Profile' },
+]
+
+export default function DesktopNavRail() {
+  const pathname = usePathname()
+  const user = getUser(CURRENT_USER_ID)
+
+  return (
+    <nav
+      aria-label="Main navigation"
+      className="fixed left-0 top-0 h-screen w-[220px] bg-background border-r border-border flex-col z-40 hidden lg:flex"
+    >
+      {/* Logo */}
+      <div className="px-5 py-6 flex items-center gap-3">
+        <div className="w-9 h-9 rounded-full bg-gradient-brand flex items-center justify-center flex-shrink-0">
+          <Heart className="w-4 h-4 text-white fill-white" />
+        </div>
+        <div className="leading-tight">
+          <p className="text-sm font-bold text-ink">StoryWall</p>
+          <p className="text-[11px] text-ink-faint">Emma &amp; James</p>
+        </div>
+      </div>
+
+      {/* Nav links */}
+      <div className="flex-1 px-3 space-y-0.5 overflow-y-auto no-scrollbar">
+        {navItems.map(({ href, icon: Icon, label }) => {
+          const active =
+            pathname === href ||
+            (href !== '/feed' && pathname.startsWith(href))
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors',
+                active
+                  ? 'bg-primary-light text-primary-dark'
+                  : 'text-ink-muted hover:bg-surface-muted hover:text-ink',
+              )}
+            >
+              <Icon
+                className={cn('w-5 h-5 flex-shrink-0', active ? 'text-primary' : '')}
+                strokeWidth={active ? 2.5 : 1.8}
+              />
+              {label}
+            </Link>
+          )
+        })}
+      </div>
+
+      {/* New Post CTA */}
+      <div className="px-4 pb-4">
+        <Link
+          href="/new-post"
+          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+        >
+          <Plus className="w-4 h-4" strokeWidth={2.5} />
+          New Post
+        </Link>
+      </div>
+
+      {/* Current user */}
+      <div className="border-t border-border px-4 py-4 flex items-center gap-3">
+        <Avatar initials={user.initials} color={user.avatarColor} size="sm" alt={user.name} />
+        <div className="overflow-hidden">
+          <p className="text-sm font-medium text-ink truncate leading-tight">{user.name}</p>
+          <p className="text-xs text-ink-muted capitalize leading-tight">{user.role}</p>
+        </div>
+      </div>
+    </nav>
+  )
+}

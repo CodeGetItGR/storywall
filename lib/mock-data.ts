@@ -1,0 +1,269 @@
+import type {
+  User, Post, Comment, Story, Notification,
+  RSVPGuest, GiftItem, ScheduleEvent, PlaylistItem,
+  SeatingTable, QuizQuestion, WishbookEntry, VenueInfo,
+} from './types'
+
+// ── Users ─────────────────────────────────────────────────
+export const CURRENT_USER_ID = 'u1'
+
+export const users: User[] = [
+  {
+    id: 'u1', name: 'Emma Chen', username: 'emmachen',
+    role: 'bride', avatarColor: '#ff7a59', initials: 'EC',
+    bio: 'Bride-to-be ✨ October 18th, 2025 · Loves wine, travel & golden hour',
+    following: 48, followers: 124, postCount: 14,
+  },
+  {
+    id: 'u2', name: 'James Rivera', username: 'jamesrivera',
+    role: 'groom', avatarColor: '#3b82f6', initials: 'JR',
+    bio: 'Groom-to-be 🤵 · Engineer by day, adventure-seeker by weekend',
+    following: 31, followers: 89, postCount: 9,
+  },
+  {
+    id: 'u3', name: 'Sophie Williams', username: 'sophiew',
+    role: 'guest', avatarColor: '#a855f7', initials: 'SW',
+    bio: 'Bridesmaid & BFF 💜 · Interior designer · Obsessed with flowers',
+    following: 72, followers: 201, postCount: 22,
+  },
+  {
+    id: 'u4', name: 'Marcus Thompson', username: 'marcust',
+    role: 'guest', avatarColor: '#f59e0b', initials: 'MT',
+    bio: 'Best man 🥂 · James\'s ride-or-die since college · Chicago native',
+    following: 55, followers: 133, postCount: 11,
+  },
+  {
+    id: 'u5', name: 'Lily Park', username: 'lilypark',
+    role: 'guest', avatarColor: '#10b981', initials: 'LP',
+    bio: 'Maid of honor 🌸 · Emma\'s person · Florist & certified romantic',
+    following: 88, followers: 312, postCount: 31,
+  },
+  {
+    id: 'u6', name: 'David Kim', username: 'davidkim',
+    role: 'guest', avatarColor: '#6366f1', initials: 'DK',
+    bio: 'Groomsman 🎶 · DJ on weekends · Playlist curator for the ages',
+    following: 41, followers: 97, postCount: 8,
+  },
+]
+
+export function getUser(id: string): User {
+  return users.find(u => u.id === id) ?? users[0]
+}
+
+// ── Posts ──────────────────────────────────────────────────
+export const posts: Post[] = [
+  {
+    id: 'p1', userId: 'u1', type: 'photo',
+    content: 'We\'re officially engaged! The most magical evening — James surprised me under the stars at our favorite vineyard. I said yes a hundred times. October 18th, 2025 ✨💍',
+    image: '/images/couple-hero.png',
+    createdAt: '2025-06-28T20:14:00Z', likes: 124, commentCount: 31, liked: false,
+    tags: ['engaged', 'yes', 'october2025'],
+  },
+  {
+    id: 'p2', userId: 'u2', type: 'photo',
+    content: 'Venue tour day was absolutely everything we dreamed of. Rosewood Estate is going to be breathtaking on October 18th. Can\'t believe it\'s actually happening 🏡',
+    image: '/images/venue.png',
+    createdAt: '2025-07-01T16:42:00Z', likes: 87, commentCount: 14, liked: true,
+    tags: ['venue', 'weddingplanning'],
+  },
+  {
+    id: 'p3', userId: 'u3', type: 'photo',
+    content: 'Dress shopping with my bride was the most emotional, beautiful, chaotic morning of my life. She found THE one. No spoilers but... you\'re all going to cry 😭🤍',
+    image: '/images/post-flowers.png',
+    createdAt: '2025-07-03T11:20:00Z', likes: 203, commentCount: 47, liked: false,
+    tags: ['bridesmaid', 'dressshopping'],
+  },
+  {
+    id: 'p4', userId: 'u4', type: 'text',
+    content: 'Bachelor party planning is officially in full swing and I cannot say a word about it. James, buddy, all I can tell you is: pack light and bring sunscreen. That\'s all. 😎🎉',
+    createdAt: '2025-07-05T09:00:00Z', likes: 56, commentCount: 23, liked: false,
+    tags: ['bestman', 'bachelorparty'],
+  },
+  {
+    id: 'p5', userId: 'u5', type: 'photo',
+    content: 'The florals for this wedding are going to be absolutely out of this world. Emma wanted romantic, lush, and garden-wild — and that is exactly what she\'s getting 🌸🌿',
+    image: '/images/post-florals.png',
+    createdAt: '2025-07-06T14:05:00Z', likes: 178, commentCount: 38, liked: true,
+    tags: ['florist', 'weddingflowers'],
+  },
+  {
+    id: 'p6', userId: 'u2', type: 'photo',
+    content: 'First tux fitting done and I have to say — I clean up pretty well 🤵 Marcus was extremely unhelpful and spent the whole time taking photos of himself in the mirror.',
+    image: '/images/post-tux.png',
+    createdAt: '2025-07-08T17:30:00Z', likes: 94, commentCount: 28, liked: false,
+    tags: ['groom', 'tux', 'formalwear'],
+  },
+  {
+    id: 'p7', userId: 'u1', type: 'photo',
+    content: 'Cake tasting Tuesday might be my favorite day of wedding planning so far. We tried seven flavors. Seven. The decisions were hard but the eating was not 🎂',
+    image: '/images/post-cake.png',
+    createdAt: '2025-07-09T19:15:00Z', likes: 145, commentCount: 52, liked: true,
+    tags: ['caketasting', 'weddingcake'],
+  },
+  {
+    id: 'p8', userId: 'u6', type: 'text',
+    content: 'Just submitted my playlist suggestions for the reception and I genuinely think it might be my greatest work. David Kim does not miss. You\'re all about to have the best night of your lives 🎶',
+    createdAt: '2025-07-10T12:00:00Z', likes: 41, commentCount: 17, liked: false,
+    tags: ['playlist', 'dj', 'reception'],
+  },
+]
+
+// ── Comments ───────────────────────────────────────────────
+export const comments: Comment[] = [
+  { id: 'c1', userId: 'u2', postId: 'p1', content: 'My person, forever. I love you endlessly ❤️', createdAt: '2025-06-28T20:30:00Z', likes: 42 },
+  { id: 'c2', userId: 'u3', postId: 'p1', content: 'I\'VE BEEN WAITING FOR THIS POST. Screaming, crying, shaking 😭', createdAt: '2025-06-28T20:45:00Z', likes: 18 },
+  { id: 'c3', userId: 'u5', postId: 'p1', content: 'Absolute fairy tale. October cannot come soon enough!! 🌸', createdAt: '2025-06-28T21:00:00Z', likes: 9 },
+  { id: 'c4', userId: 'u4', postId: 'p1', content: 'Bro I actually teared up a little. Don\'t tell anyone.', createdAt: '2025-06-28T21:30:00Z', likes: 14 },
+  { id: 'c5', userId: 'u1', postId: 'p2', content: 'The ceremony garden is going to be *chef\'s kiss* 🤌', createdAt: '2025-07-01T17:00:00Z', likes: 7 },
+  { id: 'c6', userId: 'u3', postId: 'p2', content: 'I literally gasped at the photos of this place. SO beautiful!', createdAt: '2025-07-01T17:30:00Z', likes: 5 },
+  { id: 'c7', userId: 'u5', postId: 'p3', content: 'Sophie!! Say no more, I\'m already crying 😭❤️', createdAt: '2025-07-03T12:00:00Z', likes: 22 },
+  { id: 'c8', userId: 'u1', postId: 'p3', content: 'Not me reading this while trying not to spoil anything 😂', createdAt: '2025-07-03T12:15:00Z', likes: 31 },
+  { id: 'c9', userId: 'u2', postId: 'p4', content: 'Marcus. WHAT DID YOU PLAN. I\'m scared.', createdAt: '2025-07-05T09:45:00Z', likes: 19 },
+  { id: 'c10', userId: 'u6', postId: 'p4', content: 'I have been sworn to secrecy and it\'s killing me 😂', createdAt: '2025-07-05T10:00:00Z', likes: 8 },
+]
+
+// ── Stories ────────────────────────────────────────────────
+export const stories: Story[] = [
+  { id: 's1', userId: 'u1', image: '/images/couple-hero.png', seen: false, createdAt: '2025-07-11T08:00:00Z' },
+  { id: 's2', userId: 'u2', image: '/images/venue.png', seen: false, createdAt: '2025-07-11T09:30:00Z' },
+  { id: 's3', userId: 'u3', image: '/images/post-flowers.png', seen: true, createdAt: '2025-07-10T18:00:00Z' },
+  { id: 's4', userId: 'u5', image: '/images/post-florals.png', seen: false, createdAt: '2025-07-11T07:15:00Z' },
+  { id: 's5', userId: 'u4', image: '/images/couple-hero.png', seen: true, createdAt: '2025-07-10T20:00:00Z' },
+  { id: 's6', userId: 'u6', image: '/images/post-cake.png', seen: false, createdAt: '2025-07-11T06:45:00Z' },
+]
+
+// ── Notifications ──────────────────────────────────────────
+export const notifications: Notification[] = [
+  { id: 'n1', type: 'like', fromUserId: 'u2', content: 'James liked your engagement post', createdAt: '2025-07-11T10:00:00Z', read: false, targetId: 'p1' },
+  { id: 'n2', type: 'comment', fromUserId: 'u3', content: 'Sophie commented: "I\'VE BEEN WAITING FOR THIS POST..."', createdAt: '2025-07-11T09:45:00Z', read: false, targetId: 'p1' },
+  { id: 'n3', type: 'rsvp', fromUserId: 'u4', content: 'Marcus RSVP\'d — Attending with +1', createdAt: '2025-07-11T09:00:00Z', read: false },
+  { id: 'n4', type: 'follow', fromUserId: 'u5', content: 'Lily started following you', createdAt: '2025-07-10T20:00:00Z', read: true },
+  { id: 'n5', type: 'like', fromUserId: 'u6', content: 'David liked your cake tasting post', createdAt: '2025-07-10T19:30:00Z', read: true, targetId: 'p7' },
+  { id: 'n6', type: 'comment', fromUserId: 'u5', content: 'Lily commented: "October cannot come soon enough!!"', createdAt: '2025-07-10T18:00:00Z', read: true, targetId: 'p1' },
+  { id: 'n7', type: 'rsvp', fromUserId: 'u3', content: 'Sophie RSVP\'d — Attending (bridesmaid)', createdAt: '2025-07-09T14:00:00Z', read: true },
+  { id: 'n8', type: 'mention', fromUserId: 'u4', content: 'Marcus mentioned you in a comment', createdAt: '2025-07-09T10:00:00Z', read: true, targetId: 'p4' },
+]
+
+// ── RSVP ───────────────────────────────────────────────────
+export const rsvpGuests: RSVPGuest[] = [
+  { id: 'r1', name: 'Sophie Williams', status: 'attending', plusOnes: 1, dietary: 'Vegetarian', message: 'Absolutely cannot wait! This is going to be the most beautiful day.', respondedAt: '2025-07-01', email: 'sophie@example.com' },
+  { id: 'r2', name: 'Marcus Thompson', status: 'attending', plusOnes: 1, dietary: 'None', message: 'We\'ll be there with bells on! James you\'re the best man (no pun intended).', respondedAt: '2025-07-03', email: 'marcus@example.com' },
+  { id: 'r3', name: 'Lily Park', status: 'attending', plusOnes: 0, dietary: 'Gluten-free', message: 'My favorite couple ever. Honored to be MOH ❤️', respondedAt: '2025-07-02', email: 'lily@example.com' },
+  { id: 'r4', name: 'David Kim', status: 'attending', plusOnes: 1, dietary: 'None', message: 'The DJ has arrived (kidding, mostly). So excited!', respondedAt: '2025-07-05', email: 'david@example.com' },
+  { id: 'r5', name: 'Rachel Chen', status: 'attending', plusOnes: 2, dietary: 'None', message: 'Emma\'s aunt! So proud of her. Bringing the whole family.', respondedAt: '2025-07-04', email: 'rachel@example.com' },
+  { id: 'r6', name: 'Tom & Patricia Rivera', status: 'attending', plusOnes: 0, dietary: 'None', message: 'So excited to welcome Emma to the family! James, we love you.', respondedAt: '2025-07-01', email: 'tom.p@example.com' },
+  { id: 'r7', name: 'Aiden Walsh', status: 'pending', plusOnes: 0, dietary: '', message: '', email: 'aiden@example.com' },
+  { id: 'r8', name: 'Nina Okafor', status: 'not-attending', plusOnes: 0, dietary: '', message: 'So sorry I can\'t make it — sending all my love!', respondedAt: '2025-07-06', email: 'nina@example.com' },
+]
+
+// ── Gift Registry ──────────────────────────────────────────
+export const giftItems: GiftItem[] = [
+  { id: 'g1', name: 'KitchenAid Stand Mixer', price: 449, category: 'Kitchen', priority: 'high', reserved: true, reservedBy: 'Sophie Williams', notes: 'Pearl White finish', link: 'https://example.com' },
+  { id: 'g2', name: 'Honeymoon Fund', price: 200, category: 'Experience', priority: 'high', reserved: false, notes: 'Contribute any amount toward our Amalfi Coast honeymoon!', link: 'https://example.com' },
+  { id: 'g3', name: 'Parachute Linen Duvet Set (King)', price: 279, category: 'Bedroom', priority: 'high', reserved: true, reservedBy: 'Marcus Thompson', notes: 'Warm White', link: 'https://example.com' },
+  { id: 'g4', name: 'Riedel Wine Glass Set (8)', price: 120, category: 'Kitchen', priority: 'medium', reserved: false, notes: 'Burgundy style', link: 'https://example.com' },
+  { id: 'g5', name: 'Ottolenghi Cookbook Bundle', price: 85, category: 'Books', priority: 'medium', reserved: false, notes: 'Jerusalem, Plenty & Simple', link: 'https://example.com' },
+  { id: 'g6', name: 'Away Luggage Set', price: 595, category: 'Travel', priority: 'medium', reserved: false, notes: 'Matching carry-on + checked bags in Dusty Rose', link: 'https://example.com' },
+  { id: 'g7', name: 'Le Creuset Dutch Oven (5.5 qt)', price: 360, category: 'Kitchen', priority: 'medium', reserved: true, reservedBy: 'Lily Park', notes: 'Flame color', link: 'https://example.com' },
+  { id: 'g8', name: 'Soho Home Bath Towel Set', price: 130, category: 'Bathroom', priority: 'low', reserved: false, notes: 'Stone color, set of 6', link: 'https://example.com' },
+]
+
+// ── Schedule ───────────────────────────────────────────────
+export const scheduleEvents: ScheduleEvent[] = [
+  { id: 'e1', title: 'Engagement Party', date: '2025-07-19', time: '6:00 PM', location: 'The Chen Family Home, Palo Alto', type: 'social', description: 'Casual backyard party to celebrate! BYOB.', rsvpRequired: true, attending: 34 },
+  { id: 'e2', title: 'Bridal Dress Fitting #2', date: '2025-07-26', time: '11:00 AM', location: 'Vera\'s Bridal Studio, SF', type: 'pre-wedding', description: 'Second fitting — alterations check.', rsvpRequired: false },
+  { id: 'e3', title: 'Cake Tasting (Round 2)', date: '2025-08-09', time: '2:00 PM', location: 'Butter & Bloom Bakery, SF', type: 'pre-wedding', description: 'Final selection between the top 3 flavors.', rsvpRequired: false },
+  { id: 'e4', title: 'Venue Walkthrough', date: '2025-09-06', time: '10:00 AM', location: 'Rosewood Estate, Napa Valley', type: 'pre-wedding', description: 'Final venue walkthrough with the coordinator.', rsvpRequired: false },
+  { id: 'e5', title: 'Bachelorette Weekend', date: '2025-09-20', time: '12:00 PM', location: 'Palm Springs', type: 'social', description: 'Girls trip to Palm Springs! Itinerary TBA by Sophie.', rsvpRequired: true, attending: 6 },
+  { id: 'e6', title: 'Bachelor Party', date: '2025-09-20', time: '12:00 PM', location: 'Las Vegas, NV', type: 'social', description: 'What happens in Vegas...', rsvpRequired: true, attending: 8 },
+  { id: 'e7', title: 'Rehearsal Dinner', date: '2025-10-17', time: '7:00 PM', location: 'Rosewood Estate Terrace, Napa', type: 'pre-wedding', description: 'Intimate rehearsal dinner for bridal party and immediate family.', rsvpRequired: true, attending: 24 },
+  { id: 'e8', title: 'The Wedding Day', date: '2025-10-18', time: '4:00 PM', location: 'Rosewood Estate, Napa Valley', type: 'ceremony', description: 'Ceremony begins at 4pm. Cocktail hour 5:30pm. Reception 7pm–midnight.', rsvpRequired: true, attending: 142 },
+  { id: 'e9', title: 'Farewell Brunch', date: '2025-10-19', time: '10:00 AM', location: 'The Inn at Rosewood, Napa', type: 'social', description: 'A relaxed morning-after brunch before everyone heads home.', rsvpRequired: true, attending: 38 },
+]
+
+// ── Playlist ───────────────────────────────────────────────
+export const playlist: PlaylistItem[] = [
+  { id: 'pl1', title: 'Can\'t Help Falling in Love', artist: 'Elvis Presley', addedById: 'u1', requestedFor: 'first-dance', votes: 47, voted: false },
+  { id: 'pl2', title: 'Perfect', artist: 'Ed Sheeran', addedById: 'u2', requestedFor: 'first-dance', votes: 38, voted: true },
+  { id: 'pl3', title: 'At Last', artist: 'Etta James', addedById: 'u5', requestedFor: 'ceremony', votes: 29, voted: false },
+  { id: 'pl4', title: 'Thinking Out Loud', artist: 'Ed Sheeran', addedById: 'u3', requestedFor: 'reception', votes: 21, voted: false },
+  { id: 'pl5', title: 'September', artist: 'Earth, Wind & Fire', addedById: 'u6', requestedFor: 'reception', votes: 33, voted: true },
+  { id: 'pl6', title: 'I Wanna Dance with Somebody', artist: 'Whitney Houston', addedById: 'u4', requestedFor: 'reception', votes: 41, voted: false },
+  { id: 'pl7', title: 'Bloom', artist: 'The Paper Kites', addedById: 'u5', requestedFor: 'ceremony', votes: 18, voted: false },
+  { id: 'pl8', title: 'Cruel Summer', artist: 'Taylor Swift', addedById: 'u3', requestedFor: 'cocktail', votes: 35, voted: true },
+  { id: 'pl9', title: 'All of Me', artist: 'John Legend', addedById: 'u1', requestedFor: 'first-dance', votes: 52, voted: false },
+  { id: 'pl10', title: 'Uptown Funk', artist: 'Bruno Mars', addedById: 'u6', requestedFor: 'reception', votes: 28, voted: false },
+]
+
+// ── Seating ────────────────────────────────────────────────
+export const seatingTables: SeatingTable[] = [
+  {
+    id: 't1', name: 'Bridal Party Table', capacity: 10,
+    guests: [
+      { id: 'sg1', name: 'Emma Chen' }, { id: 'sg2', name: 'James Rivera' },
+      { id: 'sg3', name: 'Sophie Williams' }, { id: 'sg4', name: 'Marcus Thompson' },
+      { id: 'sg5', name: 'Lily Park' }, { id: 'sg6', name: 'David Kim' },
+    ],
+  },
+  {
+    id: 't2', name: 'Family Table — Chen', capacity: 10,
+    guests: [
+      { id: 'sg7', name: 'Rachel Chen' }, { id: 'sg8', name: 'Michael Chen' },
+      { id: 'sg9', name: 'Linda Chen' }, { id: 'sg10', name: 'Peter Chen' },
+      { id: 'sg11', name: 'Amy Chen' },
+    ],
+  },
+  {
+    id: 't3', name: 'Family Table — Rivera', capacity: 10,
+    guests: [
+      { id: 'sg12', name: 'Tom Rivera' }, { id: 'sg13', name: 'Patricia Rivera' },
+      { id: 'sg14', name: 'Carlos Rivera' }, { id: 'sg15', name: 'Maria Rivera' },
+    ],
+  },
+  {
+    id: 't4', name: 'College Friends', capacity: 8,
+    guests: [
+      { id: 'sg16', name: 'Aiden Walsh' }, { id: 'sg17', name: 'Priya Nair' },
+      { id: 'sg18', name: 'Tyler Brooks' }, { id: 'sg19', name: 'Mei Zhang' },
+      { id: 'sg20', name: 'Jack Sato' },
+    ],
+  },
+  {
+    id: 't5', name: 'Work Friends', capacity: 8,
+    guests: [
+      { id: 'sg21', name: 'Hannah Scott' }, { id: 'sg22', name: 'Finn Murphy' },
+      { id: 'sg23', name: 'Zoe Adams' },
+    ],
+  },
+]
+
+// ── Quiz ───────────────────────────────────────────────────
+export const quizQuestions: QuizQuestion[] = [
+  { id: 'q1', question: 'Where did Emma and James have their first date?', options: ['Golden Gate Park', 'A rooftop bar in SoMa', 'A pasta class in North Beach', 'Dolores Park picnic'], correct: 2, explanation: 'They bonded over burning garlic bread on their very first date at a pasta-making class!' },
+  { id: 'q2', question: 'How long did James plan the proposal before actually doing it?', options: ['2 weeks', '3 months', '6 months', 'Over a year'], correct: 3, explanation: 'James was secretly planning the vineyard proposal for over a year, consulting Emma\'s mum the whole time!' },
+  { id: 'q3', question: 'What song is Emma and James\'s "song"?', options: ['Perfect — Ed Sheeran', 'Bloom — The Paper Kites', 'Can\'t Help Falling in Love — Elvis', 'All of Me — John Legend'], correct: 1, explanation: '"Bloom" by The Paper Kites was playing on their road trip to Big Sur when they said "I love you" for the first time.' },
+  { id: 'q4', question: 'What country is the honeymoon destination?', options: ['Greece', 'Italy', 'Japan', 'France'], correct: 1, explanation: 'The Amalfi Coast, Italy! Emma\'s dream destination since she was 12.' },
+  { id: 'q5', question: 'What are the wedding colors?', options: ['White and sage green', 'Blush and gold', 'Terracotta and dusty rose', 'Ivory and champagne'], correct: 1, explanation: 'Blush pinks and warm gold tones — romantic and timeless, just like them.' },
+]
+
+// ── Wishbook ───────────────────────────────────────────────
+export const wishbookEntries: WishbookEntry[] = [
+  { id: 'w1', userId: 'u3', message: 'Emma, watching you fall in love with James has been one of the greatest joys of my life. You two were written in the stars, and I am so honored to stand beside you on October 18th. May every single day feel like golden hour. I love you both to the moon. 🌙', createdAt: '2025-07-10T14:00:00Z', likes: 38 },
+  { id: 'w2', userId: 'u5', message: 'James, you are the person Emma always deserved — someone who makes her laugh until her stomach hurts, who shows up for her in the quiet moments, and who has clearly been planning the world\'s most romantic proposal for way too long. Take care of my best girl. We are all rooting for you both forever. 🌸', createdAt: '2025-07-09T18:30:00Z', likes: 44 },
+  { id: 'w3', userId: 'u4', message: 'James, I\'ve known you since we were 18-year-olds who thought instant ramen was a food group. Look at you now — getting married to the most wonderful person. Emma, thank you for making my best friend the happiest man alive. To many decades of chaos and love! 🥂', createdAt: '2025-07-08T21:00:00Z', likes: 29 },
+  { id: 'w4', userId: 'u6', message: 'I\'ve curated a 6-hour playlist for your wedding and every single song on it is a love letter to you two. May your life together be full of great music, great food, and the kind of love that gets better every year. So honored to celebrate you! 🎶', createdAt: '2025-07-07T12:00:00Z', likes: 17 },
+]
+
+// ── Venue ──────────────────────────────────────────────────
+export const venueInfo: VenueInfo = {
+  name: 'Rosewood Estate',
+  address: '1842 Valley View Lane',
+  city: 'Napa Valley, CA 94558',
+  description: 'A breathtaking 50-acre estate nestled in the heart of Napa Valley. Rosewood Estate offers a stunning ceremony garden, an open-air reception pavilion draped in Italian string lights, and a restored 1920s stone manor as backdrop. The property includes vineyard views, manicured rose gardens, and a private lake.',
+  amenities: ['Ceremony Garden (up to 200)', 'Open-Air Pavilion', 'Bridal Suite', 'Groom\'s Retreat', 'Vineyard Views', 'Private Parking', 'Catering Kitchen', 'On-site Coordinator'],
+  heroImage: '/images/venue.png',
+  gallery: ['/images/venue.png', '/images/couple-hero.png'],
+  mapLink: 'https://maps.google.com',
+  phone: '+1 (707) 555-0182',
+  website: 'https://rosewoodenapa.com',
+}

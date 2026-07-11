@@ -1,0 +1,156 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* ── Semantic tokens (mapped to CSS vars below) ── */
+  --color-background:           var(--background);
+  --color-foreground:           var(--foreground);
+  --color-card:                 var(--card);
+  --color-card-foreground:      var(--card-foreground);
+  --color-popover:              var(--popover);
+  --color-popover-foreground:   var(--popover-foreground);
+  --color-primary:              var(--primary);
+  --color-primary-foreground:   var(--primary-foreground);
+  --color-secondary:            var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted:                var(--muted);
+  --color-muted-foreground:     var(--muted-foreground);
+  --color-accent:               var(--accent);
+  --color-accent-foreground:    var(--accent-foreground);
+  --color-destructive:          var(--destructive);
+  --color-border:               var(--border);
+  --color-input:                var(--input);
+  --color-ring:                 var(--ring);
+  --color-sidebar:              var(--sidebar);
+  --color-sidebar-foreground:   var(--sidebar-foreground);
+  --color-sidebar-primary:      var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent:       var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border:       var(--sidebar-border);
+  --color-sidebar-ring:         var(--sidebar-ring);
+
+  /* ── Brand extras ── */
+  --color-canvas:               var(--canvas);
+  --color-surface-muted:        var(--surface-muted);
+  --color-ink:                  var(--ink);
+  --color-ink-muted:            var(--ink-muted);
+  --color-ink-faint:            var(--ink-faint);
+  --color-primary-dark:         var(--primary-dark);
+  --color-primary-light:        var(--primary-light);
+  --color-accent-pink:          var(--accent-pink);
+  --color-accent-orange:        var(--accent-orange);
+
+  /* ── Radii ── */
+  --radius-sm:   0.5rem;
+  --radius-md:   0.75rem;
+  --radius-lg:   var(--radius);
+  --radius-xl:   1.5rem;
+  --radius-2xl:  2rem;
+  --radius-pill: 999px;
+
+  /* ── Font ── */
+  --font-sans: 'Geist', 'Geist Fallback', system-ui, sans-serif;
+}
+
+/* ── CSS variables ── */
+:root {
+  color-scheme: light;
+
+  /* Canvas / surfaces */
+  --background:   #fffaf3;
+  --canvas:       #fffaf3;
+  --card:         #ffffff;
+  --popover:      #ffffff;
+  --surface-muted:#fbf1e6;
+
+  /* Ink / text */
+  --foreground:         #241f1a;
+  --card-foreground:    #241f1a;
+  --popover-foreground: #241f1a;
+  --ink:                #241f1a;
+  --ink-muted:          #8a7c70;
+  --ink-faint:          #c4b5a6;
+
+  /* Brand coral */
+  --primary:       #ff7a59;
+  --primary-dark:  #e85d3d;
+  --primary-light: #fff0eb;
+  --primary-foreground: #ffffff;
+
+  /* Accents */
+  --accent-pink:   #ff6fa0;
+  --accent-orange: #ffb259;
+
+  /* Semantic */
+  --secondary:            #fbf1e6;
+  --secondary-foreground: #241f1a;
+  --muted:                #fbf1e6;
+  --muted-foreground:     #8a7c70;
+  --accent:               #fff0eb;
+  --accent-foreground:    #e85d3d;
+  --destructive:          oklch(0.577 0.245 27.325);
+  --border:               #f0e2d2;
+  --input:                #f0e2d2;
+  --ring:                 #ff7a59;
+
+  /* Radius */
+  --radius: 1.25rem;
+
+  /* Sidebar */
+  --sidebar:                    #ffffff;
+  --sidebar-foreground:         #241f1a;
+  --sidebar-primary:            #ff7a59;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent:             #fff0eb;
+  --sidebar-accent-foreground:  #e85d3d;
+  --sidebar-border:             #f0e2d2;
+  --sidebar-ring:               #ff7a59;
+}
+
+/* ── Base layer ── */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #f0e2d2; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #c4b5a6; }
+
+/* ── Brand gradient utilities ── */
+.bg-gradient-brand {
+  background: linear-gradient(135deg, #ff6fa0 0%, #ff7a59 50%, #ffb259 100%);
+}
+.text-gradient-brand {
+  background: linear-gradient(135deg, #ff6fa0 0%, #ff7a59 60%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── Story ring ── */
+.story-ring {
+  background: linear-gradient(135deg, #ff6fa0 0%, #ff7a59 50%, #ffb259 100%);
+  border-radius: 9999px;
+  padding: 2.5px;
+  display: inline-flex;
+}
+.story-ring-inner {
+  background: #fffaf3;
+  border-radius: 9999px;
+  padding: 2px;
+}
+
+/* ── Hide scrollbar (utility) ── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
