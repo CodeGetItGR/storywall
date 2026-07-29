@@ -2,11 +2,10 @@
 
 import { use, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
 import { ArrowLeft, Heart, Send } from 'lucide-react'
 import { posts, comments as allComments, users, CURRENT_USER_ID, getUser } from '@/lib/mock-data'
 import Avatar from '@/components/ui/avatar'
-import PostCard from '@/components/feed/post-card'
+import {PostCard} from '@/components/feed/PostCard'
 import { cn } from '@/lib/utils'
 import type { Comment } from '@/lib/types'
 
@@ -95,7 +94,7 @@ export default function PostPage({ params }: { params: Promise<{ id: string }> }
                   color={commentUser.avatarColor}
                   size="sm"
                   alt={commentUser.name}
-                  className="flex-shrink-0 mt-0.5"
+                  className="shrink-0 mt-0.5"
                 />
                 <div className="flex-1 min-w-0">
                   <div className="bg-surface-muted rounded-2xl rounded-tl-sm px-4 py-3">
@@ -128,7 +127,7 @@ export default function PostPage({ params }: { params: Promise<{ id: string }> }
       </div>
 
       {/* Reply input — sticky bottom */}
-      <div className="fixed bottom-16 lg:bottom-0 left-0 right-0 lg:left-[220px] xl:right-[300px] bg-background/95 backdrop-blur-sm border-t border-border px-4 py-3 z-20">
+      <div className="fixed bottom-16 lg:bottom-0 left-0 right-0 lg:left-55 xl:right-75 bg-background/95 backdrop-blur-sm border-t border-border px-4 py-3 z-20">
         <div className="max-w-2xl mx-auto">
           <form onSubmit={handleSubmit} className="flex items-center gap-3">
             <Avatar initials={currentUser.initials} color={currentUser.avatarColor} size="sm" alt={currentUser.name} />

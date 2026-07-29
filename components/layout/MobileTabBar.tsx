@@ -13,13 +13,13 @@ const tabItems = [
   { href: '/profile', icon: User, label: 'Profile', isCenter: false },
 ]
 
-export default function MobileTabBar() {
+export function MobileTabBar() {
   const pathname = usePathname()
 
   return (
     <nav
       aria-label="Mobile navigation"
-      className="fixed bottom-0 left-0 right-0 h-16 bg-card border-t border-border flex items-center justify-around z-40 lg:hidden px-2"
+      className="fixed bottom-0 left-1/2 -translate-x-1/2 h-16 bg-white/90 border-t border-border rounded-t-2xl flex items-center justify-around z-40 lg:hidden px-5 w-9/10"
     >
       {tabItems.map(({ href, icon: Icon, label, isCenter }) => {
         const active =
@@ -40,7 +40,7 @@ export default function MobileTabBar() {
           <Link
             key={href}
             href={href}
-            className="flex flex-col items-center gap-0.5 px-3 py-1 min-w-[48px]"
+            className="flex flex-col items-center gap-0.5 px-3 py-1 min-w-12"
             aria-label={label}
             aria-current={active ? 'page' : undefined}
           >

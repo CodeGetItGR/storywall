@@ -8,7 +8,7 @@ function getCountdown(): number {
   return Math.ceil((wedding.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 }
 
-export default function RightContextPanel() {
+export function RightContextPanel() {
   const countdown = getCountdown()
   const upcomingEvents = scheduleEvents
     .filter(e => new Date(e.date + 'T00:00:00') >= new Date('2025-07-11T00:00:00'))
@@ -26,20 +26,9 @@ export default function RightContextPanel() {
   return (
     <aside
       aria-label="Wedding details"
-      className="fixed right-0 top-0 h-screen w-[300px] bg-background border-l border-border hidden xl:flex flex-col z-30 overflow-y-auto no-scrollbar"
+      className="fixed right-0 top-0 h-screen w-75 bg-background border-l border-border hidden xl:flex flex-col z-30 overflow-y-auto no-scrollbar"
     >
       <div className="flex flex-col gap-5 p-5">
-
-        {/* Countdown */}
-        <div className="bg-gradient-brand rounded-2xl p-5 text-white">
-          <div className="flex items-center gap-2 mb-2">
-            <Heart className="w-4 h-4 fill-white" aria-hidden="true" />
-            <span className="text-xs font-medium opacity-90 uppercase tracking-wide">Countdown</span>
-          </div>
-          <p className="text-4xl font-bold leading-none tabular-nums">{countdown}</p>
-          <p className="text-sm opacity-80 mt-1.5">days until October 18th</p>
-        </div>
-
         {/* RSVP summary */}
         <div className="bg-surface-muted rounded-2xl p-4">
           <div className="flex items-center justify-between mb-3">
@@ -82,7 +71,7 @@ export default function RightContextPanel() {
               return (
                 <Link key={event.id} href="/tools/schedule">
                   <div className="flex items-start gap-3 p-3 rounded-xl bg-surface-muted hover:bg-border transition-colors">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-card flex flex-col items-center justify-center shadow-sm">
+                    <div className="shrink-0 w-10 h-10 rounded-lg bg-card flex flex-col items-center justify-center shadow-sm">
                       <span className="text-[9px] text-ink-muted uppercase leading-none font-medium">{mon}</span>
                       <span className="text-sm font-bold text-ink leading-none">{day}</span>
                     </div>

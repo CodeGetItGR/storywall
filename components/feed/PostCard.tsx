@@ -24,7 +24,7 @@ function timeAgo(dateStr: string): string {
   return `${Math.floor(diff / 86400)}d ago`
 }
 
-export default function PostCard({ post, showCommentLink = true }: PostCardProps) {
+export function PostCard({ post, showCommentLink = true }: PostCardProps) {
   const [liked, setLiked] = useState(post.liked)
   const [likeCount, setLikeCount] = useState(post.likes)
   const [saved, setSaved] = useState(false)
@@ -88,7 +88,7 @@ export default function PostCard({ post, showCommentLink = true }: PostCardProps
 
       {/* Image */}
       {post.image && (
-        <div className="relative w-full aspect-[4/3] bg-surface-muted overflow-hidden">
+        <div className="relative w-full aspect-4/3 bg-surface-muted overflow-hidden">
           <Image
             src={post.image}
             alt={`Photo by ${user.name}`}

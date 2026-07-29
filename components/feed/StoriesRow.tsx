@@ -1,7 +1,7 @@
 import { stories, users, CURRENT_USER_ID, getUser } from '@/lib/mock-data'
-import StoryAvatar from './story-avatar'
+import {StoryAvatar} from './StoryAvatar'
 
-export default function StoriesRow() {
+export function StoriesRow() {
   const currentUser = getUser(CURRENT_USER_ID)
 
   // Current user's story (or "add story" slot)
@@ -31,7 +31,7 @@ export default function StoriesRow() {
       />
 
       {/* Divider */}
-      <div className="w-px h-14 bg-border self-center flex-shrink-0" aria-hidden="true" />
+      <div className="w-px h-14 bg-border self-center shrink-0" aria-hidden="true" />
 
       {/* Other stories */}
       {otherStories.map(story => {

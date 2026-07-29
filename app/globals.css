@@ -56,6 +56,34 @@
   --font-sans: 'Geist', 'Geist Fallback', system-ui, sans-serif;
 }
 
+@utility abhaya-body {
+  color: #4F4F4F;
+  font-family: var(--font-abhaya-libre);
+  font-size: 1.5625rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+@utility alegreya {
+  color: #4F4F4F;
+  font-family: var(--font-alegreya);
+  font-size: 0.5rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+
+@utility alegreya-light {
+  color: #4F4F4F;
+  font-family: var(--font-alegreya);
+  font-size: 0.75rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.5625rem; /* 208.333% */
+  letter-spacing: 0.0525rem;
+}
+
 /* ── CSS variables ── */
 :root {
   color-scheme: light;

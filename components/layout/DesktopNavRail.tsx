@@ -15,18 +15,18 @@ const navItems = [
   { href: '/profile', icon: User, label: 'Profile' },
 ]
 
-export default function DesktopNavRail() {
+export function DesktopNavRail() {
   const pathname = usePathname()
   const user = getUser(CURRENT_USER_ID)
 
   return (
     <nav
       aria-label="Main navigation"
-      className="fixed left-0 top-0 h-screen w-[220px] bg-background border-r border-border flex-col z-40 hidden lg:flex"
+      className="fixed left-0 top-0 h-screen w-55 bg-background border-r border-border flex-col z-40 hidden lg:flex"
     >
       {/* Logo */}
       <div className="px-5 py-6 flex items-center gap-3">
-        <div className="w-9 h-9 rounded-full bg-gradient-brand flex items-center justify-center flex-shrink-0">
+        <div className="w-9 h-9 rounded-full bg-gradient-brand flex items-center justify-center shrink-0">
           <Heart className="w-4 h-4 text-white fill-white" />
         </div>
         <div className="leading-tight">
@@ -53,7 +53,7 @@ export default function DesktopNavRail() {
               )}
             >
               <Icon
-                className={cn('w-5 h-5 flex-shrink-0', active ? 'text-primary' : '')}
+                className={cn('w-5 h-5 shrink-0', active ? 'text-primary' : '')}
                 strokeWidth={active ? 2.5 : 1.8}
               />
               {label}
