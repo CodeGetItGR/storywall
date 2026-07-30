@@ -60,6 +60,12 @@
   "FeedPage": {
     "celebrateTheMoment": "Γιορτάστε τη στιγμή"
   },
+  "RsvpPrompt": {
+    "willYouAttend": "Θα παραστείτε;",
+    "until": "Έως {date}",
+    "yes": "Ναι",
+    "no": "Όχι"
+  },
   "OnboardingPage": {
     "heroImageAlt": "Έμμα και Τζέιμς — αρραβωνιασμένο ζευγάρι το ηλιοβασίλεμα σε αμπελώνα",
     "coupleNames": "Έμμα & Τζέιμς",
@@ -433,6 +439,7 @@
     "messagePlaceholder": "Προαιρετικό — μοιραστείτε τον ενθουσιασμό σας ή ένα ξεχωριστό σημείωμα...",
     "messageAriaLabel": "Μήνυμα για το ζευγάρι",
     "submitRsvp": "Υποβολή RSVP",
+    "submitError": "Κάτι πήγε στραβά κατά την υποβολή του RSVP. Δοκιμάστε ξανά.",
     "whosComing": "Ποιοι έρχονται"
   },
   "VenuePage": {

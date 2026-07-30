@@ -1,31 +1,109 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, CheckCircle2, XCircle, Clock, ChevronDown } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
-import { rsvpGuests } from '@/lib/mock-data'
+import { useActiveEvent, useActiveMember } from '@/providers/EventProvider'
+import { useCreateRsvp, useEventRsvps, useRsvp, useUpdateRsvp } from '@/hooks/useRsvps'
+import { useEventMembers } from '@/hooks/useEventMembers'
+import type { AttendanceStatus } from '@/lib/api/types'
 
-type AttendingStatus = 'attending' | 'not-attending' | 'pending'
+type AttendingStatus = 'attending' | 'not-attending'
+
+function rsvpStorageKey(memberId: string) {
+  return `storywall.rsvpId.${memberId}`
+}
 
 export default function RSVPPage() {
   const t = useTranslations('RSVPPage')
   const router = useRouter()
-  const [attending, setAttending] = useState<AttendingStatus | null>(null)
+  const searchParams = useSearchParams()
+
+  const activeEvent = useActiveEvent()
+  const activeMember = useActiveMember()
+  const eventId = activeEvent?.id ?? null
+  const memberId = activeMember?.id ?? null
+  const isHost = activeMember?.role === 'HOST'
+
+  const presetAttending = searchParams.get('attending')
+  const [attending, setAttending] = useState<AttendingStatus | null>(
+    presetAttending === 'attending' || presetAttending === 'not-attending' ? presetAttending : null,
+  )
   const [dietary, setDietary] = useState('')
   const [message, setMessage] = useState('')
   const [plusOnes, setPlusOnes] = useState(0)
   const [submitted, setSubmitted] = useState(false)
 
-  const confirmed = rsvpGuests.filter(g => g.status === 'attending')
-  const declined  = rsvpGuests.filter(g => g.status === 'not-attending')
-  const pending   = rsvpGuests.filter(g => g.status === 'pending')
+  const [rsvpId, setRsvpId] = useState<string | null>(null)
+  useEffect(() => {
+    if (!memberId) return
+    setRsvpId(localStorage.getItem(rsvpStorageKey(memberId)))
+  }, [memberId])
 
-  const totalGuests = confirmed.reduce((sum, g) => sum + 1 + g.plusOnes, 0)
+  const { data: existingRsvp } = useRsvp(rsvpId)
 
-  function handleSubmit(e: React.FormEvent) {
+  // Server data is the source of truth for an already-submitted RSVP, but it
+  // arrives after mount — hydrate the form once it loads without clobbering
+  // whatever the guest has already started typing.
+  const hydratedRef = useRef(false)
+  useEffect(() => {
+    if (!existingRsvp || hydratedRef.current) return
+    hydratedRef.current = true
+    setAttending(existingRsvp.attendanceStatus === 'ATTENDING' ? 'attending' : 'not-attending')
+    setPlusOnes(Math.max(0, existingRsvp.adultCount - 1))
+    setDietary(existingRsvp.dietaryNotes ?? '')
+    setMessage(existingRsvp.notes ?? '')
+  }, [existingRsvp])
+
+  const createRsvp = useCreateRsvp(eventId ?? undefined)
+  const updateRsvp = useUpdateRsvp(rsvpId ?? '', eventId ?? undefined)
+
+  // Only HOST members can list every guest's RSVP — attendees only ever see
+  // their own via useRsvp above, so skip this fetch (and the guest list) for
+  // everyone else.
+  const { data: eventRsvps } = useEventRsvps(isHost ? eventId : null)
+  const { data: eventMembers } = useEventMembers(isHost ? eventId : null)
+  const memberNames = new Map((eventMembers ?? []).map(m => [m.id, m.displayName]))
+  const confirmedGuests = (eventRsvps ?? [])
+    .filter(r => r.attendanceStatus === 'ATTENDING')
+    .map(r => ({ ...r, name: memberNames.get(r.eventMemberId) ?? r.eventMemberId }))
+
+  const summary = activeEvent?.rsvpSummary
+
+  const isSubmitting = createRsvp.isPending || updateRsvp.isPending
+  const submitError = createRsvp.error ?? updateRsvp.error
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!attending || !memberId) return
+
+    const attendanceStatus: AttendanceStatus = attending === 'attending' ? 'ATTENDING' : 'DECLINED'
+    const adultCount = 1 + plusOnes
+
+    if (rsvpId) {
+      await updateRsvp.mutateAsync({
+        attendanceStatus,
+        adultCount,
+        childCount: 0,
+        dietaryNotes: dietary || undefined,
+        notes: message || undefined,
+      })
+    } else {
+      const created = await createRsvp.mutateAsync({
+        eventMemberId: memberId,
+        attendanceStatus,
+        adultCount,
+        childCount: 0,
+        dietaryNotes: dietary || undefined,
+        notes: message || undefined,
+        submittedAt: new Date().toISOString(),
+      })
+      setRsvpId(created.id)
+      localStorage.setItem(rsvpStorageKey(memberId), created.id)
+    }
+
     setSubmitted(true)
   }
 
@@ -69,24 +147,8 @@ export default function RSVPPage() {
         <h1 className="text-base font-bold text-ink">{t('title')}</h1>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        {[
-          { key: 'attending', count: confirmed.length, sub: t('guestsCount', { count: totalGuests }), color: 'text-emerald-600', bg: 'bg-emerald-50', Icon: CheckCircle2 },
-          { key: 'pending', count: pending.length, sub: t('awaitingReply'), color: 'text-amber-500', bg: 'bg-amber-50', Icon: Clock },
-          { key: 'declined', count: declined.length, sub: t('notAttending'), color: 'text-rose-500', bg: 'bg-rose-50', Icon: XCircle },
-        ].map(({ key, count, sub, color, bg, Icon }) => (
-          <div key={key} className={`${bg} rounded-2xl p-4 flex flex-col items-center text-center`}>
-            <Icon className={`w-5 h-5 ${color} mb-1`} strokeWidth={1.8} />
-            <p className={`text-2xl font-bold ${color} tabular-nums`}>{count}</p>
-            <p className="text-xs font-medium text-ink-muted mt-0.5 leading-tight">{t(`stats.${key}`)}</p>
-            <p className="text-[10px] text-ink-faint leading-tight">{sub}</p>
-          </div>
-        ))}
-      </div>
-
       {/* RSVP form */}
-      <div className="bg-card rounded-2xl border border-border shadow-sm p-5 mb-6">
+      <div className="p-5 mb-6">
         <h2 className="text-base font-bold text-ink mb-4">{t('yourRsvp')}</h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {/* Attending? */}
@@ -171,9 +233,13 @@ export default function RSVPPage() {
             />
           </div>
 
+          {submitError && (
+            <p className="text-xs text-rose-500 text-center">{t('submitError')}</p>
+          )}
+
           <button
             type="submit"
-            disabled={!attending}
+            disabled={!attending || !memberId || isSubmitting}
             className="w-full py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
           >
             {t('submitRsvp')}
@@ -181,24 +247,28 @@ export default function RSVPPage() {
         </form>
       </div>
 
-      {/* Guest list */}
-      <h2 className="text-sm font-bold text-ink mb-3">{t('whosComing')}</h2>
-      <div className="flex flex-col gap-2">
-        {confirmed.map(guest => (
-          <div key={guest.id} className="flex items-center justify-between bg-card rounded-xl px-4 py-3 border border-border/50 shadow-sm">
-            <div>
-              <p className="text-sm font-medium text-ink">{guest.name}</p>
-              {guest.message && <p className="text-xs text-ink-muted mt-0.5 line-clamp-1">&ldquo;{guest.message}&rdquo;</p>}
-            </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              {guest.plusOnes > 0 && (
-                <span className="text-xs text-ink-muted bg-surface-muted px-2 py-0.5 rounded-full">+{guest.plusOnes}</span>
-              )}
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-            </div>
+      {/* Guest list — HOST only, attendees don't have visibility into others' RSVPs */}
+      {isHost && confirmedGuests.length > 0 && (
+        <>
+          <h2 className="text-sm font-bold text-ink mb-3">{t('whosComing')}</h2>
+          <div className="flex flex-col gap-2">
+            {confirmedGuests.map(guest => (
+              <div key={guest.id} className="flex items-center justify-between bg-card rounded-xl px-4 py-3 border border-border/50 shadow-sm">
+                <div>
+                  <p className="text-sm font-medium text-ink">{guest.name}</p>
+                  {guest.notes && <p className="text-xs text-ink-muted mt-0.5 line-clamp-1">&ldquo;{guest.notes}&rdquo;</p>}
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {guest.adultCount + guest.childCount > 1 && (
+                    <span className="text-xs text-ink-muted bg-surface-muted px-2 py-0.5 rounded-full">+{guest.adultCount + guest.childCount - 1}</span>
+                  )}
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </>
+      )}
     </div>
   )
 }

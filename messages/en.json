@@ -60,6 +60,12 @@
   "FeedPage": {
     "celebrateTheMoment": "Celebrate the moment"
   },
+  "RsvpPrompt": {
+    "willYouAttend": "Will you attend?",
+    "until": "Until {date}",
+    "yes": "Yes",
+    "no": "No"
+  },
   "OnboardingPage": {
     "heroImageAlt": "Emma and James — engaged couple at golden hour in a vineyard",
     "coupleNames": "Emma & James",
@@ -433,6 +439,7 @@
     "messagePlaceholder": "Optional — share your excitement or a special note...",
     "messageAriaLabel": "Message for the couple",
     "submitRsvp": "Submit RSVP",
+    "submitError": "Something went wrong submitting your RSVP. Please try again.",
     "whosComing": "Who's coming"
   },
   "VenuePage": {

@@ -10,12 +10,12 @@ export type PlatformRole = "USER" | "ADMIN" | "GUEST";
 
 // eventType / moduleKey / Post.type / Reaction.reactionType are free strings server-side.
 // These are FE-side conventions only, not enforced by the backend.
-export type EventTypeConvention = "WEDDING" | "BAPTISM" | "BIRTHDAY" | "CONFERENCE" | (string & {});
-export type ModuleKeyConvention = "posts" | "rsvp" | "playlist" | "stories" | "gallery" | (string & {});
+export type EventTypeConvention = "WEDDING" | "BAPTISM" | "BIRTHDAY" | "CONFERENCE";
+export type ModuleKeyConvention = "posts" | "rsvp" | "playlist" | "stories" | "gallery";
 // Post.type is enforced server-side against this exact set (DB CHECK constraint
 // + matching DTO validation) — not a free-string convention like the others.
 export type PostType = "TEXT" | "MEDIA" | "ANNOUNCEMENT" | "PLAYLIST";
-export type MediaTypeConvention = "IMAGE" | "VIDEO" | "AUDIO" | "DOCUMENT" | (string & {});
+export type MediaTypeConvention = "IMAGE" | "VIDEO" | "AUDIO" | "DOCUMENT";
 
 // --- §2 Errors ---
 
