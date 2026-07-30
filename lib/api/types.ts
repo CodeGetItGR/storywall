@@ -12,7 +12,9 @@ export type PlatformRole = "USER" | "ADMIN" | "GUEST";
 // These are FE-side conventions only, not enforced by the backend.
 export type EventTypeConvention = "WEDDING" | "BAPTISM" | "BIRTHDAY" | "CONFERENCE" | (string & {});
 export type ModuleKeyConvention = "posts" | "rsvp" | "playlist" | "stories" | "gallery" | (string & {});
-export type PostTypeConvention = "TEXT" | "PHOTO" | "VIDEO" | "ANNOUNCEMENT" | "POLL" | (string & {});
+// Post.type is enforced server-side against this exact set (DB CHECK constraint
+// + matching DTO validation) — not a free-string convention like the others.
+export type PostType = "TEXT" | "MEDIA" | "ANNOUNCEMENT" | "PLAYLIST";
 export type MediaTypeConvention = "IMAGE" | "VIDEO" | "AUDIO" | "DOCUMENT" | (string & {});
 
 // --- §2 Errors ---
@@ -23,7 +25,9 @@ export interface ProblemDetail {
   status: number;
   detail: string;
   instance: string;
-  errorCode: number;
+  // number for GlobalExceptionHandler errors; string ("AUTHENTICATION_REQUIRED" |
+  // "ACCESS_DENIED") for the two auth-entrypoint special cases.
+  errorCode: number | string;
   errorKey: string;
   errors?: Record<string, string>;
 }
@@ -63,16 +67,22 @@ export interface GuestLoginRequestDto {
 // --- §4 Users, Me, Sessions, Notifications ---
 
 export interface NotificationRequestDto {
-  recipientMemberId?: string;
+  recipientMemberId?: string; // ignored as a spoofing vector — server resolves from the caller's own membership
   type: string;
-  referenceType: string;
-  referenceId: string;
+  referenceType?: string;
+  referenceId?: string;
   payload: Record<string, unknown>;
-  readAt: string | null;
+  readAt?: string | null;
 }
 
-export interface NotificationResponseDto extends NotificationRequestDto {
+export interface NotificationResponseDto {
   id: string;
+  recipientMemberId: string;
+  type: string;
+  referenceType: string | null;
+  referenceId: string | null;
+  payload: Record<string, unknown>;
+  readAt: string | null;
   createdAt: string;
   deletedAt: string | null;
 }
@@ -115,21 +125,85 @@ export interface EventRequestDto {
   subtitle?: string;
   description?: string;
   eventType: EventTypeConvention;
-  visibility?: EventVisibility;
+  visibility: EventVisibility; // required on this DTO despite the entity's DB default of PRIVATE
   startAt: string;
-  endAt: string;
+  endAt?: string;
   timezone: string;
   locationName?: string;
   locationAddress?: string;
   mapsUrl?: string;
   coverMediaId?: string;
-  brandingSettings?: Record<string, unknown>;
+  brandingSettings: Record<string, unknown>; // required — send {} if none
   rsvpDeadline?: string;
-  isArchived?: boolean;
+  isArchived: boolean; // required — send false explicitly
 }
 
-export interface EventResponseDto extends EventRequestDto {
+// Returned by GET /api/events (list) and POST /api/events — flat summary shape.
+// GET /api/events/{id} returns EventDetailResponseDto instead (see below).
+export interface EventResponseDto {
   id: string;
+  title: string;
+  subtitle: string | null;
+  description: string | null;
+  eventType: EventTypeConvention;
+  visibility: EventVisibility;
+  startAt: string;
+  endAt: string | null;
+  timezone: string;
+  locationName: string | null;
+  locationAddress: string | null;
+  mapsUrl: string | null;
+  coverMediaId: string | null;
+  brandingSettings: Record<string, unknown>;
+  rsvpDeadline: string | null;
+  isArchived: boolean;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface EventScheduleDto {
+  startAt: string;
+  endAt: string | null;
+  timezone: string;
+  rsvpDeadline: string | null;
+}
+
+export interface EventLocationDto {
+  name: string | null;
+  address: string | null;
+  mapsUrl: string | null;
+}
+
+export interface EventRsvpSummaryDto {
+  totalMembers: number;
+  attending: number;
+  declined: number;
+  maybe: number;
+  noResponse: number;
+}
+
+// Returned by GET /api/events/{id} only (not the list endpoint), added
+// 2026-07-30. Everything that scales with event activity — posts, comments,
+// reactions, stories, individual media, individual RSVPs, playlist
+// suggestions/votes — is intentionally excluded; fetch those from their own
+// paginatable endpoints.
+export interface EventDetailResponseDto {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  description: string | null;
+  eventType: EventTypeConvention;
+  visibility: EventVisibility;
+  schedule: EventScheduleDto;
+  location: EventLocationDto;
+  coverMedia: MediaResponseDto | null; // resolved, with a fresh presigned mediaUrl
+  brandingSettings: Record<string, unknown>;
+  isArchived: boolean;
+  hosts: EventHostResponseDto[];
+  modules: EventModuleResponseDto[];
+  sessions: EventSessionResponseDto[];
+  rsvpSummary: EventRsvpSummaryDto;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
@@ -159,11 +233,14 @@ export interface CoHostInviteRequestDto {
 export interface EventHostRequestDto {
   eventId: string;
   memberId: string;
-  displayOrder?: number;
+  displayOrder: number;
 }
 
-export interface EventHostResponseDto extends EventHostRequestDto {
+export interface EventHostResponseDto {
   id: string;
+  eventId: string;
+  memberId: string;
+  displayOrder: number;
   createdAt: string;
 }
 
@@ -178,13 +255,22 @@ export interface EventInvitationRequestDto {
   email?: string;
   firstName?: string;
   lastName?: string;
-  maxGuests?: number;
+  maxGuests: number;
   expiresAt?: string;
-  usedAt?: string | null;
+  usedAt?: string | null; // system-managed; set on accept
 }
 
-export interface EventInvitationResponseDto extends EventInvitationRequestDto {
+export interface EventInvitationResponseDto {
   id: string;
+  eventId: string;
+  inviteCode: string;
+  inviteToken: string; // server generates a UUID if omitted on write — always present on read
+  email: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  maxGuests: number;
+  expiresAt: string | null;
+  usedAt: string | null;
   createdAt: string;
 }
 
@@ -205,13 +291,24 @@ export interface EventMemberRequestDto {
   nickname?: string;
   relationshipRole?: string;
   customRelationshipRole?: string;
-  isFeatured?: boolean;
+  isFeatured?: boolean; // optional on the wire — defaults to false server-side
   avatarMediaId?: string;
-  joinedAt?: string;
+  joinedAt: string;
 }
 
-export interface EventMemberResponseDto extends EventMemberRequestDto {
+export interface EventMemberResponseDto {
   id: string;
+  eventId: string;
+  userId: string | null;
+  invitationId: string | null;
+  role: EventRole;
+  displayName: string;
+  nickname: string | null;
+  relationshipRole: string | null;
+  customRelationshipRole: string | null;
+  isFeatured: boolean;
+  avatarMediaId: string | null;
+  joinedAt: string;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
@@ -229,12 +326,16 @@ export interface EventMemberPatchDto {
 export interface EventModuleRequestDto {
   eventId: string;
   moduleKey: ModuleKeyConvention;
-  isEnabled?: boolean;
-  configuration?: Record<string, unknown>;
+  isEnabled: boolean;
+  configuration: Record<string, unknown>;
 }
 
-export interface EventModuleResponseDto extends EventModuleRequestDto {
+export interface EventModuleResponseDto {
   id: string;
+  eventId: string;
+  moduleKey: ModuleKeyConvention;
+  isEnabled: boolean;
+  configuration: Record<string, unknown>;
   createdAt: string;
 }
 
@@ -247,15 +348,23 @@ export interface EventSessionRequestDto {
   eventId: string;
   title: string;
   description?: string;
-  startAt: string;
-  endAt: string;
+  startAt?: string;
+  endAt?: string;
   locationName?: string;
   mapsUrl?: string;
-  displayOrder?: number;
+  displayOrder: number;
 }
 
-export interface EventSessionResponseDto extends EventSessionRequestDto {
+export interface EventSessionResponseDto {
   id: string;
+  eventId: string;
+  title: string;
+  description: string | null;
+  startAt: string | null;
+  endAt: string | null;
+  locationName: string | null;
+  mapsUrl: string | null;
+  displayOrder: number;
   createdAt: string;
   deletedAt: string | null;
 }
@@ -274,15 +383,23 @@ export interface RsvpRequestDto {
   eventMemberId: string;
   attendanceStatus: AttendanceStatus;
   phone?: string;
-  adultCount?: number;
-  childCount?: number;
+  adultCount: number;
+  childCount: number;
   dietaryNotes?: string;
   notes?: string;
-  submittedAt?: string;
+  submittedAt: string;
 }
 
-export interface RsvpResponseDto extends RsvpRequestDto {
+export interface RsvpResponseDto {
   id: string;
+  eventMemberId: string;
+  attendanceStatus: AttendanceStatus;
+  phone: string | null;
+  adultCount: number;
+  childCount: number;
+  dietaryNotes: string | null;
+  notes: string | null;
+  submittedAt: string;
   updatedAt: string;
 }
 
@@ -332,18 +449,18 @@ export interface MediaResponseDto {
 
 export interface PostRequestDto {
   eventId: string;
-  authorMemberId: string;
-  type: PostTypeConvention;
+  authorMemberId?: string;
+  type: PostType;
   content?: string;
-  isPinned?: boolean;
+  isPinned: boolean; // required — no server-side default
   mediaIds?: string[];
 }
 
 export interface PostResponseDto {
   id: string;
   eventId: string;
-  authorMemberId: string;
-  type: PostTypeConvention;
+  authorMemberId: string | null;
+  type: PostType;
   content: string | null;
   isPinned: boolean;
   createdAt: string;
@@ -353,13 +470,17 @@ export interface PostResponseDto {
 
 export interface CommentRequestDto {
   postId: string;
-  authorMemberId: string;
+  authorMemberId?: string;
   parentCommentId?: string;
   content: string;
 }
 
-export interface CommentResponseDto extends CommentRequestDto {
+export interface CommentResponseDto {
   id: string;
+  postId: string;
+  authorMemberId: string | null;
+  parentCommentId: string | null;
+  content: string;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
@@ -378,22 +499,28 @@ export interface ReactionResponseDto extends ReactionRequestDto {
 
 export interface StoryRequestDto {
   eventId: string;
-  authorMemberId: string;
+  authorMemberId?: string;
   mediaId: string;
   caption?: string;
   songUrl?: string;
-  expiresAt?: string;
+  expiresAt: string;
 }
 
-export interface StoryResponseDto extends StoryRequestDto {
+export interface StoryResponseDto {
   id: string;
+  eventId: string;
+  authorMemberId: string | null;
+  mediaId: string;
+  caption: string | null;
+  songUrl: string | null;
+  expiresAt: string;
   createdAt: string;
   deletedAt: string | null;
 }
 
 export interface PlaylistSuggestionRequestDto {
   eventId: string;
-  authorMemberId: string;
+  authorMemberId?: string;
   title: string;
   artist?: string;
   youtubeUrl?: string;
@@ -401,8 +528,15 @@ export interface PlaylistSuggestionRequestDto {
   comment?: string;
 }
 
-export interface PlaylistSuggestionResponseDto extends PlaylistSuggestionRequestDto {
+export interface PlaylistSuggestionResponseDto {
   id: string;
+  eventId: string;
+  authorMemberId: string | null;
+  title: string;
+  artist: string | null;
+  youtubeUrl: string | null;
+  spotifyUrl: string | null;
+  comment: string | null;
   createdAt: string;
   deletedAt: string | null;
 }
@@ -436,26 +570,39 @@ export interface AuditLogRequestDto {
   action: string;
   entityType: string;
   entityId?: string;
-  changes?: Record<string, unknown>;
+  changes: Record<string, unknown>;
   ipAddress?: string;
 }
 
-export interface AuditLogResponseDto extends AuditLogRequestDto {
+export interface AuditLogResponseDto {
   id: string;
+  eventId: string | null;
+  actorMemberId: string | null;
+  action: string;
+  entityType: string;
+  entityId: string | null;
+  changes: Record<string, unknown>;
+  ipAddress: string | null;
   createdAt: string;
 }
 
 export interface ModerationActionRequestDto {
   eventId: string;
-  moderatorMemberId: string;
+  moderatorMemberId?: string;
   targetType: string;
   targetId: string;
   actionType: string;
   reason?: string;
 }
 
-export interface ModerationActionResponseDto extends ModerationActionRequestDto {
+export interface ModerationActionResponseDto {
   id: string;
+  eventId: string;
+  moderatorMemberId: string | null;
+  targetType: string;
+  targetId: string;
+  actionType: string;
+  reason: string | null;
   createdAt: string;
 }
 
@@ -472,8 +619,18 @@ export interface ReportRequestDto {
   resolutionNotes?: string;
 }
 
-export interface ReportResponseDto extends ReportRequestDto {
+export interface ReportResponseDto {
   id: string;
+  reporterMemberId: string | null;
+  eventId: string;
+  targetType: string;
+  targetId: string;
+  reason: string;
+  description: string | null;
+  status: string | null; // set by moderators only, defaults to "OPEN" server-side
+  reviewedByMemberId: string | null;
+  reviewedAt: string | null;
+  resolutionNotes: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -487,23 +644,36 @@ export interface TelemetryEventRequestDto {
   platform?: string;
   ipAddress?: string;
   userAgent?: string;
-  payload?: Record<string, unknown>;
+  payload: Record<string, unknown>;
 }
 
-export interface TelemetryEventResponseDto extends TelemetryEventRequestDto {
+export interface TelemetryEventResponseDto {
   id: string;
+  eventName: string;
+  userId: string | null;
+  eventId: string | null;
+  memberId: string | null;
+  sessionId: string | null;
+  platform: string | null;
+  ipAddress: string | null;
+  userAgent: string | null;
+  payload: Record<string, unknown>;
   createdAt: string;
 }
 
 export interface PlatformFeatureFlagRequestDto {
   featureKey: string;
   description?: string;
-  isEnabled?: boolean;
-  configuration?: Record<string, unknown>;
+  isEnabled: boolean;
+  configuration: Record<string, unknown>;
 }
 
-export interface PlatformFeatureFlagResponseDto extends PlatformFeatureFlagRequestDto {
+export interface PlatformFeatureFlagResponseDto {
   id: string;
+  featureKey: string;
+  description: string | null;
+  isEnabled: boolean;
+  configuration: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }

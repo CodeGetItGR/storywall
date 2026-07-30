@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import { ArrowLeft, ImagePlus, X, Hash, Send } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { CURRENT_USER_ID, getUser } from '@/lib/mock-data'
@@ -11,6 +12,7 @@ import Avatar from '@/components/ui/avatar'
 const MAX_CHARS = 280
 
 export default function NewPostPage() {
+  const t = useTranslations('NewPostPage')
   const router = useRouter()
   const user = getUser(CURRENT_USER_ID)
 
@@ -57,12 +59,12 @@ export default function NewPostPage() {
       <div className="flex items-center justify-between mb-6">
         <button
           onClick={() => router.back()}
-          aria-label="Go back"
+          aria-label={t('goBack')}
           className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-base font-bold text-ink">New Post</h1>
+        <h1 className="text-base font-bold text-ink">{t('title')}</h1>
         <div className="w-9" />
       </div>
 
@@ -81,10 +83,10 @@ export default function NewPostPage() {
           <textarea
             value={caption}
             onChange={e => setCaption(e.target.value)}
-            placeholder="Share a memory, message, or moment with Emma & James..."
+            placeholder={t('captionPlaceholder')}
             rows={4}
             className="w-full bg-surface-muted rounded-2xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 resize-none transition leading-relaxed"
-            aria-label="Post caption"
+            aria-label={t('captionAriaLabel')}
           />
           <span
             className={cn(
@@ -100,11 +102,11 @@ export default function NewPostPage() {
         <div>
           {previewUrl ? (
             <div className="relative rounded-2xl overflow-hidden aspect-[4/3] bg-surface-muted">
-              <Image src={previewUrl} alt="Post preview" fill className="object-cover" sizes="600px" />
+              <Image src={previewUrl} alt={t('postPreviewAlt')} fill className="object-cover" sizes="600px" />
               <button
                 type="button"
                 onClick={() => setPreviewUrl(null)}
-                aria-label="Remove image"
+                aria-label={t('removeImage')}
                 className="absolute top-3 right-3 w-8 h-8 rounded-full bg-ink/60 flex items-center justify-center text-white hover:bg-ink/80 transition-colors"
               >
                 <X className="w-4 h-4" />
@@ -117,8 +119,8 @@ export default function NewPostPage() {
               className="w-full flex flex-col items-center justify-center gap-2 border-2 border-dashed border-border rounded-2xl py-10 text-ink-faint hover:border-primary/40 hover:text-primary/60 hover:bg-primary-light/30 transition-colors"
             >
               <ImagePlus className="w-7 h-7" />
-              <span className="text-sm font-medium">Add a photo</span>
-              <span className="text-xs">JPEG, PNG, HEIC up to 10 MB</span>
+              <span className="text-sm font-medium">{t('addPhoto')}</span>
+              <span className="text-xs">{t('photoFormats')}</span>
             </button>
           )}
           <input
@@ -127,7 +129,7 @@ export default function NewPostPage() {
             accept="image/*"
             className="sr-only"
             onChange={handleFile}
-            aria-label="Upload image"
+            aria-label={t('uploadImage')}
           />
         </div>
 
@@ -141,9 +143,9 @@ export default function NewPostPage() {
               onChange={e => setTagInput(e.target.value)}
               onKeyDown={handleTagKey}
               onBlur={addTag}
-              placeholder="Add a tag — press Enter"
+              placeholder={t('addTagPlaceholder')}
               className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink-faint outline-none"
-              aria-label="Add tag"
+              aria-label={t('addTag')}
               maxLength={24}
             />
           </div>
@@ -158,7 +160,7 @@ export default function NewPostPage() {
                   <button
                     type="button"
                     onClick={() => setTags(t => t.filter(x => x !== tag))}
-                    aria-label={`Remove tag ${tag}`}
+                    aria-label={t('removeTag', { tag })}
                     className="ml-0.5 hover:text-primary transition-colors"
                   >
                     <X className="w-3 h-3" />
@@ -176,7 +178,7 @@ export default function NewPostPage() {
           className="flex items-center justify-center gap-2 w-full py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
         >
           <Send className="w-4 h-4" />
-          Share to the Wall
+          {t('submit')}
         </button>
       </form>
     </div>

@@ -48,6 +48,7 @@ export const endpoints = {
   },
 
   eventHosts: {
+    create: "/api/event-hosts",
     byId: (id: string) => `/api/event-hosts/${id}`,
   },
 

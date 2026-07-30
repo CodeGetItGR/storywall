@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Heart, MessageCircle, Share2, MoreHorizontal, Bookmark } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import { getUser } from '@/lib/mock-data'
 import type { Post } from '@/lib/types'
@@ -14,22 +15,24 @@ interface PostCardProps {
   showCommentLink?: boolean
 }
 
-function timeAgo(dateStr: string): string {
+function timeAgoParts(dateStr: string): { unit: 'now' | 'minutes' | 'hours' | 'days'; value: number } {
   const now = new Date('2025-07-11T12:00:00Z').getTime()
   const then = new Date(dateStr).getTime()
   const diff = Math.floor((now - then) / 1000)
-  if (diff < 60) return 'just now'
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
-  return `${Math.floor(diff / 86400)}d ago`
+  if (diff < 60) return { unit: 'now', value: 0 }
+  if (diff < 3600) return { unit: 'minutes', value: Math.floor(diff / 60) }
+  if (diff < 86400) return { unit: 'hours', value: Math.floor(diff / 3600) }
+  return { unit: 'days', value: Math.floor(diff / 86400) }
 }
 
 export function PostCard({ post, showCommentLink = true }: PostCardProps) {
+  const t = useTranslations('PostCard')
   const [liked, setLiked] = useState(post.liked)
   const [likeCount, setLikeCount] = useState(post.likes)
   const [saved, setSaved] = useState(false)
 
   const user = getUser(post.userId)
+  const timeAgo = timeAgoParts(post.createdAt)
 
   function handleLike() {
     if (liked) {
@@ -60,12 +63,14 @@ export function PostCard({ post, showCommentLink = true }: PostCardProps) {
             <div className="flex items-center gap-1.5">
               <span className="text-xs text-ink-muted capitalize">{user.role}</span>
               <span className="text-ink-faint text-xs">·</span>
-              <span className="text-xs text-ink-muted">{timeAgo(post.createdAt)}</span>
+              <span className="text-xs text-ink-muted">
+                {timeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${timeAgo.unit}`, { count: timeAgo.value })}
+              </span>
             </div>
           </div>
         </Link>
         <button
-          aria-label="More options"
+          aria-label={t('moreOptions')}
           className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-faint transition-colors"
         >
           <MoreHorizontal className="w-4 h-4" />
@@ -91,7 +96,7 @@ export function PostCard({ post, showCommentLink = true }: PostCardProps) {
         <div className="relative w-full aspect-4/3 bg-surface-muted overflow-hidden">
           <Image
             src={post.image}
-            alt={`Photo by ${user.name}`}
+            alt={t('photoBy', { name: user.name })}
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 680px"
@@ -105,7 +110,7 @@ export function PostCard({ post, showCommentLink = true }: PostCardProps) {
           {/* Like */}
           <button
             onClick={handleLike}
-            aria-label={liked ? 'Unlike post' : 'Like post'}
+            aria-label={liked ? t('unlikePost') : t('likePost')}
             aria-pressed={liked}
             className={cn(
               'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors',
@@ -126,7 +131,7 @@ export function PostCard({ post, showCommentLink = true }: PostCardProps) {
             <Link
               href={`/post/${post.id}`}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-ink-muted hover:bg-surface-muted transition-colors"
-              aria-label={`${post.commentCount} comments`}
+              aria-label={t('comments', { count: post.commentCount })}
             >
               <MessageCircle className="w-4 h-4" strokeWidth={1.8} />
               <span className="tabular-nums">{post.commentCount}</span>
@@ -134,7 +139,7 @@ export function PostCard({ post, showCommentLink = true }: PostCardProps) {
           ) : (
             <button
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-ink-muted hover:bg-surface-muted transition-colors"
-              aria-label={`${post.commentCount} comments`}
+              aria-label={t('comments', { count: post.commentCount })}
             >
               <MessageCircle className="w-4 h-4" strokeWidth={1.8} />
               <span className="tabular-nums">{post.commentCount}</span>
@@ -143,7 +148,7 @@ export function PostCard({ post, showCommentLink = true }: PostCardProps) {
 
           {/* Share */}
           <button
-            aria-label="Share post"
+            aria-label={t('sharePost')}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-ink-muted hover:bg-surface-muted transition-colors"
           >
             <Share2 className="w-4 h-4" strokeWidth={1.8} />
@@ -153,7 +158,7 @@ export function PostCard({ post, showCommentLink = true }: PostCardProps) {
         {/* Save */}
         <button
           onClick={() => setSaved(s => !s)}
-          aria-label={saved ? 'Unsave post' : 'Save post'}
+          aria-label={saved ? t('unsavePost') : t('savePost')}
           aria-pressed={saved}
           className={cn(
             'w-8 h-8 flex items-center justify-center rounded-full transition-colors',

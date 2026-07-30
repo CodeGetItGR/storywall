@@ -29,6 +29,13 @@ function isProblemDetail(body: unknown): body is ProblemDetail {
   return typeof body === "object" && body !== null && "errorCode" in body;
 }
 
+// Error responses come back as RFC 7807 `application/problem+json`, not
+// `application/json` — match on "json" generically so both (and any other
+// +json suffix) get parsed instead of silently falling through to .text().
+function isJsonContentType(contentType: string | null): boolean {
+  return contentType !== null && /json/i.test(contentType);
+}
+
 type ApiFetchOptions = RequestInit & { skipAuthRetry?: boolean };
 
 // The refresh/guest-relogin flow is only ever run once at a time, no matter
@@ -89,7 +96,7 @@ async function rawFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
   });
 
   const contentType = res.headers.get("content-type");
-  const body = contentType?.includes("application/json") ? await res.json() : await res.text();
+  const body = isJsonContentType(contentType) ? await res.json() : await res.text();
 
   if (!res.ok) {
     throw new ApiError(res.status, body);
@@ -113,7 +120,7 @@ async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise
   });
 
   const contentType = res.headers.get("content-type");
-  const body = contentType?.includes("application/json") ? await res.json() : await res.text();
+  const body = isJsonContentType(contentType) ? await res.json() : await res.text();
 
   if (res.status === 401 && !skipAuthRetry) {
     const newAccessToken = await reauthenticate();

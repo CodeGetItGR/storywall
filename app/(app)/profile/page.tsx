@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { ArrowLeft, Settings, Grid3x3, Heart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { posts, users, CURRENT_USER_ID, getUser } from '@/lib/mock-data'
 import Avatar from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
@@ -11,6 +12,7 @@ import { cn } from '@/lib/utils'
 type ProfileTab = 'posts' | 'liked'
 
 export default function ProfilePage() {
+  const t = useTranslations('ProfilePage')
   const router = useRouter()
   const user = getUser(CURRENT_USER_ID)
   const [tab, setTab] = useState<ProfileTab>('posts')
@@ -21,9 +23,9 @@ export default function ProfilePage() {
   const displayPosts = tab === 'posts' ? userPosts : likedPosts
 
   const roleLabel: Record<string, string> = {
-    bride: 'Bride',
-    groom: 'Groom',
-    guest: 'Guest',
+    bride: t('roles.bride'),
+    groom: t('roles.groom'),
+    guest: t('roles.guest'),
   }
 
   return (
@@ -32,14 +34,14 @@ export default function ProfilePage() {
       <div className="flex items-center justify-between px-4 py-4">
         <button
           onClick={() => router.back()}
-          aria-label="Go back"
+          aria-label={t('goBack')}
           className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h1 className="text-base font-bold text-ink">{user.username}</h1>
         <button
-          aria-label="Settings"
+          aria-label={t('settings')}
           className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
         >
           <Settings className="w-5 h-5" />
@@ -61,15 +63,15 @@ export default function ProfilePage() {
             <div className="flex gap-5 mt-3">
               <div className="text-center">
                 <p className="text-base font-bold text-ink tabular-nums">{user.postCount}</p>
-                <p className="text-xs text-ink-muted">Posts</p>
+                <p className="text-xs text-ink-muted">{t('stats.posts')}</p>
               </div>
               <div className="text-center">
                 <p className="text-base font-bold text-ink tabular-nums">{user.followers}</p>
-                <p className="text-xs text-ink-muted">Followers</p>
+                <p className="text-xs text-ink-muted">{t('stats.followers')}</p>
               </div>
               <div className="text-center">
                 <p className="text-base font-bold text-ink tabular-nums">{user.following}</p>
-                <p className="text-xs text-ink-muted">Following</p>
+                <p className="text-xs text-ink-muted">{t('stats.following')}</p>
               </div>
             </div>
           </div>
@@ -77,7 +79,7 @@ export default function ProfilePage() {
 
         {/* Edit profile button */}
         <button className="w-full py-2 rounded-full border border-border text-sm font-medium text-ink-muted hover:bg-surface-muted transition-colors">
-          Edit Profile
+          {t('editProfile')}
         </button>
       </div>
 
@@ -91,7 +93,7 @@ export default function ProfilePage() {
           )}
         >
           <Grid3x3 className="w-4 h-4" strokeWidth={1.8} />
-          Posts
+          {t('tabs.posts')}
         </button>
         <button
           onClick={() => setTab('liked')}
@@ -101,7 +103,7 @@ export default function ProfilePage() {
           )}
         >
           <Heart className="w-4 h-4" strokeWidth={1.8} />
-          Liked
+          {t('tabs.liked')}
         </button>
       </div>
 
@@ -111,7 +113,7 @@ export default function ProfilePage() {
           <div className="w-16 h-16 rounded-full bg-surface-muted flex items-center justify-center mb-4">
             {tab === 'posts' ? <Grid3x3 className="w-7 h-7 text-ink-faint" /> : <Heart className="w-7 h-7 text-ink-faint" />}
           </div>
-          <p className="text-sm font-medium text-ink-muted">No {tab === 'posts' ? 'posts' : 'liked posts'} yet</p>
+          <p className="text-sm font-medium text-ink-muted">{tab === 'posts' ? t('emptyState.posts') : t('emptyState.liked')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-0.5 mt-0.5">
@@ -120,7 +122,7 @@ export default function ProfilePage() {
               {post.image ? (
                 <Image
                   src={post.image}
-                  alt={`Post by ${getUser(post.userId).name}`}
+                  alt={t('postBy', { name: getUser(post.userId).name })}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
                   sizes="(max-width: 640px) 33vw, 200px"

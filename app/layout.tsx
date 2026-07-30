@@ -1,6 +1,8 @@
 import { Geist, Abhaya_Libre, Alegreya } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
+import { NextIntlClientProvider } from 'next-intl'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { Providers } from '@/providers/Providers'
 import './globals.css'
 import {ReactNode} from "react";
@@ -19,9 +21,12 @@ const alegreya = Alegreya({
   weight: ["400"],
 });
 
-export const metadata: Metadata = {
-  title: 'StoryWall — Emma & James · Oct 18, 2025',
-  description: 'The wedding social wall for Emma Chen & James Rivera. Share memories, RSVP, explore the venue, and celebrate together.',
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('RootLayout')
+  return {
+    title: t('title'),
+    description: t('description'),
+  }
 }
 
 export const viewport: Viewport = {
@@ -31,13 +36,17 @@ export const viewport: Viewport = {
   initialScale: 1,
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
+  const locale = await getLocale()
+
   return (
-    <html lang="en" className={`${geist.className} ${abhayaLibre.variable} ${alegreya.variable} bg-background`}>
+    <html lang={locale} className={`${geist.className} ${abhayaLibre.variable} ${alegreya.variable} bg-background`}>
       <body className="antialiased">
-        <Providers>{children}</Providers>
+        <NextIntlClientProvider>
+          <Providers>{children}</Providers>
+        </NextIntlClientProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

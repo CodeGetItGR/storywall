@@ -1,0 +1,521 @@
+{
+  "EventNotFound": {
+    "title": "This celebration seems to have wandered off",
+    "description": "We couldn't find an event at this link. Double-check the invite you were sent, or head back and pick an event from your list.",
+    "cta": "Take me back"
+  },
+  "Countdown": {
+    "days": "Days",
+    "hours": "Hours",
+    "minutes": "Minutes",
+    "seconds": "Seconds"
+  },
+  "StoriesRow": {
+    "ariaLabel": "Stories"
+  },
+  "StoryAvatar": {
+    "addYourStory": "Add your story",
+    "userStory": "{name}'s story",
+    "yourStory": "Your story"
+  },
+  "PostCard": {
+    "justNow": "just now",
+    "timeAgo": {
+      "minutes": "{count}m ago",
+      "hours": "{count}h ago",
+      "days": "{count}d ago"
+    },
+    "moreOptions": "More options",
+    "likePost": "Like post",
+    "unlikePost": "Unlike post",
+    "comments": "{count} comments",
+    "sharePost": "Share post",
+    "savePost": "Save post",
+    "unsavePost": "Unsave post",
+    "photoBy": "Photo by {name}"
+  },
+  "DesktopNavRail": {
+    "mainNavigation": "Main navigation",
+    "coupleNames": "Emma & James",
+    "newPost": "New Post",
+    "items": {
+      "home": "Home",
+      "tools": "Tools",
+      "manage": "Manage",
+      "notifications": "Notifications",
+      "profile": "Profile"
+    }
+  },
+  "MobileTabBar": {
+    "mobileNavigation": "Mobile navigation",
+    "newPost": "New post",
+    "items": {
+      "home": "Home",
+      "tools": "Tools",
+      "post": "Post",
+      "alerts": "Alerts",
+      "profile": "Profile"
+    }
+  },
+  "FeedPage": {
+    "celebrateTheMoment": "Celebrate the moment"
+  },
+  "OnboardingPage": {
+    "heroImageAlt": "Emma and James — engaged couple at golden hour in a vineyard",
+    "coupleNames": "Emma & James",
+    "eventDateAndVenue": "October 18, 2025 · Rosewood Estate, Napa Valley",
+    "titles": {
+      "login": "Welcome back",
+      "register": "Create account",
+      "invite": "Enter invite code"
+    },
+    "subtitles": {
+      "login": "Sign in to join the celebration.",
+      "register": "Join the wedding wall and share the love.",
+      "invite": "You were invited — enter your code to get started."
+    },
+    "tabs": {
+      "login": "Sign In",
+      "register": "Register",
+      "invite": "Invite"
+    },
+    "fields": {
+      "fullName": "Full name",
+      "email": "Email",
+      "password": "Password",
+      "inviteLinkOrToken": "Invite link or token"
+    },
+    "placeholders": {
+      "fullName": "Your full name",
+      "email": "you@example.com",
+      "inviteLinkOrToken": "Paste your invite link or token"
+    },
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "submit": {
+      "login": "Sign In",
+      "register": "Create Account",
+      "invite": "Join Wedding"
+    },
+    "disclaimer": "By joining you agree to share moments from Emma & James's special day."
+  },
+  "ToolsPage": {
+    "title": "Tools",
+    "subtitle": "Everything you need to enjoy and participate in the wedding",
+    "items": {
+      "rsvp": {
+        "label": "RSVP",
+        "description": "Confirm your attendance and dietary preferences",
+        "badge": "{count} attending"
+      },
+      "gifts": {
+        "label": "Gift Registry",
+        "description": "Browse the couple's wish list and claim a gift",
+        "badge": "{count} reserved"
+      },
+      "wishbook": {
+        "label": "Wishbook",
+        "description": "Leave a heartfelt message for Emma & James",
+        "badge": "{count} entries"
+      },
+      "schedule": {
+        "label": "Schedule",
+        "description": "Full timeline of events leading up to the big day",
+        "badge": "{count} events"
+      },
+      "venue": {
+        "label": "Venue",
+        "description": "Rosewood Estate — directions, parking & amenities"
+      },
+      "playlist": {
+        "label": "Playlist",
+        "description": "Vote on songs and suggest tracks for the reception",
+        "badge": "{count} songs"
+      },
+      "quiz": {
+        "label": "Couple Quiz",
+        "description": "How well do you know Emma & James?",
+        "badge": "{count} questions"
+      },
+      "seating": {
+        "label": "Seating",
+        "description": "Find your table assignment for the reception",
+        "badge": "{count} tables"
+      },
+      "futureMessages": {
+        "label": "Future Messages",
+        "description": "Write a letter to be opened on their anniversary"
+      }
+    }
+  },
+  "ProfilePage": {
+    "goBack": "Go back",
+    "settings": "Settings",
+    "editProfile": "Edit Profile",
+    "postBy": "Post by {name}",
+    "roles": {
+      "bride": "Bride",
+      "groom": "Groom",
+      "guest": "Guest"
+    },
+    "stats": {
+      "posts": "Posts",
+      "followers": "Followers",
+      "following": "Following"
+    },
+    "tabs": {
+      "posts": "Posts",
+      "liked": "Liked"
+    },
+    "emptyState": {
+      "posts": "No posts yet",
+      "liked": "No liked posts yet"
+    }
+  },
+  "NotificationsPage": {
+    "title": "Notifications",
+    "markAllRead": "Mark all read",
+    "justNow": "just now",
+    "timeAgo": {
+      "minutes": "{count}m ago",
+      "hours": "{count}h ago",
+      "days": "{count}d ago"
+    },
+    "sections": {
+      "new": "New",
+      "earlier": "Earlier"
+    },
+    "emptyState": {
+      "title": "No notifications yet",
+      "description": "We'll let you know when something happens"
+    }
+  },
+  "NewPostPage": {
+    "goBack": "Go back",
+    "title": "New Post",
+    "captionPlaceholder": "Share a memory, message, or moment with Emma & James...",
+    "captionAriaLabel": "Post caption",
+    "postPreviewAlt": "Post preview",
+    "removeImage": "Remove image",
+    "addPhoto": "Add a photo",
+    "photoFormats": "JPEG, PNG, HEIC up to 10 MB",
+    "uploadImage": "Upload image",
+    "addTagPlaceholder": "Add a tag — press Enter",
+    "addTag": "Add tag",
+    "removeTag": "Remove tag {tag}",
+    "submit": "Share to the Wall"
+  },
+  "PostPage": {
+    "goBack": "Go back",
+    "title": "Post",
+    "noCommentsYet": "No comments yet",
+    "commentCount": "{count, plural, one {# Comment} other {# Comments}}",
+    "justNow": "just now",
+    "timeAgo": {
+      "minutes": "{count}m",
+      "hours": "{count}h",
+      "days": "{count}d"
+    },
+    "unlikeComment": "Unlike comment",
+    "likeComment": "Like comment",
+    "commentPlaceholder": "Add a comment...",
+    "commentTextAriaLabel": "Comment text",
+    "postComment": "Post comment"
+  },
+  "StoryPage": {
+    "closeStory": "Close story",
+    "userStory": "{name}'s story",
+    "story": "Story",
+    "previousStory": "Previous story",
+    "nextStory": "Next story",
+    "previous": "Previous",
+    "next": "Next",
+    "replyPlaceholder": "Reply to story...",
+    "reactWithHeart": "React with heart",
+    "sendReply": "Send reply"
+  },
+  "ManagePage": {
+    "title": "Host Dashboard",
+    "eventNameAndDate": "Emma & James · Oct 18, 2025",
+    "hostView": "Host View",
+    "tabs": {
+      "overview": "Overview",
+      "posts": "Posts",
+      "rsvp": "RSVP",
+      "registry": "Registry"
+    },
+    "stats": {
+      "totalGuests": {
+        "label": "Total guests",
+        "sub": "{count} RSVPs confirmed"
+      },
+      "daysToGo": {
+        "label": "Days to go",
+        "sub": "October 18, 2025"
+      },
+      "registryClaimed": {
+        "label": "Registry claimed",
+        "sub": "${value} reserved"
+      },
+      "wallPosts": {
+        "label": "Wall posts",
+        "sub": "{count} new notifications"
+      }
+    },
+    "rsvpBreakdown": {
+      "title": "RSVP Breakdown",
+      "confirmed": "Confirmed",
+      "pending": "Pending",
+      "declined": "Declined"
+    },
+    "seeAll": "See all",
+    "topRequestedSong": "Top Requested Song",
+    "artistAndVotes": "{artist} · {votes} votes",
+    "playlist": "Playlist",
+    "quickActions": "Quick Actions",
+    "quickActionLabels": {
+      "sendRsvpReminder": "Send RSVP reminder",
+      "exportGuestList": "Export guest list",
+      "viewRegistry": "View registry",
+      "manageSeating": "Manage seating"
+    },
+    "recentActivity": "Recent Activity",
+    "postsSummary": "{total} posts on the wall · {flagged} flagged · {hidden} hidden",
+    "postMeta": "Post by user · {likes} likes · {comments} comments",
+    "flagged": "Flagged",
+    "unhide": "Unhide",
+    "hide": "Hide",
+    "unflag": "Unflag",
+    "flag": "Flag",
+    "delete": "Delete",
+    "rsvpSummary": "{total} total invitations · {attending} guests attending",
+    "diet": "Diet: {dietary}",
+    "remind": "Remind",
+    "itemsReserved": "Items reserved",
+    "totalValue": "Total value",
+    "priceAndCategory": "${price} · {category}",
+    "reservedBy": "Reserved by {name}",
+    "reserved": "Reserved",
+    "available": "Available"
+  },
+  "SchedulePage": {
+    "backToTools": "Back to tools",
+    "title": "Schedule",
+    "subtitle": "All events from engagement to the wedding day and beyond.",
+    "eventTypes": {
+      "ceremony": "Ceremony",
+      "reception": "Reception",
+      "preWedding": "Pre-wedding",
+      "social": "Social"
+    },
+    "attendingCount": "{count} attending"
+  },
+  "GiftsPage": {
+    "goBack": "Go back",
+    "title": "Gift Registry",
+    "subtitle": "Emma and James are grateful for your love and presence. Any gift is truly appreciated.",
+    "filters": {
+      "all": "All",
+      "available": "Available",
+      "reserved": "Reserved"
+    },
+    "priority": {
+      "high": "Top pick",
+      "medium": "Wanted",
+      "low": "Nice to have"
+    },
+    "reserved": "Reserved",
+    "reservedByName": "Reserved by {name}",
+    "reserveGift": "Reserve Gift",
+    "viewOn": "View {name} on {category}"
+  },
+  "WishbookPage": {
+    "goBack": "Go back",
+    "title": "Wishbook",
+    "subtitle": "Leave a heartfelt message for Emma & James. They'll treasure every word forever.",
+    "messagePlaceholder": "Write your message to Emma & James... Be as heartfelt as you like.",
+    "messageAriaLabel": "Wishbook message",
+    "addToWishbook": "Add to Wishbook",
+    "messageCount": "{count, plural, one {# Message} other {# Messages}}",
+    "timeAgo": {
+      "hours": "{count}h ago",
+      "days": "{count}d ago"
+    },
+    "unlikeMessage": "Unlike message",
+    "likeMessage": "Like message"
+  },
+  "SeatingPage": {
+    "backToTools": "Back to tools",
+    "title": "Seating Chart",
+    "subtitle": "Find your table assignment for the reception. Search your name or browse all tables below.",
+    "searchPlaceholder": "Search your name...",
+    "searchAriaLabel": "Search guest name",
+    "clearSearch": "Clear search",
+    "noGuestsFound": "No guests found matching \"{search}\"",
+    "allTables": "All Tables",
+    "seatsCount": "{seats} / {capacity} seats",
+    "emptySeat": "Empty seat"
+  },
+  "PlaylistPage": {
+    "backToTools": "Back to tools",
+    "title": "Playlist",
+    "cancel": "Cancel",
+    "suggestASong": "Suggest a song",
+    "suggest": "Suggest",
+    "songTitle": "Song title",
+    "artist": "Artist",
+    "momentForSong": "Moment for song",
+    "addToPlaylist": "Add to Playlist",
+    "allSongs": "All songs",
+    "moments": {
+      "ceremony": "Ceremony",
+      "cocktail": "Cocktail Hour",
+      "reception": "Reception",
+      "firstDance": "First Dance"
+    },
+    "removeVote": "Remove vote",
+    "voteForThisSong": "Vote for this song"
+  },
+  "QuizPage": {
+    "backToTools": "Back to tools",
+    "title": "Couple Quiz",
+    "resultsTitle": "Couple Quiz — Results",
+    "quizComplete": "Quiz complete!",
+    "tryAgain": "Try again",
+    "reviewYourAnswers": "Review your answers",
+    "correctAnswer": "Correct: {answer}",
+    "yourAnswerVsCorrect": "Your answer: {yourAnswer} — Correct: {correctAnswer}",
+    "skipped": "Skipped",
+    "questionCounter": "Question {current} of {total}",
+    "correct": "Correct!",
+    "notQuite": "Not quite",
+    "seeResults": "See Results",
+    "nextQuestion": "Next Question",
+    "grades": {
+      "perfect": "Perfect score! You clearly know them inside out.",
+      "excellent": "Excellent! You know Emma & James really well.",
+      "good": "Pretty good — you've been paying attention!",
+      "okay": "Not bad! Maybe catch up with them at the wedding."
+    }
+  },
+  "RSVPPage": {
+    "goBack": "Go back",
+    "title": "RSVP",
+    "onTheList": "You're on the list!",
+    "rsvpReceived": "RSVP received",
+    "attendingConfirmation": "We can't wait to celebrate with you! You'll receive updates as the big day approaches.",
+    "declinedConfirmation": "Thank you for letting us know. You'll still have access to the StoryWall.",
+    "backToTheWall": "Back to the Wall",
+    "stats": {
+      "attending": "Attending",
+      "pending": "Pending",
+      "declined": "Declined"
+    },
+    "guestsCount": "{count, plural, one {# guest} other {# guests}}",
+    "awaitingReply": "awaiting reply",
+    "notAttending": "not attending",
+    "yourRsvp": "Your RSVP",
+    "willYouAttend": "Will you attend?",
+    "joyfullyAccept": "Joyfully accept",
+    "regretfullyDecline": "Regretfully decline",
+    "plusOnes": "Plus ones",
+    "dietaryRequirements": "Dietary requirements",
+    "dietaryOptions": {
+      "none": "None / No restrictions",
+      "vegetarian": "Vegetarian",
+      "vegan": "Vegan",
+      "glutenFree": "Gluten-free",
+      "halal": "Halal",
+      "kosher": "Kosher",
+      "other": "Other (specify in message)"
+    },
+    "messageForCouple": "Message for Emma & James",
+    "messagePlaceholder": "Optional — share your excitement or a special note...",
+    "messageAriaLabel": "Message for the couple",
+    "submitRsvp": "Submit RSVP",
+    "whosComing": "Who's coming"
+  },
+  "VenuePage": {
+    "backToTools": "Back to tools",
+    "title": "Venue",
+    "heroImageAlt": "Rosewood Estate, Napa Valley — the wedding venue",
+    "venueName": "Rosewood Estate",
+    "venueRegion": "Napa Valley, California",
+    "aboutTheVenue": "About the Venue",
+    "aboutText": "Rosewood Estate is a stunning 40-acre vineyard estate in the heart of Napa Valley. With its sweeping rose garden ceremony lawn, grand pavilion reception hall, and breathtaking views of the vineyards, it's the perfect backdrop for Emma and James's celebration. The estate has hosted weddings for over 25 years.",
+    "address": "Address",
+    "addressValue": "1842 Silverado Trail, Napa, CA 94558",
+    "phone": "Phone",
+    "website": "Website",
+    "gettingThere": "Getting There",
+    "openInMaps": "Open in Maps",
+    "byCarLabel": "By car:",
+    "byCarText": "1 hour 20 min from San Francisco via US-101N and CA-37E. Free parking on-site.",
+    "shuttleLabel": "Shuttle:",
+    "shuttleText": "Complimentary shuttle departs from Union Square, SF at 2:30 PM on Oct 18.",
+    "amenities": "Amenities",
+    "amenityLabels": {
+      "parking": "Free parking for 200+ vehicles",
+      "accommodation": "On-site accommodation — The Inn at Rosewood",
+      "catering": "Full-service catering & bar",
+      "wifi": "High-speed WiFi throughout",
+      "accessible": "Accessible facilities & pathways",
+      "shuttle": "Complimentary shuttle from SF"
+    },
+    "gallery": "Gallery",
+    "galleryAlts": {
+      "mainLawn": "Rosewood Estate main lawn at sunset",
+      "vineyard": "The vineyard grounds",
+      "roseGarden": "Ceremony rose garden",
+      "pavilion": "Grand pavilion interior"
+    }
+  },
+  "FutureMessagesPage": {
+    "backToTools": "Back to tools",
+    "title": "Future Messages",
+    "intro": "Write a letter to Emma & James that will be delivered to them on a future anniversary. Your message will be sealed until they choose to open it.",
+    "messageSealed": "Message sealed!",
+    "sealedUntil": "Your letter has been locked away until {openOn}. Emma & James will treasure it when the time comes.",
+    "writeAnother": "Write another",
+    "writingALetter": "Writing a letter to Emma & James",
+    "openThisLetterOn": "Open this letter on...",
+    "openOnLabels": {
+      "1-year": "1st Anniversary (Oct 18, 2026)",
+      "5-years": "5th Anniversary (Oct 18, 2030)",
+      "10-years": "10th Anniversary (Oct 18, 2035)",
+      "25-years": "25th Anniversary (Oct 18, 2050)"
+    },
+    "openOnNames": {
+      "1-year": "1st Anniversary",
+      "5-years": "5th Anniversary",
+      "10-years": "10th Anniversary",
+      "25-years": "25th Anniversary"
+    },
+    "yourMessage": "Your message",
+    "messagePlaceholder": "Dear Emma and James, by the time you read this...",
+    "messageAriaLabel": "Future message content",
+    "sealAndSend": "Seal & Send to the Future",
+    "messagesSealed": "{count} messages sealed",
+    "opens": "Opens: {openOn}"
+  },
+  "RootLayout": {
+    "title": "StoryWall — Emma & James · Oct 18, 2025",
+    "description": "The wedding social wall for Emma Chen & James Rivera. Share memories, RSVP, explore the venue, and celebrate together."
+  },
+  "RightContextPanel": {
+    "weddingDetails": "Wedding details",
+    "rsvpStatus": "RSVP Status",
+    "viewAll": "View all",
+    "attending": "Attending",
+    "pending": "Pending",
+    "upcoming": "Upcoming",
+    "seeAll": "See all",
+    "quickLinks": "Quick Links",
+    "links": {
+      "giftRegistry": "Gift Registry",
+      "venueInfo": "Venue Info",
+      "weddingPlaylist": "Wedding Playlist",
+      "seatingChart": "Seating Chart"
+    }
+  }
+}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Heart, MessageCircle, Users, Bell, UserPlus, AtSign } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { notifications as initialNotifs, users } from '@/lib/mock-data'
 import Avatar from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
@@ -23,17 +24,18 @@ const colorMap: Record<Notification['type'], string> = {
   follow:  'text-amber-500 bg-amber-50',
 }
 
-function timeAgo(dateStr: string): string {
+function timeAgoParts(dateStr: string): { unit: 'now' | 'minutes' | 'hours' | 'days'; value: number } {
   const now = new Date('2025-07-11T12:00:00Z').getTime()
   const then = new Date(dateStr).getTime()
   const diff = Math.floor((now - then) / 1000)
-  if (diff < 60) return 'just now'
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
-  return `${Math.floor(diff / 86400)}d ago`
+  if (diff < 60) return { unit: 'now', value: 0 }
+  if (diff < 3600) return { unit: 'minutes', value: Math.floor(diff / 60) }
+  if (diff < 86400) return { unit: 'hours', value: Math.floor(diff / 3600) }
+  return { unit: 'days', value: Math.floor(diff / 86400) }
 }
 
 export default function NotificationsPage() {
+  const t = useTranslations('NotificationsPage')
   const [notifs, setNotifs] = useState(initialNotifs)
 
   const unreadCount = notifs.filter(n => !n.read).length
@@ -54,7 +56,7 @@ export default function NotificationsPage() {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/90 backdrop-blur-sm border-b border-border px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h1 className="text-xl font-bold text-ink">Notifications</h1>
+          <h1 className="text-xl font-bold text-ink">{t('title')}</h1>
           {unreadCount > 0 && (
             <span className="px-2 py-0.5 rounded-full bg-primary text-white text-xs font-bold tabular-nums">
               {unreadCount}
@@ -66,7 +68,7 @@ export default function NotificationsPage() {
             onClick={markAllRead}
             className="text-xs text-primary font-semibold hover:underline"
           >
-            Mark all read
+            {t('markAllRead')}
           </button>
         )}
       </div>
@@ -76,14 +78,14 @@ export default function NotificationsPage() {
           <div className="w-16 h-16 rounded-full bg-surface-muted flex items-center justify-center mb-4">
             <Bell className="w-7 h-7 text-ink-faint" />
           </div>
-          <p className="text-sm font-medium text-ink-muted">No notifications yet</p>
-          <p className="text-xs text-ink-faint mt-1">We&apos;ll let you know when something happens</p>
+          <p className="text-sm font-medium text-ink-muted">{t('emptyState.title')}</p>
+          <p className="text-xs text-ink-faint mt-1">{t('emptyState.description')}</p>
         </div>
       ) : (
         <div>
           {today.length > 0 && (
             <section>
-              <p className="px-4 pt-5 pb-2 text-xs font-bold text-ink-muted uppercase tracking-wide">New</p>
+              <p className="px-4 pt-5 pb-2 text-xs font-bold text-ink-muted uppercase tracking-wide">{t('sections.new')}</p>
               {today.map(n => (
                 <NotifRow key={n.id} notif={n} onRead={() => markRead(n.id)} />
               ))}
@@ -91,7 +93,7 @@ export default function NotificationsPage() {
           )}
           {earlier.length > 0 && (
             <section>
-              <p className="px-4 pt-5 pb-2 text-xs font-bold text-ink-muted uppercase tracking-wide">Earlier</p>
+              <p className="px-4 pt-5 pb-2 text-xs font-bold text-ink-muted uppercase tracking-wide">{t('sections.earlier')}</p>
               {earlier.map(n => (
                 <NotifRow key={n.id} notif={n} onRead={() => markRead(n.id)} />
               ))}
@@ -104,6 +106,7 @@ export default function NotificationsPage() {
 }
 
 function NotifRow({ notif, onRead }: { notif: Notification; onRead: () => void }) {
+  const t = useTranslations('NotificationsPage')
   const fromUser = users.find(u => u.id === notif.fromUserId)
   if (!fromUser) return null
 
@@ -136,7 +139,12 @@ function NotifRow({ notif, onRead }: { notif: Notification; onRead: () => void }
         )}>
           {notif.content}
         </p>
-        <p className="text-xs text-ink-faint mt-0.5">{timeAgo(notif.createdAt)}</p>
+        <p className="text-xs text-ink-faint mt-0.5">
+          {(() => {
+            const timeAgo = timeAgoParts(notif.createdAt)
+            return timeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${timeAgo.unit}`, { count: timeAgo.value })
+          })()}
+        </p>
       </div>
 
       {!notif.read && (

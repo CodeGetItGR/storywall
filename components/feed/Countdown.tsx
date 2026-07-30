@@ -1,4 +1,5 @@
 import {useEffect, useMemo, useState} from "react";
+import {useTranslations} from "next-intl";
 import {cn} from "@/lib/utils";
 
 function Counter({text, count}: {text: string; count: number}) {
@@ -11,6 +12,7 @@ function Counter({text, count}: {text: string; count: number}) {
 }
 
 export function Countdown({time, className}: {time: number; className?: string}) {
+    const t = useTranslations("Countdown");
     const [now, setNow] = useState(() => Date.now());
 
     useEffect(() => {
@@ -45,10 +47,10 @@ export function Countdown({time, className}: {time: number; className?: string})
 
     return (
         <div className={cn(className, `flex justify-between gap-4`)}>
-            <Counter text="Days" count={days} />
-            <Counter text="Hours" count={hours} />
-            <Counter text="Minutes" count={minutes} />
-            <Counter text="Seconds" count={seconds} />
+            <Counter text={t("days")} count={days} />
+            <Counter text={t("hours")} count={hours} />
+            <Counter text={t("minutes")} count={minutes} />
+            <Counter text={t("seconds")} count={seconds} />
         </div>
     );
 }

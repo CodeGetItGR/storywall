@@ -2,6 +2,7 @@
 
 import { use, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { ArrowLeft, Heart, Send } from 'lucide-react'
 import { posts, comments as allComments, users, CURRENT_USER_ID, getUser } from '@/lib/mock-data'
 import Avatar from '@/components/ui/avatar'
@@ -9,17 +10,18 @@ import {PostCard} from '@/components/feed/PostCard'
 import { cn } from '@/lib/utils'
 import type { Comment } from '@/lib/types'
 
-function timeAgo(dateStr: string): string {
+function timeAgoParts(dateStr: string): { unit: 'now' | 'minutes' | 'hours' | 'days'; value: number } {
   const now = new Date('2025-07-11T12:00:00Z').getTime()
   const then = new Date(dateStr).getTime()
   const diff = Math.floor((now - then) / 1000)
-  if (diff < 60) return 'just now'
-  if (diff < 3600) return `${Math.floor(diff / 60)}m`
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h`
-  return `${Math.floor(diff / 86400)}d`
+  if (diff < 60) return { unit: 'now', value: 0 }
+  if (diff < 3600) return { unit: 'minutes', value: Math.floor(diff / 60) }
+  if (diff < 86400) return { unit: 'hours', value: Math.floor(diff / 3600) }
+  return { unit: 'days', value: Math.floor(diff / 86400) }
 }
 
 export default function PostPage({ params }: { params: Promise<{ id: string }> }) {
+  const t = useTranslations('PostPage')
   const { id } = use(params)
   const router = useRouter()
 
@@ -61,12 +63,12 @@ export default function PostPage({ params }: { params: Promise<{ id: string }> }
       <div className="sticky top-0 z-10 bg-background/90 backdrop-blur-sm border-b border-border flex items-center gap-3 px-4 py-3">
         <button
           onClick={() => router.back()}
-          aria-label="Go back"
+          aria-label={t('goBack')}
           className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-base font-bold text-ink">Post</h1>
+        <h1 className="text-base font-bold text-ink">{t('title')}</h1>
       </div>
 
       {/* The post — no comment link */}
@@ -77,7 +79,7 @@ export default function PostPage({ params }: { params: Promise<{ id: string }> }
       {/* Comments section */}
       <div className="px-4 pt-5">
         <h2 className="text-sm font-bold text-ink mb-4">
-          {localComments.length === 0 ? 'No comments yet' : `${localComments.length} Comment${localComments.length !== 1 ? 's' : ''}`}
+          {localComments.length === 0 ? t('noCommentsYet') : t('commentCount', { count: localComments.length })}
         </h2>
 
         <div className="flex flex-col gap-4">
@@ -100,14 +102,19 @@ export default function PostPage({ params }: { params: Promise<{ id: string }> }
                   <div className="bg-surface-muted rounded-2xl rounded-tl-sm px-4 py-3">
                     <div className="flex items-baseline gap-2 mb-1">
                       <span className="text-sm font-semibold text-ink leading-tight">{commentUser.name}</span>
-                      <span className="text-xs text-ink-faint">{timeAgo(comment.createdAt)}</span>
+                      <span className="text-xs text-ink-faint">
+                        {(() => {
+                          const timeAgo = timeAgoParts(comment.createdAt)
+                          return timeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${timeAgo.unit}`, { count: timeAgo.value })
+                        })()}
+                      </span>
                     </div>
                     <p className="text-sm text-ink leading-relaxed">{comment.content}</p>
                   </div>
                   <button
                     onClick={() => handleLikeComment(comment.id)}
                     aria-pressed={liked}
-                    aria-label={liked ? 'Unlike comment' : 'Like comment'}
+                    aria-label={liked ? t('unlikeComment') : t('likeComment')}
                     className={cn(
                       'flex items-center gap-1 mt-1.5 ml-3 text-xs font-medium transition-colors',
                       liked ? 'text-primary' : 'text-ink-faint hover:text-ink-muted',
@@ -139,14 +146,14 @@ export default function PostPage({ params }: { params: Promise<{ id: string }> }
                 onKeyDown={e => {
                   if (e.key === 'Enter' && !e.nativeEvent.isComposing && e.keyCode !== 229) handleSubmit(e as unknown as React.FormEvent)
                 }}
-                placeholder="Add a comment..."
+                placeholder={t('commentPlaceholder')}
                 className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink-faint outline-none"
-                aria-label="Comment text"
+                aria-label={t('commentTextAriaLabel')}
               />
               <button
                 type="submit"
                 disabled={!commentText.trim()}
-                aria-label="Post comment"
+                aria-label={t('postComment')}
                 className="text-primary disabled:text-ink-faint transition-colors"
               >
                 <Send className="w-4 h-4" />

@@ -3,19 +3,21 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Heart, Send, BookHeart } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { wishbookEntries, users, CURRENT_USER_ID, getUser } from '@/lib/mock-data'
 import Avatar from '@/components/ui/avatar'
 import type { WishbookEntry } from '@/lib/types'
 
-function timeAgo(dateStr: string): string {
+function timeAgoParts(dateStr: string): { unit: 'hours' | 'days'; value: number } {
   const now = new Date('2025-07-11T12:00:00Z').getTime()
   const then = new Date(dateStr).getTime()
   const diff = Math.floor((now - then) / 1000)
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
-  return `${Math.floor(diff / 86400)}d ago`
+  if (diff < 86400) return { unit: 'hours', value: Math.floor(diff / 3600) }
+  return { unit: 'days', value: Math.floor(diff / 86400) }
 }
 
 export default function WishbookPage() {
+  const t = useTranslations('WishbookPage')
   const router = useRouter()
   const currentUser = getUser(CURRENT_USER_ID)
   const [entries, setEntries] = useState<WishbookEntry[]>(wishbookEntries)
@@ -49,17 +51,17 @@ export default function WishbookPage() {
     <div className="max-w-2xl mx-auto px-4 pb-24 lg:pb-8">
       {/* Header */}
       <div className="flex items-center gap-3 py-4 mb-2">
-        <button onClick={() => router.back()} aria-label="Go back" className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors">
+        <button onClick={() => router.back()} aria-label={t('goBack')} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex items-center gap-2">
           <BookHeart className="w-5 h-5 text-pink-400" />
-          <h1 className="text-base font-bold text-ink">Wishbook</h1>
+          <h1 className="text-base font-bold text-ink">{t('title')}</h1>
         </div>
       </div>
 
       <p className="text-sm text-ink-muted mb-6 leading-relaxed">
-        Leave a heartfelt message for Emma &amp; James. They&apos;ll treasure every word forever.
+        {t('subtitle')}
       </p>
 
       {/* Write a message */}
@@ -73,9 +75,9 @@ export default function WishbookPage() {
             value={message}
             onChange={e => setMessage(e.target.value)}
             rows={4}
-            placeholder="Write your message to Emma & James... Be as heartfelt as you like."
+            placeholder={t('messagePlaceholder')}
             className="w-full bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 resize-none transition leading-relaxed"
-            aria-label="Wishbook message"
+            aria-label={t('messageAriaLabel')}
           />
           <button
             type="submit"
@@ -83,13 +85,13 @@ export default function WishbookPage() {
             className="self-end flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-brand text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
           >
             <Send className="w-3.5 h-3.5" />
-            Add to Wishbook
+            {t('addToWishbook')}
           </button>
         </form>
       </div>
 
       {/* Entries */}
-      <h2 className="text-sm font-bold text-ink mb-4">{entries.length} Message{entries.length !== 1 ? 's' : ''}</h2>
+      <h2 className="text-sm font-bold text-ink mb-4">{t('messageCount', { count: entries.length })}</h2>
       <div className="flex flex-col gap-4">
         {entries.map(entry => {
           const entryUser = users.find(u => u.id === entry.userId) ?? currentUser
@@ -103,13 +105,18 @@ export default function WishbookPage() {
                   <Avatar initials={entryUser.initials} color={entryUser.avatarColor} size="sm" alt={entryUser.name} />
                   <div>
                     <p className="text-sm font-semibold text-ink leading-tight">{entryUser.name}</p>
-                    <p className="text-xs text-ink-faint leading-tight">{timeAgo(entry.createdAt)}</p>
+                    <p className="text-xs text-ink-faint leading-tight">
+                      {(() => {
+                        const timeAgo = timeAgoParts(entry.createdAt)
+                        return t(`timeAgo.${timeAgo.unit}`, { count: timeAgo.value })
+                      })()}
+                    </p>
                   </div>
                 </div>
                 <button
                   onClick={() => handleLike(entry.id)}
                   aria-pressed={liked}
-                  aria-label={liked ? 'Unlike message' : 'Like message'}
+                  aria-label={liked ? t('unlikeMessage') : t('likeMessage')}
                   className="flex items-center gap-1 text-xs font-medium transition-colors group"
                 >
                   <Heart

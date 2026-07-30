@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { useLocale, useTranslations } from 'next-intl'
 import { Calendar, Users, Clock, ChevronRight, Heart } from 'lucide-react'
 import { scheduleEvents, rsvpGuests } from '@/lib/mock-data'
 
@@ -9,6 +10,8 @@ function getCountdown(): number {
 }
 
 export function RightContextPanel() {
+  const t = useTranslations('RightContextPanel')
+  const locale = useLocale()
   const countdown = getCountdown()
   const upcomingEvents = scheduleEvents
     .filter(e => new Date(e.date + 'T00:00:00') >= new Date('2025-07-11T00:00:00'))
@@ -17,15 +20,15 @@ export function RightContextPanel() {
   const pending = rsvpGuests.filter(g => g.status === 'pending').length
 
   const quickLinks = [
-    { label: 'Gift Registry', href: '/tools/gifts' },
-    { label: 'Venue Info', href: '/tools/venue' },
-    { label: 'Wedding Playlist', href: '/tools/playlist' },
-    { label: 'Seating Chart', href: '/tools/seating' },
-  ]
+    { key: 'giftRegistry', href: '/tools/gifts' },
+    { key: 'venueInfo', href: '/tools/venue' },
+    { key: 'weddingPlaylist', href: '/tools/playlist' },
+    { key: 'seatingChart', href: '/tools/seating' },
+  ] as const
 
   return (
     <aside
-      aria-label="Wedding details"
+      aria-label={t('weddingDetails')}
       className="fixed right-0 top-0 h-screen w-75 bg-background border-l border-border hidden xl:flex flex-col z-30 overflow-y-auto no-scrollbar"
     >
       <div className="flex flex-col gap-5 p-5">
@@ -34,20 +37,20 @@ export function RightContextPanel() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-ink-muted" aria-hidden="true" />
-              <span className="text-sm font-semibold text-ink">RSVP Status</span>
+              <span className="text-sm font-semibold text-ink">{t('rsvpStatus')}</span>
             </div>
             <Link href="/tools/rsvp" className="text-xs text-primary font-semibold hover:underline">
-              View all
+              {t('viewAll')}
             </Link>
           </div>
           <div className="flex gap-3">
             <div className="flex-1 bg-card rounded-xl p-3 text-center shadow-sm">
               <p className="text-2xl font-bold text-emerald-600 tabular-nums">{attending}</p>
-              <p className="text-[11px] text-ink-muted mt-0.5">Attending</p>
+              <p className="text-[11px] text-ink-muted mt-0.5">{t('attending')}</p>
             </div>
             <div className="flex-1 bg-card rounded-xl p-3 text-center shadow-sm">
               <p className="text-2xl font-bold text-amber-500 tabular-nums">{pending}</p>
-              <p className="text-[11px] text-ink-muted mt-0.5">Pending</p>
+              <p className="text-[11px] text-ink-muted mt-0.5">{t('pending')}</p>
             </div>
           </div>
         </div>
@@ -57,16 +60,16 @@ export function RightContextPanel() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-ink-muted" aria-hidden="true" />
-              <span className="text-sm font-semibold text-ink">Upcoming</span>
+              <span className="text-sm font-semibold text-ink">{t('upcoming')}</span>
             </div>
             <Link href="/tools/schedule" className="text-xs text-primary font-semibold hover:underline">
-              See all
+              {t('seeAll')}
             </Link>
           </div>
           <div className="space-y-2">
             {upcomingEvents.map(event => {
               const d = new Date(event.date + 'T00:00:00')
-              const mon = d.toLocaleString('en-US', { month: 'short' })
+              const mon = d.toLocaleString(locale, { month: 'short' })
               const day = d.getDate()
               return (
                 <Link key={event.id} href="/tools/schedule">
@@ -91,15 +94,15 @@ export function RightContextPanel() {
 
         {/* Quick links */}
         <div>
-          <p className="text-sm font-semibold text-ink mb-2">Quick Links</p>
+          <p className="text-sm font-semibold text-ink mb-2">{t('quickLinks')}</p>
           <div className="space-y-0.5">
-            {quickLinks.map(({ label, href }) => (
+            {quickLinks.map(({ key, href }) => (
               <Link
                 key={href}
                 href={href}
                 className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-surface-muted transition-colors group"
               >
-                <span className="text-sm text-ink-muted group-hover:text-ink transition-colors">{label}</span>
+                <span className="text-sm text-ink-muted group-hover:text-ink transition-colors">{t(`links.${key}`)}</span>
                 <ChevronRight className="w-4 h-4 text-ink-faint group-hover:text-ink-muted transition-colors" aria-hidden="true" />
               </Link>
             ))}

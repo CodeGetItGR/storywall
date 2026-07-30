@@ -1,7 +1,9 @@
+import { useTranslations } from 'next-intl'
 import { stories, users, CURRENT_USER_ID, getUser } from '@/lib/mock-data'
 import {StoryAvatar} from './StoryAvatar'
 
 export function StoriesRow() {
+  const t = useTranslations('StoriesRow')
   const currentUser = getUser(CURRENT_USER_ID)
 
   // Current user's story (or "add story" slot)
@@ -14,7 +16,7 @@ export function StoriesRow() {
 
   return (
     <section
-      aria-label="Stories"
+      aria-label={t('ariaLabel')}
       className="flex items-start gap-4 overflow-x-auto no-scrollbar px-4 py-4"
     >
       {/* Current user slot */}

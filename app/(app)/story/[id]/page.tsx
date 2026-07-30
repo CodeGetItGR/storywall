@@ -4,11 +4,14 @@ import { use, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useLocale, useTranslations } from 'next-intl'
 import { X, ChevronLeft, ChevronRight, Heart, Send } from 'lucide-react'
 import { stories, users } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
 
 export default function StoryPage({ params }: { params: Promise<{ id: string }> }) {
+  const t = useTranslations('StoryPage')
+  const locale = useLocale()
   const { id } = use(params)
   const router = useRouter()
   const [replyText, setReplyText] = useState('')
@@ -44,7 +47,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
   }
 
   const user = users.find(u => u.id === story.userId)
-  const timeStr = new Date(story.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+  const timeStr = new Date(story.createdAt).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' })
 
   function goNext() {
     if (storyIndex < stories.length - 1) router.replace(`/story/${stories[storyIndex + 1].id}`)
@@ -97,7 +100,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
           )}
           <button
             onClick={() => router.back()}
-            aria-label="Close story"
+            aria-label={t('closeStory')}
             className="w-8 h-8 flex items-center justify-center rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
           >
             <X className="w-4 h-4" />
@@ -107,7 +110,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
         {/* Image */}
         <Image
           src={story.image}
-          alt={user ? `${user.name}'s story` : 'Story'}
+          alt={user ? t('userStory', { name: user.name }) : t('story')}
           fill
           className="object-cover"
           sizes="400px"
@@ -118,22 +121,22 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
         <button
           onClick={goPrev}
           className="absolute left-0 top-0 w-1/3 h-full z-10"
-          aria-label="Previous story"
+          aria-label={t('previousStory')}
         />
         <button
           onClick={goNext}
           className="absolute right-0 top-0 w-1/3 h-full z-10"
-          aria-label="Next story"
+          aria-label={t('nextStory')}
         />
 
         {/* Nav arrows — desktop hint */}
         <div className="absolute left-2 top-1/2 -translate-y-1/2 z-20 hidden sm:flex">
-          <button onClick={goPrev} aria-label="Previous" className="w-8 h-8 rounded-full bg-black/30 flex items-center justify-center text-white hover:bg-black/50 transition-colors">
+          <button onClick={goPrev} aria-label={t('previous')} className="w-8 h-8 rounded-full bg-black/30 flex items-center justify-center text-white hover:bg-black/50 transition-colors">
             <ChevronLeft className="w-5 h-5" />
           </button>
         </div>
         <div className="absolute right-2 top-1/2 -translate-y-1/2 z-20 hidden sm:flex">
-          <button onClick={goNext} aria-label="Next" className="w-8 h-8 rounded-full bg-black/30 flex items-center justify-center text-white hover:bg-black/50 transition-colors">
+          <button onClick={goNext} aria-label={t('next')} className="w-8 h-8 rounded-full bg-black/30 flex items-center justify-center text-white hover:bg-black/50 transition-colors">
             <ChevronRight className="w-5 h-5" />
           </button>
         </div>
@@ -145,12 +148,12 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
               type="text"
               value={replyText}
               onChange={e => setReplyText(e.target.value)}
-              placeholder="Reply to story..."
+              placeholder={t('replyPlaceholder')}
               className="flex-1 bg-white/20 backdrop-blur-sm text-white text-sm placeholder:text-white/60 rounded-full px-4 py-2.5 outline-none focus:bg-white/30 transition-colors border border-white/20"
             />
             <button
               type="button"
-              aria-label="React with heart"
+              aria-label={t('reactWithHeart')}
               className="w-10 h-10 flex items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors"
             >
               <Heart className="w-5 h-5" />
@@ -158,7 +161,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
             {replyText && (
               <button
                 type="submit"
-                aria-label="Send reply"
+                aria-label={t('sendReply')}
                 className="w-10 h-10 flex items-center justify-center rounded-full bg-primary text-white"
               >
                 <Send className="w-4 h-4" />

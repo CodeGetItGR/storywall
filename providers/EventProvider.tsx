@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { EventMemberResponseDto, EventResponseDto } from "@/lib/api/types";
+import type { EventDetailResponseDto, EventMemberResponseDto } from "@/lib/api/types";
 import { useAuth } from "@/hooks/useAuth";
 import { useMyEvents } from "@/hooks/useMyEvents";
 import { useEvent } from "@/hooks/useEvent";
@@ -10,7 +10,7 @@ const ACTIVE_EVENT_KEY = "storywall.activeEventId";
 
 interface EventContextValue {
   memberships: EventMemberResponseDto[];
-  activeEvent: EventResponseDto | null;
+  activeEvent: EventDetailResponseDto | null;
   activeMember: EventMemberResponseDto | null;
   isLoading: boolean;
   setActiveEventId: (eventId: string) => void;
@@ -21,7 +21,7 @@ const EventContext = createContext<EventContextValue | null>(null);
 export function EventProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
   const { data: memberships = [], isLoading: isLoadingMemberships } = useMyEvents();
-  const [activeEventId, setActiveEventIdState] = useState<string | null>(null);
+  const [activeEventId, setActiveEventIdState] = useState<string | null>('50cc9135-55ff-4b12-a4c3-83f57cee98d0');
 
   // Restore the last-active event once memberships load, defaulting to the
   // first membership when nothing was previously selected (or the stored
@@ -70,7 +70,7 @@ function useEventContext(): EventContextValue {
   return context;
 }
 
-export function useActiveEvent(): EventResponseDto | null {
+export function useActiveEvent(): EventDetailResponseDto | null {
   return useEventContext().activeEvent;
 }
 

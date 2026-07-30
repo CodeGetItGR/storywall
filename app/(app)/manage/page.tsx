@@ -6,20 +6,22 @@ import {
   TrendingUp, CheckCircle2, Clock, XCircle, Flag, Trash2,
   ChevronRight, Eye, EyeOff
 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { posts, rsvpGuests, giftItems, playlist, notifications } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 
 type ManageTab = 'overview' | 'posts' | 'rsvp' | 'registry'
 
-const tabItems: { key: ManageTab; label: string; icon: React.ElementType }[] = [
-  { key: 'overview', label: 'Overview', icon: LayoutDashboard },
-  { key: 'posts',    label: 'Posts',    icon: MessageSquare },
-  { key: 'rsvp',     label: 'RSVP',     icon: Users },
-  { key: 'registry', label: 'Registry', icon: Gift },
+const tabItems: { key: ManageTab; icon: React.ElementType }[] = [
+  { key: 'overview', icon: LayoutDashboard },
+  { key: 'posts',    icon: MessageSquare },
+  { key: 'rsvp',     icon: Users },
+  { key: 'registry', icon: Gift },
 ]
 
 export default function ManagePage() {
+  const t = useTranslations('ManagePage')
   const [tab, setTab] = useState<ManageTab>('overview')
   const [hiddenPosts, setHiddenPosts] = useState<Set<string>>(new Set())
   const [flaggedPosts, setFlaggedPosts] = useState<Set<string>>(new Set())
@@ -34,6 +36,19 @@ export default function ManagePage() {
   const unreadNotifs   = notifications.filter(n => !n.read).length
   const topSong        = [...playlist].sort((a, b) => b.votes - a.votes)[0]
 
+  const quickActions = [
+    { key: 'sendRsvpReminder', href: '/tools/rsvp', color: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' },
+    { key: 'exportGuestList', href: '#', color: 'bg-sky-50 text-sky-700 hover:bg-sky-100' },
+    { key: 'viewRegistry', href: '/tools/gifts', color: 'bg-amber-50 text-amber-700 hover:bg-amber-100' },
+    { key: 'manageSeating', href: '/tools/seating', color: 'bg-violet-50 text-violet-700 hover:bg-violet-100' },
+  ] as const
+
+  const rsvpBreakdown = [
+    { key: 'confirmed', count: confirmedGuests.length, color: 'bg-emerald-500' },
+    { key: 'pending', count: pendingGuests.length, color: 'bg-amber-400' },
+    { key: 'declined', count: declinedGuests.length, color: 'bg-rose-400' },
+  ] as const
+
   return (
     <div className="max-w-3xl mx-auto pb-24 lg:pb-8">
       {/* Header */}
@@ -41,16 +56,16 @@ export default function ManagePage() {
         <div>
           <div className="flex items-center gap-2 mb-0.5">
             <LayoutDashboard className="w-5 h-5 text-primary" />
-            <h1 className="text-xl font-bold text-ink">Host Dashboard</h1>
+            <h1 className="text-xl font-bold text-ink">{t('title')}</h1>
           </div>
-          <p className="text-xs text-ink-muted">Emma &amp; James · Oct 18, 2025</p>
+          <p className="text-xs text-ink-muted">{t('eventNameAndDate')}</p>
         </div>
-        <span className="px-3 py-1 rounded-full bg-primary-light text-primary-dark text-xs font-bold">Host View</span>
+        <span className="px-3 py-1 rounded-full bg-primary-light text-primary-dark text-xs font-bold">{t('hostView')}</span>
       </div>
 
       {/* Tab bar */}
       <div className="flex gap-1 bg-surface-muted rounded-full p-1 mx-4 mb-5">
-        {tabItems.map(({ key, label, icon: Icon }) => (
+        {tabItems.map(({ key, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
@@ -60,7 +75,7 @@ export default function ManagePage() {
             )}
           >
             <Icon className="w-3.5 h-3.5" strokeWidth={2} />
-            {label}
+            {t(`tabs.${key}`)}
           </button>
         ))}
       </div>
@@ -71,26 +86,26 @@ export default function ManagePage() {
           {/* KPI cards */}
           <div className="grid grid-cols-2 gap-3">
             <StatCard
-              label="Total guests" value={`${totalGuests}`}
-              sub={`${confirmedGuests.length} RSVPs confirmed`}
+              label={t('stats.totalGuests.label')} value={`${totalGuests}`}
+              sub={t('stats.totalGuests.sub', { count: confirmedGuests.length })}
               color="bg-emerald-50 text-emerald-600"
               Icon={Users}
             />
             <StatCard
-              label="Days to go" value="99"
-              sub="October 18, 2025"
+              label={t('stats.daysToGo.label')} value="99"
+              sub={t('stats.daysToGo.sub')}
               color="bg-rose-50 text-rose-500"
               Icon={Clock}
             />
             <StatCard
-              label="Registry claimed" value={`${reservedItems.length}/${giftItems.length}`}
-              sub={`$${registryValue.toLocaleString()} reserved`}
+              label={t('stats.registryClaimed.label')} value={`${reservedItems.length}/${giftItems.length}`}
+              sub={t('stats.registryClaimed.sub', { value: registryValue.toLocaleString() })}
               color="bg-amber-50 text-amber-500"
               Icon={Gift}
             />
             <StatCard
-              label="Wall posts" value={`${posts.length}`}
-              sub={`${unreadNotifs} new notifications`}
+              label={t('stats.wallPosts.label')} value={`${posts.length}`}
+              sub={t('stats.wallPosts.sub', { count: unreadNotifs })}
               color="bg-violet-50 text-violet-500"
               Icon={MessageSquare}
             />
@@ -99,23 +114,19 @@ export default function ManagePage() {
           {/* RSVP breakdown */}
           <div className="bg-card rounded-2xl border border-border/60 shadow-sm p-4">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-bold text-ink">RSVP Breakdown</p>
-              <button onClick={() => setTab('rsvp')} className="text-xs text-primary font-semibold hover:underline">See all</button>
+              <p className="text-sm font-bold text-ink">{t('rsvpBreakdown.title')}</p>
+              <button onClick={() => setTab('rsvp')} className="text-xs text-primary font-semibold hover:underline">{t('seeAll')}</button>
             </div>
             <div className="flex gap-2 mb-3">
-              {[
-                { label: 'Confirmed', count: confirmedGuests.length, color: 'bg-emerald-500' },
-                { label: 'Pending', count: pendingGuests.length, color: 'bg-amber-400' },
-                { label: 'Declined', count: declinedGuests.length, color: 'bg-rose-400' },
-              ].map(({ label, count, color }) => {
+              {rsvpBreakdown.map(({ key, count, color }) => {
                 const pct = Math.round((count / rsvpGuests.length) * 100)
                 return (
-                  <div key={label} className="flex-1 text-center">
+                  <div key={key} className="flex-1 text-center">
                     <p className="text-xl font-bold text-ink tabular-nums">{count}</p>
                     <div className="h-1.5 rounded-full bg-border my-1.5 overflow-hidden">
                       <div className={`h-full rounded-full ${color} transition-all`} style={{ width: `${pct}%` }} />
                     </div>
-                    <p className="text-[10px] text-ink-muted">{label}</p>
+                    <p className="text-[10px] text-ink-muted">{t(`rsvpBreakdown.${key}`)}</p>
                   </div>
                 )
               })}
@@ -125,17 +136,17 @@ export default function ManagePage() {
           {/* Top playlist song */}
           {topSong && (
             <div className="bg-card rounded-2xl border border-border/60 shadow-sm p-4">
-              <p className="text-xs font-bold text-ink-muted uppercase tracking-wide mb-2">Top Requested Song</p>
+              <p className="text-xs font-bold text-ink-muted uppercase tracking-wide mb-2">{t('topRequestedSong')}</p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center flex-shrink-0">
                   <Music className="w-5 h-5 text-violet-500" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-ink truncate">{topSong.title}</p>
-                  <p className="text-xs text-ink-muted">{topSong.artist} · {topSong.votes} votes</p>
+                  <p className="text-xs text-ink-muted">{t('artistAndVotes', { artist: topSong.artist, votes: topSong.votes })}</p>
                 </div>
                 <Link href="/tools/playlist" className="text-xs text-primary font-semibold hover:underline flex items-center gap-0.5">
-                  Playlist <ChevronRight className="w-3 h-3" />
+                  {t('playlist')} <ChevronRight className="w-3 h-3" />
                 </Link>
               </div>
             </div>
@@ -143,20 +154,15 @@ export default function ManagePage() {
 
           {/* Quick actions */}
           <div className="bg-card rounded-2xl border border-border/60 shadow-sm p-4">
-            <p className="text-xs font-bold text-ink-muted uppercase tracking-wide mb-3">Quick Actions</p>
+            <p className="text-xs font-bold text-ink-muted uppercase tracking-wide mb-3">{t('quickActions')}</p>
             <div className="grid grid-cols-2 gap-2">
-              {[
-                { label: 'Send RSVP reminder', href: '/tools/rsvp', color: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' },
-                { label: 'Export guest list', href: '#', color: 'bg-sky-50 text-sky-700 hover:bg-sky-100' },
-                { label: 'View registry', href: '/tools/gifts', color: 'bg-amber-50 text-amber-700 hover:bg-amber-100' },
-                { label: 'Manage seating', href: '/tools/seating', color: 'bg-violet-50 text-violet-700 hover:bg-violet-100' },
-              ].map(({ label, href, color }) => (
+              {quickActions.map(({ key, href, color }) => (
                 <Link
-                  key={label}
+                  key={key}
                   href={href}
                   className={cn('flex items-center justify-center text-center px-3 py-3 rounded-xl text-xs font-semibold transition-colors', color)}
                 >
-                  {label}
+                  {t(`quickActionLabels.${key}`)}
                 </Link>
               ))}
             </div>
@@ -164,7 +170,7 @@ export default function ManagePage() {
 
           {/* Recent activity */}
           <div className="bg-card rounded-2xl border border-border/60 shadow-sm p-4">
-            <p className="text-xs font-bold text-ink-muted uppercase tracking-wide mb-3">Recent Activity</p>
+            <p className="text-xs font-bold text-ink-muted uppercase tracking-wide mb-3">{t('recentActivity')}</p>
             <div className="flex flex-col gap-0">
               {notifications.slice(0, 5).map((n, i) => (
                 <div key={n.id} className={cn('py-2.5 flex items-start gap-2', i < 4 && 'border-b border-border/50')}>
@@ -181,7 +187,7 @@ export default function ManagePage() {
       {tab === 'posts' && (
         <div className="px-4 flex flex-col gap-3">
           <p className="text-xs text-ink-muted mb-1">
-            {posts.length} posts on the wall · {flaggedPosts.size} flagged · {hiddenPosts.size} hidden
+            {t('postsSummary', { total: posts.length, flagged: flaggedPosts.size, hidden: hiddenPosts.size })}
           </p>
           {posts.map(post => {
             const isHidden = hiddenPosts.has(post.id)
@@ -198,17 +204,17 @@ export default function ManagePage() {
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-bold text-ink-muted uppercase tracking-wide mb-1">
-                      Post by user · {post.likes} likes · {post.commentCount} comments
+                      {t('postMeta', { likes: post.likes, comments: post.commentCount })}
                     </p>
                     <p className="text-sm text-ink leading-snug line-clamp-3">{post.content}</p>
                     {post.tags && post.tags.length > 0 && (
                       <div className="flex gap-1.5 mt-2">
-                        {post.tags.map(t => <span key={t} className="text-xs text-primary">#{t}</span>)}
+                        {post.tags.map(tag => <span key={tag} className="text-xs text-primary">#{tag}</span>)}
                       </div>
                     )}
                   </div>
                   {isFlagged && (
-                    <span className="flex-shrink-0 px-2 py-0.5 rounded-full bg-rose-100 text-rose-600 text-[10px] font-bold">Flagged</span>
+                    <span className="flex-shrink-0 px-2 py-0.5 rounded-full bg-rose-100 text-rose-600 text-[10px] font-bold">{t('flagged')}</span>
                   )}
                 </div>
                 <div className="flex items-center gap-2 pt-2 border-t border-border">
@@ -219,7 +225,7 @@ export default function ManagePage() {
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-surface-muted text-ink-muted hover:text-ink transition-colors"
                   >
                     {isHidden ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                    {isHidden ? 'Unhide' : 'Hide'}
+                    {isHidden ? t('unhide') : t('hide')}
                   </button>
                   <button
                     onClick={() => setFlaggedPosts(prev => {
@@ -231,11 +237,11 @@ export default function ManagePage() {
                     )}
                   >
                     <Flag className="w-3.5 h-3.5" />
-                    {isFlagged ? 'Unflag' : 'Flag'}
+                    {isFlagged ? t('unflag') : t('flag')}
                   </button>
                   <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-surface-muted text-rose-500 hover:bg-rose-50 transition-colors ml-auto">
                     <Trash2 className="w-3.5 h-3.5" />
-                    Delete
+                    {t('delete')}
                   </button>
                 </div>
               </div>
@@ -248,7 +254,7 @@ export default function ManagePage() {
       {tab === 'rsvp' && (
         <div className="px-4 flex flex-col gap-3">
           <p className="text-xs text-ink-muted mb-1">
-            {rsvpGuests.length} total invitations · {totalGuests} guests attending
+            {t('rsvpSummary', { total: rsvpGuests.length, attending: totalGuests })}
           </p>
           {rsvpGuests.map(guest => (
             <div key={guest.id} className="bg-card rounded-2xl border border-border/60 shadow-sm p-4 flex items-start gap-3">
@@ -268,12 +274,12 @@ export default function ManagePage() {
                   )}
                 </div>
                 <p className="text-xs text-ink-muted mt-0.5">{guest.email}</p>
-                {guest.dietary && <p className="text-xs text-amber-600 font-medium mt-0.5">Diet: {guest.dietary}</p>}
+                {guest.dietary && <p className="text-xs text-amber-600 font-medium mt-0.5">{t('diet', { dietary: guest.dietary })}</p>}
                 {guest.message && <p className="text-xs text-ink-muted mt-1 italic line-clamp-2">&ldquo;{guest.message}&rdquo;</p>}
               </div>
               {guest.status === 'pending' && (
                 <button className="flex-shrink-0 px-3 py-1.5 rounded-full bg-amber-50 text-amber-600 text-xs font-semibold hover:bg-amber-100 transition-colors">
-                  Remind
+                  {t('remind')}
                 </button>
               )}
             </div>
@@ -287,11 +293,11 @@ export default function ManagePage() {
           <div className="grid grid-cols-2 gap-3 mb-2">
             <div className="bg-emerald-50 rounded-2xl p-4 text-center">
               <p className="text-2xl font-bold text-emerald-600 tabular-nums">{reservedItems.length}</p>
-              <p className="text-xs text-ink-muted mt-0.5">Items reserved</p>
+              <p className="text-xs text-ink-muted mt-0.5">{t('itemsReserved')}</p>
             </div>
             <div className="bg-amber-50 rounded-2xl p-4 text-center">
               <p className="text-2xl font-bold text-amber-600 tabular-nums">${registryValue.toLocaleString()}</p>
-              <p className="text-xs text-ink-muted mt-0.5">Total value</p>
+              <p className="text-xs text-ink-muted mt-0.5">{t('totalValue')}</p>
             </div>
           </div>
           {giftItems.map(item => (
@@ -301,16 +307,16 @@ export default function ManagePage() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-ink">{item.name}</p>
-                <p className="text-xs text-ink-muted">${item.price.toLocaleString()} · {item.category}</p>
+                <p className="text-xs text-ink-muted">{t('priceAndCategory', { price: item.price.toLocaleString(), category: item.category })}</p>
                 {item.reserved && item.reservedBy && (
-                  <p className="text-xs text-emerald-600 font-medium mt-0.5">Reserved by {item.reservedBy}</p>
+                  <p className="text-xs text-emerald-600 font-medium mt-0.5">{t('reservedBy', { name: item.reservedBy })}</p>
                 )}
               </div>
               <span className={cn(
                 'flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full',
                 item.reserved ? 'bg-emerald-100 text-emerald-700' : 'bg-surface-muted text-ink-muted',
               )}>
-                {item.reserved ? 'Reserved' : 'Available'}
+                {item.reserved ? t('reserved') : t('available')}
               </span>
             </div>
           ))}

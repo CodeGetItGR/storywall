@@ -3,10 +3,12 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, LayoutGrid, Users, Search, X } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { seatingTables } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
 
 export default function SeatingPage() {
+  const t = useTranslations('SeatingPage')
   const [search, setSearch] = useState('')
   const [expandedTable, setExpandedTable] = useState<string | null>(null)
 
@@ -22,17 +24,17 @@ export default function SeatingPage() {
     <div className="max-w-2xl mx-auto px-4 pb-24 lg:pb-8">
       {/* Header */}
       <div className="flex items-center gap-3 py-4 mb-2">
-        <Link href="/tools" aria-label="Back to tools" className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors">
+        <Link href="/tools" aria-label={t('backToTools')} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div className="flex items-center gap-2">
           <LayoutGrid className="w-5 h-5 text-indigo-500" />
-          <h1 className="text-base font-bold text-ink">Seating Chart</h1>
+          <h1 className="text-base font-bold text-ink">{t('title')}</h1>
         </div>
       </div>
 
       <p className="text-sm text-ink-muted mb-5 leading-relaxed">
-        Find your table assignment for the reception. Search your name or browse all tables below.
+        {t('subtitle')}
       </p>
 
       {/* Search */}
@@ -42,12 +44,12 @@ export default function SeatingPage() {
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder="Search your name..."
+          placeholder={t('searchPlaceholder')}
           className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink-faint outline-none"
-          aria-label="Search guest name"
+          aria-label={t('searchAriaLabel')}
         />
         {search && (
-          <button onClick={() => setSearch('')} aria-label="Clear search" className="text-ink-faint hover:text-ink-muted transition-colors">
+          <button onClick={() => setSearch('')} aria-label={t('clearSearch')} className="text-ink-faint hover:text-ink-muted transition-colors">
             <X className="w-4 h-4" />
           </button>
         )}
@@ -57,7 +59,7 @@ export default function SeatingPage() {
       {search.trim() && (
         <div className="mb-5">
           {searchResults.length === 0 ? (
-            <p className="text-sm text-ink-muted text-center py-6">No guests found matching &ldquo;{search}&rdquo;</p>
+            <p className="text-sm text-ink-muted text-center py-6">{t('noGuestsFound', { search })}</p>
           ) : (
             <div className="flex flex-col gap-2">
               {searchResults.map(g => (
@@ -77,7 +79,7 @@ export default function SeatingPage() {
       )}
 
       {/* Tables grid */}
-      <h2 className="text-sm font-bold text-ink mb-3">All Tables</h2>
+      <h2 className="text-sm font-bold text-ink mb-3">{t('allTables')}</h2>
       <div className="flex flex-col gap-3">
         {seatingTables.map(table => {
           const isExpanded = expandedTable === table.id
@@ -101,7 +103,7 @@ export default function SeatingPage() {
                     <p className="text-sm font-semibold text-ink">{table.name}</p>
                     <p className="text-xs text-ink-muted flex items-center gap-1 mt-0.5">
                       <Users className="w-3 h-3" aria-hidden="true" />
-                      {seats} / {table.capacity} seats
+                      {t('seatsCount', { seats, capacity: table.capacity })}
                     </p>
                   </div>
                 </div>
@@ -126,7 +128,7 @@ export default function SeatingPage() {
                     {/* Empty seats */}
                     {Array.from({ length: table.capacity - seats }).map((_, i) => (
                       <span key={`empty-${i}`} className="px-3 py-1.5 rounded-full border border-dashed border-border text-xs text-ink-faint">
-                        Empty seat
+                        {t('emptySeat')}
                       </span>
                     ))}
                   </div>

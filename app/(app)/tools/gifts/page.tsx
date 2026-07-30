@@ -3,12 +3,12 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, ExternalLink, Check, Star } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { giftItems } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
 
 type Filter = 'all' | 'available' | 'reserved'
 
-const priorityLabel: Record<string, string> = { high: 'Top pick', medium: 'Wanted', low: 'Nice to have' }
 const priorityColor: Record<string, string> = {
   high: 'text-rose-500 bg-rose-50',
   medium: 'text-amber-500 bg-amber-50',
@@ -16,6 +16,7 @@ const priorityColor: Record<string, string> = {
 }
 
 export default function GiftsPage() {
+  const t = useTranslations('GiftsPage')
   const router = useRouter()
   const [filter, setFilter] = useState<Filter>('all')
   const [reserved, setReserved] = useState<Set<string>>(
@@ -41,14 +42,14 @@ export default function GiftsPage() {
     <div className="max-w-2xl mx-auto px-4 pb-24 lg:pb-8">
       {/* Header */}
       <div className="flex items-center gap-3 py-4 mb-2">
-        <button onClick={() => router.back()} aria-label="Go back" className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors">
+        <button onClick={() => router.back()} aria-label={t('goBack')} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-base font-bold text-ink">Gift Registry</h1>
+        <h1 className="text-base font-bold text-ink">{t('title')}</h1>
       </div>
 
       <p className="text-sm text-ink-muted mb-5 leading-relaxed">
-        Emma and James are grateful for your love and presence. Any gift is truly appreciated.
+        {t('subtitle')}
       </p>
 
       {/* Filter pills */}
@@ -62,7 +63,7 @@ export default function GiftsPage() {
               filter === f ? 'bg-primary text-white' : 'bg-surface-muted text-ink-muted hover:text-ink',
             )}
           >
-            {f}
+            {t(`filters.${f}`)}
           </button>
         ))}
       </div>
@@ -84,7 +85,7 @@ export default function GiftsPage() {
                 <span className="text-xs text-ink-muted font-medium">{item.category}</span>
                 <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full', priorityColor[item.priority])}>
                   <Star className="w-2.5 h-2.5 inline mr-0.5 -mt-0.5" strokeWidth={2} />
-                  {priorityLabel[item.priority]}
+                  {t(`priority.${item.priority}`)}
                 </span>
               </div>
 
@@ -98,7 +99,7 @@ export default function GiftsPage() {
                 {isReserved ? (
                   <div className="flex items-center gap-2 text-xs text-emerald-600 font-medium">
                     <Check className="w-4 h-4" />
-                    Reserved{item.reservedBy ? ` by ${item.reservedBy}` : ''}
+                    {item.reservedBy ? t('reservedByName', { name: item.reservedBy }) : t('reserved')}
                   </div>
                 ) : (
                   <div className="flex gap-2">
@@ -106,14 +107,14 @@ export default function GiftsPage() {
                       onClick={() => handleReserve(item.id)}
                       className="flex-1 py-2 rounded-full bg-primary text-white text-xs font-semibold hover:bg-primary-dark transition-colors"
                     >
-                      Reserve Gift
+                      {t('reserveGift')}
                     </button>
                     {item.link && (
                       <a
                         href={item.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        aria-label={`View ${item.name} on ${item.category}`}
+                        aria-label={t('viewOn', { name: item.name, category: item.category })}
                         className="w-9 h-9 flex items-center justify-center rounded-full bg-surface-muted text-ink-muted hover:text-ink transition-colors"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />

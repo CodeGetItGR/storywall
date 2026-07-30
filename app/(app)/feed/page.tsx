@@ -1,37 +1,23 @@
 'use client'
 
-import { useState } from 'react'
-import {StoriesRow, PostCard, Header, Banner, EventInfo} from '@/components/feed'
-import { posts as initialPosts } from '@/lib/mock-data'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useEventSwitcher } from '@/providers/EventProvider'
 
-export default function FeedPage() {
-  const [posts, setPosts] = useState(initialPosts)
+// Bare /feed has no event id, so it can't render a feed itself — it exists
+// only so links like the nav rail's "Home" tab and the post-login redirect
+// don't need to know an event id up front. It forwards to whichever event is
+// active (falling back to the user's first membership) as soon as that's
+// known, then the real page lives at /feed/[eventId].
+export default function FeedRedirectPage() {
+  const router = useRouter()
+  const { activeEvent, memberships, isLoading } = useEventSwitcher()
 
-  return (
-    <div className="flex flex-col">
-        <Header/>
-        <section>
-            <Banner image={"/images/Banner.jpg"}/>
-        </section>
-        <section className={'mt-3'}>
-            <EventInfo date={1634567890} type="Wedding" place="New York, NY" className={'w-full px-4'}/>
-        </section>
-      {/* Stories row — sticky */}
-      <div className="top-0 z-20 bg-background/90 backdrop-blur-sm border-b border-border">
-        <StoriesRow />
-      </div>
+  useEffect(() => {
+    if (isLoading) return
+    const eventId = activeEvent?.id ?? memberships[0]?.eventId
+    if (eventId) router.replace(`/feed/${eventId}`)
+  }, [isLoading, activeEvent, memberships, router])
 
-      {/* Feed heading */}
-      <div className="px-4 pt-5 pb-3">
-        <p className="text-sm text-ink-muted mt-0.5">Celebrate Emma &amp; James — Oct 18, 2025</p>
-      </div>
-
-      {/* Posts */}
-      <div className="flex flex-col gap-4 px-4 pb-24 lg:pb-10">
-        {posts.map(post => (
-          <PostCard key={post.id} post={post} />
-        ))}
-      </div>
-    </div>
-  )
+  return null
 }

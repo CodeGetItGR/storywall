@@ -3,19 +3,51 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { Heart, Mail, Lock, User, ArrowRight, Eye, EyeOff } from 'lucide-react'
+import { useTranslations } from 'next-intl'
+import { Heart, Mail, Lock, User, ArrowRight, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/hooks/useAuth'
+import { getErrorMessage } from '@/lib/api/errors'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 type Tab = 'login' | 'register' | 'invite'
 
 export default function OnboardingPage() {
+  const t = useTranslations('OnboardingPage')
   const router = useRouter()
+  const { login, register, guestLogin } = useAuth()
   const [tab, setTab] = useState<Tab>('login')
   const [showPw, setShowPw] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [inviteToken, setInviteToken] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    router.push('/feed')
+    setError(null)
+    setIsSubmitting(true)
+
+    try {
+      if (tab === 'login') {
+        await login({ email, password })
+      } else if (tab === 'register') {
+        await register({ email, password })
+      } else {
+        // Accept either a bare token or a full invite link
+        // (e.g. https://yourapp.com/invite/{token}) — use whatever's after
+        // the last slash so pasting the full URL also works.
+        const trimmed = inviteToken.trim()
+        const token = trimmed.includes('/') ? trimmed.split('/').filter(Boolean).pop()! : trimmed
+        await guestLogin(token)
+      }
+      router.push('/feed')
+    } catch (err) {
+      setError(getErrorMessage(err))
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -24,7 +56,7 @@ export default function OnboardingPage() {
       <div className="relative lg:w-1/2 h-56 lg:h-screen flex-shrink-0 overflow-hidden">
         <Image
           src="/images/couple-hero.png"
-          alt="Emma and James — engaged couple at golden hour in a vineyard"
+          alt={t('heroImageAlt')}
           fill
           priority
           className="object-cover"
@@ -40,15 +72,16 @@ export default function OnboardingPage() {
             <span className="text-sm font-semibold tracking-wide opacity-90">StoryWall</span>
           </div>
           <h1 className="text-3xl lg:text-4xl font-bold leading-tight text-balance">
-            Emma &amp; James
+            {t('coupleNames')}
           </h1>
-          <p className="text-sm lg:text-base opacity-80 mt-1.5">October 18, 2025 · Rosewood Estate, Napa Valley</p>
+          <p className="text-sm lg:text-base opacity-80 mt-1.5">{t('eventDateAndVenue')}</p>
         </div>
       </div>
 
       {/* Form panel */}
       <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
         <div className="w-full max-w-sm">
+          <LanguageSwitcher className="mb-6 self-start" />
           {/* Logo mark on mobile */}
           <div className="flex items-center gap-2.5 mb-8 lg:hidden">
             <div className="w-9 h-9 rounded-full bg-gradient-brand flex items-center justify-center">
@@ -58,30 +91,30 @@ export default function OnboardingPage() {
           </div>
 
           <h2 className="text-2xl font-bold text-ink mb-1">
-            {tab === 'login' && 'Welcome back'}
-            {tab === 'register' && 'Create account'}
-            {tab === 'invite' && 'Enter invite code'}
+            {tab === 'login' && t('titles.login')}
+            {tab === 'register' && t('titles.register')}
+            {tab === 'invite' && t('titles.invite')}
           </h2>
           <p className="text-sm text-ink-muted mb-7">
-            {tab === 'login' && "Sign in to join the celebration."}
-            {tab === 'register' && "Join the wedding wall and share the love."}
-            {tab === 'invite' && "You were invited — enter your code to get started."}
+            {tab === 'login' && t('subtitles.login')}
+            {tab === 'register' && t('subtitles.register')}
+            {tab === 'invite' && t('subtitles.invite')}
           </p>
 
           {/* Tabs */}
           <div className="flex gap-1 bg-surface-muted rounded-full p-1 mb-7">
-            {(['login', 'register', 'invite'] as Tab[]).map(t => (
+            {(['login', 'register', 'invite'] as Tab[]).map(tabKey => (
               <button
-                key={t}
-                onClick={() => setTab(t)}
+                key={tabKey}
+                onClick={() => setTab(tabKey)}
                 className={cn(
                   'flex-1 py-2 rounded-full text-sm font-medium transition-colors capitalize',
-                  tab === t
+                  tab === tabKey
                     ? 'bg-card text-ink shadow-sm'
                     : 'text-ink-muted hover:text-ink',
                 )}
               >
-                {t === 'login' ? 'Sign In' : t === 'register' ? 'Register' : 'Invite'}
+                {tabKey === 'login' ? t('tabs.login') : tabKey === 'register' ? t('tabs.register') : t('tabs.invite')}
               </button>
             ))}
           </div>
@@ -89,12 +122,12 @@ export default function OnboardingPage() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {tab === 'register' && (
               <label className="flex flex-col gap-1.5">
-                <span className="text-xs font-semibold text-ink-muted uppercase tracking-wide">Full name</span>
+                <span className="text-xs font-semibold text-ink-muted uppercase tracking-wide">{t('fields.fullName')}</span>
                 <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
                   <User className="w-4 h-4 text-ink-muted flex-shrink-0" />
                   <input
                     type="text"
-                    placeholder="Your full name"
+                    placeholder={t('placeholders.fullName')}
                     required
                     className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink-faint outline-none"
                   />
@@ -104,13 +137,15 @@ export default function OnboardingPage() {
 
             {tab !== 'invite' && (
               <label className="flex flex-col gap-1.5">
-                <span className="text-xs font-semibold text-ink-muted uppercase tracking-wide">Email</span>
+                <span className="text-xs font-semibold text-ink-muted uppercase tracking-wide">{t('fields.email')}</span>
                 <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
                   <Mail className="w-4 h-4 text-ink-muted flex-shrink-0" />
                   <input
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder={t('placeholders.email')}
                     required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink-faint outline-none"
                   />
                 </div>
@@ -119,19 +154,22 @@ export default function OnboardingPage() {
 
             {tab !== 'invite' && (
               <label className="flex flex-col gap-1.5">
-                <span className="text-xs font-semibold text-ink-muted uppercase tracking-wide">Password</span>
+                <span className="text-xs font-semibold text-ink-muted uppercase tracking-wide">{t('fields.password')}</span>
                 <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
                   <Lock className="w-4 h-4 text-ink-muted flex-shrink-0" />
                   <input
                     type={showPw ? 'text' : 'password'}
                     placeholder="••••••••"
                     required
+                    minLength={8}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink-faint outline-none"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPw(p => !p)}
-                    aria-label={showPw ? 'Hide password' : 'Show password'}
+                    aria-label={showPw ? t('hidePassword') : t('showPassword')}
                     className="text-ink-faint hover:text-ink-muted transition-colors"
                   >
                     {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -142,30 +180,45 @@ export default function OnboardingPage() {
 
             {tab === 'invite' && (
               <label className="flex flex-col gap-1.5">
-                <span className="text-xs font-semibold text-ink-muted uppercase tracking-wide">Invite code</span>
+                <span className="text-xs font-semibold text-ink-muted uppercase tracking-wide">{t('fields.inviteLinkOrToken')}</span>
                 <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
                   <Heart className="w-4 h-4 text-ink-muted flex-shrink-0" />
                   <input
                     type="text"
-                    placeholder="e.g. EMMA-JAMES-2025"
+                    placeholder={t('placeholders.inviteLinkOrToken')}
                     required
-                    className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink-faint outline-none tracking-widest uppercase"
+                    value={inviteToken}
+                    onChange={(e) => setInviteToken(e.target.value)}
+                    className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink-faint outline-none"
                   />
                 </div>
               </label>
             )}
 
+            {error && (
+              <p role="alert" className="text-xs text-center text-red-500 -mt-1">
+                {error}
+              </p>
+            )}
+
             <button
               type="submit"
-              className="mt-2 w-full flex items-center justify-center gap-2 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+              disabled={isSubmitting}
+              className="mt-2 w-full flex items-center justify-center gap-2 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {tab === 'login' ? 'Sign In' : tab === 'register' ? 'Create Account' : 'Join Wedding'}
-              <ArrowRight className="w-4 h-4" />
+              {isSubmitting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  {tab === 'login' ? t('submit.login') : tab === 'register' ? t('submit.register') : t('submit.invite')}
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           </form>
 
           <p className="text-xs text-center text-ink-muted mt-6">
-            By joining you agree to share moments from Emma &amp; James&apos;s special day.
+            {t('disclaimer')}
           </p>
         </div>
       </div>

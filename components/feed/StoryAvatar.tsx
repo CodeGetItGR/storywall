@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import type { Story, User } from '@/lib/types'
 import Image from "next/image";
@@ -10,11 +11,13 @@ interface StoryAvatarProps {
 }
 
 export function StoryAvatar({ story, user, isCurrentUser }: StoryAvatarProps) {
+  const t = useTranslations('StoryAvatar')
+
   return (
     <Link
       href={isCurrentUser ? '/new-post' : `/story/${story.id}`}
       className="flex flex-col items-center gap-2 shrink-0 group"
-      aria-label={isCurrentUser ? 'Add your story' : `${user.name}'s story`}
+      aria-label={isCurrentUser ? t('addYourStory') : t('userStory', { name: user.name })}
     >
       <div className="relative">
         {/* Gradient ring wrapper */}
@@ -43,7 +46,7 @@ export function StoryAvatar({ story, user, isCurrentUser }: StoryAvatarProps) {
       </div>
 
       <span className="text-[11px] text-ink-muted font-medium text-center leading-tight max-w-14 truncate">
-        {isCurrentUser ? 'Your story' : user.name.split(' ')[0]}
+        {isCurrentUser ? t('yourStory') : user.name.split(' ')[0]}
       </span>
     </Link>
   )

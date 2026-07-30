@@ -3,12 +3,14 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, HelpCircle, CheckCircle2, XCircle, ArrowRight, RefreshCw } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { quizQuestions } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
 
 type Phase = 'quiz' | 'results'
 
 export default function QuizPage() {
+  const t = useTranslations('QuizPage')
   const [phase, setPhase] = useState<Phase>('quiz')
   const [current, setCurrent] = useState(0)
   const [answers, setAnswers] = useState<(number | null)[]>(new Array(quizQuestions.length).fill(null))
@@ -49,18 +51,18 @@ export default function QuizPage() {
   if (phase === 'results') {
     const pct = Math.round((score / quizQuestions.length) * 100)
     const grade =
-      pct === 100 ? 'Perfect score! You clearly know them inside out.' :
-      pct >= 80  ? 'Excellent! You know Emma & James really well.' :
-      pct >= 60  ? 'Pretty good — you\'ve been paying attention!' :
-                   'Not bad! Maybe catch up with them at the wedding.'
+      pct === 100 ? t('grades.perfect') :
+      pct >= 80  ? t('grades.excellent') :
+      pct >= 60  ? t('grades.good') :
+                   t('grades.okay')
 
     return (
       <div className="max-w-2xl mx-auto px-4 pb-24 lg:pb-8">
         <div className="flex items-center gap-3 py-4 mb-2">
-          <Link href="/tools" aria-label="Back to tools" className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors">
+          <Link href="/tools" aria-label={t('backToTools')} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <h1 className="text-base font-bold text-ink">Couple Quiz — Results</h1>
+          <h1 className="text-base font-bold text-ink">{t('resultsTitle')}</h1>
         </div>
 
         <div className="flex flex-col items-center text-center py-10 px-4">
@@ -68,7 +70,7 @@ export default function QuizPage() {
             <p className="text-3xl font-bold tabular-nums">{score}/{quizQuestions.length}</p>
             <p className="text-sm opacity-80">{pct}%</p>
           </div>
-          <h2 className="text-xl font-bold text-ink mb-2">Quiz complete!</h2>
+          <h2 className="text-xl font-bold text-ink mb-2">{t('quizComplete')}</h2>
           <p className="text-sm text-ink-muted leading-relaxed max-w-xs">{grade}</p>
 
           <button
@@ -76,12 +78,12 @@ export default function QuizPage() {
             className="mt-8 flex items-center gap-2 px-6 py-3 rounded-full bg-surface-muted text-ink text-sm font-semibold hover:bg-border transition-colors"
           >
             <RefreshCw className="w-4 h-4" />
-            Try again
+            {t('tryAgain')}
           </button>
         </div>
 
         {/* Answer review */}
-        <h3 className="text-sm font-bold text-ink mb-3">Review your answers</h3>
+        <h3 className="text-sm font-bold text-ink mb-3">{t('reviewYourAnswers')}</h3>
         <div className="flex flex-col gap-3">
           {quizQuestions.map((q, i) => {
             const userAnswer = answers[i]
@@ -96,8 +98,11 @@ export default function QuizPage() {
                   }
                   <p className="text-xs text-ink-muted leading-snug">
                     {correct
-                      ? `Correct: ${q.options[q.correct]}`
-                      : `Your answer: ${userAnswer !== null ? q.options[userAnswer] : 'Skipped'} — Correct: ${q.options[q.correct]}`
+                      ? t('correctAnswer', { answer: q.options[q.correct] })
+                      : t('yourAnswerVsCorrect', {
+                          yourAnswer: userAnswer !== null ? q.options[userAnswer] : t('skipped'),
+                          correctAnswer: q.options[q.correct],
+                        })
                     }
                   </p>
                 </div>
@@ -114,12 +119,12 @@ export default function QuizPage() {
     <div className="max-w-2xl mx-auto px-4 pb-24 lg:pb-8">
       {/* Header */}
       <div className="flex items-center gap-3 py-4 mb-2">
-        <Link href="/tools" aria-label="Back to tools" className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors">
+        <Link href="/tools" aria-label={t('backToTools')} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div className="flex items-center gap-2">
           <HelpCircle className="w-5 h-5 text-orange-500" />
-          <h1 className="text-base font-bold text-ink">Couple Quiz</h1>
+          <h1 className="text-base font-bold text-ink">{t('title')}</h1>
         </div>
       </div>
 
@@ -141,11 +146,11 @@ export default function QuizPage() {
       {/* Question counter */}
       <div className="flex items-center justify-between mb-4">
         <span className="text-xs font-bold text-ink-muted uppercase tracking-wide">
-          Question {current + 1} of {quizQuestions.length}
+          {t('questionCounter', { current: current + 1, total: quizQuestions.length })}
         </span>
         {revealed && (
           <span className={cn('text-xs font-bold', selected === question.correct ? 'text-emerald-600' : 'text-rose-500')}>
-            {selected === question.correct ? 'Correct!' : 'Not quite'}
+            {selected === question.correct ? t('correct') : t('notQuite')}
           </span>
         )}
       </div>
@@ -201,7 +206,7 @@ export default function QuizPage() {
           onClick={handleNext}
           className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
         >
-          {isLast ? 'See Results' : 'Next Question'}
+          {isLast ? t('seeResults') : t('nextQuestion')}
           <ArrowRight className="w-4 h-4" />
         </button>
       )}

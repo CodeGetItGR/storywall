@@ -2,26 +2,28 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Home, Wrench, Bell, User, Plus, LayoutDashboard, Heart } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { CURRENT_USER_ID, getUser } from '@/lib/mock-data'
 import Avatar from '@/components/ui/avatar'
 
 const navItems = [
-  { href: '/feed', icon: Home, label: 'Home' },
-  { href: '/tools', icon: Wrench, label: 'Tools' },
-  { href: '/manage', icon: LayoutDashboard, label: 'Manage' },
-  { href: '/notifications', icon: Bell, label: 'Notifications' },
-  { href: '/profile', icon: User, label: 'Profile' },
-]
+  { href: '/feed', icon: Home, key: 'home' },
+  { href: '/tools', icon: Wrench, key: 'tools' },
+  { href: '/manage', icon: LayoutDashboard, key: 'manage' },
+  { href: '/notifications', icon: Bell, key: 'notifications' },
+  { href: '/profile', icon: User, key: 'profile' },
+] as const
 
 export function DesktopNavRail() {
+  const t = useTranslations('DesktopNavRail')
   const pathname = usePathname()
   const user = getUser(CURRENT_USER_ID)
 
   return (
     <nav
-      aria-label="Main navigation"
+      aria-label={t('mainNavigation')}
       className="fixed left-0 top-0 h-screen w-55 bg-background border-r border-border flex-col z-40 hidden lg:flex"
     >
       {/* Logo */}
@@ -31,13 +33,13 @@ export function DesktopNavRail() {
         </div>
         <div className="leading-tight">
           <p className="text-sm font-bold text-ink">StoryWall</p>
-          <p className="text-[11px] text-ink-faint">Emma &amp; James</p>
+          <p className="text-[11px] text-ink-faint">{t('coupleNames')}</p>
         </div>
       </div>
 
       {/* Nav links */}
       <div className="flex-1 px-3 space-y-0.5 overflow-y-auto no-scrollbar">
-        {navItems.map(({ href, icon: Icon, label }) => {
+        {navItems.map(({ href, icon: Icon, key }) => {
           const active =
             pathname === href ||
             (href !== '/feed' && pathname.startsWith(href))
@@ -56,7 +58,7 @@ export function DesktopNavRail() {
                 className={cn('w-5 h-5 shrink-0', active ? 'text-primary' : '')}
                 strokeWidth={active ? 2.5 : 1.8}
               />
-              {label}
+              {t(`items.${key}`)}
             </Link>
           )
         })}
@@ -69,7 +71,7 @@ export function DesktopNavRail() {
           className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
         >
           <Plus className="w-4 h-4" strokeWidth={2.5} />
-          New Post
+          {t('newPost')}
         </Link>
       </div>
 
