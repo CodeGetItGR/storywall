@@ -57,8 +57,19 @@
       "profile": "Προφίλ"
     }
   },
-  "FeedPage": {
-    "celebrateTheMoment": "Γιορτάστε τη στιγμή"
+  "ComposerCard": {
+    "placeholder": "Γιορτάστε τη στιγμή",
+    "captionPlaceholder": "Μοιραστείτε μια ανάμνηση, μήνυμα ή στιγμή...",
+    "captionAriaLabel": "Λεζάντα ανάρτησης",
+    "addPhotos": "Προσθήκη φωτογραφιών",
+    "removeImage": "Αφαίρεση εικόνας",
+    "uploadFailed": "Δεν ήταν δυνατή η μεταφόρτωση του {filename}",
+    "retry": "Επανάληψη",
+    "maxImagesReached": "Μπορείτε να προσθέσετε έως 10 φωτογραφίες",
+    "fileTooLarge": "Το {filename} υπερβαίνει τα 20 MB",
+    "cancel": "Ακύρωση",
+    "post": "Ανάρτηση",
+    "posting": "Ανάρτηση..."
   },
   "RsvpPrompt": {
     "willYouAttend": "Θα παραστείτε;",
@@ -228,21 +239,6 @@
       "title": "Δεν υπάρχουν ειδοποιήσεις ακόμα",
       "description": "Θα σας ενημερώσουμε όταν συμβεί κάτι"
     }
-  },
-  "NewPostPage": {
-    "goBack": "Πίσω",
-    "title": "Νέα Ανάρτηση",
-    "captionPlaceholder": "Μοιραστείτε μια ανάμνηση, μήνυμα ή στιγμή με την Έμμα & τον Τζέιμς...",
-    "captionAriaLabel": "Λεζάντα ανάρτησης",
-    "postPreviewAlt": "Προεπισκόπηση ανάρτησης",
-    "removeImage": "Αφαίρεση εικόνας",
-    "addPhoto": "Προσθήκη φωτογραφίας",
-    "photoFormats": "JPEG, PNG, HEIC έως 10 MB",
-    "uploadImage": "Μεταφόρτωση εικόνας",
-    "addTagPlaceholder": "Προσθήκη ετικέτας — πατήστε Enter",
-    "addTag": "Προσθήκη ετικέτας",
-    "removeTag": "Αφαίρεση ετικέτας {tag}",
-    "submit": "Κοινοποίηση στον Τοίχο"
   },
   "PostPage": {
     "goBack": "Πίσω",

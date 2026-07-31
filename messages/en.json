@@ -57,8 +57,19 @@
       "profile": "Profile"
     }
   },
-  "FeedPage": {
-    "celebrateTheMoment": "Celebrate the moment"
+  "ComposerCard": {
+    "placeholder": "Celebrate the moment",
+    "captionPlaceholder": "Share a memory, message, or moment...",
+    "captionAriaLabel": "Post caption",
+    "addPhotos": "Add photos",
+    "removeImage": "Remove image",
+    "uploadFailed": "Couldn't upload {filename}",
+    "retry": "Retry",
+    "maxImagesReached": "You can add up to 10 photos",
+    "fileTooLarge": "{filename} is over 20 MB",
+    "cancel": "Cancel",
+    "post": "Post",
+    "posting": "Posting…"
   },
   "RsvpPrompt": {
     "willYouAttend": "Will you attend?",
@@ -228,21 +239,6 @@
       "title": "No notifications yet",
       "description": "We'll let you know when something happens"
     }
-  },
-  "NewPostPage": {
-    "goBack": "Go back",
-    "title": "New Post",
-    "captionPlaceholder": "Share a memory, message, or moment with Emma & James...",
-    "captionAriaLabel": "Post caption",
-    "postPreviewAlt": "Post preview",
-    "removeImage": "Remove image",
-    "addPhoto": "Add a photo",
-    "photoFormats": "JPEG, PNG, HEIC up to 10 MB",
-    "uploadImage": "Upload image",
-    "addTagPlaceholder": "Add a tag — press Enter",
-    "addTag": "Add tag",
-    "removeTag": "Remove tag {tag}",
-    "submit": "Share to the Wall"
   },
   "PostPage": {
     "goBack": "Go back",
