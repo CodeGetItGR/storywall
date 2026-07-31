@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { ImagePlus, Send, X } from 'lucide-react'
@@ -65,11 +65,19 @@ export function ComposerCard({ eventId, autoExpand = false }: ComposerCardProps)
   }
 
   function handleContainerBlur(e: React.FocusEvent<HTMLDivElement>) {
-    if (e.currentTarget.contains(e.relatedTarget as Node)) return
+    if (!(e.relatedTarget instanceof Node)) return
+    if (e.currentTarget.contains(e.relatedTarget)) return
     if (caption.trim().length === 0 && images.length === 0) {
       setExpanded(false)
     }
   }
+
+  useEffect(() => {
+    return () => {
+      images.forEach(img => URL.revokeObjectURL(img.previewUrl))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   function handleFiles(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) return
@@ -79,19 +87,19 @@ export function ComposerCard({ eventId, autoExpand = false }: ComposerCardProps)
     const incoming = Array.from(fileList)
     const room = MAX_IMAGES - images.length
     const accepted: File[] = []
-    let oversizeName: string | null = null
+    const oversizeNames: string[] = []
 
     for (const file of incoming) {
       if (accepted.length >= room) break
       if (file.size > MAX_FILE_SIZE_BYTES) {
-        oversizeName = file.name
+        oversizeNames.push(file.name)
         continue
       }
       accepted.push(file)
     }
 
     if (incoming.length > room) setCountError(t('maxImagesReached'))
-    if (oversizeName) setSizeError(t('fileTooLarge', { filename: oversizeName }))
+    if (oversizeNames.length > 0) setSizeError(t('fileTooLarge', { filename: oversizeNames.join(', ') }))
 
     if (accepted.length > 0) {
       setImages(prev => [
@@ -126,25 +134,47 @@ export function ComposerCard({ eventId, autoExpand = false }: ComposerCardProps)
       prev.map(img => (toUpload.some(u => u.key === img.key) ? { ...img, status: 'uploading', error: undefined } : img)),
     )
 
-    const result = await uploadBatch.mutateAsync({
-      eventId,
-      files: toUpload.map(img => img.file),
-      mediaType: 'IMAGE',
-      uploaderMemberId: activeMember?.id,
+    let result
+    try {
+      result = await uploadBatch.mutateAsync({
+        eventId,
+        files: toUpload.map(img => img.file),
+        mediaType: 'IMAGE',
+        uploaderMemberId: activeMember?.id,
+      })
+    } catch {
+      setImages(prev =>
+        prev.map(img => (toUpload.some(u => u.key === img.key) ? { ...img, status: 'failed' as const } : img)),
+      )
+      return null
+    }
+
+    const createdQueue = new Map<string, typeof result.created>()
+    result.created.forEach(m => {
+      const arr = createdQueue.get(m.originalFilename) ?? []
+      arr.push(m)
+      createdQueue.set(m.originalFilename, arr)
+    })
+    const failedQueue = new Map<string, string[]>()
+    result.failed.forEach(f => {
+      const arr = failedQueue.get(f.filename) ?? []
+      arr.push(f.message)
+      failedQueue.set(f.filename, arr)
     })
 
-    const failedByName = new Map(result.failed.map(f => [f.filename, f.message]))
     let allUploaded = true
 
     setImages(prev =>
       prev.map(img => {
         if (!toUpload.some(u => u.key === img.key)) return img
-        const failure = failedByName.get(img.file.name)
-        if (failure) {
+        const failedMsgs = failedQueue.get(img.file.name)
+        if (failedMsgs && failedMsgs.length > 0) {
+          failedMsgs.shift()
           allUploaded = false
-          return { ...img, status: 'failed' as const, error: failure }
+          return { ...img, status: 'failed' as const }
         }
-        const created = result.created.find(m => m.originalFilename === img.file.name)
+        const createdList = createdQueue.get(img.file.name)
+        const created = createdList?.shift()
         return created ? { ...img, status: 'uploaded' as const, mediaId: created.id } : img
       }),
     )
@@ -250,6 +280,7 @@ export function ComposerCard({ eventId, autoExpand = false }: ComposerCardProps)
                 e.target.value = ''
               }}
               aria-label={t('addPhotos')}
+              tabIndex={-1}
             />
 
             <div className="flex items-center gap-2">
