@@ -69,7 +69,7 @@
     "fileTooLarge": "Το {filename} υπερβαίνει τα 20 MB",
     "cancel": "Ακύρωση",
     "post": "Ανάρτηση",
-    "posting": "Ανάρτηση..."
+    "posting": "Ανάρτηση…"
   },
   "RsvpPrompt": {
     "willYouAttend": "Θα παραστείτε;",
