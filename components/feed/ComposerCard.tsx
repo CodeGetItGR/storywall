@@ -202,10 +202,12 @@ export function ComposerCard({ eventId, autoExpand = false }: ComposerCardProps)
 
     if (hasFailure) return null
 
-    // Order the returned ids by `images` (this call's snapshot, in display
-    // order) rather than by the raw API response order, and skip any image
-    // that was removed after this call started (it won't be in `images`).
-    return images
+    // Order the returned ids by the latest image state (via imagesRef, not
+    // the closed-over `images` snapshot) so a removal that happened while
+    // this round was in flight is reflected, rather than by the raw API
+    // response order. Skip any image that was removed entirely (it won't
+    // be in imagesRef.current).
+    return imagesRef.current
       .map(img => newMediaIdByKey.get(img.key) ?? (img.status === 'uploaded' ? img.mediaId : undefined))
       .filter((id): id is string => Boolean(id))
   }
