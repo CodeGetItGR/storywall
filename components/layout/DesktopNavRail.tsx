@@ -67,7 +67,7 @@ export function DesktopNavRail() {
       {/* New Post CTA */}
       <div className="px-4 pb-4">
         <Link
-          href="/new-post"
+          href="/feed?compose=1"
           className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
         >
           <Plus className="w-4 h-4" strokeWidth={2.5} />
