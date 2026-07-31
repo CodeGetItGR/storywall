@@ -43,12 +43,14 @@ export function ComposerCard({ eventId, autoExpand = false }: ComposerCardProps)
   const [images, setImages] = useState<PendingImage[]>([])
   const [sizeError, setSizeError] = useState<string | null>(null)
   const [countError, setCountError] = useState<string | null>(null)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const hasUnresolvedFailures = images.some(img => img.status === 'failed')
   const isBusy = createPost.isPending || uploadBatch.isPending
-  const canSubmit = (caption.trim().length > 0 || images.length > 0) && !hasUnresolvedFailures && !isBusy
+  const canSubmit =
+    (caption.trim().length > 0 || images.length > 0) && !hasUnresolvedFailures && !isBusy && Boolean(activeMember)
 
   function expand() {
     setExpanded(true)
@@ -61,6 +63,7 @@ export function ComposerCard({ eventId, autoExpand = false }: ComposerCardProps)
     setImages([])
     setSizeError(null)
     setCountError(null)
+    setSubmitError(null)
     setExpanded(false)
   }
 
@@ -153,52 +156,82 @@ export function ComposerCard({ eventId, autoExpand = false }: ComposerCardProps)
       return null
     }
 
-    const createdQueue = new Map<string, typeof result.created>()
+    const createdByName = new Map<string, typeof result.created>()
     result.created.forEach(m => {
-      const arr = createdQueue.get(m.originalFilename) ?? []
+      const arr = createdByName.get(m.originalFilename) ?? []
       arr.push(m)
-      createdQueue.set(m.originalFilename, arr)
+      createdByName.set(m.originalFilename, arr)
     })
-    const failedQueue = new Map<string, string[]>()
+    const failedByName = new Map<string, string[]>()
     result.failed.forEach(f => {
-      const arr = failedQueue.get(f.filename) ?? []
+      const arr = failedByName.get(f.filename) ?? []
       arr.push(f.message)
-      failedQueue.set(f.filename, arr)
+      failedByName.set(f.filename, arr)
     })
+
+    // Correlate each pending image with its result in a single synchronous
+    // pass (not inside the setImages updater, whose timing isn't
+    // guaranteed) so both the new image states and the ordered id list
+    // below are derived from the same, reliable data.
+    const newMediaIdByKey = new Map<string, string>()
+    const newErrorByKey = new Map<string, string>()
+    let hasFailure = false
+    for (const img of toUpload) {
+      const failMsgs = failedByName.get(img.file.name)
+      if (failMsgs && failMsgs.length > 0) {
+        newErrorByKey.set(img.key, failMsgs.shift()!)
+        hasFailure = true
+        continue
+      }
+      const createdList = createdByName.get(img.file.name)
+      const created = createdList?.shift()
+      if (created) newMediaIdByKey.set(img.key, created.id)
+    }
 
     setImages(prev =>
       prev.map(img => {
-        if (!toUpload.some(u => u.key === img.key)) return img
-        const failedMsgs = failedQueue.get(img.file.name)
-        if (failedMsgs && failedMsgs.length > 0) {
-          const message = failedMsgs.shift()
-          return { ...img, status: 'failed' as const, error: message }
+        if (newMediaIdByKey.has(img.key)) {
+          return { ...img, status: 'uploaded' as const, mediaId: newMediaIdByKey.get(img.key) }
         }
-        const createdList = createdQueue.get(img.file.name)
-        const created = createdList?.shift()
-        return created ? { ...img, status: 'uploaded' as const, mediaId: created.id } : img
+        if (newErrorByKey.has(img.key)) {
+          return { ...img, status: 'failed' as const, error: newErrorByKey.get(img.key) }
+        }
+        return img
       }),
     )
 
-    if (result.failed.length > 0) return null
-    return [...alreadyUploaded.map(img => img.mediaId!), ...result.created.map(m => m.id)]
+    if (hasFailure) return null
+
+    // Order the returned ids by `images` (this call's snapshot, in display
+    // order) rather than by the raw API response order, and skip any image
+    // that was removed after this call started (it won't be in `images`).
+    return images
+      .map(img => newMediaIdByKey.get(img.key) ?? (img.status === 'uploaded' ? img.mediaId : undefined))
+      .filter((id): id is string => Boolean(id))
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!canSubmit) return
 
+    setSubmitError(null)
+
     const mediaIds = await uploadPendingImages()
     if (mediaIds === null) return
 
-    await createPost.mutateAsync({
-      eventId,
-      authorMemberId: activeMember?.id,
-      type: mediaIds.length > 0 ? 'MEDIA' : 'TEXT',
-      content: caption.trim() || undefined,
-      isPinned: false,
-      mediaIds: mediaIds.length > 0 ? mediaIds : undefined,
-    })
+    try {
+      await createPost.mutateAsync({
+        eventId,
+        authorMemberId: activeMember?.id,
+        type: mediaIds.length > 0 ? 'MEDIA' : 'TEXT',
+        content: caption.trim() || undefined,
+        isPinned: false,
+        mediaIds: mediaIds.length > 0 ? mediaIds : undefined,
+      })
+    } catch {
+      setSubmitError('Something went wrong. Please try again.')
+      return
+    }
 
     reset()
   }
@@ -237,8 +270,9 @@ export function ComposerCard({ eventId, autoExpand = false }: ComposerCardProps)
                   <button
                     type="button"
                     onClick={() => removeImage(img.key)}
+                    disabled={img.status === 'uploading'}
                     aria-label={t('removeImage')}
-                    className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-ink/60 flex items-center justify-center text-white hover:bg-ink/80 transition-colors"
+                    className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-ink/60 flex items-center justify-center text-white hover:bg-ink/80 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -258,7 +292,9 @@ export function ComposerCard({ eventId, autoExpand = false }: ComposerCardProps)
             </div>
           )}
 
-          {(sizeError || countError) && <p className="text-xs text-destructive">{sizeError ?? countError}</p>}
+          {(sizeError || countError || submitError) && (
+            <p className="text-xs text-destructive">{sizeError ?? countError ?? submitError}</p>
+          )}
 
           <div className="flex items-center justify-between">
             <button
@@ -288,7 +324,8 @@ export function ComposerCard({ eventId, autoExpand = false }: ComposerCardProps)
               <button
                 type="button"
                 onClick={reset}
-                className="px-4 py-2 rounded-full text-sm font-medium text-ink-muted hover:bg-surface-muted transition-colors"
+                disabled={isBusy}
+                className="px-4 py-2 rounded-full text-sm font-medium text-ink-muted hover:bg-surface-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {t('cancel')}
               </button>
