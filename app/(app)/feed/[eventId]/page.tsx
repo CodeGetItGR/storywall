@@ -34,10 +34,10 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
     // ?compose=1 (from the nav rail's "New Post" CTA) scrolls to and expands
     // the composer, then strips itself so a refresh doesn't re-trigger it.
     useEffect(() => {
-        if (!shouldCompose) return
+        if (!shouldCompose || !event) return
         composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
         router.replace(`/feed/${eventId}`)
-    }, [shouldCompose, eventId, router])
+    }, [shouldCompose, eventId, router, event])
 
     const moduleFlags = useMemo<Record<ModuleKeyConvention, boolean>>(()=> event ? Object.fromEntries(
       event.modules.map(({ moduleKey, isEnabled }) => [moduleKey, isEnabled])
