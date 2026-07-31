@@ -15,7 +15,7 @@ export function EventInfo({date, type, place, className}: {date: number, type: s
 
         <div className={'flex gap-2 text-[1rem] alegreya-light'}>
             <p>{type}</p>
-            <p aria-hidden="true"> • </p>
+            <p aria-hidden="true" className={cn({'hidden':!place})}> • </p>
             <p>{place}</p>
         </div>
     </div>

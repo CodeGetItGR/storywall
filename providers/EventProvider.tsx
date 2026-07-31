@@ -12,6 +12,7 @@ interface EventContextValue {
   memberships: EventMemberResponseDto[];
   activeEvent: EventDetailResponseDto | null;
   activeMember: EventMemberResponseDto | null;
+  isHost: boolean;
   isLoading: boolean;
   setActiveEventId: (eventId: string) => void;
 }
@@ -55,6 +56,7 @@ export function EventProvider({ children }: { children: ReactNode }) {
     memberships,
     activeEvent: activeEvent ?? null,
     activeMember,
+    isHost: activeMember?.role === "HOST",
     isLoading: isAuthenticated && (isLoadingMemberships || (Boolean(activeEventId) && isLoadingEvent)),
     setActiveEventId,
   };
@@ -80,6 +82,10 @@ export function useActiveMember(): EventMemberResponseDto | null {
 
 export function useMyMemberships(): EventMemberResponseDto[] {
   return useEventContext().memberships;
+}
+
+export function useIsHost(): boolean {
+  return useEventContext().isHost;
 }
 
 export function useEventContextLoading(): boolean {

@@ -56,6 +56,7 @@ export const endpoints = {
     create: "/api/event-invitations",
     byId: (id: string) => `/api/event-invitations/${id}`,
     accept: (inviteToken: string) => `/api/event-invitations/${inviteToken}/accept`,
+    preview: (inviteToken: string) => `/api/event-invitations/${inviteToken}/preview`,
   },
 
   eventMembers: {

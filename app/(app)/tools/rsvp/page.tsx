@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, CheckCircle2, XCircle, Clock, ChevronDown } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
-import { useActiveEvent, useActiveMember } from '@/providers/EventProvider'
+import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider'
 import { useCreateRsvp, useEventRsvps, useRsvp, useUpdateRsvp } from '@/hooks/useRsvps'
 import { useEventMembers } from '@/hooks/useEventMembers'
 import type { AttendanceStatus } from '@/lib/api/types'
@@ -25,7 +25,7 @@ export default function RSVPPage() {
   const activeMember = useActiveMember()
   const eventId = activeEvent?.id ?? null
   const memberId = activeMember?.id ?? null
-  const isHost = activeMember?.role === 'HOST'
+  const isHost = useIsHost()
 
   const presetAttending = searchParams.get('attending')
   const [attending, setAttending] = useState<AttendingStatus | null>(

@@ -5,6 +5,7 @@ import { normalizeList } from "@/lib/api/pagination";
 import { eventMemberKeys } from "@/hooks/useEventMembers";
 import type {
   EventInvitationPatchDto,
+  EventInvitationPreviewDto,
   EventInvitationRequestDto,
   EventInvitationResponseDto,
   EventMemberResponseDto,
@@ -13,7 +14,18 @@ import type {
 export const eventInvitationKeys = {
   list: (eventId: string) => ["events", eventId, "invitations"] as const,
   detail: (id: string) => ["event-invitations", id] as const,
+  preview: (inviteToken: string) => ["event-invitations", inviteToken, "preview"] as const,
 };
+
+// GET /api/event-invitations/{inviteToken}/preview — public, unauthenticated.
+// Powers the branded /invite/[token] onboarding page.
+export function useEventInvitationPreview(inviteToken: string | null) {
+  return useQuery({
+    queryKey: eventInvitationKeys.preview(inviteToken ?? ""),
+    queryFn: () => api.get<EventInvitationPreviewDto>(endpoints.eventInvitations.preview(inviteToken!)),
+    enabled: Boolean(inviteToken),
+  });
+}
 
 // GET /api/events/{eventId}/invitations — HOST of the event only. Carries
 // PII (name/email) and the raw inviteToken.

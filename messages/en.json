@@ -53,7 +53,7 @@
       "home": "Home",
       "tools": "Tools",
       "post": "Post",
-      "alerts": "Alerts",
+      "alerts": "Notifications",
       "profile": "Profile"
     }
   },
@@ -66,44 +66,77 @@
     "yes": "Yes",
     "no": "No"
   },
-  "OnboardingPage": {
-    "heroImageAlt": "Emma and James — engaged couple at golden hour in a vineyard",
-    "coupleNames": "Emma & James",
-    "eventDateAndVenue": "October 18, 2025 · Rosewood Estate, Napa Valley",
-    "titles": {
-      "login": "Welcome back",
-      "register": "Create account",
-      "invite": "Enter invite code"
-    },
-    "subtitles": {
-      "login": "Sign in to join the celebration.",
-      "register": "Join the wedding wall and share the love.",
-      "invite": "You were invited — enter your code to get started."
-    },
-    "tabs": {
-      "login": "Sign In",
-      "register": "Register",
-      "invite": "Invite"
-    },
+  "LoginPage": {
+    "title": "Welcome back",
+    "subtitle": "Sign in to join the celebration.",
     "fields": {
-      "fullName": "Full name",
       "email": "Email",
-      "password": "Password",
-      "inviteLinkOrToken": "Invite link or token"
+      "password": "Password"
     },
     "placeholders": {
-      "fullName": "Your full name",
-      "email": "you@example.com",
-      "inviteLinkOrToken": "Paste your invite link or token"
+      "email": "you@example.com"
     },
     "showPassword": "Show password",
     "hidePassword": "Hide password",
-    "submit": {
-      "login": "Sign In",
-      "register": "Create Account",
-      "invite": "Join Wedding"
+    "submit": "Sign In",
+    "disclaimer": "By joining you agree to share moments from Emma & James's special day.",
+    "noAccount": "Don't have an account?",
+    "createAccountLink": "Create one",
+    "expiredInvite": "This invitation has expired. Please ask your host for a new invite link."
+  },
+  "RegisterPage": {
+    "title": "Create account",
+    "subtitle": "Join the wedding wall and share the love.",
+    "fields": {
+      "fullName": "Full name",
+      "email": "Email",
+      "password": "Password"
     },
-    "disclaimer": "By joining you agree to share moments from Emma & James's special day."
+    "placeholders": {
+      "fullName": "Your full name",
+      "email": "you@example.com"
+    },
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "submit": "Create Account",
+    "disclaimer": "By joining you agree to share moments from Emma & James's special day.",
+    "haveAccount": "Already have an account?",
+    "signInLink": "Sign in",
+    "expiredInvite": "This invitation has expired. Please ask your host for a new invite link."
+  },
+  "WelcomePage": {
+    "title": "Let's get started",
+    "subtitle": "Create your own event, or join one you've been invited to.",
+    "createEventCta": "Create an event",
+    "or": "or",
+    "haveInviteLabel": "Have an invite link or code?",
+    "inviteInputPlaceholder": "Paste your invite link or code",
+    "goButton": "Continue"
+  },
+  "InviteOnboardingPage": {
+    "loading": "Loading your invitation…",
+    "invalidInvite": {
+      "title": "Invite not found",
+      "description": "This invite link doesn't look right. Double-check the link or QR code and try again."
+    },
+    "expiredInvite": {
+      "title": "This invite has expired",
+      "description": "Ask your host to send you a fresh invite link."
+    },
+    "alreadyUsedInvite": {
+      "title": "This invite has already been used",
+      "description": "If that was you, sign in below to get back to the wall."
+    },
+    "defaultHeroImageAlt": "Event cover photo",
+    "joinAsGuest": "Join as guest",
+    "guestForm": {
+      "displayNameLabel": "Your name",
+      "displayNamePlaceholder": "How should we show your name?",
+      "submit": "Join"
+    },
+    "haveAccount": "I have an account",
+    "createAccount": "Create an account",
+    "back": "Back"
   },
   "ToolsPage": {
     "title": "Tools",
@@ -240,69 +273,138 @@
     "reactWithHeart": "React with heart",
     "sendReply": "Send reply"
   },
+  "CreateEventPage": {
+    "goBack": "Go back",
+    "title": "Create an event",
+    "subtitle": "You can add more details — description, cover photo, RSVP deadline — after it's created.",
+    "fields": {
+      "title": "Event title",
+      "eventType": "Event type",
+      "startAt": "Starts",
+      "endAt": "Ends (optional)",
+      "timezone": "Timezone",
+      "locationName": "Location (optional)",
+      "visibility": "Visibility"
+    },
+    "placeholders": {
+      "title": "e.g. Emma & James's Wedding",
+      "locationName": "e.g. Rosewood Estate, Napa Valley"
+    },
+    "eventTypes": {
+      "WEDDING": "Wedding",
+      "BAPTISM": "Baptism",
+      "BIRTHDAY": "Birthday",
+      "CONFERENCE": "Conference"
+    },
+    "visibilities": {
+      "PRIVATE": "Private",
+      "PUBLIC": "Public"
+    },
+    "submit": "Create event"
+  },
   "ManagePage": {
     "title": "Host Dashboard",
-    "eventNameAndDate": "Emma & James · Oct 18, 2025",
     "hostView": "Host View",
+    "newEvent": "New event",
     "tabs": {
       "overview": "Overview",
-      "posts": "Posts",
       "rsvp": "RSVP",
-      "registry": "Registry"
+      "invitations": "Invitations",
+      "settings": "Settings"
     },
     "stats": {
       "totalGuests": {
-        "label": "Total guests",
-        "sub": "{count} RSVPs confirmed"
+        "label": "Members",
+        "sub": "Joined the event"
       },
       "daysToGo": {
         "label": "Days to go",
-        "sub": "October 18, 2025"
+        "sub": "Until the event starts"
       },
-      "registryClaimed": {
-        "label": "Registry claimed",
-        "sub": "${value} reserved"
-      },
-      "wallPosts": {
-        "label": "Wall posts",
-        "sub": "{count} new notifications"
+      "invitations": {
+        "label": "Invitations",
+        "sub": "Sent so far"
       }
     },
     "rsvpBreakdown": {
       "title": "RSVP Breakdown",
-      "confirmed": "Confirmed",
-      "pending": "Pending",
-      "declined": "Declined"
+      "attending": "Attending",
+      "maybe": "Maybe",
+      "declined": "Declined",
+      "noResponse": "No response"
     },
     "seeAll": "See all",
-    "topRequestedSong": "Top Requested Song",
-    "artistAndVotes": "{artist} · {votes} votes",
-    "playlist": "Playlist",
-    "quickActions": "Quick Actions",
-    "quickActionLabels": {
-      "sendRsvpReminder": "Send RSVP reminder",
-      "exportGuestList": "Export guest list",
-      "viewRegistry": "View registry",
-      "manageSeating": "Manage seating"
+    "rsvpSummary": "{total} guests · {attending} attending",
+    "rsvpStatus": {
+      "ATTENDING": "Attending",
+      "DECLINED": "Declined",
+      "MAYBE": "Maybe",
+      "NO_RESPONSE": "No response yet"
     },
-    "recentActivity": "Recent Activity",
-    "postsSummary": "{total} posts on the wall · {flagged} flagged · {hidden} hidden",
-    "postMeta": "Post by user · {likes} likes · {comments} comments",
-    "flagged": "Flagged",
-    "unhide": "Unhide",
-    "hide": "Hide",
-    "unflag": "Unflag",
-    "flag": "Flag",
-    "delete": "Delete",
-    "rsvpSummary": "{total} total invitations · {attending} guests attending",
-    "diet": "Diet: {dietary}",
-    "remind": "Remind",
-    "itemsReserved": "Items reserved",
-    "totalValue": "Total value",
-    "priceAndCategory": "${price} · {category}",
-    "reservedBy": "Reserved by {name}",
-    "reserved": "Reserved",
-    "available": "Available"
+    "noGuestsYet": "No guests have joined yet — share an invite to get started.",
+    "invitationsCard": {
+      "title": "Invitations",
+      "summary": "{count} invitations sent"
+    },
+    "invitations": {
+      "empty": "No invitations yet. Create one to generate a shareable link.",
+      "claimed": "Claimed",
+      "unclaimed": "Unclaimed",
+      "maxGuests": "Up to {count} guests",
+      "copyLink": "Copy link",
+      "copied": "Copied!",
+      "edit": "Edit",
+      "save": "Save",
+      "revoke": "Revoke",
+      "confirmRevoke": "Confirm revoke",
+      "create": {
+        "cta": "New invitation",
+        "title": "New invitation",
+        "cancel": "Cancel",
+        "submit": "Create invitation"
+      },
+      "fields": {
+        "inviteCode": "Invite code",
+        "maxGuests": "Max guests",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "email": "Email"
+      },
+      "placeholders": {
+        "inviteCode": "e.g. TABLE-7"
+      }
+    },
+    "settings": {
+      "title": "Event details",
+      "subtitle": "These details show up on your invite page and event feed.",
+      "fields": {
+        "title": "Event title",
+        "subtitle": "Subtitle",
+        "description": "Description",
+        "locationName": "Location",
+        "locationAddress": "Address",
+        "mapsUrl": "Maps link",
+        "rsvpDeadline": "RSVP deadline",
+        "startAt": "Starts",
+        "endAt": "Ends"
+      },
+      "placeholders": {
+        "subtitle": "e.g. Join us for an evening to remember",
+        "description": "Tell your guests a little more about the celebration...",
+        "locationAddress": "e.g. 1842 Silverado Trail, Napa, CA 94558",
+        "mapsUrl": "https://maps.google.com/..."
+      },
+      "coverPhoto": {
+        "label": "Cover photo",
+        "upload": "Add cover photo",
+        "change": "Change photo",
+        "remove": "Remove",
+        "uploading": "Uploading…",
+        "formats": "JPEG, PNG, HEIC up to 10 MB"
+      },
+      "save": "Save changes",
+      "saved": "Saved"
+    }
   },
   "SchedulePage": {
     "backToTools": "Back to tools",

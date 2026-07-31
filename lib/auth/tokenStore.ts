@@ -17,6 +17,7 @@ interface AuthState {
   userId: string | null;
   email: string | null;
   role: PlatformRole | null;
+  displayName: string | null
 }
 
 let state: AuthState = {
@@ -24,6 +25,7 @@ let state: AuthState = {
   userId: null,
   email: null,
   role: null,
+  displayName: null
 };
 
 type Listener = (state: AuthState) => void;
@@ -42,12 +44,13 @@ export function getAuthState(): AuthState {
   return state;
 }
 
-export function setSession(input: { accessToken: string; userId: string; email: string | null; role: PlatformRole }) {
+export function setSession(input: { accessToken: string; userId: string; email: string | null; role: PlatformRole, displayName:string }) {
   state = {
     accessToken: input.accessToken,
     userId: input.userId,
     email: input.email,
     role: input.role,
+    displayName: input.displayName,
   };
   emit();
 }
@@ -58,7 +61,7 @@ export function setAccessToken(accessToken: string) {
 }
 
 export function clearSession() {
-  state = { accessToken: null, userId: null, email: null, role: null };
+  state = { accessToken: null, userId: null, email: null, role: null, displayName: null };
   if (typeof window !== "undefined") {
     window.sessionStorage.removeItem(REFRESH_TOKEN_KEY);
     window.sessionStorage.removeItem(INVITE_TOKEN_KEY);

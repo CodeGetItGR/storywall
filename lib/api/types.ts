@@ -40,6 +40,7 @@ export interface AuthResponseDto {
   userId: string;
   email: string | null;
   role: PlatformRole;
+  displayName: string;
 }
 
 export interface RegisterRequestDto {
@@ -62,6 +63,7 @@ export interface LogoutRequestDto {
 
 export interface GuestLoginRequestDto {
   inviteToken: string;
+  displayName: string;
 }
 
 // --- §4 Users, Me, Sessions, Notifications ---
@@ -272,6 +274,24 @@ export interface EventInvitationResponseDto {
   expiresAt: string | null;
   usedAt: string | null;
   createdAt: string;
+}
+
+// GET /api/event-invitations/{inviteToken}/preview — public, unauthenticated.
+// Powers the per-event invite onboarding page; expired/alreadyUsed are not
+// errors, they're states to render (a used single-use slot doesn't imply the
+// current visitor is the one who used it).
+export interface EventInvitationPreviewDto {
+  inviteToken: string;
+  eventId: string;
+  eventTitle: string;
+  eventSubtitle: string | null;
+  eventDescription: string | null;
+  coverMediaId: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  expired: boolean;
+  alreadyUsed: boolean;
 }
 
 export interface EventInvitationPatchDto {

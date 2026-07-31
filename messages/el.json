@@ -66,44 +66,77 @@
     "yes": "Ναι",
     "no": "Όχι"
   },
-  "OnboardingPage": {
-    "heroImageAlt": "Έμμα και Τζέιμς — αρραβωνιασμένο ζευγάρι το ηλιοβασίλεμα σε αμπελώνα",
-    "coupleNames": "Έμμα & Τζέιμς",
-    "eventDateAndVenue": "18 Οκτωβρίου 2025 · Rosewood Estate, Napa Valley",
-    "titles": {
-      "login": "Καλώς ήρθατε ξανά",
-      "register": "Δημιουργία λογαριασμού",
-      "invite": "Εισαγωγή κωδικού πρόσκλησης"
-    },
-    "subtitles": {
-      "login": "Συνδεθείτε για να συμμετάσχετε στον εορτασμό.",
-      "register": "Γίνετε μέλος του τοίχου του γάμου και μοιραστείτε την αγάπη.",
-      "invite": "Έχετε προσκληθεί — εισαγάγετε τον κωδικό σας για να ξεκινήσετε."
-    },
-    "tabs": {
-      "login": "Σύνδεση",
-      "register": "Εγγραφή",
-      "invite": "Πρόσκληση"
-    },
+  "LoginPage": {
+    "title": "Καλώς ήρθατε ξανά",
+    "subtitle": "Συνδεθείτε για να συμμετάσχετε στον εορτασμό.",
     "fields": {
-      "fullName": "Ονοματεπώνυμο",
       "email": "Email",
-      "password": "Κωδικός πρόσβασης",
-      "inviteLinkOrToken": "Σύνδεσμος ή κωδικός πρόσκλησης"
+      "password": "Κωδικός πρόσβασης"
     },
     "placeholders": {
-      "fullName": "Το ονοματεπώνυμό σας",
-      "email": "you@example.com",
-      "inviteLinkOrToken": "Επικολλήστε τον σύνδεσμο ή τον κωδικό πρόσκλησης"
+      "email": "you@example.com"
     },
     "showPassword": "Εμφάνιση κωδικού",
     "hidePassword": "Απόκρυψη κωδικού",
-    "submit": {
-      "login": "Σύνδεση",
-      "register": "Δημιουργία Λογαριασμού",
-      "invite": "Συμμετοχή στον Γάμο"
+    "submit": "Σύνδεση",
+    "disclaimer": "Συμμετέχοντας, συμφωνείτε να μοιραστείτε στιγμές από την ξεχωριστή ημέρα των Έμμα & Τζέιμς.",
+    "noAccount": "Δεν έχετε λογαριασμό;",
+    "createAccountLink": "Δημιουργήστε έναν",
+    "expiredInvite": "Αυτή η πρόσκληση έχει λήξει. Ζητήστε από τον διοργανωτή έναν νέο σύνδεσμο πρόσκλησης."
+  },
+  "RegisterPage": {
+    "title": "Δημιουργία λογαριασμού",
+    "subtitle": "Γίνετε μέλος του τοίχου του γάμου και μοιραστείτε την αγάπη.",
+    "fields": {
+      "fullName": "Ονοματεπώνυμο",
+      "email": "Email",
+      "password": "Κωδικός πρόσβασης"
     },
-    "disclaimer": "Συμμετέχοντας, συμφωνείτε να μοιραστείτε στιγμές από την ξεχωριστή ημέρα των Έμμα & Τζέιμς."
+    "placeholders": {
+      "fullName": "Το ονοματεπώνυμό σας",
+      "email": "you@example.com"
+    },
+    "showPassword": "Εμφάνιση κωδικού",
+    "hidePassword": "Απόκρυψη κωδικού",
+    "submit": "Δημιουργία Λογαριασμού",
+    "disclaimer": "Συμμετέχοντας, συμφωνείτε να μοιραστείτε στιγμές από την ξεχωριστή ημέρα των Έμμα & Τζέιμς.",
+    "haveAccount": "Έχετε ήδη λογαριασμό;",
+    "signInLink": "Σύνδεση",
+    "expiredInvite": "Αυτή η πρόσκληση έχει λήξει. Ζητήστε από τον διοργανωτή έναν νέο σύνδεσμο πρόσκλησης."
+  },
+  "WelcomePage": {
+    "title": "Ας ξεκινήσουμε",
+    "subtitle": "Δημιουργήστε τη δική σας εκδήλωση ή συμμετέχετε σε μια στην οποία έχετε προσκληθεί.",
+    "createEventCta": "Δημιουργία εκδήλωσης",
+    "or": "ή",
+    "haveInviteLabel": "Έχετε σύνδεσμο ή κωδικό πρόσκλησης;",
+    "inviteInputPlaceholder": "Επικολλήστε τον σύνδεσμο ή τον κωδικό πρόσκλησης",
+    "goButton": "Συνέχεια"
+  },
+  "InviteOnboardingPage": {
+    "loading": "Φόρτωση της πρόσκλησής σας…",
+    "invalidInvite": {
+      "title": "Η πρόσκληση δεν βρέθηκε",
+      "description": "Αυτός ο σύνδεσμος πρόσκλησης δεν φαίνεται σωστός. Ελέγξτε τον σύνδεσμο ή τον κωδικό QR και δοκιμάστε ξανά."
+    },
+    "expiredInvite": {
+      "title": "Αυτή η πρόσκληση έχει λήξει",
+      "description": "Ζητήστε από τον διοργανωτή να σας στείλει έναν νέο σύνδεσμο πρόσκλησης."
+    },
+    "alreadyUsedInvite": {
+      "title": "Αυτή η πρόσκληση έχει ήδη χρησιμοποιηθεί",
+      "description": "Αν ήσασταν εσείς, συνδεθείτε παρακάτω για να επιστρέψετε στον τοίχο."
+    },
+    "defaultHeroImageAlt": "Φωτογραφία εξωφύλλου εκδήλωσης",
+    "joinAsGuest": "Συμμετοχή ως καλεσμένος/η",
+    "guestForm": {
+      "displayNameLabel": "Το όνομά σας",
+      "displayNamePlaceholder": "Πώς θέλετε να εμφανίζεται το όνομά σας;",
+      "submit": "Συμμετοχή"
+    },
+    "haveAccount": "Έχω ήδη λογαριασμό",
+    "createAccount": "Δημιουργία λογαριασμού",
+    "back": "Πίσω"
   },
   "ToolsPage": {
     "title": "Εργαλεία",
@@ -240,69 +273,138 @@
     "reactWithHeart": "Αντίδραση με καρδιά",
     "sendReply": "Αποστολή απάντησης"
   },
+  "CreateEventPage": {
+    "goBack": "Πίσω",
+    "title": "Δημιουργία εκδήλωσης",
+    "subtitle": "Μπορείτε να προσθέσετε περισσότερες λεπτομέρειες — περιγραφή, εξώφυλλο, προθεσμία RSVP — μετά τη δημιουργία.",
+    "fields": {
+      "title": "Τίτλος εκδήλωσης",
+      "eventType": "Τύπος εκδήλωσης",
+      "startAt": "Έναρξη",
+      "endAt": "Λήξη (προαιρετικό)",
+      "timezone": "Ζώνη ώρας",
+      "locationName": "Τοποθεσία (προαιρετικό)",
+      "visibility": "Ορατότητα"
+    },
+    "placeholders": {
+      "title": "π.χ. Γάμος Έμμα & Τζέιμς",
+      "locationName": "π.χ. Rosewood Estate, Napa Valley"
+    },
+    "eventTypes": {
+      "WEDDING": "Γάμος",
+      "BAPTISM": "Βάφτιση",
+      "BIRTHDAY": "Γενέθλια",
+      "CONFERENCE": "Συνέδριο"
+    },
+    "visibilities": {
+      "PRIVATE": "Ιδιωτικό",
+      "PUBLIC": "Δημόσιο"
+    },
+    "submit": "Δημιουργία εκδήλωσης"
+  },
   "ManagePage": {
-    "title": "Πίνακας Διαχειριστή",
-    "eventNameAndDate": "Έμμα & Τζέιμς · 18 Οκτ 2025",
+    "title": "Πίνακας Διοργανωτή",
     "hostView": "Προβολή Διοργανωτή",
+    "newEvent": "Νέα εκδήλωση",
     "tabs": {
       "overview": "Επισκόπηση",
-      "posts": "Αναρτήσεις",
       "rsvp": "RSVP",
-      "registry": "Λίστα Δώρων"
+      "invitations": "Προσκλήσεις",
+      "settings": "Ρυθμίσεις"
     },
     "stats": {
       "totalGuests": {
-        "label": "Σύνολο καλεσμένων",
-        "sub": "{count} επιβεβαιωμένα RSVP"
+        "label": "Μέλη",
+        "sub": "Συμμετέχουν στην εκδήλωση"
       },
       "daysToGo": {
         "label": "Ημέρες που απομένουν",
-        "sub": "18 Οκτωβρίου 2025"
+        "sub": "Μέχρι την έναρξη"
       },
-      "registryClaimed": {
-        "label": "Δώρα διεκδικημένα",
-        "sub": "${value} δεσμευμένα"
-      },
-      "wallPosts": {
-        "label": "Αναρτήσεις τοίχου",
-        "sub": "{count} νέες ειδοποιήσεις"
+      "invitations": {
+        "label": "Προσκλήσεις",
+        "sub": "Έχουν σταλεί"
       }
     },
     "rsvpBreakdown": {
       "title": "Ανάλυση RSVP",
-      "confirmed": "Επιβεβαιωμένα",
-      "pending": "Σε αναμονή",
-      "declined": "Απορριφθέντα"
+      "attending": "Θα παρευρεθούν",
+      "maybe": "Ίσως",
+      "declined": "Απορριφθέντα",
+      "noResponse": "Χωρίς απάντηση"
     },
     "seeAll": "Δείτε όλα",
-    "topRequestedSong": "Πιο Δημοφιλές Τραγούδι",
-    "artistAndVotes": "{artist} · {votes} ψήφοι",
-    "playlist": "Λίστα Τραγουδιών",
-    "quickActions": "Γρήγορες Ενέργειες",
-    "quickActionLabels": {
-      "sendRsvpReminder": "Αποστολή υπενθύμισης RSVP",
-      "exportGuestList": "Εξαγωγή λίστας καλεσμένων",
-      "viewRegistry": "Προβολή λίστας δώρων",
-      "manageSeating": "Διαχείριση καθισμάτων"
+    "rsvpSummary": "{total} καλεσμένοι · {attending} θα παρευρεθούν",
+    "rsvpStatus": {
+      "ATTENDING": "Θα παρευρεθεί",
+      "DECLINED": "Απέρριψε",
+      "MAYBE": "Ίσως",
+      "NO_RESPONSE": "Χωρίς απάντηση ακόμα"
     },
-    "recentActivity": "Πρόσφατη Δραστηριότητα",
-    "postsSummary": "{total} αναρτήσεις στον τοίχο · {flagged} επισημασμένες · {hidden} κρυμμένες",
-    "postMeta": "Ανάρτηση από χρήστη · {likes} μου αρέσει · {comments} σχόλια",
-    "flagged": "Επισημασμένο",
-    "unhide": "Εμφάνιση",
-    "hide": "Απόκρυψη",
-    "unflag": "Αναίρεση επισήμανσης",
-    "flag": "Επισήμανση",
-    "delete": "Διαγραφή",
-    "rsvpSummary": "{total} συνολικές προσκλήσεις · {attending} καλεσμένοι θα παρευρεθούν",
-    "diet": "Δίαιτα: {dietary}",
-    "remind": "Υπενθύμιση",
-    "itemsReserved": "Δεσμευμένα είδη",
-    "totalValue": "Συνολική αξία",
-    "priceAndCategory": "${price} · {category}",
-    "reservedBy": "Δεσμεύτηκε από {name}",
-    "reserved": "Δεσμευμένο",
-    "available": "Διαθέσιμο"
+    "noGuestsYet": "Δεν έχουν συμμετάσχει καλεσμένοι ακόμα — μοιραστείτε μια πρόσκληση για να ξεκινήσετε.",
+    "invitationsCard": {
+      "title": "Προσκλήσεις",
+      "summary": "{count} προσκλήσεις έχουν σταλεί"
+    },
+    "invitations": {
+      "empty": "Δεν υπάρχουν προσκλήσεις ακόμα. Δημιουργήστε μία για να πάρετε έναν σύνδεσμο κοινοποίησης.",
+      "claimed": "Χρησιμοποιήθηκε",
+      "unclaimed": "Διαθέσιμη",
+      "maxGuests": "Έως {count} καλεσμένους",
+      "copyLink": "Αντιγραφή συνδέσμου",
+      "copied": "Αντιγράφηκε!",
+      "edit": "Επεξεργασία",
+      "save": "Αποθήκευση",
+      "revoke": "Ανάκληση",
+      "confirmRevoke": "Επιβεβαίωση ανάκλησης",
+      "create": {
+        "cta": "Νέα πρόσκληση",
+        "title": "Νέα πρόσκληση",
+        "cancel": "Ακύρωση",
+        "submit": "Δημιουργία πρόσκλησης"
+      },
+      "fields": {
+        "inviteCode": "Κωδικός πρόσκλησης",
+        "maxGuests": "Μέγιστοι καλεσμένοι",
+        "firstName": "Όνομα",
+        "lastName": "Επώνυμο",
+        "email": "Email"
+      },
+      "placeholders": {
+        "inviteCode": "π.χ. TABLE-7"
+      }
+    },
+    "settings": {
+      "title": "Λεπτομέρειες εκδήλωσης",
+      "subtitle": "Αυτές οι λεπτομέρειες εμφανίζονται στη σελίδα πρόσκλησης και στη ροή της εκδήλωσης.",
+      "fields": {
+        "title": "Τίτλος εκδήλωσης",
+        "subtitle": "Υπότιτλος",
+        "description": "Περιγραφή",
+        "locationName": "Τοποθεσία",
+        "locationAddress": "Διεύθυνση",
+        "mapsUrl": "Σύνδεσμος χάρτη",
+        "rsvpDeadline": "Προθεσμία RSVP",
+        "startAt": "Έναρξη",
+        "endAt": "Λήξη"
+      },
+      "placeholders": {
+        "subtitle": "π.χ. Ελάτε να γιορτάσουμε μαζί ένα βράδυ που θα θυμόμαστε",
+        "description": "Πείτε λίγα περισσότερα στους καλεσμένους σας για τον εορτασμό...",
+        "locationAddress": "π.χ. 1842 Silverado Trail, Napa, CA 94558",
+        "mapsUrl": "https://maps.google.com/..."
+      },
+      "coverPhoto": {
+        "label": "Φωτογραφία εξωφύλλου",
+        "upload": "Προσθήκη φωτογραφίας εξωφύλλου",
+        "change": "Αλλαγή φωτογραφίας",
+        "remove": "Αφαίρεση",
+        "uploading": "Μεταφόρτωση…",
+        "formats": "JPEG, PNG, HEIC έως 10 MB"
+      },
+      "save": "Αποθήκευση αλλαγών",
+      "saved": "Αποθηκεύτηκε"
+    }
   },
   "SchedulePage": {
     "backToTools": "Πίσω στα εργαλεία",

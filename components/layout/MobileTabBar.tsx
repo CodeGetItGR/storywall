@@ -8,11 +8,9 @@ import { cn } from '@/lib/utils'
 
 const tabItems = [
   { href: '/feed', icon: Home, key: 'home', isCenter: false },
-  { href: '/tools', icon: Wrench, key: 'tools', isCenter: false },
-  { href: '/new-post', icon: Plus, key: 'post', isCenter: true },
   { href: '/notifications', icon: Bell, key: 'alerts', isCenter: false },
   { href: '/profile', icon: User, key: 'profile', isCenter: false },
-] as const
+]
 
 export function MobileTabBar() {
   const t = useTranslations('MobileTabBar')

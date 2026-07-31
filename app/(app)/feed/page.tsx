@@ -16,7 +16,7 @@ export default function FeedRedirectPage() {
   useEffect(() => {
     if (isLoading) return
     const eventId = activeEvent?.id ?? memberships[0]?.eventId
-    if (eventId) router.replace(`/feed/${eventId}`)
+    router.replace(eventId ? `/feed/${eventId}` : '/welcome')
   }, [isLoading, activeEvent, memberships, router])
 
   return null

@@ -25,9 +25,9 @@ interface AuthContextValue {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isBootstrapping: boolean;
-  register: (input: { email: string; password: string }) => Promise<AuthResponseDto>;
+  register: (input: { email: string; password: string, displayName:string }) => Promise<AuthResponseDto>;
   login: (input: { email: string; password: string }) => Promise<AuthResponseDto>;
-  guestLogin: (inviteToken: string) => Promise<AuthResponseDto>;
+  guestLogin: (input: { inviteToken: string; displayName: string }) => Promise<AuthResponseDto>;
   logout: () => Promise<void>;
 }
 
@@ -93,8 +93,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       applyAuthResponse(auth);
       return auth;
     },
-    guestLogin: async (inviteToken) => {
-      const auth = await api.post<AuthResponseDto>(endpoints.auth.guestLogin, { inviteToken });
+    guestLogin: async ({ inviteToken, displayName }) => {
+      const auth = await api.post<AuthResponseDto>(endpoints.auth.guestLogin, { inviteToken, displayName });
       applyAuthResponse(auth);
       setStoredInviteToken(inviteToken);
       return auth;
