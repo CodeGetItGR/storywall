@@ -1,7 +1,8 @@
 'use client'
 
-import {use, useEffect, useMemo, useState} from 'react'
-import {StoriesRow, PostCard, Header, Banner, EventInfo, EventNotFound, RsvpPrompt} from '@/components/feed'
+import {use, useEffect, useMemo, useRef, useState} from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import {StoriesRow, PostCard, Header, Banner, EventInfo, EventNotFound, RsvpPrompt, ComposerCard} from '@/components/feed'
 import { posts as initialPosts } from '@/lib/mock-data'
 import { useEvent } from '@/hooks/useEvent'
 import { useEventSwitcher } from '@/providers/EventProvider'
@@ -12,6 +13,10 @@ import {useEventPosts} from "@/hooks";
 export default function FeedPage({ params }: { params: Promise<{ eventId: string }> }) {
     const { eventId } = use(params)
     const [posts, setPosts] = useState(initialPosts)
+    const router = useRouter()
+    const searchParams = useSearchParams()
+    const shouldCompose = searchParams.get('compose') === '1'
+    const composerRef = useRef<HTMLDivElement>(null)
 
     const { data: event, error } = useEvent(eventId)
     const { setActiveEventId } = useEventSwitcher()
@@ -25,6 +30,14 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
     useEffect(() => {
         if (event) setActiveEventId(eventId)
     }, [event, eventId, setActiveEventId])
+
+    // ?compose=1 (from the nav rail's "New Post" CTA) scrolls to and expands
+    // the composer, then strips itself so a refresh doesn't re-trigger it.
+    useEffect(() => {
+        if (!shouldCompose) return
+        composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        router.replace(`/feed/${eventId}`)
+    }, [shouldCompose, eventId, router])
 
     const moduleFlags = useMemo<Record<ModuleKeyConvention, boolean>>(()=> event ? Object.fromEntries(
       event.modules.map(({ moduleKey, isEnabled }) => [moduleKey, isEnabled])
@@ -72,6 +85,9 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
         <section className={'mt-5'}>
             {moduleFlags.posts && (
                 <div className="flex flex-col gap-4 px-4 pb-24 lg:pb-10">
+                    <div ref={composerRef}>
+                        <ComposerCard eventId={eventId} autoExpand={shouldCompose} />
+                    </div>
                     {posts.map(post => (
                         <PostCard key={post.id} post={post}/>
                     ))}
