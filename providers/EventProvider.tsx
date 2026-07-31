@@ -21,7 +21,7 @@ const EventContext = createContext<EventContextValue | null>(null);
 export function EventProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
   const { data: memberships = [], isLoading: isLoadingMemberships } = useMyEvents();
-  const [activeEventId, setActiveEventIdState] = useState<string | null>('50cc9135-55ff-4b12-a4c3-83f57cee98d0');
+  const [activeEventId, setActiveEventIdState] = useState<string | null>(null);
 
   // Restore the last-active event once memberships load, defaulting to the
   // first membership when nothing was previously selected (or the stored
