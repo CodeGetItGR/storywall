@@ -15,7 +15,7 @@ export function StoryAvatar({ story, user, isCurrentUser }: StoryAvatarProps) {
 
   return (
     <Link
-      href={isCurrentUser ? '/new-post' : `/story/${story.id}`}
+      href={isCurrentUser ? '/feed?compose=1' : `/story/${story.id}`}
       className="flex flex-col items-center gap-2 shrink-0 group"
       aria-label={isCurrentUser ? t('addYourStory') : t('userStory', { name: user.name })}
     >
