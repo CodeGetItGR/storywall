@@ -72,11 +72,15 @@ export function ComposerCard({ eventId, autoExpand = false }: ComposerCardProps)
     }
   }
 
+  const imagesRef = useRef<PendingImage[]>([])
+  useEffect(() => {
+    imagesRef.current = images
+  }, [images])
+
   useEffect(() => {
     return () => {
-      images.forEach(img => URL.revokeObjectURL(img.previewUrl))
+      imagesRef.current.forEach(img => URL.revokeObjectURL(img.previewUrl))
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function handleFiles(fileList: FileList | null) {
@@ -162,16 +166,13 @@ export function ComposerCard({ eventId, autoExpand = false }: ComposerCardProps)
       failedQueue.set(f.filename, arr)
     })
 
-    let allUploaded = true
-
     setImages(prev =>
       prev.map(img => {
         if (!toUpload.some(u => u.key === img.key)) return img
         const failedMsgs = failedQueue.get(img.file.name)
         if (failedMsgs && failedMsgs.length > 0) {
-          failedMsgs.shift()
-          allUploaded = false
-          return { ...img, status: 'failed' as const }
+          const message = failedMsgs.shift()
+          return { ...img, status: 'failed' as const, error: message }
         }
         const createdList = createdQueue.get(img.file.name)
         const created = createdList?.shift()
@@ -179,7 +180,7 @@ export function ComposerCard({ eventId, autoExpand = false }: ComposerCardProps)
       }),
     )
 
-    if (!allUploaded) return null
+    if (result.failed.length > 0) return null
     return [...alreadyUploaded.map(img => img.mediaId!), ...result.created.map(m => m.id)]
   }
 
