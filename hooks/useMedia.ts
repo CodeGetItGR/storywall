@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api/client";
 import { endpoints } from "@/lib/api/endpoints";
 import { normalizeList } from "@/lib/api/pagination";
-import type { MediaResponseDto, MediaTypeConvention } from "@/lib/api/types";
+import type { MediaBatchUploadResponseDto, MediaResponseDto, MediaTypeConvention } from "@/lib/api/types";
 
 export const mediaKeys = {
   list: (eventId: string) => ["events", eventId, "media"] as const,
@@ -54,6 +54,36 @@ export function useUploadMedia() {
     },
     onSuccess: (media) => {
       queryClient.invalidateQueries({ queryKey: mediaKeys.list(media.eventId) });
+    },
+  });
+}
+
+interface UploadMediaBatchInput {
+  eventId: string;
+  files: File[];
+  mediaType: MediaTypeConvention;
+  uploaderMemberId?: string;
+}
+
+// POST /api/events/{eventId}/media/batch (multipart/form-data, repeated
+// "files" field, 1..10 files, 20MB/file). Always resolves 200 — per-file
+// outcomes are in the response body's `created`/`failed`, not the HTTP
+// status, so check those rather than treating a 200 as "all succeeded".
+export function useUploadMediaBatch() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ eventId, files, mediaType, uploaderMemberId }: UploadMediaBatchInput) => {
+      const formData = new FormData();
+      files.forEach((file) => formData.append("files", file));
+      formData.append("mediaType", mediaType);
+      if (uploaderMemberId) formData.append("uploaderMemberId", uploaderMemberId);
+      return api.postForm<MediaBatchUploadResponseDto>(endpoints.events.mediaBatch(eventId), formData);
+    },
+    onSuccess: (result, { eventId }) => {
+      if (result.created.length > 0) {
+        queryClient.invalidateQueries({ queryKey: mediaKeys.list(eventId) });
+      }
     },
   });
 }

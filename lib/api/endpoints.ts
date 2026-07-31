@@ -42,6 +42,7 @@ export const endpoints = {
     sessions: (eventId: string) => `/api/events/${eventId}/sessions`,
     rsvps: (eventId: string) => `/api/events/${eventId}/rsvps`,
     media: (eventId: string) => `/api/events/${eventId}/media`,
+    mediaBatch: (eventId: string) => `/api/events/${eventId}/media/batch`,
     posts: (eventId: string) => `/api/events/${eventId}/posts`,
     stories: (eventId: string) => `/api/events/${eventId}/stories`,
     playlistSuggestions: (eventId: string) => `/api/events/${eventId}/playlist-suggestions`,

@@ -467,6 +467,17 @@ export interface MediaResponseDto {
   deletedAt: string | null;
 }
 
+export interface MediaBatchFailedItemDto {
+  filename: string;
+  errorCode: string;
+  message: string;
+}
+
+export interface MediaBatchUploadResponseDto {
+  created: MediaResponseDto[];
+  failed: MediaBatchFailedItemDto[];
+}
+
 export interface PostRequestDto {
   eventId: string;
   authorMemberId?: string;
