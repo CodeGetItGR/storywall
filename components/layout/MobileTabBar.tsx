@@ -24,7 +24,7 @@ export function MobileTabBar() {
       {tabItems.map(({ href, icon: Icon, key, isCenter }) => {
         const active =
           pathname === href ||
-          (href !== '/feed' && href !== '/new-post' && pathname.startsWith(href))
+          (href !== '/feed' && pathname.startsWith(href))
 
         if (isCenter) {
           return (
