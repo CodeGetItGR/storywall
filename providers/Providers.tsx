@@ -6,6 +6,7 @@ import { useState } from "react";
 import { ApiError } from "@/lib/api/client";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { EventProvider } from "@/providers/EventProvider";
+import { ModalProvider } from "@/providers/ModalProvider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -27,7 +28,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <EventProvider>{children}</EventProvider>
+        <EventProvider>
+          <ModalProvider>{children}</ModalProvider>
+        </EventProvider>
       </AuthProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
