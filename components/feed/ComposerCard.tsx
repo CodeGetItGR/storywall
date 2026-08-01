@@ -7,6 +7,7 @@ import { ImagePlus, Send, X } from 'lucide-react'
 import { useActiveMember } from '@/providers/EventProvider'
 import { useCreatePost, useUploadMediaBatch } from '@/hooks'
 import Avatar from '@/components/ui/avatar'
+import { initialsFromName } from '@/lib/utils'
 
 const MAX_IMAGES = 10
 const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024
@@ -23,13 +24,6 @@ interface PendingImage {
   status: 'pending' | 'uploading' | 'uploaded' | 'failed'
   mediaId?: string
   error?: string
-}
-
-function initialsFromName(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 0) return '?'
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
 export function ComposerCard({ eventId, autoExpand = false }: ComposerCardProps) {

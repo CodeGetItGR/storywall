@@ -3,20 +3,19 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Heart, MessageCircle, Share2, MoreHorizontal, Bookmark } from 'lucide-react'
+import { Heart, MessageCircle, MoreHorizontal, Pin } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { cn } from '@/lib/utils'
-import { getUser } from '@/lib/mock-data'
-import type { Post } from '@/lib/types'
+import { cn, initialsFromName, avatarColorFromId } from '@/lib/utils'
+import type { PostResponseDto } from '@/lib/api/types'
 import Avatar from '@/components/ui/avatar'
 
 interface PostCardProps {
-  post: Post
+  post: PostResponseDto
   showCommentLink?: boolean
 }
 
 function timeAgoParts(dateStr: string): { unit: 'now' | 'minutes' | 'hours' | 'days'; value: number } {
-  const now = new Date('2025-07-11T12:00:00Z').getTime()
+  const now = Date.now()
   const then = new Date(dateStr).getTime()
   const diff = Math.floor((now - then) / 1000)
   if (diff < 60) return { unit: 'now', value: 0 }
@@ -27,12 +26,13 @@ function timeAgoParts(dateStr: string): { unit: 'now' | 'minutes' | 'hours' | 'd
 
 export function PostCard({ post, showCommentLink = true }: PostCardProps) {
   const t = useTranslations('PostCard')
-  const [liked, setLiked] = useState(post.liked)
-  const [likeCount, setLikeCount] = useState(post.likes)
-  const [saved, setSaved] = useState(false)
+  const [liked, setLiked] = useState(false)
+  const [likeCount, setLikeCount] = useState(post.reactionCount)
 
-  const user = getUser(post.userId)
+  const authorName = post.author?.displayName ?? t('unknownAuthor')
+  const authorSubtitle = post.author?.nickname ?? post.author?.role
   const timeAgo = timeAgoParts(post.createdAt)
+  const media = post.media
 
   function handleLike() {
     if (liked) {
@@ -51,56 +51,81 @@ export function PostCard({ post, showCommentLink = true }: PostCardProps) {
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <Link href={`/profile`} className="flex items-center gap-3 group">
           <Avatar
-            initials={user.initials}
-            color={user.avatarColor}
+            src={post.author?.avatarUrl}
+            initials={initialsFromName(authorName)}
+            color={avatarColorFromId(post.author?.memberId ?? post.id)}
             size="md"
-            alt={user.name}
+            alt={authorName}
           />
           <div>
             <p className="text-sm font-semibold text-ink group-hover:text-primary transition-colors leading-tight">
-              {user.name}
+              {authorName}
             </p>
             <div className="flex items-center gap-1.5">
-              <span className="text-xs text-ink-muted capitalize">{user.role}</span>
-              <span className="text-ink-faint text-xs">·</span>
+              {authorSubtitle && <span className="text-xs text-ink-muted capitalize">{authorSubtitle}</span>}
+              {authorSubtitle && <span className="text-ink-faint text-xs">·</span>}
               <span className="text-xs text-ink-muted">
                 {timeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${timeAgo.unit}`, { count: timeAgo.value })}
               </span>
             </div>
           </div>
         </Link>
-        <button
-          aria-label={t('moreOptions')}
-          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-faint transition-colors"
-        >
-          <MoreHorizontal className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-1">
+          {post.isPinned && (
+            <span
+              className="w-8 h-8 flex items-center justify-center rounded-full text-primary"
+              aria-label={t('pinned')}
+              title={t('pinned')}
+            >
+              <Pin className="w-4 h-4" strokeWidth={1.8} />
+            </span>
+          )}
+          <button
+            aria-label={t('moreOptions')}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-faint transition-colors"
+          >
+            <MoreHorizontal className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Content */}
-      <div className="px-4 pb-3">
-        <p className="text-sm text-ink leading-relaxed">{post.content}</p>
-        {post.tags && post.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-2">
-            {post.tags.map(tag => (
-              <span key={tag} className="text-xs text-primary font-medium hover:underline cursor-pointer">
-                #{tag}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
+      {post.content && (
+        <div className="px-4 pb-3">
+          <p className="text-sm text-ink leading-relaxed">{post.content}</p>
+        </div>
+      )}
 
-      {/* Image */}
-      {post.image && (
+      {/* Media */}
+      {media.length === 1 && (
         <div className="relative w-full aspect-4/3 bg-surface-muted overflow-hidden">
           <Image
-            src={post.image}
-            alt={t('photoBy', { name: user.name })}
+            src={media[0].mediaUrl}
+            alt={t('photoBy', { name: authorName })}
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 680px"
           />
+        </div>
+      )}
+      {media.length > 1 && (
+        <div className="grid grid-cols-2 gap-0.5 bg-surface-muted">
+          {media.slice(0, 4).map((item, i) => (
+            <div key={item.id} className="relative aspect-square overflow-hidden">
+              <Image
+                src={item.mediaUrl}
+                alt={t('photoBy', { name: authorName })}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 50vw, 340px"
+              />
+              {i === 3 && media.length > 4 && (
+                <div className="absolute inset-0 bg-ink/50 flex items-center justify-center text-white text-lg font-semibold">
+                  +{media.length - 4}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
 
@@ -145,28 +170,7 @@ export function PostCard({ post, showCommentLink = true }: PostCardProps) {
               <span className="tabular-nums">{post.commentCount}</span>
             </button>
           )}
-
-          {/* Share */}
-          <button
-            aria-label={t('sharePost')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-ink-muted hover:bg-surface-muted transition-colors"
-          >
-            <Share2 className="w-4 h-4" strokeWidth={1.8} />
-          </button>
         </div>
-
-        {/* Save */}
-        <button
-          onClick={() => setSaved(s => !s)}
-          aria-label={saved ? t('unsavePost') : t('savePost')}
-          aria-pressed={saved}
-          className={cn(
-            'w-8 h-8 flex items-center justify-center rounded-full transition-colors',
-            saved ? 'text-primary bg-primary-light' : 'text-ink-faint hover:bg-surface-muted',
-          )}
-        >
-          <Bookmark className={cn('w-4 h-4', saved ? 'fill-primary' : '')} strokeWidth={saved ? 0 : 1.8} />
-        </button>
       </div>
     </article>
   )

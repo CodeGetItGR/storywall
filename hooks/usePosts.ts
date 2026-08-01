@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api/client";
 import { endpoints } from "@/lib/api/endpoints";
-import { normalizeList } from "@/lib/api/pagination";
+import { normalizeList, type Page } from "@/lib/api/pagination";
 import type { MediaResponseDto, PostRequestDto, PostResponseDto } from "@/lib/api/types";
 
 export const postKeys = {
@@ -10,15 +10,22 @@ export const postKeys = {
   media: (postId: string) => ["posts", postId, "media"] as const,
 };
 
+const POSTS_PAGE_SIZE = 20;
+
 // GET /api/events/{eventId}/posts — any authenticated principal (not
 // scoped to event membership, matching EventController's read convention).
+// Paginated (pinned first, then newest, soft-deleted excluded server-side);
+// author/media/comment+reaction counts are embedded per post, so rendering
+// a feed needs no follow-up requests.
 export function useEventPosts(eventId: string | null) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: postKeys.list(eventId ?? ""),
-    queryFn: async () => {
-      const res = await api.get<PostResponseDto[]>(endpoints.events.posts(eventId!));
-      return normalizeList(res).items;
-    },
+    queryFn: ({ pageParam }) =>
+      api.get<Page<PostResponseDto>>(
+        `${endpoints.events.posts(eventId!)}?page=${pageParam}&size=${POSTS_PAGE_SIZE}`,
+      ),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => (lastPage.number + 1 < lastPage.totalPages ? lastPage.number + 1 : undefined),
     enabled: Boolean(eventId),
   });
 }

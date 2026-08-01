@@ -18,6 +18,9 @@
     "userStory": "Ιστορία του/της {name}",
     "yourStory": "Η ιστορία σας"
   },
+  "FeedPage": {
+    "loadingMore": "Φόρτωση περισσότερων…"
+  },
   "PostCard": {
     "justNow": "μόλις τώρα",
     "timeAgo": {
@@ -32,7 +35,9 @@
     "sharePost": "Κοινοποίηση ανάρτησης",
     "savePost": "Αποθήκευση ανάρτησης",
     "unsavePost": "Κατάργηση αποθήκευσης",
-    "photoBy": "Φωτογραφία από {name}"
+    "photoBy": "Φωτογραφία από {name}",
+    "unknownAuthor": "Άγνωστος",
+    "pinned": "Καρφιτσωμένη"
   },
   "DesktopNavRail": {
     "mainNavigation": "Κύρια πλοήγηση",
@@ -53,8 +58,7 @@
       "home": "Αρχική",
       "tools": "Εργαλεία",
       "post": "Ανάρτηση",
-      "alerts": "Ειδοποιήσεις",
-      "profile": "Προφίλ"
+      "alerts": "Ειδοποιήσεις"
     }
   },
   "ComposerCard": {
@@ -199,27 +203,16 @@
     }
   },
   "ProfilePage": {
-    "goBack": "Πίσω",
-    "settings": "Ρυθμίσεις",
-    "editProfile": "Επεξεργασία Προφίλ",
-    "postBy": "Ανάρτηση από {name}",
-    "roles": {
-      "bride": "Νύφη",
-      "groom": "Γαμπρός",
-      "guest": "Καλεσμένος/η"
+    "yourEvents": "Τα events σου",
+    "eventUnavailable": "Το event δεν είναι διαθέσιμο",
+    "roleFallback": {
+      "host": "Διοργανωτής/τρια",
+      "attendee": "Καλεσμένος/η"
     },
-    "stats": {
-      "posts": "Αναρτήσεις",
-      "followers": "Ακόλουθοι",
-      "following": "Ακολουθεί"
-    },
-    "tabs": {
-      "posts": "Αναρτήσεις",
-      "liked": "Αγαπημένα"
-    },
-    "emptyState": {
-      "posts": "Δεν υπάρχουν αναρτήσεις ακόμα",
-      "liked": "Δεν υπάρχουν αγαπημένες αναρτήσεις ακόμα"
+    "emptyMemberships": {
+      "title": "Δεν υπάρχουν events ακόμα",
+      "body": "Συμμετέχεις σε ένα event με σύνδεσμο πρόσκλησης ή δημιούργησε το δικό σου για να ξεκινήσεις.",
+      "cta": "Ξεκίνα τώρα"
     }
   },
   "NotificationsPage": {

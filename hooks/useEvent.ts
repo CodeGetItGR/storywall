@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api/client";
 import { endpoints } from "@/lib/api/endpoints";
 import { myEventsKeys } from "@/hooks/useMyEvents";
@@ -17,6 +17,20 @@ export function useEvent(eventId: string | null) {
     queryKey: eventKeys.detail(eventId ?? ""),
     queryFn: () => api.get<EventDetailResponseDto>(endpoints.events.byId(eventId!)),
     enabled: Boolean(eventId),
+  });
+}
+
+// Batch variant of useEvent, for screens (like the profile/home page) that
+// need title/cover for every event a user belongs to at once. Shares the
+// same eventKeys.detail cache entries as useEvent, so a membership whose
+// feed the user already visited is served from cache. Order-preserving:
+// result[i] corresponds to eventIds[i].
+export function useEventDetails(eventIds: string[]) {
+  return useQueries({
+    queries: eventIds.map((id) => ({
+      queryKey: eventKeys.detail(id),
+      queryFn: () => api.get<EventDetailResponseDto>(endpoints.events.byId(id)),
+    })),
   });
 }
 

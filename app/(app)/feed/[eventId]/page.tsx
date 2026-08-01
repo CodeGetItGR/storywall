@@ -1,9 +1,9 @@
 'use client'
 
-import {use, useEffect, useMemo, useRef, useState} from 'react'
+import {use, useEffect, useMemo, useRef} from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import {StoriesRow, PostCard, Header, Banner, EventInfo, EventNotFound, RsvpPrompt, ComposerCard} from '@/components/feed'
-import { posts as initialPosts } from '@/lib/mock-data'
 import { useEvent } from '@/hooks/useEvent'
 import { useEventSwitcher } from '@/providers/EventProvider'
 import { ApiError } from '@/lib/api/client'
@@ -12,16 +12,30 @@ import {useEventPosts} from "@/hooks";
 
 export default function FeedPage({ params }: { params: Promise<{ eventId: string }> }) {
     const { eventId } = use(params)
-    const [posts, setPosts] = useState(initialPosts)
+    const t = useTranslations('FeedPage')
     const router = useRouter()
     const searchParams = useSearchParams()
     const shouldCompose = searchParams.get('compose') === '1'
     const composerRef = useRef<HTMLDivElement>(null)
+    const loadMoreRef = useRef<HTMLDivElement>(null)
 
     const { data: event, error } = useEvent(eventId)
     const { setActiveEventId } = useEventSwitcher()
-    const {data, isPending} = useEventPosts(eventId)
-    console.log('data', data)
+    const { data: postPages, fetchNextPage, hasNextPage, isFetchingNextPage } = useEventPosts(eventId)
+    const posts = useMemo(() => postPages?.pages.flatMap(page => page.content) ?? [], [postPages])
+
+    // Auto-load the next page as the sentinel at the bottom of the list
+    // scrolls into view.
+    useEffect(() => {
+        const sentinel = loadMoreRef.current
+        if (!sentinel || !hasNextPage) return
+
+        const observer = new IntersectionObserver(([entry]) => {
+            if (entry.isIntersecting) fetchNextPage()
+        })
+        observer.observe(sentinel)
+        return () => observer.disconnect()
+    }, [hasNextPage, fetchNextPage, posts.length])
 
 
     // Deep links (a shared invite, browser history, a bookmark) should make
@@ -91,6 +105,10 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
                     {posts.map(post => (
                         <PostCard key={post.id} post={post}/>
                     ))}
+                    <div ref={loadMoreRef} className="h-1" />
+                    {isFetchingNextPage && (
+                        <p className="text-center text-sm text-ink-muted py-2">{t('loadingMore')}</p>
+                    )}
                 </div>
             )}
         </section>

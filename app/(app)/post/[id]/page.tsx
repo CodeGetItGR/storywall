@@ -9,6 +9,57 @@ import Avatar from '@/components/ui/avatar'
 import {PostCard} from '@/components/feed/PostCard'
 import { cn } from '@/lib/utils'
 import type { Comment } from '@/lib/types'
+import type { PostResponseDto } from '@/lib/api/types'
+
+// This page is still mock-data-only (comments, users) — only PostCard itself
+// was migrated to the real PostResponseDto shape for the feed. Adapt the
+// mock Post into that shape here rather than threading real data through a
+// page this task doesn't otherwise touch.
+function toPostResponseDto(post: (typeof posts)[number]): PostResponseDto {
+  const author = getUser(post.userId)
+  return {
+    id: post.id,
+    eventId: '',
+    authorMemberId: post.userId,
+    author: {
+      memberId: author.id,
+      displayName: author.name,
+      nickname: null,
+      role: author.role === 'guest' ? 'ATTENDEE' : 'HOST',
+      avatarMediaId: null,
+      avatarUrl: null,
+    },
+    type: post.type === 'photo' ? 'MEDIA' : 'TEXT',
+    content: post.content,
+    isPinned: false,
+    media: post.image
+      ? [
+          {
+            id: `${post.id}-media`,
+            eventId: '',
+            uploaderMemberId: post.userId,
+            storageKey: '',
+            mediaUrl: post.image,
+            originalFilename: '',
+            mimeType: 'image/jpeg',
+            mediaType: 'IMAGE',
+            fileSize: 0,
+            width: null,
+            height: null,
+            durationSeconds: null,
+            metadata: {},
+            createdAt: post.createdAt,
+            deletedAt: null,
+          },
+        ]
+      : [],
+    commentCount: post.commentCount,
+    reactionCount: post.likes,
+    createdAt: post.createdAt,
+    updatedAt: post.createdAt,
+    deletedAt: null,
+  }
+}
 
 function timeAgoParts(dateStr: string): { unit: 'now' | 'minutes' | 'hours' | 'days'; value: number } {
   const now = new Date('2025-07-11T12:00:00Z').getTime()
@@ -73,7 +124,7 @@ export default function PostPage({ params }: { params: Promise<{ id: string }> }
 
       {/* The post — no comment link */}
       <div className="px-4 pt-4">
-        <PostCard post={post} showCommentLink={false} />
+        <PostCard post={toPostResponseDto(post)} showCommentLink={false} />
       </div>
 
       {/* Comments section */}

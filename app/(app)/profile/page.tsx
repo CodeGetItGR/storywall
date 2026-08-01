@@ -1,147 +1,103 @@
 'use client'
 
-import { useState } from 'react'
-import Image from 'next/image'
-import { ArrowLeft, Settings, Grid3x3, Heart } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { CalendarHeart } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { posts, users, CURRENT_USER_ID, getUser } from '@/lib/mock-data'
+import { useAuth } from '@/hooks/useAuth'
+import { useEventDetails } from '@/hooks/useEvent'
+import { useActiveMember, useEventContextLoading, useMyMemberships } from '@/providers/EventProvider'
+import { EventListItem } from '@/components/profile/EventListItem'
 import Avatar from '@/components/ui/avatar'
-import { cn } from '@/lib/utils'
 
-type ProfileTab = 'posts' | 'liked'
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return '?'
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
 
 export default function ProfilePage() {
   const t = useTranslations('ProfilePage')
-  const router = useRouter()
-  const user = getUser(CURRENT_USER_ID)
-  const [tab, setTab] = useState<ProfileTab>('posts')
+  const { user } = useAuth()
+  const memberships = useMyMemberships()
+  const activeMember = useActiveMember()
+  const isLoading = useEventContextLoading()
+  const eventQueries = useEventDetails(memberships.map(m => m.eventId))
 
-  const userPosts = posts.filter(p => p.userId === user.id)
-  const likedPosts = posts.filter(p => p.liked)
-
-  const displayPosts = tab === 'posts' ? userPosts : likedPosts
-
-  const roleLabel: Record<string, string> = {
-    bride: t('roles.bride'),
-    groom: t('roles.groom'),
-    guest: t('roles.guest'),
-  }
-
-  return (
-    <div className="max-w-2xl mx-auto pb-24 lg:pb-8">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-4">
-        <button
-          onClick={() => router.back()}
-          aria-label={t('goBack')}
-          className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <h1 className="text-base font-bold text-ink">{user.username}</h1>
-        <button
-          aria-label={t('settings')}
-          className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
-        >
-          <Settings className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* Profile info */}
-      <div className="px-4 pb-6">
-        <div className="flex items-start gap-5 mb-5">
-          <Avatar initials={user.initials} color={user.avatarColor} size="2xl" alt={user.name} />
-          <div className="flex-1 pt-1">
-            <h2 className="text-xl font-bold text-ink leading-tight">{user.name}</h2>
-            <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full bg-primary-light text-primary-dark text-xs font-semibold capitalize">
-              {roleLabel[user.role] ?? user.role}
-            </span>
-            <p className="text-sm text-ink-muted mt-2 leading-relaxed">{user.bio}</p>
-
-            {/* Stats */}
-            <div className="flex gap-5 mt-3">
-              <div className="text-center">
-                <p className="text-base font-bold text-ink tabular-nums">{user.postCount}</p>
-                <p className="text-xs text-ink-muted">{t('stats.posts')}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-base font-bold text-ink tabular-nums">{user.followers}</p>
-                <p className="text-xs text-ink-muted">{t('stats.followers')}</p>
-              </div>
-              <div className="text-center">
-                <p className="text-base font-bold text-ink tabular-nums">{user.following}</p>
-                <p className="text-xs text-ink-muted">{t('stats.following')}</p>
-              </div>
-            </div>
+  if (isLoading) {
+    return (
+      <div className="max-w-2xl mx-auto pb-24 lg:pb-8 px-4 pt-6">
+        <div className="bg-card rounded-2xl p-4 flex items-center gap-4">
+          <div className="w-14 h-14 rounded-full bg-surface-muted animate-pulse" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 w-32 bg-surface-muted rounded animate-pulse" />
+            <div className="h-3 w-44 bg-surface-muted rounded animate-pulse" />
           </div>
         </div>
-
-        {/* Edit profile button */}
-        <button className="w-full py-2 rounded-full border border-border text-sm font-medium text-ink-muted hover:bg-surface-muted transition-colors">
-          {t('editProfile')}
-        </button>
-      </div>
-
-      {/* Tabs */}
-      <div className="border-y border-border flex">
-        <button
-          onClick={() => setTab('posts')}
-          className={cn(
-            'flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors',
-            tab === 'posts' ? 'text-ink border-b-2 border-ink' : 'text-ink-faint hover:text-ink-muted',
-          )}
-        >
-          <Grid3x3 className="w-4 h-4" strokeWidth={1.8} />
-          {t('tabs.posts')}
-        </button>
-        <button
-          onClick={() => setTab('liked')}
-          className={cn(
-            'flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors',
-            tab === 'liked' ? 'text-ink border-b-2 border-ink' : 'text-ink-faint hover:text-ink-muted',
-          )}
-        >
-          <Heart className="w-4 h-4" strokeWidth={1.8} />
-          {t('tabs.liked')}
-        </button>
-      </div>
-
-      {/* Posts grid */}
-      {displayPosts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center px-4">
-          <div className="w-16 h-16 rounded-full bg-surface-muted flex items-center justify-center mb-4">
-            {tab === 'posts' ? <Grid3x3 className="w-7 h-7 text-ink-faint" /> : <Heart className="w-7 h-7 text-ink-faint" />}
-          </div>
-          <p className="text-sm font-medium text-ink-muted">{tab === 'posts' ? t('emptyState.posts') : t('emptyState.liked')}</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-3 gap-0.5 mt-0.5">
-          {displayPosts.map(post => (
-            <div key={post.id} className="relative aspect-square bg-surface-muted overflow-hidden group cursor-pointer">
-              {post.image ? (
-                <Image
-                  src={post.image}
-                  alt={t('postBy', { name: getUser(post.userId).name })}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  sizes="(max-width: 640px) 33vw, 200px"
-                />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center bg-surface-muted p-3">
-                  <p className="text-xs text-ink-muted line-clamp-4 text-center">{post.content}</p>
-                </div>
-              )}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-white text-xs font-semibold">
-                  <Heart className="w-4 h-4 fill-white" />
-                  {post.likes}
-                </div>
+        <div className="h-3 w-24 bg-surface-muted rounded animate-pulse mt-6 mb-3 ml-1" />
+        <div className="bg-card rounded-2xl divide-y divide-border overflow-hidden">
+          {[0, 1, 2].map(i => (
+            <div key={i} className="flex items-center gap-3 px-4 py-3">
+              <div className="w-10 h-10 rounded-full bg-surface-muted animate-pulse shrink-0" />
+              <div className="flex-1 space-y-1.5">
+                <div className="h-3.5 w-28 bg-surface-muted rounded animate-pulse" />
+                <div className="h-3 w-16 bg-surface-muted rounded animate-pulse" />
               </div>
             </div>
           ))}
         </div>
-      )}
+      </div>
+    )
+  }
+
+  if (memberships.length === 0) {
+    return (
+      <div className="max-w-2xl mx-auto pb-24 lg:pb-8 px-4 pt-6">
+        <div className="bg-card rounded-2xl flex flex-col items-center justify-center text-center py-16 px-6">
+          <div className="w-16 h-16 rounded-full bg-surface-muted flex items-center justify-center mb-4">
+            <CalendarHeart className="w-7 h-7 text-ink-faint" />
+          </div>
+          <h2 className="text-base font-bold text-ink mb-1">{t('emptyMemberships.title')}</h2>
+          <p className="text-sm text-ink-muted max-w-xs leading-relaxed mb-5">{t('emptyMemberships.body')}</p>
+          <Link
+            href="/welcome"
+            className="px-5 py-2 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+          >
+            {t('emptyMemberships.cta')}
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  const featuredMember = activeMember ?? memberships[0]
+
+  return (
+    <div className="max-w-2xl mx-auto pb-24 lg:pb-8 px-4 pt-6">
+      {/* Identity */}
+      <div className="bg-card rounded-2xl p-4 flex items-center gap-4">
+        <Avatar initials={getInitials(featuredMember.displayName)} size="lg" alt={featuredMember.displayName} />
+        <div className="min-w-0">
+          <h1 className="text-base font-bold text-ink truncate leading-tight">{featuredMember.displayName}</h1>
+          {user?.email && <p className="text-sm text-ink-muted truncate mt-0.5">{user.email}</p>}
+        </div>
+      </div>
+
+      {/* Events */}
+      <div className="mt-6">
+        <h2 className="text-xs font-semibold text-ink-faint uppercase tracking-wide px-1 mb-2">{t('yourEvents')}</h2>
+        <div className="bg-card rounded-2xl divide-y divide-border overflow-hidden">
+          {memberships.map((member, i) => (
+            <EventListItem
+              key={member.eventId}
+              eventId={member.eventId}
+              member={member}
+              event={eventQueries[i]?.data}
+              isLoading={eventQueries[i]?.isLoading ?? false}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

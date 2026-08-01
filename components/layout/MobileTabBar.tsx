@@ -3,13 +3,12 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { Home, Wrench, Bell, User, Plus } from 'lucide-react'
+import { Home, Wrench, Bell, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const tabItems = [
-  { href: '/feed', icon: Home, key: 'home', isCenter: false },
+  { href: '/profile', icon: Home, key: 'home', isCenter: false },
   { href: '/notifications', icon: Bell, key: 'alerts', isCenter: false },
-  { href: '/profile', icon: User, key: 'profile', isCenter: false },
 ]
 
 export function MobileTabBar() {
@@ -22,9 +21,7 @@ export function MobileTabBar() {
       className="fixed bottom-0 left-1/2 -translate-x-1/2 h-16 bg-white/90 border-t border-border rounded-t-2xl flex items-center justify-around z-40 lg:hidden px-5 w-9/10"
     >
       {tabItems.map(({ href, icon: Icon, key, isCenter }) => {
-        const active =
-          pathname === href ||
-          (href !== '/feed' && pathname.startsWith(href))
+        const active = pathname === href || pathname.startsWith(href + '/')
 
         if (isCenter) {
           return (

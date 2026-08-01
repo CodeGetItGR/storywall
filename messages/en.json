@@ -18,6 +18,9 @@
     "userStory": "{name}'s story",
     "yourStory": "Your story"
   },
+  "FeedPage": {
+    "loadingMore": "Loading more…"
+  },
   "PostCard": {
     "justNow": "just now",
     "timeAgo": {
@@ -32,7 +35,9 @@
     "sharePost": "Share post",
     "savePost": "Save post",
     "unsavePost": "Unsave post",
-    "photoBy": "Photo by {name}"
+    "photoBy": "Photo by {name}",
+    "unknownAuthor": "Unknown",
+    "pinned": "Pinned"
   },
   "DesktopNavRail": {
     "mainNavigation": "Main navigation",
@@ -53,8 +58,7 @@
       "home": "Home",
       "tools": "Tools",
       "post": "Post",
-      "alerts": "Notifications",
-      "profile": "Profile"
+      "alerts": "Notifications"
     }
   },
   "ComposerCard": {
@@ -199,27 +203,16 @@
     }
   },
   "ProfilePage": {
-    "goBack": "Go back",
-    "settings": "Settings",
-    "editProfile": "Edit Profile",
-    "postBy": "Post by {name}",
-    "roles": {
-      "bride": "Bride",
-      "groom": "Groom",
-      "guest": "Guest"
+    "yourEvents": "Your events",
+    "eventUnavailable": "Event unavailable",
+    "roleFallback": {
+      "host": "Host",
+      "attendee": "Guest"
     },
-    "stats": {
-      "posts": "Posts",
-      "followers": "Followers",
-      "following": "Following"
-    },
-    "tabs": {
-      "posts": "Posts",
-      "liked": "Liked"
-    },
-    "emptyState": {
-      "posts": "No posts yet",
-      "liked": "No liked posts yet"
+    "emptyMemberships": {
+      "title": "No events yet",
+      "body": "Join an event with an invite link, or create your own to get started.",
+      "cta": "Get started"
     }
   },
   "NotificationsPage": {

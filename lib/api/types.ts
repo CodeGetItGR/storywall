@@ -487,13 +487,34 @@ export interface PostRequestDto {
   mediaIds?: string[];
 }
 
+// Embedded on PostResponseDto — null when the post has no author (rare,
+// media-only import) or the authoring member has since left the event
+// (Post.authorMember uses ON DELETE SET NULL, so the post survives but
+// authorship is dropped).
+export interface PostAuthorDto {
+  memberId: string;
+  displayName: string;
+  nickname: string | null;
+  role: EventRole;
+  avatarMediaId: string | null;
+  // Can be null even when avatarMediaId is set — the avatar reference has
+  // no DB foreign-key constraint, so a dangling id resolves to null rather
+  // than erroring. Fall back to a placeholder avatar.
+  avatarUrl: string | null;
+}
+
 export interface PostResponseDto {
   id: string;
   eventId: string;
   authorMemberId: string | null;
+  author: PostAuthorDto | null;
   type: PostType;
   content: string | null;
   isPinned: boolean;
+  // Already ordered by displayOrder and URL-resolved — render as-is.
+  media: MediaResponseDto[];
+  commentCount: number;
+  reactionCount: number;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
