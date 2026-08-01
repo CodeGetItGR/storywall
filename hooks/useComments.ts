@@ -22,22 +22,18 @@ export function usePostComments(postId: string | null) {
 }
 
 // POST /api/comments — event member. `parentCommentId` supports threaded replies.
-export function useCreateComment() {
+// Takes eventId (not carried on CommentRequestDto/CommentResponseDto) so the
+// post's cached commentCount can be refreshed precisely — same pattern as
+// useDeletePost(eventId).
+export function useCreateComment(eventId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (input: CommentRequestDto) => api.post<CommentResponseDto>(endpoints.comments.create, input),
     onSuccess: (comment) => {
       queryClient.invalidateQueries({ queryKey: commentKeys.list(comment.postId) });
-      // Refresh the post's cached commentCount too. We don't have the
-      // post's eventId here (CommentRequestDto doesn't carry it), so
-      // rather than threading it through just for a cache patch, refetch:
-      // the single-post cache directly, and any event's feed list that's
-      // currently mounted (matched by key shape since eventId is unknown).
       queryClient.invalidateQueries({ queryKey: postKeys.detail(comment.postId) });
-      queryClient.invalidateQueries({
-        predicate: (query) => query.queryKey[0] === "events" && query.queryKey[2] === "posts",
-      });
+      queryClient.invalidateQueries({ queryKey: postKeys.list(eventId) });
     },
   });
 }
