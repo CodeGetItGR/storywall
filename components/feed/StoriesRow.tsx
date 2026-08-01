@@ -1,18 +1,61 @@
+'use client'
+
+import { useMemo, useRef, useState } from 'react'
+import type { ChangeEvent } from 'react'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { stories, users, CURRENT_USER_ID, getUser } from '@/lib/mock-data'
-import {StoryAvatar} from './StoryAvatar'
+import { useActiveMember } from '@/providers/EventProvider'
+import { useCreateStory, useEventMembers, useEventStories, useUploadMedia } from '@/hooks'
+import { groupStoriesByAuthor } from '@/lib/stories'
+import { StoryAvatar } from './StoryAvatar'
 
-export function StoriesRow() {
+interface StoriesRowProps {
+  eventId: string
+}
+
+export function StoriesRow({ eventId }: StoriesRowProps) {
   const t = useTranslations('StoriesRow')
-  const currentUser = getUser(CURRENT_USER_ID)
+  const tAvatar = useTranslations('StoryAvatar')
+  const router = useRouter()
+  const activeMember = useActiveMember()
+  const { data: stories = [] } = useEventStories(eventId)
+  const { data: members = [] } = useEventMembers(eventId)
+  const uploadMedia = useUploadMedia()
+  const createStory = useCreateStory()
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const isBusy = uploadMedia.isPending || createStory.isPending
 
-  // Current user's story (or "add story" slot)
-  const currentUserStory = stories.find(s => s.userId === CURRENT_USER_ID)
+  const groups = useMemo(() => groupStoriesByAuthor(stories), [stories])
+  const membersById = useMemo(() => new Map(members.map(m => [m.id, m])), [members])
 
-  // Other users' stories, sorted: unseen first
-  const otherStories = stories
-    .filter(s => s.userId !== CURRENT_USER_ID)
-    .sort((a, b) => Number(a.seen) - Number(b.seen))
+  const ownGroup = activeMember ? groups.find(g => g.authorMemberId === activeMember.id) : undefined
+  const otherGroups = groups.filter(g => g.authorMemberId !== activeMember?.id)
+
+  async function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file || !activeMember) return
+
+    setUploadError(null)
+    try {
+      const media = await uploadMedia.mutateAsync({
+        eventId,
+        file,
+        mediaType: 'IMAGE',
+        uploaderMemberId: activeMember.id,
+      })
+      const story = await createStory.mutateAsync({
+        eventId,
+        authorMemberId: activeMember.id,
+        mediaId: media.id,
+      })
+      router.push(`/story/${story.id}`)
+    } catch {
+      setUploadError(t('uploadFailed'))
+    }
+  }
 
   return (
     <section
@@ -20,26 +63,54 @@ export function StoriesRow() {
       className="flex items-start gap-4 overflow-x-auto no-scrollbar px-4 py-4"
     >
       {/* Current user slot */}
-      <StoryAvatar
-        story={currentUserStory ?? {
-          id: 'new',
-          userId: CURRENT_USER_ID,
-          image: '',
-          seen: false,
-          createdAt: '',
-        }}
-        user={currentUser}
-        isCurrentUser
-      />
+      {ownGroup && activeMember ? (
+        <StoryAvatar group={ownGroup} member={activeMember} isCurrentUser />
+      ) : (
+        <div className="flex flex-col items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={!activeMember || isBusy}
+            aria-label={tAvatar('addYourStory')}
+            className="relative w-15.5 h-15.5 flex items-center justify-center disabled:opacity-60"
+          >
+            <Image
+              src="/assets/StoryAvatar.svg"
+              alt=""
+              className="w-full h-full object-cover rounded-xl"
+              width={150}
+              height={150}
+            />
+          </button>
+          <span className="text-[11px] text-ink-muted font-medium text-center leading-tight max-w-14 truncate">
+            {tAvatar('yourStory')}
+          </span>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={handleFileChange}
+            aria-label={tAvatar('addYourStory')}
+            tabIndex={-1}
+          />
+        </div>
+      )}
+
+      {uploadError && (
+        <p role="alert" className="text-xs text-destructive shrink-0 self-center max-w-32">
+          {uploadError}
+        </p>
+      )}
 
       {/* Divider */}
       <div className="w-px h-14 bg-border self-center shrink-0" aria-hidden="true" />
 
       {/* Other stories */}
-      {otherStories.map(story => {
-        const user = users.find(u => u.id === story.userId)
-        if (!user) return null
-        return <StoryAvatar key={story.id} story={story} user={user} />
+      {otherGroups.map(group => {
+        const member = membersById.get(group.authorMemberId)
+        if (!member) return null
+        return <StoryAvatar key={group.authorMemberId} group={group} member={member} />
       })}
     </section>
   )
