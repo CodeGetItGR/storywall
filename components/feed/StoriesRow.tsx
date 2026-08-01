@@ -91,6 +91,7 @@ export function StoriesRow({ eventId }: StoriesRowProps) {
             accept="image/*"
             className="sr-only"
             onChange={handleFileChange}
+            disabled={!activeMember || isBusy}
             aria-label={tAvatar('addYourStory')}
             tabIndex={-1}
           />
