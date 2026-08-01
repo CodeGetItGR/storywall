@@ -84,7 +84,7 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
       {/* Stories row — sticky */}
         {
             moduleFlags.stories && <section className="top-0 z-20 bg-background/90 backdrop-blur-sm border-b border-border">
-                <StoriesRow/>
+                <StoriesRow eventId={eventId}/>
             </section>
         }
         {/* Event Description */}
