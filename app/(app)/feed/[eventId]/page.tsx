@@ -22,7 +22,10 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
     const loadMoreRef = useRef<HTMLDivElement>(null)
 
     function closeModal() {
-        router.push(pathname)
+        const params = new URLSearchParams(searchParams.toString())
+        params.delete('post')
+        const query = params.toString()
+        router.push(query ? `${pathname}?${query}` : pathname)
     }
 
     const { data: event, error } = useEvent(eventId)
@@ -56,8 +59,11 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
     useEffect(() => {
         if (!shouldCompose || !event) return
         composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        router.replace(`/feed/${eventId}`)
-    }, [shouldCompose, eventId, router, event])
+        const params = new URLSearchParams(searchParams.toString())
+        params.delete('compose')
+        const query = params.toString()
+        router.replace(query ? `/feed/${eventId}?${query}` : `/feed/${eventId}`)
+    }, [shouldCompose, eventId, router, event, searchParams])
 
     const moduleFlags = useMemo<Record<ModuleKeyConvention, boolean>>(()=> event ? Object.fromEntries(
       event.modules.map(({ moduleKey, isEnabled }) => [moduleKey, isEnabled])
@@ -118,6 +124,8 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
                 </div>
             )}
         </section>
+        {/* Deliberately outside moduleFlags.posts — a shared post link should
+            still open even if the posts module is toggled off for this event. */}
         {openPostId && <PostModal postId={openPostId} onClose={closeModal} />}
     </div>
     )
