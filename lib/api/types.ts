@@ -515,6 +515,11 @@ export interface PostResponseDto {
   media: MediaResponseDto[];
   commentCount: number;
   reactionCount: number;
+  // True if the requesting member has any reaction on the post. Always
+  // false immediately after POST /api/posts (a fresh post can't have
+  // reactions yet) and false for a caller who isn't a member of the
+  // post's event — both resolved server-side.
+  likedByCurrentUser: boolean;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
