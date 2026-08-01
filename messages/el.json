@@ -250,7 +250,8 @@
     },
     "commentPlaceholder": "Προσθέστε ένα σχόλιο...",
     "commentTextAriaLabel": "Κείμενο σχολίου",
-    "postComment": "Δημοσίευση σχολίου"
+    "postComment": "Δημοσίευση σχολίου",
+    "commentFailed": "Δεν ήταν δυνατή η δημοσίευση του σχολίου σας. Δοκιμάστε ξανά."
   },
   "StoryPage": {
     "closeStory": "Κλείσιμο ιστορίας",

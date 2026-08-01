@@ -33,6 +33,7 @@ export function PostModal({ postId, onClose }: PostModalProps) {
   const { data: members = [] } = useEventMembers(post?.eventId ?? null)
   const createComment = useCreateComment(post?.eventId ?? '')
   const [commentText, setCommentText] = useState('')
+  const [commentError, setCommentError] = useState<string | null>(null)
 
   const membersById = useMemo(() => new Map(members.map(m => [m.id, m])), [members])
 
@@ -44,14 +45,23 @@ export function PostModal({ postId, onClose }: PostModalProps) {
     return () => window.removeEventListener('keydown', handleKey)
   }, [onClose])
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!commentText.trim() || !post || !activeMember) return
-    createComment.mutate({
-      postId: post.id,
-      authorMemberId: activeMember.id,
-      content: commentText.trim(),
-    })
+
+    setCommentError(null)
+
+    try {
+      await createComment.mutateAsync({
+        postId: post.id,
+        authorMemberId: activeMember.id,
+        content: commentText.trim(),
+      })
+    } catch {
+      setCommentError(t('commentFailed'))
+      return
+    }
+
     setCommentText('')
   }
 
@@ -127,6 +137,8 @@ export function PostModal({ postId, onClose }: PostModalProps) {
               </div>
             </div>
 
+            {commentError && <p className="text-xs text-destructive px-4">{commentError}</p>}
+
             <form
               onSubmit={handleSubmit}
               className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t border-border px-4 py-3 flex items-center gap-3"
@@ -141,7 +153,7 @@ export function PostModal({ postId, onClose }: PostModalProps) {
               />
               <button
                 type="submit"
-                disabled={!commentText.trim() || createComment.isPending}
+                disabled={!commentText.trim() || createComment.isPending || !activeMember}
                 aria-label={t('postComment')}
                 className="text-primary disabled:text-ink-faint transition-colors"
               >

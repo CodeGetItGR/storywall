@@ -250,7 +250,8 @@
     },
     "commentPlaceholder": "Add a comment...",
     "commentTextAriaLabel": "Comment text",
-    "postComment": "Post comment"
+    "postComment": "Post comment",
+    "commentFailed": "Couldn't post your comment. Please try again."
   },
   "StoryPage": {
     "closeStory": "Close story",
