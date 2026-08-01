@@ -47,7 +47,7 @@ export function PostModal() {
 
   return (
     <Modal open={isOpen} onClose={close} size="lg" closeLabel={t('close')} className="min-h-[70vh]">
-      <div className="top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border flex items-center justify-between px-4 py-3 w-full shrink-0">
+      <div className="z-10 bg-background/95 backdrop-blur-sm border-b border-border flex items-center justify-between px-4 py-3 w-full shrink-0">
         <h2 className="text-base font-bold text-ink">{t('title')}</h2>
       </div>
 
@@ -63,13 +63,15 @@ export function PostModal() {
       {post && (
         <section className="w-full grid grid-cols-1 lg:grid-cols-5 flex-1 min-h-0 p-6 overflow-hidden">
           <section className="w-full min-w-0 min-h-0 lg:col-span-3 bg-black rounded-2xl shadow-xl hidden lg:block">
-            <Image
-              src={post.media[0].mediaUrl}
-              alt={tCard('photoBy', { name: post.author?.displayName ?? '' })}
-              className="w-full h-full object-center object-scale-down"
-              width={150}
-              height={150}
-            />
+            {post.media[0] && (
+              <Image
+                src={post.media[0].mediaUrl}
+                alt={tCard('photoBy', { name: post.author?.displayName ?? '' })}
+                className="w-full h-full object-center object-scale-down"
+                width={150}
+                height={150}
+              />
+            )}
           </section>
           <section className="lg:px-4 pt-4 lg:col-span-2 min-w-0 min-h-0 flex flex-col">
             <Modal.Body className={cn('lg:px-4 pt-5 pb-4', { 'flex items-center justify-center': comments.length === 0 })}>
