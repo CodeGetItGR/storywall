@@ -6,6 +6,7 @@ import type { StoryRequestDto, StoryResponseDto } from "@/lib/api/types";
 
 export const storyKeys = {
   list: (eventId: string) => ["events", eventId, "stories"] as const,
+  detail: (id: string) => ["stories", id] as const,
 };
 
 // GET /api/events/{eventId}/stories — event member. `expiresAt` is stored
@@ -19,6 +20,15 @@ export function useEventStories(eventId: string | null) {
       return normalizeList(res).items;
     },
     enabled: Boolean(eventId),
+  });
+}
+
+// GET /api/stories/{id} — event member.
+export function useStory(id: string | null) {
+  return useQuery({
+    queryKey: storyKeys.detail(id ?? ""),
+    queryFn: () => api.get<StoryResponseDto>(endpoints.stories.byId(id!)),
+    enabled: Boolean(id),
   });
 }
 
@@ -41,8 +51,9 @@ export function useDeleteStory(eventId: string) {
 
   return useMutation({
     mutationFn: (id: string) => api.del<void>(endpoints.stories.byId(id)),
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: storyKeys.list(eventId) });
+      queryClient.removeQueries({ queryKey: storyKeys.detail(id) });
     },
   });
 }
