@@ -1,22 +1,20 @@
 'use client'
 
-import React, { useEffect, useMemo, useState} from 'react'
-import { Send, X } from 'lucide-react'
+import React, { useMemo, useState } from 'react'
+import { Send } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { usePost, usePostComments, useCreateComment, useEventMembers } from '@/hooks'
+import { usePost, usePostComments, useCreateComment, useEventMembers, usePostModal } from '@/hooks'
 import { useActiveMember } from '@/providers/EventProvider'
-import { PostCard } from '@/components/feed/PostCard'
+import { Modal } from '@/components/ui/modal'
 import Avatar from '@/components/ui/avatar'
 import { ApiError } from '@/lib/api/client'
-import {initialsFromName, avatarColorFromId, timeAgoParts} from '@/lib/utils'
+import { initialsFromName, avatarColorFromId, timeAgoParts, cn } from '@/lib/utils'
+import Image from 'next/image'
 
-interface PostModalProps {
-  postId: string
-  onClose: () => void
-}
-
-export function PostModal({ postId, onClose }: PostModalProps) {
+export function PostModal() {
   const t = useTranslations('PostModal')
+  const tCard = useTranslations('PostCard')
+  const { postId, isOpen, close } = usePostModal()
   const activeMember = useActiveMember()
   const { data: post, error, isPending } = usePost(postId)
   const { data: comments = [] } = usePostComments(postId)
@@ -26,14 +24,6 @@ export function PostModal({ postId, onClose }: PostModalProps) {
   const [commentError, setCommentError] = useState<string | null>(null)
 
   const membersById = useMemo(() => new Map(members.map(m => [m.id, m])), [members])
-
-  useEffect(() => {
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  }, [onClose])
 
   async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -56,41 +46,35 @@ export function PostModal({ postId, onClose }: PostModalProps) {
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 bg-ink/60 backdrop-blur-sm flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-background rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border flex items-center justify-between px-4 py-3">
-          <h2 className="text-base font-bold text-ink">{t('title')}</h2>
-          <button
-            onClick={onClose}
-            aria-label={t('close')}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+    <Modal open={isOpen} onClose={close} size="lg" closeLabel={t('close')} className="min-h-[70vh]">
+      <div className="z-10 bg-background/95 backdrop-blur-sm border-b border-border flex items-center justify-between px-4 py-3 w-full shrink-0">
+        <h2 className="text-base font-bold text-ink">{t('title')}</h2>
+      </div>
+
+      {isPending && <p className="text-center text-sm text-ink-muted py-16">{t('loading')}</p>}
+
+      {error instanceof ApiError && error.status === 404 && (
+        <div className="flex flex-col items-center justify-center text-center px-6 py-16">
+          <p className="text-base font-semibold text-ink mb-1">{t('notFoundTitle')}</p>
+          <p className="text-sm text-ink-muted">{t('notFoundDescription')}</p>
         </div>
+      )}
 
-        {isPending && <p className="text-center text-sm text-ink-muted py-16">{t('loading')}</p>}
-
-        {error instanceof ApiError && error.status === 404 && (
-          <div className="flex flex-col items-center justify-center text-center px-6 py-16">
-            <p className="text-base font-semibold text-ink mb-1">{t('notFoundTitle')}</p>
-            <p className="text-sm text-ink-muted">{t('notFoundDescription')}</p>
-          </div>
-        )}
-
-        {post && (
-          <>
-            <div className="px-4 pt-4">
-              <PostCard post={post} showCommentLink={false} />
-            </div>
-
-            <div className="px-4 pt-5 pb-4">
+      {post && (
+        <section className="w-full grid grid-cols-1 lg:grid-cols-5 flex-1 min-h-0 p-6 overflow-hidden">
+          <section className="w-full min-w-0 min-h-0 lg:col-span-3 bg-black rounded-2xl shadow-xl hidden lg:block">
+            {post.media[0] && (
+              <Image
+                src={post.media[0].mediaUrl}
+                alt={tCard('photoBy', { name: post.author?.displayName ?? '' })}
+                className="w-full h-full object-center object-scale-down"
+                width={150}
+                height={150}
+              />
+            )}
+          </section>
+          <section className="lg:px-4 pt-4 lg:col-span-2 min-w-0 min-h-0 flex flex-col">
+            <Modal.Body className={cn('lg:px-4 pt-5 pb-4', { 'flex items-center justify-center': comments.length === 0 })}>
               <h3 className="text-sm font-bold text-ink mb-4">
                 {comments.length === 0 ? t('noCommentsYet') : t('commentCount', { count: comments.length })}
               </h3>
@@ -125,34 +109,39 @@ export function PostModal({ postId, onClose }: PostModalProps) {
                   )
                 })}
               </div>
-            </div>
-
-            {commentError && <p className="text-xs text-destructive px-4">{commentError}</p>}
+            </Modal.Body>
 
             <form
               onSubmit={handleSubmit}
-              className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t border-border px-4 py-3 flex items-center gap-3"
+              className="bg-background/95 backdrop-blur-sm border-t border-border px-4 py-3 flex flex-col items-center gap-3 shrink-0"
             >
-              <input
-                type="text"
-                value={commentText}
-                onChange={e => setCommentText(e.target.value)}
-                placeholder={t('commentPlaceholder')}
-                aria-label={t('commentTextAriaLabel')}
-                className="flex-1 bg-surface-muted rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
-              />
-              <button
-                type="submit"
-                disabled={!commentText.trim() || createComment.isPending || !activeMember}
-                aria-label={t('postComment')}
-                className="text-primary disabled:text-ink-faint transition-colors"
-              >
-                <Send className="w-4 h-4" />
-              </button>
+              {commentError && (
+                <p className="text-xs text-destructive px-4">
+                  {commentError}
+                </p>
+              )}
+              <section className="flex gap-3 w-full">
+                <input
+                  type="text"
+                  value={commentText}
+                  onChange={e => setCommentText(e.target.value)}
+                  placeholder={t('commentPlaceholder')}
+                  aria-label={t('commentTextAriaLabel')}
+                  className="relative flex-1 bg-surface-muted rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
+                />
+                <button
+                  type="submit"
+                  disabled={!commentText.trim() || createComment.isPending || !activeMember}
+                  aria-label={t('postComment')}
+                  className="text-primary disabled:text-ink-faint transition-colors"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </section>
             </form>
-          </>
-        )}
-      </div>
-    </div>
+          </section>
+        </section>
+      )}
+    </Modal>
   )
 }

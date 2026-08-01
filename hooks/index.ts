@@ -12,6 +12,7 @@ export * from "./useRsvps";
 export * from "./useMedia";
 export * from "./usePosts";
 export * from "./usePostLike";
+export * from "./usePostModal";
 export * from "./useComments";
 export * from "./useReactions";
 export * from "./useStories";

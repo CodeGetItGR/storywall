@@ -2,11 +2,10 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Heart, MessageCircle, MoreHorizontal, Pin } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import {cn, initialsFromName, avatarColorFromId, timeAgoParts} from '@/lib/utils'
-import { usePostLike } from '@/hooks'
+import { usePostLike, usePostModal } from '@/hooks'
 import type { PostResponseDto } from '@/lib/api/types'
 import Avatar from '@/components/ui/avatar'
 import {useMemo} from "react";
@@ -18,9 +17,7 @@ interface PostCardProps {
 
 export function PostCard({ post, showCommentLink = true }: PostCardProps) {
   const t = useTranslations('PostCard')
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const { open: openPostModal } = usePostModal()
   const { liked, count: likeCount, toggle: handleLike, isPending: isLikePending } = usePostLike(post)
 
   const authorName = post.author?.displayName ?? t('unknownAuthor')
@@ -29,9 +26,7 @@ export function PostCard({ post, showCommentLink = true }: PostCardProps) {
   const media = post.media
 
   function openPost() {
-    const params = new URLSearchParams(searchParams.toString())
-    params.set('post', post.id)
-    router.push(`${pathname}?${params.toString()}`)
+    openPostModal(post.id)
   }
 
   return (

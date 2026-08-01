@@ -17,16 +17,8 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
     const pathname = usePathname()
     const searchParams = useSearchParams()
     const shouldCompose = searchParams.get('compose') === '1'
-    const openPostId = searchParams.get('post')
     const composerRef = useRef<HTMLDivElement>(null)
     const loadMoreRef = useRef<HTMLDivElement>(null)
-
-    function closeModal() {
-        const params = new URLSearchParams(searchParams.toString())
-        params.delete('post')
-        const query = params.toString()
-        router.push(query ? `${pathname}?${query}` : pathname)
-    }
 
     const { data: event, error } = useEvent(eventId)
     const { setActiveEventId } = useEventSwitcher()
@@ -125,8 +117,10 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
             )}
         </section>
         {/* Deliberately outside moduleFlags.posts — a shared post link should
-            still open even if the posts module is toggled off for this event. */}
-        {openPostId && <PostModal postId={openPostId} onClose={closeModal} />}
+            still open even if the posts module is toggled off for this event.
+            PostModal reads its own open state from the `?post=` param via
+            usePostModal(). */}
+        <PostModal />
     </div>
     )
 }
