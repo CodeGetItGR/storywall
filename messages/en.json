@@ -233,19 +233,21 @@
       "description": "We'll let you know when something happens"
     }
   },
-  "PostPage": {
-    "goBack": "Go back",
+  "PostModal": {
     "title": "Post",
+    "close": "Close",
+    "loading": "Loading post…",
+    "notFoundTitle": "Post not found",
+    "notFoundDescription": "This post may have been removed.",
     "noCommentsYet": "No comments yet",
     "commentCount": "{count, plural, one {# Comment} other {# Comments}}",
+    "unknownAuthor": "Unknown",
     "justNow": "just now",
     "timeAgo": {
       "minutes": "{count}m",
       "hours": "{count}h",
       "days": "{count}d"
     },
-    "unlikeComment": "Unlike comment",
-    "likeComment": "Like comment",
     "commentPlaceholder": "Add a comment...",
     "commentTextAriaLabel": "Comment text",
     "postComment": "Post comment"

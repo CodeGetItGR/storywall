@@ -233,19 +233,21 @@
       "description": "Θα σας ενημερώσουμε όταν συμβεί κάτι"
     }
   },
-  "PostPage": {
-    "goBack": "Πίσω",
+  "PostModal": {
     "title": "Ανάρτηση",
+    "close": "Κλείσιμο",
+    "loading": "Φόρτωση ανάρτησης…",
+    "notFoundTitle": "Η ανάρτηση δεν βρέθηκε",
+    "notFoundDescription": "Αυτή η ανάρτηση μπορεί να έχει αφαιρεθεί.",
     "noCommentsYet": "Δεν υπάρχουν σχόλια ακόμα",
-    "commentCount": "{count, plural, one {# Σχόλιο} other {# Σχόλια}}",
+    "commentCount": "{count, plural, one {# σχόλιο} other {# σχόλια}}",
+    "unknownAuthor": "Άγνωστος",
     "justNow": "μόλις τώρα",
     "timeAgo": {
       "minutes": "{count}λ",
       "hours": "{count}ώ",
       "days": "{count}η"
     },
-    "unlikeComment": "Αναίρεση μου αρέσει",
-    "likeComment": "Μου αρέσει",
     "commentPlaceholder": "Προσθέστε ένα σχόλιο...",
     "commentTextAriaLabel": "Κείμενο σχολίου",
     "postComment": "Δημοσίευση σχολίου"
