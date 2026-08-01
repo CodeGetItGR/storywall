@@ -1,9 +1,9 @@
 'use client'
 
 import {use, useEffect, useMemo, useRef} from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import {StoriesRow, PostCard, Header, Banner, EventInfo, EventNotFound, RsvpPrompt, ComposerCard} from '@/components/feed'
+import {StoriesRow, PostCard, PostModal, Header, Banner, EventInfo, EventNotFound, RsvpPrompt, ComposerCard} from '@/components/feed'
 import { useEvent } from '@/hooks/useEvent'
 import { useEventSwitcher } from '@/providers/EventProvider'
 import { ApiError } from '@/lib/api/client'
@@ -14,10 +14,16 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
     const { eventId } = use(params)
     const t = useTranslations('FeedPage')
     const router = useRouter()
+    const pathname = usePathname()
     const searchParams = useSearchParams()
     const shouldCompose = searchParams.get('compose') === '1'
+    const openPostId = searchParams.get('post')
     const composerRef = useRef<HTMLDivElement>(null)
     const loadMoreRef = useRef<HTMLDivElement>(null)
+
+    function closeModal() {
+        router.push(pathname)
+    }
 
     const { data: event, error } = useEvent(eventId)
     const { setActiveEventId } = useEventSwitcher()
@@ -112,6 +118,7 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
                 </div>
             )}
         </section>
+        {openPostId && <PostModal postId={openPostId} onClose={closeModal} />}
     </div>
     )
 }
