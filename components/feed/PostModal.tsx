@@ -71,7 +71,7 @@ export function PostModal() {
               height={150}
             />
           </section>
-          <section className="lg:px-4 pt-4 lg:col-span-2 min-h-0 flex flex-col justify-between">
+          <section className="lg:px-4 pt-4 lg:col-span-2 min-w-0 min-h-0 flex flex-col">
             <Modal.Body className={cn('lg:px-4 pt-5 pb-4', { 'flex items-center justify-center': comments.length === 0 })}>
               <h3 className="text-sm font-bold text-ink mb-4">
                 {comments.length === 0 ? t('noCommentsYet') : t('commentCount', { count: comments.length })}
