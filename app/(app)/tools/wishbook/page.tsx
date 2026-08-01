@@ -1,20 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Heart, Send, BookHeart } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { wishbookEntries, users, CURRENT_USER_ID, getUser } from '@/lib/mock-data'
 import Avatar from '@/components/ui/avatar'
 import type { WishbookEntry } from '@/lib/types'
-
-function timeAgoParts(dateStr: string): { unit: 'hours' | 'days'; value: number } {
-  const now = new Date('2025-07-11T12:00:00Z').getTime()
-  const then = new Date(dateStr).getTime()
-  const diff = Math.floor((now - then) / 1000)
-  if (diff < 86400) return { unit: 'hours', value: Math.floor(diff / 3600) }
-  return { unit: 'days', value: Math.floor(diff / 86400) }
-}
+import {timeAgoParts} from "@/lib/utils";
 
 export default function WishbookPage() {
   const t = useTranslations('WishbookPage')
@@ -33,7 +26,7 @@ export default function WishbookPage() {
     })
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!message.trim()) return
     const newEntry: WishbookEntry = {

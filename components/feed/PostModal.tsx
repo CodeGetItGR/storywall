@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import React, { useEffect, useMemo, useState} from 'react'
 import { Send, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { usePost, usePostComments, useCreateComment, useEventMembers } from '@/hooks'
@@ -8,21 +8,11 @@ import { useActiveMember } from '@/providers/EventProvider'
 import { PostCard } from '@/components/feed/PostCard'
 import Avatar from '@/components/ui/avatar'
 import { ApiError } from '@/lib/api/client'
-import { initialsFromName, avatarColorFromId } from '@/lib/utils'
+import {initialsFromName, avatarColorFromId, timeAgoParts} from '@/lib/utils'
 
 interface PostModalProps {
   postId: string
   onClose: () => void
-}
-
-function timeAgoParts(dateStr: string): { unit: 'now' | 'minutes' | 'hours' | 'days'; value: number } {
-  const now = Date.now()
-  const then = new Date(dateStr).getTime()
-  const diff = Math.floor((now - then) / 1000)
-  if (diff < 60) return { unit: 'now', value: 0 }
-  if (diff < 3600) return { unit: 'minutes', value: Math.floor(diff / 60) }
-  if (diff < 86400) return { unit: 'hours', value: Math.floor(diff / 3600) }
-  return { unit: 'days', value: Math.floor(diff / 86400) }
 }
 
 export function PostModal({ postId, onClose }: PostModalProps) {
@@ -45,7 +35,7 @@ export function PostModal({ postId, onClose }: PostModalProps) {
     return () => window.removeEventListener('keydown', handleKey)
   }, [onClose])
 
-  async function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!commentText.trim() || !post || !activeMember) return
 

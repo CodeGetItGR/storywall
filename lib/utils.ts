@@ -23,3 +23,13 @@ export function avatarColorFromId(id: string): string {
   }
   return AVATAR_COLORS[hash % AVATAR_COLORS.length]
 }
+
+export function timeAgoParts(dateStr: string): { unit: 'now' | 'minutes' | 'hours' | 'days'; value: number } {
+  const now = Date.now()
+  const then = new Date(dateStr).getTime()
+  const diff = Math.floor((now - then) / 1000)
+  if (diff < 60) return { unit: 'now', value: 0 }
+  if (diff < 3600) return { unit: 'minutes', value: Math.floor(diff / 60) }
+  if (diff < 86400) return { unit: 'hours', value: Math.floor(diff / 3600) }
+  return { unit: 'days', value: Math.floor(diff / 86400) }
+}

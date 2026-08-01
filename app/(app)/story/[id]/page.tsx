@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useState, useEffect } from 'react'
+import React, { use, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -58,7 +58,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
     if (storyIndex > 0) router.replace(`/story/${stories[storyIndex - 1].id}`)
   }
 
-  function handleReply(e: React.FormEvent) {
+  function handleReply(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
     setReplyText('')
   }
@@ -66,7 +66,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
   return (
     <div className="fixed inset-0 bg-ink z-50 flex flex-col items-center justify-center">
       {/* Story container */}
-      <div className="relative w-full max-w-sm h-full max-h-[100dvh] bg-black overflow-hidden">
+      <div className="relative w-full max-w-sm h-full max-h-dvh bg-black overflow-hidden">
 
         {/* Progress bars */}
         <div className="absolute top-3 left-3 right-3 z-30 flex gap-1">

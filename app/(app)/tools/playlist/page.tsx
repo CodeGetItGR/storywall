@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Music, ThumbsUp, Plus, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -41,7 +41,7 @@ export default function PlaylistPage() {
     ))
   }
 
-  function handleAdd(e: React.FormEvent) {
+  function handleAdd(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!newTitle.trim() || !newArtist.trim()) return
     const newItem: PlaylistItem = {

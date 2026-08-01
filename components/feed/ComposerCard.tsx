@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { ImagePlus, Send, X } from 'lucide-react'
@@ -206,7 +206,7 @@ export function ComposerCard({ eventId, autoExpand = false }: ComposerCardProps)
       .filter((id): id is string => Boolean(id))
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!canSubmit) return
 

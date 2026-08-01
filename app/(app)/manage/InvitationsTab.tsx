@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Copy, Pencil, Trash2, Plus, X, Loader2 } from 'lucide-react'
 import type { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
@@ -69,7 +69,7 @@ function CreateInvitationForm({
 
   const fieldErrors = getFieldErrors(createInvitation.error)
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
     const input: EventInvitationRequestDto = {
       eventId,

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Mail, Lock, Send, Clock } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -43,7 +43,7 @@ export default function FutureMessagesPage() {
   const [openOn, setOpenOn] = useState<OpenOn>('1-year')
   const [submitted, setSubmitted] = useState(false)
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!message.trim()) return
     setSubmitted(true)

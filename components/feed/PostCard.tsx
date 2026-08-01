@@ -5,24 +5,15 @@ import Image from 'next/image'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Heart, MessageCircle, MoreHorizontal, Pin } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { cn, initialsFromName, avatarColorFromId } from '@/lib/utils'
+import {cn, initialsFromName, avatarColorFromId, timeAgoParts} from '@/lib/utils'
 import { usePostLike } from '@/hooks'
 import type { PostResponseDto } from '@/lib/api/types'
 import Avatar from '@/components/ui/avatar'
+import {useMemo} from "react";
 
 interface PostCardProps {
   post: PostResponseDto
   showCommentLink?: boolean
-}
-
-function timeAgoParts(dateStr: string): { unit: 'now' | 'minutes' | 'hours' | 'days'; value: number } {
-  const now = Date.now()
-  const then = new Date(dateStr).getTime()
-  const diff = Math.floor((now - then) / 1000)
-  if (diff < 60) return { unit: 'now', value: 0 }
-  if (diff < 3600) return { unit: 'minutes', value: Math.floor(diff / 60) }
-  if (diff < 86400) return { unit: 'hours', value: Math.floor(diff / 3600) }
-  return { unit: 'days', value: Math.floor(diff / 86400) }
 }
 
 export function PostCard({ post, showCommentLink = true }: PostCardProps) {
@@ -34,7 +25,7 @@ export function PostCard({ post, showCommentLink = true }: PostCardProps) {
 
   const authorName = post.author?.displayName ?? t('unknownAuthor')
   const authorSubtitle = post.author?.nickname ?? post.author?.role
-  const timeAgo = timeAgoParts(post.createdAt)
+  const timeAgo = useMemo(()=>timeAgoParts(post.createdAt),[post.createdAt])
   const media = post.media
 
   function openPost() {

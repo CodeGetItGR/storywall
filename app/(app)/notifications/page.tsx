@@ -5,7 +5,7 @@ import { Heart, MessageCircle, Users, Bell, UserPlus, AtSign } from 'lucide-reac
 import { useTranslations } from 'next-intl'
 import { notifications as initialNotifs, users } from '@/lib/mock-data'
 import Avatar from '@/components/ui/avatar'
-import { cn } from '@/lib/utils'
+import {cn, timeAgoParts} from '@/lib/utils'
 import type { Notification } from '@/lib/types'
 
 const iconMap: Record<Notification['type'], React.ElementType> = {
@@ -22,16 +22,6 @@ const colorMap: Record<Notification['type'], string> = {
   rsvp:    'text-emerald-500 bg-emerald-50',
   mention: 'text-violet-500 bg-violet-50',
   follow:  'text-amber-500 bg-amber-50',
-}
-
-function timeAgoParts(dateStr: string): { unit: 'now' | 'minutes' | 'hours' | 'days'; value: number } {
-  const now = new Date('2025-07-11T12:00:00Z').getTime()
-  const then = new Date(dateStr).getTime()
-  const diff = Math.floor((now - then) / 1000)
-  if (diff < 60) return { unit: 'now', value: 0 }
-  if (diff < 3600) return { unit: 'minutes', value: Math.floor(diff / 60) }
-  if (diff < 86400) return { unit: 'hours', value: Math.floor(diff / 3600) }
-  return { unit: 'days', value: Math.floor(diff / 86400) }
 }
 
 export default function NotificationsPage() {
@@ -148,7 +138,7 @@ function NotifRow({ notif, onRead }: { notif: Notification; onRead: () => void }
       </div>
 
       {!notif.read && (
-        <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-1.5" aria-hidden="true" />
+        <div className="w-2 h-2 rounded-full bg-primary shrink-0 mt-1.5" aria-hidden="true" />
       )}
     </button>
   )

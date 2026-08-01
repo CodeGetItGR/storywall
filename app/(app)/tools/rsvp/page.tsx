@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, CheckCircle2, XCircle, Clock, ChevronDown } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -75,7 +75,7 @@ export default function RSVPPage() {
   const isSubmitting = createRsvp.isPending || updateRsvp.isPending
   const submitError = createRsvp.error ?? updateRsvp.error
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!attending || !memberId) return
 

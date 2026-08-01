@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import Image from 'next/image'
 import { ImagePlus, X, Loader2, Check } from 'lucide-react'
 import type { useTranslations } from 'next-intl'
@@ -72,7 +72,7 @@ export default function SettingsTab({
     setCoverPreview(event.coverMedia?.mediaUrl ?? null)
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
     setSaved(false)
 
