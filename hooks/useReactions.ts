@@ -8,14 +8,16 @@ export const reactionKeys = {
   list: (postId: string) => ["posts", postId, "reactions"] as const,
 };
 
+export async function fetchPostReactions(postId: string): Promise<ReactionResponseDto[]> {
+  const res = await api.get<ReactionResponseDto[]>(endpoints.posts.reactions(postId));
+  return normalizeList(res).items;
+}
+
 // GET /api/posts/{postId}/reactions — event member (checked in the service).
 export function usePostReactions(postId: string | null) {
   return useQuery({
     queryKey: reactionKeys.list(postId ?? ""),
-    queryFn: async () => {
-      const res = await api.get<ReactionResponseDto[]>(endpoints.posts.reactions(postId!));
-      return normalizeList(res).items;
-    },
+    queryFn: () => fetchPostReactions(postId!),
     enabled: Boolean(postId),
   });
 }
