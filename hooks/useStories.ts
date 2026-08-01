@@ -75,8 +75,9 @@ export function useMarkStoryViewed() {
       queryClient.setQueryData<StoryResponseDto>(storyKeys.detail(storyId), (old) =>
         old ? { ...old, viewedByCurrentUser: true } : old,
       );
-      queryClient.setQueriesData<StoryResponseDto[]>({ queryKey: ["events"], exact: false }, (old) =>
-        old?.map((story) => (story.id === storyId ? { ...story, viewedByCurrentUser: true } : story)),
+      queryClient.setQueriesData<StoryResponseDto[]>(
+        { queryKey: ["events"], exact: false, predicate: (query) => query.queryKey[2] === "stories" },
+        (old) => old?.map((story) => (story.id === storyId ? { ...story, viewedByCurrentUser: true } : story)),
       );
     },
   });
