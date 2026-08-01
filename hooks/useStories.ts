@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api/client";
+import { api, ApiError } from "@/lib/api/client";
 import { endpoints } from "@/lib/api/endpoints";
 import { normalizeList } from "@/lib/api/pagination";
-import type { StoryRequestDto, StoryResponseDto } from "@/lib/api/types";
+import type { StoryRequestDto, StoryResponseDto, StoryViewResponseDto } from "@/lib/api/types";
 
 export const storyKeys = {
   list: (eventId: string) => ["events", eventId, "stories"] as const,
+  views: (storyId: string) => ["stories", storyId, "views"] as const,
 };
 
 // GET /api/events/{eventId}/stories — event member. `expiresAt` is stored
@@ -44,5 +45,32 @@ export function useDeleteStory(eventId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: storyKeys.list(eventId) });
     },
+  });
+}
+
+// POST /api/stories/{id}/views — event member. Idempotent: safe to call on
+// every open, not just the first — the server resolves the caller's member
+// from the JWT and returns the same view record on repeat calls.
+export function useMarkStoryViewed() {
+  return useMutation({
+    mutationFn: (storyId: string) => api.post<StoryViewResponseDto>(endpoints.stories.views(storyId)),
+  });
+}
+
+// GET /api/stories/{id}/views — story author or HOST only. Anyone else gets
+// a 403; treat that as "no affordance" rather than surfacing an error.
+export function useStoryViews(storyId: string | null) {
+  return useQuery({
+    queryKey: storyKeys.views(storyId ?? ""),
+    queryFn: async () => {
+      try {
+        const res = await api.get<StoryViewResponseDto[]>(endpoints.stories.views(storyId!));
+        return normalizeList(res).items;
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 403) return [];
+        throw err;
+      }
+    },
+    enabled: Boolean(storyId),
   });
 }

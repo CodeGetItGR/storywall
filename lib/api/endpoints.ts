@@ -112,6 +112,7 @@ export const endpoints = {
   stories: {
     create: "/api/stories",
     byId: (id: string) => `/api/stories/${id}`,
+    views: (id: string) => `/api/stories/${id}/views`,
   },
 
   playlistSuggestions: {

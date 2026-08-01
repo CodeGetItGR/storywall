@@ -560,7 +560,8 @@ export interface StoryRequestDto {
   mediaId: string;
   caption?: string;
   songUrl?: string;
-  expiresAt: string;
+  // Optional — omit to let the server default to createdAt + 24h.
+  expiresAt?: string;
 }
 
 export interface StoryResponseDto {
@@ -573,6 +574,15 @@ export interface StoryResponseDto {
   expiresAt: string;
   createdAt: string;
   deletedAt: string | null;
+  // Whether the requesting member has already POSTed a view for this story.
+  viewedByCurrentUser: boolean;
+}
+
+export interface StoryViewResponseDto {
+  id: string;
+  storyId: string;
+  memberId: string;
+  createdAt: string;
 }
 
 export interface PlaylistSuggestionRequestDto {
