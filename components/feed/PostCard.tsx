@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Heart, MessageCircle, MoreHorizontal, Pin } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { cn, initialsFromName, avatarColorFromId } from '@/lib/utils'
+import { usePostLike } from '@/hooks'
 import type { PostResponseDto } from '@/lib/api/types'
 import Avatar from '@/components/ui/avatar'
 
@@ -26,22 +27,20 @@ function timeAgoParts(dateStr: string): { unit: 'now' | 'minutes' | 'hours' | 'd
 
 export function PostCard({ post, showCommentLink = true }: PostCardProps) {
   const t = useTranslations('PostCard')
-  const [liked, setLiked] = useState(false)
-  const [likeCount, setLikeCount] = useState(post.reactionCount)
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const { liked, count: likeCount, toggle: handleLike, isPending: isLikePending } = usePostLike(post)
 
   const authorName = post.author?.displayName ?? t('unknownAuthor')
   const authorSubtitle = post.author?.nickname ?? post.author?.role
   const timeAgo = timeAgoParts(post.createdAt)
   const media = post.media
 
-  function handleLike() {
-    if (liked) {
-      setLiked(false)
-      setLikeCount(c => c - 1)
-    } else {
-      setLiked(true)
-      setLikeCount(c => c + 1)
-    }
+  function openPost() {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('post', post.id)
+    router.push(`${pathname}?${params.toString()}`)
   }
 
   return (
@@ -135,6 +134,7 @@ export function PostCard({ post, showCommentLink = true }: PostCardProps) {
           {/* Like */}
           <button
             onClick={handleLike}
+            disabled={isLikePending}
             aria-label={liked ? t('unlikePost') : t('likePost')}
             aria-pressed={liked}
             className={cn(
@@ -153,14 +153,15 @@ export function PostCard({ post, showCommentLink = true }: PostCardProps) {
 
           {/* Comment */}
           {showCommentLink ? (
-            <Link
-              href={`/post/${post.id}`}
+            <button
+              type="button"
+              onClick={openPost}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-ink-muted hover:bg-surface-muted transition-colors"
               aria-label={t('comments', { count: post.commentCount })}
             >
               <MessageCircle className="w-4 h-4" strokeWidth={1.8} />
               <span className="tabular-nums">{post.commentCount}</span>
-            </Link>
+            </button>
           ) : (
             <button
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-ink-muted hover:bg-surface-muted transition-colors"
