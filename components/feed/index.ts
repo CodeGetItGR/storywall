@@ -1,5 +1,6 @@
 export * from './StoriesRow'
 export * from './PostCard'
+export * from './PostModal'
 export * from './ComposerCard'
 export * from './StoryAvatar'
 export * from './Header'
