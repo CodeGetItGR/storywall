@@ -239,6 +239,8 @@
     "loading": "Φόρτωση ανάρτησης…",
     "notFoundTitle": "Η ανάρτηση δεν βρέθηκε",
     "notFoundDescription": "Αυτή η ανάρτηση μπορεί να έχει αφαιρεθεί.",
+    "loadFailedTitle": "Δεν ήταν δυνατή η φόρτωση της ανάρτησης",
+    "loadFailedDescription": "Κάτι πήγε στραβά. Δοκιμάστε ξανά αργότερα.",
     "noCommentsYet": "Δεν υπάρχουν σχόλια ακόμα",
     "commentCount": "{count, plural, one {# σχόλιο} other {# σχόλια}}",
     "unknownAuthor": "Άγνωστος",

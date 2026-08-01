@@ -239,6 +239,8 @@
     "loading": "Loading post…",
     "notFoundTitle": "Post not found",
     "notFoundDescription": "This post may have been removed.",
+    "loadFailedTitle": "Couldn't load this post",
+    "loadFailedDescription": "Something went wrong. Please try again later.",
     "noCommentsYet": "No comments yet",
     "commentCount": "{count, plural, one {# Comment} other {# Comments}}",
     "unknownAuthor": "Unknown",
