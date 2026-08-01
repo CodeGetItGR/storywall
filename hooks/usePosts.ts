@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData, type QueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api/client";
 import { endpoints } from "@/lib/api/endpoints";
 import { normalizeList, type Page } from "@/lib/api/pagination";
@@ -9,6 +9,32 @@ export const postKeys = {
   detail: (id: string) => ["posts", id] as const,
   media: (postId: string) => ["posts", postId, "media"] as const,
 };
+
+// Applies a partial update to a post wherever it's currently cached — the
+// single-post query and, if a page of it is loaded, the event's feed list.
+// Used for optimistic updates (likes) where waiting on a refetch would feel
+// laggy; other mutations in this file just invalidate instead.
+export function patchPostInCaches(
+  queryClient: QueryClient,
+  eventId: string,
+  postId: string,
+  patch: Partial<PostResponseDto>,
+) {
+  queryClient.setQueryData<PostResponseDto>(postKeys.detail(postId), (old) =>
+    old ? { ...old, ...patch } : old,
+  );
+
+  queryClient.setQueryData<InfiniteData<Page<PostResponseDto>>>(postKeys.list(eventId), (old) => {
+    if (!old) return old;
+    return {
+      ...old,
+      pages: old.pages.map((page) => ({
+        ...page,
+        content: page.content.map((post) => (post.id === postId ? { ...post, ...patch } : post)),
+      })),
+    };
+  });
+}
 
 const POSTS_PAGE_SIZE = 20;
 
