@@ -11,7 +11,8 @@
     "seconds": "Δευτερόλεπτα"
   },
   "StoriesRow": {
-    "ariaLabel": "Ιστορίες"
+    "ariaLabel": "Ιστορίες",
+    "uploadFailed": "Δεν ήταν δυνατή η μεταφόρτωση της ιστορίας σας. Δοκιμάστε ξανά."
   },
   "StoryAvatar": {
     "addYourStory": "Προσθέστε την ιστορία σας",
@@ -263,9 +264,15 @@
     "nextStory": "Επόμενη ιστορία",
     "previous": "Προηγούμενο",
     "next": "Επόμενο",
-    "replyPlaceholder": "Απάντηση στην ιστορία...",
-    "reactWithHeart": "Αντίδραση με καρδιά",
-    "sendReply": "Αποστολή απάντησης"
+    "moreOptions": "Περισσότερες επιλογές",
+    "deleteStory": "Διαγραφή ιστορίας",
+    "listenToSong": "Ακούστε το τραγούδι",
+    "viewedBy": "Είδαν",
+    "viewedByCount": "Είδαν {count}",
+    "loadingViewers": "Φόρτωση…",
+    "noViewers": "Δεν υπάρχουν προβολές ακόμα",
+    "unknownAuthor": "Κάποιος/α",
+    "close": "Κλείσιμο"
   },
   "CreateEventPage": {
     "goBack": "Πίσω",

@@ -11,7 +11,8 @@
     "seconds": "Seconds"
   },
   "StoriesRow": {
-    "ariaLabel": "Stories"
+    "ariaLabel": "Stories",
+    "uploadFailed": "Couldn't upload your story. Please try again."
   },
   "StoryAvatar": {
     "addYourStory": "Add your story",
@@ -263,9 +264,15 @@
     "nextStory": "Next story",
     "previous": "Previous",
     "next": "Next",
-    "replyPlaceholder": "Reply to story...",
-    "reactWithHeart": "React with heart",
-    "sendReply": "Send reply"
+    "moreOptions": "More options",
+    "deleteStory": "Delete story",
+    "listenToSong": "Listen to song",
+    "viewedBy": "Viewed by",
+    "viewedByCount": "Viewed by {count}",
+    "loadingViewers": "Loading…",
+    "noViewers": "No views yet",
+    "unknownAuthor": "Someone",
+    "close": "Close"
   },
   "CreateEventPage": {
     "goBack": "Go back",
