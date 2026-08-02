@@ -2,7 +2,7 @@
 
 import { Send } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { PostAuthorAvatar, PostMediaCarousel, ReactionCount } from '@/components/feed/post';
 import { CommentCount } from '@/components/feed/post/CommentCount';
@@ -24,15 +24,21 @@ export function PostModal() {
     const createComment = useCreateComment(post?.eventId ?? '');
     const [commentText, setCommentText] = useState('');
     const [commentError, setCommentError] = useState<string | null>(null);
-    // Mobile-only "comments sheet" expanded state. Seeded from the `view`
-    // URL param whenever the modal (re)opens or a different post/view is
-    // requested; PostModal is a single always-mounted instance (rendered
-    // once from the feed page), so this can't just be initial useState.
+    // Mobile-only "comments sheet" expanded state, reseeded from the `view`
+    // URL param whenever a (possibly different) post is opened. PostModal is
+    // a single always-mounted instance, so this can't be plain useState —
+    // note that `postId` itself already flips to null on close (see
+    // usePostModal.close), so tracking postId here also catches "reopen the
+    // same post" transitions, not just "open a different post." Adjusting
+    // state during render (not in an effect) avoids an extra render pass —
+    // see https://react.dev/learn/you-might-not-need-an-effect.
+    const [seenModalState, setSeenModalState] = useState({ postId, view });
     const [commentsOpen, setCommentsOpen] = useState(view === 'comments');
 
-    useEffect(() => {
-        if (isOpen) setCommentsOpen(view === 'comments');
-    }, [postId, isOpen, view]);
+    if (postId !== seenModalState.postId || view !== seenModalState.view) {
+        setSeenModalState({ postId, view });
+        setCommentsOpen(view === 'comments');
+    }
 
     const timeAgo = useMemo(
         () =>
@@ -183,6 +189,7 @@ export function PostModal() {
                         <section className="relative w-full flex-1 min-h-0 lg:grid lg:grid-cols-5 overflow-hidden">
                             <div className="relative w-full h-full lg:col-span-3 bg-black">
                                 <PostMediaCarousel
+                                    key={postId}
                                     media={post.media}
                                     initialIndex={clampedIndex}
                                     onIndexChange={setMediaIndex}
@@ -208,9 +215,9 @@ export function PostModal() {
 
                             <div
                                 className={cn(
-                                    'lg:col-span-2 lg:static lg:h-auto lg:max-h-none lg:rounded-none lg:translate-y-0 lg:flex lg:flex-col lg:min-h-0 lg:bg-background lg:border-l lg:border-border',
+                                    'lg:col-span-2 lg:static lg:h-auto lg:max-h-none lg:rounded-none lg:translate-y-0 lg:visible lg:flex lg:flex-col lg:min-h-0 lg:bg-background lg:border-l lg:border-border',
                                     'fixed inset-x-0 bottom-0 z-10 h-[85dvh] max-h-[85dvh] bg-background rounded-t-2xl flex flex-col transition-transform duration-300 ease-out',
-                                    commentsOpen ? 'translate-y-0' : 'translate-y-full'
+                                    commentsOpen ? 'translate-y-0 visible' : 'translate-y-full invisible'
                                 )}
                             >
                                 <div className="lg:hidden flex items-center justify-center pt-2.5 pb-1.5 shrink-0">
