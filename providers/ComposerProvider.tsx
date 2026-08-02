@@ -86,6 +86,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     }
 
     function closePostComposer() {
+        if (isPostBusy) return;
         images.forEach((img) => URL.revokeObjectURL(img.previewUrl));
         setCaption('');
         setImages([]);
@@ -335,7 +336,12 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
                                         {img.status === 'failed' && (
                                             <div className="absolute inset-x-0 bottom-0 bg-destructive/90 text-white text-[10px] px-1.5 py-1 flex items-center justify-between gap-1">
                                                 <span className="truncate">{t('uploadFailed', { filename: img.file.name })}</span>
-                                                <button type="button" onClick={() => uploadPendingImages()} className="underline shrink-0">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => uploadPendingImages()}
+                                                    disabled={uploadBatch.isPending}
+                                                    className="underline shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+                                                >
                                                     {t('retry')}
                                                 </button>
                                             </div>
