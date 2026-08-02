@@ -16,6 +16,7 @@
     },
     "StoryAvatar": {
         "addYourStory": "Προσθέστε την ιστορία σας",
+        "addAnotherStory": "Προσθήκη νέας ιστορίας",
         "userStory": "Ιστορία του/της {name}",
         "yourStory": "Η ιστορία σας"
     },
@@ -54,7 +55,11 @@
     },
     "MobileTabBar": {
         "mobileNavigation": "Πλοήγηση κινητού",
-        "newPost": "Νέα ανάρτηση",
+        "compose": "Δημιουργία",
+        "composeMenu": {
+            "post": "Ανάρτηση",
+            "story": "Ιστορία"
+        },
         "items": {
             "home": "Αρχική",
             "tools": "Εργαλεία",
@@ -69,6 +74,7 @@
         "addPhotos": "Προσθήκη φωτογραφιών",
         "removeImage": "Αφαίρεση εικόνας",
         "uploadFailed": "Δεν ήταν δυνατή η μεταφόρτωση του {filename}",
+        "storyUploadFailed": "Δεν ήταν δυνατή η μεταφόρτωση της ιστορίας σας. Δοκιμάστε ξανά.",
         "retry": "Επανάληψη",
         "maxImagesReached": "Μπορείτε να προσθέσετε έως 10 φωτογραφίες",
         "fileTooLarge": "Το {filename} υπερβαίνει τα 20 MB",

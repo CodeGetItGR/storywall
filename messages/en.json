@@ -16,6 +16,7 @@
     },
     "StoryAvatar": {
         "addYourStory": "Add your story",
+        "addAnotherStory": "Add another story",
         "userStory": "{name}'s story",
         "yourStory": "Your story"
     },
@@ -54,7 +55,11 @@
     },
     "MobileTabBar": {
         "mobileNavigation": "Mobile navigation",
-        "newPost": "New post",
+        "compose": "Create",
+        "composeMenu": {
+            "post": "Post",
+            "story": "Story"
+        },
         "items": {
             "home": "Home",
             "tools": "Tools",
@@ -69,6 +74,7 @@
         "addPhotos": "Add photos",
         "removeImage": "Remove image",
         "uploadFailed": "Couldn't upload {filename}",
+        "storyUploadFailed": "Couldn't upload your story. Please try again.",
         "retry": "Retry",
         "maxImagesReached": "You can add up to 10 photos",
         "fileTooLarge": "{filename} is over 20 MB",
