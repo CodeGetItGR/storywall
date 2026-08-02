@@ -8,6 +8,7 @@ import { useMyEvents } from '@/hooks/useMyEvents';
 import type { EventDetailResponseDto, EventMemberResponseDto } from '@/lib/api/types';
 
 const ACTIVE_EVENT_KEY = 'storywall.activeEventId';
+const EMPTY_MEMBERSHIPS: EventMemberResponseDto[] = [];
 
 interface EventContextValue {
     memberships: EventMemberResponseDto[];
@@ -22,7 +23,7 @@ const EventContext = createContext<EventContextValue | null>(null);
 
 export function EventProvider({ children }: { children: ReactNode }) {
     const { isAuthenticated } = useAuth();
-    const { data: memberships = [], isLoading: isLoadingMemberships } = useMyEvents();
+    const { data: memberships = EMPTY_MEMBERSHIPS, isLoading: isLoadingMemberships } = useMyEvents();
     const [activeEventId, setActiveEventIdState] = useState<string | null>(null);
 
     // Restore the last-active event whenever memberships load or change,
