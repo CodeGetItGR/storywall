@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { use, useEffect, useMemo, useRef } from 'react';
 
@@ -14,10 +13,6 @@ import { useEventSwitcher } from '@/providers/EventProvider';
 export default function FeedPage({ params }: { params: Promise<{ eventId: string }> }) {
     const { eventId } = use(params);
     const t = useTranslations('FeedPage');
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const shouldCompose = searchParams.get('compose') === '1';
-    const composerRef = useRef<HTMLDivElement>(null);
     const loadMoreRef = useRef<HTMLDivElement>(null);
 
     const { data: event, error } = useEvent(eventId);
@@ -44,17 +39,6 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
     useEffect(() => {
         if (event) setActiveEventId(eventId);
     }, [event, eventId, setActiveEventId]);
-
-    // ?compose=1 (from the nav rail's "New Post" CTA) scrolls to and expands
-    // the composer, then strips itself so a refresh doesn't re-trigger it.
-    useEffect(() => {
-        if (!shouldCompose || !event) return;
-        composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        const params = new URLSearchParams(searchParams.toString());
-        params.delete('compose');
-        const query = params.toString();
-        router.replace(query ? `/feed/${eventId}?${query}` : `/feed/${eventId}`);
-    }, [shouldCompose, eventId, router, event, searchParams]);
 
     const moduleFlags = useMemo<Record<ModuleKeyConvention, boolean>>(
         () =>
@@ -109,9 +93,7 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
             <section className={'mt-5'}>
                 {moduleFlags.posts && (
                     <div className="flex flex-col gap-4 px-4 pb-24 lg:pb-10">
-                        <div ref={composerRef}>
-                            <ComposerCard eventId={eventId} autoExpand={shouldCompose} />
-                        </div>
+                        <ComposerCard />
                         {posts.map((post) => (
                             <PostCard key={post.id} post={post} />
                         ))}

@@ -1,7 +1,7 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { useEventSwitcher } from '@/providers/EventProvider';
 
@@ -9,11 +9,9 @@ import { useEventSwitcher } from '@/providers/EventProvider';
 // only so links like the nav rail's "Home" tab and the post-login redirect
 // don't need to know an event id up front. It forwards to whichever event is
 // active (falling back to the user's first membership) as soon as that's
-// known, then the real page lives at /feed/[eventId]. Any query string
-// (e.g. ?compose=1 from the "New Post" CTA) is forwarded along.
+// known, then the real page lives at /feed/[eventId].
 export default function FeedRedirectPage() {
     const router = useRouter();
-    const searchParams = useSearchParams();
     const { activeEvent, memberships, isLoading } = useEventSwitcher();
 
     useEffect(() => {
@@ -23,9 +21,8 @@ export default function FeedRedirectPage() {
             router.replace('/welcome');
             return;
         }
-        const query = searchParams.toString();
-        router.replace(`/feed/${eventId}${query ? `?${query}` : ''}`);
-    }, [isLoading, activeEvent, memberships, router, searchParams]);
+        router.replace(`/feed/${eventId}`);
+    }, [isLoading, activeEvent, memberships, router]);
 
     return null;
 }
