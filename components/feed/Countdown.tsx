@@ -7,7 +7,7 @@ function Counter({ text, count }: { text: string; count: number }) {
     return (
         <div className="flex flex-col items-center">
             <span className="abhaya-body font-bold text-black">{count}</span>
-            <span className="text-[0.5rem] text-black/60 alegreya">{text}</span>
+            <span className="text-[1.2rem] lg:text-[1.5rem] text-black/60 alegreya">{text}</span>
         </div>
     );
 }

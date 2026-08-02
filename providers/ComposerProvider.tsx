@@ -303,7 +303,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
                 tabIndex={-1}
             />
 
-            <Modal open={isOpen} onClose={closePostComposer} size="sm" closeLabel={t('cancel')}>
+            <Modal open={isOpen} onClose={closePostComposer} size="sm" closeLabel={t('cancel')} className={'p-4'}>
                 <Modal.Body className="p-4">
                     <form onSubmit={submitPost} className="flex flex-col gap-4">
                         <div className="flex items-start gap-3">
