@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useMemo, useState } from 'react'
-import { Send } from 'lucide-react'
+import {Heart, MessageCircle, Send} from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { usePost, usePostComments, useCreateComment, useEventMembers, usePostModal } from '@/hooks'
 import { useActiveMember } from '@/providers/EventProvider'
@@ -10,6 +10,8 @@ import Avatar from '@/components/ui/avatar'
 import { ApiError } from '@/lib/api/client'
 import { initialsFromName, avatarColorFromId, timeAgoParts, cn } from '@/lib/utils'
 import Image from 'next/image'
+import {PostAuthorAvatar, ReactionCount} from "@/components/feed/post";
+import {CommentCount} from "@/components/feed/post/CommentCount";
 
 export function PostModal() {
   const t = useTranslations('PostModal')
@@ -22,6 +24,10 @@ export function PostModal() {
   const createComment = useCreateComment(post?.eventId ?? '')
   const [commentText, setCommentText] = useState('')
   const [commentError, setCommentError] = useState<string | null>(null)
+  const timeAgo = useMemo(()=> post ? timeAgoParts(post?.createdAt) : {
+    unit: 'minutes',
+    value: 0
+  },[post])
 
   const membersById = useMemo(() => new Map(members.map(m => [m.id, m])), [members])
 
@@ -47,7 +53,7 @@ export function PostModal() {
 
   return (
     <Modal open={isOpen} onClose={close} size="lg" closeLabel={t('close')} className="min-h-[70vh]">
-      <div className="z-10 bg-background/95 backdrop-blur-sm border-b border-border flex items-center justify-between px-4 py-3 w-full shrink-0">
+      <div className="z-10 bg-background/95 backdrop-blur-sm border-b border-border flex items-center justify-between px-4 py-5 w-full shrink-0">
         <h2 className="text-base font-bold text-ink">{t('title')}</h2>
       </div>
 
@@ -61,8 +67,8 @@ export function PostModal() {
       )}
 
       {post && (
-        <section className="w-full grid grid-cols-1 lg:grid-cols-5 flex-1 min-h-0 p-6 overflow-hidden">
-          <section className="w-full min-w-0 min-h-0 lg:col-span-3 bg-black rounded-2xl shadow-xl hidden lg:block">
+        <section className="w-full grid grid-cols-1 lg:grid-cols-5 flex-1 min-h-0 overflow-hidden">
+          <section className="w-full min-w-0 min-h-0 lg:col-span-3 bg-black  shadow-xl hidden lg:block">
             {post.media[0] && (
               <Image
                 src={post.media[0].mediaUrl}
@@ -74,6 +80,14 @@ export function PostModal() {
             )}
           </section>
           <section className="lg:px-4 pt-4 lg:col-span-2 min-w-0 min-h-0 flex flex-col">
+            {/* Likes and comments count. */}
+            <section className={'border-b flex justify-between pb-2'}>
+              <PostAuthorAvatar avatarUrl={post.author?.avatarUrl} name={post.author?.displayName ?? tCard('unknownAuthor')} subtitle={ post.author?.nickname ?? post.author?.role} timeAgo={timeAgo} />
+              <div className={'flex gap-2'}>
+                <ReactionCount count={post.reactionCount} />
+                <CommentCount count={post.commentCount} />
+              </div>
+            </section>
             <Modal.Body className={cn('lg:px-4 pt-5 pb-4', { 'flex items-center justify-center': comments.length === 0 })}>
               <h3 className="text-sm font-bold text-ink mb-4">
                 {comments.length === 0 ? t('noCommentsYet') : t('commentCount', { count: comments.length })}

@@ -8,7 +8,9 @@ import {cn, initialsFromName, avatarColorFromId, timeAgoParts} from '@/lib/utils
 import { usePostLike, usePostModal } from '@/hooks'
 import type { PostResponseDto } from '@/lib/api/types'
 import Avatar from '@/components/ui/avatar'
-import {useMemo} from "react";
+import React, {useMemo} from "react";
+import {PostAuthorAvatar, ReactionCount} from "@/components/feed/post";
+import {CommentCount} from "@/components/feed/post/CommentCount";
 
 interface PostCardProps {
   post: PostResponseDto
@@ -34,27 +36,7 @@ export function PostCard({ post, showCommentLink = true }: PostCardProps) {
 
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
-        <Link href={`/profile`} className="flex items-center gap-3 group">
-          <Avatar
-            src={post.author?.avatarUrl}
-            initials={initialsFromName(authorName)}
-            color={avatarColorFromId(post.author?.memberId ?? post.id)}
-            size="md"
-            alt={authorName}
-          />
-          <div>
-            <p className="text-sm font-semibold text-ink group-hover:text-primary transition-colors leading-tight">
-              {authorName}
-            </p>
-            <div className="flex items-center gap-1.5">
-              {authorSubtitle && <span className="text-xs text-ink-muted capitalize">{authorSubtitle}</span>}
-              {authorSubtitle && <span className="text-ink-faint text-xs">·</span>}
-              <span className="text-xs text-ink-muted">
-                {timeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${timeAgo.unit}`, { count: timeAgo.value })}
-              </span>
-            </div>
-          </div>
-        </Link>
+       <PostAuthorAvatar avatarUrl={post.author?.avatarUrl} name={authorName} subtitle={authorSubtitle} timeAgo={timeAgo} />
         <div className="flex items-center gap-1">
           {post.isPinned && (
             <span
@@ -130,11 +112,7 @@ export function PostCard({ post, showCommentLink = true }: PostCardProps) {
                 : 'text-ink-muted hover:bg-surface-muted',
             )}
           >
-            <Heart
-              className={cn('w-4 h-4', liked ? 'fill-primary text-primary' : '')}
-              strokeWidth={liked ? 0 : 1.8}
-            />
-            <span className="tabular-nums">{likeCount}</span>
+            <ReactionCount count={likeCount} iconClassName={liked ? 'fill-primary text-primary' : ''}  iconStrokeWidth={liked ? 0 : 1.8}/>
           </button>
 
           {/* Comment */}

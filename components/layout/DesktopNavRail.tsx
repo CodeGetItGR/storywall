@@ -3,18 +3,15 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { Home, Wrench, Bell, User, Plus, LayoutDashboard, Heart } from 'lucide-react'
+import { Home, Bell, Plus, Heart } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { CURRENT_USER_ID, getUser } from '@/lib/mock-data'
 import Avatar from '@/components/ui/avatar'
 
 const navItems = [
-  { href: '/feed', icon: Home, key: 'home' },
-  { href: '/tools', icon: Wrench, key: 'tools' },
-  { href: '/manage', icon: LayoutDashboard, key: 'manage' },
-  { href: '/notifications', icon: Bell, key: 'notifications' },
-  { href: '/profile', icon: User, key: 'profile' },
-] as const
+  { href: '/profile', icon: Home, key: 'home', isCenter: false },
+  { href: '/notifications', icon: Bell, key: 'notifications', isCenter: false },
+]
 
 export function DesktopNavRail() {
   const t = useTranslations('DesktopNavRail')

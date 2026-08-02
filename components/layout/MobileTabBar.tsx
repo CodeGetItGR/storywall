@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { Home, Wrench, Bell, Plus } from 'lucide-react'
+import { Home, Bell } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const tabItems = [

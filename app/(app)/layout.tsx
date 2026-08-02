@@ -12,7 +12,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <div className="lg:max-w-none">
           {children}
         </div>
-      </main>
+      </main>11
       <RightContextPanel />
       <MobileTabBar />
     </div>

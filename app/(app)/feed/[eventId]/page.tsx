@@ -1,7 +1,7 @@
 'use client'
 
 import {use, useEffect, useMemo, useRef} from 'react'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import {StoriesRow, PostCard, PostModal, Header, Banner, EventInfo, EventNotFound, RsvpPrompt, ComposerCard} from '@/components/feed'
 import { useEvent } from '@/hooks/useEvent'
@@ -14,7 +14,6 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
     const { eventId } = use(params)
     const t = useTranslations('FeedPage')
     const router = useRouter()
-    const pathname = usePathname()
     const searchParams = useSearchParams()
     const shouldCompose = searchParams.get('compose') === '1'
     const composerRef = useRef<HTMLDivElement>(null)
@@ -66,7 +65,7 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
     }
 
     return (
-    <div className="flex flex-col">
+    <div className="flex flex-col max-w-3xl mx-auto">
         <Header countdownTime={event?.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0}/>
         <section>
             <Banner image={"/images/Banner.jpg"} title={event.title}/>
