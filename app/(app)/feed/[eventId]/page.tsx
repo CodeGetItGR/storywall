@@ -23,7 +23,7 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
     const { data: event, error } = useEvent(eventId);
     const { setActiveEventId } = useEventSwitcher();
     const { data: postPages, fetchNextPage, hasNextPage, isFetchingNextPage } = useEventPosts(eventId);
-    const posts = useMemo(() => postPages?.pages.flatMap((page) => page.content) ?? [], [postPages]);
+    const posts = useMemo(() => postPages?.pages.flatMap((page) => page.content) ?? [], [postPages?.pages]);
 
     // Auto-load the next page as the sentinel at the bottom of the list
     // scrolls into view.
