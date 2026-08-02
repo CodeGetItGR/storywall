@@ -6,6 +6,7 @@ import { useState } from 'react';
 
 import { ApiError } from '@/lib/api/client';
 import { AuthProvider } from '@/providers/AuthProvider';
+import { ComposerProvider } from '@/providers/ComposerProvider';
 import { EventProvider } from '@/providers/EventProvider';
 import { ModalProvider } from '@/providers/ModalProvider';
 
@@ -30,7 +31,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <QueryClientProvider client={queryClient}>
             <AuthProvider>
                 <EventProvider>
-                    <ModalProvider>{children}</ModalProvider>
+                    <ComposerProvider>
+                        <ModalProvider>{children}</ModalProvider>
+                    </ComposerProvider>
                 </EventProvider>
             </AuthProvider>
             <ReactQueryDevtools initialIsOpen={false} />
