@@ -12,7 +12,7 @@ const sizeMap = {
     lg: 'max-w-4xl',
 } as const;
 
-type ModalSize = keyof typeof sizeMap;
+type ModalSize = keyof typeof sizeMap | 'full';
 
 interface ModalProps {
     open: boolean;
@@ -24,6 +24,8 @@ interface ModalProps {
 }
 
 export function Modal({ open, onClose, size = 'md', closeLabel = 'Close', className, children }: ModalProps) {
+    const isFull = size === 'full';
+
     return (
         <Dialog.Root
             open={open}
@@ -35,16 +37,23 @@ export function Modal({ open, onClose, size = 'md', closeLabel = 'Close', classN
                 <Dialog.Backdrop className="fixed inset-0 z-50 bg-ink/60 backdrop-blur-sm" />
                 <Dialog.Popup
                     className={cn(
-                        'fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2',
-                        'w-[calc(100vw-2rem)] max-h-[90dvh] overflow-hidden',
-                        'bg-background rounded-2xl flex flex-col outline-none',
-                        sizeMap[size],
+                        'fixed z-50 bg-background flex flex-col outline-none',
+                        isFull
+                            ? 'inset-0 w-screen h-dvh max-h-dvh rounded-none'
+                            : cn(
+                                  'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
+                                  'w-[calc(100vw-2rem)] max-h-[90dvh] overflow-hidden rounded-2xl',
+                                  sizeMap[size]
+                              ),
                         className
                     )}
                 >
                     <Dialog.Close
                         aria-label={closeLabel}
-                        className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
+                        className={cn(
+                            'absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center rounded-full transition-colors',
+                            isFull ? 'bg-black/40 hover:bg-black/60 text-white' : 'hover:bg-surface-muted text-ink-muted'
+                        )}
                     >
                         <X className="w-5 h-5" />
                     </Dialog.Close>
