@@ -216,8 +216,8 @@ export function PostModal() {
                             <div
                                 className={cn(
                                     'lg:col-span-2 lg:static lg:h-auto lg:max-h-none lg:rounded-none lg:translate-y-0 lg:visible lg:flex lg:flex-col lg:min-h-0 lg:bg-background lg:border-l lg:border-border',
-                                    'fixed inset-x-0 bottom-0 z-10 h-[85dvh] max-h-[85dvh] bg-background rounded-t-2xl flex flex-col transition-transform duration-300 ease-out',
-                                    commentsOpen ? 'translate-y-0 visible' : 'translate-y-full invisible'
+                                    'fixed inset-x-0 bottom-0 z-10 h-[85dvh] max-h-[85dvh] bg-background rounded-t-2xl flex flex-col transition-[transform,visibility] duration-300 ease-out',
+                                    commentsOpen ? 'translate-y-0 visible delay-0' : 'translate-y-full invisible delay-300'
                                 )}
                             >
                                 <div className="lg:hidden flex items-center justify-center pt-2.5 pb-1.5 shrink-0">
