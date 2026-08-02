@@ -49,11 +49,11 @@ Add to `lib/api/types.ts`:
 
 ```ts
 export interface PostResponseDto {
-  // ...existing fields...
-  commentCount: number;
-  reactionCount: number;
-  likedByCurrentUser: boolean; // NEW
-  // ...
+    // ...existing fields...
+    commentCount: number;
+    reactionCount: number;
+    likedByCurrentUser: boolean; // NEW
+    // ...
 }
 ```
 

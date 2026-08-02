@@ -1,631 +1,631 @@
 {
-  "EventNotFound": {
-    "title": "Αυτός ο εορτασμός φαίνεται να έχει χαθεί",
-    "description": "Δεν μπορέσαμε να βρούμε εκδήλωση σε αυτόν τον σύνδεσμο. Ελέγξτε ξανά την πρόσκληση που λάβατε ή επιστρέψτε και επιλέξτε μια εκδήλωση από τη λίστα σας.",
-    "cta": "Πίσω στην αρχική"
-  },
-  "Countdown": {
-    "days": "Ημέρες",
-    "hours": "Ώρες",
-    "minutes": "Λεπτά",
-    "seconds": "Δευτερόλεπτα"
-  },
-  "StoriesRow": {
-    "ariaLabel": "Ιστορίες",
-    "uploadFailed": "Δεν ήταν δυνατή η μεταφόρτωση της ιστορίας σας. Δοκιμάστε ξανά."
-  },
-  "StoryAvatar": {
-    "addYourStory": "Προσθέστε την ιστορία σας",
-    "userStory": "Ιστορία του/της {name}",
-    "yourStory": "Η ιστορία σας"
-  },
-  "FeedPage": {
-    "loadingMore": "Φόρτωση περισσότερων…"
-  },
-  "PostCard": {
-    "justNow": "μόλις τώρα",
-    "timeAgo": {
-      "minutes": "πριν {count} λ",
-      "hours": "πριν {count} ώ",
-      "days": "πριν {count} η"
+    "EventNotFound": {
+        "title": "Αυτός ο εορτασμός φαίνεται να έχει χαθεί",
+        "description": "Δεν μπορέσαμε να βρούμε εκδήλωση σε αυτόν τον σύνδεσμο. Ελέγξτε ξανά την πρόσκληση που λάβατε ή επιστρέψτε και επιλέξτε μια εκδήλωση από τη λίστα σας.",
+        "cta": "Πίσω στην αρχική"
     },
-    "moreOptions": "Περισσότερες επιλογές",
-    "likePost": "Μου αρέσει",
-    "unlikePost": "Αναίρεση μου αρέσει",
-    "comments": "{count} σχόλια",
-    "sharePost": "Κοινοποίηση ανάρτησης",
-    "savePost": "Αποθήκευση ανάρτησης",
-    "unsavePost": "Κατάργηση αποθήκευσης",
-    "photoBy": "Φωτογραφία από {name}",
-    "unknownAuthor": "Άγνωστος",
-    "pinned": "Καρφιτσωμένη"
-  },
-  "DesktopNavRail": {
-    "mainNavigation": "Κύρια πλοήγηση",
-    "coupleNames": "Έμμα & Τζέιμς",
-    "newPost": "Νέα Ανάρτηση",
-    "items": {
-      "home": "Αρχική",
-      "tools": "Εργαλεία",
-      "manage": "Διαχείριση",
-      "notifications": "Ειδοποιήσεις",
-      "profile": "Προφίλ"
-    }
-  },
-  "MobileTabBar": {
-    "mobileNavigation": "Πλοήγηση κινητού",
-    "newPost": "Νέα ανάρτηση",
-    "items": {
-      "home": "Αρχική",
-      "tools": "Εργαλεία",
-      "post": "Ανάρτηση",
-      "alerts": "Ειδοποιήσεις"
-    }
-  },
-  "ComposerCard": {
-    "placeholder": "Γιορτάστε τη στιγμή",
-    "captionPlaceholder": "Μοιραστείτε μια ανάμνηση, μήνυμα ή στιγμή...",
-    "captionAriaLabel": "Λεζάντα ανάρτησης",
-    "addPhotos": "Προσθήκη φωτογραφιών",
-    "removeImage": "Αφαίρεση εικόνας",
-    "uploadFailed": "Δεν ήταν δυνατή η μεταφόρτωση του {filename}",
-    "retry": "Επανάληψη",
-    "maxImagesReached": "Μπορείτε να προσθέσετε έως 10 φωτογραφίες",
-    "fileTooLarge": "Το {filename} υπερβαίνει τα 20 MB",
-    "cancel": "Ακύρωση",
-    "post": "Ανάρτηση",
-    "posting": "Ανάρτηση…"
-  },
-  "RsvpPrompt": {
-    "willYouAttend": "Θα παραστείτε;",
-    "until": "Έως {date}",
-    "yes": "Ναι",
-    "no": "Όχι"
-  },
-  "LoginPage": {
-    "title": "Καλώς ήρθατε ξανά",
-    "subtitle": "Συνδεθείτε για να συμμετάσχετε στον εορτασμό.",
-    "fields": {
-      "email": "Email",
-      "password": "Κωδικός πρόσβασης"
+    "Countdown": {
+        "days": "Ημέρες",
+        "hours": "Ώρες",
+        "minutes": "Λεπτά",
+        "seconds": "Δευτερόλεπτα"
     },
-    "placeholders": {
-      "email": "you@example.com"
+    "StoriesRow": {
+        "ariaLabel": "Ιστορίες",
+        "uploadFailed": "Δεν ήταν δυνατή η μεταφόρτωση της ιστορίας σας. Δοκιμάστε ξανά."
     },
-    "showPassword": "Εμφάνιση κωδικού",
-    "hidePassword": "Απόκρυψη κωδικού",
-    "submit": "Σύνδεση",
-    "disclaimer": "Συμμετέχοντας, συμφωνείτε να μοιραστείτε στιγμές από την ξεχωριστή ημέρα των Έμμα & Τζέιμς.",
-    "noAccount": "Δεν έχετε λογαριασμό;",
-    "createAccountLink": "Δημιουργήστε έναν",
-    "expiredInvite": "Αυτή η πρόσκληση έχει λήξει. Ζητήστε από τον διοργανωτή έναν νέο σύνδεσμο πρόσκλησης."
-  },
-  "RegisterPage": {
-    "title": "Δημιουργία λογαριασμού",
-    "subtitle": "Γίνετε μέλος του τοίχου του γάμου και μοιραστείτε την αγάπη.",
-    "fields": {
-      "fullName": "Ονοματεπώνυμο",
-      "email": "Email",
-      "password": "Κωδικός πρόσβασης"
+    "StoryAvatar": {
+        "addYourStory": "Προσθέστε την ιστορία σας",
+        "userStory": "Ιστορία του/της {name}",
+        "yourStory": "Η ιστορία σας"
     },
-    "placeholders": {
-      "fullName": "Το ονοματεπώνυμό σας",
-      "email": "you@example.com"
+    "FeedPage": {
+        "loadingMore": "Φόρτωση περισσότερων…"
     },
-    "showPassword": "Εμφάνιση κωδικού",
-    "hidePassword": "Απόκρυψη κωδικού",
-    "submit": "Δημιουργία Λογαριασμού",
-    "disclaimer": "Συμμετέχοντας, συμφωνείτε να μοιραστείτε στιγμές από την ξεχωριστή ημέρα των Έμμα & Τζέιμς.",
-    "haveAccount": "Έχετε ήδη λογαριασμό;",
-    "signInLink": "Σύνδεση",
-    "expiredInvite": "Αυτή η πρόσκληση έχει λήξει. Ζητήστε από τον διοργανωτή έναν νέο σύνδεσμο πρόσκλησης."
-  },
-  "WelcomePage": {
-    "title": "Ας ξεκινήσουμε",
-    "subtitle": "Δημιουργήστε τη δική σας εκδήλωση ή συμμετέχετε σε μια στην οποία έχετε προσκληθεί.",
-    "createEventCta": "Δημιουργία εκδήλωσης",
-    "or": "ή",
-    "haveInviteLabel": "Έχετε σύνδεσμο ή κωδικό πρόσκλησης;",
-    "inviteInputPlaceholder": "Επικολλήστε τον σύνδεσμο ή τον κωδικό πρόσκλησης",
-    "goButton": "Συνέχεια"
-  },
-  "InviteOnboardingPage": {
-    "loading": "Φόρτωση της πρόσκλησής σας…",
-    "invalidInvite": {
-      "title": "Η πρόσκληση δεν βρέθηκε",
-      "description": "Αυτός ο σύνδεσμος πρόσκλησης δεν φαίνεται σωστός. Ελέγξτε τον σύνδεσμο ή τον κωδικό QR και δοκιμάστε ξανά."
+    "PostCard": {
+        "justNow": "μόλις τώρα",
+        "timeAgo": {
+            "minutes": "πριν {count} λ",
+            "hours": "πριν {count} ώ",
+            "days": "πριν {count} η"
+        },
+        "moreOptions": "Περισσότερες επιλογές",
+        "likePost": "Μου αρέσει",
+        "unlikePost": "Αναίρεση μου αρέσει",
+        "comments": "{count} σχόλια",
+        "sharePost": "Κοινοποίηση ανάρτησης",
+        "savePost": "Αποθήκευση ανάρτησης",
+        "unsavePost": "Κατάργηση αποθήκευσης",
+        "photoBy": "Φωτογραφία από {name}",
+        "unknownAuthor": "Άγνωστος",
+        "pinned": "Καρφιτσωμένη"
     },
-    "expiredInvite": {
-      "title": "Αυτή η πρόσκληση έχει λήξει",
-      "description": "Ζητήστε από τον διοργανωτή να σας στείλει έναν νέο σύνδεσμο πρόσκλησης."
+    "DesktopNavRail": {
+        "mainNavigation": "Κύρια πλοήγηση",
+        "coupleNames": "Έμμα & Τζέιμς",
+        "newPost": "Νέα Ανάρτηση",
+        "items": {
+            "home": "Αρχική",
+            "tools": "Εργαλεία",
+            "manage": "Διαχείριση",
+            "notifications": "Ειδοποιήσεις",
+            "profile": "Προφίλ"
+        }
     },
-    "alreadyUsedInvite": {
-      "title": "Αυτή η πρόσκληση έχει ήδη χρησιμοποιηθεί",
-      "description": "Αν ήσασταν εσείς, συνδεθείτε παρακάτω για να επιστρέψετε στον τοίχο."
+    "MobileTabBar": {
+        "mobileNavigation": "Πλοήγηση κινητού",
+        "newPost": "Νέα ανάρτηση",
+        "items": {
+            "home": "Αρχική",
+            "tools": "Εργαλεία",
+            "post": "Ανάρτηση",
+            "alerts": "Ειδοποιήσεις"
+        }
     },
-    "defaultHeroImageAlt": "Φωτογραφία εξωφύλλου εκδήλωσης",
-    "joinAsGuest": "Συμμετοχή ως καλεσμένος/η",
-    "guestForm": {
-      "displayNameLabel": "Το όνομά σας",
-      "displayNamePlaceholder": "Πώς θέλετε να εμφανίζεται το όνομά σας;",
-      "submit": "Συμμετοχή"
-    },
-    "haveAccount": "Έχω ήδη λογαριασμό",
-    "createAccount": "Δημιουργία λογαριασμού",
-    "back": "Πίσω"
-  },
-  "ToolsPage": {
-    "title": "Εργαλεία",
-    "subtitle": "Όλα όσα χρειάζεστε για να απολαύσετε και να συμμετάσχετε στον γάμο",
-    "items": {
-      "rsvp": {
-        "label": "RSVP",
-        "description": "Επιβεβαιώστε την παρουσία σας και τις διατροφικές σας προτιμήσεις",
-        "badge": "{count} θα παρευρεθούν"
-      },
-      "gifts": {
-        "label": "Λίστα Δώρων",
-        "description": "Περιηγηθείτε στη λίστα επιθυμιών του ζευγαριού και διεκδικήστε ένα δώρο",
-        "badge": "{count} δεσμευμένα"
-      },
-      "wishbook": {
-        "label": "Βιβλίο Ευχών",
-        "description": "Αφήστε ένα συγκινητικό μήνυμα για την Έμμα & τον Τζέιμς",
-        "badge": "{count} εγγραφές"
-      },
-      "schedule": {
-        "label": "Πρόγραμμα",
-        "description": "Πλήρες χρονοδιάγραμμα εκδηλώσεων πριν από τη μεγάλη μέρα",
-        "badge": "{count} εκδηλώσεις"
-      },
-      "venue": {
-        "label": "Χώρος Εκδήλωσης",
-        "description": "Rosewood Estate — οδηγίες, πάρκινγκ & παροχές"
-      },
-      "playlist": {
-        "label": "Λίστα Τραγουδιών",
-        "description": "Ψηφίστε τραγούδια και προτείνετε κομμάτια για τη δεξίωση",
-        "badge": "{count} τραγούδια"
-      },
-      "quiz": {
-        "label": "Κουίζ Ζευγαριού",
-        "description": "Πόσο καλά γνωρίζετε την Έμμα & τον Τζέιμς;",
-        "badge": "{count} ερωτήσεις"
-      },
-      "seating": {
-        "label": "Καθίσματα",
-        "description": "Βρείτε τη θέση σας στο τραπέζι για τη δεξίωση",
-        "badge": "{count} τραπέζια"
-      },
-      "futureMessages": {
-        "label": "Μελλοντικά Μηνύματα",
-        "description": "Γράψτε ένα γράμμα που θα ανοίξει την επέτειό τους"
-      }
-    }
-  },
-  "ProfilePage": {
-    "yourEvents": "Τα events σου",
-    "eventUnavailable": "Το event δεν είναι διαθέσιμο",
-    "roleFallback": {
-      "host": "Διοργανωτής/τρια",
-      "attendee": "Καλεσμένος/η"
-    },
-    "emptyMemberships": {
-      "title": "Δεν υπάρχουν events ακόμα",
-      "body": "Συμμετέχεις σε ένα event με σύνδεσμο πρόσκλησης ή δημιούργησε το δικό σου για να ξεκινήσεις.",
-      "cta": "Ξεκίνα τώρα"
-    }
-  },
-  "NotificationsPage": {
-    "title": "Ειδοποιήσεις",
-    "markAllRead": "Σήμανση όλων ως αναγνωσμένα",
-    "justNow": "μόλις τώρα",
-    "timeAgo": {
-      "minutes": "πριν {count} λ",
-      "hours": "πριν {count} ώ",
-      "days": "πριν {count} η"
-    },
-    "sections": {
-      "new": "Νέα",
-      "earlier": "Παλαιότερα"
-    },
-    "emptyState": {
-      "title": "Δεν υπάρχουν ειδοποιήσεις ακόμα",
-      "description": "Θα σας ενημερώσουμε όταν συμβεί κάτι"
-    }
-  },
-  "PostModal": {
-    "title": "Ανάρτηση",
-    "close": "Κλείσιμο",
-    "loading": "Φόρτωση ανάρτησης…",
-    "notFoundTitle": "Η ανάρτηση δεν βρέθηκε",
-    "notFoundDescription": "Αυτή η ανάρτηση μπορεί να έχει αφαιρεθεί.",
-    "loadFailedTitle": "Δεν ήταν δυνατή η φόρτωση της ανάρτησης",
-    "loadFailedDescription": "Κάτι πήγε στραβά. Δοκιμάστε ξανά αργότερα.",
-    "noCommentsYet": "Δεν υπάρχουν σχόλια ακόμα",
-    "commentCount": "{count, plural, one {# σχόλιο} other {# σχόλια}}",
-    "unknownAuthor": "Άγνωστος",
-    "justNow": "μόλις τώρα",
-    "timeAgo": {
-      "minutes": "{count}λ",
-      "hours": "{count}ώ",
-      "days": "{count}η"
-    },
-    "commentPlaceholder": "Προσθέστε ένα σχόλιο...",
-    "commentTextAriaLabel": "Κείμενο σχολίου",
-    "postComment": "Δημοσίευση σχολίου",
-    "commentFailed": "Δεν ήταν δυνατή η δημοσίευση του σχολίου σας. Δοκιμάστε ξανά."
-  },
-  "StoryPage": {
-    "closeStory": "Κλείσιμο ιστορίας",
-    "userStory": "Ιστορία του/της {name}",
-    "story": "Ιστορία",
-    "previousStory": "Προηγούμενη ιστορία",
-    "nextStory": "Επόμενη ιστορία",
-    "previous": "Προηγούμενο",
-    "next": "Επόμενο",
-    "moreOptions": "Περισσότερες επιλογές",
-    "deleteStory": "Διαγραφή ιστορίας",
-    "listenToSong": "Ακούστε το τραγούδι",
-    "viewedBy": "Είδαν",
-    "viewedByCount": "Είδαν {count}",
-    "loadingViewers": "Φόρτωση…",
-    "noViewers": "Δεν υπάρχουν προβολές ακόμα",
-    "unknownAuthor": "Κάποιος/α",
-    "close": "Κλείσιμο"
-  },
-  "CreateEventPage": {
-    "goBack": "Πίσω",
-    "title": "Δημιουργία εκδήλωσης",
-    "subtitle": "Μπορείτε να προσθέσετε περισσότερες λεπτομέρειες — περιγραφή, εξώφυλλο, προθεσμία RSVP — μετά τη δημιουργία.",
-    "fields": {
-      "title": "Τίτλος εκδήλωσης",
-      "eventType": "Τύπος εκδήλωσης",
-      "startAt": "Έναρξη",
-      "endAt": "Λήξη (προαιρετικό)",
-      "timezone": "Ζώνη ώρας",
-      "locationName": "Τοποθεσία (προαιρετικό)",
-      "visibility": "Ορατότητα"
-    },
-    "placeholders": {
-      "title": "π.χ. Γάμος Έμμα & Τζέιμς",
-      "locationName": "π.χ. Rosewood Estate, Napa Valley"
-    },
-    "eventTypes": {
-      "WEDDING": "Γάμος",
-      "BAPTISM": "Βάφτιση",
-      "BIRTHDAY": "Γενέθλια",
-      "CONFERENCE": "Συνέδριο"
-    },
-    "visibilities": {
-      "PRIVATE": "Ιδιωτικό",
-      "PUBLIC": "Δημόσιο"
-    },
-    "submit": "Δημιουργία εκδήλωσης"
-  },
-  "ManagePage": {
-    "title": "Πίνακας Διοργανωτή",
-    "hostView": "Προβολή Διοργανωτή",
-    "newEvent": "Νέα εκδήλωση",
-    "tabs": {
-      "overview": "Επισκόπηση",
-      "rsvp": "RSVP",
-      "invitations": "Προσκλήσεις",
-      "settings": "Ρυθμίσεις"
-    },
-    "stats": {
-      "totalGuests": {
-        "label": "Μέλη",
-        "sub": "Συμμετέχουν στην εκδήλωση"
-      },
-      "daysToGo": {
-        "label": "Ημέρες που απομένουν",
-        "sub": "Μέχρι την έναρξη"
-      },
-      "invitations": {
-        "label": "Προσκλήσεις",
-        "sub": "Έχουν σταλεί"
-      }
-    },
-    "rsvpBreakdown": {
-      "title": "Ανάλυση RSVP",
-      "attending": "Θα παρευρεθούν",
-      "maybe": "Ίσως",
-      "declined": "Απορριφθέντα",
-      "noResponse": "Χωρίς απάντηση"
-    },
-    "seeAll": "Δείτε όλα",
-    "rsvpSummary": "{total} καλεσμένοι · {attending} θα παρευρεθούν",
-    "rsvpStatus": {
-      "ATTENDING": "Θα παρευρεθεί",
-      "DECLINED": "Απέρριψε",
-      "MAYBE": "Ίσως",
-      "NO_RESPONSE": "Χωρίς απάντηση ακόμα"
-    },
-    "noGuestsYet": "Δεν έχουν συμμετάσχει καλεσμένοι ακόμα — μοιραστείτε μια πρόσκληση για να ξεκινήσετε.",
-    "invitationsCard": {
-      "title": "Προσκλήσεις",
-      "summary": "{count} προσκλήσεις έχουν σταλεί"
-    },
-    "invitations": {
-      "empty": "Δεν υπάρχουν προσκλήσεις ακόμα. Δημιουργήστε μία για να πάρετε έναν σύνδεσμο κοινοποίησης.",
-      "claimed": "Χρησιμοποιήθηκε",
-      "unclaimed": "Διαθέσιμη",
-      "maxGuests": "Έως {count} καλεσμένους",
-      "copyLink": "Αντιγραφή συνδέσμου",
-      "copied": "Αντιγράφηκε!",
-      "edit": "Επεξεργασία",
-      "save": "Αποθήκευση",
-      "revoke": "Ανάκληση",
-      "confirmRevoke": "Επιβεβαίωση ανάκλησης",
-      "create": {
-        "cta": "Νέα πρόσκληση",
-        "title": "Νέα πρόσκληση",
+    "ComposerCard": {
+        "placeholder": "Γιορτάστε τη στιγμή",
+        "captionPlaceholder": "Μοιραστείτε μια ανάμνηση, μήνυμα ή στιγμή...",
+        "captionAriaLabel": "Λεζάντα ανάρτησης",
+        "addPhotos": "Προσθήκη φωτογραφιών",
+        "removeImage": "Αφαίρεση εικόνας",
+        "uploadFailed": "Δεν ήταν δυνατή η μεταφόρτωση του {filename}",
+        "retry": "Επανάληψη",
+        "maxImagesReached": "Μπορείτε να προσθέσετε έως 10 φωτογραφίες",
+        "fileTooLarge": "Το {filename} υπερβαίνει τα 20 MB",
         "cancel": "Ακύρωση",
-        "submit": "Δημιουργία πρόσκλησης"
-      },
-      "fields": {
-        "inviteCode": "Κωδικός πρόσκλησης",
-        "maxGuests": "Μέγιστοι καλεσμένοι",
-        "firstName": "Όνομα",
-        "lastName": "Επώνυμο",
-        "email": "Email"
-      },
-      "placeholders": {
-        "inviteCode": "π.χ. TABLE-7"
-      }
+        "post": "Ανάρτηση",
+        "posting": "Ανάρτηση…"
     },
-    "settings": {
-      "title": "Λεπτομέρειες εκδήλωσης",
-      "subtitle": "Αυτές οι λεπτομέρειες εμφανίζονται στη σελίδα πρόσκλησης και στη ροή της εκδήλωσης.",
-      "fields": {
-        "title": "Τίτλος εκδήλωσης",
-        "subtitle": "Υπότιτλος",
-        "description": "Περιγραφή",
-        "locationName": "Τοποθεσία",
-        "locationAddress": "Διεύθυνση",
-        "mapsUrl": "Σύνδεσμος χάρτη",
-        "rsvpDeadline": "Προθεσμία RSVP",
-        "startAt": "Έναρξη",
-        "endAt": "Λήξη"
-      },
-      "placeholders": {
-        "subtitle": "π.χ. Ελάτε να γιορτάσουμε μαζί ένα βράδυ που θα θυμόμαστε",
-        "description": "Πείτε λίγα περισσότερα στους καλεσμένους σας για τον εορτασμό...",
-        "locationAddress": "π.χ. 1842 Silverado Trail, Napa, CA 94558",
-        "mapsUrl": "https://maps.google.com/..."
-      },
-      "coverPhoto": {
-        "label": "Φωτογραφία εξωφύλλου",
-        "upload": "Προσθήκη φωτογραφίας εξωφύλλου",
-        "change": "Αλλαγή φωτογραφίας",
-        "remove": "Αφαίρεση",
-        "uploading": "Μεταφόρτωση…",
-        "formats": "JPEG, PNG, HEIC έως 10 MB"
-      },
-      "save": "Αποθήκευση αλλαγών",
-      "saved": "Αποθηκεύτηκε"
+    "RsvpPrompt": {
+        "willYouAttend": "Θα παραστείτε;",
+        "until": "Έως {date}",
+        "yes": "Ναι",
+        "no": "Όχι"
+    },
+    "LoginPage": {
+        "title": "Καλώς ήρθατε ξανά",
+        "subtitle": "Συνδεθείτε για να συμμετάσχετε στον εορτασμό.",
+        "fields": {
+            "email": "Email",
+            "password": "Κωδικός πρόσβασης"
+        },
+        "placeholders": {
+            "email": "you@example.com"
+        },
+        "showPassword": "Εμφάνιση κωδικού",
+        "hidePassword": "Απόκρυψη κωδικού",
+        "submit": "Σύνδεση",
+        "disclaimer": "Συμμετέχοντας, συμφωνείτε να μοιραστείτε στιγμές από την ξεχωριστή ημέρα των Έμμα & Τζέιμς.",
+        "noAccount": "Δεν έχετε λογαριασμό;",
+        "createAccountLink": "Δημιουργήστε έναν",
+        "expiredInvite": "Αυτή η πρόσκληση έχει λήξει. Ζητήστε από τον διοργανωτή έναν νέο σύνδεσμο πρόσκλησης."
+    },
+    "RegisterPage": {
+        "title": "Δημιουργία λογαριασμού",
+        "subtitle": "Γίνετε μέλος του τοίχου του γάμου και μοιραστείτε την αγάπη.",
+        "fields": {
+            "fullName": "Ονοματεπώνυμο",
+            "email": "Email",
+            "password": "Κωδικός πρόσβασης"
+        },
+        "placeholders": {
+            "fullName": "Το ονοματεπώνυμό σας",
+            "email": "you@example.com"
+        },
+        "showPassword": "Εμφάνιση κωδικού",
+        "hidePassword": "Απόκρυψη κωδικού",
+        "submit": "Δημιουργία Λογαριασμού",
+        "disclaimer": "Συμμετέχοντας, συμφωνείτε να μοιραστείτε στιγμές από την ξεχωριστή ημέρα των Έμμα & Τζέιμς.",
+        "haveAccount": "Έχετε ήδη λογαριασμό;",
+        "signInLink": "Σύνδεση",
+        "expiredInvite": "Αυτή η πρόσκληση έχει λήξει. Ζητήστε από τον διοργανωτή έναν νέο σύνδεσμο πρόσκλησης."
+    },
+    "WelcomePage": {
+        "title": "Ας ξεκινήσουμε",
+        "subtitle": "Δημιουργήστε τη δική σας εκδήλωση ή συμμετέχετε σε μια στην οποία έχετε προσκληθεί.",
+        "createEventCta": "Δημιουργία εκδήλωσης",
+        "or": "ή",
+        "haveInviteLabel": "Έχετε σύνδεσμο ή κωδικό πρόσκλησης;",
+        "inviteInputPlaceholder": "Επικολλήστε τον σύνδεσμο ή τον κωδικό πρόσκλησης",
+        "goButton": "Συνέχεια"
+    },
+    "InviteOnboardingPage": {
+        "loading": "Φόρτωση της πρόσκλησής σας…",
+        "invalidInvite": {
+            "title": "Η πρόσκληση δεν βρέθηκε",
+            "description": "Αυτός ο σύνδεσμος πρόσκλησης δεν φαίνεται σωστός. Ελέγξτε τον σύνδεσμο ή τον κωδικό QR και δοκιμάστε ξανά."
+        },
+        "expiredInvite": {
+            "title": "Αυτή η πρόσκληση έχει λήξει",
+            "description": "Ζητήστε από τον διοργανωτή να σας στείλει έναν νέο σύνδεσμο πρόσκλησης."
+        },
+        "alreadyUsedInvite": {
+            "title": "Αυτή η πρόσκληση έχει ήδη χρησιμοποιηθεί",
+            "description": "Αν ήσασταν εσείς, συνδεθείτε παρακάτω για να επιστρέψετε στον τοίχο."
+        },
+        "defaultHeroImageAlt": "Φωτογραφία εξωφύλλου εκδήλωσης",
+        "joinAsGuest": "Συμμετοχή ως καλεσμένος/η",
+        "guestForm": {
+            "displayNameLabel": "Το όνομά σας",
+            "displayNamePlaceholder": "Πώς θέλετε να εμφανίζεται το όνομά σας;",
+            "submit": "Συμμετοχή"
+        },
+        "haveAccount": "Έχω ήδη λογαριασμό",
+        "createAccount": "Δημιουργία λογαριασμού",
+        "back": "Πίσω"
+    },
+    "ToolsPage": {
+        "title": "Εργαλεία",
+        "subtitle": "Όλα όσα χρειάζεστε για να απολαύσετε και να συμμετάσχετε στον γάμο",
+        "items": {
+            "rsvp": {
+                "label": "RSVP",
+                "description": "Επιβεβαιώστε την παρουσία σας και τις διατροφικές σας προτιμήσεις",
+                "badge": "{count} θα παρευρεθούν"
+            },
+            "gifts": {
+                "label": "Λίστα Δώρων",
+                "description": "Περιηγηθείτε στη λίστα επιθυμιών του ζευγαριού και διεκδικήστε ένα δώρο",
+                "badge": "{count} δεσμευμένα"
+            },
+            "wishbook": {
+                "label": "Βιβλίο Ευχών",
+                "description": "Αφήστε ένα συγκινητικό μήνυμα για την Έμμα & τον Τζέιμς",
+                "badge": "{count} εγγραφές"
+            },
+            "schedule": {
+                "label": "Πρόγραμμα",
+                "description": "Πλήρες χρονοδιάγραμμα εκδηλώσεων πριν από τη μεγάλη μέρα",
+                "badge": "{count} εκδηλώσεις"
+            },
+            "venue": {
+                "label": "Χώρος Εκδήλωσης",
+                "description": "Rosewood Estate — οδηγίες, πάρκινγκ & παροχές"
+            },
+            "playlist": {
+                "label": "Λίστα Τραγουδιών",
+                "description": "Ψηφίστε τραγούδια και προτείνετε κομμάτια για τη δεξίωση",
+                "badge": "{count} τραγούδια"
+            },
+            "quiz": {
+                "label": "Κουίζ Ζευγαριού",
+                "description": "Πόσο καλά γνωρίζετε την Έμμα & τον Τζέιμς;",
+                "badge": "{count} ερωτήσεις"
+            },
+            "seating": {
+                "label": "Καθίσματα",
+                "description": "Βρείτε τη θέση σας στο τραπέζι για τη δεξίωση",
+                "badge": "{count} τραπέζια"
+            },
+            "futureMessages": {
+                "label": "Μελλοντικά Μηνύματα",
+                "description": "Γράψτε ένα γράμμα που θα ανοίξει την επέτειό τους"
+            }
+        }
+    },
+    "ProfilePage": {
+        "yourEvents": "Τα events σου",
+        "eventUnavailable": "Το event δεν είναι διαθέσιμο",
+        "roleFallback": {
+            "host": "Διοργανωτής/τρια",
+            "attendee": "Καλεσμένος/η"
+        },
+        "emptyMemberships": {
+            "title": "Δεν υπάρχουν events ακόμα",
+            "body": "Συμμετέχεις σε ένα event με σύνδεσμο πρόσκλησης ή δημιούργησε το δικό σου για να ξεκινήσεις.",
+            "cta": "Ξεκίνα τώρα"
+        }
+    },
+    "NotificationsPage": {
+        "title": "Ειδοποιήσεις",
+        "markAllRead": "Σήμανση όλων ως αναγνωσμένα",
+        "justNow": "μόλις τώρα",
+        "timeAgo": {
+            "minutes": "πριν {count} λ",
+            "hours": "πριν {count} ώ",
+            "days": "πριν {count} η"
+        },
+        "sections": {
+            "new": "Νέα",
+            "earlier": "Παλαιότερα"
+        },
+        "emptyState": {
+            "title": "Δεν υπάρχουν ειδοποιήσεις ακόμα",
+            "description": "Θα σας ενημερώσουμε όταν συμβεί κάτι"
+        }
+    },
+    "PostModal": {
+        "title": "Ανάρτηση",
+        "close": "Κλείσιμο",
+        "loading": "Φόρτωση ανάρτησης…",
+        "notFoundTitle": "Η ανάρτηση δεν βρέθηκε",
+        "notFoundDescription": "Αυτή η ανάρτηση μπορεί να έχει αφαιρεθεί.",
+        "loadFailedTitle": "Δεν ήταν δυνατή η φόρτωση της ανάρτησης",
+        "loadFailedDescription": "Κάτι πήγε στραβά. Δοκιμάστε ξανά αργότερα.",
+        "noCommentsYet": "Δεν υπάρχουν σχόλια ακόμα",
+        "commentCount": "{count, plural, one {# σχόλιο} other {# σχόλια}}",
+        "unknownAuthor": "Άγνωστος",
+        "justNow": "μόλις τώρα",
+        "timeAgo": {
+            "minutes": "{count}λ",
+            "hours": "{count}ώ",
+            "days": "{count}η"
+        },
+        "commentPlaceholder": "Προσθέστε ένα σχόλιο...",
+        "commentTextAriaLabel": "Κείμενο σχολίου",
+        "postComment": "Δημοσίευση σχολίου",
+        "commentFailed": "Δεν ήταν δυνατή η δημοσίευση του σχολίου σας. Δοκιμάστε ξανά."
+    },
+    "StoryPage": {
+        "closeStory": "Κλείσιμο ιστορίας",
+        "userStory": "Ιστορία του/της {name}",
+        "story": "Ιστορία",
+        "previousStory": "Προηγούμενη ιστορία",
+        "nextStory": "Επόμενη ιστορία",
+        "previous": "Προηγούμενο",
+        "next": "Επόμενο",
+        "moreOptions": "Περισσότερες επιλογές",
+        "deleteStory": "Διαγραφή ιστορίας",
+        "listenToSong": "Ακούστε το τραγούδι",
+        "viewedBy": "Είδαν",
+        "viewedByCount": "Είδαν {count}",
+        "loadingViewers": "Φόρτωση…",
+        "noViewers": "Δεν υπάρχουν προβολές ακόμα",
+        "unknownAuthor": "Κάποιος/α",
+        "close": "Κλείσιμο"
+    },
+    "CreateEventPage": {
+        "goBack": "Πίσω",
+        "title": "Δημιουργία εκδήλωσης",
+        "subtitle": "Μπορείτε να προσθέσετε περισσότερες λεπτομέρειες — περιγραφή, εξώφυλλο, προθεσμία RSVP — μετά τη δημιουργία.",
+        "fields": {
+            "title": "Τίτλος εκδήλωσης",
+            "eventType": "Τύπος εκδήλωσης",
+            "startAt": "Έναρξη",
+            "endAt": "Λήξη (προαιρετικό)",
+            "timezone": "Ζώνη ώρας",
+            "locationName": "Τοποθεσία (προαιρετικό)",
+            "visibility": "Ορατότητα"
+        },
+        "placeholders": {
+            "title": "π.χ. Γάμος Έμμα & Τζέιμς",
+            "locationName": "π.χ. Rosewood Estate, Napa Valley"
+        },
+        "eventTypes": {
+            "WEDDING": "Γάμος",
+            "BAPTISM": "Βάφτιση",
+            "BIRTHDAY": "Γενέθλια",
+            "CONFERENCE": "Συνέδριο"
+        },
+        "visibilities": {
+            "PRIVATE": "Ιδιωτικό",
+            "PUBLIC": "Δημόσιο"
+        },
+        "submit": "Δημιουργία εκδήλωσης"
+    },
+    "ManagePage": {
+        "title": "Πίνακας Διοργανωτή",
+        "hostView": "Προβολή Διοργανωτή",
+        "newEvent": "Νέα εκδήλωση",
+        "tabs": {
+            "overview": "Επισκόπηση",
+            "rsvp": "RSVP",
+            "invitations": "Προσκλήσεις",
+            "settings": "Ρυθμίσεις"
+        },
+        "stats": {
+            "totalGuests": {
+                "label": "Μέλη",
+                "sub": "Συμμετέχουν στην εκδήλωση"
+            },
+            "daysToGo": {
+                "label": "Ημέρες που απομένουν",
+                "sub": "Μέχρι την έναρξη"
+            },
+            "invitations": {
+                "label": "Προσκλήσεις",
+                "sub": "Έχουν σταλεί"
+            }
+        },
+        "rsvpBreakdown": {
+            "title": "Ανάλυση RSVP",
+            "attending": "Θα παρευρεθούν",
+            "maybe": "Ίσως",
+            "declined": "Απορριφθέντα",
+            "noResponse": "Χωρίς απάντηση"
+        },
+        "seeAll": "Δείτε όλα",
+        "rsvpSummary": "{total} καλεσμένοι · {attending} θα παρευρεθούν",
+        "rsvpStatus": {
+            "ATTENDING": "Θα παρευρεθεί",
+            "DECLINED": "Απέρριψε",
+            "MAYBE": "Ίσως",
+            "NO_RESPONSE": "Χωρίς απάντηση ακόμα"
+        },
+        "noGuestsYet": "Δεν έχουν συμμετάσχει καλεσμένοι ακόμα — μοιραστείτε μια πρόσκληση για να ξεκινήσετε.",
+        "invitationsCard": {
+            "title": "Προσκλήσεις",
+            "summary": "{count} προσκλήσεις έχουν σταλεί"
+        },
+        "invitations": {
+            "empty": "Δεν υπάρχουν προσκλήσεις ακόμα. Δημιουργήστε μία για να πάρετε έναν σύνδεσμο κοινοποίησης.",
+            "claimed": "Χρησιμοποιήθηκε",
+            "unclaimed": "Διαθέσιμη",
+            "maxGuests": "Έως {count} καλεσμένους",
+            "copyLink": "Αντιγραφή συνδέσμου",
+            "copied": "Αντιγράφηκε!",
+            "edit": "Επεξεργασία",
+            "save": "Αποθήκευση",
+            "revoke": "Ανάκληση",
+            "confirmRevoke": "Επιβεβαίωση ανάκλησης",
+            "create": {
+                "cta": "Νέα πρόσκληση",
+                "title": "Νέα πρόσκληση",
+                "cancel": "Ακύρωση",
+                "submit": "Δημιουργία πρόσκλησης"
+            },
+            "fields": {
+                "inviteCode": "Κωδικός πρόσκλησης",
+                "maxGuests": "Μέγιστοι καλεσμένοι",
+                "firstName": "Όνομα",
+                "lastName": "Επώνυμο",
+                "email": "Email"
+            },
+            "placeholders": {
+                "inviteCode": "π.χ. TABLE-7"
+            }
+        },
+        "settings": {
+            "title": "Λεπτομέρειες εκδήλωσης",
+            "subtitle": "Αυτές οι λεπτομέρειες εμφανίζονται στη σελίδα πρόσκλησης και στη ροή της εκδήλωσης.",
+            "fields": {
+                "title": "Τίτλος εκδήλωσης",
+                "subtitle": "Υπότιτλος",
+                "description": "Περιγραφή",
+                "locationName": "Τοποθεσία",
+                "locationAddress": "Διεύθυνση",
+                "mapsUrl": "Σύνδεσμος χάρτη",
+                "rsvpDeadline": "Προθεσμία RSVP",
+                "startAt": "Έναρξη",
+                "endAt": "Λήξη"
+            },
+            "placeholders": {
+                "subtitle": "π.χ. Ελάτε να γιορτάσουμε μαζί ένα βράδυ που θα θυμόμαστε",
+                "description": "Πείτε λίγα περισσότερα στους καλεσμένους σας για τον εορτασμό...",
+                "locationAddress": "π.χ. 1842 Silverado Trail, Napa, CA 94558",
+                "mapsUrl": "https://maps.google.com/..."
+            },
+            "coverPhoto": {
+                "label": "Φωτογραφία εξωφύλλου",
+                "upload": "Προσθήκη φωτογραφίας εξωφύλλου",
+                "change": "Αλλαγή φωτογραφίας",
+                "remove": "Αφαίρεση",
+                "uploading": "Μεταφόρτωση…",
+                "formats": "JPEG, PNG, HEIC έως 10 MB"
+            },
+            "save": "Αποθήκευση αλλαγών",
+            "saved": "Αποθηκεύτηκε"
+        }
+    },
+    "SchedulePage": {
+        "backToTools": "Πίσω στα εργαλεία",
+        "title": "Πρόγραμμα",
+        "subtitle": "Όλες οι εκδηλώσεις από τον αρραβώνα μέχρι και μετά τον γάμο.",
+        "eventTypes": {
+            "ceremony": "Τελετή",
+            "reception": "Δεξίωση",
+            "preWedding": "Προγαμιαία",
+            "social": "Κοινωνική"
+        },
+        "attendingCount": "{count} θα παρευρεθούν"
+    },
+    "GiftsPage": {
+        "goBack": "Πίσω",
+        "title": "Λίστα Δώρων",
+        "subtitle": "Η Έμμα και ο Τζέιμς είναι ευγνώμονες για την αγάπη και την παρουσία σας. Κάθε δώρο εκτιμάται βαθιά.",
+        "filters": {
+            "all": "Όλα",
+            "available": "Διαθέσιμα",
+            "reserved": "Δεσμευμένα"
+        },
+        "priority": {
+            "high": "Κορυφαία επιλογή",
+            "medium": "Επιθυμητό",
+            "low": "Ωραίο να έχεις"
+        },
+        "reserved": "Δεσμευμένο",
+        "reservedByName": "Δεσμεύτηκε από {name}",
+        "reserveGift": "Δέσμευση Δώρου",
+        "viewOn": "Δείτε {name} στο {category}"
+    },
+    "WishbookPage": {
+        "goBack": "Πίσω",
+        "title": "Βιβλίο Ευχών",
+        "subtitle": "Αφήστε ένα συγκινητικό μήνυμα για την Έμμα & τον Τζέιμς. Θα το θησαυρίσουν για πάντα.",
+        "messagePlaceholder": "Γράψτε το μήνυμά σας στην Έμμα & τον Τζέιμς... Όσο πιο συγκινητικό θέλετε.",
+        "messageAriaLabel": "Μήνυμα βιβλίου ευχών",
+        "addToWishbook": "Προσθήκη στο Βιβλίο Ευχών",
+        "messageCount": "{count, plural, one {# Μήνυμα} other {# Μηνύματα}}",
+        "timeAgo": {
+            "hours": "πριν {count} ώ",
+            "days": "πριν {count} η"
+        },
+        "unlikeMessage": "Αναίρεση μου αρέσει",
+        "likeMessage": "Μου αρέσει"
+    },
+    "SeatingPage": {
+        "backToTools": "Πίσω στα εργαλεία",
+        "title": "Διάταξη Καθισμάτων",
+        "subtitle": "Βρείτε τη θέση σας στο τραπέζι για τη δεξίωση. Αναζητήστε το όνομά σας ή περιηγηθείτε σε όλα τα τραπέζια παρακάτω.",
+        "searchPlaceholder": "Αναζητήστε το όνομά σας...",
+        "searchAriaLabel": "Αναζήτηση ονόματος καλεσμένου",
+        "clearSearch": "Καθαρισμός αναζήτησης",
+        "noGuestsFound": "Δεν βρέθηκαν καλεσμένοι που να ταιριάζουν με \"{search}\"",
+        "allTables": "Όλα τα Τραπέζια",
+        "seatsCount": "{seats} / {capacity} θέσεις",
+        "emptySeat": "Κενή θέση"
+    },
+    "PlaylistPage": {
+        "backToTools": "Πίσω στα εργαλεία",
+        "title": "Λίστα Τραγουδιών",
+        "cancel": "Ακύρωση",
+        "suggestASong": "Προτείνετε ένα τραγούδι",
+        "suggest": "Πρόταση",
+        "songTitle": "Τίτλος τραγουδιού",
+        "artist": "Καλλιτέχνης",
+        "momentForSong": "Στιγμή για το τραγούδι",
+        "addToPlaylist": "Προσθήκη στη Λίστα",
+        "allSongs": "Όλα τα τραγούδια",
+        "moments": {
+            "ceremony": "Τελετή",
+            "cocktail": "Cocktail Hour",
+            "reception": "Δεξίωση",
+            "firstDance": "Πρώτος Χορός"
+        },
+        "removeVote": "Αφαίρεση ψήφου",
+        "voteForThisSong": "Ψηφίστε αυτό το τραγούδι"
+    },
+    "QuizPage": {
+        "backToTools": "Πίσω στα εργαλεία",
+        "title": "Κουίζ Ζευγαριού",
+        "resultsTitle": "Κουίζ Ζευγαριού — Αποτελέσματα",
+        "quizComplete": "Το κουίζ ολοκληρώθηκε!",
+        "tryAgain": "Δοκιμάστε ξανά",
+        "reviewYourAnswers": "Ελέγξτε τις απαντήσεις σας",
+        "correctAnswer": "Σωστό: {answer}",
+        "yourAnswerVsCorrect": "Η απάντησή σας: {yourAnswer} — Σωστό: {correctAnswer}",
+        "skipped": "Παραλείφθηκε",
+        "questionCounter": "Ερώτηση {current} από {total}",
+        "correct": "Σωστά!",
+        "notQuite": "Όχι ακριβώς",
+        "seeResults": "Δείτε τα Αποτελέσματα",
+        "nextQuestion": "Επόμενη Ερώτηση",
+        "grades": {
+            "perfect": "Τέλεια βαθμολογία! Ξέρετε τα πάντα γι' αυτούς.",
+            "excellent": "Εξαιρετικά! Γνωρίζετε πολύ καλά την Έμμα & τον Τζέιμς.",
+            "good": "Αρκετά καλά — προσέχατε!",
+            "okay": "Όχι κι άσχημα! Μιλήστε τους περισσότερο στον γάμο."
+        }
+    },
+    "RSVPPage": {
+        "goBack": "Πίσω",
+        "title": "RSVP",
+        "onTheList": "Είστε στη λίστα!",
+        "rsvpReceived": "Το RSVP λήφθηκε",
+        "attendingConfirmation": "Ανυπομονούμε να γιορτάσουμε μαζί σας! Θα λαμβάνετε ενημερώσεις καθώς πλησιάζει η μεγάλη μέρα.",
+        "declinedConfirmation": "Ευχαριστούμε που μας ενημερώσατε. Θα έχετε ακόμα πρόσβαση στο StoryWall.",
+        "backToTheWall": "Πίσω στον Τοίχο",
+        "stats": {
+            "attending": "Θα παρευρεθούν",
+            "pending": "Σε αναμονή",
+            "declined": "Απορρίφθηκαν"
+        },
+        "guestsCount": "{count, plural, one {# καλεσμένος} other {# καλεσμένοι}}",
+        "awaitingReply": "αναμονή απάντησης",
+        "notAttending": "δεν θα παρευρεθούν",
+        "yourRsvp": "Το RSVP σας",
+        "willYouAttend": "Θα παρευρεθείτε;",
+        "joyfullyAccept": "Αποδέχομαι με χαρά",
+        "regretfullyDecline": "Δυστυχώς αρνούμαι",
+        "plusOnes": "Συνοδοί",
+        "dietaryRequirements": "Διατροφικές απαιτήσεις",
+        "dietaryOptions": {
+            "none": "Καμία / Χωρίς περιορισμούς",
+            "vegetarian": "Χορτοφαγικό",
+            "vegan": "Vegan",
+            "glutenFree": "Χωρίς γλουτένη",
+            "halal": "Halal",
+            "kosher": "Kosher",
+            "other": "Άλλο (διευκρινίστε στο μήνυμα)"
+        },
+        "messageForCouple": "Μήνυμα για την Έμμα & τον Τζέιμς",
+        "messagePlaceholder": "Προαιρετικό — μοιραστείτε τον ενθουσιασμό σας ή ένα ξεχωριστό σημείωμα...",
+        "messageAriaLabel": "Μήνυμα για το ζευγάρι",
+        "submitRsvp": "Υποβολή RSVP",
+        "submitError": "Κάτι πήγε στραβά κατά την υποβολή του RSVP. Δοκιμάστε ξανά.",
+        "whosComing": "Ποιοι έρχονται"
+    },
+    "VenuePage": {
+        "backToTools": "Πίσω στα εργαλεία",
+        "title": "Χώρος Εκδήλωσης",
+        "heroImageAlt": "Rosewood Estate, Napa Valley — ο χώρος του γάμου",
+        "venueName": "Rosewood Estate",
+        "venueRegion": "Napa Valley, Καλιφόρνια",
+        "aboutTheVenue": "Σχετικά με τον Χώρο",
+        "aboutText": "Το Rosewood Estate είναι ένα εντυπωσιακό κτήμα 40 στρεμμάτων με αμπελώνες στην καρδιά της Napa Valley. Με τον απέραντο κήπο τριαντάφυλλων για την τελετή, τη μεγαλοπρεπή αίθουσα δεξίωσης και τη μαγευτική θέα στους αμπελώνες, είναι το ιδανικό σκηνικό για τον εορτασμό της Έμμα και του Τζέιμς. Το κτήμα φιλοξενεί γάμους εδώ και πάνω από 25 χρόνια.",
+        "address": "Διεύθυνση",
+        "addressValue": "1842 Silverado Trail, Napa, CA 94558",
+        "phone": "Τηλέφωνο",
+        "website": "Ιστότοπος",
+        "gettingThere": "Πώς να Φτάσετε",
+        "openInMaps": "Άνοιγμα στους Χάρτες",
+        "byCarLabel": "Με αυτοκίνητο:",
+        "byCarText": "1 ώρα και 20 λεπτά από το Σαν Φρανσίσκο μέσω US-101N και CA-37E. Δωρεάν πάρκινγκ επί τόπου.",
+        "shuttleLabel": "Λεωφορείο:",
+        "shuttleText": "Δωρεάν λεωφορείο αναχωρεί από την Union Square, SF στις 2:30 μ.μ. στις 18 Οκτωβρίου.",
+        "amenities": "Παροχές",
+        "amenityLabels": {
+            "parking": "Δωρεάν πάρκινγκ για 200+ οχήματα",
+            "accommodation": "Διαμονή επί τόπου — The Inn at Rosewood",
+            "catering": "Πλήρες κέτερινγκ & μπαρ",
+            "wifi": "Υψηλής ταχύτητας WiFi παντού",
+            "accessible": "Προσβάσιμες εγκαταστάσεις & διαδρομές",
+            "shuttle": "Δωρεάν λεωφορείο από το Σαν Φρανσίσκο"
+        },
+        "gallery": "Γκαλερί",
+        "galleryAlts": {
+            "mainLawn": "Ο κεντρικός χώρος του Rosewood Estate το ηλιοβασίλεμα",
+            "vineyard": "Οι αμπελώνες",
+            "roseGarden": "Κήπος τριαντάφυλλων τελετής",
+            "pavilion": "Εσωτερικό μεγάλου περιπτέρου"
+        }
+    },
+    "FutureMessagesPage": {
+        "backToTools": "Πίσω στα εργαλεία",
+        "title": "Μελλοντικά Μηνύματα",
+        "intro": "Γράψτε ένα γράμμα στην Έμμα & τον Τζέιμς που θα τους παραδοθεί σε μια μελλοντική επέτειο. Το μήνυμά σας θα παραμείνει σφραγισμένο μέχρι να επιλέξουν να το ανοίξουν.",
+        "messageSealed": "Το μήνυμα σφραγίστηκε!",
+        "sealedUntil": "Το γράμμα σας έχει κλειδωθεί μέχρι {openOn}. Η Έμμα & ο Τζέιμς θα το εκτιμήσουν όταν έρθει η ώρα.",
+        "writeAnother": "Γράψτε άλλο ένα",
+        "writingALetter": "Γράφετε ένα γράμμα στην Έμμα & τον Τζέιμς",
+        "openThisLetterOn": "Ανοίξτε αυτό το γράμμα στις...",
+        "openOnLabels": {
+            "1-year": "1η Επέτειος (18 Οκτ 2026)",
+            "5-years": "5η Επέτειος (18 Οκτ 2030)",
+            "10-years": "10η Επέτειος (18 Οκτ 2035)",
+            "25-years": "25η Επέτειος (18 Οκτ 2050)"
+        },
+        "openOnNames": {
+            "1-year": "1η Επέτειο",
+            "5-years": "5η Επέτειο",
+            "10-years": "10η Επέτειο",
+            "25-years": "25η Επέτειο"
+        },
+        "yourMessage": "Το μήνυμά σας",
+        "messagePlaceholder": "Αγαπητοί Έμμα και Τζέιμς, μέχρι να διαβάσετε αυτό...",
+        "messageAriaLabel": "Περιεχόμενο μελλοντικού μηνύματος",
+        "sealAndSend": "Σφράγιση & Αποστολή στο Μέλλον",
+        "messagesSealed": "{count} μηνύματα σφραγισμένα",
+        "opens": "Ανοίγει: {openOn}"
+    },
+    "RootLayout": {
+        "title": "StoryWall — Έμμα & Τζέιμς · 18 Οκτ 2025",
+        "description": "Ο κοινωνικός τοίχος γάμου για την Έμμα Chen και τον Τζέιμς Rivera. Μοιραστείτε αναμνήσεις, κάντε RSVP, εξερευνήστε τον χώρο και γιορτάστε μαζί."
+    },
+    "RightContextPanel": {
+        "weddingDetails": "Λεπτομέρειες γάμου",
+        "rsvpStatus": "Κατάσταση RSVP",
+        "viewAll": "Προβολή όλων",
+        "attending": "Θα παρευρεθούν",
+        "pending": "Σε αναμονή",
+        "upcoming": "Προσεχώς",
+        "seeAll": "Δείτε όλα",
+        "quickLinks": "Γρήγοροι Σύνδεσμοι",
+        "links": {
+            "giftRegistry": "Λίστα Δώρων",
+            "venueInfo": "Πληροφορίες Χώρου",
+            "weddingPlaylist": "Λίστα Τραγουδιών Γάμου",
+            "seatingChart": "Διάταξη Καθισμάτων"
+        }
     }
-  },
-  "SchedulePage": {
-    "backToTools": "Πίσω στα εργαλεία",
-    "title": "Πρόγραμμα",
-    "subtitle": "Όλες οι εκδηλώσεις από τον αρραβώνα μέχρι και μετά τον γάμο.",
-    "eventTypes": {
-      "ceremony": "Τελετή",
-      "reception": "Δεξίωση",
-      "preWedding": "Προγαμιαία",
-      "social": "Κοινωνική"
-    },
-    "attendingCount": "{count} θα παρευρεθούν"
-  },
-  "GiftsPage": {
-    "goBack": "Πίσω",
-    "title": "Λίστα Δώρων",
-    "subtitle": "Η Έμμα και ο Τζέιμς είναι ευγνώμονες για την αγάπη και την παρουσία σας. Κάθε δώρο εκτιμάται βαθιά.",
-    "filters": {
-      "all": "Όλα",
-      "available": "Διαθέσιμα",
-      "reserved": "Δεσμευμένα"
-    },
-    "priority": {
-      "high": "Κορυφαία επιλογή",
-      "medium": "Επιθυμητό",
-      "low": "Ωραίο να έχεις"
-    },
-    "reserved": "Δεσμευμένο",
-    "reservedByName": "Δεσμεύτηκε από {name}",
-    "reserveGift": "Δέσμευση Δώρου",
-    "viewOn": "Δείτε {name} στο {category}"
-  },
-  "WishbookPage": {
-    "goBack": "Πίσω",
-    "title": "Βιβλίο Ευχών",
-    "subtitle": "Αφήστε ένα συγκινητικό μήνυμα για την Έμμα & τον Τζέιμς. Θα το θησαυρίσουν για πάντα.",
-    "messagePlaceholder": "Γράψτε το μήνυμά σας στην Έμμα & τον Τζέιμς... Όσο πιο συγκινητικό θέλετε.",
-    "messageAriaLabel": "Μήνυμα βιβλίου ευχών",
-    "addToWishbook": "Προσθήκη στο Βιβλίο Ευχών",
-    "messageCount": "{count, plural, one {# Μήνυμα} other {# Μηνύματα}}",
-    "timeAgo": {
-      "hours": "πριν {count} ώ",
-      "days": "πριν {count} η"
-    },
-    "unlikeMessage": "Αναίρεση μου αρέσει",
-    "likeMessage": "Μου αρέσει"
-  },
-  "SeatingPage": {
-    "backToTools": "Πίσω στα εργαλεία",
-    "title": "Διάταξη Καθισμάτων",
-    "subtitle": "Βρείτε τη θέση σας στο τραπέζι για τη δεξίωση. Αναζητήστε το όνομά σας ή περιηγηθείτε σε όλα τα τραπέζια παρακάτω.",
-    "searchPlaceholder": "Αναζητήστε το όνομά σας...",
-    "searchAriaLabel": "Αναζήτηση ονόματος καλεσμένου",
-    "clearSearch": "Καθαρισμός αναζήτησης",
-    "noGuestsFound": "Δεν βρέθηκαν καλεσμένοι που να ταιριάζουν με \"{search}\"",
-    "allTables": "Όλα τα Τραπέζια",
-    "seatsCount": "{seats} / {capacity} θέσεις",
-    "emptySeat": "Κενή θέση"
-  },
-  "PlaylistPage": {
-    "backToTools": "Πίσω στα εργαλεία",
-    "title": "Λίστα Τραγουδιών",
-    "cancel": "Ακύρωση",
-    "suggestASong": "Προτείνετε ένα τραγούδι",
-    "suggest": "Πρόταση",
-    "songTitle": "Τίτλος τραγουδιού",
-    "artist": "Καλλιτέχνης",
-    "momentForSong": "Στιγμή για το τραγούδι",
-    "addToPlaylist": "Προσθήκη στη Λίστα",
-    "allSongs": "Όλα τα τραγούδια",
-    "moments": {
-      "ceremony": "Τελετή",
-      "cocktail": "Cocktail Hour",
-      "reception": "Δεξίωση",
-      "firstDance": "Πρώτος Χορός"
-    },
-    "removeVote": "Αφαίρεση ψήφου",
-    "voteForThisSong": "Ψηφίστε αυτό το τραγούδι"
-  },
-  "QuizPage": {
-    "backToTools": "Πίσω στα εργαλεία",
-    "title": "Κουίζ Ζευγαριού",
-    "resultsTitle": "Κουίζ Ζευγαριού — Αποτελέσματα",
-    "quizComplete": "Το κουίζ ολοκληρώθηκε!",
-    "tryAgain": "Δοκιμάστε ξανά",
-    "reviewYourAnswers": "Ελέγξτε τις απαντήσεις σας",
-    "correctAnswer": "Σωστό: {answer}",
-    "yourAnswerVsCorrect": "Η απάντησή σας: {yourAnswer} — Σωστό: {correctAnswer}",
-    "skipped": "Παραλείφθηκε",
-    "questionCounter": "Ερώτηση {current} από {total}",
-    "correct": "Σωστά!",
-    "notQuite": "Όχι ακριβώς",
-    "seeResults": "Δείτε τα Αποτελέσματα",
-    "nextQuestion": "Επόμενη Ερώτηση",
-    "grades": {
-      "perfect": "Τέλεια βαθμολογία! Ξέρετε τα πάντα γι' αυτούς.",
-      "excellent": "Εξαιρετικά! Γνωρίζετε πολύ καλά την Έμμα & τον Τζέιμς.",
-      "good": "Αρκετά καλά — προσέχατε!",
-      "okay": "Όχι κι άσχημα! Μιλήστε τους περισσότερο στον γάμο."
-    }
-  },
-  "RSVPPage": {
-    "goBack": "Πίσω",
-    "title": "RSVP",
-    "onTheList": "Είστε στη λίστα!",
-    "rsvpReceived": "Το RSVP λήφθηκε",
-    "attendingConfirmation": "Ανυπομονούμε να γιορτάσουμε μαζί σας! Θα λαμβάνετε ενημερώσεις καθώς πλησιάζει η μεγάλη μέρα.",
-    "declinedConfirmation": "Ευχαριστούμε που μας ενημερώσατε. Θα έχετε ακόμα πρόσβαση στο StoryWall.",
-    "backToTheWall": "Πίσω στον Τοίχο",
-    "stats": {
-      "attending": "Θα παρευρεθούν",
-      "pending": "Σε αναμονή",
-      "declined": "Απορρίφθηκαν"
-    },
-    "guestsCount": "{count, plural, one {# καλεσμένος} other {# καλεσμένοι}}",
-    "awaitingReply": "αναμονή απάντησης",
-    "notAttending": "δεν θα παρευρεθούν",
-    "yourRsvp": "Το RSVP σας",
-    "willYouAttend": "Θα παρευρεθείτε;",
-    "joyfullyAccept": "Αποδέχομαι με χαρά",
-    "regretfullyDecline": "Δυστυχώς αρνούμαι",
-    "plusOnes": "Συνοδοί",
-    "dietaryRequirements": "Διατροφικές απαιτήσεις",
-    "dietaryOptions": {
-      "none": "Καμία / Χωρίς περιορισμούς",
-      "vegetarian": "Χορτοφαγικό",
-      "vegan": "Vegan",
-      "glutenFree": "Χωρίς γλουτένη",
-      "halal": "Halal",
-      "kosher": "Kosher",
-      "other": "Άλλο (διευκρινίστε στο μήνυμα)"
-    },
-    "messageForCouple": "Μήνυμα για την Έμμα & τον Τζέιμς",
-    "messagePlaceholder": "Προαιρετικό — μοιραστείτε τον ενθουσιασμό σας ή ένα ξεχωριστό σημείωμα...",
-    "messageAriaLabel": "Μήνυμα για το ζευγάρι",
-    "submitRsvp": "Υποβολή RSVP",
-    "submitError": "Κάτι πήγε στραβά κατά την υποβολή του RSVP. Δοκιμάστε ξανά.",
-    "whosComing": "Ποιοι έρχονται"
-  },
-  "VenuePage": {
-    "backToTools": "Πίσω στα εργαλεία",
-    "title": "Χώρος Εκδήλωσης",
-    "heroImageAlt": "Rosewood Estate, Napa Valley — ο χώρος του γάμου",
-    "venueName": "Rosewood Estate",
-    "venueRegion": "Napa Valley, Καλιφόρνια",
-    "aboutTheVenue": "Σχετικά με τον Χώρο",
-    "aboutText": "Το Rosewood Estate είναι ένα εντυπωσιακό κτήμα 40 στρεμμάτων με αμπελώνες στην καρδιά της Napa Valley. Με τον απέραντο κήπο τριαντάφυλλων για την τελετή, τη μεγαλοπρεπή αίθουσα δεξίωσης και τη μαγευτική θέα στους αμπελώνες, είναι το ιδανικό σκηνικό για τον εορτασμό της Έμμα και του Τζέιμς. Το κτήμα φιλοξενεί γάμους εδώ και πάνω από 25 χρόνια.",
-    "address": "Διεύθυνση",
-    "addressValue": "1842 Silverado Trail, Napa, CA 94558",
-    "phone": "Τηλέφωνο",
-    "website": "Ιστότοπος",
-    "gettingThere": "Πώς να Φτάσετε",
-    "openInMaps": "Άνοιγμα στους Χάρτες",
-    "byCarLabel": "Με αυτοκίνητο:",
-    "byCarText": "1 ώρα και 20 λεπτά από το Σαν Φρανσίσκο μέσω US-101N και CA-37E. Δωρεάν πάρκινγκ επί τόπου.",
-    "shuttleLabel": "Λεωφορείο:",
-    "shuttleText": "Δωρεάν λεωφορείο αναχωρεί από την Union Square, SF στις 2:30 μ.μ. στις 18 Οκτωβρίου.",
-    "amenities": "Παροχές",
-    "amenityLabels": {
-      "parking": "Δωρεάν πάρκινγκ για 200+ οχήματα",
-      "accommodation": "Διαμονή επί τόπου — The Inn at Rosewood",
-      "catering": "Πλήρες κέτερινγκ & μπαρ",
-      "wifi": "Υψηλής ταχύτητας WiFi παντού",
-      "accessible": "Προσβάσιμες εγκαταστάσεις & διαδρομές",
-      "shuttle": "Δωρεάν λεωφορείο από το Σαν Φρανσίσκο"
-    },
-    "gallery": "Γκαλερί",
-    "galleryAlts": {
-      "mainLawn": "Ο κεντρικός χώρος του Rosewood Estate το ηλιοβασίλεμα",
-      "vineyard": "Οι αμπελώνες",
-      "roseGarden": "Κήπος τριαντάφυλλων τελετής",
-      "pavilion": "Εσωτερικό μεγάλου περιπτέρου"
-    }
-  },
-  "FutureMessagesPage": {
-    "backToTools": "Πίσω στα εργαλεία",
-    "title": "Μελλοντικά Μηνύματα",
-    "intro": "Γράψτε ένα γράμμα στην Έμμα & τον Τζέιμς που θα τους παραδοθεί σε μια μελλοντική επέτειο. Το μήνυμά σας θα παραμείνει σφραγισμένο μέχρι να επιλέξουν να το ανοίξουν.",
-    "messageSealed": "Το μήνυμα σφραγίστηκε!",
-    "sealedUntil": "Το γράμμα σας έχει κλειδωθεί μέχρι {openOn}. Η Έμμα & ο Τζέιμς θα το εκτιμήσουν όταν έρθει η ώρα.",
-    "writeAnother": "Γράψτε άλλο ένα",
-    "writingALetter": "Γράφετε ένα γράμμα στην Έμμα & τον Τζέιμς",
-    "openThisLetterOn": "Ανοίξτε αυτό το γράμμα στις...",
-    "openOnLabels": {
-      "1-year": "1η Επέτειος (18 Οκτ 2026)",
-      "5-years": "5η Επέτειος (18 Οκτ 2030)",
-      "10-years": "10η Επέτειος (18 Οκτ 2035)",
-      "25-years": "25η Επέτειος (18 Οκτ 2050)"
-    },
-    "openOnNames": {
-      "1-year": "1η Επέτειο",
-      "5-years": "5η Επέτειο",
-      "10-years": "10η Επέτειο",
-      "25-years": "25η Επέτειο"
-    },
-    "yourMessage": "Το μήνυμά σας",
-    "messagePlaceholder": "Αγαπητοί Έμμα και Τζέιμς, μέχρι να διαβάσετε αυτό...",
-    "messageAriaLabel": "Περιεχόμενο μελλοντικού μηνύματος",
-    "sealAndSend": "Σφράγιση & Αποστολή στο Μέλλον",
-    "messagesSealed": "{count} μηνύματα σφραγισμένα",
-    "opens": "Ανοίγει: {openOn}"
-  },
-  "RootLayout": {
-    "title": "StoryWall — Έμμα & Τζέιμς · 18 Οκτ 2025",
-    "description": "Ο κοινωνικός τοίχος γάμου για την Έμμα Chen και τον Τζέιμς Rivera. Μοιραστείτε αναμνήσεις, κάντε RSVP, εξερευνήστε τον χώρο και γιορτάστε μαζί."
-  },
-  "RightContextPanel": {
-    "weddingDetails": "Λεπτομέρειες γάμου",
-    "rsvpStatus": "Κατάσταση RSVP",
-    "viewAll": "Προβολή όλων",
-    "attending": "Θα παρευρεθούν",
-    "pending": "Σε αναμονή",
-    "upcoming": "Προσεχώς",
-    "seeAll": "Δείτε όλα",
-    "quickLinks": "Γρήγοροι Σύνδεσμοι",
-    "links": {
-      "giftRegistry": "Λίστα Δώρων",
-      "venueInfo": "Πληροφορίες Χώρου",
-      "weddingPlaylist": "Λίστα Τραγουδιών Γάμου",
-      "seatingChart": "Διάταξη Καθισμάτων"
-    }
-  }
 }

@@ -1,161 +1,177 @@
-'use client'
+'use client';
 
-import React, { useMemo, useState } from 'react'
-import {Heart, MessageCircle, Send} from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import { usePost, usePostComments, useCreateComment, useEventMembers, usePostModal } from '@/hooks'
-import { useActiveMember } from '@/providers/EventProvider'
-import { Modal } from '@/components/ui/modal'
-import Avatar from '@/components/ui/avatar'
-import { ApiError } from '@/lib/api/client'
-import { initialsFromName, avatarColorFromId, timeAgoParts, cn } from '@/lib/utils'
-import Image from 'next/image'
-import {PostAuthorAvatar, ReactionCount} from "@/components/feed/post";
-import {CommentCount} from "@/components/feed/post/CommentCount";
+import { Send } from 'lucide-react';
+import Image from 'next/image';
+import { useTranslations } from 'next-intl';
+import React, { useMemo, useState } from 'react';
+
+import { PostAuthorAvatar, ReactionCount } from '@/components/feed/post';
+import { CommentCount } from '@/components/feed/post/CommentCount';
+import Avatar from '@/components/ui/avatar';
+import { Modal } from '@/components/ui/modal';
+import { useCreateComment, useEventMembers, usePost, usePostComments, usePostModal } from '@/hooks';
+import { ApiError } from '@/lib/api/client';
+import { avatarColorFromId, cn, initialsFromName, timeAgoParts } from '@/lib/utils';
+import { useActiveMember } from '@/providers/EventProvider';
 
 export function PostModal() {
-  const t = useTranslations('PostModal')
-  const tCard = useTranslations('PostCard')
-  const { postId, isOpen, close } = usePostModal()
-  const activeMember = useActiveMember()
-  const { data: post, error, isPending } = usePost(postId)
-  const { data: comments = [] } = usePostComments(postId)
-  const { data: members = [] } = useEventMembers(post?.eventId ?? null)
-  const createComment = useCreateComment(post?.eventId ?? '')
-  const [commentText, setCommentText] = useState('')
-  const [commentError, setCommentError] = useState<string | null>(null)
-  const timeAgo = useMemo(()=> post ? timeAgoParts(post?.createdAt) : {
-    unit: 'minutes',
-    value: 0
-  },[post])
+    const t = useTranslations('PostModal');
+    const tCard = useTranslations('PostCard');
+    const { postId, isOpen, close } = usePostModal();
+    const activeMember = useActiveMember();
+    const { data: post, error, isPending } = usePost(postId);
+    const { data: comments = [] } = usePostComments(postId);
+    const { data: members = [] } = useEventMembers(post?.eventId ?? null);
+    const createComment = useCreateComment(post?.eventId ?? '');
+    const [commentText, setCommentText] = useState('');
+    const [commentError, setCommentError] = useState<string | null>(null);
+    const timeAgo = useMemo(
+        () =>
+            post
+                ? timeAgoParts(post?.createdAt)
+                : {
+                      unit: 'minutes' as const,
+                      value: 0,
+                  },
+        [post]
+    );
 
-  const membersById = useMemo(() => new Map(members.map(m => [m.id, m])), [members])
+    const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
 
-  async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
-    e.preventDefault()
-    if (!commentText.trim() || !post || !activeMember) return
+    async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
+        e.preventDefault();
+        if (!commentText.trim() || !post || !activeMember) return;
 
-    setCommentError(null)
+        setCommentError(null);
 
-    try {
-      await createComment.mutateAsync({
-        postId: post.id,
-        authorMemberId: activeMember.id,
-        content: commentText.trim(),
-      })
-    } catch {
-      setCommentError(t('commentFailed'))
-      return
+        try {
+            await createComment.mutateAsync({
+                postId: post.id,
+                authorMemberId: activeMember.id,
+                content: commentText.trim(),
+            });
+        } catch {
+            setCommentError(t('commentFailed'));
+            return;
+        }
+
+        setCommentText('');
     }
 
-    setCommentText('')
-  }
+    return (
+        <Modal open={isOpen} onClose={close} size="lg" closeLabel={t('close')} className="min-h-[70vh]">
+            <div className="z-10 bg-background/95 backdrop-blur-sm border-b border-border flex items-center justify-between px-4 py-5 w-full shrink-0">
+                <h2 className="text-base font-bold text-ink">{t('title')}</h2>
+            </div>
 
-  return (
-    <Modal open={isOpen} onClose={close} size="lg" closeLabel={t('close')} className="min-h-[70vh]">
-      <div className="z-10 bg-background/95 backdrop-blur-sm border-b border-border flex items-center justify-between px-4 py-5 w-full shrink-0">
-        <h2 className="text-base font-bold text-ink">{t('title')}</h2>
-      </div>
+            {isPending && <p className="text-center text-sm text-ink-muted py-16">{t('loading')}</p>}
 
-      {isPending && <p className="text-center text-sm text-ink-muted py-16">{t('loading')}</p>}
-
-      {error instanceof ApiError && error.status === 404 && (
-        <div className="flex flex-col items-center justify-center text-center px-6 py-16">
-          <p className="text-base font-semibold text-ink mb-1">{t('notFoundTitle')}</p>
-          <p className="text-sm text-ink-muted">{t('notFoundDescription')}</p>
-        </div>
-      )}
-
-      {post && (
-        <section className="w-full grid grid-cols-1 lg:grid-cols-5 flex-1 min-h-0 overflow-hidden">
-          <section className="w-full min-w-0 min-h-0 lg:col-span-3 bg-black  shadow-xl hidden lg:block">
-            {post.media[0] && (
-              <Image
-                src={post.media[0].mediaUrl}
-                alt={tCard('photoBy', { name: post.author?.displayName ?? '' })}
-                className="w-full h-full object-center object-scale-down"
-                width={150}
-                height={150}
-              />
+            {error instanceof ApiError && error.status === 404 && (
+                <div className="flex flex-col items-center justify-center text-center px-6 py-16">
+                    <p className="text-base font-semibold text-ink mb-1">{t('notFoundTitle')}</p>
+                    <p className="text-sm text-ink-muted">{t('notFoundDescription')}</p>
+                </div>
             )}
-          </section>
-          <section className="lg:px-4 pt-4 lg:col-span-2 min-w-0 min-h-0 flex flex-col">
-            {/* Likes and comments count. */}
-            <section className={'border-b flex justify-between pb-2'}>
-              <PostAuthorAvatar avatarUrl={post.author?.avatarUrl} name={post.author?.displayName ?? tCard('unknownAuthor')} subtitle={ post.author?.nickname ?? post.author?.role} timeAgo={timeAgo} />
-              <div className={'flex gap-2'}>
-                <ReactionCount count={post.reactionCount} />
-                <CommentCount count={post.commentCount} />
-              </div>
-            </section>
-            <Modal.Body className={cn('lg:px-4 pt-5 pb-4', { 'flex items-center justify-center': comments.length === 0 })}>
-              <h3 className="text-sm font-bold text-ink mb-4">
-                {comments.length === 0 ? t('noCommentsYet') : t('commentCount', { count: comments.length })}
-              </h3>
 
-              <div className="flex flex-col gap-4">
-                {comments.map(comment => {
-                  const author = comment.authorMemberId ? membersById.get(comment.authorMemberId) : undefined
-                  const name = author?.displayName ?? t('unknownAuthor')
-                  const timeAgo = timeAgoParts(comment.createdAt)
+            {post && (
+                <section className="w-full grid grid-cols-1 lg:grid-cols-5 flex-1 min-h-0 overflow-hidden">
+                    <section className="w-full min-w-0 min-h-0 lg:col-span-3 bg-black  shadow-xl hidden lg:block">
+                        {post.media[0] && (
+                            <Image
+                                src={post.media[0].mediaUrl}
+                                alt={tCard('photoBy', { name: post.author?.displayName ?? '' })}
+                                className="w-full h-full object-center object-scale-down"
+                                width={150}
+                                height={150}
+                            />
+                        )}
+                    </section>
+                    <section className="lg:px-4 pt-4 lg:col-span-2 min-w-0 min-h-0 flex flex-col">
+                        {/* Likes and comments count. */}
+                        <section className={'border-b flex justify-between pb-2'}>
+                            <PostAuthorAvatar
+                                avatarUrl={post.author?.avatarUrl}
+                                name={post.author?.displayName ?? tCard('unknownAuthor')}
+                                subtitle={post.author?.nickname ?? post.author?.role}
+                                timeAgo={timeAgo}
+                            />
+                            <div className={'flex gap-2'}>
+                                <ReactionCount count={post.reactionCount} />
+                                <CommentCount count={post.commentCount} />
+                            </div>
+                        </section>
+                        <Modal.Body
+                            className={cn('lg:px-4 pt-5 pb-4', {
+                                'flex items-center justify-center': comments.length === 0,
+                            })}
+                        >
+                            <h3 className="text-sm font-bold text-ink mb-4">
+                                {comments.length === 0 ? t('noCommentsYet') : t('commentCount', { count: comments.length })}
+                            </h3>
 
-                  return (
-                    <div key={comment.id} className="flex gap-3">
-                      <Avatar
-                        initials={initialsFromName(name)}
-                        color={avatarColorFromId(comment.authorMemberId ?? comment.id)}
-                        size="sm"
-                        alt={name}
-                        className="shrink-0 mt-0.5"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="bg-surface-muted rounded-2xl rounded-tl-sm px-4 py-3">
-                          <div className="flex items-baseline gap-2 mb-1">
-                            <span className="text-sm font-semibold text-ink leading-tight">{name}</span>
-                            <span className="text-xs text-ink-faint">
-                              {timeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${timeAgo.unit}`, { count: timeAgo.value })}
-                            </span>
-                          </div>
-                          <p className="text-sm text-ink leading-relaxed">{comment.content}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </Modal.Body>
+                            <div className="flex flex-col gap-4">
+                                {comments.map((comment) => {
+                                    const author = comment.authorMemberId ? membersById.get(comment.authorMemberId) : undefined;
+                                    const name = author?.displayName ?? t('unknownAuthor');
+                                    const timeAgo = timeAgoParts(comment.createdAt);
 
-            <form
-              onSubmit={handleSubmit}
-              className="bg-background/95 backdrop-blur-sm border-t border-border px-4 py-3 flex flex-col items-center gap-3 shrink-0"
-            >
-              {commentError && (
-                <p className="text-xs text-destructive px-4">
-                  {commentError}
-                </p>
-              )}
-              <section className="flex gap-3 w-full">
-                <input
-                  type="text"
-                  value={commentText}
-                  onChange={e => setCommentText(e.target.value)}
-                  placeholder={t('commentPlaceholder')}
-                  aria-label={t('commentTextAriaLabel')}
-                  className="relative flex-1 bg-surface-muted rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
-                />
-                <button
-                  type="submit"
-                  disabled={!commentText.trim() || createComment.isPending || !activeMember}
-                  aria-label={t('postComment')}
-                  className="text-primary disabled:text-ink-faint transition-colors"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </section>
-            </form>
-          </section>
-        </section>
-      )}
-    </Modal>
-  )
+                                    return (
+                                        <div key={comment.id} className="flex gap-3">
+                                            <Avatar
+                                                initials={initialsFromName(name)}
+                                                color={avatarColorFromId(comment.authorMemberId ?? comment.id)}
+                                                size="sm"
+                                                alt={name}
+                                                className="shrink-0 mt-0.5"
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                                <div className="bg-surface-muted rounded-2xl rounded-tl-sm px-4 py-3">
+                                                    <div className="flex items-baseline gap-2 mb-1">
+                                                        <span className="text-sm font-semibold text-ink leading-tight">{name}</span>
+                                                        <span className="text-xs text-ink-faint">
+                                                            {timeAgo.unit === 'now'
+                                                                ? t('justNow')
+                                                                : t(`timeAgo.${timeAgo.unit}`, {
+                                                                      count: timeAgo.value,
+                                                                  })}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm text-ink leading-relaxed">{comment.content}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </Modal.Body>
+
+                        <form
+                            onSubmit={handleSubmit}
+                            className="bg-background/95 backdrop-blur-sm border-t border-border px-4 py-3 flex flex-col items-center gap-3 shrink-0"
+                        >
+                            {commentError && <p className="text-xs text-destructive px-4">{commentError}</p>}
+                            <section className="flex gap-3 w-full">
+                                <input
+                                    type="text"
+                                    value={commentText}
+                                    onChange={(e) => setCommentText(e.target.value)}
+                                    placeholder={t('commentPlaceholder')}
+                                    aria-label={t('commentTextAriaLabel')}
+                                    className="relative flex-1 bg-surface-muted rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={!commentText.trim() || createComment.isPending || !activeMember}
+                                    aria-label={t('postComment')}
+                                    className="text-primary disabled:text-ink-faint transition-colors"
+                                >
+                                    <Send className="w-4 h-4" />
+                                </button>
+                            </section>
+                        </form>
+                    </section>
+                </section>
+            )}
+        </Modal>
+    );
 }

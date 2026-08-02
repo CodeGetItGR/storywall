@@ -34,6 +34,7 @@
 ### Task 1: Add `likedByCurrentUser` to `PostResponseDto`
 
 **Files:**
+
 - Modify: `lib/api/types.ts:490-506`
 
 - [ ] **Step 1: Add the field**
@@ -42,20 +43,20 @@ In `lib/api/types.ts`, the `PostResponseDto` interface currently reads:
 
 ```ts
 export interface PostResponseDto {
-  id: string;
-  eventId: string;
-  authorMemberId: string | null;
-  author: PostAuthorDto | null;
-  type: PostType;
-  content: string | null;
-  isPinned: boolean;
-  // Already ordered by displayOrder and URL-resolved — render as-is.
-  media: MediaResponseDto[];
-  commentCount: number;
-  reactionCount: number;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
+    id: string;
+    eventId: string;
+    authorMemberId: string | null;
+    author: PostAuthorDto | null;
+    type: PostType;
+    content: string | null;
+    isPinned: boolean;
+    // Already ordered by displayOrder and URL-resolved — render as-is.
+    media: MediaResponseDto[];
+    commentCount: number;
+    reactionCount: number;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
 }
 ```
 
@@ -63,25 +64,25 @@ Change it to:
 
 ```ts
 export interface PostResponseDto {
-  id: string;
-  eventId: string;
-  authorMemberId: string | null;
-  author: PostAuthorDto | null;
-  type: PostType;
-  content: string | null;
-  isPinned: boolean;
-  // Already ordered by displayOrder and URL-resolved — render as-is.
-  media: MediaResponseDto[];
-  commentCount: number;
-  reactionCount: number;
-  // True if the requesting member has any reaction on the post. Always
-  // false immediately after POST /api/posts (a fresh post can't have
-  // reactions yet) and false for a caller who isn't a member of the
-  // post's event — both resolved server-side.
-  likedByCurrentUser: boolean;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
+    id: string;
+    eventId: string;
+    authorMemberId: string | null;
+    author: PostAuthorDto | null;
+    type: PostType;
+    content: string | null;
+    isPinned: boolean;
+    // Already ordered by displayOrder and URL-resolved — render as-is.
+    media: MediaResponseDto[];
+    commentCount: number;
+    reactionCount: number;
+    // True if the requesting member has any reaction on the post. Always
+    // false immediately after POST /api/posts (a fresh post can't have
+    // reactions yet) and false for a caller who isn't a member of the
+    // post's event — both resolved server-side.
+    likedByCurrentUser: boolean;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
 }
 ```
 
@@ -102,6 +103,7 @@ git commit -m "feat: add likedByCurrentUser to PostResponseDto"
 ### Task 2: Add `patchPostInCaches` helper
 
 **Files:**
+
 - Modify: `hooks/usePosts.ts:1-11`
 
 - [ ] **Step 1: Add the helper**
@@ -109,58 +111,51 @@ git commit -m "feat: add likedByCurrentUser to PostResponseDto"
 In `hooks/usePosts.ts`, change the top imports from:
 
 ```ts
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api/client";
-import { endpoints } from "@/lib/api/endpoints";
-import { normalizeList, type Page } from "@/lib/api/pagination";
-import type { MediaResponseDto, PostRequestDto, PostResponseDto } from "@/lib/api/types";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api/client';
+import { endpoints } from '@/lib/api/endpoints';
+import { normalizeList, type Page } from '@/lib/api/pagination';
+import type { MediaResponseDto, PostRequestDto, PostResponseDto } from '@/lib/api/types';
 
 export const postKeys = {
-  list: (eventId: string) => ["events", eventId, "posts"] as const,
-  detail: (id: string) => ["posts", id] as const,
-  media: (postId: string) => ["posts", postId, "media"] as const,
+    list: (eventId: string) => ['events', eventId, 'posts'] as const,
+    detail: (id: string) => ['posts', id] as const,
+    media: (postId: string) => ['posts', postId, 'media'] as const,
 };
 ```
 
 to:
 
 ```ts
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData, type QueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api/client";
-import { endpoints } from "@/lib/api/endpoints";
-import { normalizeList, type Page } from "@/lib/api/pagination";
-import type { MediaResponseDto, PostRequestDto, PostResponseDto } from "@/lib/api/types";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData, type QueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api/client';
+import { endpoints } from '@/lib/api/endpoints';
+import { normalizeList, type Page } from '@/lib/api/pagination';
+import type { MediaResponseDto, PostRequestDto, PostResponseDto } from '@/lib/api/types';
 
 export const postKeys = {
-  list: (eventId: string) => ["events", eventId, "posts"] as const,
-  detail: (id: string) => ["posts", id] as const,
-  media: (postId: string) => ["posts", postId, "media"] as const,
+    list: (eventId: string) => ['events', eventId, 'posts'] as const,
+    detail: (id: string) => ['posts', id] as const,
+    media: (postId: string) => ['posts', postId, 'media'] as const,
 };
 
 // Applies a partial update to a post wherever it's currently cached — the
 // single-post query and, if a page of it is loaded, the event's feed list.
 // Used for optimistic updates (likes) where waiting on a refetch would feel
 // laggy; other mutations in this file just invalidate instead.
-export function patchPostInCaches(
-  queryClient: QueryClient,
-  eventId: string,
-  postId: string,
-  patch: Partial<PostResponseDto>,
-) {
-  queryClient.setQueryData<PostResponseDto>(postKeys.detail(postId), (old) =>
-    old ? { ...old, ...patch } : old,
-  );
+export function patchPostInCaches(queryClient: QueryClient, eventId: string, postId: string, patch: Partial<PostResponseDto>) {
+    queryClient.setQueryData<PostResponseDto>(postKeys.detail(postId), (old) => (old ? { ...old, ...patch } : old));
 
-  queryClient.setQueryData<InfiniteData<Page<PostResponseDto>>>(postKeys.list(eventId), (old) => {
-    if (!old) return old;
-    return {
-      ...old,
-      pages: old.pages.map((page) => ({
-        ...page,
-        content: page.content.map((post) => (post.id === postId ? { ...post, ...patch } : post)),
-      })),
-    };
-  });
+    queryClient.setQueryData<InfiniteData<Page<PostResponseDto>>>(postKeys.list(eventId), (old) => {
+        if (!old) return old;
+        return {
+            ...old,
+            pages: old.pages.map((page) => ({
+                ...page,
+                content: page.content.map((post) => (post.id === postId ? { ...post, ...patch } : post)),
+            })),
+        };
+    });
 }
 ```
 
@@ -183,6 +178,7 @@ git commit -m "feat: add patchPostInCaches helper for optimistic post updates"
 ### Task 3: Extract `fetchPostReactions`
 
 **Files:**
+
 - Modify: `hooks/useReactions.ts:1-21`
 
 - [ ] **Step 1: Extract the fetcher**
@@ -190,54 +186,54 @@ git commit -m "feat: add patchPostInCaches helper for optimistic post updates"
 Change:
 
 ```ts
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api/client";
-import { endpoints } from "@/lib/api/endpoints";
-import { normalizeList } from "@/lib/api/pagination";
-import type { ReactionRequestDto, ReactionResponseDto } from "@/lib/api/types";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api/client';
+import { endpoints } from '@/lib/api/endpoints';
+import { normalizeList } from '@/lib/api/pagination';
+import type { ReactionRequestDto, ReactionResponseDto } from '@/lib/api/types';
 
 export const reactionKeys = {
-  list: (postId: string) => ["posts", postId, "reactions"] as const,
+    list: (postId: string) => ['posts', postId, 'reactions'] as const,
 };
 
 // GET /api/posts/{postId}/reactions — event member (checked in the service).
 export function usePostReactions(postId: string | null) {
-  return useQuery({
-    queryKey: reactionKeys.list(postId ?? ""),
-    queryFn: async () => {
-      const res = await api.get<ReactionResponseDto[]>(endpoints.posts.reactions(postId!));
-      return normalizeList(res).items;
-    },
-    enabled: Boolean(postId),
-  });
+    return useQuery({
+        queryKey: reactionKeys.list(postId ?? ''),
+        queryFn: async () => {
+            const res = await api.get<ReactionResponseDto[]>(endpoints.posts.reactions(postId!));
+            return normalizeList(res).items;
+        },
+        enabled: Boolean(postId),
+    });
 }
 ```
 
 to:
 
 ```ts
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api/client";
-import { endpoints } from "@/lib/api/endpoints";
-import { normalizeList } from "@/lib/api/pagination";
-import type { ReactionRequestDto, ReactionResponseDto } from "@/lib/api/types";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api/client';
+import { endpoints } from '@/lib/api/endpoints';
+import { normalizeList } from '@/lib/api/pagination';
+import type { ReactionRequestDto, ReactionResponseDto } from '@/lib/api/types';
 
 export const reactionKeys = {
-  list: (postId: string) => ["posts", postId, "reactions"] as const,
+    list: (postId: string) => ['posts', postId, 'reactions'] as const,
 };
 
 export async function fetchPostReactions(postId: string): Promise<ReactionResponseDto[]> {
-  const res = await api.get<ReactionResponseDto[]>(endpoints.posts.reactions(postId));
-  return normalizeList(res).items;
+    const res = await api.get<ReactionResponseDto[]>(endpoints.posts.reactions(postId));
+    return normalizeList(res).items;
 }
 
 // GET /api/posts/{postId}/reactions — event member (checked in the service).
 export function usePostReactions(postId: string | null) {
-  return useQuery({
-    queryKey: reactionKeys.list(postId ?? ""),
-    queryFn: () => fetchPostReactions(postId!),
-    enabled: Boolean(postId),
-  });
+    return useQuery({
+        queryKey: reactionKeys.list(postId ?? ''),
+        queryFn: () => fetchPostReactions(postId!),
+        enabled: Boolean(postId),
+    });
 }
 ```
 
@@ -260,17 +256,18 @@ git commit -m "refactor: extract fetchPostReactions for imperative use"
 ### Task 4: Create `usePostLike`
 
 **Files:**
+
 - Create: `hooks/usePostLike.ts`
 
 - [ ] **Step 1: Write the hook**
 
 ```ts
-import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { useActiveMember } from "@/providers/EventProvider";
-import { useCreateReaction, useDeleteReaction, reactionKeys, fetchPostReactions } from "@/hooks/useReactions";
-import { patchPostInCaches } from "@/hooks/usePosts";
-import type { PostResponseDto } from "@/lib/api/types";
+import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useActiveMember } from '@/providers/EventProvider';
+import { useCreateReaction, useDeleteReaction, reactionKeys, fetchPostReactions } from '@/hooks/useReactions';
+import { patchPostInCaches } from '@/hooks/usePosts';
+import type { PostResponseDto } from '@/lib/api/types';
 
 // Reaction ids created this session, so unliking right after liking never
 // needs to re-fetch the reactor list to find what to delete. Keyed by
@@ -280,57 +277,62 @@ import type { PostResponseDto } from "@/lib/api/types";
 const knownReactionIds = new Map<string, string>();
 
 export function usePostLike(post: PostResponseDto) {
-  const queryClient = useQueryClient();
-  const activeMember = useActiveMember();
-  const createReaction = useCreateReaction();
-  const deleteReaction = useDeleteReaction(post.id);
-  const [isToggling, setIsToggling] = useState(false);
+    const queryClient = useQueryClient();
+    const activeMember = useActiveMember();
+    const createReaction = useCreateReaction();
+    const deleteReaction = useDeleteReaction(post.id);
+    const [isToggling, setIsToggling] = useState(false);
 
-  async function toggle() {
-    if (!activeMember || isToggling) return;
+    async function toggle() {
+        if (!activeMember || isToggling) return;
 
-    const wasLiked = post.likedByCurrentUser;
-    const previousCount = post.reactionCount;
+        const wasLiked = post.likedByCurrentUser;
+        const previousCount = post.reactionCount;
 
-    setIsToggling(true);
-    patchPostInCaches(queryClient, post.eventId, post.id, {
-      likedByCurrentUser: !wasLiked,
-      reactionCount: previousCount + (wasLiked ? -1 : 1),
-    });
-
-    try {
-      if (!wasLiked) {
-        const reaction = await createReaction.mutateAsync({
-          postId: post.id,
-          memberId: activeMember.id,
-          reactionType: "LIKE",
+        setIsToggling(true);
+        patchPostInCaches(queryClient, post.eventId, post.id, {
+            likedByCurrentUser: !wasLiked,
+            reactionCount: previousCount + (wasLiked ? -1 : 1),
         });
-        knownReactionIds.set(post.id, reaction.id);
-      } else {
-        let reactionId = knownReactionIds.get(post.id);
-        if (!reactionId) {
-          const reactions = await queryClient.fetchQuery({
-            queryKey: reactionKeys.list(post.id),
-            queryFn: () => fetchPostReactions(post.id),
-          });
-          reactionId = reactions.find((r) => r.memberId === activeMember.id)?.id;
-        }
-        if (reactionId) {
-          await deleteReaction.mutateAsync(reactionId);
-        }
-        knownReactionIds.delete(post.id);
-      }
-    } catch {
-      patchPostInCaches(queryClient, post.eventId, post.id, {
-        likedByCurrentUser: wasLiked,
-        reactionCount: previousCount,
-      });
-    } finally {
-      setIsToggling(false);
-    }
-  }
 
-  return { liked: post.likedByCurrentUser, count: post.reactionCount, toggle, isPending: isToggling };
+        try {
+            if (!wasLiked) {
+                const reaction = await createReaction.mutateAsync({
+                    postId: post.id,
+                    memberId: activeMember.id,
+                    reactionType: 'LIKE',
+                });
+                knownReactionIds.set(post.id, reaction.id);
+            } else {
+                let reactionId = knownReactionIds.get(post.id);
+                if (!reactionId) {
+                    const reactions = await queryClient.fetchQuery({
+                        queryKey: reactionKeys.list(post.id),
+                        queryFn: () => fetchPostReactions(post.id),
+                    });
+                    reactionId = reactions.find((r) => r.memberId === activeMember.id)?.id;
+                }
+                if (reactionId) {
+                    await deleteReaction.mutateAsync(reactionId);
+                }
+                knownReactionIds.delete(post.id);
+            }
+        } catch {
+            patchPostInCaches(queryClient, post.eventId, post.id, {
+                likedByCurrentUser: wasLiked,
+                reactionCount: previousCount,
+            });
+        } finally {
+            setIsToggling(false);
+        }
+    }
+
+    return {
+        liked: post.likedByCurrentUser,
+        count: post.reactionCount,
+        toggle,
+        isPending: isToggling,
+    };
 }
 ```
 
@@ -351,6 +353,7 @@ git commit -m "feat: add usePostLike hook with optimistic like/unlike"
 ### Task 5: Export `usePostLike` from the hooks barrel
 
 **Files:**
+
 - Modify: `hooks/index.ts:1-19`
 
 - [ ] **Step 1: Add the export**
@@ -358,8 +361,8 @@ git commit -m "feat: add usePostLike hook with optimistic like/unlike"
 Add a line after the `usePosts` export:
 
 ```ts
-export * from "./usePosts";
-export * from "./usePostLike";
+export * from './usePosts';
+export * from './usePostLike';
 ```
 
 - [ ] **Step 2: Type-check**
@@ -379,6 +382,7 @@ git commit -m "chore: export usePostLike from hooks barrel"
 ### Task 6: Wire `PostCard`'s heart button to `usePostLike`
 
 **Files:**
+
 - Modify: `components/feed/PostCard.tsx`
 
 - [ ] **Step 1: Replace the local liked/count state**
@@ -386,32 +390,32 @@ git commit -m "chore: export usePostLike from hooks barrel"
 Change the imports at the top of `components/feed/PostCard.tsx` from:
 
 ```tsx
-'use client'
+'use client';
 
-import { useState } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
-import { Heart, MessageCircle, MoreHorizontal, Pin } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import { cn, initialsFromName, avatarColorFromId } from '@/lib/utils'
-import type { PostResponseDto } from '@/lib/api/types'
-import Avatar from '@/components/ui/avatar'
+import { useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Heart, MessageCircle, MoreHorizontal, Pin } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { cn, initialsFromName, avatarColorFromId } from '@/lib/utils';
+import type { PostResponseDto } from '@/lib/api/types';
+import Avatar from '@/components/ui/avatar';
 ```
 
 to:
 
 ```tsx
-'use client'
+'use client';
 
-import Link from 'next/link'
-import Image from 'next/image'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Heart, MessageCircle, MoreHorizontal, Pin } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import { cn, initialsFromName, avatarColorFromId } from '@/lib/utils'
-import { usePostLike } from '@/hooks'
-import type { PostResponseDto } from '@/lib/api/types'
-import Avatar from '@/components/ui/avatar'
+import Link from 'next/link';
+import Image from 'next/image';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { Heart, MessageCircle, MoreHorizontal, Pin } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { cn, initialsFromName, avatarColorFromId } from '@/lib/utils';
+import { usePostLike } from '@/hooks';
+import type { PostResponseDto } from '@/lib/api/types';
+import Avatar from '@/components/ui/avatar';
 ```
 
 Then replace the component body's opening (from the `export function PostCard` line through the `handleLike` function) — currently:
@@ -535,6 +539,7 @@ git commit -m "feat: wire PostCard like button and comment button to real data"
 ### Task 7: Sync `commentCount` after posting a comment
 
 **Files:**
+
 - Modify: `hooks/useComments.ts:1-33`
 
 - [ ] **Step 1: Update `useCreateComment`**
@@ -542,86 +547,86 @@ git commit -m "feat: wire PostCard like button and comment button to real data"
 Change:
 
 ```ts
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api/client";
-import { endpoints } from "@/lib/api/endpoints";
-import { normalizeList } from "@/lib/api/pagination";
-import type { CommentRequestDto, CommentResponseDto } from "@/lib/api/types";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api/client';
+import { endpoints } from '@/lib/api/endpoints';
+import { normalizeList } from '@/lib/api/pagination';
+import type { CommentRequestDto, CommentResponseDto } from '@/lib/api/types';
 
 export const commentKeys = {
-  list: (postId: string) => ["posts", postId, "comments"] as const,
+    list: (postId: string) => ['posts', postId, 'comments'] as const,
 };
 
 // GET /api/posts/{postId}/comments — event member (checked in the service).
 export function usePostComments(postId: string | null) {
-  return useQuery({
-    queryKey: commentKeys.list(postId ?? ""),
-    queryFn: async () => {
-      const res = await api.get<CommentResponseDto[]>(endpoints.posts.comments(postId!));
-      return normalizeList(res).items;
-    },
-    enabled: Boolean(postId),
-  });
+    return useQuery({
+        queryKey: commentKeys.list(postId ?? ''),
+        queryFn: async () => {
+            const res = await api.get<CommentResponseDto[]>(endpoints.posts.comments(postId!));
+            return normalizeList(res).items;
+        },
+        enabled: Boolean(postId),
+    });
 }
 
 // POST /api/comments — event member. `parentCommentId` supports threaded replies.
 export function useCreateComment() {
-  const queryClient = useQueryClient();
+    const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (input: CommentRequestDto) => api.post<CommentResponseDto>(endpoints.comments.create, input),
-    onSuccess: (comment) => {
-      queryClient.invalidateQueries({ queryKey: commentKeys.list(comment.postId) });
-    },
-  });
+    return useMutation({
+        mutationFn: (input: CommentRequestDto) => api.post<CommentResponseDto>(endpoints.comments.create, input),
+        onSuccess: (comment) => {
+            queryClient.invalidateQueries({ queryKey: commentKeys.list(comment.postId) });
+        },
+    });
 }
 ```
 
 to:
 
 ```ts
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api/client";
-import { endpoints } from "@/lib/api/endpoints";
-import { normalizeList } from "@/lib/api/pagination";
-import { postKeys } from "@/hooks/usePosts";
-import type { CommentRequestDto, CommentResponseDto } from "@/lib/api/types";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api/client';
+import { endpoints } from '@/lib/api/endpoints';
+import { normalizeList } from '@/lib/api/pagination';
+import { postKeys } from '@/hooks/usePosts';
+import type { CommentRequestDto, CommentResponseDto } from '@/lib/api/types';
 
 export const commentKeys = {
-  list: (postId: string) => ["posts", postId, "comments"] as const,
+    list: (postId: string) => ['posts', postId, 'comments'] as const,
 };
 
 // GET /api/posts/{postId}/comments — event member (checked in the service).
 export function usePostComments(postId: string | null) {
-  return useQuery({
-    queryKey: commentKeys.list(postId ?? ""),
-    queryFn: async () => {
-      const res = await api.get<CommentResponseDto[]>(endpoints.posts.comments(postId!));
-      return normalizeList(res).items;
-    },
-    enabled: Boolean(postId),
-  });
+    return useQuery({
+        queryKey: commentKeys.list(postId ?? ''),
+        queryFn: async () => {
+            const res = await api.get<CommentResponseDto[]>(endpoints.posts.comments(postId!));
+            return normalizeList(res).items;
+        },
+        enabled: Boolean(postId),
+    });
 }
 
 // POST /api/comments — event member. `parentCommentId` supports threaded replies.
 export function useCreateComment() {
-  const queryClient = useQueryClient();
+    const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (input: CommentRequestDto) => api.post<CommentResponseDto>(endpoints.comments.create, input),
-    onSuccess: (comment) => {
-      queryClient.invalidateQueries({ queryKey: commentKeys.list(comment.postId) });
-      // Refresh the post's cached commentCount too. We don't have the
-      // post's eventId here (CommentRequestDto doesn't carry it), so
-      // rather than threading it through just for a cache patch, refetch:
-      // the single-post cache directly, and any event's feed list that's
-      // currently mounted (matched by key shape since eventId is unknown).
-      queryClient.invalidateQueries({ queryKey: postKeys.detail(comment.postId) });
-      queryClient.invalidateQueries({
-        predicate: (query) => query.queryKey[0] === "events" && query.queryKey[2] === "posts",
-      });
-    },
-  });
+    return useMutation({
+        mutationFn: (input: CommentRequestDto) => api.post<CommentResponseDto>(endpoints.comments.create, input),
+        onSuccess: (comment) => {
+            queryClient.invalidateQueries({ queryKey: commentKeys.list(comment.postId) });
+            // Refresh the post's cached commentCount too. We don't have the
+            // post's eventId here (CommentRequestDto doesn't carry it), so
+            // rather than threading it through just for a cache patch, refetch:
+            // the single-post cache directly, and any event's feed list that's
+            // currently mounted (matched by key shape since eventId is unknown).
+            queryClient.invalidateQueries({ queryKey: postKeys.detail(comment.postId) });
+            queryClient.invalidateQueries({
+                predicate: (query) => query.queryKey[0] === 'events' && query.queryKey[2] === 'posts',
+            });
+        },
+    });
 }
 ```
 
@@ -644,6 +649,7 @@ git commit -m "feat: refresh cached commentCount after posting a comment"
 ### Task 8: Add `PostModal` translations
 
 **Files:**
+
 - Modify: `messages/en.json`
 - Modify: `messages/el.json`
 
@@ -747,166 +753,168 @@ git commit -m "feat: add PostModal translations, remove unused PostPage"
 ### Task 9: Create `PostModal`
 
 **Files:**
+
 - Create: `components/feed/PostModal.tsx`
 
 - [ ] **Step 1: Write the component**
 
 ```tsx
-'use client'
+'use client';
 
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { Send, X } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import { usePost, usePostComments, useCreateComment, useEventMembers } from '@/hooks'
-import { useActiveMember } from '@/providers/EventProvider'
-import { PostCard } from '@/components/feed/PostCard'
-import Avatar from '@/components/ui/avatar'
-import { ApiError } from '@/lib/api/client'
-import { initialsFromName, avatarColorFromId } from '@/lib/utils'
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { Send, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { usePost, usePostComments, useCreateComment, useEventMembers } from '@/hooks';
+import { useActiveMember } from '@/providers/EventProvider';
+import { PostCard } from '@/components/feed/PostCard';
+import Avatar from '@/components/ui/avatar';
+import { ApiError } from '@/lib/api/client';
+import { initialsFromName, avatarColorFromId } from '@/lib/utils';
 
 interface PostModalProps {
-  postId: string
-  onClose: () => void
+    postId: string;
+    onClose: () => void;
 }
 
-function timeAgoParts(dateStr: string): { unit: 'now' | 'minutes' | 'hours' | 'days'; value: number } {
-  const now = Date.now()
-  const then = new Date(dateStr).getTime()
-  const diff = Math.floor((now - then) / 1000)
-  if (diff < 60) return { unit: 'now', value: 0 }
-  if (diff < 3600) return { unit: 'minutes', value: Math.floor(diff / 60) }
-  if (diff < 86400) return { unit: 'hours', value: Math.floor(diff / 3600) }
-  return { unit: 'days', value: Math.floor(diff / 86400) }
+function timeAgoParts(dateStr: string): {
+    unit: 'now' | 'minutes' | 'hours' | 'days';
+    value: number;
+} {
+    const now = Date.now();
+    const then = new Date(dateStr).getTime();
+    const diff = Math.floor((now - then) / 1000);
+    if (diff < 60) return { unit: 'now', value: 0 };
+    if (diff < 3600) return { unit: 'minutes', value: Math.floor(diff / 60) };
+    if (diff < 86400) return { unit: 'hours', value: Math.floor(diff / 3600) };
+    return { unit: 'days', value: Math.floor(diff / 86400) };
 }
 
 export function PostModal({ postId, onClose }: PostModalProps) {
-  const t = useTranslations('PostModal')
-  const activeMember = useActiveMember()
-  const { data: post, error, isPending } = usePost(postId)
-  const { data: comments = [] } = usePostComments(postId)
-  const { data: members = [] } = useEventMembers(post?.eventId ?? null)
-  const createComment = useCreateComment()
-  const [commentText, setCommentText] = useState('')
+    const t = useTranslations('PostModal');
+    const activeMember = useActiveMember();
+    const { data: post, error, isPending } = usePost(postId);
+    const { data: comments = [] } = usePostComments(postId);
+    const { data: members = [] } = useEventMembers(post?.eventId ?? null);
+    const createComment = useCreateComment();
+    const [commentText, setCommentText] = useState('');
 
-  const membersById = useMemo(() => new Map(members.map(m => [m.id, m])), [members])
+    const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
 
-  useEffect(() => {
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose()
+    useEffect(() => {
+        function handleKey(e: KeyboardEvent) {
+            if (e.key === 'Escape') onClose();
+        }
+        window.addEventListener('keydown', handleKey);
+        return () => window.removeEventListener('keydown', handleKey);
+    }, [onClose]);
+
+    function handleSubmit(e: FormEvent) {
+        e.preventDefault();
+        if (!commentText.trim() || !post || !activeMember) return;
+        createComment.mutate({
+            postId: post.id,
+            authorMemberId: activeMember.id,
+            content: commentText.trim(),
+        });
+        setCommentText('');
     }
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  }, [onClose])
 
-  function handleSubmit(e: FormEvent) {
-    e.preventDefault()
-    if (!commentText.trim() || !post || !activeMember) return
-    createComment.mutate({
-      postId: post.id,
-      authorMemberId: activeMember.id,
-      content: commentText.trim(),
-    })
-    setCommentText('')
-  }
+    return (
+        <div className="fixed inset-0 z-50 bg-ink/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+            <div className="bg-background rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border flex items-center justify-between px-4 py-3">
+                    <h2 className="text-base font-bold text-ink">{t('title')}</h2>
+                    <button
+                        onClick={onClose}
+                        aria-label={t('close')}
+                        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
 
-  return (
-    <div
-      className="fixed inset-0 z-50 bg-ink/60 backdrop-blur-sm flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-background rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border flex items-center justify-between px-4 py-3">
-          <h2 className="text-base font-bold text-ink">{t('title')}</h2>
-          <button
-            onClick={onClose}
-            aria-label={t('close')}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+                {isPending && <p className="text-center text-sm text-ink-muted py-16">{t('loading')}</p>}
 
-        {isPending && <p className="text-center text-sm text-ink-muted py-16">{t('loading')}</p>}
-
-        {error instanceof ApiError && error.status === 404 && (
-          <div className="flex flex-col items-center justify-center text-center px-6 py-16">
-            <p className="text-base font-semibold text-ink mb-1">{t('notFoundTitle')}</p>
-            <p className="text-sm text-ink-muted">{t('notFoundDescription')}</p>
-          </div>
-        )}
-
-        {post && (
-          <>
-            <div className="px-4 pt-4">
-              <PostCard post={post} showCommentLink={false} />
-            </div>
-
-            <div className="px-4 pt-5 pb-4">
-              <h3 className="text-sm font-bold text-ink mb-4">
-                {comments.length === 0 ? t('noCommentsYet') : t('commentCount', { count: comments.length })}
-              </h3>
-
-              <div className="flex flex-col gap-4">
-                {comments.map(comment => {
-                  const author = comment.authorMemberId ? membersById.get(comment.authorMemberId) : undefined
-                  const name = author?.displayName ?? t('unknownAuthor')
-                  const timeAgo = timeAgoParts(comment.createdAt)
-
-                  return (
-                    <div key={comment.id} className="flex gap-3">
-                      <Avatar
-                        initials={initialsFromName(name)}
-                        color={avatarColorFromId(comment.authorMemberId ?? comment.id)}
-                        size="sm"
-                        alt={name}
-                        className="shrink-0 mt-0.5"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="bg-surface-muted rounded-2xl rounded-tl-sm px-4 py-3">
-                          <div className="flex items-baseline gap-2 mb-1">
-                            <span className="text-sm font-semibold text-ink leading-tight">{name}</span>
-                            <span className="text-xs text-ink-faint">
-                              {timeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${timeAgo.unit}`, { count: timeAgo.value })}
-                            </span>
-                          </div>
-                          <p className="text-sm text-ink leading-relaxed">{comment.content}</p>
-                        </div>
-                      </div>
+                {error instanceof ApiError && error.status === 404 && (
+                    <div className="flex flex-col items-center justify-center text-center px-6 py-16">
+                        <p className="text-base font-semibold text-ink mb-1">{t('notFoundTitle')}</p>
+                        <p className="text-sm text-ink-muted">{t('notFoundDescription')}</p>
                     </div>
-                  )
-                })}
-              </div>
-            </div>
+                )}
 
-            <form
-              onSubmit={handleSubmit}
-              className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t border-border px-4 py-3 flex items-center gap-3"
-            >
-              <input
-                type="text"
-                value={commentText}
-                onChange={e => setCommentText(e.target.value)}
-                placeholder={t('commentPlaceholder')}
-                aria-label={t('commentTextAriaLabel')}
-                className="flex-1 bg-surface-muted rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
-              />
-              <button
-                type="submit"
-                disabled={!commentText.trim() || createComment.isPending}
-                aria-label={t('postComment')}
-                className="text-primary disabled:text-ink-faint transition-colors"
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </form>
-          </>
-        )}
-      </div>
-    </div>
-  )
+                {post && (
+                    <>
+                        <div className="px-4 pt-4">
+                            <PostCard post={post} showCommentLink={false} />
+                        </div>
+
+                        <div className="px-4 pt-5 pb-4">
+                            <h3 className="text-sm font-bold text-ink mb-4">
+                                {comments.length === 0 ? t('noCommentsYet') : t('commentCount', { count: comments.length })}
+                            </h3>
+
+                            <div className="flex flex-col gap-4">
+                                {comments.map((comment) => {
+                                    const author = comment.authorMemberId ? membersById.get(comment.authorMemberId) : undefined;
+                                    const name = author?.displayName ?? t('unknownAuthor');
+                                    const timeAgo = timeAgoParts(comment.createdAt);
+
+                                    return (
+                                        <div key={comment.id} className="flex gap-3">
+                                            <Avatar
+                                                initials={initialsFromName(name)}
+                                                color={avatarColorFromId(comment.authorMemberId ?? comment.id)}
+                                                size="sm"
+                                                alt={name}
+                                                className="shrink-0 mt-0.5"
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                                <div className="bg-surface-muted rounded-2xl rounded-tl-sm px-4 py-3">
+                                                    <div className="flex items-baseline gap-2 mb-1">
+                                                        <span className="text-sm font-semibold text-ink leading-tight">{name}</span>
+                                                        <span className="text-xs text-ink-faint">
+                                                            {timeAgo.unit === 'now'
+                                                                ? t('justNow')
+                                                                : t(`timeAgo.${timeAgo.unit}`, {
+                                                                      count: timeAgo.value,
+                                                                  })}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm text-ink leading-relaxed">{comment.content}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        <form
+                            onSubmit={handleSubmit}
+                            className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t border-border px-4 py-3 flex items-center gap-3"
+                        >
+                            <input
+                                type="text"
+                                value={commentText}
+                                onChange={(e) => setCommentText(e.target.value)}
+                                placeholder={t('commentPlaceholder')}
+                                aria-label={t('commentTextAriaLabel')}
+                                className="flex-1 bg-surface-muted rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
+                            />
+                            <button
+                                type="submit"
+                                disabled={!commentText.trim() || createComment.isPending}
+                                aria-label={t('postComment')}
+                                className="text-primary disabled:text-ink-faint transition-colors"
+                            >
+                                <Send className="w-4 h-4" />
+                            </button>
+                        </form>
+                    </>
+                )}
+            </div>
+        </div>
+    );
 }
 ```
 
@@ -927,21 +935,22 @@ git commit -m "feat: add PostModal component"
 ### Task 10: Export `PostModal`
 
 **Files:**
+
 - Modify: `components/feed/index.ts`
 
 - [ ] **Step 1: Add the export**
 
 ```ts
-export * from './StoriesRow'
-export * from './PostCard'
-export * from './PostModal'
-export * from './ComposerCard'
-export * from './StoryAvatar'
-export * from './Header'
-export * from './Banner'
-export * from './EventInfo'
-export * from './RsvpPrompt'
-export * from './EventNotFound'
+export * from './StoriesRow';
+export * from './PostCard';
+export * from './PostModal';
+export * from './ComposerCard';
+export * from './StoryAvatar';
+export * from './Header';
+export * from './Banner';
+export * from './EventInfo';
+export * from './RsvpPrompt';
+export * from './EventNotFound';
 ```
 
 - [ ] **Step 2: Type-check**
@@ -961,6 +970,7 @@ git commit -m "chore: export PostModal from feed barrel"
 ### Task 11: Render `PostModal` from the feed page
 
 **Files:**
+
 - Modify: `app/(app)/feed/[eventId]/page.tsx`
 
 - [ ] **Step 1: Read `?post=` and add a close handler**
@@ -968,49 +978,49 @@ git commit -m "chore: export PostModal from feed barrel"
 Change the imports:
 
 ```tsx
-import {use, useEffect, useMemo, useRef} from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useTranslations } from 'next-intl'
-import {StoriesRow, PostCard, Header, Banner, EventInfo, EventNotFound, RsvpPrompt, ComposerCard} from '@/components/feed'
+import { use, useEffect, useMemo, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { StoriesRow, PostCard, Header, Banner, EventInfo, EventNotFound, RsvpPrompt, ComposerCard } from '@/components/feed';
 ```
 
 to:
 
 ```tsx
-import {use, useEffect, useMemo, useRef} from 'react'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { useTranslations } from 'next-intl'
-import {StoriesRow, PostCard, PostModal, Header, Banner, EventInfo, EventNotFound, RsvpPrompt, ComposerCard} from '@/components/feed'
+import { use, useEffect, useMemo, useRef } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { StoriesRow, PostCard, PostModal, Header, Banner, EventInfo, EventNotFound, RsvpPrompt, ComposerCard } from '@/components/feed';
 ```
 
 Then, right after `const searchParams = useSearchParams()`, add the pathname hook and derive the open post id + close handler. Change:
 
 ```tsx
-    const { eventId } = use(params)
-    const t = useTranslations('FeedPage')
-    const router = useRouter()
-    const searchParams = useSearchParams()
-    const shouldCompose = searchParams.get('compose') === '1'
-    const composerRef = useRef<HTMLDivElement>(null)
-    const loadMoreRef = useRef<HTMLDivElement>(null)
+const { eventId } = use(params);
+const t = useTranslations('FeedPage');
+const router = useRouter();
+const searchParams = useSearchParams();
+const shouldCompose = searchParams.get('compose') === '1';
+const composerRef = useRef<HTMLDivElement>(null);
+const loadMoreRef = useRef<HTMLDivElement>(null);
 ```
 
 to:
 
 ```tsx
-    const { eventId } = use(params)
-    const t = useTranslations('FeedPage')
-    const router = useRouter()
-    const pathname = usePathname()
-    const searchParams = useSearchParams()
-    const shouldCompose = searchParams.get('compose') === '1'
-    const openPostId = searchParams.get('post')
-    const composerRef = useRef<HTMLDivElement>(null)
-    const loadMoreRef = useRef<HTMLDivElement>(null)
+const { eventId } = use(params);
+const t = useTranslations('FeedPage');
+const router = useRouter();
+const pathname = usePathname();
+const searchParams = useSearchParams();
+const shouldCompose = searchParams.get('compose') === '1';
+const openPostId = searchParams.get('post');
+const composerRef = useRef<HTMLDivElement>(null);
+const loadMoreRef = useRef<HTMLDivElement>(null);
 
-    function closeModal() {
-        router.push(pathname)
-    }
+function closeModal() {
+    router.push(pathname);
+}
 ```
 
 - [ ] **Step 2: Render the modal**
@@ -1051,6 +1061,7 @@ git commit -m "feat: open PostModal from the feed via ?post= param"
 ### Task 12: Replace `/post/[id]` with a redirect resolver
 
 **Files:**
+
 - Modify: `app/(app)/post/[id]/page.tsx` (full rewrite)
 
 - [ ] **Step 1: Replace the entire file**
@@ -1058,34 +1069,30 @@ git commit -m "feat: open PostModal from the feed via ?post= param"
 The current file is fully mock-data-driven (imports from `@/lib/mock-data`, a local `toPostResponseDto` adapter, its own comment list/composer UI). Replace its entire contents with:
 
 ```tsx
-'use client'
+'use client';
 
-import { use, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useTranslations } from 'next-intl'
-import { usePost } from '@/hooks'
-import { EventNotFound } from '@/components/feed'
-import { ApiError } from '@/lib/api/client'
+import { use, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { usePost } from '@/hooks';
+import { EventNotFound } from '@/components/feed';
+import { ApiError } from '@/lib/api/client';
 
 export default function PostRedirectPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
-  const router = useRouter()
-  const t = useTranslations('PostModal')
-  const { data: post, error } = usePost(id)
+    const { id } = use(params);
+    const router = useRouter();
+    const t = useTranslations('PostModal');
+    const { data: post, error } = usePost(id);
 
-  useEffect(() => {
-    if (post) router.replace(`/feed/${post.eventId}?post=${post.id}`)
-  }, [post, router])
+    useEffect(() => {
+        if (post) router.replace(`/feed/${post.eventId}?post=${post.id}`);
+    }, [post, router]);
 
-  if (error instanceof ApiError && error.status === 404) {
-    return <EventNotFound />
-  }
+    if (error instanceof ApiError && error.status === 404) {
+        return <EventNotFound />;
+    }
 
-  return (
-    <div className="min-h-[70vh] flex items-center justify-center text-sm text-ink-muted">
-      {t('loading')}
-    </div>
-  )
+    return <div className="min-h-[70vh] flex items-center justify-center text-sm text-ink-muted">{t('loading')}</div>;
 }
 ```
 

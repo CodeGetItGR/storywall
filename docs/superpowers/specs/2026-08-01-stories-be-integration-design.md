@@ -41,12 +41,12 @@ added for stories.
   author's display name/avatar for the header.
 - **Seen-by + delete affordances** are both added to the viewer, both gated to
   author-or-HOST:
-  - A "viewed by N" pill, shown only when `activeMember.id === story.authorMemberId || isHost`.
-    Tapping it lazily fires `useStoryViews(id)` and opens a sheet listing viewer names (resolved
-    against `useEventMembers`). The query is not fired at all for non-author/non-host viewers
-    (it would just 403).
-  - A "…" menu, same gating, offering delete via `useDeleteStory(eventId)`. On success, advance to
-    the next story in the author's queue, or close the viewer if it was the last one.
+    - A "viewed by N" pill, shown only when `activeMember.id === story.authorMemberId || isHost`.
+      Tapping it lazily fires `useStoryViews(id)` and opens a sheet listing viewer names (resolved
+      against `useEventMembers`). The query is not fired at all for non-author/non-host viewers
+      (it would just 403).
+    - A "…" menu, same gating, offering delete via `useDeleteStory(eventId)`. On success, advance to
+      the next story in the author's queue, or close the viewer if it was the last one.
 - **Mark-viewed:** `useMarkStoryViewed().mutate(id)` fires on mount of the viewer for each `id`
   (idempotent per the guide — safe to call on every open, not just the first).
 
@@ -67,13 +67,13 @@ Pure helper module, no React:
 
 ```ts
 export interface StoryGroup {
-  authorMemberId: string;
-  stories: StoryResponseDto[]; // sorted oldest → newest within the author
-  allSeen: boolean;
-  latestCreatedAt: string;
+    authorMemberId: string;
+    stories: StoryResponseDto[]; // sorted oldest → newest within the author
+    allSeen: boolean;
+    latestCreatedAt: string;
 }
 
-export function groupStoriesByAuthor(stories: StoryResponseDto[], now = new Date()): StoryGroup[]
+export function groupStoriesByAuthor(stories: StoryResponseDto[], now = new Date()): StoryGroup[];
 ```
 
 Filters `expiresAt < now`, groups by `authorMemberId` (nulls dropped — a story needs an author to
@@ -109,10 +109,10 @@ render an avatar), sorts stories within a group by `createdAt` ascending, sorts 
   404 `ApiError`.
 - `useEventStories(story.eventId)` + `groupStoriesByAuthor` to find this story's group; the
   in-group index (not the global list) drives progress bars, auto-advance, and prev/next. Opening
-  a group starts at its first *unseen* story if any, else its first story (`viewedByCurrentUser`
+  a group starts at its first _unseen_ story if any, else its first story (`viewedByCurrentUser`
   already reflects prior views, so a re-opened group doesn't restart from the very first slide
   every time).
-- On last-story auto-advance / manual next, move to the next *group* (next author) via the same
+- On last-story auto-advance / manual next, move to the next _group_ (next author) via the same
   ordering `StoriesRow` used, rather than falling through to `/feed`, unless this was the last
   group — mirrors IG-style continuous playback. (`StoriesRow`'s ordering needs to be
   recomputable from the page too — hoist the ordering into `groupStoriesByAuthor`'s return order

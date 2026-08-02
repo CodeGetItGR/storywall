@@ -18,7 +18,7 @@ built and partially wired:
 - `@tanstack/react-query` for all data hooks (`hooks/use*.ts`).
 
 **Decision:** storywall keeps its own screens and visual design as-is (storywall-fe's UI is
-considered outdated). This migration ports storywall-fe's *data layer* — API client, types,
+considered outdated). This migration ports storywall-fe's _data layer_ — API client, types,
 auth, multi-event context — into storywall, and rewires storywall's existing components to
 consume real data instead of `lib/mock-data.ts`, wherever a backend endpoint exists.
 
@@ -26,7 +26,7 @@ consume real data instead of `lib/mock-data.ts`, wherever a backend endpoint exi
 
 - **UI/screens:** unchanged. No adoption of storywall-fe's routes, layout, or design.
 - **Auth:** full parity with storywall-fe — registered accounts (register/login/silent-refresh)
-  *and* guest-via-invite-token.
+  _and_ guest-via-invite-token.
 - **Multi-event:** the data model and providers become fully multi-event capable, but storywall
   auto-selects the active event (most recent from `GET /me/events`) with **no event-switcher UI**
   in this pass.
@@ -60,18 +60,18 @@ of i18n/`[locale]` routing in storywall:
 
 ## Screen-by-screen wiring
 
-| storywall screen | Real endpoint(s) | Notes |
-|---|---|---|
-| `app/(app)/feed/page.tsx` | `GET/POST /events/{id}/posts`, media upload, `POST /reactions`, `GET/POST /events/{id}/stories` | Replace `posts`/`stories` mock imports |
-| `app/(app)/post/[id]/page.tsx`, comments | `GET/POST /comments` (threaded via `parentCommentId`) | |
-| `app/(app)/profile/page.tsx` | `EventMember` self-read + `PATCH /event-members/{id}` | Hide `isFeatured` for non-hosts |
-| `app/(app)/notifications/page.tsx` | `GET /notifications` | No "mark read" endpoint upstream (same gap storywall-fe has) — read-only for now, list as backend ask |
-| `app/(app)/manage/page.tsx` | Overview/Posts/RSVP: real data. Registry: stays mock. **New:** Invitations section — `GET/POST/PATCH/DELETE /event-invitations`, generates `/invite/{token}` links | |
-| `app/(app)/tools/rsvp/page.tsx` | `POST/PATCH /rsvps`, `/rsvps/{id}/session-responses` | Multi-session support ported from storywall-fe's `useRsvpSessionResponses` |
-| `app/(app)/tools/schedule/page.tsx` | `GET /events/{id}/sessions` | |
-| `app/(app)/tools/venue/page.tsx` | `Event.locationName/locationAddress/mapsUrl` | |
-| `app/(app)/tools/wishbook`, `future-messages`, `quiz`, `seating`, `gifts` | **None** — no backend endpoint | Stay on mock, marked client-only in code comment |
-| new: `/login`, `/register`, `/invite/[inviteToken]` | Full auth + guest-login | Styled with storywall's existing UI primitives, not storywall-fe's |
+| storywall screen                                                          | Real endpoint(s)                                                                                                                                                   | Notes                                                                                                 |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| `app/(app)/feed/page.tsx`                                                 | `GET/POST /events/{id}/posts`, media upload, `POST /reactions`, `GET/POST /events/{id}/stories`                                                                    | Replace `posts`/`stories` mock imports                                                                |
+| `app/(app)/post/[id]/page.tsx`, comments                                  | `GET/POST /comments` (threaded via `parentCommentId`)                                                                                                              |                                                                                                       |
+| `app/(app)/profile/page.tsx`                                              | `EventMember` self-read + `PATCH /event-members/{id}`                                                                                                              | Hide `isFeatured` for non-hosts                                                                       |
+| `app/(app)/notifications/page.tsx`                                        | `GET /notifications`                                                                                                                                               | No "mark read" endpoint upstream (same gap storywall-fe has) — read-only for now, list as backend ask |
+| `app/(app)/manage/page.tsx`                                               | Overview/Posts/RSVP: real data. Registry: stays mock. **New:** Invitations section — `GET/POST/PATCH/DELETE /event-invitations`, generates `/invite/{token}` links |                                                                                                       |
+| `app/(app)/tools/rsvp/page.tsx`                                           | `POST/PATCH /rsvps`, `/rsvps/{id}/session-responses`                                                                                                               | Multi-session support ported from storywall-fe's `useRsvpSessionResponses`                            |
+| `app/(app)/tools/schedule/page.tsx`                                       | `GET /events/{id}/sessions`                                                                                                                                        |                                                                                                       |
+| `app/(app)/tools/venue/page.tsx`                                          | `Event.locationName/locationAddress/mapsUrl`                                                                                                                       |                                                                                                       |
+| `app/(app)/tools/wishbook`, `future-messages`, `quiz`, `seating`, `gifts` | **None** — no backend endpoint                                                                                                                                     | Stay on mock, marked client-only in code comment                                                      |
+| new: `/login`, `/register`, `/invite/[inviteToken]`                       | Full auth + guest-login                                                                                                                                            | Styled with storywall's existing UI primitives, not storywall-fe's                                    |
 
 ## Error handling & loading states
 

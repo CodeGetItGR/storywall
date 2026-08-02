@@ -29,6 +29,7 @@ manual dev-server checks against the running backend — the same approach story
 ### Task 1: Add React Query dependency
 
 **Files:**
+
 - Modify: `package.json`
 
 - [ ] **Step 1: Install the dependency**
@@ -57,6 +58,7 @@ git commit -m "chore: add @tanstack/react-query"
 ### Task 2: Environment config
 
 **Files:**
+
 - Create: `.env.local`
 - Create: `.env.example`
 - Modify: `.gitignore` (confirm `.env.local` is already ignored)
@@ -93,12 +95,14 @@ git commit -m "chore: add API base URL env config"
 ### Task 3: Port `lib/api/types.ts`
 
 **Files:**
+
 - Create: `lib/api/types.ts` (copied verbatim from storywall-fe — 509 lines of DTO types, no
   adaptation needed since neither repo's types depend on i18n/routing)
 
 - [ ] **Step 1: Copy the file**
 
 Run:
+
 ```bash
 mkdir -p "C:\Users\User\WebstormProjects\storywall\lib\api"
 cp "C:\Users\User\WebstormProjects\storywall-fe\lib\api\types.ts" "C:\Users\User\WebstormProjects\storywall\lib\api\types.ts"
@@ -126,6 +130,7 @@ git commit -m "feat: port API DTO types from storywall-fe"
 ### Task 4: Port `lib/api/endpoints.ts`
 
 **Files:**
+
 - Create: `lib/api/endpoints.ts` (copied verbatim — no i18n/routing dependency)
 
 - [ ] **Step 1: Copy the file**
@@ -151,12 +156,14 @@ git commit -m "feat: port API endpoint registry from storywall-fe"
 ### Task 5: Port `lib/auth/tokenStore.ts`
 
 **Files:**
+
 - Create: `lib/auth/tokenStore.ts` (copied verbatim — depends only on `PlatformRole` from
   `lib/api/types.ts`, already ported in Task 3)
 
 - [ ] **Step 1: Copy the file**
 
 Run:
+
 ```bash
 mkdir -p "C:\Users\User\WebstormProjects\storywall\lib\auth"
 cp "C:\Users\User\WebstormProjects\storywall-fe\lib\auth\tokenStore.ts" "C:\Users\User\WebstormProjects\storywall\lib\auth\tokenStore.ts"
@@ -181,6 +188,7 @@ git commit -m "feat: port auth token store from storywall-fe"
 ### Task 6: Port `lib/api/client.ts`
 
 **Files:**
+
 - Create: `lib/api/client.ts` (copied verbatim — depends on `endpoints.ts`, `types.ts`,
   `tokenStore.ts`, all ported above)
 
@@ -207,12 +215,14 @@ git commit -m "feat: port API client from storywall-fe"
 ### Task 7: Port `lib/api/errors.ts` and `lib/api/pagination.ts`
 
 **Files:**
+
 - Create: `lib/api/errors.ts` (copied verbatim — depends on `client.ts`'s `ApiError`)
 - Create: `lib/api/pagination.ts` (copied verbatim — no internal deps)
 
 - [ ] **Step 1: Copy both files**
 
 Run:
+
 ```bash
 cp "C:\Users\User\WebstormProjects\storywall-fe\lib\api\errors.ts" "C:\Users\User\WebstormProjects\storywall\lib\api\errors.ts"
 cp "C:\Users\User\WebstormProjects\storywall-fe\lib\api\pagination.ts" "C:\Users\User\WebstormProjects\storywall\lib\api\pagination.ts"
@@ -237,6 +247,7 @@ git commit -m "feat: port API error mapping and list-pagination adapter"
 ### Task 8: Port `providers/AuthProvider.tsx` and `hooks/useAuth.ts`
 
 **Files:**
+
 - Create: `providers/AuthProvider.tsx` (copied verbatim — depends only on `lib/api/*` and
   `lib/auth/tokenStore.ts`, no i18n/locale dependency)
 - Create: `hooks/useAuth.ts` (copied verbatim — one-line re-export)
@@ -244,6 +255,7 @@ git commit -m "feat: port API error mapping and list-pagination adapter"
 - [ ] **Step 1: Copy both files**
 
 Run:
+
 ```bash
 mkdir -p "C:\Users\User\WebstormProjects\storywall\providers"
 mkdir -p "C:\Users\User\WebstormProjects\storywall\hooks"
@@ -270,12 +282,14 @@ git commit -m "feat: port AuthProvider (register/login/guest-login/refresh)"
 ### Task 9: Port `hooks/useMyEvents.ts` and `hooks/useEvent.ts`
 
 **Files:**
+
 - Create: `hooks/useMyEvents.ts` (copied verbatim — `GET /api/me/events`)
 - Create: `hooks/useEvent.ts` (copied verbatim — `GET/POST/PATCH /api/events`)
 
 - [ ] **Step 1: Copy both files**
 
 Run:
+
 ```bash
 cp "C:\Users\User\WebstormProjects\storywall-fe\hooks\useMyEvents.ts" "C:\Users\User\WebstormProjects\storywall\hooks\useMyEvents.ts"
 cp "C:\Users\User\WebstormProjects\storywall-fe\hooks\useEvent.ts" "C:\Users\User\WebstormProjects\storywall\hooks\useEvent.ts"
@@ -300,6 +314,7 @@ git commit -m "feat: port useMyEvents and useEvent hooks"
 ### Task 10: Port `providers/EventProvider.tsx`
 
 **Files:**
+
 - Create: `providers/EventProvider.tsx` (copied verbatim — depends on `useAuth`, `useMyEvents`,
   `useEvent`, all ported above; no i18n/locale dependency, so it needs no adaptation)
 
@@ -328,6 +343,7 @@ git commit -m "feat: port EventProvider (multi-event context, auto-active-event)
 ### Task 11: Create the `Providers` wrapper
 
 **Files:**
+
 - Create: `providers/Providers.tsx`
 
 Unlike storywall-fe's `app/[locale]/providers.tsx`, this wrapper does **not** include
@@ -339,40 +355,40 @@ protection is Phase 1 scope per the spec. This task only needs `QueryClientProvi
 - [ ] **Step 1: Write `providers/Providers.tsx`**
 
 ```tsx
-"use client";
+'use client';
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { useState } from "react";
-import { ApiError } from "@/lib/api/client";
-import { AuthProvider } from "@/providers/AuthProvider";
-import { EventProvider } from "@/providers/EventProvider";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { useState } from 'react';
+import { ApiError } from '@/lib/api/client';
+import { AuthProvider } from '@/providers/AuthProvider';
+import { EventProvider } from '@/providers/EventProvider';
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            retry: (failureCount, error) => {
-              // 4xx responses (bad auth, validation, not-found, etc.) won't
-              // succeed on retry — only retry transient/server errors.
-              if (error instanceof ApiError && error.status >= 400 && error.status < 500) return false;
-              return failureCount < 2;
-            },
-          },
-        },
-      }),
-  );
+    const [queryClient] = useState(
+        () =>
+            new QueryClient({
+                defaultOptions: {
+                    queries: {
+                        retry: (failureCount, error) => {
+                            // 4xx responses (bad auth, validation, not-found, etc.) won't
+                            // succeed on retry — only retry transient/server errors.
+                            if (error instanceof ApiError && error.status >= 400 && error.status < 500) return false;
+                            return failureCount < 2;
+                        },
+                    },
+                },
+            })
+    );
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <EventProvider>{children}</EventProvider>
-      </AuthProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
-  );
+    return (
+        <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+                <EventProvider>{children}</EventProvider>
+            </AuthProvider>
+            <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
+    );
 }
 ```
 
@@ -395,44 +411,44 @@ git commit -m "feat: add Providers wrapper (QueryClient, Auth, Event)"
 ### Task 12: Wire `Providers` into the root layout
 
 **Files:**
+
 - Modify: `app/layout.tsx`
 
 `app/layout.tsx` currently renders `children` directly with no providers at all (see current
 content below). This step wraps it with the new `Providers` component.
 
 Current content of `app/layout.tsx`:
-```tsx
-import { Geist } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
-import type { Metadata, Viewport } from 'next'
-import './globals.css'
 
-const geist = Geist({ subsets: ['latin'] })
+```tsx
+import { Geist } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
+import type { Metadata, Viewport } from 'next';
+import './globals.css';
+
+const geist = Geist({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'StoryWall — Emma & James · Oct 18, 2025',
-  description: 'The wedding social wall for Emma Chen & James Rivera. Share memories, RSVP, explore the venue, and celebrate together.',
-  generator: 'v0.app',
-}
+    title: 'StoryWall — Emma & James · Oct 18, 2025',
+    description: 'The wedding social wall for Emma Chen & James Rivera. Share memories, RSVP, explore the venue, and celebrate together.',
+    generator: 'v0.app',
+};
 
 export const viewport: Viewport = {
-  colorScheme: 'light',
-  themeColor: '#fffaf3',
-  width: 'device-width',
-  initialScale: 1,
-}
+    colorScheme: 'light',
+    themeColor: '#fffaf3',
+    width: 'device-width',
+    initialScale: 1,
+};
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <html lang="en" className={`${geist.className} bg-background`}>
-      <body className="antialiased">
-        {children}
-        {process.env.NODE_ENV === 'production' && <Analytics />}
-      </body>
-    </html>
-  )
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+    return (
+        <html lang="en" className={`${geist.className} bg-background`}>
+            <body className="antialiased">
+                {children}
+                {process.env.NODE_ENV === 'production' && <Analytics />}
+            </body>
+        </html>
+    );
 }
 ```
 
@@ -441,36 +457,40 @@ export default function RootLayout({
 Use the Edit tool on `app/layout.tsx`:
 
 Old string:
+
 ```tsx
-import { Geist } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
-import type { Metadata, Viewport } from 'next'
-import './globals.css'
+import { Geist } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
+import type { Metadata, Viewport } from 'next';
+import './globals.css';
 ```
 
 New string:
+
 ```tsx
-import { Geist } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
-import type { Metadata, Viewport } from 'next'
-import { Providers } from '@/providers/Providers'
-import './globals.css'
+import { Geist } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
+import type { Metadata, Viewport } from 'next';
+import { Providers } from '@/providers/Providers';
+import './globals.css';
 ```
 
 Old string:
+
 ```tsx
-      <body className="antialiased">
-        {children}
-        {process.env.NODE_ENV === 'production' && <Analytics />}
-      </body>
+<body className="antialiased">
+    {children}
+    {process.env.NODE_ENV === 'production' && <Analytics />}
+</body>
 ```
 
 New string:
+
 ```tsx
-      <body className="antialiased">
-        <Providers>{children}</Providers>
-        {process.env.NODE_ENV === 'production' && <Analytics />}
-      </body>
+<body className="antialiased">
+    <Providers>{children}</Providers>
+    {process.env.NODE_ENV === 'production' && <Analytics />}
+</body>
 ```
 
 - [ ] **Step 2: Typecheck**
@@ -514,7 +534,7 @@ otherwise confirm with the user it's already running.
 
 storywall-fe's `plan.md` flags that `CORS_ALLOWED_ORIGINS` defaults to `localhost:3000` and
 `:5173`. storywall's dev server also defaults to port 3000 (`next dev`) — if storywall-fe is
-*also* running on 3000 locally, run storywall on a different port and confirm that port is on the
+_also_ running on 3000 locally, run storywall on a different port and confirm that port is on the
 backend's CORS allowlist:
 
 Run: `cd "C:\Users\User\WebstormProjects\storywall" && npx next dev -p 3002`
@@ -522,6 +542,7 @@ Run: `cd "C:\Users\User\WebstormProjects\storywall" && npx next dev -p 3002`
 - [ ] **Step 3: Open the app and confirm no console errors**
 
 Use the browser preview tool to open `http://localhost:3002`. Confirm:
+
 - The page renders (feed screen, still on mock data — expected, no screens were touched).
 - No uncaught exceptions in the console about `useAuth`/`useActiveEvent`/missing providers.
 - No CORS errors in the console (if there are, revisit Step 2).

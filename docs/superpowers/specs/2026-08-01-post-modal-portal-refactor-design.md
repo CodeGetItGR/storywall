@@ -58,7 +58,7 @@ Declarative API:
   `max-h-[90dvh]` with `overflow-hidden` on the outer shell — the shell
   itself can never exceed the viewport in either axis.
 - `Modal.Body`: a sub-component providing `flex-1 overflow-y-auto
-  min-h-0` — the designated scrollable region for content that can grow
+min-h-0` — the designated scrollable region for content that can grow
   (e.g. a comment list). Consumers that need internal horizontal
   constraints (e.g. a media panel) are responsible for their own
   `min-w-0`/`object-contain`, same as any flex/grid child.
@@ -73,9 +73,9 @@ Declarative API:
 - Wired into `providers/Providers.tsx` alongside `AuthProvider`/
   `EventProvider`.
 - Tracks a single active modal's open state generically: `{ isOpen,
-  openModal(), closeModal() }`. Deliberately minimal — it does not own
-  *content*, since `PostModal`'s content stays URL-driven (see below).
-  This keeps the provider reusable for a future modal that *does* want the
+openModal(), closeModal() }`. Deliberately minimal — it does not own
+  _content_, since `PostModal`'s content stays URL-driven (see below).
+  This keeps the provider reusable for a future modal that _does_ want the
   provider to own its open state, without forcing `PostModal` through an
   extra indirection it doesn't need.
 - Follows the existing `EventProvider` context pattern (`createContext` +
@@ -102,7 +102,7 @@ Declarative API:
 - Move the comment list into `<Modal.Body>` so it scrolls internally
   instead of growing the shell.
 - Media panel (`lg:col-span-3` black panel): constrain with `min-w-0
-  min-h-0` inside the grid cell and keep `object-scale-down` so the image
+min-h-0` inside the grid cell and keep `object-scale-down` so the image
   never forces the grid — and therefore the shell — wider or taller than
   available space.
 - Drop the existing manual `Escape`-key `useEffect` (now handled by

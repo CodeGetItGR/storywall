@@ -1,188 +1,188 @@
 // Domain DTOs transcribed from event_social_media/docs/frontend-integration-guide.md.
 // Route casing/paths live in lib/api/endpoints.ts, not here.
 
-export type EventRole = "HOST" | "ATTENDEE";
-export type EventVisibility = "PUBLIC" | "PRIVATE";
-export type AttendanceStatus = "ATTENDING" | "DECLINED" | "MAYBE";
-export type AuthProvider = "LOCAL" | "OAUTH" | "INVITE";
-export type AccountStatus = "ACTIVE" | "SUSPENDED" | "DELETED";
-export type PlatformRole = "USER" | "ADMIN" | "GUEST";
+export type EventRole = 'HOST' | 'ATTENDEE';
+export type EventVisibility = 'PUBLIC' | 'PRIVATE';
+export type AttendanceStatus = 'ATTENDING' | 'DECLINED' | 'MAYBE';
+export type AuthProvider = 'LOCAL' | 'OAUTH' | 'INVITE';
+export type AccountStatus = 'ACTIVE' | 'SUSPENDED' | 'DELETED';
+export type PlatformRole = 'USER' | 'ADMIN' | 'GUEST';
 
 // eventType / moduleKey / Post.type / Reaction.reactionType are free strings server-side.
 // These are FE-side conventions only, not enforced by the backend.
-export type EventTypeConvention = "WEDDING" | "BAPTISM" | "BIRTHDAY" | "CONFERENCE";
-export type ModuleKeyConvention = "posts" | "rsvp" | "playlist" | "stories" | "gallery";
+export type EventTypeConvention = 'WEDDING' | 'BAPTISM' | 'BIRTHDAY' | 'CONFERENCE';
+export type ModuleKeyConvention = 'posts' | 'rsvp' | 'playlist' | 'stories' | 'gallery';
 // Post.type is enforced server-side against this exact set (DB CHECK constraint
 // + matching DTO validation) — not a free-string convention like the others.
-export type PostType = "TEXT" | "MEDIA" | "ANNOUNCEMENT" | "PLAYLIST";
-export type MediaTypeConvention = "IMAGE" | "VIDEO" | "AUDIO" | "DOCUMENT";
+export type PostType = 'TEXT' | 'MEDIA' | 'ANNOUNCEMENT' | 'PLAYLIST';
+export type MediaTypeConvention = 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT';
 
 // --- §2 Errors ---
 
 export interface ProblemDetail {
-  type: string;
-  title: string;
-  status: number;
-  detail: string;
-  instance: string;
-  // number for GlobalExceptionHandler errors; string ("AUTHENTICATION_REQUIRED" |
-  // "ACCESS_DENIED") for the two auth-entrypoint special cases.
-  errorCode: number | string;
-  errorKey: string;
-  errors?: Record<string, string>;
+    type: string;
+    title: string;
+    status: number;
+    detail: string;
+    instance: string;
+    // number for GlobalExceptionHandler errors; string ("AUTHENTICATION_REQUIRED" |
+    // "ACCESS_DENIED") for the two auth-entrypoint special cases.
+    errorCode: number | string;
+    errorKey: string;
+    errors?: Record<string, string>;
 }
 
 // --- §3 Auth ---
 
 export interface AuthResponseDto {
-  accessToken: string;
-  refreshToken: string | null;
-  userId: string;
-  email: string | null;
-  role: PlatformRole;
-  displayName: string;
+    accessToken: string;
+    refreshToken: string | null;
+    userId: string;
+    email: string | null;
+    role: PlatformRole;
+    displayName: string;
 }
 
 export interface RegisterRequestDto {
-  email: string;
-  password: string;
+    email: string;
+    password: string;
 }
 
 export interface LoginRequestDto {
-  email: string;
-  password: string;
+    email: string;
+    password: string;
 }
 
 export interface RefreshRequestDto {
-  refreshToken: string;
+    refreshToken: string;
 }
 
 export interface LogoutRequestDto {
-  refreshToken: string;
+    refreshToken: string;
 }
 
 export interface GuestLoginRequestDto {
-  inviteToken: string;
-  displayName: string;
+    inviteToken: string;
+    displayName: string;
 }
 
 // --- §4 Users, Me, Sessions, Notifications ---
 
 export interface NotificationRequestDto {
-  recipientMemberId?: string; // ignored as a spoofing vector — server resolves from the caller's own membership
-  type: string;
-  referenceType?: string;
-  referenceId?: string;
-  payload: Record<string, unknown>;
-  readAt?: string | null;
+    recipientMemberId?: string; // ignored as a spoofing vector — server resolves from the caller's own membership
+    type: string;
+    referenceType?: string;
+    referenceId?: string;
+    payload: Record<string, unknown>;
+    readAt?: string | null;
 }
 
 export interface NotificationResponseDto {
-  id: string;
-  recipientMemberId: string;
-  type: string;
-  referenceType: string | null;
-  referenceId: string | null;
-  payload: Record<string, unknown>;
-  readAt: string | null;
-  createdAt: string;
-  deletedAt: string | null;
+    id: string;
+    recipientMemberId: string;
+    type: string;
+    referenceType: string | null;
+    referenceId: string | null;
+    payload: Record<string, unknown>;
+    readAt: string | null;
+    createdAt: string;
+    deletedAt: string | null;
 }
 
 export interface SessionResponseDto {
-  id: string;
-  userId: string;
-  ipAddress: string;
-  userAgent: string;
-  refreshTokenHash: string;
-  expiresAt: string;
-  createdAt: string;
-  revokedAt: string | null;
+    id: string;
+    userId: string;
+    ipAddress: string;
+    userAgent: string;
+    refreshTokenHash: string;
+    expiresAt: string;
+    createdAt: string;
+    revokedAt: string | null;
 }
 
 export interface UserRequestDto {
-  email?: string;
-  authProvider?: AuthProvider;
-  isGuestAccount?: boolean;
-  status?: AccountStatus;
-  platformRole?: PlatformRole;
+    email?: string;
+    authProvider?: AuthProvider;
+    isGuestAccount?: boolean;
+    status?: AccountStatus;
+    platformRole?: PlatformRole;
 }
 
 export interface UserResponseDto {
-  id: string;
-  email: string;
-  authProvider: AuthProvider;
-  isGuestAccount: boolean;
-  status: AccountStatus;
-  platformRole: PlatformRole;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
+    id: string;
+    email: string;
+    authProvider: AuthProvider;
+    isGuestAccount: boolean;
+    status: AccountStatus;
+    platformRole: PlatformRole;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
 }
 
 // --- §5 Event domain ---
 
 export interface EventRequestDto {
-  title: string;
-  subtitle?: string;
-  description?: string;
-  eventType: EventTypeConvention;
-  visibility: EventVisibility; // required on this DTO despite the entity's DB default of PRIVATE
-  startAt: string;
-  endAt?: string;
-  timezone: string;
-  locationName?: string;
-  locationAddress?: string;
-  mapsUrl?: string;
-  coverMediaId?: string;
-  brandingSettings: Record<string, unknown>; // required — send {} if none
-  rsvpDeadline?: string;
-  isArchived: boolean; // required — send false explicitly
+    title: string;
+    subtitle?: string;
+    description?: string;
+    eventType: EventTypeConvention;
+    visibility: EventVisibility; // required on this DTO despite the entity's DB default of PRIVATE
+    startAt: string;
+    endAt?: string;
+    timezone: string;
+    locationName?: string;
+    locationAddress?: string;
+    mapsUrl?: string;
+    coverMediaId?: string;
+    brandingSettings: Record<string, unknown>; // required — send {} if none
+    rsvpDeadline?: string;
+    isArchived: boolean; // required — send false explicitly
 }
 
 // Returned by GET /api/events (list) and POST /api/events — flat summary shape.
 // GET /api/events/{id} returns EventDetailResponseDto instead (see below).
 export interface EventResponseDto {
-  id: string;
-  title: string;
-  subtitle: string | null;
-  description: string | null;
-  eventType: EventTypeConvention;
-  visibility: EventVisibility;
-  startAt: string;
-  endAt: string | null;
-  timezone: string;
-  locationName: string | null;
-  locationAddress: string | null;
-  mapsUrl: string | null;
-  coverMediaId: string | null;
-  brandingSettings: Record<string, unknown>;
-  rsvpDeadline: string | null;
-  isArchived: boolean;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
+    id: string;
+    title: string;
+    subtitle: string | null;
+    description: string | null;
+    eventType: EventTypeConvention;
+    visibility: EventVisibility;
+    startAt: string;
+    endAt: string | null;
+    timezone: string;
+    locationName: string | null;
+    locationAddress: string | null;
+    mapsUrl: string | null;
+    coverMediaId: string | null;
+    brandingSettings: Record<string, unknown>;
+    rsvpDeadline: string | null;
+    isArchived: boolean;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
 }
 
 export interface EventScheduleDto {
-  startAt: string;
-  endAt: string | null;
-  timezone: string;
-  rsvpDeadline: string | null;
+    startAt: string;
+    endAt: string | null;
+    timezone: string;
+    rsvpDeadline: string | null;
 }
 
 export interface EventLocationDto {
-  name: string | null;
-  address: string | null;
-  mapsUrl: string | null;
+    name: string | null;
+    address: string | null;
+    mapsUrl: string | null;
 }
 
 export interface EventRsvpSummaryDto {
-  totalMembers: number;
-  attending: number;
-  declined: number;
-  maybe: number;
-  noResponse: number;
+    totalMembers: number;
+    attending: number;
+    declined: number;
+    maybe: number;
+    noResponse: number;
 }
 
 // Returned by GET /api/events/{id} only (not the list endpoint), added
@@ -191,89 +191,89 @@ export interface EventRsvpSummaryDto {
 // suggestions/votes — is intentionally excluded; fetch those from their own
 // paginatable endpoints.
 export interface EventDetailResponseDto {
-  id: string;
-  title: string;
-  subtitle: string | null;
-  description: string | null;
-  eventType: EventTypeConvention;
-  visibility: EventVisibility;
-  schedule: EventScheduleDto;
-  location: EventLocationDto;
-  coverMedia: MediaResponseDto | null; // resolved, with a fresh presigned mediaUrl
-  brandingSettings: Record<string, unknown>;
-  isArchived: boolean;
-  hosts: EventHostResponseDto[];
-  modules: EventModuleResponseDto[];
-  sessions: EventSessionResponseDto[];
-  rsvpSummary: EventRsvpSummaryDto;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
+    id: string;
+    title: string;
+    subtitle: string | null;
+    description: string | null;
+    eventType: EventTypeConvention;
+    visibility: EventVisibility;
+    schedule: EventScheduleDto;
+    location: EventLocationDto;
+    coverMedia: MediaResponseDto | null; // resolved, with a fresh presigned mediaUrl
+    brandingSettings: Record<string, unknown>;
+    isArchived: boolean;
+    hosts: EventHostResponseDto[];
+    modules: EventModuleResponseDto[];
+    sessions: EventSessionResponseDto[];
+    rsvpSummary: EventRsvpSummaryDto;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
 }
 
 export interface EventPatchDto {
-  title?: string;
-  subtitle?: string;
-  description?: string;
-  visibility?: EventVisibility;
-  startAt?: string;
-  endAt?: string;
-  timezone?: string;
-  locationName?: string;
-  locationAddress?: string;
-  mapsUrl?: string;
-  coverMediaId?: string;
-  brandingSettings?: Record<string, unknown>;
-  rsvpDeadline?: string;
-  isArchived?: boolean;
+    title?: string;
+    subtitle?: string;
+    description?: string;
+    visibility?: EventVisibility;
+    startAt?: string;
+    endAt?: string;
+    timezone?: string;
+    locationName?: string;
+    locationAddress?: string;
+    mapsUrl?: string;
+    coverMediaId?: string;
+    brandingSettings?: Record<string, unknown>;
+    rsvpDeadline?: string;
+    isArchived?: boolean;
 }
 
 export interface CoHostInviteRequestDto {
-  userId: string;
+    userId: string;
 }
 
 export interface EventHostRequestDto {
-  eventId: string;
-  memberId: string;
-  displayOrder: number;
+    eventId: string;
+    memberId: string;
+    displayOrder: number;
 }
 
 export interface EventHostResponseDto {
-  id: string;
-  eventId: string;
-  memberId: string;
-  displayOrder: number;
-  createdAt: string;
+    id: string;
+    eventId: string;
+    memberId: string;
+    displayOrder: number;
+    createdAt: string;
 }
 
 export interface EventHostPatchDto {
-  displayOrder?: number;
+    displayOrder?: number;
 }
 
 export interface EventInvitationRequestDto {
-  eventId: string;
-  inviteCode: string;
-  inviteToken?: string;
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-  maxGuests: number;
-  expiresAt?: string;
-  usedAt?: string | null; // system-managed; set on accept
+    eventId: string;
+    inviteCode: string;
+    inviteToken?: string;
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    maxGuests: number;
+    expiresAt?: string;
+    usedAt?: string | null; // system-managed; set on accept
 }
 
 export interface EventInvitationResponseDto {
-  id: string;
-  eventId: string;
-  inviteCode: string;
-  inviteToken: string; // server generates a UUID if omitted on write — always present on read
-  email: string | null;
-  firstName: string | null;
-  lastName: string | null;
-  maxGuests: number;
-  expiresAt: string | null;
-  usedAt: string | null;
-  createdAt: string;
+    id: string;
+    eventId: string;
+    inviteCode: string;
+    inviteToken: string; // server generates a UUID if omitted on write — always present on read
+    email: string | null;
+    firstName: string | null;
+    lastName: string | null;
+    maxGuests: number;
+    expiresAt: string | null;
+    usedAt: string | null;
+    createdAt: string;
 }
 
 // GET /api/event-invitations/{inviteToken}/preview — public, unauthenticated.
@@ -281,210 +281,210 @@ export interface EventInvitationResponseDto {
 // errors, they're states to render (a used single-use slot doesn't imply the
 // current visitor is the one who used it).
 export interface EventInvitationPreviewDto {
-  inviteToken: string;
-  eventId: string;
-  eventTitle: string;
-  eventSubtitle: string | null;
-  eventDescription: string | null;
-  coverMediaId: string | null;
-  firstName: string | null;
-  lastName: string | null;
-  email: string | null;
-  expired: boolean;
-  alreadyUsed: boolean;
+    inviteToken: string;
+    eventId: string;
+    eventTitle: string;
+    eventSubtitle: string | null;
+    eventDescription: string | null;
+    coverMediaId: string | null;
+    firstName: string | null;
+    lastName: string | null;
+    email: string | null;
+    expired: boolean;
+    alreadyUsed: boolean;
 }
 
 export interface EventInvitationPatchDto {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  maxGuests?: number;
-  expiresAt?: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    maxGuests?: number;
+    expiresAt?: string;
 }
 
 export interface EventMemberRequestDto {
-  eventId: string;
-  userId?: string;
-  invitationId?: string;
-  role: EventRole;
-  displayName: string;
-  nickname?: string;
-  relationshipRole?: string;
-  customRelationshipRole?: string;
-  isFeatured?: boolean; // optional on the wire — defaults to false server-side
-  avatarMediaId?: string;
-  joinedAt: string;
+    eventId: string;
+    userId?: string;
+    invitationId?: string;
+    role: EventRole;
+    displayName: string;
+    nickname?: string;
+    relationshipRole?: string;
+    customRelationshipRole?: string;
+    isFeatured?: boolean; // optional on the wire — defaults to false server-side
+    avatarMediaId?: string;
+    joinedAt: string;
 }
 
 export interface EventMemberResponseDto {
-  id: string;
-  eventId: string;
-  userId: string | null;
-  invitationId: string | null;
-  role: EventRole;
-  displayName: string;
-  nickname: string | null;
-  relationshipRole: string | null;
-  customRelationshipRole: string | null;
-  isFeatured: boolean;
-  avatarMediaId: string | null;
-  joinedAt: string;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
+    id: string;
+    eventId: string;
+    userId: string | null;
+    invitationId: string | null;
+    role: EventRole;
+    displayName: string;
+    nickname: string | null;
+    relationshipRole: string | null;
+    customRelationshipRole: string | null;
+    isFeatured: boolean;
+    avatarMediaId: string | null;
+    joinedAt: string;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
 }
 
 export interface EventMemberPatchDto {
-  displayName?: string;
-  nickname?: string;
-  relationshipRole?: string;
-  customRelationshipRole?: string;
-  isFeatured?: boolean;
-  avatarMediaId?: string;
+    displayName?: string;
+    nickname?: string;
+    relationshipRole?: string;
+    customRelationshipRole?: string;
+    isFeatured?: boolean;
+    avatarMediaId?: string;
 }
 
 export interface EventModuleRequestDto {
-  eventId: string;
-  moduleKey: ModuleKeyConvention;
-  isEnabled: boolean;
-  configuration: Record<string, unknown>;
+    eventId: string;
+    moduleKey: ModuleKeyConvention;
+    isEnabled: boolean;
+    configuration: Record<string, unknown>;
 }
 
 export interface EventModuleResponseDto {
-  id: string;
-  eventId: string;
-  moduleKey: ModuleKeyConvention;
-  isEnabled: boolean;
-  configuration: Record<string, unknown>;
-  createdAt: string;
+    id: string;
+    eventId: string;
+    moduleKey: ModuleKeyConvention;
+    isEnabled: boolean;
+    configuration: Record<string, unknown>;
+    createdAt: string;
 }
 
 export interface EventModulePatchDto {
-  isEnabled?: boolean;
-  configuration?: Record<string, unknown>;
+    isEnabled?: boolean;
+    configuration?: Record<string, unknown>;
 }
 
 export interface EventSessionRequestDto {
-  eventId: string;
-  title: string;
-  description?: string;
-  startAt?: string;
-  endAt?: string;
-  locationName?: string;
-  mapsUrl?: string;
-  displayOrder: number;
+    eventId: string;
+    title: string;
+    description?: string;
+    startAt?: string;
+    endAt?: string;
+    locationName?: string;
+    mapsUrl?: string;
+    displayOrder: number;
 }
 
 export interface EventSessionResponseDto {
-  id: string;
-  eventId: string;
-  title: string;
-  description: string | null;
-  startAt: string | null;
-  endAt: string | null;
-  locationName: string | null;
-  mapsUrl: string | null;
-  displayOrder: number;
-  createdAt: string;
-  deletedAt: string | null;
+    id: string;
+    eventId: string;
+    title: string;
+    description: string | null;
+    startAt: string | null;
+    endAt: string | null;
+    locationName: string | null;
+    mapsUrl: string | null;
+    displayOrder: number;
+    createdAt: string;
+    deletedAt: string | null;
 }
 
 export interface EventSessionPatchDto {
-  title?: string;
-  description?: string;
-  startAt?: string;
-  endAt?: string;
-  locationName?: string;
-  mapsUrl?: string;
-  displayOrder?: number;
+    title?: string;
+    description?: string;
+    startAt?: string;
+    endAt?: string;
+    locationName?: string;
+    mapsUrl?: string;
+    displayOrder?: number;
 }
 
 export interface RsvpRequestDto {
-  eventMemberId: string;
-  attendanceStatus: AttendanceStatus;
-  phone?: string;
-  adultCount: number;
-  childCount: number;
-  dietaryNotes?: string;
-  notes?: string;
-  submittedAt: string;
+    eventMemberId: string;
+    attendanceStatus: AttendanceStatus;
+    phone?: string;
+    adultCount: number;
+    childCount: number;
+    dietaryNotes?: string;
+    notes?: string;
+    submittedAt: string;
 }
 
 export interface RsvpResponseDto {
-  id: string;
-  eventMemberId: string;
-  attendanceStatus: AttendanceStatus;
-  phone: string | null;
-  adultCount: number;
-  childCount: number;
-  dietaryNotes: string | null;
-  notes: string | null;
-  submittedAt: string;
-  updatedAt: string;
+    id: string;
+    eventMemberId: string;
+    attendanceStatus: AttendanceStatus;
+    phone: string | null;
+    adultCount: number;
+    childCount: number;
+    dietaryNotes: string | null;
+    notes: string | null;
+    submittedAt: string;
+    updatedAt: string;
 }
 
 export interface RsvpPatchDto {
-  attendanceStatus?: AttendanceStatus;
-  phone?: string;
-  adultCount?: number;
-  childCount?: number;
-  dietaryNotes?: string;
-  notes?: string;
+    attendanceStatus?: AttendanceStatus;
+    phone?: string;
+    adultCount?: number;
+    childCount?: number;
+    dietaryNotes?: string;
+    notes?: string;
 }
 
 export interface RsvpSessionResponsRequestDto {
-  rsvpId: string;
-  eventSessionId: string;
-  isAttending: boolean;
+    rsvpId: string;
+    eventSessionId: string;
+    isAttending: boolean;
 }
 
 export interface RsvpSessionResponsResponseDto extends RsvpSessionResponsRequestDto {
-  id: string;
-  createdAt: string;
+    id: string;
+    createdAt: string;
 }
 
 export interface RsvpSessionResponsPatchDto {
-  isAttending?: boolean;
+    isAttending?: boolean;
 }
 
 // --- §6 Media domain ---
 
 export interface MediaResponseDto {
-  id: string;
-  eventId: string;
-  uploaderMemberId: string | null;
-  storageKey: string;
-  mediaUrl: string;
-  originalFilename: string;
-  mimeType: string;
-  mediaType: MediaTypeConvention;
-  fileSize: number;
-  width: number | null;
-  height: number | null;
-  durationSeconds: number | null;
-  metadata: Record<string, unknown>;
-  createdAt: string;
-  deletedAt: string | null;
+    id: string;
+    eventId: string;
+    uploaderMemberId: string | null;
+    storageKey: string;
+    mediaUrl: string;
+    originalFilename: string;
+    mimeType: string;
+    mediaType: MediaTypeConvention;
+    fileSize: number;
+    width: number | null;
+    height: number | null;
+    durationSeconds: number | null;
+    metadata: Record<string, unknown>;
+    createdAt: string;
+    deletedAt: string | null;
 }
 
 export interface MediaBatchFailedItemDto {
-  filename: string;
-  errorCode: string;
-  message: string;
+    filename: string;
+    errorCode: string;
+    message: string;
 }
 
 export interface MediaBatchUploadResponseDto {
-  created: MediaResponseDto[];
-  failed: MediaBatchFailedItemDto[];
+    created: MediaResponseDto[];
+    failed: MediaBatchFailedItemDto[];
 }
 
 export interface PostRequestDto {
-  eventId: string;
-  authorMemberId?: string;
-  type: PostType;
-  content?: string;
-  isPinned: boolean; // required — no server-side default
-  mediaIds?: string[];
+    eventId: string;
+    authorMemberId?: string;
+    type: PostType;
+    content?: string;
+    isPinned: boolean; // required — no server-side default
+    mediaIds?: string[];
 }
 
 // Embedded on PostResponseDto — null when the post has no author (rare,
@@ -492,255 +492,255 @@ export interface PostRequestDto {
 // (Post.authorMember uses ON DELETE SET NULL, so the post survives but
 // authorship is dropped).
 export interface PostAuthorDto {
-  memberId: string;
-  displayName: string;
-  nickname: string | null;
-  role: EventRole;
-  avatarMediaId: string | null;
-  // Can be null even when avatarMediaId is set — the avatar reference has
-  // no DB foreign-key constraint, so a dangling id resolves to null rather
-  // than erroring. Fall back to a placeholder avatar.
-  avatarUrl: string | null;
+    memberId: string;
+    displayName: string;
+    nickname: string | null;
+    role: EventRole;
+    avatarMediaId: string | null;
+    // Can be null even when avatarMediaId is set — the avatar reference has
+    // no DB foreign-key constraint, so a dangling id resolves to null rather
+    // than erroring. Fall back to a placeholder avatar.
+    avatarUrl: string | null;
 }
 
 export interface PostResponseDto {
-  id: string;
-  eventId: string;
-  authorMemberId: string | null;
-  author: PostAuthorDto | null;
-  type: PostType;
-  content: string | null;
-  isPinned: boolean;
-  // Already ordered by displayOrder and URL-resolved — render as-is.
-  media: MediaResponseDto[];
-  commentCount: number;
-  reactionCount: number;
-  // True if the requesting member has any reaction on the post. Always
-  // false immediately after POST /api/posts (a fresh post can't have
-  // reactions yet) and false for a caller who isn't a member of the
-  // post's event — both resolved server-side.
-  likedByCurrentUser: boolean;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
+    id: string;
+    eventId: string;
+    authorMemberId: string | null;
+    author: PostAuthorDto | null;
+    type: PostType;
+    content: string | null;
+    isPinned: boolean;
+    // Already ordered by displayOrder and URL-resolved — render as-is.
+    media: MediaResponseDto[];
+    commentCount: number;
+    reactionCount: number;
+    // True if the requesting member has any reaction on the post. Always
+    // false immediately after POST /api/posts (a fresh post can't have
+    // reactions yet) and false for a caller who isn't a member of the
+    // post's event — both resolved server-side.
+    likedByCurrentUser: boolean;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
 }
 
 export interface CommentRequestDto {
-  postId: string;
-  authorMemberId?: string;
-  parentCommentId?: string;
-  content: string;
+    postId: string;
+    authorMemberId?: string;
+    parentCommentId?: string;
+    content: string;
 }
 
 export interface CommentResponseDto {
-  id: string;
-  postId: string;
-  authorMemberId: string | null;
-  parentCommentId: string | null;
-  content: string;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
+    id: string;
+    postId: string;
+    authorMemberId: string | null;
+    parentCommentId: string | null;
+    content: string;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
 }
 
 export interface ReactionRequestDto {
-  postId: string;
-  memberId: string;
-  reactionType: string;
+    postId: string;
+    memberId: string;
+    reactionType: string;
 }
 
 export interface ReactionResponseDto extends ReactionRequestDto {
-  id: string;
-  createdAt: string;
+    id: string;
+    createdAt: string;
 }
 
 export interface StoryRequestDto {
-  eventId: string;
-  authorMemberId?: string;
-  mediaId: string;
-  caption?: string;
-  songUrl?: string;
-  // Optional — omit to let the server default to createdAt + 24h.
-  expiresAt?: string;
+    eventId: string;
+    authorMemberId?: string;
+    mediaId: string;
+    caption?: string;
+    songUrl?: string;
+    // Optional — omit to let the server default to createdAt + 24h.
+    expiresAt?: string;
 }
 
 export interface StoryResponseDto {
-  id: string;
-  eventId: string;
-  authorMemberId: string | null;
-  mediaId: string;
-  caption: string | null;
-  songUrl: string | null;
-  expiresAt: string;
-  createdAt: string;
-  deletedAt: string | null;
-  // Whether the requesting member has already POSTed a view for this story.
-  viewedByCurrentUser: boolean;
+    id: string;
+    eventId: string;
+    authorMemberId: string | null;
+    mediaId: string;
+    caption: string | null;
+    songUrl: string | null;
+    expiresAt: string;
+    createdAt: string;
+    deletedAt: string | null;
+    // Whether the requesting member has already POSTed a view for this story.
+    viewedByCurrentUser: boolean;
 }
 
 export interface StoryViewResponseDto {
-  id: string;
-  storyId: string;
-  memberId: string;
-  createdAt: string;
+    id: string;
+    storyId: string;
+    memberId: string;
+    createdAt: string;
 }
 
 export interface PlaylistSuggestionRequestDto {
-  eventId: string;
-  authorMemberId?: string;
-  title: string;
-  artist?: string;
-  youtubeUrl?: string;
-  spotifyUrl?: string;
-  comment?: string;
+    eventId: string;
+    authorMemberId?: string;
+    title: string;
+    artist?: string;
+    youtubeUrl?: string;
+    spotifyUrl?: string;
+    comment?: string;
 }
 
 export interface PlaylistSuggestionResponseDto {
-  id: string;
-  eventId: string;
-  authorMemberId: string | null;
-  title: string;
-  artist: string | null;
-  youtubeUrl: string | null;
-  spotifyUrl: string | null;
-  comment: string | null;
-  createdAt: string;
-  deletedAt: string | null;
+    id: string;
+    eventId: string;
+    authorMemberId: string | null;
+    title: string;
+    artist: string | null;
+    youtubeUrl: string | null;
+    spotifyUrl: string | null;
+    comment: string | null;
+    createdAt: string;
+    deletedAt: string | null;
 }
 
 export interface PlaylistVoteRequestDto {
-  playlistSuggestionId: string;
-  memberId: string;
+    playlistSuggestionId: string;
+    memberId: string;
 }
 
 export interface PlaylistVoteResponseDto extends PlaylistVoteRequestDto {
-  id: string;
-  createdAt: string;
+    id: string;
+    createdAt: string;
 }
 
 export interface PostMediaRequestDto {
-  postId: string;
-  mediaId: string;
-  displayOrder: number;
+    postId: string;
+    mediaId: string;
+    displayOrder: number;
 }
 
 export interface PostMediaResponseDto extends PostMediaRequestDto {
-  id: string;
-  createdAt: string;
+    id: string;
+    createdAt: string;
 }
 
 // --- §7 Admin / moderation ---
 
 export interface AuditLogRequestDto {
-  eventId?: string;
-  actorMemberId?: string;
-  action: string;
-  entityType: string;
-  entityId?: string;
-  changes: Record<string, unknown>;
-  ipAddress?: string;
+    eventId?: string;
+    actorMemberId?: string;
+    action: string;
+    entityType: string;
+    entityId?: string;
+    changes: Record<string, unknown>;
+    ipAddress?: string;
 }
 
 export interface AuditLogResponseDto {
-  id: string;
-  eventId: string | null;
-  actorMemberId: string | null;
-  action: string;
-  entityType: string;
-  entityId: string | null;
-  changes: Record<string, unknown>;
-  ipAddress: string | null;
-  createdAt: string;
+    id: string;
+    eventId: string | null;
+    actorMemberId: string | null;
+    action: string;
+    entityType: string;
+    entityId: string | null;
+    changes: Record<string, unknown>;
+    ipAddress: string | null;
+    createdAt: string;
 }
 
 export interface ModerationActionRequestDto {
-  eventId: string;
-  moderatorMemberId?: string;
-  targetType: string;
-  targetId: string;
-  actionType: string;
-  reason?: string;
+    eventId: string;
+    moderatorMemberId?: string;
+    targetType: string;
+    targetId: string;
+    actionType: string;
+    reason?: string;
 }
 
 export interface ModerationActionResponseDto {
-  id: string;
-  eventId: string;
-  moderatorMemberId: string | null;
-  targetType: string;
-  targetId: string;
-  actionType: string;
-  reason: string | null;
-  createdAt: string;
+    id: string;
+    eventId: string;
+    moderatorMemberId: string | null;
+    targetType: string;
+    targetId: string;
+    actionType: string;
+    reason: string | null;
+    createdAt: string;
 }
 
 export interface ReportRequestDto {
-  reporterMemberId?: string;
-  eventId: string;
-  targetType: string;
-  targetId: string;
-  reason: string;
-  description?: string;
-  status?: string;
-  reviewedByMemberId?: string;
-  reviewedAt?: string;
-  resolutionNotes?: string;
+    reporterMemberId?: string;
+    eventId: string;
+    targetType: string;
+    targetId: string;
+    reason: string;
+    description?: string;
+    status?: string;
+    reviewedByMemberId?: string;
+    reviewedAt?: string;
+    resolutionNotes?: string;
 }
 
 export interface ReportResponseDto {
-  id: string;
-  reporterMemberId: string | null;
-  eventId: string;
-  targetType: string;
-  targetId: string;
-  reason: string;
-  description: string | null;
-  status: string | null; // set by moderators only, defaults to "OPEN" server-side
-  reviewedByMemberId: string | null;
-  reviewedAt: string | null;
-  resolutionNotes: string | null;
-  createdAt: string;
-  updatedAt: string;
+    id: string;
+    reporterMemberId: string | null;
+    eventId: string;
+    targetType: string;
+    targetId: string;
+    reason: string;
+    description: string | null;
+    status: string | null; // set by moderators only, defaults to "OPEN" server-side
+    reviewedByMemberId: string | null;
+    reviewedAt: string | null;
+    resolutionNotes: string | null;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface TelemetryEventRequestDto {
-  eventName: string;
-  userId?: string;
-  eventId?: string;
-  memberId?: string;
-  sessionId?: string;
-  platform?: string;
-  ipAddress?: string;
-  userAgent?: string;
-  payload: Record<string, unknown>;
+    eventName: string;
+    userId?: string;
+    eventId?: string;
+    memberId?: string;
+    sessionId?: string;
+    platform?: string;
+    ipAddress?: string;
+    userAgent?: string;
+    payload: Record<string, unknown>;
 }
 
 export interface TelemetryEventResponseDto {
-  id: string;
-  eventName: string;
-  userId: string | null;
-  eventId: string | null;
-  memberId: string | null;
-  sessionId: string | null;
-  platform: string | null;
-  ipAddress: string | null;
-  userAgent: string | null;
-  payload: Record<string, unknown>;
-  createdAt: string;
+    id: string;
+    eventName: string;
+    userId: string | null;
+    eventId: string | null;
+    memberId: string | null;
+    sessionId: string | null;
+    platform: string | null;
+    ipAddress: string | null;
+    userAgent: string | null;
+    payload: Record<string, unknown>;
+    createdAt: string;
 }
 
 export interface PlatformFeatureFlagRequestDto {
-  featureKey: string;
-  description?: string;
-  isEnabled: boolean;
-  configuration: Record<string, unknown>;
+    featureKey: string;
+    description?: string;
+    isEnabled: boolean;
+    configuration: Record<string, unknown>;
 }
 
 export interface PlatformFeatureFlagResponseDto {
-  id: string;
-  featureKey: string;
-  description: string | null;
-  isEnabled: boolean;
-  configuration: Record<string, unknown>;
-  createdAt: string;
-  updatedAt: string;
+    id: string;
+    featureKey: string;
+    description: string | null;
+    isEnabled: boolean;
+    configuration: Record<string, unknown>;
+    createdAt: string;
+    updatedAt: string;
 }

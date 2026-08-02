@@ -20,7 +20,7 @@ multi-image picker/upload, real `useCreatePost` + new batch-media-upload
 wiring), removing the now-redundant `/new-post` page, and repointing its nav
 entry points at the feed's inline composer.
 
-**Out of scope:** migrating the feed's post *list* off mock data. The list
+**Out of scope:** migrating the feed's post _list_ off mock data. The list
 at `app/(app)/feed/[eventId]/page.tsx` currently renders
 `useState(initialPosts)` (mock `Post[]`), not the real `useEventPosts` result
 (fetched, but presently only `console.log`'d). `PostCard` also expects the
@@ -38,19 +38,19 @@ The batch upload endpoint is new — only single-file upload
 (`useUploadMedia`) exists today.
 
 - `lib/api/endpoints.ts`: add `events.mediaBatch = (eventId) =>
-  \`/api/events/${eventId}/media/batch\``.
+\`/api/events/${eventId}/media/batch\``.
 - `lib/api/types.ts`: add
-  ```ts
-  export interface MediaBatchFailedItemDto {
-    filename: string;
-    errorCode: string;
-    message: string;
-  }
-  export interface MediaBatchUploadResponseDto {
-    created: MediaResponseDto[];
-    failed: MediaBatchFailedItemDto[];
-  }
-  ```
+    ```ts
+    export interface MediaBatchFailedItemDto {
+        filename: string;
+        errorCode: string;
+        message: string;
+    }
+    export interface MediaBatchUploadResponseDto {
+        created: MediaResponseDto[];
+        failed: MediaBatchFailedItemDto[];
+    }
+    ```
 - `hooks/useMedia.ts`: add `useUploadMediaBatch()` — a mutation mirroring
   `useUploadMedia`, POSTing multipart/form-data with a repeated `files`
   field (1–10 files, shared `mediaType`, optional `uploaderMemberId`) to
@@ -75,10 +75,11 @@ placeholder copy (reusing `FeedPage.celebrateTheMoment`, relocated to a new
 seemingly written for never used it). Clicking/focusing it expands the card.
 
 **Expanded state:**
+
 - Autofocused `<textarea>` for the caption (no character limit — the
   backend's `PostRequestDto.content` declares none).
 - "Add photos" button opening a hidden multi-file `<input type="file"
-  accept="image/*" multiple>`.
+accept="image/*" multiple>`.
 - Thumbnail grid of pending/uploading/uploaded images, each with a remove
   (×) button. Failed uploads show an inline error + per-thumbnail Retry.
 - Cancel button: resets all state and collapses.
@@ -88,6 +89,7 @@ seemingly written for never used it). Clicking/focusing it expands the card.
   images) — avoids silently discarding a draft.
 
 **Submit flow:**
+
 1. If there are pending (not-yet-uploaded) images, call
    `useUploadMediaBatch()` with all of them.
 2. Partition the response: `created[]` media IDs are kept (marked
@@ -95,16 +97,16 @@ seemingly written for never used it). Clicking/focusing it expands the card.
    action. If anything is still failed, stop here — Post stays disabled
    until every image is either uploaded or removed.
 3. Once there are zero unresolved failures, call `useCreatePost()`:
-   ```ts
-   {
-     eventId,
-     authorMemberId: activeMember.id,
-     type: images.length ? "MEDIA" : "TEXT",
-     content: caption.trim() || undefined,
-     isPinned: false,
-     mediaIds: uploadedMediaIds.length ? uploadedMediaIds : undefined,
-   }
-   ```
+    ```ts
+    {
+      eventId,
+      authorMemberId: activeMember.id,
+      type: images.length ? "MEDIA" : "TEXT",
+      content: caption.trim() || undefined,
+      isPinned: false,
+      mediaIds: uploadedMediaIds.length ? uploadedMediaIds : undefined,
+    }
+    ```
 4. On success: clear the form and collapse. (`useCreatePost`'s existing
    `onSuccess` already invalidates `postKeys.list(eventId)` — irrelevant to
    the mock-rendered list today, but correct for when it's migrated.)
