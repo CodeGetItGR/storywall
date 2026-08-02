@@ -38,6 +38,7 @@
         "unsavePost": "Κατάργηση αποθήκευσης",
         "photoBy": "Φωτογραφία από {name}",
         "viewPhoto": "Προβολή φωτογραφίας από {name}",
+        "viewPhotoAt": "Φωτογραφία {index} από {count}, {name}",
         "unknownAuthor": "Άγνωστος",
         "pinned": "Καρφιτσωμένη"
     },

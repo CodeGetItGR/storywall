@@ -84,7 +84,7 @@ export function PostCard({ post, showCommentLink = true }: PostCardProps) {
                             type="button"
                             key={item.id}
                             onClick={() => openPostModal(post.id, { mediaIndex: i })}
-                            aria-label={t('viewPhoto', { name: authorName })}
+                            aria-label={t('viewPhotoAt', { index: i + 1, count: media.length, name: authorName })}
                             className="relative block aspect-square overflow-hidden"
                         >
                             <Image

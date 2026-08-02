@@ -38,6 +38,7 @@
         "unsavePost": "Unsave post",
         "photoBy": "Photo by {name}",
         "viewPhoto": "View photo by {name}",
+        "viewPhotoAt": "Photo {index} of {count} by {name}",
         "unknownAuthor": "Unknown",
         "pinned": "Pinned"
     },
