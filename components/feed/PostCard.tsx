@@ -26,7 +26,7 @@ export function PostCard({ post, showCommentLink = true }: PostCardProps) {
     const media = post.media;
 
     function openPost() {
-        openPostModal(post.id);
+        openPostModal(post.id, { mediaIndex: 0, view: 'comments' });
     }
 
     return (
@@ -62,7 +62,12 @@ export function PostCard({ post, showCommentLink = true }: PostCardProps) {
 
             {/* Media */}
             {media.length === 1 && (
-                <div className="relative w-full aspect-4/3 bg-surface-muted overflow-hidden">
+                <button
+                    type="button"
+                    onClick={() => openPostModal(post.id, { mediaIndex: 0 })}
+                    aria-label={t('viewPhoto', { name: authorName })}
+                    className="relative block w-full aspect-4/3 bg-surface-muted overflow-hidden"
+                >
                     <Image
                         src={media[0].mediaUrl}
                         alt={t('photoBy', { name: authorName })}
@@ -70,12 +75,18 @@ export function PostCard({ post, showCommentLink = true }: PostCardProps) {
                         className="object-cover"
                         sizes="(max-width: 768px) 100vw, 680px"
                     />
-                </div>
+                </button>
             )}
             {media.length > 1 && (
                 <div className="grid grid-cols-2 gap-0.5 bg-surface-muted">
                     {media.slice(0, 4).map((item, i) => (
-                        <div key={item.id} className="relative aspect-square overflow-hidden">
+                        <button
+                            type="button"
+                            key={item.id}
+                            onClick={() => openPostModal(post.id, { mediaIndex: i })}
+                            aria-label={t('viewPhoto', { name: authorName })}
+                            className="relative block aspect-square overflow-hidden"
+                        >
                             <Image
                                 src={item.mediaUrl}
                                 alt={t('photoBy', { name: authorName })}
@@ -88,7 +99,7 @@ export function PostCard({ post, showCommentLink = true }: PostCardProps) {
                                     +{media.length - 4}
                                 </div>
                             )}
-                        </div>
+                        </button>
                     ))}
                 </div>
             )}
