@@ -43,7 +43,7 @@ export function PostMediaCarousel({ media, initialIndex, onIndexChange, alt, cla
             emblaApi.off('select', handleSelect);
             emblaApi.off('reInit', handleSelect);
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- onIndexChange is stable per PostModal render tree; re-subscribing on every parent render would drop the current select handler's closure over stale state unnecessarily.
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- onIndexChange changes identity on every render (it's usePostModal().setMediaIndex, not memoized), but handleSelect only needs whatever the current one is when it fires, not to react to it changing — omitting it avoids tearing down and resubscribing Embla's select/reInit listeners on every parent render.
     }, [emblaApi]);
 
     const hasMultiple = media.length > 1;
