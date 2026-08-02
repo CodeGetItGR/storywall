@@ -11,8 +11,7 @@
         "seconds": "Δευτερόλεπτα"
     },
     "StoriesRow": {
-        "ariaLabel": "Ιστορίες",
-        "uploadFailed": "Δεν ήταν δυνατή η μεταφόρτωση της ιστορίας σας. Δοκιμάστε ξανά."
+        "ariaLabel": "Ιστορίες"
     },
     "StoryAvatar": {
         "addYourStory": "Προσθέστε την ιστορία σας",

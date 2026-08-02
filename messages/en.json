@@ -11,8 +11,7 @@
         "seconds": "Seconds"
     },
     "StoriesRow": {
-        "ariaLabel": "Stories",
-        "uploadFailed": "Couldn't upload your story. Please try again."
+        "ariaLabel": "Stories"
     },
     "StoryAvatar": {
         "addYourStory": "Add your story",
