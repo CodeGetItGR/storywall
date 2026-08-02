@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 
 import Avatar from '@/components/ui/avatar';
 import { CURRENT_USER_ID, getUser } from '@/lib/mock-data';
+import { useComposer } from '@/providers/ComposerProvider';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -18,6 +19,7 @@ export function DesktopNavRail() {
     const t = useTranslations('DesktopNavRail');
     const pathname = usePathname();
     const user = getUser(CURRENT_USER_ID);
+    const { openPostComposer } = useComposer();
 
     return (
         <nav
@@ -57,13 +59,14 @@ export function DesktopNavRail() {
 
             {/* New Post CTA */}
             <div className="px-4 pb-4">
-                <Link
-                    href="/feed?compose=1"
+                <button
+                    type="button"
+                    onClick={openPostComposer}
                     className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
                 >
                     <Plus className="w-4 h-4" strokeWidth={2.5} />
                     {t('newPost')}
-                </Link>
+                </button>
             </div>
 
             {/* Current user */}
