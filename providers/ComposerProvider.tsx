@@ -29,6 +29,7 @@ interface ComposerContextValue {
     openStoryCapture: () => void;
     isCreatingStory: boolean;
     storyError: string | null;
+    canCompose: boolean;
 }
 
 const ComposerContext = createContext<ComposerContextValue | null>(null);
@@ -77,11 +78,11 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
 
     const hasUnresolvedFailures = images.some((img) => img.status === 'failed');
     const isPostBusy = createPost.isPending || uploadBatch.isPending;
-    const canSubmit =
-        (caption.trim().length > 0 || images.length > 0) && !hasUnresolvedFailures && !isPostBusy && Boolean(activeMember) && Boolean(activeEvent);
+    const canCompose = Boolean(activeMember) && Boolean(activeEvent);
+    const canSubmit = (caption.trim().length > 0 || images.length > 0) && !hasUnresolvedFailures && !isPostBusy && canCompose;
 
     function openPostComposer() {
-        if (!activeMember || !activeEvent) return;
+        if (!canCompose) return;
         setIsOpen(true);
     }
 
@@ -249,6 +250,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     }
 
     function openStoryCapture() {
+        if (!canCompose) return;
         storyInputRef.current?.click();
     }
 
@@ -283,6 +285,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
         openStoryCapture,
         isCreatingStory: uploadMedia.isPending || createStory.isPending,
         storyError,
+        canCompose,
     };
 
     return (

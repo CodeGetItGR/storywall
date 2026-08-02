@@ -34,7 +34,7 @@ function TabLink({ href, icon: Icon, label, active }: TabLinkProps) {
 export function MobileTabBar() {
     const t = useTranslations('MobileTabBar');
     const pathname = usePathname();
-    const { openPostComposer, openStoryCapture } = useComposer();
+    const { openPostComposer, openStoryCapture, canCompose } = useComposer();
 
     const [home, alerts] = tabItems;
     const homeActive = pathname === home.href || pathname.startsWith(home.href + '/');
@@ -56,13 +56,15 @@ export function MobileTabBar() {
                         <Menu.Popup className="bg-background rounded-2xl shadow-[0_2px_16px_0_rgba(36,31,26,0.15)] border border-border py-1 min-w-36 outline-none">
                             <Menu.Item
                                 onClick={openPostComposer}
-                                className="mx-1 rounded-lg px-4 py-2.5 text-sm font-medium text-ink hover:bg-surface-muted cursor-pointer outline-none"
+                                disabled={!canCompose}
+                                className="mx-1 rounded-lg px-4 py-2.5 text-sm font-medium text-ink hover:bg-surface-muted cursor-pointer outline-none disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                             >
                                 {t('composeMenu.post')}
                             </Menu.Item>
                             <Menu.Item
                                 onClick={openStoryCapture}
-                                className="mx-1 rounded-lg px-4 py-2.5 text-sm font-medium text-ink hover:bg-surface-muted cursor-pointer outline-none"
+                                disabled={!canCompose}
+                                className="mx-1 rounded-lg px-4 py-2.5 text-sm font-medium text-ink hover:bg-surface-muted cursor-pointer outline-none disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                             >
                                 {t('composeMenu.story')}
                             </Menu.Item>
