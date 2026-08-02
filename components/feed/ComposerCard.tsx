@@ -4,8 +4,8 @@ import { useTranslations } from 'next-intl';
 
 import Avatar from '@/components/ui/avatar';
 import { initialsFromName } from '@/lib/utils';
-import { useActiveMember } from '@/providers/EventProvider';
 import { useComposer } from '@/providers/ComposerProvider';
+import { useActiveMember } from '@/providers/EventProvider';
 
 export function ComposerCard() {
     const t = useTranslations('ComposerCard');

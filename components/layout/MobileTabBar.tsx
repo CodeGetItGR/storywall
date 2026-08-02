@@ -7,8 +7,8 @@ import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { ComponentType } from 'react';
 
-import { useComposer } from '@/providers/ComposerProvider';
 import { cn } from '@/lib/utils';
+import { useComposer } from '@/providers/ComposerProvider';
 
 const tabItems = [
     { href: '/profile', icon: Home, key: 'home' },

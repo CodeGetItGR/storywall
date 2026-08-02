@@ -4,9 +4,9 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
-import { useComposer } from '@/providers/ComposerProvider';
 import { useEventMembers, useEventStories } from '@/hooks';
 import { groupStoriesByAuthor } from '@/lib/stories';
+import { useComposer } from '@/providers/ComposerProvider';
 import { useActiveMember } from '@/providers/EventProvider';
 
 import { StoryAvatar } from './StoryAvatar';

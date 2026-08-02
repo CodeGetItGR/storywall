@@ -7,8 +7,8 @@ import { useTranslations } from 'next-intl';
 
 import Avatar from '@/components/ui/avatar';
 import { CURRENT_USER_ID, getUser } from '@/lib/mock-data';
-import { useComposer } from '@/providers/ComposerProvider';
 import { cn } from '@/lib/utils';
+import { useComposer } from '@/providers/ComposerProvider';
 
 const navItems = [
     { href: '/profile', icon: Home, key: 'home', isCenter: false },

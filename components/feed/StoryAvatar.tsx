@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import Avatar from '@/components/ui/avatar';
-import { useComposer } from '@/providers/ComposerProvider';
 import type { EventMemberResponseDto } from '@/lib/api/types';
 import type { StoryGroup } from '@/lib/stories';
 import { avatarColorFromId, cn, initialsFromName } from '@/lib/utils';
+import { useComposer } from '@/providers/ComposerProvider';
 
 interface StoryAvatarProps {
     group: StoryGroup;
