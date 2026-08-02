@@ -37,6 +37,7 @@
         "savePost": "Save post",
         "unsavePost": "Unsave post",
         "photoBy": "Photo by {name}",
+        "viewPhoto": "View photo by {name}",
         "unknownAuthor": "Unknown",
         "pinned": "Pinned"
     },
@@ -259,7 +260,11 @@
         "commentPlaceholder": "Add a comment...",
         "commentTextAriaLabel": "Comment text",
         "postComment": "Post comment",
-        "commentFailed": "Couldn't post your comment. Please try again."
+        "commentFailed": "Couldn't post your comment. Please try again.",
+        "previousMedia": "Previous photo",
+        "nextMedia": "Next photo",
+        "showComments": "Show comments",
+        "hideComments": "Hide comments"
     },
     "StoryPage": {
         "closeStory": "Close story",
