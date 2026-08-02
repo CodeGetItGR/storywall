@@ -6,8 +6,8 @@ import { cn } from '@/lib/utils';
 function Counter({ text, count }: { text: string; count: number }) {
     return (
         <div className="flex flex-col items-center">
-            <span className="abhaya-body font-bold text-black">{count}</span>
-            <span className="text-[1.2rem] lg:text-[1.5rem] text-black/60 alegreya">{text}</span>
+            <span className="text-[1.2rem] xs:text-[1.5rem] sm:text-[1.7rem] abhaya-body font-bold text-black">{count}</span>
+            <span className="text-[0.7rem] xxs:text-[0.9rem] xs:text-[1.2rem] sm:text-[1.5rem] text-black/60 alegreya">{text}</span>
         </div>
     );
 }
@@ -41,7 +41,7 @@ export function Countdown({ time, className }: { time: number; className?: strin
     }, [time, now]);
 
     return (
-        <div className={cn(className, `flex justify-between gap-4`)}>
+        <div className={cn(className, `flex justify-between gap-2 md:gap-4`)}>
             <Counter text={t('days')} count={days} />
             <Counter text={t('hours')} count={hours} />
             <Counter text={t('minutes')} count={minutes} />

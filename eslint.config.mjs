@@ -2,6 +2,7 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 import nextConfig from 'eslint-config-next/core-web-vitals';
 import nextTypeScript from 'eslint-config-next/typescript';
 import prettierConfig from 'eslint-config-prettier/flat';
+import reactPlugin from 'eslint-plugin-react';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import unusedImports from 'eslint-plugin-unused-imports';
 
@@ -13,6 +14,7 @@ export default defineConfig([
         plugins: {
             'simple-import-sort': simpleImportSort,
             'unused-imports': unusedImports,
+            react: reactPlugin,
         },
 
         rules: {
@@ -21,6 +23,23 @@ export default defineConfig([
              */
             'simple-import-sort/imports': 'error',
             'simple-import-sort/exports': 'error',
+
+            /*
+             * Ban inline arrow/bind functions passed as JSX props (e.g.
+             * onClick={() => ...}). They create a new function every render,
+             * defeat memoization, and push logic into markup. Extract a
+             * named handler instead.
+             */
+            'react/jsx-no-bind': [
+                'error',
+                {
+                    ignoreDOMComponents: false,
+                    ignoreRefs: false,
+                    allowArrowFunctions: false,
+                    allowFunctions: false,
+                    allowBind: false,
+                },
+            ],
 
             /*
              * Remove unused imports automatically.

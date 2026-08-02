@@ -21,9 +21,10 @@ interface ModalProps {
     closeLabel?: string;
     className?: string;
     children: ReactNode;
+    closeButtonPosition?: 'left' | 'right';
 }
 
-export function Modal({ open, onClose, size = 'md', closeLabel = 'Close', className, children }: ModalProps) {
+export function Modal({ open, onClose, size = 'md', closeLabel = 'Close', className, children, closeButtonPosition = 'right' }: ModalProps) {
     const isFull = size === 'full';
 
     return (
@@ -51,9 +52,9 @@ export function Modal({ open, onClose, size = 'md', closeLabel = 'Close', classN
                     <Dialog.Close
                         aria-label={closeLabel}
                         className={cn(
-                            'absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center rounded-full transition-colors',
-                            isFull ? 'bg-black/40 hover:bg-black/60 text-white' : 'hover:bg-surface-muted text-ink-muted'
-                        )}
+                            `absolute top-3 ${closeButtonPosition}-3 z-20 w-8 h-8 flex items-center justify-center rounded-full transition-colors`,
+                            isFull ? 'bg-black/40 hover:bg-black/60 text-white' : 'hover:bg-surface-muted text-ink-muted',
+                            )}
                     >
                         <X className="w-5 h-5" />
                     </Dialog.Close>

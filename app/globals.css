@@ -56,6 +56,11 @@
     --font-sans: 'Geist', 'Geist Fallback', system-ui, sans-serif;
 }
 
+@theme {
+    --breakpoint-xxs: 25rem;
+    --breakpoint-xs: 30rem;
+}
+
 @utility abhaya-body {
     color: #4f4f4f;
     font-family: var(--font-abhaya-libre);

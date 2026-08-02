@@ -75,7 +75,7 @@ export function PostModal() {
     }
 
     return (
-        <Modal open={isOpen} onClose={close} size={hasMedia ? 'full' : 'lg'} closeLabel={t('close')} className={hasMedia ? undefined : 'min-h-[70vh]'}>
+        <Modal open={isOpen} onClose={close} size={hasMedia ? 'full' : 'lg'} closeLabel={t('close')} closeButtonPosition={'left'} className={hasMedia ? undefined : 'min-h-[70vh]'}>
             {!hasMedia && (
                 <div className="z-10 bg-background/95 backdrop-blur-sm border-b border-border flex items-center justify-between px-4 py-5 w-full shrink-0">
                     <h2 className="text-base font-bold text-ink">{t('title')}</h2>
@@ -95,7 +95,7 @@ export function PostModal() {
                 (() => {
                     const commentsPanel = (
                         <>
-                            <section className="border-b flex justify-between pb-2 px-3 shrink-0">
+                            <section className="border-b flex justify-between pb-2 px-3 shrink-0 pt-2">
                                 <PostAuthorAvatar
                                     avatarUrl={post.author?.avatarUrl}
                                     name={post.author?.displayName ?? tCard('unknownAuthor')}
@@ -198,7 +198,7 @@ export function PostModal() {
 
                                 <div
                                     className={cn(
-                                        'lg:hidden absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-4 pt-12 pb-4 transition-opacity duration-200',
+                                        'lg:hidden absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 via-black/40 to-transparent px-4 pt-12 pb-4 transition-opacity duration-200',
                                         commentsOpen && 'opacity-0 pointer-events-none'
                                     )}
                                 >
