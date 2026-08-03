@@ -1,105 +1,79 @@
-import { Calendar, ChevronRight, Clock, Users } from 'lucide-react';
+'use client';
+
+import { LayoutDashboard, MessageSquareText, Settings2, Ticket } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { rsvpGuests, scheduleEvents } from '@/lib/mock-data';
+import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
+
+const hostLinks = [
+    { key: 'manage', href: '/manage', icon: LayoutDashboard },
+    { key: 'rsvps', href: '/tools/rsvp', icon: Ticket },
+    { key: 'invitations', href: '/manage?tab=invitations', icon: MessageSquareText },
+    { key: 'settings', href: '/manage?tab=settings', icon: Settings2 },
+] as const;
 
 export function RightContextPanel() {
     const t = useTranslations('RightContextPanel');
     const locale = useLocale();
-    const upcomingEvents = scheduleEvents.filter((e) => new Date(e.date + 'T00:00:00') >= new Date('2025-07-11T00:00:00')).slice(0, 3);
-    const attending = rsvpGuests.filter((g) => g.status === 'attending').length;
-    const pending = rsvpGuests.filter((g) => g.status === 'pending').length;
+    const activeEvent = useActiveEvent();
+    const isHost = useIsHost();
+    const isLoading = useEventContextLoading();
 
-    const quickLinks = [
-        { key: 'giftRegistry', href: '/tools/gifts' },
-        { key: 'venueInfo', href: '/tools/venue' },
-        { key: 'weddingPlaylist', href: '/tools/playlist' },
-        { key: 'seatingChart', href: '/tools/seating' },
-    ] as const;
+    if (isLoading || !activeEvent || !isHost) return null;
+
+    const eventDate = new Date(activeEvent.schedule.startAt);
+    const eventDateLabel = eventDate.toLocaleDateString(locale, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    });
+    const enabledModuleCount = activeEvent.modules.filter((module) => module.isEnabled).length;
 
     return (
         <aside
-            aria-label={t('weddingDetails')}
-            className="fixed right-0 top-0 h-screen w-75 bg-background border-l border-border hidden xl:flex flex-col z-30 overflow-y-auto no-scrollbar"
+            aria-label={t('hostConsole')}
+            className="fixed right-0 top-0 z-30 hidden h-screen w-75 flex-col overflow-y-auto border-l border-border bg-background no-scrollbar xl:flex"
         >
             <div className="flex flex-col gap-5 p-5">
-                {/* RSVP summary */}
-                <div className="bg-surface-muted rounded-2xl p-4">
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4 text-ink-muted" aria-hidden="true" />
-                            <span className="text-sm font-semibold text-ink">{t('rsvpStatus')}</span>
+                <div className="rounded-[1.5rem] border border-border bg-gradient-to-b from-surface-muted to-card p-4 shadow-[0_12px_30px_rgba(36,31,26,0.05)]">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-faint">{t('hostConsole')}</p>
+                    <h2 className="mt-2 text-lg font-semibold leading-tight text-ink text-balance">{activeEvent.title}</h2>
+                    <p className="mt-1 text-sm text-ink-muted">{eventDateLabel}</p>
+
+                    <div className="mt-4 grid grid-cols-2 gap-2">
+                        <div className="rounded-2xl bg-background/70 px-3 py-2">
+                            <p className="text-[11px] uppercase tracking-[0.16em] text-ink-faint">{t('hostQuickLinks')}</p>
+                            <p className="mt-1 text-sm font-medium text-ink">{t('dashboard')}</p>
                         </div>
-                        <Link href="/tools/rsvp" className="text-xs text-primary font-semibold hover:underline">
-                            {t('viewAll')}
-                        </Link>
-                    </div>
-                    <div className="flex gap-3">
-                        <div className="flex-1 bg-card rounded-xl p-3 text-center shadow-sm">
-                            <p className="text-2xl font-bold text-emerald-600 tabular-nums">{attending}</p>
-                            <p className="text-[11px] text-ink-muted mt-0.5">{t('attending')}</p>
-                        </div>
-                        <div className="flex-1 bg-card rounded-xl p-3 text-center shadow-sm">
-                            <p className="text-2xl font-bold text-amber-500 tabular-nums">{pending}</p>
-                            <p className="text-[11px] text-ink-muted mt-0.5">{t('pending')}</p>
+                        <div className="rounded-2xl bg-background/70 px-3 py-2">
+                            <p className="text-[11px] uppercase tracking-[0.16em] text-ink-faint">{t('activeModules')}</p>
+                            <p className="mt-1 text-sm font-medium text-ink tabular-nums">{enabledModuleCount}</p>
                         </div>
                     </div>
                 </div>
 
-                {/* Upcoming events */}
                 <div>
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-ink-muted" aria-hidden="true" />
-                            <span className="text-sm font-semibold text-ink">{t('upcoming')}</span>
-                        </div>
-                        <Link href="/tools/schedule" className="text-xs text-primary font-semibold hover:underline">
-                            {t('seeAll')}
-                        </Link>
-                    </div>
+                    <p className="mb-2 text-sm font-semibold text-ink">{t('hostActions')}</p>
                     <div className="space-y-2">
-                        {upcomingEvents.map((event) => {
-                            const d = new Date(event.date + 'T00:00:00');
-                            const mon = d.toLocaleString(locale, { month: 'short' });
-                            const day = d.getDate();
-                            return (
-                                <Link key={event.id} href="/tools/schedule">
-                                    <div className="flex items-start gap-3 p-3 rounded-xl bg-surface-muted hover:bg-border transition-colors">
-                                        <div className="shrink-0 w-10 h-10 rounded-lg bg-card flex flex-col items-center justify-center shadow-sm">
-                                            <span className="text-[9px] text-ink-muted uppercase leading-none font-medium">{mon}</span>
-                                            <span className="text-sm font-bold text-ink leading-none">{day}</span>
-                                        </div>
-                                        <div className="flex-1 min-w-0 pt-0.5">
-                                            <p className="text-sm font-medium text-ink truncate leading-tight">{event.title}</p>
-                                            <p className="text-xs text-ink-muted flex items-center gap-1 mt-0.5">
-                                                <Clock className="w-3 h-3" aria-hidden="true" />
-                                                {event.time}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </Link>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                {/* Quick links */}
-                <div>
-                    <p className="text-sm font-semibold text-ink mb-2">{t('quickLinks')}</p>
-                    <div className="space-y-0.5">
-                        {quickLinks.map(({ key, href }) => (
+                        {hostLinks.map(({ key, href, icon: Icon }) => (
                             <Link
                                 key={href}
                                 href={href}
-                                className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-surface-muted transition-colors group"
+                                className="group flex items-center gap-3 rounded-2xl border border-border/70 bg-card px-3 py-3 transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-[0_10px_24px_rgba(36,31,26,0.06)]"
                             >
-                                <span className="text-sm text-ink-muted group-hover:text-ink transition-colors">{t(`links.${key}`)}</span>
-                                <ChevronRight className="w-4 h-4 text-ink-faint group-hover:text-ink-muted transition-colors" aria-hidden="true" />
+                                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-muted text-ink-muted transition-colors group-hover:bg-primary-light group-hover:text-primary-dark">
+                                    <Icon className="h-4 w-4" aria-hidden="true" />
+                                </span>
+                                <span className="min-w-0">
+                                    <span className="block text-sm font-medium text-ink">{t(`links.${key}`)}</span>
+                                    <span className="block text-xs text-ink-muted">{t(`helper.${key}`)}</span>
+                                </span>
                             </Link>
                         ))}
                     </div>
                 </div>
+
             </div>
         </aside>
     );

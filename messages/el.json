@@ -616,19 +616,59 @@
         "description": "Ο κοινωνικός τοίχος γάμου για την Έμμα Chen και τον Τζέιμς Rivera. Μοιραστείτε αναμνήσεις, κάντε RSVP, εξερευνήστε τον χώρο και γιορτάστε μαζί."
     },
     "RightContextPanel": {
-        "weddingDetails": "Λεπτομέρειες γάμου",
-        "rsvpStatus": "Κατάσταση RSVP",
-        "viewAll": "Προβολή όλων",
-        "attending": "Θα παρευρεθούν",
-        "pending": "Σε αναμονή",
-        "upcoming": "Προσεχώς",
-        "seeAll": "Δείτε όλα",
-        "quickLinks": "Γρήγοροι Σύνδεσμοι",
+        "hostConsole": "Κονσόλα διοργανωτή",
+        "hostQuickLinks": "Γρήγορη πρόσβαση",
+        "activeModules": "Ενεργά modules",
+        "dashboard": "Πίνακας",
+        "hostActions": "Ενέργειες",
+        "eventDate": "Ημερομηνία event",
         "links": {
-            "giftRegistry": "Λίστα Δώρων",
-            "venueInfo": "Πληροφορίες Χώρου",
-            "weddingPlaylist": "Λίστα Τραγουδιών Γάμου",
-            "seatingChart": "Διάταξη Καθισμάτων"
+            "manage": "Πίνακας",
+            "rsvps": "RSVP",
+            "invitations": "Προσκλήσεις",
+            "settings": "Ρυθμίσεις"
+        },
+        "helper": {
+            "manage": "Επισκόπηση και έλεγχος event",
+            "rsvps": "Δείτε συμμετοχές και απαντήσεις",
+            "invitations": "Δημιουργία ή έλεγχος προσκλήσεων",
+            "settings": "Επεξεργασία λεπτομερειών event"
+        }
+    },
+    "FeedQuickAccessBar": {
+        "ariaLabel": "Γρήγορη πρόσβαση",
+        "eyebrow": "Πρόσβαση επισκέπτη",
+        "title": "Άνοιξε τα βασικά",
+        "subtitle": "Μεταβείτε στα πιο χρήσιμα σημεία του event.",
+        "items": {
+            "rsvp": {
+                "label": "RSVP",
+                "subtitle": "Απαντήστε στην πρόσκληση"
+            },
+            "schedule": {
+                "label": "Πρόγραμμα",
+                "subtitle": "Δείτε το timeline"
+            },
+            "venue": {
+                "label": "Χώρος",
+                "subtitle": "Οδηγίες και πληροφορίες"
+            },
+            "gifts": {
+                "label": "Δώρα",
+                "subtitle": "Προβολή λίστας"
+            },
+            "playlist": {
+                "label": "Playlist",
+                "subtitle": "Προτείνετε τραγούδι"
+            },
+            "seating": {
+                "label": "Καθίσματα",
+                "subtitle": "Βρείτε το τραπέζι σας"
+            },
+            "wishbook": {
+                "label": "Βιβλίο ευχών",
+                "subtitle": "Αφήστε ένα μήνυμα"
+            }
         }
     }
 }

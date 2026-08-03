@@ -2,7 +2,7 @@
 
 import { CalendarPlus, LayoutDashboard, Loader2, Settings, Ticket, Users } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { ElementType, useEffect, useState } from 'react';
 
@@ -29,7 +29,9 @@ const tabItems: { key: ManageTab; icon: ElementType }[] = [
 export default function ManagePage() {
     const t = useTranslations('ManagePage');
     const router = useRouter();
-    const [tab, setTab] = useState<ManageTab>('overview');
+    const searchParams = useSearchParams();
+    const tabParam = searchParams.get('tab');
+    const tab = tabParam === 'rsvp' || tabParam === 'invitations' || tabParam === 'settings' ? tabParam : 'overview';
 
     const activeEvent = useActiveEvent();
     const isHost = useIsHost();
@@ -44,8 +46,16 @@ export default function ManagePage() {
         Math.max(0, activeEvent ? Math.ceil((new Date(activeEvent.schedule.startAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0)
     );
 
+    function navigateToTab(nextTab: ManageTab) {
+        const nextParams = new URLSearchParams(searchParams.toString());
+        if (nextTab === 'overview') nextParams.delete('tab');
+        else nextParams.set('tab', nextTab);
+        const query = nextParams.toString();
+        router.replace(query ? `/manage?${query}` : '/manage');
+    }
+
     // Date.now() is impure, so this can't be computed directly during render
-    // (react-hooks/purity) — it must live in an effect.
+    // (react-hooks/purity) it must live in an effect.
     useEffect(() => {
         if (activeEvent) {
             // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -55,7 +65,7 @@ export default function ManagePage() {
         }
     }, [activeEvent]);
 
-    // Host-only page — redirect once the event context has settled.
+    // Host-only page. Redirect once the event context has settled.
     useEffect(() => {
         if (isContextLoading) return;
         if (!eventId) {
@@ -84,7 +94,6 @@ export default function ManagePage() {
 
     return (
         <div className="max-w-3xl mx-auto pb-24 lg:pb-8">
-            {/* Header */}
             <div className="px-4 pt-5 pb-4 flex items-center justify-between gap-3">
                 <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
@@ -107,12 +116,11 @@ export default function ManagePage() {
                 </div>
             </div>
 
-            {/* Tab bar */}
             <div className="flex gap-1 bg-surface-muted rounded-full p-1 mx-4 mb-5">
                 {tabItems.map(({ key, icon: Icon }) => (
                     <button
                         key={key}
-                        onClick={() => setTab(key)}
+                        onClick={() => navigateToTab(key)}
                         className={cn(
                             'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full text-xs font-semibold transition-colors',
                             tab === key ? 'bg-card text-ink shadow-sm' : 'text-ink-muted hover:text-ink'
@@ -131,8 +139,8 @@ export default function ManagePage() {
                     daysToGo={daysToGo}
                     invitationCount={invitations.length}
                     rsvpBreakdown={rsvpBreakdown}
-                    onSeeAllRsvp={() => setTab('rsvp')}
-                    onSeeAllInvitations={() => setTab('invitations')}
+                    onSeeAllRsvp={() => navigateToTab('rsvp')}
+                    onSeeAllInvitations={() => navigateToTab('invitations')}
                 />
             )}
 

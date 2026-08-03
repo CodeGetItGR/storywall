@@ -6,6 +6,7 @@ export * from './FeedPageSkeleton';
 export * from './Header';
 export * from './PostCard';
 export * from './PostModal';
+export * from './QuickAccessBar';
 export * from './RsvpPrompt';
 export * from './StoriesRow';
 export * from './StoryAvatar';

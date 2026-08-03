@@ -616,19 +616,59 @@
         "description": "The wedding social wall for Emma Chen & James Rivera. Share memories, RSVP, explore the venue, and celebrate together."
     },
     "RightContextPanel": {
-        "weddingDetails": "Wedding details",
-        "rsvpStatus": "RSVP Status",
-        "viewAll": "View all",
-        "attending": "Attending",
-        "pending": "Pending",
-        "upcoming": "Upcoming",
-        "seeAll": "See all",
-        "quickLinks": "Quick Links",
+        "hostConsole": "Host console",
+        "hostQuickLinks": "Quick access",
+        "activeModules": "Live modules",
+        "dashboard": "Dashboard",
+        "hostActions": "Host actions",
+        "eventDate": "Event date",
         "links": {
-            "giftRegistry": "Gift Registry",
-            "venueInfo": "Venue Info",
-            "weddingPlaylist": "Wedding Playlist",
-            "seatingChart": "Seating Chart"
+            "manage": "Dashboard",
+            "rsvps": "RSVPs",
+            "invitations": "Invitations",
+            "settings": "Settings"
+        },
+        "helper": {
+            "manage": "Overview and event controls",
+            "rsvps": "See attendance and replies",
+            "invitations": "Create or review invites",
+            "settings": "Edit event details"
+        }
+    },
+    "FeedQuickAccessBar": {
+        "ariaLabel": "Quick access",
+        "eyebrow": "Guest access",
+        "title": "Open the essentials",
+        "subtitle": "Jump to the parts of the event guests use most often.",
+        "items": {
+            "rsvp": {
+                "label": "RSVP",
+                "subtitle": "Reply to the invite"
+            },
+            "schedule": {
+                "label": "Schedule",
+                "subtitle": "See the timeline"
+            },
+            "venue": {
+                "label": "Venue",
+                "subtitle": "Directions and info"
+            },
+            "gifts": {
+                "label": "Gifts",
+                "subtitle": "View the registry"
+            },
+            "playlist": {
+                "label": "Playlist",
+                "subtitle": "Suggest a song"
+            },
+            "seating": {
+                "label": "Seating",
+                "subtitle": "Find your table"
+            },
+            "wishbook": {
+                "label": "Wishbook",
+                "subtitle": "Leave a note"
+            }
         }
     }
 }

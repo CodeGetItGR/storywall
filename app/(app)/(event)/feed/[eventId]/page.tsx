@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { use, useEffect, useMemo, useRef } from 'react';
 
-import { Banner, ComposerCard, EventInfo, EventNotFound, FeedPageSkeleton, Header, PostCard, PostModal, RsvpPrompt, StoriesRow } from '@/components/feed';
+import { Banner, ComposerCard, EventInfo, EventNotFound, FeedPageSkeleton, Header, PostCard, PostModal, QuickAccessBar, RsvpPrompt, StoriesRow } from '@/components/feed';
 import { useEventPosts } from '@/hooks';
 import { useEvent } from '@/hooks/useEvent';
 import { ApiError } from '@/lib/api/client';
@@ -75,12 +75,17 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
                     className={'w-full px-4'}
                 />
             </section>
+
             {/* Stories row — sticky */}
             {moduleFlags.stories && (
                 <section className="top-0 bg-background/90 backdrop-blur-sm border-b border-border">
                     <StoriesRow eventId={eventId} />
                 </section>
             )}
+
+            {/* Guest quick access bar. */}
+            <QuickAccessBar />
+
             {/* Event Description */}
             {event.description && (
                 <section className={'alegreya-light text-lg p-3 text-center'}>

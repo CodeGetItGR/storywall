@@ -62,6 +62,7 @@ function EventListItemSkeleton() {
 }
 
 export function EventListItem({ eventId, member, event, isLoading }: EventListItemProps) {
+    console.log(event)
     const t = useTranslations('ProfilePage');
     const locale = useLocale();
     const { data: eventMembers = [] } = useEventMembers(eventId);
