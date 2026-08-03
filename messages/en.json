@@ -167,7 +167,7 @@
         "items": {
             "rsvp": {
                 "label": "RSVP",
-                "description": "Confirm your attendance and dietary preferences",
+                "description": "Confirm your attendance",
                 "badge": "{count} attending"
             },
             "gifts": {
@@ -532,23 +532,15 @@
             "declined": "Declined"
         },
         "guestsCount": "{count, plural, one {# guest} other {# guests}}",
+        "adultsCount": "{count, plural, one {# adult} other {# adults}}",
+        "childrenCount": "{count, plural, one {# child} other {# children}}",
         "awaitingReply": "awaiting reply",
         "notAttending": "not attending",
         "yourRsvp": "Your RSVP",
         "willYouAttend": "Will you attend?",
-        "joyfullyAccept": "Joyfully accept",
-        "regretfullyDecline": "Regretfully decline",
+        "joyfullyAccept": "Yes",
+        "regretfullyDecline": "No",
         "plusOnes": "Plus ones",
-        "dietaryRequirements": "Dietary requirements",
-        "dietaryOptions": {
-            "none": "None / No restrictions",
-            "vegetarian": "Vegetarian",
-            "vegan": "Vegan",
-            "glutenFree": "Gluten-free",
-            "halal": "Halal",
-            "kosher": "Kosher",
-            "other": "Other (specify in message)"
-        },
         "messageForCouple": "Message for Emma & James",
         "messagePlaceholder": "Optional — share your excitement or a special note...",
         "messageAriaLabel": "Message for the couple",

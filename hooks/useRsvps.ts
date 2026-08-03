@@ -11,7 +11,7 @@ export const rsvpKeys = {
     sessionResponses: (rsvpId: string) => ['rsvps', rsvpId, 'session-responses'] as const,
 };
 
-// GET /api/events/{eventId}/rsvps — HOST only, lists everyone's phone/dietary notes.
+// GET /api/events/{eventId}/rsvps — HOST only, lists everyone's phone notes.
 export function useEventRsvps(eventId: string | null) {
     return useQuery({
         queryKey: rsvpKeys.list(eventId ?? ''),

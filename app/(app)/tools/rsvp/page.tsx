@@ -1,12 +1,12 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { GuestList, RsvpForm, RsvpHeader, RsvpSubmittedView } from '@/components/rsvp';
 import { useEventMembers } from '@/hooks/useEventMembers';
 import { useCreateRsvp, useEventRsvps, useRsvp, useUpdateRsvp } from '@/hooks/useRsvps';
-import type { AttendanceStatus } from '@/lib/api/types';
+import { AttendanceStatus, RsvpPlusOnes } from '@/lib/api/types';
 import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
 
 type AttendingStatus = 'attending' | 'not-attending';
@@ -26,19 +26,25 @@ export default function RSVPPage() {
     const isHost = useIsHost();
 
     const presetAttending = searchParams.get('attending');
+
     const [attending, setAttending] = useState<AttendingStatus | null>(
-        presetAttending === 'attending' || presetAttending === 'not-attending' ? presetAttending : null
+        presetAttending === 'attending' || presetAttending === 'not-attending'
+            ? presetAttending
+            : null
     );
-    const [dietary, setDietary] = useState('');
     const [message, setMessage] = useState('');
-    const [plusOnes, setPlusOnes] = useState(0);
+    const [plusOnes, setPlusOnes] = useState<RsvpPlusOnes>({
+        adultCount: 1,
+        childCount: 0
+    });
     const [submitted, setSubmitted] = useState(false);
 
-    const [rsvpId, setRsvpId] = useState<string | null>(() => (memberId ? localStorage.getItem(rsvpStorageKey(memberId)) : null));
+    const [rsvpId, setRsvpId] = useState<string | null>(() =>
+        memberId ? localStorage.getItem(rsvpStorageKey(memberId)) : null
+    );
 
-    // Re-read localStorage synchronously during render when memberId changes,
-    // instead of via an effect (see react.dev/learn/you-might-not-need-an-effect).
     const [prevMemberId, setPrevMemberId] = useState(memberId);
+
     if (memberId !== prevMemberId) {
         setPrevMemberId(memberId);
         setRsvpId(memberId ? localStorage.getItem(rsvpStorageKey(memberId)) : null);
@@ -46,110 +52,150 @@ export default function RSVPPage() {
 
     const { data: existingRsvp } = useRsvp(rsvpId);
 
-    // Server data is the source of truth for an already-submitted RSVP, but it
-    // arrives after mount — hydrate the form once it loads without clobbering
-    // whatever the guest has already started typing.
     const hydratedRef = useRef(false);
+
     useEffect(() => {
-        if (!existingRsvp || hydratedRef.current) return;
+        if (!existingRsvp || hydratedRef.current) {
+            return;
+        }
+
         hydratedRef.current = true;
-        setAttending(existingRsvp.attendanceStatus === 'ATTENDING' ? 'attending' : 'not-attending');
-        setPlusOnes(Math.max(0, existingRsvp.adultCount - 1));
-        setDietary(existingRsvp.dietaryNotes ?? '');
+
+        setAttending(
+            existingRsvp.attendanceStatus === 'ATTENDING'
+                ? 'attending'
+                : 'not-attending'
+        );
+        setPlusOnes({
+            adultCount: Math.max(1, existingRsvp.adultCount - 1),
+            childCount: Math.max(0, existingRsvp.childCount)
+        });
         setMessage(existingRsvp.notes ?? '');
     }, [existingRsvp]);
 
     const createRsvp = useCreateRsvp(eventId ?? undefined);
     const updateRsvp = useUpdateRsvp(rsvpId ?? '', eventId ?? undefined);
 
-    // Only HOST members can list every guest's RSVP — attendees only ever see
-    // their own via useRsvp above, so skip this fetch (and the guest list) for
-    // everyone else.
     const { data: eventRsvps } = useEventRsvps(isHost ? eventId : null);
     const { data: eventMembers } = useEventMembers(isHost ? eventId : null);
-    const memberNames = new Map((eventMembers ?? []).map((m) => [m.id, m.displayName]));
+
+    const memberNames = new Map(
+        (eventMembers ?? []).map((member) => [member.id, member.displayName])
+    );
+
     const confirmedGuests = (eventRsvps ?? [])
-        .filter((r) => r.attendanceStatus === 'ATTENDING')
-        .map((r) => ({ ...r, name: memberNames.get(r.eventMemberId) ?? r.eventMemberId }));
+        .filter((rsvp) => rsvp.attendanceStatus === 'ATTENDING')
+        .map((rsvp) => ({
+            ...rsvp,
+            name: memberNames.get(rsvp.eventMemberId) ?? rsvp.eventMemberId
+        }));
 
     const isSubmitting = createRsvp.isPending || updateRsvp.isPending;
     const submitError = createRsvp.error ?? updateRsvp.error;
 
-    function handleGoBack() {
+    const handleGoBack = useCallback(() => {
         router.back();
-    }
+    }, [router]);
 
-    function handleBackToWall() {
+    const handleBackToWall = useCallback(() => {
         router.push('/feed');
-    }
+    }, [router]);
 
-    function handleAttend() {
+    const handleAttend = useCallback(() => {
         setAttending('attending');
-    }
+    }, []);
 
-    function handleDecline() {
+    const handleDecline = useCallback(() => {
         setAttending('not-attending');
-    }
+    }, []);
 
-    function handleIncrementPlusOnes() {
-        setPlusOnes((p) => Math.min(4, p + 1));
-    }
+    const handleIncrementPlusOnes = useCallback((type: 'adult' | 'child') => () => {
+        setPlusOnes((currentPlusOnes) => ({
+            adultCount:
+                type === 'adult'
+                    ? Math.min(4, currentPlusOnes.adultCount + 1)
+                    : currentPlusOnes.adultCount,
+            childCount:
+                type === 'child'
+                    ? Math.min(4, currentPlusOnes.childCount + 1)
+                    : currentPlusOnes.childCount
+        }));
+    }, []);
 
-    function handleDecrementPlusOnes() {
-        setPlusOnes((p) => Math.max(0, p - 1));
-    }
+    const handleDecrementPlusOnes = useCallback((type: 'adult' | 'child') => () => {
+        setPlusOnes((currentPlusOnes) => ({
+            adultCount:
+                type === 'adult'
+                    ? Math.max(1, currentPlusOnes.adultCount - 1)
+                    : currentPlusOnes.adultCount,
+            childCount:
+                type === 'child'
+                    ? Math.max(0, currentPlusOnes.childCount - 1)
+                    : currentPlusOnes.childCount
+        }));
+    }, []);
 
-    function handleDietaryChange(e: React.ChangeEvent<HTMLSelectElement>) {
-        setDietary(e.target.value);
-    }
+    const handleMessageChange = useCallback(
+        (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+            setMessage(event.target.value);
+        },
+        []
+    );
 
-    function handleMessageChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
-        setMessage(e.target.value);
-    }
+    const handleSubmit = useCallback(
+        async (event: React.SubmitEvent<HTMLFormElement>) => {
+            event.preventDefault();
 
-    async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
-        e.preventDefault();
-        if (!attending || !memberId) return;
+            if (!attending || !memberId) {
+                return;
+            }
 
-        const attendanceStatus: AttendanceStatus = attending === 'attending' ? 'ATTENDING' : 'DECLINED';
-        const adultCount = 1 + plusOnes;
+            const attendanceStatus: AttendanceStatus =
+                attending === 'attending' ? 'ATTENDING' : 'DECLINED';
 
-        if (rsvpId) {
-            await updateRsvp.mutateAsync({
-                attendanceStatus,
-                adultCount,
-                childCount: 0,
-                dietaryNotes: dietary || undefined,
-                notes: message || undefined,
-            });
-        } else {
-            const created = await createRsvp.mutateAsync({
-                eventMemberId: memberId,
-                attendanceStatus,
-                adultCount,
-                childCount: 0,
-                dietaryNotes: dietary || undefined,
-                notes: message || undefined,
-                submittedAt: new Date().toISOString(),
-            });
-            setRsvpId(created.id);
-            localStorage.setItem(rsvpStorageKey(memberId), created.id);
-        }
+            const adultCount = 1 + plusOnes.adultCount;
+            const childCount = plusOnes.childCount;
 
-        setSubmitted(true);
-    }
+            if (rsvpId) {
+                await updateRsvp.mutateAsync({
+                    attendanceStatus,
+                    adultCount,
+                    childCount,
+                    notes: message || undefined
+                });
+            } else {
+                const created = await createRsvp.mutateAsync({
+                    eventMemberId: memberId,
+                    attendanceStatus,
+                    adultCount,
+                    childCount,
+                    notes: message || undefined,
+                    submittedAt: new Date().toISOString()
+                });
+
+                setRsvpId(created.id);
+                localStorage.setItem(rsvpStorageKey(memberId), created.id);
+            }
+
+            setSubmitted(true);
+        },
+        [attending, rsvpId, message, createRsvp, updateRsvp, plusOnes.adultCount, plusOnes.childCount]
+    );
 
     if (submitted) {
         return (
-            <div className="max-w-2xl mx-auto px-4 pb-24 lg:pb-8">
+            <div className="mx-auto max-w-2xl px-4 pb-24 lg:pb-8">
                 <RsvpHeader onGoBack={handleGoBack} />
-                <RsvpSubmittedView attending={attending} onBackToWall={handleBackToWall} />
+                <RsvpSubmittedView
+                    attending={attending}
+                    onBackToWall={handleBackToWall}
+                />
             </div>
         );
     }
 
     return (
-        <div className="max-w-2xl mx-auto px-4 pb-24 lg:pb-8">
+        <div className="mx-auto max-w-2xl px-4 pb-24 lg:pb-8">
             <RsvpHeader onGoBack={handleGoBack} />
 
             <RsvpForm
@@ -159,8 +205,6 @@ export default function RSVPPage() {
                 plusOnes={plusOnes}
                 onIncrementPlusOnes={handleIncrementPlusOnes}
                 onDecrementPlusOnes={handleDecrementPlusOnes}
-                dietary={dietary}
-                onDietaryChange={handleDietaryChange}
                 message={message}
                 onMessageChange={handleMessageChange}
                 onSubmit={handleSubmit}
@@ -168,7 +212,9 @@ export default function RSVPPage() {
                 submitError={submitError !== null && submitError !== undefined}
             />
 
-            {isHost && confirmedGuests.length > 0 && <GuestList guests={confirmedGuests} />}
+            {isHost && confirmedGuests.length > 0 && (
+                <GuestList guests={confirmedGuests} />
+            )}
         </div>
     );
 }

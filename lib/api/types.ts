@@ -405,9 +405,13 @@ export interface RsvpRequestDto {
     phone?: string;
     adultCount: number;
     childCount: number;
-    dietaryNotes?: string;
     notes?: string;
     submittedAt: string;
+}
+
+export interface RsvpPlusOnes {
+    adultCount:number;
+    childCount:number;
 }
 
 export interface RsvpResponseDto {
@@ -417,7 +421,6 @@ export interface RsvpResponseDto {
     phone: string | null;
     adultCount: number;
     childCount: number;
-    dietaryNotes: string | null;
     notes: string | null;
     submittedAt: string;
     updatedAt: string;
@@ -428,7 +431,6 @@ export interface RsvpPatchDto {
     phone?: string;
     adultCount?: number;
     childCount?: number;
-    dietaryNotes?: string;
     notes?: string;
 }
 

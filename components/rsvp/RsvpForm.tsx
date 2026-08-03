@@ -1,10 +1,11 @@
 'use client';
 
-import { CheckCircle2, ChevronDown, XCircle } from 'lucide-react';
+import { CheckCircle2, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type React from 'react';
 
 import { cn } from '@/lib/utils';
+import {RsvpPlusOnes} from "@/lib/api/types";
 
 type AttendingStatus = 'attending' | 'not-attending';
 
@@ -12,11 +13,9 @@ interface RsvpFormProps {
     attending: AttendingStatus | null;
     onAttend: () => void;
     onDecline: () => void;
-    plusOnes: number;
-    onIncrementPlusOnes: () => void;
-    onDecrementPlusOnes: () => void;
-    dietary: string;
-    onDietaryChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+    plusOnes: RsvpPlusOnes;
+    onIncrementPlusOnes: (type:"adult" | "child") => () => void;
+    onDecrementPlusOnes: (type:"adult" | "child") => () => void;
     message: string;
     onMessageChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
     onSubmit: (e: React.SubmitEvent<HTMLFormElement>) => void;
@@ -31,8 +30,6 @@ export function RsvpForm({
     plusOnes,
     onIncrementPlusOnes,
     onDecrementPlusOnes,
-    dietary,
-    onDietaryChange,
     message,
     onMessageChange,
     onSubmit,
@@ -42,7 +39,7 @@ export function RsvpForm({
     const t = useTranslations('RSVPPage');
 
     return (
-        <div className="p-5 mb-6">
+        <div className="p-3 mb-6">
             <h2 className="text-base font-bold text-ink mb-4">{t('yourRsvp')}</h2>
             <form onSubmit={onSubmit} className="flex flex-col gap-4">
                 <div>
@@ -52,7 +49,7 @@ export function RsvpForm({
                             type="button"
                             onClick={onAttend}
                             className={cn(
-                                'flex items-center justify-center gap-2 py-3 rounded-xl border-2 text-sm font-semibold transition-all',
+                                'flex items-center justify-center gap-2 py-3 rounded-xl border-2 text-sm font-semibold transition-all px-1',
                                 attending === 'attending'
                                     ? 'border-emerald-400 bg-emerald-50 text-emerald-600'
                                     : 'border-border text-ink-muted hover:border-emerald-200'
@@ -65,7 +62,7 @@ export function RsvpForm({
                             type="button"
                             onClick={onDecline}
                             className={cn(
-                                'flex items-center justify-center gap-2 py-3 rounded-xl border-2 text-sm font-semibold transition-all',
+                                'flex items-center justify-center gap-2 py-3 rounded-xl border-2 text-sm font-semibold transition-all px-1',
                                 attending === 'not-attending'
                                     ? 'border-rose-300 bg-rose-50 text-rose-500'
                                     : 'border-border text-ink-muted hover:border-rose-200'
@@ -79,46 +76,45 @@ export function RsvpForm({
 
                 {attending === 'attending' && (
                     <>
-                        <div>
+                        <div className="flex flex-col items-center gap-2">
                             <p className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-2">{t('plusOnes')}</p>
-                            <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3">
-                                <button
-                                    type="button"
-                                    onClick={onDecrementPlusOnes}
-                                    className="w-7 h-7 rounded-full bg-card border border-border flex items-center justify-center text-ink-muted hover:text-ink transition-colors font-bold"
-                                >
-                                    −
-                                </button>
-                                <span className="flex-1 text-center text-sm font-semibold text-ink tabular-nums">{t('guestsCount', { count: plusOnes })}</span>
-                                <button
-                                    type="button"
-                                    onClick={onIncrementPlusOnes}
-                                    className="w-7 h-7 rounded-full bg-card border border-border flex items-center justify-center text-ink-muted hover:text-ink transition-colors font-bold"
-                                >
-                                    +
-                                </button>
+                            <div className={'flex flex-col sm:flex-row justify-around gap-2 w-full'}>
+                                <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 flex-1">
+                                    <button
+                                        type="button"
+                                        onClick={onDecrementPlusOnes('adult')}
+                                        className="w-7 h-7 rounded-full bg-card border border-border flex items-center justify-center text-ink-muted hover:text-ink transition-colors font-bold"
+                                    >
+                                        −
+                                    </button>
+                                    <span className="flex-1 text-center text-sm font-semibold text-ink tabular-nums">{t('adultsCount', { count: plusOnes.adultCount })}</span>
+                                    <button
+                                        type="button"
+                                        onClick={onIncrementPlusOnes('adult')}
+                                        className="w-7 h-7 rounded-full bg-card border border-border flex items-center justify-center text-ink-muted hover:text-ink transition-colors font-bold"
+                                    >
+                                        +
+                                    </button>
+                                </div>
+                                <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 flex-1">
+                                    <button
+                                        type="button"
+                                        onClick={onDecrementPlusOnes('child')}
+                                        className="w-7 h-7 rounded-full bg-card border border-border flex items-center justify-center text-ink-muted hover:text-ink transition-colors font-bold"
+                                    >
+                                        −
+                                    </button>
+                                    <span className="flex-1 text-center text-sm font-semibold text-ink tabular-nums">{t('childrenCount', { count: plusOnes.childCount })}</span>
+                                    <button
+                                        type="button"
+                                        onClick={onIncrementPlusOnes('child')}
+                                        className="w-7 h-7 rounded-full bg-card border border-border flex items-center justify-center text-ink-muted hover:text-ink transition-colors font-bold"
+                                    >
+                                        +
+                                    </button>
                             </div>
-                        </div>
+                            </div>
 
-                        <div>
-                            <p className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-2">{t('dietaryRequirements')}</p>
-                            <div className="relative">
-                                <select
-                                    value={dietary}
-                                    onChange={onDietaryChange}
-                                    className="w-full appearance-none bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition pr-10"
-                                    aria-label={t('dietaryRequirements')}
-                                >
-                                    <option value="">{t('dietaryOptions.none')}</option>
-                                    <option value="vegetarian">{t('dietaryOptions.vegetarian')}</option>
-                                    <option value="vegan">{t('dietaryOptions.vegan')}</option>
-                                    <option value="gluten-free">{t('dietaryOptions.glutenFree')}</option>
-                                    <option value="halal">{t('dietaryOptions.halal')}</option>
-                                    <option value="kosher">{t('dietaryOptions.kosher')}</option>
-                                    <option value="other">{t('dietaryOptions.other')}</option>
-                                </select>
-                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted pointer-events-none" />
-                            </div>
                         </div>
                     </>
                 )}
