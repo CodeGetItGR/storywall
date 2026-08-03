@@ -641,6 +641,14 @@
         "title": "Open the essentials",
         "subtitle": "Jump to the parts of the event guests use most often.",
         "items": {
+            "posts": {
+                "label": "Posts",
+                "subtitle": "Read the wall"
+            },
+            "stories": {
+                "label": "Stories",
+                "subtitle": "Watch the latest moments"
+            },
             "rsvp": {
                 "label": "RSVP",
                 "subtitle": "Reply to the invite"

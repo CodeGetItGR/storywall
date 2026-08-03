@@ -1,21 +1,71 @@
 'use client';
 
-import { CalendarDays, Gift, MapPinned, Music4, NotebookText, Table2, Ticket } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { Image, MessageSquareText, Music4, Ticket } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { useMemo } from 'react';
 
-const quickAccessItems = [
-    { key: 'rsvp', href: '/tools/rsvp', icon: Ticket },
-    { key: 'schedule', href: '/tools/schedule', icon: CalendarDays },
-    { key: 'venue', href: '/tools/venue', icon: MapPinned },
-    { key: 'gifts', href: '/tools/gifts', icon: Gift },
-    { key: 'playlist', href: '/tools/playlist', icon: Music4 },
-    { key: 'seating', href: '/tools/seating', icon: Table2 },
-    { key: 'wishbook', href: '/tools/wishbook', icon: NotebookText },
-] as const;
+import type { ModuleKeyConvention } from '@/lib/api/types';
+import { useActiveEvent } from '@/providers/EventProvider';
+
+type QuickAccessItem = {
+    moduleKey: ModuleKeyConvention;
+    href: string;
+    icon: LucideIcon;
+    visible: boolean;
+    key: 'posts' | 'stories' | 'rsvp' | 'playlist';
+};
+
+const quickAccessItems: QuickAccessItem[] = [
+    {
+        moduleKey: 'posts',
+        href: '#posts',
+        icon: MessageSquareText,
+        visible: false,
+        key: 'posts',
+    },
+    {
+        moduleKey: 'stories',
+        href: '#stories',
+        icon: Image,
+        visible: false,
+        key: 'stories',
+    },
+    {
+        moduleKey: 'rsvp',
+        href: '/tools/rsvp',
+        icon: Ticket,
+        visible: false,
+        key: 'rsvp',
+    },
+    {
+        moduleKey: 'playlist',
+        href: '/tools/playlist',
+        icon: Music4,
+        visible: true,
+        key: 'playlist',
+    },
+];
 
 export function QuickAccessBar() {
     const t = useTranslations('FeedQuickAccessBar');
+    const activeEvent = useActiveEvent();
+
+    const enabledItems = useMemo(() => {
+        if (!activeEvent) return [];
+
+        const enabledModules = new Set(activeEvent.modules.filter((module) => module.isEnabled).map((module) => module.moduleKey));
+
+        return activeEvent.modules
+            .filter((module) => module.isEnabled)
+            .map((module) => quickAccessItems.find((item) => item.moduleKey === module.moduleKey && item.visible))
+            .filter((item): item is QuickAccessItem => !!item && enabledModules.has(item.moduleKey));
+    }, [activeEvent]);
+
+    if (enabledItems.length === 0) {
+        return null;
+    }
 
     return (
         <section aria-label={t('ariaLabel')} className="px-4 pb-2 mt-4">
@@ -28,8 +78,8 @@ export function QuickAccessBar() {
                     <p className="hidden max-w-52 text-right text-sm text-ink-muted sm:block">{t('subtitle')}</p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
-                    {quickAccessItems.map(({ key, href, icon: Icon }) => (
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
+                    {enabledItems.map(({ key, href, icon: Icon }) => (
                         <Link
                             key={key}
                             href={href}
