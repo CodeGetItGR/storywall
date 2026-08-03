@@ -4,7 +4,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import {useCallback, useEffect, useState} from 'react';
 
 import type { MediaResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
@@ -48,6 +48,14 @@ export function PostMediaCarousel({ media, initialIndex, onIndexChange, alt, cla
 
     const hasMultiple = media.length > 1;
 
+    const scrollPrev = useCallback(() => {
+        emblaApi?.scrollPrev();
+    },[emblaApi])
+
+    const scrollNext = useCallback(() => {
+        emblaApi?.scrollNext();
+    },[emblaApi])
+
     return (
         <div className={cn('relative w-full h-full overflow-hidden', className)}>
             <div className="w-full h-full overflow-hidden" ref={emblaRef}>
@@ -64,7 +72,7 @@ export function PostMediaCarousel({ media, initialIndex, onIndexChange, alt, cla
                 <>
                     <button
                         type="button"
-                        onClick={() => emblaApi?.scrollPrev()}
+                        onClick={scrollPrev}
                         disabled={!canScrollPrev}
                         aria-label={t('previousMedia')}
                         className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 hover:bg-black/70 disabled:opacity-30 disabled:hover:bg-black/50 text-white flex items-center justify-center transition-colors"
@@ -73,7 +81,7 @@ export function PostMediaCarousel({ media, initialIndex, onIndexChange, alt, cla
                     </button>
                     <button
                         type="button"
-                        onClick={() => emblaApi?.scrollNext()}
+                        onClick={scrollNext}
                         disabled={!canScrollNext}
                         aria-label={t('nextMedia')}
                         className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 hover:bg-black/70 disabled:opacity-30 disabled:hover:bg-black/50 text-white flex items-center justify-center transition-colors"

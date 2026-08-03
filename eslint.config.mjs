@@ -36,7 +36,10 @@ export default defineConfig([
                     ignoreDOMComponents: false,
                     ignoreRefs: false,
                     allowArrowFunctions: false,
-                    allowFunctions: false,
+                    // Named handler functions (`function handleClick() {}`) are
+                    // fine — they keep JSX readable. Only arrow-function/bind
+                    // *literals* written inline in a prop are banned.
+                    allowFunctions: true,
                     allowBind: false,
                 },
             ],
@@ -82,5 +85,5 @@ export default defineConfig([
      */
     prettierConfig,
 
-    globalIgnores(['.next/**', 'node_modules/**', 'coverage/**', 'dist/**', 'out/**', 'next-env.d.ts']),
+    globalIgnores(['.next/**', 'node_modules/**', 'coverage/**', 'dist/**', 'out/**', 'next-env.d.ts', ".worktrees/**"]),
 ]);

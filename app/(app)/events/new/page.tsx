@@ -3,7 +3,7 @@
 import { ArrowLeft, ChevronDown, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import React, { useState } from 'react';
+import React, {useCallback, useState} from 'react';
 
 import { useCreateEvent } from '@/hooks/useEvent';
 import { getErrorMessage, getFieldErrors } from '@/lib/api/errors';
@@ -54,11 +54,39 @@ export default function CreateEventPage() {
         }
     }
 
+    const routeBack = useCallback(() => {
+        router.back();
+    }, [router]);
+
+    const onTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setTitle(e.target.value);
+    }, []);
+
+    const onEventTypeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+        setEventType(e.target.value as EventTypeConvention);
+    }, []);
+
+    const onStartAtChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setStartAt(e.target.value);
+    }, []);
+
+    const onEndAtChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setEndAt(e.target.value);
+    }, []);
+
+    const onTimezoneChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setTimezone(e.target.value);
+    }, []);
+
+    const onLocationNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setLocationName(e.target.value);
+    }, []);
+
     return (
         <div className="max-w-2xl mx-auto px-4 pb-24 lg:pb-8">
             <div className="flex items-center gap-3 py-4 mb-2">
                 <button
-                    onClick={() => router.back()}
+                    onClick={routeBack}
                     aria-label={t('goBack')}
                     className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
                 >
@@ -77,7 +105,7 @@ export default function CreateEventPage() {
                             type="text"
                             required
                             value={title}
-                            onChange={(e) => setTitle(e.target.value)}
+                            onChange={onTitleChange}
                             placeholder={t('placeholders.title')}
                             className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
                         />
@@ -89,7 +117,7 @@ export default function CreateEventPage() {
                         <div className="relative">
                             <select
                                 value={eventType}
-                                onChange={(e) => setEventType(e.target.value as EventTypeConvention)}
+                                onChange={onEventTypeChange}
                                 className="w-full appearance-none bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition pr-10"
                             >
                                 {EVENT_TYPES.map((type) => (
@@ -109,7 +137,7 @@ export default function CreateEventPage() {
                                 type="datetime-local"
                                 required
                                 value={startAt}
-                                onChange={(e) => setStartAt(e.target.value)}
+                                onChange={onStartAtChange}
                                 className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
                             />
                         </label>
@@ -118,7 +146,7 @@ export default function CreateEventPage() {
                             <input
                                 type="datetime-local"
                                 value={endAt}
-                                onChange={(e) => setEndAt(e.target.value)}
+                                onChange={onEndAtChange}
                                 className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
                             />
                         </label>
@@ -130,7 +158,7 @@ export default function CreateEventPage() {
                             type="text"
                             required
                             value={timezone}
-                            onChange={(e) => setTimezone(e.target.value)}
+                            onChange={onTimezoneChange}
                             className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
                         />
                     </label>
@@ -140,7 +168,7 @@ export default function CreateEventPage() {
                         <input
                             type="text"
                             value={locationName}
-                            onChange={(e) => setLocationName(e.target.value)}
+                            onChange={onLocationNameChange}
                             placeholder={t('placeholders.locationName')}
                             className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
                         />

@@ -2,7 +2,7 @@
 
 import { Dialog } from '@base-ui/react/dialog';
 import { X } from 'lucide-react';
-import type { ReactNode } from 'react';
+import {ReactNode, useCallback} from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -27,12 +27,14 @@ interface ModalProps {
 export function Modal({ open, onClose, size = 'md', closeLabel = 'Close', className, children, closeButtonPosition = 'right' }: ModalProps) {
     const isFull = size === 'full';
 
+    const onOpenChange = useCallback((nextOpen: boolean) => {
+        if (!nextOpen) onClose();
+    }, [onClose]);
+
     return (
         <Dialog.Root
             open={open}
-            onOpenChange={(nextOpen) => {
-                if (!nextOpen) onClose();
-            }}
+            onOpenChange={onOpenChange}
         >
             <Dialog.Portal>
                 <Dialog.Backdrop className="fixed inset-0 z-50 bg-ink/60 backdrop-blur-sm" />
