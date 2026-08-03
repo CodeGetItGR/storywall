@@ -1,12 +1,17 @@
 'use client';
 
-import { ChevronRight, Heart } from 'lucide-react';
+import { CalendarDays, ChevronRight, Heart, UsersRound } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
+import { useMemo } from 'react';
 
+import Avatar from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useEventMembers } from '@/hooks';
 import type { EventDetailResponseDto, EventMemberResponseDto } from '@/lib/api/types';
-import { cn } from '@/lib/utils';
+import { avatarColorFromId, cn, initialsFromName } from '@/lib/utils';
 
 interface EventListItemProps {
     eventId: string;
@@ -15,36 +20,132 @@ interface EventListItemProps {
     isLoading: boolean;
 }
 
+function formatEventDate(startAt: string | undefined, locale: string) {
+    if (!startAt) return null;
+
+    const date = new Date(startAt);
+    if (Number.isNaN(date.getTime())) return null;
+
+    const weekday = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(date);
+    const calendarDate = new Intl.DateTimeFormat(locale, {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    }).format(date);
+    const time = new Intl.DateTimeFormat(locale, {
+        hour: 'numeric',
+        minute: date.getMinutes() === 0 ? undefined : '2-digit',
+    }).format(date);
+
+    return `${weekday}, ${calendarDate} at ${time}`.toUpperCase();
+}
+
+function EventListItemSkeleton() {
+    return (
+        <div className="overflow-hidden rounded-2xl bg-card shadow-[0_10px_30px_rgba(36,31,26,0.08)]">
+            <Skeleton className="aspect-video w-full rounded-none" />
+            <div className="space-y-3 p-4">
+                <Skeleton className="h-3 w-40 rounded-full" />
+                <Skeleton className="h-5 w-48 rounded-full" />
+                <Skeleton className="h-3 w-32 rounded-full" />
+                <div className="flex items-center justify-between pt-1">
+                    <div className="flex -space-x-2">
+                        <Skeleton className="h-6 w-6 rounded-full ring-2 ring-card" />
+                        <Skeleton className="h-6 w-6 rounded-full ring-2 ring-card" />
+                        <Skeleton className="h-6 w-6 rounded-full ring-2 ring-card" />
+                    </div>
+                    <Skeleton className="h-7 w-16 rounded-full" />
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export function EventListItem({ eventId, member, event, isLoading }: EventListItemProps) {
     const t = useTranslations('ProfilePage');
+    const locale = useLocale();
+    const { data: eventMembers = [] } = useEventMembers(eventId);
 
     const roleLabel =
         member.customRelationshipRole ?? member.relationshipRole ?? (member.role === 'HOST' ? t('roleFallback.host') : t('roleFallback.attendee'));
+    const displayMembers = useMemo(() => {
+        const members = eventMembers.length > 0 ? eventMembers : [member];
+        return members.slice(0, 3);
+    }, [eventMembers, member]);
+    const goingCount = event?.rsvpSummary.attending ?? event?.rsvpSummary.totalMembers ?? displayMembers.length;
+    const extraMemberCount = Math.max(goingCount - displayMembers.length, 0);
+    const eventDate = formatEventDate(event?.schedule.startAt, locale);
+
+    if (isLoading) {
+        return <EventListItemSkeleton />;
+    }
 
     return (
-        <Link href={`/feed/${eventId}`} className="flex items-center gap-3 px-4 py-3 hover:bg-surface-muted transition-colors">
-            <div className="relative w-10 h-10 rounded-full overflow-hidden bg-surface-muted shrink-0">
-                {isLoading ? (
-                    <div className="absolute inset-0 animate-pulse bg-surface-muted" />
-                ) : event?.coverMedia?.mediaUrl ? (
-                    <Image src={event.coverMedia.mediaUrl} alt={event.title} fill className="object-cover" sizes="40px" />
+        <Link
+            href={`/feed/${eventId}`}
+            className="group block overflow-hidden rounded-2xl bg-card shadow-[0_10px_30px_rgba(36,31,26,0.08)] transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(36,31,26,0.12)] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
+        >
+            <div className="relative aspect-video w-full overflow-hidden bg-surface-muted">
+                {event?.coverMedia?.mediaUrl ? (
+                    <Image
+                        src={event.coverMedia.mediaUrl}
+                        alt={event.title}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                        sizes="(max-width: 768px) 100vw, 672px"
+                    />
                 ) : (
-                    <div className="absolute inset-0 bg-gradient-brand flex items-center justify-center">
-                        <Heart className="w-4 h-4 text-white/80" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-brand">
+                        <Heart className="h-8 w-8 text-white/85" />
                     </div>
                 )}
+                <div className="absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-ink/30 to-transparent" />
             </div>
 
-            <div className="flex-1 min-w-0">
-                {isLoading ? (
-                    <div className="h-4 w-32 bg-surface-muted rounded animate-pulse" />
-                ) : (
-                    <p className="text-sm font-medium text-ink truncate leading-tight">{event?.title ?? t('eventUnavailable')}</p>
-                )}
-                <p className={cn('text-xs text-ink-muted truncate', isLoading ? 'mt-2' : 'mt-0.5')}>{roleLabel}</p>
-            </div>
+            <div className="p-4">
+                <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                        {eventDate && <p className="text-[11px] font-semibold tracking-wide text-ink-muted">{eventDate}</p>}
+                        <h3 className="mt-1 truncate text-base font-bold leading-tight text-ink">{event?.title ?? t('eventUnavailable')}</h3>
+                    </div>
+                    <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-ink-faint transition-transform group-hover:translate-x-0.5" />
+                </div>
 
-            <ChevronRight className="w-4 h-4 text-ink-faint shrink-0" />
+                <p className="mt-2 flex items-center gap-1.5 text-sm text-ink-muted">
+                    <CalendarDays className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />
+                    <span className="truncate">{roleLabel}</span>
+                    <span aria-hidden="true" className={cn('text-ink-faint', !goingCount && 'hidden')}>
+                        |
+                    </span>
+                    {goingCount > 0 && <span className="shrink-0">{goingCount} Going</span>}
+                </p>
+
+                {member.role === 'HOST' && <div className="mt-4 flex items-center justify-between">
+                    <div className="flex items-center">
+                        {displayMembers.map((eventMember) => (
+                            <Avatar
+                                key={eventMember.id}
+                                initials={initialsFromName(eventMember.displayName)}
+                                color={avatarColorFromId(eventMember.id)}
+                                size="xs"
+                                alt={eventMember.displayName}
+                                className="-ml-2 first:ml-0 ring-2 ring-card"
+                            />
+                        ))}
+                        {extraMemberCount > 0 && (
+                            <span
+                                className="-ml-2 flex h-6 w-6 items-center justify-center rounded-full bg-surface-muted text-[10px] font-semibold text-ink-muted ring-2 ring-card">
+                                +{extraMemberCount}
+                            </span>
+                        )}
+                    </div>
+                    <span
+                        className="inline-flex h-7 items-center gap-1.5 rounded-full bg-surface-muted px-2.5 text-xs font-medium text-ink-muted">
+                        <UsersRound className="h-3.5 w-3.5" strokeWidth={1.8}/>
+                        {event?.rsvpSummary.totalMembers ?? displayMembers.length}
+                    </span>
+                </div>}
+            </div>
         </Link>
     );
 }

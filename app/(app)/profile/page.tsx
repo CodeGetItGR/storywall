@@ -87,7 +87,7 @@ export default function ProfilePage() {
             {/* Events */}
             <div className="mt-6">
                 <h2 className="text-xs font-semibold text-ink-faint uppercase tracking-wide px-1 mb-2">{t('yourEvents')}</h2>
-                <div className="bg-card rounded-2xl divide-y divide-border overflow-hidden">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {memberships.map((member, i) => (
                         <EventListItem
                             key={member.eventId}
