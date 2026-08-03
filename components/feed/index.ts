@@ -2,6 +2,7 @@ export * from './Banner';
 export * from './ComposerCard';
 export * from './EventInfo';
 export * from './EventNotFound';
+export * from './FeedPageSkeleton';
 export * from './Header';
 export * from './PostCard';
 export * from './PostModal';

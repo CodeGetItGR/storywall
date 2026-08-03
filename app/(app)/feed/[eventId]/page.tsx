@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { use, useEffect, useMemo, useRef } from 'react';
 
-import { Banner, ComposerCard, EventInfo, EventNotFound, Header, PostCard, PostModal, RsvpPrompt, StoriesRow } from '@/components/feed';
+import { Banner, ComposerCard, EventInfo, EventNotFound, FeedPageSkeleton, Header, PostCard, PostModal, RsvpPrompt, StoriesRow } from '@/components/feed';
 import { useEventPosts } from '@/hooks';
 import { useEvent } from '@/hooks/useEvent';
 import { ApiError } from '@/lib/api/client';
@@ -15,7 +15,7 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
     const t = useTranslations('FeedPage');
     const loadMoreRef = useRef<HTMLDivElement>(null);
 
-    const { data: event, error } = useEvent(eventId);
+    const { data: event, error, isLoading } = useEvent(eventId);
     const { setActiveEventId } = useEventSwitcher();
     const { data: postPages, fetchNextPage, hasNextPage, isFetchingNextPage } = useEventPosts(eventId);
     const posts = useMemo(() => postPages?.pages.flatMap((page) => page.content) ?? [], [postPages?.pages]);
@@ -50,6 +50,10 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
                 : { rsvp: false, stories: false, posts: false, playlist: false, gallery: false },
         [event]
     );
+
+    if (isLoading) {
+        return <FeedPageSkeleton />;
+    }
 
     if (!event || (error instanceof ApiError && error.status === 404)) {
         return <EventNotFound />;
