@@ -482,11 +482,32 @@
         "cancel": "Cancel",
         "suggestASong": "Suggest a song",
         "suggest": "Suggest",
+        "heroEyebrow": "Playlist studio",
+        "heroTitle": "Shape the night with the tracks that matter.",
+        "heroBody": "Drop in a song, attach a Spotify or YouTube link if you have one, and let the room vote it upward. Clean, simple, and actually playable.",
+        "heroStatSongs": "Songs",
+        "heroStatEmbeds": "Playable links",
+        "heroStatNotes": "Notes",
+        "heroLive": "Live",
+        "formTitle": "Add a track to the queue",
+        "formSubtitle": "Title is required. Everything else is optional, so you can paste a link and a quick note when you have them.",
         "songTitle": "Song title",
         "artist": "Artist",
+        "artistUnknown": "Artist not specified",
+        "youtubeUrl": "YouTube URL",
+        "spotifyUrl": "Spotify URL",
+        "comment": "Comment",
+        "songTitlePlaceholder": "e.g. Dancing Queen",
+        "artistPlaceholder": "ABBA",
+        "youtubePlaceholder": "Paste a YouTube link",
+        "spotifyPlaceholder": "Paste a Spotify track link",
+        "commentPlaceholder": "Why this one belongs on the playlist",
+        "urlHint": "Spotify and YouTube links embed automatically",
         "momentForSong": "Moment for song",
         "addToPlaylist": "Add to Playlist",
         "allSongs": "All songs",
+        "disabledTitle": "Playlist is disabled",
+        "disabledBody": "This event has the playlist module turned off, so suggestions and votes are hidden until a host enables it.",
         "moments": {
             "ceremony": "Ceremony",
             "cocktail": "Cocktail Hour",
@@ -494,7 +515,15 @@
             "firstDance": "First Dance"
         },
         "removeVote": "Remove vote",
-        "voteForThisSong": "Vote for this song"
+        "voteForThisSong": "Vote for this song",
+        "deleteSuggestion": "Delete suggestion",
+        "confirmDeleteSuggestion": "Confirm delete suggestion",
+        "showPreview": "Show preview",
+        "hidePreview": "Hide preview",
+        "previewLabel": "Preview",
+        "openSpotify": "Open Spotify",
+        "openYouTube": "Open YouTube"
+
     },
     "QuizPage": {
         "backToTools": "Back to tools",
@@ -637,9 +666,7 @@
     },
     "FeedQuickAccessBar": {
         "ariaLabel": "Quick access",
-        "eyebrow": "Guest access",
-        "title": "Open the essentials",
-        "subtitle": "Jump to the parts of the event guests use most often.",
+        "eyebrow": "Quick access",
         "items": {
             "posts": {
                 "label": "Posts",

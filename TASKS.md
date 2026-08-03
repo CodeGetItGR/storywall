@@ -2,7 +2,7 @@
 
 Things deliberately scoped out while building the feed migration and the post
 reactions/comments/modal feature, so they don't get lost. None of these are
-bugs in what shipped — each was an explicit scope decision at the time.
+bugs in what shipped β€” each was an explicit scope decision at the time.
 
 ## From the reactions/comments/modal feature
 
@@ -11,9 +11,9 @@ bugs in what shipped — each was an explicit scope decision at the time.
   (love, laugh, etc.) are possible later, but would need a picker UI and a
   decided fixed set of types.
 - **Threaded comment replies.** Comments are a flat list. The API already
-  supports `parentCommentId` on `CommentRequestDto` — nothing server-side
+  supports `parentCommentId` on `CommentRequestDto` β€” nothing server-side
   blocks adding replies, it just isn't built.
-- **Per-comment likes.** Removed entirely — the backend only supports
+- **Per-comment likes.** Removed entirely β€” the backend only supports
   reactions on posts, not comments. Would need a new backend endpoint first.
 - **Deleting posts or comments.** `PostCard`'s "..." menu is still a no-op.
   Needs its own permission check (author-or-host) and confirmation UX.
@@ -31,7 +31,7 @@ bugs in what shipped — each was an explicit scope decision at the time.
 ## Not yet migrated off mock data
 
 - **Stories** (`components/feed/StoriesRow.tsx`, `StoryAvatar.tsx`,
-  `app/(app)/story/[id]/page.tsx`) — still fully mock-data-driven.
-- Everything under `app/(app)/tools/*` (gifts, wishbook, playlist, schedule,
-  quiz, seating, future-messages) and `RightContextPanel.tsx` — still mock
-  data, untouched by either of these two efforts.
+  `app/(app)/story/[id]/page.tsx`) β€” still fully mock-data-driven.
+- **`app/(app)/notifications/page.tsx`** and **`components/layout/DesktopNavRail.tsx`** β€” still read from `lib/mock-data.ts`.
+- **`app/(app)/tools/schedule/page.tsx`**, **`app/(app)/tools/gifts/page.tsx`**, **`app/(app)/tools/wishbook/page.tsx`**, **`app/(app)/tools/quiz/page.tsx`**, **`app/(app)/tools/seating/page.tsx`**, **`app/(app)/tools/future-messages/page.tsx`** β€” still mock-data-driven.
+- **`app/(app)/tools/playlist/page.tsx`** β€” now wired to the real playlist API and no longer part of the mock-data backlog.

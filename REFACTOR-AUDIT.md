@@ -40,8 +40,9 @@ down now. All three touched trees are 0 `react/jsx-no-bind` violations.
 - **`app/(app)/tools/quiz/page.tsx`** (220 lines). Two large inline-rendered
   branches (quiz view vs. results view), each with its own grading/styling
   logic. Extract `QuizResults` and `QuizQuestionCard`.
-- **`app/(app)/tools/playlist/page.tsx`** (195 lines). Extract `AddSongForm`
-  and `PlaylistItemRow`.
+- **`app/(app)/tools/playlist/page.tsx`** (195 lines). `AddSongForm` and
+  `PlaylistItemRow` are now extracted; the page is wired to the real playlist
+  API.
 - **`app/invite/[token]/page.tsx`** (180 lines). A `TerminalState` component
   already exists but the "already used" case duplicates its markup inline
   instead of reusing it (~lines 63–78) — fix that duplication, and extract
