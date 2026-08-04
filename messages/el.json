@@ -33,19 +33,20 @@
         "likePost": "Μου αρέσει",
         "unlikePost": "Αναίρεση μου αρέσει",
         "comments": "{count} σχόλια",
-        "sharePost": "Κοινοποίηση ανάρτησης",
-        "savePost": "Αποθήκευση ανάρτησης",
+        "sharePost": "Κοινοποίηση Δημοσίευσης",
+        "savePost": "Αποθήκευση Δημοσίευσης",
         "unsavePost": "Κατάργηση αποθήκευσης",
         "photoBy": "Φωτογραφία από {name}",
         "viewPhoto": "Προβολή φωτογραφίας από {name}",
         "viewPhotoAt": "Φωτογραφία {index} από {count}, {name}",
         "unknownAuthor": "Άγνωστος",
-        "pinned": "Καρφιτσωμένη"
+        "pinned": "Καρφιτσωμένη",
+        "hostPost": "POST ΔΙΟΡΓΑΝΩΤΗ"
     },
     "DesktopNavRail": {
         "mainNavigation": "Κύρια πλοήγηση",
         "coupleNames": "Έμμα & Τζέιμς",
-        "newPost": "Νέα Ανάρτηση",
+        "newPost": "Νέα Δημοσίευση",
         "items": {
             "home": "Αρχική",
             "tools": "Εργαλεία",
@@ -58,20 +59,20 @@
         "mobileNavigation": "Πλοήγηση κινητού",
         "compose": "Δημιουργία",
         "composeMenu": {
-            "post": "Ανάρτηση",
+            "post": "Δημοσίευση",
             "story": "Ιστορία"
         },
         "items": {
             "home": "Αρχική",
-            "tools": "Εργαλεία",
-            "post": "Ανάρτηση",
+            "playlist": "Τραγούδια",
+            "post": "Δημοσίευση",
             "alerts": "Ειδοποιήσεις"
         }
     },
     "ComposerCard": {
         "placeholder": "Γιορτάστε τη στιγμή",
         "captionPlaceholder": "Μοιραστείτε μια ανάμνηση, μήνυμα ή στιγμή...",
-        "captionAriaLabel": "Λεζάντα ανάρτησης",
+        "captionAriaLabel": "Λεζάντα Δημοσίευσης",
         "addPhotos": "Προσθήκη φωτογραφιών",
         "removeImage": "Αφαίρεση εικόνας",
         "uploadFailed": "Δεν ήταν δυνατή η μεταφόρτωση του {filename}",
@@ -80,8 +81,8 @@
         "maxImagesReached": "Μπορείτε να προσθέσετε έως 10 φωτογραφίες",
         "fileTooLarge": "Το {filename} υπερβαίνει τα 20 MB",
         "cancel": "Ακύρωση",
-        "post": "Ανάρτηση",
-        "posting": "Ανάρτηση…"
+        "post": "Δημοσίευση",
+        "posting": "Δημοσίευση…"
     },
     "RsvpPrompt": {
         "willYouAttend": "Θα παραστείτε;",
@@ -242,12 +243,12 @@
         }
     },
     "PostModal": {
-        "title": "Ανάρτηση",
+        "title": "Δημοσίευση",
         "close": "Κλείσιμο",
-        "loading": "Φόρτωση ανάρτησης…",
-        "notFoundTitle": "Η ανάρτηση δεν βρέθηκε",
-        "notFoundDescription": "Αυτή η ανάρτηση μπορεί να έχει αφαιρεθεί.",
-        "loadFailedTitle": "Δεν ήταν δυνατή η φόρτωση της ανάρτησης",
+        "loading": "Φόρτωση δημοσίευσης…",
+        "notFoundTitle": "Η δημοσίευση δεν βρέθηκε",
+        "notFoundDescription": "Αυτή η δημοσίευση μπορεί να έχει αφαιρεθεί.",
+        "loadFailedTitle": "Δεν ήταν δυνατή η φόρτωση της δημοσίευσης",
         "loadFailedDescription": "Κάτι πήγε στραβά. Δοκιμάστε ξανά αργότερα.",
         "noCommentsYet": "Δεν υπάρχουν σχόλια ακόμα",
         "commentCount": "{count, plural, one {# σχόλιο} other {# σχόλια}}",

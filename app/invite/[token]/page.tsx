@@ -13,6 +13,7 @@ import { useEventInvitationPreview } from '@/hooks/useEventInvitations';
 import { useMediaItem } from '@/hooks/useMedia';
 import { ApiError } from '@/lib/api/client';
 import { getErrorMessage } from '@/lib/api/errors';
+import { routes } from '@/lib/routes';
 
 const DEFAULT_HERO_IMAGE = '/images/couple-hero.png';
 
@@ -69,7 +70,7 @@ export default function InviteOnboardingPage({ params }: { params: Promise<{ tok
                 <h1 className="text-2xl lg:text-3xl font-bold text-ink mb-3 text-balance">{t('alreadyUsedInvite.title')}</h1>
                 <p className="text-sm text-ink-muted max-w-sm mb-8 leading-relaxed">{t('alreadyUsedInvite.description')}</p>
                 <Link
-                    href="/login"
+                    href={routes.login}
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
                 >
                     {t('haveAccount')}
@@ -79,8 +80,8 @@ export default function InviteOnboardingPage({ params }: { params: Promise<{ tok
     }
 
     const prefilledName = [preview.firstName, preview.lastName].filter(Boolean).join(' ');
-    const loginHref = `/login?invite=${token}${preview.email ? `&email=${encodeURIComponent(preview.email)}` : ''}`;
-    const registerHref = `/register?invite=${token}${preview.email ? `&email=${encodeURIComponent(preview.email)}` : ''}`;
+    const loginHref = routes.auth.login({ invite: token, email: preview.email });
+    const registerHref = routes.auth.register({ invite: token, email: preview.email });
 
     async function handleGuestSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -92,7 +93,7 @@ export default function InviteOnboardingPage({ params }: { params: Promise<{ tok
                 inviteToken: token,
                 displayName: displayName.trim() || prefilledName,
             });
-            router.push('/feed');
+            router.push(routes.feed);
         } catch (err) {
             setGuestError(getErrorMessage(err));
         } finally {

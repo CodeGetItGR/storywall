@@ -1,66 +1,67 @@
 import { BookHeart, Calendar, ChevronRight, Gift, HelpCircle, LayoutGrid, Mail, MapPin, Music, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { routes } from '@/lib/routes';
 
 const tools = [
     {
-        href: '/tools/rsvp/submit',
+        href: routes.tools.rsvpSubmit,
         icon: Users,
         key: 'rsvp',
         color: 'bg-emerald-50 text-emerald-600',
         badgeCount: 6,
     },
     {
-        href: '/tools/gifts',
+        href: routes.tools.gifts,
         icon: Gift,
         key: 'gifts',
         color: 'bg-rose-50 text-rose-500',
         badgeCount: 3,
     },
     {
-        href: '/tools/wishbook',
+        href: routes.tools.wishbook,
         icon: BookHeart,
         key: 'wishbook',
         color: 'bg-pink-50 text-pink-500',
         badgeCount: 4,
     },
     {
-        href: '/tools/schedule',
+        href: routes.tools.schedule,
         icon: Calendar,
         key: 'schedule',
         color: 'bg-amber-50 text-amber-500',
         badgeCount: 9,
     },
     {
-        href: '/tools/venue',
+        href: routes.tools.venue,
         icon: MapPin,
         key: 'venue',
         color: 'bg-sky-50 text-sky-500',
         badgeCount: null,
     },
     {
-        href: '/tools/playlist',
+        href: routes.tools.playlist,
         icon: Music,
         key: 'playlist',
         color: 'bg-violet-50 text-violet-500',
         badgeCount: 10,
     },
     {
-        href: '/tools/quiz',
+        href: routes.tools.quiz,
         icon: HelpCircle,
         key: 'quiz',
         color: 'bg-orange-50 text-orange-500',
         badgeCount: 5,
     },
     {
-        href: '/tools/seating',
+        href: routes.tools.seating,
         icon: LayoutGrid,
         key: 'seating',
         color: 'bg-indigo-50 text-indigo-500',
         badgeCount: 5,
     },
     {
-        href: '/tools/future-messages',
+        href: routes.tools.futureMessages,
         icon: Mail,
         key: 'futureMessages',
         color: 'bg-teal-50 text-teal-500',

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { scheduleEvents } from '@/lib/mock-data';
+import { routes } from '@/lib/routes';
 
 const typeColors: Record<string, string> = {
     ceremony: 'bg-rose-100 text-rose-600 border-rose-200',
@@ -46,7 +47,7 @@ export default function SchedulePage() {
             {/* Header */}
             <div className="flex items-center gap-3 py-4 mb-2">
                 <Link
-                    href="/tools"
+                    href={routes.tools.root}
                     aria-label={t('backToTools')}
                     className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
                 >

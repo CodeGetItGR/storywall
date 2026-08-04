@@ -3,6 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import { routes } from '@/lib/routes';
+
 const amenities = [
     { icon: Car, key: 'parking' },
     { icon: Bed, key: 'accommodation' },
@@ -27,7 +29,7 @@ export default function VenuePage() {
             {/* Header */}
             <div className="flex items-center gap-3 px-4 py-4">
                 <Link
-                    href="/tools"
+                    href={routes.tools.root}
                     aria-label={t('backToTools')}
                     className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
                 >
@@ -48,6 +50,7 @@ export default function VenuePage() {
                     className="object-cover"
                     sizes="(max-width: 640px) 100vw, 672px"
                     priority
+                    loading="eager"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                 <div className="absolute bottom-5 left-5 text-white">
@@ -153,6 +156,7 @@ export default function VenuePage() {
                                     fill
                                     className="object-cover hover:scale-105 transition-transform duration-300"
                                     sizes="(max-width: 640px) 50vw, 300px"
+                                    loading="lazy"
                                 />
                             </div>
                         ))}

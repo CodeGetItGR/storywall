@@ -17,8 +17,8 @@ export function Logo({
 }: LogoProps) {
     return (
         <div className={cn('flex items-center gap-3', direction === 'col' ? 'flex-col' : 'flex-row', className)}>
-            <Image src="/assets/Logo.svg" alt="StoryWall" width={30} height={32} className={iconClassName} />
-            <Image src="/assets/LogoText.svg" alt="StoryWall" width={117} height={28} className={wordmarkClassName} />
+            <Image src="/assets/Logo.svg" loading="eager" alt="StoryWall" width={30} height={32} className={iconClassName} />
+            <Image src="/assets/LogoText.svg" loading="eager" alt="StoryWall" width={117} height={28} className={wordmarkClassName} />
         </div>
     );
 }

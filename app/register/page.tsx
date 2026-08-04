@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAcceptEventInvitation } from '@/hooks/useEventInvitations';
 import { getErrorMessage } from '@/lib/api/errors';
 import { joinEventAfterAuth } from '@/lib/invite/joinAfterAuth';
+import { routes } from '@/lib/routes';
 
 export default function RegisterPage() {
     const t = useTranslations('RegisterPage');
@@ -44,7 +45,7 @@ export default function RegisterPage() {
                 }
             }
 
-            router.push('/feed');
+            router.push(routes.feed);
         } catch (err) {
             setError(getErrorMessage(err));
         } finally {
@@ -147,7 +148,7 @@ export default function RegisterPage() {
 
             <p className="text-xs text-center text-ink-muted mt-6">
                 {t('haveAccount')}{' '}
-                <Link href={inviteToken ? `/login?invite=${inviteToken}` : '/login'} className="font-semibold text-ink hover:underline">
+                <Link href={inviteToken ? routes.auth.login({ invite: inviteToken }) : routes.login} className="font-semibold text-ink hover:underline">
                     {t('signInLink')}
                 </Link>
             </p>

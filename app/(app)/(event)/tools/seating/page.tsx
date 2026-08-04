@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { seatingTables } from '@/lib/mock-data';
+import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
 export default function SeatingPage() {
@@ -22,7 +23,7 @@ export default function SeatingPage() {
             {/* Header */}
             <div className="flex items-center gap-3 py-4 mb-2">
                 <Link
-                    href="/tools"
+                    href={routes.tools.root}
                     aria-label={t('backToTools')}
                     className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
                 >

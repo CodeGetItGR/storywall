@@ -8,6 +8,7 @@ import { useMemo, useState } from 'react';
 import { AddSongForm, PlaylistItemRow } from '@/components/playlist';
 import { useEventModules } from '@/hooks/useEventModules';
 import { useCreatePlaylistSuggestion, usePlaylistSuggestions } from '@/hooks/usePlaylist';
+import { routes } from '@/lib/routes';
 import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
 
 export default function PlaylistPage() {
@@ -69,7 +70,7 @@ export default function PlaylistPage() {
             <div className="mx-auto max-w-2xl px-4 pb-24 lg:pb-8">
                 <div className="flex items-center gap-3 py-4">
                     <Link
-                        href="/tools"
+                        href={routes.tools.root}
                         aria-label={t('backToTools')}
                         className="flex h-9 w-9 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-muted"
                     >
@@ -98,7 +99,7 @@ export default function PlaylistPage() {
             <div className="mb-4 flex items-center justify-between gap-3 py-4">
                 <div className="flex items-center gap-3">
                     <Link
-                        href="/tools"
+                        href={routes.tools.root}
                         aria-label={t('backToTools')}
                         className="flex h-9 w-9 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-muted"
                     >

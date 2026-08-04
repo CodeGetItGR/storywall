@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import React, { useEffect, useState } from 'react';
 
 import { AuthLayout } from '@/components/auth/AuthLayout';
+import { routes } from '@/lib/routes';
 import { useEventSwitcher } from '@/providers/EventProvider';
 
 // A pasted invite can be the raw token or a full /invite/{token} link —
@@ -26,13 +27,13 @@ export default function WelcomePage() {
 
     // Someone who already belongs to an event doesn't belong here.
     useEffect(() => {
-        if (!isLoading && memberships.length > 0) router.replace('/feed');
+        if (!isLoading && memberships.length > 0) router.replace(routes.feed);
     }, [isLoading, memberships, router]);
 
     function handleInviteSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
         const token = extractInviteToken(inviteInput);
-        if (token) router.push(`/invite/${token}`);
+        if (token) router.push(routes.inviteToken(token));
     }
 
     return (
@@ -42,7 +43,7 @@ export default function WelcomePage() {
 
             <button
                 type="button"
-                onClick={() => router.push('/events/new')}
+                onClick={() => router.push(routes.events.new)}
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
             >
                 <CalendarPlus className="w-4 h-4" />

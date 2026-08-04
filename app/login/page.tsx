@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAcceptEventInvitation } from '@/hooks/useEventInvitations';
 import { getErrorMessage } from '@/lib/api/errors';
 import { joinEventAfterAuth } from '@/lib/invite/joinAfterAuth';
+import { routes } from '@/lib/routes';
 
 export default function LoginPage() {
     const t = useTranslations('LoginPage');
@@ -43,7 +44,7 @@ export default function LoginPage() {
                 }
             }
 
-            router.push('/feed');
+            router.push(routes.feed);
         } catch (err) {
             setError(getErrorMessage(err));
         } finally {
@@ -120,7 +121,7 @@ export default function LoginPage() {
 
             <p className="text-xs text-center text-ink-muted mt-6">
                 {t('noAccount')}{' '}
-                <Link href={inviteToken ? `/register?invite=${inviteToken}` : '/register'} className="font-semibold text-ink hover:underline">
+                <Link href={inviteToken ? routes.auth.register({ invite: inviteToken }) : routes.register} className="font-semibold text-ink hover:underline">
                     {t('createAccountLink')}
                 </Link>
             </p>

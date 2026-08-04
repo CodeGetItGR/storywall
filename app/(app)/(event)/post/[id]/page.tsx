@@ -6,6 +6,7 @@ import { use, useEffect } from 'react';
 
 import { usePost } from '@/hooks';
 import { ApiError } from '@/lib/api/client';
+import { routes } from '@/lib/routes';
 
 export default function PostRedirectPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
@@ -14,7 +15,7 @@ export default function PostRedirectPage({ params }: { params: Promise<{ id: str
     const { data: post, error } = usePost(id);
 
     useEffect(() => {
-        if (post) router.replace(`/feed/${post.eventId}?post=${post.id}`);
+        if (post) router.replace(routes.post.feedWithPost(post.eventId, post.id));
     }, [post, router]);
 
     if (error) {

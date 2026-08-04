@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import Avatar from '@/components/ui/avatar';
 import type { EventMemberResponseDto } from '@/lib/api/types';
 import type { StoryGroup } from '@/lib/stories';
+import { routes } from '@/lib/routes';
 import { avatarColorFromId, cn, initialsFromName } from '@/lib/utils';
 import { useComposer } from '@/providers/ComposerProvider';
 
@@ -46,7 +47,7 @@ export function StoryAvatar({ group, member, isCurrentUser }: StoryAvatarProps) 
 
     if (!isCurrentUser) {
         return (
-            <Link href={`/story/${firstStoryId}`} className="flex flex-col items-center gap-2 shrink-0 group" aria-label={t('userStory', { name: member.displayName })}>
+            <Link href={routes.story(firstStoryId)} className="flex flex-col items-center gap-2 shrink-0 group" aria-label={t('userStory', { name: member.displayName })}>
                 {ring}
                 {label}
             </Link>
@@ -56,7 +57,7 @@ export function StoryAvatar({ group, member, isCurrentUser }: StoryAvatarProps) 
     return (
         <div className="flex flex-col items-center gap-2 shrink-0">
             <div className="relative">
-                <Link href={`/story/${firstStoryId}`} aria-label={t('yourStory')}>
+                <Link href={routes.story(firstStoryId)} aria-label={t('yourStory')}>
                     {ring}
                 </Link>
                 <button

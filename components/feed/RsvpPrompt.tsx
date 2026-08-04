@@ -2,8 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import {useCallback} from "react";
+import { useCallback } from 'react';
 
+import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
 export function RsvpPrompt({ deadline, className }: { deadline: string | null; className?: string }) {
@@ -19,14 +20,19 @@ export function RsvpPrompt({ deadline, className }: { deadline: string | null; c
           }).format(new Date(deadline))
         : null;
 
-    const go = useCallback((attending: 'attending' | 'not-attending') => {
-        router.push(`/tools/rsvp/submit?attending=${attending}`);
-    }, [router]);
+    const go = useCallback(
+        (attending: 'attending' | 'not-attending') => {
+            router.push(routes.auth.rsvpSubmit(attending));
+        },
+        [router]
+    );
 
-    const handleClick = useCallback((status: 'attending' | 'not-attending') => () => {
-        go(status);
-    }
-    , [go]);
+    const handleClick = useCallback(
+        (status: 'attending' | 'not-attending') => () => {
+            go(status);
+        },
+        [go]
+    );
 
     return (
         <div className={cn('flex items-center justify-between gap-3 rounded-2xl border-2 border-primary/25 bg-card px-4 py-3', className)}>

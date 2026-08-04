@@ -15,7 +15,15 @@ export function InviteLayout({ coverImageSrc, coverImageAlt, eventTitle, eventSu
     return (
         <div className="min-h-screen flex flex-col lg:flex-row lg:h-screen bg-background">
             <div className="relative w-full h-64 sm:h-80 lg:h-screen lg:w-1/2 shrink-0">
-                <Image src={coverImageSrc} alt={coverImageAlt} fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" priority />
+                <Image
+                    src={coverImageSrc}
+                    alt={coverImageAlt}
+                    fill
+                    sizes="(min-width: 1024px) 50vw, 100vw"
+                    className="object-cover"
+                    priority
+                    loading="eager"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-12 xl:p-16">
                     <h1 className="text-2xl lg:text-4xl xl:text-5xl font-bold text-white text-balance">{eventTitle}</h1>

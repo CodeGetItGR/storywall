@@ -10,6 +10,7 @@ import { StoryCaptionBar, StoryHeader, StoryProgressBar, StoryViewersModal } fro
 import { useDeleteStory, useEventMembers, useEventStories, useMarkStoryViewed, useMediaItem, useStory, useStoryViews } from '@/hooks';
 import { ApiError } from '@/lib/api/client';
 import { groupStoriesByAuthor } from '@/lib/stories';
+import { routes } from '@/lib/routes';
 import { useActiveMember, useIsHost } from '@/providers/EventProvider';
 
 export default function StoryPage({ params }: { params: Promise<{ id: string }> }) {
@@ -77,7 +78,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
     }, [id]);
 
     if (storyError instanceof ApiError && storyError.status === 404) {
-        router.replace('/feed');
+        router.replace(routes.feed);
         return null;
     }
 
@@ -86,26 +87,26 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
     function goNext() {
         if (!group) return;
         if (storyIndex < group.stories.length - 1) {
-            router.replace(`/story/${group.stories[storyIndex + 1].id}`);
+            router.replace(routes.story(group.stories[storyIndex + 1].id));
             return;
         }
         const nextGroup = groups[groupIndex + 1];
         if (nextGroup) {
-            router.replace(`/story/${nextGroup.stories[0].id}`);
+            router.replace(routes.story(nextGroup.stories[0].id));
         } else {
-            router.replace('/feed');
+            router.replace(routes.feed);
         }
     }
 
     function goPrev() {
         if (!group) return;
         if (storyIndex > 0) {
-            router.replace(`/story/${group.stories[storyIndex - 1].id}`);
+            router.replace(routes.story(group.stories[storyIndex - 1].id));
             return;
         }
         const prevGroup = groups[groupIndex - 1];
         if (prevGroup) {
-            router.replace(`/story/${prevGroup.stories[prevGroup.stories.length - 1].id}`);
+            router.replace(routes.story(prevGroup.stories[prevGroup.stories.length - 1].id));
         }
     }
 

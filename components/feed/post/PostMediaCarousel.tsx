@@ -4,7 +4,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import {useCallback, useEffect, useState} from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import type { MediaResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
@@ -50,19 +50,26 @@ export function PostMediaCarousel({ media, initialIndex, onIndexChange, alt, cla
 
     const scrollPrev = useCallback(() => {
         emblaApi?.scrollPrev();
-    },[emblaApi])
+    }, [emblaApi]);
 
     const scrollNext = useCallback(() => {
         emblaApi?.scrollNext();
-    },[emblaApi])
+    }, [emblaApi]);
 
     return (
         <div className={cn('relative w-full h-full overflow-hidden', className)}>
             <div className="w-full h-full overflow-hidden" ref={emblaRef}>
                 <div className="flex h-full">
-                    {media.map((item) => (
+                    {media.map((item, index) => (
                         <div key={item.id} className="relative shrink-0 grow-0 basis-full h-full">
-                            <Image src={item.mediaUrl} alt={alt} fill className="object-contain" sizes="100vw" />
+                            <Image
+                                src={item.mediaUrl}
+                                alt={alt}
+                                fill
+                                className="object-contain"
+                                sizes="100vw"
+                                loading={index === currentIndex ? 'eager' : 'lazy'}
+                            />
                         </div>
                     ))}
                 </div>

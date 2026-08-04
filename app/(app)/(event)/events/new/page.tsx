@@ -8,6 +8,7 @@ import React, {useCallback, useState} from 'react';
 import { useCreateEvent } from '@/hooks/useEvent';
 import { getErrorMessage, getFieldErrors } from '@/lib/api/errors';
 import type { EventRequestDto, EventTypeConvention } from '@/lib/api/types';
+import { routes } from '@/lib/routes';
 import { useEventSwitcher } from '@/providers/EventProvider';
 
 const EVENT_TYPES: EventTypeConvention[] = ['WEDDING', 'BAPTISM', 'BIRTHDAY', 'CONFERENCE'];
@@ -48,7 +49,7 @@ export default function CreateEventPage() {
         try {
             const event = await createEvent.mutateAsync(input);
             setActiveEventId(event.id);
-            router.push('/manage');
+            router.push(routes.manage);
         } catch (err) {
             setError(getErrorMessage(err));
         }

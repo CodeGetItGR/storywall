@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 
 import { useEventMembers } from '@/hooks/useEventMembers';
 import { useEventRsvps } from '@/hooks/useRsvps';
+import { routes } from '@/lib/routes';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
 import RsvpTab from '../../manage/RsvpTab';
@@ -29,12 +30,12 @@ export default function RSVPPage() {
         }
 
         if (!eventId) {
-            router.replace('/welcome');
+            router.replace(routes.welcome);
             return;
         }
 
         if (!isHost) {
-            router.replace('/tools/rsvp/submit');
+            router.replace(routes.tools.rsvpSubmit);
         }
     }, [eventId, isContextLoading, isHost, router]);
 
@@ -57,7 +58,7 @@ export default function RSVPPage() {
                     <p className="mt-1 truncate text-xs text-ink-muted">{activeEvent.title}</p>
                 </div>
                 <Link
-                    href="/manage?tab=rsvp"
+                    href={routes.auth.manage({ tab: 'rsvp' })}
                     className="hidden rounded-full bg-surface-muted px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:bg-surface-muted/70 sm:inline-flex"
                 >
                     {t('openDashboard')}

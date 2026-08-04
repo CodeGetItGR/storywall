@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
+import { routes } from '@/lib/routes';
 import { useEventSwitcher } from '@/providers/EventProvider';
 
 // Bare /feed has no event id, so it can't render a feed itself — it exists
@@ -18,10 +19,10 @@ export default function FeedRedirectPage() {
         if (isLoading) return;
         const eventId = activeEvent?.id ?? memberships[0]?.eventId;
         if (!eventId) {
-            router.replace('/welcome');
+            router.replace(routes.welcome);
             return;
         }
-        router.replace(`/feed/${eventId}`);
+        router.replace(routes.post.feed(eventId));
     }, [isLoading, activeEvent, memberships, router]);
 
     return null;

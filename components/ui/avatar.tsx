@@ -39,7 +39,7 @@ export default function Avatar({ src, initials = '?', color = '#ff7a59', size = 
                 aria-label={alt ?? initials}
                 className={cn('relative rounded-full overflow-hidden select-none flex-shrink-0', sizeMap[size], className)}
             >
-                <Image src={src} alt="" fill className="object-cover" sizes={`${sizePx[size]}px`} />
+                <Image src={src} alt="" fill className="object-cover" sizes={`${sizePx[size]}px`} loading="lazy" />
             </div>
         );
     }

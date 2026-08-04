@@ -5,28 +5,35 @@ import { Bell, Home, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import type { ComponentType } from 'react';
 
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import { routes } from '@/lib/routes';
 import { useComposer } from '@/providers/ComposerProvider';
 
 const tabItems = [
-    { href: '/profile', icon: Home, key: 'home' },
-    { href: '/notifications', icon: Bell, key: 'alerts' },
+    { href: routes.profile, icon: '/icons/home.svg', key: 'home' },
+    { href: routes.notifications, icon: '/icons/music.svg', key: 'playlist' },
 ];
 
 interface TabLinkProps {
     href: string;
-    icon: ComponentType<{ className?: string; strokeWidth?: number }>;
+    icon: string;
     label: string;
     active: boolean;
 }
 
-function TabLink({ href, icon: Icon, label, active }: TabLinkProps) {
+function TabLink({ href, icon, label, active }: TabLinkProps) {
     return (
         <Link href={href} className="flex flex-col items-center gap-0.5 px-3 py-1 min-w-12" aria-label={label} aria-current={active ? 'page' : undefined}>
-            <Icon className={cn('w-5 h-5 transition-colors', active ? 'text-primary' : 'text-ink-faint')} strokeWidth={active ? 2.5 : 1.8} />
-            <span className={cn('text-[10px] font-medium transition-colors', active ? 'text-primary' : 'text-ink-faint')}>{label}</span>
+            <Image
+                src={icon}
+                alt={label}
+                width={20}
+                height={20}
+                className={cn('w-5 h-5 transition-colors', active ? 'text-primary' : 'text-ink-faint')}
+                loading="eager"
+            />
         </Link>
     );
 }

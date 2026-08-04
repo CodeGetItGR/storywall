@@ -40,7 +40,8 @@
         "viewPhoto": "View photo by {name}",
         "viewPhotoAt": "Photo {index} of {count} by {name}",
         "unknownAuthor": "Unknown",
-        "pinned": "Pinned"
+        "pinned": "Pinned",
+        "hostPost": "Host post"
     },
     "DesktopNavRail": {
         "mainNavigation": "Main navigation",
@@ -63,7 +64,7 @@
         },
         "items": {
             "home": "Home",
-            "tools": "Tools",
+            "playlist": "Playlist",
             "post": "Post",
             "alerts": "Notifications"
         }
@@ -529,7 +530,6 @@
         "previewLabel": "Preview",
         "openSpotify": "Open Spotify",
         "openYouTube": "Open YouTube"
-
     },
     "QuizPage": {
         "backToTools": "Back to tools",

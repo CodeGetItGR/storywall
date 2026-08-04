@@ -9,6 +9,7 @@ import { createContext, type ReactNode, useContext, useEffect, useRef, useState 
 import Avatar from '@/components/ui/avatar';
 import { Modal } from '@/components/ui/modal';
 import { useCreatePost, useCreateStory, useUploadMedia, useUploadMediaBatch } from '@/hooks';
+import { routes } from '@/lib/routes';
 import { initialsFromName } from '@/lib/utils';
 import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
 
@@ -272,7 +273,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
                 authorMemberId: activeMember.id,
                 mediaId: media.id,
             });
-            router.push(`/story/${story.id}`);
+            router.push(routes.story(story.id));
         } catch {
             setStoryError(t('storyUploadFailed'));
         }

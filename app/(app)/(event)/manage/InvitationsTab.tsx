@@ -7,6 +7,7 @@ import React, {useCallback, useState} from 'react';
 import { useCreateEventInvitation, useDeleteEventInvitation, useUpdateEventInvitation } from '@/hooks/useEventInvitations';
 import { getErrorMessage, getFieldErrors } from '@/lib/api/errors';
 import type { EventInvitationPatchDto, EventInvitationRequestDto, EventInvitationResponseDto } from '@/lib/api/types';
+import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
 export default function InvitationsTab({
@@ -189,7 +190,7 @@ function InvitationRow({
 
     const guestName = [invitation.firstName, invitation.lastName].filter(Boolean).join(' ');
     const isUsed = Boolean(invitation.usedAt);
-    const inviteLink = typeof window !== 'undefined' ? `${window.location.origin}/invite/${invitation.inviteToken}` : '';
+    const inviteLink = typeof window !== 'undefined' ? `${window.location.origin}${routes.inviteToken(invitation.inviteToken)}` : '';
 
     async function handleCopy() {
         await navigator.clipboard.writeText(inviteLink);

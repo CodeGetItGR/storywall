@@ -11,6 +11,7 @@ import Avatar from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEventMembers } from '@/hooks';
 import type { EventDetailResponseDto, EventMemberResponseDto } from '@/lib/api/types';
+import { routes } from '@/lib/routes';
 import { avatarColorFromId, cn, initialsFromName } from '@/lib/utils';
 
 interface EventListItemProps {
@@ -83,7 +84,7 @@ export function EventListItem({ eventId, member, event, isLoading }: EventListIt
 
     return (
         <Link
-            href={`/feed/${eventId}`}
+            href={routes.post.feed(eventId)}
             className="group block overflow-hidden rounded-2xl bg-card shadow-[0_10px_30px_rgba(36,31,26,0.08)] transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(36,31,26,0.12)] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
         >
             <div className="relative aspect-video w-full overflow-hidden bg-surface-muted">
@@ -94,6 +95,7 @@ export function EventListItem({ eventId, member, event, isLoading }: EventListIt
                         fill
                         className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                         sizes="(max-width: 768px) 100vw, 672px"
+                        loading="lazy"
                     />
                 ) : (
                     <div className="absolute inset-0 flex items-center justify-center bg-gradient-brand">

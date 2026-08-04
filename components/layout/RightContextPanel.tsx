@@ -4,13 +4,14 @@ import { LayoutDashboard, MessageSquareText, Settings2, Ticket } from 'lucide-re
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { routes } from '@/lib/routes';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
 const hostLinks = [
-    { key: 'manage', href: '/manage', icon: LayoutDashboard },
-    { key: 'rsvps', href: '/tools/rsvp', icon: Ticket },
-    { key: 'invitations', href: '/manage?tab=invitations', icon: MessageSquareText },
-    { key: 'settings', href: '/manage?tab=settings', icon: Settings2 },
+    { key: 'manage', href: routes.manage, icon: LayoutDashboard },
+    { key: 'rsvps', href: routes.tools.rsvp, icon: Ticket },
+    { key: 'invitations', href: routes.auth.manage({ tab: 'invitations' }), icon: MessageSquareText },
+    { key: 'settings', href: routes.auth.manage({ tab: 'settings' }), icon: Settings2 },
 ] as const;
 
 export function RightContextPanel() {

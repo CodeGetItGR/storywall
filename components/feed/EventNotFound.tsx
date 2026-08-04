@@ -2,6 +2,8 @@ import { HeartCrack } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import { routes } from '@/lib/routes';
+
 // Shown in place of the feed when /feed/[eventId] doesn't resolve to a real
 // event — bad link, typo, or an event that's since been removed. Kept warm
 // and non-technical on purpose; the person hitting this is a wedding guest,
@@ -17,7 +19,7 @@ export function EventNotFound() {
             <h1 className="text-2xl lg:text-3xl font-bold text-ink mb-3 text-balance">{t('title')}</h1>
             <p className="text-sm text-ink-muted max-w-sm mb-8 leading-relaxed">{t('description')}</p>
             <Link
-                href="/feed"
+                href={routes.feed}
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
             >
                 {t('cta')}

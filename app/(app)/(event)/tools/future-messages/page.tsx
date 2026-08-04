@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 
 import Avatar from '@/components/ui/avatar';
 import { CURRENT_USER_ID, getUser } from '@/lib/mock-data';
+import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
 type OpenOn = '1-year' | '5-years' | '10-years' | '25-years';
@@ -73,7 +74,7 @@ export default function FutureMessagesPage() {
             {/* Header */}
             <div className="flex items-center gap-3 py-4 mb-2">
                 <Link
-                    href="/tools"
+                    href={routes.tools.root}
                     aria-label={t('backToTools')}
                     className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
                 >

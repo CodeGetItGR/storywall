@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { quizQuestions } from '@/lib/mock-data';
+import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
 type Phase = 'quiz' | 'results';
@@ -57,7 +58,7 @@ export default function QuizPage() {
             <div className="max-w-2xl mx-auto px-4 pb-24 lg:pb-8">
                 <div className="flex items-center gap-3 py-4 mb-2">
                     <Link
-                        href="/tools"
+                        href={routes.tools.root}
                         aria-label={t('backToTools')}
                         className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
                     >
@@ -123,7 +124,7 @@ export default function QuizPage() {
             {/* Header */}
             <div className="flex items-center gap-3 py-4 mb-2">
                 <Link
-                    href="/tools"
+                    href={routes.tools.root}
                     aria-label={t('backToTools')}
                     className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
                 >

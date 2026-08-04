@@ -7,12 +7,13 @@ import { useTranslations } from 'next-intl';
 
 import Avatar from '@/components/ui/avatar';
 import { CURRENT_USER_ID, getUser } from '@/lib/mock-data';
+import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 import { useComposer } from '@/providers/ComposerProvider';
 
 const navItems = [
-    { href: '/profile', icon: Home, key: 'home', isCenter: false },
-    { href: '/notifications', icon: Bell, key: 'notifications', isCenter: false },
+    { href: routes.profile, icon: Home, key: 'home', isCenter: false },
+    { href: routes.notifications, icon: Bell, key: 'notifications', isCenter: false },
 ];
 
 export function DesktopNavRail() {
@@ -40,7 +41,7 @@ export function DesktopNavRail() {
             {/* Nav links */}
             <div className="flex-1 px-3 space-y-0.5 overflow-y-auto no-scrollbar">
                 {navItems.map(({ href, icon: Icon, key }) => {
-                    const active = pathname === href || (href !== '/feed' && pathname.startsWith(href));
+                    const active = pathname === href || (href !== routes.feed && pathname.startsWith(href));
                     return (
                         <Link
                             key={href}

@@ -8,6 +8,7 @@ import { useCreateRsvp, useRsvp, useUpdateRsvp } from '@/hooks/useRsvps';
 import { ApiError } from '@/lib/api/client';
 import { AttendanceStatus, RsvpPlusOnes } from '@/lib/api/types';
 import { rsvpStorageKey } from '@/lib/storageKeys';
+import { routes } from '@/lib/routes';
 import { useActiveEvent, useActiveMember, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
 type AttendingStatus = 'attending' | 'not-attending';
@@ -71,7 +72,7 @@ export default function RSVPSubmitPage() {
 
     useEffect(() => {
         if (!isContextLoading && isHost) {
-            router.replace('/tools/rsvp');
+            router.replace(routes.tools.rsvp);
         }
     }, [isContextLoading, isHost, router]);
 
@@ -95,7 +96,7 @@ export default function RSVPSubmitPage() {
     }, [router]);
 
     const handleBackToWall = useCallback(() => {
-        router.push('/feed');
+        router.push(routes.feed);
     }, [router]);
 
     const handleAttend = useCallback(() => {

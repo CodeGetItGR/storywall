@@ -11,6 +11,7 @@ import { useEventMembers } from '@/hooks/useEventMembers';
 import { useEventRsvps } from '@/hooks/useRsvps';
 import { cn } from '@/lib/utils';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
+import { routes } from '@/lib/routes';
 
 import InvitationsTab from './InvitationsTab';
 import OverviewTab from './OverviewTab';
@@ -51,7 +52,7 @@ export default function ManagePage() {
         if (nextTab === 'overview') nextParams.delete('tab');
         else nextParams.set('tab', nextTab);
         const query = nextParams.toString();
-        router.replace(query ? `/manage?${query}` : '/manage');
+        router.replace(query ? `${routes.manage}?${query}` : routes.manage);
     }
 
     // Date.now() is impure, so this can't be computed directly during render
@@ -69,10 +70,10 @@ export default function ManagePage() {
     useEffect(() => {
         if (isContextLoading) return;
         if (!eventId) {
-            router.replace('/welcome');
+            router.replace(routes.welcome);
             return;
         }
-        if (!isHost) router.replace(`/feed/${eventId}`);
+        if (!isHost) router.replace(routes.post.feed(eventId));
     }, [isContextLoading, eventId, isHost, router]);
 
     if (isContextLoading || !activeEvent || !isHost) {
@@ -104,7 +105,7 @@ export default function ManagePage() {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                     <Link
-                        href="/events/new"
+                        href={routes.events.new}
                         className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-muted text-ink text-xs font-semibold hover:bg-surface-muted/70 transition-colors"
                     >
                         <CalendarPlus className="w-3.5 h-3.5" />

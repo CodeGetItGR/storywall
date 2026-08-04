@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
 import type { ModuleKeyConvention } from '@/lib/api/types';
+import { routes } from '@/lib/routes';
 import { useActiveEvent, useIsHost } from '@/providers/EventProvider';
 
 type QuickAccessItem = {
@@ -34,14 +35,14 @@ const quickAccessItems: QuickAccessItem[] = [
     },
     {
         moduleKey: 'rsvp',
-        href: '/tools/rsvp/submit',
+        href: routes.tools.rsvpSubmit,
         icon: Ticket,
         visible: false,
         key: 'rsvp',
     },
     {
         moduleKey: 'playlist',
-        href: '/tools/playlist',
+        href: routes.tools.playlist,
         icon: Music4,
         visible: true,
         key: 'playlist',
@@ -66,9 +67,7 @@ export function QuickAccessBar() {
                     return null;
                 }
 
-                return item.moduleKey === 'rsvp'
-                    ? { ...item, href: isHost ? '/tools/rsvp' : '/tools/rsvp/submit' }
-                    : item;
+                return item.moduleKey === 'rsvp' ? { ...item, href: isHost ? routes.tools.rsvp : routes.tools.rsvpSubmit } : item;
             })
             .filter((item): item is QuickAccessItem => !!item);
     }, [activeEvent, isHost]);
