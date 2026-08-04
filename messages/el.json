@@ -345,6 +345,10 @@
             "declined": "Απορριφθέντα",
             "noResponse": "Χωρίς απάντηση"
         },
+        "rsvpSeats": "Θέσεις που έχουν κλειστεί",
+        "rsvpInsights": "{responded} απάντησαν · {pending} σε εκκρεμότητα · {seats} θέσεις κλεισμένες · {notes} σημειώσεις",
+        "rsvpResponded": "απάντησαν",
+        "rsvpAwaiting": "Αναμενόμενη απάντηση",
         "seeAll": "Δείτε όλα",
         "rsvpSummary": "{total} καλεσμένοι · {attending} θα παρευρεθούν",
         "rsvpStatus": {

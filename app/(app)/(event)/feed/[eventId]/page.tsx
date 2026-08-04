@@ -1,19 +1,26 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { use, useEffect, useMemo, useRef } from 'react';
 
-import { Banner, ComposerCard, EventInfo, EventNotFound, FeedPageSkeleton, Header, PostCard, PostModal, QuickAccessBar, RsvpPrompt, StoriesRow } from '@/components/feed';
+import { Banner, ComposerCard, EventDescription, EventInfo, EventNotFound, FeedPageSkeleton, Header, PostCard, PostModal, QuickAccessBar, RsvpPrompt, StoriesRow } from '@/components/feed';
 import { useEventPosts } from '@/hooks';
 import { useEvent } from '@/hooks/useEvent';
+import { useRsvp } from '@/hooks/useRsvps';
 import { ApiError } from '@/lib/api/client';
 import { ModuleKeyConvention } from '@/lib/api/types';
-import { useEventSwitcher } from '@/providers/EventProvider';
+import { rsvpStorageKey } from '@/lib/storageKeys';
+import { useActiveMember, useEventSwitcher, useIsHost } from '@/providers/EventProvider';
 
 export default function FeedPage({ params }: { params: Promise<{ eventId: string }> }) {
     const { eventId } = use(params);
     const t = useTranslations('FeedPage');
+    const router = useRouter();
     const loadMoreRef = useRef<HTMLDivElement>(null);
+    const activeMember = useActiveMember();
+    const isHost = useIsHost();
+    const memberId = activeMember?.id ?? null;
 
     const { data: event, error, isLoading } = useEvent(eventId);
     const { setActiveEventId } = useEventSwitcher();
@@ -39,6 +46,26 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
     useEffect(() => {
         if (event) setActiveEventId(eventId);
     }, [event, eventId, setActiveEventId]);
+
+    const storedRsvpId = useMemo(() => {
+        if (!memberId || typeof window === 'undefined') {
+            return undefined;
+        }
+
+        return window.localStorage.getItem(rsvpStorageKey(memberId));
+    }, [memberId]);
+
+    const { error: submittedRsvpError } = useRsvp(storedRsvpId ?? null);
+    const isStaleRsvp = submittedRsvpError instanceof ApiError && submittedRsvpError.status === 404;
+
+    useEffect(() => {
+        if (!memberId || !isStaleRsvp || !storedRsvpId) {
+            return;
+        }
+
+        window.localStorage.removeItem(rsvpStorageKey(memberId));
+        router.refresh();
+    }, [isStaleRsvp, memberId, router, storedRsvpId]);
 
     const moduleFlags = useMemo<Record<ModuleKeyConvention, boolean>>(
         () =>
@@ -86,14 +113,10 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
             {/* Guest quick access bar. */}
             <QuickAccessBar />
 
-            {/* Event Description */}
-            {event.description && (
-                <section className={'alegreya-light text-lg p-3 text-center'}>
-                    <p>{event.description}</p>
-                </section>
-            )}
-            {moduleFlags.rsvp && (
-                <section className={'mt-3 px-4'}>
+            {/* Event description */}
+            {event.description && <EventDescription eventId={event.id} description={event.description} />}
+            {moduleFlags.rsvp && !isHost && storedRsvpId === null && (
+                <section className="mt-3 px-4">
                     <RsvpPrompt deadline={event?.schedule.rsvpDeadline ?? null} />
                 </section>
             )}

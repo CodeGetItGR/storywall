@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 
 const tools = [
     {
-        href: '/tools/rsvp',
+        href: '/tools/rsvp/submit',
         icon: Users,
         key: 'rsvp',
         color: 'bg-emerald-50 text-emerald-600',

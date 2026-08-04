@@ -1,5 +1,6 @@
 export * from './Banner';
 export * from './ComposerCard';
+export * from './EventDescription';
 export * from './EventInfo';
 export * from './EventNotFound';
 export * from './FeedPageSkeleton';

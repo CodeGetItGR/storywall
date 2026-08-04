@@ -3,7 +3,7 @@
 import { Check, ImagePlus, Loader2, X } from 'lucide-react';
 import Image from 'next/image';
 import type { useTranslations } from 'next-intl';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { useUpdateEvent } from '@/hooks/useEvent';
 import { useUploadMedia } from '@/hooks/useMedia';
@@ -48,20 +48,38 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
     const [pendingCoverMediaId, setPendingCoverMediaId] = useState<string | null>(null);
     const [saved, setSaved] = useState(false);
     const fileRef = useRef<HTMLInputElement>(null);
+    const coverObjectUrlRef = useRef<string | null>(null);
 
     const updateEvent = useUpdateEvent(event.id);
     const uploadMedia = useUploadMedia();
     const fieldErrors = getFieldErrors(updateEvent.error);
 
+    useEffect(() => {
+        return () => {
+            if (coverObjectUrlRef.current) {
+                URL.revokeObjectURL(coverObjectUrlRef.current);
+            }
+        };
+    }, []);
+
     function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
         if (!file) return;
-        setCoverPreview(URL.createObjectURL(file));
+        if (coverObjectUrlRef.current) {
+            URL.revokeObjectURL(coverObjectUrlRef.current);
+        }
+        const nextPreviewUrl = URL.createObjectURL(file);
+        coverObjectUrlRef.current = nextPreviewUrl;
+        setCoverPreview(nextPreviewUrl);
         setSaved(false);
         uploadMedia.mutate({ eventId: event.id, file, mediaType: 'IMAGE' }, { onSuccess: (media) => setPendingCoverMediaId(media.id) });
     }
 
     function handleRemovePendingCover() {
+        if (coverObjectUrlRef.current) {
+            URL.revokeObjectURL(coverObjectUrlRef.current);
+            coverObjectUrlRef.current = null;
+        }
         setPendingCoverMediaId(null);
         setCoverPreview(event.coverMedia?.mediaUrl ?? null);
     }

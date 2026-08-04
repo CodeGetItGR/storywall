@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
 import type { ModuleKeyConvention } from '@/lib/api/types';
-import { useActiveEvent } from '@/providers/EventProvider';
+import { useActiveEvent, useIsHost } from '@/providers/EventProvider';
 
 type QuickAccessItem = {
     moduleKey: ModuleKeyConvention;
@@ -34,7 +34,7 @@ const quickAccessItems: QuickAccessItem[] = [
     },
     {
         moduleKey: 'rsvp',
-        href: '/tools/rsvp',
+        href: '/tools/rsvp/submit',
         icon: Ticket,
         visible: false,
         key: 'rsvp',
@@ -51,6 +51,7 @@ const quickAccessItems: QuickAccessItem[] = [
 export function QuickAccessBar() {
     const t = useTranslations('FeedQuickAccessBar');
     const activeEvent = useActiveEvent();
+    const isHost = useIsHost();
 
     const enabledItems = useMemo(() => {
         if (!activeEvent) return [];
@@ -59,9 +60,18 @@ export function QuickAccessBar() {
 
         return activeEvent.modules
             .filter((module) => module.isEnabled)
-            .map((module) => quickAccessItems.find((item) => item.moduleKey === module.moduleKey && item.visible))
-            .filter((item): item is QuickAccessItem => !!item && enabledModules.has(item.moduleKey));
-    }, [activeEvent]);
+            .map((module) => {
+                const item = quickAccessItems.find((entry) => entry.moduleKey === module.moduleKey && entry.visible);
+                if (!item || !enabledModules.has(item.moduleKey)) {
+                    return null;
+                }
+
+                return item.moduleKey === 'rsvp'
+                    ? { ...item, href: isHost ? '/tools/rsvp' : '/tools/rsvp/submit' }
+                    : item;
+            })
+            .filter((item): item is QuickAccessItem => !!item);
+    }, [activeEvent, isHost]);
 
     if (enabledItems.length === 0) {
         return null;

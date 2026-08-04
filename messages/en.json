@@ -317,6 +317,8 @@
     "ManagePage": {
         "title": "Host Dashboard",
         "hostView": "Host View",
+        "openDashboard": "Open dashboard",
+        "rsvpOverview": "RSVP overview",
         "newEvent": "New event",
         "tabs": {
             "overview": "Overview",
@@ -345,6 +347,10 @@
             "declined": "Declined",
             "noResponse": "No response"
         },
+        "rsvpSeats": "Seats claimed",
+        "rsvpInsights": "{responded} responded · {pending} pending · {seats} seats claimed · {notes} notes",
+        "rsvpResponded": "responded",
+        "rsvpAwaiting": "Awaiting reply",
         "seeAll": "See all",
         "rsvpSummary": "{total} guests · {attending} attending",
         "rsvpStatus": {

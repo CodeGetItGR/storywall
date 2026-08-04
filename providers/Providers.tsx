@@ -1,7 +1,7 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import dynamic from 'next/dynamic';
 import { useState } from 'react';
 
 import { ApiError } from '@/lib/api/client';
@@ -9,6 +9,10 @@ import { AuthProvider } from '@/providers/AuthProvider';
 import { ComposerProvider } from '@/providers/ComposerProvider';
 import { EventProvider } from '@/providers/EventProvider';
 import { ModalProvider } from '@/providers/ModalProvider';
+
+const ReactQueryDevtools = dynamic(() => import('@tanstack/react-query-devtools').then((mod) => mod.ReactQueryDevtools), {
+    ssr: false,
+});
 
 export function Providers({ children }: { children: React.ReactNode }) {
     const [queryClient] = useState(
@@ -36,7 +40,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
                     </ComposerProvider>
                 </EventProvider>
             </AuthProvider>
-            <ReactQueryDevtools initialIsOpen={false} />
+            {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
         </QueryClientProvider>
     );
 }

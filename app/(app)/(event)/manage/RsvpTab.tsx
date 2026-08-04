@@ -1,7 +1,54 @@
-import { CheckCircle2, Clock, HelpCircle, XCircle } from 'lucide-react';
+import { CheckCircle2, Clock, HelpCircle, Users } from 'lucide-react';
 import type { useTranslations } from 'next-intl';
+import type { ElementType } from 'react';
+import { useMemo } from 'react';
 
 import { cn } from '@/lib/utils';
+
+type Member = { id: string; displayName: string; role: string };
+type Rsvp = {
+    eventMemberId: string;
+    attendanceStatus: 'ATTENDING' | 'DECLINED' | 'MAYBE';
+    notes: string | null;
+    adultCount: number;
+    childCount: number;
+};
+
+const statusOrder: Record<'ATTENDING' | 'MAYBE' | 'DECLINED' | 'NO_RESPONSE', number> = {
+    ATTENDING: 0,
+    MAYBE: 1,
+    DECLINED: 2,
+    NO_RESPONSE: 3,
+};
+
+const statusTone: Record<'ATTENDING' | 'MAYBE' | 'DECLINED' | 'NO_RESPONSE', string> = {
+    ATTENDING: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+    MAYBE: 'bg-amber-50 text-amber-700 border-amber-100',
+    DECLINED: 'bg-rose-50 text-rose-700 border-rose-100',
+    NO_RESPONSE: 'bg-surface-muted text-ink-muted border-border',
+};
+
+function SummaryCard({
+    label,
+    value,
+    icon: Icon,
+}: {
+    label: string;
+    value: number;
+    icon: ElementType;
+}) {
+    return (
+        <div className="rounded-2xl border border-border/70 bg-card px-3 py-3 shadow-[0_8px_20px_rgba(36,31,26,0.04)]">
+            <div className="flex items-center justify-between gap-2">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-faint">{label}</p>
+                <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-surface-muted text-ink-muted">
+                    <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                </span>
+            </div>
+            <p className="mt-2 text-2xl font-bold leading-none tracking-tight text-ink tabular-nums">{value}</p>
+        </div>
+    );
+}
 
 export default function RsvpTab({
     t,
@@ -9,62 +56,113 @@ export default function RsvpTab({
     rsvps,
 }: {
     t: ReturnType<typeof useTranslations>;
-    members: { id: string; displayName: string; role: string }[];
-    rsvps: {
-        eventMemberId: string;
-        attendanceStatus: 'ATTENDING' | 'DECLINED' | 'MAYBE';
-        notes: string | null;
-        adultCount: number;
-        childCount: number;
-    }[];
+    members: Member[];
+    rsvps: Rsvp[];
 }) {
-    const rsvpByMember = new Map(rsvps.map((r) => [r.eventMemberId, r]));
-    const guests = members.filter((m) => m.role !== 'HOST');
+    const rsvpByMember = useMemo(() => new Map(rsvps.map((rsvp) => [rsvp.eventMemberId, rsvp])), [rsvps]);
 
-    const attending = guests.filter((m) => rsvpByMember.get(m.id)?.attendanceStatus === 'ATTENDING').length;
+    const guests = useMemo(
+        () => members.filter((member) => member.role !== 'HOST'),
+        [members]
+    );
+
+    const sortedGuests = useMemo(
+        () =>
+            [...guests].sort((left, right) => {
+                const leftStatus = rsvpByMember.get(left.id)?.attendanceStatus ?? 'NO_RESPONSE';
+                const rightStatus = rsvpByMember.get(right.id)?.attendanceStatus ?? 'NO_RESPONSE';
+                const orderDelta = statusOrder[leftStatus] - statusOrder[rightStatus];
+                return orderDelta !== 0 ? orderDelta : left.displayName.localeCompare(right.displayName);
+            }),
+        [guests, rsvpByMember]
+    );
+
+    const attending = guests.filter((member) => rsvpByMember.get(member.id)?.attendanceStatus === 'ATTENDING').length;
+    const pending = guests.filter((member) => !rsvpByMember.get(member.id)).length;
+    const maybe = guests.filter((member) => rsvpByMember.get(member.id)?.attendanceStatus === 'MAYBE').length;
+    const declined = guests.filter((member) => rsvpByMember.get(member.id)?.attendanceStatus === 'DECLINED').length;
+    const responded = guests.length - pending;
+    const seatsClaimed = rsvps.reduce((sum, rsvp) => sum + rsvp.adultCount + rsvp.childCount, 0);
+    const notesCount = rsvps.filter((rsvp) => Boolean(rsvp.notes?.trim())).length;
 
     return (
-        <div className="px-4 flex flex-col">
-            <p className="text-xs text-ink-muted mb-3">{t('rsvpSummary', { total: guests.length, attending })}</p>
-            <div className="flex flex-col divide-y divide-border">
-                {guests.map((member) => {
-                    const rsvp = rsvpByMember.get(member.id);
-                    const status = rsvp?.attendanceStatus ?? null;
-                    const partySize = rsvp ? rsvp.adultCount + rsvp.childCount : 0;
-                    return (
-                        <div key={member.id} className="py-4 flex items-start gap-3 first:pt-0">
-                            <div
-                                className={cn(
-                                    'w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0',
-                                    status === 'ATTENDING'
-                                        ? 'bg-emerald-50'
-                                        : status === 'MAYBE'
-                                          ? 'bg-amber-50'
-                                          : status === 'DECLINED'
-                                            ? 'bg-rose-50'
-                                            : 'bg-surface-muted'
-                                )}
-                            >
-                                {status === 'ATTENDING' && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
-                                {status === 'MAYBE' && <HelpCircle className="w-5 h-5 text-amber-500" />}
-                                {status === 'DECLINED' && <XCircle className="w-5 h-5 text-rose-500" />}
-                                {!status && <Clock className="w-5 h-5 text-ink-faint" />}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-baseline gap-2">
-                                    <p className="text-sm font-semibold text-ink">{member.displayName}</p>
-                                    {partySize > 1 && (
-                                        <span className="text-xs text-ink-muted bg-surface-muted px-1.5 py-0.5 rounded-full">+{partySize - 1}</span>
-                                    )}
-                                </div>
-                                <p className="text-xs text-ink-muted mt-0.5">{status ? t(`rsvpStatus.${status}`) : t('rsvpStatus.NO_RESPONSE')}</p>
-                                {rsvp?.notes && <p className="text-xs text-ink-muted mt-1 italic line-clamp-2">&ldquo;{rsvp.notes}&rdquo;</p>}
-                            </div>
-                        </div>
-                    );
-                })}
+        <div className="px-4 flex flex-col gap-4">
+            <p className="text-xs text-ink-muted">{t('rsvpSummary', { total: guests.length, attending })}</p>
+
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                <SummaryCard label={t('stats.totalGuests.label')} value={guests.length} icon={Users} />
+                <SummaryCard label={t('rsvpBreakdown.attending')} value={attending} icon={CheckCircle2} />
+                <SummaryCard label={t('rsvpBreakdown.noResponse')} value={pending} icon={Clock} />
+                <SummaryCard label={t('rsvpSeats')} value={seatsClaimed} icon={HelpCircle} />
             </div>
-            {guests.length === 0 && <p className="text-sm text-ink-muted text-center py-10">{t('noGuestsYet')}</p>}
+
+            <div className="flex flex-wrap gap-2 text-[11px] font-medium text-ink-muted">
+                <span className="rounded-full bg-surface-muted px-2.5 py-1">
+                    {t('rsvpInsights', { responded, pending, seats: seatsClaimed, notes: notesCount })}
+                </span>
+                <span className="rounded-full bg-surface-muted px-2.5 py-1">
+                    {t('rsvpBreakdown.maybe')}: {maybe}
+                </span>
+                <span className="rounded-full bg-surface-muted px-2.5 py-1">
+                    {t('rsvpBreakdown.declined')}: {declined}
+                </span>
+            </div>
+
+            <div className="overflow-hidden rounded-[1.5rem] border border-border/70 bg-card shadow-[0_10px_26px_rgba(36,31,26,0.04)]">
+                <div className="flex items-center justify-between border-b border-border/70 px-4 py-3">
+                    <div>
+                        <p className="text-sm font-semibold text-ink">{t('tabs.rsvp')}</p>
+                        <p className="text-xs text-ink-muted">
+                            {responded} {t('rsvpResponded')}
+                        </p>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-xs text-ink-muted">{t('rsvpBreakdown.attending')}</p>
+                        <p className="text-sm font-bold text-ink tabular-nums">{attending}</p>
+                    </div>
+                </div>
+
+                <div className="divide-y divide-border/70">
+                    {sortedGuests.map((member) => {
+                        const rsvp = rsvpByMember.get(member.id);
+                        const status = rsvp?.attendanceStatus ?? 'NO_RESPONSE';
+                        const partySize = rsvp ? rsvp.adultCount + rsvp.childCount : 0;
+                        const statusLabel = rsvp ? t(`rsvpStatus.${status}`) : t('rsvpStatus.NO_RESPONSE');
+
+                        return (
+                            <div key={member.id} className="px-4 py-3">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="min-w-0">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <p className="truncate text-sm font-semibold leading-tight text-ink">{member.displayName}</p>
+                                            {partySize > 1 && (
+                                                <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[11px] font-semibold text-ink-muted">
+                                                    +{partySize - 1}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="mt-1 text-xs text-ink-muted">
+                                            {status !== 'NO_RESPONSE' ? statusLabel : t('rsvpAwaiting')}
+                                        </p>
+                                    </div>
+
+                                    <span className={cn('shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold', statusTone[status])}>
+                                        {statusLabel}
+                                    </span>
+                                </div>
+
+                                {rsvp?.notes && (
+                                    <p className="mt-2 max-w-[70ch] text-xs leading-6 text-ink-muted">
+                                        {rsvp.notes}
+                                    </p>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {guests.length === 0 && <p className="py-8 text-center text-sm text-ink-muted">{t('noGuestsYet')}</p>}
         </div>
     );
 }

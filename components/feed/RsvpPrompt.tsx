@@ -20,7 +20,7 @@ export function RsvpPrompt({ deadline, className }: { deadline: string | null; c
         : null;
 
     const go = useCallback((attending: 'attending' | 'not-attending') => {
-        router.push(`/tools/rsvp?attending=${attending}`);
+        router.push(`/tools/rsvp/submit?attending=${attending}`);
     }, [router]);
 
     const handleClick = useCallback((status: 'attending' | 'not-attending') => () => {
