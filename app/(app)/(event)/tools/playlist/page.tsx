@@ -20,9 +20,10 @@ export default function PlaylistPage() {
     const [showAdd, setShowAdd] = useState(false);
 
     const { data: modules = [], isLoading: isLoadingModules } = useEventModules(eventId);
-    const suggestionsQuery = usePlaylistSuggestions(eventId);
+    const {data:suggestionsData, isLoading:suggestionsLoading} = usePlaylistSuggestions(eventId);
     const createSuggestion = useCreatePlaylistSuggestion();
     const playlistEnabled = modules.some((module) => module.moduleKey === 'playlist' && module.isEnabled);
+
     async function handleCreateSuggestion(input: {
         title: string;
         artist?: string;
@@ -51,18 +52,18 @@ export default function PlaylistPage() {
 
     const suggestions = useMemo(
         () =>
-            [...(suggestionsQuery.data ?? [])].sort(
+            [...(suggestionsData?? [])].sort(
                 (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             ),
-        [suggestionsQuery.data]
+        [suggestionsData]
     );
 
 
     useEffect(() => {
-        if(playlistEnabled && !suggestions.length) {
+        if(playlistEnabled && !suggestionsLoading && !suggestions.length) {
             setShowAdd(true);
         }
-    }, [playlistEnabled, suggestions.length]);
+    }, [playlistEnabled, suggestions.length, suggestionsLoading]);
 
     if (!eventId) {
         return null;
