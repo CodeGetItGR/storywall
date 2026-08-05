@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, type ReactNode, useContext, useMemo, useState } from 'react';
+import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { useEvent } from '@/hooks/useEvent';
@@ -28,19 +28,23 @@ export function EventProvider({ children }: { children: ReactNode }) {
 
     // Restore the last-active event whenever memberships load or change,
     // defaulting to the first membership when nothing was previously selected
-    // (or the stored id no longer matches any membership, e.g. after switching
-    // accounts). Done synchronously during render — comparing against the
-    // previous `memberships` reference — rather than in an effect (see
-    // react.dev/learn/you-might-not-need-an-effect).
-    const [prevMemberships, setPrevMemberships] = useState(memberships);
-    if (memberships !== prevMemberships) {
-        setPrevMemberships(memberships);
-        if (memberships.length > 0 && !(activeEventId && memberships.some((m) => m.eventId === activeEventId))) {
-            const stored = typeof window !== 'undefined' ? window.sessionStorage.getItem(ACTIVE_EVENT_KEY) : null;
-            const restored = memberships.find((m) => m.eventId === stored);
-            setActiveEventIdState((restored ?? memberships[0]).eventId);
+    // or the stored id no longer matches any membership. Kept in an effect so
+    // render stays pure.
+    useEffect(() => {
+        if (memberships.length === 0) {
+            if (activeEventId !== null) setActiveEventIdState(null);
+            return;
         }
-    }
+
+        if (activeEventId && memberships.some((m) => m.eventId === activeEventId)) {
+            return;
+        }
+
+        const stored = typeof window !== 'undefined' ? window.sessionStorage.getItem(ACTIVE_EVENT_KEY) : null;
+        const restored = memberships.find((m) => m.eventId === stored)?.eventId ?? memberships[0].eventId;
+
+        setActiveEventIdState((current) => (current === restored ? current : restored));
+    }, [activeEventId, memberships]);
 
     function setActiveEventId(eventId: string) {
         setActiveEventIdState(eventId);
