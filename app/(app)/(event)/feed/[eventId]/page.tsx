@@ -10,8 +10,8 @@ import { EventDescription } from '@/components/feed/EventDescription';
 import { EventInfo } from '@/components/feed/EventInfo';
 import { EventNotFound } from '@/components/feed/EventNotFound';
 import { FeedPageSkeleton } from '@/components/feed/FeedPageSkeleton';
+import { FeedPostRenderer } from '@/components/feed/FeedPostRenderer';
 import { Header } from '@/components/feed/Header';
-import { PostCard } from '@/components/feed/PostCard';
 import { PostModal } from '@/components/feed/PostModal';
 import { QuickAccessBar } from '@/components/feed/QuickAccessBar';
 import { RsvpPrompt } from '@/components/feed/RsvpPrompt';
@@ -143,7 +143,7 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
                     <div className="flex flex-col gap-4 px-4 pb-24 lg:pb-10">
                         <ComposerCard />
                         {posts.map((post, index) => (
-                            <PostCard key={post.id} post={post} isLcpCandidate={index === 0} />
+                            <FeedPostRenderer key={post.id} post={post} isLcpCandidate={index === 0} />
                         ))}
                         <div ref={loadMoreRef} className="h-1" />
                         {isFetchingNextPage && <p className="text-center text-sm text-ink-muted py-2">{t('loadingMore')}</p>}

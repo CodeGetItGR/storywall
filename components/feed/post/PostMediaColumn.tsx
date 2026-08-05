@@ -8,6 +8,8 @@ import { ReactionCount } from '@/components/feed/post/ReactionCount';
 import type { PostResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
+import { isPlaylistDigestPost } from './postUtils';
+
 interface PostMediaColumnProps {
     postKey: string;
     post: PostResponseDto;
@@ -20,7 +22,7 @@ interface PostMediaColumnProps {
 export function PostMediaColumn({ postKey, post, clampedIndex, onIndexChange, commentsOpen, onShowComments }: PostMediaColumnProps) {
     const t = useTranslations('PostModal');
     const tCard = useTranslations('PostCard');
-    const authorDisplayName = post.author?.displayName ?? tCard('unknownAuthor');
+    const authorDisplayName = isPlaylistDigestPost(post) ? tCard('playlistDigest') : post.author?.displayName ?? tCard('unknownAuthor');
 
     return (
         <div className="relative w-full h-full lg:col-span-3 bg-black">

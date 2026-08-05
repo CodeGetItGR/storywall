@@ -40,6 +40,7 @@
         "viewPhoto": "View photo by {name}",
         "viewPhotoAt": "Photo {index} of {count} by {name}",
         "unknownAuthor": "Unknown",
+        "playlistDigest": "Playlist update",
         "pinned": "Pinned",
         "hostPost": "Host post"
     },

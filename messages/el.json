@@ -40,6 +40,7 @@
         "viewPhoto": "Προβολή φωτογραφίας από {name}",
         "viewPhotoAt": "Φωτογραφία {index} από {count}, {name}",
         "unknownAuthor": "Άγνωστος",
+        "playlistDigest": "Ενημέρωση λίστας",
         "pinned": "Καρφιτσωμένη",
         "hostPost": "POST ΔΙΟΡΓΑΝΩΤΗ"
     },

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import type { MouseEvent } from 'react';
 
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -21,11 +22,12 @@ interface TabLinkProps {
     icon: string;
     label: string;
     active: boolean;
+    onClick?: (event: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
-function TabLink({ href, icon, label, active }: TabLinkProps) {
+function TabLink({ href, icon, label, active, onClick }: TabLinkProps) {
     return (
-        <Link href={href} className="flex min-w-12 flex-col items-center gap-0.5 px-3 py-1" aria-label={label} aria-current={active ? 'page' : undefined}>
+        <Link href={href} onClick={onClick} className="flex min-w-12 flex-col items-center gap-0.5 px-3 py-1" aria-label={label} aria-current={active ? 'page' : undefined}>
             <Image src={icon} alt={label} width={20} height={20} className={cn('h-5 w-5 transition-opacity', active ? 'opacity-100' : 'opacity-70')} loading="eager" />
         </Link>
     );
@@ -35,17 +37,25 @@ export function MobileTabBar() {
     const t = useTranslations('MobileTabBar');
     const pathname = usePathname();
     const { openPostComposer, openSongComposer, openStoryCapture, canCompose, canComposeSong } = useComposer();
+    const isFeedDetailPage = pathname.startsWith('/feed/');
 
     const [home, playlist] = tabItems;
     const homeActive = pathname === home.href || pathname.startsWith(home.href + '/');
     const playlistActive = pathname === playlist.href || pathname.startsWith(playlist.href + '/');
+
+    function handleHomeClick(event: MouseEvent<HTMLAnchorElement>) {
+        if (!isFeedDetailPage) return;
+
+        event.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
     return (
         <nav
             aria-label={t('mobileNavigation')}
             className="fixed bottom-0 left-1/2 z-40 flex h-16 w-9/10 -translate-x-1/2 items-center justify-around rounded-t-2xl border-t border-border bg-white/90 px-5 lg:hidden"
         >
-            <TabLink href={home.href} icon={home.icon} label={t(`items.${home.key}`)} active={homeActive} />
+            <TabLink href={home.href} icon={home.icon} label={t(`items.${home.key}`)} active={homeActive} onClick={handleHomeClick} />
 
             <Menu.Root>
                 <Menu.Trigger aria-label={t('compose')} className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md">

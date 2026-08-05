@@ -53,7 +53,6 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
         <div className={cn('relative', isHostPost && 'pt-3 pr-3')}>
             <div className="rounded-[1.75rem] bg-[linear-gradient(132deg,rgba(199,119,177,0.9)_15.05%,rgba(228,130,121,0.9)_33.58%,rgba(242,136,92,0.9)_42.44%,rgba(254,196,99,0.9)_78.7%)] p-[1.5px] shadow-[0_14px_36px_rgba(242,136,92,0.16)]">
                 <article className="overflow-hidden rounded-[1.65rem] bg-card">
-                    {/* Header */}
                     <div className="flex items-center justify-between px-4 pt-4 pb-3">
                         <PostAuthorAvatar avatarUrl={post.author?.avatarUrl} name={authorName} subtitle={authorSubtitle} timeAgo={timeAgo} />
                         <div className="flex items-center gap-1">
@@ -85,14 +84,12 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                         </div>
                     </div>
 
-                    {/* Content */}
                     {post.content && (
                         <div className="px-4 pb-3">
                             <p className="text-sm leading-relaxed text-ink">{post.content}</p>
                         </div>
                     )}
 
-                    {/* Media */}
                     {media.length === 1 && (
                         <button
                             type="button"
@@ -139,10 +136,8 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                         </div>
                     )}
 
-                    {/* Actions */}
                     <div className="flex items-center justify-between px-4 py-3">
                         <div className="flex items-center gap-1">
-                            {/* Like */}
                             <button
                                 onClick={handleLike}
                                 disabled={isLikePending}
@@ -160,7 +155,6 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                                 />
                             </button>
 
-                            {/* Comment */}
                             {showCommentLink ? (
                                 <button
                                     type="button"

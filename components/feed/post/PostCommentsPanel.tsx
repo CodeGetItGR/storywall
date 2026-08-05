@@ -4,8 +4,8 @@ import { useTranslations } from 'next-intl';
 import type React from 'react';
 
 import { CommentCount } from '@/components/feed/post/CommentCount';
-import { PostAuthorAvatar } from '@/components/feed/post/PostAuthorAvatar';
 import { PostCommentForm } from '@/components/feed/post/PostCommentForm';
+import { PostHeader } from '@/components/feed/post/PostHeader';
 import { ReactionCount } from '@/components/feed/post/ReactionCount';
 import { Modal } from '@/components/ui/modal';
 import type { CommentResponseDto, EventMemberResponseDto, PostResponseDto } from '@/lib/api/types';
@@ -37,17 +37,11 @@ export function PostCommentsPanel({
     submitDisabled,
 }: PostCommentsPanelProps) {
     const t = useTranslations('PostModal');
-    const tCard = useTranslations('PostCard');
 
     return (
         <>
             <section className="border-b flex justify-between pb-2 px-3 shrink-0 pt-2">
-                <PostAuthorAvatar
-                    avatarUrl={post.author?.avatarUrl}
-                    name={post.author?.displayName ?? tCard('unknownAuthor')}
-                    subtitle={post.author?.nickname ?? post.author?.role}
-                    timeAgo={timeAgo}
-                />
+                <PostHeader post={post} timeAgo={timeAgo} />
                 <div className="flex gap-2">
                     <ReactionCount count={post.reactionCount} />
                     <CommentCount count={post.commentCount} />

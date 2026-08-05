@@ -3,6 +3,8 @@ export * from './CommentsList';
 export * from './PostAuthorAvatar';
 export * from './PostCommentForm';
 export * from './PostCommentsPanel';
+export * from './PostHeader';
 export * from './PostMediaCarousel';
 export * from './PostMediaColumn';
+export * from './postUtils';
 export * from './ReactionCount';
