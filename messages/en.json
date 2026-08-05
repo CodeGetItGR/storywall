@@ -20,7 +20,21 @@
         "yourStory": "Your story"
     },
     "FeedPage": {
+        "scheduleBadge": "Schedule",
         "loadingMore": "Loading more…"
+    },
+    "FeedScheduleCard": {
+        "eyebrow": "Schedule",
+        "title": "Guest program",
+        "intro": "A quick run of show so everyone knows when to arrive, when the ceremony starts, and how the evening flows.",
+        "guestLabel": "Guest view",
+        "program": "Program",
+        "viewFullSchedule": "Open full schedule",
+        "emptyTitle": "Schedule coming soon",
+        "emptyBody": "The host hasn't published the full run of show yet. Check back later for the day-by-day timeline.",
+        "timeTba": "Time TBA",
+        "timeRangeNote": "Ends at {time}",
+        "footer": "Guests will always have the latest version here."
     },
     "PostCard": {
         "justNow": "just now",
@@ -64,9 +78,20 @@
             "story": "Story",
             "song": "Song"
         },
+        "hostMenu": {
+            "manage": "Dashboard",
+            "schedule": "Schedule",
+            "rsvps": "RSVPs",
+            "invitations": "Invitations",
+            "settings": "Settings"
+        },
+        "guestMenu": {
+            "schedule": "Schedule"
+        },
         "items": {
             "home": "Home",
             "playlist": "Playlist",
+            "manage": "Manage",
             "post": "Post",
             "alerts": "Notifications"
         }
@@ -430,16 +455,54 @@
         }
     },
     "SchedulePage": {
-        "backToTools": "Back to tools",
+        "back": "Go back",
         "title": "Schedule",
-        "subtitle": "All events from engagement to the wedding day and beyond.",
-        "eventTypes": {
-            "ceremony": "Ceremony",
-            "reception": "Reception",
-            "preWedding": "Pre-wedding",
-            "social": "Social"
+        "subtitle": "See the full run of show. Hosts can add new sessions here.",
+        "timeTba": "Time TBA",
+        "unscheduled": "Unscheduled",
+        "endsAt": "Ends at {time}",
+        "saved": "Added",
+        "host": {
+            "eyebrow": "Host tools",
+            "badge": "Host view",
+            "title": "Add schedule item",
+            "subtitle": "Create a session that shows up in the guest timeline and feed preview.",
+            "editingEyebrow": "Editing item",
+            "editingTitle": "Edit schedule item",
+            "editingSubtitle": "Update “{title}” and save your changes.",
+            "endBeforeStart": "The end time must be after the start time.",
+            "fields": {
+                "title": "Title",
+                "description": "Description",
+                "startAt": "Starts",
+                "endAt": "Ends",
+                "locationName": "Location",
+                "mapsUrl": "Maps link"
+            },
+            "placeholders": {
+                "title": "Welcome drinks",
+                "description": "Optional notes for guests...",
+                "locationName": "Main lawn",
+                "mapsUrl": "https://maps.google.com/..."
+            },
+            "submit": "Create item",
+            "submitting": "Creating...",
+            "update": "Save changes",
+            "updating": "Saving...",
+            "reset": "Reset",
+            "cancelEdit": "Cancel edit",
+            "editSession": "Edit {title}",
+            "deleteSession": "Delete {title}",
+            "deleteConfirm": "Delete “{title}”? This can't be undone.",
+            "mapPreview": "Map preview",
+            "openMap": "Open map for {title}",
+            "emptyTitle": "No sessions yet",
+            "emptyBody": "Add the first item so guests can see the timeline."
         },
-        "attendingCount": "{count} attending"
+        "guest": {
+            "emptyTitle": "Schedule coming soon",
+            "emptyBody": "The host hasn't published the run of show yet. Check back later."
+        }
     },
     "GiftsPage": {
         "goBack": "Go back",
@@ -719,3 +782,4 @@
         }
     }
 }
+

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { eventKeys } from '@/hooks/useEvent';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
@@ -31,6 +32,7 @@ export function useCreateEventSession() {
         mutationFn: (input: EventSessionRequestDto) => api.post<EventSessionResponseDto>(endpoints.eventSessions.create, input),
         onSuccess: (session) => {
             queryClient.invalidateQueries({ queryKey: eventSessionKeys.list(session.eventId) });
+            queryClient.invalidateQueries({ queryKey: eventKeys.detail(session.eventId) });
         },
     });
 }
@@ -42,6 +44,7 @@ export function useUpdateEventSession(id: string, eventId: string) {
         mutationFn: (input: EventSessionPatchDto) => api.patch<EventSessionResponseDto>(endpoints.eventSessions.byId(id), input),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: eventSessionKeys.list(eventId) });
+            queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
         },
     });
 }
@@ -53,6 +56,7 @@ export function useDeleteEventSession(eventId: string) {
         mutationFn: (id: string) => api.del<void>(endpoints.eventSessions.byId(id)),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: eventSessionKeys.list(eventId) });
+            queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
         },
     });
 }

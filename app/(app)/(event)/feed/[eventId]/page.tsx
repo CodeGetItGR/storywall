@@ -54,7 +54,7 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
     }, [hasNextPage, fetchNextPage, posts.length]);
 
     // Deep links (a shared invite, browser history, a bookmark) should make
-    // this the active event for the rest of the app too, not just this page —
+    // this the active event for the rest of the app too, not just this page β€” 
     // but only once we know it actually exists.
     useEffect(() => {
         if (event) setActiveEventId(eventId);
@@ -119,7 +119,7 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
                 />
             </section>
 
-            {/* Stories row — sticky */}
+            {/* Stories row β€” sticky */}
             {moduleFlags.stories && (
                 <section id="stories" className="top-0 bg-background/90 backdrop-blur-sm border-b border-border">
                     <StoriesRow eventId={eventId} />
@@ -127,7 +127,7 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
             )}
 
             {/* Guest quick access bar. */}
-            <QuickAccessBar />
+            {/*<QuickAccessBar />*/}
 
             {/* Event description */}
             {event.description && <EventDescription eventId={event.id} description={event.description} />}
@@ -150,7 +150,7 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
                     </div>
                 )}
             </section>
-            {/* Deliberately outside moduleFlags.posts — a shared post link should
+            {/* Deliberately outside moduleFlags.posts β€” a shared post link should
             still open even if the posts module is toggled off for this event.
             PostModal reads its own open state from the `?post=` param via
             usePostModal(). */}

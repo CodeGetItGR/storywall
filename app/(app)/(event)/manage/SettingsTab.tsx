@@ -9,17 +9,11 @@ import { useUpdateEvent } from '@/hooks/useEvent';
 import { useUploadMedia } from '@/hooks/useMedia';
 import { getErrorMessage, getFieldErrors } from '@/lib/api/errors';
 import type { EventDetailResponseDto, EventPatchDto } from '@/lib/api/types';
+import { toDatetimeLocalValue } from '@/lib/datetime';
 
 const inputClass =
     'bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition';
 const labelClass = 'text-xs font-semibold text-ink-muted uppercase tracking-wide';
-
-function toDatetimeLocalValue(iso: string | null): string {
-    if (!iso) return '';
-    const d = new Date(iso);
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
 
 export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTranslations>; event: EventDetailResponseDto }) {
     const initial = {
@@ -84,6 +78,46 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
         setCoverPreview(event.coverMedia?.mediaUrl ?? null);
     }
 
+    function handleChangeCoverClick() {
+        fileRef.current?.click();
+    }
+
+    function handleTitleChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setTitle(e.target.value);
+    }
+
+    function handleSubtitleChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setSubtitle(e.target.value);
+    }
+
+    function handleDescriptionChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+        setDescription(e.target.value);
+    }
+
+    function handleLocationNameChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setLocationName(e.target.value);
+    }
+
+    function handleLocationAddressChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setLocationAddress(e.target.value);
+    }
+
+    function handleMapsUrlChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setMapsUrl(e.target.value);
+    }
+
+    function handleStartAtChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setStartAt(e.target.value);
+    }
+
+    function handleEndAtChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setEndAt(e.target.value);
+    }
+
+    function handleRsvpDeadlineChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setRsvpDeadline(e.target.value);
+    }
+
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
         setSaved(false);
@@ -133,7 +167,7 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
                                 <div className="absolute bottom-3 right-3 flex items-center gap-2">
                                     <button
                                         type="button"
-                                        onClick={() => fileRef.current?.click()}
+                                        onClick={handleChangeCoverClick}
                                         className="px-3 py-1.5 rounded-full bg-ink/60 text-white text-xs font-semibold hover:bg-ink/80 transition-colors"
                                     >
                                         {t('settings.coverPhoto.change')}
@@ -153,7 +187,7 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
                         ) : (
                             <button
                                 type="button"
-                                onClick={() => fileRef.current?.click()}
+                                onClick={handleChangeCoverClick}
                                 className="w-full flex flex-col items-center justify-center gap-2 border-2 border-dashed border-border rounded-2xl py-10 text-ink-faint hover:border-primary/40 hover:text-primary/60 hover:bg-primary-light/30 transition-colors"
                             >
                                 <ImagePlus className="w-7 h-7" />
@@ -174,7 +208,7 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
 
                 <label className="flex flex-col gap-1.5">
                     <span className={labelClass}>{t('settings.fields.title')}</span>
-                    <input type="text" required value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} />
+                    <input type="text" required value={title} onChange={handleTitleChange} className={inputClass} />
                     {fieldErrors?.title && <span className="text-xs text-rose-500">{fieldErrors.title}</span>}
                 </label>
 
@@ -183,7 +217,7 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
                     <input
                         type="text"
                         value={subtitle}
-                        onChange={(e) => setSubtitle(e.target.value)}
+                        onChange={handleSubtitleChange}
                         placeholder={t('settings.placeholders.subtitle')}
                         className={inputClass}
                     />
@@ -193,7 +227,7 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
                     <span className={labelClass}>{t('settings.fields.description')}</span>
                     <textarea
                         value={description}
-                        onChange={(e) => setDescription(e.target.value)}
+                        onChange={handleDescriptionChange}
                         placeholder={t('settings.placeholders.description')}
                         rows={4}
                         className={`${inputClass} resize-none leading-relaxed`}
@@ -203,14 +237,14 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
                 <div className="grid grid-cols-2 gap-3">
                     <label className="flex flex-col gap-1.5">
                         <span className={labelClass}>{t('settings.fields.locationName')}</span>
-                        <input type="text" value={locationName} onChange={(e) => setLocationName(e.target.value)} className={inputClass} />
+                        <input type="text" value={locationName} onChange={handleLocationNameChange} className={inputClass} />
                     </label>
                     <label className="flex flex-col gap-1.5">
                         <span className={labelClass}>{t('settings.fields.locationAddress')}</span>
                         <input
                             type="text"
                             value={locationAddress}
-                            onChange={(e) => setLocationAddress(e.target.value)}
+                            onChange={handleLocationAddressChange}
                             placeholder={t('settings.placeholders.locationAddress')}
                             className={inputClass}
                         />
@@ -222,7 +256,7 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
                     <input
                         type="url"
                         value={mapsUrl}
-                        onChange={(e) => setMapsUrl(e.target.value)}
+                        onChange={handleMapsUrlChange}
                         placeholder={t('settings.placeholders.mapsUrl')}
                         className={inputClass}
                     />
@@ -231,17 +265,17 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
                 <div className="grid grid-cols-2 gap-3">
                     <label className="flex flex-col gap-1.5">
                         <span className={labelClass}>{t('settings.fields.startAt')}</span>
-                        <input type="datetime-local" required value={startAt} onChange={(e) => setStartAt(e.target.value)} className={inputClass} />
+                        <input type="datetime-local" required value={startAt} onChange={handleStartAtChange} className={inputClass} />
                     </label>
                     <label className="flex flex-col gap-1.5">
                         <span className={labelClass}>{t('settings.fields.endAt')}</span>
-                        <input type="datetime-local" value={endAt} onChange={(e) => setEndAt(e.target.value)} className={inputClass} />
+                        <input type="datetime-local" value={endAt} onChange={handleEndAtChange} className={inputClass} />
                     </label>
                 </div>
 
                 <label className="flex flex-col gap-1.5">
                     <span className={labelClass}>{t('settings.fields.rsvpDeadline')}</span>
-                    <input type="datetime-local" value={rsvpDeadline} onChange={(e) => setRsvpDeadline(e.target.value)} className={inputClass} />
+                    <input type="datetime-local" value={rsvpDeadline} onChange={handleRsvpDeadlineChange} className={inputClass} />
                 </label>
 
                 {updateEvent.isError && !fieldErrors && <p className="text-xs text-rose-500">{getErrorMessage(updateEvent.error)}</p>}

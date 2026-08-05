@@ -11,6 +11,7 @@ import Avatar from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEventMembers } from '@/hooks';
 import type { EventDetailResponseDto, EventMemberResponseDto } from '@/lib/api/types';
+import { formatDate, formatTime } from '@/lib/datetime';
 import { routes } from '@/lib/routes';
 import { avatarColorFromId, cn, initialsFromName } from '@/lib/utils';
 
@@ -27,16 +28,16 @@ function formatEventDate(startAt: string | undefined, locale: string) {
     const date = new Date(startAt);
     if (Number.isNaN(date.getTime())) return null;
 
-    const weekday = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(date);
-    const calendarDate = new Intl.DateTimeFormat(locale, {
+    const weekday = formatDate(locale, date, { weekday: 'short' });
+    const calendarDate = formatDate(locale, date, {
         day: '2-digit',
         month: 'short',
         year: 'numeric',
-    }).format(date);
-    const time = new Intl.DateTimeFormat(locale, {
+    });
+    const time = formatTime(locale, date, {
         hour: 'numeric',
         minute: date.getMinutes() === 0 ? undefined : '2-digit',
-    }).format(date);
+    });
 
     return `${weekday}, ${calendarDate} at ${time}`.toUpperCase();
 }
@@ -63,7 +64,6 @@ function EventListItemSkeleton() {
 }
 
 export function EventListItem({ eventId, member, event, isLoading }: EventListItemProps) {
-    console.log(event)
     const t = useTranslations('ProfilePage');
     const locale = useLocale();
     const { data: eventMembers = [] } = useEventMembers(eventId);
