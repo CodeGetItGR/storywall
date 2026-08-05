@@ -89,22 +89,18 @@ export function ScheduleSessionCard({
             {locationContent}
 
             {session.mapsUrl && (
-                <div className={cn('mt-3', !locationContent && 'mt-4')}>
-                    <ScheduleMapPreview mapsUrl={session.mapsUrl} title={t('host.openMap', { title: session.title })} />
-                    <div className="mt-2 flex items-center justify-between gap-3">
-                        <div className="flex min-w-0 items-center gap-1.5 text-xs text-ink-muted">
-                            <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                            <a
-                                href={session.mapsUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="truncate font-medium text-ink-muted underline decoration-ink-muted/40 underline-offset-2 transition-colors hover:text-ink"
-                            >
-                                {session.locationName ?? session.mapsUrl}
-                            </a>
-                        </div>
-                        <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-faint">{t('host.mapPreview')}</span>
+                <div className={cn('mt-3 grid gap-2', !locationContent && 'mt-4')}>
+                    <div className="flex items-center gap-1.5 text-xs text-ink-muted">
+                        <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                        <span className="font-medium text-ink-muted">{session.locationName ?? session.mapsUrl}</span>
                     </div>
+                    <ScheduleMapPreview
+                        mapsUrl={session.mapsUrl}
+                        title={t('host.openMap', { title: session.title })}
+                        openLabel={t('host.openInGoogleMaps')}
+                        previewLabel={t('host.mapPreview')}
+                        unavailableLabel={t('host.mapPreviewUnavailable')}
+                    />
                 </div>
             )}
 

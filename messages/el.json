@@ -505,6 +505,8 @@
             "deleteSession": "Διαγραφή {title}",
             "deleteConfirm": "Να διαγραφεί το “{title}”; Αυτό δεν αναιρείται.",
             "mapPreview": "Προεπισκόπηση χάρτη",
+            "mapPreviewUnavailable": "Η προεπισκόπηση χάρτη δεν είναι διαθέσιμη για αυτόν τον σύνδεσμο, αλλά η τοποθεσία ανοίγει στο Google Maps.",
+            "openInGoogleMaps": "Άνοιγμα στο Google Maps",
             "openMap": "Άνοιγμα χάρτη για {title}",
             "emptyTitle": "Δεν υπάρχουν ακόμη sessions",
             "emptyBody": "Πρόσθεσε το πρώτο στοιχείο ώστε οι καλεσμένοι να δουν το πρόγραμμα."

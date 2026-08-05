@@ -495,6 +495,8 @@
             "deleteSession": "Delete {title}",
             "deleteConfirm": "Delete “{title}”? This can't be undone.",
             "mapPreview": "Map preview",
+            "mapPreviewUnavailable": "Map preview isn't available for this link, but the location still opens in Google Maps.",
+            "openInGoogleMaps": "Open in Google Maps",
             "openMap": "Open map for {title}",
             "emptyTitle": "No sessions yet",
             "emptyBody": "Add the first item so guests can see the timeline."
