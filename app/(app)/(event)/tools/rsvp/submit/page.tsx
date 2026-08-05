@@ -4,11 +4,12 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { RsvpForm, RsvpHeader, RsvpSubmittedView } from '@/components/rsvp';
+import { useAppRsvpConfig } from '@/hooks/useAppConfig';
 import { useCreateRsvp, useRsvp, useUpdateRsvp } from '@/hooks/useRsvps';
 import { ApiError } from '@/lib/api/client';
 import { AttendanceStatus, RsvpPlusOnes } from '@/lib/api/types';
-import { rsvpStorageKey } from '@/lib/storageKeys';
 import { routes } from '@/lib/routes';
+import { rsvpStorageKey } from '@/lib/storageKeys';
 import { useActiveEvent, useActiveMember, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
 type AttendingStatus = 'attending' | 'not-attending';
@@ -23,6 +24,11 @@ export default function RSVPSubmitPage() {
     const memberId = activeMember?.id ?? null;
     const isHost = useIsHost();
     const isContextLoading = useEventContextLoading();
+    const rsvpConfig = useAppRsvpConfig();
+    const minAdultPlusOnes = Math.max(0, (rsvpConfig?.minAdults ?? 1) - 1);
+    const maxAdultPlusOnes = Math.max(minAdultPlusOnes, (rsvpConfig?.maxAdults ?? 5) - 1);
+    const minChildCount = rsvpConfig?.minChildren ?? 0;
+    const maxChildCount = rsvpConfig?.maxChildren ?? 4;
 
     const presetAttending = searchParams.get('attending');
 
@@ -33,8 +39,8 @@ export default function RSVPSubmitPage() {
     );
     const [message, setMessage] = useState('');
     const [plusOnes, setPlusOnes] = useState<RsvpPlusOnes>({
-        adultCount: 1,
-        childCount: 0
+        adultCount: minAdultPlusOnes,
+        childCount: minChildCount
     });
     const [submitted, setSubmitted] = useState(false);
     const rsvpId = useMemo(() => {
@@ -64,11 +70,11 @@ export default function RSVPSubmitPage() {
                 : 'not-attending'
         );
         setPlusOnes({
-            adultCount: Math.max(1, existingRsvp.adultCount - 1),
-            childCount: Math.max(0, existingRsvp.childCount)
+            adultCount: Math.max(minAdultPlusOnes, Math.min(maxAdultPlusOnes, existingRsvp.adultCount - 1)),
+            childCount: Math.max(minChildCount, Math.min(maxChildCount, existingRsvp.childCount))
         });
         setMessage(existingRsvp.notes ?? '');
-    }, [existingRsvp]);
+    }, [existingRsvp, maxAdultPlusOnes, maxChildCount, minAdultPlusOnes, minChildCount]);
 
     useEffect(() => {
         if (!isContextLoading && isHost) {
@@ -111,27 +117,27 @@ export default function RSVPSubmitPage() {
         setPlusOnes((currentPlusOnes) => ({
             adultCount:
                 type === 'adult'
-                    ? Math.min(4, currentPlusOnes.adultCount + 1)
+                    ? Math.min(maxAdultPlusOnes, currentPlusOnes.adultCount + 1)
                     : currentPlusOnes.adultCount,
             childCount:
                 type === 'child'
-                    ? Math.min(4, currentPlusOnes.childCount + 1)
+                    ? Math.min(maxChildCount, currentPlusOnes.childCount + 1)
                     : currentPlusOnes.childCount
         }));
-    }, []);
+    }, [maxAdultPlusOnes, maxChildCount]);
 
     const handleDecrementPlusOnes = useCallback((type: 'adult' | 'child') => () => {
         setPlusOnes((currentPlusOnes) => ({
             adultCount:
                 type === 'adult'
-                    ? Math.max(1, currentPlusOnes.adultCount - 1)
+                    ? Math.max(minAdultPlusOnes, currentPlusOnes.adultCount - 1)
                     : currentPlusOnes.adultCount,
             childCount:
                 type === 'child'
-                    ? Math.max(0, currentPlusOnes.childCount - 1)
+                    ? Math.max(minChildCount, currentPlusOnes.childCount - 1)
                     : currentPlusOnes.childCount
         }));
-    }, []);
+    }, [minAdultPlusOnes, minChildCount]);
 
     const handleMessageChange = useCallback(
         (event: React.ChangeEvent<HTMLTextAreaElement>) => {

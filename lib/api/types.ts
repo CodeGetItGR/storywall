@@ -8,16 +8,52 @@ export type AuthProvider = 'LOCAL' | 'OAUTH' | 'INVITE';
 export type AccountStatus = 'ACTIVE' | 'SUSPENDED' | 'DELETED';
 export type PlatformRole = 'USER' | 'ADMIN' | 'GUEST';
 
-// eventType / moduleKey / Post.type / Reaction.reactionType are free strings server-side.
-// These are FE-side conventions only, not enforced by the backend.
+// eventType / Post.type / Reaction.reactionType are free strings server-side.
+// moduleKey is now a closed set on the backend and should match the config payload.
 export type EventTypeConvention = 'WEDDING' | 'BAPTISM' | 'BIRTHDAY' | 'CONFERENCE';
-export type ModuleKeyConvention = 'posts' | 'rsvp' | 'playlist' | 'stories' | 'gallery';
+export const EVENT_MODULE_KEYS = ['posts', 'rsvp', 'playlist', 'stories', 'gallery'] as const;
+export type ModuleKeyConvention = (typeof EVENT_MODULE_KEYS)[number];
 // Post.type is enforced server-side against this exact set (DB CHECK constraint
 // + matching DTO validation) — not a free-string convention like the others.
 export type PostType = 'TEXT' | 'MEDIA' | 'ANNOUNCEMENT' | 'PLAYLIST';
 export type MediaTypeConvention = 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT';
 
 // --- §2 Errors ---
+
+// --- Β§1 App config ---
+
+export interface AppMediaConfigDto {
+    maxFileSizeBytes: number;
+    maxRequestSizeBytes: number;
+    maxBatchUploadFiles: number;
+    maxMediaPerPost: number;
+    presignedUrlTtlMinutes: number;
+    publicHost: string | null;
+}
+
+export interface AppPlanTierConfigDto {
+    storageBytes: number;
+    maxMembers: number;
+    maxActiveEvents: number;
+}
+
+export interface AppRsvpConfigDto {
+    minAdults: number;
+    maxAdults: number;
+    minChildren: number;
+    maxChildren: number;
+}
+
+export interface AppConfigResponseDto {
+    featureFlags: PlatformFeatureFlagResponseDto[];
+    media: AppMediaConfigDto;
+    pagination: { defaultPageSize: number; maxPageSize: number };
+    planTiers: Record<'FREE' | 'PLUS' | 'PRO', AppPlanTierConfigDto>;
+    eventModuleKeys: ModuleKeyConvention[];
+    rsvp: AppRsvpConfigDto;
+}
+
+// --- Β§2 Errors ---
 
 export interface ProblemDetail {
     type: string;

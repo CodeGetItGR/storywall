@@ -17,10 +17,11 @@ import { QuickAccessBar } from '@/components/feed/QuickAccessBar';
 import { RsvpPrompt } from '@/components/feed/RsvpPrompt';
 import { StoriesRow } from '@/components/feed/StoriesRow';
 import { useEventPosts } from '@/hooks';
+import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEvent } from '@/hooks/useEvent';
 import { useRsvp } from '@/hooks/useRsvps';
 import { ApiError } from '@/lib/api/client';
-import { ModuleKeyConvention } from '@/lib/api/types';
+import { EVENT_MODULE_KEYS, ModuleKeyConvention } from '@/lib/api/types';
 import { rsvpStorageKey } from '@/lib/storageKeys';
 import { useActiveMember, useEventSwitcher, useIsHost } from '@/providers/EventProvider';
 
@@ -32,6 +33,7 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
     const activeMember = useActiveMember();
     const isHost = useIsHost();
     const memberId = activeMember?.id ?? null;
+    const { data: appConfig } = useAppConfig();
 
     const { data: event, error, isLoading } = useEvent(eventId);
     const { setActiveEventId } = useEventSwitcher();
@@ -78,16 +80,19 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
         router.refresh();
     }, [isStaleRsvp, memberId, router, storedRsvpId]);
 
-    const moduleFlags = useMemo<Record<ModuleKeyConvention, boolean>>(
-        () =>
-            event
-                ? (Object.fromEntries(event.modules.map(({ moduleKey, isEnabled }) => [moduleKey, isEnabled])) as Record<
-                      ModuleKeyConvention,
-                      boolean
-                  >)
-                : { rsvp: false, stories: false, posts: false, playlist: false, gallery: false },
-        [event]
-    );
+    const moduleFlags = useMemo<Record<ModuleKeyConvention, boolean>>(() => {
+        const moduleKeys = appConfig?.eventModuleKeys ?? EVENT_MODULE_KEYS;
+        const defaults = Object.fromEntries(moduleKeys.map((key) => [key, false])) as Record<ModuleKeyConvention, boolean>;
+
+        if (!event) {
+            return defaults;
+        }
+
+        return {
+            ...defaults,
+            ...Object.fromEntries(event.modules.map(({ moduleKey, isEnabled }) => [moduleKey, isEnabled])),
+        } as Record<ModuleKeyConvention, boolean>;
+    }, [appConfig?.eventModuleKeys, event]);
 
     if (isLoading) {
         return <FeedPageSkeleton />;

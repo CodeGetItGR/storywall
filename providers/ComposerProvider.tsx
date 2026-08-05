@@ -10,14 +10,12 @@ import { AddSongForm } from '@/components/playlist';
 import Avatar from '@/components/ui/avatar';
 import { Modal } from '@/components/ui/modal';
 import { useCreatePost, useCreateStory, useUploadMedia, useUploadMediaBatch } from '@/hooks';
+import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventModules } from '@/hooks/useEventModules';
 import { useCreatePlaylistSuggestion } from '@/hooks/usePlaylist';
 import { routes } from '@/lib/routes';
 import { initialsFromName } from '@/lib/utils';
 import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
-
-const MAX_IMAGES = 10;
-const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
 
 interface PendingImage {
     key: string;
@@ -40,12 +38,18 @@ interface ComposerContextValue {
 
 const ComposerContext = createContext<ComposerContextValue | null>(null);
 
+function formatBytes(bytes: number): string {
+    const megabytes = bytes / (1024 * 1024);
+    return `${Number.isInteger(megabytes) ? megabytes : megabytes.toFixed(1)} MB`;
+}
+
 export function ComposerProvider({ children }: { children: ReactNode }) {
     const t = useTranslations('ComposerCard');
     const router = useRouter();
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
     const { data: eventModules = [] } = useEventModules(activeEvent?.id ?? null);
+    const { data: appConfig } = useAppConfig();
     const createPost = useCreatePost();
     const uploadBatch = useUploadMediaBatch();
     const uploadMedia = useUploadMedia();
@@ -88,6 +92,11 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     const isSongBusy = createPlaylistSuggestion.isPending;
     const canCompose = Boolean(activeMember) && Boolean(activeEvent);
     const canComposeSong = canCompose && eventModules.some((module) => module.moduleKey === 'playlist' && module.isEnabled);
+    const maxMediaPerPost = appConfig?.media.maxMediaPerPost ?? 10;
+    const maxBatchUploadFiles = appConfig?.media.maxBatchUploadFiles ?? 10;
+    const maxImages = Math.min(maxMediaPerPost, maxBatchUploadFiles);
+    const maxFileSizeBytes = appConfig?.media.maxFileSizeBytes ?? 20 * 1024 * 1024;
+    const maxRequestSizeBytes = appConfig?.media.maxRequestSizeBytes ?? 220 * 1024 * 1024;
     const canSubmit = (caption.trim().length > 0 || images.length > 0) && !hasUnresolvedFailures && !isPostBusy && canCompose;
 
     function openPostComposer() {
@@ -130,21 +139,33 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
         setCountError(null);
 
         const incoming = Array.from(fileList);
-        const room = MAX_IMAGES - images.length;
+        const room = maxImages - images.length;
         const accepted: File[] = [];
         const oversizeNames: string[] = [];
+        const existingBytes = images.reduce((sum, img) => sum + img.file.size, 0);
+        let acceptedBytes = 0;
+        let requestTooLarge = false;
 
         for (const file of incoming) {
             if (accepted.length >= room) break;
-            if (file.size > MAX_FILE_SIZE_BYTES) {
+            if (file.size > maxFileSizeBytes) {
                 oversizeNames.push(file.name);
                 continue;
             }
+            if (existingBytes + acceptedBytes + file.size > maxRequestSizeBytes) {
+                requestTooLarge = true;
+                continue;
+            }
             accepted.push(file);
+            acceptedBytes += file.size;
         }
 
-        if (incoming.length > room) setCountError(t('maxImagesReached'));
-        if (oversizeNames.length > 0) setSizeError(t('fileTooLarge', { filename: oversizeNames.join(', ') }));
+        if (incoming.length > room) setCountError(t('maxImagesReached', { count: maxImages }));
+        if (oversizeNames.length > 0) {
+            setSizeError(t('fileTooLarge', { filename: oversizeNames.join(', '), size: formatBytes(maxFileSizeBytes) }));
+        } else if (requestTooLarge) {
+            setSizeError(t('requestTooLarge', { size: formatBytes(maxRequestSizeBytes) }));
+        }
 
         if (accepted.length > 0) {
             setImages((prev) => [
@@ -457,7 +478,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
                                 <button
                                     type="button"
                                     onClick={handlePickPhotos}
-                                    disabled={images.length >= MAX_IMAGES}
+                                    disabled={images.length >= maxImages}
                                     className="flex items-center gap-2 text-sm font-medium text-ink-muted transition-colors hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
                                 >
                                     <ImagePlus className="h-4 w-4" />

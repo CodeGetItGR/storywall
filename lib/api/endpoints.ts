@@ -4,6 +4,10 @@
 // path here 404s.
 
 export const endpoints = {
+    config: {
+        get: '/api/config',
+    },
+
     auth: {
         register: '/api/auth/register',
         login: '/api/auth/login',

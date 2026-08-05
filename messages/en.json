@@ -80,8 +80,9 @@
         "uploadFailed": "Couldn't upload {filename}",
         "storyUploadFailed": "Couldn't upload your story. Please try again.",
         "retry": "Retry",
-        "maxImagesReached": "You can add up to 10 photos",
-        "fileTooLarge": "{filename} is over 20 MB",
+        "maxImagesReached": "You can add up to {count} photos",
+        "fileTooLarge": "{filename} is over {size}",
+        "requestTooLarge": "The selected photos exceed the {size} upload limit",
         "cancel": "Cancel",
         "post": "Post",
         "posting": "Posting…"

@@ -1,18 +1,19 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import dynamic from 'next/dynamic';
 import { useState } from 'react';
 
+import { useAppConfig } from '@/hooks/useAppConfig';
 import { ApiError } from '@/lib/api/client';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { ComposerProvider } from '@/providers/ComposerProvider';
 import { EventProvider } from '@/providers/EventProvider';
 import { ModalProvider } from '@/providers/ModalProvider';
 
-const ReactQueryDevtools = dynamic(() => import('@tanstack/react-query-devtools').then((mod) => mod.ReactQueryDevtools), {
-    ssr: false,
-});
+function AppConfigBootstrap() {
+    useAppConfig();
+    return null;
+}
 
 export function Providers({ children }: { children: React.ReactNode }) {
     const [queryClient] = useState(
@@ -33,6 +34,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
     return (
         <QueryClientProvider client={queryClient}>
+            <AppConfigBootstrap />
             <AuthProvider>
                 <EventProvider>
                     <ComposerProvider>

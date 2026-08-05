@@ -80,8 +80,9 @@
         "uploadFailed": "Δεν ήταν δυνατή η μεταφόρτωση του {filename}",
         "storyUploadFailed": "Δεν ήταν δυνατή η μεταφόρτωση της ιστορίας σας. Δοκιμάστε ξανά.",
         "retry": "Επανάληψη",
-        "maxImagesReached": "Μπορείτε να προσθέσετε έως 10 φωτογραφίες",
-        "fileTooLarge": "Το {filename} υπερβαίνει τα 20 MB",
+        "maxImagesReached": "Μπορείτε να προσθέσετε έως {count} φωτογραφίες",
+        "fileTooLarge": "Το {filename} υπερβαίνει τα {size}",
+        "requestTooLarge": "Οι επιλεγμένες φωτογραφίες υπερβαίνουν το όριο {size}",
         "cancel": "Ακύρωση",
         "post": "Δημοσίευση",
         "posting": "Δημοσίευση…"

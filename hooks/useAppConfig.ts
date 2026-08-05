@@ -1,0 +1,36 @@
+import { useQuery } from '@tanstack/react-query';
+
+import { api } from '@/lib/api/client';
+import { endpoints } from '@/lib/api/endpoints';
+import type { AppConfigResponseDto, AppMediaConfigDto, AppRsvpConfigDto, PlatformFeatureFlagResponseDto } from '@/lib/api/types';
+
+export const appConfigKeys = {
+    all: ['app-config'] as const,
+};
+
+// GET /api/config β€” public, read-only, and safe to cache aggressively.
+export function useAppConfig() {
+    return useQuery({
+        queryKey: appConfigKeys.all,
+        queryFn: () => api.get<AppConfigResponseDto>(endpoints.config.get),
+        staleTime: 24 * 60 * 60 * 1000,
+        gcTime: Infinity,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+    });
+}
+
+export function useAppMediaConfig(): AppMediaConfigDto | null {
+    const { data } = useAppConfig();
+    return data?.media ?? null;
+}
+
+export function useAppRsvpConfig(): AppRsvpConfigDto | null {
+    const { data } = useAppConfig();
+    return data?.rsvp ?? null;
+}
+
+export function useAppFeatureFlags(): PlatformFeatureFlagResponseDto[] {
+    const { data } = useAppConfig();
+    return data?.featureFlags ?? [];
+}

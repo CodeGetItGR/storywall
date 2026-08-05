@@ -19,6 +19,7 @@ const nextConfig = {
             },
         ],
     },
+    reactCompiler:true
 };
 
 export default withNextIntl(nextConfig);
