@@ -41,7 +41,7 @@ export function DesktopNavRail() {
             {/* Nav links */}
             <div className="flex-1 px-3 space-y-0.5 overflow-y-auto no-scrollbar">
                 {navItems.map(({ href, icon: Icon, key }) => {
-                    const active = pathname === href || (href !== routes.feed && pathname.startsWith(href));
+                    const active = pathname === href || pathname.startsWith(href);
                     return (
                         <Link
                             key={href}

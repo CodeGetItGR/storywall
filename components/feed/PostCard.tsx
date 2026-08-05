@@ -6,7 +6,8 @@ import { useTranslations } from 'next-intl';
 import React, { useMemo } from 'react';
 
 import { PostAuthorAvatar, ReactionCount } from '@/components/feed/post';
-import { usePostLike, usePostModal } from '@/hooks';
+import { CommentsList } from '@/components/feed/post/CommentsList';
+import { useEventMembers, usePostComments, usePostLike, usePostModal } from '@/hooks';
 import type { PostResponseDto } from '@/lib/api/types';
 import { cn, timeAgoParts } from '@/lib/utils';
 import { useActiveMember } from '@/providers/EventProvider';
@@ -27,12 +28,25 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const timeAgo = useMemo(() => timeAgoParts(post.createdAt), [post.createdAt]);
     const media = post.media;
     const isHostPost = post.author?.role === 'HOST';
+    const { data: comments = [] } = usePostComments(post.id);
+    const { data: members = [] } = useEventMembers(post.eventId);
 
     const activeMember = useActiveMember();
-    const isMyPost = activeMember?.id != null && post.authorMemberId === activeMember.id;
+    const isMyPost = activeMember?.id !== undefined && post.authorMemberId === activeMember.id;
+    const visibleComments = useMemo(() => comments.slice(0, 3), [comments]);
+    const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
 
     function openPost() {
         openPostModal(post.id, { mediaIndex: 0, view: 'comments' });
+    }
+
+    function handleOpenSingleMedia() {
+        openPostModal(post.id, { mediaIndex: 0 });
+    }
+
+    function handleMediaClick(event: React.MouseEvent<HTMLButtonElement>) {
+        const index = Number(event.currentTarget.dataset.index ?? 0);
+        openPostModal(post.id, { mediaIndex: index });
     }
 
     return (
@@ -82,7 +96,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                     {media.length === 1 && (
                         <button
                             type="button"
-                            onClick={() => openPostModal(post.id, { mediaIndex: 0 })}
+                            onClick={handleOpenSingleMedia}
                             aria-label={t('viewPhoto', { name: authorName })}
                             className="relative block aspect-4/3 w-full overflow-hidden bg-surface-muted"
                         >
@@ -102,7 +116,8 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                                 <button
                                     type="button"
                                     key={item.id}
-                                    onClick={() => openPostModal(post.id, { mediaIndex: i })}
+                                    onClick={handleMediaClick}
+                                    data-index={i}
                                     aria-label={t('viewPhotoAt', { index: i + 1, count: media.length, name: authorName })}
                                     className="relative block aspect-square overflow-hidden"
                                 >
@@ -168,6 +183,12 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                             )}
                         </div>
                     </div>
+
+                    {visibleComments.length > 0 && (
+                        <div className="border-t border-border/50 px-4 pb-4 pt-2">
+                            <CommentsList comments={visibleComments} membersById={membersById} compact limit={3} />
+                        </div>
+                    )}
                 </article>
             </div>
         </div>

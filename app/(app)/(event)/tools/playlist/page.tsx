@@ -3,7 +3,7 @@
 import { AlertCircle, ArrowLeft, Plus, X } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { useMemo, useState } from 'react';
+import {useEffect, useMemo, useState} from 'react';
 
 import { AddSongForm, PlaylistItemRow } from '@/components/playlist';
 import { useEventModules } from '@/hooks/useEventModules';
@@ -57,6 +57,13 @@ export default function PlaylistPage() {
         [suggestionsQuery.data]
     );
 
+
+    useEffect(() => {
+        if(playlistEnabled && !suggestions.length) {
+            setShowAdd(true);
+        }
+    }, [playlistEnabled, suggestions.length]);
+
     if (!eventId) {
         return null;
     }
@@ -70,13 +77,12 @@ export default function PlaylistPage() {
             <div className="mx-auto max-w-2xl px-4 pb-24 lg:pb-8">
                 <div className="flex items-center gap-3 py-4">
                     <Link
-                        href={routes.tools.root}
-                        aria-label={t('backToTools')}
+                        href={routes.post.feed(eventId)}
+                        aria-label={t('backToFeed')}
                         className="flex h-9 w-9 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-muted"
                     >
                         <ArrowLeft className="h-5 w-5" />
                     </Link>
-                    <h1 className="text-base font-semibold text-ink">{t('title')}</h1>
                 </div>
 
                 <div className="mt-8 rounded-2xl border border-border bg-card px-5 py-6 shadow-sm">
@@ -99,13 +105,12 @@ export default function PlaylistPage() {
             <div className="mb-4 flex items-center justify-between gap-3 py-4">
                 <div className="flex items-center gap-3">
                     <Link
-                        href={routes.tools.root}
-                        aria-label={t('backToTools')}
+                        href={routes.post.feed(eventId)}
+                        aria-label={t('backToFeed')}
                         className="flex h-9 w-9 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-muted"
                     >
                         <ArrowLeft className="h-5 w-5" />
                     </Link>
-                    <h1 className="text-base font-semibold text-ink">{t('title')}</h1>
                 </div>
                 <button
                     onClick={handleToggleAdd}

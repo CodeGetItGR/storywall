@@ -77,7 +77,7 @@ export function QuickAccessBar() {
     }
 
     return (
-        <section aria-label={t('ariaLabel')} className="px-4 pb-2 mt-4">
+        <section aria-label={t('ariaLabel')} className="hidden px-4 pb-2 mt-4 lg:block">
             <div className="rounded-[1.5rem] border border-border bg-linear-to-r from-card via-surface-muted to-card p-3 shadow-[0_12px_28px_rgba(36,31,26,0.05)] sm:p-4">
                 <div className="mb-3 flex items-center justify-between gap-3">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-faint">{t('eyebrow')}</p>

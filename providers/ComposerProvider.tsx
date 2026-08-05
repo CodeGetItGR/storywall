@@ -1,14 +1,17 @@
 'use client';
 
-import { ImagePlus, Send, X } from 'lucide-react';
+import { ImagePlus, Music3, Send, X } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { createContext, type ReactNode, useContext, useEffect, useRef, useState } from 'react';
 
+import { AddSongForm } from '@/components/playlist';
 import Avatar from '@/components/ui/avatar';
 import { Modal } from '@/components/ui/modal';
 import { useCreatePost, useCreateStory, useUploadMedia, useUploadMediaBatch } from '@/hooks';
+import { useEventModules } from '@/hooks/useEventModules';
+import { useCreatePlaylistSuggestion } from '@/hooks/usePlaylist';
 import { routes } from '@/lib/routes';
 import { initialsFromName } from '@/lib/utils';
 import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
@@ -27,10 +30,12 @@ interface PendingImage {
 
 interface ComposerContextValue {
     openPostComposer: () => void;
+    openSongComposer: () => void;
     openStoryCapture: () => void;
     isCreatingStory: boolean;
     storyError: string | null;
     canCompose: boolean;
+    canComposeSong: boolean;
 }
 
 const ComposerContext = createContext<ComposerContextValue | null>(null);
@@ -40,31 +45,32 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     const router = useRouter();
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
+    const { data: eventModules = [] } = useEventModules(activeEvent?.id ?? null);
     const createPost = useCreatePost();
     const uploadBatch = useUploadMediaBatch();
     const uploadMedia = useUploadMedia();
     const createStory = useCreateStory();
+    const createPlaylistSuggestion = useCreatePlaylistSuggestion();
 
     const [isOpen, setIsOpen] = useState(false);
+    const [composerMode, setComposerMode] = useState<'post' | 'song'>('post');
     const [caption, setCaption] = useState('');
     const [images, setImages] = useState<PendingImage[]>([]);
     const [sizeError, setSizeError] = useState<string | null>(null);
     const [countError, setCountError] = useState<string | null>(null);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [storyError, setStoryError] = useState<string | null>(null);
+    const [songComposerKey, setSongComposerKey] = useState(0);
     const fileRef = useRef<HTMLInputElement>(null);
     const storyInputRef = useRef<HTMLInputElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    // Focus the caption box once the modal (and its portaled DOM) has
-    // actually mounted, rather than in the same tick as setIsOpen(true) —
-    // the textarea doesn't exist yet at that point since Dialog.Portal only
-    // renders its content once `open` takes effect.
+    // Focus the caption box once the modal has mounted, but only for post mode.
     useEffect(() => {
-        if (!isOpen) return;
+        if (!isOpen || composerMode !== 'post') return;
         const raf = requestAnimationFrame(() => textareaRef.current?.focus());
         return () => cancelAnimationFrame(raf);
-    }, [isOpen]);
+    }, [composerMode, isOpen]);
 
     const imagesRef = useRef<PendingImage[]>([]);
     useEffect(() => {
@@ -79,22 +85,42 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
 
     const hasUnresolvedFailures = images.some((img) => img.status === 'failed');
     const isPostBusy = createPost.isPending || uploadBatch.isPending;
+    const isSongBusy = createPlaylistSuggestion.isPending;
     const canCompose = Boolean(activeMember) && Boolean(activeEvent);
+    const canComposeSong = canCompose && eventModules.some((module) => module.moduleKey === 'playlist' && module.isEnabled);
     const canSubmit = (caption.trim().length > 0 || images.length > 0) && !hasUnresolvedFailures && !isPostBusy && canCompose;
 
     function openPostComposer() {
         if (!canCompose) return;
+        setComposerMode('post');
         setIsOpen(true);
     }
 
-    function closePostComposer() {
-        if (isPostBusy) return;
+    function openSongComposer() {
+        if (!canComposeSong) return;
+        setComposerMode('song');
+        setIsOpen(true);
+    }
+
+    function selectPostMode() {
+        setComposerMode('post');
+    }
+
+    function selectSongMode() {
+        if (!canComposeSong) return;
+        setComposerMode('song');
+    }
+
+    function closeComposer() {
+        if (isPostBusy || isSongBusy) return;
         images.forEach((img) => URL.revokeObjectURL(img.previewUrl));
         setCaption('');
         setImages([]);
         setSizeError(null);
         setCountError(null);
         setSubmitError(null);
+        setComposerMode('post');
+        setSongComposerKey((current) => current + 1);
         setIsOpen(false);
     }
 
@@ -141,6 +167,28 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
         });
     }
 
+    function handleCaptionChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+        setCaption(e.target.value);
+    }
+
+    function handlePickPhotos() {
+        fileRef.current?.click();
+    }
+
+    function handlePostFilesChange(e: React.ChangeEvent<HTMLInputElement>) {
+        handleFiles(e.target.files);
+        e.target.value = '';
+    }
+
+    function handleRemoveImageClick(e: React.MouseEvent<HTMLButtonElement>) {
+        const key = e.currentTarget.dataset.key;
+        if (key) removeImage(key);
+    }
+
+    function handleRetryUploadClick() {
+        void uploadPendingImages();
+    }
+
     async function uploadPendingImages(): Promise<string[] | null> {
         const toUpload = images.filter((img) => img.status === 'pending' || img.status === 'failed');
         const alreadyUploaded = images.filter((img) => img.status === 'uploaded' && img.mediaId);
@@ -177,10 +225,6 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
             failedByName.set(f.filename, arr);
         });
 
-        // Correlate each pending image with its result in a single synchronous
-        // pass (not inside the setImages updater, whose timing isn't
-        // guaranteed) so both the new image states and the ordered id list
-        // below are derived from the same, reliable data.
         const newMediaIdByKey = new Map<string, string>();
         const newErrorByKey = new Map<string, string>();
         let hasFailure = false;
@@ -214,11 +258,6 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
 
         if (hasFailure) return null;
 
-        // Order the returned ids by the latest image state (via imagesRef, not
-        // the closed-over `images` snapshot) so a removal that happened while
-        // this round was in flight is reflected, rather than by the raw API
-        // response order. Skip any image that was removed entirely (it won't
-        // be in imagesRef.current).
         return imagesRef.current
             .map((img) => newMediaIdByKey.get(img.key) ?? (img.status === 'uploaded' ? img.mediaId : undefined))
             .filter((id): id is string => Boolean(id));
@@ -247,7 +286,29 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
             return;
         }
 
-        closePostComposer();
+        closeComposer();
+    }
+
+    async function submitPlaylistSuggestion(input: {
+        title: string;
+        artist?: string;
+        youtubeUrl?: string;
+        spotifyUrl?: string;
+        comment?: string;
+    }) {
+        if (!canComposeSong || !activeEvent || !activeMember) return;
+
+        await createPlaylistSuggestion.mutateAsync({
+            eventId: activeEvent.id,
+            authorMemberId: activeMember.id,
+            title: input.title,
+            artist: input.artist,
+            youtubeUrl: input.youtubeUrl,
+            spotifyUrl: input.spotifyUrl,
+            comment: input.comment,
+        });
+
+        closeComposer();
     }
 
     function openStoryCapture() {
@@ -283,10 +344,12 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
 
     const value: ComposerContextValue = {
         openPostComposer,
+        openSongComposer,
         openStoryCapture,
         isCreatingStory: uploadMedia.isPending || createStory.isPending,
         storyError,
         canCompose,
+        canComposeSong,
     };
 
     return (
@@ -304,105 +367,144 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
                 tabIndex={-1}
             />
 
-            <Modal open={isOpen} onClose={closePostComposer} size="sm" closeLabel={t('cancel')} className={'p-4'}>
+            <Modal open={isOpen} onClose={closeComposer} size="sm" closeLabel={t('cancel')} className="p-4">
                 <Modal.Body className="p-4">
-                    <form onSubmit={submitPost} className="flex flex-col gap-4">
-                        <div className="flex items-start gap-3">
-                            <Avatar initials={initials} size="md" alt={activeMember?.displayName} />
-                            <textarea
-                                ref={textareaRef}
-                                value={caption}
-                                onChange={(e) => setCaption(e.target.value)}
-                                placeholder={t('captionPlaceholder')}
-                                aria-label={t('captionAriaLabel')}
-                                rows={3}
-                                className="flex-1 bg-surface-muted rounded-2xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 resize-none transition leading-relaxed"
-                            />
-                        </div>
+                    <div className="mb-4 flex items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={selectPostMode}
+                            aria-pressed={composerMode === 'post'}
+                            className={
+                                `inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ` +
+                                (composerMode === 'post' ? 'bg-ink text-white' : 'bg-surface-muted text-ink-muted hover:bg-surface-muted/80')
+                            }
+                        >
+                            {t('post')}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={selectSongMode}
+                            aria-pressed={composerMode === 'song'}
+                            disabled={!canComposeSong}
+                            className={
+                                `inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ` +
+                                (composerMode === 'song'
+                                    ? 'bg-primary-light text-primary-dark'
+                                    : 'bg-surface-muted text-ink-muted hover:bg-surface-muted/80')
+                            }
+                        >
+                            <Music3 className="h-3.5 w-3.5" />
+                            {t('music')}
+                        </button>
+                    </div>
 
-                        {images.length > 0 && (
-                            <div className="grid grid-cols-3 gap-2">
-                                {images.map((img) => (
-                                    <div key={img.key} className="relative aspect-square rounded-xl overflow-hidden bg-surface-muted">
-                                        <Image src={img.previewUrl} alt="" fill className="object-cover" sizes="200px" />
-                                        <button
-                                            type="button"
-                                            onClick={() => removeImage(img.key)}
-                                            disabled={img.status === 'uploading'}
-                                            aria-label={t('removeImage')}
-                                            className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-ink/60 flex items-center justify-center text-white hover:bg-ink/80 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                                        >
-                                            <X className="w-3.5 h-3.5" />
-                                        </button>
-                                        {img.status === 'uploading' && (
-                                            <div className="absolute inset-0 bg-ink/40 flex items-center justify-center text-white text-xs">…</div>
-                                        )}
-                                        {img.status === 'failed' && (
-                                            <div className="absolute inset-x-0 bottom-0 bg-destructive/90 text-white text-[10px] px-1.5 py-1 flex items-center justify-between gap-1">
-                                                <span className="truncate">{t('uploadFailed', { filename: img.file.name })}</span>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => uploadPendingImages()}
-                                                    disabled={uploadBatch.isPending}
-                                                    className="underline shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
-                                                >
-                                                    {t('retry')}
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
+                    <div hidden={composerMode !== 'post'}>
+                        <form onSubmit={submitPost} className="flex flex-col gap-4">
+                            <div className="flex items-start gap-3">
+                                <Avatar initials={initials} size="md" alt={activeMember?.displayName} />
+                                <textarea
+                                    ref={textareaRef}
+                                    value={caption}
+                                    onChange={handleCaptionChange}
+                                    placeholder={t('captionPlaceholder')}
+                                    aria-label={t('captionAriaLabel')}
+                                    rows={3}
+                                    className="flex-1 resize-none rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink placeholder:text-ink-faint outline-none transition focus:ring-2 focus:ring-primary/30"
+                                />
                             </div>
-                        )}
 
-                        {(sizeError || countError || submitError) && (
-                            <p className="text-xs text-destructive">{sizeError ?? countError ?? submitError}</p>
-                        )}
+                            {images.length > 0 && (
+                                <div className="grid grid-cols-3 gap-2">
+                                    {images.map((img) => (
+                                        <div key={img.key} className="relative aspect-square overflow-hidden rounded-xl bg-surface-muted">
+                                            <Image src={img.previewUrl} alt="" fill className="object-cover" sizes="200px" />
+                                            <button
+                                                type="button"
+                                                onClick={handleRemoveImageClick}
+                                                data-key={img.key}
+                                                disabled={img.status === 'uploading'}
+                                                aria-label={t('removeImage')}
+                                                className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-ink/60 text-white transition-colors hover:bg-ink/80 disabled:cursor-not-allowed disabled:opacity-40"
+                                            >
+                                                <X className="h-3.5 w-3.5" />
+                                            </button>
+                                            {img.status === 'uploading' && (
+                                                <div className="absolute inset-0 flex items-center justify-center bg-ink/40 text-xs text-white">β€¦</div>
+                                            )}
+                                            {img.status === 'failed' && (
+                                                <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-destructive/90 px-1.5 py-1 text-[10px] text-white">
+                                                    <span className="truncate">{t('uploadFailed', { filename: img.file.name })}</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleRetryUploadClick}
+                                                        disabled={uploadBatch.isPending}
+                                                        className="shrink-0 underline disabled:cursor-not-allowed disabled:opacity-40"
+                                                    >
+                                                        {t('retry')}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
 
-                        <div className="flex items-center justify-between">
-                            <button
-                                type="button"
-                                onClick={() => fileRef.current?.click()}
-                                disabled={images.length >= MAX_IMAGES}
-                                className="flex items-center gap-2 text-sm font-medium text-ink-muted hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                            >
-                                <ImagePlus className="w-4 h-4" />
-                                {t('addPhotos')}
-                            </button>
-                            <input
-                                ref={fileRef}
-                                type="file"
-                                accept="image/*"
-                                multiple
-                                className="sr-only"
-                                onChange={(e) => {
-                                    handleFiles(e.target.files);
-                                    e.target.value = '';
-                                }}
-                                aria-label={t('addPhotos')}
-                                tabIndex={-1}
-                            />
+                            {(sizeError || countError || submitError) && (
+                                <p className="text-xs text-destructive">{sizeError ?? countError ?? submitError}</p>
+                            )}
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center justify-between">
                                 <button
                                     type="button"
-                                    onClick={closePostComposer}
-                                    disabled={isPostBusy}
-                                    className="px-4 py-2 rounded-full text-sm font-medium text-ink-muted hover:bg-surface-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                    onClick={handlePickPhotos}
+                                    disabled={images.length >= MAX_IMAGES}
+                                    className="flex items-center gap-2 text-sm font-medium text-ink-muted transition-colors hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
                                 >
-                                    {t('cancel')}
+                                    <ImagePlus className="h-4 w-4" />
+                                    {t('addPhotos')}
                                 </button>
-                                <button
-                                    type="submit"
-                                    disabled={!canSubmit}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-brand text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
-                                >
-                                    <Send className="w-4 h-4" />
-                                    {isPostBusy ? t('posting') : t('post')}
-                                </button>
+                                <input
+                                    ref={fileRef}
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    className="sr-only"
+                                    onChange={handlePostFilesChange}
+                                    aria-label={t('addPhotos')}
+                                    tabIndex={-1}
+                                />
+
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={closeComposer}
+                                        disabled={isPostBusy}
+                                        className="rounded-full px-4 py-2 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-40"
+                                    >
+                                        {t('cancel')}
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={!canSubmit}
+                                        className="flex items-center gap-2 rounded-full bg-gradient-brand px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                                    >
+                                        <Send className="h-4 w-4" />
+                                        {isPostBusy ? t('posting') : t('post')}
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
+
+                    <div hidden={composerMode !== 'song'}>
+                        <AddSongForm
+                            key={songComposerKey}
+                            isSubmitting={isSongBusy}
+                            canSubmit={canComposeSong}
+                            onSubmit={submitPlaylistSuggestion}
+                            compact
+                        />
+                    </div>
                 </Modal.Body>
             </Modal>
         </ComposerContext.Provider>

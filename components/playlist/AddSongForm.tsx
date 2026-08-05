@@ -16,6 +16,7 @@ type AddSongFormProps = {
     isSubmitting: boolean;
     canSubmit: boolean;
     onSubmit: (input: PlaylistSuggestionInput) => Promise<void>;
+    compact?: boolean;
 };
 
 function SpotifyMark({ className }: { className?: string }) {
@@ -61,13 +62,14 @@ function FieldShell({
     );
 }
 
-export function AddSongForm({ isSubmitting, canSubmit, onSubmit }: AddSongFormProps) {
+export function AddSongForm({ isSubmitting, canSubmit, onSubmit, compact = false }: AddSongFormProps) {
     const t = useTranslations('PlaylistPage');
     const [title, setTitle] = useState('');
     const [artist, setArtist] = useState('');
     const [youtubeUrl, setYoutubeUrl] = useState('');
     const [spotifyUrl, setSpotifyUrl] = useState('');
     const [comment, setComment] = useState('');
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     function handleTitleChange(event: ChangeEvent<HTMLInputElement>) {
         setTitle(event.target.value);
@@ -96,40 +98,46 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmit }: AddSongFormPr
         const trimmedArtist = artist.trim();
         if (!canSubmit || !trimmedTitle) return;
 
-        await onSubmit({
-            title: trimmedTitle,
-            artist: trimmedArtist || undefined,
-            youtubeUrl: youtubeUrl.trim() || undefined,
-            spotifyUrl: spotifyUrl.trim() || undefined,
-            comment: comment.trim() || undefined,
-        });
+        setSubmitError(null);
 
-        setTitle('');
-        setArtist('');
-        setYoutubeUrl('');
-        setSpotifyUrl('');
-        setComment('');
+        try {
+            await onSubmit({
+                title: trimmedTitle,
+                artist: trimmedArtist || undefined,
+                youtubeUrl: youtubeUrl.trim() || undefined,
+                spotifyUrl: spotifyUrl.trim() || undefined,
+                comment: comment.trim() || undefined,
+            });
+
+            setTitle('');
+            setArtist('');
+            setYoutubeUrl('');
+            setSpotifyUrl('');
+            setComment('');
+        } catch {
+            setSubmitError(t('submitFailed'));
+        }
     }
 
     return (
         <form
             onSubmit={handleSubmit}
-            className="mb-5 overflow-hidden rounded-[1.75rem] border border-border/70 bg-card shadow-[0_20px_40px_rgba(35,28,22,0.08)]"
+            className={`mb-5 overflow-hidden rounded-[1.75rem] border border-border/70 bg-card shadow-[0_20px_40px_rgba(35,28,22,0.08)] ${compact ? 'shadow-[0_14px_28px_rgba(35,28,22,0.06)]' : ''}`}
         >
-            <div className="bg-gradient-brand px-5 py-5 text-white">
-                <div className="flex items-start gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/15 backdrop-blur-sm">
-                        <BadgePlus className="h-6 w-6" />
+            <div className={compact ? 'px-4 pt-4 text-ink' : 'bg-gradient-brand px-5 py-5 text-white'}>
+                <div className={`flex items-start gap-4 ${compact ? 'items-center' : ''}`}>
+                    <div className={`flex shrink-0 items-center justify-center rounded-2xl ${compact ? 'h-10 w-10 bg-primary-light text-primary-dark' : 'h-12 w-12 bg-white/15 text-white ring-1 ring-white/15 backdrop-blur-sm'}`}>
+                        <BadgePlus className={compact ? 'h-5 w-5' : 'h-6 w-6'} />
                     </div>
                     <div className="min-w-0">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/75">{t('suggestASong')}</p>
-                        <h2 className="mt-1 text-lg font-semibold leading-tight">{t('formTitle')}</h2>
-                        <p className="mt-1 max-w-xl text-sm leading-relaxed text-white/80">{t('formSubtitle')}</p>
+                        <p className={`text-[11px] font-semibold uppercase tracking-[0.24em] ${compact ? 'text-ink-faint' : 'text-white/75'}`}>{t('suggestASong')}</p>
+                        <h2 className={`mt-1 font-semibold leading-tight ${compact ? 'text-base text-ink' : 'text-lg text-white'}`}>{t('formTitle')}</h2>
+                        {!compact && <p className="mt-1 max-w-xl text-sm leading-relaxed text-white/80">{t('formSubtitle')}</p>}
                     </div>
                 </div>
             </div>
 
-            <div className="space-y-4 px-5 py-5">
+            <div className={compact ? 'space-y-3 px-4 pb-4 pt-4' : 'space-y-4 px-5 py-5'}>
                 <div className="grid gap-4 md:grid-cols-2">
                     <FieldShell icon={Music3} label={t('songTitle')}>
                         <div className="relative">
@@ -139,7 +147,7 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmit }: AddSongFormPr
                                 onChange={handleTitleChange}
                                 placeholder={t('songTitlePlaceholder')}
                                 required
-                                className="w-full rounded-2xl border border-border/70 bg-background/80 py-3.5 px-4 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                                className={`w-full rounded-2xl border border-border/70 bg-background/80 px-4 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 ${compact ? 'py-3' : 'py-3.5'}`}
                             />
                         </div>
                     </FieldShell>
@@ -151,7 +159,7 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmit }: AddSongFormPr
                                 value={artist}
                                 onChange={handleArtistChange}
                                 placeholder={t('artistPlaceholder')}
-                                className="w-full rounded-2xl border border-border/70 bg-background/80 py-3.5 px-4 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                                className={`w-full rounded-2xl border border-border/70 bg-background/80 px-4 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 ${compact ? 'py-3' : 'py-3.5'}`}
                             />
                         </div>
                     </FieldShell>
@@ -166,7 +174,7 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmit }: AddSongFormPr
                                 onChange={handleYoutubeUrlChange}
                                 placeholder={t('youtubePlaceholder')}
                                 inputMode="url"
-                                className="w-full rounded-2xl border border-border/70 bg-background/80 py-3.5 px-4 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                                className={`w-full rounded-2xl border border-border/70 bg-background/80 px-4 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 ${compact ? 'py-3' : 'py-3.5'}`}
                             />
                         </div>
                     </FieldShell>
@@ -179,27 +187,48 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmit }: AddSongFormPr
                                 onChange={handleSpotifyUrlChange}
                                 placeholder={t('spotifyPlaceholder')}
                                 inputMode="url"
-                                className="w-full rounded-2xl border border-border/70 bg-background/80 py-3.5 px-4 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                                className={`w-full rounded-2xl border border-border/70 bg-background/80 px-4 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 ${compact ? 'py-3' : 'py-3.5'}`}
                             />
                         </div>
                     </FieldShell>
                 </div>
 
-                <FieldShell icon={TextCursorInput} label={t('comment')}>
-                    <textarea
-                        value={comment}
-                        onChange={handleCommentChange}
-                        rows={4}
-                        placeholder={t('commentPlaceholder')}
-                        className="w-full resize-none rounded-2xl border border-border/70 bg-background/80 px-4 py-3.5 text-sm leading-relaxed text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
-                    />
-                </FieldShell>
+                {compact ? (
+                    <details className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
+                        <summary className="cursor-pointer list-none text-sm font-medium text-ink-muted transition-colors hover:text-ink">
+                            {t('moreDetails')}
+                        </summary>
+                        <div className="mt-3">
+                            <FieldShell icon={TextCursorInput} label={t('comment')}>
+                                <textarea
+                                    value={comment}
+                                    onChange={handleCommentChange}
+                                    rows={3}
+                                    placeholder={t('commentPlaceholder')}
+                                    className="w-full resize-none rounded-2xl border border-border/70 bg-background/80 px-4 py-3 text-sm leading-relaxed text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                                />
+                            </FieldShell>
+                        </div>
+                    </details>
+                ) : (
+                    <FieldShell icon={TextCursorInput} label={t('comment')}>
+                        <textarea
+                            value={comment}
+                            onChange={handleCommentChange}
+                            rows={4}
+                            placeholder={t('commentPlaceholder')}
+                            className="w-full resize-none rounded-2xl border border-border/70 bg-background/80 px-4 py-3.5 text-sm leading-relaxed text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                        />
+                    </FieldShell>
+                )}
+
+                {submitError && <p className="text-xs text-destructive">{submitError}</p>}
 
                 <div className="flex flex-wrap items-center justify-end gap-3 pt-1">
                     <button
                         type="submit"
                         disabled={isSubmitting || !canSubmit || !title.trim()}
-                        className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-5 py-3 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20 disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-40 disabled:hover:shadow-none"
+                        className={`inline-flex items-center gap-2 rounded-full bg-gradient-brand text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20 disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-40 disabled:hover:shadow-none ${compact ? 'px-4 py-2.5' : 'px-5 py-3'}`}
                     >
                         <Play className="h-4 w-4 fill-current" />
                         {t('addToPlaylist')}

@@ -60,7 +60,8 @@
         "compose": "Create",
         "composeMenu": {
             "post": "Post",
-            "story": "Story"
+            "story": "Story",
+            "song": "Song"
         },
         "items": {
             "home": "Home",
@@ -73,6 +74,7 @@
         "placeholder": "Celebrate the moment",
         "captionPlaceholder": "Share a memory, message, or moment...",
         "captionAriaLabel": "Post caption",
+        "music": "Music",
         "addPhotos": "Add photos",
         "removeImage": "Remove image",
         "uploadFailed": "Couldn't upload {filename}",
@@ -484,7 +486,7 @@
         "emptySeat": "Empty seat"
     },
     "PlaylistPage": {
-        "backToTools": "Back to tools",
+        "backToFeed": "Back to feed",
         "title": "Playlist",
         "cancel": "Cancel",
         "suggestASong": "Suggest a song",
@@ -511,7 +513,9 @@
         "commentPlaceholder": "Why this one belongs on the playlist",
         "urlHint": "Spotify and YouTube links embed automatically",
         "momentForSong": "Moment for song",
+        "moreDetails": "More details",
         "addToPlaylist": "Add to Playlist",
+        "submitFailed": "Couldn't add the song. Please try again.",
         "allSongs": "All songs",
         "disabledTitle": "Playlist is disabled",
         "disabledBody": "This event has the playlist module turned off, so suggestions and votes are hidden until a host enables it.",

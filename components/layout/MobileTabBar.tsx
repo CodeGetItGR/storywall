@@ -1,19 +1,19 @@
 'use client';
 
 import { Menu } from '@base-ui/react/menu';
-import { Bell, Home, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
-import Image from 'next/image';
-import { cn } from '@/lib/utils';
 import { routes } from '@/lib/routes';
+import { cn } from '@/lib/utils';
 import { useComposer } from '@/providers/ComposerProvider';
 
 const tabItems = [
-    { href: routes.profile, icon: '/icons/home.svg', key: 'home' },
-    { href: routes.notifications, icon: '/icons/music.svg', key: 'playlist' },
+    { href: routes.feed, icon: '/icons/home.svg', key: 'home' },
+    { href: routes.tools.playlist, icon: '/icons/music.svg', key: 'playlist' },
 ];
 
 interface TabLinkProps {
@@ -25,15 +25,8 @@ interface TabLinkProps {
 
 function TabLink({ href, icon, label, active }: TabLinkProps) {
     return (
-        <Link href={href} className="flex flex-col items-center gap-0.5 px-3 py-1 min-w-12" aria-label={label} aria-current={active ? 'page' : undefined}>
-            <Image
-                src={icon}
-                alt={label}
-                width={20}
-                height={20}
-                className={cn('w-5 h-5 transition-colors', active ? 'text-primary' : 'text-ink-faint')}
-                loading="eager"
-            />
+        <Link href={href} className="flex min-w-12 flex-col items-center gap-0.5 px-3 py-1" aria-label={label} aria-current={active ? 'page' : undefined}>
+            <Image src={icon} alt={label} width={20} height={20} className={cn('h-5 w-5 transition-opacity', active ? 'opacity-100' : 'opacity-70')} loading="eager" />
         </Link>
     );
 }
@@ -41,46 +34,56 @@ function TabLink({ href, icon, label, active }: TabLinkProps) {
 export function MobileTabBar() {
     const t = useTranslations('MobileTabBar');
     const pathname = usePathname();
-    const { openPostComposer, openStoryCapture, canCompose } = useComposer();
+    const { openPostComposer, openSongComposer, openStoryCapture, canCompose, canComposeSong } = useComposer();
 
-    const [home, alerts] = tabItems;
+    const [home, playlist] = tabItems;
     const homeActive = pathname === home.href || pathname.startsWith(home.href + '/');
-    const alertsActive = pathname === alerts.href || pathname.startsWith(alerts.href + '/');
+    const playlistActive = pathname === playlist.href || pathname.startsWith(playlist.href + '/');
 
     return (
         <nav
             aria-label={t('mobileNavigation')}
-            className="fixed bottom-0 left-1/2 -translate-x-1/2 h-16 bg-white/90 border-t border-border rounded-t-2xl flex items-center justify-around z-40 lg:hidden px-5 w-9/10"
+            className="fixed bottom-0 left-1/2 z-40 flex h-16 w-9/10 -translate-x-1/2 items-center justify-around rounded-t-2xl border-t border-border bg-white/90 px-5 lg:hidden"
         >
             <TabLink href={home.href} icon={home.icon} label={t(`items.${home.key}`)} active={homeActive} />
 
             <Menu.Root>
-                <Menu.Trigger aria-label={t('compose')} className="w-12 h-12 rounded-full bg-gradient-brand flex items-center justify-center shadow-md">
-                    <Plus className="w-6 h-6 text-white" strokeWidth={2.5} />
+                <Menu.Trigger aria-label={t('compose')} className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md">
+                    <Plus className="h-6 w-6 text-white" strokeWidth={2.5} />
                 </Menu.Trigger>
                 <Menu.Portal>
                     <Menu.Positioner side="top" sideOffset={8} className="z-50">
-                        <Menu.Popup className="bg-background rounded-2xl shadow-[0_2px_16px_0_rgba(36,31,26,0.15)] border border-border py-1 min-w-36 outline-none">
+                        <Menu.Popup className="min-w-36 rounded-2xl border border-border bg-background py-1 shadow-[0_2px_16px_0_rgba(36,31,26,0.15)] outline-none">
                             <Menu.Item
                                 onClick={openPostComposer}
                                 disabled={!canCompose}
-                                className="mx-1 rounded-lg px-4 py-2.5 text-sm font-medium text-ink hover:bg-surface-muted cursor-pointer outline-none disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                                className="mx-1 flex cursor-pointer justify-between rounded-lg px-4 py-2.5 text-sm font-medium text-ink outline-none transition-colors hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
                             >
                                 {t('composeMenu.post')}
+                                <Image src="/icons/post.svg" alt={t('composeMenu.post')} width={20} height={20} className="h-5 w-5 transition-opacity" loading="eager" />
                             </Menu.Item>
                             <Menu.Item
                                 onClick={openStoryCapture}
                                 disabled={!canCompose}
-                                className="mx-1 rounded-lg px-4 py-2.5 text-sm font-medium text-ink hover:bg-surface-muted cursor-pointer outline-none disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                                className="mx-1 flex cursor-pointer justify-between rounded-lg px-4 py-2.5 text-sm font-medium text-ink outline-none transition-colors hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
                             >
                                 {t('composeMenu.story')}
+                                <Image src="/icons/story.svg" alt={t('composeMenu.story')} width={20} height={20} className="h-5 w-5 transition-opacity" loading="eager" />
+                            </Menu.Item>
+                            <Menu.Item
+                                onClick={openSongComposer}
+                                disabled={!canComposeSong}
+                                className="mx-1 flex cursor-pointer justify-between rounded-lg px-4 py-2.5 text-sm font-medium text-ink outline-none transition-colors hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+                            >
+                                {t('composeMenu.song')}
+                                <Image src="/icons/music.svg" alt={t('composeMenu.song')} width={20} height={20} className="h-5 w-5 transition-opacity" loading="eager" />
                             </Menu.Item>
                         </Menu.Popup>
                     </Menu.Positioner>
                 </Menu.Portal>
             </Menu.Root>
 
-            <TabLink href={alerts.href} icon={alerts.icon} label={t(`items.${alerts.key}`)} active={alertsActive} />
+            <TabLink href={playlist.href} icon={playlist.icon} label={t(`items.${playlist.key}`)} active={playlistActive} />
         </nav>
     );
 }
