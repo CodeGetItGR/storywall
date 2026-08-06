@@ -54,6 +54,8 @@
         "viewPhoto": "View photo by {name}",
         "viewPhotoAt": "Photo {index} of {count} by {name}",
         "unknownAuthor": "Unknown",
+        "moduleUnavailable": "Posts are not available on this event's current plan.",
+        "reactionFailed": "Couldn't update your reaction. Please try again.",
         "playlistDigest": "Playlist update",
         "openPlaylist": "Open playlist",
         "pinned": "Pinned",
@@ -106,13 +108,17 @@
         "removeImage": "Remove image",
         "uploadFailed": "Couldn't upload {filename}",
         "storyUploadFailed": "Couldn't upload your story. Please try again.",
+        "storageLimitExceeded": "This event has no room left for new media on its current plan.",
+        "moduleUnavailable": "This feature is not available on this event's current plan.",
+        "genericSubmitFailed": "Something went wrong. Please try again.",
         "retry": "Retry",
         "maxImagesReached": "You can add up to {count} photos",
         "fileTooLarge": "{filename} is over {size}",
         "requestTooLarge": "The selected photos exceed the {size} upload limit",
         "cancel": "Cancel",
         "post": "Post",
-        "posting": "Posting…"
+        "posting": "Posting…",
+        "storageLimitExceededWithPlan": "This event has no room left for new media on its current plan. Upgrade to {plan} to add more."
     },
     "RsvpPrompt": {
         "willYouAttend": "Will you attend?",
@@ -136,7 +142,9 @@
         "disclaimer": "By joining you agree to share moments from Emma & James's special day.",
         "noAccount": "Don't have an account?",
         "createAccountLink": "Create one",
-        "expiredInvite": "This invitation has expired. Please ask your host for a new invite link."
+        "expiredInvite": "This invitation has expired. Please ask your host for a new invite link.",
+        "memberLimitExceeded": "This event has reached the member limit for its current plan. Ask the host to upgrade before joining.",
+        "memberLimitExceededWithPlan": "This event is full on its current plan. Ask the host to upgrade to {plan} before joining."
     },
     "RegisterPage": {
         "title": "Create account",
@@ -156,7 +164,9 @@
         "disclaimer": "By joining you agree to share moments from Emma & James's special day.",
         "haveAccount": "Already have an account?",
         "signInLink": "Sign in",
-        "expiredInvite": "This invitation has expired. Please ask your host for a new invite link."
+        "expiredInvite": "This invitation has expired. Please ask your host for a new invite link.",
+        "memberLimitExceeded": "This event has reached the member limit for its current plan. Ask the host to upgrade before joining.",
+        "memberLimitExceededWithPlan": "This event is full on its current plan. Ask the host to upgrade to {plan} before joining."
     },
     "WelcomePage": {
         "title": "Let's get started",
@@ -293,6 +303,7 @@
         "commentTextAriaLabel": "Comment text",
         "postComment": "Post comment",
         "commentFailed": "Couldn't post your comment. Please try again.",
+        "moduleUnavailable": "Comments are not available on this event's current plan.",
         "previousMedia": "Previous photo",
         "nextMedia": "Next photo",
         "showComments": "Show comments",
@@ -346,7 +357,10 @@
             "PRIVATE": "Private",
             "PUBLIC": "Public"
         },
-        "submit": "Create event"
+        "submit": "Create event",
+        "activeEventLimitExceeded": "Your account is already hosting as many active events as its current plan allows. Archive an old event or upgrade to create another one.",
+        "usageTitle": "Account usage",
+        "activeEventLimitExceededWithPlan": "Your account has reached its active event limit. Archive an old event or upgrade to {plan} to create another one."
     },
     "ManagePage": {
         "title": "Host Dashboard",
@@ -458,6 +472,9 @@
             },
             "save": "Save changes",
             "saved": "Saved"
+        },
+        "usage": {
+            "eventTitle": "Plan usage"
         }
     },
     "SchedulePage": {
@@ -589,6 +606,8 @@
         "moreDetails": "More details",
         "addToPlaylist": "Add to Playlist",
         "submitFailed": "Couldn't add the song. Please try again.",
+        "voteFailed": "Couldn't update your vote. Please try again.",
+        "moduleUnavailable": "Playlist is not available on this event's current plan.",
         "allSongs": "All songs",
         "disabledTitle": "Playlist is disabled",
         "disabledBody": "This event has the playlist module turned off, so suggestions and votes are hidden until a host enables it.",
@@ -621,7 +640,8 @@
         "leaderboardTopCount": "Top {count}",
         "leaderboardShowingMore": "Showing {shown} of {total}",
         "up": "Up",
-        "down": "Down"
+        "down": "Down",
+        "disabledUpgradeBody": "Playlist is not included in this event plan. Upgrade to {plans} to unlock song suggestions and votes."
     },
     "QuizPage": {
         "backToTools": "Back to tools",
@@ -673,6 +693,7 @@
         "messageAriaLabel": "Message for the couple",
         "submitRsvp": "Submit RSVP",
         "submitError": "Something went wrong submitting your RSVP. Please try again.",
+        "moduleUnavailable": "RSVP is not available on this event's current plan.",
         "whosComing": "Who's coming"
     },
     "VenuePage": {
@@ -760,7 +781,8 @@
             "rsvps": "See attendance and replies",
             "invitations": "Create or review invites",
             "settings": "Edit event details"
-        }
+        },
+        "usageTitle": "Plan usage"
     },
     "FeedQuickAccessBar": {
         "ariaLabel": "Quick access",
@@ -803,5 +825,16 @@
                 "subtitle": "Leave a note"
             }
         }
+    },
+    "PlanUsage": {
+        "currentPlan": "Current plan: {plan}",
+        "upgradeTo": "Upgrade to {plan}",
+        "unlimited": "Unlimited",
+        "items": {
+            "storage": "Storage",
+            "members": "Members",
+            "activeEvents": "Active events"
+        },
+        "includedModules": "Included modules"
     }
 }

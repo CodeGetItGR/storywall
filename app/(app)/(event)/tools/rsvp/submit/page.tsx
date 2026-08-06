@@ -1,12 +1,14 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { RsvpForm, RsvpHeader, RsvpSubmittedView } from '@/components/rsvp';
 import { useAppRsvpConfig } from '@/hooks/useAppConfig';
 import { useCreateRsvp, useRsvp, useUpdateRsvp } from '@/hooks/useRsvps';
 import { ApiError } from '@/lib/api/client';
+import { getErrorMessage, isModuleNotAvailableError } from '@/lib/api/errors';
 import { AttendanceStatus, RsvpPlusOnes } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 import { rsvpStorageKey } from '@/lib/storageKeys';
@@ -15,6 +17,7 @@ import { useActiveEvent, useActiveMember, useEventContextLoading, useIsHost } fr
 type AttendingStatus = 'attending' | 'not-attending';
 
 export default function RSVPSubmitPage() {
+    const t = useTranslations('RSVPPage');
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -33,14 +36,12 @@ export default function RSVPSubmitPage() {
     const presetAttending = searchParams.get('attending');
 
     const [attending, setAttending] = useState<AttendingStatus | null>(
-        presetAttending === 'attending' || presetAttending === 'not-attending'
-            ? presetAttending
-            : null
+        presetAttending === 'attending' || presetAttending === 'not-attending' ? presetAttending : null
     );
     const [message, setMessage] = useState('');
     const [plusOnes, setPlusOnes] = useState<RsvpPlusOnes>({
         adultCount: minAdultPlusOnes,
-        childCount: minChildCount
+        childCount: minChildCount,
     });
     const [submitted, setSubmitted] = useState(false);
     const rsvpId = useMemo(() => {
@@ -64,14 +65,10 @@ export default function RSVPSubmitPage() {
 
         hydratedRef.current = true;
 
-        setAttending(
-            existingRsvp.attendanceStatus === 'ATTENDING'
-                ? 'attending'
-                : 'not-attending'
-        );
+        setAttending(existingRsvp.attendanceStatus === 'ATTENDING' ? 'attending' : 'not-attending');
         setPlusOnes({
             adultCount: Math.max(minAdultPlusOnes, Math.min(maxAdultPlusOnes, existingRsvp.adultCount - 1)),
-            childCount: Math.max(minChildCount, Math.min(maxChildCount, existingRsvp.childCount))
+            childCount: Math.max(minChildCount, Math.min(maxChildCount, existingRsvp.childCount)),
         });
         setMessage(existingRsvp.notes ?? '');
     }, [existingRsvp, maxAdultPlusOnes, maxChildCount, minAdultPlusOnes, minChildCount]);
@@ -96,6 +93,11 @@ export default function RSVPSubmitPage() {
 
     const isSubmitting = createRsvp.isPending || updateRsvp.isPending;
     const submitError = createRsvp.error ?? updateRsvp.error;
+    const submitErrorMessage = submitError
+        ? isModuleNotAvailableError(submitError)
+            ? t('moduleUnavailable')
+            : getErrorMessage(submitError, t('submitError'))
+        : null;
 
     const handleGoBack = useCallback(() => {
         router.back();
@@ -113,38 +115,29 @@ export default function RSVPSubmitPage() {
         setAttending('not-attending');
     }, []);
 
-    const handleIncrementPlusOnes = useCallback((type: 'adult' | 'child') => () => {
-        setPlusOnes((currentPlusOnes) => ({
-            adultCount:
-                type === 'adult'
-                    ? Math.min(maxAdultPlusOnes, currentPlusOnes.adultCount + 1)
-                    : currentPlusOnes.adultCount,
-            childCount:
-                type === 'child'
-                    ? Math.min(maxChildCount, currentPlusOnes.childCount + 1)
-                    : currentPlusOnes.childCount
-        }));
-    }, [maxAdultPlusOnes, maxChildCount]);
-
-    const handleDecrementPlusOnes = useCallback((type: 'adult' | 'child') => () => {
-        setPlusOnes((currentPlusOnes) => ({
-            adultCount:
-                type === 'adult'
-                    ? Math.max(minAdultPlusOnes, currentPlusOnes.adultCount - 1)
-                    : currentPlusOnes.adultCount,
-            childCount:
-                type === 'child'
-                    ? Math.max(minChildCount, currentPlusOnes.childCount - 1)
-                    : currentPlusOnes.childCount
-        }));
-    }, [minAdultPlusOnes, minChildCount]);
-
-    const handleMessageChange = useCallback(
-        (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-            setMessage(event.target.value);
+    const handleIncrementPlusOnes = useCallback(
+        (type: 'adult' | 'child') => () => {
+            setPlusOnes((currentPlusOnes) => ({
+                adultCount: type === 'adult' ? Math.min(maxAdultPlusOnes, currentPlusOnes.adultCount + 1) : currentPlusOnes.adultCount,
+                childCount: type === 'child' ? Math.min(maxChildCount, currentPlusOnes.childCount + 1) : currentPlusOnes.childCount,
+            }));
         },
-        []
+        [maxAdultPlusOnes, maxChildCount]
     );
+
+    const handleDecrementPlusOnes = useCallback(
+        (type: 'adult' | 'child') => () => {
+            setPlusOnes((currentPlusOnes) => ({
+                adultCount: type === 'adult' ? Math.max(minAdultPlusOnes, currentPlusOnes.adultCount - 1) : currentPlusOnes.adultCount,
+                childCount: type === 'child' ? Math.max(minChildCount, currentPlusOnes.childCount - 1) : currentPlusOnes.childCount,
+            }));
+        },
+        [minAdultPlusOnes, minChildCount]
+    );
+
+    const handleMessageChange = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setMessage(event.target.value);
+    }, []);
 
     const handleSubmit = useCallback(
         async (event: React.SubmitEvent<HTMLFormElement>) => {
@@ -154,30 +147,33 @@ export default function RSVPSubmitPage() {
                 return;
             }
 
-            const attendanceStatus: AttendanceStatus =
-                attending === 'attending' ? 'ATTENDING' : 'DECLINED';
+            const attendanceStatus: AttendanceStatus = attending === 'attending' ? 'ATTENDING' : 'DECLINED';
 
             const adultCount = 1 + plusOnes.adultCount;
             const childCount = plusOnes.childCount;
 
-            if (effectiveRsvpId) {
-                await updateRsvp.mutateAsync({
-                    attendanceStatus,
-                    adultCount,
-                    childCount,
-                    notes: message || undefined
-                });
-            } else {
-                const created = await createRsvp.mutateAsync({
-                    eventMemberId: memberId,
-                    attendanceStatus,
-                    adultCount,
-                    childCount,
-                    notes: message || undefined,
-                    submittedAt: new Date().toISOString()
-                });
+            try {
+                if (effectiveRsvpId) {
+                    await updateRsvp.mutateAsync({
+                        attendanceStatus,
+                        adultCount,
+                        childCount,
+                        notes: message || undefined,
+                    });
+                } else {
+                    const created = await createRsvp.mutateAsync({
+                        eventMemberId: memberId,
+                        attendanceStatus,
+                        adultCount,
+                        childCount,
+                        notes: message || undefined,
+                        submittedAt: new Date().toISOString(),
+                    });
 
-                localStorage.setItem(rsvpStorageKey(memberId), created.id);
+                    localStorage.setItem(rsvpStorageKey(memberId), created.id);
+                }
+            } catch {
+                return;
             }
 
             setSubmitted(true);
@@ -189,10 +185,7 @@ export default function RSVPSubmitPage() {
         return (
             <div className="mx-auto max-w-2xl px-4 pb-24 lg:pb-8">
                 <RsvpHeader onGoBack={handleGoBack} />
-                <RsvpSubmittedView
-                    attending={attending}
-                    onBackToWall={handleBackToWall}
-                />
+                <RsvpSubmittedView attending={attending} onBackToWall={handleBackToWall} />
             </div>
         );
     }
@@ -212,9 +205,8 @@ export default function RSVPSubmitPage() {
                 onMessageChange={handleMessageChange}
                 onSubmit={handleSubmit}
                 submitDisabled={!attending || !memberId || isSubmitting}
-                submitError={submitError !== null && submitError !== undefined}
+                submitError={submitErrorMessage}
             />
-
         </div>
     );
 }

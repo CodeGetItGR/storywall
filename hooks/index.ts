@@ -20,3 +20,4 @@ export * from './useReports';
 export * from './useRsvps';
 export * from './useSessions';
 export * from './useStories';
+export * from './useUsage';

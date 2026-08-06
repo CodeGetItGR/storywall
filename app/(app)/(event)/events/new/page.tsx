@@ -3,11 +3,15 @@
 import { ArrowLeft, ChevronDown, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import React, {useCallback, useState} from 'react';
+import React, { useCallback, useState } from 'react';
 
+import { UsagePanel } from '@/components/plan/UsagePanel';
+import { useAppConfig } from '@/hooks/useAppConfig';
 import { useCreateEvent } from '@/hooks/useEvent';
-import { getErrorMessage, getFieldErrors } from '@/lib/api/errors';
+import { useMeUsage } from '@/hooks/useUsage';
+import { ERROR_CODES, getErrorCode, getErrorMessage, getFieldErrors, getQuotaExceededDetails } from '@/lib/api/errors';
 import type { EventRequestDto, EventTypeConvention } from '@/lib/api/types';
+import { findNextPlan, findPlanByCode } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { useEventSwitcher } from '@/providers/EventProvider';
 
@@ -18,6 +22,8 @@ export default function CreateEventPage() {
     const router = useRouter();
     const { setActiveEventId } = useEventSwitcher();
     const createEvent = useCreateEvent();
+    const { data: accountUsage } = useMeUsage();
+    const { data: appConfig } = useAppConfig();
 
     const [title, setTitle] = useState('');
     const [eventType, setEventType] = useState<EventTypeConvention>('WEDDING');
@@ -28,6 +34,8 @@ export default function CreateEventPage() {
     const [error, setError] = useState<string | null>(null);
 
     const fieldErrors = getFieldErrors(createEvent.error);
+    const accountPlan = accountUsage ? findPlanByCode(appConfig?.planTiers ?? [], 'ACCOUNT', accountUsage.planTier) : undefined;
+    const nextAccountPlan = accountUsage ? findNextPlan(appConfig?.planTiers ?? [], 'ACCOUNT', accountUsage.planTier) : undefined;
 
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -51,6 +59,13 @@ export default function CreateEventPage() {
             setActiveEventId(event.id);
             router.push(routes.manage);
         } catch (err) {
+            if (getErrorCode(err) === ERROR_CODES.ACTIVE_EVENT_LIMIT_EXCEEDED) {
+                const details = getQuotaExceededDetails(err);
+                const nextPlan = details ? findNextPlan(appConfig?.planTiers ?? [], 'ACCOUNT', details.planCode) : undefined;
+                setError(nextPlan ? t('activeEventLimitExceededWithPlan', { plan: nextPlan.name }) : t('activeEventLimitExceeded'));
+                return;
+            }
+
             setError(getErrorMessage(err));
         }
     }
@@ -98,6 +113,27 @@ export default function CreateEventPage() {
 
             <div className="bg-card rounded-xl shadow-2xs p-5">
                 <p className="text-sm text-ink-muted mb-5">{t('subtitle')}</p>
+
+                {accountUsage && (
+                    <UsagePanel
+                        title={t('usageTitle')}
+                        planName={accountPlan?.name ?? accountUsage.planTier}
+                        nextPlanName={nextAccountPlan?.name}
+                        className="mb-5"
+                        items={[
+                            {
+                                key: 'activeEvents',
+                                used: accountUsage.activeEvents,
+                                limit: accountUsage.activeEventLimit,
+                                percent: accountUsage.activeEventPercent,
+                                valueLabel:
+                                    accountUsage.activeEventLimit === null
+                                        ? `${accountUsage.activeEvents}`
+                                        : `${accountUsage.activeEvents} / ${accountUsage.activeEventLimit}`,
+                            },
+                        ]}
+                    />
+                )}
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     <label className="flex flex-col gap-1.5">

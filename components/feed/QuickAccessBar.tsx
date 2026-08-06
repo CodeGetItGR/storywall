@@ -57,13 +57,13 @@ export function QuickAccessBar() {
     const enabledItems = useMemo(() => {
         if (!activeEvent) return [];
 
-        const enabledModules = new Set(activeEvent.modules.filter((module) => module.isEnabled).map((module) => module.moduleKey));
+        const availableModules = new Set(activeEvent.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey));
 
         return activeEvent.modules
-            .filter((module) => module.isEnabled)
+            .filter((module) => module.isAvailable)
             .map((module) => {
                 const item = quickAccessItems.find((entry) => entry.moduleKey === module.moduleKey && entry.visible);
-                if (!item || !enabledModules.has(item.moduleKey)) {
+                if (!item || !availableModules.has(item.moduleKey)) {
                     return null;
                 }
 

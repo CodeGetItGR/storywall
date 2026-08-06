@@ -4,13 +4,15 @@ import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { AuthLayout } from '@/components/auth/AuthLayout';
+import { useAppConfig } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { useAcceptEventInvitation } from '@/hooks/useEventInvitations';
 import { getErrorMessage } from '@/lib/api/errors';
 import { joinEventAfterAuth } from '@/lib/invite/joinAfterAuth';
+import { findNextPlan } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 
 export default function LoginPage() {
@@ -21,12 +23,25 @@ export default function LoginPage() {
 
     const { login } = useAuth();
     const acceptInvitation = useAcceptEventInvitation();
+    const { data: appConfig } = useAppConfig();
 
     const [showPw, setShowPw] = useState(false);
     const [email, setEmail] = useState(searchParams.get('email') ?? '');
     const [password, setPassword] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setEmail(e.target.value);
+    }, []);
+
+    const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setPassword(e.target.value);
+    }, []);
+
+    const handleTogglePasswordVisibility = useCallback(() => {
+        setShowPw((p) => !p);
+    }, []);
 
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -38,8 +53,13 @@ export default function LoginPage() {
 
             if (inviteToken) {
                 const result = await joinEventAfterAuth((token) => acceptInvitation.mutateAsync(token), inviteToken);
-                if (result === 'expired') {
+                if (result.status === 'expired') {
                     setError(t('expiredInvite'));
+                    return;
+                }
+                if (result.status === 'memberLimitExceeded') {
+                    const nextPlan = result.planCode ? findNextPlan(appConfig?.planTiers ?? [], 'EVENT', result.planCode) : undefined;
+                    setError(nextPlan ? t('memberLimitExceededWithPlan', { plan: nextPlan.name }) : t('memberLimitExceeded'));
                     return;
                 }
             }
@@ -67,7 +87,7 @@ export default function LoginPage() {
                             placeholder={t('placeholders.email')}
                             required
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={handleEmailChange}
                             className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink-faint outline-none"
                         />
                     </div>
@@ -83,12 +103,12 @@ export default function LoginPage() {
                             required
                             minLength={8}
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={handlePasswordChange}
                             className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink-faint outline-none"
                         />
                         <button
                             type="button"
-                            onClick={() => setShowPw((p) => !p)}
+                            onClick={handleTogglePasswordVisibility}
                             aria-label={showPw ? t('hidePassword') : t('showPassword')}
                             className="text-ink-faint hover:text-ink-muted transition-colors"
                         >
@@ -121,7 +141,10 @@ export default function LoginPage() {
 
             <p className="text-xs text-center text-ink-muted mt-6">
                 {t('noAccount')}{' '}
-                <Link href={inviteToken ? routes.auth.register({ invite: inviteToken }) : routes.register} className="font-semibold text-ink hover:underline">
+                <Link
+                    href={inviteToken ? routes.auth.register({ invite: inviteToken }) : routes.register}
+                    className="font-semibold text-ink hover:underline"
+                >
                     {t('createAccountLink')}
                 </Link>
             </p>

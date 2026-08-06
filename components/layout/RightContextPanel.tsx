@@ -4,6 +4,10 @@ import { LayoutDashboard, MessageSquareText, Settings2, Ticket } from 'lucide-re
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { formatBytes, UsagePanel } from '@/components/plan/UsagePanel';
+import { useAppConfig } from '@/hooks/useAppConfig';
+import { useEventUsage } from '@/hooks/useUsage';
+import { findNextPlan, findPlanByCode } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
@@ -20,6 +24,8 @@ export function RightContextPanel() {
     const activeEvent = useActiveEvent();
     const isHost = useIsHost();
     const isLoading = useEventContextLoading();
+    const { data: eventUsage = null } = useEventUsage(activeEvent?.id ?? null);
+    const { data: appConfig } = useAppConfig();
 
     if (isLoading || !activeEvent || !isHost) return null;
 
@@ -29,7 +35,11 @@ export function RightContextPanel() {
         day: 'numeric',
         year: 'numeric',
     });
-    const enabledModuleCount = activeEvent.modules.filter((module) => module.isEnabled).length;
+    const enabledModuleCount = activeEvent.modules.filter((module) => module.isAvailable).length;
+    const currentPlan = eventUsage ? findPlanByCode(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
+    const nextPlan = eventUsage ? findNextPlan(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
+    const moduleNamesByKey = new Map((appConfig?.modules ?? []).map((module_) => [module_.moduleKey, module_.name]));
+    const includedModules = currentPlan?.moduleKeys.map((moduleKey) => moduleNamesByKey.get(moduleKey) ?? moduleKey) ?? [];
 
     return (
         <aside
@@ -54,6 +64,37 @@ export function RightContextPanel() {
                     </div>
                 </div>
 
+                {eventUsage && (
+                    <UsagePanel
+                        title={t('usageTitle')}
+                        planName={currentPlan?.name ?? eventUsage.planTier}
+                        nextPlanName={nextPlan?.name}
+                        includedModules={includedModules}
+                        items={[
+                            {
+                                key: 'storage',
+                                used: eventUsage.storageBytes,
+                                limit: eventUsage.storageLimitBytes,
+                                percent: eventUsage.storagePercent,
+                                valueLabel:
+                                    eventUsage.storageLimitBytes === null
+                                        ? formatBytes(eventUsage.storageBytes)
+                                        : `${formatBytes(eventUsage.storageBytes)} / ${formatBytes(eventUsage.storageLimitBytes)}`,
+                            },
+                            {
+                                key: 'members',
+                                used: eventUsage.memberCount,
+                                limit: eventUsage.memberLimit,
+                                percent: eventUsage.memberPercent,
+                                valueLabel:
+                                    eventUsage.memberLimit === null
+                                        ? `${eventUsage.memberCount}`
+                                        : `${eventUsage.memberCount} / ${eventUsage.memberLimit}`,
+                            },
+                        ]}
+                    />
+                )}
+
                 <div>
                     <p className="mb-2 text-sm font-semibold text-ink">{t('hostActions')}</p>
                     <div className="space-y-2">
@@ -74,7 +115,6 @@ export function RightContextPanel() {
                         ))}
                     </div>
                 </div>
-
             </div>
         </aside>
     );

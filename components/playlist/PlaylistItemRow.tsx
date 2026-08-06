@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react';
 
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useCreatePlaylistVote, useDeletePlaylistSuggestion, useDeletePlaylistVote, usePlaylistVotes } from '@/hooks/usePlaylist';
+import { getErrorMessage, isModuleNotAvailableError } from '@/lib/api/errors';
 import type { PlaylistSuggestionResponseDto, PlaylistVoteType } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
@@ -67,7 +68,7 @@ function buildYouTubeEmbedUrl(url: string | null): string | null {
             if (!videoId) {
                 const parts = parsed.pathname.split('/').filter(Boolean);
                 const embedIndex = parts.findIndex((part) => part === 'embed' || part === 'shorts');
-                videoId = embedIndex >= 0 ? parts[embedIndex + 1] ?? null : null;
+                videoId = embedIndex >= 0 ? (parts[embedIndex + 1] ?? null) : null;
             }
         }
 
@@ -91,6 +92,7 @@ export function PlaylistItemRow({ suggestion }: PlaylistItemRowProps) {
     const deleteSuggestion = useDeletePlaylistSuggestion(eventId);
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
     const [resolvingVote, setResolvingVote] = useState(false);
+    const [voteError, setVoteError] = useState<string | null>(null);
 
     const upvoteActive = suggestion.myVote === 'UPVOTE';
     const downvoteActive = suggestion.myVote === 'DOWNVOTE';
@@ -122,15 +124,21 @@ export function PlaylistItemRow({ suggestion }: PlaylistItemRowProps) {
     async function handleVote(voteType: PlaylistVoteType) {
         if (!memberId || isBusy) return;
 
-        if (suggestion.myVote === voteType) {
-            await clearCurrentVote();
-            return;
-        }
+        setVoteError(null);
 
-        await createVote.mutateAsync({
-            playlistSuggestionId: suggestion.id,
-            voteType,
-        });
+        try {
+            if (suggestion.myVote === voteType) {
+                await clearCurrentVote();
+                return;
+            }
+
+            await createVote.mutateAsync({
+                playlistSuggestionId: suggestion.id,
+                voteType,
+            });
+        } catch (error) {
+            setVoteError(isModuleNotAvailableError(error) ? t('moduleUnavailable') : getErrorMessage(error, t('voteFailed')));
+        }
     }
 
     function handleUpvoteClick() {
@@ -169,11 +177,7 @@ export function PlaylistItemRow({ suggestion }: PlaylistItemRowProps) {
                                         'bg-primary-light text-primary-dark'
                                     )}
                                 >
-                                    {previewSource === 'spotify' ? (
-                                        <SpotifyMark className="h-3.5 w-3.5" />
-                                    ) : (
-                                        <YouTubeMark className="h-3.5 w-3.5" />
-                                    )}
+                                    {previewSource === 'spotify' ? <SpotifyMark className="h-3.5 w-3.5" /> : <YouTubeMark className="h-3.5 w-3.5" />}
                                 </span>
                             )}
                         </div>
@@ -215,7 +219,9 @@ export function PlaylistItemRow({ suggestion }: PlaylistItemRowProps) {
                             disabled={!memberId || isBusy}
                             className={cn(
                                 'flex min-w-12 flex-col items-center gap-0.5 rounded-2xl px-3 py-2 transition-all',
-                                upvoteActive ? 'bg-primary-light text-primary shadow-sm shadow-primary/10' : 'text-ink-faint hover:bg-surface-muted hover:text-ink-muted',
+                                upvoteActive
+                                    ? 'bg-primary-light text-primary shadow-sm shadow-primary/10'
+                                    : 'text-ink-faint hover:bg-surface-muted hover:text-ink-muted',
                                 (!memberId || isBusy) && 'cursor-not-allowed opacity-60'
                             )}
                         >
@@ -231,13 +237,17 @@ export function PlaylistItemRow({ suggestion }: PlaylistItemRowProps) {
                             disabled={!memberId || isBusy}
                             className={cn(
                                 'flex min-w-12 flex-col items-center gap-0.5 rounded-2xl px-3 py-2 transition-all',
-                                downvoteActive ? 'bg-destructive/10 text-destructive shadow-sm shadow-destructive/10' : 'text-ink-faint hover:bg-surface-muted hover:text-ink-muted',
+                                downvoteActive
+                                    ? 'bg-destructive/10 text-destructive shadow-sm shadow-destructive/10'
+                                    : 'text-ink-faint hover:bg-surface-muted hover:text-ink-muted',
                                 (!memberId || isBusy) && 'cursor-not-allowed opacity-60'
                             )}
                         >
                             <ThumbsDown className={cn('h-4 w-4', downvoteActive && 'fill-destructive')} strokeWidth={downvoteActive ? 0 : 1.8} />
                             <span className="text-[11px] font-bold tabular-nums">{suggestion.downvoteCount}</span>
                         </button>
+
+                        {voteError && <p className="basis-full text-right text-xs text-destructive">{voteError}</p>}
 
                         {canDeleteSuggestion && (
                             <button
@@ -251,11 +261,7 @@ export function PlaylistItemRow({ suggestion }: PlaylistItemRowProps) {
                                     deleteSuggestion.isPending && 'cursor-not-allowed opacity-60'
                                 )}
                             >
-                                {deleteSuggestion.isPending ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                    <Trash2 className="h-4 w-4" />
-                                )}
+                                {deleteSuggestion.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                             </button>
                         )}
                     </div>

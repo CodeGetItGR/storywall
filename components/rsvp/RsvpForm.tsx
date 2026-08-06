@@ -4,8 +4,8 @@ import { CheckCircle2, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type React from 'react';
 
+import type { RsvpPlusOnes } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
-import {RsvpPlusOnes} from "@/lib/api/types";
 
 type AttendingStatus = 'attending' | 'not-attending';
 
@@ -14,13 +14,13 @@ interface RsvpFormProps {
     onAttend: () => void;
     onDecline: () => void;
     plusOnes: RsvpPlusOnes;
-    onIncrementPlusOnes: (type:"adult" | "child") => () => void;
-    onDecrementPlusOnes: (type:"adult" | "child") => () => void;
+    onIncrementPlusOnes: (type: 'adult' | 'child') => () => void;
+    onDecrementPlusOnes: (type: 'adult' | 'child') => () => void;
     message: string;
     onMessageChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
     onSubmit: (e: React.SubmitEvent<HTMLFormElement>) => void;
     submitDisabled: boolean;
-    submitError: boolean;
+    submitError: string | null;
 }
 
 export function RsvpForm({
@@ -87,7 +87,9 @@ export function RsvpForm({
                                     >
                                         −
                                     </button>
-                                    <span className="flex-1 text-center text-sm font-semibold text-ink tabular-nums">{t('adultsCount', { count: plusOnes.adultCount })}</span>
+                                    <span className="flex-1 text-center text-sm font-semibold text-ink tabular-nums">
+                                        {t('adultsCount', { count: plusOnes.adultCount })}
+                                    </span>
                                     <button
                                         type="button"
                                         onClick={onIncrementPlusOnes('adult')}
@@ -104,7 +106,9 @@ export function RsvpForm({
                                     >
                                         −
                                     </button>
-                                    <span className="flex-1 text-center text-sm font-semibold text-ink tabular-nums">{t('childrenCount', { count: plusOnes.childCount })}</span>
+                                    <span className="flex-1 text-center text-sm font-semibold text-ink tabular-nums">
+                                        {t('childrenCount', { count: plusOnes.childCount })}
+                                    </span>
                                     <button
                                         type="button"
                                         onClick={onIncrementPlusOnes('child')}
@@ -112,9 +116,8 @@ export function RsvpForm({
                                     >
                                         +
                                     </button>
+                                </div>
                             </div>
-                            </div>
-
                         </div>
                     </>
                 )}
@@ -131,7 +134,7 @@ export function RsvpForm({
                     />
                 </div>
 
-                {submitError && <p className="text-xs text-rose-500 text-center">{t('submitError')}</p>}
+                {submitError && <p className="text-xs text-rose-500 text-center">{submitError}</p>}
 
                 <button
                     type="submit"

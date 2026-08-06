@@ -7,6 +7,7 @@ import { PostCommentsPanel, PostMediaColumn } from '@/components/feed/post';
 import { Modal } from '@/components/ui/modal';
 import { useCreateComment, useEventMembers, usePost, usePostComments, usePostModal } from '@/hooks';
 import { ApiError } from '@/lib/api/client';
+import { getErrorMessage, isModuleNotAvailableError } from '@/lib/api/errors';
 import { cn, timeAgoParts } from '@/lib/utils';
 import { useActiveMember } from '@/providers/EventProvider';
 
@@ -70,8 +71,8 @@ export function PostModal() {
                 authorMemberId: activeMember.id,
                 content: commentText.trim(),
             });
-        } catch {
-            setCommentError(t('commentFailed'));
+        } catch (error) {
+            setCommentError(isModuleNotAvailableError(error) ? t('moduleUnavailable') : getErrorMessage(error, t('commentFailed')));
             return;
         }
 
@@ -95,7 +96,14 @@ export function PostModal() {
     const clampedIndex = post ? Math.min(Math.max(mediaIndex, 0), post.media.length - 1) : 0;
 
     return (
-        <Modal open={isOpen} onClose={close} size={hasMedia ? 'full' : 'lg'} closeLabel={t('close')} closeButtonPosition={'left'} className={hasMedia ? undefined : 'min-h-[70vh]'}>
+        <Modal
+            open={isOpen}
+            onClose={close}
+            size={hasMedia ? 'full' : 'lg'}
+            closeLabel={t('close')}
+            closeButtonPosition={'left'}
+            className={hasMedia ? undefined : 'min-h-[70vh]'}
+        >
             {!hasMedia && (
                 <div className="z-10 bg-background/95 backdrop-blur-sm border-b border-border flex items-center justify-between px-4 py-5 w-full shrink-0">
                     <h2 className="text-base font-bold text-ink">{t('title')}</h2>
@@ -132,7 +140,12 @@ export function PostModal() {
                         )}
                     >
                         <div className="lg:hidden flex items-center justify-center pt-2.5 pb-1.5 shrink-0">
-                            <button type="button" onClick={handleHideComments} aria-label={t('hideComments')} className="w-10 h-1.5 rounded-full bg-border" />
+                            <button
+                                type="button"
+                                onClick={handleHideComments}
+                                aria-label={t('hideComments')}
+                                className="w-10 h-1.5 rounded-full bg-border"
+                            />
                         </div>
                         {commentsPanel}
                     </div>

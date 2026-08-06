@@ -2,6 +2,9 @@ import { Clock, Ticket, Users } from 'lucide-react';
 import type { useTranslations } from 'next-intl';
 
 import Section from '@/components/manage/Section';
+import { formatBytes, UsagePanel } from '@/components/plan/UsagePanel';
+import type { EventUsageResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import { findNextPlan, findPlanByCode } from '@/lib/planTiers';
 import { cn } from '@/lib/utils';
 
 function Stat({ label, value, sub, color, Icon }: { label: string; value: string; sub: string; color: string; Icon: React.ElementType }) {
@@ -23,6 +26,9 @@ export default function OverviewTab({
     daysToGo,
     invitationCount,
     rsvpBreakdown,
+    eventUsage,
+    planTiers,
+    modules,
     onSeeAllRsvp,
     onSeeAllInvitations,
 }: {
@@ -31,10 +37,17 @@ export default function OverviewTab({
     daysToGo: number;
     invitationCount: number;
     rsvpBreakdown: readonly { key: string; count: number; color: string }[];
+    eventUsage: EventUsageResponseDto | null;
+    planTiers: PlanTierResponseDto[];
+    modules: PlatformModuleResponseDto[];
     onSeeAllRsvp: () => void;
     onSeeAllInvitations: () => void;
 }) {
     const rsvpTotal = rsvpBreakdown.reduce((sum, r) => sum + r.count, 0) || 1;
+    const currentPlan = eventUsage ? findPlanByCode(planTiers, 'EVENT', eventUsage.planTier) : undefined;
+    const nextPlan = eventUsage ? findNextPlan(planTiers, 'EVENT', eventUsage.planTier) : undefined;
+    const moduleNamesByKey = new Map(modules.map((module_) => [module_.moduleKey, module_.name]));
+    const includedModules = currentPlan?.moduleKeys.map((moduleKey) => moduleNamesByKey.get(moduleKey) ?? moduleKey) ?? [];
 
     return (
         <div className="px-4 flex flex-col gap-6">
@@ -63,6 +76,41 @@ export default function OverviewTab({
             </div>
 
             <div className="h-px bg-border" />
+
+            {eventUsage && (
+                <>
+                    <UsagePanel
+                        title={t('usage.eventTitle')}
+                        planName={currentPlan?.name ?? eventUsage.planTier}
+                        nextPlanName={nextPlan?.name}
+                        includedModules={includedModules}
+                        items={[
+                            {
+                                key: 'storage',
+                                used: eventUsage.storageBytes,
+                                limit: eventUsage.storageLimitBytes,
+                                percent: eventUsage.storagePercent,
+                                valueLabel:
+                                    eventUsage.storageLimitBytes === null
+                                        ? formatBytes(eventUsage.storageBytes)
+                                        : `${formatBytes(eventUsage.storageBytes)} / ${formatBytes(eventUsage.storageLimitBytes)}`,
+                            },
+                            {
+                                key: 'members',
+                                used: eventUsage.memberCount,
+                                limit: eventUsage.memberLimit,
+                                percent: eventUsage.memberPercent,
+                                valueLabel:
+                                    eventUsage.memberLimit === null
+                                        ? `${eventUsage.memberCount}`
+                                        : `${eventUsage.memberCount} / ${eventUsage.memberLimit}`,
+                            },
+                        ]}
+                    />
+
+                    <div className="h-px bg-border" />
+                </>
+            )}
 
             <Section
                 title={t('rsvpBreakdown.title')}

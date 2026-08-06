@@ -17,6 +17,12 @@ export type ModuleKeyConvention = (typeof EVENT_MODULE_KEYS)[number];
 // + matching DTO validation) — not a free-string convention like the others.
 export type PostType = 'TEXT' | 'MEDIA' | 'ANNOUNCEMENT' | 'PLAYLIST';
 export type MediaTypeConvention = 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT';
+export type PlanScope = 'ACCOUNT' | 'EVENT';
+export type BillingPeriod = 'MONTHLY' | 'YEARLY' | 'ONE_TIME';
+// Plan codes are admin-configurable at runtime. Known codes such as FREE,
+// PLUS, and PRO are conventions, not an exhaustive client-side union.
+export type PlanTierCode = string;
+export type ModuleKey = string;
 
 // --- §2 Errors ---
 
@@ -31,10 +37,36 @@ export interface AppMediaConfigDto {
     publicHost: string | null;
 }
 
-export interface AppPlanTierConfigDto {
-    storageBytes: number;
-    maxMembers: number;
-    maxActiveEvents: number;
+export interface PlanTierResponseDto {
+    id: string;
+    code: PlanTierCode;
+    scope: PlanScope;
+    name: string;
+    description: string | null;
+    sortOrder: number;
+    isDefault: boolean;
+    isAssignable: boolean;
+    isPublic: boolean;
+    storageBytes: number | null;
+    maxMembers: number | null;
+    maxActiveEvents: number | null;
+    priceAmountMinor: number | null;
+    priceCurrency: string | null;
+    billingPeriod: BillingPeriod | null;
+    discountPercent: number | null;
+    discountLabel: string | null;
+    discountStartsAt: string | null;
+    discountEndsAt: string | null;
+    moduleKeys: ModuleKey[];
+}
+
+export interface PlatformModuleResponseDto {
+    id: string;
+    moduleKey: ModuleKey;
+    name: string;
+    description: string | null;
+    isEnabled: boolean;
+    sortOrder: number;
 }
 
 export interface AppRsvpConfigDto {
@@ -48,8 +80,9 @@ export interface AppConfigResponseDto {
     featureFlags: PlatformFeatureFlagResponseDto[];
     media: AppMediaConfigDto;
     pagination: { defaultPageSize: number; maxPageSize: number };
-    planTiers: Record<'FREE' | 'PLUS' | 'PRO', AppPlanTierConfigDto>;
-    eventModuleKeys: ModuleKeyConvention[];
+    planTiers: PlanTierResponseDto[];
+    eventModuleKeys: ModuleKey[];
+    modules: PlatformModuleResponseDto[];
     rsvp: AppRsvpConfigDto;
 }
 
@@ -66,6 +99,7 @@ export interface ProblemDetail {
     errorCode: number | string;
     errorKey: string;
     errors?: Record<string, string>;
+    details?: unknown;
 }
 
 // --- §3 Auth ---
@@ -381,7 +415,7 @@ export interface EventMemberPatchDto {
 
 export interface EventModuleRequestDto {
     eventId: string;
-    moduleKey: ModuleKeyConvention;
+    moduleKey: ModuleKey;
     isEnabled: boolean;
     configuration: Record<string, unknown>;
 }
@@ -389,10 +423,11 @@ export interface EventModuleRequestDto {
 export interface EventModuleResponseDto {
     id: string;
     eventId: string;
-    moduleKey: ModuleKeyConvention;
+    moduleKey: ModuleKey;
     isEnabled: boolean;
-    configuration: Record<string, unknown>;
+    configuration: Record<string, unknown> | null;
     createdAt: string;
+    isAvailable: boolean;
 }
 
 export interface EventModulePatchDto {
@@ -446,8 +481,8 @@ export interface RsvpRequestDto {
 }
 
 export interface RsvpPlusOnes {
-    adultCount:number;
-    childCount:number;
+    adultCount: number;
+    childCount: number;
 }
 
 export interface RsvpResponseDto {
@@ -514,6 +549,32 @@ export interface MediaBatchFailedItemDto {
 export interface MediaBatchUploadResponseDto {
     created: MediaResponseDto[];
     failed: MediaBatchFailedItemDto[];
+}
+
+export interface QuotaExceededDetails {
+    planCode: PlanTierCode;
+    used: number;
+    limit: number;
+    incomingBytes?: number;
+}
+
+export interface EventUsageResponseDto {
+    eventId: string;
+    planTier: PlanTierCode;
+    storageBytes: number;
+    storageLimitBytes: number | null;
+    storagePercent: number;
+    memberCount: number;
+    memberLimit: number | null;
+    memberPercent: number;
+}
+
+export interface AccountUsageResponseDto {
+    userId: string;
+    planTier: PlanTierCode;
+    activeEvents: number;
+    activeEventLimit: number | null;
+    activeEventPercent: number;
 }
 
 export interface PostRequestDto {

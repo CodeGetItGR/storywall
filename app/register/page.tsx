@@ -7,10 +7,12 @@ import { useTranslations } from 'next-intl';
 import React, { ChangeEvent, useCallback, useState } from 'react';
 
 import { AuthLayout } from '@/components/auth/AuthLayout';
+import { useAppConfig } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { useAcceptEventInvitation } from '@/hooks/useEventInvitations';
 import { getErrorMessage } from '@/lib/api/errors';
 import { joinEventAfterAuth } from '@/lib/invite/joinAfterAuth';
+import { findNextPlan } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 
 export default function RegisterPage() {
@@ -21,6 +23,7 @@ export default function RegisterPage() {
 
     const { register } = useAuth();
     const acceptInvitation = useAcceptEventInvitation();
+    const { data: appConfig } = useAppConfig();
 
     const [showPw, setShowPw] = useState(false);
     const [email, setEmail] = useState(searchParams.get('email') ?? '');
@@ -39,8 +42,13 @@ export default function RegisterPage() {
 
             if (inviteToken) {
                 const result = await joinEventAfterAuth((token) => acceptInvitation.mutateAsync(token), inviteToken);
-                if (result === 'expired') {
+                if (result.status === 'expired') {
                     setError(t('expiredInvite'));
+                    return;
+                }
+                if (result.status === 'memberLimitExceeded') {
+                    const nextPlan = result.planCode ? findNextPlan(appConfig?.planTiers ?? [], 'EVENT', result.planCode) : undefined;
+                    setError(nextPlan ? t('memberLimitExceededWithPlan', { plan: nextPlan.name }) : t('memberLimitExceeded'));
                     return;
                 }
             }
@@ -63,6 +71,10 @@ export default function RegisterPage() {
 
     const onDisplayNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         setDisplayName(e.target.value);
+    }, []);
+
+    const onTogglePasswordVisibility = useCallback(() => {
+        setShowPw((p) => !p);
     }, []);
 
     return (
@@ -115,7 +127,7 @@ export default function RegisterPage() {
                         />
                         <button
                             type="button"
-                            onClick={() => setShowPw((p) => !p)}
+                            onClick={onTogglePasswordVisibility}
                             aria-label={showPw ? t('hidePassword') : t('showPassword')}
                             className="text-ink-faint hover:text-ink-muted transition-colors"
                         >
@@ -148,7 +160,10 @@ export default function RegisterPage() {
 
             <p className="text-xs text-center text-ink-muted mt-6">
                 {t('haveAccount')}{' '}
-                <Link href={inviteToken ? routes.auth.login({ invite: inviteToken }) : routes.login} className="font-semibold text-ink hover:underline">
+                <Link
+                    href={inviteToken ? routes.auth.login({ invite: inviteToken }) : routes.login}
+                    className="font-semibold text-ink hover:underline"
+                >
                     {t('signInLink')}
                 </Link>
             </p>

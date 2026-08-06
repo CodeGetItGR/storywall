@@ -4,6 +4,8 @@ import { BadgePlus, Music3, Play, TextCursorInput } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type ChangeEvent, type ComponentType, type ReactNode, type SubmitEvent, useState } from 'react';
 
+import { getErrorMessage, isModuleNotAvailableError } from '@/lib/api/errors';
+
 type PlaylistSuggestionInput = {
     title: string;
     artist?: string;
@@ -42,15 +44,7 @@ function YouTubeMark({ className }: { className?: string }) {
     );
 }
 
-function FieldShell({
-    icon: Icon,
-    label,
-    children,
-}: {
-    icon: ComponentType<{ className?: string }>;
-    label: string;
-    children: ReactNode;
-}) {
+function FieldShell({ icon: Icon, label, children }: { icon: ComponentType<{ className?: string }>; label: string; children: ReactNode }) {
     return (
         <label className="group block">
             <span className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-faint">
@@ -114,8 +108,8 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmit, compact = false
             setYoutubeUrl('');
             setSpotifyUrl('');
             setComment('');
-        } catch {
-            setSubmitError(t('submitFailed'));
+        } catch (error) {
+            setSubmitError(isModuleNotAvailableError(error) ? t('moduleUnavailable') : getErrorMessage(error, t('submitFailed')));
         }
     }
 
@@ -126,12 +120,18 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmit, compact = false
         >
             <div className={compact ? 'px-4 pt-4 text-ink' : 'bg-gradient-brand px-5 py-5 text-white'}>
                 <div className={`flex items-start gap-4 ${compact ? 'items-center' : ''}`}>
-                    <div className={`flex shrink-0 items-center justify-center rounded-2xl ${compact ? 'h-10 w-10 bg-primary-light text-primary-dark' : 'h-12 w-12 bg-white/15 text-white ring-1 ring-white/15 backdrop-blur-sm'}`}>
+                    <div
+                        className={`flex shrink-0 items-center justify-center rounded-2xl ${compact ? 'h-10 w-10 bg-primary-light text-primary-dark' : 'h-12 w-12 bg-white/15 text-white ring-1 ring-white/15 backdrop-blur-sm'}`}
+                    >
                         <BadgePlus className={compact ? 'h-5 w-5' : 'h-6 w-6'} />
                     </div>
                     <div className="min-w-0">
-                        <p className={`text-[11px] font-semibold uppercase tracking-[0.24em] ${compact ? 'text-ink-faint' : 'text-white/75'}`}>{t('suggestASong')}</p>
-                        <h2 className={`mt-1 font-semibold leading-tight ${compact ? 'text-base text-ink' : 'text-lg text-white'}`}>{t('formTitle')}</h2>
+                        <p className={`text-[11px] font-semibold uppercase tracking-[0.24em] ${compact ? 'text-ink-faint' : 'text-white/75'}`}>
+                            {t('suggestASong')}
+                        </p>
+                        <h2 className={`mt-1 font-semibold leading-tight ${compact ? 'text-base text-ink' : 'text-lg text-white'}`}>
+                            {t('formTitle')}
+                        </h2>
                         {!compact && <p className="mt-1 max-w-xl text-sm leading-relaxed text-white/80">{t('formSubtitle')}</p>}
                     </div>
                 </div>

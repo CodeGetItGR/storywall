@@ -1,4 +1,5 @@
 import { ApiError } from '@/lib/api/client';
+import type { QuotaExceededDetails } from '@/lib/api/types';
 
 // Numeric errorCode registry from the integration guide §2. Switch on
 // errorCode, never on `detail` (detail is human copy and may change).
@@ -18,6 +19,10 @@ export const ERROR_CODES = {
     STORAGE_UPLOAD_FAILED: 5004,
     DUPLICATE_REACTION: 5005,
     ALREADY_LINKED: 5006,
+    EVENT_STORAGE_LIMIT_EXCEEDED: 5008,
+    EVENT_MEMBER_LIMIT_EXCEEDED: 5009,
+    ACTIVE_EVENT_LIMIT_EXCEEDED: 5010,
+    MODULE_NOT_AVAILABLE: 5012,
     INTERNAL_ERROR: 9001,
 } as const;
 
@@ -40,6 +45,30 @@ export function getFieldErrors(error: unknown): Record<string, string> | undefin
         return error.problem?.errors;
     }
     return undefined;
+}
+
+function isQuotaExceededDetails(details: unknown): details is QuotaExceededDetails {
+    return (
+        typeof details === 'object' &&
+        details !== null &&
+        'planCode' in details &&
+        'used' in details &&
+        'limit' in details &&
+        typeof (details as QuotaExceededDetails).planCode === 'string' &&
+        typeof (details as QuotaExceededDetails).used === 'number' &&
+        typeof (details as QuotaExceededDetails).limit === 'number'
+    );
+}
+
+export function getQuotaExceededDetails(error: unknown): QuotaExceededDetails | undefined {
+    if (error instanceof ApiError && isQuotaExceededDetails(error.problem?.details)) {
+        return error.problem.details;
+    }
+    return undefined;
+}
+
+export function isModuleNotAvailableError(error: unknown): boolean {
+    return getErrorCode(error) === ERROR_CODES.MODULE_NOT_AVAILABLE;
 }
 
 export function getErrorMessage(error: unknown, fallback = 'Something went wrong. Please try again.'): string {

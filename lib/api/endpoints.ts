@@ -18,6 +18,7 @@ export const endpoints = {
 
     me: {
         events: '/api/me/events',
+        usage: '/api/me/usage',
     },
 
     notifications: {
@@ -47,6 +48,7 @@ export const endpoints = {
         rsvps: (eventId: string) => `/api/events/${eventId}/rsvps`,
         media: (eventId: string) => `/api/events/${eventId}/media`,
         mediaBatch: (eventId: string) => `/api/events/${eventId}/media/batch`,
+        usage: (eventId: string) => `/api/events/${eventId}/usage`,
         posts: (eventId: string) => `/api/events/${eventId}/posts`,
         stories: (eventId: string) => `/api/events/${eventId}/stories`,
         playlistSuggestions: (eventId: string) => `/api/events/${eventId}/playlist-suggestions`,

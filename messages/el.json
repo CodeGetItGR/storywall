@@ -57,7 +57,9 @@
         "playlistDigest": "Ενημέρωση λίστας",
         "pinned": "Καρφιτσωμένη",
         "hostPost": "POST ΔΙΟΡΓΑΝΩΤΗ",
-        "openPlaylist": "Άνοιγμα λίστας"
+        "openPlaylist": "Άνοιγμα λίστας",
+        "moduleUnavailable": "Posts are not available on this event's current plan.",
+        "reactionFailed": "Couldn't update your reaction. Please try again."
     },
     "DesktopNavRail": {
         "mainNavigation": "Κύρια πλοήγηση",
@@ -112,7 +114,11 @@
         "requestTooLarge": "Οι επιλεγμένες φωτογραφίες υπερβαίνουν το όριο {size}",
         "cancel": "Ακύρωση",
         "post": "Δημοσίευση",
-        "posting": "Δημοσίευση…"
+        "posting": "Δημοσίευση…",
+        "storageLimitExceeded": "This event has no room left for new media on its current plan.",
+        "moduleUnavailable": "This feature is not available on this event's current plan.",
+        "genericSubmitFailed": "Something went wrong. Please try again.",
+        "storageLimitExceededWithPlan": "This event has no room left for new media on its current plan. Upgrade to {plan} to add more."
     },
     "RsvpPrompt": {
         "willYouAttend": "Θα παραστείτε;",
@@ -136,7 +142,9 @@
         "disclaimer": "Συμμετέχοντας, συμφωνείτε να μοιραστείτε στιγμές από την ξεχωριστή ημέρα των Έμμα & Τζέιμς.",
         "noAccount": "Δεν έχετε λογαριασμό;",
         "createAccountLink": "Δημιουργήστε έναν",
-        "expiredInvite": "Αυτή η πρόσκληση έχει λήξει. Ζητήστε από τον διοργανωτή έναν νέο σύνδεσμο πρόσκλησης."
+        "expiredInvite": "Αυτή η πρόσκληση έχει λήξει. Ζητήστε από τον διοργανωτή έναν νέο σύνδεσμο πρόσκλησης.",
+        "memberLimitExceeded": "This event has reached the member limit for its current plan. Ask the host to upgrade before joining.",
+        "memberLimitExceededWithPlan": "This event is full on its current plan. Ask the host to upgrade to {plan} before joining."
     },
     "RegisterPage": {
         "title": "Δημιουργία λογαριασμού",
@@ -156,7 +164,9 @@
         "disclaimer": "Συμμετέχοντας, συμφωνείτε να μοιραστείτε στιγμές από την ξεχωριστή ημέρα των Έμμα & Τζέιμς.",
         "haveAccount": "Έχετε ήδη λογαριασμό;",
         "signInLink": "Σύνδεση",
-        "expiredInvite": "Αυτή η πρόσκληση έχει λήξει. Ζητήστε από τον διοργανωτή έναν νέο σύνδεσμο πρόσκλησης."
+        "expiredInvite": "Αυτή η πρόσκληση έχει λήξει. Ζητήστε από τον διοργανωτή έναν νέο σύνδεσμο πρόσκλησης.",
+        "memberLimitExceeded": "This event has reached the member limit for its current plan. Ask the host to upgrade before joining.",
+        "memberLimitExceededWithPlan": "This event is full on its current plan. Ask the host to upgrade to {plan} before joining."
     },
     "WelcomePage": {
         "title": "Ας ξεκινήσουμε",
@@ -296,7 +306,8 @@
         "previousMedia": "Προηγούμενη φωτογραφία",
         "nextMedia": "Επόμενη φωτογραφία",
         "showComments": "Εμφάνιση σχολίων",
-        "hideComments": "Απόκρυψη σχολίων"
+        "hideComments": "Απόκρυψη σχολίων",
+        "moduleUnavailable": "Comments are not available on this event's current plan."
     },
     "StoryPage": {
         "closeStory": "Κλείσιμο ιστορίας",
@@ -346,7 +357,10 @@
             "PRIVATE": "Ιδιωτικό",
             "PUBLIC": "Δημόσιο"
         },
-        "submit": "Δημιουργία εκδήλωσης"
+        "submit": "Δημιουργία εκδήλωσης",
+        "activeEventLimitExceeded": "Your account is already hosting as many active events as its current plan allows. Archive an old event or upgrade to create another one.",
+        "usageTitle": "Account usage",
+        "activeEventLimitExceededWithPlan": "Your account has reached its active event limit. Archive an old event or upgrade to {plan} to create another one."
     },
     "ManagePage": {
         "title": "Πίνακας Διοργανωτή",
@@ -458,7 +472,10 @@
             "saved": "Αποθηκεύτηκε"
         },
         "openDashboard": "Άνοιγμα πίνακα",
-        "rsvpOverview": "Επισκόπηση RSVP"
+        "rsvpOverview": "Επισκόπηση RSVP",
+        "usage": {
+            "eventTitle": "Plan usage"
+        }
     },
     "SchedulePage": {
         "back": "Πίσω",
@@ -621,7 +638,10 @@
         "leaderboardTopCount": "Κορυφαία {count}",
         "leaderboardShowingMore": "Εμφάνιση {shown} από {total}",
         "up": "Υπ.",
-        "down": "Κάτ."
+        "down": "Κάτ.",
+        "voteFailed": "Couldn't update your vote. Please try again.",
+        "moduleUnavailable": "Playlist is not available on this event's current plan.",
+        "disabledUpgradeBody": "Playlist is not included in this event plan. Upgrade to {plans} to unlock song suggestions and votes."
     },
     "QuizPage": {
         "backToTools": "Πίσω στα εργαλεία",
@@ -673,7 +693,8 @@
         "messageAriaLabel": "Μήνυμα για το ζευγάρι",
         "submitRsvp": "Υποβολή RSVP",
         "submitError": "Κάτι πήγε στραβά κατά την υποβολή του RSVP. Δοκιμάστε ξανά.",
-        "whosComing": "Ποιοι έρχονται"
+        "whosComing": "Ποιοι έρχονται",
+        "moduleUnavailable": "RSVP is not available on this event's current plan."
     },
     "VenuePage": {
         "backToTools": "Πίσω στα εργαλεία",
@@ -760,7 +781,8 @@
             "rsvps": "Δείτε συμμετοχές και απαντήσεις",
             "invitations": "Δημιουργία ή έλεγχος προσκλήσεων",
             "settings": "Επεξεργασία λεπτομερειών event"
-        }
+        },
+        "usageTitle": "Plan usage"
     },
     "FeedQuickAccessBar": {
         "ariaLabel": "Γρήγορη πρόσβαση",
@@ -803,5 +825,16 @@
                 "subtitle": "Αφήστε ένα μήνυμα"
             }
         }
+    },
+    "PlanUsage": {
+        "currentPlan": "Current plan: {plan}",
+        "upgradeTo": "Upgrade to {plan}",
+        "unlimited": "Unlimited",
+        "items": {
+            "storage": "Storage",
+            "members": "Members",
+            "activeEvents": "Active events"
+        },
+        "includedModules": "Included modules"
     }
 }

@@ -13,10 +13,8 @@ export function useAppConfig() {
     return useQuery({
         queryKey: appConfigKeys.all,
         queryFn: () => api.get<AppConfigResponseDto>(endpoints.config.get),
-        staleTime: 24 * 60 * 60 * 1000,
-        gcTime: Infinity,
-        refetchOnWindowFocus: false,
-        refetchOnReconnect: false,
+        staleTime: 5 * 60 * 1000,
+        gcTime: 30 * 60 * 1000,
     });
 }
 

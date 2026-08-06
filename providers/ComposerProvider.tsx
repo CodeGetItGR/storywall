@@ -13,6 +13,8 @@ import { useCreatePost, useCreateStory, useUploadMedia, useUploadMediaBatch } fr
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventModules } from '@/hooks/useEventModules';
 import { useCreatePlaylistSuggestion } from '@/hooks/usePlaylist';
+import { ERROR_CODES, getErrorCode, getErrorMessage, getQuotaExceededDetails, isModuleNotAvailableError } from '@/lib/api/errors';
+import { findNextPlan } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { initialsFromName } from '@/lib/utils';
 import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
@@ -91,7 +93,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     const isPostBusy = createPost.isPending || uploadBatch.isPending;
     const isSongBusy = createPlaylistSuggestion.isPending;
     const canCompose = Boolean(activeMember) && Boolean(activeEvent);
-    const canComposeSong = canCompose && eventModules.some((module) => module.moduleKey === 'playlist' && module.isEnabled);
+    const canComposeSong = canCompose && eventModules.some((module) => module.moduleKey === 'playlist' && module.isAvailable);
     const maxMediaPerPost = appConfig?.media.maxMediaPerPost ?? 10;
     const maxBatchUploadFiles = appConfig?.media.maxBatchUploadFiles ?? 10;
     const maxImages = Math.min(maxMediaPerPost, maxBatchUploadFiles);
@@ -210,6 +212,18 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
         void uploadPendingImages();
     }
 
+    function getComposerErrorMessage(error: unknown): string {
+        if (getErrorCode(error) === ERROR_CODES.EVENT_STORAGE_LIMIT_EXCEEDED) {
+            const details = getQuotaExceededDetails(error);
+            const nextPlan = details ? findNextPlan(appConfig?.planTiers ?? [], 'EVENT', details.planCode) : undefined;
+            return nextPlan ? t('storageLimitExceededWithPlan', { plan: nextPlan.name }) : t('storageLimitExceeded');
+        }
+        if (isModuleNotAvailableError(error)) {
+            return t('moduleUnavailable');
+        }
+        return getErrorMessage(error, t('genericSubmitFailed'));
+    }
+
     async function uploadPendingImages(): Promise<string[] | null> {
         const toUpload = images.filter((img) => img.status === 'pending' || img.status === 'failed');
         const alreadyUploaded = images.filter((img) => img.status === 'uploaded' && img.mediaId);
@@ -228,8 +242,20 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
                 mediaType: 'IMAGE',
                 uploaderMemberId: activeMember?.id,
             });
-        } catch {
-            setImages((prev) => prev.map((img) => (toUpload.some((u) => u.key === img.key) ? { ...img, status: 'failed' as const } : img)));
+        } catch (error) {
+            const message = getComposerErrorMessage(error);
+            setImages((prev) =>
+                prev.map((img) =>
+                    toUpload.some((u) => u.key === img.key)
+                        ? {
+                              ...img,
+                              status: 'failed' as const,
+                              error: message,
+                          }
+                        : img
+                )
+            );
+            setSubmitError(message);
             return null;
         }
 
@@ -242,7 +268,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
         const failedByName = new Map<string, string[]>();
         result.failed.forEach((f) => {
             const arr = failedByName.get(f.filename) ?? [];
-            arr.push(f.message);
+            arr.push(f.errorCode === 'EVENT_STORAGE_LIMIT_EXCEEDED' ? t('storageLimitExceeded') : f.message);
             failedByName.set(f.filename, arr);
         });
 
@@ -302,21 +328,15 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
                 isPinned: false,
                 mediaIds: mediaIds.length > 0 ? mediaIds : undefined,
             });
-        } catch {
-            setSubmitError('Something went wrong. Please try again.');
+        } catch (error) {
+            setSubmitError(getComposerErrorMessage(error));
             return;
         }
 
         closeComposer();
     }
 
-    async function submitPlaylistSuggestion(input: {
-        title: string;
-        artist?: string;
-        youtubeUrl?: string;
-        spotifyUrl?: string;
-        comment?: string;
-    }) {
+    async function submitPlaylistSuggestion(input: { title: string; artist?: string; youtubeUrl?: string; spotifyUrl?: string; comment?: string }) {
         if (!canComposeSong || !activeEvent || !activeMember) return;
 
         await createPlaylistSuggestion.mutateAsync({
@@ -355,8 +375,8 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
                 mediaId: media.id,
             });
             router.push(routes.story(story.id));
-        } catch {
-            setStoryError(t('storyUploadFailed'));
+        } catch (error) {
+            setStoryError(getComposerErrorMessage(error));
         }
     }
 
@@ -387,7 +407,14 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
                 tabIndex={-1}
             />
 
-            <Modal open={isOpen} onClose={closeComposer} size="sm" variant="sheet" closeLabel={t('cancel')} className="pb-[env(safe-area-inset-bottom)]">
+            <Modal
+                open={isOpen}
+                onClose={closeComposer}
+                size="sm"
+                variant="sheet"
+                closeLabel={t('cancel')}
+                className="pb-[env(safe-area-inset-bottom)]"
+            >
                 <Modal.Body className="p-4 pt-12">
                     <div className="mb-4 flex items-center gap-2 pr-10">
                         <button
@@ -449,11 +476,13 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
                                                 <X className="h-3.5 w-3.5" />
                                             </button>
                                             {img.status === 'uploading' && (
-                                                <div className="absolute inset-0 flex items-center justify-center bg-ink/40 text-xs text-white">β€¦</div>
+                                                <div className="absolute inset-0 flex items-center justify-center bg-ink/40 text-xs text-white">
+                                                    β€¦
+                                                </div>
                                             )}
                                             {img.status === 'failed' && (
                                                 <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-1 bg-destructive/90 px-1.5 py-1 text-[10px] text-white">
-                                                    <span className="truncate">{t('uploadFailed', { filename: img.file.name })}</span>
+                                                    <span className="truncate">{img.error ?? t('uploadFailed', { filename: img.file.name })}</span>
                                                     <button
                                                         type="button"
                                                         onClick={handleRetryUploadClick}

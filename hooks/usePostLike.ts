@@ -23,6 +23,7 @@ export function usePostLike(post: PostResponseDto) {
     // Assumes at most one mounted instance of a given post's like button is interactive at a time —
     // true today since PostModal's fixed-overlay backdrop blocks clicks on the feed behind it.
     const [isToggling, setIsToggling] = useState(false);
+    const [error, setError] = useState<unknown>(null);
 
     async function toggle() {
         if (!activeMember || isToggling) return;
@@ -31,6 +32,7 @@ export function usePostLike(post: PostResponseDto) {
         const wasLiked = post.likedByCurrentUser;
         const previousCount = post.reactionCount;
 
+        setError(null);
         setIsToggling(true);
         patchPostInCaches(queryClient, post.eventId, post.id, {
             likedByCurrentUser: !wasLiked,
@@ -62,7 +64,8 @@ export function usePostLike(post: PostResponseDto) {
                 // purpose — the id is retained for a retry since nothing was actually deleted server-side.
                 knownReactionIds.delete(reactionKey);
             }
-        } catch {
+        } catch (err) {
+            setError(err);
             patchPostInCaches(queryClient, post.eventId, post.id, {
                 likedByCurrentUser: wasLiked,
                 reactionCount: previousCount,
@@ -77,5 +80,6 @@ export function usePostLike(post: PostResponseDto) {
         count: post.reactionCount,
         toggle,
         isPending: isToggling,
+        error,
     };
 }

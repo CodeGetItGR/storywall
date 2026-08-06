@@ -53,7 +53,7 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
     }, [hasNextPage, fetchNextPage, posts.length]);
 
     // Deep links (a shared invite, browser history, a bookmark) should make
-    // this the active event for the rest of the app too, not just this page β€” 
+    // this the active event for the rest of the app too, not just this page β€”
     // but only once we know it actually exists.
     useEffect(() => {
         if (event) setActiveEventId(eventId);
@@ -80,8 +80,8 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
     }, [isStaleRsvp, memberId, router, storedRsvpId]);
 
     const moduleFlags = useMemo<Record<ModuleKeyConvention, boolean>>(() => {
-        const moduleKeys = appConfig?.eventModuleKeys ?? EVENT_MODULE_KEYS;
-        const defaults = Object.fromEntries(moduleKeys.map((key) => [key, false])) as Record<ModuleKeyConvention, boolean>;
+        const registryKeys = new Set(appConfig?.eventModuleKeys ?? EVENT_MODULE_KEYS);
+        const defaults = Object.fromEntries(EVENT_MODULE_KEYS.map((key) => [key, false])) as Record<ModuleKeyConvention, boolean>;
 
         if (!event) {
             return defaults;
@@ -89,7 +89,9 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
 
         return {
             ...defaults,
-            ...Object.fromEntries(event.modules.map(({ moduleKey, isEnabled }) => [moduleKey, isEnabled])),
+            ...Object.fromEntries(
+                event.modules.filter(({ moduleKey }) => registryKeys.has(moduleKey)).map(({ moduleKey, isAvailable }) => [moduleKey, isAvailable])
+            ),
         } as Record<ModuleKeyConvention, boolean>;
     }, [appConfig?.eventModuleKeys, event]);
 
@@ -140,18 +142,18 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
             {/* Posts */}
             <section id="posts">
                 {moduleFlags.posts && (
-                <div className="flex flex-col px-0 pb-24 lg:pb-10">
-                    <ComposerCard />
-                    <div className="flex flex-col">
-                        {posts.map((post, index) => (
-                            <FeedPostRenderer key={post.id} post={post} isLcpCandidate={index === 0} />
-                        ))}
-                        <div ref={loadMoreRef} className="h-1" />
-                        {isFetchingNextPage && <p className="py-2 text-center text-sm text-ink-muted">{t('loadingMore')}</p>}
+                    <div className="flex flex-col px-0 pb-24 lg:pb-10">
+                        <ComposerCard />
+                        <div className="flex flex-col">
+                            {posts.map((post, index) => (
+                                <FeedPostRenderer key={post.id} post={post} isLcpCandidate={index === 0} />
+                            ))}
+                            <div ref={loadMoreRef} className="h-1" />
+                            {isFetchingNextPage && <p className="py-2 text-center text-sm text-ink-muted">{t('loadingMore')}</p>}
+                        </div>
                     </div>
-                </div>
-            )}
-        </section>
+                )}
+            </section>
             {/* Deliberately outside moduleFlags.posts a shared post link should
             still open even if the posts module is toggled off for this event.
             PostModal reads its own open state from the `?post=` param via

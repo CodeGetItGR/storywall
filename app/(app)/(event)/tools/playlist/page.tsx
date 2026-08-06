@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { PlaylistItemRow, PlaylistLeaderboard } from '@/components/playlist';
+import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventModules } from '@/hooks/useEventModules';
 import { usePlaylistLeaderboard, usePlaylistSuggestions } from '@/hooks/usePlaylist';
+import { findPlansUnlockingModule } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { useComposer } from '@/providers/ComposerProvider';
 import { useActiveEvent, useIsHost } from '@/providers/EventProvider';
@@ -20,10 +22,14 @@ export default function PlaylistPage() {
     const { openSongComposer, canComposeSong } = useComposer();
     const eventId = activeEvent?.id ?? null;
 
+    const { data: appConfig } = useAppConfig();
     const { data: modules = [], isLoading: isLoadingModules } = useEventModules(eventId);
     const { data: suggestionsData, isLoading: suggestionsLoading } = usePlaylistSuggestions(eventId);
     const { data: leaderboard = [], isLoading: isLoadingLeaderboard } = usePlaylistLeaderboard(eventId, isHost);
-    const playlistEnabled = modules.some((module) => module.moduleKey === 'playlist' && module.isEnabled);
+    const playlistEnabled = modules.some((module) => module.moduleKey === 'playlist' && module.isAvailable);
+    const playlistInRegistry = appConfig?.eventModuleKeys.includes('playlist') ?? true;
+    const unlockingPlans = findPlansUnlockingModule(appConfig?.planTiers ?? [], 'playlist');
+    const unlockPlanNames = unlockingPlans.map((plan) => plan.name).join(', ');
     const suggestions = suggestionsData ?? [];
 
     if (!eventId) {
@@ -54,7 +60,9 @@ export default function PlaylistPage() {
                         </div>
                         <div className="min-w-0">
                             <h2 className="text-sm font-semibold text-ink">{t('disabledTitle')}</h2>
-                            <p className="mt-1 text-sm leading-relaxed text-ink-muted">{t('disabledBody')}</p>
+                            <p className="mt-1 text-sm leading-relaxed text-ink-muted">
+                                {playlistInRegistry && unlockPlanNames ? t('disabledUpgradeBody', { plans: unlockPlanNames }) : t('disabledBody')}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -89,7 +97,11 @@ export default function PlaylistPage() {
 
             {isHost && (
                 <section className="mb-8">
-                    <PlaylistLeaderboard leaderboard={leaderboard} isLoading={isLoadingLeaderboard} maxVisibleSongs={HOST_LEADERBOARD_VISIBLE_SONGS} />
+                    <PlaylistLeaderboard
+                        leaderboard={leaderboard}
+                        isLoading={isLoadingLeaderboard}
+                        maxVisibleSongs={HOST_LEADERBOARD_VISIBLE_SONGS}
+                    />
                 </section>
             )}
 

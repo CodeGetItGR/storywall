@@ -4,14 +4,16 @@ import { CalendarPlus, LayoutDashboard, Loader2, Settings, Ticket, Users } from 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { ElementType, useEffect, useState } from 'react';
+import { ElementType, useCallback, useEffect, useState } from 'react';
 
+import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventInvitations } from '@/hooks/useEventInvitations';
 import { useEventMembers } from '@/hooks/useEventMembers';
 import { useEventRsvps } from '@/hooks/useRsvps';
+import { useEventUsage } from '@/hooks/useUsage';
+import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
-import { routes } from '@/lib/routes';
 
 import InvitationsTab from './InvitationsTab';
 import OverviewTab from './OverviewTab';
@@ -26,6 +28,38 @@ const tabItems: { key: ManageTab; icon: ElementType }[] = [
     { key: 'invitations', icon: Ticket },
     { key: 'settings', icon: Settings },
 ];
+
+function ManageTabButton({
+    tabKey,
+    active,
+    Icon,
+    label,
+    onSelect,
+}: {
+    tabKey: ManageTab;
+    active: boolean;
+    Icon: ElementType;
+    label: string;
+    onSelect: (tab: ManageTab) => void;
+}) {
+    const handleClick = useCallback(() => {
+        onSelect(tabKey);
+    }, [onSelect, tabKey]);
+
+    return (
+        <button
+            type="button"
+            onClick={handleClick}
+            className={cn(
+                'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full text-xs font-semibold transition-colors',
+                active ? 'bg-card text-ink shadow-sm' : 'text-ink-muted hover:text-ink'
+            )}
+        >
+            <Icon className="w-3.5 h-3.5" strokeWidth={2} />
+            {label}
+        </button>
+    );
+}
 
 export default function ManagePage() {
     const t = useTranslations('ManagePage');
@@ -42,27 +76,38 @@ export default function ManagePage() {
     const { data: members = [] } = useEventMembers(isHost ? eventId : null);
     const { data: rsvps = [] } = useEventRsvps(isHost ? eventId : null);
     const { data: invitations = [] } = useEventInvitations(isHost ? eventId : null);
+    const { data: eventUsage = null } = useEventUsage(isHost ? eventId : null);
+    const { data: appConfig } = useAppConfig();
 
     const [daysToGo, setDaysToGo] = useState(() =>
         Math.max(0, activeEvent ? Math.ceil((new Date(activeEvent.schedule.startAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0)
     );
 
-    function navigateToTab(nextTab: ManageTab) {
-        const nextParams = new URLSearchParams(searchParams.toString());
-        if (nextTab === 'overview') nextParams.delete('tab');
-        else nextParams.set('tab', nextTab);
-        const query = nextParams.toString();
-        router.replace(query ? `${routes.manage}?${query}` : routes.manage);
-    }
+    const navigateToTab = useCallback(
+        (nextTab: ManageTab) => {
+            const nextParams = new URLSearchParams(searchParams.toString());
+            if (nextTab === 'overview') nextParams.delete('tab');
+            else nextParams.set('tab', nextTab);
+            const query = nextParams.toString();
+            router.replace(query ? `${routes.manage}?${query}` : routes.manage);
+        },
+        [router, searchParams]
+    );
+
+    const handleSeeAllRsvp = useCallback(() => {
+        navigateToTab('rsvp');
+    }, [navigateToTab]);
+
+    const handleSeeAllInvitations = useCallback(() => {
+        navigateToTab('invitations');
+    }, [navigateToTab]);
 
     // Date.now() is impure, so this can't be computed directly during render
     // (react-hooks/purity) it must live in an effect.
     useEffect(() => {
         if (activeEvent) {
             // eslint-disable-next-line react-hooks/set-state-in-effect
-            setDaysToGo(
-                Math.max(0, Math.ceil((new Date(activeEvent.schedule.startAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
-            );
+            setDaysToGo(Math.max(0, Math.ceil((new Date(activeEvent.schedule.startAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))));
         }
     }, [activeEvent]);
 
@@ -119,17 +164,7 @@ export default function ManagePage() {
 
             <div className="flex gap-1 bg-surface-muted rounded-full p-1 mx-4 mb-5">
                 {tabItems.map(({ key, icon: Icon }) => (
-                    <button
-                        key={key}
-                        onClick={() => navigateToTab(key)}
-                        className={cn(
-                            'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full text-xs font-semibold transition-colors',
-                            tab === key ? 'bg-card text-ink shadow-sm' : 'text-ink-muted hover:text-ink'
-                        )}
-                    >
-                        <Icon className="w-3.5 h-3.5" strokeWidth={2} />
-                        {t(`tabs.${key}`)}
-                    </button>
+                    <ManageTabButton key={key} tabKey={key} active={tab === key} Icon={Icon} label={t(`tabs.${key}`)} onSelect={navigateToTab} />
                 ))}
             </div>
 
@@ -140,8 +175,11 @@ export default function ManagePage() {
                     daysToGo={daysToGo}
                     invitationCount={invitations.length}
                     rsvpBreakdown={rsvpBreakdown}
-                    onSeeAllRsvp={() => navigateToTab('rsvp')}
-                    onSeeAllInvitations={() => navigateToTab('invitations')}
+                    eventUsage={eventUsage}
+                    planTiers={appConfig?.planTiers ?? []}
+                    modules={appConfig?.modules ?? []}
+                    onSeeAllRsvp={handleSeeAllRsvp}
+                    onSeeAllInvitations={handleSeeAllInvitations}
                 />
             )}
 
