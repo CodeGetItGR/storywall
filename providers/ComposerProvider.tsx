@@ -321,7 +321,6 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
 
         await createPlaylistSuggestion.mutateAsync({
             eventId: activeEvent.id,
-            authorMemberId: activeMember.id,
             title: input.title,
             artist: input.artist,
             youtubeUrl: input.youtubeUrl,

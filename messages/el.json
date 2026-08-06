@@ -19,7 +19,7 @@
         "userStory": "Ιστορία του/της {name}",
         "yourStory": "Η ιστορία σας"
     },
-        "FeedPage": {
+    "FeedPage": {
         "scheduleBadge": "Πρόγραμμα",
         "loadingMore": "Φόρτωση περισσότερων…"
     },
@@ -56,7 +56,8 @@
         "unknownAuthor": "Άγνωστος",
         "playlistDigest": "Ενημέρωση λίστας",
         "pinned": "Καρφιτσωμένη",
-        "hostPost": "POST ΔΙΟΡΓΑΝΩΤΗ"
+        "hostPost": "POST ΔΙΟΡΓΑΝΩΤΗ",
+        "openPlaylist": "Άνοιγμα λίστας"
     },
     "DesktopNavRail": {
         "mainNavigation": "Κύρια πλοήγηση",
@@ -313,7 +314,10 @@
         "loadingViewers": "Φόρτωση…",
         "noViewers": "Δεν υπάρχουν προβολές ακόμα",
         "unknownAuthor": "Κάποιος/α",
-        "close": "Κλείσιμο"
+        "close": "Κλείσιμο",
+        "deleteStoryConfirmTitle": "Να διαγραφεί αυτή η ιστορία;",
+        "deleteStoryConfirmBody": "Αυτή η ιστορία θα αφαιρεθεί για όλους και δεν μπορεί να αναιρεθεί.",
+        "deleteStoryConfirm": "Διαγραφή ιστορίας"
     },
     "CreateEventPage": {
         "goBack": "Πίσω",
@@ -418,7 +422,9 @@
             },
             "placeholders": {
                 "inviteCode": "π.χ. TABLE-7"
-            }
+            },
+            "revokeConfirmTitle": "Να ανακληθεί αυτή η πρόσκληση;",
+            "revokeConfirmBody": "Αυτός ο σύνδεσμος πρόσκλησης θα σταματήσει να λειτουργεί και δεν μπορεί να επανέλθει."
         },
         "settings": {
             "title": "Λεπτομέρειες εκδήλωσης",
@@ -450,19 +456,9 @@
             },
             "save": "Αποθήκευση αλλαγών",
             "saved": "Αποθηκεύτηκε"
-        }
-    },
-    "SchedulePage": {
-        "backToTools": "Πίσω στα εργαλεία",
-        "title": "Πρόγραμμα",
-        "subtitle": "Όλες οι εκδηλώσεις από τον αρραβώνα μέχρι και μετά τον γάμο.",
-        "eventTypes": {
-            "ceremony": "Τελετή",
-            "reception": "Δεξίωση",
-            "preWedding": "Προγαμιαία",
-            "social": "Κοινωνική"
         },
-        "attendingCount": "{count} θα παρευρεθούν"
+        "openDashboard": "Άνοιγμα πίνακα",
+        "rsvpOverview": "Επισκόπηση RSVP"
     },
     "SchedulePage": {
         "back": "Πίσω",
@@ -610,7 +606,18 @@
         "hidePreview": "Απόκρυψη προεπισκόπησης",
         "previewLabel": "Προεπισκόπηση",
         "openSpotify": "Άνοιγμα στο Spotify",
-        "openYouTube": "Άνοιγμα στο YouTube"
+        "openYouTube": "Άνοιγμα στο YouTube",
+        "downvoteThisSong": "Καταψήφιση αυτού του τραγουδιού",
+        "deleteSuggestionConfirmTitle": "Να διαγραφεί αυτή η πρόταση;",
+        "deleteSuggestionConfirmBody": "Αυτή η πρόταση τραγουδιού θα αφαιρεθεί για όλους και δεν μπορεί να αναιρεθεί.",
+        "deleteSuggestionConfirm": "Διαγραφή πρότασης",
+        "leaderboardEyebrow": "Κατάταξη διοργανωτή",
+        "leaderboardTitle": "Τραγούδια με βάση τη στήριξη",
+        "leaderboardBody": "Η κατάταξη βασίζεται στις θετικές ψήφους.",
+        "playlistEmpty": "Δεν έχουν προταθεί τραγούδια ακόμα. Ανοίξτε το παράθυρο και προσθέστε το πρώτο.",
+        "loadingSongs": "Φόρτωση τραγουδιών...",
+        "leaderboardEmpty": "Δεν υπάρχει αρκετή δραστηριότητα ακόμα για κατάταξη.",
+        "loadingLeaderboard": "Φόρτωση κατάταξης..."
     },
     "QuizPage": {
         "backToTools": "Πίσω στα εργαλεία",
@@ -794,4 +801,3 @@
         }
     }
 }
-

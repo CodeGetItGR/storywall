@@ -9,6 +9,7 @@ import { ScheduleEditorSheet } from '@/app/(app)/(event)/tools/schedule/componen
 import { ScheduleEmptyState } from '@/app/(app)/(event)/tools/schedule/components/ScheduleEmptyState';
 import { SchedulePageHeader } from '@/app/(app)/(event)/tools/schedule/components/SchedulePageHeader';
 import { ScheduleSessionsList } from '@/app/(app)/(event)/tools/schedule/components/ScheduleSessionsList';
+import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useCreateEventSession, useDeleteEventSession, useEventSessions, useUpdateEventSession } from '@/hooks/useEventSessions';
 import { getErrorMessage } from '@/lib/api/errors';
 import type { EventSessionResponseDto } from '@/lib/api/types';
@@ -30,6 +31,7 @@ export default function SchedulePage() {
     const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
     const [editorOpen, setEditorOpen] = useState(false);
     const [deleteError, setDeleteError] = useState<string | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<EventSessionResponseDto | null>(null);
     const updateSession = useUpdateEventSession(editingSessionId ?? '', eventId ?? '');
     const deleteSession = useDeleteEventSession(eventId ?? '');
 
@@ -82,10 +84,15 @@ export default function SchedulePage() {
     }
 
     async function handleDeleteSession(session: EventSessionResponseDto) {
-        const confirmed = window.confirm(t('host.deleteConfirm', { title: session.title }));
-        if (!confirmed) return;
-
         setDeleteError(null);
+        setDeleteTarget(session);
+    }
+
+    async function confirmDeleteSession() {
+        if (!deleteTarget) return;
+
+        const session = deleteTarget;
+        setDeleteTarget(null);
 
         try {
             await deleteSession.mutateAsync(session.id);
@@ -95,6 +102,10 @@ export default function SchedulePage() {
         } catch (error) {
             setDeleteError(getErrorMessage(error));
         }
+    }
+
+    function handleCloseDeleteSessionConfirm() {
+        setDeleteTarget(null);
     }
 
     if (isContextLoading || !activeEvent || isLoadingSessions) {
@@ -139,6 +150,17 @@ export default function SchedulePage() {
                     t={t}
                 />
             )}
+
+            <ConfirmActionModal
+                open={Boolean(deleteTarget)}
+                onClose={handleCloseDeleteSessionConfirm}
+                onConfirm={confirmDeleteSession}
+                title={deleteTarget ? t('host.deleteSession', { title: deleteTarget.title }) : ''}
+                body={deleteTarget ? t('host.deleteConfirm', { title: deleteTarget.title }) : ''}
+                confirmLabel={t('host.deleteSession', { title: '' }).trim()}
+                cancelLabel={t('host.cancelEdit')}
+                isConfirming={deleteSession.isPending}
+            />
         </div>
     );
 }

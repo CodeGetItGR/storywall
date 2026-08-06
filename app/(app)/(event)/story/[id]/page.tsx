@@ -7,10 +7,11 @@ import { useLocale, useTranslations } from 'next-intl';
 import { use, useEffect, useMemo, useState } from 'react';
 
 import { StoryCaptionBar, StoryHeader, StoryProgressBar, StoryViewersModal } from '@/components/story';
+import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useDeleteStory, useEventMembers, useEventStories, useMarkStoryViewed, useMediaItem, useStory, useStoryViews } from '@/hooks';
 import { ApiError } from '@/lib/api/client';
-import { groupStoriesByAuthor } from '@/lib/stories';
 import { routes } from '@/lib/routes';
+import { groupStoriesByAuthor } from '@/lib/stories';
 import { useActiveMember, useIsHost } from '@/providers/EventProvider';
 
 export default function StoryPage({ params }: { params: Promise<{ id: string }> }) {
@@ -32,6 +33,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
     const [progress, setProgress] = useState(0);
     const [showViewers, setShowViewers] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     // Reset progress synchronously during render when navigating to a
     // different story, instead of via an effect (see react.dev/learn/you-might-not-need-an-effect).
@@ -126,8 +128,17 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
         setShowViewers(false);
     }
 
-    async function handleDelete() {
+    function handleDeleteRequest() {
         setShowMenu(false);
+        setShowDeleteConfirm(true);
+    }
+
+    function handleCloseDeleteConfirm() {
+        setShowDeleteConfirm(false);
+    }
+
+    async function handleDelete() {
+        handleCloseDeleteConfirm();
         await deleteStory.mutateAsync(id);
         goNext();
     }
@@ -151,8 +162,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                     showMenu={showMenu}
                     onToggleMenu={handleToggleMenu}
                     onClose={handleCloseStory}
-                    onDelete={handleDelete}
-                    deletePending={deleteStory.isPending}
+                    onDeleteRequest={handleDeleteRequest}
                 />
 
                 {media && (
@@ -187,6 +197,16 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
             </div>
 
             <StoryViewersModal open={showViewers} onClose={handleHideViewers} viewers={viewers} loading={viewersLoading} membersById={membersById} />
+            <ConfirmActionModal
+                open={showDeleteConfirm}
+                onClose={handleCloseDeleteConfirm}
+                onConfirm={handleDelete}
+                title={t('deleteStoryConfirmTitle')}
+                body={t('deleteStoryConfirmBody')}
+                confirmLabel={t('deleteStoryConfirm')}
+                cancelLabel={t('cancel')}
+                isConfirming={deleteStory.isPending}
+            />
         </div>
     );
 }

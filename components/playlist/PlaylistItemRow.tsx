@@ -1,11 +1,12 @@
 'use client';
 
-import { Check, ChevronDown, ChevronUp, Loader2, Music3, ThumbsUp, Trash2 } from 'lucide-react';
+import { Loader2, ThumbsDown, ThumbsUp, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
+import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useCreatePlaylistVote, useDeletePlaylistSuggestion, useDeletePlaylistVote, usePlaylistVotes } from '@/hooks/usePlaylist';
-import type { PlaylistSuggestionResponseDto } from '@/lib/api/types';
+import type { PlaylistSuggestionResponseDto, PlaylistVoteType } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
 
@@ -81,18 +82,19 @@ export function PlaylistItemRow({ suggestion }: PlaylistItemRowProps) {
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
     const isHost = useIsHost();
-    const memberId = activeMember?.id ?? null;
     const eventId = activeEvent?.id ?? '';
+    const memberId = activeMember?.id ?? null;
 
-    const { data: votes = [] } = usePlaylistVotes(suggestion.id);
-    const createVote = useCreatePlaylistVote();
-    const deleteVote = useDeletePlaylistVote(suggestion.id);
+    const currentVotesQuery = usePlaylistVotes(suggestion.id, false);
+    const createVote = useCreatePlaylistVote(eventId);
+    const deleteVote = useDeletePlaylistVote(eventId, suggestion.id);
     const deleteSuggestion = useDeletePlaylistSuggestion(eventId);
-    const [confirmingDelete, setConfirmingDelete] = useState(false);
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+    const [resolvingVote, setResolvingVote] = useState(false);
 
-    const currentVote = memberId ? votes.find((vote) => vote.memberId === memberId) : undefined;
-    const voted = Boolean(currentVote);
-    const isBusy = createVote.isPending || deleteVote.isPending;
+    const upvoteActive = suggestion.myVote === 'UPVOTE';
+    const downvoteActive = suggestion.myVote === 'DOWNVOTE';
+    const isBusy = createVote.isPending || deleteVote.isPending || resolvingVote;
     const canDeleteSuggestion = Boolean(memberId && (isHost || suggestion.authorMemberId === memberId));
 
     const spotifyEmbedUrl = useMemo(() => buildSpotifyEmbedUrl(suggestion.spotifyUrl), [suggestion.spotifyUrl]);
@@ -102,26 +104,54 @@ export function PlaylistItemRow({ suggestion }: PlaylistItemRowProps) {
     const openSpotifyLabel = t('openSpotify');
     const openYouTubeLabel = t('openYouTube');
 
-    function handleVote() {
+    async function clearCurrentVote() {
+        if (!memberId) return;
+
+        setResolvingVote(true);
+        try {
+            const res = await currentVotesQuery.refetch();
+            const currentVote = res.data?.find((vote) => vote.memberId === memberId);
+            if (!currentVote) return;
+
+            await deleteVote.mutateAsync(currentVote.id);
+        } finally {
+            setResolvingVote(false);
+        }
+    }
+
+    async function handleVote(voteType: PlaylistVoteType) {
         if (!memberId || isBusy) return;
 
-        if (currentVote) {
-            deleteVote.mutate(currentVote.id);
+        if (suggestion.myVote === voteType) {
+            await clearCurrentVote();
             return;
         }
 
-        createVote.mutate({
+        await createVote.mutateAsync({
             playlistSuggestionId: suggestion.id,
-            memberId,
+            voteType,
         });
+    }
+
+    function handleUpvoteClick() {
+        void handleVote('UPVOTE');
+    }
+
+    function handleDownvoteClick() {
+        void handleVote('DOWNVOTE');
     }
 
     function handleDeleteRequest() {
         if (!canDeleteSuggestion) return;
-        setConfirmingDelete(true);
+        setConfirmDeleteOpen(true);
+    }
+
+    function handleCloseDeleteConfirm() {
+        setConfirmDeleteOpen(false);
     }
 
     async function handleDeleteSuggestion() {
+        handleCloseDeleteConfirm();
         await deleteSuggestion.mutateAsync(suggestion.id);
     }
 
@@ -178,35 +208,51 @@ export function PlaylistItemRow({ suggestion }: PlaylistItemRowProps) {
 
                     <div className="flex shrink-0 items-center gap-2">
                         <button
-                            onClick={handleVote}
-                            aria-pressed={voted}
-                            aria-label={voted ? t('removeVote') : t('voteForThisSong')}
+                            type="button"
+                            onClick={handleUpvoteClick}
+                            aria-pressed={upvoteActive}
+                            aria-label={upvoteActive ? t('removeVote') : t('voteForThisSong')}
                             disabled={!memberId || isBusy}
                             className={cn(
                                 'flex min-w-12 flex-col items-center gap-0.5 rounded-2xl px-3 py-2 transition-all',
-                                voted ? 'bg-primary-light text-primary shadow-sm shadow-primary/10' : 'text-ink-faint hover:bg-surface-muted hover:text-ink-muted',
+                                upvoteActive ? 'bg-primary-light text-primary shadow-sm shadow-primary/10' : 'text-ink-faint hover:bg-surface-muted hover:text-ink-muted',
                                 (!memberId || isBusy) && 'cursor-not-allowed opacity-60'
                             )}
                         >
-                            <ThumbsUp className={cn('h-4 w-4', voted && 'fill-primary')} strokeWidth={voted ? 0 : 1.8} />
-                            <span className="text-[11px] font-bold tabular-nums">{votes.length}</span>
+                            <ThumbsUp className={cn('h-4 w-4', upvoteActive && 'fill-primary')} strokeWidth={upvoteActive ? 0 : 1.8} />
+                            <span className="text-[11px] font-bold tabular-nums">{suggestion.upvoteCount}</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={handleDownvoteClick}
+                            aria-pressed={downvoteActive}
+                            aria-label={downvoteActive ? t('removeVote') : t('downvoteThisSong')}
+                            disabled={!memberId || isBusy}
+                            className={cn(
+                                'flex min-w-12 flex-col items-center gap-0.5 rounded-2xl px-3 py-2 transition-all',
+                                downvoteActive ? 'bg-destructive/10 text-destructive shadow-sm shadow-destructive/10' : 'text-ink-faint hover:bg-surface-muted hover:text-ink-muted',
+                                (!memberId || isBusy) && 'cursor-not-allowed opacity-60'
+                            )}
+                        >
+                            <ThumbsDown className={cn('h-4 w-4', downvoteActive && 'fill-destructive')} strokeWidth={downvoteActive ? 0 : 1.8} />
+                            <span className="text-[11px] font-bold tabular-nums">{suggestion.downvoteCount}</span>
                         </button>
 
                         {canDeleteSuggestion && (
                             <button
-                                onClick={confirmingDelete ? handleDeleteSuggestion : handleDeleteRequest}
+                                type="button"
+                                onClick={handleDeleteRequest}
                                 disabled={deleteSuggestion.isPending}
-                                aria-label={confirmingDelete ? t('confirmDeleteSuggestion') : t('deleteSuggestion')}
+                                aria-label={t('deleteSuggestion')}
                                 className={cn(
                                     'flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-colors',
-                                    confirmingDelete ? 'bg-primary-light text-primary-dark hover:bg-primary-light/80' : 'text-ink-faint hover:bg-surface-muted hover:text-primary-dark',
+                                    'text-ink-faint hover:bg-surface-muted hover:text-primary-dark',
                                     deleteSuggestion.isPending && 'cursor-not-allowed opacity-60'
                                 )}
                             >
                                 {deleteSuggestion.isPending ? (
                                     <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : confirmingDelete ? (
-                                    <Check className="h-4 w-4" />
                                 ) : (
                                     <Trash2 className="h-4 w-4" />
                                 )}
@@ -229,6 +275,17 @@ export function PlaylistItemRow({ suggestion }: PlaylistItemRowProps) {
                     </div>
                 )}
             </div>
+
+            <ConfirmActionModal
+                open={confirmDeleteOpen}
+                onClose={handleCloseDeleteConfirm}
+                onConfirm={handleDeleteSuggestion}
+                title={t('deleteSuggestionConfirmTitle')}
+                body={t('deleteSuggestionConfirmBody')}
+                confirmLabel={t('deleteSuggestionConfirm')}
+                cancelLabel={t('cancel')}
+                isConfirming={deleteSuggestion.isPending}
+            />
         </article>
     );
 }

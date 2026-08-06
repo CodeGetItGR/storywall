@@ -1,6 +1,7 @@
 'use client';
 
-import { MessageCircle, Music4, Pin } from 'lucide-react';
+import { ArrowRight, MessageCircle, Music4, Pin } from 'lucide-react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import React, { useMemo } from 'react';
 
@@ -8,6 +9,7 @@ import { ReactionCount } from '@/components/feed/post';
 import { CommentsList } from '@/components/feed/post/CommentsList';
 import { useEventMembers, usePostComments, usePostLike, usePostModal } from '@/hooks';
 import type { PostResponseDto } from '@/lib/api/types';
+import { routes } from '@/lib/routes';
 import { cn, timeAgoParts } from '@/lib/utils';
 
 interface PlaylistDigestCardProps {
@@ -18,7 +20,6 @@ interface PlaylistDigestCardProps {
 export function PlaylistDigestCard({ post, showCommentLink = true }: PlaylistDigestCardProps) {
     const t = useTranslations('PostCard');
     const { open: openPostModal } = usePostModal();
-    const { liked, count: likeCount, toggle: handleLike, isPending: isLikePending } = usePostLike(post);
     const timeAgo = useMemo(() => timeAgoParts(post.createdAt), [post.createdAt]);
     const { data: comments = [] } = usePostComments(post.id);
     const { data: members = [] } = useEventMembers(post.eventId);
@@ -59,46 +60,16 @@ export function PlaylistDigestCard({ post, showCommentLink = true }: PlaylistDig
                 </div>
             )}
 
-            <div className="flex items-center justify-between px-4 pb-4">
-                <div className="flex items-center gap-1">
-                    <button
-                        onClick={handleLike}
-                        disabled={isLikePending}
-                        aria-label={liked ? t('unlikePost') : t('likePost')}
-                        aria-pressed={liked}
-                        className={cn(
-                            'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
-                            liked ? 'bg-sky-100 text-sky-700' : 'text-ink-muted hover:bg-surface-muted'
-                        )}
-                    >
-                        <ReactionCount
-                            count={likeCount}
-                            iconClassName={liked ? 'fill-sky-700 text-sky-700' : ''}
-                            iconStrokeWidth={liked ? 0 : 1.8}
-                        />
-                    </button>
-
-                    {showCommentLink ? (
-                        <button
-                            type="button"
-                            onClick={openPost}
-                            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-muted"
-                            aria-label={t('comments', { count: post.commentCount })}
-                        >
-                            <MessageCircle className="w-4 h-4" strokeWidth={1.8} />
-                            <span className="tabular-nums">{post.commentCount}</span>
-                        </button>
-                    ) : (
-                        <button
-                            type="button"
-                            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-muted"
-                            aria-label={t('comments', { count: post.commentCount })}
-                        >
-                            <MessageCircle className="w-4 h-4" strokeWidth={1.8} />
-                            <span className="tabular-nums">{post.commentCount}</span>
-                        </button>
-                    )}
-                </div>
+            <div className="flex items-center justify-end gap-3 px-4 pb-4">
+                <Link
+                    href={routes.tools.playlist}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background px-3 py-1.5 text-sm font-medium text-ink-muted transition-colors hover:bg-primary-light hover:text-primary-dark"
+                    aria-label={t('openPlaylist')}
+                >
+                    <Music4 className="h-4 w-4" strokeWidth={1.8} aria-hidden="true" />
+                    <span>{t('openPlaylist')}</span>
+                    <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
+                </Link>
             </div>
 
             {visibleComments.length > 0 && (

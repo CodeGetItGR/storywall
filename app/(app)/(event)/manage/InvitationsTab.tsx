@@ -4,6 +4,7 @@ import { Copy, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
 import type { useTranslations } from 'next-intl';
 import React, {useCallback, useState} from 'react';
 
+import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useCreateEventInvitation, useDeleteEventInvitation, useUpdateEventInvitation } from '@/hooks/useEventInvitations';
 import { getErrorMessage, getFieldErrors } from '@/lib/api/errors';
 import type { EventInvitationPatchDto, EventInvitationRequestDto, EventInvitationResponseDto } from '@/lib/api/types';
@@ -67,6 +68,26 @@ function CreateInvitationForm({ t, eventId, onDone }: { t: ReturnType<typeof use
 
     const fieldErrors = getFieldErrors(createInvitation.error);
 
+    function handleInviteCodeChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setInviteCode(e.target.value);
+    }
+
+    function handleMaxGuestsChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setMaxGuests(Math.max(1, Number(e.target.value)));
+    }
+
+    function handleFirstNameChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setFirstName(e.target.value);
+    }
+
+    function handleLastNameChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setLastName(e.target.value);
+    }
+
+    function handleEmailChange(e: React.ChangeEvent<HTMLInputElement>) {
+        setEmail(e.target.value);
+    }
+
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
         const input: EventInvitationRequestDto = {
@@ -107,7 +128,7 @@ function CreateInvitationForm({ t, eventId, onDone }: { t: ReturnType<typeof use
                         required
                         maxLength={100}
                         value={inviteCode}
-                        onChange={(e) => setInviteCode(e.target.value)}
+                        onChange={handleInviteCodeChange}
                         placeholder={t('invitations.placeholders.inviteCode')}
                         className="bg-surface-muted rounded-xl px-3 py-2.5 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
                     />
@@ -120,7 +141,7 @@ function CreateInvitationForm({ t, eventId, onDone }: { t: ReturnType<typeof use
                         required
                         min={1}
                         value={maxGuests}
-                        onChange={(e) => setMaxGuests(Math.max(1, Number(e.target.value)))}
+                        onChange={handleMaxGuestsChange}
                         className="bg-surface-muted rounded-xl px-3 py-2.5 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
                     />
                 </label>
@@ -132,7 +153,7 @@ function CreateInvitationForm({ t, eventId, onDone }: { t: ReturnType<typeof use
                     <input
                         type="text"
                         value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
+                        onChange={handleFirstNameChange}
                         className="bg-surface-muted rounded-xl px-3 py-2.5 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
                     />
                 </label>
@@ -141,7 +162,7 @@ function CreateInvitationForm({ t, eventId, onDone }: { t: ReturnType<typeof use
                     <input
                         type="text"
                         value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
+                        onChange={handleLastNameChange}
                         className="bg-surface-muted rounded-xl px-3 py-2.5 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
                     />
                 </label>
@@ -152,7 +173,7 @@ function CreateInvitationForm({ t, eventId, onDone }: { t: ReturnType<typeof use
                 <input
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={handleEmailChange}
                     className="bg-surface-muted rounded-xl px-3 py-2.5 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
                 />
                 {fieldErrors?.email && <span className="text-xs text-rose-500">{fieldErrors.email}</span>}
@@ -181,7 +202,7 @@ function InvitationRow({
     invitation: EventInvitationResponseDto;
 }) {
     const [isEditing, setIsEditing] = useState(false);
-    const [confirmingDelete, setConfirmingDelete] = useState(false);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const [copied, setCopied] = useState(false);
     const [maxGuests, setMaxGuests] = useState(invitation.maxGuests);
 
@@ -205,6 +226,7 @@ function InvitationRow({
     }
 
     async function handleDelete() {
+        setDeleteConfirmOpen(false);
         await deleteInvitation.mutateAsync(invitation.id);
     }
 
@@ -221,7 +243,11 @@ function InvitationRow({
         setIsEditing(true);
     },[])
 
-    const onConfirmDelete = useCallback(() => setConfirmingDelete(true), [])
+    const onConfirmDelete = useCallback(() => setDeleteConfirmOpen(true), [])
+
+    const onCloseDeleteConfirm = useCallback(() => {
+        setDeleteConfirmOpen(false);
+    }, [])
 
     return (
         <div className="py-4 flex flex-col gap-2 first:pt-0">
@@ -288,26 +314,27 @@ function InvitationRow({
                             <Pencil className="w-3.5 h-3.5" />
                             {t('invitations.edit')}
                         </button>
-                        {confirmingDelete ? (
-                            <button
-                                onClick={handleDelete}
-                                disabled={deleteInvitation.isPending}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-rose-100 text-rose-600 hover:bg-rose-200 transition-colors disabled:opacity-40"
-                            >
-                                {deleteInvitation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : t('invitations.confirmRevoke')}
-                            </button>
-                        ) : (
-                            <button
-                                onClick={onConfirmDelete}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-surface-muted text-rose-500 hover:bg-rose-50 transition-colors"
-                            >
-                                <Trash2 className="w-3.5 h-3.5" />
-                                {t('invitations.revoke')}
-                            </button>
-                        )}
+                        <button
+                            onClick={onConfirmDelete}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-surface-muted text-rose-500 hover:bg-rose-50 transition-colors"
+                        >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            {t('invitations.revoke')}
+                        </button>
                     </div>
                 </div>
             )}
+
+            <ConfirmActionModal
+                open={deleteConfirmOpen}
+                onClose={onCloseDeleteConfirm}
+                onConfirm={handleDelete}
+                title={t('invitations.revokeConfirmTitle')}
+                body={t('invitations.revokeConfirmBody')}
+                confirmLabel={t('invitations.confirmRevoke')}
+                cancelLabel={t('invitations.create.cancel')}
+                isConfirming={deleteInvitation.isPending}
+            />
         </div>
     );
 }

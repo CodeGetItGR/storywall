@@ -50,6 +50,7 @@ export const endpoints = {
         posts: (eventId: string) => `/api/events/${eventId}/posts`,
         stories: (eventId: string) => `/api/events/${eventId}/stories`,
         playlistSuggestions: (eventId: string) => `/api/events/${eventId}/playlist-suggestions`,
+        playlistSuggestionsLeaderboard: (eventId: string) => `/api/events/${eventId}/playlist-suggestions/leaderboard`,
     },
 
     eventHosts: {

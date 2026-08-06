@@ -625,13 +625,14 @@ export interface StoryViewResponseDto {
 
 export interface PlaylistSuggestionRequestDto {
     eventId: string;
-    authorMemberId?: string;
     title: string;
     artist?: string;
     youtubeUrl?: string;
     spotifyUrl?: string;
     comment?: string;
 }
+
+export type PlaylistVoteType = 'UPVOTE' | 'DOWNVOTE';
 
 export interface PlaylistSuggestionResponseDto {
     id: string;
@@ -642,18 +643,26 @@ export interface PlaylistSuggestionResponseDto {
     youtubeUrl: string | null;
     spotifyUrl: string | null;
     comment: string | null;
+    upvoteCount: number;
+    downvoteCount: number;
+    myVote: PlaylistVoteType | null;
     createdAt: string;
     deletedAt: string | null;
 }
 
 export interface PlaylistVoteRequestDto {
     playlistSuggestionId: string;
-    memberId: string;
+    voteType: PlaylistVoteType;
 }
 
 export interface PlaylistVoteResponseDto extends PlaylistVoteRequestDto {
     id: string;
+    memberId: string;
     createdAt: string;
+}
+
+export interface PlaylistSuggestionLeaderboardDto extends Omit<PlaylistSuggestionResponseDto, 'myVote'> {
+    rank: number;
 }
 
 export interface PostMediaRequestDto {
