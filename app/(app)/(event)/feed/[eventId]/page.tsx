@@ -13,7 +13,6 @@ import { FeedPageSkeleton } from '@/components/feed/FeedPageSkeleton';
 import { FeedPostRenderer } from '@/components/feed/FeedPostRenderer';
 import { Header } from '@/components/feed/Header';
 import { PostModal } from '@/components/feed/PostModal';
-import { QuickAccessBar } from '@/components/feed/QuickAccessBar';
 import { RsvpPrompt } from '@/components/feed/RsvpPrompt';
 import { StoriesRow } from '@/components/feed/StoriesRow';
 import { useEventPosts } from '@/hooks';
@@ -103,7 +102,7 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
     }
 
     return (
-        <div className="flex flex-col max-w-3xl mx-auto">
+        <div className="mx-auto flex w-full flex-col lg:max-w-2xl">
             <Header countdownTime={event?.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0} />
             <section>
                 <Banner image={'/images/Banner.jpg'} title={event.title} />
@@ -131,26 +130,29 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
 
             {/* Event description */}
             {event.description && <EventDescription eventId={event.id} description={event.description} />}
+
             {moduleFlags.rsvp && !isHost && storedRsvpId === null && (
-                <section className="mt-3 px-4">
+                <section className="">
                     <RsvpPrompt deadline={event?.schedule.rsvpDeadline ?? null} />
                 </section>
             )}
 
             {/* Posts */}
-            <section id="posts" className={'mt-5'}>
+            <section id="posts">
                 {moduleFlags.posts && (
-                    <div className="flex flex-col gap-4 px-4 pb-24 lg:pb-10">
-                        <ComposerCard />
+                <div className="flex flex-col px-0 pb-24 lg:pb-10">
+                    <ComposerCard />
+                    <div className="flex flex-col">
                         {posts.map((post, index) => (
                             <FeedPostRenderer key={post.id} post={post} isLcpCandidate={index === 0} />
                         ))}
                         <div ref={loadMoreRef} className="h-1" />
-                        {isFetchingNextPage && <p className="text-center text-sm text-ink-muted py-2">{t('loadingMore')}</p>}
+                        {isFetchingNextPage && <p className="py-2 text-center text-sm text-ink-muted">{t('loadingMore')}</p>}
                     </div>
-                )}
-            </section>
-            {/* Deliberately outside moduleFlags.posts β€” a shared post link should
+                </div>
+            )}
+        </section>
+            {/* Deliberately outside moduleFlags.posts a shared post link should
             still open even if the posts module is toggled off for this event.
             PostModal reads its own open state from the `?post=` param via
             usePostModal(). */}

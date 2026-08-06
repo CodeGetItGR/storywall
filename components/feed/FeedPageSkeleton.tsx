@@ -37,7 +37,7 @@ function PostSkeleton({ withMedia = false }: { withMedia?: boolean }) {
 
 export function FeedPageSkeleton() {
     return (
-        <div className="mx-auto flex max-w-3xl flex-col" role="status" aria-label="Loading feed">
+        <div className="mx-auto flex w-full flex-col lg:max-w-[42rem]" role="status" aria-label="Loading feed">
             <div className="sticky top-0 z-20 flex w-full items-center justify-between gap-4 bg-background/90 px-4 py-5 backdrop-blur-sm">
                 <Skeleton className="h-8 w-[8.5rem] rounded-full sm:h-12 sm:w-44" />
                 <Skeleton className="h-8 w-24 rounded-full" />
@@ -61,15 +61,17 @@ export function FeedPageSkeleton() {
             </section>
 
             <section className="mt-5">
-                <div className="flex flex-col gap-4 px-4 pb-24 lg:pb-10">
+                <div className="flex flex-col px-0 pb-24 lg:pb-10">
                     <div className="rounded-2xl bg-card p-4 shadow-[0_2px_16px_0_rgba(36,31,26,0.07)]">
                         <div className="flex items-center gap-3">
                             <Skeleton className="h-10 w-10 rounded-full" />
                             <Skeleton className="h-10 flex-1 rounded-full" />
                         </div>
                     </div>
-                    <PostSkeleton withMedia />
-                    <PostSkeleton />
+                    <div className="mt-4 flex flex-col">
+                        <PostSkeleton withMedia />
+                        <PostSkeleton />
+                    </div>
                 </div>
             </section>
         </div>
