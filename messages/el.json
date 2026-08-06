@@ -617,7 +617,11 @@
         "playlistEmpty": "Δεν έχουν προταθεί τραγούδια ακόμα. Ανοίξτε το παράθυρο και προσθέστε το πρώτο.",
         "loadingSongs": "Φόρτωση τραγουδιών...",
         "leaderboardEmpty": "Δεν υπάρχει αρκετή δραστηριότητα ακόμα για κατάταξη.",
-        "loadingLeaderboard": "Φόρτωση κατάταξης..."
+        "loadingLeaderboard": "Φόρτωση κατάταξης...",
+        "leaderboardTopCount": "Κορυφαία {count}",
+        "leaderboardShowingMore": "Εμφάνιση {shown} από {total}",
+        "up": "Υπ.",
+        "down": "Κάτ."
     },
     "QuizPage": {
         "backToTools": "Πίσω στα εργαλεία",

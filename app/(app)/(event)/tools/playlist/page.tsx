@@ -4,12 +4,14 @@ import { AlertCircle, ArrowLeft, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
-import { PlaylistItemRow } from '@/components/playlist';
+import { PlaylistItemRow, PlaylistLeaderboard } from '@/components/playlist';
 import { useEventModules } from '@/hooks/useEventModules';
 import { usePlaylistLeaderboard, usePlaylistSuggestions } from '@/hooks/usePlaylist';
 import { routes } from '@/lib/routes';
 import { useComposer } from '@/providers/ComposerProvider';
 import { useActiveEvent, useIsHost } from '@/providers/EventProvider';
+
+const HOST_LEADERBOARD_VISIBLE_SONGS = 3;
 
 export default function PlaylistPage() {
     const t = useTranslations('PlaylistPage');
@@ -87,45 +89,7 @@ export default function PlaylistPage() {
 
             {isHost && (
                 <section className="mb-8">
-                    <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border/70 pb-4">
-                        <div className="max-w-xl">
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-ink-faint">{t('leaderboardEyebrow')}</p>
-                            <h2 className="mt-1 text-2xl font-semibold tracking-tight text-ink">{t('leaderboardTitle')}</h2>
-                            <p className="mt-1 text-sm leading-relaxed text-ink-muted">{t('leaderboardBody')}</p>
-                        </div>
-                        {isLoadingLeaderboard && <span className="text-sm text-ink-faint">{t('loadingLeaderboard')}</span>}
-                    </div>
-
-                    {!isLoadingLeaderboard && leaderboard.length === 0 ? (
-                        <div className="py-6 text-sm text-ink-muted">{t('leaderboardEmpty')}</div>
-                    ) : (
-                        <ol className="mt-4 border-t border-border/60">
-                            {leaderboard.map((song) => (
-                                <li key={song.id} className="grid grid-cols-[auto,1fr,auto] gap-4 border-b border-border/60 py-4">
-                                    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-border/70 bg-background text-base font-semibold text-ink">
-                                        {song.rank}
-                                    </div>
-
-                                    <div className="min-w-0">
-                                        <h3 className="truncate text-base font-semibold text-ink">{song.title}</h3>
-                                        <p className="mt-0.5 truncate text-sm text-ink-muted">{song.artist ?? t('artistUnknown')}</p>
-                                        {song.comment && <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-faint">{song.comment}</p>}
-                                    </div>
-
-                                    <div className="flex shrink-0 flex-col items-end gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-faint">
-                                        <span className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background px-2.5 py-1 text-ink-muted">
-                                            <span className="text-[10px]">Up</span>
-                                            <span className="tabular-nums">{song.upvoteCount}</span>
-                                        </span>
-                                        <span className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-surface-muted px-2.5 py-1">
-                                            <span className="text-[10px]">Down</span>
-                                            <span className="tabular-nums">{song.downvoteCount}</span>
-                                        </span>
-                                    </div>
-                                </li>
-                            ))}
-                        </ol>
-                    )}
+                    <PlaylistLeaderboard leaderboard={leaderboard} isLoading={isLoadingLeaderboard} maxVisibleSongs={HOST_LEADERBOARD_VISIBLE_SONGS} />
                 </section>
             )}
 
