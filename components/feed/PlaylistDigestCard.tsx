@@ -30,7 +30,7 @@ export function PlaylistDigestCard({ post, showCommentLink = true }: PlaylistDig
     }
 
     return (
-        <article className="border-b border-border/60 bg-card">
+        <article className="border-2 border-b border-border/60 bg-card/60">
             <div className="px-4 pt-4 pb-3">
                 <div className="flex items-start gap-3">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-sky-500/10 text-sky-700">

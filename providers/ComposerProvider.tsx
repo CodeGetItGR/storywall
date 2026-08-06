@@ -388,9 +388,9 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
                 tabIndex={-1}
             />
 
-            <Modal open={isOpen} onClose={closeComposer} size="sm" closeLabel={t('cancel')} className="p-4">
-                <Modal.Body className="p-4">
-                    <div className="mb-4 flex items-center gap-2">
+            <Modal open={isOpen} onClose={closeComposer} size="sm" variant="sheet" closeLabel={t('cancel')} className="pb-[env(safe-area-inset-bottom)]">
+                <Modal.Body className="p-4 pt-12">
+                    <div className="mb-4 flex items-center gap-2 pr-10">
                         <button
                             type="button"
                             onClick={selectPostMode}

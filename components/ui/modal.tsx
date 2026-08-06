@@ -56,8 +56,10 @@ export function Modal({
                             ? 'inset-0 w-screen h-dvh max-h-dvh rounded-none'
                             : isSheet
                               ? cn(
-                                    'inset-x-0 bottom-0 mx-auto w-[calc(100vw-1rem)] max-h-[88dvh] overflow-hidden rounded-t-[1.75rem] rounded-b-none sm:max-w-2xl',
-                                    'sm:bottom-6 sm:rounded-b-3xl sm:rounded-t-3xl sm:shadow-[0_24px_60px_rgba(36,31,26,0.22)]'
+                                    'inset-x-0 bottom-0 mx-auto w-[calc(100vw-1rem)] max-h-[88dvh] overflow-hidden rounded-t-[1.75rem] rounded-b-none shadow-[0_-18px_50px_rgba(36,31,26,0.18)]',
+                                    'transition-[transform,opacity] duration-300 ease-out motion-safe:data-starting-style:translate-y-full motion-safe:data-starting-style:opacity-0',
+                                    'motion-safe:data-ending-style:translate-y-0 motion-safe:data-ending-style:opacity-100',
+                                    'sm:bottom-6 sm:max-w-2xl sm:rounded-b-3xl sm:rounded-t-3xl sm:shadow-[0_24px_60px_rgba(36,31,26,0.22)]'
                                 )
                             : cn(
                                   'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',

@@ -53,13 +53,12 @@ export function MobileTabBar() {
     const isHost = useIsHost();
     const isLoading = useEventContextLoading();
     const isFeedDetailPage = pathname.startsWith('/feed/');
-    const showHostMenu = !isLoading && Boolean(activeEvent) && isHost;
-    const showGuestMenu = !isLoading && Boolean(activeEvent) && !isHost;
 
     const [home, playlist] = tabItems;
     const homeActive = pathname === home.href || pathname.startsWith(home.href + '/');
     const playlistActive = pathname === playlist.href || pathname.startsWith(playlist.href + '/');
     const hostActive = pathname === routes.manage || pathname.startsWith(routes.manage + '/');
+    const showDashboardMenu = !isLoading && Boolean(activeEvent);
 
     function handleHomeClick(event: MouseEvent<HTMLAnchorElement>) {
         if (!isFeedDetailPage) return;
@@ -68,132 +67,140 @@ export function MobileTabBar() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    function handleDashboardMenuClick(event: MouseEvent<HTMLElement>) {
+        const href = event.currentTarget.dataset.href;
+        if (href) router.push(href);
+    }
+
     return (
         <>
             <nav
                 aria-label={t('mobileNavigation')}
-                className="fixed bottom-0 left-1/2 z-40 flex h-16 w-9/10 -translate-x-1/2 items-center justify-around rounded-t-2xl border-t border-border bg-white/90 px-5 lg:hidden"
+                className="fixed bottom-0 left-1/2 z-40 grid h-16 w-9/10 -translate-x-1/2 grid-cols-3 items-center rounded-t-2xl border-t border-border bg-white/90 px-4 lg:hidden"
             >
-                <TabLink href={home.href} icon={home.icon} label={t(`items.${home.key}`)} active={homeActive} onClick={handleHomeClick} />
+                <div className="justify-self-start">
+                    <TabLink href={home.href} icon={home.icon} label={t(`items.${home.key}`)} active={homeActive} onClick={handleHomeClick} />
+                </div>
 
-                <Menu.Root>
-                    <Menu.Trigger aria-label={t('compose')} className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md">
-                        <Plus className="h-6 w-6 text-white" strokeWidth={2.5} />
-                    </Menu.Trigger>
-                    <Menu.Portal>
-                        <Menu.Positioner side="top" sideOffset={8} className="z-50">
-                            <Menu.Popup className="min-w-36 rounded-2xl border border-border bg-background py-1 shadow-[0_2px_16px_0_rgba(36,31,26,0.15)] outline-none">
-                                <Menu.Item
-                                    onClick={openPostComposer}
-                                    disabled={!canCompose}
-                                    className="mx-1 flex cursor-pointer justify-between rounded-lg px-4 py-2.5 text-sm font-medium text-ink outline-none transition-colors hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+                <div className="justify-self-center">
+                    {showDashboardMenu && isHost && (
+                        <Menu.Root>
+                            <Menu.Trigger
+                                aria-label={t('hostMenu.manage')}
+                                className={cn(
+                                    'flex h-11 w-11 items-center justify-center rounded-full border bg-white/95 text-ink shadow-[0_10px_22px_rgba(36,31,26,0.12)] transition-all hover:-translate-y-0.5 hover:bg-surface-muted lg:hidden',
+                                    hostActive ? 'border-primary/20 bg-primary-light text-primary-dark' : 'border-border'
+                                )}
+                            >
+                                <LayoutDashboard className="h-5 w-5" aria-hidden="true" />
+                            </Menu.Trigger>
+                            <Menu.Portal>
+                                <Menu.Positioner
+                                    side="top"
+                                    align="center"
+                                    sideOffset={12}
+                                    positionMethod="fixed"
+                                    collisionPadding={{ top: 8, right: 12, bottom: 96, left: 12 }}
+                                    className="z-50"
                                 >
-                                    {t('composeMenu.post')}
-                                    <Image src="/icons/post.svg" alt={t('composeMenu.post')} width={20} height={20} className="h-5 w-5 transition-opacity" loading="eager" />
-                                </Menu.Item>
-                                <Menu.Item
-                                    onClick={openStoryCapture}
-                                    disabled={!canCompose}
-                                    className="mx-1 flex cursor-pointer justify-between rounded-lg px-4 py-2.5 text-sm font-medium text-ink outline-none transition-colors hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
-                                >
-                                    {t('composeMenu.story')}
-                                    <Image src="/icons/story.svg" alt={t('composeMenu.story')} width={20} height={20} className="h-5 w-5 transition-opacity" loading="eager" />
-                                </Menu.Item>
-                                <Menu.Item
-                                    onClick={openSongComposer}
-                                    disabled={!canComposeSong}
-                                    className="mx-1 flex cursor-pointer justify-between rounded-lg px-4 py-2.5 text-sm font-medium text-ink outline-none transition-colors hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
-                                >
-                                    {t('composeMenu.song')}
-                                    <Image src="/icons/music.svg" alt={t('composeMenu.song')} width={20} height={20} className="h-5 w-5 transition-opacity" loading="eager" />
-                                </Menu.Item>
-                            </Menu.Popup>
-                        </Menu.Positioner>
-                    </Menu.Portal>
-                </Menu.Root>
+                                    <Menu.Popup className="min-w-52 rounded-2xl border border-border bg-background py-1 shadow-[0_2px_16px_0_rgba(36,31,26,0.15)] outline-none">
+                                        {hostMenuItems.map(({ href, icon: Icon, key }) => (
+                                            <Menu.Item
+                                                key={href}
+                                                onClick={handleDashboardMenuClick}
+                                                data-href={href}
+                                                className={cn(
+                                                    'mx-1 flex cursor-pointer justify-between rounded-lg px-4 py-2.5 text-sm font-medium outline-none transition-colors',
+                                                    pathname === href || pathname.startsWith(href + '/') ? 'bg-surface-muted text-ink' : 'text-ink hover:bg-surface-muted'
+                                                )}
+                                            >
+                                                <span>{t(`hostMenu.${key}`)}</span>
+                                                <Icon className="h-4 w-4 text-ink-muted" aria-hidden="true" />
+                                            </Menu.Item>
+                                        ))}
+                                    </Menu.Popup>
+                                </Menu.Positioner>
+                            </Menu.Portal>
+                        </Menu.Root>
+                    )}
 
-                <TabLink href={playlist.href} icon={playlist.icon} label={t(`items.${playlist.key}`)} active={playlistActive} />
+                    {showDashboardMenu && !isHost && (
+                        <Menu.Root>
+                            <Menu.Trigger
+                                aria-label={t(`guestMenu.${guestScheduleItem.key}`)}
+                                className="flex h-11 w-11 items-center justify-center rounded-full border border-amber-200 bg-amber-50 text-amber-700 shadow-[0_10px_22px_rgba(36,31,26,0.12)] transition-all hover:-translate-y-0.5 hover:bg-amber-100 lg:hidden"
+                            >
+                                <CalendarDays className="h-5 w-5" aria-hidden="true" />
+                            </Menu.Trigger>
+                            <Menu.Portal>
+                                <Menu.Positioner
+                                    side="top"
+                                    align="center"
+                                    sideOffset={12}
+                                    positionMethod="fixed"
+                                    collisionPadding={{ top: 8, right: 12, bottom: 96, left: 12 }}
+                                    className="z-50"
+                                >
+                                    <Menu.Popup className="min-w-44 rounded-2xl border border-border bg-background py-1 shadow-[0_2px_16px_0_rgba(36,31,26,0.15)] outline-none">
+                                        <Menu.Item
+                                            onClick={handleDashboardMenuClick}
+                                            data-href={guestScheduleItem.href}
+                                            className="mx-1 flex cursor-pointer justify-between rounded-lg px-4 py-2.5 text-sm font-medium text-ink outline-none transition-colors hover:bg-surface-muted"
+                                        >
+                                            {t(`guestMenu.${guestScheduleItem.key}`)}
+                                            <CalendarDays className="h-4 w-4 text-amber-500" aria-hidden="true" />
+                                        </Menu.Item>
+                                    </Menu.Popup>
+                                </Menu.Positioner>
+                            </Menu.Portal>
+                        </Menu.Root>
+                    )}
+                </div>
+
+                <div className="justify-self-end">
+                    <TabLink href={playlist.href} icon={playlist.icon} label={t(`items.${playlist.key}`)} active={playlistActive} />
+                </div>
             </nav>
 
-            {showHostMenu && (
-                <Menu.Root>
-                    <Menu.Trigger
-                        aria-label={t('hostMenu.manage')}
-                        className={cn(
-                            'fixed bottom-20 right-4 z-40 flex items-center gap-2 rounded-full border px-3 py-2 shadow-[0_12px_28px_rgba(36,31,26,0.12)] transition-all lg:hidden',
-                            hostActive ? 'border-primary/20 bg-primary-light text-primary-dark' : 'border-border bg-white/95 text-ink'
-                        )}
-                    >
-                        <span className={cn('flex h-8 w-8 items-center justify-center rounded-full transition-colors', hostActive ? 'bg-primary/10' : 'bg-surface-muted')}>
-                            <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
-                        </span>
-                        <span className="text-sm font-semibold">{t('hostMenu.manage')}</span>
-                    </Menu.Trigger>
-                    <Menu.Portal>
-                        <Menu.Positioner
-                            side="top"
-                            align="end"
-                            sideOffset={12}
-                            positionMethod="fixed"
-                            collisionPadding={{ top: 8, right: 12, bottom: 96, left: 12 }}
-                            className="z-50"
-                        >
-                            <Menu.Popup className="min-w-52 rounded-2xl border border-border bg-background py-1 shadow-[0_2px_16px_0_rgba(36,31,26,0.15)] outline-none">
-                                {hostMenuItems.map(({ href, icon: Icon, key }) => (
-                                    <Menu.Item
-                                        key={href}
-                                        onClick={() => router.push(href)}
-                                        className={cn(
-                                            'mx-1 flex cursor-pointer justify-between rounded-lg px-4 py-2.5 text-sm font-medium outline-none transition-colors',
-                                            pathname === href || pathname.startsWith(href + '/') ? 'bg-surface-muted text-ink' : 'text-ink hover:bg-surface-muted'
-                                        )}
-                                    >
-                                        <span>{t(`hostMenu.${key}`)}</span>
-                                        <Icon className="h-4 w-4 text-ink-muted" aria-hidden="true" />
-                                    </Menu.Item>
-                                ))}
-                            </Menu.Popup>
-                        </Menu.Positioner>
-                    </Menu.Portal>
-                </Menu.Root>
-            )}
+            <Menu.Root>
+                <Menu.Trigger
+                    aria-label={t('compose')}
+                    className="fixed bottom-20 right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md transition-transform hover:scale-105 lg:hidden"
+                >
+                    <Plus className="h-6 w-6 text-white" strokeWidth={2.5} />
+                </Menu.Trigger>
+                <Menu.Portal>
+                    <Menu.Positioner side="top" align="end" sideOffset={8} className="z-50">
+                        <Menu.Popup className="min-w-36 rounded-2xl border border-border bg-background py-1 shadow-[0_2px_16px_0_rgba(36,31,26,0.15)] outline-none">
+                            <Menu.Item
+                                onClick={openPostComposer}
+                                disabled={!canCompose}
+                                className="mx-1 flex cursor-pointer justify-between rounded-lg px-4 py-2.5 text-sm font-medium text-ink outline-none transition-colors hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+                            >
+                                {t('composeMenu.post')}
+                                <Image src="/icons/post.svg" alt={t('composeMenu.post')} width={20} height={20} className="h-5 w-5 transition-opacity" loading="eager" />
+                            </Menu.Item>
+                            <Menu.Item
+                                onClick={openStoryCapture}
+                                disabled={!canCompose}
+                                className="mx-1 flex cursor-pointer justify-between rounded-lg px-4 py-2.5 text-sm font-medium text-ink outline-none transition-colors hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+                            >
+                                {t('composeMenu.story')}
+                                <Image src="/icons/story.svg" alt={t('composeMenu.story')} width={20} height={20} className="h-5 w-5 transition-opacity" loading="eager" />
+                            </Menu.Item>
+                            <Menu.Item
+                                onClick={openSongComposer}
+                                disabled={!canComposeSong}
+                                className="mx-1 flex cursor-pointer justify-between rounded-lg px-4 py-2.5 text-sm font-medium text-ink outline-none transition-colors hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+                            >
+                                {t('composeMenu.song')}
+                                <Image src="/icons/music.svg" alt={t('composeMenu.song')} width={20} height={20} className="h-5 w-5 transition-opacity" loading="eager" />
+                            </Menu.Item>
+                        </Menu.Popup>
+                    </Menu.Positioner>
+                </Menu.Portal>
+            </Menu.Root>
 
-            {showGuestMenu && (
-                <Menu.Root>
-                    <Menu.Trigger
-                        aria-label={t(`guestMenu.${guestScheduleItem.key}`)}
-                        className={cn(
-                            'fixed bottom-20 right-4 z-40 flex items-center gap-2 rounded-full border px-3 py-2 shadow-[0_12px_28px_rgba(36,31,26,0.12)] transition-all lg:hidden',
-                            'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100'
-                        )}
-                    >
-                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-amber-700">
-                            <CalendarDays className="h-4 w-4" aria-hidden="true" />
-                        </span>
-                        <span className="text-sm font-semibold">{t(`guestMenu.${guestScheduleItem.key}`)}</span>
-                    </Menu.Trigger>
-                    <Menu.Portal>
-                        <Menu.Positioner
-                            side="top"
-                            align="center"
-                            sideOffset={12}
-                            positionMethod="fixed"
-                            collisionPadding={{ top: 8, right: 12, bottom: 96, left: 12 }}
-                            className="z-50"
-                        >
-                            <Menu.Popup className="min-w-44 rounded-2xl border border-border bg-background py-1 shadow-[0_2px_16px_0_rgba(36,31,26,0.15)] outline-none">
-                                <Menu.Item
-                                    onClick={() => router.push(guestScheduleItem.href)}
-                                    className="mx-1 flex cursor-pointer justify-between rounded-lg px-4 py-2.5 text-sm font-medium text-ink outline-none transition-colors hover:bg-surface-muted"
-                                >
-                                    {t(`guestMenu.${guestScheduleItem.key}`)}
-                                    <CalendarDays className="h-4 w-4 text-amber-500" aria-hidden="true" />
-                                </Menu.Item>
-                            </Menu.Popup>
-                        </Menu.Positioner>
-                    </Menu.Portal>
-                </Menu.Root>
-            )}
         </>
     );
 }

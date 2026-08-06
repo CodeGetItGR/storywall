@@ -50,7 +50,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     }
 
     return (
-        <article className={cn('relative border-b border-border/60 bg-card', isHostPost && 'pt-3 sm:pt-0 sm:pr-3')}>
+        <article className={cn('relative border-2 border-b border-border/60 bg-card/60', isHostPost && 'pt-3 sm:pt-0 sm:pr-3')}>
                 <div className="flex items-center justify-between px-4 pt-4 pb-3">
                     <PostAuthorAvatar avatarUrl={post.author?.avatarUrl} name={authorName} subtitle={authorSubtitle} timeAgo={timeAgo} />
                     <div className="flex items-center gap-1">

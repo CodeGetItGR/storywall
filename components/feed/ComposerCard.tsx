@@ -15,7 +15,7 @@ export function ComposerCard() {
     const initials = activeMember ? initialsFromName(activeMember.displayName) : '?';
 
     return (
-        <div className="bg-card shadow-[0_2px_16px_0_rgba(36,31,26,0.07)] p-4 border-b border-gray-200">
+        <div className="bg-card/60 shadow-[0_2px_16px_0_rgba(36,31,26,0.07)] p-4 border-b border-gray-200">
             <button type="button" onClick={openPostComposer} className="w-full flex items-center gap-3 text-left">
                 <Avatar initials={initials} size="md" alt={activeMember?.displayName} />
                 <span className="flex-1 bg-surface-muted rounded-full px-4 py-2.5 text-sm text-ink-faint">{t('placeholder')}</span>
