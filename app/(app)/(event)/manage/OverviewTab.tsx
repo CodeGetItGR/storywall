@@ -1,9 +1,14 @@
-import { Clock, Ticket, Users } from 'lucide-react';
+import { Clock, Loader2, Ticket, Users } from 'lucide-react';
 import type { useTranslations } from 'next-intl';
+import { useState } from 'react';
 
 import Section from '@/components/manage/Section';
-import { formatBytes, UsagePanel } from '@/components/plan/UsagePanel';
+import { UsagePanel } from '@/components/plan/UsagePanel';
+import { useCheckout } from '@/hooks/useBilling';
+import { getErrorMessage } from '@/lib/api/errors';
 import type { EventUsageResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import { checkoutSuccessUrl } from '@/lib/billing';
+import { formatBytes } from '@/lib/format';
 import { findNextPlan, findPlanByCode } from '@/lib/planTiers';
 import { cn } from '@/lib/utils';
 
@@ -31,6 +36,9 @@ export default function OverviewTab({
     modules,
     onSeeAllRsvp,
     onSeeAllInvitations,
+    eventId,
+    eventStatus,
+    endAt,
 }: {
     t: ReturnType<typeof useTranslations>;
     memberCount: number;
@@ -42,7 +50,29 @@ export default function OverviewTab({
     modules: PlatformModuleResponseDto[];
     onSeeAllRsvp: () => void;
     onSeeAllInvitations: () => void;
+    eventId: string;
+    eventStatus: 'DRAFT' | 'ACTIVE' | 'FROZEN' | 'PURGED';
+    endAt: string | null;
 }) {
+    const checkout = useCheckout(eventId);
+    const [checkoutError, setCheckoutError] = useState<string | null>(null);
+    const canPay = eventStatus === 'DRAFT' && Boolean(endAt);
+    async function startCheckout() {
+        setCheckoutError(null);
+        try {
+            const result = await checkout.mutateAsync();
+            const successUrl = checkoutSuccessUrl(window.location.origin, eventId, result.orderId);
+            // The backend normally supplies its own return route. Preserve the order id for
+            // local/manual providers and navigate the hosted checkout at top level.
+            if (result.redirectUrl.includes('/checkout/success')) {
+                window.location.href = successUrl;
+            } else {
+                window.location.href = result.redirectUrl;
+            }
+        } catch (error) {
+            setCheckoutError(getErrorMessage(error));
+        }
+    }
     const rsvpTotal = rsvpBreakdown.reduce((sum, r) => sum + r.count, 0) || 1;
     const currentPlan = eventUsage ? findPlanByCode(planTiers, 'EVENT', eventUsage.planTier) : undefined;
     const nextPlan = eventUsage ? findNextPlan(planTiers, 'EVENT', eventUsage.planTier) : undefined;
@@ -51,7 +81,18 @@ export default function OverviewTab({
 
     return (
         <div className="px-4 flex flex-col gap-6">
-            <div className="grid grid-cols-3 gap-4">
+            {eventStatus === 'DRAFT' && (
+                <div className="rounded-2xl border border-primary/20 bg-primary-light p-4">
+                    <p className="text-sm font-bold text-primary-dark">{t('draft.title')}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-primary-dark/80">{t('draft.body')}</p>
+                    {checkoutError && <p className="mt-2 text-xs text-rose-600">{checkoutError}</p>}
+                    <button type="button" onClick={startCheckout} disabled={!canPay || checkout.isPending} className="mt-3 inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40">
+                        {checkout.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                        {endAt ? t('draft.payAndPublish') : t('draft.addEndDate')}
+                    </button>
+                </div>
+            )}
+            <div className="grid gap-4 sm:grid-cols-3">
                 <Stat
                     label={t('stats.totalGuests.label')}
                     value={`${memberCount}`}

@@ -1,22 +1,26 @@
 'use client';
 
-import { LayoutDashboard, MessageSquareText, Settings2, Ticket } from 'lucide-react';
+import { CreditCard, LayoutDashboard, MessageSquareText, Settings2, Ticket } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { formatBytes, UsagePanel } from '@/components/plan/UsagePanel';
+import { UsagePanel } from '@/components/plan/UsagePanel';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventUsage } from '@/hooks/useUsage';
+import { formatBytes } from '@/lib/format';
 import { findNextPlan, findPlanByCode } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
-const hostLinks = [
-    { key: 'manage', href: routes.manage, icon: LayoutDashboard },
-    { key: 'rsvps', href: routes.tools.rsvp, icon: Ticket },
-    { key: 'invitations', href: routes.auth.manage({ tab: 'invitations' }), icon: MessageSquareText },
-    { key: 'settings', href: routes.auth.manage({ tab: 'settings' }), icon: Settings2 },
-] as const;
+function hostLinks(eventId: string) {
+    return [
+        { key: 'manage', href: routes.manage, icon: LayoutDashboard },
+        { key: 'rsvps', href: routes.tools.rsvp, icon: Ticket },
+        { key: 'invitations', href: routes.auth.manage({ tab: 'invitations' }), icon: MessageSquareText },
+        { key: 'settings', href: routes.auth.manage({ tab: 'settings' }), icon: Settings2 },
+        { key: 'billing', href: routes.events.settingsPlan(eventId), icon: CreditCard },
+    ] as const;
+}
 
 export function RightContextPanel() {
     const t = useTranslations('RightContextPanel');
@@ -98,7 +102,7 @@ export function RightContextPanel() {
                 <div>
                     <p className="mb-2 text-sm font-semibold text-ink">{t('hostActions')}</p>
                     <div className="space-y-2">
-                        {hostLinks.map(({ key, href, icon: Icon }) => (
+                        {hostLinks(activeEvent.id).map(({ key, href, icon: Icon }) => (
                             <Link
                                 key={href}
                                 href={href}

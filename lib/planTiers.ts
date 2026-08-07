@@ -1,7 +1,25 @@
 import type { ModuleKey, PlanScope, PlanTierResponseDto } from '@/lib/api/types';
+import { formatBytes } from '@/lib/format';
+
+export function scopedPlans(plans: PlanTierResponseDto[], scope: PlanScope): PlanTierResponseDto[] {
+    return plans.filter((plan) => plan.scope === scope).sort((left, right) => left.sortOrder - right.sortOrder);
+}
+
+export function formatPlanMoney(plan: PlanTierResponseDto): string | null {
+    if (plan.priceAmountMinor === null || !plan.priceCurrency) return null;
+    return new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: plan.priceCurrency,
+    }).format(plan.priceAmountMinor / 100);
+}
+
+export function formatLimitValue(value: number | null, unit: 'bytes' | 'count'): string | null {
+    if (value === null) return null;
+    return unit === 'bytes' ? formatBytes(value) : value.toLocaleString();
+}
 
 export function publicAssignablePlans(plans: PlanTierResponseDto[], scope: PlanScope): PlanTierResponseDto[] {
-    return plans.filter((plan) => plan.scope === scope && plan.isAssignable && plan.isPublic).sort((left, right) => left.sortOrder - right.sortOrder);
+    return scopedPlans(plans, scope).filter((plan) => plan.isAssignable && plan.isPublic);
 }
 
 export function findPlanByCode(plans: PlanTierResponseDto[], scope: PlanScope, code: string): PlanTierResponseDto | undefined {

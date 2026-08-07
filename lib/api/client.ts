@@ -8,6 +8,7 @@ export class ApiError extends Error {
     status: number;
     body: unknown;
     problem?: ProblemDetail;
+    retryAfterSeconds?: number;
 
     constructor(status: number, body: unknown, message?: string) {
         super(message ?? `API request failed with status ${status}`);
@@ -15,6 +16,7 @@ export class ApiError extends Error {
         this.status = status;
         this.body = body;
         this.problem = isProblemDetail(body) ? body : undefined;
+        this.retryAfterSeconds = this.problem?.status === 429 ? (this.problem.retryAfterSeconds as number | undefined) : undefined;
     }
 }
 

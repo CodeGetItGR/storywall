@@ -3,7 +3,7 @@
 import { ArrowLeft, ArrowRight, CheckCircle2, HelpCircle, RefreshCw, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { quizQuestions } from '@/lib/mock-data';
 import { routes } from '@/lib/routes';
@@ -22,7 +22,7 @@ export default function QuizPage() {
     const selected = answers[current];
     const isLast = current === quizQuestions.length - 1;
 
-    function handleSelect(idx: number) {
+    const handleSelect = useCallback((idx: number) => {
         if (revealed) return;
         setAnswers((prev) => {
             const next = [...prev];
@@ -30,7 +30,7 @@ export default function QuizPage() {
             return next;
         });
         setRevealed(true);
-    }
+    }, [current, revealed]);
 
     function handleNext() {
         if (isLast) {
@@ -47,6 +47,11 @@ export default function QuizPage() {
         setAnswers(new Array(quizQuestions.length).fill(null));
         setRevealed(false);
     }
+
+    const handleAnswerClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+        const index = Number(event.currentTarget.dataset.answerIndex);
+        if (!Number.isNaN(index)) handleSelect(index);
+    }, [handleSelect]);
 
     const score = answers.filter((a, i) => a === quizQuestions[i].correct).length;
 
@@ -180,7 +185,8 @@ export default function QuizPage() {
                         return (
                             <button
                                 key={idx}
-                                onClick={() => handleSelect(idx)}
+                                data-answer-index={idx}
+                                onClick={handleAnswerClick}
                                 disabled={revealed}
                                 className={cn(
                                     'w-full text-left px-4 py-3 rounded-xl border-2 text-sm transition-all flex items-center gap-3',

@@ -12,10 +12,10 @@ import type { EventDetailResponseDto, EventPatchDto } from '@/lib/api/types';
 import { toDatetimeLocalValue } from '@/lib/datetime';
 
 const inputClass =
-    'bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition';
+    'bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition disabled:cursor-not-allowed disabled:opacity-60';
 const labelClass = 'text-xs font-semibold text-ink-muted uppercase tracking-wide';
 
-export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTranslations>; event: EventDetailResponseDto }) {
+export default function SettingsTab({ t, event, canWrite }: { t: ReturnType<typeof useTranslations>; event: EventDetailResponseDto; canWrite: boolean }) {
     const initial = {
         title: event.title,
         subtitle: event.subtitle ?? '',
@@ -57,6 +57,7 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
     }, []);
 
     function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+        if (!canWrite) return;
         const file = e.target.files?.[0];
         if (!file) return;
         if (coverObjectUrlRef.current) {
@@ -70,6 +71,7 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
     }
 
     function handleRemovePendingCover() {
+        if (!canWrite) return;
         if (coverObjectUrlRef.current) {
             URL.revokeObjectURL(coverObjectUrlRef.current);
             coverObjectUrlRef.current = null;
@@ -79,6 +81,7 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
     }
 
     function handleChangeCoverClick() {
+        if (!canWrite) return;
         fileRef.current?.click();
     }
 
@@ -120,6 +123,7 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
 
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
+        if (!canWrite) return;
         setSaved(false);
 
         const patch: EventPatchDto = {};
@@ -147,10 +151,12 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
 
     const isUploading = uploadMedia.isPending;
     const isSaving = updateEvent.isPending;
+    const disabled = !canWrite;
 
     return (
         <div className="px-4">
             <p className="text-sm text-ink-muted mb-5">{t('settings.subtitle')}</p>
+            {!canWrite && <p className="mb-5 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('settings.readOnly')}</p>}
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 <div>
@@ -168,6 +174,7 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
                                     <button
                                         type="button"
                                         onClick={handleChangeCoverClick}
+                                        disabled={disabled}
                                         className="px-3 py-1.5 rounded-full bg-ink/60 text-white text-xs font-semibold hover:bg-ink/80 transition-colors"
                                     >
                                         {t('settings.coverPhoto.change')}
@@ -176,6 +183,7 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
                                         <button
                                             type="button"
                                             onClick={handleRemovePendingCover}
+                                            disabled={disabled}
                                             aria-label={t('settings.coverPhoto.remove')}
                                             className="w-8 h-8 rounded-full bg-ink/60 flex items-center justify-center text-white hover:bg-ink/80 transition-colors"
                                         >
@@ -188,6 +196,7 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
                             <button
                                 type="button"
                                 onClick={handleChangeCoverClick}
+                                disabled={disabled}
                                 className="w-full flex flex-col items-center justify-center gap-2 border-2 border-dashed border-border rounded-2xl py-10 text-ink-faint hover:border-primary/40 hover:text-primary/60 hover:bg-primary-light/30 transition-colors"
                             >
                                 <ImagePlus className="w-7 h-7" />
@@ -201,6 +210,7 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
                             accept="image/*"
                             className="sr-only"
                             onChange={handleFile}
+                            disabled={disabled}
                             aria-label={t('settings.coverPhoto.upload')}
                         />
                     </div>
@@ -208,7 +218,7 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
 
                 <label className="flex flex-col gap-1.5">
                     <span className={labelClass}>{t('settings.fields.title')}</span>
-                    <input type="text" required value={title} onChange={handleTitleChange} className={inputClass} />
+                    <input type="text" required value={title} onChange={handleTitleChange} disabled={disabled} className={inputClass} />
                     {fieldErrors?.title && <span className="text-xs text-rose-500">{fieldErrors.title}</span>}
                 </label>
 
@@ -218,6 +228,7 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
                         type="text"
                         value={subtitle}
                         onChange={handleSubtitleChange}
+                        disabled={disabled}
                         placeholder={t('settings.placeholders.subtitle')}
                         className={inputClass}
                     />
@@ -228,16 +239,17 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
                     <textarea
                         value={description}
                         onChange={handleDescriptionChange}
+                        disabled={disabled}
                         placeholder={t('settings.placeholders.description')}
                         rows={4}
                         className={`${inputClass} resize-none leading-relaxed`}
                     />
                 </label>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-3 sm:grid-cols-2">
                     <label className="flex flex-col gap-1.5">
                         <span className={labelClass}>{t('settings.fields.locationName')}</span>
-                        <input type="text" value={locationName} onChange={handleLocationNameChange} className={inputClass} />
+                        <input type="text" value={locationName} onChange={handleLocationNameChange} disabled={disabled} className={inputClass} />
                     </label>
                     <label className="flex flex-col gap-1.5">
                         <span className={labelClass}>{t('settings.fields.locationAddress')}</span>
@@ -245,6 +257,7 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
                             type="text"
                             value={locationAddress}
                             onChange={handleLocationAddressChange}
+                            disabled={disabled}
                             placeholder={t('settings.placeholders.locationAddress')}
                             className={inputClass}
                         />
@@ -257,25 +270,26 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
                         type="url"
                         value={mapsUrl}
                         onChange={handleMapsUrlChange}
+                        disabled={disabled}
                         placeholder={t('settings.placeholders.mapsUrl')}
                         className={inputClass}
                     />
                 </label>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-3 sm:grid-cols-2">
                     <label className="flex flex-col gap-1.5">
                         <span className={labelClass}>{t('settings.fields.startAt')}</span>
-                        <input type="datetime-local" required value={startAt} onChange={handleStartAtChange} className={inputClass} />
+                        <input type="datetime-local" required value={startAt} onChange={handleStartAtChange} disabled={disabled} className={inputClass} />
                     </label>
                     <label className="flex flex-col gap-1.5">
                         <span className={labelClass}>{t('settings.fields.endAt')}</span>
-                        <input type="datetime-local" value={endAt} onChange={handleEndAtChange} className={inputClass} />
+                        <input type="datetime-local" value={endAt} onChange={handleEndAtChange} disabled={disabled} className={inputClass} />
                     </label>
                 </div>
 
                 <label className="flex flex-col gap-1.5">
                     <span className={labelClass}>{t('settings.fields.rsvpDeadline')}</span>
-                    <input type="datetime-local" value={rsvpDeadline} onChange={handleRsvpDeadlineChange} className={inputClass} />
+                    <input type="datetime-local" value={rsvpDeadline} onChange={handleRsvpDeadlineChange} disabled={disabled} className={inputClass} />
                 </label>
 
                 {updateEvent.isError && !fieldErrors && <p className="text-xs text-rose-500">{getErrorMessage(updateEvent.error)}</p>}
@@ -283,7 +297,7 @@ export default function SettingsTab({ t, event }: { t: ReturnType<typeof useTran
                 <div className="flex items-center gap-3 mt-1">
                     <button
                         type="submit"
-                        disabled={isSaving || isUploading || !title.trim() || !startAt}
+                        disabled={disabled || isSaving || isUploading || !title.trim() || !startAt}
                         className="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                         {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : t('settings.save')}

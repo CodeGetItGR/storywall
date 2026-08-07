@@ -14,6 +14,7 @@ import { useCreateEventSession, useDeleteEventSession, useEventSessions, useUpda
 import { getErrorMessage } from '@/lib/api/errors';
 import type { EventSessionResponseDto } from '@/lib/api/types';
 import { toDatetimeLocalValue } from '@/lib/datetime';
+import { isEventWritable } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
@@ -25,6 +26,8 @@ export default function SchedulePage() {
     const isHost = useIsHost();
     const isContextLoading = useEventContextLoading();
     const eventId = activeEvent?.id ?? null;
+    const canWrite = isEventWritable(activeEvent?.status);
+    const canManageSchedule = isHost && canWrite;
 
     const { data: sessions = [], isLoading: isLoadingSessions } = useEventSessions(eventId);
     const createSession = useCreateEventSession();
@@ -58,12 +61,14 @@ export default function SchedulePage() {
     }
 
     function openCreateEditor() {
+        if (!canManageSchedule) return;
         setDeleteError(null);
         setEditingSessionId(null);
         setEditorOpen(true);
     }
 
     function beginEditSession(session: EventSessionResponseDto) {
+        if (!canManageSchedule) return;
         setDeleteError(null);
         setEditingSessionId(session.id);
         setEditorOpen(true);
@@ -80,16 +85,17 @@ export default function SchedulePage() {
             return;
         }
 
-        setEditorOpen(true);
+        if (canManageSchedule) setEditorOpen(true);
     }
 
     async function handleDeleteSession(session: EventSessionResponseDto) {
+        if (!canManageSchedule) return;
         setDeleteError(null);
         setDeleteTarget(session);
     }
 
     async function confirmDeleteSession() {
-        if (!deleteTarget) return;
+        if (!deleteTarget || !canManageSchedule) return;
 
         const session = deleteTarget;
         setDeleteTarget(null);
@@ -118,12 +124,14 @@ export default function SchedulePage() {
 
     return (
         <div className="mx-auto max-w-2xl px-4 pb-24 lg:pb-8">
-            <SchedulePageHeader t={t} onBack={handleBack} onAddSession={openCreateEditor} canAddSession={isHost} />
+            <SchedulePageHeader t={t} onBack={handleBack} onAddSession={openCreateEditor} canAddSession={canManageSchedule} />
+
+            {isHost && !canWrite && <p className="mb-4 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('host.readOnly')}</p>}
 
             {deleteError && <p className="mb-4 text-xs font-medium text-rose-500">{deleteError}</p>}
 
             {sessions.length === 0 ? (
-                <ScheduleEmptyState isHost={isHost} t={t} />
+                <ScheduleEmptyState isHost={isHost} canWrite={canWrite} t={t} />
             ) : (
                 <ScheduleSessionsList
                     sessions={sessions}
@@ -133,18 +141,19 @@ export default function SchedulePage() {
                     t={t}
                     onEdit={beginEditSession}
                     onDelete={handleDeleteSession}
-                    deleteDisabled={deleteSession.isPending}
+                    deleteDisabled={deleteSession.isPending || !canManageSchedule}
+                    canManage={canManageSchedule}
                 />
             )}
 
-            {isHost && (
+            {canManageSchedule && (
                 <ScheduleEditorSheet
                     open={editorOpen}
                     onOpenChange={handleEditorOpenChange}
-                    eventId={eventId}
+                    eventId={eventId ?? ''}
                     sessions={sessions}
                     editingSession={editingSession}
-                    defaultStartAt={defaultStartAt}
+                    defaultStartAt={defaultStartAt ?? ''}
                     createSession={createSession}
                     updateSession={updateSession}
                     t={t}

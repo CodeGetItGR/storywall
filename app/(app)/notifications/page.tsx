@@ -2,7 +2,7 @@
 
 import { AtSign, Bell, Heart, MessageCircle, UserPlus, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import Avatar from '@/components/ui/avatar';
 import { notifications as initialNotifs, users } from '@/lib/mock-data';
@@ -39,6 +39,10 @@ export default function NotificationsPage() {
         setNotifs((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
     }
 
+    const handleRead = useCallback((id: string) => {
+        markRead(id);
+    }, []);
+
     const today = notifs.filter((n) => !n.read);
     const earlier = notifs.filter((n) => n.read);
 
@@ -73,7 +77,7 @@ export default function NotificationsPage() {
                         <section>
                             <p className="px-4 pt-5 pb-2 text-xs font-bold text-ink-muted uppercase tracking-wide">{t('sections.new')}</p>
                             {today.map((n) => (
-                                <NotifRow key={n.id} notif={n} onRead={() => markRead(n.id)} />
+                                <NotifRow key={n.id} notif={n} onRead={handleRead} />
                             ))}
                         </section>
                     )}
@@ -81,7 +85,7 @@ export default function NotificationsPage() {
                         <section>
                             <p className="px-4 pt-5 pb-2 text-xs font-bold text-ink-muted uppercase tracking-wide">{t('sections.earlier')}</p>
                             {earlier.map((n) => (
-                                <NotifRow key={n.id} notif={n} onRead={() => markRead(n.id)} />
+                                <NotifRow key={n.id} notif={n} onRead={handleRead} />
                             ))}
                         </section>
                     )}
@@ -91,8 +95,11 @@ export default function NotificationsPage() {
     );
 }
 
-function NotifRow({ notif, onRead }: { notif: Notification; onRead: () => void }) {
+function NotifRow({ notif, onRead }: { notif: Notification; onRead: (id: string) => void }) {
     const t = useTranslations('NotificationsPage');
+    const handleClick = useCallback(() => {
+        onRead(notif.id);
+    }, [notif.id, onRead]);
     const fromUser = users.find((u) => u.id === notif.fromUserId);
     if (!fromUser) return null;
 
@@ -101,7 +108,7 @@ function NotifRow({ notif, onRead }: { notif: Notification; onRead: () => void }
 
     return (
         <button
-            onClick={onRead}
+            onClick={handleClick}
             className={cn(
                 'w-full flex items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-surface-muted',
                 !notif.read && 'bg-primary-light/40'

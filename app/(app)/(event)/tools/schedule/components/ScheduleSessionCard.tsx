@@ -44,6 +44,7 @@ function SessionActions({
 interface ScheduleSessionCardProps {
     session: EventSessionResponseDto;
     isHost: boolean;
+    canManage: boolean;
     isEditing: boolean;
     t: ReturnType<typeof useTranslations>;
     locationContent?: ReactNode;
@@ -57,6 +58,7 @@ interface ScheduleSessionCardProps {
 export function ScheduleSessionCard({
     session,
     isHost,
+    canManage,
     isEditing,
     t,
     locationContent,
@@ -82,7 +84,7 @@ export function ScheduleSessionCard({
 
                 <div className="flex items-start gap-2">
                     {timeContent}
-                    {isHost && <SessionActions session={session} onEdit={onEdit} onDelete={onDelete} deleteDisabled={deleteDisabled} t={t} />}
+                    {isHost && canManage && <SessionActions session={session} onEdit={onEdit} onDelete={onDelete} deleteDisabled={deleteDisabled} t={t} />}
                 </div>
             </div>
 

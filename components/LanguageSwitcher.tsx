@@ -2,7 +2,7 @@
 
 import { Languages } from 'lucide-react';
 import { useLocale } from 'next-intl';
-import { useTransition } from 'react';
+import { type MouseEvent, useCallback, useTransition } from 'react';
 
 import { setLocale } from '@/i18n/actions';
 import { type Locale, locales } from '@/i18n/config';
@@ -17,12 +17,20 @@ export function LanguageSwitcher({ className }: { className?: string }) {
     const locale = useLocale();
     const [isPending, startTransition] = useTransition();
 
-    function handleChange(next: Locale) {
+    const handleChange = useCallback((next: Locale) => {
         if (next === locale) return;
         startTransition(() => {
             void setLocale(next);
         });
-    }
+    }, [locale, startTransition]);
+
+    const handleLocaleClick = useCallback(
+        (event: MouseEvent<HTMLButtonElement>) => {
+            const nextLocale = event.currentTarget.dataset.locale as Locale | undefined;
+            if (nextLocale) handleChange(nextLocale);
+        },
+        [handleChange]
+    );
 
     return (
         <div className={cn('flex items-center gap-1 bg-surface-muted rounded-full p-1', className)}>
@@ -31,7 +39,8 @@ export function LanguageSwitcher({ className }: { className?: string }) {
                 <button
                     key={l}
                     type="button"
-                    onClick={() => handleChange(l)}
+                    data-locale={l}
+                    onClick={handleLocaleClick}
                     disabled={isPending}
                     aria-pressed={locale === l}
                     className={cn(

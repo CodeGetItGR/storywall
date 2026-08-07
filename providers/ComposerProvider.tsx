@@ -14,6 +14,7 @@ import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventModules } from '@/hooks/useEventModules';
 import { useCreatePlaylistSuggestion } from '@/hooks/usePlaylist';
 import { ERROR_CODES, getErrorCode, getErrorMessage, getQuotaExceededDetails, isModuleNotAvailableError } from '@/lib/api/errors';
+import { isEventWritable } from '@/lib/eventLifecycle';
 import { findNextPlan } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { initialsFromName } from '@/lib/utils';
@@ -92,7 +93,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     const hasUnresolvedFailures = images.some((img) => img.status === 'failed');
     const isPostBusy = createPost.isPending || uploadBatch.isPending;
     const isSongBusy = createPlaylistSuggestion.isPending;
-    const canCompose = Boolean(activeMember) && Boolean(activeEvent);
+    const canCompose = Boolean(activeMember) && isEventWritable(activeEvent?.status);
     const canComposeSong = canCompose && eventModules.some((module) => module.moduleKey === 'playlist' && module.isAvailable);
     const maxMediaPerPost = appConfig?.media.maxMediaPerPost ?? 10;
     const maxBatchUploadFiles = appConfig?.media.maxBatchUploadFiles ?? 10;
@@ -136,6 +137,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     }
 
     function handleFiles(fileList: FileList | null) {
+        if (!canCompose) return;
         if (!fileList || fileList.length === 0) return;
         setSizeError(null);
         setCountError(null);
@@ -183,6 +185,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     }
 
     function removeImage(key: string) {
+        if (!canCompose) return;
         setImages((prev) => {
             const target = prev.find((img) => img.key === key);
             if (target) URL.revokeObjectURL(target.previewUrl);
@@ -195,6 +198,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     }
 
     function handlePickPhotos() {
+        if (!canCompose) return;
         fileRef.current?.click();
     }
 
@@ -359,7 +363,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     async function handleStoryFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
         e.target.value = '';
-        if (!file || !activeMember || !activeEvent) return;
+        if (!file || !activeMember || !activeEvent || !canCompose) return;
 
         setStoryError(null);
         try {
@@ -477,7 +481,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
                                             </button>
                                             {img.status === 'uploading' && (
                                                 <div className="absolute inset-0 flex items-center justify-center bg-ink/40 text-xs text-white">
-                                                    β€¦
+                                                    {t('uploading')}
                                                 </div>
                                             )}
                                             {img.status === 'failed' && (
@@ -506,7 +510,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
                                 <button
                                     type="button"
                                     onClick={handlePickPhotos}
-                                    disabled={images.length >= maxImages}
+                                    disabled={!canCompose || images.length >= maxImages}
                                     className="flex items-center gap-2 text-sm font-medium text-ink-muted transition-colors hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
                                 >
                                     <ImagePlus className="h-4 w-4" />

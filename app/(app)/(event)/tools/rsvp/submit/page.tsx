@@ -10,6 +10,7 @@ import { useCreateRsvp, useRsvp, useUpdateRsvp } from '@/hooks/useRsvps';
 import { ApiError } from '@/lib/api/client';
 import { getErrorMessage, isModuleNotAvailableError } from '@/lib/api/errors';
 import { AttendanceStatus, RsvpPlusOnes } from '@/lib/api/types';
+import { isEventWritable } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
 import { rsvpStorageKey } from '@/lib/storageKeys';
 import { useActiveEvent, useActiveMember, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
@@ -92,6 +93,7 @@ export default function RSVPSubmitPage() {
     const updateRsvp = useUpdateRsvp(effectiveRsvpId ?? '', eventId ?? undefined);
 
     const isSubmitting = createRsvp.isPending || updateRsvp.isPending;
+    const canSubmitRsvp = isEventWritable(activeEvent?.status);
     const submitError = createRsvp.error ?? updateRsvp.error;
     const submitErrorMessage = submitError
         ? isModuleNotAvailableError(submitError)
@@ -143,7 +145,7 @@ export default function RSVPSubmitPage() {
         async (event: React.SubmitEvent<HTMLFormElement>) => {
             event.preventDefault();
 
-            if (!attending || !memberId) {
+            if (!attending || !memberId || !canSubmitRsvp) {
                 return;
             }
 
@@ -178,7 +180,7 @@ export default function RSVPSubmitPage() {
 
             setSubmitted(true);
         },
-        [attending, effectiveRsvpId, message, createRsvp, updateRsvp, memberId, plusOnes.adultCount, plusOnes.childCount]
+        [attending, canSubmitRsvp, effectiveRsvpId, message, createRsvp, updateRsvp, memberId, plusOnes.adultCount, plusOnes.childCount]
     );
 
     if (submitted) {
@@ -204,8 +206,8 @@ export default function RSVPSubmitPage() {
                 message={message}
                 onMessageChange={handleMessageChange}
                 onSubmit={handleSubmit}
-                submitDisabled={!attending || !memberId || isSubmitting}
-                submitError={submitErrorMessage}
+                submitDisabled={!attending || !memberId || isSubmitting || !canSubmitRsvp}
+                submitError={!canSubmitRsvp ? t('eventReadOnly') : submitErrorMessage}
             />
         </div>
     );

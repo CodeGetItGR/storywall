@@ -8,6 +8,7 @@ import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useCreatePlaylistVote, useDeletePlaylistSuggestion, useDeletePlaylistVote, usePlaylistVotes } from '@/hooks/usePlaylist';
 import { getErrorMessage, isModuleNotAvailableError } from '@/lib/api/errors';
 import type { PlaylistSuggestionResponseDto, PlaylistVoteType } from '@/lib/api/types';
+import { isEventWritable } from '@/lib/eventLifecycle';
 import { cn } from '@/lib/utils';
 import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
 
@@ -96,8 +97,10 @@ export function PlaylistItemRow({ suggestion }: PlaylistItemRowProps) {
 
     const upvoteActive = suggestion.myVote === 'UPVOTE';
     const downvoteActive = suggestion.myVote === 'DOWNVOTE';
+    const canWrite = isEventWritable(activeEvent?.status);
     const isBusy = createVote.isPending || deleteVote.isPending || resolvingVote;
-    const canDeleteSuggestion = Boolean(memberId && (isHost || suggestion.authorMemberId === memberId));
+    const canVote = Boolean(memberId) && canWrite;
+    const canDeleteSuggestion = Boolean(memberId && canWrite && (isHost || suggestion.authorMemberId === memberId));
 
     const spotifyEmbedUrl = useMemo(() => buildSpotifyEmbedUrl(suggestion.spotifyUrl), [suggestion.spotifyUrl]);
     const youtubeEmbedUrl = useMemo(() => buildYouTubeEmbedUrl(suggestion.youtubeUrl), [suggestion.youtubeUrl]);
@@ -122,7 +125,7 @@ export function PlaylistItemRow({ suggestion }: PlaylistItemRowProps) {
     }
 
     async function handleVote(voteType: PlaylistVoteType) {
-        if (!memberId || isBusy) return;
+        if (!memberId || !canWrite || isBusy) return;
 
         setVoteError(null);
 
@@ -216,13 +219,13 @@ export function PlaylistItemRow({ suggestion }: PlaylistItemRowProps) {
                             onClick={handleUpvoteClick}
                             aria-pressed={upvoteActive}
                             aria-label={upvoteActive ? t('removeVote') : t('voteForThisSong')}
-                            disabled={!memberId || isBusy}
+                            disabled={!canVote || isBusy}
                             className={cn(
                                 'flex min-w-12 flex-col items-center gap-0.5 rounded-2xl px-3 py-2 transition-all',
                                 upvoteActive
                                     ? 'bg-primary-light text-primary shadow-sm shadow-primary/10'
                                     : 'text-ink-faint hover:bg-surface-muted hover:text-ink-muted',
-                                (!memberId || isBusy) && 'cursor-not-allowed opacity-60'
+                                (!canVote || isBusy) && 'cursor-not-allowed opacity-60'
                             )}
                         >
                             <ThumbsUp className={cn('h-4 w-4', upvoteActive && 'fill-primary')} strokeWidth={upvoteActive ? 0 : 1.8} />
@@ -234,20 +237,20 @@ export function PlaylistItemRow({ suggestion }: PlaylistItemRowProps) {
                             onClick={handleDownvoteClick}
                             aria-pressed={downvoteActive}
                             aria-label={downvoteActive ? t('removeVote') : t('downvoteThisSong')}
-                            disabled={!memberId || isBusy}
+                            disabled={!canVote || isBusy}
                             className={cn(
                                 'flex min-w-12 flex-col items-center gap-0.5 rounded-2xl px-3 py-2 transition-all',
                                 downvoteActive
                                     ? 'bg-destructive/10 text-destructive shadow-sm shadow-destructive/10'
                                     : 'text-ink-faint hover:bg-surface-muted hover:text-ink-muted',
-                                (!memberId || isBusy) && 'cursor-not-allowed opacity-60'
+                                (!canVote || isBusy) && 'cursor-not-allowed opacity-60'
                             )}
                         >
                             <ThumbsDown className={cn('h-4 w-4', downvoteActive && 'fill-destructive')} strokeWidth={downvoteActive ? 0 : 1.8} />
                             <span className="text-[11px] font-bold tabular-nums">{suggestion.downvoteCount}</span>
                         </button>
 
-                        {voteError && <p className="basis-full text-right text-xs text-destructive">{voteError}</p>}
+                        {(voteError || !canWrite) && <p className="basis-full text-right text-xs text-destructive">{voteError ?? t('readOnly')}</p>}
 
                         {canDeleteSuggestion && (
                             <button

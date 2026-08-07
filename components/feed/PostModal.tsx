@@ -8,12 +8,14 @@ import { Modal } from '@/components/ui/modal';
 import { useCreateComment, useEventMembers, usePost, usePostComments, usePostModal } from '@/hooks';
 import { ApiError } from '@/lib/api/client';
 import { getErrorMessage, isModuleNotAvailableError } from '@/lib/api/errors';
+import { isEventWritable } from '@/lib/eventLifecycle';
 import { cn, timeAgoParts } from '@/lib/utils';
-import { useActiveMember } from '@/providers/EventProvider';
+import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
 
 export function PostModal() {
     const t = useTranslations('PostModal');
     const { postId, isOpen, close, mediaIndex, view, setMediaIndex } = usePostModal();
+    const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
     const { data: post, error, isPending } = usePost(postId);
     const { data: comments = [] } = usePostComments(postId);
@@ -50,6 +52,7 @@ export function PostModal() {
 
     const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
     const hasMedia = (post?.media.length ?? 0) > 0;
+    const canComment = Boolean(activeMember) && isEventWritable(activeEvent?.status);
 
     function handleShowComments() {
         setCommentsOpen(true);
@@ -61,7 +64,7 @@ export function PostModal() {
 
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
-        if (!commentText.trim() || !post || !activeMember) return;
+        if (!commentText.trim() || !post || !activeMember || !canComment) return;
 
         setCommentError(null);
 
@@ -87,9 +90,10 @@ export function PostModal() {
             timeAgo={timeAgo}
             commentText={commentText}
             onCommentTextChange={setCommentText}
-            commentError={commentError}
+            commentError={!isEventWritable(activeEvent?.status) ? t('eventReadOnly') : commentError}
             onSubmit={handleSubmit}
-            submitDisabled={!commentText.trim() || createComment.isPending || !activeMember}
+            submitDisabled={!commentText.trim() || createComment.isPending || !canComment}
+            inputDisabled={!canComment}
         />
     );
 

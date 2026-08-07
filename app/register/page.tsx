@@ -38,7 +38,7 @@ export default function RegisterPage() {
         setIsSubmitting(true);
 
         try {
-            await register({ email, password, displayName });
+            const auth = await register({ email, password, displayName });
 
             if (inviteToken) {
                 const result = await joinEventAfterAuth((token) => acceptInvitation.mutateAsync(token), inviteToken);
@@ -53,7 +53,7 @@ export default function RegisterPage() {
                 }
             }
 
-            router.push(routes.feed);
+            router.push(auth.role === 'ADMIN' ? routes.admin : routes.feed);
         } catch (err) {
             setError(getErrorMessage(err));
         } finally {

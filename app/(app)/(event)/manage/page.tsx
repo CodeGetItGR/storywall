@@ -11,6 +11,7 @@ import { useEventInvitations } from '@/hooks/useEventInvitations';
 import { useEventMembers } from '@/hooks/useEventMembers';
 import { useEventRsvps } from '@/hooks/useRsvps';
 import { useEventUsage } from '@/hooks/useUsage';
+import { isEventWritable } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
@@ -73,6 +74,7 @@ export default function ManagePage() {
     const isContextLoading = useEventContextLoading();
 
     const eventId = activeEvent?.id ?? null;
+    const canWrite = isEventWritable(activeEvent?.status);
     const { data: members = [] } = useEventMembers(isHost ? eventId : null);
     const { data: rsvps = [] } = useEventRsvps(isHost ? eventId : null);
     const { data: invitations = [] } = useEventInvitations(isHost ? eventId : null);
@@ -180,14 +182,17 @@ export default function ManagePage() {
                     modules={appConfig?.modules ?? []}
                     onSeeAllRsvp={handleSeeAllRsvp}
                     onSeeAllInvitations={handleSeeAllInvitations}
+                    eventId={activeEvent.id}
+                    eventStatus={activeEvent.status}
+                    endAt={activeEvent.schedule.endAt}
                 />
             )}
 
             {tab === 'rsvp' && <RsvpTab t={t} members={members} rsvps={rsvps} />}
 
-            {tab === 'invitations' && eventId && <InvitationsTab t={t} eventId={eventId} invitations={invitations} />}
+            {tab === 'invitations' && eventId && <InvitationsTab t={t} eventId={eventId} invitations={invitations} canWrite={canWrite} />}
 
-            {tab === 'settings' && <SettingsTab t={t} event={activeEvent} />}
+            {tab === 'settings' && <SettingsTab t={t} event={activeEvent} canWrite={canWrite} />}
         </div>
     );
 }

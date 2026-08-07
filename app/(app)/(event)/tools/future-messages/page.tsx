@@ -3,7 +3,7 @@
 import { ArrowLeft, Clock, Lock, Mail, Send } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import Avatar from '@/components/ui/avatar';
 import { CURRENT_USER_ID, getUser } from '@/lib/mock-data';
@@ -69,6 +69,19 @@ export default function FutureMessagesPage() {
         setSubmitted(true);
     }
 
+    const handleWriteAnother = useCallback(() => {
+        setSubmitted(false);
+    }, []);
+
+    const handleOpenOnClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+        const nextOpenOn = event.currentTarget.dataset.openOn as OpenOn | undefined;
+        if (nextOpenOn) setOpenOn(nextOpenOn);
+    }, []);
+
+    const handleMessageChange = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setMessage(event.target.value);
+    }, []);
+
     return (
         <div className="max-w-2xl mx-auto px-4 pb-24 lg:pb-8">
             {/* Header */}
@@ -99,7 +112,7 @@ export default function FutureMessagesPage() {
                     <h2 className="text-xl font-bold text-ink mb-2">{t('messageSealed')}</h2>
                     <p className="text-sm text-ink-muted max-w-xs leading-relaxed">{t('sealedUntil', { openOn: openOnNames[openOn] })}</p>
                     <button
-                        onClick={() => setSubmitted(false)}
+                        onClick={handleWriteAnother}
                         className="mt-8 px-6 py-3 rounded-full bg-teal-500 text-white text-sm font-semibold hover:bg-teal-600 transition-colors"
                     >
                         {t('writeAnother')}
@@ -124,7 +137,8 @@ export default function FutureMessagesPage() {
                                 <button
                                     key={key}
                                     type="button"
-                                    onClick={() => setOpenOn(key)}
+                                    data-open-on={key}
+                                    onClick={handleOpenOnClick}
                                     className={cn(
                                         'flex items-center justify-between px-4 py-3 rounded-xl border-2 text-sm font-medium text-left transition-all',
                                         openOn === key
@@ -144,7 +158,7 @@ export default function FutureMessagesPage() {
                         <p className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-2">{t('yourMessage')}</p>
                         <textarea
                             value={message}
-                            onChange={(e) => setMessage(e.target.value)}
+                            onChange={handleMessageChange}
                             rows={8}
                             placeholder={t('messagePlaceholder')}
                             className="w-full bg-surface-muted rounded-2xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-teal-400/30 resize-none transition leading-relaxed"

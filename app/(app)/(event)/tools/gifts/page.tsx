@@ -3,7 +3,7 @@
 import { ArrowLeft, Check, ExternalLink, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { giftItems } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
@@ -37,12 +37,26 @@ export default function GiftsPage() {
         });
     }
 
+    const handleBack = useCallback(() => {
+        router.back();
+    }, [router]);
+
+    const handleFilterClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+        const nextFilter = event.currentTarget.dataset.filter as Filter | undefined;
+        if (nextFilter) setFilter(nextFilter);
+    }, []);
+
+    const handleReserveClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+        const giftId = event.currentTarget.dataset.giftId;
+        if (giftId) handleReserve(giftId);
+    }, []);
+
     return (
         <div className="max-w-2xl mx-auto px-4 pb-24 lg:pb-8">
             {/* Header */}
             <div className="flex items-center gap-3 py-4 mb-2">
                 <button
-                    onClick={() => router.back()}
+                    onClick={handleBack}
                     aria-label={t('goBack')}
                     className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
                 >
@@ -58,7 +72,8 @@ export default function GiftsPage() {
                 {(['all', 'available', 'reserved'] as Filter[]).map((f) => (
                     <button
                         key={f}
-                        onClick={() => setFilter(f)}
+                        data-filter={f}
+                        onClick={handleFilterClick}
                         className={cn(
                             'px-4 py-1.5 rounded-full text-sm font-medium transition-colors capitalize',
                             filter === f ? 'bg-primary text-white' : 'bg-surface-muted text-ink-muted hover:text-ink'
@@ -105,7 +120,8 @@ export default function GiftsPage() {
                                 ) : (
                                     <div className="flex gap-2">
                                         <button
-                                            onClick={() => handleReserve(item.id)}
+                                            data-gift-id={item.id}
+                                            onClick={handleReserveClick}
                                             className="flex-1 py-2 rounded-full bg-primary text-white text-xs font-semibold hover:bg-primary-dark transition-colors"
                                         >
                                             {t('reserveGift')}

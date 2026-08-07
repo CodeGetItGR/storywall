@@ -20,8 +20,12 @@ export const routes = {
     invite: '/invite',
     events: {
         new: '/events/new',
+        settingsPlan: (eventId: string) => `/events/${eventId}/settings/plan`,
+        checkoutSuccess: (eventId: string, orderId?: string | null) => withQuery(`/events/${eventId}/checkout/success`, { orderId }),
+        checkoutCancelled: (eventId: string) => `/events/${eventId}/checkout/cancelled`,
     },
     manage: '/manage',
+    admin: '/admin',
     notifications: '/notifications',
     profile: '/profile',
     story: (storyId: string) => `/story/${storyId}`,

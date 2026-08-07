@@ -10,8 +10,9 @@ import { CommentsList } from '@/components/feed/post/CommentsList';
 import { useEventMembers, usePostComments, usePostLike, usePostModal } from '@/hooks';
 import { getErrorMessage, isModuleNotAvailableError } from '@/lib/api/errors';
 import type { PostResponseDto } from '@/lib/api/types';
+import { isEventWritable } from '@/lib/eventLifecycle';
 import { cn, timeAgoParts } from '@/lib/utils';
-import { useActiveMember } from '@/providers/EventProvider';
+import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
 
 interface PostCardProps {
     post: PostResponseDto;
@@ -32,7 +33,9 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const { data: comments = [] } = usePostComments(post.id);
     const { data: members = [] } = useEventMembers(post.eventId);
 
+    const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
+    const canWrite = isEventWritable(activeEvent?.status);
     const isMyPost = activeMember?.id !== undefined && post.authorMemberId === activeMember.id;
     const visibleComments = useMemo(() => comments.slice(0, 3), [comments]);
     const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
@@ -135,12 +138,13 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                 <div className="flex items-center gap-1">
                     <button
                         onClick={handleLike}
-                        disabled={isLikePending}
+                        disabled={isLikePending || !canWrite}
                         aria-label={liked ? t('unlikePost') : t('likePost')}
                         aria-pressed={liked}
                         className={cn(
                             'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
-                            liked ? 'bg-primary-light text-primary' : 'text-ink-muted hover:bg-surface-muted'
+                            liked ? 'bg-primary-light text-primary' : 'text-ink-muted hover:bg-surface-muted',
+                            !canWrite && 'cursor-not-allowed opacity-60 hover:bg-transparent'
                         )}
                     >
                         <ReactionCount count={likeCount} iconClassName={liked ? 'fill-primary text-primary' : ''} iconStrokeWidth={liked ? 0 : 1.8} />

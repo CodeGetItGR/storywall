@@ -1,12 +1,12 @@
 'use client';
 
+import Image from "next/image";
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
-import Image from "next/image";
 
 export function RsvpPrompt({ deadline, className }: { deadline: string | null; className?: string }) {
     const t = useTranslations('RsvpPrompt');

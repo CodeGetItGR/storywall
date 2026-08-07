@@ -8,7 +8,7 @@ export const appConfigKeys = {
     all: ['app-config'] as const,
 };
 
-// GET /api/config β€” public, read-only, and safe to cache aggressively.
+// GET /api/config — public, read-only, and safe to cache aggressively.
 export function useAppConfig() {
     return useQuery({
         queryKey: appConfigKeys.all,

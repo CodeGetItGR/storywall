@@ -18,6 +18,7 @@ interface ScheduleSessionsListProps {
     onEdit: (session: EventSessionResponseDto) => void;
     onDelete: (session: EventSessionResponseDto) => void;
     deleteDisabled: boolean;
+    canManage: boolean;
 }
 
 export function ScheduleSessionsList({
@@ -29,6 +30,7 @@ export function ScheduleSessionsList({
     onEdit,
     onDelete,
     deleteDisabled,
+    canManage,
 }: ScheduleSessionsListProps) {
     const sortedSessions = sortSessions(sessions);
     const groupedSessions = groupSessions(sortedSessions);
@@ -58,6 +60,7 @@ export function ScheduleSessionsList({
                                 <ScheduleSessionCard
                                     session={session}
                                     isHost={isHost}
+                                    canManage={canManage}
                                     isEditing={editingSessionId === session.id}
                                     t={t}
                                     onEdit={onEdit}
@@ -95,6 +98,7 @@ export function ScheduleSessionsList({
                                 key={session.id}
                                 session={session}
                                 isHost={isHost}
+                                canManage={canManage}
                                 isEditing={editingSessionId === session.id}
                                 t={t}
                                 onEdit={onEdit}

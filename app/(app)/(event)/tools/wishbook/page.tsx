@@ -3,7 +3,7 @@
 import { ArrowLeft, BookHeart, Heart, Send } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import Avatar from '@/components/ui/avatar';
 import { CURRENT_USER_ID, getUser, users, wishbookEntries } from '@/lib/mock-data';
@@ -41,12 +41,25 @@ export default function WishbookPage() {
         setMessage('');
     }
 
+    const handleBack = useCallback(() => {
+        router.back();
+    }, [router]);
+
+    const handleMessageChange = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setMessage(event.target.value);
+    }, []);
+
+    const handleLikeClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+        const entryId = event.currentTarget.dataset.entryId;
+        if (entryId) handleLike(entryId);
+    }, []);
+
     return (
         <div className="max-w-2xl mx-auto px-4 pb-24 lg:pb-8">
             {/* Header */}
             <div className="flex items-center gap-3 py-4 mb-2">
                 <button
-                    onClick={() => router.back()}
+                    onClick={handleBack}
                     aria-label={t('goBack')}
                     className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
                 >
@@ -69,7 +82,7 @@ export default function WishbookPage() {
                 <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                     <textarea
                         value={message}
-                        onChange={(e) => setMessage(e.target.value)}
+                        onChange={handleMessageChange}
                         rows={4}
                         placeholder={t('messagePlaceholder')}
                         className="w-full bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 resize-none transition leading-relaxed"
@@ -112,7 +125,8 @@ export default function WishbookPage() {
                                     </div>
                                 </div>
                                 <button
-                                    onClick={() => handleLike(entry.id)}
+                                    data-entry-id={entry.id}
+                                    onClick={handleLikeClick}
                                     aria-pressed={liked}
                                     aria-label={liked ? t('unlikeMessage') : t('likeMessage')}
                                     className="flex items-center gap-1 text-xs font-medium transition-colors group"

@@ -3,7 +3,7 @@
 import { ArrowRight, CalendarPlus, Ticket } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { routes } from '@/lib/routes';
@@ -36,45 +36,53 @@ export default function WelcomePage() {
         if (token) router.push(routes.inviteToken(token));
     }
 
+    const handleCreateEvent = useCallback(() => {
+        router.push(routes.events.new);
+    }, [router]);
+
+    const handleInviteInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+        setInviteInput(event.target.value);
+    }, []);
+
     return (
         <AuthLayout>
-            <h2 className="text-2xl font-bold text-ink mb-1">{t('title')}</h2>
-            <p className="text-sm text-ink-muted mb-7 leading-relaxed">{t('subtitle')}</p>
+            <h2 className="mb-1 text-2xl font-bold text-ink">{t('title')}</h2>
+            <p className="mb-7 text-sm leading-relaxed text-ink-muted">{t('subtitle')}</p>
 
             <button
                 type="button"
-                onClick={() => router.push(routes.events.new)}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+                onClick={handleCreateEvent}
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-brand py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
             >
-                <CalendarPlus className="w-4 h-4" />
+                <CalendarPlus className="h-4 w-4" />
                 {t('createEventCta')}
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="h-4 w-4" />
             </button>
 
-            <div className="flex items-center gap-3 my-6">
-                <div className="flex-1 h-px bg-border" />
-                <span className="text-xs text-ink-faint uppercase tracking-wide">{t('or')}</span>
-                <div className="flex-1 h-px bg-border" />
+            <div className="my-6 flex items-center gap-3">
+                <div className="h-px flex-1 bg-border" />
+                <span className="text-xs uppercase tracking-wide text-ink-faint">{t('or')}</span>
+                <div className="h-px flex-1 bg-border" />
             </div>
 
             <form onSubmit={handleInviteSubmit} className="flex flex-col gap-3">
                 <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-semibold text-ink-muted uppercase tracking-wide">{t('haveInviteLabel')}</span>
-                    <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
-                        <Ticket className="w-4 h-4 text-ink-muted shrink-0" />
+                    <span className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{t('haveInviteLabel')}</span>
+                    <div className="flex items-center gap-3 rounded-xl bg-surface-muted px-4 py-3 transition focus-within:ring-2 focus-within:ring-primary/30">
+                        <Ticket className="h-4 w-4 shrink-0 text-ink-muted" />
                         <input
                             type="text"
                             placeholder={t('inviteInputPlaceholder')}
                             value={inviteInput}
-                            onChange={(e) => setInviteInput(e.target.value)}
-                            className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink-faint outline-none"
+                            onChange={handleInviteInputChange}
+                            className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-faint"
                         />
                     </div>
                 </label>
                 <button
                     type="submit"
                     disabled={!inviteInput.trim()}
-                    className="w-full py-3 rounded-full bg-surface-muted text-ink text-sm font-semibold hover:bg-surface-muted/70 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="w-full rounded-full bg-surface-muted py-3 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted/70 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                     {t('goButton')}
                 </button>

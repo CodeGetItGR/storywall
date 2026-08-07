@@ -23,6 +23,7 @@ interface PostCommentsPanelProps {
     commentError: string | null;
     onSubmit: (e: React.SubmitEvent<HTMLFormElement>) => void;
     submitDisabled: boolean;
+    inputDisabled?: boolean;
 }
 
 export function PostCommentsPanel({
@@ -35,6 +36,7 @@ export function PostCommentsPanel({
     commentError,
     onSubmit,
     submitDisabled,
+    inputDisabled,
 }: PostCommentsPanelProps) {
     const t = useTranslations('PostModal');
 
@@ -62,6 +64,7 @@ export function PostCommentsPanel({
                 onSubmit={onSubmit}
                 error={commentError}
                 submitDisabled={submitDisabled}
+                inputDisabled={inputDisabled}
                 placeholder={t('commentPlaceholder')}
                 inputAriaLabel={t('commentTextAriaLabel')}
                 submitAriaLabel={t('postComment')}

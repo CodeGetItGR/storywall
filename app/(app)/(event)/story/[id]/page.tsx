@@ -10,15 +10,17 @@ import { StoryCaptionBar, StoryHeader, StoryProgressBar, StoryViewersModal } fro
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useDeleteStory, useEventMembers, useEventStories, useMarkStoryViewed, useMediaItem, useStory, useStoryViews } from '@/hooks';
 import { ApiError } from '@/lib/api/client';
+import { isEventWritable } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
 import { groupStoriesByAuthor } from '@/lib/stories';
-import { useActiveMember, useIsHost } from '@/providers/EventProvider';
+import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
 
 export default function StoryPage({ params }: { params: Promise<{ id: string }> }) {
     const t = useTranslations('StoryPage');
     const locale = useLocale();
     const { id } = use(params);
     const router = useRouter();
+    const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
     const isHost = useIsHost();
 
@@ -50,7 +52,9 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
 
     const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
     const author = story?.authorMemberId ? membersById.get(story.authorMemberId) : undefined;
+    const canWrite = isEventWritable(activeEvent?.status);
     const canManage = Boolean(story && activeMember && (activeMember.id === story.authorMemberId || isHost));
+    const canDeleteStory = canManage && canWrite;
 
     const { data: viewers = [], isFetching: viewersLoading } = useStoryViews(showViewers ? id : null);
 
@@ -129,6 +133,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
     }
 
     function handleDeleteRequest() {
+        if (!canDeleteStory) return;
         setShowMenu(false);
         setShowDeleteConfirm(true);
     }
@@ -138,6 +143,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
     }
 
     async function handleDelete() {
+        if (!canDeleteStory) return;
         handleCloseDeleteConfirm();
         await deleteStory.mutateAsync(id);
         goNext();
@@ -159,6 +165,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
                     authorId={story.authorMemberId ?? story.id}
                     timeStr={timeStr}
                     canManage={canManage}
+                    canDelete={canDeleteStory}
                     showMenu={showMenu}
                     onToggleMenu={handleToggleMenu}
                     onClose={handleCloseStory}

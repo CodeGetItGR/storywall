@@ -19,6 +19,7 @@ export type PostType = 'TEXT' | 'MEDIA' | 'ANNOUNCEMENT' | 'PLAYLIST';
 export type MediaTypeConvention = 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT';
 export type PlanScope = 'ACCOUNT' | 'EVENT';
 export type BillingPeriod = 'MONTHLY' | 'YEARLY' | 'ONE_TIME';
+export type EventStatus = 'DRAFT' | 'ACTIVE' | 'FROZEN' | 'PURGED';
 // Plan codes are admin-configurable at runtime. Known codes such as FREE,
 // PLUS, and PRO are conventions, not an exhaustive client-side union.
 export type PlanTierCode = string;
@@ -53,6 +54,8 @@ export interface PlanTierResponseDto {
     priceAmountMinor: number | null;
     priceCurrency: string | null;
     billingPeriod: BillingPeriod | null;
+    recurringPriceAmountMinor: number | null;
+    includedMonths: number | null;
     discountPercent: number | null;
     discountLabel: string | null;
     discountStartsAt: string | null;
@@ -100,6 +103,7 @@ export interface ProblemDetail {
     errorKey: string;
     errors?: Record<string, string>;
     details?: unknown;
+    retryAfterSeconds?: number;
 }
 
 // --- §3 Auth ---
@@ -194,6 +198,7 @@ export interface UserResponseDto {
 
 export interface EventRequestDto {
     title: string;
+    planTierCode?: PlanTierCode;
     subtitle?: string;
     description?: string;
     eventType: EventTypeConvention;
@@ -279,7 +284,17 @@ export interface EventDetailResponseDto {
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
+    status: EventStatus;
 }
+
+export interface CheckoutResponseDto { orderId: string; redirectUrl: string }
+export interface CoverageSummaryDto { unlimited: boolean; paidThrough: string | null; covered: boolean; freezesAt: string | null; purgesAt: string | null }
+export interface SubscriptionSummaryDto { id: string; status: 'ACTIVE' | 'PAST_DUE' | 'CANCELLED'; currentPeriodEnd: string | null; cancelledAt: string | null }
+export interface OrderSummaryDto { id: string; kind: 'ACTIVATION' | 'RENEWAL'; status: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED'; amountMinor: number; currency: string; coversFrom: string | null; coversUntil: string | null; paidAt: string | null; createdAt: string }
+export interface EventBillingResponseDto { eventStatus: EventStatus; planTierCode: string; planTierName: string; coverage: CoverageSummaryDto; subscription: SubscriptionSummaryDto | null; orders: OrderSummaryDto[] }
+export type RefundRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+export interface RefundEligibilityResponseDto { eligible: boolean; reasons: string[]; hasPendingRequest: boolean }
+export interface RefundRequestResponseDto { id: string; eventId: string; orderId: string; status: RefundRequestStatus; reason: string; amountMinor: number | null; currency: string | null; requestedById: string; requestedAt: string; decidedById: string | null; decidedAt: string | null; decisionNote: string | null; providerRefunded: boolean }
 
 export interface EventPatchDto {
     title?: string;
@@ -851,4 +866,42 @@ export interface PlatformFeatureFlagResponseDto {
     configuration: Record<string, unknown>;
     createdAt: string;
     updatedAt: string;
+}
+
+export interface PlanTierRequestDto {
+    code: PlanTierCode;
+    scope: PlanScope;
+    name: string;
+    description?: string | null;
+    sortOrder: number;
+    isDefault: boolean;
+    isAssignable: boolean;
+    isPublic: boolean;
+    storageBytes?: number | null;
+    maxMembers?: number | null;
+    maxActiveEvents?: number | null;
+    priceAmountMinor?: number | null;
+    priceCurrency?: string | null;
+    billingPeriod?: BillingPeriod | null;
+    discountPercent?: number | null;
+    discountLabel?: string | null;
+    discountStartsAt?: string | null;
+    discountEndsAt?: string | null;
+}
+
+export type PlanTierPatchDto = Partial<Omit<PlanTierRequestDto, 'code' | 'scope'>>;
+
+export interface PlanModulesRequestDto {
+    moduleKeys: ModuleKey[];
+}
+
+export interface PlanAssignmentRequestDto {
+    planTierCode: PlanTierCode;
+}
+
+export interface PlatformModulePatchDto {
+    name?: string;
+    description?: string | null;
+    isEnabled?: boolean;
+    sortOrder?: number;
 }

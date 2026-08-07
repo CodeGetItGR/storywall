@@ -11,13 +11,14 @@ interface StoryHeaderProps {
     authorId: string;
     timeStr: string;
     canManage: boolean;
+    canDelete: boolean;
     showMenu: boolean;
     onToggleMenu: () => void;
     onClose: () => void;
     onDeleteRequest: () => void;
 }
 
-export function StoryHeader({ authorName, authorId, timeStr, canManage, showMenu, onToggleMenu, onClose, onDeleteRequest }: StoryHeaderProps) {
+export function StoryHeader({ authorName, authorId, timeStr, canManage, canDelete, showMenu, onToggleMenu, onClose, onDeleteRequest }: StoryHeaderProps) {
     const t = useTranslations('StoryPage');
 
     return (
@@ -56,14 +57,14 @@ export function StoryHeader({ authorName, authorId, timeStr, canManage, showMenu
                 </div>
             </div>
 
-            {canManage && showMenu && (
+            {canManage && showMenu && canDelete && (
                 <div className="absolute top-16 right-4 z-30 bg-background rounded-xl shadow-lg overflow-hidden">
-                <button
-                    onClick={onDeleteRequest}
-                    className="px-4 py-2.5 text-sm text-destructive hover:bg-surface-muted transition-colors whitespace-nowrap disabled:opacity-50"
-                >
-                    {t('deleteStory')}
-                </button>
+                    <button
+                        onClick={onDeleteRequest}
+                        className="px-4 py-2.5 text-sm text-destructive hover:bg-surface-muted transition-colors whitespace-nowrap disabled:opacity-50"
+                    >
+                        {t('deleteStory')}
+                    </button>
                 </div>
             )}
         </>

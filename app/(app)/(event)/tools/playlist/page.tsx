@@ -8,6 +8,7 @@ import { PlaylistItemRow, PlaylistLeaderboard } from '@/components/playlist';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventModules } from '@/hooks/useEventModules';
 import { usePlaylistLeaderboard, usePlaylistSuggestions } from '@/hooks/usePlaylist';
+import { isEventWritable } from '@/lib/eventLifecycle';
 import { findPlansUnlockingModule } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { useComposer } from '@/providers/ComposerProvider';
@@ -31,6 +32,7 @@ export default function PlaylistPage() {
     const unlockingPlans = findPlansUnlockingModule(appConfig?.planTiers ?? [], 'playlist');
     const unlockPlanNames = unlockingPlans.map((plan) => plan.name).join(', ');
     const suggestions = suggestionsData ?? [];
+    const canSuggest = canComposeSong && isEventWritable(activeEvent?.status);
 
     if (!eventId) {
         return null;
@@ -86,7 +88,7 @@ export default function PlaylistPage() {
                 <button
                     type="button"
                     onClick={openSongComposer}
-                    disabled={!canComposeSong}
+                    disabled={!canSuggest}
                     aria-label={t('suggestASong')}
                     className="inline-flex items-center gap-1.5 rounded-full bg-gradient-brand px-3 py-1.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20 disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-40"
                 >
@@ -94,6 +96,7 @@ export default function PlaylistPage() {
                     {t('suggest')}
                 </button>
             </div>
+            {!isEventWritable(activeEvent?.status) && <p className="mb-5 rounded-lg bg-surface-muted px-4 py-3 text-sm text-ink-muted">{t('readOnly')}</p>}
 
             {isHost && (
                 <section className="mb-8">

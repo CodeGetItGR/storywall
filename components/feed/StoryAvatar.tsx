@@ -6,8 +6,8 @@ import { useTranslations } from 'next-intl';
 
 import Avatar from '@/components/ui/avatar';
 import type { EventMemberResponseDto } from '@/lib/api/types';
-import type { StoryGroup } from '@/lib/stories';
 import { routes } from '@/lib/routes';
+import type { StoryGroup } from '@/lib/stories';
 import { avatarColorFromId, cn, initialsFromName } from '@/lib/utils';
 import { useComposer } from '@/providers/ComposerProvider';
 

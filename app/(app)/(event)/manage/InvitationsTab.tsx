@@ -15,16 +15,19 @@ export default function InvitationsTab({
     t,
     eventId,
     invitations,
+    canWrite,
 }: {
     t: ReturnType<typeof useTranslations>;
     eventId: string;
     invitations: EventInvitationResponseDto[];
+    canWrite: boolean;
 }) {
     const [showCreate, setShowCreate] = useState(false);
 
     const handleShowCreate = useCallback(() => {
+        if (!canWrite) return;
         setShowCreate(true);
-    }, []);
+    }, [canWrite]);
 
     const handleHideCreate = useCallback(() => {
         setShowCreate(false);
@@ -34,7 +37,7 @@ export default function InvitationsTab({
         <div className="px-4 flex flex-col">
             <div className="flex items-center justify-between mb-3">
                 <p className="text-xs text-ink-muted">{t('invitationsCard.summary', { count: invitations.length })}</p>
-                {!showCreate && (
+                {!showCreate && canWrite && (
                     <button
                         onClick={handleShowCreate}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-brand text-white text-xs font-semibold hover:opacity-90 transition-opacity"
@@ -45,11 +48,13 @@ export default function InvitationsTab({
                 )}
             </div>
 
-            {showCreate && <CreateInvitationForm t={t} eventId={eventId} onDone={handleHideCreate} />}
+            {!canWrite && <p className="mb-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('invitations.readOnly')}</p>}
+
+            {showCreate && canWrite && <CreateInvitationForm t={t} eventId={eventId} onDone={handleHideCreate} />}
 
             <div className="flex flex-col divide-y divide-border">
                 {invitations.map((invitation) => (
-                    <InvitationRow key={invitation.id} t={t} eventId={eventId} invitation={invitation} />
+                    <InvitationRow key={invitation.id} t={t} eventId={eventId} invitation={invitation} canWrite={canWrite} />
                 ))}
             </div>
 
@@ -120,7 +125,7 @@ function CreateInvitationForm({ t, eventId, onDone }: { t: ReturnType<typeof use
                 </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
                 <label className="flex flex-col gap-1.5">
                     <span className="text-xs font-semibold text-ink-muted uppercase tracking-wide">{t('invitations.fields.inviteCode')}</span>
                     <input
@@ -147,7 +152,7 @@ function CreateInvitationForm({ t, eventId, onDone }: { t: ReturnType<typeof use
                 </label>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
                 <label className="flex flex-col gap-1.5">
                     <span className="text-xs font-semibold text-ink-muted uppercase tracking-wide">{t('invitations.fields.firstName')}</span>
                     <input
@@ -196,10 +201,12 @@ function InvitationRow({
     t,
     eventId,
     invitation,
+    canWrite,
 }: {
     t: ReturnType<typeof useTranslations>;
     eventId: string;
     invitation: EventInvitationResponseDto;
+    canWrite: boolean;
 }) {
     const [isEditing, setIsEditing] = useState(false);
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -220,12 +227,14 @@ function InvitationRow({
     }
 
     async function handleSaveEdit() {
+        if (!canWrite) return;
         const patch: EventInvitationPatchDto = { maxGuests };
         await updateInvitation.mutateAsync(patch);
         setIsEditing(false);
     }
 
     async function handleDelete() {
+        if (!canWrite) return;
         setDeleteConfirmOpen(false);
         await deleteInvitation.mutateAsync(invitation.id);
     }
@@ -240,10 +249,14 @@ function InvitationRow({
     },[invitation.maxGuests])
 
     const onStartEditing = useCallback(() => {
+        if (!canWrite) return;
         setIsEditing(true);
-    },[])
+    },[canWrite])
 
-    const onConfirmDelete = useCallback(() => setDeleteConfirmOpen(true), [])
+    const onConfirmDelete = useCallback(() => {
+        if (!canWrite) return;
+        setDeleteConfirmOpen(true)
+    }, [canWrite])
 
     const onCloseDeleteConfirm = useCallback(() => {
         setDeleteConfirmOpen(false);
@@ -270,8 +283,8 @@ function InvitationRow({
                 </div>
             </div>
 
-            {isEditing ? (
-                <div className="flex items-center gap-2">
+            {isEditing && canWrite ? (
+                <div className="flex flex-wrap items-center gap-2">
                     <label className="flex items-center gap-2 text-xs text-ink-muted">
                         {t('invitations.fields.maxGuests')}
                         <input
@@ -297,9 +310,9 @@ function InvitationRow({
                     </button>
                 </div>
             ) : (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                     <p className="text-xs text-ink-muted">{t('invitations.maxGuests', { count: invitation.maxGuests })}</p>
-                    <div className="ml-auto flex items-center gap-2">
+                    <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
                         <button
                             onClick={handleCopy}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-surface-muted text-ink-muted hover:text-ink transition-colors"
@@ -307,20 +320,24 @@ function InvitationRow({
                             <Copy className="w-3.5 h-3.5" />
                             {copied ? t('invitations.copied') : t('invitations.copyLink')}
                         </button>
-                        <button
-                            onClick={onStartEditing}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-surface-muted text-ink-muted hover:text-ink transition-colors"
-                        >
-                            <Pencil className="w-3.5 h-3.5" />
-                            {t('invitations.edit')}
-                        </button>
-                        <button
-                            onClick={onConfirmDelete}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-surface-muted text-rose-500 hover:bg-rose-50 transition-colors"
-                        >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            {t('invitations.revoke')}
-                        </button>
+                        {canWrite && (
+                            <>
+                                <button
+                                    onClick={onStartEditing}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-surface-muted text-ink-muted hover:text-ink transition-colors"
+                                >
+                                    <Pencil className="w-3.5 h-3.5" />
+                                    {t('invitations.edit')}
+                                </button>
+                                <button
+                                    onClick={onConfirmDelete}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-surface-muted text-rose-500 hover:bg-rose-50 transition-colors"
+                                >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                    {t('invitations.revoke')}
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
             )}

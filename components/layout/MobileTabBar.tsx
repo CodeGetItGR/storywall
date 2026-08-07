@@ -1,7 +1,7 @@
 'use client';
 
 import { Menu } from '@base-ui/react/menu';
-import { CalendarDays, LayoutDashboard, MessageSquareText, Plus, Settings2, Ticket } from 'lucide-react';
+import { CalendarDays, CreditCard, LayoutDashboard, MessageSquareText, Plus, Settings2, Ticket } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -18,13 +18,16 @@ const tabItems = [
     { href: routes.tools.playlist, icon: '/icons/music.svg', key: 'playlist' },
 ];
 
-const hostMenuItems = [
-    { href: routes.manage, icon: LayoutDashboard, key: 'manage' },
-    { href: routes.tools.schedule, icon: CalendarDays, key: 'schedule' },
-    { href: routes.tools.rsvp, icon: Ticket, key: 'rsvps' },
-    { href: routes.auth.manage({ tab: 'invitations' }), icon: MessageSquareText, key: 'invitations' },
-    { href: routes.auth.manage({ tab: 'settings' }), icon: Settings2, key: 'settings' },
-] as const;
+function hostMenuItems(eventId: string) {
+    return [
+        { href: routes.manage, icon: LayoutDashboard, key: 'manage' },
+        { href: routes.tools.schedule, icon: CalendarDays, key: 'schedule' },
+        { href: routes.tools.rsvp, icon: Ticket, key: 'rsvps' },
+        { href: routes.auth.manage({ tab: 'invitations' }), icon: MessageSquareText, key: 'invitations' },
+        { href: routes.auth.manage({ tab: 'settings' }), icon: Settings2, key: 'settings' },
+        { href: routes.events.settingsPlan(eventId), icon: CreditCard, key: 'billing' },
+    ] as const;
+}
 
 const guestScheduleItem = { href: routes.tools.schedule, key: 'schedule' } as const;
 
@@ -83,7 +86,7 @@ export function MobileTabBar() {
                 </div>
 
                 <div className="justify-self-center">
-                    {showDashboardMenu && isHost && (
+                    {showDashboardMenu && isHost && activeEvent && (
                         <Menu.Root>
                             <Menu.Trigger
                                 aria-label={t('hostMenu.manage')}
@@ -104,7 +107,7 @@ export function MobileTabBar() {
                                     className="z-50"
                                 >
                                     <Menu.Popup className="min-w-52 rounded-2xl border border-border bg-background py-1 shadow-[0_2px_16px_0_rgba(36,31,26,0.15)] outline-none">
-                                        {hostMenuItems.map(({ href, icon: Icon, key }) => (
+                                        {hostMenuItems(activeEvent.id).map(({ href, icon: Icon, key }) => (
                                             <Menu.Item
                                                 key={href}
                                                 onClick={handleDashboardMenuClick}

@@ -11,7 +11,7 @@ import Avatar from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEventMembers } from '@/hooks';
 import type { EventDetailResponseDto, EventMemberResponseDto } from '@/lib/api/types';
-import { formatDate, formatTime } from '@/lib/datetime';
+import { formatDate } from '@/lib/datetime';
 import { routes } from '@/lib/routes';
 import { avatarColorFromId, cn, initialsFromName } from '@/lib/utils';
 
@@ -22,7 +22,7 @@ interface EventListItemProps {
     isLoading: boolean;
 }
 
-function formatEventDate(startAt: string | undefined, locale: string) {
+function formatEventDate(startAt: string | undefined, locale: string, atLabel: string) {
     if (!startAt) return null;
 
     const date = new Date(startAt);
@@ -34,12 +34,12 @@ function formatEventDate(startAt: string | undefined, locale: string) {
         month: 'short',
         year: 'numeric',
     });
-    const time = formatTime(locale, date, {
+    const time = formatDate(locale, startAt, {
         hour: 'numeric',
         minute: date.getMinutes() === 0 ? undefined : '2-digit',
     });
 
-    return `${weekday}, ${calendarDate} at ${time}`.toUpperCase();
+    return `${weekday}, ${calendarDate} ${atLabel} ${time}`.toUpperCase();
 }
 
 function EventListItemSkeleton() {
@@ -76,7 +76,7 @@ export function EventListItem({ eventId, member, event, isLoading }: EventListIt
     }, [eventMembers, member]);
     const goingCount = event?.rsvpSummary.attending ?? event?.rsvpSummary.totalMembers ?? displayMembers.length;
     const extraMemberCount = Math.max(goingCount - displayMembers.length, 0);
-    const eventDate = formatEventDate(event?.schedule.startAt, locale);
+    const eventDate = formatEventDate(event?.schedule.startAt, locale, t('dateAt'));
 
     if (isLoading) {
         return <EventListItemSkeleton />;
@@ -120,7 +120,7 @@ export function EventListItem({ eventId, member, event, isLoading }: EventListIt
                     <span aria-hidden="true" className={cn('text-ink-faint', !goingCount && 'hidden')}>
                         |
                     </span>
-                    {goingCount > 0 && <span className="shrink-0">{goingCount} Going</span>}
+                    {goingCount > 0 && <span className="shrink-0">{t('goingCount', { count: goingCount })}</span>}
                 </p>
 
                 {member.role === 'HOST' && <div className="mt-4 flex items-center justify-between">

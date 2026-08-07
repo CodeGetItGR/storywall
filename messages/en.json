@@ -70,6 +70,7 @@
             "tools": "Tools",
             "manage": "Manage",
             "notifications": "Notifications",
+            "admin": "Admin",
             "profile": "Profile"
         }
     },
@@ -86,7 +87,8 @@
             "schedule": "Schedule",
             "rsvps": "RSVPs",
             "invitations": "Invitations",
-            "settings": "Settings"
+            "settings": "Settings",
+            "billing": "Plan & billing"
         },
         "guestMenu": {
             "schedule": "Schedule"
@@ -101,6 +103,7 @@
     },
     "ComposerCard": {
         "placeholder": "Celebrate the moment",
+        "eventReadOnly": "This event is read-only",
         "captionPlaceholder": "Share a memory, message, or moment...",
         "captionAriaLabel": "Post caption",
         "music": "Music",
@@ -118,7 +121,28 @@
         "cancel": "Cancel",
         "post": "Post",
         "posting": "Posting…",
-        "storageLimitExceededWithPlan": "This event has no room left for new media on its current plan. Upgrade to {plan} to add more."
+        "storageLimitExceededWithPlan": "This event has no room left for new media on its current plan. Upgrade to {plan} to add more.",
+        "uploading": "Uploading…"
+    },
+    "EventLifecycleBanner": {
+        "DRAFT": {
+            "title": "This event is not published yet",
+            "hostBody": "Guests cannot post until the event is activated. Finish setup and publish from the host dashboard.",
+            "guestBody": "The host is still setting up this event. Posting will open once it is published.",
+            "action": "Open dashboard"
+        },
+        "FROZEN": {
+            "title": "This event is read-only",
+            "hostBody": "Coverage has ended. Renew preservation to unlock new posts, stories, and uploads.",
+            "guestBody": "The event is still available to view, but new posts and uploads are paused.",
+            "action": "Manage billing"
+        },
+        "PURGED": {
+            "title": "Media retention has ended",
+            "hostBody": "Stored media may have been permanently deleted. Renewing can reactivate the event, but deleted files cannot be restored.",
+            "guestBody": "The event is available in a limited state because its media retention period has ended.",
+            "action": "Manage billing"
+        }
     },
     "RsvpPrompt": {
         "willYouAttend": "Will you attend?",
@@ -262,7 +286,9 @@
             "title": "No events yet",
             "body": "Join an event with an invite link, or create your own to get started.",
             "cta": "Get started"
-        }
+        },
+        "dateAt": "at",
+        "goingCount": "{count} going"
     },
     "NotificationsPage": {
         "title": "Notifications",
@@ -302,6 +328,7 @@
         "commentPlaceholder": "Add a comment...",
         "commentTextAriaLabel": "Comment text",
         "postComment": "Post comment",
+        "eventReadOnly": "This event is read-only. Comments are paused.",
         "commentFailed": "Couldn't post your comment. Please try again.",
         "moduleUnavailable": "Comments are not available on this event's current plan.",
         "previousMedia": "Previous photo",
@@ -360,7 +387,29 @@
         "submit": "Create event",
         "activeEventLimitExceeded": "Your account is already hosting as many active events as its current plan allows. Archive an old event or upgrade to create another one.",
         "usageTitle": "Account usage",
-        "activeEventLimitExceededWithPlan": "Your account has reached its active event limit. Archive an old event or upgrade to {plan} to create another one."
+        "activeEventLimitExceededWithPlan": "Your account has reached its active event limit. Archive an old event or upgrade to {plan} to create another one.",
+        "unlimited": "Unlimited",
+        "noPlans": "No public event plans are available yet.",
+        "planDescriptionFallback": "Everything you need for this event tier.",
+        "continueToPayment": "Continue to payment",
+        "backToPlans": "Back to plans",
+        "selectedPlan": "Selected plan: {plan}",
+        "steps": {
+            "plan": "Plan",
+            "payment": "Payment",
+            "details": "Details",
+            "planSubtitle": "Choose the event plan your guests will experience.",
+            "paymentSubtitle": "Payment is not connected yet, so this step confirms the selected plan for now."
+        },
+        "payment": {
+            "noCharge": "No charge",
+            "placeholder": "Backend payment is not implemented yet. This placeholder keeps the flow in the right order: choose a plan, confirm payment, then create the event.",
+            "continue": "Continue to details"
+        },
+        "planLimits": {
+            "storage": "storage",
+            "members": "members"
+        }
     },
     "ManagePage": {
         "title": "Host Dashboard",
@@ -412,6 +461,12 @@
             "title": "Invitations",
             "summary": "{count} invitations sent"
         },
+        "draft": {
+            "title": "Not published yet",
+            "body": "Set an end date before publishing. Your coverage is calculated from the event dates.",
+            "payAndPublish": "Pay and publish",
+            "addEndDate": "Add an end date to publish"
+        },
         "invitations": {
             "empty": "No invitations yet. Create one to generate a shareable link.",
             "claimed": "Claimed",
@@ -440,7 +495,8 @@
             },
             "placeholders": {
                 "inviteCode": "e.g. TABLE-7"
-            }
+            },
+            "readOnly": "This event is read-only. Invitation changes are paused, but existing invite links can still be copied."
         },
         "settings": {
             "title": "Event details",
@@ -471,11 +527,138 @@
                 "formats": "JPEG, PNG, HEIC up to 10 MB"
             },
             "save": "Save changes",
-            "saved": "Saved"
+            "saved": "Saved",
+            "readOnly": "This event is read-only. Event details and cover photo changes are paused until the event is active again."
         },
         "usage": {
             "eventTitle": "Plan usage"
         }
+    },
+    "EventPlanSettingsPage": {
+        "loading": "Loading billing details...",
+        "loadError": "Unable to load billing details.",
+        "backToEvent": "Back to event",
+        "title": "Plan and billing",
+        "subtitle": "Coverage, preservation, and payments for this event.",
+        "yes": "Yes",
+        "no": "No",
+        "emptyDate": "Not set",
+        "notApplicable": "Not applicable",
+        "actions": {
+            "renew": "Renew preservation",
+            "openingCheckout": "Opening checkout..."
+        },
+        "eventStatus": {
+            "DRAFT": "Draft",
+            "ACTIVE": "Active",
+            "FROZEN": "Frozen",
+            "PURGED": "Purged"
+        },
+        "orderStatus": {
+            "PENDING": "Pending",
+            "PAID": "Paid",
+            "FAILED": "Failed",
+            "CANCELLED": "Cancelled"
+        },
+        "subscriptionStatus": {
+            "ACTIVE": "Active",
+            "PAST_DUE": "Past due",
+            "CANCELLED": "Cancelled"
+        },
+        "refundStatus": {
+            "PENDING": "Pending",
+            "APPROVED": "Approved",
+            "REJECTED": "Rejected"
+        },
+        "summary": {
+            "DRAFT": "The event is not published yet. Activation payment happens from the host dashboard after the event dates are complete.",
+            "ACTIVE": "This event is covered through {date}. Guests can keep using the wall while coverage is active.",
+            "ACTIVE_UNLIMITED": "This event has unlimited coverage. There is no freeze or purge date to manage.",
+            "FROZEN": "Coverage ended on {date}. The event is read-only until preservation is renewed.",
+            "PURGED": "The event has passed the media retention window. Renewing can reactivate the event, but deleted media cannot be restored."
+        },
+        "facts": {
+            "covered": "Covered",
+            "totalPaid": "Total paid",
+            "orders": "Orders",
+            "pending": "Pending"
+        },
+        "timeline": {
+            "title": "Coverage timeline",
+            "unlimited": "Unlimited coverage",
+            "paidThrough": {
+                "label": "Paid through",
+                "hint": "Guest access stays active until this date."
+            },
+            "freezesAt": {
+                "label": "Freezes",
+                "hint": "The event becomes read-only."
+            },
+            "purgesAt": {
+                "label": "Purges",
+                "hint": "Stored media can be permanently removed."
+            }
+        },
+        "subscription": {
+            "title": "Preservation",
+            "status": "Status",
+            "currentPeriodEnd": "Renews through",
+            "cancelledAt": "Cancelled",
+            "none": "No subscription",
+            "renewalHint": "Start preservation to keep the event online after the included coverage period."
+        },
+        "activation": {
+            "title": "Activation",
+            "order": "Order",
+            "paidAt": "Paid",
+            "amount": "Amount"
+        },
+        "refund": {
+            "title": "Refund",
+            "loading": "Checking refund eligibility...",
+            "eligible": "This activation payment can be reviewed for a refund. Approved refunds return the event to draft.",
+            "notEligible": "This payment is not eligible for refund right now.",
+            "pending": "A refund request is already pending review.",
+            "reason": "Reason",
+            "reasonPlaceholder": "Add a short note for the admin team",
+            "submit": "Request refund",
+            "submitting": "Submitting...",
+            "requested": "Refund request {status}",
+            "requestedAmount": "Requested amount: {amount}",
+            "requestedNoAmount": "Requested amount will be calculated during review."
+        },
+        "orders": {
+            "title": "Order history",
+            "lastOrder": "Last order {date}",
+            "coverageRange": "{from} to {until}",
+            "empty": "No orders yet. Activation will appear here after checkout starts.",
+            "columns": {
+                "kind": "Type",
+                "status": "Status",
+                "coverage": "Coverage",
+                "date": "Date",
+                "amount": "Amount"
+            },
+            "kind": {
+                "ACTIVATION": "Activation",
+                "RENEWAL": "Renewal"
+            }
+        }
+    },
+    "CheckoutSuccessPage": {
+        "eyebrow": "Checkout",
+        "paidTitle": "Payment received",
+        "processingTitle": "Payment still processing",
+        "paidBody": "Your event is being updated now.",
+        "processingBody": "We are waiting for the payment confirmation.",
+        "timedOutBody": "We are still reconciling this payment. It will update shortly.",
+        "orderId": "Order {orderId}",
+        "backToEvent": "Back to event"
+    },
+    "CheckoutCancelledPage": {
+        "title": "Checkout cancelled",
+        "body": "Nothing was charged. You can try again whenever you are ready.",
+        "returnToEvent": "Return to event"
     },
     "SchedulePage": {
         "back": "Go back",
@@ -516,13 +699,15 @@
             "cancelEdit": "Cancel edit",
             "editSession": "Edit {title}",
             "deleteSession": "Delete {title}",
+            "readOnly": "This event is read-only. Schedule changes are paused until the event is active again.",
             "deleteConfirm": "Delete “{title}”? This can't be undone.",
             "mapPreview": "Map preview",
             "mapPreviewUnavailable": "Map preview isn't available for this link, but the location still opens in Google Maps.",
             "openInGoogleMaps": "Open in Google Maps",
             "openMap": "Open map for {title}",
             "emptyTitle": "No sessions yet",
-            "emptyBody": "Add the first item so guests can see the timeline."
+            "emptyBody": "Add the first item so guests can see the timeline.",
+            "emptyReadOnlyBody": "The schedule is empty, and new sessions can't be added while the event is read-only."
         },
         "guest": {
             "emptyTitle": "Schedule coming soon",
@@ -608,6 +793,7 @@
         "submitFailed": "Couldn't add the song. Please try again.",
         "voteFailed": "Couldn't update your vote. Please try again.",
         "moduleUnavailable": "Playlist is not available on this event's current plan.",
+        "readOnly": "This event is read-only. Playlist changes are paused.",
         "allSongs": "All songs",
         "disabledTitle": "Playlist is disabled",
         "disabledBody": "This event has the playlist module turned off, so suggestions and votes are hidden until a host enables it.",
@@ -694,6 +880,7 @@
         "submitRsvp": "Submit RSVP",
         "submitError": "Something went wrong submitting your RSVP. Please try again.",
         "moduleUnavailable": "RSVP is not available on this event's current plan.",
+        "eventReadOnly": "This event is read-only. RSVP changes are paused.",
         "whosComing": "Who's coming"
     },
     "VenuePage": {
@@ -774,15 +961,148 @@
             "manage": "Dashboard",
             "rsvps": "RSVPs",
             "invitations": "Invitations",
-            "settings": "Settings"
+            "settings": "Settings",
+            "billing": "Plan & billing"
         },
         "helper": {
             "manage": "Overview and event controls",
             "rsvps": "See attendance and replies",
             "invitations": "Create or review invites",
-            "settings": "Edit event details"
+            "settings": "Edit event details",
+            "billing": "Payments and renewals"
         },
         "usageTitle": "Plan usage"
+    },
+    "AdminPage": {
+        "checkingAccess": "Checking admin access...",
+        "eyebrow": "Platform admin",
+        "title": "Plan operations",
+        "subtitle": "Manage catalog tiers, module availability, and plan assignment without a deploy.",
+        "save": "Save",
+        "cancel": "Cancel",
+        "collapse": "Collapse",
+        "none": "None",
+        "unlimited": "Unlimited",
+        "accessDenied": {
+            "title": "Admin access required",
+            "body": "You need an admin account to manage plans, modules, and assignments."
+        },
+        "layout": {
+            "console": "Control room",
+            "signedInAs": "Signed in as",
+            "signOut": "Sign out",
+            "accountPlans": "Account plans",
+            "eventPlans": "Event plans",
+            "plans": "Plans",
+            "modules": "Modules",
+            "assignments": "Assignments"
+        },
+        "tabs": {
+            "accountPlans": "Account plans",
+            "eventPlans": "Event plans",
+            "plans": "Plans",
+            "modules": "Modules",
+            "assignments": "Assignments"
+        },
+        "fields": {
+            "code": "Code",
+            "scope": "Scope",
+            "name": "Name",
+            "sort": "Sort",
+            "description": "Description",
+            "storage": "Storage",
+            "storageBytes": "Storage bytes",
+            "unit": "Unit",
+            "maxMembers": "Members",
+            "maxActiveEvents": "Active events",
+            "price": "Price",
+            "priceAmountMinor": "Price minor",
+            "priceCurrency": "Currency",
+            "billingPeriod": "Billing",
+            "discountPercent": "Discount %",
+            "blankUnlimited": "Blank = unlimited",
+            "isDefault": "Default",
+            "isDefaultHint": "Use this when no plan has been chosen yet.",
+            "isAssignable": "Assignable",
+            "isAssignableHint": "Admins can assign this plan to users or events.",
+            "isPublic": "Public",
+            "isPublicHint": "Shown in customer-facing plan selection.",
+            "plan": "Plan"
+        },
+        "plans": {
+            "loading": "Loading plans...",
+            "default": "Default",
+            "archived": "Archived",
+            "noPrice": "No price",
+            "makeDefault": "Make default",
+            "archive": "Archive",
+            "delete": "Delete",
+            "edit": "Edit",
+            "snapshotTitle": "Plan snapshot",
+            "storage": "storage",
+            "members": "members",
+            "activeEvents": "active events",
+            "moduleCount": "{count, plural, one {# module} other {# modules}}",
+            "includedModules": "Included modules",
+            "saveModules": "Save modules",
+            "destructiveHint": "Archive plans instead of deleting them once they may be in use.",
+            "deleteConfirmTitle": "Delete {code}?",
+            "deleteConfirmBody": "Only delete plans created by mistake and never assigned. In-use plans should be archived.",
+            "sections": {
+                "identity": "Plan identity",
+                "limits": "Limits",
+                "pricing": "Pricing",
+                "modules": "Modules",
+                "modulesHint": "Toggle the tools this event plan unlocks.",
+                "availability": "Availability"
+            },
+            "filters": {
+                "all": "All",
+                "includeArchived": "Include archived"
+            },
+            "panel": {
+                "ACCOUNT": {
+                    "eyebrow": "Account catalog",
+                    "title": "Account plans",
+                    "subtitle": "Limits that apply to a user's hosting account, such as active event capacity."
+                },
+                "EVENT": {
+                    "eyebrow": "Event catalog",
+                    "title": "Event plans",
+                    "subtitle": "Limits and modules that apply to one event, such as members, storage, and enabled tools."
+                }
+            },
+            "create": {
+                "title": "Create plan",
+                "subtitle": "Add a catalog tier without leaving this screen.",
+                "open": "New plan",
+                "submit": "Create"
+            }
+        },
+        "modules": {
+            "notice": "Platform modules are fixed by backend code. Disable a module here to withdraw it everywhere on the next config refresh.",
+            "loading": "Loading modules...",
+            "enabled": "Enabled"
+        },
+        "assignments": {
+            "userTitle": "Assign account plan",
+            "userSubtitle": "Use an ACCOUNT plan code for a user.",
+            "eventTitle": "Assign event plan",
+            "eventSubtitle": "Use an EVENT plan code for one event.",
+            "userId": "User UUID",
+            "eventId": "Event UUID",
+            "openUser": "Assign",
+            "openEvent": "Assign",
+            "assignUser": "Assign user plan",
+            "assignEvent": "Assign event plan",
+            "freshAccountUsage": "Fresh account usage",
+            "freshEventUsage": "Fresh event usage"
+        },
+        "errors": {
+            "planInUse": "This plan is in use. Archive it instead of deleting it.",
+            "onlyDefault": "Make another plan the default for this scope first.",
+            "generic": "Something went wrong. Please try again."
+        }
     },
     "FeedQuickAccessBar": {
         "ariaLabel": "Quick access",

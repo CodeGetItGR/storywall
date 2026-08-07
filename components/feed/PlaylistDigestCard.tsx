@@ -1,34 +1,28 @@
 'use client';
 
-import { ArrowRight, MessageCircle, Music4, Pin } from 'lucide-react';
+import { ArrowRight, Music4, Pin } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import React, { useMemo } from 'react';
 
-import { ReactionCount } from '@/components/feed/post';
 import { CommentsList } from '@/components/feed/post/CommentsList';
-import { useEventMembers, usePostComments, usePostLike, usePostModal } from '@/hooks';
+import { useEventMembers, usePostComments } from '@/hooks';
 import type { PostResponseDto } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
-import { cn, timeAgoParts } from '@/lib/utils';
+import { timeAgoParts } from '@/lib/utils';
 
 interface PlaylistDigestCardProps {
     post: PostResponseDto;
     showCommentLink?: boolean;
 }
 
-export function PlaylistDigestCard({ post, showCommentLink = true }: PlaylistDigestCardProps) {
+export function PlaylistDigestCard({ post }: PlaylistDigestCardProps) {
     const t = useTranslations('PostCard');
-    const { open: openPostModal } = usePostModal();
     const timeAgo = useMemo(() => timeAgoParts(post.createdAt), [post.createdAt]);
     const { data: comments = [] } = usePostComments(post.id);
     const { data: members = [] } = useEventMembers(post.eventId);
     const visibleComments = useMemo(() => comments.slice(0, 3), [comments]);
     const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
-
-    function openPost() {
-        openPostModal(post.id, { mediaIndex: 0, view: 'comments' });
-    }
 
     return (
         <article className="border-2 border-b border-border/60 bg-card/60">

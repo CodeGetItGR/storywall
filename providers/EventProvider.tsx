@@ -32,6 +32,7 @@ export function EventProvider({ children }: { children: ReactNode }) {
     // render stays pure.
     useEffect(() => {
         if (memberships.length === 0) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- Sync derived active event once async memberships settle.
             if (activeEventId !== null) setActiveEventIdState(null);
             return;
         }

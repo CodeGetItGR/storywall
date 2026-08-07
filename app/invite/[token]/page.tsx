@@ -4,7 +4,7 @@ import { ArrowRight, HeartCrack, Loader2, User } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import React, { use, useState } from 'react';
+import React, { use, useCallback, useState } from 'react';
 
 import { Logo } from '@/components/common/Logo';
 import { InviteLayout } from '@/components/invite/InviteLayout';
@@ -43,6 +43,20 @@ export default function InviteOnboardingPage({ params }: { params: Promise<{ tok
     const [displayName, setDisplayName] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [guestError, setGuestError] = useState<string | null>(null);
+    const prefilledName = preview ? [preview.firstName, preview.lastName].filter(Boolean).join(' ') : '';
+
+    const handleJoinAsGuest = useCallback(() => {
+        setDisplayName(prefilledName);
+        setShowGuestForm(true);
+    }, [prefilledName]);
+
+    const handleDisplayNameChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+        setDisplayName(event.target.value);
+    }, []);
+
+    const handleBackToChoices = useCallback(() => {
+        setShowGuestForm(false);
+    }, []);
 
     if (isLoading) {
         return (
@@ -79,7 +93,6 @@ export default function InviteOnboardingPage({ params }: { params: Promise<{ tok
         );
     }
 
-    const prefilledName = [preview.firstName, preview.lastName].filter(Boolean).join(' ');
     const loginHref = routes.auth.login({ invite: token, email: preview.email });
     const registerHref = routes.auth.register({ invite: token, email: preview.email });
 
@@ -114,10 +127,7 @@ export default function InviteOnboardingPage({ params }: { params: Promise<{ tok
                 <div className="flex flex-col gap-3">
                     <button
                         type="button"
-                        onClick={() => {
-                            setDisplayName(prefilledName);
-                            setShowGuestForm(true);
-                        }}
+                        onClick={handleJoinAsGuest}
                         className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
                     >
                         {t('joinAsGuest')}
@@ -147,7 +157,7 @@ export default function InviteOnboardingPage({ params }: { params: Promise<{ tok
                                 placeholder={t('guestForm.displayNamePlaceholder')}
                                 required
                                 value={displayName}
-                                onChange={(e) => setDisplayName(e.target.value)}
+                                onChange={handleDisplayNameChange}
                                 className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink-faint outline-none"
                             />
                         </div>
@@ -169,7 +179,7 @@ export default function InviteOnboardingPage({ params }: { params: Promise<{ tok
 
                     <button
                         type="button"
-                        onClick={() => setShowGuestForm(false)}
+                        onClick={handleBackToChoices}
                         className="text-xs text-center text-ink-muted hover:text-ink transition-colors"
                     >
                         {t('back')}

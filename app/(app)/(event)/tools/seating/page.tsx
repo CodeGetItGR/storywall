@@ -3,7 +3,7 @@
 import { ArrowLeft, LayoutGrid, Search, Users, X } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { seatingTables } from '@/lib/mock-data';
 import { routes } from '@/lib/routes';
@@ -17,6 +17,20 @@ export default function SeatingPage() {
     const allGuests = seatingTables.flatMap((t) => t.guests.map((g) => ({ ...g, tableName: t.name, tableId: t.id })));
 
     const searchResults = search.trim() ? allGuests.filter((g) => g.name.toLowerCase().includes(search.toLowerCase())) : [];
+
+    const handleSearchChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearch(event.target.value);
+    }, []);
+
+    const handleClearSearch = useCallback(() => {
+        setSearch('');
+    }, []);
+
+    const handleTableToggle = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+        const tableId = event.currentTarget.dataset.tableId;
+        if (!tableId) return;
+        setExpandedTable((current) => (current === tableId ? null : tableId));
+    }, []);
 
     return (
         <div className="max-w-2xl mx-auto px-4 pb-24 lg:pb-8">
@@ -43,14 +57,14 @@ export default function SeatingPage() {
                 <input
                     type="text"
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={handleSearchChange}
                     placeholder={t('searchPlaceholder')}
                     className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink-faint outline-none"
                     aria-label={t('searchAriaLabel')}
                 />
                 {search && (
                     <button
-                        onClick={() => setSearch('')}
+                        onClick={handleClearSearch}
                         aria-label={t('clearSearch')}
                         className="text-ink-faint hover:text-ink-muted transition-colors"
                     >
@@ -95,7 +109,8 @@ export default function SeatingPage() {
                     return (
                         <div key={table.id} className="bg-card rounded-2xl border border-border/60 shadow-sm overflow-hidden">
                             <button
-                                onClick={() => setExpandedTable(isExpanded ? null : table.id)}
+                                data-table-id={table.id}
+                                onClick={handleTableToggle}
                                 className="w-full flex items-center justify-between px-4 py-4 text-left hover:bg-surface-muted/50 transition-colors"
                                 aria-expanded={isExpanded}
                             >

@@ -20,7 +20,7 @@ export function DesktopNavRail() {
     const t = useTranslations('DesktopNavRail');
     const pathname = usePathname();
     const user = getUser(CURRENT_USER_ID);
-    const { openPostComposer } = useComposer();
+    const { openPostComposer, canCompose } = useComposer();
 
     return (
         <nav
@@ -63,7 +63,8 @@ export function DesktopNavRail() {
                 <button
                     type="button"
                     onClick={openPostComposer}
-                    className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+                    disabled={!canCompose}
+                    className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
                 >
                     <Plus className="w-4 h-4" strokeWidth={2.5} />
                     {t('newPost')}

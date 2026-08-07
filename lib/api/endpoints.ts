@@ -49,6 +49,11 @@ export const endpoints = {
         media: (eventId: string) => `/api/events/${eventId}/media`,
         mediaBatch: (eventId: string) => `/api/events/${eventId}/media/batch`,
         usage: (eventId: string) => `/api/events/${eventId}/usage`,
+        billing: (eventId: string) => `/api/events/${eventId}/billing`,
+        checkout: (eventId: string) => `/api/events/${eventId}/checkout`,
+        subscriptionCheckout: (eventId: string) => `/api/events/${eventId}/subscription-checkout`,
+        refundEligibility: (eventId: string) => `/api/events/${eventId}/refund-eligibility`,
+        refundRequests: (eventId: string) => `/api/events/${eventId}/refund-requests`,
         posts: (eventId: string) => `/api/events/${eventId}/posts`,
         stories: (eventId: string) => `/api/events/${eventId}/stories`,
         playlistSuggestions: (eventId: string) => `/api/events/${eventId}/playlist-suggestions`,
@@ -161,5 +166,23 @@ export const endpoints = {
     platformFeatureFlags: {
         list: '/api/platform-feature-flags',
         byId: (id: string) => `/api/platform-feature-flags/${id}`,
+    },
+
+    admin: {
+        planTiers: {
+            list: '/api/admin/plan-tiers',
+            byId: (id: string) => `/api/admin/plan-tiers/${id}`,
+            modules: (id: string) => `/api/admin/plan-tiers/${id}/modules`,
+        },
+        platformModules: {
+            list: '/api/admin/platform-modules',
+            byKey: (moduleKey: string) => `/api/admin/platform-modules/${moduleKey}`,
+        },
+        users: {
+            planTier: (userId: string) => `/api/admin/users/${userId}/plan-tier`,
+        },
+        events: {
+            planTier: (eventId: string) => `/api/admin/events/${eventId}/plan-tier`,
+        },
     },
 } as const;

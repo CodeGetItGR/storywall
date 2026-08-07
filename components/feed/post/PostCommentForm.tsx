@@ -10,12 +10,23 @@ interface PostCommentFormProps {
     onSubmit: (e: React.SubmitEvent<HTMLFormElement>) => void;
     error: string | null;
     submitDisabled: boolean;
+    inputDisabled?: boolean;
     placeholder: string;
     inputAriaLabel: string;
     submitAriaLabel: string;
 }
 
-export function PostCommentForm({ value, onValueChange, onSubmit, error, submitDisabled, placeholder, inputAriaLabel, submitAriaLabel }: PostCommentFormProps) {
+export function PostCommentForm({
+    value,
+    onValueChange,
+    onSubmit,
+    error,
+    submitDisabled,
+    inputDisabled,
+    placeholder,
+    inputAriaLabel,
+    submitAriaLabel,
+}: PostCommentFormProps) {
     function handleChange(e: ChangeEvent<HTMLInputElement>) {
         onValueChange(e.target.value);
     }
@@ -28,9 +39,10 @@ export function PostCommentForm({ value, onValueChange, onSubmit, error, submitD
                     type="text"
                     value={value}
                     onChange={handleChange}
+                    disabled={inputDisabled}
                     placeholder={placeholder}
                     aria-label={inputAriaLabel}
-                    className="relative flex-1 bg-surface-muted rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
+                    className="relative flex-1 bg-surface-muted rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition disabled:cursor-not-allowed disabled:opacity-60"
                 />
                 <button
                     type="submit"

@@ -1,3 +1,4 @@
+export * from './useAdmin';
 export * from './useAppConfig';
 export * from './useAuth';
 export * from './useComments';
