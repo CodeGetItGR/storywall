@@ -10,14 +10,29 @@ export class ApiError extends Error {
     problem?: ProblemDetail;
     retryAfterSeconds?: number;
 
-    constructor(status: number, body: unknown, message?: string) {
+    constructor(status: number, body: unknown, message?: string, retryAfterHeader?: string | null) {
         super(message ?? `API request failed with status ${status}`);
         this.name = 'ApiError';
         this.status = status;
         this.body = body;
         this.problem = isProblemDetail(body) ? body : undefined;
-        this.retryAfterSeconds = this.problem?.status === 429 ? (this.problem.retryAfterSeconds as number | undefined) : undefined;
+        // The ProblemDetail carries the wait, but a 429 from an edge/proxy may
+        // arrive with no body at all — fall back to the Retry-After header,
+        // which the guide guarantees is identical when both are present.
+        this.retryAfterSeconds =
+            status === 429 ? ((this.problem?.retryAfterSeconds as number | undefined) ?? parseRetryAfter(retryAfterHeader)) : undefined;
     }
+}
+
+// `Retry-After` is either a delay in seconds or an HTTP date. Both are legal;
+// the backend sends seconds, but a proxy in front of it may not.
+function parseRetryAfter(header?: string | null): number | undefined {
+    if (!header) return undefined;
+    const seconds = Number(header);
+    if (Number.isFinite(seconds)) return Math.max(0, Math.round(seconds));
+    const date = Date.parse(header);
+    if (Number.isNaN(date)) return undefined;
+    return Math.max(0, Math.round((date - Date.now()) / 1000));
 }
 
 function isProblemDetail(body: unknown): body is ProblemDetail {
@@ -94,7 +109,7 @@ async function rawFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
     const body = isJsonContentType(contentType) ? await res.json() : await res.text();
 
     if (!res.ok) {
-        throw new ApiError(res.status, body);
+        throw new ApiError(res.status, body, undefined, res.headers.get('retry-after'));
     }
 
     return body as T;
@@ -125,7 +140,7 @@ async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise
     }
 
     if (!res.ok) {
-        throw new ApiError(res.status, body);
+        throw new ApiError(res.status, body, undefined, res.headers.get('retry-after'));
     }
 
     return body as T;

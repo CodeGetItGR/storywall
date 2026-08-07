@@ -151,16 +151,30 @@ export interface NotificationRequestDto {
     readAt?: string | null;
 }
 
+// Billing notifications (billing-fe-guide §10) all arrive as `category: "BILLING"`
+// through this same feed. `type` stays a plain string — the server adds new ones
+// without a deploy here, and unknown types must render as a generic row.
+export type BillingNotificationType = 'BILLING_EXPIRING' | 'BILLING_PAST_DUE' | 'BILLING_PURGE_WARNING' | 'REFUND_APPROVED' | 'REFUND_REJECTED';
+
+export type NotificationCategory = 'BILLING' | (string & {});
+export type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
+
 export interface NotificationResponseDto {
     id: string;
     recipientMemberId: string;
     type: string;
+    category?: NotificationCategory | null;
+    severity?: NotificationSeverity | null;
     referenceType: string | null;
     referenceId: string | null;
     payload: Record<string, unknown>;
     readAt: string | null;
     createdAt: string;
     deletedAt: string | null;
+}
+
+export interface NotificationUnreadCountDto {
+    count: number;
 }
 
 export interface SessionResponseDto {
@@ -289,12 +303,50 @@ export interface EventDetailResponseDto {
 
 export interface CheckoutResponseDto { orderId: string; redirectUrl: string }
 export interface CoverageSummaryDto { unlimited: boolean; paidThrough: string | null; covered: boolean; freezesAt: string | null; purgesAt: string | null }
-export interface SubscriptionSummaryDto { id: string; status: 'ACTIVE' | 'PAST_DUE' | 'CANCELLED'; currentPeriodEnd: string | null; cancelledAt: string | null }
+// `cancelAtPeriodEnd` splits ACTIVE in two: renewing, or cancelled-but-still-paid-up.
+// Rendering on `status` alone tells a host their event will renew when it will not.
+export interface SubscriptionSummaryDto { id: string; status: 'ACTIVE' | 'PAST_DUE' | 'CANCELLED'; currentPeriodEnd: string | null; cancelAtPeriodEnd: boolean; cancelledAt: string | null }
 export interface OrderSummaryDto { id: string; kind: 'ACTIVATION' | 'RENEWAL'; status: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED'; amountMinor: number; currency: string; coversFrom: string | null; coversUntil: string | null; paidAt: string | null; createdAt: string }
 export interface EventBillingResponseDto { eventStatus: EventStatus; planTierCode: string; planTierName: string; coverage: CoverageSummaryDto; subscription: SubscriptionSummaryDto | null; orders: OrderSummaryDto[] }
 export type RefundRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 export interface RefundEligibilityResponseDto { eligible: boolean; reasons: string[]; hasPendingRequest: boolean }
 export interface RefundRequestResponseDto { id: string; eventId: string; orderId: string; status: RefundRequestStatus; reason: string; amountMinor: number | null; currency: string | null; requestedById: string; requestedAt: string; decidedById: string | null; decidedAt: string | null; decisionNote: string | null; providerRefunded: boolean }
+
+// --- Admin billing operations (billing-fe-guide §13) ---
+
+// The refund queue row: the request plus the usage evidence an admin needs to
+// decide it. Counts include soft-deleted rows, matching the eligibility gates.
+export interface RefundRequestAdminDto {
+    request: RefundRequestResponseDto;
+    eventTitle: string;
+    eventStatus: EventStatus;
+    eventStartAt: string | null;
+    eventEndAt: string | null;
+    paidAt: string | null;
+    hostDisplayName: string | null;
+    hostEmail: string | null;
+    currentlyEligible: boolean;
+    ineligibilityReasons: string[];
+    guestCount: number;
+    hostCount: number;
+    postCount: number;
+    mediaCount: number;
+    storageBytes: number;
+}
+
+export interface RefundDecisionRequestDto {
+    note?: string | null;
+}
+
+export interface UnprocessedWebhookDto {
+    id: string;
+    provider: string | null;
+    eventType: string | null;
+    payloadSummary?: string | null;
+    receivedAt: string;
+    processedAt: string | null;
+    orderId: string | null;
+}
 
 export interface EventPatchDto {
     title?: string;

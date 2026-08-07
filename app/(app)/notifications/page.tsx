@@ -1,69 +1,112 @@
 'use client';
 
-import { AtSign, Bell, Heart, MessageCircle, UserPlus, Users } from 'lucide-react';
+import { AlertTriangle, Bell, CreditCard, Loader2, Trash2, XCircle } from 'lucide-react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { useCallback, useState } from 'react';
+import { type MouseEvent, useCallback, useMemo, useState } from 'react';
 
-import Avatar from '@/components/ui/avatar';
-import { notifications as initialNotifs, users } from '@/lib/mock-data';
-import type { Notification } from '@/lib/types';
+import {
+    useDeleteNotification,
+    useMarkAllNotificationsRead,
+    useMarkNotificationRead,
+    useNotifications,
+    useUnreadNotificationCount,
+} from '@/hooks/useNotifications';
+import type { NotificationResponseDto } from '@/lib/api/types';
+import { isBillingNotification, notificationCtaRoute, notificationSeverity, payloadString } from '@/lib/notifications';
 import { cn, timeAgoParts } from '@/lib/utils';
 
-const iconMap: Record<Notification['type'], React.ElementType> = {
-    like: Heart,
-    comment: MessageCircle,
-    rsvp: Users,
-    mention: AtSign,
-    follow: UserPlus,
-};
+type CategoryFilter = 'all' | 'billing' | 'activity';
 
-const colorMap: Record<Notification['type'], string> = {
-    like: 'text-rose-500 bg-rose-50',
-    comment: 'text-sky-500 bg-sky-50',
-    rsvp: 'text-emerald-500 bg-emerald-50',
-    mention: 'text-violet-500 bg-violet-50',
-    follow: 'text-amber-500 bg-amber-50',
-};
+const SEVERITY_STYLES = {
+    CRITICAL: 'text-rose-600 bg-rose-50',
+    WARNING: 'text-amber-600 bg-amber-50',
+    INFO: 'text-sky-600 bg-sky-50',
+} as const;
+
+function SeverityIcon({ notification }: { notification: NotificationResponseDto }) {
+    const severity = notificationSeverity(notification);
+    if (!isBillingNotification(notification)) return <Bell className="w-2.5 h-2.5" strokeWidth={2} />;
+    if (notification.type === 'REFUND_REJECTED') return <XCircle className="w-2.5 h-2.5" strokeWidth={2} />;
+    if (severity === 'INFO') return <CreditCard className="w-2.5 h-2.5" strokeWidth={2} />;
+    return <AlertTriangle className="w-2.5 h-2.5" strokeWidth={2} />;
+}
 
 export default function NotificationsPage() {
     const t = useTranslations('NotificationsPage');
-    const [notifs, setNotifs] = useState(initialNotifs);
+    const notificationsQuery = useNotifications();
+    const unreadCountQuery = useUnreadNotificationCount();
+    const markAllRead = useMarkAllNotificationsRead();
+    const [filter, setFilter] = useState<CategoryFilter>('all');
 
-    const unreadCount = notifs.filter((n) => !n.read).length;
+    const notifications = useMemo(() => notificationsQuery.data ?? [], [notificationsQuery.data]);
+    const visible = useMemo(() => {
+        if (filter === 'billing') return notifications.filter(isBillingNotification);
+        if (filter === 'activity') return notifications.filter((notification) => !isBillingNotification(notification));
+        return notifications;
+    }, [notifications, filter]);
 
-    function markAllRead() {
-        setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
-    }
+    const unreadCount = unreadCountQuery.data ?? notifications.filter((notification) => !notification.readAt).length;
+    const unread = visible.filter((notification) => !notification.readAt);
+    const earlier = visible.filter((notification) => notification.readAt);
 
-    function markRead(id: string) {
-        setNotifs((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
-    }
+    const handleMarkAllRead = useCallback(() => {
+        markAllRead.mutate();
+    }, [markAllRead]);
 
-    const handleRead = useCallback((id: string) => {
-        markRead(id);
+    const handleFilterClick = useCallback((event: MouseEvent<HTMLButtonElement>) => {
+        const next = event.currentTarget.dataset.filter as CategoryFilter | undefined;
+        if (next) setFilter(next);
     }, []);
 
-    const today = notifs.filter((n) => !n.read);
-    const earlier = notifs.filter((n) => n.read);
+    const filters: CategoryFilter[] = ['all', 'billing', 'activity'];
 
     return (
         <div className="max-w-2xl mx-auto pb-24 lg:pb-8">
-            {/* Header */}
-            <div className="sticky top-0 z-10 bg-background/90 backdrop-blur-sm border-b border-border px-4 py-4 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <h1 className="text-xl font-bold text-ink">{t('title')}</h1>
+            <div className="sticky top-0 z-10 bg-background/90 backdrop-blur-sm border-b border-border px-4 py-4">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <h1 className="text-xl font-bold text-ink">{t('title')}</h1>
+                        {unreadCount > 0 && (
+                            <span className="px-2 py-0.5 rounded-full bg-primary text-white text-xs font-bold tabular-nums">{unreadCount}</span>
+                        )}
+                    </div>
                     {unreadCount > 0 && (
-                        <span className="px-2 py-0.5 rounded-full bg-primary text-white text-xs font-bold tabular-nums">{unreadCount}</span>
+                        <button
+                            onClick={handleMarkAllRead}
+                            disabled={markAllRead.isPending}
+                            className="inline-flex items-center gap-1.5 text-xs text-primary font-semibold hover:underline disabled:opacity-50"
+                        >
+                            {markAllRead.isPending && <Loader2 className="h-3 w-3 animate-spin" />}
+                            {t('markAllRead')}
+                        </button>
                     )}
                 </div>
-                {unreadCount > 0 && (
-                    <button onClick={markAllRead} className="text-xs text-primary font-semibold hover:underline">
-                        {t('markAllRead')}
-                    </button>
-                )}
+                <div className="mt-3 flex gap-2">
+                    {filters.map((key) => (
+                        <button
+                            key={key}
+                            data-filter={key}
+                            onClick={handleFilterClick}
+                            className={cn(
+                                'rounded-full px-3 py-1 text-xs font-semibold transition',
+                                filter === key ? 'bg-ink text-white' : 'bg-surface-muted text-ink-muted hover:text-ink'
+                            )}
+                        >
+                            {t(`filters.${key}`)}
+                        </button>
+                    ))}
+                </div>
             </div>
 
-            {notifs.length === 0 ? (
+            {notificationsQuery.isLoading ? (
+                <div className="space-y-2 px-4 py-6">
+                    <div className="h-16 animate-pulse rounded-lg bg-surface-muted" />
+                    <div className="h-16 animate-pulse rounded-lg bg-surface-muted" />
+                </div>
+            ) : notificationsQuery.error ? (
+                <p className="px-4 py-10 text-center text-sm text-rose-600">{t('loadError')}</p>
+            ) : visible.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-24 text-center px-4">
                     <div className="w-16 h-16 rounded-full bg-surface-muted flex items-center justify-center mb-4">
                         <Bell className="w-7 h-7 text-ink-faint" />
@@ -73,19 +116,19 @@ export default function NotificationsPage() {
                 </div>
             ) : (
                 <div>
-                    {today.length > 0 && (
+                    {unread.length > 0 && (
                         <section>
                             <p className="px-4 pt-5 pb-2 text-xs font-bold text-ink-muted uppercase tracking-wide">{t('sections.new')}</p>
-                            {today.map((n) => (
-                                <NotifRow key={n.id} notif={n} onRead={handleRead} />
+                            {unread.map((notification) => (
+                                <NotifRow key={notification.id} notification={notification} />
                             ))}
                         </section>
                     )}
                     {earlier.length > 0 && (
                         <section>
                             <p className="px-4 pt-5 pb-2 text-xs font-bold text-ink-muted uppercase tracking-wide">{t('sections.earlier')}</p>
-                            {earlier.map((n) => (
-                                <NotifRow key={n.id} notif={n} onRead={handleRead} />
+                            {earlier.map((notification) => (
+                                <NotifRow key={notification.id} notification={notification} />
                             ))}
                         </section>
                     )}
@@ -95,49 +138,84 @@ export default function NotificationsPage() {
     );
 }
 
-function NotifRow({ notif, onRead }: { notif: Notification; onRead: (id: string) => void }) {
+function NotifRow({ notification }: { notification: NotificationResponseDto }) {
     const t = useTranslations('NotificationsPage');
-    const handleClick = useCallback(() => {
-        onRead(notif.id);
-    }, [notif.id, onRead]);
-    const fromUser = users.find((u) => u.id === notif.fromUserId);
-    if (!fromUser) return null;
+    const markRead = useMarkNotificationRead();
+    const deleteNotification = useDeleteNotification();
 
-    const Icon = iconMap[notif.type];
-    const colorCls = colorMap[notif.type];
+    const isRead = Boolean(notification.readAt);
+    const ctaRoute = notificationCtaRoute(notification);
+    const severity = notificationSeverity(notification);
 
-    return (
-        <button
-            onClick={handleClick}
-            className={cn(
-                'w-full flex items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-surface-muted',
-                !notif.read && 'bg-primary-light/40'
-            )}
-        >
-            {/* Avatar with type badge */}
+    const handleActivate = useCallback(() => {
+        if (!isRead) markRead.mutate(notification.id);
+    }, [isRead, markRead, notification.id]);
+
+    const handleDelete = useCallback(
+        (event: MouseEvent<HTMLButtonElement>) => {
+            event.preventDefault();
+            event.stopPropagation();
+            deleteNotification.mutate(notification.id);
+        },
+        [deleteNotification, notification.id]
+    );
+
+    // Unknown types are expected — the server adds notification types without a
+    // frontend deploy, so anything without copy falls back to a generic row.
+    const titleKey = `types.${notification.type}.title`;
+    const bodyKey = `types.${notification.type}.body`;
+    const title = t.has(titleKey) ? t(titleKey) : t('generic.title');
+    const body = t.has(bodyKey)
+        ? t(bodyKey, {
+              days: payloadString(notification, 'daysRemaining') ?? payloadString(notification, 'daysOverdue') ?? '0',
+              daysUntilFreeze: payloadString(notification, 'daysUntilFreeze') ?? '0',
+              plan: payloadString(notification, 'planTier') ?? '',
+          })
+        : null;
+
+    const decisionNote = payloadString(notification, 'decisionNote');
+    const timeAgo = timeAgoParts(notification.createdAt);
+
+    const content = (
+        <>
             <div className="relative flex-shrink-0">
-                <Avatar initials={fromUser.initials} color={fromUser.avatarColor} size="md" alt={fromUser.name} />
-                <div
-                    className={cn(
-                        'absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center border-2 border-background',
-                        colorCls
-                    )}
-                >
-                    <Icon className="w-2.5 h-2.5" strokeWidth={2} />
+                <div className={cn('w-9 h-9 rounded-full flex items-center justify-center', SEVERITY_STYLES[severity])}>
+                    <SeverityIcon notification={notification} />
                 </div>
             </div>
 
             <div className="flex-1 min-w-0 pt-0.5">
-                <p className={cn('text-sm leading-snug', notif.read ? 'text-ink-muted' : 'text-ink font-medium')}>{notif.content}</p>
-                <p className="text-xs text-ink-faint mt-0.5">
-                    {(() => {
-                        const timeAgo = timeAgoParts(notif.createdAt);
-                        return timeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${timeAgo.unit}`, { count: timeAgo.value });
-                    })()}
-                </p>
+                <p className={cn('text-sm leading-snug', isRead ? 'text-ink-muted' : 'text-ink font-medium')}>{title}</p>
+                {body && <p className="mt-0.5 text-xs leading-relaxed text-ink-muted">{body}</p>}
+                {decisionNote && <p className="mt-1 text-xs italic leading-relaxed text-ink-faint">{decisionNote}</p>}
+                <p className="text-xs text-ink-faint mt-1">{timeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${timeAgo.unit}`, { count: timeAgo.value })}</p>
             </div>
 
-            {!notif.read && <div className="w-2 h-2 rounded-full bg-primary shrink-0 mt-1.5" aria-hidden="true" />}
-        </button>
+            {!isRead && <div className="w-2 h-2 rounded-full bg-primary shrink-0 mt-1.5" aria-hidden="true" />}
+        </>
+    );
+
+    const rowClass = cn('w-full flex items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-surface-muted', !isRead && 'bg-primary-light/40');
+
+    return (
+        <div className="relative group">
+            {ctaRoute ? (
+                <Link href={ctaRoute} onClick={handleActivate} className={rowClass}>
+                    {content}
+                </Link>
+            ) : (
+                <button onClick={handleActivate} className={rowClass}>
+                    {content}
+                </button>
+            )}
+            <button
+                onClick={handleDelete}
+                disabled={deleteNotification.isPending}
+                aria-label={t('delete')}
+                className="absolute right-3 top-3 hidden rounded-full p-1.5 text-ink-faint transition hover:bg-background hover:text-ink group-hover:block disabled:opacity-50"
+            >
+                <Trash2 className="h-3.5 w-3.5" />
+            </button>
+        </div>
     );
 }

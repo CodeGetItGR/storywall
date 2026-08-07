@@ -4,8 +4,8 @@ import { useState } from 'react';
 
 import Section from '@/components/manage/Section';
 import { UsagePanel } from '@/components/plan/UsagePanel';
+import { useApiErrorMessage, useRetryAfterCountdown } from '@/hooks/useApiErrorMessage';
 import { useCheckout } from '@/hooks/useBilling';
-import { getErrorMessage } from '@/lib/api/errors';
 import type { EventUsageResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { checkoutSuccessUrl } from '@/lib/billing';
 import { formatBytes } from '@/lib/format';
@@ -15,12 +15,10 @@ import { cn } from '@/lib/utils';
 function Stat({ label, value, sub, color, Icon }: { label: string; value: string; sub: string; color: string; Icon: React.ElementType }) {
     return (
         <div>
-            <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center mb-3', color)}>
-                <Icon className="w-4 h-4" strokeWidth={1.8} />
-            </div>
-            <p className="text-2xl font-bold text-ink tabular-nums leading-none">{value}</p>
-            <p className="text-xs font-semibold text-ink mt-1">{label}</p>
-            <p className="text-[11px] text-ink-muted mt-0.5">{sub}</p>
+            <Icon className={cn('h-4 w-4', color)} strokeWidth={1.8} aria-hidden="true" />
+            <p className="mt-2 text-xl font-bold leading-none tabular-nums text-ink sm:text-2xl">{value}</p>
+            <p className="mt-1 text-[11px] font-semibold leading-tight text-ink sm:text-xs">{label}</p>
+            <p className="mt-0.5 hidden text-[11px] text-ink-muted sm:block">{sub}</p>
         </div>
     );
 }
@@ -56,6 +54,8 @@ export default function OverviewTab({
 }) {
     const checkout = useCheckout(eventId);
     const [checkoutError, setCheckoutError] = useState<string | null>(null);
+    const toErrorMessage = useApiErrorMessage();
+    const checkoutRetryIn = useRetryAfterCountdown(checkout.error);
     const canPay = eventStatus === 'DRAFT' && Boolean(endAt);
     async function startCheckout() {
         setCheckoutError(null);
@@ -70,7 +70,7 @@ export default function OverviewTab({
                 window.location.href = result.redirectUrl;
             }
         } catch (error) {
-            setCheckoutError(getErrorMessage(error));
+            setCheckoutError(toErrorMessage(error));
         }
     }
     const rsvpTotal = rsvpBreakdown.reduce((sum, r) => sum + r.count, 0) || 1;
@@ -80,47 +80,83 @@ export default function OverviewTab({
     const includedModules = currentPlan?.moduleKeys.map((moduleKey) => moduleNamesByKey.get(moduleKey) ?? moduleKey) ?? [];
 
     return (
-        <div className="px-4 flex flex-col gap-6">
+        <div className="flex flex-col gap-4 px-4 sm:gap-5">
             {eventStatus === 'DRAFT' && (
-                <div className="rounded-2xl border border-primary/20 bg-primary-light p-4">
-                    <p className="text-sm font-bold text-primary-dark">{t('draft.title')}</p>
-                    <p className="mt-1 text-xs leading-relaxed text-primary-dark/80">{t('draft.body')}</p>
+                <div className="border-l-2 border-primary pl-3">
+                    <p className="text-sm font-bold text-ink">{t('draft.title')}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('draft.body')}</p>
                     {checkoutError && <p className="mt-2 text-xs text-rose-600">{checkoutError}</p>}
-                    <button type="button" onClick={startCheckout} disabled={!canPay || checkout.isPending} className="mt-3 inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40">
+                    <button type="button" onClick={startCheckout} disabled={!canPay || checkout.isPending || checkoutRetryIn > 0} className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto">
                         {checkout.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                        {endAt ? t('draft.payAndPublish') : t('draft.addEndDate')}
+                        {checkoutRetryIn > 0 ? t('draft.retryIn', { seconds: checkoutRetryIn }) : endAt ? t('draft.payAndPublish') : t('draft.addEndDate')}
                     </button>
                 </div>
             )}
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4">
                 <Stat
                     label={t('stats.totalGuests.label')}
                     value={`${memberCount}`}
                     sub={t('stats.totalGuests.sub')}
-                    color="bg-emerald-50 text-emerald-600"
+                    color="text-emerald-600"
                     Icon={Users}
                 />
                 <Stat
                     label={t('stats.daysToGo.label')}
                     value={`${daysToGo}`}
                     sub={t('stats.daysToGo.sub')}
-                    color="bg-rose-50 text-rose-500"
+                    color="text-rose-500"
                     Icon={Clock}
                 />
                 <Stat
                     label={t('stats.invitations.label')}
                     value={`${invitationCount}`}
                     sub={t('stats.invitations.sub')}
-                    color="bg-sky-50 text-sky-600"
+                    color="text-sky-600"
                     Icon={Ticket}
                 />
             </div>
 
-            <div className="h-px bg-border" />
+            <Section
+                title={t('rsvpBreakdown.title')}
+                className="border-t border-border pt-4"
+                action={
+                    <button onClick={onSeeAllRsvp} className="text-xs font-semibold text-primary hover:underline">
+                        {t('seeAll')}
+                    </button>
+                }
+            >
+                <div className="flex gap-2">
+                    {rsvpBreakdown.map(({ key, count, color }) => {
+                        const pct = Math.round((count / rsvpTotal) * 100);
+                        return (
+                            <div key={key} className="flex-1 text-center">
+                                <p className="text-xl font-bold text-ink tabular-nums">{count}</p>
+                                <div className="my-1.5 h-1.5 overflow-hidden rounded-full bg-border">
+                                    <div className={`h-full rounded-full ${color} transition-all`} style={{ width: `${pct}%` }} />
+                                </div>
+                                <p className="text-[10px] leading-tight text-ink-muted">{t(`rsvpBreakdown.${key}`)}</p>
+                            </div>
+                        );
+                    })}
+                </div>
+            </Section>
+
+            <Section
+                title={t('invitationsCard.title')}
+                className="border-t border-border pt-4"
+                action={
+                    <button onClick={onSeeAllInvitations} className="text-xs font-semibold text-primary hover:underline">
+                        {t('seeAll')}
+                    </button>
+                }
+            >
+                <p className="text-xs text-ink-muted">{t('invitationsCard.summary', { count: invitationCount })}</p>
+            </Section>
 
             {eventUsage && (
                 <>
                     <UsagePanel
+                        className="rounded-none border-0 border-t border-border bg-transparent p-0 pt-4 shadow-none"
                         title={t('usage.eventTitle')}
                         planName={currentPlan?.name ?? eventUsage.planTier}
                         nextPlanName={nextPlan?.name}
@@ -148,47 +184,8 @@ export default function OverviewTab({
                             },
                         ]}
                     />
-
-                    <div className="h-px bg-border" />
                 </>
             )}
-
-            <Section
-                title={t('rsvpBreakdown.title')}
-                action={
-                    <button onClick={onSeeAllRsvp} className="text-xs text-primary font-semibold hover:underline">
-                        {t('seeAll')}
-                    </button>
-                }
-            >
-                <div className="flex gap-2">
-                    {rsvpBreakdown.map(({ key, count, color }) => {
-                        const pct = Math.round((count / rsvpTotal) * 100);
-                        return (
-                            <div key={key} className="flex-1 text-center">
-                                <p className="text-xl font-bold text-ink tabular-nums">{count}</p>
-                                <div className="h-1.5 rounded-full bg-border my-1.5 overflow-hidden">
-                                    <div className={`h-full rounded-full ${color} transition-all`} style={{ width: `${pct}%` }} />
-                                </div>
-                                <p className="text-[10px] text-ink-muted">{t(`rsvpBreakdown.${key}`)}</p>
-                            </div>
-                        );
-                    })}
-                </div>
-            </Section>
-
-            <div className="h-px bg-border" />
-
-            <Section
-                title={t('invitationsCard.title')}
-                action={
-                    <button onClick={onSeeAllInvitations} className="text-xs text-primary font-semibold hover:underline">
-                        {t('seeAll')}
-                    </button>
-                }
-            >
-                <p className="text-xs text-ink-muted">{t('invitationsCard.summary', { count: invitationCount })}</p>
-            </Section>
         </div>
     );
 }

@@ -24,6 +24,9 @@ export const endpoints = {
     notifications: {
         list: '/api/notifications',
         byId: (id: string) => `/api/notifications/${id}`,
+        unreadCount: '/api/notifications/unread-count',
+        read: (id: string) => `/api/notifications/${id}/read`,
+        readAll: '/api/notifications/read-all',
     },
 
     sessions: {
@@ -52,6 +55,7 @@ export const endpoints = {
         billing: (eventId: string) => `/api/events/${eventId}/billing`,
         checkout: (eventId: string) => `/api/events/${eventId}/checkout`,
         subscriptionCheckout: (eventId: string) => `/api/events/${eventId}/subscription-checkout`,
+        subscription: (eventId: string) => `/api/events/${eventId}/subscription`,
         refundEligibility: (eventId: string) => `/api/events/${eventId}/refund-eligibility`,
         refundRequests: (eventId: string) => `/api/events/${eventId}/refund-requests`,
         posts: (eventId: string) => `/api/events/${eventId}/posts`,
@@ -169,6 +173,17 @@ export const endpoints = {
     },
 
     admin: {
+        orders: {
+            settle: (orderId: string) => `/api/admin/orders/${orderId}/settle`,
+        },
+        webhooks: {
+            unprocessed: '/api/admin/webhooks/unprocessed',
+        },
+        refundRequests: {
+            list: '/api/admin/refund-requests',
+            approve: (requestId: string) => `/api/admin/refund-requests/${requestId}/approve`,
+            reject: (requestId: string) => `/api/admin/refund-requests/${requestId}/reject`,
+        },
         planTiers: {
             list: '/api/admin/plan-tiers',
             byId: (id: string) => `/api/admin/plan-tiers/${id}`,
@@ -183,6 +198,8 @@ export const endpoints = {
         },
         events: {
             planTier: (eventId: string) => `/api/admin/events/${eventId}/plan-tier`,
+            freeze: (eventId: string) => `/api/admin/events/${eventId}/freeze`,
+            purge: (eventId: string) => `/api/admin/events/${eventId}/purge`,
         },
     },
 } as const;

@@ -4,11 +4,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
-import type { NotificationRequestDto, NotificationResponseDto } from '@/lib/api/types';
+import type { NotificationRequestDto, NotificationResponseDto, NotificationUnreadCountDto } from '@/lib/api/types';
 
 export const notificationKeys = {
     all: ['notifications'] as const,
     detail: (id: string) => ['notifications', id] as const,
+    unreadCount: ['notifications', 'unread-count'] as const,
 };
 
 // GET /api/notifications — always scoped to the caller's own inbox.
@@ -25,6 +26,18 @@ export function useNotifications() {
     });
 }
 
+// GET /api/notifications/unread-count — the badge source, cheap enough to poll.
+export function useUnreadNotificationCount() {
+    const { isAuthenticated } = useAuth();
+
+    return useQuery({
+        queryKey: notificationKeys.unreadCount,
+        queryFn: () => api.get<NotificationUnreadCountDto>(endpoints.notifications.unreadCount),
+        enabled: isAuthenticated,
+        select: (data) => data.count,
+    });
+}
+
 export function useCreateNotification() {
     const queryClient = useQueryClient();
 
@@ -36,9 +49,45 @@ export function useCreateNotification() {
     });
 }
 
-// There is no "mark as read" endpoint — readAt is a full field with no PATCH
-// route for notifications (see integration guide §4). Delete is the only
-// other mutation available.
+// PATCH /api/notifications/{id}/read
+export function useMarkNotificationRead() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (id: string) => api.patch<NotificationResponseDto>(endpoints.notifications.read(id)),
+        // Optimistic: the row is already visually "read" the moment it is clicked,
+        // and a failed call just leaves the server truth to the refetch below.
+        onMutate: async (id: string) => {
+            await queryClient.cancelQueries({ queryKey: notificationKeys.all });
+            const previous = queryClient.getQueryData<NotificationResponseDto[]>(notificationKeys.all);
+            queryClient.setQueryData<NotificationResponseDto[]>(notificationKeys.all, (rows) =>
+                rows?.map((row) => (row.id === id && !row.readAt ? { ...row, readAt: new Date().toISOString() } : row))
+            );
+            return { previous };
+        },
+        onError: (_error, _id, context) => {
+            if (context?.previous) queryClient.setQueryData(notificationKeys.all, context.previous);
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: notificationKeys.all });
+            queryClient.invalidateQueries({ queryKey: notificationKeys.unreadCount });
+        },
+    });
+}
+
+// PATCH /api/notifications/read-all
+export function useMarkAllNotificationsRead() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: () => api.patch<void>(endpoints.notifications.readAll),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: notificationKeys.all });
+            queryClient.invalidateQueries({ queryKey: notificationKeys.unreadCount });
+        },
+    });
+}
+
 export function useDeleteNotification() {
     const queryClient = useQueryClient();
 
@@ -46,6 +95,7 @@ export function useDeleteNotification() {
         mutationFn: (id: string) => api.del<void>(endpoints.notifications.byId(id)),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: notificationKeys.all });
+            queryClient.invalidateQueries({ queryKey: notificationKeys.unreadCount });
         },
     });
 }

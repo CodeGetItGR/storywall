@@ -5,14 +5,17 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import type { ChangeEvent, FormEvent } from 'react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
-import { useCheckout, useEventBilling, useRefundEligibility, useRequestRefund } from '@/hooks/useBilling';
-import { getErrorMessage } from '@/lib/api/errors';
-import type { EventBillingResponseDto, RefundRequestResponseDto } from '@/lib/api/types';
+import { useApiErrorMessage, useRetryAfterCountdown } from '@/hooks/useApiErrorMessage';
+import { useCancelSubscription, useCheckout, useEventBilling, useEventRefundRequests, useRefundEligibility, useRequestRefund } from '@/hooks/useBilling';
+import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
+import type { EventBillingResponseDto } from '@/lib/api/types';
 import { billingCurrency, checkoutSuccessUrl, formatBillingDate, formatMoney, newestBillingOrder, paidBillingTotal } from '@/lib/billing';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
+
+const ORDER_PREVIEW_COUNT = 6;
 
 function statusTone(status: EventBillingResponseDto['eventStatus']) {
     if (status === 'ACTIVE') return 'bg-emerald-50 text-emerald-700 ring-emerald-200';
@@ -29,11 +32,22 @@ export default function EventPlanSettingsPage() {
     const refundEligibility = useRefundEligibility(eventId);
     const requestRefund = useRequestRefund(eventId);
     const renew = useCheckout(eventId, true);
+    const refundHistory = useEventRefundRequests(eventId);
+    const toErrorMessage = useApiErrorMessage();
+    const renewRetryIn = useRetryAfterCountdown(renew.error);
+    const refundRetryIn = useRetryAfterCountdown(requestRefund.error);
     const [error, setError] = useState<string | null>(null);
     const [refundReason, setRefundReason] = useState('');
     const [refundError, setRefundError] = useState<string | null>(null);
-    const [refundRequest, setRefundRequest] = useState<RefundRequestResponseDto | null>(null);
+    const [confirmingRefund, setConfirmingRefund] = useState(false);
+    const cancelSubscription = useCancelSubscription(eventId);
+    const [cancelError, setCancelError] = useState<string | null>(null);
+    const [confirmingCancel, setConfirmingCancel] = useState(false);
+    const [showAllOrders, setShowAllOrders] = useState(false);
     const data = billing.data;
+    // Server-side history, so a decision (and its note) survives a reload — the
+    // page used to only know about a request the same tab had just submitted.
+    const refundRequest = refundHistory.data?.[0] ?? null;
 
     async function startRenewal() {
         setError(null);
@@ -43,21 +57,56 @@ export default function EventPlanSettingsPage() {
                 ? checkoutSuccessUrl(window.location.origin, eventId, checkout.orderId)
                 : checkout.redirectUrl;
         } catch (e) {
-            setError(getErrorMessage(e));
+            setError(toErrorMessage(e));
         }
     }
 
-    async function submitRefundRequest(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        setRefundError(null);
+    const askCancelConfirmation = useCallback(() => {
+        setCancelError(null);
+        setConfirmingCancel(true);
+    }, []);
+
+    const dismissCancelConfirmation = useCallback(() => setConfirmingCancel(false), []);
+    const handleShowAllOrders = useCallback(() => setShowAllOrders(true), []);
+
+    async function confirmCancelSubscription() {
+        setCancelError(null);
         try {
-            const result = await requestRefund.mutateAsync(refundReason.trim());
-            setRefundRequest(result);
-            setRefundReason('');
+            await cancelSubscription.mutateAsync();
+            setConfirmingCancel(false);
         } catch (e) {
-            setRefundError(getErrorMessage(e));
+            // 5026 means there was nothing live to cancel — a stale tab, not a
+            // failure worth alarming anyone about. Refetch and close the dialog.
+            if (getErrorCode(e) === ERROR_CODES.SUBSCRIPTION_NOT_LIVE) {
+                await billing.refetch();
+                setConfirmingCancel(false);
+                return;
+            }
+            // Everything else, including the 5027 "still billing" case, keeps the
+            // dialog open so the retry is one tap away.
+            setCancelError(toErrorMessage(e));
         }
     }
+
+    function askRefundConfirmation(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        setRefundError(null);
+        setConfirmingRefund(true);
+    }
+
+    async function submitRefundRequest() {
+        setRefundError(null);
+        try {
+            await requestRefund.mutateAsync(refundReason.trim());
+            setRefundReason('');
+            setConfirmingRefund(false);
+        } catch (e) {
+            setRefundError(toErrorMessage(e));
+            setConfirmingRefund(false);
+        }
+    }
+
+    const cancelRefundConfirmation = useCallback(() => setConfirmingRefund(false), []);
 
     function handleRefundReasonChange(event: ChangeEvent<HTMLTextAreaElement>) {
         setRefundReason(event.target.value);
@@ -75,6 +124,10 @@ export default function EventPlanSettingsPage() {
             pendingOrders,
             paidTotalMinor: paidBillingTotal(data.orders),
             orderCurrency: billingCurrency(data.orders),
+            // `subscription: null` means "never subscribed" OR "subscribed, then it
+            // ended at the period boundary". A renewal order is the only evidence
+            // on this payload that distinguishes the two.
+            hadSubscription: data.orders.some((order) => order.kind === 'RENEWAL'),
         };
     }, [data]);
 
@@ -102,6 +155,11 @@ export default function EventPlanSettingsPage() {
     const isRiskState = data.eventStatus === 'FROZEN' || data.eventStatus === 'PURGED' || !coverage.covered;
     const statusIcon = data.eventStatus === 'ACTIVE' ? CheckCircle2 : data.eventStatus === 'DRAFT' ? Clock3 : data.eventStatus === 'FROZEN' ? AlertTriangle : XCircle;
     const StatusIcon = statusIcon;
+    const hadSubscription = insights.hadSubscription;
+    // A renewal writes an order every month, so a long-running event's history
+    // grows without bound. Show a recent window until the host asks for the rest.
+    const visibleOrders = showAllOrders ? data.orders : data.orders.slice(0, ORDER_PREVIEW_COUNT);
+    const hiddenOrderCount = data.orders.length - visibleOrders.length;
 
     return (
         <main className="mx-auto max-w-5xl px-4 pb-24 pt-5 sm:pt-6 lg:pb-10">
@@ -117,11 +175,11 @@ export default function EventPlanSettingsPage() {
                     <button
                         type="button"
                         onClick={startRenewal}
-                        disabled={renew.isPending}
+                        disabled={renew.isPending || renewRetryIn > 0}
                         className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-ink px-4 py-2.5 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
                     >
                         {renew.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5" />}
-                        {renew.isPending ? t('actions.openingCheckout') : t('actions.renew')}
+                        {renewRetryIn > 0 ? t('actions.retryIn', { seconds: renewRetryIn }) : renew.isPending ? t('actions.openingCheckout') : t('actions.renew')}
                     </button>
                 )}
             </div>
@@ -203,7 +261,7 @@ export default function EventPlanSettingsPage() {
                                 <p className="py-6 text-sm text-ink-muted">{t('orders.empty')}</p>
                             ) : (
                                 <div className="divide-y divide-border">
-                                    {data.orders.map((order) => (
+                                    {visibleOrders.map((order) => (
                                         <div key={order.id} className="py-4 text-sm">
                                             <div className="flex items-start justify-between gap-3">
                                                 <div className="min-w-0">
@@ -254,7 +312,7 @@ export default function EventPlanSettingsPage() {
                                             </td>
                                         </tr>
                                     ) : (
-                                        data.orders.map((order) => (
+                                        visibleOrders.map((order) => (
                                             <tr key={order.id}>
                                                 <td className="py-3 pr-4 font-medium text-ink">
                                                     {t(`orders.kind.${order.kind}`)}
@@ -278,6 +336,15 @@ export default function EventPlanSettingsPage() {
                                 </tbody>
                             </table>
                         </div>
+                        {hiddenOrderCount > 0 && (
+                            <button
+                                type="button"
+                                onClick={handleShowAllOrders}
+                                className="mt-3 inline-flex min-h-11 items-center justify-center text-xs font-semibold text-primary-dark"
+                            >
+                                {t('orders.showAll', { count: hiddenOrderCount })}
+                            </button>
+                        )}
                     </div>
                 </section>
 
@@ -287,17 +354,74 @@ export default function EventPlanSettingsPage() {
                         <dl className="mt-3 divide-y divide-border border-y border-border text-sm">
                             <div className="flex justify-between gap-4 py-3">
                                 <dt className="text-ink-muted">{t('subscription.status')}</dt>
-                                <dd className="font-semibold text-ink">{subscription ? t(`subscriptionStatus.${subscription.status}`) : t('subscription.none')}</dd>
+                                <dd className="text-right font-semibold text-ink">
+                                    {subscription
+                                        ? subscription.cancelAtPeriodEnd
+                                            ? t('subscription.notRenewing')
+                                            : t(`subscriptionStatus.${subscription.status}`)
+                                        : hadSubscription
+                                          ? t('subscription.ended')
+                                          : t('subscription.none')}
+                                </dd>
                             </div>
                             <div className="flex justify-between gap-4 py-3">
-                                <dt className="text-ink-muted">{t('subscription.currentPeriodEnd')}</dt>
+                                <dt className="text-ink-muted">{subscription?.cancelAtPeriodEnd ? t('subscription.liveUntil') : t('subscription.currentPeriodEnd')}</dt>
                                 <dd className="text-right font-semibold text-ink">{formatDate(subscription?.currentPeriodEnd ?? null)}</dd>
                             </div>
-                            <div className="flex justify-between gap-4 py-3">
-                                <dt className="text-ink-muted">{t('subscription.cancelledAt')}</dt>
-                                <dd className="text-right font-semibold text-ink">{formatDate(subscription?.cancelledAt ?? null)}</dd>
-                            </div>
                         </dl>
+
+                        {/* ACTIVE alone no longer means "renewing" — split the copy on the
+                            flag, or a cancelled subscription reads as healthy. */}
+                        {subscription && (
+                            <p className="mt-3 text-xs leading-relaxed text-ink-muted">
+                                {subscription.cancelAtPeriodEnd
+                                    ? t('subscription.willNotRenew', { date: formatDate(subscription.currentPeriodEnd) })
+                                    : subscription.status === 'PAST_DUE'
+                                      ? t('subscription.pastDue')
+                                      : t('subscription.renewsOn', { date: formatDate(subscription.currentPeriodEnd) })}
+                            </p>
+                        )}
+
+                        {subscription && !subscription.cancelAtPeriodEnd && (
+                            <div className="mt-3">
+                                {confirmingCancel ? (
+                                    <div className="rounded-lg bg-surface-muted p-3">
+                                        <p className="text-xs leading-relaxed text-ink">
+                                            {t('subscription.cancelConfirm', { date: formatDate(subscription.currentPeriodEnd) })}
+                                        </p>
+                                        {cancelError && <p className="mt-2 text-xs text-rose-600">{cancelError}</p>}
+                                        <div className="mt-2 flex flex-wrap gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={confirmCancelSubscription}
+                                                disabled={cancelSubscription.isPending}
+                                                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-ink px-4 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+                                            >
+                                                {cancelSubscription.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                                                {t('subscription.cancelConfirmYes')}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={dismissCancelConfirmation}
+                                                className="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-xs font-semibold text-ink-muted"
+                                            >
+                                                {t('subscription.cancelConfirmNo')}
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={askCancelConfirmation}
+                                        className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-border px-3 py-2 text-xs font-semibold text-ink sm:w-auto"
+                                    >
+                                        {t('subscription.cancel')}
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
+                        {subscription?.cancelAtPeriodEnd && <p className="mt-3 text-xs leading-relaxed text-ink-muted">{t('subscription.noResume')}</p>}
                         {!subscription && hasRenewalPath && <p className="mt-3 text-xs leading-relaxed text-ink-muted">{t('subscription.renewalHint')}</p>}
                     </section>
 
@@ -324,7 +448,7 @@ export default function EventPlanSettingsPage() {
                     <section>
                         <h2 className="text-sm font-bold text-ink">{t('refund.title')}</h2>
                         <div className="mt-3 border-y border-border py-3 text-sm">
-                            {refundEligibility.isLoading ? (
+                            {refundEligibility.isLoading || refundHistory.isLoading ? (
                                 <p className="text-ink-muted">{t('refund.loading')}</p>
                             ) : refundRequest ? (
                                 <div>
@@ -334,11 +458,17 @@ export default function EventPlanSettingsPage() {
                                             ? t('refund.requestedAmount', { amount: formatMoney(locale, refundRequest.amountMinor, refundRequest.currency) })
                                             : t('refund.requestedNoAmount')}
                                     </p>
+                                    {refundRequest.decisionNote && <p className="mt-2 text-xs leading-relaxed text-ink-muted">{refundRequest.decisionNote}</p>}
+                                    {/* Approved but no money moved yet: say so rather than let the
+                                        host assume the payment is already back. */}
+                                    {refundRequest.status === 'APPROVED' && !refundRequest.providerRefunded && (
+                                        <p className="mt-2 text-xs leading-relaxed text-amber-700">{t('refund.notRefundedYet')}</p>
+                                    )}
                                 </div>
                             ) : refundEligibility.data?.hasPendingRequest ? (
                                 <p className="text-ink-muted">{t('refund.pending')}</p>
                             ) : refundEligibility.data?.eligible ? (
-                                <form onSubmit={submitRefundRequest} className="space-y-3">
+                                <form onSubmit={askRefundConfirmation} className="space-y-3">
                                     <p className="text-ink-muted">{t('refund.eligible')}</p>
                                     <label className="block">
                                         <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('refund.reason')}</span>
@@ -351,14 +481,38 @@ export default function EventPlanSettingsPage() {
                                         />
                                     </label>
                                     {refundError && <p className="text-xs text-rose-600">{refundError}</p>}
-                                    <button
-                                        type="submit"
-                                        disabled={requestRefund.isPending || !refundReason.trim()}
-                                        className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-border px-3 py-2 text-xs font-semibold text-ink disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
-                                    >
-                                        {requestRefund.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                                        {requestRefund.isPending ? t('refund.submitting') : t('refund.submit')}
-                                    </button>
+                                    {confirmingRefund ? (
+                                        <div className="rounded-lg bg-surface-muted p-3">
+                                            <p className="text-xs leading-relaxed text-ink">{t('refund.confirmBody')}</p>
+                                            <div className="mt-2 flex flex-wrap gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={submitRefundRequest}
+                                                    disabled={requestRefund.isPending || refundRetryIn > 0}
+                                                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-ink px-4 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+                                                >
+                                                    {requestRefund.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                                                    {refundRetryIn > 0 ? t('actions.retryIn', { seconds: refundRetryIn }) : t('refund.confirmSubmit')}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={cancelRefundConfirmation}
+                                                    className="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-xs font-semibold text-ink-muted"
+                                                >
+                                                    {t('refund.confirmCancel')}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            type="submit"
+                                            disabled={requestRefund.isPending || !refundReason.trim()}
+                                            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-border px-3 py-2 text-xs font-semibold text-ink disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+                                        >
+                                            {requestRefund.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                                            {requestRefund.isPending ? t('refund.submitting') : t('refund.submit')}
+                                        </button>
+                                    )}
                                 </form>
                             ) : (
                                 <div>

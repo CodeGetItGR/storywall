@@ -1,6 +1,15 @@
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 
-export type AdminErrorMessageKey = 'planInUse' | 'onlyDefault' | 'generic';
+export type AdminErrorMessageKey =
+    | 'planInUse'
+    | 'onlyDefault'
+    | 'orderNotPending'
+    | 'notFound'
+    | 'refundNotPending'
+    | 'refundNotEligible'
+    | 'orderNotRefundable'
+    | 'eventNotActive'
+    | 'generic';
 
 export function emptyToNull(value: FormDataEntryValue | null): string | null {
     const text = typeof value === 'string' ? value.trim() : '';
@@ -20,5 +29,14 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     const code = getErrorCode(error);
     if (code === ERROR_CODES.PLAN_TIER_IN_USE) return 'planInUse';
     if (code === ERROR_CODES.PLAN_TIER_IS_ONLY_DEFAULT) return 'onlyDefault';
+    if (code === ERROR_CODES.ORDER_NOT_PENDING) return 'orderNotPending';
+    if (code === ERROR_CODES.RESOURCE_NOT_FOUND) return 'notFound';
+    // Refund-queue outcomes. The first one is the common concurrent case: two
+    // admins open the queue and the second one's decision lands on a request
+    // that is no longer PENDING. "Something went wrong" hides exactly that.
+    if (code === ERROR_CODES.REFUND_REQUEST_NOT_PENDING) return 'refundNotPending';
+    if (code === ERROR_CODES.REFUND_NOT_ELIGIBLE) return 'refundNotEligible';
+    if (code === ERROR_CODES.ORDER_NOT_REFUNDABLE) return 'orderNotRefundable';
+    if (code === ERROR_CODES.EVENT_NOT_ACTIVE) return 'eventNotActive';
     return 'generic';
 }

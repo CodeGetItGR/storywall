@@ -27,11 +27,21 @@ export const ERROR_CODES = {
     PLAN_TIER_IS_ONLY_DEFAULT: 5013,
     INTERNAL_ERROR: 9001,
     RATE_LIMITED: 3010,
+    EVENT_DATES_INCOMPLETE: 3008,
+    EVENT_NOT_ACTIVE: 5014,
     EVENT_FROZEN: 5016,
+    EVENT_NOT_DRAFT: 5017,
+    ORDER_NOT_PENDING: 5018,
     PLAN_TIER_NOT_PURCHASABLE: 5015,
+    PLAN_TIER_NOT_PRICED: 5019,
+    PLAN_TIER_CURRENCY_UNSUPPORTED: 5021,
     SUBSCRIPTION_ALREADY_ACTIVE: 5020,
     REFUND_NOT_ELIGIBLE: 5022,
     REFUND_ALREADY_REQUESTED: 5023,
+    REFUND_REQUEST_NOT_PENDING: 5024,
+    ORDER_NOT_REFUNDABLE: 5025,
+    SUBSCRIPTION_NOT_LIVE: 5026,
+    SUBSCRIPTION_CANCEL_FAILED: 5027,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the
@@ -77,6 +87,25 @@ export function getQuotaExceededDetails(error: unknown): QuotaExceededDetails | 
 
 export function isModuleNotAvailableError(error: unknown): boolean {
     return getErrorCode(error) === ERROR_CODES.MODULE_NOT_AVAILABLE;
+}
+
+// A frozen event still reads fine — only writes close (guide §5). Callers use
+// this to swap a generic failure for "renew to keep editing".
+export function isEventFrozenError(error: unknown): boolean {
+    return getErrorCode(error) === ERROR_CODES.EVENT_FROZEN;
+}
+
+// Seconds the caller must wait after a 429, or undefined when this isn't one.
+// Mirrors the `Retry-After` header; the client parses it off the ProblemDetail.
+export function getRetryAfterSeconds(error: unknown): number | undefined {
+    if (error instanceof ApiError && error.status === 429) {
+        return error.retryAfterSeconds ?? undefined;
+    }
+    return undefined;
+}
+
+export function isRateLimitedError(error: unknown): boolean {
+    return error instanceof ApiError && (error.status === 429 || getErrorCode(error) === ERROR_CODES.RATE_LIMITED);
 }
 
 export function getErrorMessage(error: unknown, fallback = 'Something went wrong. Please try again.'): string {

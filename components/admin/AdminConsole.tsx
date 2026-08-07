@@ -1,21 +1,27 @@
 'use client';
 
-import { CalendarDays, Layers3, Shield, Users } from 'lucide-react';
+import { CalendarDays, Layers3, LifeBuoy, Receipt, Shield, Undo2, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type MouseEvent, useEffect, useState } from 'react';
 
+import { BillingOpsPanel } from '@/components/admin/BillingOpsPanel';
+import { EventLifecyclePanel } from '@/components/admin/EventLifecyclePanel';
 import { ModuleRegistryPanel } from '@/components/admin/ModuleRegistryPanel';
 import { PlanAssignmentPanel } from '@/components/admin/PlanAssignmentPanel';
 import { PlanCatalogPanel } from '@/components/admin/PlanCatalogPanel';
+import { RefundQueuePanel } from '@/components/admin/RefundQueuePanel';
 import { cn } from '@/lib/utils';
 
-type AdminTab = 'accountPlans' | 'eventPlans' | 'modules' | 'assignments';
+type AdminTab = 'accountPlans' | 'eventPlans' | 'modules' | 'assignments' | 'billingOps' | 'refunds' | 'lifecycle';
 
 const HASH_TO_TAB: Record<string, AdminTab> = {
     '#account-plans': 'accountPlans',
     '#event-plans': 'eventPlans',
     '#modules': 'modules',
     '#assignments': 'assignments',
+    '#billing-ops': 'billingOps',
+    '#refunds': 'refunds',
+    '#lifecycle': 'lifecycle',
 };
 
 const TAB_TO_HASH: Record<AdminTab, string> = {
@@ -23,6 +29,9 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     eventPlans: '#event-plans',
     modules: '#modules',
     assignments: '#assignments',
+    billingOps: '#billing-ops',
+    refunds: '#refunds',
+    lifecycle: '#lifecycle',
 };
 
 function currentHashTab(): AdminTab {
@@ -38,6 +47,9 @@ export function AdminConsole() {
         { key: 'eventPlans' as const, label: t('tabs.eventPlans'), icon: CalendarDays },
         { key: 'modules' as const, label: t('tabs.modules'), icon: Shield },
         { key: 'assignments' as const, label: t('tabs.assignments'), icon: Layers3 },
+        { key: 'billingOps' as const, label: t('tabs.billingOps'), icon: Receipt },
+        { key: 'refunds' as const, label: t('tabs.refunds'), icon: Undo2 },
+        { key: 'lifecycle' as const, label: t('tabs.lifecycle'), icon: LifeBuoy },
     ];
 
     useEffect(() => {
@@ -92,6 +104,9 @@ export function AdminConsole() {
             {tab === 'eventPlans' && <PlanCatalogPanel scope="EVENT" />}
             {tab === 'modules' && <ModuleRegistryPanel />}
             {tab === 'assignments' && <PlanAssignmentPanel />}
+            {tab === 'billingOps' && <BillingOpsPanel />}
+            {tab === 'refunds' && <RefundQueuePanel />}
+            {tab === 'lifecycle' && <EventLifecyclePanel />}
         </div>
     );
 }

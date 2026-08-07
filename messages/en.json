@@ -306,6 +306,38 @@
         "emptyState": {
             "title": "No notifications yet",
             "description": "We'll let you know when something happens"
+        },
+        "filters": {
+            "all": "All",
+            "billing": "Billing",
+            "activity": "Activity"
+        },
+        "loadError": "We couldn't load your notifications. Please try again.",
+        "delete": "Delete notification",
+        "generic": {
+            "title": "You have a new update"
+        },
+        "types": {
+            "BILLING_EXPIRING": {
+                "title": "Your event coverage is ending soon",
+                "body": "{days} days left on your {plan} plan. Renew to keep the photos online."
+            },
+            "BILLING_PAST_DUE": {
+                "title": "Your event coverage has lapsed",
+                "body": "Overdue by {days} days. The event becomes read-only in {daysUntilFreeze} days."
+            },
+            "BILLING_PURGE_WARNING": {
+                "title": "The media on this event will be deleted",
+                "body": "{days} days left before the photos are permanently removed. This cannot be undone."
+            },
+            "REFUND_APPROVED": {
+                "title": "Your refund was approved",
+                "body": "The event has been returned to draft and is no longer visible to guests."
+            },
+            "REFUND_REJECTED": {
+                "title": "Your refund request was declined",
+                "body": "Nothing has changed on your event."
+            }
         }
     },
     "PostModal": {
@@ -414,6 +446,12 @@
     "ManagePage": {
         "title": "Host Dashboard",
         "hostView": "Host View",
+        "status": {
+            "DRAFT": "Draft",
+            "ACTIVE": "Live",
+            "FROZEN": "Frozen",
+            "PURGED": "Purged"
+        },
         "openDashboard": "Open dashboard",
         "rsvpOverview": "RSVP overview",
         "newEvent": "New event",
@@ -465,7 +503,8 @@
             "title": "Not published yet",
             "body": "Set an end date before publishing. Your coverage is calculated from the event dates.",
             "payAndPublish": "Pay and publish",
-            "addEndDate": "Add an end date to publish"
+            "addEndDate": "Add an end date to publish",
+            "retryIn": "Try again in {seconds}s"
         },
         "invitations": {
             "empty": "No invitations yet. Create one to generate a shareable link.",
@@ -546,7 +585,8 @@
         "notApplicable": "Not applicable",
         "actions": {
             "renew": "Renew preservation",
-            "openingCheckout": "Opening checkout..."
+            "openingCheckout": "Opening checkout...",
+            "retryIn": "Try again in {seconds}s"
         },
         "eventStatus": {
             "DRAFT": "Draft",
@@ -603,9 +643,19 @@
             "title": "Preservation",
             "status": "Status",
             "currentPeriodEnd": "Renews through",
-            "cancelledAt": "Cancelled",
             "none": "No subscription",
-            "renewalHint": "Start preservation to keep the event online after the included coverage period."
+            "renewalHint": "Start preservation to keep the event online after the included coverage period.",
+            "notRenewing": "Not renewing",
+            "ended": "Ended",
+            "liveUntil": "Live until",
+            "renewsOn": "Renews automatically on {date}.",
+            "willNotRenew": "Won't renew. Your event stays live until {date}, then becomes read-only.",
+            "pastDue": "The last payment failed. Your card is being retried — update it if this persists.",
+            "cancel": "Stop the subscription",
+            "cancelConfirm": "This stops future renewals. You keep the month you already paid for: the event stays live until {date}, then becomes read-only. No refund is issued.",
+            "cancelConfirmYes": "Yes, stop renewing",
+            "cancelConfirmNo": "Keep it running",
+            "noResume": "There is no undo. To keep the event live past this date, start a new subscription."
         },
         "activation": {
             "title": "Activation",
@@ -625,7 +675,11 @@
             "submitting": "Submitting...",
             "requested": "Refund request {status}",
             "requestedAmount": "Requested amount: {amount}",
-            "requestedNoAmount": "Requested amount will be calculated during review."
+            "requestedNoAmount": "Requested amount will be calculated during review.",
+            "confirmBody": "Requesting a refund takes the event offline and returns it to draft if it is approved. Guests will lose access.",
+            "confirmSubmit": "Yes, request a refund",
+            "confirmCancel": "Cancel",
+            "notRefundedYet": "Approved. The money has not been returned yet — our team is processing it."
         },
         "orders": {
             "title": "Order history",
@@ -642,7 +696,8 @@
             "kind": {
                 "ACTIVATION": "Activation",
                 "RENEWAL": "Renewal"
-            }
+            },
+            "showAll": "Show {count} older orders"
         }
     },
     "CheckoutSuccessPage": {
@@ -995,14 +1050,18 @@
             "eventPlans": "Event plans",
             "plans": "Plans",
             "modules": "Modules",
-            "assignments": "Assignments"
+            "assignments": "Assignments",
+            "billingOps": "Billing ops"
         },
         "tabs": {
             "accountPlans": "Account plans",
             "eventPlans": "Event plans",
             "plans": "Plans",
             "modules": "Modules",
-            "assignments": "Assignments"
+            "assignments": "Assignments",
+            "billingOps": "Billing ops",
+            "refunds": "Refunds",
+            "lifecycle": "Lifecycle"
         },
         "fields": {
             "code": "Code",
@@ -1101,7 +1160,71 @@
         "errors": {
             "planInUse": "This plan is in use. Archive it instead of deleting it.",
             "onlyDefault": "Make another plan the default for this scope first.",
-            "generic": "Something went wrong. Please try again."
+            "generic": "Something went wrong. Please try again.",
+            "orderNotPending": "This order has already been settled or cancelled.",
+            "notFound": "We could not find that record. Check the id and try again.",
+            "refundNotPending": "This request was already decided — refresh the queue to see the current state.",
+            "refundNotEligible": "This event no longer meets the refund conditions.",
+            "orderNotRefundable": "Only the activation payment can be refunded.",
+            "eventNotActive": "This event is not live, so that action does not apply."
+        },
+        "billingOps": {
+            "notice": "Settling an order marks it paid with no provider payment behind it and activates the event exactly as a real payment would. On dev and staging this is the only way an event leaves DRAFT.",
+            "settleTitle": "Settle an order",
+            "settleSubtitle": "Use for bank transfers, comped events, and payments whose webhook never arrived.",
+            "orderIdField": "Order UUID",
+            "settle": "Settle order",
+            "settleThis": "Settle",
+            "settled": "Settled",
+            "settleSuccess": "Order {orderId} settled. The event is now active.",
+            "webhooksTitle": "Unprocessed webhooks",
+            "webhooksSubtitle": "Deliveries received but never processed — settlements the platform may have lost.",
+            "webhooksLoading": "Loading webhooks...",
+            "webhooksEmpty": "Nothing unprocessed. Every delivery has been handled.",
+            "refresh": "Refresh",
+            "receivedAt": "Received {date}",
+            "orderId": "Order {orderId}",
+            "noOrderRef": "No order reference",
+            "unknownEventType": "Unknown event"
+        },
+        "refunds": {
+            "title": "Refund requests",
+            "subtitle": "Approving returns the event to draft and takes it offline.",
+            "loading": "Loading requests…",
+            "empty": "No refund requests.",
+            "guests": "Guests",
+            "posts": "Posts",
+            "media": "Media",
+            "storage": "Storage",
+            "notEligible": "No longer meets the refund conditions",
+            "notRefundedByProvider": "Approved, but the provider did not return the money. Refund it manually.",
+            "noteLabel": "Decision note",
+            "noteHint": "This note is sent to the host.",
+            "approve": "Approve",
+            "reject": "Reject",
+            "cancel": "Cancel",
+            "confirmYes": "Confirm",
+            "confirmApprove": "This refunds the payment and returns the event to draft, taking it offline. Continue?",
+            "confirmReject": "The host will be told this request was rejected. Continue?",
+            "status": {
+                "PENDING": "Pending",
+                "APPROVED": "Approved",
+                "REJECTED": "Rejected"
+            }
+        },
+        "lifecycle": {
+            "freezeTitle": "Freeze event",
+            "freezeSubtitle": "Makes the event read-only. Guests can still view it; nobody can post.",
+            "eventIdField": "Event ID",
+            "freeze": "Freeze",
+            "freezeSuccess": "Event {eventId} is now frozen.",
+            "purgeTitle": "Purge event media",
+            "purgeWarning": "This permanently deletes every file stored for the event. It cannot be undone.",
+            "purgeConfirmField": "Type the event ID again to confirm",
+            "purgeConfirmPlaceholder": "Repeat the event ID",
+            "purge": "Purge media",
+            "purgeSuccess": "All media for {eventId} was deleted.",
+            "purgePartial": "Some files for {eventId} could not be deleted. The event stays frozen — run purge again."
         }
     },
     "FeedQuickAccessBar": {
@@ -1156,5 +1279,30 @@
             "activeEvents": "Active events"
         },
         "includedModules": "Included modules"
+    },
+    "ApiErrors": {
+        "generic": "Something went wrong. Please try again.",
+        "eventFrozen": "This event is frozen. Renew it to make changes again.",
+        "eventNotActive": "This event is not live yet.",
+        "rateLimited": "Too many requests. Please wait a moment and try again.",
+        "rateLimitedWithWait": "Too many requests. Try again in {seconds}s.",
+        "storageLimit": "Storage limit reached for this event.",
+        "storageLimitWithPlan": "Storage limit reached on the {plan} plan. Upgrade to add more.",
+        "memberLimit": "Guest limit reached for this event.",
+        "memberLimitWithPlan": "Guest limit reached on the {plan} plan. Upgrade to invite more.",
+        "activeEventLimit": "You have reached your limit of live events.",
+        "activeEventLimitWithPlan": "The {plan} plan allows fewer live events. Upgrade or finish an event first.",
+        "moduleUnavailable": "This feature is not included in the current plan.",
+        "eventDatesIncomplete": "Add a start and end date to the event before paying.",
+        "eventNotDraft": "This event has already been published.",
+        "planNotPurchasable": "This plan cannot be bought directly. Contact us to switch to it.",
+        "planNotPriced": "This plan has no price set yet. Please try again later.",
+        "planCurrencyUnsupported": "This plan is not available in your currency yet.",
+        "subscriptionAlreadyActive": "A preservation subscription is already running for this event.",
+        "refundNotEligible": "This event no longer meets the refund conditions.",
+        "refundAlreadyRequested": "A refund request is already pending for this event.",
+        "orderNotRefundable": "Only the activation payment can be refunded.",
+        "subscriptionNotLive": "There was no active subscription to stop — we have refreshed this page.",
+        "subscriptionCancelFailed": "We couldn't stop it just now, so the subscription is still running and will still be charged. Please try again in a moment."
     }
 }

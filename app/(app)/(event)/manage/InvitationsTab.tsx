@@ -5,8 +5,9 @@ import type { useTranslations } from 'next-intl';
 import React, {useCallback, useState} from 'react';
 
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
+import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCreateEventInvitation, useDeleteEventInvitation, useUpdateEventInvitation } from '@/hooks/useEventInvitations';
-import { getErrorMessage, getFieldErrors } from '@/lib/api/errors';
+import { getFieldErrors } from '@/lib/api/errors';
 import type { EventInvitationPatchDto, EventInvitationRequestDto, EventInvitationResponseDto } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -72,6 +73,7 @@ function CreateInvitationForm({ t, eventId, onDone }: { t: ReturnType<typeof use
     const [email, setEmail] = useState('');
 
     const fieldErrors = getFieldErrors(createInvitation.error);
+    const toErrorMessage = useApiErrorMessage();
 
     function handleInviteCodeChange(e: React.ChangeEvent<HTMLInputElement>) {
         setInviteCode(e.target.value);
@@ -184,7 +186,7 @@ function CreateInvitationForm({ t, eventId, onDone }: { t: ReturnType<typeof use
                 {fieldErrors?.email && <span className="text-xs text-rose-500">{fieldErrors.email}</span>}
             </label>
 
-            {createInvitation.isError && !fieldErrors && <p className="text-xs text-rose-500">{getErrorMessage(createInvitation.error)}</p>}
+            {createInvitation.isError && !fieldErrors && <p className="text-xs text-rose-500">{toErrorMessage(createInvitation.error)}</p>}
 
             <button
                 type="submit"

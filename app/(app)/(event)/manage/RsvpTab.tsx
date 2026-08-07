@@ -38,14 +38,10 @@ function SummaryCard({
     icon: ElementType;
 }) {
     return (
-        <div className="rounded-2xl border border-border/70 bg-card px-3 py-3 shadow-[0_8px_20px_rgba(36,31,26,0.04)]">
-            <div className="flex items-center justify-between gap-2">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-faint">{label}</p>
-                <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-surface-muted text-ink-muted">
-                    <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-                </span>
-            </div>
-            <p className="mt-2 text-2xl font-bold leading-none tracking-tight text-ink tabular-nums">{value}</p>
+        <div>
+            <Icon className="h-4 w-4 text-ink-faint" aria-hidden="true" />
+            <p className="mt-2 text-xl font-bold leading-none tracking-tight text-ink tabular-nums sm:text-2xl">{value}</p>
+            <p className="mt-1 text-[11px] font-semibold leading-tight text-ink-muted">{label}</p>
         </div>
     );
 }
@@ -89,7 +85,7 @@ export default function RsvpTab({
         <div className="px-4 flex flex-col gap-4">
             <p className="text-xs text-ink-muted">{t('rsvpSummary', { total: guests.length, attending })}</p>
 
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div className="grid grid-cols-4 gap-3">
                 <SummaryCard label={t('stats.totalGuests.label')} value={guests.length} icon={Users} />
                 <SummaryCard label={t('rsvpBreakdown.attending')} value={attending} icon={CheckCircle2} />
                 <SummaryCard label={t('rsvpBreakdown.noResponse')} value={pending} icon={Clock} />
@@ -108,8 +104,8 @@ export default function RsvpTab({
                 </span>
             </div>
 
-            <div className="overflow-hidden rounded-[1.5rem] border border-border/70 bg-card shadow-[0_10px_26px_rgba(36,31,26,0.04)]">
-                <div className="flex items-center justify-between border-b border-border/70 px-4 py-3">
+            <div className="border-t border-border">
+                <div className="flex items-center justify-between border-b border-border py-3">
                     <div>
                         <p className="text-sm font-semibold text-ink">{t('tabs.rsvp')}</p>
                         <p className="text-xs text-ink-muted">
@@ -122,7 +118,7 @@ export default function RsvpTab({
                     </div>
                 </div>
 
-                <div className="divide-y divide-border/70">
+                <div className="divide-y divide-border">
                     {sortedGuests.map((member) => {
                         const rsvp = rsvpByMember.get(member.id);
                         const status = rsvp?.attendanceStatus ?? 'NO_RESPONSE';
@@ -130,7 +126,7 @@ export default function RsvpTab({
                         const statusLabel = rsvp ? t(`rsvpStatus.${status}`) : t('rsvpStatus.NO_RESPONSE');
 
                         return (
-                            <div key={member.id} className="px-4 py-3">
+                            <div key={member.id} className="py-3">
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="min-w-0">
                                         <div className="flex flex-wrap items-center gap-2">
