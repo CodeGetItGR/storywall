@@ -205,3 +205,11 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
+button {
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.85;
+}

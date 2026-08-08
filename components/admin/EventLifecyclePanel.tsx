@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { type ChangeEvent, type FormEvent, useCallback, useState } from 'react';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
+import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useFreezeEvent, usePurgeEvent } from '@/hooks/useAdmin';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 
@@ -16,30 +17,50 @@ export function EventLifecyclePanel() {
     const [frozenId, setFrozenId] = useState<string | null>(null);
     const [purgeId, setPurgeId] = useState('');
     const [purgeConfirm, setPurgeConfirm] = useState('');
-    // `false` from the purge endpoint means some objects survived: the event stays
-    // FROZEN and a later call retries. Kept apart from the success case on purpose.
+    const [pendingFreeze, setPendingFreeze] = useState<{ eventId: string; form: HTMLFormElement } | null>(null);
+    const [pendingPurgeId, setPendingPurgeId] = useState<string | null>(null);
     const [purgeResult, setPurgeResult] = useState<{ eventId: string; complete: boolean } | null>(null);
 
-    async function handleFreeze(event: FormEvent<HTMLFormElement>) {
+    function handleFreeze(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
         const form = event.currentTarget;
         const eventId = String(new FormData(form).get('eventId') ?? '').trim();
         if (!eventId) return;
-        setFrozenId(null);
-        await freezeEvent.mutateAsync(eventId);
-        setFrozenId(eventId);
-        form.reset();
+        setPendingFreeze({ eventId, form });
     }
 
-    async function handlePurge(event: FormEvent<HTMLFormElement>) {
+    function handleFreezeConfirmClose() {
+        setPendingFreeze(null);
+    }
+
+    async function handleFreezeConfirm() {
+        if (!pendingFreeze) return;
+        setFrozenId(null);
+        await freezeEvent.mutateAsync(pendingFreeze.eventId);
+        setFrozenId(pendingFreeze.eventId);
+        pendingFreeze.form.reset();
+        setPendingFreeze(null);
+    }
+
+    function handlePurge(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
         const eventId = purgeId.trim();
         if (!eventId || purgeConfirm.trim() !== eventId) return;
+        setPendingPurgeId(eventId);
+    }
+
+    function handlePurgeConfirmClose() {
+        setPendingPurgeId(null);
+    }
+
+    async function handlePurgeConfirm() {
+        if (!pendingPurgeId) return;
         setPurgeResult(null);
-        const complete = await purgeEvent.mutateAsync(eventId);
-        setPurgeResult({ eventId, complete });
+        const complete = await purgeEvent.mutateAsync(pendingPurgeId);
+        setPurgeResult({ eventId: pendingPurgeId, complete });
         setPurgeId('');
         setPurgeConfirm('');
+        setPendingPurgeId(null);
     }
 
     const handlePurgeIdChange = useCallback((event: ChangeEvent<HTMLInputElement>) => setPurgeId(event.target.value), []);
@@ -49,12 +70,12 @@ export function EventLifecyclePanel() {
 
     return (
         <section className="space-y-4">
-            <form onSubmit={handleFreeze} className="rounded-xl border border-border bg-card p-3 shadow-sm sm:p-4">
+            <form onSubmit={handleFreeze} className="border-b border-border pb-4">
                 <h2 className="text-base font-semibold text-ink">{t('lifecycle.freezeTitle')}</h2>
                 <p className="mt-1 text-sm text-ink-muted">{t('lifecycle.freezeSubtitle')}</p>
-                <div className="mt-3 grid gap-2.5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+                <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
                     <AdminField label={t('lifecycle.eventIdField')}>
-                        <input name="eventId" required className={adminInputClass()} placeholder="1f3c…" />
+                        <input name="eventId" required className={adminInputClass()} placeholder={t('lifecycle.eventIdPlaceholder')} />
                     </AdminField>
                     <button
                         type="submit"
@@ -69,24 +90,22 @@ export function EventLifecyclePanel() {
                 {frozenId && !freezeEvent.error && <p className="mt-2 text-sm text-emerald-700">{t('lifecycle.freezeSuccess', { eventId: frozenId })}</p>}
             </form>
 
-            <form onSubmit={handlePurge} className="rounded-xl border border-rose-200 bg-rose-50/50 p-3 shadow-sm sm:p-4">
+            <form onSubmit={handlePurge} className="border-b border-rose-200 pb-4">
                 <h2 className="flex items-center gap-2 text-base font-semibold text-rose-700">
                     <AlertTriangle className="h-4 w-4" aria-hidden="true" />
                     {t('lifecycle.purgeTitle')}
                 </h2>
                 <p className="mt-1 text-sm text-rose-700">{t('lifecycle.purgeWarning')}</p>
-                <div className="mt-3 grid gap-2.5">
+                <div className="mt-3 grid gap-3">
                     <AdminField label={t('lifecycle.eventIdField')}>
                         <input
                             value={purgeId}
                             onChange={handlePurgeIdChange}
                             required
                             className={adminInputClass()}
-                            placeholder="1f3c…"
+                            placeholder={t('lifecycle.eventIdPlaceholder')}
                         />
                     </AdminField>
-                    {/* No event name is available admin-side, so the id itself is the
-                        thing typed back — the same "name what you are destroying" gate. */}
                     <AdminField label={t('lifecycle.purgeConfirmField')}>
                         <input
                             value={purgeConfirm}
@@ -113,6 +132,31 @@ export function EventLifecyclePanel() {
                     </p>
                 )}
             </form>
+
+            <ConfirmActionModal
+                open={Boolean(pendingFreeze)}
+                onClose={handleFreezeConfirmClose}
+                title={t('lifecycle.freezeConfirmTitle', { eventId: pendingFreeze?.eventId ?? '' })}
+                body={t('lifecycle.freezeConfirmBody')}
+                cancelLabel={t('cancel')}
+                confirmLabel={t('lifecycle.freeze')}
+                isConfirming={freezeEvent.isPending}
+                onConfirm={handleFreezeConfirm}
+                tone="default"
+                icon={<Snowflake className="h-5 w-5" aria-hidden="true" />}
+            />
+
+            <ConfirmActionModal
+                open={Boolean(pendingPurgeId)}
+                onClose={handlePurgeConfirmClose}
+                title={t('lifecycle.purgeConfirmTitle', { eventId: pendingPurgeId ?? '' })}
+                body={t('lifecycle.purgeConfirmBody')}
+                cancelLabel={t('cancel')}
+                confirmLabel={t('lifecycle.purge')}
+                isConfirming={purgeEvent.isPending}
+                onConfirm={handlePurgeConfirm}
+                icon={<Trash2 className="h-5 w-5" aria-hidden="true" />}
+            />
         </section>
     );
 }

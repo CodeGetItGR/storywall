@@ -1046,12 +1046,17 @@
             "console": "Control room",
             "signedInAs": "Signed in as",
             "signOut": "Sign out",
+            "closeMenu": "Close menu",
             "accountPlans": "Account plans",
             "eventPlans": "Event plans",
             "plans": "Plans",
             "modules": "Modules",
             "assignments": "Assignments",
-            "billingOps": "Billing ops"
+            "billingOps": "Billing ops",
+            "refunds": "Refunds",
+            "lifecycle": "Lifecycle",
+            "signOutConfirmTitle": "Sign out of admin?",
+            "signOutConfirmBody": "Please confirm before leaving the admin area."
         },
         "tabs": {
             "accountPlans": "Account plans",
@@ -1131,17 +1136,36 @@
                     "subtitle": "Limits and modules that apply to one event, such as members, storage, and enabled tools."
                 }
             },
+            "selectorHint": "Pick a plan on the left to edit it in the main pane.",
+            "empty": "No plans to show.",
+            "emptyEditorTitle": "Select a plan",
+            "emptyEditorBody": "Choose a plan from the list to open the full editor.",
             "create": {
                 "title": "Create plan",
                 "subtitle": "Add a catalog tier without leaving this screen.",
                 "open": "New plan",
-                "submit": "Create"
-            }
+                "submit": "Create",
+                "confirmTitle": "Create {code}?",
+                "confirmBody": "This adds a new catalog plan immediately. Review limits, pricing, and availability before confirming."
+            },
+            "restore": "Restore",
+            "archiveConfirmTitle": "Archive {code}?",
+            "archiveConfirmBody": "This plan will stop being assignable and will be hidden from normal plan lists. You can restore it later from the archived plans view.",
+            "makeDefaultConfirmTitle": "Make {code} the default?",
+            "makeDefaultConfirmBody": "New accounts or events in this scope will use this plan when no plan has been chosen. Existing assignments are not changed.",
+            "modulesConfirmTitle": "Save modules for {code}?",
+            "modulesConfirmBody": "This changes which event tools the plan unlocks. Events on this plan may gain or lose access after config refresh.",
+            "restoreConfirmTitle": "Restore {code}?",
+            "restoreConfirmBody": "This plan will become assignable again and can appear anywhere archived plans are included.",
+            "saveConfirmTitle": "Save changes to {code}?",
+            "saveConfirmBody": "This can change pricing, limits, or availability for the plan. Confirm that the edits are intentional."
         },
         "modules": {
             "notice": "Platform modules are fixed by backend code. Disable a module here to withdraw it everywhere on the next config refresh.",
             "loading": "Loading modules...",
-            "enabled": "Enabled"
+            "enabled": "Enabled",
+            "confirmTitle": "Save {module}?",
+            "confirmBody": "This updates the platform module registry. Disabling a module can remove that feature everywhere after config refresh."
         },
         "assignments": {
             "userTitle": "Assign account plan",
@@ -1155,7 +1179,11 @@
             "assignUser": "Assign user plan",
             "assignEvent": "Assign event plan",
             "freshAccountUsage": "Fresh account usage",
-            "freshEventUsage": "Fresh event usage"
+            "freshEventUsage": "Fresh event usage",
+            "confirmUserTitle": "Assign plan to {userId}?",
+            "confirmUserBody": "This changes the user account plan to {plan} and may alter account limits immediately.",
+            "confirmEventTitle": "Assign plan to {eventId}?",
+            "confirmEventBody": "This changes the event plan to {plan} and may alter storage, member, and module limits immediately."
         },
         "errors": {
             "planInUse": "This plan is in use. Archive it instead of deleting it.",
@@ -1185,7 +1213,10 @@
             "receivedAt": "Received {date}",
             "orderId": "Order {orderId}",
             "noOrderRef": "No order reference",
-            "unknownEventType": "Unknown event"
+            "unknownEventType": "Unknown event",
+            "confirmSettleTitle": "Settle order {orderId}?",
+            "confirmSettleBody": "This marks the order paid without a provider payment and can activate the event. Confirm only after verifying the payment or comp.",
+            "orderIdPlaceholder": "order-id"
         },
         "refunds": {
             "title": "Refund requests",
@@ -1210,7 +1241,9 @@
                 "PENDING": "Pending",
                 "APPROVED": "Approved",
                 "REJECTED": "Rejected"
-            }
+            },
+            "approveConfirmTitle": "Approve refund request?",
+            "rejectConfirmTitle": "Reject refund request?"
         },
         "lifecycle": {
             "freezeTitle": "Freeze event",
@@ -1224,7 +1257,12 @@
             "purgeConfirmPlaceholder": "Repeat the event ID",
             "purge": "Purge media",
             "purgeSuccess": "All media for {eventId} was deleted.",
-            "purgePartial": "Some files for {eventId} could not be deleted. The event stays frozen — run purge again."
+            "purgePartial": "Some files for {eventId} could not be deleted. The event stays frozen — run purge again.",
+            "eventIdPlaceholder": "event-id",
+            "freezeConfirmTitle": "Freeze event {eventId}?",
+            "freezeConfirmBody": "The event will become read-only while lifecycle handling runs. Hosts and guests will not be able to make changes.",
+            "purgeConfirmTitle": "Permanently purge event {eventId}?",
+            "purgeConfirmBody": "This deletes event data and files wherever possible. Do not continue unless the final checks are complete."
         }
     },
     "FeedQuickAccessBar": {

@@ -6,6 +6,7 @@ import { type FormEvent, useState } from 'react';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { UsagePanel } from '@/components/plan/UsagePanel';
+import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useAdminPlanTiers, useAssignEventPlanTier, useAssignUserPlanTier } from '@/hooks/useAdmin';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { AccountUsageResponseDto, EventUsageResponseDto } from '@/lib/api/types';
@@ -56,6 +57,8 @@ export function PlanAssignmentPanel() {
     const [isEventFormExpanded, setIsEventFormExpanded] = useState(false);
     const [userUsage, setUserUsage] = useState<AccountUsageResponseDto | null>(null);
     const [eventUsage, setEventUsage] = useState<EventUsageResponseDto | null>(null);
+    const [pendingUserAssignment, setPendingUserAssignment] = useState<{ userId: string; planTierCode: string } | null>(null);
+    const [pendingEventAssignment, setPendingEventAssignment] = useState<{ eventId: string; planTierCode: string } | null>(null);
     const accountPlans = scopedPlans(plansQuery.data ?? [], 'ACCOUNT').filter((plan) => plan.isAssignable);
     const eventPlans = scopedPlans(plansQuery.data ?? [], 'EVENT').filter((plan) => plan.isAssignable);
 
@@ -72,8 +75,18 @@ export function PlanAssignmentPanel() {
         const formData = new FormData(event.currentTarget);
         const userId = String(formData.get('userId') ?? '').trim();
         const planTierCode = String(formData.get('planTierCode') ?? '').trim();
-        const usage = await assignUser.mutateAsync({ userId, input: { planTierCode } });
+        if (!userId || !planTierCode) return;
+        setPendingUserAssignment({ userId, planTierCode });
+    }
+
+    async function handleConfirmAssignUser() {
+        if (!pendingUserAssignment) return;
+        const usage = await assignUser.mutateAsync({
+            userId: pendingUserAssignment.userId,
+            input: { planTierCode: pendingUserAssignment.planTierCode },
+        });
         setUserUsage(usage);
+        setPendingUserAssignment(null);
     }
 
     async function handleAssignEvent(event: FormEvent<HTMLFormElement>) {
@@ -81,14 +94,32 @@ export function PlanAssignmentPanel() {
         const formData = new FormData(event.currentTarget);
         const eventId = String(formData.get('eventId') ?? '').trim();
         const planTierCode = String(formData.get('planTierCode') ?? '').trim();
-        const usage = await assignEvent.mutateAsync({ eventId, input: { planTierCode } });
+        if (!eventId || !planTierCode) return;
+        setPendingEventAssignment({ eventId, planTierCode });
+    }
+
+    async function handleConfirmAssignEvent() {
+        if (!pendingEventAssignment) return;
+        const usage = await assignEvent.mutateAsync({
+            eventId: pendingEventAssignment.eventId,
+            input: { planTierCode: pendingEventAssignment.planTierCode },
+        });
         setEventUsage(usage);
+        setPendingEventAssignment(null);
+    }
+
+    function handleCloseAssignUserConfirm() {
+        setPendingUserAssignment(null);
+    }
+
+    function handleCloseAssignEventConfirm() {
+        setPendingEventAssignment(null);
     }
 
     return (
         <section className="grid gap-3 xl:grid-cols-2">
-            <form onSubmit={handleAssignUser} className="rounded-xl border border-border bg-card shadow-sm">
-                <div className="flex items-start justify-between gap-3 p-3 sm:p-4">
+            <form onSubmit={handleAssignUser} className="border-b border-border pb-4">
+                <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                         <h2 className="text-base font-semibold text-ink">{t('assignments.userTitle')}</h2>
                         <p className="mt-1 text-sm text-ink-muted">{t('assignments.userSubtitle')}</p>
@@ -104,7 +135,7 @@ export function PlanAssignmentPanel() {
                     </button>
                 </div>
                 {isUserFormExpanded && (
-                    <div className="grid gap-2.5 border-t border-border p-3 sm:grid-cols-[minmax(0,1fr)_minmax(11rem,0.85fr)_auto] sm:items-end sm:p-4">
+                    <div className="grid gap-3 border-t border-border pt-4 sm:grid-cols-[minmax(0,1fr)_minmax(11rem,0.85fr)_auto] sm:items-end">
                         <AdminField label={t('assignments.userId')}>
                             <input name="userId" required className={adminInputClass()} />
                         </AdminField>
@@ -130,18 +161,11 @@ export function PlanAssignmentPanel() {
                         )}
                     </div>
                 )}
-                {userUsage && (
-                    <UsagePanel
-                        title={t('assignments.freshAccountUsage')}
-                        planName={userUsage.planTier}
-                        items={usageItems(userUsage)}
-                        className="m-4 mt-0"
-                    />
-                )}
+                {userUsage && <UsagePanel title={t('assignments.freshAccountUsage')} planName={userUsage.planTier} items={usageItems(userUsage)} className="mt-4" />}
             </form>
 
-            <form onSubmit={handleAssignEvent} className="rounded-xl border border-border bg-card shadow-sm">
-                <div className="flex items-start justify-between gap-3 p-3 sm:p-4">
+            <form onSubmit={handleAssignEvent} className="border-b border-border pb-4">
+                <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                         <h2 className="text-base font-semibold text-ink">{t('assignments.eventTitle')}</h2>
                         <p className="mt-1 text-sm text-ink-muted">{t('assignments.eventSubtitle')}</p>
@@ -157,7 +181,7 @@ export function PlanAssignmentPanel() {
                     </button>
                 </div>
                 {isEventFormExpanded && (
-                    <div className="grid gap-2.5 border-t border-border p-3 sm:grid-cols-[minmax(0,1fr)_minmax(11rem,0.85fr)_auto] sm:items-end sm:p-4">
+                    <div className="grid gap-3 border-t border-border pt-4 sm:grid-cols-[minmax(0,1fr)_minmax(11rem,0.85fr)_auto] sm:items-end">
                         <AdminField label={t('assignments.eventId')}>
                             <input name="eventId" required className={adminInputClass()} />
                         </AdminField>
@@ -183,15 +207,32 @@ export function PlanAssignmentPanel() {
                         )}
                     </div>
                 )}
-                {eventUsage && (
-                    <UsagePanel
-                        title={t('assignments.freshEventUsage')}
-                        planName={eventUsage.planTier}
-                        items={usageItems(eventUsage)}
-                        className="m-4 mt-0"
-                    />
-                )}
+                {eventUsage && <UsagePanel title={t('assignments.freshEventUsage')} planName={eventUsage.planTier} items={usageItems(eventUsage)} className="mt-4" />}
             </form>
+
+            <ConfirmActionModal
+                open={Boolean(pendingUserAssignment)}
+                onClose={handleCloseAssignUserConfirm}
+                title={pendingUserAssignment ? t('assignments.confirmUserTitle', { userId: pendingUserAssignment.userId }) : ''}
+                body={pendingUserAssignment ? t('assignments.confirmUserBody', { plan: pendingUserAssignment.planTierCode }) : ''}
+                cancelLabel={t('cancel')}
+                confirmLabel={t('assignments.assignUser')}
+                isConfirming={assignUser.isPending}
+                onConfirm={handleConfirmAssignUser}
+                tone="default"
+            />
+
+            <ConfirmActionModal
+                open={Boolean(pendingEventAssignment)}
+                onClose={handleCloseAssignEventConfirm}
+                title={pendingEventAssignment ? t('assignments.confirmEventTitle', { eventId: pendingEventAssignment.eventId }) : ''}
+                body={pendingEventAssignment ? t('assignments.confirmEventBody', { plan: pendingEventAssignment.planTierCode }) : ''}
+                cancelLabel={t('cancel')}
+                confirmLabel={t('assignments.assignEvent')}
+                isConfirming={assignEvent.isPending}
+                onConfirm={handleConfirmAssignEvent}
+                tone="default"
+            />
         </section>
     );
 }

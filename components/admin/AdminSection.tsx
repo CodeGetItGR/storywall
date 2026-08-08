@@ -16,8 +16,8 @@ export function AdminSection({
     return (
         <section className={cn('py-3 first:pt-0', className)}>
             <div className="mb-2">
-                <p className="text-xs font-bold uppercase tracking-wide text-primary-dark">{title}</p>
-                {description && <p className="mt-0.5 text-sm text-ink-muted">{description}</p>}
+                <p className="text-[11px] font-bold uppercase tracking-wide text-primary-dark">{title}</p>
+                {description && <p className="mt-1 text-sm leading-6 text-ink-muted">{description}</p>}
             </div>
             {children}
         </section>
