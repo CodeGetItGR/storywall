@@ -585,8 +585,39 @@
         "notApplicable": "Not applicable",
         "actions": {
             "renew": "Renew preservation",
+            "upgradeTo": "Upgrade to {plan}",
             "openingCheckout": "Opening checkout...",
             "retryIn": "Try again in {seconds}s"
+        },
+        "compare": {
+            "title": "Plan differences",
+            "upgradeTitle": "What changes on {plan}",
+            "subtitle": "See the differences before you continue to billing.",
+            "upgradeSubtitle": "Compared with your current {plan} plan.",
+            "nextPlanHint": "Next upgrade: {plan}",
+            "highestPlan": "You are on the highest published tier.",
+            "current": "Current plan",
+            "recommended": "Recommended",
+            "fromTo": "Upgrade path",
+            "to": "to",
+            "storage": "Storage",
+            "members": "Members",
+            "modules": "Included modules",
+            "moduleChanges": "New modules",
+            "noModuleChanges": "No new modules on this tier. The upgrade mainly increases limits.",
+            "allPlansTitle": "All published tiers",
+            "mediaCapacity": "Approx media",
+            "mediaEstimate": "~{images} photos or ~{videos} short videos",
+            "mediaAssumption": "Based on ~4 MB photos and ~90 MB videos.",
+            "noPrice": "Contact us",
+            "unlimited": "Unlimited",
+            "unlimitedMedia": "Unlimited uploads",
+            "same": "No increase"
+        },
+        "billingPeriod": {
+            "MONTHLY": "per month",
+            "YEARLY": "per year",
+            "ONE_TIME": "one time"
         },
         "eventStatus": {
             "DRAFT": "Draft",
@@ -685,6 +716,7 @@
             "title": "Order history",
             "lastOrder": "Last order {date}",
             "coverageRange": "{from} to {until}",
+            "coverageThrough": "Covers through {date}",
             "empty": "No orders yet. Activation will appear here after checkout starts.",
             "columns": {
                 "kind": "Type",
@@ -695,8 +727,11 @@
             },
             "kind": {
                 "ACTIVATION": "Activation",
-                "RENEWAL": "Renewal"
+                "RENEWAL": "Renewal",
+                "UPGRADE": "Upgrade"
             },
+            "upgradeCoverage": "Plan upgrade. Coverage unchanged.",
+            "recordedCharge": "Recorded charge",
             "showAll": "Show {count} older orders"
         }
     },
@@ -1194,7 +1229,9 @@
             "refundNotPending": "This request was already decided — refresh the queue to see the current state.",
             "refundNotEligible": "This event no longer meets the refund conditions.",
             "orderNotRefundable": "Only the activation payment can be refunded.",
-            "eventNotActive": "This event is not live, so that action does not apply."
+            "eventNotActive": "This event is not live, so that action does not apply.",
+            "webhookAlreadyProcessed": "This webhook was already processed. Refresh the list.",
+            "webhookNotReplayable": "This webhook cannot be replayed because its body was not stored."
         },
         "billingOps": {
             "notice": "Settling an order marks it paid with no provider payment behind it and activates the event exactly as a real payment would. On dev and staging this is the only way an event leaves DRAFT.",
@@ -1210,10 +1247,15 @@
             "webhooksLoading": "Loading webhooks...",
             "webhooksEmpty": "Nothing unprocessed. Every delivery has been handled.",
             "refresh": "Refresh",
+            "replay": "Replay",
+            "replayed": "Replayed",
+            "notReplayable": "This delivery predates body storage and cannot be replayed.",
             "receivedAt": "Received {date}",
             "orderId": "Order {orderId}",
             "noOrderRef": "No order reference",
             "unknownEventType": "Unknown event",
+            "confirmReplayTitle": "Replay this webhook?",
+            "confirmReplayBody": "This asks the backend to process the stored provider delivery again. Use it only after checking the delivery is safe to retry.",
             "confirmSettleTitle": "Settle order {orderId}?",
             "confirmSettleBody": "This marks the order paid without a provider payment and can activate the event. Confirm only after verifying the payment or comp.",
             "orderIdPlaceholder": "order-id"
@@ -1336,6 +1378,9 @@
         "planNotPurchasable": "This plan cannot be bought directly. Contact us to switch to it.",
         "planNotPriced": "This plan has no price set yet. Please try again later.",
         "planCurrencyUnsupported": "This plan is not available in your currency yet.",
+        "planNotAnUpgrade": "These upgrade options are out of date. We refreshed the plan catalog.",
+        "planCurrencyMismatch": "This plan is not available for your event.",
+        "checkoutSessionUnresolved": "Your last payment is still finishing. Try again in a moment.",
         "subscriptionAlreadyActive": "A preservation subscription is already running for this event.",
         "refundNotEligible": "This event no longer meets the refund conditions.",
         "refundAlreadyRequested": "A refund request is already pending for this event.",

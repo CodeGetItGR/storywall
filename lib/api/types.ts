@@ -301,16 +301,69 @@ export interface EventDetailResponseDto {
     status: EventStatus;
 }
 
-export interface CheckoutResponseDto { orderId: string; redirectUrl: string }
-export interface CoverageSummaryDto { unlimited: boolean; paidThrough: string | null; covered: boolean; freezesAt: string | null; purgesAt: string | null }
+export interface CheckoutResponseDto {
+    orderId: string;
+    redirectUrl: string;
+}
+export interface UpgradeCheckoutRequestDto {
+    planTierCode: PlanTierCode;
+}
+export interface CoverageSummaryDto {
+    unlimited: boolean;
+    paidThrough: string | null;
+    covered: boolean;
+    freezesAt: string | null;
+    purgesAt: string | null;
+}
 // `cancelAtPeriodEnd` splits ACTIVE in two: renewing, or cancelled-but-still-paid-up.
 // Rendering on `status` alone tells a host their event will renew when it will not.
-export interface SubscriptionSummaryDto { id: string; status: 'ACTIVE' | 'PAST_DUE' | 'CANCELLED'; currentPeriodEnd: string | null; cancelAtPeriodEnd: boolean; cancelledAt: string | null }
-export interface OrderSummaryDto { id: string; kind: 'ACTIVATION' | 'RENEWAL'; status: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED'; amountMinor: number; currency: string; coversFrom: string | null; coversUntil: string | null; paidAt: string | null; createdAt: string }
-export interface EventBillingResponseDto { eventStatus: EventStatus; planTierCode: string; planTierName: string; coverage: CoverageSummaryDto; subscription: SubscriptionSummaryDto | null; orders: OrderSummaryDto[] }
+export interface SubscriptionSummaryDto {
+    id: string;
+    status: 'ACTIVE' | 'PAST_DUE' | 'CANCELLED';
+    currentPeriodEnd: string | null;
+    cancelAtPeriodEnd: boolean;
+    cancelledAt: string | null;
+}
+export interface OrderSummaryDto {
+    id: string;
+    kind: 'ACTIVATION' | 'RENEWAL' | 'UPGRADE';
+    status: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED';
+    amountMinor: number;
+    currency: string;
+    coversFrom: string | null;
+    coversUntil: string | null;
+    paidAt: string | null;
+    createdAt: string;
+}
+export interface EventBillingResponseDto {
+    eventStatus: EventStatus;
+    planTierCode: string;
+    planTierName: string;
+    coverage: CoverageSummaryDto;
+    subscription: SubscriptionSummaryDto | null;
+    orders: OrderSummaryDto[];
+}
 export type RefundRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
-export interface RefundEligibilityResponseDto { eligible: boolean; reasons: string[]; hasPendingRequest: boolean }
-export interface RefundRequestResponseDto { id: string; eventId: string; orderId: string; status: RefundRequestStatus; reason: string; amountMinor: number | null; currency: string | null; requestedById: string; requestedAt: string; decidedById: string | null; decidedAt: string | null; decisionNote: string | null; providerRefunded: boolean }
+export interface RefundEligibilityResponseDto {
+    eligible: boolean;
+    reasons: string[];
+    hasPendingRequest: boolean;
+}
+export interface RefundRequestResponseDto {
+    id: string;
+    eventId: string;
+    orderId: string;
+    status: RefundRequestStatus;
+    reason: string;
+    amountMinor: number | null;
+    currency: string | null;
+    requestedById: string;
+    requestedAt: string;
+    decidedById: string | null;
+    decidedAt: string | null;
+    decisionNote: string | null;
+    providerRefunded: boolean;
+}
 
 // --- Admin billing operations (billing-fe-guide §13) ---
 
@@ -341,11 +394,13 @@ export interface RefundDecisionRequestDto {
 export interface UnprocessedWebhookDto {
     id: string;
     provider: string | null;
+    providerEventId: string | null;
     eventType: string | null;
     payloadSummary?: string | null;
     receivedAt: string;
     processedAt: string | null;
     orderId: string | null;
+    replayable: boolean;
 }
 
 export interface EventPatchDto {

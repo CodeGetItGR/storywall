@@ -14,11 +14,12 @@ export function AdminSection({
     className?: string;
 }) {
     return (
-        <section className={cn('py-3 first:pt-0', className)}>
-            <div className="mb-2">
-                <p className="text-[11px] font-bold uppercase tracking-wide text-primary-dark">{title}</p>
-                {description && <p className="mt-1 text-sm leading-6 text-ink-muted">{description}</p>}
+        <section className={cn('border-t-2 border-border py-6 first:border-t-0 first:pt-0', className)}>
+            <div className="mb-3 flex items-baseline gap-3">
+                <p className="text-xs font-bold uppercase tracking-wide text-primary-dark">{title}</p>
+                <span className="h-px min-w-8 flex-1 bg-border" />
             </div>
+            {description && <p className="-mt-1 mb-4 max-w-2xl text-sm leading-6 text-ink-muted">{description}</p>}
             {children}
         </section>
     );

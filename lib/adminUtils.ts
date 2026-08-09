@@ -9,6 +9,8 @@ export type AdminErrorMessageKey =
     | 'refundNotEligible'
     | 'orderNotRefundable'
     | 'eventNotActive'
+    | 'webhookAlreadyProcessed'
+    | 'webhookNotReplayable'
     | 'generic';
 
 export function emptyToNull(value: FormDataEntryValue | null): string | null {
@@ -22,7 +24,7 @@ export function numberOrNull(value: FormDataEntryValue | null): number | null {
 }
 
 export function checked(formData: FormData, key: string): boolean {
-    return formData.get(key) === 'on';
+    return formData.has(key);
 }
 
 export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
@@ -38,5 +40,7 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.REFUND_NOT_ELIGIBLE) return 'refundNotEligible';
     if (code === ERROR_CODES.ORDER_NOT_REFUNDABLE) return 'orderNotRefundable';
     if (code === ERROR_CODES.EVENT_NOT_ACTIVE) return 'eventNotActive';
+    if (code === ERROR_CODES.WEBHOOK_ALREADY_PROCESSED) return 'webhookAlreadyProcessed';
+    if (code === ERROR_CODES.WEBHOOK_NOT_REPLAYABLE) return 'webhookNotReplayable';
     return 'generic';
 }

@@ -7,7 +7,7 @@ import { Modal } from '@/components/ui/modal';
 type ConfirmActionModalProps = {
     open: boolean;
     title: string;
-    body: string;
+    body: ReactNode;
     confirmLabel: string;
     cancelLabel: string;
     onClose: () => void;
@@ -15,6 +15,7 @@ type ConfirmActionModalProps = {
     isConfirming?: boolean;
     tone?: 'danger' | 'default';
     icon?: ReactNode;
+    size?: 'sm' | 'md';
 };
 
 export function ConfirmActionModal({
@@ -28,9 +29,10 @@ export function ConfirmActionModal({
     isConfirming = false,
     tone = 'danger',
     icon,
+    size = 'sm',
 }: ConfirmActionModalProps) {
     return (
-        <Modal open={open} onClose={onClose} size="sm" closeLabel={cancelLabel}>
+        <Modal open={open} onClose={onClose} size={size} closeLabel={cancelLabel}>
             <Modal.Body className="px-4 pb-4 pt-12 sm:px-5">
                 <div className="flex flex-col gap-5">
                     <div className="flex items-start gap-3 pr-8">
@@ -44,7 +46,7 @@ export function ConfirmActionModal({
 
                         <div className="min-w-0">
                             <h2 className="text-base font-semibold text-ink">{title}</h2>
-                            <p className="mt-1 text-sm leading-relaxed text-ink-muted">{body}</p>
+                            <div className="mt-1 text-sm leading-relaxed text-ink-muted">{body}</div>
                         </div>
                     </div>
 

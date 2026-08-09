@@ -10,6 +10,7 @@ import type { EventUsageResponseDto, PlanTierResponseDto, PlatformModuleResponse
 import { checkoutSuccessUrl } from '@/lib/billing';
 import { formatBytes } from '@/lib/format';
 import { findNextPlan, findPlanByCode } from '@/lib/planTiers';
+import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
 function Stat({ label, value, sub, color, Icon }: { label: string; value: string; sub: string; color: string; Icon: React.ElementType }) {
@@ -86,9 +87,18 @@ export default function OverviewTab({
                     <p className="text-sm font-bold text-ink">{t('draft.title')}</p>
                     <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('draft.body')}</p>
                     {checkoutError && <p className="mt-2 text-xs text-rose-600">{checkoutError}</p>}
-                    <button type="button" onClick={startCheckout} disabled={!canPay || checkout.isPending || checkoutRetryIn > 0} className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto">
+                    <button
+                        type="button"
+                        onClick={startCheckout}
+                        disabled={!canPay || checkout.isPending || checkoutRetryIn > 0}
+                        className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+                    >
                         {checkout.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                        {checkoutRetryIn > 0 ? t('draft.retryIn', { seconds: checkoutRetryIn }) : endAt ? t('draft.payAndPublish') : t('draft.addEndDate')}
+                        {checkoutRetryIn > 0
+                            ? t('draft.retryIn', { seconds: checkoutRetryIn })
+                            : endAt
+                              ? t('draft.payAndPublish')
+                              : t('draft.addEndDate')}
                     </button>
                 </div>
             )}
@@ -100,13 +110,7 @@ export default function OverviewTab({
                     color="text-emerald-600"
                     Icon={Users}
                 />
-                <Stat
-                    label={t('stats.daysToGo.label')}
-                    value={`${daysToGo}`}
-                    sub={t('stats.daysToGo.sub')}
-                    color="text-rose-500"
-                    Icon={Clock}
-                />
+                <Stat label={t('stats.daysToGo.label')} value={`${daysToGo}`} sub={t('stats.daysToGo.sub')} color="text-rose-500" Icon={Clock} />
                 <Stat
                     label={t('stats.invitations.label')}
                     value={`${invitationCount}`}
@@ -160,6 +164,7 @@ export default function OverviewTab({
                         title={t('usage.eventTitle')}
                         planName={currentPlan?.name ?? eventUsage.planTier}
                         nextPlanName={nextPlan?.name}
+                        upgradeHref={routes.events.settingsPlan(eventId)}
                         includedModules={includedModules}
                         items={[
                             {

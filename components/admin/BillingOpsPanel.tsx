@@ -6,7 +6,7 @@ import { type FormEvent, useState } from 'react';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { useSettleOrder, useUnprocessedWebhooks } from '@/hooks/useAdmin';
+import { useReplayWebhook, useSettleOrder, useUnprocessedWebhooks } from '@/hooks/useAdmin';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { UnprocessedWebhookDto } from '@/lib/api/types';
 
@@ -57,6 +57,24 @@ function SettleButton({ orderId, label }: { orderId: string; label: string }) {
 
 function WebhookRow({ webhook }: { webhook: UnprocessedWebhookDto }) {
     const t = useTranslations('AdminPage');
+    const replayWebhook = useReplayWebhook();
+    const [confirmReplayOpen, setConfirmReplayOpen] = useState(false);
+    const providerEventId = webhook.providerEventId ?? webhook.id;
+    const canReplay = webhook.replayable && Boolean(webhook.provider && providerEventId);
+
+    function handleOpenReplay() {
+        setConfirmReplayOpen(true);
+    }
+
+    function handleCloseReplay() {
+        setConfirmReplayOpen(false);
+    }
+
+    async function handleReplay() {
+        if (!webhook.provider || !providerEventId) return;
+        await replayWebhook.mutateAsync({ provider: webhook.provider, providerEventId });
+        setConfirmReplayOpen(false);
+    }
 
     return (
         <div className="flex flex-col gap-2.5 border-b border-border py-3 sm:flex-row sm:items-center sm:justify-between">
@@ -65,8 +83,40 @@ function WebhookRow({ webhook }: { webhook: UnprocessedWebhookDto }) {
                 <p className="mt-0.5 truncate text-xs text-ink-faint">{[webhook.provider, webhook.id].filter(Boolean).join(' • ')}</p>
                 <p className="mt-0.5 text-xs text-ink-muted">{t('billingOps.receivedAt', { date: new Date(webhook.receivedAt).toLocaleString() })}</p>
                 {webhook.orderId && <p className="mt-0.5 truncate text-xs text-ink-muted">{t('billingOps.orderId', { orderId: webhook.orderId })}</p>}
+                {!webhook.replayable && <p className="mt-0.5 text-xs text-ink-faint">{t('billingOps.notReplayable')}</p>}
             </div>
-            {webhook.orderId ? <SettleButton orderId={webhook.orderId} label={t('billingOps.settleThis')} /> : <p className="text-xs text-ink-faint">{t('billingOps.noOrderRef')}</p>}
+            <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                {canReplay && (
+                    <div className="flex flex-col items-end gap-1">
+                        <button
+                            type="button"
+                            onClick={handleOpenReplay}
+                            disabled={replayWebhook.isPending || replayWebhook.isSuccess}
+                            className="inline-flex min-h-9 items-center gap-2 rounded-full border border-border px-4 py-1.5 text-sm font-semibold text-ink disabled:opacity-50"
+                        >
+                            {replayWebhook.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                            {replayWebhook.isSuccess ? t('billingOps.replayed') : t('billingOps.replay')}
+                        </button>
+                        {replayWebhook.error && <p className="text-xs text-rose-600">{t(`errors.${adminErrorMessageKey(replayWebhook.error)}`)}</p>}
+                    </div>
+                )}
+                {webhook.orderId ? (
+                    <SettleButton orderId={webhook.orderId} label={t('billingOps.settleThis')} />
+                ) : (
+                    <p className="text-xs text-ink-faint">{t('billingOps.noOrderRef')}</p>
+                )}
+            </div>
+            <ConfirmActionModal
+                open={confirmReplayOpen}
+                onClose={handleCloseReplay}
+                title={t('billingOps.confirmReplayTitle')}
+                body={t('billingOps.confirmReplayBody')}
+                cancelLabel={t('cancel')}
+                confirmLabel={t('billingOps.replay')}
+                isConfirming={replayWebhook.isPending}
+                onConfirm={handleReplay}
+                tone="default"
+            />
         </div>
     );
 }
@@ -120,13 +170,19 @@ export function BillingOpsPanel() {
                     <AdminField label={t('billingOps.orderIdField')}>
                         <input name="orderId" required className={adminInputClass()} placeholder={t('billingOps.orderIdPlaceholder')} />
                     </AdminField>
-                    <button type="submit" disabled={settleOrder.isPending} className="inline-flex min-h-9 items-center justify-center gap-2 rounded-full bg-ink px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-50">
+                    <button
+                        type="submit"
+                        disabled={settleOrder.isPending}
+                        className="inline-flex min-h-9 items-center justify-center gap-2 rounded-full bg-ink px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-50"
+                    >
                         {settleOrder.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <BadgeCheck className="h-4 w-4" />}
                         {t('billingOps.settle')}
                     </button>
                 </div>
                 {settleOrder.error && <p className="mt-2 text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(settleOrder.error)}`)}</p>}
-                {settledOrderId && !settleOrder.error && <p className="mt-2 text-sm text-emerald-700">{t('billingOps.settleSuccess', { orderId: settledOrderId })}</p>}
+                {settledOrderId && !settleOrder.error && (
+                    <p className="mt-2 text-sm text-emerald-700">{t('billingOps.settleSuccess', { orderId: settledOrderId })}</p>
+                )}
             </form>
 
             <ConfirmActionModal
@@ -159,7 +215,9 @@ export function BillingOpsPanel() {
                 </div>
                 {webhooksQuery.isLoading && <p className="text-sm text-ink-muted">{t('billingOps.webhooksLoading')}</p>}
                 {webhooksQuery.error && <p className="text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(webhooksQuery.error)}`)}</p>}
-                {!webhooksQuery.isLoading && !webhooksQuery.error && webhooks.length === 0 && <p className="border-b border-border py-3 text-sm text-ink-muted">{t('billingOps.webhooksEmpty')}</p>}
+                {!webhooksQuery.isLoading && !webhooksQuery.error && webhooks.length === 0 && (
+                    <p className="border-b border-border py-3 text-sm text-ink-muted">{t('billingOps.webhooksEmpty')}</p>
+                )}
                 <div className="space-y-2">
                     {webhooks.map((webhook) => (
                         <WebhookRow key={webhook.id} webhook={webhook} />

@@ -18,9 +18,9 @@ export function AdminSwitch({
     onChange?: ChangeEventHandler<HTMLInputElement>;
 }) {
     return (
-        <label className="group flex cursor-pointer items-center justify-between gap-3 py-1.5 transition">
+        <label className="group flex min-h-12 cursor-pointer items-center justify-between gap-3 border-b border-border/70 py-2 transition last:border-b-0 hover:bg-surface-muted/45">
             <span className="min-w-0">
-                <span className="block text-xs font-semibold text-ink">{label}</span>
+                <span className="block text-sm font-semibold text-ink">{label}</span>
                 {description && <span className="mt-0.5 block text-[11px] leading-snug text-ink-muted">{description}</span>}
             </span>
             <input

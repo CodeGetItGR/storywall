@@ -56,6 +56,20 @@ export function useUnprocessedWebhooks() {
     });
 }
 
+export function useReplayWebhook() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ provider, providerEventId }: { provider: string; providerEventId: string }) =>
+            api.post<void>(endpoints.admin.webhooks.replay(provider, providerEventId)),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: adminKeys.unprocessedWebhooks });
+            queryClient.invalidateQueries({ queryKey: ['events'] });
+            queryClient.invalidateQueries({ queryKey: ['billing'] });
+        },
+    });
+}
+
 // GET /api/admin/refund-requests — the queue, oldest first, each row carrying the
 // usage evidence the gates are derived from (guide §9). The counts include
 // soft-deleted rows on purpose: the bytes were stored and paid for either way.
@@ -73,7 +87,8 @@ export function useDecideRefundRequest() {
 
     return useMutation({
         mutationFn: ({ requestId, decision, note }: { requestId: string; decision: 'approve' | 'reject'; note?: string }) => {
-            const path = decision === 'approve' ? endpoints.admin.refundRequests.approve(requestId) : endpoints.admin.refundRequests.reject(requestId);
+            const path =
+                decision === 'approve' ? endpoints.admin.refundRequests.approve(requestId) : endpoints.admin.refundRequests.reject(requestId);
             const body: RefundDecisionRequestDto = { note: note?.trim() ? note.trim() : null };
             return api.post<RefundRequestResponseDto>(path, body);
         },

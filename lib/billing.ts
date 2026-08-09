@@ -8,8 +8,10 @@ export function formatBillingDate(locale: string, value: string | null): string 
     return value ? new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(value)) : null;
 }
 
-export function checkoutSuccessUrl(origin: string, eventId: string, orderId: string): string {
-    return `${origin}/events/${eventId}/checkout/success?orderId=${encodeURIComponent(orderId)}`;
+export function checkoutSuccessUrl(origin: string, eventId: string, orderId: string, planTierCode?: string | null): string {
+    const params = new URLSearchParams({ orderId });
+    if (planTierCode) params.set('planTierCode', planTierCode);
+    return `${origin}/events/${eventId}/checkout/success?${params.toString()}`;
 }
 
 export function newestBillingOrder(orders: OrderSummaryDto[], kind?: OrderSummaryDto['kind']): OrderSummaryDto | null {

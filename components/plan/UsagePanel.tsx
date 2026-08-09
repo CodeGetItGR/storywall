@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowUpRight } from 'lucide-react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { cn } from '@/lib/utils';
@@ -19,6 +20,7 @@ type UsagePanelProps = {
     items: UsageItem[];
     includedModules?: string[];
     nextPlanName?: string;
+    upgradeHref?: string;
     className?: string;
 };
 
@@ -26,7 +28,7 @@ function clampPercent(percent: number): number {
     return Math.max(0, Math.min(100, percent));
 }
 
-export function UsagePanel({ title, planName, items, includedModules = [], nextPlanName, className }: UsagePanelProps) {
+export function UsagePanel({ title, planName, items, includedModules = [], nextPlanName, upgradeHref, className }: UsagePanelProps) {
     const t = useTranslations('PlanUsage');
 
     return (
@@ -36,12 +38,21 @@ export function UsagePanel({ title, planName, items, includedModules = [], nextP
                     <p className="text-sm font-semibold text-ink">{title}</p>
                     <p className="mt-0.5 text-xs text-ink-muted">{t('currentPlan', { plan: planName })}</p>
                 </div>
-                {nextPlanName && (
-                    <div className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary-light px-2.5 py-1 text-xs font-semibold text-primary-dark">
-                        {t('upgradeTo', { plan: nextPlanName })}
-                        <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
-                    </div>
-                )}
+                {nextPlanName &&
+                    (upgradeHref ? (
+                        <Link
+                            href={upgradeHref}
+                            className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary-light px-2.5 py-1 text-xs font-semibold text-primary-dark transition-opacity hover:opacity-90"
+                        >
+                            {t('upgradeTo', { plan: nextPlanName })}
+                            <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
+                        </Link>
+                    ) : (
+                        <div className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary-light px-2.5 py-1 text-xs font-semibold text-primary-dark">
+                            {t('upgradeTo', { plan: nextPlanName })}
+                            <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
+                        </div>
+                    ))}
             </div>
 
             <div className="space-y-3">

@@ -153,18 +153,18 @@ export function PlanCreateForm({
                         </div>
                     </AdminSection>
 
-                    <div className="flex justify-end gap-2 border-t border-border pt-4">
+                    <div className="flex flex-wrap items-center justify-end gap-2 border-t-2 border-border bg-surface-muted/45 px-4 py-4">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold text-ink-muted"
+                            className="inline-flex h-10 items-center justify-center rounded-md border border-border bg-background px-4 text-sm font-bold text-ink-muted transition hover:border-ink-faint hover:bg-surface-muted"
                         >
                             {t('cancel')}
                         </button>
                         <button
                             type="submit"
                             disabled={createPlan.isPending}
-                            className="inline-flex items-center justify-center gap-2 rounded-full bg-ink px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-ink px-5 text-sm font-bold text-white shadow-[0_8px_18px_rgba(36,31,26,0.14)] transition hover:-translate-y-0.5 hover:bg-ink/90 disabled:opacity-50"
                         >
                             {createPlan.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                             {t('plans.create.submit')}

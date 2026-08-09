@@ -7,15 +7,27 @@ import { useLocale, useTranslations } from 'next-intl';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 
+import { useAppConfig } from '@/hooks/useAppConfig';
 import { useApiErrorMessage, useRetryAfterCountdown } from '@/hooks/useApiErrorMessage';
-import { useCancelSubscription, useCheckout, useEventBilling, useEventRefundRequests, useRefundEligibility, useRequestRefund } from '@/hooks/useBilling';
+import {
+    useCancelSubscription,
+    useCheckout,
+    useEventBilling,
+    useEventRefundRequests,
+    useRefundEligibility,
+    useRequestRefund,
+    useUpgradeCheckout,
+} from '@/hooks/useBilling';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { EventBillingResponseDto } from '@/lib/api/types';
 import { billingCurrency, checkoutSuccessUrl, formatBillingDate, formatMoney, newestBillingOrder, paidBillingTotal } from '@/lib/billing';
+import { formatLimitValue, formatPlanMoney, publicAssignablePlans, scopedPlans } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
 const ORDER_PREVIEW_COUNT = 6;
+const APPROX_IMAGE_BYTES = 4 * 1024 * 1024;
+const APPROX_VIDEO_BYTES = 90 * 1024 * 1024;
 
 function statusTone(status: EventBillingResponseDto['eventStatus']) {
     if (status === 'ACTIVE') return 'bg-emerald-50 text-emerald-700 ring-emerald-200';
@@ -24,17 +36,37 @@ function statusTone(status: EventBillingResponseDto['eventStatus']) {
     return 'bg-rose-50 text-rose-700 ring-rose-200';
 }
 
+function limitDeltaLabel(current: number | null, next: number | null, unit: 'bytes' | 'count', sameLabel: string, unlimitedLabel: string) {
+    if (next === null) return unlimitedLabel;
+    if (current === null) return sameLabel;
+    const delta = next - current;
+    if (delta <= 0) return sameLabel;
+    return `+${formatLimitValue(delta, unit) ?? delta.toLocaleString()}`;
+}
+
+function mediaEstimate(storageBytes: number | null): { images: string; videos: string } | null {
+    if (storageBytes === null) return null;
+    return {
+        images: Math.max(1, Math.floor(storageBytes / APPROX_IMAGE_BYTES)).toLocaleString(),
+        videos: Math.max(1, Math.floor(storageBytes / APPROX_VIDEO_BYTES)).toLocaleString(),
+    };
+}
+
 export default function EventPlanSettingsPage() {
     const { eventId } = useParams<{ eventId: string }>();
     const locale = useLocale();
     const t = useTranslations('EventPlanSettingsPage');
+    const appConfigQuery = useAppConfig();
+    const appConfig = appConfigQuery.data;
     const billing = useEventBilling(eventId, true);
     const refundEligibility = useRefundEligibility(eventId);
     const requestRefund = useRequestRefund(eventId);
     const renew = useCheckout(eventId, true);
+    const upgradeCheckout = useUpgradeCheckout(eventId);
     const refundHistory = useEventRefundRequests(eventId);
     const toErrorMessage = useApiErrorMessage();
     const renewRetryIn = useRetryAfterCountdown(renew.error);
+    const upgradeRetryIn = useRetryAfterCountdown(upgradeCheckout.error);
     const refundRetryIn = useRetryAfterCountdown(requestRefund.error);
     const [error, setError] = useState<string | null>(null);
     const [refundReason, setRefundReason] = useState('');
@@ -45,6 +77,32 @@ export default function EventPlanSettingsPage() {
     const [confirmingCancel, setConfirmingCancel] = useState(false);
     const [showAllOrders, setShowAllOrders] = useState(false);
     const data = billing.data;
+    const planTiers = appConfig?.planTiers ?? [];
+    const eventPlans = useMemo(() => publicAssignablePlans(planTiers, 'EVENT'), [planTiers]);
+    const currentPlan = useMemo(
+        () => scopedPlans(planTiers, 'EVENT').find((plan) => plan.code === data?.planTierCode) ?? null,
+        [data?.planTierCode, planTiers]
+    );
+    const moduleNamesByKey = useMemo(
+        () => new Map((appConfig?.modules ?? []).map((module_) => [module_.moduleKey, module_.name])),
+        [appConfig?.modules]
+    );
+    const upgradeTargets = useMemo(() => {
+        if (!currentPlan || currentPlan.priceAmountMinor === null || !currentPlan.priceCurrency) return [];
+        return eventPlans.filter(
+            (plan) =>
+                plan.code !== currentPlan.code &&
+                plan.priceAmountMinor !== null &&
+                Boolean(plan.priceCurrency) &&
+                plan.priceCurrency === currentPlan.priceCurrency &&
+                plan.priceAmountMinor > currentPlan.priceAmountMinor
+        );
+    }, [currentPlan, eventPlans]);
+    const nextPlan = upgradeTargets[0];
+    const comparisonPlans = useMemo(() => {
+        if (!currentPlan) return eventPlans;
+        return [currentPlan, ...eventPlans.filter((plan) => plan.id !== currentPlan.id)];
+    }, [currentPlan, eventPlans]);
     // Server-side history, so a decision (and its note) survives a reload — the
     // page used to only know about a request the same tab had just submitted.
     const refundRequest = refundHistory.data?.[0] ?? null;
@@ -57,6 +115,28 @@ export default function EventPlanSettingsPage() {
                 ? checkoutSuccessUrl(window.location.origin, eventId, checkout.orderId)
                 : checkout.redirectUrl;
         } catch (e) {
+            setError(toErrorMessage(e));
+        }
+    }
+
+    async function startUpgrade(planTierCode: string) {
+        setError(null);
+        try {
+            await appConfigQuery.refetch();
+        } catch {
+            // Stale config is handled again by the server; this is only a freshness attempt.
+        }
+
+        try {
+            const checkout = await upgradeCheckout.mutateAsync({ planTierCode });
+            window.location.href = checkout.redirectUrl.includes('/checkout/success')
+                ? checkoutSuccessUrl(window.location.origin, eventId, checkout.orderId, planTierCode)
+                : checkout.redirectUrl;
+        } catch (e) {
+            const code = getErrorCode(e);
+            if (code === ERROR_CODES.PLAN_TIER_NOT_AN_UPGRADE || code === ERROR_CODES.PLAN_TIER_NOT_PURCHASABLE) {
+                await appConfigQuery.refetch();
+            }
             setError(toErrorMessage(e));
         }
     }
@@ -151,15 +231,39 @@ export default function EventPlanSettingsPage() {
     const coverage = data.coverage;
     const subscription = data.subscription;
     const formatDate = (value: string | null) => formatBillingDate(locale, value) ?? t('emptyDate');
+    const orderCoverageLabel = (order: EventBillingResponseDto['orders'][number]) => {
+        if (order.coversFrom && order.coversUntil)
+            return t('orders.coverageRange', { from: formatDate(order.coversFrom), until: formatDate(order.coversUntil) });
+        if (order.coversUntil) return t('orders.coverageThrough', { date: formatDate(order.coversUntil) });
+        if (order.kind === 'UPGRADE') return t('orders.upgradeCoverage');
+        return t('orders.recordedCharge');
+    };
     const hasRenewalPath = data.eventStatus !== 'DRAFT' && !coverage.unlimited && !subscription;
     const isRiskState = data.eventStatus === 'FROZEN' || data.eventStatus === 'PURGED' || !coverage.covered;
-    const statusIcon = data.eventStatus === 'ACTIVE' ? CheckCircle2 : data.eventStatus === 'DRAFT' ? Clock3 : data.eventStatus === 'FROZEN' ? AlertTriangle : XCircle;
+    const canUpgrade = data.eventStatus === 'ACTIVE';
+    const statusIcon =
+        data.eventStatus === 'ACTIVE'
+            ? CheckCircle2
+            : data.eventStatus === 'DRAFT'
+              ? Clock3
+              : data.eventStatus === 'FROZEN'
+                ? AlertTriangle
+                : XCircle;
     const StatusIcon = statusIcon;
     const hadSubscription = insights.hadSubscription;
     // A renewal writes an order every month, so a long-running event's history
     // grows without bound. Show a recent window until the host asks for the rest.
     const visibleOrders = showAllOrders ? data.orders : data.orders.slice(0, ORDER_PREVIEW_COUNT);
     const hiddenOrderCount = data.orders.length - visibleOrders.length;
+    const upgradeButtonLabel = nextPlan ? t('actions.upgradeTo', { plan: nextPlan.name }) : t('actions.renew');
+    const upgradeDueLabel =
+        nextPlan && currentPlan && nextPlan.priceAmountMinor !== null && currentPlan.priceAmountMinor !== null
+            ? formatMoney(
+                  locale,
+                  nextPlan.priceAmountMinor - currentPlan.priceAmountMinor,
+                  nextPlan.priceCurrency ?? currentPlan.priceCurrency ?? insights.orderCurrency
+              )
+            : null;
 
     return (
         <main className="mx-auto max-w-5xl px-4 pb-24 pt-5 sm:pt-6 lg:pb-10">
@@ -179,7 +283,11 @@ export default function EventPlanSettingsPage() {
                         className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-ink px-4 py-2.5 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
                     >
                         {renew.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5" />}
-                        {renewRetryIn > 0 ? t('actions.retryIn', { seconds: renewRetryIn }) : renew.isPending ? t('actions.openingCheckout') : t('actions.renew')}
+                        {renewRetryIn > 0
+                            ? t('actions.retryIn', { seconds: renewRetryIn })
+                            : renew.isPending
+                              ? t('actions.openingCheckout')
+                              : t('actions.renew')}
                     </button>
                 )}
             </div>
@@ -188,7 +296,12 @@ export default function EventPlanSettingsPage() {
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                            <span className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1', statusTone(data.eventStatus))}>
+                            <span
+                                className={cn(
+                                    'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1',
+                                    statusTone(data.eventStatus)
+                                )}
+                            >
                                 <StatusIcon className="h-3.5 w-3.5" />
                                 {t(`eventStatus.${data.eventStatus}`)}
                             </span>
@@ -214,7 +327,9 @@ export default function EventPlanSettingsPage() {
                         </div>
                         <div>
                             <dt className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('facts.totalPaid')}</dt>
-                            <dd className="mt-1 text-sm font-semibold text-ink">{formatMoney(locale, insights.paidTotalMinor, insights.orderCurrency)}</dd>
+                            <dd className="mt-1 text-sm font-semibold text-ink">
+                                {formatMoney(locale, insights.paidTotalMinor, insights.orderCurrency)}
+                            </dd>
                         </div>
                         <div>
                             <dt className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('facts.orders')}</dt>
@@ -228,6 +343,171 @@ export default function EventPlanSettingsPage() {
                 </div>
                 {error && <p className="mt-3 text-xs text-rose-600">{error}</p>}
             </section>
+
+            {canUpgrade && comparisonPlans.length > 0 && (
+                <section className="mt-6 space-y-5 border-y border-border py-5 sm:py-6">
+                    <div className="min-w-0">
+                        <h2 className="text-base font-bold text-ink">
+                            {nextPlan ? t('compare.upgradeTitle', { plan: nextPlan.name }) : t('compare.title')}
+                        </h2>
+                        <p className="mt-1 max-w-3xl text-sm leading-relaxed text-ink-muted">
+                            {nextPlan ? t('compare.upgradeSubtitle', { plan: data.planTierName }) : t('compare.highestPlan')}
+                        </p>
+                    </div>
+
+                    {nextPlan && currentPlan && (
+                        <div className="rounded-lg border border-border bg-card p-4">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                <div className="min-w-0">
+                                    <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('compare.fromTo')}</p>
+                                    <p className="mt-1 text-sm font-semibold text-ink">
+                                        {currentPlan.name} <span className="text-ink-faint">{t('compare.to')}</span> {nextPlan.name}
+                                    </p>
+                                    <p className="mt-1 text-xs leading-relaxed text-ink-muted">
+                                        {upgradeDueLabel
+                                            ? t('compare.upgradeCharge', {
+                                                  amount: upgradeDueLabel,
+                                                  date: formatDate(coverage.paidThrough),
+                                              })
+                                            : t('compare.upgradeChargeUnavailable')}
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => startUpgrade(nextPlan.code)}
+                                    disabled={upgradeCheckout.isPending || upgradeRetryIn > 0 || !upgradeDueLabel}
+                                    className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-ink px-4 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+                                >
+                                    {upgradeCheckout.isPending ? (
+                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    ) : (
+                                        <CreditCard className="h-3.5 w-3.5" />
+                                    )}
+                                    {upgradeRetryIn > 0 ? t('actions.retryIn', { seconds: upgradeRetryIn }) : upgradeButtonLabel}
+                                </button>
+                            </div>
+
+                            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                                <div className="rounded-lg bg-surface-muted p-3">
+                                    <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('compare.storage')}</p>
+                                    <p className="mt-1 text-base font-bold text-ink">
+                                        {formatLimitValue(currentPlan.storageBytes, 'bytes') ?? t('compare.unlimited')}
+                                        <span className="mx-1.5 text-ink-faint">{t('compare.to')}</span>
+                                        {formatLimitValue(nextPlan.storageBytes, 'bytes') ?? t('compare.unlimited')}
+                                    </p>
+                                    <p className="mt-1 text-xs font-semibold text-primary-dark">
+                                        {limitDeltaLabel(
+                                            currentPlan.storageBytes,
+                                            nextPlan.storageBytes,
+                                            'bytes',
+                                            t('compare.same'),
+                                            t('compare.unlimited')
+                                        )}
+                                    </p>
+                                </div>
+                                <div className="rounded-lg bg-surface-muted p-3">
+                                    <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('compare.members')}</p>
+                                    <p className="mt-1 text-base font-bold text-ink">
+                                        {formatLimitValue(currentPlan.maxMembers, 'count') ?? t('compare.unlimited')}
+                                        <span className="mx-1.5 text-ink-faint">{t('compare.to')}</span>
+                                        {formatLimitValue(nextPlan.maxMembers, 'count') ?? t('compare.unlimited')}
+                                    </p>
+                                    <p className="mt-1 text-xs font-semibold text-primary-dark">
+                                        {limitDeltaLabel(
+                                            currentPlan.maxMembers,
+                                            nextPlan.maxMembers,
+                                            'count',
+                                            t('compare.same'),
+                                            t('compare.unlimited')
+                                        )}
+                                    </p>
+                                </div>
+                                <div className="rounded-lg bg-surface-muted p-3">
+                                    <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('compare.mediaCapacity')}</p>
+                                    <p className="mt-1 text-sm font-bold leading-snug text-ink">
+                                        {(() => {
+                                            const estimate = mediaEstimate(nextPlan.storageBytes);
+                                            return estimate
+                                                ? t('compare.mediaEstimate', { images: estimate.images, videos: estimate.videos })
+                                                : t('compare.unlimitedMedia');
+                                        })()}
+                                    </p>
+                                    <p className="mt-1 text-[11px] leading-snug text-ink-muted">{t('compare.mediaAssumption')}</p>
+                                </div>
+                            </div>
+
+                            <div className="mt-4 border-t border-border pt-3">
+                                <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('compare.moduleChanges')}</p>
+                                {nextPlan.moduleKeys.filter((moduleKey) => !currentPlan.moduleKeys.includes(moduleKey)).length > 0 ? (
+                                    <div className="mt-2 flex flex-wrap gap-1.5">
+                                        {nextPlan.moduleKeys
+                                            .filter((moduleKey) => !currentPlan.moduleKeys.includes(moduleKey))
+                                            .map((moduleKey) => (
+                                                <span
+                                                    key={moduleKey}
+                                                    className="rounded-full bg-primary-light px-2 py-1 text-[11px] font-semibold text-primary-dark"
+                                                >
+                                                    {moduleNamesByKey.get(moduleKey) ?? moduleKey}
+                                                </span>
+                                            ))}
+                                    </div>
+                                ) : (
+                                    <p className="mt-1 text-sm text-ink-muted">{t('compare.noModuleChanges')}</p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    <div>
+                        <h3 className="text-sm font-bold text-ink">{t('compare.allPlansTitle')}</h3>
+                        <div className="mt-2 divide-y divide-border border-y border-border">
+                            {comparisonPlans.map((plan) => {
+                                const isCurrent = plan.code === data.planTierCode;
+                                const price = formatPlanMoney(plan) ?? t('compare.noPrice');
+                                const storage = formatLimitValue(plan.storageBytes, 'bytes') ?? t('compare.unlimited');
+                                const members = formatLimitValue(plan.maxMembers, 'count') ?? t('compare.unlimited');
+                                const estimate = mediaEstimate(plan.storageBytes);
+
+                                return (
+                                    <div
+                                        key={plan.id}
+                                        className="grid gap-2 py-3 text-sm sm:grid-cols-[minmax(10rem,1fr)_7rem_7rem_minmax(12rem,1.2fr)] sm:items-center"
+                                    >
+                                        <div className="min-w-0">
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <p className="font-semibold text-ink">{plan.name}</p>
+                                                {isCurrent && (
+                                                    <span className="rounded-full bg-primary-light px-2 py-0.5 text-[11px] font-semibold text-primary-dark">
+                                                        {t('compare.current')}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="mt-0.5 text-xs text-ink-muted">
+                                                {price}
+                                                {plan.billingPeriod ? ` ${t(`billingPeriod.${plan.billingPeriod}`)}` : ''}
+                                            </p>
+                                        </div>
+                                        <p className="text-ink-muted">
+                                            <span className="font-semibold text-ink sm:hidden">{t('compare.storage')}: </span>
+                                            {storage}
+                                        </p>
+                                        <p className="text-ink-muted">
+                                            <span className="font-semibold text-ink sm:hidden">{t('compare.members')}: </span>
+                                            {members}
+                                        </p>
+                                        <p className="text-ink-muted">
+                                            <span className="font-semibold text-ink sm:hidden">{t('compare.mediaCapacity')}: </span>
+                                            {estimate
+                                                ? t('compare.mediaEstimate', { images: estimate.images, videos: estimate.videos })
+                                                : t('compare.unlimitedMedia')}
+                                        </p>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </section>
+            )}
 
             <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
                 <section className="min-w-0">
@@ -254,7 +534,9 @@ export default function EventPlanSettingsPage() {
                     <div className="mt-7">
                         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                             <h2 className="text-sm font-bold text-ink">{t('orders.title')}</h2>
-                            {insights.lastOrder && <p className="text-xs text-ink-muted">{t('orders.lastOrder', { date: formatDate(insights.lastOrder.createdAt) })}</p>}
+                            {insights.lastOrder && (
+                                <p className="text-xs text-ink-muted">{t('orders.lastOrder', { date: formatDate(insights.lastOrder.createdAt) })}</p>
+                            )}
                         </div>
                         <div className="border-y border-border md:hidden">
                             {data.orders.length === 0 ? (
@@ -268,7 +550,9 @@ export default function EventPlanSettingsPage() {
                                                     <p className="font-semibold text-ink">{t(`orders.kind.${order.kind}`)}</p>
                                                     <p className="mt-0.5 truncate text-xs text-ink-faint">{order.id}</p>
                                                 </div>
-                                                <p className="shrink-0 text-right font-semibold text-ink">{formatMoney(locale, order.amountMinor, order.currency)}</p>
+                                                <p className="shrink-0 text-right font-semibold text-ink">
+                                                    {formatMoney(locale, order.amountMinor, order.currency)}
+                                                </p>
                                             </div>
                                             <dl className="mt-3 grid gap-2">
                                                 <div className="flex justify-between gap-3">
@@ -281,11 +565,7 @@ export default function EventPlanSettingsPage() {
                                                 </div>
                                                 <div className="grid gap-1">
                                                     <dt className="text-ink-muted">{t('orders.columns.coverage')}</dt>
-                                                    <dd className="font-medium text-ink">
-                                                        {order.coversFrom || order.coversUntil
-                                                            ? t('orders.coverageRange', { from: formatDate(order.coversFrom), until: formatDate(order.coversUntil) })
-                                                            : t('notApplicable')}
-                                                    </dd>
+                                                    <dd className="font-medium text-ink">{orderCoverageLabel(order)}</dd>
                                                 </div>
                                             </dl>
                                         </div>
@@ -293,15 +573,15 @@ export default function EventPlanSettingsPage() {
                                 </div>
                             )}
                         </div>
-                        <div className="hidden overflow-x-auto border-y border-border md:block">
-                            <table className="w-full min-w-[700px] text-left text-sm">
+                        <div className="hidden border-y border-border md:block">
+                            <table className="w-full table-fixed text-left text-sm">
                                 <thead className="text-[11px] uppercase tracking-wide text-ink-faint">
                                     <tr>
-                                        <th className="py-2 pr-4 font-semibold">{t('orders.columns.kind')}</th>
-                                        <th className="px-4 py-2 font-semibold">{t('orders.columns.status')}</th>
-                                        <th className="px-4 py-2 font-semibold">{t('orders.columns.coverage')}</th>
-                                        <th className="px-4 py-2 font-semibold">{t('orders.columns.date')}</th>
-                                        <th className="py-2 pl-4 text-right font-semibold">{t('orders.columns.amount')}</th>
+                                        <th className="py-2 pr-4 font-semibold md:w-36">{t('orders.columns.kind')}</th>
+                                        <th className="px-4 py-2 font-semibold md:w-28">{t('orders.columns.status')}</th>
+                                        <th className="px-4 py-2 font-semibold md:w-[38%]">{t('orders.columns.coverage')}</th>
+                                        <th className="px-4 py-2 font-semibold md:w-36">{t('orders.columns.date')}</th>
+                                        <th className="py-2 pl-4 text-right font-semibold md:w-28">{t('orders.columns.amount')}</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-border">
@@ -323,13 +603,11 @@ export default function EventPlanSettingsPage() {
                                                         {t(`orderStatus.${order.status}`)}
                                                     </span>
                                                 </td>
-                                                <td className="px-4 py-3 text-ink-muted">
-                                                    {order.coversFrom || order.coversUntil
-                                                        ? t('orders.coverageRange', { from: formatDate(order.coversFrom), until: formatDate(order.coversUntil) })
-                                                        : t('notApplicable')}
-                                                </td>
+                                                <td className="px-4 py-3 text-ink-muted">{orderCoverageLabel(order)}</td>
                                                 <td className="px-4 py-3 text-ink-muted">{formatDate(order.paidAt ?? order.createdAt)}</td>
-                                                <td className="py-3 pl-4 text-right font-semibold text-ink">{formatMoney(locale, order.amountMinor, order.currency)}</td>
+                                                <td className="py-3 pl-4 text-right font-semibold text-ink">
+                                                    {formatMoney(locale, order.amountMinor, order.currency)}
+                                                </td>
                                             </tr>
                                         ))
                                     )}
@@ -365,7 +643,9 @@ export default function EventPlanSettingsPage() {
                                 </dd>
                             </div>
                             <div className="flex justify-between gap-4 py-3">
-                                <dt className="text-ink-muted">{subscription?.cancelAtPeriodEnd ? t('subscription.liveUntil') : t('subscription.currentPeriodEnd')}</dt>
+                                <dt className="text-ink-muted">
+                                    {subscription?.cancelAtPeriodEnd ? t('subscription.liveUntil') : t('subscription.currentPeriodEnd')}
+                                </dt>
                                 <dd className="text-right font-semibold text-ink">{formatDate(subscription?.currentPeriodEnd ?? null)}</dd>
                             </div>
                         </dl>
@@ -421,8 +701,12 @@ export default function EventPlanSettingsPage() {
                             </div>
                         )}
 
-                        {subscription?.cancelAtPeriodEnd && <p className="mt-3 text-xs leading-relaxed text-ink-muted">{t('subscription.noResume')}</p>}
-                        {!subscription && hasRenewalPath && <p className="mt-3 text-xs leading-relaxed text-ink-muted">{t('subscription.renewalHint')}</p>}
+                        {subscription?.cancelAtPeriodEnd && (
+                            <p className="mt-3 text-xs leading-relaxed text-ink-muted">{t('subscription.noResume')}</p>
+                        )}
+                        {!subscription && hasRenewalPath && (
+                            <p className="mt-3 text-xs leading-relaxed text-ink-muted">{t('subscription.renewalHint')}</p>
+                        )}
                     </section>
 
                     <section>
@@ -430,7 +714,9 @@ export default function EventPlanSettingsPage() {
                         <dl className="mt-3 divide-y divide-border border-y border-border text-sm">
                             <div className="flex justify-between gap-4 py-3">
                                 <dt className="text-ink-muted">{t('activation.order')}</dt>
-                                <dd className="max-w-36 truncate text-right font-semibold text-ink">{insights.activationOrder?.id ?? t('emptyDate')}</dd>
+                                <dd className="max-w-36 truncate text-right font-semibold text-ink">
+                                    {insights.activationOrder?.id ?? t('emptyDate')}
+                                </dd>
                             </div>
                             <div className="flex justify-between gap-4 py-3">
                                 <dt className="text-ink-muted">{t('activation.paidAt')}</dt>
@@ -439,7 +725,9 @@ export default function EventPlanSettingsPage() {
                             <div className="flex justify-between gap-4 py-3">
                                 <dt className="text-ink-muted">{t('activation.amount')}</dt>
                                 <dd className="text-right font-semibold text-ink">
-                                    {insights.activationOrder ? formatMoney(locale, insights.activationOrder.amountMinor, insights.activationOrder.currency) : t('emptyDate')}
+                                    {insights.activationOrder
+                                        ? formatMoney(locale, insights.activationOrder.amountMinor, insights.activationOrder.currency)
+                                        : t('emptyDate')}
                                 </dd>
                             </div>
                         </dl>
@@ -452,13 +740,19 @@ export default function EventPlanSettingsPage() {
                                 <p className="text-ink-muted">{t('refund.loading')}</p>
                             ) : refundRequest ? (
                                 <div>
-                                    <p className="font-semibold text-ink">{t('refund.requested', { status: t(`refundStatus.${refundRequest.status}`) })}</p>
+                                    <p className="font-semibold text-ink">
+                                        {t('refund.requested', { status: t(`refundStatus.${refundRequest.status}`) })}
+                                    </p>
                                     <p className="mt-1 text-xs text-ink-muted">
                                         {refundRequest.amountMinor !== null && refundRequest.currency
-                                            ? t('refund.requestedAmount', { amount: formatMoney(locale, refundRequest.amountMinor, refundRequest.currency) })
+                                            ? t('refund.requestedAmount', {
+                                                  amount: formatMoney(locale, refundRequest.amountMinor, refundRequest.currency),
+                                              })
                                             : t('refund.requestedNoAmount')}
                                     </p>
-                                    {refundRequest.decisionNote && <p className="mt-2 text-xs leading-relaxed text-ink-muted">{refundRequest.decisionNote}</p>}
+                                    {refundRequest.decisionNote && (
+                                        <p className="mt-2 text-xs leading-relaxed text-ink-muted">{refundRequest.decisionNote}</p>
+                                    )}
                                     {/* Approved but no money moved yet: say so rather than let the
                                         host assume the payment is already back. */}
                                     {refundRequest.status === 'APPROVED' && !refundRequest.providerRefunded && (

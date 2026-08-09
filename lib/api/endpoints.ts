@@ -54,6 +54,7 @@ export const endpoints = {
         usage: (eventId: string) => `/api/events/${eventId}/usage`,
         billing: (eventId: string) => `/api/events/${eventId}/billing`,
         checkout: (eventId: string) => `/api/events/${eventId}/checkout`,
+        upgradeCheckout: (eventId: string) => `/api/events/${eventId}/upgrade-checkout`,
         subscriptionCheckout: (eventId: string) => `/api/events/${eventId}/subscription-checkout`,
         subscription: (eventId: string) => `/api/events/${eventId}/subscription`,
         refundEligibility: (eventId: string) => `/api/events/${eventId}/refund-eligibility`,
@@ -178,6 +179,8 @@ export const endpoints = {
         },
         webhooks: {
             unprocessed: '/api/admin/webhooks/unprocessed',
+            replay: (provider: string, providerEventId: string) =>
+                `/api/admin/webhooks/${encodeURIComponent(provider)}/${encodeURIComponent(providerEventId)}/replay`,
         },
         refundRequests: {
             list: '/api/admin/refund-requests',

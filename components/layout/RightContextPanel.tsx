@@ -73,6 +73,7 @@ export function RightContextPanel() {
                         title={t('usageTitle')}
                         planName={currentPlan?.name ?? eventUsage.planTier}
                         nextPlanName={nextPlan?.name}
+                        upgradeHref={routes.events.settingsPlan(activeEvent.id)}
                         includedModules={includedModules}
                         items={[
                             {

@@ -44,25 +44,27 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
     }, []);
 
     return (
-        <section className="space-y-3">
-            <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border pb-3 sm:pb-4">
+        <section className="space-y-5">
+            <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border pb-4">
                 <div>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary-dark">{t(`plans.panel.${scope}.eyebrow`)}</p>
                     <h2 className="mt-1 text-xl font-semibold tracking-tight text-ink">{t(`plans.panel.${scope}.title`)}</h2>
                     <p className="mt-2 max-w-2xl text-base leading-7 text-ink-muted">{t(`plans.panel.${scope}.subtitle`)}</p>
                 </div>
-                <label className="inline-flex items-center gap-2 text-base font-medium text-ink-muted">
-                    <input type="checkbox" checked={includeArchived} onChange={handleIncludeArchivedChange} className="h-4 w-4 accent-primary" />
-                    {t('plans.filters.includeArchived')}
-                </label>
-                <button
-                    type="button"
-                    onClick={handleOpenCreate}
-                    className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-base font-semibold text-white transition hover:bg-ink/90"
-                >
-                    <Plus className="h-4 w-4" />
-                    {t('plans.create.open')}
-                </button>
+                <div className="flex flex-wrap items-center gap-3">
+                    <label className="inline-flex min-h-10 items-center gap-2 border-b-2 border-border px-1 text-sm font-semibold text-ink-muted">
+                        <input type="checkbox" checked={includeArchived} onChange={handleIncludeArchivedChange} className="h-4 w-4 accent-primary" />
+                        {t('plans.filters.includeArchived')}
+                    </label>
+                    <button
+                        type="button"
+                        onClick={handleOpenCreate}
+                        className="inline-flex min-h-10 items-center gap-2 rounded-md bg-ink px-4 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(36,31,26,0.14)] transition hover:-translate-y-0.5 hover:bg-ink/90 focus-visible:ring-2 focus-visible:ring-primary/30"
+                    >
+                        <Plus className="h-4 w-4" />
+                        {t('plans.create.open')}
+                    </button>
+                </div>
             </div>
 
             <PlanCreateForm open={createOpen} onClose={handleCloseCreate} plans={plans} scope={scope} />
@@ -70,16 +72,16 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
             {plansQuery.isLoading && <p className="text-sm text-ink-muted">{t('plans.loading')}</p>}
             {plansQuery.error && <p className="text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(plansQuery.error)}`)}</p>}
             {!plansQuery.isLoading && !plansQuery.error && (
-                <div className="grid gap-5 lg:grid-cols-[19rem_minmax(0,1fr)] xl:grid-cols-[20rem_minmax(0,1fr)] lg:items-start">
-                    <aside className="border-b border-border lg:border-b-0 lg:border-r lg:pr-5">
-                        <div className="px-1 py-2 sm:px-0">
+                <div className="grid gap-7 lg:grid-cols-[19rem_minmax(0,1fr)] xl:grid-cols-[20rem_minmax(0,1fr)] lg:items-start">
+                    <aside className="border-b border-border pb-4 lg:sticky lg:top-6 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-5">
+                        <div className="pb-4">
                             <div className="flex items-center gap-2">
                                 <Layers3 className="h-4 w-4 text-primary-dark" />
                                 <h3 className="text-base font-semibold text-ink">{t('plans.snapshotTitle')}</h3>
                             </div>
                             <p className="mt-1 text-sm leading-6 text-ink-muted">{t('plans.selectorHint')}</p>
                         </div>
-                        <div className="max-h-[32rem] overflow-auto py-2 pr-1">
+                        <div className="max-h-[34rem] overflow-auto">
                             {plans.length === 0 ? (
                                 <div className="border-b border-dashed border-border px-2 py-4 text-sm text-ink-muted">
                                     {t('plans.empty')}
@@ -101,10 +103,10 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                                                 data-plan-id={plan.id}
                                                 onClick={handleSelectPlan}
                                                 className={[
-                                                    'w-full border-b px-2 py-3 text-left transition last:border-b-0',
+                                                    'w-full border border-x-transparent border-t-transparent px-3 py-3 text-left transition focus-visible:ring-2 focus-visible:ring-primary/25',
                                                     selected
-                                                        ? 'border-primary bg-primary/5'
-                                                        : 'border-transparent hover:bg-surface-muted',
+                                                        ? 'border-primary/40 bg-primary-light'
+                                                        : 'border-b-border hover:border-border hover:bg-surface-muted/70',
                                                 ].join(' ')}
                                             >
                                                 <div className="flex items-start justify-between gap-2">

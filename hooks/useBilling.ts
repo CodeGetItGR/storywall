@@ -2,6 +2,8 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { appConfigKeys } from '@/hooks/useAppConfig';
+import { usageKeys } from '@/hooks/useUsage';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type {
@@ -10,6 +12,7 @@ import type {
     RefundEligibilityResponseDto,
     RefundRequestResponseDto,
     SubscriptionSummaryDto,
+    UpgradeCheckoutRequestDto,
 } from '@/lib/api/types';
 
 // The server can now legitimately refuse to settle an order (amount collected
@@ -43,8 +46,21 @@ export function useEventBilling(eventId: string | null, enabled = true) {
 export function useCheckout(eventId: string, subscription = false) {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: () => api.post<CheckoutResponseDto>(subscription ? endpoints.events.subscriptionCheckout(eventId) : endpoints.events.checkout(eventId)),
+        mutationFn: () =>
+            api.post<CheckoutResponseDto>(subscription ? endpoints.events.subscriptionCheckout(eventId) : endpoints.events.checkout(eventId)),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) }),
+    });
+}
+
+export function useUpgradeCheckout(eventId: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (input: UpgradeCheckoutRequestDto) => api.post<CheckoutResponseDto>(endpoints.events.upgradeCheckout(eventId), input),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
+            queryClient.invalidateQueries({ queryKey: usageKeys.event(eventId) });
+            queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+        },
     });
 }
 
