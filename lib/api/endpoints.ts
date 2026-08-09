@@ -182,6 +182,9 @@ export const endpoints = {
             replay: (provider: string, providerEventId: string) =>
                 `/api/admin/webhooks/${encodeURIComponent(provider)}/${encodeURIComponent(providerEventId)}/replay`,
         },
+        notifications: {
+            sweep: '/api/admin/notifications/sweep',
+        },
         refundRequests: {
             list: '/api/admin/refund-requests',
             approve: (requestId: string) => `/api/admin/refund-requests/${requestId}/approve`,

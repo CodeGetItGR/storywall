@@ -1269,6 +1269,10 @@
             "notice": "Settling an order marks it paid with no provider payment behind it and activates the event exactly as a real payment would. On dev and staging this is the only way an event leaves DRAFT.",
             "settleTitle": "Settle an order",
             "settleSubtitle": "Use for bank transfers, comped events, and payments whose webhook never arrived.",
+            "sweepTitle": "Notification sweep",
+            "sweepSubtitle": "Run the quota notification rules now. The backend deduplicates results, so unchanged data usually creates zero new rows.",
+            "runSweep": "Run sweep",
+            "sweepSuccess": "Sweep complete: {result}",
             "orderIdField": "Order UUID",
             "settle": "Settle order",
             "settleThis": "Settle",
@@ -1290,6 +1294,8 @@
             "confirmReplayBody": "This asks the backend to process the stored provider delivery again. Use it only after checking the delivery is safe to retry.",
             "confirmSettleTitle": "Settle order {orderId}?",
             "confirmSettleBody": "This marks the order paid without a provider payment and can activate the event. Confirm only after verifying the payment or comp.",
+            "confirmSweepTitle": "Run notification sweep?",
+            "confirmSweepBody": "This can create visible host notifications for quota warnings, offers, and tips. It cannot send arbitrary messages.",
             "orderIdPlaceholder": "order-id"
         },
         "refunds": {

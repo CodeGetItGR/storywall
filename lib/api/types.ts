@@ -142,29 +142,26 @@ export interface GuestLoginRequestDto {
 
 // --- §4 Users, Me, Sessions, Notifications ---
 
-export interface NotificationRequestDto {
-    recipientMemberId?: string; // ignored as a spoofing vector — server resolves from the caller's own membership
-    type: string;
-    referenceType?: string;
-    referenceId?: string;
-    payload: Record<string, unknown>;
-    readAt?: string | null;
-}
-
-// Billing notifications (billing-fe-guide §10) all arrive as `category: "BILLING"`
-// through this same feed. `type` stays a plain string — the server adds new ones
-// without a deploy here, and unknown types must render as a generic row.
+// Notifications are produced by backend sweeps/actions; clients can only read,
+// mark read, mark all read, and dismiss them.
 export type BillingNotificationType = 'BILLING_EXPIRING' | 'BILLING_PAST_DUE' | 'BILLING_PURGE_WARNING' | 'REFUND_APPROVED' | 'REFUND_REJECTED';
 
-export type NotificationCategory = 'BILLING' | (string & {});
+export type NotificationCategory = 'LIMIT' | 'OFFER' | 'TIP' | 'SYSTEM' | 'BILLING' | (string & {});
 export type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 
 export interface NotificationResponseDto {
     id: string;
-    recipientMemberId: string;
+    recipientMemberId: string | null;
+    eventId?: string | null;
+    eventTitle?: string | null;
     type: string;
     category?: NotificationCategory | null;
     severity?: NotificationSeverity | null;
+    title?: string | null;
+    body?: string | null;
+    ctaLabel?: string | null;
+    ctaRoute?: string | null;
+    expiresAt?: string | null;
     referenceType: string | null;
     referenceId: string | null;
     payload: Record<string, unknown>;
@@ -174,7 +171,8 @@ export interface NotificationResponseDto {
 }
 
 export interface NotificationUnreadCountDto {
-    count: number;
+    unreadCount?: number;
+    count?: number;
 }
 
 export interface SessionResponseDto {
@@ -402,6 +400,8 @@ export interface UnprocessedWebhookDto {
     orderId: string | null;
     replayable: boolean;
 }
+
+export type NotificationSweepResponseDto = Record<string, number>;
 
 export interface EventPatchDto {
     title?: string;

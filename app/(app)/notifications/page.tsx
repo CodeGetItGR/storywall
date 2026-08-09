@@ -164,14 +164,14 @@ function NotifRow({ notification }: { notification: NotificationResponseDto }) {
     // frontend deploy, so anything without copy falls back to a generic row.
     const titleKey = `types.${notification.type}.title`;
     const bodyKey = `types.${notification.type}.body`;
-    const title = t.has(titleKey) ? t(titleKey) : t('generic.title');
-    const body = t.has(bodyKey)
+    const title = notification.title ?? (t.has(titleKey) ? t(titleKey) : t('generic.title'));
+    const body = notification.body ?? (t.has(bodyKey)
         ? t(bodyKey, {
               days: payloadString(notification, 'daysRemaining') ?? payloadString(notification, 'daysOverdue') ?? '0',
               daysUntilFreeze: payloadString(notification, 'daysUntilFreeze') ?? '0',
               plan: payloadString(notification, 'planTier') ?? '',
           })
-        : null;
+        : null);
 
     const decisionNote = payloadString(notification, 'decisionNote');
     const timeAgo = timeAgoParts(notification.createdAt);

@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
-import type { NotificationRequestDto, NotificationResponseDto, NotificationUnreadCountDto } from '@/lib/api/types';
+import type { NotificationResponseDto, NotificationUnreadCountDto } from '@/lib/api/types';
 
 export const notificationKeys = {
     all: ['notifications'] as const,
@@ -34,18 +34,7 @@ export function useUnreadNotificationCount() {
         queryKey: notificationKeys.unreadCount,
         queryFn: () => api.get<NotificationUnreadCountDto>(endpoints.notifications.unreadCount),
         enabled: isAuthenticated,
-        select: (data) => data.count,
-    });
-}
-
-export function useCreateNotification() {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: (input: NotificationRequestDto) => api.post<NotificationResponseDto>(endpoints.notifications.list, input),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: notificationKeys.all });
-        },
+        select: (data) => data.unreadCount ?? data.count ?? 0,
     });
 }
 

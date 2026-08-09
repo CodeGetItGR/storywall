@@ -1,14 +1,20 @@
 'use client';
 
-import { BadgeCheck, Check, Loader2, RefreshCw } from 'lucide-react';
+import { BadgeCheck, BellRing, Check, Loader2, RefreshCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type FormEvent, useState } from 'react';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { useReplayWebhook, useSettleOrder, useUnprocessedWebhooks } from '@/hooks/useAdmin';
+import { useReplayWebhook, useRunNotificationSweep, useSettleOrder, useUnprocessedWebhooks } from '@/hooks/useAdmin';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { UnprocessedWebhookDto } from '@/lib/api/types';
+
+function formatSweepResult(result: Record<string, number>): string {
+    const entries = Object.entries(result);
+    if (entries.length === 0) return '0';
+    return entries.map(([rule, count]) => `${rule}: ${count}`).join(', ');
+}
 
 function SettleButton({ orderId, label }: { orderId: string; label: string }) {
     const settleOrder = useSettleOrder();
@@ -124,10 +130,12 @@ function WebhookRow({ webhook }: { webhook: UnprocessedWebhookDto }) {
 export function BillingOpsPanel() {
     const t = useTranslations('AdminPage');
     const settleOrder = useSettleOrder();
+    const runSweep = useRunNotificationSweep();
     const webhooksQuery = useUnprocessedWebhooks();
     const [settledOrderId, setSettledOrderId] = useState<string | null>(null);
     const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
     const [pendingForm, setPendingForm] = useState<HTMLFormElement | null>(null);
+    const [confirmSweepOpen, setConfirmSweepOpen] = useState(false);
 
     function handleSettle(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -157,11 +165,58 @@ export function BillingOpsPanel() {
         webhooksQuery.refetch();
     }
 
+    function handleOpenSweep() {
+        setConfirmSweepOpen(true);
+    }
+
+    function handleCloseSweep() {
+        setConfirmSweepOpen(false);
+    }
+
+    async function handleConfirmSweep() {
+        await runSweep.mutateAsync();
+        setConfirmSweepOpen(false);
+    }
+
     const webhooks = webhooksQuery.data ?? [];
 
     return (
         <section className="space-y-5">
             <div className="border-b border-amber-200 pb-3 text-sm text-amber-800">{t('billingOps.notice')}</div>
+
+            <div className="border-b border-border pb-4">
+                <h2 className="text-base font-semibold text-ink">{t('billingOps.sweepTitle')}</h2>
+                <p className="mt-1 text-sm text-ink-muted">{t('billingOps.sweepSubtitle')}</p>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <button
+                        type="button"
+                        onClick={handleOpenSweep}
+                        disabled={runSweep.isPending}
+                        className="inline-flex min-h-9 items-center justify-center gap-2 rounded-full bg-ink px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-50"
+                    >
+                        {runSweep.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <BellRing className="h-4 w-4" />}
+                        {t('billingOps.runSweep')}
+                    </button>
+                    {runSweep.data && (
+                        <p className="text-sm text-emerald-700">
+                            {t('billingOps.sweepSuccess', { result: formatSweepResult(runSweep.data) })}
+                        </p>
+                    )}
+                    {runSweep.error && <p className="text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(runSweep.error)}`)}</p>}
+                </div>
+            </div>
+
+            <ConfirmActionModal
+                open={confirmSweepOpen}
+                onClose={handleCloseSweep}
+                title={t('billingOps.confirmSweepTitle')}
+                body={t('billingOps.confirmSweepBody')}
+                cancelLabel={t('cancel')}
+                confirmLabel={t('billingOps.runSweep')}
+                isConfirming={runSweep.isPending}
+                onConfirm={handleConfirmSweep}
+                tone="default"
+            />
 
             <form onSubmit={handleSettle} className="border-b border-border pb-4">
                 <h2 className="text-base font-semibold text-ink">{t('billingOps.settleTitle')}</h2>

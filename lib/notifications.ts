@@ -4,6 +4,7 @@ import type { BillingNotificationType, NotificationResponseDto, NotificationSeve
 // always `/events/{eventId}/settings/plan` today, but read it off the payload
 // rather than rebuilding it so a server-side change does not strand the link.
 export function notificationCtaRoute(notification: NotificationResponseDto): string | null {
+    if (notification.ctaRoute?.startsWith('/')) return notification.ctaRoute;
     const route = notification.payload?.ctaRoute;
     return typeof route === 'string' && route.startsWith('/') ? route : null;
 }

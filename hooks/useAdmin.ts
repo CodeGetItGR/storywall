@@ -1,12 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { appConfigKeys } from '@/hooks/useAppConfig';
+import { notificationKeys } from '@/hooks/useNotifications';
 import { usageKeys } from '@/hooks/useUsage';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type {
     AccountUsageResponseDto,
     EventUsageResponseDto,
+    NotificationSweepResponseDto,
     PlanAssignmentRequestDto,
     PlanModulesRequestDto,
     PlanScope,
@@ -26,6 +28,7 @@ export const adminKeys = {
     planTiers: (scope?: PlanScope, includeArchived?: boolean) => ['admin', 'plan-tiers', scope ?? 'ALL', Boolean(includeArchived)] as const,
     platformModules: ['admin', 'platform-modules'] as const,
     unprocessedWebhooks: ['admin', 'webhooks', 'unprocessed'] as const,
+    notificationSweep: ['admin', 'notifications', 'sweep'] as const,
     refundRequests: ['admin', 'refund-requests'] as const,
 };
 
@@ -66,6 +69,21 @@ export function useReplayWebhook() {
             queryClient.invalidateQueries({ queryKey: adminKeys.unprocessedWebhooks });
             queryClient.invalidateQueries({ queryKey: ['events'] });
             queryClient.invalidateQueries({ queryKey: ['billing'] });
+        },
+    });
+}
+
+// POST /api/admin/notifications/sweep — runs the same quota/tip notification
+// rules as the scheduler. It is deduplicated server-side, so unchanged data
+// usually returns zeros after the first run.
+export function useRunNotificationSweep() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: () => api.post<NotificationSweepResponseDto>(endpoints.admin.notifications.sweep),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: notificationKeys.all });
+            queryClient.invalidateQueries({ queryKey: notificationKeys.unreadCount });
         },
     });
 }
