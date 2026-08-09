@@ -40,7 +40,12 @@ function AdminShellNav({
     }
 
     return (
-        <aside className={cn('flex flex-col bg-[#f3eee6] px-5 py-6', mobile ? 'min-h-full' : 'hidden w-72 shrink-0 border-r border-black/5 lg:flex')}>
+        <aside
+            className={cn(
+                'flex flex-col bg-[#f3eee6] px-5 py-6',
+                mobile ? 'min-h-full' : 'hidden h-full w-72 shrink-0 overflow-hidden border-r border-black/5 lg:flex'
+            )}
+        >
             <div className="flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-ink text-white shadow-sm">
                     <Shield className="h-5 w-5" />
@@ -97,7 +102,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     const [signOutOpen, setSignOutOpen] = useState(false);
 
     if (isBootstrapping) {
-        return <div className="min-h-screen bg-[#f7f3ed]" />;
+        return <div className="h-full bg-[#f7f3ed]" />;
     }
 
     if (user?.role !== 'ADMIN') {
@@ -132,11 +137,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
     return (
         <AdminNavigationProvider>
-            <div className="min-h-screen bg-[#f7f3ed] text-ink">
-                <div className="mx-auto flex min-h-screen">
+            <div className="flex h-full min-h-0 overflow-hidden bg-[#f7f3ed] text-ink">
+                <div className="mx-auto flex h-full min-h-0 w-full">
                     <AdminShellNav email={user?.email} userId={user?.userId} onLogout={handleLogout} />
 
-                    <div className="flex min-w-0 flex-1 flex-col">
+                    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
                         <header className="sticky top-0 z-20 border-b border-black/5 bg-[#f7f3ed]/90 px-4 py-3 backdrop-blur lg:hidden">
                             <div className="flex items-center justify-between gap-3">
                                 <button
@@ -158,7 +163,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                             </div>
                         </header>
 
-                        <main className="min-w-0 flex-1">{children}</main>
+                        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain">{children}</main>
                     </div>
                 </div>
 

@@ -24,6 +24,7 @@ export const routes = {
         checkoutSuccess: (eventId: string, orderId?: string | null) => withQuery(`/events/${eventId}/checkout/success`, { orderId }),
         checkoutCancelled: (eventId: string) => `/events/${eventId}/checkout/cancelled`,
     },
+    plans: (params: { plan?: string | null } = {}) => withQuery('/plans', params),
     manage: '/manage',
     admin: '/admin',
     notifications: '/notifications',

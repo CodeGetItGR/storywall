@@ -19,14 +19,14 @@ export function AppShell({ children }: { children: ReactNode }) {
     }, [isBootstrapping, router, user?.role]);
 
     if (isBootstrapping || user?.role === 'ADMIN') {
-        return <div className="min-h-screen bg-background" />;
+        return <div className="h-full bg-background" />;
     }
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="flex h-full min-h-0 overflow-hidden bg-background">
             <DesktopNavRail />
-            <main className="w-full min-h-screen pb-20 lg:pb-0 lg:pl-55">
-                <div className="lg:max-w-none">{children}</div>
+            <main className="h-full min-w-0 flex-1 overflow-y-auto pb-20 lg:pb-0 lg:pl-55">
+                <div className="min-h-full lg:max-w-none">{children}</div>
             </main>
             <MobileTabBar />
         </div>

@@ -21,35 +21,17 @@ import {
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { EventBillingResponseDto } from '@/lib/api/types';
 import { billingCurrency, checkoutSuccessUrl, formatBillingDate, formatMoney, newestBillingOrder, paidBillingTotal } from '@/lib/billing';
-import { formatLimitValue, formatPlanMoney, publicAssignablePlans, scopedPlans } from '@/lib/planTiers';
+import { publicAssignablePlans, scopedPlans } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
 const ORDER_PREVIEW_COUNT = 6;
-const APPROX_IMAGE_BYTES = 4 * 1024 * 1024;
-const APPROX_VIDEO_BYTES = 90 * 1024 * 1024;
 
 function statusTone(status: EventBillingResponseDto['eventStatus']) {
     if (status === 'ACTIVE') return 'bg-emerald-50 text-emerald-700 ring-emerald-200';
     if (status === 'DRAFT') return 'bg-sky-50 text-sky-700 ring-sky-200';
     if (status === 'FROZEN') return 'bg-amber-50 text-amber-800 ring-amber-200';
     return 'bg-rose-50 text-rose-700 ring-rose-200';
-}
-
-function limitDeltaLabel(current: number | null, next: number | null, unit: 'bytes' | 'count', sameLabel: string, unlimitedLabel: string) {
-    if (next === null) return unlimitedLabel;
-    if (current === null) return sameLabel;
-    const delta = next - current;
-    if (delta <= 0) return sameLabel;
-    return `+${formatLimitValue(delta, unit) ?? delta.toLocaleString()}`;
-}
-
-function mediaEstimate(storageBytes: number | null): { images: string; videos: string } | null {
-    if (storageBytes === null) return null;
-    return {
-        images: Math.max(1, Math.floor(storageBytes / APPROX_IMAGE_BYTES)).toLocaleString(),
-        videos: Math.max(1, Math.floor(storageBytes / APPROX_VIDEO_BYTES)).toLocaleString(),
-    };
 }
 
 export default function EventPlanSettingsPage() {
@@ -83,26 +65,20 @@ export default function EventPlanSettingsPage() {
         () => scopedPlans(planTiers, 'EVENT').find((plan) => plan.code === data?.planTierCode) ?? null,
         [data?.planTierCode, planTiers]
     );
-    const moduleNamesByKey = useMemo(
-        () => new Map((appConfig?.modules ?? []).map((module_) => [module_.moduleKey, module_.name])),
-        [appConfig?.modules]
-    );
     const upgradeTargets = useMemo(() => {
         if (!currentPlan || currentPlan.priceAmountMinor === null || !currentPlan.priceCurrency) return [];
+        const currentPrice = currentPlan.priceAmountMinor;
+        const currentCurrency = currentPlan.priceCurrency;
         return eventPlans.filter(
             (plan) =>
                 plan.code !== currentPlan.code &&
                 plan.priceAmountMinor !== null &&
                 Boolean(plan.priceCurrency) &&
-                plan.priceCurrency === currentPlan.priceCurrency &&
-                plan.priceAmountMinor > currentPlan.priceAmountMinor
+                plan.priceCurrency === currentCurrency &&
+                plan.priceAmountMinor > currentPrice
         );
     }, [currentPlan, eventPlans]);
     const nextPlan = upgradeTargets[0];
-    const comparisonPlans = useMemo(() => {
-        if (!currentPlan) return eventPlans;
-        return [currentPlan, ...eventPlans.filter((plan) => plan.id !== currentPlan.id)];
-    }, [currentPlan, eventPlans]);
     // Server-side history, so a decision (and its note) survives a reload — the
     // page used to only know about a request the same tab had just submitted.
     const refundRequest = refundHistory.data?.[0] ?? null;
@@ -344,8 +320,8 @@ export default function EventPlanSettingsPage() {
                 {error && <p className="mt-3 text-xs text-rose-600">{error}</p>}
             </section>
 
-            {canUpgrade && comparisonPlans.length > 0 && (
-                <section className="mt-6 space-y-5 border-y border-border py-5 sm:py-6">
+            <section className="mt-6 rounded-lg border border-border bg-card px-4 py-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
                         <h2 className="text-base font-bold text-ink">
                             {nextPlan ? t('compare.upgradeTitle', { plan: nextPlan.name }) : t('compare.title')}
@@ -354,160 +330,40 @@ export default function EventPlanSettingsPage() {
                             {nextPlan ? t('compare.upgradeSubtitle', { plan: data.planTierName }) : t('compare.highestPlan')}
                         </p>
                     </div>
+                    <Link
+                        href={routes.plans({ plan: data.planTierCode })}
+                        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-ink px-4 text-xs font-semibold text-white"
+                    >
+                        {t('compare.allPlansTitle')}
+                    </Link>
+                </div>
 
-                    {nextPlan && currentPlan && (
-                        <div className="rounded-lg border border-border bg-card p-4">
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                                <div className="min-w-0">
-                                    <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('compare.fromTo')}</p>
-                                    <p className="mt-1 text-sm font-semibold text-ink">
-                                        {currentPlan.name} <span className="text-ink-faint">{t('compare.to')}</span> {nextPlan.name}
-                                    </p>
-                                    <p className="mt-1 text-xs leading-relaxed text-ink-muted">
-                                        {upgradeDueLabel
-                                            ? t('compare.upgradeCharge', {
-                                                  amount: upgradeDueLabel,
-                                                  date: formatDate(coverage.paidThrough),
-                                              })
-                                            : t('compare.upgradeChargeUnavailable')}
-                                    </p>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => startUpgrade(nextPlan.code)}
-                                    disabled={upgradeCheckout.isPending || upgradeRetryIn > 0 || !upgradeDueLabel}
-                                    className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-ink px-4 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
-                                >
-                                    {upgradeCheckout.isPending ? (
-                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                    ) : (
-                                        <CreditCard className="h-3.5 w-3.5" />
-                                    )}
-                                    {upgradeRetryIn > 0 ? t('actions.retryIn', { seconds: upgradeRetryIn }) : upgradeButtonLabel}
-                                </button>
-                            </div>
-
-                            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                                <div className="rounded-lg bg-surface-muted p-3">
-                                    <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('compare.storage')}</p>
-                                    <p className="mt-1 text-base font-bold text-ink">
-                                        {formatLimitValue(currentPlan.storageBytes, 'bytes') ?? t('compare.unlimited')}
-                                        <span className="mx-1.5 text-ink-faint">{t('compare.to')}</span>
-                                        {formatLimitValue(nextPlan.storageBytes, 'bytes') ?? t('compare.unlimited')}
-                                    </p>
-                                    <p className="mt-1 text-xs font-semibold text-primary-dark">
-                                        {limitDeltaLabel(
-                                            currentPlan.storageBytes,
-                                            nextPlan.storageBytes,
-                                            'bytes',
-                                            t('compare.same'),
-                                            t('compare.unlimited')
-                                        )}
-                                    </p>
-                                </div>
-                                <div className="rounded-lg bg-surface-muted p-3">
-                                    <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('compare.members')}</p>
-                                    <p className="mt-1 text-base font-bold text-ink">
-                                        {formatLimitValue(currentPlan.maxMembers, 'count') ?? t('compare.unlimited')}
-                                        <span className="mx-1.5 text-ink-faint">{t('compare.to')}</span>
-                                        {formatLimitValue(nextPlan.maxMembers, 'count') ?? t('compare.unlimited')}
-                                    </p>
-                                    <p className="mt-1 text-xs font-semibold text-primary-dark">
-                                        {limitDeltaLabel(
-                                            currentPlan.maxMembers,
-                                            nextPlan.maxMembers,
-                                            'count',
-                                            t('compare.same'),
-                                            t('compare.unlimited')
-                                        )}
-                                    </p>
-                                </div>
-                                <div className="rounded-lg bg-surface-muted p-3">
-                                    <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('compare.mediaCapacity')}</p>
-                                    <p className="mt-1 text-sm font-bold leading-snug text-ink">
-                                        {(() => {
-                                            const estimate = mediaEstimate(nextPlan.storageBytes);
-                                            return estimate
-                                                ? t('compare.mediaEstimate', { images: estimate.images, videos: estimate.videos })
-                                                : t('compare.unlimitedMedia');
-                                        })()}
-                                    </p>
-                                    <p className="mt-1 text-[11px] leading-snug text-ink-muted">{t('compare.mediaAssumption')}</p>
-                                </div>
-                            </div>
-
-                            <div className="mt-4 border-t border-border pt-3">
-                                <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('compare.moduleChanges')}</p>
-                                {nextPlan.moduleKeys.filter((moduleKey) => !currentPlan.moduleKeys.includes(moduleKey)).length > 0 ? (
-                                    <div className="mt-2 flex flex-wrap gap-1.5">
-                                        {nextPlan.moduleKeys
-                                            .filter((moduleKey) => !currentPlan.moduleKeys.includes(moduleKey))
-                                            .map((moduleKey) => (
-                                                <span
-                                                    key={moduleKey}
-                                                    className="rounded-full bg-primary-light px-2 py-1 text-[11px] font-semibold text-primary-dark"
-                                                >
-                                                    {moduleNamesByKey.get(moduleKey) ?? moduleKey}
-                                                </span>
-                                            ))}
-                                    </div>
-                                ) : (
-                                    <p className="mt-1 text-sm text-ink-muted">{t('compare.noModuleChanges')}</p>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    <div>
-                        <h3 className="text-sm font-bold text-ink">{t('compare.allPlansTitle')}</h3>
-                        <div className="mt-2 divide-y divide-border border-y border-border">
-                            {comparisonPlans.map((plan) => {
-                                const isCurrent = plan.code === data.planTierCode;
-                                const price = formatPlanMoney(plan) ?? t('compare.noPrice');
-                                const storage = formatLimitValue(plan.storageBytes, 'bytes') ?? t('compare.unlimited');
-                                const members = formatLimitValue(plan.maxMembers, 'count') ?? t('compare.unlimited');
-                                const estimate = mediaEstimate(plan.storageBytes);
-
-                                return (
-                                    <div
-                                        key={plan.id}
-                                        className="grid gap-2 py-3 text-sm sm:grid-cols-[minmax(10rem,1fr)_7rem_7rem_minmax(12rem,1.2fr)] sm:items-center"
-                                    >
-                                        <div className="min-w-0">
-                                            <div className="flex flex-wrap items-center gap-2">
-                                                <p className="font-semibold text-ink">{plan.name}</p>
-                                                {isCurrent && (
-                                                    <span className="rounded-full bg-primary-light px-2 py-0.5 text-[11px] font-semibold text-primary-dark">
-                                                        {t('compare.current')}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <p className="mt-0.5 text-xs text-ink-muted">
-                                                {price}
-                                                {plan.billingPeriod ? ` ${t(`billingPeriod.${plan.billingPeriod}`)}` : ''}
-                                            </p>
-                                        </div>
-                                        <p className="text-ink-muted">
-                                            <span className="font-semibold text-ink sm:hidden">{t('compare.storage')}: </span>
-                                            {storage}
-                                        </p>
-                                        <p className="text-ink-muted">
-                                            <span className="font-semibold text-ink sm:hidden">{t('compare.members')}: </span>
-                                            {members}
-                                        </p>
-                                        <p className="text-ink-muted">
-                                            <span className="font-semibold text-ink sm:hidden">{t('compare.mediaCapacity')}: </span>
-                                            {estimate
-                                                ? t('compare.mediaEstimate', { images: estimate.images, videos: estimate.videos })
-                                                : t('compare.unlimitedMedia')}
-                                        </p>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                {nextPlan && currentPlan && (
+                    <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-ink-muted">
+                        <span className="font-semibold text-ink">{currentPlan.name}</span>
+                        <span className="text-ink-faint">{t('compare.to')}</span>
+                        <span className="font-semibold text-ink">{nextPlan.name}</span>
+                        <span className="text-ink-faint">·</span>
+                        <span>
+                            {upgradeDueLabel
+                                ? t('compare.upgradeCharge', {
+                                      amount: upgradeDueLabel,
+                                      date: formatDate(coverage.paidThrough),
+                                  })
+                                : t('compare.upgradeChargeUnavailable')}
+                        </span>
+                        <button
+                            type="button"
+                            onClick={() => startUpgrade(nextPlan.code)}
+                            disabled={upgradeCheckout.isPending || upgradeRetryIn > 0 || !upgradeDueLabel}
+                            className="inline-flex items-center gap-2 rounded-full bg-surface-muted px-3 py-1.5 text-xs font-semibold text-ink"
+                        >
+                            {upgradeCheckout.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5" />}
+                            {upgradeRetryIn > 0 ? t('actions.retryIn', { seconds: upgradeRetryIn }) : upgradeButtonLabel}
+                        </button>
                     </div>
-                </section>
-            )}
+                )}
+            </section>
 
             <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
                 <section className="min-w-0">
