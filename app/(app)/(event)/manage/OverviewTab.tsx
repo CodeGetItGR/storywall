@@ -1,6 +1,6 @@
 import { Clock, Loader2, Ticket, Users } from 'lucide-react';
 import type { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import {ElementType, useState} from 'react';
 
 import Section from '@/components/manage/Section';
 import { UsagePanel } from '@/components/plan/UsagePanel';
@@ -13,7 +13,7 @@ import { findNextPlan, findPlanByCode } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
-function Stat({ label, value, sub, color, Icon }: { label: string; value: string; sub: string; color: string; Icon: React.ElementType }) {
+function Stat({ label, value, sub, color, Icon }: { label: string; value: string; sub: string; color: string; Icon: ElementType }) {
     return (
         <div>
             <Icon className={cn('h-4 w-4', color)} strokeWidth={1.8} aria-hidden="true" />
@@ -158,9 +158,8 @@ export default function OverviewTab({
             </Section>
 
             {eventUsage && (
-                <>
                     <UsagePanel
-                        className="rounded-none border-0 border-t border-border bg-transparent p-0 pt-4 shadow-none"
+                        className="rounded-none border-0 border-t border-border bg-transparent p-0 pt-4 shadow-none md:hidden"
                         title={t('usage.eventTitle')}
                         planName={currentPlan?.name ?? eventUsage.planTier}
                         nextPlanName={nextPlan?.name}
@@ -189,7 +188,6 @@ export default function OverviewTab({
                             },
                         ]}
                     />
-                </>
             )}
         </div>
     );
