@@ -51,6 +51,8 @@ export function PlanCreateForm({
             priceAmountMinor: priceInputToMinor(formData.get('price')),
             priceCurrency: emptyToNull(formData.get('priceCurrency'))?.toUpperCase() ?? null,
             billingPeriod: (emptyToNull(formData.get('billingPeriod')) as BillingPeriod | null) ?? null,
+            recurringPriceAmountMinor: scope === 'EVENT' ? priceInputToMinor(formData.get('recurringPrice')) : null,
+            includedMonths: scope === 'EVENT' ? numberOrNull(formData.get('includedMonths')) : null,
             discountPercent: numberOrNull(formData.get('discountPercent')),
             discountLabel: emptyToNull(formData.get('discountLabel')),
             discountStartsAt: emptyToNull(formData.get('discountStartsAt')),
@@ -114,7 +116,7 @@ export function PlanCreateForm({
                                     </AdminField>
                                 </>
                             ) : (
-                                <AdminField label={t('fields.maxActiveEvents')} className="col-span-2 lg:col-span-3">
+                                <AdminField label={t('fields.maxEventsPerUser')} className="col-span-2 lg:col-span-3">
                                     <input name="maxActiveEvents" type="number" min={0} placeholder={t('fields.blankUnlimited')} className={adminInputClass('max-w-[7rem]')} />
                                 </AdminField>
                             )}
@@ -139,6 +141,16 @@ export function PlanCreateForm({
                                     ))}
                                 </select>
                             </AdminField>
+                            {scope === 'EVENT' && (
+                                <>
+                                    <AdminField label={t('fields.recurringPrice')} className="col-span-1 lg:col-span-2">
+                                        <input name="recurringPrice" type="number" min={0} step="0.01" placeholder="15" className={adminInputClass('max-w-[8rem]')} />
+                                    </AdminField>
+                                    <AdminField label={t('fields.includedMonths')} className="col-span-1">
+                                        <input name="includedMonths" type="number" min={0} placeholder="3" className={adminInputClass('max-w-[6rem]')} />
+                                    </AdminField>
+                                </>
+                            )}
                             <AdminField label={t('fields.discountPercent')} className="col-span-1">
                                 <input name="discountPercent" type="number" min={0} max={100} className={adminInputClass('max-w-[6rem]')} />
                             </AdminField>

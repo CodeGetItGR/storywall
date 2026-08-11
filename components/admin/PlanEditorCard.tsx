@@ -37,6 +37,8 @@ function planPatchFromFormData(plan: PlanTierResponseDto, formData: FormData): P
         priceAmountMinor: priceInputToMinor(formData.get('price')),
         priceCurrency: emptyToNull(formData.get('priceCurrency'))?.toUpperCase() ?? null,
         billingPeriod: (emptyToNull(formData.get('billingPeriod')) as BillingPeriod | null) ?? null,
+        recurringPriceAmountMinor: plan.scope === 'EVENT' ? priceInputToMinor(formData.get('recurringPrice')) : null,
+        includedMonths: plan.scope === 'EVENT' ? numberOrNull(formData.get('includedMonths')) : null,
         discountPercent: numberOrNull(formData.get('discountPercent')),
         discountLabel: emptyToNull(formData.get('discountLabel')),
         discountStartsAt: emptyToNull(formData.get('discountStartsAt')),
@@ -198,7 +200,7 @@ export function PlanEditorCard({
                         <span className="rounded-full bg-surface-muted px-2 py-1">
                             {plan.scope === 'EVENT'
                                 ? `${formatLimitValue(plan.maxMembers, 'count') ?? t('unlimited')} ${t('plans.members')}`
-                                : `${formatLimitValue(plan.maxActiveEvents, 'count') ?? t('unlimited')} ${t('plans.activeEvents')}`}
+                                : `${formatLimitValue(plan.maxActiveEvents, 'count') ?? t('unlimited')} ${t('plans.eventsPerUser')}`}
                         </span>
                         {plan.scope === 'EVENT' && (
                             <span className="rounded-full bg-surface-muted px-2 py-1">
@@ -315,7 +317,7 @@ export function PlanEditorCard({
                                             </AdminField>
                                         </>
                                     ) : (
-                                        <AdminField label={t('fields.maxActiveEvents')} className="col-span-1">
+                                        <AdminField label={t('fields.maxEventsPerUser')} className="col-span-1">
                                             <input
                                                 name="maxActiveEvents"
                                                 type="number"
@@ -363,6 +365,30 @@ export function PlanEditorCard({
                                             ))}
                                         </select>
                                     </AdminField>
+                                    {plan.scope === 'EVENT' && (
+                                        <>
+                                            <AdminField label={t('fields.recurringPrice')}>
+                                                <input
+                                                    name="recurringPrice"
+                                                    type="number"
+                                                    min={0}
+                                                    step="0.01"
+                                                    defaultValue={priceMinorToInput(plan.recurringPriceAmountMinor)}
+                                                    className={adminInputClass('max-w-32')}
+                                                />
+                                            </AdminField>
+                                            <AdminField label={t('fields.includedMonths')}>
+                                                <input
+                                                    name="includedMonths"
+                                                    type="number"
+                                                    min={0}
+                                                    defaultValue={plan.includedMonths ?? ''}
+                                                    placeholder={t('none')}
+                                                    className={adminInputClass('max-w-20')}
+                                                />
+                                            </AdminField>
+                                        </>
+                                    )}
                                 </div>
                             </AdminSection>
 
@@ -522,7 +548,7 @@ function planChangeSummary(plan: PlanTierResponseDto, patch: PlanTierPatchDto, t
         add(t('fields.storage'), storageLabel(plan.storageBytes), storageLabel(patch.storageBytes ?? null));
         add(t('fields.maxMembers'), countLabel(plan.maxMembers), countLabel(patch.maxMembers ?? null));
     } else {
-        add(t('fields.maxActiveEvents'), countLabel(plan.maxActiveEvents), countLabel(patch.maxActiveEvents ?? null));
+        add(t('fields.maxEventsPerUser'), countLabel(plan.maxActiveEvents), countLabel(patch.maxActiveEvents ?? null));
     }
 
     add(
@@ -531,6 +557,14 @@ function planChangeSummary(plan: PlanTierResponseDto, patch: PlanTierPatchDto, t
         moneyLabel(patch.priceAmountMinor ?? null, patch.priceCurrency ?? null)
     );
     add(t('fields.billingPeriod'), textLabel(plan.billingPeriod), textLabel(patch.billingPeriod));
+    if (plan.scope === 'EVENT') {
+        add(
+            t('fields.recurringPrice'),
+            moneyLabel(plan.recurringPriceAmountMinor, plan.priceCurrency),
+            moneyLabel(patch.recurringPriceAmountMinor ?? null, patch.priceCurrency ?? null)
+        );
+        add(t('fields.includedMonths'), textLabel(plan.includedMonths === null ? null : String(plan.includedMonths)), textLabel(patch.includedMonths === null ? null : String(patch.includedMonths)));
+    }
     add(t('fields.isAssignable'), booleanLabel(plan.isAssignable), booleanLabel(Boolean(patch.isAssignable)));
     add(t('fields.isPublic'), booleanLabel(plan.isPublic), booleanLabel(Boolean(patch.isPublic)));
 

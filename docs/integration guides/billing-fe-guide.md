@@ -1,7 +1,12 @@
 # FE integration guide: plans, payments, subscriptions, refunds
 
 **The complete, current reference for the commercial side of the platform.** Everything a frontend
-needs to sell an event, keep it alive, and give money back. Current as of 2026-08-07.
+needs to sell an event, keep it alive, and give money back. Current as of 2026-08-11.
+
+**2026-08-11:** Account-scope plans (`scope: 'ACCOUNT'`) are disabled — see
+`account-plans-disabled-and-platform-metrics-fe-integration.md` for the full change and a new
+`GET /api/admin/metrics` endpoint. This doc's `ACCOUNT`-scope references below have been updated
+in place; the standalone doc has the "what changed and why" detail.
 
 This supersedes three earlier delta docs, which remain in `docs/` as change history only:
 `plan-tiers-fe-integration.md`, `billing-payments-fe-integration.md`,
@@ -75,6 +80,10 @@ host requests ──► admin decides ──► approved: money back + event ret
 `GET /api/config` → `planTiers: PlanTierResponse[]`, already filtered to `isAssignable && isPublic`.
 This is the public, marketing-facing catalog. Admins see the full one at
 `GET /api/admin/plan-tiers` (§13).
+
+**`ACCOUNT`-scope plans no longer appear in this array** — they are all `isPublic: false` now that
+account plans are disabled (§13, Assignment). Filter a pricing page by `scope === 'EVENT'`; an
+"account plans" tab built by filtering the other way will render empty.
 
 ```jsonc
 {
@@ -782,6 +791,7 @@ name, for logs). Branch on `errorCode`.
 | `5015` `PLAN_TIER_NOT_PURCHASABLE` | 409 | the plan was archived or hidden since page load | refetch `/api/config`, ask them to pick again |
 | `5019` `PLAN_TIER_NOT_PRICED` | 409 | catalog misconfiguration — no activation or monthly price | generic error + support contact; the host cannot fix this |
 | `5021` `PLAN_TIER_CURRENCY_UNSUPPORTED` | 409 | the plan's currency is not supported by the provider | admin-facing; host sees a generic failure |
+| `5034` `ACCOUNT_PLANS_DISABLED` | 409 | admin tries to create an `ACCOUNT`-scope plan, or move a user onto a different one | admin-facing; remove/disable the control (§13) |
 
 ### Lifecycle and checkout
 
@@ -861,13 +871,20 @@ catalog visibility. Delete is for a plan created by mistake and never assigned.
 
 | endpoint | body | returns |
 |---|---|---|
-| `PATCH /api/admin/users/{id}/plan-tier` | `{ "planTierCode": "PRO" }` — must be `ACCOUNT` scope | `AccountUsageResponse` |
+| `PATCH /api/admin/users/{id}/plan-tier` | `{ "planTierCode": "PRO" }` | **always `409 ACCOUNT_PLANS_DISABLED`** — see below |
 | `PATCH /api/admin/events/{id}/plan-tier` | `{ "planTierCode": "PLUS" }` — must be `EVENT` scope | `EventUsageResponse` |
 
-The response is a fresh usage snapshot against the new plan's limits, so an admin sees immediately
-whether the new plan is already exceeded — there is no proration or commerce flow behind this.
-`planTierCode` is required, non-blank, ≤30 chars; an unknown code or a scope mismatch errors rather
-than silently no-op'ing.
+**Account plans are disabled as of 2026-08-11** (`account-plans-disabled-and-platform-metrics-fe-integration.md`
+has the full change). `PATCH /api/admin/users/{id}/plan-tier` now unconditionally rejects with
+`errorCode: 5034 ACCOUNT_PLANS_DISABLED` — remove or disable any admin UI for reassigning a user's
+account plan. `POST /api/admin/plan-tiers` with `"scope": "ACCOUNT"` rejects the same way, so an
+account plan can no longer be created either. Everything else about `ACCOUNT`-scope plans (read,
+patch, delete) still works normally — only *create* and *assign* are blocked.
+
+The event-plan assignment endpoint is unaffected: the response is still a fresh usage snapshot
+against the new plan's limits, so an admin sees immediately whether it's already exceeded — there
+is no proration or commerce flow behind this. `planTierCode` is required, non-blank, ≤30 chars; an
+unknown code or a scope mismatch errors rather than silently no-op'ing.
 
 ### Modules and flags
 
@@ -876,6 +893,12 @@ than silently no-op'ing.
 | `GET /api/admin/platform-modules` | every registry row including disabled, by `sortOrder` |
 | `PATCH /api/admin/platform-modules/{moduleKey}` | every field optional. **No create or delete** — the module set is fixed by backend code. `isEnabled: false` is the fastest way to withdraw a broken module platform-wide without a deploy. |
 | `PATCH /api/platform-feature-flags/{id}` | `description` (≤100), `isEnabled`, `configuration` (arbitrary JSON). `featureKey` is not patchable. |
+
+### Platform metrics
+
+| endpoint | notes |
+|---|---|
+| `GET /api/admin/metrics` | dashboard counts: users/events totals, active counts, and both grouped by plan/status. No params, computed live on every call. Full field reference in `account-plans-disabled-and-platform-metrics-fe-integration.md`. |
 
 ---
 
@@ -1024,6 +1047,18 @@ export interface RefundRequestAdmin {
   postCount: number;
   mediaCount: number;
   storageBytes: number;
+}
+
+// ---------- Admin metrics ----------
+export interface PlatformMetricsResponse {
+  totalUsers: number;
+  activeUsers: number;
+  usersByAccountPlan: Record<string, number>;
+
+  totalEvents: number;
+  activeEvents: number;
+  eventsByStatus: Record<string, number>;   // keys: DRAFT | ACTIVE | FROZEN | PURGED, missing = 0
+  eventsByPlanTier: Record<string, number>;
 }
 
 // ---------- Notifications ----------

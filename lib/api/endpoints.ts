@@ -174,6 +174,7 @@ export const endpoints = {
     },
 
     admin: {
+        metrics: '/api/admin/metrics',
         orders: {
             settle: (orderId: string) => `/api/admin/orders/${orderId}/settle`,
         },

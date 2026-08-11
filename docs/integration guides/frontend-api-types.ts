@@ -50,7 +50,6 @@ type EventVisibility = "PUBLIC" | "PRIVATE"; // default PRIVATE server-side, but
 type AttendanceStatus = "ATTENDING" | "DECLINED" | "MAYBE";
 
 type PostType = "TEXT" | "MEDIA" | "ANNOUNCEMENT" | "PLAYLIST"; // server-enforced via @Pattern + DB CHECK
-type EventStatus = "DRAFT" | "ACTIVE" | "FROZEN" | "PURGED";
 
 // ---------------------------------------------------------------------------
 // Auth (/api/auth/*) — all public, no token required
@@ -94,11 +93,19 @@ interface SessionResponseDto {
   refreshTokenHash: string; expiresAt: string; createdAt: string; revokedAt: string | null;
 }
 
-/** Notifications are backend-produced. There is no request DTO. */
-type NotificationType = string;
+/**
+ * Notifications are host-facing and produced solely by the backend quota sweep.
+ * There is no request DTO — POST /api/notifications was removed entirely.
+ */
+type NotificationType =
+  | 'STORAGE_LIMIT_WARNING'
+  | 'MEMBER_LIMIT_WARNING'
+  | 'EVENT_CAP_WARNING'
+  | 'UPGRADE_OFFER'
+  | 'HOST_TIP';
 
 /** OFFER is marketing (gated on consent for email); the rest are transactional. */
-type NotificationCategory = 'LIMIT' | 'OFFER' | 'TIP' | 'SYSTEM' | 'BILLING' | string;
+type NotificationCategory = 'LIMIT' | 'OFFER' | 'TIP' | 'SYSTEM';
 
 type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 
@@ -126,10 +133,6 @@ interface NotificationResponseDto {
   readAt: string | null;
   createdAt: string;
   deletedAt: string | null;
-}
-
-interface NotificationUnreadCountDto {
-  unreadCount: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -170,7 +173,6 @@ interface AccountUsageResponseDto {
 
 interface EventRequestDto {
   title: string;                 // required, max 255
-  planTierCode?: string;          // required for paid-event creation in current billing flow
   subtitle?: string;              // max 255
   description?: string;
   eventType: string;              // required, max 50 — free text (WEDDING | BAPTISM | BIRTHDAY | CONFERENCE | <custom>)
@@ -241,7 +243,6 @@ interface EventDetailResponseDto {
   modules: EventModuleResponseDto[];   // fixed-size — one per module key
   sessions: EventSessionResponseDto[]; // bounded agenda items
   rsvpSummary: EventRsvpSummaryDto;    // aggregate counts only, not the individual RSVPs
-  status: EventStatus;
   createdAt: string; updatedAt: string; deletedAt: string | null;
 }
 
@@ -647,4 +648,21 @@ export interface QuotaExceededDetails {
   used: number;
   limit: number;
   incomingBytes?: number;   // storage rejections only
+}
+
+// ---- Admin platform metrics ----
+
+/** GET /api/admin/metrics response. Live-computed dashboard counts, no pagination. */
+export interface PlatformMetricsResponseDto {
+  totalUsers: number;
+  activeUsers: number;
+  /** Keyed by ACCOUNT-scope plan code, e.g. 'FREE'. Missing key = 0. */
+  usersByAccountPlan: Record<string, number>;
+
+  totalEvents: number;
+  activeEvents: number;
+  /** Keyed by EventStatus name (DRAFT | ACTIVE | FROZEN | PURGED). Missing key = 0. */
+  eventsByStatus: Record<string, number>;
+  /** Keyed by EVENT-scope plan code, e.g. 'BASIC'. Missing key = 0. */
+  eventsByPlanTier: Record<string, number>;
 }

@@ -19,6 +19,7 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
     const [createOpen, setCreateOpen] = useState(false);
     const plansQuery = useAdminPlanTiers(scope, includeArchived);
     const modulesQuery = useAdminPlatformModules();
+    const accountPlansDisabled = scope === 'ACCOUNT';
     const plans = useMemo(() => [...(plansQuery.data ?? [])].sort((left, right) => left.sortOrder - right.sortOrder), [plansQuery.data]);
     const selectedPlan = useMemo(
         () => plans.find((plan) => plan.id === selectedPlanId) ?? plans[0] ?? null,
@@ -56,18 +57,26 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                         <input type="checkbox" checked={includeArchived} onChange={handleIncludeArchivedChange} className="h-4 w-4 accent-primary" />
                         {t('plans.filters.includeArchived')}
                     </label>
-                    <button
-                        type="button"
-                        onClick={handleOpenCreate}
-                        className="inline-flex min-h-10 items-center gap-2 rounded-md bg-ink px-4 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(36,31,26,0.14)] transition hover:-translate-y-0.5 hover:bg-ink/90 focus-visible:ring-2 focus-visible:ring-primary/30"
-                    >
-                        <Plus className="h-4 w-4" />
-                        {t('plans.create.open')}
-                    </button>
+                    {!accountPlansDisabled && (
+                        <button
+                            type="button"
+                            onClick={handleOpenCreate}
+                            className="inline-flex min-h-10 items-center gap-2 rounded-md bg-ink px-4 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(36,31,26,0.14)] transition hover:-translate-y-0.5 hover:bg-ink/90 focus-visible:ring-2 focus-visible:ring-primary/30"
+                        >
+                            <Plus className="h-4 w-4" />
+                            {t('plans.create.open')}
+                        </button>
+                    )}
                 </div>
             </div>
 
-            <PlanCreateForm open={createOpen} onClose={handleCloseCreate} plans={plans} scope={scope} />
+            {accountPlansDisabled && (
+                <div className="border-b border-amber-200 bg-amber-50/70 px-4 py-3 text-sm font-medium leading-6 text-amber-900">
+                    {t('plans.accountDisabledNotice')}
+                </div>
+            )}
+
+            {!accountPlansDisabled && <PlanCreateForm open={createOpen} onClose={handleCloseCreate} plans={plans} scope={scope} />}
 
             {plansQuery.isLoading && <p className="text-sm text-ink-muted">{t('plans.loading')}</p>}
             {plansQuery.error && <p className="text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(plansQuery.error)}`)}</p>}
@@ -94,7 +103,7 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                                         const limit =
                                             plan.scope === 'EVENT'
                                                 ? `${formatLimitValue(plan.maxMembers, 'count') ?? t('unlimited')} ${t('plans.members')}`
-                                                : `${formatLimitValue(plan.maxActiveEvents, 'count') ?? t('unlimited')} ${t('plans.activeEvents')}`;
+                                                : `${formatLimitValue(plan.maxActiveEvents, 'count') ?? t('unlimited')} ${t('plans.eventsPerUser')}`;
 
                                         return (
                                             <button

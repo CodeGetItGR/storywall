@@ -48,6 +48,7 @@ export const ERROR_CODES = {
     CHECKOUT_SESSION_UNRESOLVED: 5031,
     WEBHOOK_ALREADY_PROCESSED: 5032,
     WEBHOOK_NOT_REPLAYABLE: 5033,
+    ACCOUNT_PLANS_DISABLED: 5034,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the

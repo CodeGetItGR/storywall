@@ -389,6 +389,16 @@ export interface RefundDecisionRequestDto {
     note?: string | null;
 }
 
+export interface PlatformMetricsResponseDto {
+    totalUsers: number;
+    activeUsers: number;
+    usersByAccountPlan: Record<string, number>;
+    totalEvents: number;
+    activeEvents: number;
+    eventsByStatus: Record<string, number>;
+    eventsByPlanTier: Record<string, number>;
+}
+
 export interface UnprocessedWebhookDto {
     id: string;
     provider: string | null;
@@ -990,6 +1000,8 @@ export interface PlanTierRequestDto {
     priceAmountMinor?: number | null;
     priceCurrency?: string | null;
     billingPeriod?: BillingPeriod | null;
+    recurringPriceAmountMinor?: number | null;
+    includedMonths?: number | null;
     discountPercent?: number | null;
     discountLabel?: string | null;
     discountStartsAt?: string | null;

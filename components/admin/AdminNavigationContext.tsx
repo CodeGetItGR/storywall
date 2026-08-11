@@ -1,10 +1,10 @@
 'use client';
 
-import { CalendarDays, Layers3, LifeBuoy, type LucideIcon,Receipt, Shield, Undo2, Users } from 'lucide-react';
+import { BarChart3, CalendarDays, Layers3, LifeBuoy, type LucideIcon, Receipt, Shield, Undo2, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-export type AdminTab = 'accountPlans' | 'eventPlans' | 'modules' | 'assignments' | 'billingOps' | 'refunds' | 'lifecycle';
+export type AdminTab = 'metrics' | 'accountPlans' | 'eventPlans' | 'modules' | 'assignments' | 'billingOps' | 'refunds' | 'lifecycle';
 
 export type AdminTabItem = {
     key: AdminTab;
@@ -13,6 +13,7 @@ export type AdminTabItem = {
 };
 
 const HASH_TO_TAB: Record<string, AdminTab> = {
+    '#metrics': 'metrics',
     '#account-plans': 'accountPlans',
     '#event-plans': 'eventPlans',
     '#modules': 'modules',
@@ -23,6 +24,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
 };
 
 const TAB_TO_HASH: Record<AdminTab, string> = {
+    metrics: '#metrics',
     accountPlans: '#account-plans',
     eventPlans: '#event-plans',
     modules: '#modules',
@@ -43,8 +45,8 @@ const AdminNavigationContext = createContext<
 >(undefined);
 
 function currentHashTab(): AdminTab {
-    if (typeof window === 'undefined') return 'accountPlans';
-    return HASH_TO_TAB[window.location.hash] ?? 'accountPlans';
+    if (typeof window === 'undefined') return 'metrics';
+    return HASH_TO_TAB[window.location.hash] ?? 'metrics';
 }
 
 export function AdminNavigationProvider({ children }: { children: ReactNode }) {
@@ -57,7 +59,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
         }
 
         if (!window.location.hash) {
-            window.history.replaceState(null, '', TAB_TO_HASH.accountPlans);
+            window.history.replaceState(null, '', TAB_TO_HASH.metrics);
         }
 
         window.addEventListener('hashchange', syncFromHash);
@@ -72,6 +74,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
 
     const tabs = useMemo<AdminTabItem[]>(
         () => [
+            { key: 'metrics', label: t('metrics'), icon: BarChart3 },
             { key: 'accountPlans', label: t('accountPlans'), icon: Users },
             { key: 'eventPlans', label: t('eventPlans'), icon: CalendarDays },
             { key: 'modules', label: t('modules'), icon: Shield },

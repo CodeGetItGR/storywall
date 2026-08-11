@@ -15,6 +15,7 @@ import type {
     PlanTierPatchDto,
     PlanTierRequestDto,
     PlanTierResponseDto,
+    PlatformMetricsResponseDto,
     PlatformModulePatchDto,
     PlatformModuleResponseDto,
     RefundDecisionRequestDto,
@@ -30,7 +31,16 @@ export const adminKeys = {
     unprocessedWebhooks: ['admin', 'webhooks', 'unprocessed'] as const,
     notificationSweep: ['admin', 'notifications', 'sweep'] as const,
     refundRequests: ['admin', 'refund-requests'] as const,
+    metrics: ['admin', 'metrics'] as const,
 };
+
+// GET /api/admin/metrics - live platform dashboard counts.
+export function useAdminMetrics() {
+    return useQuery({
+        queryKey: adminKeys.metrics,
+        queryFn: () => api.get<PlatformMetricsResponseDto>(endpoints.admin.metrics),
+    });
+}
 
 // POST /api/admin/orders/{orderId}/settle — marks an order paid with no provider
 // payment behind it (bank transfer, comped event, lost webhook) and activates the
@@ -46,6 +56,7 @@ export function useSettleOrder() {
             // The settled order belongs to an event whose billing/status just moved.
             queryClient.invalidateQueries({ queryKey: ['events'] });
             queryClient.invalidateQueries({ queryKey: ['billing'] });
+            queryClient.invalidateQueries({ queryKey: adminKeys.metrics });
         },
     });
 }
@@ -115,6 +126,7 @@ export function useDecideRefundRequest() {
             // Approval reverses the order and returns the event to DRAFT.
             queryClient.invalidateQueries({ queryKey: ['events'] });
             queryClient.invalidateQueries({ queryKey: ['billing'] });
+            queryClient.invalidateQueries({ queryKey: adminKeys.metrics });
         },
     });
 }
@@ -128,6 +140,7 @@ export function useFreezeEvent() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['events'] });
             queryClient.invalidateQueries({ queryKey: ['billing'] });
+            queryClient.invalidateQueries({ queryKey: adminKeys.metrics });
         },
     });
 }
@@ -144,6 +157,7 @@ export function usePurgeEvent() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['events'] });
             queryClient.invalidateQueries({ queryKey: ['billing'] });
+            queryClient.invalidateQueries({ queryKey: adminKeys.metrics });
         },
     });
 }
@@ -256,6 +270,7 @@ export function useAssignEventPlanTier() {
             queryClient.invalidateQueries({ queryKey: usageKeys.event(usage.eventId) });
             queryClient.setQueryData(usageKeys.event(usage.eventId), usage);
             queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+            queryClient.invalidateQueries({ queryKey: adminKeys.metrics });
         },
     });
 }

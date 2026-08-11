@@ -1116,6 +1116,7 @@
             "closeMenu": "Close menu",
             "accountPlans": "Account plans",
             "eventPlans": "Event plans",
+            "metrics": "Metrics",
             "plans": "Plans",
             "modules": "Modules",
             "assignments": "Assignments",
@@ -1126,6 +1127,7 @@
             "signOutConfirmBody": "Please confirm before leaving the admin area."
         },
         "tabs": {
+            "metrics": "Metrics",
             "accountPlans": "Account plans",
             "eventPlans": "Event plans",
             "plans": "Plans",
@@ -1146,10 +1148,13 @@
             "unit": "Unit",
             "maxMembers": "Members",
             "maxActiveEvents": "Active events",
+            "maxEventsPerUser": "Max active events per user",
             "price": "Price",
             "priceAmountMinor": "Price minor",
             "priceCurrency": "Currency",
             "billingPeriod": "Billing",
+            "recurringPrice": "Monthly price",
+            "includedMonths": "Included months",
             "discountPercent": "Discount %",
             "blankUnlimited": "Blank = unlimited",
             "isDefault": "Default",
@@ -1173,8 +1178,10 @@
             "storage": "storage",
             "members": "members",
             "activeEvents": "active events",
+            "eventsPerUser": "events per user",
             "moduleCount": "{count, plural, one {# module} other {# modules}}",
             "includedModules": "Included modules",
+            "accountDisabledNotice": "Account plans are disabled for new sales and assignment. Existing rows remain here for historical review and limited maintenance.",
             "saveModules": "Save modules",
             "destructiveHint": "Archive plans instead of deleting them once they may be in use.",
             "deleteConfirmTitle": "Delete {code}?",
@@ -1250,7 +1257,22 @@
             "confirmUserTitle": "Assign plan to {userId}?",
             "confirmUserBody": "This changes the user account plan to {plan} and may alter account limits immediately.",
             "confirmEventTitle": "Assign plan to {eventId}?",
-            "confirmEventBody": "This changes the event plan to {plan} and may alter storage, member, and module limits immediately."
+            "confirmEventBody": "This changes the event plan to {plan} and may alter storage, member, and module limits immediately.",
+            "accountDisabledNotice": "Account-plan assignment is disabled by the backend. Users keep their existing account plan; only event-plan assignment remains available."
+        },
+        "metrics": {
+            "eyebrow": "Live platform counts",
+            "title": "Platform metrics",
+            "subtitle": "Dashboard totals from the admin metrics endpoint. Group keys come from live plan and status data.",
+            "loading": "Loading metrics...",
+            "refresh": "Refresh",
+            "totalUsers": "Total users",
+            "activeUsers": "Active users",
+            "totalEvents": "Total events",
+            "activeEvents": "Active events",
+            "usersByAccountPlan": "Users by account plan",
+            "eventsByStatus": "Events by status",
+            "eventsByPlanTier": "Events by event plan"
         },
         "errors": {
             "planInUse": "This plan is in use. Archive it instead of deleting it.",
@@ -1263,7 +1285,8 @@
             "orderNotRefundable": "Only the activation payment can be refunded.",
             "eventNotActive": "This event is not live, so that action does not apply.",
             "webhookAlreadyProcessed": "This webhook was already processed. Refresh the list.",
-            "webhookNotReplayable": "This webhook cannot be replayed because its body was not stored."
+            "webhookNotReplayable": "This webhook cannot be replayed because its body was not stored.",
+            "accountPlansDisabled": "Account plans are disabled; only event plans can be created or assigned."
         },
         "billingOps": {
             "notice": "Settling an order marks it paid with no provider payment behind it and activates the event exactly as a real payment would. On dev and staging this is the only way an event leaves DRAFT.",

@@ -51,7 +51,7 @@ export function RightContextPanel() {
             className="fixed right-0 top-0 z-30 hidden h-screen w-75 flex-col overflow-y-auto border-l border-border bg-background no-scrollbar xl:flex"
         >
             <div className="flex flex-col gap-5 p-5">
-                <div className="rounded-[1.5rem] border border-border bg-gradient-to-b from-surface-muted to-card p-4 shadow-[0_12px_30px_rgba(36,31,26,0.05)]">
+                <div className="rounded-[1.5rem] border border-border bg-linear-to-b from-surface-muted to-card p-4 shadow-[0_12px_30px_rgba(36,31,26,0.05)]">
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-faint">{t('hostConsole')}</p>
                     <h2 className="mt-2 text-lg font-semibold leading-tight text-ink text-balance">{activeEvent.title}</h2>
                     <p className="mt-1 text-sm text-ink-muted">{eventDateLabel}</p>

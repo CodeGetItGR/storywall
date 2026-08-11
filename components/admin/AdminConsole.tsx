@@ -8,6 +8,7 @@ import { EventLifecyclePanel } from '@/components/admin/EventLifecyclePanel';
 import { ModuleRegistryPanel } from '@/components/admin/ModuleRegistryPanel';
 import { PlanAssignmentPanel } from '@/components/admin/PlanAssignmentPanel';
 import { PlanCatalogPanel } from '@/components/admin/PlanCatalogPanel';
+import { PlatformMetricsPanel } from '@/components/admin/PlatformMetricsPanel';
 import { RefundQueuePanel } from '@/components/admin/RefundQueuePanel';
 
 export function AdminConsole() {
@@ -23,6 +24,7 @@ export function AdminConsole() {
             </header>
 
             <main className="min-w-0">
+                {tab === 'metrics' && <PlatformMetricsPanel />}
                 {tab === 'accountPlans' && <PlanCatalogPanel scope="ACCOUNT" />}
                 {tab === 'eventPlans' && <PlanCatalogPanel scope="EVENT" />}
                 {tab === 'modules' && <ModuleRegistryPanel />}
