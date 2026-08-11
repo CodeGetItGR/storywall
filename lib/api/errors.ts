@@ -49,6 +49,8 @@ export const ERROR_CODES = {
     WEBHOOK_ALREADY_PROCESSED: 5032,
     WEBHOOK_NOT_REPLAYABLE: 5033,
     ACCOUNT_PLANS_DISABLED: 5034,
+    QR_LINK_NOT_FOUND: 2004,
+    INVITATION_EXHAUSTED: 5035,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the

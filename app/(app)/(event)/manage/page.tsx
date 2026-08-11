@@ -9,6 +9,7 @@ import { ElementType, useCallback, useEffect, useState } from 'react';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventInvitations } from '@/hooks/useEventInvitations';
 import { useEventMembers } from '@/hooks/useEventMembers';
+import { useEventQrLinks } from '@/hooks/useQrLinks';
 import { useEventRsvps } from '@/hooks/useRsvps';
 import { useEventUsage } from '@/hooks/useUsage';
 import { isEventWritable } from '@/lib/eventLifecycle';
@@ -86,6 +87,7 @@ export default function ManagePage() {
     const { data: members = [] } = useEventMembers(isHost ? eventId : null);
     const { data: rsvps = [] } = useEventRsvps(isHost ? eventId : null);
     const { data: invitations = [] } = useEventInvitations(isHost ? eventId : null);
+    const { data: qrLinks = [] } = useEventQrLinks(isHost ? eventId : null);
     const { data: eventUsage = null } = useEventUsage(isHost ? eventId : null);
     const { data: appConfig } = useAppConfig();
 
@@ -170,7 +172,9 @@ export default function ManagePage() {
 
             {tab === 'rsvp' && <RsvpTab t={t} members={members} rsvps={rsvps} />}
 
-            {tab === 'invitations' && eventId && <InvitationsTab t={t} eventId={eventId} invitations={invitations} canWrite={canWrite} />}
+            {tab === 'invitations' && eventId && (
+                <InvitationsTab t={t} eventId={eventId} invitations={invitations} qrLinks={qrLinks} canWrite={canWrite} />
+            )}
 
             {tab === 'settings' && <SettingsTab t={t} event={activeEvent} canWrite={canWrite} />}
         </>

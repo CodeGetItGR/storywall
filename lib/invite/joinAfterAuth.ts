@@ -2,7 +2,11 @@ import { ApiError } from '@/lib/api/client';
 import { ERROR_CODES, getErrorCode, getQuotaExceededDetails } from '@/lib/api/errors';
 
 export type JoinResult =
-    { status: 'joined' } | { status: 'alreadyMember' } | { status: 'memberLimitExceeded'; planCode?: string } | { status: 'expired' };
+    | { status: 'joined' }
+    | { status: 'alreadyMember' }
+    | { status: 'memberLimitExceeded'; planCode?: string }
+    | { status: 'invitationExhausted' }
+    | { status: 'expired' };
 
 // Shared by /login and /register: after a successful login/register, accept
 // the pending invitation. 409 means the caller is already a member — treat
@@ -16,6 +20,7 @@ export async function joinEventAfterAuth(accept: (inviteToken: string) => Promis
         if (err instanceof ApiError && getErrorCode(err) === ERROR_CODES.EVENT_MEMBER_LIMIT_EXCEEDED) {
             return { status: 'memberLimitExceeded', planCode: getQuotaExceededDetails(err)?.planCode };
         }
+        if (err instanceof ApiError && getErrorCode(err) === ERROR_CODES.INVITATION_EXHAUSTED) return { status: 'invitationExhausted' };
         if (err instanceof ApiError && err.status === 410) return { status: 'expired' };
         throw err;
     }

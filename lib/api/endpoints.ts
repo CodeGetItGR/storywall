@@ -45,6 +45,7 @@ export const endpoints = {
         hosts: (eventId: string) => `/api/events/${eventId}/hosts`,
         hostById: (eventId: string, id: string) => `/api/events/${eventId}/hosts/${id}`,
         invitations: (eventId: string) => `/api/events/${eventId}/invitations`,
+        qrLinks: (eventId: string) => `/api/events/${eventId}/qr-links`,
         members: (eventId: string) => `/api/events/${eventId}/members`,
         modules: (eventId: string) => `/api/events/${eventId}/modules`,
         sessions: (eventId: string) => `/api/events/${eventId}/sessions`,
@@ -75,6 +76,12 @@ export const endpoints = {
         byId: (id: string) => `/api/event-invitations/${id}`,
         accept: (inviteToken: string) => `/api/event-invitations/${inviteToken}/accept`,
         preview: (inviteToken: string) => `/api/event-invitations/${inviteToken}/preview`,
+    },
+
+    qrLinks: {
+        byId: (id: string) => `/api/qr-links/${id}`,
+        revoke: (id: string) => `/api/qr-links/${id}/revoke`,
+        resolve: (token: string) => `/api/qr/${token}`,
     },
 
     eventMembers: {

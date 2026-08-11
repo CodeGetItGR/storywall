@@ -62,6 +62,10 @@ export default function LoginPage() {
                     setError(nextPlan ? t('memberLimitExceededWithPlan', { plan: nextPlan.name }) : t('memberLimitExceeded'));
                     return;
                 }
+                if (result.status === 'invitationExhausted') {
+                    setError(t('invitationExhausted'));
+                    return;
+                }
             }
 
             router.push(auth.role === 'ADMIN' ? routes.admin : routes.feed);

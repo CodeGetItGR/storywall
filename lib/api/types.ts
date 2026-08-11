@@ -138,6 +138,7 @@ export interface LogoutRequestDto {
 export interface GuestLoginRequestDto {
     inviteToken: string;
     displayName: string;
+    guestKey?: string;
 }
 
 // --- §4 Users, Me, Sessions, Notifications ---
@@ -397,6 +398,55 @@ export interface PlatformMetricsResponseDto {
     activeEvents: number;
     eventsByStatus: Record<string, number>;
     eventsByPlanTier: Record<string, number>;
+}
+
+export type QrTargetType = 'EVENT_JOIN' | 'MEDIA_UPLOAD' | 'INVITATION';
+export type QrLinkStatus = 'ACTIVE' | 'REVOKED' | 'EXPIRED' | 'TARGET_UNAVAILABLE';
+
+export interface QrLinkRequestDto {
+    targetType: QrTargetType;
+    targetId?: string;
+    maxGuests?: number;
+    label?: string;
+    metadata?: Record<string, unknown>;
+    expiresAt?: string;
+}
+
+export interface QrLinkPatchDto {
+    targetType?: QrTargetType;
+    targetId?: string;
+    label?: string;
+    metadata?: Record<string, unknown>;
+    expiresAt?: string;
+}
+
+export interface QrLinkResponseDto {
+    id: string;
+    eventId: string;
+    token: string;
+    publicUrl: string;
+    targetType: QrTargetType;
+    targetId: string | null;
+    label: string | null;
+    metadata: Record<string, unknown>;
+    expiresAt: string | null;
+    revokedAt: string | null;
+    createdByUserId: string | null;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface QrLinkResolutionDto {
+    status: QrLinkStatus;
+    targetType: QrTargetType;
+    eventId?: string;
+    eventTitle?: string;
+    eventSubtitle?: string | null;
+    coverMediaId?: string | null;
+    eventStatus?: 'ACTIVE' | 'FROZEN';
+    inviteToken?: string;
+    requiresAuth?: boolean;
+    requiresGuestKey?: boolean;
 }
 
 export interface UnprocessedWebhookDto {

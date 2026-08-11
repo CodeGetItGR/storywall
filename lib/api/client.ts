@@ -1,6 +1,14 @@
 import { endpoints } from '@/lib/api/endpoints';
 import type { AuthResponseDto, ProblemDetail } from '@/lib/api/types';
-import { clearSession, getAccessToken, getStoredInviteToken, getStoredRefreshToken, setSession, setStoredRefreshToken } from '@/lib/auth/tokenStore';
+import {
+    clearSession,
+    getAccessToken,
+    getOrCreateGuestKey,
+    getStoredInviteToken,
+    getStoredRefreshToken,
+    setSession,
+    setStoredRefreshToken,
+} from '@/lib/auth/tokenStore';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 
@@ -73,7 +81,7 @@ async function reauthenticate(): Promise<string | null> {
             if (inviteToken) {
                 const auth = await rawFetch<AuthResponseDto>(endpoints.auth.guestLogin, {
                     method: 'POST',
-                    body: JSON.stringify({ inviteToken }),
+                    body: JSON.stringify({ inviteToken, displayName: 'Guest', guestKey: getOrCreateGuestKey() ?? undefined }),
                 });
                 setSession(auth);
                 return auth.accessToken;
@@ -148,6 +156,7 @@ async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise
 
 export const api = {
     get: <T>(path: string, options?: RequestInit) => apiFetch<T>(path, { ...options, method: 'GET' }),
+    publicGet: <T>(path: string, options?: RequestInit) => rawFetch<T>(path, { ...options, method: 'GET' }),
     post: <T>(path: string, data?: unknown, options?: RequestInit) =>
         apiFetch<T>(path, {
             ...options,

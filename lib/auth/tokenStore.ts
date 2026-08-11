@@ -11,6 +11,7 @@ import type { PlatformRole } from '@/lib/api/types';
 
 const REFRESH_TOKEN_KEY = 'storywall.refreshToken';
 const INVITE_TOKEN_KEY = 'storywall.inviteToken';
+const GUEST_KEY_KEY = 'storywall.guestKey';
 
 interface AuthState {
     accessToken: string | null;
@@ -101,4 +102,15 @@ export function setStoredInviteToken(inviteToken: string | null) {
     } else {
         window.sessionStorage.removeItem(INVITE_TOKEN_KEY);
     }
+}
+
+export function getOrCreateGuestKey(): string | null {
+    if (typeof window === 'undefined') return null;
+
+    const existing = window.localStorage.getItem(GUEST_KEY_KEY);
+    if (existing) return existing;
+
+    const key = window.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    window.localStorage.setItem(GUEST_KEY_KEY, key);
+    return key;
 }

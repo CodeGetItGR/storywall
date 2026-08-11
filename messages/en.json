@@ -168,7 +168,8 @@
         "createAccountLink": "Create one",
         "expiredInvite": "This invitation has expired. Please ask your host for a new invite link.",
         "memberLimitExceeded": "This event has reached the member limit for its current plan. Ask the host to upgrade before joining.",
-        "memberLimitExceededWithPlan": "This event is full on its current plan. Ask the host to upgrade to {plan} before joining."
+        "memberLimitExceededWithPlan": "This event is full on its current plan. Ask the host to upgrade to {plan} before joining.",
+        "invitationExhausted": "This invite link is full. Ask the host to raise its guest limit or send you a new link."
     },
     "RegisterPage": {
         "title": "Create account",
@@ -190,7 +191,8 @@
         "signInLink": "Sign in",
         "expiredInvite": "This invitation has expired. Please ask your host for a new invite link.",
         "memberLimitExceeded": "This event has reached the member limit for its current plan. Ask the host to upgrade before joining.",
-        "memberLimitExceededWithPlan": "This event is full on its current plan. Ask the host to upgrade to {plan} before joining."
+        "memberLimitExceededWithPlan": "This event is full on its current plan. Ask the host to upgrade to {plan} before joining.",
+        "invitationExhausted": "This invite link is full. Ask the host to raise its guest limit or send you a new link."
     },
     "WelcomePage": {
         "title": "Let's get started",
@@ -225,6 +227,36 @@
         "haveAccount": "I have an account",
         "createAccount": "Create an account",
         "back": "Back"
+    },
+    "QrCodePage": {
+        "fallbackTitle": "You're invited",
+        "defaultHeroImageAlt": "Event cover photo",
+        "eventJoinEyebrow": "Join the event",
+        "mediaUploadEyebrow": "Share your photos",
+        "frozenNotice": "This event is currently read-only. You can still join and view the wall, but new uploads are paused.",
+        "invitationExhausted": "This invite link is full. Ask the host to raise its guest limit or send you a new link.",
+        "guestForm": {
+            "displayNameLabel": "Your name",
+            "displayNamePlaceholder": "How should we show your name?",
+            "submit": "Join",
+            "submitMedia": "Continue"
+        },
+        "unknown": {
+            "title": "Code not found",
+            "description": "We do not recognise this QR code. Double-check the card or ask your host for a new one."
+        },
+        "revoked": {
+            "title": "This code is no longer active",
+            "description": "The host turned this QR code off. Ask them for a new one."
+        },
+        "expired": {
+            "title": "This code has expired",
+            "description": "Ask your host for a fresh QR code."
+        },
+        "unavailable": {
+            "title": "This event is not available",
+            "description": "The event behind this QR code is not available right now."
+        }
     },
     "ToolsPage": {
         "title": "Tools",
@@ -507,6 +539,10 @@
             "retryIn": "Try again in {seconds}s"
         },
         "invitations": {
+            "panels": {
+                "invites": "Invites",
+                "qr": "QR Codes"
+            },
             "empty": "No invitations yet. Create one to generate a shareable link.",
             "claimed": "Claimed",
             "unclaimed": "Unclaimed",
@@ -522,6 +558,10 @@
             "create": {
                 "cta": "New invitation",
                 "title": "New invitation",
+                "subtitle": "Create the join link and optional guest prefill in one place.",
+                "prefillTitle": "Guest prefill",
+                "alsoCreateQr": "Also create a QR code",
+                "alsoCreateQrHint": "Creates a matching QR code that opens this specific invitation.",
                 "cancel": "Cancel",
                 "submit": "Create invitation"
             },
@@ -536,6 +576,45 @@
                 "inviteCode": "e.g. TABLE-7"
             },
             "readOnly": "This event is read-only. Invitation changes are paused, but existing invite links can still be copied."
+        },
+        "qr": {
+            "summary": "{count} QR codes",
+            "empty": "No QR codes yet. Create one for posters, table cards, or printed invitations.",
+            "readOnly": "This event is read-only. QR code changes are paused, but existing codes can still be previewed and printed.",
+            "untitled": "Untitled QR code",
+            "preview": "Preview",
+            "revoke": "Revoke",
+            "confirmRevoke": "Confirm revoke",
+            "revokeConfirmTitle": "Revoke this QR code?",
+            "revokeConfirmBody": "Future scans will show that this code is no longer active. Printed cards will keep the same URL, but they will stop joining guests.",
+            "downloadSvg": "Download SVG",
+            "print": "Print",
+            "noInvitations": "Create an invitation first, then link this QR code to it.",
+            "create": {
+                "cta": "New QR code",
+                "title": "New QR code",
+                "subtitle": "Make a printable scan link for posters, table cards, or invite cards.",
+                "submit": "Create QR code"
+            },
+            "fields": {
+                "targetType": "Destination",
+                "label": "Label",
+                "maxGuests": "Max guests",
+                "invitation": "Invitation"
+            },
+            "placeholders": {
+                "label": "e.g. Entrance poster"
+            },
+            "targetTypes": {
+                "EVENT_JOIN": "Join event",
+                "MEDIA_UPLOAD": "Photo upload",
+                "INVITATION": "Specific invitation"
+            },
+            "status": {
+                "ACTIVE": "Active",
+                "REVOKED": "Revoked",
+                "EXPIRED": "Expired"
+            }
         },
         "settings": {
             "title": "Event details",

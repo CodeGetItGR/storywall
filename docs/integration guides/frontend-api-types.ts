@@ -58,7 +58,17 @@ type PostType = "TEXT" | "MEDIA" | "ANNOUNCEMENT" | "PLAYLIST"; // server-enforc
 interface RegisterRequestDto { email: string; password: string; } // password 8-100 chars
 interface LoginRequestDto { email: string; password: string; }
 interface RefreshRequestDto { refreshToken: string; } // also the body for /logout
-interface GuestLoginRequestDto { inviteToken: string; } // UUID
+interface GuestLoginRequestDto {
+  inviteToken: string;   // UUID
+  displayName: string;
+  /**
+   * Opaque per-device key. Generate once (crypto.randomUUID()), persist in localStorage, send it
+   * on every guest-login thereafter. REQUIRED whenever the invite is shared by more than one
+   * guest — which is every QR link. Omitting it there is a 400. Max 64 chars.
+   * See `QrLinkResolutionDto.requiresGuestKey`.
+   */
+  guestKey?: string;
+}
 
 interface AuthResponseDto {
   accessToken: string;
@@ -665,4 +675,71 @@ export interface PlatformMetricsResponseDto {
   eventsByStatus: Record<string, number>;
   /** Keyed by EVENT-scope plan code, e.g. 'BASIC'. Missing key = 0. */
   eventsByPlanTier: Record<string, number>;
+}
+
+// ---- Dynamic QR links ----
+
+export type QrTargetType = 'EVENT_JOIN' | 'MEDIA_UPLOAD' | 'INVITATION';
+
+export type QrLinkStatus = 'ACTIVE' | 'REVOKED' | 'EXPIRED' | 'TARGET_UNAVAILABLE';
+
+/** POST /api/events/{eventId}/qr-links */
+export interface QrLinkRequestDto {
+  targetType: QrTargetType;
+  /** Required for INVITATION (must belong to the same event); must be omitted otherwise. */
+  targetId?: string;
+  /** EVENT_JOIN / MEDIA_UPLOAD only. 1..1000, default 50. */
+  maxGuests?: number;
+  label?: string;                        // max 100, host-facing only
+  metadata?: Record<string, unknown>;    // host-facing only, never returned publicly
+  expiresAt?: string;
+}
+
+/** PATCH /api/qr-links/{id}. Every field optional; omitted fields are left unchanged. */
+export interface QrLinkPatchDto {
+  targetType?: QrTargetType;
+  targetId?: string;
+  label?: string;
+  metadata?: Record<string, unknown>;
+  expiresAt?: string;
+}
+
+/** Host-facing view. Returned by every /api/qr-links and /api/events/{id}/qr-links endpoint. */
+export interface QrLinkResponseDto {
+  id: string;
+  eventId: string;
+  token: string;
+  /** Absolute, stable, printable. Render THIS as the QR code — do not build the URL yourself. */
+  publicUrl: string;
+  targetType: QrTargetType;
+  targetId: string | null;
+  label: string | null;
+  metadata: Record<string, unknown>;
+  expiresAt: string | null;   // null = never expires
+  revokedAt: string | null;   // non-null = dead; revocation is one-way
+  createdByUserId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * GET /api/qr/{token} — PUBLIC, no Authorization header.
+ * Only `status` and `targetType` are always present; everything else is ACTIVE-only.
+ * An unknown token is the sole error case (404, errorCode 2004).
+ */
+export interface QrLinkResolutionDto {
+  status: QrLinkStatus;
+  targetType: QrTargetType;
+  eventId?: string;
+  eventTitle?: string;
+  eventSubtitle?: string | null;
+  coverMediaId?: string | null;
+  /** Only these two can appear here — anything else resolves as TARGET_UNAVAILABLE instead.
+   *  FROZEN is readable but rejects every write, so grey out upload CTAs. */
+  eventStatus?: 'ACTIVE' | 'FROZEN';
+  /** Feed this to POST /api/auth/guest-login. */
+  inviteToken?: string;
+  requiresAuth?: boolean;
+  /** When true, guest-login MUST carry a guestKey. True for every shared code. */
+  requiresGuestKey?: boolean;
 }

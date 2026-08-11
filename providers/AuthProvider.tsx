@@ -8,6 +8,7 @@ import type { AuthResponseDto, PlatformRole } from '@/lib/api/types';
 import {
     clearSession,
     getAuthState,
+    getOrCreateGuestKey,
     getStoredInviteToken,
     getStoredRefreshToken,
     setSession,
@@ -66,6 +67,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 } else if (inviteToken) {
                     const auth = await api.post<AuthResponseDto>(endpoints.auth.guestLogin, {
                         inviteToken,
+                        displayName: 'Guest',
+                        guestKey: getOrCreateGuestKey() ?? undefined,
                     });
                     if (!cancelled) applyAuthResponse(auth);
                 }
@@ -100,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const auth = await api.post<AuthResponseDto>(endpoints.auth.guestLogin, {
                 inviteToken,
                 displayName,
+                guestKey: getOrCreateGuestKey() ?? undefined,
             });
             applyAuthResponse(auth);
             setStoredInviteToken(inviteToken);
