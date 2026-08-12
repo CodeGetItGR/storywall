@@ -2,7 +2,7 @@
 
 import { BadgePlus, Music3, Play, TextCursorInput } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, type SubmitEvent, useState } from 'react';
+import React, { type ChangeEvent, useState } from 'react';
 
 import { AddSongFieldShell } from '@/components/playlist/AddSongFieldShell';
 import { SpotifyMark, YouTubeMark } from '@/components/playlist/MusicServiceMarks';
@@ -52,7 +52,7 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmit, compact = false
         setComment(event.target.value);
     }
 
-    async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
+    async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
 
         const trimmedTitle = title.trim();

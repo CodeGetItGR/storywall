@@ -1,6 +1,7 @@
 'use client';
 
 import { Loader2, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import React, { type ChangeEvent, useState } from 'react';
 
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
@@ -9,19 +10,18 @@ import { useCreateQrLink } from '@/hooks/useQrLinks';
 import type { EventInvitationResponseDto, QrLinkRequestDto, QrTargetType } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
-import { fieldControlClass, fieldLabelClass, fieldTextClass, formPanelClass, type ManageTranslations } from './shared';
+import { fieldControlClass, fieldLabelClass, fieldTextClass, formPanelClass } from './shared';
 
 export function CreateQrLinkForm({
-    t,
     eventId,
     invitations,
     onDone,
 }: {
-    t: ManageTranslations;
     eventId: string;
     invitations: EventInvitationResponseDto[];
     onDone: () => void;
 }) {
+    const t = useTranslations('ManagePage');
     const createQrLink = useCreateQrLink(eventId);
     const [targetType, setTargetType] = useState<QrTargetType>('EVENT_JOIN');
     const [label, setLabel] = useState('');

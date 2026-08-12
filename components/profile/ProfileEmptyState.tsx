@@ -2,15 +2,13 @@
 
 import { CalendarHeart } from 'lucide-react';
 import Link from 'next/link';
-import type { useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 import { routes } from '@/lib/routes';
 
-interface ProfileEmptyStateProps {
-    t: ReturnType<typeof useTranslations>;
-}
+export function ProfileEmptyState() {
+    const t = useTranslations('ProfilePage');
 
-export function ProfileEmptyState({ t }: ProfileEmptyStateProps) {
     return (
         <div className="mx-auto max-w-2xl px-4 pt-6 pb-24 lg:pb-8">
             <div className="flex flex-col items-center justify-center rounded-2xl bg-card px-6 py-16 text-center">

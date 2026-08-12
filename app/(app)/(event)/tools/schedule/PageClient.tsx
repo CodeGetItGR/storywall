@@ -110,7 +110,7 @@ function ScheduleScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDe
 
     return (
         <div className="mx-auto max-w-2xl px-4 pb-24 lg:pb-8">
-            <SchedulePageHeader t={t} onBack={handleBack} onAddSession={openCreateEditor} canAddSession={canManageSchedule} />
+            <SchedulePageHeader onBack={handleBack} onAddSession={openCreateEditor} canAddSession={canManageSchedule} />
 
             {isHost && !canWrite && (
                 <p className="mb-4 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('host.readOnly')}</p>
@@ -119,14 +119,13 @@ function ScheduleScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDe
             {deleteError && <p className="mb-4 text-xs font-medium text-rose-500">{deleteError}</p>}
 
             {sessions.length === 0 ? (
-                <ScheduleEmptyState isHost={isHost} canWrite={canWrite} t={t} />
+                <ScheduleEmptyState isHost={isHost} canWrite={canWrite} />
             ) : (
                 <ScheduleSessionsList
                     sessions={sessions}
                     editingSessionId={editingSessionId}
                     isHost={isHost}
                     locale={locale}
-                    t={t}
                     onEdit={beginEditSession}
                     onDelete={handleDeleteSession}
                     deleteDisabled={deleteSession.isPending || !canManageSchedule}
@@ -144,7 +143,6 @@ function ScheduleScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDe
                     defaultStartAt={defaultStartAt ?? ''}
                     createSession={createSession}
                     updateSession={updateSession}
-                    t={t}
                 />
             )}
 

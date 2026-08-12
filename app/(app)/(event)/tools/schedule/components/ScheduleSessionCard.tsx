@@ -13,14 +13,14 @@ function SessionActions({
     onEdit,
     onDelete,
     deleteDisabled,
-    t,
 }: {
     session: EventSessionResponseDto;
     onEdit: (session: EventSessionResponseDto) => void;
     onDelete: (session: EventSessionResponseDto) => void;
     deleteDisabled: boolean;
-    t: ReturnType<typeof useTranslations>;
 }) {
+    const t = useTranslations('SchedulePage');
+
     function handleEditClick() {
         onEdit(session);
     }
@@ -46,7 +46,6 @@ interface ScheduleSessionCardProps {
     isHost: boolean;
     canManage: boolean;
     isEditing: boolean;
-    t: ReturnType<typeof useTranslations>;
     locationContent?: ReactNode;
     timeContent?: ReactNode;
     onEdit: (session: EventSessionResponseDto) => void;
@@ -60,7 +59,6 @@ export function ScheduleSessionCard({
     isHost,
     canManage,
     isEditing,
-    t,
     locationContent,
     timeContent,
     onEdit,
@@ -68,6 +66,8 @@ export function ScheduleSessionCard({
     deleteDisabled,
     className,
 }: ScheduleSessionCardProps) {
+    const t = useTranslations('SchedulePage');
+
     return (
         <article
             className={cn(
@@ -84,7 +84,7 @@ export function ScheduleSessionCard({
 
                 <div className="flex items-start gap-2">
                     {timeContent}
-                    {isHost && canManage && <SessionActions session={session} onEdit={onEdit} onDelete={onDelete} deleteDisabled={deleteDisabled} t={t} />}
+                    {isHost && canManage && <SessionActions session={session} onEdit={onEdit} onDelete={onDelete} deleteDisabled={deleteDisabled} />}
                 </div>
             </div>
 

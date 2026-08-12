@@ -2,7 +2,7 @@
 
 import { Check, ImagePlus, Loader2, X } from 'lucide-react';
 import Image from 'next/image';
-import type { useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
@@ -16,7 +16,9 @@ const inputClass =
     'bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition disabled:cursor-not-allowed disabled:opacity-60';
 const labelClass = 'text-xs font-semibold text-ink-muted uppercase tracking-wide';
 
-export default function SettingsTab({ t, event, canWrite }: { t: ReturnType<typeof useTranslations>; event: EventDetailResponseDto; canWrite: boolean }) {
+export default function SettingsTab({ event, canWrite }: { event: EventDetailResponseDto; canWrite: boolean }) {
+    const t = useTranslations('ManagePage');
+
     const initial = {
         title: event.title,
         subtitle: event.subtitle ?? '',

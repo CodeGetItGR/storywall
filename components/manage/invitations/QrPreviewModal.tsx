@@ -2,24 +2,22 @@
 
 import { Download, Printer } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import { useTranslations } from 'next-intl';
 import { useRef } from 'react';
 
 import { Modal } from '@/components/ui/modal';
 import type { QrLinkResponseDto } from '@/lib/api/types';
 
-import type { ManageTranslations } from './shared';
-
 export function QrPreviewModal({
-    t,
     qrLink,
     open,
     onClose,
 }: {
-    t: ManageTranslations;
     qrLink: QrLinkResponseDto;
     open: boolean;
     onClose: () => void;
 }) {
+    const t = useTranslations('ManagePage');
     const svgRef = useRef<SVGSVGElement | null>(null);
 
     function handleDownloadSvg() {

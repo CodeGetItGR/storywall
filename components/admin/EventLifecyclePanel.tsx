@@ -42,7 +42,7 @@ export function EventLifecyclePanel() {
         setPendingFreeze(null);
     }
 
-    function handlePurge(event: FormEvent<HTMLFormElement>) {
+    function handlePurge(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
         const eventId = purgeId.trim();
         if (!eventId || purgeConfirm.trim() !== eventId) return;

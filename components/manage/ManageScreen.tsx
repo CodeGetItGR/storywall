@@ -89,7 +89,6 @@ export function ManageScreen({ activeEvent, eventId, isHost }: { activeEvent: Ev
         <>
             {tab === 'overview' && (
                 <OverviewTab
-                    t={t}
                     memberCount={members.length}
                     daysToGo={daysToGo}
                     invitationCount={invitations.length}
@@ -106,13 +105,13 @@ export function ManageScreen({ activeEvent, eventId, isHost }: { activeEvent: Ev
                 />
             )}
 
-            {tab === 'rsvp' && <RsvpTab t={t} members={members} rsvps={rsvps} />}
+            {tab === 'rsvp' && <RsvpTab members={members} rsvps={rsvps} />}
 
             {tab === 'invitations' && eventId && (
-                <InvitationsTab t={t} eventId={eventId} invitations={invitations} qrLinks={qrLinks} qrLinkStats={qrLinkStats} canWrite={canWrite} />
+                <InvitationsTab eventId={eventId} invitations={invitations} qrLinks={qrLinks} qrLinkStats={qrLinkStats} canWrite={canWrite} />
             )}
 
-            {tab === 'settings' && <SettingsTab t={t} event={activeEvent} canWrite={canWrite} />}
+            {tab === 'settings' && <SettingsTab event={activeEvent} canWrite={canWrite} />}
         </>
     );
 

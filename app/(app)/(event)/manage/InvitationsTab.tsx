@@ -1,7 +1,7 @@
 'use client';
 
 import { Plus } from 'lucide-react';
-import type { useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
 import {
@@ -15,20 +15,19 @@ import {
 import type { EventInvitationResponseDto, QrLinkResponseDto, QrLinkStatsDto } from '@/lib/api/types';
 
 export default function InvitationsTab({
-    t,
     eventId,
     invitations,
     qrLinks,
     qrLinkStats,
     canWrite,
 }: {
-    t: ReturnType<typeof useTranslations>;
     eventId: string;
     invitations: EventInvitationResponseDto[];
     qrLinks: QrLinkResponseDto[];
     qrLinkStats: QrLinkStatsDto[];
     canWrite: boolean;
 }) {
+    const t = useTranslations('ManagePage');
     const [showCreate, setShowCreate] = useState(false);
     const [panel, setPanel] = useState<InvitationPanel>('invites');
 
@@ -84,22 +83,22 @@ export default function InvitationsTab({
                 </p>
             )}
 
-            {showCreate && canWrite && showInvites && <CreateInvitationForm t={t} eventId={eventId} onDone={handleHideCreate} />}
+            {showCreate && canWrite && showInvites && <CreateInvitationForm eventId={eventId} onDone={handleHideCreate} />}
             {showCreate && canWrite && !showInvites && (
-                <CreateQrLinkForm t={t} eventId={eventId} invitations={invitations} onDone={handleHideCreate} />
+                <CreateQrLinkForm eventId={eventId} invitations={invitations} onDone={handleHideCreate} />
             )}
 
             {showInvites ? (
                 <div className="flex flex-col divide-y divide-border">
                     {invitations.map((invitation) => (
-                        <InvitationRow key={invitation.id} t={t} eventId={eventId} invitation={invitation} canWrite={canWrite} />
+                        <InvitationRow key={invitation.id} eventId={eventId} invitation={invitation} canWrite={canWrite} />
                     ))}
                 </div>
             ) : (
                 <div className="flex flex-col divide-y divide-border">
                     {qrLinks.map((qrLink) => {
                         const stats = qrLinkStats.find((row) => row.qrLinkId === qrLink.id);
-                        return <QrLinkRow key={qrLink.id} t={t} eventId={eventId} qrLink={qrLink} stats={stats} canWrite={canWrite} />;
+                        return <QrLinkRow key={qrLink.id} eventId={eventId} qrLink={qrLink} stats={stats} canWrite={canWrite} />;
                     })}
                 </div>
             )}

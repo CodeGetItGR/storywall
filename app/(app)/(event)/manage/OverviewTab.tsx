@@ -1,5 +1,5 @@
 import { Clock, Loader2, Ticket, Users } from 'lucide-react';
-import type { useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { ElementType, useState } from 'react';
 
 import Section from '@/components/manage/Section';
@@ -25,7 +25,6 @@ function Stat({ label, value, sub, color, Icon }: { label: string; value: string
 }
 
 export default function OverviewTab({
-    t,
     memberCount,
     daysToGo,
     invitationCount,
@@ -40,7 +39,6 @@ export default function OverviewTab({
     eventStatus,
     endAt,
 }: {
-    t: ReturnType<typeof useTranslations>;
     memberCount: number;
     daysToGo: number;
     invitationCount: number;
@@ -55,6 +53,7 @@ export default function OverviewTab({
     eventStatus: 'DRAFT' | 'ACTIVE' | 'FROZEN' | 'PURGED';
     endAt: string | null;
 }) {
+    const t = useTranslations('ManagePage');
     const checkout = useCheckout(eventId);
     const [checkoutError, setCheckoutError] = useState<string | null>(null);
     const toErrorMessage = useApiErrorMessage();

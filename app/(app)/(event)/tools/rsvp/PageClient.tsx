@@ -44,7 +44,7 @@ function RsvpScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDetail
                 </Link>
             </div>
 
-            <RsvpTab t={t} members={members} rsvps={rsvps} />
+            <RsvpTab members={members} rsvps={rsvps} />
         </div>
     );
 }

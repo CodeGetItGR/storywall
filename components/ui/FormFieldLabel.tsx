@@ -11,26 +11,39 @@ interface FormFieldLabelProps {
     children: ReactNode;
     className?: string;
     labelClassName?: string;
+    required?: boolean;
+    optional?: boolean;
     indicator?: FormFieldLabelIndicator;
     indicatorClassName?: string;
 }
 
-export function FormFieldLabel({ label, children, className, labelClassName, indicator, indicatorClassName }: FormFieldLabelProps) {
+export function FormFieldLabel({
+    label,
+    children,
+    className,
+    labelClassName,
+    required,
+    optional,
+    indicator,
+    indicatorClassName,
+}: FormFieldLabelProps) {
+    const resolvedIndicator = indicator ?? (required ? 'required' : optional ? 'optional' : undefined);
+
     return (
         <label className={cn('flex min-w-0 flex-col gap-1.5', className)}>
             <span className={cn('text-xs font-semibold uppercase tracking-wide text-ink-muted', labelClassName)}>
                 <span>{label}</span>
-                {indicator && (
+                {resolvedIndicator && (
                     <span
                         aria-hidden="true"
                         className={cn(
-                            indicator === 'required'
+                            resolvedIndicator === 'required'
                                 ? 'ml-1 align-top text-[0.7em] font-medium text-ink-muted/80'
                                 : 'ml-1 text-[10px] font-medium normal-case tracking-normal text-ink-faint',
                             indicatorClassName
                         )}
                     >
-                        {indicator === 'required' ? '*' : '(optional)'}
+                        {resolvedIndicator === 'required' ? '*' : '(optional)'}
                     </span>
                 )}
             </span>

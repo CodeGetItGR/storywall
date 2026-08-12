@@ -14,7 +14,6 @@ interface ScheduleSessionsListProps {
     editingSessionId: string | null;
     isHost: boolean;
     locale: string;
-    t: ReturnType<typeof useTranslations>;
     onEdit: (session: EventSessionResponseDto) => void;
     onDelete: (session: EventSessionResponseDto) => void;
     deleteDisabled: boolean;
@@ -26,12 +25,12 @@ export function ScheduleSessionsList({
     editingSessionId,
     isHost,
     locale,
-    t,
     onEdit,
     onDelete,
     deleteDisabled,
     canManage,
 }: ScheduleSessionsListProps) {
+    const t = useTranslations('SchedulePage');
     const sortedSessions = sortSessions(sessions);
     const groupedSessions = groupSessions(sortedSessions);
     const datedKeys = Object.keys(groupedSessions).filter((key) => key !== 'unscheduled').sort();
@@ -62,7 +61,6 @@ export function ScheduleSessionsList({
                                     isHost={isHost}
                                     canManage={canManage}
                                     isEditing={editingSessionId === session.id}
-                                    t={t}
                                     onEdit={onEdit}
                                     onDelete={onDelete}
                                     deleteDisabled={deleteDisabled}
@@ -100,7 +98,6 @@ export function ScheduleSessionsList({
                                 isHost={isHost}
                                 canManage={canManage}
                                 isEditing={editingSessionId === session.id}
-                                t={t}
                                 onEdit={onEdit}
                                 onDelete={onDelete}
                                 deleteDisabled={deleteDisabled}

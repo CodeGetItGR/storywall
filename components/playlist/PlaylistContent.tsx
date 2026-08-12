@@ -2,7 +2,7 @@
 
 import { ArrowLeft, Plus } from 'lucide-react';
 import Link from 'next/link';
-import type { useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 import { PlaylistItemRow, PlaylistLeaderboard } from '@/components/playlist';
 import type { PlaylistSuggestionLeaderboardDto, PlaylistSuggestionResponseDto } from '@/lib/api/types';
@@ -20,7 +20,6 @@ interface PlaylistContentProps {
     onSuggest: () => void;
     suggestions: PlaylistSuggestionResponseDto[];
     suggestionsLoading: boolean;
-    t: ReturnType<typeof useTranslations>;
 }
 
 export function PlaylistContent({
@@ -33,8 +32,9 @@ export function PlaylistContent({
     onSuggest,
     suggestions,
     suggestionsLoading,
-    t,
 }: PlaylistContentProps) {
+    const t = useTranslations('PlaylistPage');
+
     return (
         <div className="mx-auto max-w-2xl px-4 pb-24 lg:pb-8">
             <div className="mb-5 flex items-center justify-between gap-3 py-4">

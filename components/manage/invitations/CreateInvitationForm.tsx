@@ -1,6 +1,7 @@
 'use client';
 
 import { Loader2, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import React, { type ChangeEvent, useState } from 'react';
 
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
@@ -11,9 +12,10 @@ import { getFieldErrors } from '@/lib/api/errors';
 import type { EventInvitationRequestDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
-import { fieldControlClass, fieldLabelClass, fieldTextClass, formPanelClass, type ManageTranslations } from './shared';
+import { fieldControlClass, fieldLabelClass, fieldTextClass, formPanelClass } from './shared';
 
-export function CreateInvitationForm({ t, eventId, onDone }: { t: ManageTranslations; eventId: string; onDone: () => void }) {
+export function CreateInvitationForm({ eventId, onDone }: { eventId: string; onDone: () => void }) {
+    const t = useTranslations('ManagePage');
     const createInvitation = useCreateEventInvitation();
     const createQrLink = useCreateQrLink(eventId);
     const [inviteCode, setInviteCode] = useState('');

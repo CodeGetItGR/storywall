@@ -8,6 +8,7 @@
 - Put utility functions, formatting helpers, route helpers, and domain logic in `lib/`, preferably under an existing domain file before creating a new one.
 - Avoid local React context in a page unless multiple distant descendants truly need shared mutable state. Prefer props for local page composition.
 - Do not keep stale guard variables that can hide valid UI. Empty, loading, and error states should be explicit and tied to the data they actually depend on.
+- Prefer `React.SubmitEvent` for form submit handlers instead of `FormEvent`.
 
 ## Reuse
 

@@ -2,7 +2,7 @@
 
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import type { useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 import { EventPlanComparison } from '@/components/plan/EventPlanComparison';
 import type { AppConfigResponseDto, PlanTierResponseDto } from '@/lib/api/types';
@@ -14,10 +14,11 @@ interface PlansContentProps {
     plans: PlanTierResponseDto[];
     selectedPlan: PlanTierResponseDto | null;
     selectedPlanCode: string | null;
-    t: ReturnType<typeof useTranslations>;
 }
 
-export function PlansContent({ modules, nextPlan, plans, selectedPlan, selectedPlanCode, t }: PlansContentProps) {
+export function PlansContent({ modules, nextPlan, plans, selectedPlan, selectedPlanCode }: PlansContentProps) {
+    const t = useTranslations('EventPlanSettingsPage');
+
     return (
         <main className="h-full overflow-y-auto">
             <div className="mx-auto max-w-6xl px-4 pb-24 pt-5 sm:pt-6 lg:pb-10">

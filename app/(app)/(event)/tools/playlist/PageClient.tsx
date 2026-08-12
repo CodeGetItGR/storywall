@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { PlaylistContent, PlaylistDisabledState } from '@/components/playlist';
 import { EventRouteGate, EventRouteSpinner } from '@/components/routing/EventRouteGate';
 import { usePlaylistPageData } from '@/hooks/usePlaylistPageData';
@@ -12,6 +14,7 @@ export default function PlaylistPage() {
 
 function PlaylistScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDetailResponseDto; eventId: string; isHost: boolean }) {
     const data = usePlaylistPageData({ activeEvent, eventId, isHost });
+    const t = useTranslations('PlaylistPage');
 
     if (data.isLoadingModules) {
         return <EventRouteSpinner />;
@@ -20,14 +23,14 @@ function PlaylistScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDe
     if (!data.playlistEnabled) {
         return (
             <PlaylistDisabledState
-                backLabel={data.t('backToFeed')}
+                backLabel={t('backToFeed')}
                 body={
                     data.playlistInRegistry && data.unlockPlanNames
-                        ? data.t('disabledUpgradeBody', { plans: data.unlockPlanNames })
-                        : data.t('disabledBody')
+                        ? t('disabledUpgradeBody', { plans: data.unlockPlanNames })
+                        : t('disabledBody')
                 }
                 eventId={eventId}
-                title={data.t('disabledTitle')}
+                title={t('disabledTitle')}
             />
         );
     }
@@ -43,7 +46,6 @@ function PlaylistScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDe
             onSuggest={data.onSuggest}
             suggestions={data.suggestions}
             suggestionsLoading={data.suggestionsLoading}
-            t={data.t}
         />
     );
 }

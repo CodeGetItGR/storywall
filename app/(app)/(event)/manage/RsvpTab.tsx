@@ -1,5 +1,5 @@
 import { CheckCircle2, Clock, HelpCircle, Users } from 'lucide-react';
-import type { useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import type { ElementType } from 'react';
 import { useMemo } from 'react';
 
@@ -25,7 +25,8 @@ function SummaryCard({ label, value, icon: Icon }: { label: string; value: numbe
     );
 }
 
-export default function RsvpTab({ t, members, rsvps }: { t: ReturnType<typeof useTranslations>; members: Member[]; rsvps: Rsvp[] }) {
+export default function RsvpTab({ members, rsvps }: { members: Member[]; rsvps: Rsvp[] }) {
+    const t = useTranslations('ManagePage');
     const rsvpByMember = useMemo(() => new Map(rsvps.map((rsvp) => [rsvp.eventMemberId, rsvp])), [rsvps]);
 
     const guests = useMemo(() => members.filter((member) => member.role !== 'HOST'), [members]);

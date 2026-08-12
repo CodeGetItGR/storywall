@@ -4,13 +4,14 @@ import { ArrowLeft, Calendar, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 interface SchedulePageHeaderProps {
-    t: ReturnType<typeof useTranslations>;
     onBack: () => void;
     onAddSession: () => void;
     canAddSession: boolean;
 }
 
-export function SchedulePageHeader({ t, onBack, onAddSession, canAddSession }: SchedulePageHeaderProps) {
+export function SchedulePageHeader({ onBack, onAddSession, canAddSession }: SchedulePageHeaderProps) {
+    const t = useTranslations('SchedulePage');
+
     return (
         <>
             <div className="flex items-center justify-between gap-3 py-4">

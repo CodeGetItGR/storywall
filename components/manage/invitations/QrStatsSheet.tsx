@@ -1,16 +1,14 @@
 'use client';
 
 import { AlertTriangle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import React from 'react';
 
 import { Modal } from '@/components/ui/modal';
 import type { QrLinkResponseDto, QrLinkStatsDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
-import type { ManageTranslations } from './shared';
-
 export function QrStatsSheet({
-    t,
     qrLink,
     stats,
     open,
@@ -18,7 +16,6 @@ export function QrStatsSheet({
     canRaiseLimit,
     onRaiseLimit,
 }: {
-    t: ManageTranslations;
     qrLink: QrLinkResponseDto;
     stats: QrLinkStatsDto;
     open: boolean;
@@ -26,6 +23,7 @@ export function QrStatsSheet({
     canRaiseLimit: boolean;
     onRaiseLimit: () => void;
 }) {
+    const t = useTranslations('ManagePage');
     const remainingSlots = stats.remainingSlots ?? null;
     const isLowOnSlots = remainingSlots !== null && remainingSlots <= 5;
 

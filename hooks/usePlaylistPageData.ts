@@ -1,5 +1,3 @@
-import { useTranslations } from 'next-intl';
-
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventModules } from '@/hooks/useEventModules';
 import { usePlaylistLeaderboard, usePlaylistSuggestions } from '@/hooks/usePlaylist';
@@ -9,7 +7,6 @@ import { findPlansUnlockingModule } from '@/lib/planTiers';
 import { useComposer } from '@/providers/ComposerProvider';
 
 export function usePlaylistPageData({ activeEvent, eventId, isHost }: { activeEvent: EventDetailResponseDto; eventId: string; isHost: boolean }) {
-    const t = useTranslations('PlaylistPage');
     const { openSongComposer, canComposeSong } = useComposer();
     const { data: appConfig } = useAppConfig();
     const { data: modules = [], isLoading: isLoadingModules } = useEventModules(eventId);
@@ -30,7 +27,6 @@ export function usePlaylistPageData({ activeEvent, eventId, isHost }: { activeEv
         playlistInRegistry,
         suggestions: suggestionsData ?? [],
         suggestionsLoading,
-        t,
         unlockPlanNames,
     };
 }

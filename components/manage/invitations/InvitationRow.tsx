@@ -1,6 +1,7 @@
 'use client';
 
 import { Copy, Pencil, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { type ChangeEvent, useCallback, useState } from 'react';
 
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
@@ -9,19 +10,16 @@ import type { EventInvitationPatchDto, EventInvitationResponseDto } from '@/lib/
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
-import type { ManageTranslations } from './shared';
-
 export function InvitationRow({
-    t,
     eventId,
     invitation,
     canWrite,
 }: {
-    t: ManageTranslations;
     eventId: string;
     invitation: EventInvitationResponseDto;
     canWrite: boolean;
 }) {
+    const t = useTranslations('ManagePage');
     const [isEditing, setIsEditing] = useState(false);
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const [copied, setCopied] = useState(false);

@@ -184,6 +184,5 @@ export function useRsvpSubmitPageData() {
         plusOnes,
         submitErrorMessage,
         submitted,
-        t,
     };
 }

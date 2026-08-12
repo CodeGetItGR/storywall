@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { RsvpForm, RsvpHeader, RsvpSubmittedView } from '@/components/rsvp';
 import type { useRsvpSubmitPageData } from '@/hooks/useRsvpSubmitPageData';
 
@@ -23,6 +25,8 @@ function RsvpSubmittedContent({ data }: { data: RsvpSubmitPageData }) {
 }
 
 function RsvpSubmitFormContent({ data }: { data: RsvpSubmitPageData }) {
+    const t = useTranslations('RSVPPage');
+
     return (
         <div className="mx-auto max-w-2xl px-4 pb-24 lg:pb-8">
             <RsvpHeader onGoBack={data.onGoBack} />
@@ -38,7 +42,7 @@ function RsvpSubmitFormContent({ data }: { data: RsvpSubmitPageData }) {
                 onMessageChange={data.onMessageChange}
                 onSubmit={data.onSubmit}
                 submitDisabled={!data.attending || !data.memberId || data.isSubmitting || !data.canSubmitRsvp}
-                submitError={!data.canSubmitRsvp ? data.t('eventReadOnly') : data.submitErrorMessage}
+                submitError={!data.canSubmitRsvp ? t('eventReadOnly') : data.submitErrorMessage}
             />
         </div>
     );

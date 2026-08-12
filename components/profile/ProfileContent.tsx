@@ -1,6 +1,6 @@
 'use client';
 
-import type { useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 import { EventListItem } from '@/components/profile/EventListItem';
 import type { useEventDetails } from '@/hooks/useEvent';
@@ -9,10 +9,11 @@ import type { EventMemberResponseDto } from '@/lib/api/types';
 interface ProfileContentProps {
     eventQueries: ReturnType<typeof useEventDetails>;
     memberships: EventMemberResponseDto[];
-    t: ReturnType<typeof useTranslations>;
 }
 
-export function ProfileContent({ eventQueries, memberships, t }: ProfileContentProps) {
+export function ProfileContent({ eventQueries, memberships }: ProfileContentProps) {
+    const t = useTranslations('ProfilePage');
+
     return (
         <div className="mx-auto max-w-2xl px-4 pt-6 pb-24 lg:pb-8">
             <div className="mt-6">

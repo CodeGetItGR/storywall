@@ -5,10 +5,10 @@ import { useTranslations } from 'next-intl';
 interface ScheduleEmptyStateProps {
     isHost: boolean;
     canWrite: boolean;
-    t: ReturnType<typeof useTranslations>;
 }
 
-export function ScheduleEmptyState({ isHost, canWrite, t }: ScheduleEmptyStateProps) {
+export function ScheduleEmptyState({ isHost, canWrite }: ScheduleEmptyStateProps) {
+    const t = useTranslations('SchedulePage');
     const hostReadOnly = isHost && !canWrite;
 
     return (

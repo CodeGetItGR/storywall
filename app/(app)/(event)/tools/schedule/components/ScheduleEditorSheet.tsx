@@ -24,7 +24,6 @@ interface ScheduleEditorSheetProps {
     defaultStartAt: string;
     createSession: SessionMutator;
     updateSession: SessionMutator;
-    t: ReturnType<typeof useTranslations>;
 }
 
 interface ScheduleEditorFormProps {
@@ -35,7 +34,6 @@ interface ScheduleEditorFormProps {
     createSession: SessionMutator;
     updateSession: SessionMutator;
     onClose: () => void;
-    t: ReturnType<typeof useTranslations>;
 }
 
 function ScheduleEditorForm({
@@ -46,8 +44,9 @@ function ScheduleEditorForm({
     createSession,
     updateSession,
     onClose,
-    t,
 }: ScheduleEditorFormProps) {
+    const t = useTranslations('SchedulePage');
+
     const initialTitle = editingSession?.title ?? '';
     const initialDescription = editingSession?.description ?? '';
     const initialStartAt = editingSession?.startAt ? toDatetimeLocalValue(editingSession.startAt) : defaultStartAt;
@@ -277,8 +276,9 @@ export function ScheduleEditorSheet({
     defaultStartAt,
     createSession,
     updateSession,
-    t,
 }: ScheduleEditorSheetProps) {
+    const t = useTranslations('SchedulePage');
+
     function handleClose() {
         onOpenChange(false);
     }
@@ -297,7 +297,6 @@ export function ScheduleEditorSheet({
                     createSession={createSession}
                     updateSession={updateSession}
                     onClose={handleClose}
-                    t={t}
                 />
             )}
         </Modal>

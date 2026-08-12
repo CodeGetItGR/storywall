@@ -1,6 +1,7 @@
 'use client';
 
 import { AlertTriangle, BarChart3, Copy, Pencil, QrCode, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { type ChangeEvent, useCallback, useState } from 'react';
 
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
@@ -12,21 +13,19 @@ import { cn } from '@/lib/utils';
 
 import { QrPreviewModal } from './QrPreviewModal';
 import { QrStatsSheet } from './QrStatsSheet';
-import type { ManageTranslations } from './shared';
 
 export function QrLinkRow({
-    t,
     eventId,
     qrLink,
     stats,
     canWrite,
 }: {
-    t: ManageTranslations;
     eventId: string;
     qrLink: QrLinkResponseDto;
     stats?: QrLinkStatsDto;
     canWrite: boolean;
 }) {
+    const t = useTranslations('ManagePage');
     const [previewOpen, setPreviewOpen] = useState(false);
     const [statsOpen, setStatsOpen] = useState(false);
     const [revokeConfirmOpen, setRevokeConfirmOpen] = useState(false);
@@ -209,10 +208,9 @@ export function QrLinkRow({
                 </div>
             </div>
 
-            <QrPreviewModal t={t} qrLink={qrLink} open={previewOpen} onClose={handlePreviewClose} />
+            <QrPreviewModal qrLink={qrLink} open={previewOpen} onClose={handlePreviewClose} />
             {stats && (
                 <QrStatsSheet
-                    t={t}
                     qrLink={qrLink}
                     stats={stats}
                     open={statsOpen}

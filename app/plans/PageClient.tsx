@@ -23,7 +23,6 @@ export default function PlansPage() {
             plans={data.plans}
             selectedPlan={data.selectedPlan}
             selectedPlanCode={data.selectedPlanCode}
-            t={data.t}
         />
     );
 }
