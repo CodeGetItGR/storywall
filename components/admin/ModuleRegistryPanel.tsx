@@ -2,7 +2,7 @@
 
 import { Check, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { type FormEvent, useState } from 'react';
+import React, { useState } from 'react';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
@@ -20,7 +20,7 @@ function ModuleRow({ module }: { module: PlatformModuleResponseDto }) {
     const updateModule = useUpdatePlatformModule();
     const [pendingUpdate, setPendingUpdate] = useState<PendingModuleUpdate | null>(null);
 
-    function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
         setPendingUpdate({
@@ -50,19 +50,21 @@ function ModuleRow({ module }: { module: PlatformModuleResponseDto }) {
                 onSubmit={handleSubmit}
                 className="grid gap-3 border-b border-border py-4 md:grid-cols-[minmax(10rem,0.9fr)_minmax(14rem,1.25fr)_5.5rem_auto] md:items-end md:gap-4"
             >
-                <AdminField label={module.moduleKey}>
+                <AdminField label={module.moduleKey} required>
                     <input name="name" required maxLength={100} defaultValue={module.name} className={adminInputClass()} />
                 </AdminField>
-                <AdminField label={t('fields.description')}>
+                <AdminField label={t('fields.description')} optional>
                     <input name="description" defaultValue={module.description ?? ''} className={adminInputClass()} />
                 </AdminField>
-                <AdminField label={t('fields.sort')}>
+                <AdminField label={t('fields.sort')} optional>
                     <input name="sortOrder" type="number" min={0} defaultValue={module.sortOrder} className={adminInputClass()} />
                 </AdminField>
                 <div className="flex items-center justify-between gap-3 md:justify-end">
                     <label className="inline-flex items-center gap-2 text-sm font-medium text-ink-muted">
                         <input type="checkbox" name="isEnabled" defaultChecked={module.isEnabled} className="h-4 w-4 accent-primary" />
-                        {t('modules.enabled')}
+                        <span>
+                            {t('modules.enabled')} <span className="text-ink-faint">(optional)</span>
+                        </span>
                     </label>
                     <button
                         type="submit"

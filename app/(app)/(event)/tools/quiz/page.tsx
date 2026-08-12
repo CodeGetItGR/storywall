@@ -3,7 +3,7 @@
 import { ArrowLeft, ArrowRight, CheckCircle2, HelpCircle, RefreshCw, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { quizQuestions } from '@/lib/mock-data';
 import { routes } from '@/lib/routes';
@@ -102,9 +102,9 @@ export default function QuizPage() {
                                 <p className="text-sm font-semibold text-ink mb-2">{q.question}</p>
                                 <div className="flex items-start gap-2">
                                     {correct ? (
-                                        <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                                     ) : (
-                                        <XCircle className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
+                                        <XCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
                                     )}
                                     <p className="text-xs text-ink-muted leading-snug">
                                         {correct
@@ -194,12 +194,12 @@ export default function QuizPage() {
                                     revealed ? 'cursor-default' : 'cursor-pointer'
                                 )}
                             >
-                                <span className="w-5 h-5 rounded-full border-2 border-current flex items-center justify-center flex-shrink-0 text-[10px] font-bold">
+                                <span className="w-5 h-5 rounded-full border-2 border-current flex items-center justify-center shrink-0 text-[10px] font-bold">
                                     {String.fromCharCode(65 + idx)}
                                 </span>
                                 {option}
-                                {revealed && isCorrect && <CheckCircle2 className="w-4 h-4 text-emerald-500 ml-auto flex-shrink-0" />}
-                                {revealed && isSelected && !isCorrect && <XCircle className="w-4 h-4 text-rose-500 ml-auto flex-shrink-0" />}
+                                {revealed && isCorrect && <CheckCircle2 className="w-4 h-4 text-emerald-500 ml-auto shrink-0" />}
+                                {revealed && isSelected && !isCorrect && <XCircle className="w-4 h-4 text-rose-500 ml-auto shrink-0" />}
                             </button>
                         );
                     })}

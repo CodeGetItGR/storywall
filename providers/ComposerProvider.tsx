@@ -4,7 +4,7 @@ import { ImagePlus, Music3, Send, X } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { createContext, type ReactNode, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, type ReactNode, useContext, useEffect, useRef, useState } from 'react';
 
 import { AddSongForm } from '@/components/playlist';
 import Avatar from '@/components/ui/avatar';

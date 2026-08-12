@@ -7,6 +7,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { EventPlanPaymentStep } from '@/components/plan/EventPlanPaymentStep';
 import { EventPlanSelector } from '@/components/plan/EventPlanSelector';
+import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateEvent } from '@/hooks/useEvent';
@@ -182,8 +183,7 @@ export default function CreateEventPage() {
                                             {t('selectedPlan', { plan: selectedPlan.name })}
                                         </div>
                                     )}
-                                    <label className="flex flex-col gap-1.5">
-                                        <span className="text-xs font-semibold text-ink-muted uppercase tracking-wide">{t('fields.title')}</span>
+                                    <FormFieldLabel label={t('fields.title')} required>
                                         <input
                                             type="text"
                                             required
@@ -193,10 +193,9 @@ export default function CreateEventPage() {
                                             className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
                                         />
                                         {fieldErrors?.title && <span className="text-xs text-rose-500">{fieldErrors.title}</span>}
-                                    </label>
+                                    </FormFieldLabel>
 
-                                    <label className="flex flex-col gap-1.5">
-                                        <span className="text-xs font-semibold text-ink-muted uppercase tracking-wide">{t('fields.eventType')}</span>
+                                    <FormFieldLabel label={t('fields.eventType')}>
                                         <div className="relative">
                                             <select
                                                 value={eventType}
@@ -211,13 +210,10 @@ export default function CreateEventPage() {
                                             </select>
                                             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted pointer-events-none" />
                                         </div>
-                                    </label>
+                                    </FormFieldLabel>
 
                                     <div className="grid gap-3 sm:grid-cols-2">
-                                        <label className="flex flex-col gap-1.5">
-                                            <span className="text-xs font-semibold text-ink-muted uppercase tracking-wide">
-                                                {t('fields.startAt')}
-                                            </span>
+                                        <FormFieldLabel label={t('fields.startAt')} required>
                                             <input
                                                 type="datetime-local"
                                                 required
@@ -225,20 +221,18 @@ export default function CreateEventPage() {
                                                 onChange={onStartAtChange}
                                                 className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
                                             />
-                                        </label>
-                                        <label className="flex flex-col gap-1.5">
-                                            <span className="text-xs font-semibold text-ink-muted uppercase tracking-wide">{t('fields.endAt')}</span>
+                                        </FormFieldLabel>
+                                        <FormFieldLabel label={t('fields.endAt')} optional>
                                             <input
                                                 type="datetime-local"
                                                 value={endAt}
                                                 onChange={onEndAtChange}
                                                 className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
                                             />
-                                        </label>
+                                        </FormFieldLabel>
                                     </div>
 
-                                    <label className="flex flex-col gap-1.5">
-                                        <span className="text-xs font-semibold text-ink-muted uppercase tracking-wide">{t('fields.timezone')}</span>
+                                    <FormFieldLabel label={t('fields.timezone')} required>
                                         <input
                                             type="text"
                                             required
@@ -246,12 +240,9 @@ export default function CreateEventPage() {
                                             onChange={onTimezoneChange}
                                             className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
                                         />
-                                    </label>
+                                    </FormFieldLabel>
 
-                                    <label className="flex flex-col gap-1.5">
-                                        <span className="text-xs font-semibold text-ink-muted uppercase tracking-wide">
-                                            {t('fields.locationName')}
-                                        </span>
+                                    <FormFieldLabel label={t('fields.locationName')} optional>
                                         <input
                                             type="text"
                                             value={locationName}
@@ -259,7 +250,7 @@ export default function CreateEventPage() {
                                             placeholder={t('placeholders.locationName')}
                                             className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
                                         />
-                                    </label>
+                                    </FormFieldLabel>
 
                                     {error && <p className="text-xs text-rose-500 text-center">{error}</p>}
 

@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 
+import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { cn } from '@/lib/utils';
 
 export function adminInputClass(className?: string): string {
@@ -11,11 +12,27 @@ export function adminInputClass(className?: string): string {
     );
 }
 
-export function AdminField({ label, children, className }: { label: string; children: ReactNode; className?: string }) {
+export function AdminField({
+    label,
+    children,
+    className,
+    required,
+    optional,
+}: {
+    label: string;
+    children: ReactNode;
+    className?: string;
+    required?: boolean;
+    optional?: boolean;
+}) {
     return (
-        <label className={cn('flex min-w-0 flex-col gap-0.5', className)}>
-            <span className="text-[11px] font-bold uppercase tracking-wide text-ink-muted">{label}</span>
+        <FormFieldLabel
+            label={label}
+            className={cn('gap-0.5', className)}
+            labelClassName="text-[11px] font-bold uppercase tracking-wide text-ink-muted"
+            indicator={required ? 'required' : optional ? 'optional' : undefined}
+        >
             {children}
-        </label>
+        </FormFieldLabel>
     );
 }

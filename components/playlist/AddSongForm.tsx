@@ -83,7 +83,7 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmit, compact = false
     return (
         <form
             onSubmit={handleSubmit}
-            className={`mb-5 overflow-hidden rounded-[1.75rem] border border-border/70 bg-card shadow-[0_20px_40px_rgba(35,28,22,0.08)] ${compact ? 'shadow-[0_14px_28px_rgba(35,28,22,0.06)]' : ''}`}
+            className={`mb-5`}
         >
             <div className={compact ? 'px-4 pt-4 text-ink' : 'bg-gradient-brand px-5 py-5 text-white'}>
                 <div className={`flex items-start gap-4 ${compact ? 'items-center' : ''}`}>
@@ -106,7 +106,7 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmit, compact = false
 
             <div className={compact ? 'space-y-3 px-4 pb-4 pt-4' : 'space-y-4 px-5 py-5'}>
                 <div className="grid gap-4 md:grid-cols-2">
-                    <AddSongFieldShell icon={Music3} label={t('songTitle')}>
+                    <AddSongFieldShell icon={Music3} label={t('songTitle')} required>
                         <div className="relative">
                             <input
                                 type="text"
@@ -119,7 +119,7 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmit, compact = false
                         </div>
                     </AddSongFieldShell>
 
-                    <AddSongFieldShell icon={Music3} label={t('artist')}>
+                    <AddSongFieldShell icon={Music3} label={t('artist')} optional>
                         <div className="relative">
                             <input
                                 type="text"
@@ -133,7 +133,7 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmit, compact = false
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
-                    <AddSongFieldShell icon={YouTubeMark} label={t('youtubeUrl')}>
+                    <AddSongFieldShell icon={YouTubeMark} label={t('youtubeUrl')} optional>
                         <div className="relative">
                             <input
                                 type="url"
@@ -146,7 +146,7 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmit, compact = false
                         </div>
                     </AddSongFieldShell>
 
-                    <AddSongFieldShell icon={SpotifyMark} label={t('spotifyUrl')}>
+                    <AddSongFieldShell icon={SpotifyMark} label={t('spotifyUrl')} optional iconClassName={"text-[#1DB954]"}>
                         <div className="relative">
                             <input
                                 type="url"
@@ -160,34 +160,15 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmit, compact = false
                     </AddSongFieldShell>
                 </div>
 
-                {compact ? (
-                    <details className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
-                        <summary className="cursor-pointer list-none text-sm font-medium text-ink-muted transition-colors hover:text-ink">
-                            {t('moreDetails')}
-                        </summary>
-                        <div className="mt-3">
-                            <AddSongFieldShell icon={TextCursorInput} label={t('comment')}>
-                                <textarea
-                                    value={comment}
-                                    onChange={handleCommentChange}
-                                    rows={3}
-                                    placeholder={t('commentPlaceholder')}
-                                    className="w-full resize-none rounded-2xl border border-border/70 bg-background/80 px-4 py-3 text-sm leading-relaxed text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
-                                />
-                            </AddSongFieldShell>
-                        </div>
-                    </details>
-                ) : (
-                    <AddSongFieldShell icon={TextCursorInput} label={t('comment')}>
-                        <textarea
-                            value={comment}
-                            onChange={handleCommentChange}
-                            rows={4}
-                            placeholder={t('commentPlaceholder')}
-                            className="w-full resize-none rounded-2xl border border-border/70 bg-background/80 px-4 py-3.5 text-sm leading-relaxed text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
-                        />
-                    </AddSongFieldShell>
-                )}
+                <AddSongFieldShell icon={TextCursorInput} label={t('comment')} optional>
+                    <textarea
+                        value={comment}
+                        onChange={handleCommentChange}
+                        rows={4}
+                        placeholder={t('commentPlaceholder')}
+                        className="w-full resize-none rounded-2xl border border-border/70 bg-background/80 px-4 py-3.5 text-sm leading-relaxed text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                    />
+                </AddSongFieldShell>
 
                 {submitError && <p className="text-xs text-destructive">{submitError}</p>}
 

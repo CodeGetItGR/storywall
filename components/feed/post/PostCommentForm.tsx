@@ -34,25 +34,30 @@ export function PostCommentForm({
     return (
         <form onSubmit={onSubmit} className="bg-background/95 backdrop-blur-sm border-t border-border px-4 py-3 flex flex-col items-center gap-3 shrink-0">
             {error && <p className="text-xs text-destructive px-4">{error}</p>}
-            <section className="flex gap-3 w-full">
-                <input
-                    type="text"
-                    value={value}
-                    onChange={handleChange}
-                    disabled={inputDisabled}
-                    placeholder={placeholder}
-                    aria-label={inputAriaLabel}
-                    className="relative flex-1 bg-surface-muted rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition disabled:cursor-not-allowed disabled:opacity-60"
-                />
-                <button
-                    type="submit"
-                    disabled={submitDisabled}
-                    aria-label={submitAriaLabel}
-                    className="text-primary disabled:text-ink-faint transition-colors"
-                >
-                    <Send className="w-4 h-4" />
-                </button>
-            </section>
+            <div className="w-full space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                    {inputAriaLabel} <span className="text-ink-faint">*</span>
+                </p>
+                <section className="flex gap-3 w-full">
+                    <input
+                        type="text"
+                        value={value}
+                        onChange={handleChange}
+                        disabled={inputDisabled}
+                        placeholder={placeholder}
+                        aria-label={inputAriaLabel}
+                        className="relative flex-1 bg-surface-muted rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition disabled:cursor-not-allowed disabled:opacity-60"
+                    />
+                    <button
+                        type="submit"
+                        disabled={submitDisabled}
+                        aria-label={submitAriaLabel}
+                        className="text-primary disabled:text-ink-faint transition-colors"
+                    >
+                        <Send className="w-4 h-4" />
+                    </button>
+                </section>
+            </div>
         </form>
     );
 }

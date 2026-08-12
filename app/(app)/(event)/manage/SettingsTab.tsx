@@ -5,6 +5,7 @@ import Image from 'next/image';
 import type { useTranslations } from 'next-intl';
 import React, { useEffect, useRef, useState } from 'react';
 
+import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useUpdateEvent } from '@/hooks/useEvent';
 import { useUploadMedia } from '@/hooks/useMedia';
 import { getErrorMessage, getFieldErrors } from '@/lib/api/errors';
@@ -216,14 +217,12 @@ export default function SettingsTab({ t, event, canWrite }: { t: ReturnType<type
                     </div>
                 </div>
 
-                <label className="flex flex-col gap-1.5">
-                    <span className={labelClass}>{t('settings.fields.title')}</span>
+                <FormFieldLabel label={t('settings.fields.title')} required labelClassName={labelClass}>
                     <input type="text" required value={title} onChange={handleTitleChange} disabled={disabled} className={inputClass} />
                     {fieldErrors?.title && <span className="text-xs text-rose-500">{fieldErrors.title}</span>}
-                </label>
+                </FormFieldLabel>
 
-                <label className="flex flex-col gap-1.5">
-                    <span className={labelClass}>{t('settings.fields.subtitle')}</span>
+                <FormFieldLabel label={t('settings.fields.subtitle')} optional labelClassName={labelClass}>
                     <input
                         type="text"
                         value={subtitle}
@@ -232,10 +231,9 @@ export default function SettingsTab({ t, event, canWrite }: { t: ReturnType<type
                         placeholder={t('settings.placeholders.subtitle')}
                         className={inputClass}
                     />
-                </label>
+                </FormFieldLabel>
 
-                <label className="flex flex-col gap-1.5">
-                    <span className={labelClass}>{t('settings.fields.description')}</span>
+                <FormFieldLabel label={t('settings.fields.description')} optional labelClassName={labelClass}>
                     <textarea
                         value={description}
                         onChange={handleDescriptionChange}
@@ -244,15 +242,13 @@ export default function SettingsTab({ t, event, canWrite }: { t: ReturnType<type
                         rows={4}
                         className={`${inputClass} resize-none leading-relaxed`}
                     />
-                </label>
+                </FormFieldLabel>
 
                 <div className="grid gap-3 sm:grid-cols-2">
-                    <label className="flex flex-col gap-1.5">
-                        <span className={labelClass}>{t('settings.fields.locationName')}</span>
+                    <FormFieldLabel label={t('settings.fields.locationName')} optional labelClassName={labelClass}>
                         <input type="text" value={locationName} onChange={handleLocationNameChange} disabled={disabled} className={inputClass} />
-                    </label>
-                    <label className="flex flex-col gap-1.5">
-                        <span className={labelClass}>{t('settings.fields.locationAddress')}</span>
+                    </FormFieldLabel>
+                    <FormFieldLabel label={t('settings.fields.locationAddress')} optional labelClassName={labelClass}>
                         <input
                             type="text"
                             value={locationAddress}
@@ -261,11 +257,10 @@ export default function SettingsTab({ t, event, canWrite }: { t: ReturnType<type
                             placeholder={t('settings.placeholders.locationAddress')}
                             className={inputClass}
                         />
-                    </label>
+                    </FormFieldLabel>
                 </div>
 
-                <label className="flex flex-col gap-1.5">
-                    <span className={labelClass}>{t('settings.fields.mapsUrl')}</span>
+                <FormFieldLabel label={t('settings.fields.mapsUrl')} optional labelClassName={labelClass}>
                     <input
                         type="url"
                         value={mapsUrl}
@@ -274,23 +269,20 @@ export default function SettingsTab({ t, event, canWrite }: { t: ReturnType<type
                         placeholder={t('settings.placeholders.mapsUrl')}
                         className={inputClass}
                     />
-                </label>
+                </FormFieldLabel>
 
                 <div className="grid gap-3 sm:grid-cols-2">
-                    <label className="flex flex-col gap-1.5">
-                        <span className={labelClass}>{t('settings.fields.startAt')}</span>
+                    <FormFieldLabel label={t('settings.fields.startAt')} required labelClassName={labelClass}>
                         <input type="datetime-local" required value={startAt} onChange={handleStartAtChange} disabled={disabled} className={inputClass} />
-                    </label>
-                    <label className="flex flex-col gap-1.5">
-                        <span className={labelClass}>{t('settings.fields.endAt')}</span>
+                    </FormFieldLabel>
+                    <FormFieldLabel label={t('settings.fields.endAt')} optional labelClassName={labelClass}>
                         <input type="datetime-local" value={endAt} onChange={handleEndAtChange} disabled={disabled} className={inputClass} />
-                    </label>
+                    </FormFieldLabel>
                 </div>
 
-                <label className="flex flex-col gap-1.5">
-                    <span className={labelClass}>{t('settings.fields.rsvpDeadline')}</span>
+                <FormFieldLabel label={t('settings.fields.rsvpDeadline')} optional labelClassName={labelClass}>
                     <input type="datetime-local" value={rsvpDeadline} onChange={handleRsvpDeadlineChange} disabled={disabled} className={inputClass} />
-                </label>
+                </FormFieldLabel>
 
                 {updateEvent.isError && !fieldErrors && <p className="text-xs text-rose-500">{getErrorMessage(updateEvent.error)}</p>}
 

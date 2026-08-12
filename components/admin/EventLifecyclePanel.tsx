@@ -2,7 +2,7 @@
 
 import { AlertTriangle, Loader2, Snowflake, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, type FormEvent, useCallback, useState } from 'react';
+import React, { type ChangeEvent, useCallback, useState } from 'react';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
@@ -21,7 +21,7 @@ export function EventLifecyclePanel() {
     const [pendingPurgeId, setPendingPurgeId] = useState<string | null>(null);
     const [purgeResult, setPurgeResult] = useState<{ eventId: string; complete: boolean } | null>(null);
 
-    function handleFreeze(event: FormEvent<HTMLFormElement>) {
+    function handleFreeze(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
         const form = event.currentTarget;
         const eventId = String(new FormData(form).get('eventId') ?? '').trim();
@@ -74,7 +74,7 @@ export function EventLifecyclePanel() {
                 <h2 className="text-base font-semibold text-ink">{t('lifecycle.freezeTitle')}</h2>
                 <p className="mt-1 text-sm text-ink-muted">{t('lifecycle.freezeSubtitle')}</p>
                 <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-                    <AdminField label={t('lifecycle.eventIdField')}>
+                    <AdminField label={t('lifecycle.eventIdField')} required>
                         <input name="eventId" required className={adminInputClass()} placeholder={t('lifecycle.eventIdPlaceholder')} />
                     </AdminField>
                     <button
@@ -97,7 +97,7 @@ export function EventLifecyclePanel() {
                 </h2>
                 <p className="mt-1 text-sm text-rose-700">{t('lifecycle.purgeWarning')}</p>
                 <div className="mt-3 grid gap-3">
-                    <AdminField label={t('lifecycle.eventIdField')}>
+                    <AdminField label={t('lifecycle.eventIdField')} required>
                         <input
                             value={purgeId}
                             onChange={handlePurgeIdChange}
@@ -106,7 +106,7 @@ export function EventLifecyclePanel() {
                             placeholder={t('lifecycle.eventIdPlaceholder')}
                         />
                     </AdminField>
-                    <AdminField label={t('lifecycle.purgeConfirmField')}>
+                    <AdminField label={t('lifecycle.purgeConfirmField')} required>
                         <input
                             value={purgeConfirm}
                             onChange={handlePurgeConfirmChange}

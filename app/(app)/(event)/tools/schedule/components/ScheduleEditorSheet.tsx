@@ -2,8 +2,9 @@
 
 import { Loader2, PencilLine, Plus, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, type FormEvent, useId, useMemo, useState } from 'react';
+import React, { type ChangeEvent, useId, useMemo, useState } from 'react';
 
+import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { Modal } from '@/components/ui/modal';
 import { getErrorMessage } from '@/lib/api/errors';
 import type { EventSessionRequestDto, EventSessionResponseDto } from '@/lib/api/types';
@@ -111,7 +112,7 @@ function ScheduleEditorForm({
         resetToInitialValues();
     }
 
-    async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
 
         const trimmedTitle = title.trim();
@@ -168,8 +169,7 @@ function ScheduleEditorForm({
 
             <Modal.Body className="px-4 py-4 sm:px-5">
                 <form id={formId} className="grid gap-4" onSubmit={handleSubmit}>
-                    <label className="grid gap-1.5">
-                        <span className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{t('host.fields.title')}</span>
+                    <FormFieldLabel label={t('host.fields.title')} required className="grid gap-1.5" labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted">
                         <input
                             type="text"
                             value={title}
@@ -178,30 +178,27 @@ function ScheduleEditorForm({
                             placeholder={t('host.placeholders.title')}
                             required
                         />
-                    </label>
+                    </FormFieldLabel>
 
-                    <label className="grid gap-1.5">
-                        <span className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{t('host.fields.description')}</span>
+                    <FormFieldLabel label={t('host.fields.description')} optional className="grid gap-1.5" labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted">
                         <textarea
                             value={description}
                             onChange={handleDescriptionChange}
                             className="w-full min-h-24 rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                             placeholder={t('host.placeholders.description')}
                         />
-                    </label>
+                    </FormFieldLabel>
 
                     <div className="grid gap-3 sm:grid-cols-2">
-                        <label className="grid gap-1.5">
-                            <span className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{t('host.fields.startAt')}</span>
+                        <FormFieldLabel label={t('host.fields.startAt')} optional className="grid gap-1.5" labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted">
                             <input
                                 type="datetime-local"
                                 value={startAt}
                                 onChange={handleStartAtChange}
                                 className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                             />
-                        </label>
-                        <label className="grid gap-1.5">
-                            <span className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{t('host.fields.endAt')}</span>
+                        </FormFieldLabel>
+                        <FormFieldLabel label={t('host.fields.endAt')} optional className="grid gap-1.5" labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted">
                             <input
                                 type="datetime-local"
                                 value={endAt}
@@ -209,14 +206,13 @@ function ScheduleEditorForm({
                                 min={startAt || undefined}
                                 className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                             />
-                        </label>
+                        </FormFieldLabel>
                     </div>
 
                     {isEndBeforeStart && <p className="text-xs font-medium text-rose-500">{t('host.endBeforeStart')}</p>}
 
                     <div className="grid gap-3 sm:grid-cols-2">
-                        <label className="grid gap-1.5">
-                            <span className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{t('host.fields.locationName')}</span>
+                        <FormFieldLabel label={t('host.fields.locationName')} optional className="grid gap-1.5" labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted">
                             <input
                                 type="text"
                                 value={locationName}
@@ -224,9 +220,8 @@ function ScheduleEditorForm({
                                 className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                                 placeholder={t('host.placeholders.locationName')}
                             />
-                        </label>
-                        <label className="grid gap-1.5">
-                            <span className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{t('host.fields.mapsUrl')}</span>
+                        </FormFieldLabel>
+                        <FormFieldLabel label={t('host.fields.mapsUrl')} optional className="grid gap-1.5" labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted">
                             <input
                                 type="url"
                                 value={mapsUrl}
@@ -234,7 +229,7 @@ function ScheduleEditorForm({
                                 className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                                 placeholder={t('host.placeholders.mapsUrl')}
                             />
-                        </label>
+                        </FormFieldLabel>
                     </div>
 
                     {submitError && <p className="text-xs font-medium text-rose-500">{submitError}</p>}

@@ -3,7 +3,7 @@
 import { ArrowLeft, LayoutGrid, Search, Users, X } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { seatingTables } from '@/lib/mock-data';
 import { routes } from '@/lib/routes';
@@ -53,7 +53,7 @@ export default function SeatingPage() {
 
             {/* Search */}
             <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 mb-5 focus-within:ring-2 focus-within:ring-primary/30 transition">
-                <Search className="w-4 h-4 text-ink-muted flex-shrink-0" />
+                <Search className="w-4 h-4 text-ink-muted shrink-0" />
                 <input
                     type="text"
                     value={search}
@@ -115,7 +115,7 @@ export default function SeatingPage() {
                                 aria-expanded={isExpanded}
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                                    <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
                                         <LayoutGrid className="w-4 h-4 text-indigo-500" />
                                     </div>
                                     <div>

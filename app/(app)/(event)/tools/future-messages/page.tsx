@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import React, { useCallback, useState } from 'react';
 
 import Avatar from '@/components/ui/avatar';
+import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { CURRENT_USER_ID, getUser } from '@/lib/mock-data';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -154,8 +155,7 @@ export default function FutureMessagesPage() {
                     </div>
 
                     {/* Message */}
-                    <div>
-                        <p className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-2">{t('yourMessage')}</p>
+                    <FormFieldLabel label={t('yourMessage')} required className="gap-2">
                         <textarea
                             value={message}
                             onChange={handleMessageChange}
@@ -164,7 +164,7 @@ export default function FutureMessagesPage() {
                             className="w-full bg-surface-muted rounded-2xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-teal-400/30 resize-none transition leading-relaxed"
                             aria-label={t('messageAriaLabel')}
                         />
-                    </div>
+                    </FormFieldLabel>
 
                     <button
                         type="submit"

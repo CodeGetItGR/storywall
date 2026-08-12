@@ -1,8 +1,9 @@
 'use client';
 
 import { Loader2, X } from 'lucide-react';
-import { type ChangeEvent, type FormEvent, useState } from 'react';
+import React, { type ChangeEvent, useState } from 'react';
 
+import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCreateEventInvitation } from '@/hooks/useEventInvitations';
 import { useCreateQrLink } from '@/hooks/useQrLinks';
@@ -50,7 +51,7 @@ export function CreateInvitationForm({ t, eventId, onDone }: { t: ManageTranslat
         setAlsoCreateQr(event.target.checked);
     }
 
-    async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
         const trimmedInviteCode = inviteCode.trim();
         const input: EventInvitationRequestDto = {
@@ -94,8 +95,7 @@ export function CreateInvitationForm({ t, eventId, onDone }: { t: ManageTranslat
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
-                <label className={fieldLabelClass}>
-                    <span className={fieldTextClass}>{t('invitations.fields.inviteCode')}</span>
+                <FormFieldLabel label={t('invitations.fields.inviteCode')} required className={fieldLabelClass} labelClassName={fieldTextClass}>
                     <input
                         type="text"
                         required
@@ -106,31 +106,27 @@ export function CreateInvitationForm({ t, eventId, onDone }: { t: ManageTranslat
                         className={cn(fieldControlClass, 'placeholder:text-ink-faint')}
                     />
                     {fieldErrors?.inviteCode && <span className="text-xs text-rose-500">{fieldErrors.inviteCode}</span>}
-                </label>
-                <label className={fieldLabelClass}>
-                    <span className={fieldTextClass}>{t('invitations.fields.maxGuests')}</span>
+                </FormFieldLabel>
+                <FormFieldLabel label={t('invitations.fields.maxGuests')} required className={fieldLabelClass} labelClassName={fieldTextClass}>
                     <input type="number" required min={1} value={maxGuests} onChange={handleMaxGuestsChange} className={fieldControlClass} />
-                </label>
+                </FormFieldLabel>
             </div>
 
             <div className="mt-4 rounded-xl bg-surface-muted/60 p-3">
                 <p className="mb-3 text-xs font-semibold text-ink">{t('invitations.create.prefillTitle')}</p>
                 <div className="grid gap-3 sm:grid-cols-2">
-                    <label className={fieldLabelClass}>
-                        <span className={fieldTextClass}>{t('invitations.fields.firstName')}</span>
+                    <FormFieldLabel label={t('invitations.fields.firstName')} optional className={fieldLabelClass} labelClassName={fieldTextClass}>
                         <input type="text" value={firstName} onChange={handleFirstNameChange} className={fieldControlClass} />
-                    </label>
-                    <label className={fieldLabelClass}>
-                        <span className={fieldTextClass}>{t('invitations.fields.lastName')}</span>
+                    </FormFieldLabel>
+                    <FormFieldLabel label={t('invitations.fields.lastName')} optional className={fieldLabelClass} labelClassName={fieldTextClass}>
                         <input type="text" value={lastName} onChange={handleLastNameChange} className={fieldControlClass} />
-                    </label>
+                    </FormFieldLabel>
                 </div>
 
-                <label className={cn(fieldLabelClass, 'mt-3')}>
-                    <span className={fieldTextClass}>{t('invitations.fields.email')}</span>
+                <FormFieldLabel label={t('invitations.fields.email')} optional className={cn(fieldLabelClass, 'mt-3')} labelClassName={fieldTextClass}>
                     <input type="email" value={email} onChange={handleEmailChange} className={fieldControlClass} />
                     {fieldErrors?.email && <span className="text-xs text-rose-500">{fieldErrors.email}</span>}
-                </label>
+                </FormFieldLabel>
             </div>
 
             <label className="mt-4 flex items-start gap-3 rounded-xl border border-border bg-background px-3 py-3">
@@ -141,7 +137,9 @@ export function CreateInvitationForm({ t, eventId, onDone }: { t: ManageTranslat
                     className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
                 />
                 <span className="min-w-0">
-                    <span className="block text-sm font-semibold text-ink">{t('invitations.create.alsoCreateQr')}</span>
+                    <span className="block text-sm font-semibold text-ink">
+                        {t('invitations.create.alsoCreateQr')} <span className="text-ink-faint">(optional)</span>
+                    </span>
                     <span className="mt-0.5 block text-xs leading-relaxed text-ink-muted">{t('invitations.create.alsoCreateQrHint')}</span>
                 </span>
             </label>

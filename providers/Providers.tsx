@@ -1,7 +1,7 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState } from 'react';
+import {ReactNode, useState} from 'react';
 
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { ApiError } from '@/lib/api/client';
@@ -15,7 +15,7 @@ function AppConfigBootstrap() {
     return null;
 }
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({ children }: { children: ReactNode }) {
     const [queryClient] = useState(
         () =>
             new QueryClient({

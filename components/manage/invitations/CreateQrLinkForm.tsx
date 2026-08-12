@@ -1,8 +1,9 @@
 'use client';
 
 import { Loader2, X } from 'lucide-react';
-import { type ChangeEvent, type FormEvent, useState } from 'react';
+import React, { type ChangeEvent, useState } from 'react';
 
+import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCreateQrLink } from '@/hooks/useQrLinks';
 import type { EventInvitationResponseDto, QrLinkRequestDto, QrTargetType } from '@/lib/api/types';
@@ -46,7 +47,7 @@ export function CreateQrLinkForm({
         setMaxGuests(Math.max(1, Number(event.target.value)));
     }
 
-    async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
         const input: QrLinkRequestDto = {
             targetType,
@@ -80,17 +81,15 @@ export function CreateQrLinkForm({
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
-                <label className={fieldLabelClass}>
-                    <span className={fieldTextClass}>{t('qr.fields.targetType')}</span>
+                <FormFieldLabel label={t('qr.fields.targetType')} className={fieldLabelClass} labelClassName={fieldTextClass}>
                     <select value={targetType} onChange={handleTargetTypeChange} className={fieldControlClass}>
                         <option value="EVENT_JOIN">{t('qr.targetTypes.EVENT_JOIN')}</option>
                         <option value="MEDIA_UPLOAD">{t('qr.targetTypes.MEDIA_UPLOAD')}</option>
                         <option value="INVITATION">{t('qr.targetTypes.INVITATION')}</option>
                     </select>
-                </label>
+                </FormFieldLabel>
 
-                <label className={fieldLabelClass}>
-                    <span className={fieldTextClass}>{t('qr.fields.label')}</span>
+                <FormFieldLabel label={t('qr.fields.label')} optional className={fieldLabelClass} labelClassName={fieldTextClass}>
                     <input
                         type="text"
                         maxLength={100}
@@ -99,12 +98,11 @@ export function CreateQrLinkForm({
                         placeholder={t('qr.placeholders.label')}
                         className={cn(fieldControlClass, 'placeholder:text-ink-faint')}
                     />
-                </label>
+                </FormFieldLabel>
             </div>
 
             {isInvitationTarget ? (
-                <label className={cn(fieldLabelClass, 'mt-4')}>
-                    <span className={fieldTextClass}>{t('qr.fields.invitation')}</span>
+                <FormFieldLabel label={t('qr.fields.invitation')} required className={cn(fieldLabelClass, 'mt-4')} labelClassName={fieldTextClass}>
                     <select required value={targetId} onChange={handleTargetIdChange} className={fieldControlClass}>
                         {invitations.map((invitation) => (
                             <option key={invitation.id} value={invitation.id}>
@@ -112,10 +110,9 @@ export function CreateQrLinkForm({
                             </option>
                         ))}
                     </select>
-                </label>
+                </FormFieldLabel>
             ) : (
-                <label className={cn(fieldLabelClass, 'mt-4')}>
-                    <span className={fieldTextClass}>{t('qr.fields.maxGuests')}</span>
+                <FormFieldLabel label={t('qr.fields.maxGuests')} required className={cn(fieldLabelClass, 'mt-4')} labelClassName={fieldTextClass}>
                     <input
                         type="number"
                         required
@@ -125,7 +122,7 @@ export function CreateQrLinkForm({
                         onChange={handleMaxGuestsChange}
                         className={fieldControlClass}
                     />
-                </label>
+                </FormFieldLabel>
             )}
 
             {isInvitationTarget && invitations.length === 0 && <p className="mt-3 text-xs text-rose-500">{t('qr.noInvitations')}</p>}

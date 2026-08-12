@@ -2,7 +2,7 @@
 
 import { Archive, ArchiveRestore, Loader2, Pencil, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, type FormEvent, useMemo, useRef, useState } from 'react';
+import React, { type ChangeEvent, useMemo, useRef, useState } from 'react';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminSection } from '@/components/admin/AdminSection';
@@ -114,7 +114,7 @@ export function PlanEditorCard({
         setDeleteOpen(false);
     }
 
-    function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
         if (!canSave) return;
@@ -206,16 +206,17 @@ export function PlanEditorCard({
                         <div className="space-y-1">
                             <AdminSection title={t('plans.sections.identity')}>
                                 <div className={cn('grid gap-3', isEvent ? 'grid-cols-2 lg:grid-cols-4' : 'grid-cols-2 lg:grid-cols-3')}>
-                                    <AdminField label={t('fields.name')} className="col-span-2">
+                                    <AdminField label={t('fields.name')} required className="col-span-2">
                                         <input name="name" defaultValue={plan.name} required maxLength={100} className={adminInputClass()} />
                                     </AdminField>
                                     <AdminField
                                         label={t('fields.description')}
+                                        optional
                                         className={isEvent ? 'col-span-2 lg:col-span-3' : 'col-span-2 lg:col-span-2'}
                                     >
                                         <input name="description" defaultValue={plan.description ?? ''} className={adminInputClass()} />
                                     </AdminField>
-                                    <AdminField label={t('fields.sort')} className="col-span-1 lg:col-span-1">
+                                    <AdminField label={t('fields.sort')} optional className="col-span-1 lg:col-span-1">
                                         <input
                                             name="sortOrder"
                                             type="number"
@@ -255,7 +256,7 @@ export function PlanEditorCard({
                                     {plan.scope === 'EVENT' ? (
                                         <>
                                             <div className="col-span-2 grid grid-cols-[minmax(0,8rem)_5rem] gap-2">
-                                                <AdminField label={t('fields.storage')}>
+                                                <AdminField label={t('fields.storage')} optional>
                                                     <input
                                                         name="storageAmount"
                                                         type="number"
@@ -280,7 +281,7 @@ export function PlanEditorCard({
                                                     </select>
                                                 </AdminField>
                                             </div>
-                                            <AdminField label={t('fields.maxMembers')} className="col-span-1">
+                                            <AdminField label={t('fields.maxMembers')} optional className="col-span-1">
                                                 <input
                                                     name="maxMembers"
                                                     type="number"
@@ -292,7 +293,7 @@ export function PlanEditorCard({
                                             </AdminField>
                                         </>
                                     ) : (
-                                        <AdminField label={t('fields.maxEventsPerUser')} className="col-span-1">
+                                        <AdminField label={t('fields.maxEventsPerUser')} optional className="col-span-1">
                                             <input
                                                 name="maxActiveEvents"
                                                 type="number"
@@ -308,7 +309,7 @@ export function PlanEditorCard({
 
                             <AdminSection title={t('plans.sections.pricing')}>
                                 <div className="grid grid-cols-2 gap-3">
-                                    <AdminField label={t('fields.price')}>
+                                    <AdminField label={t('fields.price')} optional>
                                         <input
                                             name="price"
                                             type="number"
@@ -318,7 +319,7 @@ export function PlanEditorCard({
                                             className={adminInputClass('max-w-32')}
                                         />
                                     </AdminField>
-                                    <AdminField label={t('fields.priceCurrency')}>
+                                    <AdminField label={t('fields.priceCurrency')} optional>
                                         <input
                                             name="priceCurrency"
                                             maxLength={3}
@@ -326,7 +327,7 @@ export function PlanEditorCard({
                                             className={adminInputClass('max-w-20')}
                                         />
                                     </AdminField>
-                                    <AdminField label={t('fields.billingPeriod')} className="col-span-2">
+                                    <AdminField label={t('fields.billingPeriod')} optional className="col-span-2">
                                         <select name="billingPeriod" defaultValue={plan.billingPeriod ?? ''} className={adminInputClass('max-w-40')}>
                                             <option value="">{t('none')}</option>
                                             {BILLING_PERIODS.map((item) => (
@@ -338,7 +339,7 @@ export function PlanEditorCard({
                                     </AdminField>
                                     {plan.scope === 'EVENT' && (
                                         <>
-                                            <AdminField label={t('fields.recurringPrice')}>
+                                            <AdminField label={t('fields.recurringPrice')} optional>
                                                 <input
                                                     name="recurringPrice"
                                                     type="number"
@@ -348,7 +349,7 @@ export function PlanEditorCard({
                                                     className={adminInputClass('max-w-32')}
                                                 />
                                             </AdminField>
-                                            <AdminField label={t('fields.includedMonths')}>
+                                            <AdminField label={t('fields.includedMonths')} optional>
                                                 <input
                                                     name="includedMonths"
                                                     type="number"

@@ -2,7 +2,7 @@
 
 import { BadgeCheck, BellRing, Check, Loader2, RefreshCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { type FormEvent, useState } from 'react';
+import React, { useState } from 'react';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
@@ -132,7 +132,7 @@ export function BillingOpsPanel() {
     const [pendingForm, setPendingForm] = useState<HTMLFormElement | null>(null);
     const [confirmSweepOpen, setConfirmSweepOpen] = useState(false);
 
-    function handleSettle(event: FormEvent<HTMLFormElement>) {
+    function handleSettle(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
         const form = event.currentTarget;
         const orderId = String(new FormData(form).get('orderId') ?? '').trim();
@@ -215,7 +215,7 @@ export function BillingOpsPanel() {
                 <h2 className="text-base font-semibold text-ink">{t('billingOps.settleTitle')}</h2>
                 <p className="mt-1 text-sm text-ink-muted">{t('billingOps.settleSubtitle')}</p>
                 <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-                    <AdminField label={t('billingOps.orderIdField')}>
+                    <AdminField label={t('billingOps.orderIdField')} required>
                         <input name="orderId" required className={adminInputClass()} placeholder={t('billingOps.orderIdPlaceholder')} />
                     </AdminField>
                     <button

@@ -43,7 +43,9 @@ export function RsvpForm({
             <h2 className="text-base font-bold text-ink mb-4">{t('yourRsvp')}</h2>
             <form onSubmit={onSubmit} className="flex flex-col gap-4">
                 <div>
-                    <p className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-2">{t('willYouAttend')}</p>
+                    <p className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-2">
+                        {t('willYouAttend')} <span className="text-ink-faint">(required)</span>
+                    </p>
                     <div className="grid grid-cols-2 gap-2">
                         <button
                             type="button"
@@ -123,7 +125,9 @@ export function RsvpForm({
                 )}
 
                 <div>
-                    <p className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-2">{t('messageForCouple')}</p>
+                    <p className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-2">
+                        {t('messageForCouple')} <span className="text-ink-faint">(optional)</span>
+                    </p>
                     <textarea
                         value={message}
                         onChange={onMessageChange}

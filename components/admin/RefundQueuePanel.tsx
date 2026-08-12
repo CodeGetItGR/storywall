@@ -102,7 +102,7 @@ function RefundRow({ row }: { row: RefundRequestAdminDto }) {
             {pending && (
                 <div className="mt-3 border-t border-border pt-3">
                     <label className="text-xs font-semibold text-ink" htmlFor={`note-${request.id}`}>
-                        {t('refunds.noteLabel')}
+                        {t('refunds.noteLabel')} <span className="text-ink-faint">(optional)</span>
                     </label>
                     <p className="text-[11px] text-ink-muted">{t('refunds.noteHint')}</p>
                     <textarea

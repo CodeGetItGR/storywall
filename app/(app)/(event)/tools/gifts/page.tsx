@@ -3,7 +3,7 @@
 import { ArrowLeft, Check, ExternalLink, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { giftItems } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';

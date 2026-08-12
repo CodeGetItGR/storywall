@@ -2,7 +2,7 @@
 
 import { ChevronDown, Layers3, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { type FormEvent, useState } from 'react';
+import React, { useState } from 'react';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { UsagePanel } from '@/components/plan/UsagePanel';
@@ -49,7 +49,7 @@ export function PlanAssignmentPanel() {
         setIsEventFormExpanded((current) => !current);
     }
 
-    async function handleAssignEvent(event: FormEvent<HTMLFormElement>) {
+    async function handleAssignEvent(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
         const eventId = String(formData.get('eventId') ?? '').trim();
@@ -92,10 +92,10 @@ export function PlanAssignmentPanel() {
                 </div>
                 {isEventFormExpanded && (
                     <div className="grid gap-3 border-t border-border pt-4 sm:grid-cols-[minmax(0,1fr)_minmax(11rem,0.85fr)_auto] sm:items-end">
-                        <AdminField label={t('assignments.eventId')}>
+                        <AdminField label={t('assignments.eventId')} required>
                             <input name="eventId" required className={adminInputClass()} />
                         </AdminField>
-                        <AdminField label={t('fields.plan')}>
+                        <AdminField label={t('fields.plan')} required>
                             <select name="planTierCode" required className={adminInputClass()}>
                                 {eventPlans.map((plan) => (
                                     <option key={plan.id} value={plan.code}>

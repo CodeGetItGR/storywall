@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import React, { useCallback, useState } from 'react';
 
 import { AuthLayout } from '@/components/auth/AuthLayout';
+import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { useAcceptEventInvitation } from '@/hooks/useEventInvitations';
@@ -82,8 +83,7 @@ export default function LoginPage() {
             <p className="text-sm text-ink-muted mb-7">{t('subtitle')}</p>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-semibold text-ink-muted uppercase tracking-wide">{t('fields.email')}</span>
+                <FormFieldLabel label={t('fields.email')} required>
                     <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
                         <Mail className="w-4 h-4 text-ink-muted flex-shrink-0" />
                         <input
@@ -95,10 +95,9 @@ export default function LoginPage() {
                             className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink-faint outline-none"
                         />
                     </div>
-                </label>
+                </FormFieldLabel>
 
-                <label className="flex flex-col gap-1.5">
-                    <span className="text-xs font-semibold text-ink-muted uppercase tracking-wide">{t('fields.password')}</span>
+                <FormFieldLabel label={t('fields.password')} required>
                     <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
                         <Lock className="w-4 h-4 text-ink-muted flex-shrink-0" />
                         <input
@@ -119,7 +118,7 @@ export default function LoginPage() {
                             {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
                     </div>
-                </label>
+                </FormFieldLabel>
 
                 {error && (
                     <p role="alert" className="text-xs text-center text-red-500 -mt-1">

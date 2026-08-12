@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import React, { useCallback, useState } from 'react';
 
 import Avatar from '@/components/ui/avatar';
+import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { CURRENT_USER_ID, getUser, users, wishbookEntries } from '@/lib/mock-data';
 import type { WishbookEntry } from '@/lib/types';
 import { timeAgoParts } from '@/lib/utils';
@@ -80,14 +81,16 @@ export default function WishbookPage() {
                     <p className="text-sm font-semibold text-ink">{currentUser.name}</p>
                 </div>
                 <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-                    <textarea
-                        value={message}
-                        onChange={handleMessageChange}
-                        rows={4}
+                    <FormFieldLabel label={t('messageAriaLabel')} required className="gap-2">
+                        <textarea
+                            value={message}
+                            onChange={handleMessageChange}
+                            rows={4}
                         placeholder={t('messagePlaceholder')}
-                        className="w-full bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 resize-none transition leading-relaxed"
-                        aria-label={t('messageAriaLabel')}
-                    />
+                            className="w-full bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 resize-none transition leading-relaxed"
+                            aria-label={t('messageAriaLabel')}
+                        />
+                    </FormFieldLabel>
                     <button
                         type="submit"
                         disabled={!message.trim()}

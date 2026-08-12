@@ -55,7 +55,9 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                 <div className="flex flex-wrap items-center gap-3">
                     <label className="inline-flex min-h-10 items-center gap-2 border-b-2 border-border px-1 text-sm font-semibold text-ink-muted">
                         <input type="checkbox" checked={includeArchived} onChange={handleIncludeArchivedChange} className="h-4 w-4 accent-primary" />
-                        {t('plans.filters.includeArchived')}
+                        <span>
+                            {t('plans.filters.includeArchived')} <span className="text-ink-faint">(optional)</span>
+                        </span>
                     </label>
                     {!accountPlansDisabled && (
                         <button

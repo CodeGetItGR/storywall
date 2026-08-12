@@ -7,6 +7,7 @@ import React, { type ReactNode, useCallback, useEffect, useState } from 'react';
 
 import { InviteLayout } from '@/components/invite/InviteLayout';
 import { InviteTerminalState } from '@/components/invite/InviteTerminalState';
+import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useAuth } from '@/hooks/useAuth';
 import { useMediaItem } from '@/hooks/useMedia';
 import { useQrLinkResolution } from '@/hooks/useQrLinks';
@@ -107,10 +108,7 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
                                 <p className="text-sm leading-relaxed text-ink-muted">{t('frozenNotice')}</p>
                             )}
 
-                            <label className="flex flex-col gap-1.5">
-                                <span className="text-xs font-semibold text-ink-muted uppercase tracking-wide">
-                                    {t('guestForm.displayNameLabel')}
-                                </span>
+                            <FormFieldLabel label={t('guestForm.displayNameLabel')} required>
                                 <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
                                     <User className="w-4 h-4 text-ink-muted shrink-0" />
                                     <input
@@ -122,7 +120,7 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
                                         className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink-faint outline-none"
                                     />
                                 </div>
-                            </label>
+                            </FormFieldLabel>
 
                             {guestError && (
                                 <p role="alert" className="text-xs text-center text-red-500 -mt-1">

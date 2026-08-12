@@ -1,14 +1,14 @@
 'use client';
 
-import { AlertTriangle, CheckCircle2, Clock3, CreditCard, Loader2, XCircle } from 'lucide-react';
+import {AlertTriangle, CheckCircle2, Clock3, CreditCard, Loader2, XCircle} from 'lucide-react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { useLocale, useTranslations } from 'next-intl';
-import type { ChangeEvent, FormEvent } from 'react';
-import { useCallback, useMemo, useState } from 'react';
+import {useParams} from 'next/navigation';
+import {useLocale, useTranslations} from 'next-intl';
+import React, {ChangeEvent} from 'react';
+import {useCallback, useMemo, useState} from 'react';
 
-import { useApiErrorMessage, useRetryAfterCountdown } from '@/hooks/useApiErrorMessage';
-import { useAppConfig } from '@/hooks/useAppConfig';
+import {useApiErrorMessage, useRetryAfterCountdown} from '@/hooks/useApiErrorMessage';
+import {useAppConfig} from '@/hooks/useAppConfig';
 import {
     useCancelSubscription,
     useCheckout,
@@ -18,13 +18,20 @@ import {
     useRequestRefund,
     useUpgradeCheckout,
 } from '@/hooks/useBilling';
-import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
-import type { EventBillingResponseDto } from '@/lib/api/types';
-import { billingCurrency, checkoutSuccessUrl, formatBillingDate, formatMoney, newestBillingOrder, paidBillingTotal } from '@/lib/billing';
-import { publicAssignablePlans, scopedPlans } from '@/lib/planTiers';
-import { routes } from '@/lib/routes';
-import { getEventBillingStatusTone } from '@/lib/statusTones';
-import { cn } from '@/lib/utils';
+import {ERROR_CODES, getErrorCode} from '@/lib/api/errors';
+import type {EventBillingResponseDto} from '@/lib/api/types';
+import {
+    billingCurrency,
+    checkoutSuccessUrl,
+    formatBillingDate,
+    formatMoney,
+    newestBillingOrder,
+    paidBillingTotal
+} from '@/lib/billing';
+import {publicAssignablePlans, scopedPlans} from '@/lib/planTiers';
+import {routes} from '@/lib/routes';
+import {getEventBillingStatusTone} from '@/lib/statusTones';
+import {cn} from '@/lib/utils';
 
 const ORDER_PREVIEW_COUNT = 6;
 
@@ -138,7 +145,7 @@ export default function EventPlanSettingsPage() {
         }
     }
 
-    function askRefundConfirmation(event: FormEvent<HTMLFormElement>) {
+    function askRefundConfirmation(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
         setRefundError(null);
         setConfirmingRefund(true);
@@ -210,15 +217,13 @@ export default function EventPlanSettingsPage() {
     };
     const hasRenewalPath = data.eventStatus !== 'DRAFT' && !coverage.unlimited && !subscription;
     const isRiskState = data.eventStatus === 'FROZEN' || data.eventStatus === 'PURGED' || !coverage.covered;
-    const statusIcon =
-        data.eventStatus === 'ACTIVE'
-            ? CheckCircle2
-            : data.eventStatus === 'DRAFT'
-              ? Clock3
-              : data.eventStatus === 'FROZEN'
+    const StatusIcon = data.eventStatus === 'ACTIVE'
+        ? CheckCircle2
+        : data.eventStatus === 'DRAFT'
+            ? Clock3
+            : data.eventStatus === 'FROZEN'
                 ? AlertTriangle
                 : XCircle;
-    const StatusIcon = statusIcon;
     const hadSubscription = insights.hadSubscription;
     // A renewal writes an order every month, so a long-running event's history
     // grows without bound. Show a recent window until the host asks for the rest.
@@ -619,7 +624,9 @@ export default function EventPlanSettingsPage() {
                                 <form onSubmit={askRefundConfirmation} className="space-y-3">
                                     <p className="text-ink-muted">{t('refund.eligible')}</p>
                                     <label className="block">
-                                        <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('refund.reason')}</span>
+                                        <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+                                            {t('refund.reason')} <span className="text-ink-faint/80">(optional)</span>
+                                        </span>
                                         <textarea
                                             value={refundReason}
                                             onChange={handleRefundReasonChange}
