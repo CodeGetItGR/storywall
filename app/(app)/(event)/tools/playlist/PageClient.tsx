@@ -34,7 +34,7 @@ type PlaylistPageContextValue = {
 const PlaylistPageContext = createContext<PlaylistPageContextValue | null>(null);
 
 export default function PlaylistPage() {
-    return <EventRouteGate missingEventRedirectTo={routes.welcome}>{(context) => <PlaylistScreen {...context} />}</EventRouteGate>;
+    return <EventRouteGate>{(context) => <PlaylistScreen {...context} />}</EventRouteGate>;
 }
 
 function usePlaylistPage() {

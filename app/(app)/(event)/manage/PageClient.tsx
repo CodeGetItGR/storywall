@@ -9,7 +9,7 @@ import { EventRouteGate } from '@/components/routing/EventRouteGate';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventInvitations } from '@/hooks/useEventInvitations';
 import { useEventMembers } from '@/hooks/useEventMembers';
-import { useEventQrLinks } from '@/hooks/useQrLinks';
+import { useEventQrLinks, useEventQrLinkStats } from '@/hooks/useQrLinks';
 import { useEventRsvps } from '@/hooks/useRsvps';
 import { useEventUsage } from '@/hooks/useUsage';
 import type { EventDetailResponseDto } from '@/lib/api/types';
@@ -66,11 +66,7 @@ function ManageTabButton({
 }
 
 export default function ManagePage() {
-    return (
-        <EventRouteGate requireHost missingEventRedirectTo={routes.welcome}>
-            {(context) => <ManageScreen {...context} />}
-        </EventRouteGate>
-    );
+    return <EventRouteGate requireHost>{(context) => <ManageScreen {...context} />}</EventRouteGate>;
 }
 
 function ManageScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDetailResponseDto; eventId: string; isHost: boolean }) {
@@ -85,6 +81,7 @@ function ManageScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDeta
     const { data: rsvps = [] } = useEventRsvps(isHost ? eventId : null);
     const { data: invitations = [] } = useEventInvitations(isHost ? eventId : null);
     const { data: qrLinks = [] } = useEventQrLinks(isHost ? eventId : null);
+    const { data: qrLinkStats = [] } = useEventQrLinkStats(isHost ? eventId : null);
     const { data: eventUsage = null } = useEventUsage(isHost ? eventId : null);
     const { data: appConfig } = useAppConfig();
 
@@ -153,7 +150,7 @@ function ManageScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDeta
             {tab === 'rsvp' && <RsvpTab t={t} members={members} rsvps={rsvps} />}
 
             {tab === 'invitations' && eventId && (
-                <InvitationsTab t={t} eventId={eventId} invitations={invitations} qrLinks={qrLinks} canWrite={canWrite} />
+                <InvitationsTab t={t} eventId={eventId} invitations={invitations} qrLinks={qrLinks} qrLinkStats={qrLinkStats} canWrite={canWrite} />
             )}
 
             {tab === 'settings' && <SettingsTab t={t} event={activeEvent} canWrite={canWrite} />}

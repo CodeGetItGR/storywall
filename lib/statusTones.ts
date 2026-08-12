@@ -1,7 +1,7 @@
-import type { AttendanceStatus, EventStatus } from '@/lib/api/types';
+import type { AttendanceStatus, EventStatus, QrLinkStatus } from '@/lib/api/types';
 
 export type RsvpDisplayStatus = AttendanceStatus | 'NO_RESPONSE';
-export type QrDisplayStatus = 'ACTIVE' | 'REVOKED' | 'EXPIRED';
+export type QrDisplayStatus = QrLinkStatus;
 
 export const eventStatusBadgeTone: Record<EventStatus, string> = {
     DRAFT: 'bg-amber-50 text-amber-700',
@@ -34,5 +34,6 @@ export const rsvpStatusTone: Record<RsvpDisplayStatus, string> = {
 export function getQrStatusTone(status: QrDisplayStatus): string {
     if (status === 'ACTIVE') return 'bg-primary-light text-primary-dark';
     if (status === 'EXPIRED') return 'bg-amber-50 text-amber-700';
+    if (status === 'TARGET_UNAVAILABLE') return 'bg-sky-50 text-sky-700';
     return 'bg-rose-50 text-rose-700';
 }

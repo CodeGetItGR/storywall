@@ -3,10 +3,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
-import type { QrLinkPatchDto, QrLinkRequestDto, QrLinkResolutionDto, QrLinkResponseDto } from '@/lib/api/types';
+import type { QrLinkPatchDto, QrLinkRequestDto, QrLinkResolutionDto, QrLinkResponseDto, QrLinkStatsDto } from '@/lib/api/types';
 
 export const qrLinkKeys = {
     list: (eventId: string) => ['events', eventId, 'qr-links'] as const,
+    stats: (eventId: string) => ['events', eventId, 'qr-links', 'stats'] as const,
     detail: (id: string) => ['qr-links', id] as const,
     resolution: (token: string) => ['qr-links', token, 'resolution'] as const,
 };
@@ -31,6 +32,18 @@ export function useEventQrLinks(eventId: string | null) {
     });
 }
 
+export function useEventQrLinkStats(eventId: string | null) {
+    return useQuery({
+        queryKey: qrLinkKeys.stats(eventId ?? ''),
+        queryFn: async () => {
+            const res = await api.get<QrLinkStatsDto[]>(endpoints.events.qrLinkStats(eventId!));
+            return normalizeList(res).items;
+        },
+        enabled: Boolean(eventId),
+        refetchInterval: 30_000,
+    });
+}
+
 export function useCreateQrLink(eventId: string) {
     const queryClient = useQueryClient();
 
@@ -38,6 +51,7 @@ export function useCreateQrLink(eventId: string) {
         mutationFn: (input: QrLinkRequestDto) => api.post<QrLinkResponseDto>(endpoints.events.qrLinks(eventId), input),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: qrLinkKeys.list(eventId) });
+            queryClient.invalidateQueries({ queryKey: qrLinkKeys.stats(eventId) });
         },
     });
 }
@@ -50,6 +64,7 @@ export function useUpdateQrLink(eventId: string, id: string) {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: qrLinkKeys.detail(id) });
             queryClient.invalidateQueries({ queryKey: qrLinkKeys.list(eventId) });
+            queryClient.invalidateQueries({ queryKey: qrLinkKeys.stats(eventId) });
         },
     });
 }
@@ -61,6 +76,7 @@ export function useRevokeQrLink(eventId: string) {
         mutationFn: (id: string) => api.post<QrLinkResponseDto>(endpoints.qrLinks.revoke(id)),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: qrLinkKeys.list(eventId) });
+            queryClient.invalidateQueries({ queryKey: qrLinkKeys.stats(eventId) });
         },
     });
 }

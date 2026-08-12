@@ -2,7 +2,8 @@
     "EventNotFound": {
         "title": "This celebration seems to have wandered off",
         "description": "We couldn't find an event at this link. Double-check the invite you were sent, or head back and pick an event from your list.",
-        "cta": "Take me back"
+        "ctaAuthenticated": "Go to profile",
+        "ctaGuest": "Sign in"
     },
     "Countdown": {
         "days": "Days",
@@ -602,6 +603,22 @@
             "downloadSvg": "Download SVG",
             "print": "Print",
             "noInvitations": "Create an invitation first, then link this QR code to it.",
+            "editLimit": "Edit limit",
+            "saving": "Saving...",
+            "stats": {
+                "cta": "Stats",
+                "title": "QR performance",
+                "joined": "Joined",
+                "remainingSlots": "Slots left",
+                "maxGuests": "Guest limit",
+                "uploads": "Uploads by joined guests",
+                "notAvailable": "N/A",
+                "lastJoined": "Last joined",
+                "lastJoinedAt": "Last joined {date, date, medium}",
+                "noJoinsYet": "No guests have joined through this code yet.",
+                "lowSlots": "{count} slots left",
+                "raiseLimit": "Raise the limit"
+            },
             "create": {
                 "cta": "New QR code",
                 "title": "New QR code",
@@ -625,7 +642,8 @@
             "status": {
                 "ACTIVE": "Active",
                 "REVOKED": "Revoked",
-                "EXPIRED": "Expired"
+                "EXPIRED": "Expired",
+                "TARGET_UNAVAILABLE": "Target unavailable"
             }
         },
         "settings": {

@@ -11,7 +11,6 @@ import type { EventDetailResponseDto, EventMemberResponseDto } from '@/lib/api/t
 import { formatShortDateTime } from '@/lib/datetime';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { formatBytes } from '@/lib/format';
-import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 import { useActiveMember } from '@/providers/EventProvider';
 
@@ -20,11 +19,7 @@ const MAX_FILES_PER_BATCH = 10;
 export default function GalleryPage() {
     const activeMember = useActiveMember();
 
-    return (
-        <EventRouteGate missingEventRedirectTo={routes.welcome}>
-            {(context) => <GalleryScreen {...context} activeMember={activeMember} />}
-        </EventRouteGate>
-    );
+    return <EventRouteGate>{(context) => <GalleryScreen {...context} activeMember={activeMember} />}</EventRouteGate>;
 }
 
 function GalleryScreen({

@@ -18,7 +18,7 @@ import { isEventWritable } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
 
 export default function SchedulePage() {
-    return <EventRouteGate missingEventRedirectTo={routes.welcome}>{(context) => <ScheduleScreen {...context} />}</EventRouteGate>;
+    return <EventRouteGate>{(context) => <ScheduleScreen {...context} />}</EventRouteGate>;
 }
 
 function ScheduleScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDetailResponseDto; eventId: string; isHost: boolean }) {

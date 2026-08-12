@@ -1,6 +1,6 @@
 'use client';
 
-import { Copy, Download, Loader2, Pencil, Plus, Printer, QrCode, Trash2, X } from 'lucide-react';
+import { AlertTriangle, BarChart3, Copy, Download, Loader2, Pencil, Plus, Printer, QrCode, Trash2, X } from 'lucide-react';
 import type { useTranslations } from 'next-intl';
 import { QRCodeSVG } from 'qrcode.react';
 import React, { useCallback, useRef, useState } from 'react';
@@ -9,7 +9,7 @@ import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { Modal } from '@/components/ui/modal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCreateEventInvitation, useDeleteEventInvitation, useUpdateEventInvitation } from '@/hooks/useEventInvitations';
-import { useCreateQrLink, useRevokeQrLink } from '@/hooks/useQrLinks';
+import { useCreateQrLink, useRevokeQrLink, useUpdateQrLink } from '@/hooks/useQrLinks';
 import { getFieldErrors } from '@/lib/api/errors';
 import type {
     EventInvitationPatchDto,
@@ -17,9 +17,9 @@ import type {
     EventInvitationResponseDto,
     QrLinkRequestDto,
     QrLinkResponseDto,
+    QrLinkStatsDto,
     QrTargetType,
 } from '@/lib/api/types';
-import { getQrStatus } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
 import { getQrStatusTone, type QrDisplayStatus } from '@/lib/statusTones';
 import { cn } from '@/lib/utils';
@@ -67,12 +67,14 @@ export default function InvitationsTab({
     eventId,
     invitations,
     qrLinks,
+    qrLinkStats,
     canWrite,
 }: {
     t: ReturnType<typeof useTranslations>;
     eventId: string;
     invitations: EventInvitationResponseDto[];
     qrLinks: QrLinkResponseDto[];
+    qrLinkStats: QrLinkStatsDto[];
     canWrite: boolean;
 }) {
     const [showCreate, setShowCreate] = useState(false);
@@ -143,9 +145,10 @@ export default function InvitationsTab({
                 </div>
             ) : (
                 <div className="flex flex-col divide-y divide-border">
-                    {qrLinks.map((qrLink) => (
-                        <QrLinkRow key={qrLink.id} t={t} eventId={eventId} qrLink={qrLink} canWrite={canWrite} />
-                    ))}
+                    {qrLinks.map((qrLink) => {
+                        const stats = qrLinkStats.find((row) => row.qrLinkId === qrLink.id);
+                        return <QrLinkRow key={qrLink.id} t={t} eventId={eventId} qrLink={qrLink} stats={stats} canWrite={canWrite} />;
+                    })}
                 </div>
             )}
 
@@ -441,19 +444,29 @@ function QrLinkRow({
     t,
     eventId,
     qrLink,
+    stats,
     canWrite,
 }: {
     t: ReturnType<typeof useTranslations>;
     eventId: string;
     qrLink: QrLinkResponseDto;
+    stats?: QrLinkStatsDto;
     canWrite: boolean;
 }) {
     const [previewOpen, setPreviewOpen] = useState(false);
+    const [statsOpen, setStatsOpen] = useState(false);
     const [revokeConfirmOpen, setRevokeConfirmOpen] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [maxGuests, setMaxGuests] = useState(qrLink.maxGuests ?? stats?.maxGuests ?? 50);
     const revokeQrLink = useRevokeQrLink(eventId);
+    const updateQrLink = useUpdateQrLink(eventId, qrLink.id);
+    const toErrorMessage = useApiErrorMessage();
 
-    const status: QrDisplayStatus = getQrStatus(qrLink);
+    const status: QrDisplayStatus = qrLink.status;
+    const canEditLimit = canWrite && qrLink.targetType !== 'INVITATION' && qrLink.maxGuests !== null;
+    const remainingSlots = stats?.remainingSlots ?? null;
+    const isLowOnSlots = remainingSlots !== null && remainingSlots <= 5;
 
     const handleOpenPreview = useCallback(() => {
         setPreviewOpen(true);
@@ -463,8 +476,36 @@ function QrLinkRow({
         setPreviewOpen(false);
     }, []);
 
+    const handleOpenStats = useCallback(() => {
+        setStatsOpen(true);
+    }, []);
+
+    const handleCloseStats = useCallback(() => {
+        setStatsOpen(false);
+    }, []);
+
     const handleOpenRevokeConfirm = useCallback(() => {
         setRevokeConfirmOpen(true);
+    }, []);
+
+    const handleStartEditing = useCallback(() => {
+        if (!canEditLimit) return;
+        setIsEditing(true);
+    }, [canEditLimit]);
+
+    const handleRaiseLimitFromStats = useCallback(() => {
+        if (!canEditLimit) return;
+        setStatsOpen(false);
+        setIsEditing(true);
+    }, [canEditLimit]);
+
+    const handleStopEditing = useCallback(() => {
+        setIsEditing(false);
+        setMaxGuests(qrLink.maxGuests ?? stats?.maxGuests ?? 50);
+    }, [qrLink.maxGuests, stats?.maxGuests]);
+
+    const handleMaxGuestsChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setMaxGuests(Math.min(1000, Math.max(1, Number(e.target.value))));
     }, []);
 
     const handleCloseRevokeConfirm = useCallback(() => {
@@ -483,27 +524,82 @@ function QrLinkRow({
         await revokeQrLink.mutateAsync(qrLink.id);
     }
 
+    async function handleSaveLimit() {
+        if (!canEditLimit) return;
+        await updateQrLink.mutateAsync({ maxGuests });
+        setIsEditing(false);
+    }
+
     return (
-        <div className="py-4 flex flex-col gap-2 first:pt-0">
-            <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                        <p className="text-sm font-semibold text-ink truncate">{qrLink.label || t('qr.untitled')}</p>
-                        <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0', getQrStatusTone(status))}>
+        <div className="flex flex-col gap-2 py-3 first:pt-0">
+            <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1.5">
+                <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <p className="truncate text-sm font-semibold leading-5 text-ink">{qrLink.label || t('qr.untitled')}</p>
+                        <span className={cn('shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none', getQrStatusTone(status))}>
                             {t(`qr.status.${status}`)}
                         </span>
+                        <span className="text-xs leading-5 text-ink-muted">{t(`qr.targetTypes.${qrLink.targetType}`)}</span>
                     </div>
-                    <p className="text-xs text-ink-muted mt-0.5 truncate">{t(`qr.targetTypes.${qrLink.targetType}`)}</p>
                 </div>
+
+                {stats && isLowOnSlots && (
+                    <button type="button" onClick={handleOpenStats} className="flex shrink-0 items-center gap-1 text-xs font-semibold text-amber-700">
+                        <AlertTriangle className="h-3.5 w-3.5" />
+                        {t('qr.stats.lowSlots', { count: remainingSlots })}
+                    </button>
+                )}
             </div>
 
+            {isEditing && canEditLimit && (
+                <div className="flex flex-wrap items-center gap-2 rounded-xl bg-surface-muted/70 p-2">
+                    <label className="flex items-center gap-2 text-xs text-ink-muted">
+                        {t('qr.fields.maxGuests')}
+                        <input
+                            type="number"
+                            min={1}
+                            max={1000}
+                            value={maxGuests}
+                            onChange={handleMaxGuestsChange}
+                            className="w-20 rounded-lg bg-card px-2 py-1 text-sm text-ink outline-none transition focus:ring-2 focus:ring-primary/30"
+                        />
+                    </label>
+                    <button
+                        type="button"
+                        onClick={handleSaveLimit}
+                        disabled={updateQrLink.isPending}
+                        className="ml-auto rounded-full bg-gradient-brand px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+                    >
+                        {updateQrLink.isPending ? t('qr.saving') : t('invitations.save')}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleStopEditing}
+                        className="rounded-full bg-card px-3 py-1.5 text-xs font-semibold text-ink-muted transition-colors hover:text-ink"
+                    >
+                        {t('invitations.create.cancel')}
+                    </button>
+                    {updateQrLink.isError && <p className="basis-full text-xs text-rose-500">{toErrorMessage(updateQrLink.error)}</p>}
+                </div>
+            )}
+
             <div className="flex flex-wrap items-center gap-2">
-                <p className="min-w-0 flex-1 truncate text-xs text-ink-muted">{qrLink.publicUrl}</p>
-                <div className="flex flex-wrap items-center justify-end gap-2">
+                <p className="min-w-40 flex-1 truncate text-xs text-ink-muted">{qrLink.publicUrl}</p>
+                <div className="flex flex-wrap items-center justify-end gap-1.5">
+                    {stats && (
+                        <button
+                            type="button"
+                            onClick={handleOpenStats}
+                            className="flex items-center gap-1.5 rounded-full bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-ink"
+                        >
+                            <BarChart3 className="h-3.5 w-3.5" />
+                            {t('qr.stats.cta')}
+                        </button>
+                    )}
                     <button
                         type="button"
                         onClick={handleOpenPreview}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-surface-muted text-ink-muted hover:text-ink transition-colors"
+                        className="flex items-center gap-1.5 rounded-full bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-ink"
                     >
                         <QrCode className="w-3.5 h-3.5" />
                         {t('qr.preview')}
@@ -511,16 +607,26 @@ function QrLinkRow({
                     <button
                         type="button"
                         onClick={handleCopy}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-surface-muted text-ink-muted hover:text-ink transition-colors"
+                        className="flex items-center gap-1.5 rounded-full bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-ink"
                     >
                         <Copy className="w-3.5 h-3.5" />
                         {copied ? t('invitations.copied') : t('invitations.copyLink')}
                     </button>
+                    {canEditLimit && !isEditing && (
+                        <button
+                            type="button"
+                            onClick={handleStartEditing}
+                            className="flex items-center gap-1.5 rounded-full bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-ink"
+                        >
+                            <Pencil className="w-3.5 h-3.5" />
+                            {t('qr.editLimit')}
+                        </button>
+                    )}
                     {canWrite && status === 'ACTIVE' && (
                         <button
                             type="button"
                             onClick={handleOpenRevokeConfirm}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-surface-muted text-rose-500 hover:bg-rose-50 transition-colors"
+                            className="flex items-center gap-1.5 rounded-full bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-rose-500 transition-colors hover:bg-rose-50"
                         >
                             <Trash2 className="w-3.5 h-3.5" />
                             {t('qr.revoke')}
@@ -530,6 +636,17 @@ function QrLinkRow({
             </div>
 
             <QrPreviewModal t={t} qrLink={qrLink} open={previewOpen} onClose={handleClosePreview} />
+            {stats && (
+                <QrStatsSheet
+                    t={t}
+                    qrLink={qrLink}
+                    stats={stats}
+                    open={statsOpen}
+                    onClose={handleCloseStats}
+                    canRaiseLimit={canEditLimit}
+                    onRaiseLimit={handleRaiseLimitFromStats}
+                />
+            )}
             <ConfirmActionModal
                 open={revokeConfirmOpen}
                 onClose={handleCloseRevokeConfirm}
@@ -540,6 +657,73 @@ function QrLinkRow({
                 cancelLabel={t('invitations.create.cancel')}
                 isConfirming={revokeQrLink.isPending}
             />
+        </div>
+    );
+}
+
+function QrStatsSheet({
+    t,
+    qrLink,
+    stats,
+    open,
+    onClose,
+    canRaiseLimit,
+    onRaiseLimit,
+}: {
+    t: ReturnType<typeof useTranslations>;
+    qrLink: QrLinkResponseDto;
+    stats: QrLinkStatsDto;
+    open: boolean;
+    onClose: () => void;
+    canRaiseLimit: boolean;
+    onRaiseLimit: () => void;
+}) {
+    const remainingSlots = stats.remainingSlots ?? null;
+    const isLowOnSlots = remainingSlots !== null && remainingSlots <= 5;
+
+    return (
+        <Modal open={open} onClose={onClose} closeLabel={t('invitations.create.cancel')} variant="sheet" size="md">
+            <Modal.Body className="px-5 pb-5 pt-6">
+                <div className="pr-8">
+                    <p className="text-base font-bold text-ink">{t('qr.stats.title')}</p>
+                    <p className="mt-1 truncate text-sm text-ink-muted">{qrLink.label || t('qr.untitled')}</p>
+                </div>
+
+                <div className="mt-5 divide-y divide-border rounded-lg border border-border bg-card">
+                    <QrStatsRow label={t('qr.stats.joined')} value={stats.joinCount} />
+                    <QrStatsRow
+                        label={t('qr.stats.remainingSlots')}
+                        value={stats.remainingSlots === null ? t('qr.stats.notAvailable') : stats.remainingSlots}
+                        isWarning={isLowOnSlots}
+                    />
+                    <QrStatsRow label={t('qr.stats.maxGuests')} value={stats.maxGuests === null ? t('qr.stats.notAvailable') : stats.maxGuests} />
+                    <QrStatsRow label={t('qr.stats.uploads')} value={stats.uploadCount} />
+                    <QrStatsRow
+                        label={t('qr.stats.lastJoined')}
+                        value={stats.lastJoinedAt ? t('qr.stats.lastJoinedAt', { date: new Date(stats.lastJoinedAt) }) : t('qr.stats.noJoinsYet')}
+                    />
+                </div>
+
+                {isLowOnSlots && canRaiseLimit && (
+                    <button
+                        type="button"
+                        onClick={onRaiseLimit}
+                        className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-brand px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                    >
+                        <AlertTriangle className="h-4 w-4" />
+                        {t('qr.stats.raiseLimit')}
+                    </button>
+                )}
+            </Modal.Body>
+        </Modal>
+    );
+}
+
+function QrStatsRow({ label, value, isWarning = false }: { label: string; value: React.ReactNode; isWarning?: boolean }) {
+    return (
+        <div className="flex items-center justify-between gap-4 px-3 py-2.5">
+            <p className="text-sm text-ink-muted">{label}</p>
+            <p className={cn('text-right text-sm font-semibold text-ink', isWarning && 'text-amber-700')}>{value}</p>
         </div>
     );
 }

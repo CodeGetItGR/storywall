@@ -12,6 +12,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     const pathname = usePathname();
     const { user, isBootstrapping } = useAuth();
     const isProfilePage = pathname === routes.profile || pathname.startsWith(routes.profile + '/');
+    const isChromeLessPage = pathname === routes.eventNotFound;
 
     useEffect(() => {
         if (isBootstrapping) return;
@@ -22,6 +23,10 @@ export function AppShell({ children }: { children: ReactNode }) {
 
     if (isBootstrapping || user?.role === 'ADMIN') {
         return <div className="h-full bg-background" />;
+    }
+
+    if (isChromeLessPage) {
+        return <div className="h-full bg-background">{children}</div>;
     }
 
     if (isProfilePage) {

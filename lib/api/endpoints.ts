@@ -46,6 +46,7 @@ export const endpoints = {
         hostById: (eventId: string, id: string) => `/api/events/${eventId}/hosts/${id}`,
         invitations: (eventId: string) => `/api/events/${eventId}/invitations`,
         qrLinks: (eventId: string) => `/api/events/${eventId}/qr-links`,
+        qrLinkStats: (eventId: string) => `/api/events/${eventId}/qr-links/stats`,
         members: (eventId: string) => `/api/events/${eventId}/members`,
         modules: (eventId: string) => `/api/events/${eventId}/modules`,
         sessions: (eventId: string) => `/api/events/${eventId}/sessions`,

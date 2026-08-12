@@ -14,7 +14,7 @@ import RsvpTab from '../../manage/RsvpTab';
 
 export default function RSVPPage() {
     return (
-        <EventRouteGate requireHost missingEventRedirectTo={routes.welcome} guestRedirectTo={routes.tools.rsvpSubmit}>
+        <EventRouteGate requireHost guestRedirectTo={routes.tools.rsvpSubmit}>
             {(context) => <RsvpScreen {...context} />}
         </EventRouteGate>
     );

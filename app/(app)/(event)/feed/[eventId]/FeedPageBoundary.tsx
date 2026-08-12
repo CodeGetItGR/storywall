@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef } from 'react';
 
-import { EventNotFound } from '@/components/feed/EventNotFound';
 import { FeedPageSkeleton } from '@/components/feed/FeedPageSkeleton';
 import { useEventPosts } from '@/hooks';
 import { useAppConfig } from '@/hooks/useAppConfig';
@@ -12,6 +11,7 @@ import { useEvent } from '@/hooks/useEvent';
 import { useRsvp } from '@/hooks/useRsvps';
 import { ApiError } from '@/lib/api/client';
 import { EVENT_MODULE_KEYS, type ModuleKeyConvention } from '@/lib/api/types';
+import { routes } from '@/lib/routes';
 import { rsvpStorageKey } from '@/lib/storageKeys';
 import { useActiveMember, useEventSwitcher, useIsHost } from '@/providers/EventProvider';
 
@@ -46,6 +46,12 @@ export function FeedPageBoundary({ eventId }: { eventId: string }) {
     useEffect(() => {
         if (event) setActiveEventId(eventId);
     }, [event, eventId, setActiveEventId]);
+
+    useEffect(() => {
+        if (!isLoading && (!event || (error instanceof ApiError && error.status === 404))) {
+            router.replace(routes.eventNotFound);
+        }
+    }, [error, event, isLoading, router]);
 
     const storedRsvpId = useMemo(() => {
         if (!memberId || typeof window === 'undefined') {
@@ -90,7 +96,7 @@ export function FeedPageBoundary({ eventId }: { eventId: string }) {
     }
 
     if (!event || (error instanceof ApiError && error.status === 404)) {
-        return <EventNotFound />;
+        return null;
     }
 
     return (

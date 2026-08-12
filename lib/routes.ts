@@ -14,7 +14,7 @@ function withQuery(pathname: string, params: Record<string, RouteQueryValue>): s
 
 export const routes = {
     feed: '/feed',
-    welcome: '/welcome',
+    eventNotFound: '/event-not-found',
     login: '/login',
     register: '/register',
     invite: '/invite',

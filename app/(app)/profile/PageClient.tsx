@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useEventDetails } from '@/hooks/useEvent';
 import type { EventMemberResponseDto } from '@/lib/api/types';
 import { getInitials } from '@/lib/format';
+import { routes } from '@/lib/routes';
 import { useActiveMember, useEventContextLoading, useMyMemberships } from '@/providers/EventProvider';
 
 type ProfilePageContextValue = {
@@ -133,7 +134,7 @@ function ProfileEmptyState() {
                 <h2 className="text-base font-bold text-ink mb-1">{t('emptyMemberships.title')}</h2>
                 <p className="text-sm text-ink-muted max-w-xs leading-relaxed mb-5">{t('emptyMemberships.body')}</p>
                 <Link
-                    href="/welcome"
+                    href={routes.events.new}
                     className="px-5 py-2 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
                 >
                     {t('emptyMemberships.cta')}

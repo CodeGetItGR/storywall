@@ -415,6 +415,7 @@ export interface QrLinkRequestDto {
 export interface QrLinkPatchDto {
     targetType?: QrTargetType;
     targetId?: string;
+    maxGuests?: number;
     label?: string;
     metadata?: Record<string, unknown>;
     expiresAt?: string;
@@ -427,6 +428,8 @@ export interface QrLinkResponseDto {
     publicUrl: string;
     targetType: QrTargetType;
     targetId: string | null;
+    status: QrLinkStatus;
+    maxGuests: number | null;
     label: string | null;
     metadata: Record<string, unknown>;
     expiresAt: string | null;
@@ -434,6 +437,18 @@ export interface QrLinkResponseDto {
     createdByUserId: string | null;
     createdAt: string;
     updatedAt: string;
+}
+
+export interface QrLinkStatsDto {
+    qrLinkId: string;
+    label: string | null;
+    targetType: QrTargetType;
+    status: QrLinkStatus;
+    joinCount: number;
+    maxGuests: number | null;
+    remainingSlots: number | null;
+    lastJoinedAt: string | null;
+    uploadCount: number;
 }
 
 export interface QrLinkResolutionDto {
