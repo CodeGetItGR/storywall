@@ -19,7 +19,7 @@ export default function FeedRedirectPage() {
         if (isLoading) return;
         const eventId = activeEvent?.id ?? memberships[0]?.eventId;
         if (!eventId) {
-            router.replace(routes.welcome);
+            router.replace(routes.profile);
             return;
         }
         router.replace(routes.post.feed(eventId));

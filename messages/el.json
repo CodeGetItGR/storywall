@@ -74,6 +74,11 @@
             "profile": "Προφίλ"
         }
     },
+    "AccountTopBar": {
+        "profile": "Προφίλ",
+        "logout": "Αποσύνδεση",
+        "fallbackName": "Λογαριασμός"
+    },
     "MobileTabBar": {
         "mobileNavigation": "Πλοήγηση κινητού",
         "compose": "Δημιουργία",
@@ -97,6 +102,7 @@
         "items": {
             "home": "Αρχική",
             "playlist": "Τραγούδια",
+            "profile": "Προφίλ",
             "manage": "Διαχείριση",
             "post": "Δημοσίευση",
             "alerts": "Ειδοποιήσεις"

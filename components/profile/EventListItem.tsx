@@ -11,7 +11,7 @@ import Avatar from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEventMembers } from '@/hooks';
 import type { EventDetailResponseDto, EventMemberResponseDto } from '@/lib/api/types';
-import { formatDate } from '@/lib/datetime';
+import { formatEventListDate } from '@/lib/datetime';
 import { routes } from '@/lib/routes';
 import { avatarColorFromId, cn, initialsFromName } from '@/lib/utils';
 
@@ -20,26 +20,6 @@ interface EventListItemProps {
     member: EventMemberResponseDto;
     event: EventDetailResponseDto | undefined;
     isLoading: boolean;
-}
-
-function formatEventDate(startAt: string | undefined, locale: string, atLabel: string) {
-    if (!startAt) return null;
-
-    const date = new Date(startAt);
-    if (Number.isNaN(date.getTime())) return null;
-
-    const weekday = formatDate(locale, date, { weekday: 'short' });
-    const calendarDate = formatDate(locale, date, {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-    });
-    const time = formatDate(locale, startAt, {
-        hour: 'numeric',
-        minute: date.getMinutes() === 0 ? undefined : '2-digit',
-    });
-
-    return `${weekday}, ${calendarDate} ${atLabel} ${time}`.toUpperCase();
 }
 
 function EventListItemSkeleton() {
@@ -76,7 +56,7 @@ export function EventListItem({ eventId, member, event, isLoading }: EventListIt
     }, [eventMembers, member]);
     const goingCount = event?.rsvpSummary.attending ?? event?.rsvpSummary.totalMembers ?? displayMembers.length;
     const extraMemberCount = Math.max(goingCount - displayMembers.length, 0);
-    const eventDate = formatEventDate(event?.schedule.startAt, locale, t('dateAt'));
+    const eventDate = formatEventListDate(event?.schedule.startAt, locale, t('dateAt'));
 
     if (isLoading) {
         return <EventListItemSkeleton />;
@@ -123,31 +103,31 @@ export function EventListItem({ eventId, member, event, isLoading }: EventListIt
                     {goingCount > 0 && <span className="shrink-0">{t('goingCount', { count: goingCount })}</span>}
                 </p>
 
-                {member.role === 'HOST' && <div className="mt-4 flex items-center justify-between">
-                    <div className="flex items-center">
-                        {displayMembers.map((eventMember) => (
-                            <Avatar
-                                key={eventMember.id}
-                                initials={initialsFromName(eventMember.displayName)}
-                                color={avatarColorFromId(eventMember.id)}
-                                size="xs"
-                                alt={eventMember.displayName}
-                                className="-ml-2 first:ml-0 ring-2 ring-card"
-                            />
-                        ))}
-                        {extraMemberCount > 0 && (
-                            <span
-                                className="-ml-2 flex h-6 w-6 items-center justify-center rounded-full bg-surface-muted text-[10px] font-semibold text-ink-muted ring-2 ring-card">
-                                +{extraMemberCount}
-                            </span>
-                        )}
+                {member.role === 'HOST' && (
+                    <div className="mt-4 flex items-center justify-between">
+                        <div className="flex items-center">
+                            {displayMembers.map((eventMember) => (
+                                <Avatar
+                                    key={eventMember.id}
+                                    initials={initialsFromName(eventMember.displayName)}
+                                    color={avatarColorFromId(eventMember.id)}
+                                    size="xs"
+                                    alt={eventMember.displayName}
+                                    className="-ml-2 first:ml-0 ring-2 ring-card"
+                                />
+                            ))}
+                            {extraMemberCount > 0 && (
+                                <span className="-ml-2 flex h-6 w-6 items-center justify-center rounded-full bg-surface-muted text-[10px] font-semibold text-ink-muted ring-2 ring-card">
+                                    +{extraMemberCount}
+                                </span>
+                            )}
+                        </div>
+                        <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-surface-muted px-2.5 text-xs font-medium text-ink-muted">
+                            <UsersRound className="h-3.5 w-3.5" strokeWidth={1.8} />
+                            {event?.rsvpSummary.totalMembers ?? displayMembers.length}
+                        </span>
                     </div>
-                    <span
-                        className="inline-flex h-7 items-center gap-1.5 rounded-full bg-surface-muted px-2.5 text-xs font-medium text-ink-muted">
-                        <UsersRound className="h-3.5 w-3.5" strokeWidth={1.8}/>
-                        {event?.rsvpSummary.totalMembers ?? displayMembers.length}
-                    </span>
-                </div>}
+                )}
             </div>
         </Link>
     );

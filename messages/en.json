@@ -74,6 +74,11 @@
             "profile": "Profile"
         }
     },
+    "AccountTopBar": {
+        "profile": "Profile",
+        "logout": "Log out",
+        "fallbackName": "Account"
+    },
     "MobileTabBar": {
         "mobileNavigation": "Mobile navigation",
         "compose": "Create",
@@ -97,6 +102,7 @@
         "items": {
             "home": "Home",
             "playlist": "Playlist",
+            "profile": "Profile",
             "manage": "Manage",
             "post": "Post",
             "alerts": "Notifications"

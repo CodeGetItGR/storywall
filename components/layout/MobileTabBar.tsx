@@ -14,6 +14,7 @@ import { useComposer } from '@/providers/ComposerProvider';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
 const homeTabItem = { href: routes.feed, icon: '/icons/home.svg', key: 'home' } as const;
+const profileTabItem = { href: routes.profile, icon: '/icons/profile.svg', key: 'profile' } as const;
 
 function hostMenuItems(eventId: string) {
     return [
@@ -177,6 +178,20 @@ function isPathActive(pathname: string, href: string, searchParams = '') {
     return pathname === itemPathname || pathname.startsWith(itemPathname + '/');
 }
 
+function isEventRoute(pathname: string) {
+    return (
+        pathname === routes.feed ||
+        pathname.startsWith(routes.feed + '/') ||
+        pathname === routes.manage ||
+        pathname.startsWith(routes.manage + '/') ||
+        pathname === routes.tools.root ||
+        pathname.startsWith(routes.tools.root + '/') ||
+        pathname.startsWith('/story/') ||
+        pathname.startsWith('/post/') ||
+        pathname.startsWith('/events/')
+    );
+}
+
 export function MobileTabBar() {
     const t = useTranslations('MobileTabBar');
     const router = useRouter();
@@ -187,14 +202,16 @@ export function MobileTabBar() {
     const isHost = useIsHost();
     const isLoading = useEventContextLoading();
     const isFeedDetailPage = pathname.startsWith('/feed/');
+    const showEventActions = !isLoading && Boolean(activeEvent) && isEventRoute(pathname);
+    const showEventHome = showEventActions;
 
     const homeActive = isPathActive(pathname, homeTabItem.href);
-    const showDashboardMenu = !isLoading && Boolean(activeEvent);
+    const profileActive = isPathActive(pathname, profileTabItem.href);
     const availableModules = new Set(activeEvent?.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey) ?? []);
-    const playlistAvailable = availableModules.has('playlist');
+    const playlistAvailable = showEventActions && availableModules.has('playlist');
     const playlistActive = playlistAvailable && isPathActive(pathname, routes.tools.playlist);
     const contextItems: ContextNavItem[] =
-        showDashboardMenu && activeEvent
+        showEventActions && activeEvent
             ? isHost
                 ? hostMenuItems(activeEvent.id)
                       .filter((item) => {
@@ -222,16 +239,18 @@ export function MobileTabBar() {
         <>
             <nav
                 aria-label={t('mobileNavigation')}
-                className="fixed bottom-0 left-1/2 z-40 grid h-16 w-9/10 -translate-x-1/2 grid-cols-3 items-center rounded-t-2xl border-t border-border bg-white/90 px-4 lg:hidden"
+                className="fixed bottom-0 left-1/2 z-40 grid h-16 w-9/10 -translate-x-1/2 grid-cols-4 items-center rounded-t-2xl border-t border-border bg-white/90 px-4 lg:hidden"
             >
                 <div className="justify-self-start">
-                    <TabLink
-                        href={homeTabItem.href}
-                        icon={homeTabItem.icon}
-                        label={t(`items.${homeTabItem.key}`)}
-                        active={homeActive}
-                        onClick={handleHomeClick}
-                    />
+                    {showEventHome && (
+                        <TabLink
+                            href={activeEvent ? routes.post.feed(activeEvent.id) : homeTabItem.href}
+                            icon={homeTabItem.icon}
+                            label={t(`items.${homeTabItem.key}`)}
+                            active={homeActive}
+                            onClick={handleHomeClick}
+                        />
+                    )}
                 </div>
 
                 <div className="justify-self-center">
@@ -250,9 +269,13 @@ export function MobileTabBar() {
                         onItemClick={handleDashboardMenuClick}
                     />
                 </div>
+
+                <div className="justify-self-end">
+                    <TabLink href={profileTabItem.href} icon={profileTabItem.icon} label={t(`items.${profileTabItem.key}`)} active={profileActive} />
+                </div>
             </nav>
 
-            {(canComposePost || canComposeStory || canComposeSong) && (
+            {showEventActions && (canComposePost || canComposeStory || canComposeSong) && (
                 <Menu.Root>
                     <Menu.Trigger
                         aria-label={t('compose')}

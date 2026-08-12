@@ -6,17 +6,9 @@ import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { AuthLayout } from '@/components/auth/AuthLayout';
+import { extractInviteToken } from '@/lib/invite/tokens';
 import { routes } from '@/lib/routes';
 import { useEventSwitcher } from '@/providers/EventProvider';
-
-// A pasted invite can be the raw token or a full /invite/{token} link —
-// take whatever's after the last slash, or the whole trimmed string if
-// there isn't one.
-function extractInviteToken(value: string): string {
-    const trimmed = value.trim();
-    const lastSlash = trimmed.lastIndexOf('/');
-    return lastSlash === -1 ? trimmed : trimmed.slice(lastSlash + 1);
-}
 
 export default function WelcomePage() {
     const t = useTranslations('WelcomePage');

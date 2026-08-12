@@ -9,12 +9,7 @@ import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useReplayWebhook, useRunNotificationSweep, useSettleOrder, useUnprocessedWebhooks } from '@/hooks/useAdmin';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { UnprocessedWebhookDto } from '@/lib/api/types';
-
-function formatSweepResult(result: Record<string, number>): string {
-    const entries = Object.entries(result);
-    if (entries.length === 0) return '0';
-    return entries.map(([rule, count]) => `${rule}: ${count}`).join(', ');
-}
+import { formatRecordCounts } from '@/lib/format';
 
 function SettleButton({ orderId, label }: { orderId: string; label: string }) {
     const settleOrder = useSettleOrder();
@@ -198,9 +193,7 @@ export function BillingOpsPanel() {
                         {t('billingOps.runSweep')}
                     </button>
                     {runSweep.data && (
-                        <p className="text-sm text-emerald-700">
-                            {t('billingOps.sweepSuccess', { result: formatSweepResult(runSweep.data) })}
-                        </p>
+                        <p className="text-sm text-emerald-700">{t('billingOps.sweepSuccess', { result: formatRecordCounts(runSweep.data) })}</p>
                     )}
                     {runSweep.error && <p className="text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(runSweep.error)}`)}</p>}
                 </div>

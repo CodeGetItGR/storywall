@@ -2,9 +2,9 @@
 
 import { useTranslations } from 'next-intl';
 
-import { enabledModuleKeys, getModuleMeta } from '@/components/plan/PlanModuleIcons';
 import { Modal } from '@/components/ui/modal';
 import type { PlatformModuleResponseDto } from '@/lib/api/types';
+import { enabledModuleKeys, getModuleMeta } from '@/lib/planModules';
 
 export function PlanModuleGuideModal({
     open,

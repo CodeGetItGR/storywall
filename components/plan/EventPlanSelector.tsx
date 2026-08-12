@@ -6,8 +6,9 @@ import { type MouseEvent, useMemo, useState } from 'react';
 
 import { PlanModuleGuideButton } from '@/components/plan/PlanModuleGuideButton';
 import { PlanModuleGuideModal } from '@/components/plan/PlanModuleGuideModal';
-import { enabledModuleKeys, PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
+import { PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
 import type { PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import { enabledModuleKeys } from '@/lib/planModules';
 import { formatLimitValue, formatPlanMoney } from '@/lib/planTiers';
 import { cn } from '@/lib/utils';
 

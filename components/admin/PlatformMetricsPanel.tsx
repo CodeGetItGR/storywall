@@ -6,10 +6,7 @@ import { useTranslations } from 'next-intl';
 import { AdminSection } from '@/components/admin/AdminSection';
 import { useAdminMetrics } from '@/hooks/useAdmin';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
-
-function formatCount(value: number): string {
-    return new Intl.NumberFormat().format(value);
-}
+import { formatCount } from '@/lib/format';
 
 function MetricTile({ label, value, icon: Icon }: { label: string; value: number; icon: LucideIcon }) {
     return (

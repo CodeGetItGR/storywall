@@ -1,15 +1,17 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { type ReactNode, useEffect } from 'react';
 
-import { DesktopNavRail, MobileTabBar } from '@/components/layout';
+import { AccountTopBar, DesktopNavRail, MobileTabBar } from '@/components/layout';
 import { useAuth } from '@/hooks/useAuth';
 import { routes } from '@/lib/routes';
 
 export function AppShell({ children }: { children: ReactNode }) {
     const router = useRouter();
+    const pathname = usePathname();
     const { user, isBootstrapping } = useAuth();
+    const isProfilePage = pathname === routes.profile || pathname.startsWith(routes.profile + '/');
 
     useEffect(() => {
         if (isBootstrapping) return;
@@ -20,6 +22,17 @@ export function AppShell({ children }: { children: ReactNode }) {
 
     if (isBootstrapping || user?.role === 'ADMIN') {
         return <div className="h-full bg-background" />;
+    }
+
+    if (isProfilePage) {
+        return (
+            <div className="flex h-full min-h-0 overflow-hidden bg-background">
+                <AccountTopBar />
+                <main className="h-full min-w-0 flex-1 overflow-y-auto pt-16">
+                    <div className="min-h-full lg:max-w-none">{children}</div>
+                </main>
+            </div>
+        );
     }
 
     return (

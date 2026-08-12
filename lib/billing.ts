@@ -4,6 +4,19 @@ export function formatMoney(locale: string, minor: number, currency: string): st
     return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(minor / 100);
 }
 
+export function formatOptionalMoney(minor: number | null, currency: string | null, locale?: string): string | null {
+    if (minor === null) return null;
+
+    const value = minor / 100;
+    if (!currency) return value.toFixed(2);
+
+    try {
+        return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(value);
+    } catch {
+        return `${value.toFixed(2)} ${currency}`;
+    }
+}
+
 export function formatBillingDate(locale: string, value: string | null): string | null {
     return value ? new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(value)) : null;
 }

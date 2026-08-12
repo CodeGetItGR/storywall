@@ -3,6 +3,7 @@ import type { useTranslations } from 'next-intl';
 import type { ElementType } from 'react';
 import { useMemo } from 'react';
 
+import { type RsvpDisplayStatus, rsvpStatusOrder, rsvpStatusTone } from '@/lib/statusTones';
 import { cn } from '@/lib/utils';
 
 type Member = { id: string; displayName: string; role: string };
@@ -14,29 +15,7 @@ type Rsvp = {
     childCount: number;
 };
 
-const statusOrder: Record<'ATTENDING' | 'MAYBE' | 'DECLINED' | 'NO_RESPONSE', number> = {
-    ATTENDING: 0,
-    MAYBE: 1,
-    DECLINED: 2,
-    NO_RESPONSE: 3,
-};
-
-const statusTone: Record<'ATTENDING' | 'MAYBE' | 'DECLINED' | 'NO_RESPONSE', string> = {
-    ATTENDING: 'bg-emerald-50 text-emerald-700 border-emerald-100',
-    MAYBE: 'bg-amber-50 text-amber-700 border-amber-100',
-    DECLINED: 'bg-rose-50 text-rose-700 border-rose-100',
-    NO_RESPONSE: 'bg-surface-muted text-ink-muted border-border',
-};
-
-function SummaryCard({
-    label,
-    value,
-    icon: Icon,
-}: {
-    label: string;
-    value: number;
-    icon: ElementType;
-}) {
+function SummaryCard({ label, value, icon: Icon }: { label: string; value: number; icon: ElementType }) {
     return (
         <div>
             <Icon className="h-4 w-4 text-ink-faint" aria-hidden="true" />
@@ -46,28 +25,17 @@ function SummaryCard({
     );
 }
 
-export default function RsvpTab({
-    t,
-    members,
-    rsvps,
-}: {
-    t: ReturnType<typeof useTranslations>;
-    members: Member[];
-    rsvps: Rsvp[];
-}) {
+export default function RsvpTab({ t, members, rsvps }: { t: ReturnType<typeof useTranslations>; members: Member[]; rsvps: Rsvp[] }) {
     const rsvpByMember = useMemo(() => new Map(rsvps.map((rsvp) => [rsvp.eventMemberId, rsvp])), [rsvps]);
 
-    const guests = useMemo(
-        () => members.filter((member) => member.role !== 'HOST'),
-        [members]
-    );
+    const guests = useMemo(() => members.filter((member) => member.role !== 'HOST'), [members]);
 
     const sortedGuests = useMemo(
         () =>
             [...guests].sort((left, right) => {
-                const leftStatus = rsvpByMember.get(left.id)?.attendanceStatus ?? 'NO_RESPONSE';
-                const rightStatus = rsvpByMember.get(right.id)?.attendanceStatus ?? 'NO_RESPONSE';
-                const orderDelta = statusOrder[leftStatus] - statusOrder[rightStatus];
+                const leftStatus: RsvpDisplayStatus = rsvpByMember.get(left.id)?.attendanceStatus ?? 'NO_RESPONSE';
+                const rightStatus: RsvpDisplayStatus = rsvpByMember.get(right.id)?.attendanceStatus ?? 'NO_RESPONSE';
+                const orderDelta = rsvpStatusOrder[leftStatus] - rsvpStatusOrder[rightStatus];
                 return orderDelta !== 0 ? orderDelta : left.displayName.localeCompare(right.displayName);
             }),
         [guests, rsvpByMember]
@@ -137,21 +105,17 @@ export default function RsvpTab({
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="mt-1 text-xs text-ink-muted">
-                                            {status !== 'NO_RESPONSE' ? statusLabel : t('rsvpAwaiting')}
-                                        </p>
+                                        <p className="mt-1 text-xs text-ink-muted">{status !== 'NO_RESPONSE' ? statusLabel : t('rsvpAwaiting')}</p>
                                     </div>
 
-                                    <span className={cn('shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold', statusTone[status])}>
+                                    <span
+                                        className={cn('shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold', rsvpStatusTone[status])}
+                                    >
                                         {statusLabel}
                                     </span>
                                 </div>
 
-                                {rsvp?.notes && (
-                                    <p className="mt-2 max-w-[70ch] text-xs leading-6 text-ink-muted">
-                                        {rsvp.notes}
-                                    </p>
-                                )}
+                                {rsvp?.notes && <p className="mt-2 max-w-[70ch] text-xs leading-6 text-ink-muted">{rsvp.notes}</p>}
                             </div>
                         );
                     })}

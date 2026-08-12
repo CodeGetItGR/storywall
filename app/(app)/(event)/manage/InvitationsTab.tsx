@@ -19,30 +19,18 @@ import type {
     QrLinkResponseDto,
     QrTargetType,
 } from '@/lib/api/types';
+import { getQrStatus } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
+import { getQrStatusTone, type QrDisplayStatus } from '@/lib/statusTones';
 import { cn } from '@/lib/utils';
 
 type InvitationPanel = 'invites' | 'qr';
-
-type QrUiStatus = 'ACTIVE' | 'REVOKED' | 'EXPIRED';
 
 const formPanelClass = 'mb-4 rounded-2xl border border-border bg-card p-4 shadow-sm';
 const fieldLabelClass = 'flex flex-col gap-1.5';
 const fieldTextClass = 'text-[11px] font-semibold uppercase tracking-wide text-ink-muted';
 const fieldControlClass =
     'rounded-xl border border-transparent bg-surface-muted px-3 py-2.5 text-sm text-ink outline-none transition focus:border-primary/30 focus:bg-card focus:ring-2 focus:ring-primary/20';
-
-function getQrStatus(qrLink: QrLinkResponseDto): QrUiStatus {
-    if (qrLink.revokedAt) return 'REVOKED';
-    if (qrLink.expiresAt && Date.parse(qrLink.expiresAt) <= Date.now()) return 'EXPIRED';
-    return 'ACTIVE';
-}
-
-function qrStatusTone(status: QrUiStatus): string {
-    if (status === 'ACTIVE') return 'bg-primary-light text-primary-dark';
-    if (status === 'EXPIRED') return 'bg-amber-50 text-amber-700';
-    return 'bg-rose-50 text-rose-700';
-}
 
 function InvitationPanelButton({
     item,
@@ -465,7 +453,7 @@ function QrLinkRow({
     const [copied, setCopied] = useState(false);
     const revokeQrLink = useRevokeQrLink(eventId);
 
-    const status = getQrStatus(qrLink);
+    const status: QrDisplayStatus = getQrStatus(qrLink);
 
     const handleOpenPreview = useCallback(() => {
         setPreviewOpen(true);
@@ -501,7 +489,7 @@ function QrLinkRow({
                 <div className="min-w-0">
                     <div className="flex items-center gap-2">
                         <p className="text-sm font-semibold text-ink truncate">{qrLink.label || t('qr.untitled')}</p>
-                        <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0', qrStatusTone(status))}>
+                        <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0', getQrStatusTone(status))}>
                             {t(`qr.status.${status}`)}
                         </span>
                     </div>

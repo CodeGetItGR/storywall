@@ -7,9 +7,10 @@ import { type MatrixRow, PlanComparisonMatrix } from '@/components/plan/PlanComp
 import { type ComparisonRow, PlanComparisonMobile } from '@/components/plan/PlanComparisonMobile';
 import { PlanModuleGuideButton } from '@/components/plan/PlanModuleGuideButton';
 import { PlanModuleGuideModal } from '@/components/plan/PlanModuleGuideModal';
-import { enabledModuleKeys, PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
+import { PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
 import type { PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { formatPlanDiscount, mediaEstimate, PLAN_COMPARISON_EMPTY } from '@/lib/planComparison';
+import { enabledModuleKeys } from '@/lib/planModules';
 import { formatLimitValue, formatPlanMoney } from '@/lib/planTiers';
 
 export function EventPlanComparison({

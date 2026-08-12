@@ -8,18 +8,8 @@ import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useAdminRefundRequests, useDecideRefundRequest } from '@/hooks/useAdmin';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { RefundRequestAdminDto } from '@/lib/api/types';
+import { formatOptionalMoney } from '@/lib/billing';
 import { formatBytes } from '@/lib/format';
-
-function formatAmount(amountMinor: number | null, currency: string | null): string | null {
-    if (amountMinor === null) return null;
-    const value = amountMinor / 100;
-    if (!currency) return value.toFixed(2);
-    try {
-        return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value);
-    } catch {
-        return `${value.toFixed(2)} ${currency}`;
-    }
-}
 
 function Evidence({ label, value }: { label: string; value: string }) {
     return (
@@ -43,7 +33,7 @@ function RefundRow({ row }: { row: RefundRequestAdminDto }) {
 
     const { request } = row;
     const pending = request.status === 'PENDING';
-    const amount = formatAmount(request.amountMinor, request.currency);
+    const amount = formatOptionalMoney(request.amountMinor, request.currency);
 
     const run = useCallback(
         async (decision: 'approve' | 'reject') => {
@@ -62,7 +52,9 @@ function RefundRow({ row }: { row: RefundRequestAdminDto }) {
             <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-ink">{row.eventTitle}</p>
-                    <p className="mt-0.5 truncate text-xs text-ink-faint">{[row.hostDisplayName, row.hostEmail].filter(Boolean).join(' • ') || request.requestedById}</p>
+                    <p className="mt-0.5 truncate text-xs text-ink-faint">
+                        {[row.hostDisplayName, row.hostEmail].filter(Boolean).join(' • ') || request.requestedById}
+                    </p>
                 </div>
                 <div className="text-right">
                     {amount && <p className="text-sm font-semibold tabular-nums text-ink">{amount}</p>}
@@ -192,7 +184,9 @@ export function RefundQueuePanel() {
 
             {query.isLoading && <p className="text-sm text-ink-muted">{t('refunds.loading')}</p>}
             {query.error && <p className="text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(query.error)}`)}</p>}
-            {!query.isLoading && !query.error && rows.length === 0 && <p className="border-b border-border py-3 text-sm text-ink-muted">{t('refunds.empty')}</p>}
+            {!query.isLoading && !query.error && rows.length === 0 && (
+                <p className="border-b border-border py-3 text-sm text-ink-muted">{t('refunds.empty')}</p>
+            )}
 
             <div className="space-y-2">
                 {rows.map((row) => (

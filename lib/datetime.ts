@@ -21,7 +21,7 @@ export function toDatetimeLocalValue(iso: string | null): string {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
-export function formatDate(locale: string, value: string | number | Date, options: Intl.DateTimeFormatOptions): string {
+export function formatDate(locale: string | undefined, value: string | number | Date, options: Intl.DateTimeFormatOptions): string {
     const date = parseDate(value);
     if (!date) return '';
 
@@ -41,4 +41,28 @@ export function formatTimeRange(locale: string, startAt: string | null, endAt: s
     if (start && end && start !== end) return `${start} - ${end}`;
     if (start) return start;
     return fallbackLabel;
+}
+
+export function formatShortDateTime(value: string | number | Date, locale?: string): string {
+    return formatDate(locale ?? undefined, value, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+export function formatEventListDate(startAt: string | undefined, locale: string, atLabel: string): string | null {
+    if (!startAt) return null;
+
+    const date = parseDate(startAt);
+    if (!date) return null;
+
+    const weekday = formatDate(locale, date, { weekday: 'short' });
+    const calendarDate = formatDate(locale, date, {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    });
+    const time = formatDate(locale, startAt, {
+        hour: 'numeric',
+        minute: date.getMinutes() === 0 ? undefined : '2-digit',
+    });
+
+    return `${weekday}, ${calendarDate} ${atLabel} ${time}`.toUpperCase();
 }

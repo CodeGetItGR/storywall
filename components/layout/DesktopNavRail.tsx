@@ -1,26 +1,48 @@
 'use client';
 
-import { Bell, Heart, Home, Plus } from 'lucide-react';
+import { Heart, Home, Plus, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import Avatar from '@/components/ui/avatar';
+import { useAuth } from '@/hooks/useAuth';
 import { CURRENT_USER_ID, getUser } from '@/lib/mock-data';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 import { useComposer } from '@/providers/ComposerProvider';
+import { useActiveEvent } from '@/providers/EventProvider';
 
-const navItems = [
-    { href: routes.profile, icon: Home, key: 'home', isCenter: false },
-    { href: routes.notifications, icon: Bell, key: 'notifications', isCenter: false },
-];
+function isPathActive(pathname: string, href: string) {
+    return pathname === href || pathname.startsWith(href + '/');
+}
+
+function isEventRoute(pathname: string) {
+    return (
+        pathname === routes.feed ||
+        pathname.startsWith(routes.feed + '/') ||
+        pathname === routes.manage ||
+        pathname.startsWith(routes.manage + '/') ||
+        pathname === routes.tools.root ||
+        pathname.startsWith(routes.tools.root + '/') ||
+        pathname.startsWith('/story/') ||
+        pathname.startsWith('/post/') ||
+        pathname.startsWith('/events/')
+    );
+}
 
 export function DesktopNavRail() {
     const t = useTranslations('DesktopNavRail');
     const pathname = usePathname();
     const user = getUser(CURRENT_USER_ID);
+    const { user: authUser } = useAuth();
     const { openPostComposer, canComposePost } = useComposer();
+    const activeEvent = useActiveEvent();
+    const showEventActions = Boolean(activeEvent) && isEventRoute(pathname);
+    const navItems = [
+        ...(activeEvent ? [{ href: routes.post.feed(activeEvent.id), icon: Home, key: 'home' }] : []),
+        { href: routes.profile, icon: UserRound, key: 'profile' },
+    ];
 
     return (
         <nav
@@ -41,7 +63,7 @@ export function DesktopNavRail() {
             {/* Nav links */}
             <div className="flex-1 px-3 space-y-0.5 overflow-y-auto no-scrollbar">
                 {navItems.map(({ href, icon: Icon, key }) => {
-                    const active = pathname === href || pathname.startsWith(href);
+                    const active = isPathActive(pathname, href) || (key === 'home' && isPathActive(pathname, routes.feed));
                     return (
                         <Link
                             key={href}
@@ -59,7 +81,7 @@ export function DesktopNavRail() {
             </div>
 
             {/* New Post CTA */}
-            {canComposePost && (
+            {showEventActions && canComposePost && (
                 <div className="px-4 pb-4">
                     <button
                         type="button"
@@ -77,7 +99,7 @@ export function DesktopNavRail() {
                 <Avatar initials={user.initials} color={user.avatarColor} size="sm" alt={user.name} />
                 <div className="overflow-hidden">
                     <p className="text-sm font-medium text-ink truncate leading-tight">{user.name}</p>
-                    <p className="text-xs text-ink-muted capitalize leading-tight">{user.role}</p>
+                    {authUser?.email && <p className="text-xs text-ink-muted truncate leading-tight">{authUser.email}</p>}
                 </div>
             </div>
         </nav>
