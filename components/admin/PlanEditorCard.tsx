@@ -7,50 +7,17 @@ import { type ChangeEvent, type FormEvent, useMemo, useRef, useState } from 'rea
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminSection } from '@/components/admin/AdminSection';
 import { AdminSwitch } from '@/components/admin/AdminSwitch';
+import { PlanSaveSummary } from '@/components/admin/PlanSaveSummary';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useDeletePlanTier, useSetPlanModules, useUpdatePlanTier } from '@/hooks/useAdmin';
-import { defaultCurrency, priceInputToMinor, priceMinorToInput, STORAGE_UNITS, storageBytesToInput, storageInputToBytes } from '@/lib/adminPlanForm';
-import { adminErrorMessageKey, checked, emptyToNull, numberOrNull } from '@/lib/adminUtils';
-import type { BillingPeriod, PlanTierPatchDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import { moduleChangeSummary, type PendingPlanSave, planChangeSummary, planPatchFromFormData, sameStringSet } from '@/lib/adminPlanEditor';
+import { defaultCurrency, priceMinorToInput, STORAGE_UNITS, storageBytesToInput } from '@/lib/adminPlanForm';
+import { adminErrorMessageKey } from '@/lib/adminUtils';
+import type { BillingPeriod, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { formatLimitValue, formatPlanMoney } from '@/lib/planTiers';
 import { cn } from '@/lib/utils';
 
 const BILLING_PERIODS: BillingPeriod[] = ['MONTHLY', 'YEARLY', 'ONE_TIME'];
-
-type PendingPlanSave = {
-    patch: PlanTierPatchDto;
-    moduleKeys: string[];
-    changes: Array<{ label: string; before: string; after: string }>;
-    moduleChanges: Array<{ label: string; tone: 'added' | 'removed' }>;
-};
-
-function planPatchFromFormData(plan: PlanTierResponseDto, formData: FormData): PlanTierPatchDto {
-    return {
-        name: String(formData.get('name') ?? '').trim(),
-        description: emptyToNull(formData.get('description')),
-        sortOrder: Number(formData.get('sortOrder') ?? plan.sortOrder),
-        isPublic: checked(formData, 'isPublic'),
-        isAssignable: checked(formData, 'isAssignable'),
-        storageBytes: plan.scope === 'EVENT' ? storageInputToBytes(formData.get('storageAmount'), formData.get('storageUnit')) : null,
-        maxMembers: plan.scope === 'EVENT' ? numberOrNull(formData.get('maxMembers')) : null,
-        maxActiveEvents: plan.scope === 'ACCOUNT' ? numberOrNull(formData.get('maxActiveEvents')) : null,
-        priceAmountMinor: priceInputToMinor(formData.get('price')),
-        priceCurrency: emptyToNull(formData.get('priceCurrency'))?.toUpperCase() ?? null,
-        billingPeriod: (emptyToNull(formData.get('billingPeriod')) as BillingPeriod | null) ?? null,
-        recurringPriceAmountMinor: plan.scope === 'EVENT' ? priceInputToMinor(formData.get('recurringPrice')) : null,
-        includedMonths: plan.scope === 'EVENT' ? numberOrNull(formData.get('includedMonths')) : null,
-        discountPercent: numberOrNull(formData.get('discountPercent')),
-        discountLabel: emptyToNull(formData.get('discountLabel')),
-        discountStartsAt: emptyToNull(formData.get('discountStartsAt')),
-        discountEndsAt: emptyToNull(formData.get('discountEndsAt')),
-    };
-}
-
-function sameStringSet(left: string[], right: string[]): boolean {
-    if (left.length !== right.length) return false;
-    const rightSet = new Set(right);
-    return left.every((item) => rightSet.has(item));
-}
 
 export function PlanEditorCard({
     plan,
@@ -230,14 +197,22 @@ export function PlanEditorCard({
 
             <div className="pt-6">
                 <form ref={formRef} onSubmit={handleSubmit} onChange={handleFormChange}>
-                    <div className={cn('grid gap-8', isEvent ? 'xl:grid-cols-[minmax(0,1.2fr)_minmax(24rem,0.8fr)]' : 'xl:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)]')}>
+                    <div
+                        className={cn(
+                            'grid gap-8',
+                            isEvent ? 'xl:grid-cols-[minmax(0,1.2fr)_minmax(24rem,0.8fr)]' : 'xl:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)]'
+                        )}
+                    >
                         <div className="space-y-1">
                             <AdminSection title={t('plans.sections.identity')}>
                                 <div className={cn('grid gap-3', isEvent ? 'grid-cols-2 lg:grid-cols-4' : 'grid-cols-2 lg:grid-cols-3')}>
                                     <AdminField label={t('fields.name')} className="col-span-2">
                                         <input name="name" defaultValue={plan.name} required maxLength={100} className={adminInputClass()} />
                                     </AdminField>
-                                    <AdminField label={t('fields.description')} className={isEvent ? 'col-span-2 lg:col-span-3' : 'col-span-2 lg:col-span-2'}>
+                                    <AdminField
+                                        label={t('fields.description')}
+                                        className={isEvent ? 'col-span-2 lg:col-span-3' : 'col-span-2 lg:col-span-2'}
+                                    >
                                         <input name="description" defaultValue={plan.description ?? ''} className={adminInputClass()} />
                                     </AdminField>
                                     <AdminField label={t('fields.sort')} className="col-span-1 lg:col-span-1">
@@ -352,11 +327,7 @@ export function PlanEditorCard({
                                         />
                                     </AdminField>
                                     <AdminField label={t('fields.billingPeriod')} className="col-span-2">
-                                        <select
-                                            name="billingPeriod"
-                                            defaultValue={plan.billingPeriod ?? ''}
-                                            className={adminInputClass('max-w-40')}
-                                        >
+                                        <select name="billingPeriod" defaultValue={plan.billingPeriod ?? ''} className={adminInputClass('max-w-40')}>
                                             <option value="">{t('none')}</option>
                                             {BILLING_PERIODS.map((item) => (
                                                 <option key={item} value={item}>
@@ -417,7 +388,11 @@ export function PlanEditorCard({
                             disabled={!canSave || updatePlan.isPending || setModules.isPending}
                             className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-ink px-5 text-sm font-bold text-white shadow-[0_8px_18px_rgba(36,31,26,0.14)] transition hover:-translate-y-0.5 hover:bg-ink/90 disabled:opacity-50"
                         >
-                            {updatePlan.isPending || setModules.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pencil className="h-4 w-4" />}
+                            {updatePlan.isPending || setModules.isPending ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <Pencil className="h-4 w-4" />
+                            )}
                             {t('save')}
                         </button>
                     </div>
@@ -521,113 +496,5 @@ export function PlanEditorCard({
                 onConfirm={handleDeleteConfirm}
             />
         </article>
-    );
-}
-
-function planChangeSummary(plan: PlanTierResponseDto, patch: PlanTierPatchDto, t: ReturnType<typeof useTranslations>) {
-    const changes: PendingPlanSave['changes'] = [];
-    const none = t('none');
-    const unlimited = t('unlimited');
-    const booleanLabel = (value: boolean) => (value ? 'Enabled' : 'Disabled');
-    const textLabel = (value: string | null | undefined) => value || none;
-    const countLabel = (value: number | null) => (value === null ? unlimited : value.toLocaleString());
-    const moneyLabel = (amountMinor: number | null, currency: string | null) => {
-        if (amountMinor === null || !currency) return t('plans.noPrice');
-        return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(amountMinor / 100);
-    };
-    const storageLabel = (value: number | null) => (formatLimitValue(value, 'bytes') ?? unlimited);
-    const add = (label: string, before: string, after: string) => {
-        if (before !== after) changes.push({ label, before, after });
-    };
-
-    add(t('fields.name'), plan.name, patch.name ?? '');
-    add(t('fields.description'), textLabel(plan.description), textLabel(patch.description));
-    add(t('fields.sort'), String(plan.sortOrder), String(patch.sortOrder ?? plan.sortOrder));
-
-    if (plan.scope === 'EVENT') {
-        add(t('fields.storage'), storageLabel(plan.storageBytes), storageLabel(patch.storageBytes ?? null));
-        add(t('fields.maxMembers'), countLabel(plan.maxMembers), countLabel(patch.maxMembers ?? null));
-    } else {
-        add(t('fields.maxEventsPerUser'), countLabel(plan.maxActiveEvents), countLabel(patch.maxActiveEvents ?? null));
-    }
-
-    add(
-        t('fields.price'),
-        moneyLabel(plan.priceAmountMinor, plan.priceCurrency),
-        moneyLabel(patch.priceAmountMinor ?? null, patch.priceCurrency ?? null)
-    );
-    add(t('fields.billingPeriod'), textLabel(plan.billingPeriod), textLabel(patch.billingPeriod));
-    if (plan.scope === 'EVENT') {
-        add(
-            t('fields.recurringPrice'),
-            moneyLabel(plan.recurringPriceAmountMinor, plan.priceCurrency),
-            moneyLabel(patch.recurringPriceAmountMinor ?? null, patch.priceCurrency ?? null)
-        );
-        add(t('fields.includedMonths'), textLabel(plan.includedMonths === null ? null : String(plan.includedMonths)), textLabel(patch.includedMonths === null ? null : String(patch.includedMonths)));
-    }
-    add(t('fields.isAssignable'), booleanLabel(plan.isAssignable), booleanLabel(Boolean(patch.isAssignable)));
-    add(t('fields.isPublic'), booleanLabel(plan.isPublic), booleanLabel(Boolean(patch.isPublic)));
-
-    return changes;
-}
-
-function moduleChangeSummary(
-    beforeKeys: string[],
-    afterKeys: string[],
-    modules: PlatformModuleResponseDto[]
-): PendingPlanSave['moduleChanges'] {
-    const moduleName = (key: string) => modules.find((module) => module.moduleKey === key)?.name ?? key;
-    const before = new Set(beforeKeys);
-    const after = new Set(afterKeys);
-    const added = afterKeys.filter((key) => !before.has(key)).map((key) => ({ label: moduleName(key), tone: 'added' as const }));
-    const removed = beforeKeys.filter((key) => !after.has(key)).map((key) => ({ label: moduleName(key), tone: 'removed' as const }));
-
-    return [...added, ...removed];
-}
-
-function PlanSaveSummary({ pendingSave }: { pendingSave: PendingPlanSave | null }) {
-    if (!pendingSave) return null;
-    const hasChanges = pendingSave.changes.length > 0 || pendingSave.moduleChanges.length > 0;
-
-    if (!hasChanges) {
-        return <p>No changes detected. You can cancel and keep editing.</p>;
-    }
-
-    return (
-        <div className="space-y-4">
-            <p>Review the exact updates before they are applied.</p>
-            {pendingSave.changes.length > 0 && (
-                <div className="space-y-2">
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-ink">Plan fields</p>
-                    <dl className="divide-y divide-border border-y border-border">
-                        {pendingSave.changes.map((change) => (
-                            <div key={change.label} className="grid gap-2 py-2 sm:grid-cols-[8rem_minmax(0,1fr)]">
-                                <dt className="font-semibold text-ink">{change.label}</dt>
-                                <dd className="min-w-0 text-ink-muted">
-                                    <span className="break-words line-through decoration-ink-faint">{change.before}</span>
-                                    <span className="px-2 text-ink-faint">to</span>
-                                    <span className="break-words font-semibold text-ink">{change.after}</span>
-                                </dd>
-                            </div>
-                        ))}
-                    </dl>
-                </div>
-            )}
-            {pendingSave.moduleChanges.length > 0 && (
-                <div className="space-y-2">
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-ink">Modules</p>
-                    <ul className="divide-y divide-border border-y border-border">
-                        {pendingSave.moduleChanges.map((change) => (
-                            <li key={`${change.tone}:${change.label}`} className="flex items-center justify-between gap-3 py-2">
-                                <span className="font-semibold text-ink">{change.label}</span>
-                                <span className={change.tone === 'added' ? 'text-emerald-700' : 'text-rose-600'}>
-                                    {change.tone === 'added' ? 'Will be enabled' : 'Will be disabled'}
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
-        </div>
     );
 }
