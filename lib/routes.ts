@@ -39,6 +39,7 @@ export const routes = {
         root: '/tools',
         rsvp: '/tools/rsvp',
         rsvpSubmit: '/tools/rsvp/submit',
+        gallery: '/tools/gallery',
         playlist: '/tools/playlist',
         quiz: '/tools/quiz',
         futureMessages: '/tools/future-messages',

@@ -1,12 +1,12 @@
 import { Clock, Loader2, Ticket, Users } from 'lucide-react';
 import type { useTranslations } from 'next-intl';
-import {ElementType, useState} from 'react';
+import { ElementType, useState } from 'react';
 
 import Section from '@/components/manage/Section';
 import { UsagePanel } from '@/components/plan/UsagePanel';
 import { useApiErrorMessage, useRetryAfterCountdown } from '@/hooks/useApiErrorMessage';
 import { useCheckout } from '@/hooks/useBilling';
-import type { EventUsageResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import type { EventModuleResponseDto, EventUsageResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { checkoutSuccessUrl } from '@/lib/billing';
 import { formatBytes } from '@/lib/format';
 import { findNextPlan, findPlanByCode } from '@/lib/planTiers';
@@ -33,6 +33,7 @@ export default function OverviewTab({
     eventUsage,
     planTiers,
     modules,
+    eventModules,
     onSeeAllRsvp,
     onSeeAllInvitations,
     eventId,
@@ -47,6 +48,7 @@ export default function OverviewTab({
     eventUsage: EventUsageResponseDto | null;
     planTiers: PlanTierResponseDto[];
     modules: PlatformModuleResponseDto[];
+    eventModules: EventModuleResponseDto[];
     onSeeAllRsvp: () => void;
     onSeeAllInvitations: () => void;
     eventId: string;
@@ -77,8 +79,13 @@ export default function OverviewTab({
     const rsvpTotal = rsvpBreakdown.reduce((sum, r) => sum + r.count, 0) || 1;
     const currentPlan = eventUsage ? findPlanByCode(planTiers, 'EVENT', eventUsage.planTier) : undefined;
     const nextPlan = eventUsage ? findNextPlan(planTiers, 'EVENT', eventUsage.planTier) : undefined;
-    const moduleNamesByKey = new Map(modules.map((module_) => [module_.moduleKey, module_.name]));
-    const includedModules = currentPlan?.moduleKeys.map((moduleKey) => moduleNamesByKey.get(moduleKey) ?? moduleKey) ?? [];
+    const globallyEnabledModules = modules.filter((module_) => module_.isEnabled);
+    const moduleNamesByKey = new Map(globallyEnabledModules.map((module_) => [module_.moduleKey, module_.name]));
+    const availableModuleKeys = new Set(eventModules.filter((module) => module.isAvailable).map((module) => module.moduleKey));
+    const includedModules =
+        currentPlan?.moduleKeys
+            .filter((moduleKey) => moduleNamesByKey.has(moduleKey) && availableModuleKeys.has(moduleKey))
+            .map((moduleKey) => moduleNamesByKey.get(moduleKey) ?? moduleKey) ?? [];
 
     return (
         <div className="flex flex-col gap-4 px-4 sm:gap-5">
@@ -158,36 +165,36 @@ export default function OverviewTab({
             </Section>
 
             {eventUsage && (
-                    <UsagePanel
-                        className="rounded-none border-0 border-t border-border bg-transparent p-0 pt-4 shadow-none md:hidden"
-                        title={t('usage.eventTitle')}
-                        planName={currentPlan?.name ?? eventUsage.planTier}
-                        nextPlanName={nextPlan?.name}
-                        upgradeHref={routes.events.settingsPlan(eventId)}
-                        includedModules={includedModules}
-                        items={[
-                            {
-                                key: 'storage',
-                                used: eventUsage.storageBytes,
-                                limit: eventUsage.storageLimitBytes,
-                                percent: eventUsage.storagePercent,
-                                valueLabel:
-                                    eventUsage.storageLimitBytes === null
-                                        ? formatBytes(eventUsage.storageBytes)
-                                        : `${formatBytes(eventUsage.storageBytes)} / ${formatBytes(eventUsage.storageLimitBytes)}`,
-                            },
-                            {
-                                key: 'members',
-                                used: eventUsage.memberCount,
-                                limit: eventUsage.memberLimit,
-                                percent: eventUsage.memberPercent,
-                                valueLabel:
-                                    eventUsage.memberLimit === null
-                                        ? `${eventUsage.memberCount}`
-                                        : `${eventUsage.memberCount} / ${eventUsage.memberLimit}`,
-                            },
-                        ]}
-                    />
+                <UsagePanel
+                    className="rounded-none border-0 border-t border-border bg-transparent p-0 pt-4 shadow-none md:hidden"
+                    title={t('usage.eventTitle')}
+                    planName={currentPlan?.name ?? eventUsage.planTier}
+                    nextPlanName={nextPlan?.name}
+                    upgradeHref={routes.events.settingsPlan(eventId)}
+                    includedModules={includedModules}
+                    items={[
+                        {
+                            key: 'storage',
+                            used: eventUsage.storageBytes,
+                            limit: eventUsage.storageLimitBytes,
+                            percent: eventUsage.storagePercent,
+                            valueLabel:
+                                eventUsage.storageLimitBytes === null
+                                    ? formatBytes(eventUsage.storageBytes)
+                                    : `${formatBytes(eventUsage.storageBytes)} / ${formatBytes(eventUsage.storageLimitBytes)}`,
+                        },
+                        {
+                            key: 'members',
+                            used: eventUsage.memberCount,
+                            limit: eventUsage.memberLimit,
+                            percent: eventUsage.memberPercent,
+                            valueLabel:
+                                eventUsage.memberLimit === null
+                                    ? `${eventUsage.memberCount}`
+                                    : `${eventUsage.memberCount} / ${eventUsage.memberLimit}`,
+                        },
+                    ]}
+                />
             )}
         </div>
     );

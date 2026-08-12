@@ -25,7 +25,6 @@ export function AdminConsole() {
 
             <main className="min-w-0">
                 {tab === 'metrics' && <PlatformMetricsPanel />}
-                {tab === 'accountPlans' && <PlanCatalogPanel scope="ACCOUNT" />}
                 {tab === 'eventPlans' && <PlanCatalogPanel scope="EVENT" />}
                 {tab === 'modules' && <ModuleRegistryPanel />}
                 {tab === 'assignments' && <PlanAssignmentPanel />}

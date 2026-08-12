@@ -107,7 +107,13 @@ export default function QrCodeLandingPage({ params }: { params: Promise<{ token:
                 inviteToken: activeResolution.inviteToken!,
                 displayName: displayName.trim(),
             });
-            router.push(activeResolution.eventId ? routes.post.feed(activeResolution.eventId) : routes.feed);
+            router.push(
+                activeResolution.targetType === 'MEDIA_UPLOAD'
+                    ? routes.tools.gallery
+                    : activeResolution.eventId
+                      ? routes.post.feed(activeResolution.eventId)
+                      : routes.feed
+            );
         } catch (err) {
             if (getErrorCode(err) === ERROR_CODES.INVITATION_EXHAUSTED) {
                 setGuestError(t('invitationExhausted'));

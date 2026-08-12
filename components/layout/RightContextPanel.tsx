@@ -1,6 +1,6 @@
 'use client';
 
-import { CreditCard, LayoutDashboard, MessageSquareText, Settings2, Ticket } from 'lucide-react';
+import { CreditCard, Images, LayoutDashboard, MessageSquareText, Settings2, Ticket } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
@@ -15,6 +15,7 @@ import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/E
 function hostLinks(eventId: string) {
     return [
         { key: 'manage', href: routes.manage, icon: LayoutDashboard },
+        { key: 'gallery', href: routes.tools.gallery, icon: Images },
         { key: 'rsvps', href: routes.tools.rsvp, icon: Ticket },
         { key: 'invitations', href: routes.auth.manage({ tab: 'invitations' }), icon: MessageSquareText },
         { key: 'settings', href: routes.auth.manage({ tab: 'settings' }), icon: Settings2 },
@@ -42,8 +43,13 @@ export function RightContextPanel() {
     const enabledModuleCount = activeEvent.modules.filter((module) => module.isAvailable).length;
     const currentPlan = eventUsage ? findPlanByCode(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
     const nextPlan = eventUsage ? findNextPlan(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
-    const moduleNamesByKey = new Map((appConfig?.modules ?? []).map((module_) => [module_.moduleKey, module_.name]));
-    const includedModules = currentPlan?.moduleKeys.map((moduleKey) => moduleNamesByKey.get(moduleKey) ?? moduleKey) ?? [];
+    const globallyEnabledModules = (appConfig?.modules ?? []).filter((module_) => module_.isEnabled);
+    const moduleNamesByKey = new Map(globallyEnabledModules.map((module_) => [module_.moduleKey, module_.name]));
+    const availableModuleKeys = new Set(activeEvent.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey));
+    const includedModules =
+        currentPlan?.moduleKeys
+            .filter((moduleKey) => moduleNamesByKey.has(moduleKey) && availableModuleKeys.has(moduleKey))
+            .map((moduleKey) => moduleNamesByKey.get(moduleKey) ?? moduleKey) ?? [];
 
     return (
         <aside

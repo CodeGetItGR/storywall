@@ -28,8 +28,8 @@ export default function PlaylistPage() {
     const { data: suggestionsData, isLoading: suggestionsLoading } = usePlaylistSuggestions(eventId);
     const { data: leaderboard = [], isLoading: isLoadingLeaderboard } = usePlaylistLeaderboard(eventId, isHost);
     const playlistEnabled = modules.some((module) => module.moduleKey === 'playlist' && module.isAvailable);
-    const playlistInRegistry = appConfig?.eventModuleKeys.includes('playlist') ?? true;
-    const unlockingPlans = findPlansUnlockingModule(appConfig?.planTiers ?? [], 'playlist');
+    const playlistInRegistry = appConfig?.modules.some((module) => module.moduleKey === 'playlist' && module.isEnabled) ?? true;
+    const unlockingPlans = playlistInRegistry ? findPlansUnlockingModule(appConfig?.planTiers ?? [], 'playlist') : [];
     const unlockPlanNames = unlockingPlans.map((plan) => plan.name).join(', ');
     const suggestions = suggestionsData ?? [];
     const canSuggest = canComposeSong && isEventWritable(activeEvent?.status);
@@ -96,7 +96,9 @@ export default function PlaylistPage() {
                     {t('suggest')}
                 </button>
             </div>
-            {!isEventWritable(activeEvent?.status) && <p className="mb-5 rounded-lg bg-surface-muted px-4 py-3 text-sm text-ink-muted">{t('readOnly')}</p>}
+            {!isEventWritable(activeEvent?.status) && (
+                <p className="mb-5 rounded-lg bg-surface-muted px-4 py-3 text-sm text-ink-muted">{t('readOnly')}</p>
+            )}
 
             {isHost && (
                 <section className="mb-8">

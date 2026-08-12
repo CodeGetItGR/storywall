@@ -21,7 +21,7 @@ export function StoriesRow({ eventId }: StoriesRowProps) {
     const activeMember = useActiveMember();
     const { data: stories = [] } = useEventStories(eventId);
     const { data: members = [] } = useEventMembers(eventId);
-    const { openStoryCapture, isCreatingStory, storyError } = useComposer();
+    const { openStoryCapture, isCreatingStory, storyError, canComposeStory } = useComposer();
 
     const groups = useMemo(() => groupStoriesByAuthor(stories), [stories]);
     const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
@@ -34,7 +34,7 @@ export function StoriesRow({ eventId }: StoriesRowProps) {
             {/* Current user slot */}
             {ownGroup && activeMember ? (
                 <StoryAvatar group={ownGroup} member={activeMember} isCurrentUser />
-            ) : (
+            ) : canComposeStory ? (
                 <div className="flex flex-col items-center gap-2 shrink-0">
                     <button
                         type="button"
@@ -47,16 +47,19 @@ export function StoriesRow({ eventId }: StoriesRowProps) {
                     </button>
                     <span className="text-[11px] text-ink-muted font-medium text-center leading-tight max-w-14 truncate">{tAvatar('yourStory')}</span>
                 </div>
-            )}
+            ) : null}
 
-            {storyError && (
-                <p role="alert" className="text-xs text-destructive shrink-0 self-center max-w-32">
-                    {storyError}
-                </p>
-            )}
+            {(ownGroup || canComposeStory) && (
+                <>
+                    {storyError && (
+                        <p role="alert" className="text-xs text-destructive shrink-0 self-center max-w-32">
+                            {storyError}
+                        </p>
+                    )}
 
-            {/* Divider */}
-            <div className="w-px h-14 bg-border self-center shrink-0" aria-hidden="true" />
+                    <div className="w-px h-14 bg-border self-center shrink-0" aria-hidden="true" />
+                </>
+            )}
 
             {/* Other stories */}
             {otherGroups.map((group) => {

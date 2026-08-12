@@ -74,9 +74,6 @@ export function PlanAssignmentPanel() {
 
     return (
         <section className="grid gap-3">
-            <div className="border-b border-amber-200 bg-amber-50/70 px-4 py-3 text-sm font-medium leading-6 text-amber-900">
-                {t('assignments.accountDisabledNotice')}
-            </div>
             <form onSubmit={handleAssignEvent} className="border-b border-border pb-4">
                 <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">

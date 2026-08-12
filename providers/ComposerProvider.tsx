@@ -36,6 +36,8 @@ interface ComposerContextValue {
     isCreatingStory: boolean;
     storyError: string | null;
     canCompose: boolean;
+    canComposePost: boolean;
+    canComposeStory: boolean;
     canComposeSong: boolean;
 }
 
@@ -94,16 +96,18 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     const isPostBusy = createPost.isPending || uploadBatch.isPending;
     const isSongBusy = createPlaylistSuggestion.isPending;
     const canCompose = Boolean(activeMember) && isEventWritable(activeEvent?.status);
+    const canComposePost = canCompose && eventModules.some((module) => module.moduleKey === 'posts' && module.isAvailable);
+    const canComposeStory = canCompose && eventModules.some((module) => module.moduleKey === 'stories' && module.isAvailable);
     const canComposeSong = canCompose && eventModules.some((module) => module.moduleKey === 'playlist' && module.isAvailable);
     const maxMediaPerPost = appConfig?.media.maxMediaPerPost ?? 10;
     const maxBatchUploadFiles = appConfig?.media.maxBatchUploadFiles ?? 10;
     const maxImages = Math.min(maxMediaPerPost, maxBatchUploadFiles);
     const maxFileSizeBytes = appConfig?.media.maxFileSizeBytes ?? 20 * 1024 * 1024;
     const maxRequestSizeBytes = appConfig?.media.maxRequestSizeBytes ?? 220 * 1024 * 1024;
-    const canSubmit = (caption.trim().length > 0 || images.length > 0) && !hasUnresolvedFailures && !isPostBusy && canCompose;
+    const canSubmit = (caption.trim().length > 0 || images.length > 0) && !hasUnresolvedFailures && !isPostBusy && canComposePost;
 
     function openPostComposer() {
-        if (!canCompose) return;
+        if (!canComposePost) return;
         setComposerMode('post');
         setIsOpen(true);
     }
@@ -137,7 +141,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     }
 
     function handleFiles(fileList: FileList | null) {
-        if (!canCompose) return;
+        if (!canComposePost) return;
         if (!fileList || fileList.length === 0) return;
         setSizeError(null);
         setCountError(null);
@@ -185,7 +189,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     }
 
     function removeImage(key: string) {
-        if (!canCompose) return;
+        if (!canComposePost) return;
         setImages((prev) => {
             const target = prev.find((img) => img.key === key);
             if (target) URL.revokeObjectURL(target.previewUrl);
@@ -198,7 +202,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     }
 
     function handlePickPhotos() {
-        if (!canCompose) return;
+        if (!canComposePost) return;
         fileRef.current?.click();
     }
 
@@ -356,14 +360,14 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     }
 
     function openStoryCapture() {
-        if (!canCompose) return;
+        if (!canComposeStory) return;
         storyInputRef.current?.click();
     }
 
     async function handleStoryFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0];
         e.target.value = '';
-        if (!file || !activeMember || !activeEvent || !canCompose) return;
+        if (!file || !activeMember || !activeEvent || !canComposeStory) return;
 
         setStoryError(null);
         try {
@@ -393,6 +397,8 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
         isCreatingStory: uploadMedia.isPending || createStory.isPending,
         storyError,
         canCompose,
+        canComposePost,
+        canComposeStory,
         canComposeSong,
     };
 
@@ -510,7 +516,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
                                 <button
                                     type="button"
                                     onClick={handlePickPhotos}
-                                    disabled={!canCompose || images.length >= maxImages}
+                                    disabled={!canComposePost || images.length >= maxImages}
                                     className="flex items-center gap-2 text-sm font-medium text-ink-muted transition-colors hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
                                 >
                                     <ImagePlus className="h-4 w-4" />

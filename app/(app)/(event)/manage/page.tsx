@@ -1,7 +1,6 @@
 'use client';
 
-import { CalendarPlus, LayoutDashboard, Loader2, Settings, Ticket, Users } from 'lucide-react';
-import Link from 'next/link';
+import { LayoutDashboard, Loader2, Settings, Ticket, Users } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { ElementType, useCallback, useEffect, useState } from 'react';
@@ -162,6 +161,7 @@ export default function ManagePage() {
                     eventUsage={eventUsage}
                     planTiers={appConfig?.planTiers ?? []}
                     modules={appConfig?.modules ?? []}
+                    eventModules={activeEvent.modules}
                     onSeeAllRsvp={handleSeeAllRsvp}
                     onSeeAllInvitations={handleSeeAllInvitations}
                     eventId={activeEvent.id}
@@ -200,15 +200,6 @@ export default function ManagePage() {
                         >
                             {t.has(`status.${activeEvent.status}`) ? t(`status.${activeEvent.status}`) : t('hostView')}
                         </span>
-                        <Link
-                            href={routes.events.new}
-                            aria-label={t('newEvent')}
-                            title={t('newEvent')}
-                            className="flex h-9 items-center gap-1.5 rounded-full bg-surface-muted px-2.5 text-xs font-semibold text-ink transition-colors hover:bg-surface-muted/70 sm:px-3"
-                        >
-                            <CalendarPlus className="h-4 w-4 shrink-0" />
-                            <span className="hidden sm:inline">{t('newEvent')}</span>
-                        </Link>
                     </div>
                 </div>
 

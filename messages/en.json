@@ -84,6 +84,7 @@
         },
         "hostMenu": {
             "manage": "Dashboard",
+            "gallery": "Gallery",
             "schedule": "Schedule",
             "rsvps": "RSVPs",
             "invitations": "Invitations",
@@ -286,6 +287,10 @@
                 "label": "Venue",
                 "description": "Rosewood Estate — directions, parking & amenities"
             },
+            "gallery": {
+                "label": "Gallery",
+                "description": "Upload and browse event photos"
+            },
             "playlist": {
                 "label": "Playlist",
                 "description": "Vote on songs and suggest tracks for the reception",
@@ -449,9 +454,9 @@
             "PUBLIC": "Public"
         },
         "submit": "Create event",
-        "activeEventLimitExceeded": "Your account is already hosting as many active events as its current plan allows. Archive an old event or upgrade to create another one.",
-        "usageTitle": "Account usage",
-        "activeEventLimitExceededWithPlan": "Your account has reached its active event limit. Archive an old event or upgrade to {plan} to create another one.",
+        "activeEventLimitExceeded": "You are already hosting as many active events as currently allowed. Archive an old event before creating another one.",
+        "usageTitle": "Event usage",
+        "activeEventLimitExceededWithPlan": "You are already hosting as many active events as currently allowed. Archive an old event before creating another one.",
         "unlimited": "Unlimited",
         "noPlans": "No public event plans are available yet.",
         "planDescriptionFallback": "Everything you need for this event tier.",
@@ -472,7 +477,8 @@
         },
         "planLimits": {
             "storage": "storage",
-            "members": "members"
+            "members": "members",
+            "modules": "Included modules"
         }
     },
     "ManagePage": {
@@ -1160,6 +1166,7 @@
         "eventDate": "Event date",
         "links": {
             "manage": "Dashboard",
+            "gallery": "Gallery",
             "rsvps": "RSVPs",
             "invitations": "Invitations",
             "settings": "Settings",
@@ -1167,6 +1174,7 @@
         },
         "helper": {
             "manage": "Overview and event controls",
+            "gallery": "Review guest uploads",
             "rsvps": "See attendance and replies",
             "invitations": "Create or review invites",
             "settings": "Edit event details",
@@ -1479,6 +1487,10 @@
                 "label": "Playlist",
                 "subtitle": "Suggest a song"
             },
+            "gallery": {
+                "label": "Gallery",
+                "subtitle": "Share photos"
+            },
             "seating": {
                 "label": "Seating",
                 "subtitle": "Find your table"
@@ -1499,6 +1511,28 @@
             "activeEvents": "Active events"
         },
         "includedModules": "Included modules"
+    },
+    "GalleryPage": {
+        "hostEyebrow": "Host gallery",
+        "guestEyebrow": "Guest gallery",
+        "title": "Gallery",
+        "hostSubtitle": "Guest uploads are stored here without creating feed posts, so you can review and download them later.",
+        "guestSubtitle": "Share photos from the celebration. Uploads are saved to the event gallery for the host.",
+        "moduleUnavailable": "Gallery is not available on this event's current plan.",
+        "eventFrozen": "This event is read-only. Existing photos are still available, but new uploads are paused.",
+        "uploadTitle": "Upload photos",
+        "uploadHint": "Choose up to {count} images at a time.",
+        "choosePhotos": "Choose photos",
+        "selectedSummary": "{count} selected · {size}",
+        "clear": "Clear",
+        "upload": "Upload",
+        "uploadComplete": "{count} uploaded, {failed} failed.",
+        "uploadFailed": "We couldn't upload those photos. Please try again.",
+        "libraryTitle": "Event photos",
+        "photoCount": "{count} photos",
+        "emptyTitle": "No photos yet",
+        "emptyBody": "Photos uploaded from QR cards or this page will appear here.",
+        "guestSavedForHost": "Uploaded photos are saved privately to the event gallery for the host to review later."
     },
     "ApiErrors": {
         "generic": "Something went wrong. Please try again.",

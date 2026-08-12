@@ -19,7 +19,7 @@ interface StoryAvatarProps {
 
 export function StoryAvatar({ group, member, isCurrentUser }: StoryAvatarProps) {
     const t = useTranslations('StoryAvatar');
-    const { openStoryCapture } = useComposer();
+    const { openStoryCapture, canComposeStory } = useComposer();
     const firstStoryId = group.stories[0].id;
 
     const ring = (
@@ -47,7 +47,11 @@ export function StoryAvatar({ group, member, isCurrentUser }: StoryAvatarProps) 
 
     if (!isCurrentUser) {
         return (
-            <Link href={routes.story(firstStoryId)} className="flex flex-col items-center gap-2 shrink-0 group" aria-label={t('userStory', { name: member.displayName })}>
+            <Link
+                href={routes.story(firstStoryId)}
+                className="flex flex-col items-center gap-2 shrink-0 group"
+                aria-label={t('userStory', { name: member.displayName })}
+            >
                 {ring}
                 {label}
             </Link>
@@ -60,14 +64,16 @@ export function StoryAvatar({ group, member, isCurrentUser }: StoryAvatarProps) 
                 <Link href={routes.story(firstStoryId)} aria-label={t('yourStory')}>
                     {ring}
                 </Link>
-                <button
-                    type="button"
-                    onClick={openStoryCapture}
-                    aria-label={t('addAnotherStory')}
-                    className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-gradient-brand border-2 border-background flex items-center justify-center"
-                >
-                    <Plus className="w-3 h-3 text-white" strokeWidth={3} />
-                </button>
+                {canComposeStory && (
+                    <button
+                        type="button"
+                        onClick={openStoryCapture}
+                        aria-label={t('addAnotherStory')}
+                        className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-gradient-brand border-2 border-background flex items-center justify-center"
+                    >
+                        <Plus className="w-3 h-3 text-white" strokeWidth={3} />
+                    </button>
+                )}
             </div>
             {label}
         </div>

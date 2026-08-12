@@ -1,8 +1,11 @@
-import { BookHeart, Calendar, ChevronRight, Gift, HelpCircle, LayoutGrid, Mail, MapPin, Music, Users } from 'lucide-react';
+'use client';
+
+import { BookHeart, Calendar, ChevronRight, Gift, HelpCircle, Images, LayoutGrid, Mail, MapPin, Music, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { routes } from '@/lib/routes';
+import { useActiveEvent } from '@/providers/EventProvider';
 
 const tools = [
     {
@@ -41,6 +44,13 @@ const tools = [
         badgeCount: null,
     },
     {
+        href: routes.tools.gallery,
+        icon: Images,
+        key: 'gallery',
+        color: 'bg-cyan-50 text-cyan-600',
+        badgeCount: null,
+    },
+    {
         href: routes.tools.playlist,
         icon: Music,
         key: 'playlist',
@@ -70,8 +80,20 @@ const tools = [
     },
 ] as const;
 
+const moduleBackedTools: Partial<Record<(typeof tools)[number]['key'], 'rsvp' | 'gallery' | 'playlist'>> = {
+    rsvp: 'rsvp',
+    gallery: 'gallery',
+    playlist: 'playlist',
+};
+
 export default function ToolsPage() {
     const t = useTranslations('ToolsPage');
+    const activeEvent = useActiveEvent();
+    const availableModules = new Set(activeEvent?.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey) ?? []);
+    const visibleTools = tools.filter((tool) => {
+        const moduleKey = moduleBackedTools[tool.key];
+        return !moduleKey || availableModules.has(moduleKey);
+    });
 
     return (
         <div className="max-w-2xl mx-auto px-4 pb-24 lg:pb-8">
@@ -81,7 +103,7 @@ export default function ToolsPage() {
             </div>
 
             <div className="flex flex-col gap-2">
-                {tools.map((tool) => {
+                {visibleTools.map((tool) => {
                     const Icon = tool.icon;
                     return (
                         <Link

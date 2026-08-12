@@ -2,9 +2,9 @@
 
 import { useTranslations } from 'next-intl';
 
+import { enabledModuleKeys, getModuleMeta } from '@/components/plan/PlanModuleIcons';
 import { Modal } from '@/components/ui/modal';
 import type { PlatformModuleResponseDto } from '@/lib/api/types';
-import { getModuleMeta } from '@/components/plan/PlanModuleIcons';
 
 export function PlanModuleGuideModal({
     open,
@@ -18,6 +18,7 @@ export function PlanModuleGuideModal({
     modules: PlatformModuleResponseDto[];
 }) {
     const t = useTranslations('EventPlanSettingsPage');
+    const visibleModuleKeys = enabledModuleKeys(moduleKeys, modules);
 
     return (
         <Modal open={open} onClose={onClose} size="sm" closeLabel={t('compare.moduleLegendClose')}>
@@ -25,7 +26,7 @@ export function PlanModuleGuideModal({
                 <h2 className="text-lg font-semibold text-ink">{t('compare.moduleLegendTitle')}</h2>
                 <p className="mt-2 text-sm leading-6 text-ink-muted">{t('compare.moduleLegendBody')}</p>
                 <div className="mt-4 divide-y divide-border border-y border-border">
-                    {moduleKeys.map((moduleKey) => {
+                    {visibleModuleKeys.map((moduleKey) => {
                         const meta = getModuleMeta(moduleKey, modules);
                         const Icon = meta.Icon;
                         return (
@@ -35,9 +36,7 @@ export function PlanModuleGuideModal({
                                 </span>
                                 <div>
                                     <p className="text-sm font-semibold text-ink">{meta.name}</p>
-                                    <p className="mt-1 text-sm leading-6 text-ink-muted">
-                                        {meta.description || t('compare.moduleLegendFallback')}
-                                    </p>
+                                    <p className="mt-1 text-sm leading-6 text-ink-muted">{meta.description || t('compare.moduleLegendFallback')}</p>
                                 </div>
                             </div>
                         );

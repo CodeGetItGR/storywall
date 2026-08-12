@@ -20,7 +20,7 @@ export function DesktopNavRail() {
     const t = useTranslations('DesktopNavRail');
     const pathname = usePathname();
     const user = getUser(CURRENT_USER_ID);
-    const { openPostComposer, canCompose } = useComposer();
+    const { openPostComposer, canComposePost } = useComposer();
 
     return (
         <nav
@@ -59,17 +59,18 @@ export function DesktopNavRail() {
             </div>
 
             {/* New Post CTA */}
-            <div className="px-4 pb-4">
-                <button
-                    type="button"
-                    onClick={openPostComposer}
-                    disabled={!canCompose}
-                    className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                    <Plus className="w-4 h-4" strokeWidth={2.5} />
-                    {t('newPost')}
-                </button>
-            </div>
+            {canComposePost && (
+                <div className="px-4 pb-4">
+                    <button
+                        type="button"
+                        onClick={openPostComposer}
+                        className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                        <Plus className="w-4 h-4" strokeWidth={2.5} />
+                        {t('newPost')}
+                    </button>
+                </div>
+            )}
 
             {/* Current user */}
             <div className="border-t border-border px-4 py-4 flex items-center gap-3">

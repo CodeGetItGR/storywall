@@ -88,7 +88,8 @@
             "rsvps": "RSVP",
             "invitations": "Προσκλήσεις",
             "settings": "Ρυθμίσεις",
-            "billing": "Πλάνο & χρέωση"
+            "billing": "Πλάνο & χρέωση",
+            "gallery": "Gallery"
         },
         "guestMenu": {
             "schedule": "Πρόγραμμα"
@@ -304,6 +305,10 @@
             "futureMessages": {
                 "label": "Μελλοντικά Μηνύματα",
                 "description": "Γράψτε ένα γράμμα που θα ανοίξει την επέτειό τους"
+            },
+            "gallery": {
+                "label": "Gallery",
+                "description": "Μεταφόρτωση και προβολή φωτογραφιών εκδήλωσης"
             }
         }
     },
@@ -449,9 +454,9 @@
             "PUBLIC": "Δημόσιο"
         },
         "submit": "Δημιουργία εκδήλωσης",
-        "activeEventLimitExceeded": "Your account is already hosting as many active events as its current plan allows. Archive an old event or upgrade to create another one.",
-        "usageTitle": "Account usage",
-        "activeEventLimitExceededWithPlan": "Your account has reached its active event limit. Archive an old event or upgrade to {plan} to create another one.",
+        "activeEventLimitExceeded": "Φιλοξενείτε ήδη όσες ενεργές εκδηλώσεις επιτρέπονται αυτή τη στιγμή. Αρχειοθετήστε μια παλιά εκδήλωση πριν δημιουργήσετε άλλη.",
+        "usageTitle": "Χρήση εκδήλωσης",
+        "activeEventLimitExceededWithPlan": "Φιλοξενείτε ήδη όσες ενεργές εκδηλώσεις επιτρέπονται αυτή τη στιγμή. Αρχειοθετήστε μια παλιά εκδήλωση πριν δημιουργήσετε άλλη.",
         "unlimited": "Απεριόριστο",
         "noPlans": "Δεν υπάρχουν ακόμη δημόσια διαθέσιμα πλάνα για εκδηλώσεις.",
         "planDescriptionFallback": "Ό,τι χρειάζεστε για αυτό το επίπεδο εκδήλωσης.",
@@ -472,7 +477,8 @@
         },
         "planLimits": {
             "storage": "αποθηκευτικός χώρος",
-            "members": "μέλη"
+            "members": "μέλη",
+            "modules": "Περιλαμβανόμενα modules"
         }
     },
     "ManagePage": {
@@ -1163,14 +1169,16 @@
             "rsvps": "RSVP",
             "invitations": "Προσκλήσεις",
             "settings": "Ρυθμίσεις",
-            "billing": "Πλάνο & χρέωση"
+            "billing": "Πλάνο & χρέωση",
+            "gallery": "Gallery"
         },
         "helper": {
             "manage": "Επισκόπηση και έλεγχος event",
             "rsvps": "Δείτε συμμετοχές και απαντήσεις",
             "invitations": "Δημιουργία ή έλεγχος προσκλήσεων",
             "settings": "Επεξεργασία λεπτομερειών event",
-            "billing": "Πληρωμές και ανανεώσεις"
+            "billing": "Πληρωμές και ανανεώσεις",
+            "gallery": "Έλεγχος φωτογραφιών καλεσμένων"
         },
         "usageTitle": "Plan usage"
     },
@@ -1486,6 +1494,10 @@
             "wishbook": {
                 "label": "Βιβλίο ευχών",
                 "subtitle": "Αφήστε ένα μήνυμα"
+            },
+            "gallery": {
+                "label": "Gallery",
+                "subtitle": "Μοιραστείτε φωτογραφίες"
             }
         }
     },
@@ -1527,5 +1539,27 @@
         "planNotAnUpgrade": "These upgrade options are out of date. We refreshed the plan catalog.",
         "planCurrencyMismatch": "This plan is not available for your event.",
         "checkoutSessionUnresolved": "Your last payment is still finishing. Try again in a moment."
+    },
+    "GalleryPage": {
+        "hostEyebrow": "Gallery διοργανωτή",
+        "guestEyebrow": "Gallery καλεσμένου",
+        "title": "Gallery",
+        "hostSubtitle": "Οι φωτογραφίες των καλεσμένων αποθηκεύονται εδώ χωρίς να δημιουργούν δημοσιεύσεις στη ροή, ώστε να τις δείτε και να τις κατεβάσετε αργότερα.",
+        "guestSubtitle": "Μοιραστείτε φωτογραφίες από την εκδήλωση. Οι μεταφορτώσεις αποθηκεύονται στο gallery για τον διοργανωτή.",
+        "moduleUnavailable": "Το Gallery δεν είναι διαθέσιμο στο τρέχον πλάνο αυτής της εκδήλωσης.",
+        "eventFrozen": "Η εκδήλωση είναι μόνο για ανάγνωση. Οι υπάρχουσες φωτογραφίες είναι διαθέσιμες, αλλά οι νέες μεταφορτώσεις έχουν σταματήσει.",
+        "uploadTitle": "Μεταφόρτωση φωτογραφιών",
+        "uploadHint": "Επιλέξτε έως {count} εικόνες κάθε φορά.",
+        "choosePhotos": "Επιλογή φωτογραφιών",
+        "selectedSummary": "{count} επιλεγμένες · {size}",
+        "clear": "Καθαρισμός",
+        "upload": "Μεταφόρτωση",
+        "uploadComplete": "{count} ανέβηκαν, {failed} απέτυχαν.",
+        "uploadFailed": "Δεν μπορέσαμε να ανεβάσουμε αυτές τις φωτογραφίες. Δοκιμάστε ξανά.",
+        "libraryTitle": "Φωτογραφίες εκδήλωσης",
+        "photoCount": "{count} φωτογραφίες",
+        "emptyTitle": "Δεν υπάρχουν φωτογραφίες ακόμη",
+        "emptyBody": "Οι φωτογραφίες από QR κάρτες ή αυτή τη σελίδα θα εμφανίζονται εδώ.",
+        "guestSavedForHost": "Οι φωτογραφίες που ανεβάζετε αποθηκεύονται στο gallery της εκδήλωσης για να τις δει αργότερα ο διοργανωτής."
     }
 }

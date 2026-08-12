@@ -1,15 +1,15 @@
 'use client';
 
-import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
 
-import { PlanComparisonMatrix, type MatrixRow } from '@/components/plan/PlanComparisonMatrix';
-import { PlanComparisonMobile, type ComparisonRow } from '@/components/plan/PlanComparisonMobile';
-import { PlanModuleGuideModal } from '@/components/plan/PlanModuleGuideModal';
-import { PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
+import { type MatrixRow, PlanComparisonMatrix } from '@/components/plan/PlanComparisonMatrix';
+import { type ComparisonRow, PlanComparisonMobile } from '@/components/plan/PlanComparisonMobile';
 import { PlanModuleGuideButton } from '@/components/plan/PlanModuleGuideButton';
+import { PlanModuleGuideModal } from '@/components/plan/PlanModuleGuideModal';
+import { enabledModuleKeys, PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
 import type { PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
-import { PLAN_COMPARISON_EMPTY, formatPlanDiscount, mediaEstimate } from '@/lib/planComparison';
+import { formatPlanDiscount, mediaEstimate, PLAN_COMPARISON_EMPTY } from '@/lib/planComparison';
 import { formatLimitValue, formatPlanMoney } from '@/lib/planTiers';
 
 export function EventPlanComparison({
@@ -26,8 +26,11 @@ export function EventPlanComparison({
 
     const displayPlans = useMemo(() => [...plans].sort((left, right) => left.sortOrder - right.sortOrder), [plans]);
     const currentIndex = currentPlanCode ? displayPlans.findIndex((plan) => plan.code === currentPlanCode) : -1;
-    const nextPlanId = currentIndex >= 0 ? displayPlans[currentIndex + 1]?.id ?? null : null;
-    const allModuleKeys = useMemo(() => Array.from(new Set(displayPlans.flatMap((plan) => plan.moduleKeys))), [displayPlans]);
+    const nextPlanId = currentIndex >= 0 ? (displayPlans[currentIndex + 1]?.id ?? null) : null;
+    const allModuleKeys = useMemo(
+        () => enabledModuleKeys(Array.from(new Set(displayPlans.flatMap((plan) => plan.moduleKeys))), modules),
+        [displayPlans, modules]
+    );
 
     function openModuleLegend() {
         setModuleLegendOpen(true);
@@ -51,7 +54,9 @@ export function EventPlanComparison({
         {
             key: 'includedMonths',
             label: t('compare.includedMonths'),
-            render: (plan) => <span>{plan.includedMonths === null ? PLAN_COMPARISON_EMPTY : t('compare.monthCount', { count: plan.includedMonths })}</span>,
+            render: (plan) => (
+                <span>{plan.includedMonths === null ? PLAN_COMPARISON_EMPTY : t('compare.monthCount', { count: plan.includedMonths })}</span>
+            ),
         },
         {
             key: 'discount',
@@ -73,7 +78,11 @@ export function EventPlanComparison({
             label: t('compare.mediaCapacity'),
             render: (plan) => {
                 const estimate = mediaEstimate(plan.storageBytes);
-                return <span>{estimate ? t('compare.mediaEstimate', { images: estimate.images, videos: estimate.videos }) : t('compare.unlimitedMedia')}</span>;
+                return (
+                    <span>
+                        {estimate ? t('compare.mediaEstimate', { images: estimate.images, videos: estimate.videos }) : t('compare.unlimitedMedia')}
+                    </span>
+                );
             },
         },
         {
@@ -94,12 +103,7 @@ export function EventPlanComparison({
     return (
         <section>
             <div className="md:hidden">
-                <PlanComparisonMobile
-                    plans={displayPlans}
-                    rows={rows}
-                    currentPlanCode={currentPlanCode}
-                    nextPlanId={nextPlanId}
-                />
+                <PlanComparisonMobile plans={displayPlans} rows={rows} currentPlanCode={currentPlanCode} nextPlanId={nextPlanId} />
             </div>
 
             <div className="hidden md:block">

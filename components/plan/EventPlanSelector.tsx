@@ -2,21 +2,30 @@
 
 import { Check } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { type MouseEvent } from 'react';
+import { type MouseEvent, useMemo, useState } from 'react';
 
-import type { PlanTierResponseDto } from '@/lib/api/types';
-import { formatLimitValue } from '@/lib/planTiers';
+import { PlanModuleGuideButton } from '@/components/plan/PlanModuleGuideButton';
+import { PlanModuleGuideModal } from '@/components/plan/PlanModuleGuideModal';
+import { enabledModuleKeys, PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
+import type { PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import { formatLimitValue, formatPlanMoney } from '@/lib/planTiers';
 import { cn } from '@/lib/utils';
 
 type EventPlanSelectorProps = {
     plans: PlanTierResponseDto[];
+    modules: PlatformModuleResponseDto[];
     selectedCode: string;
     onSelect: (code: string) => void;
     onContinue: () => void;
 };
 
-export function EventPlanSelector({ plans, selectedCode, onSelect, onContinue }: EventPlanSelectorProps) {
+export function EventPlanSelector({ plans, modules, selectedCode, onSelect, onContinue }: EventPlanSelectorProps) {
     const t = useTranslations('CreateEventPage');
+    const [isModuleGuideOpen, setIsModuleGuideOpen] = useState(false);
+    const moduleGuideKeys = useMemo(
+        () => enabledModuleKeys(Array.from(new Set(plans.flatMap((plan) => plan.moduleKeys))), modules),
+        [modules, plans]
+    );
 
     function handlePlanClick(event: MouseEvent<HTMLButtonElement>) {
         const code = event.currentTarget.dataset.planCode;
@@ -27,8 +36,22 @@ export function EventPlanSelector({ plans, selectedCode, onSelect, onContinue }:
         return formatLimitValue(value, unit) ?? t('unlimited');
     }
 
+    function openModuleGuide() {
+        setIsModuleGuideOpen(true);
+    }
+
+    function closeModuleGuide() {
+        setIsModuleGuideOpen(false);
+    }
+
     return (
         <div className="space-y-3">
+            {moduleGuideKeys.length > 0 && (
+                <div className="flex items-center justify-between gap-3 rounded-lg bg-surface-muted px-3 py-2 text-xs font-semibold text-ink-muted">
+                    <span>{t('planLimits.modules')}</span>
+                    <PlanModuleGuideButton onOpen={openModuleGuide} />
+                </div>
+            )}
             {plans.length === 0 && <p className="rounded-xl bg-rose-50 p-4 text-sm text-rose-600">{t('noPlans')}</p>}
             {plans.map((plan) => (
                 <button
@@ -43,7 +66,10 @@ export function EventPlanSelector({ plans, selectedCode, onSelect, onContinue }:
                 >
                     <div className="flex items-start justify-between gap-3">
                         <div>
-                            <p className="font-semibold text-ink">{plan.name}</p>
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                <p className="font-semibold text-ink">{plan.name}</p>
+                                <span className="text-sm font-semibold text-primary-dark">{formatPlanMoney(plan) ?? t('payment.noCharge')}</span>
+                            </div>
                             <p className="mt-1 text-sm text-ink-muted">{plan.description ?? t('planDescriptionFallback')}</p>
                         </div>
                         {selectedCode === plan.code && (
@@ -53,20 +79,17 @@ export function EventPlanSelector({ plans, selectedCode, onSelect, onContinue }:
                         )}
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-ink-muted">
-                        <span className="rounded-full bg-surface-muted px-2.5 py-1">
+                        <span className="rounded-full bg-surface-muted px-2.5 py-1 flex items-center justify-center">
                             {renderLimit(plan.storageBytes, 'bytes')} {t('planLimits.storage')}
                         </span>
-                        <span className="rounded-full bg-surface-muted px-2.5 py-1">
+                        <span className="rounded-full bg-surface-muted px-2.5 py-1 flex items-center justify-center">
                             {renderLimit(plan.maxMembers, 'count')} {t('planLimits.members')}
                         </span>
-                        {plan.moduleKeys.slice(0, 4).map((moduleKey) => (
-                            <span key={moduleKey} className="rounded-full bg-surface-muted px-2.5 py-1">
-                                {moduleKey}
-                            </span>
-                        ))}
+                        <PlanModuleIcons moduleKeys={plan.moduleKeys} modules={modules} />
                     </div>
                 </button>
             ))}
+            <PlanModuleGuideModal open={isModuleGuideOpen} onClose={closeModuleGuide} moduleKeys={moduleGuideKeys} modules={modules} />
             <button
                 type="button"
                 disabled={!selectedCode}

@@ -80,7 +80,9 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
     }, [isStaleRsvp, memberId, router, storedRsvpId]);
 
     const moduleFlags = useMemo<Record<ModuleKeyConvention, boolean>>(() => {
-        const registryKeys = new Set(appConfig?.eventModuleKeys ?? EVENT_MODULE_KEYS);
+        const registryKeys = new Set(
+            appConfig?.modules.filter((module_) => module_.isEnabled).map((module_) => module_.moduleKey) ?? EVENT_MODULE_KEYS
+        );
         const defaults = Object.fromEntries(EVENT_MODULE_KEYS.map((key) => [key, false])) as Record<ModuleKeyConvention, boolean>;
 
         if (!event) {
@@ -93,7 +95,7 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
                 event.modules.filter(({ moduleKey }) => registryKeys.has(moduleKey)).map(({ moduleKey, isAvailable }) => [moduleKey, isAvailable])
             ),
         } as Record<ModuleKeyConvention, boolean>;
-    }, [appConfig?.eventModuleKeys, event]);
+    }, [appConfig?.modules, event]);
 
     if (isLoading) {
         return <FeedPageSkeleton />;
