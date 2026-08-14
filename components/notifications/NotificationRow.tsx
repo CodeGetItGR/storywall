@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback } from 'react';
 
-import { NOTIFICATION_SEVERITY_STYLES,NotificationSeverityIcon } from '@/components/notifications/NotificationSeverityIcon';
+import { NOTIFICATION_SEVERITY_STYLES, NotificationSeverityIcon } from '@/components/notifications/NotificationSeverityIcon';
 import { useDeleteNotification, useMarkNotificationRead } from '@/hooks/useNotifications';
 import type { NotificationResponseDto } from '@/lib/api/types';
 import { notificationCtaRoute, notificationSeverity, payloadString } from '@/lib/notifications';

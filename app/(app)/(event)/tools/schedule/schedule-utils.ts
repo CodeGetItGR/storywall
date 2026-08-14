@@ -22,4 +22,3 @@ export function groupSessions(sessions: EventSessionResponseDto[]): Record<strin
 
     return grouped;
 }
-

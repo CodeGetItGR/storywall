@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, type ReactNode,type RefObject, useContext } from 'react';
+import { createContext, type ReactNode, type RefObject, useContext } from 'react';
 
 import type { EventDetailResponseDto, ModuleKeyConvention, PostResponseDto } from '@/lib/api/types';
 

@@ -13,6 +13,7 @@ export type AdminErrorMessageKey =
     | 'webhookNotReplayable'
     | 'accountPlansDisabled'
     | 'paidServiceInUse'
+    | 'addonLockedWhileActive'
     | 'addonNotActive'
     | 'generic';
 
@@ -47,6 +48,7 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.WEBHOOK_NOT_REPLAYABLE) return 'webhookNotReplayable';
     if (code === ERROR_CODES.ACCOUNT_PLANS_DISABLED) return 'accountPlansDisabled';
     if (code === ERROR_CODES.PAID_SERVICE_IN_USE) return 'paidServiceInUse';
+    if (code === ERROR_CODES.ADDON_LOCKED_WHILE_ACTIVE) return 'addonLockedWhileActive';
     if (code === ERROR_CODES.ADDON_NOT_ACTIVE) return 'addonNotActive';
     return 'generic';
 }

@@ -32,7 +32,10 @@ export function PostCommentForm({
     }
 
     return (
-        <form onSubmit={onSubmit} className="bg-background/95 backdrop-blur-sm border-t border-border px-4 py-3 flex flex-col items-center gap-3 shrink-0">
+        <form
+            onSubmit={onSubmit}
+            className="bg-background/95 backdrop-blur-sm border-t border-border px-4 py-3 flex flex-col items-center gap-3 shrink-0"
+        >
             {error && <p className="text-xs text-destructive px-4">{error}</p>}
             <div className="w-full space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">

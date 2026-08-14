@@ -62,7 +62,7 @@ HTTP request
 
 Controllers do not talk to repositories directly. Authorization has two layers: **who you
 are** (role — `ROLE_USER`, `ROLE_ADMIN`, guest) enforced declaratively via
-`@PreAuthorize`/Security config, and **what you own** (e.g. "are you a host of *this* event")
+`@PreAuthorize`/Security config, and **what you own** (e.g. "are you a host of _this_ event")
 enforced imperatively inside services, since that requires loading the resource.
 
 ## 4. Auth model
@@ -77,7 +77,7 @@ Three identities, one token scheme:
 - **Admin** — a `ROLE_ADMIN` registered user; no separate auth path, just a role check.
 
 `ScopeChecker` + service-level ownership checks are what actually stop a guest of event A from
-touching event B's resources — the JWT alone only proves *who*, not *what they can reach*.
+touching event B's resources — the JWT alone only proves _who_, not _what they can reach_.
 
 ## 5. Media pipeline
 
@@ -123,15 +123,15 @@ plan, storage/member quota) vs. the user's own plan tier (active-event cap). See
 All scheduled work lives behind `SchedulingConfig` (`@EnableScheduling`) and is individually
 flag-gated in `application.properties`:
 
-| Job | Flag | Purpose |
-|---|---|---|
+| Job                | Flag                          | Purpose                                                                                                                                                                                                  |
+| ------------------ | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Notification sweep | `NOTIFICATIONS_SWEEP_ENABLED` | Evaluates `NotificationRule`s (storage/member/event-cap thresholds, upgrade offers, pre-event tips) hourly, writes `Notification` rows. Rule set lives in `service/notification/` as one class per rule. |
-| Playlist digest | shares the sweep flag | Rolls up new song suggestions into one feed post per event per run. |
-| Billing sweep | `BILLING_SWEEP_ENABLED` | Reconciliation, dunning, freeze, purge — see §6. |
-| Mail dispatch | `APP_MAIL_ENABLED` | Sends queued notification emails via Brevo SMTP; with it off, emails are logged, not sent, and nothing else changes. |
+| Playlist digest    | shares the sweep flag         | Rolls up new song suggestions into one feed post per event per run.                                                                                                                                      |
+| Billing sweep      | `BILLING_SWEEP_ENABLED`       | Reconciliation, dunning, freeze, purge — see §6.                                                                                                                                                         |
+| Mail dispatch      | `APP_MAIL_ENABLED`            | Sends queued notification emails via Brevo SMTP; with it off, emails are logged, not sent, and nothing else changes.                                                                                     |
 
 A host is only ever told about a given threshold crossing once — dismissing a notification
-doesn't reset it, crossing a *further* threshold produces a new one. This is enforced at
+doesn't reset it, crossing a _further_ threshold produces a new one. This is enforced at
 write-time in the rule, not filtered client-side.
 
 ## 8. Rate limiting

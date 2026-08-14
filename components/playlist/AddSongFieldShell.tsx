@@ -17,7 +17,7 @@ export function AddSongFieldShell({ icon: Icon, label, children, required, optio
         <FormFieldLabel
             label={
                 <span className="flex items-center gap-2">
-                    <Icon className={cn("h-4.5 w-4.5 text-primary", iconClassName)} />
+                    <Icon className={cn('h-4.5 w-4.5 text-primary', iconClassName)} />
                     {label}
                 </span>
             }

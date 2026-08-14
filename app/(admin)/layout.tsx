@@ -169,13 +169,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
                 <Modal open={mobileNavOpen} onClose={handleCloseMobileNav} variant="sheet" size="full" closeLabel={t('layout.closeMenu') ?? 'Close'}>
                     <Modal.Body className="px-4 pb-4 pt-12">
-                        <AdminShellNav
-                            mobile
-                            email={user?.email}
-                            userId={user?.userId}
-                            onLogout={handleLogout}
-                            onNavigate={handleCloseMobileNav}
-                        />
+                        <AdminShellNav mobile email={user?.email} userId={user?.userId} onLogout={handleLogout} onNavigate={handleCloseMobileNav} />
                     </Modal.Body>
                 </Modal>
 

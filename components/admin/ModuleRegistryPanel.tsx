@@ -76,7 +76,9 @@ function ModuleRow({ module }: { module: PlatformModuleResponseDto }) {
                         {t('save')}
                     </button>
                 </div>
-                {updateModule.error && <p className="text-sm text-rose-600 md:col-span-4">{t(`errors.${adminErrorMessageKey(updateModule.error)}`)}</p>}
+                {updateModule.error && (
+                    <p className="text-sm text-rose-600 md:col-span-4">{t(`errors.${adminErrorMessageKey(updateModule.error)}`)}</p>
+                )}
             </form>
             <ConfirmActionModal
                 open={Boolean(pendingUpdate)}

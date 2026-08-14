@@ -1,6 +1,6 @@
 # Product overview
 
-What this backend is *for*, in plain terms. Not an API reference — see
+What this backend is _for_, in plain terms. Not an API reference — see
 [`frontend-integration-guide.md`](frontend-integration-guide.md) for endpoints and wire
 shapes. This doc is for onboarding, product discussions, and roadmap conversations.
 
@@ -19,9 +19,9 @@ sees another event's content unless they're a member of it too.
 - **Host** — creates the event, configures it, invites guests, moderates. Can have co-hosts.
   Sees usage/billing/plan screens the way an admin of a Slack workspace does.
 - **Guest** — joins via an invite link. Two flavors:
-  - **Registered guest** — has a full account (email+password), can belong to multiple events.
-  - **Scoped guest** — joined via `guest-login` against a single invite token, no password, no
-    account beyond that one event's membership. Lower-friction join, intentionally limited.
+    - **Registered guest** — has a full account (email+password), can belong to multiple events.
+    - **Scoped guest** — joined via `guest-login` against a single invite token, no password, no
+      account beyond that one event's membership. Lower-friction join, intentionally limited.
 - **Platform admin** — internal role, manages plan tiers, feature flags, and billing
   reconciliation across all events. Not a role any customer has.
 
@@ -54,7 +54,7 @@ product:
 
 - **Event plan tier** — governs that event's storage quota and member cap. This is what a
   host actually pays for, per event, because a bigger wedding needs more storage/guests.
-- **User plan tier** — governs how many *active* events a user may host simultaneously. This
+- **User plan tier** — governs how many _active_ events a user may host simultaneously. This
   is the "how many parties can you run at once" axis.
 
 Upgrading one does not touch the other. Event plan tiers today: `BASIC` / `PLUS` / `PRO`, at

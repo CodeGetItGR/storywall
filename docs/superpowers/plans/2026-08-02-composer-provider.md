@@ -477,23 +477,23 @@ import { ModalProvider } from '@/providers/ModalProvider';
 and change:
 
 ```tsx
-            <AuthProvider>
-                <EventProvider>
-                    <ModalProvider>{children}</ModalProvider>
-                </EventProvider>
-            </AuthProvider>
+<AuthProvider>
+    <EventProvider>
+        <ModalProvider>{children}</ModalProvider>
+    </EventProvider>
+</AuthProvider>
 ```
 
 to:
 
 ```tsx
-            <AuthProvider>
-                <EventProvider>
-                    <ComposerProvider>
-                        <ModalProvider>{children}</ModalProvider>
-                    </ComposerProvider>
-                </EventProvider>
-            </AuthProvider>
+<AuthProvider>
+    <EventProvider>
+        <ComposerProvider>
+            <ModalProvider>{children}</ModalProvider>
+        </ComposerProvider>
+    </EventProvider>
+</AuthProvider>
 ```
 
 - [ ] **Step 2: Type-check**
@@ -930,7 +930,11 @@ export function StoryAvatar({ group, member, isCurrentUser }: StoryAvatarProps) 
 
     if (!isCurrentUser) {
         return (
-            <Link href={`/story/${firstStoryId}`} className="flex flex-col items-center gap-2 shrink-0 group" aria-label={t('userStory', { name: member.displayName })}>
+            <Link
+                href={`/story/${firstStoryId}`}
+                className="flex flex-col items-center gap-2 shrink-0 group"
+                aria-label={t('userStory', { name: member.displayName })}
+            >
                 {ring}
                 {label}
             </Link>
@@ -1009,7 +1013,12 @@ interface TabLinkProps {
 
 function TabLink({ href, icon: Icon, label, active }: TabLinkProps) {
     return (
-        <Link href={href} className="flex flex-col items-center gap-0.5 px-3 py-1 min-w-12" aria-label={label} aria-current={active ? 'page' : undefined}>
+        <Link
+            href={href}
+            className="flex flex-col items-center gap-0.5 px-3 py-1 min-w-12"
+            aria-label={label}
+            aria-current={active ? 'page' : undefined}
+        >
             <Icon className={cn('w-5 h-5 transition-colors', active ? 'text-primary' : 'text-ink-faint')} strokeWidth={active ? 2.5 : 1.8} />
             <span className={cn('text-[10px] font-medium transition-colors', active ? 'text-primary' : 'text-ink-faint')}>{label}</span>
         </Link>
@@ -1033,7 +1042,10 @@ export function MobileTabBar() {
             <TabLink href={home.href} icon={home.icon} label={t(`items.${home.key}`)} active={homeActive} />
 
             <Menu.Root>
-                <Menu.Trigger aria-label={t('compose')} className="w-12 h-12 rounded-full bg-gradient-brand flex items-center justify-center shadow-md">
+                <Menu.Trigger
+                    aria-label={t('compose')}
+                    className="w-12 h-12 rounded-full bg-gradient-brand flex items-center justify-center shadow-md"
+                >
                     <Plus className="w-6 h-6 text-white" strokeWidth={2.5} />
                 </Menu.Trigger>
                 <Menu.Portal>
@@ -1137,32 +1149,36 @@ export function DesktopNavRail() {
 Change the "New Post CTA" block:
 
 ```tsx
-            {/* New Post CTA */}
-            <div className="px-4 pb-4">
-                <Link
-                    href="/feed?compose=1"
-                    className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
-                >
-                    <Plus className="w-4 h-4" strokeWidth={2.5} />
-                    {t('newPost')}
-                </Link>
-            </div>
+{
+    /* New Post CTA */
+}
+<div className="px-4 pb-4">
+    <Link
+        href="/feed?compose=1"
+        className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+    >
+        <Plus className="w-4 h-4" strokeWidth={2.5} />
+        {t('newPost')}
+    </Link>
+</div>;
 ```
 
 to:
 
 ```tsx
-            {/* New Post CTA */}
-            <div className="px-4 pb-4">
-                <button
-                    type="button"
-                    onClick={openPostComposer}
-                    className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
-                >
-                    <Plus className="w-4 h-4" strokeWidth={2.5} />
-                    {t('newPost')}
-                </button>
-            </div>
+{
+    /* New Post CTA */
+}
+<div className="px-4 pb-4">
+    <button
+        type="button"
+        onClick={openPostComposer}
+        className="flex items-center justify-center gap-2 w-full py-2.5 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+    >
+        <Plus className="w-4 h-4" strokeWidth={2.5} />
+        {t('newPost')}
+    </button>
+</div>;
 ```
 
 - [ ] **Step 2: Type-check**
@@ -1301,33 +1317,37 @@ export default function FeedPage({ params }: { params: Promise<{ eventId: string
 Change:
 
 ```tsx
-                {moduleFlags.posts && (
-                    <div className="flex flex-col gap-4 px-4 pb-24 lg:pb-10">
-                        <div ref={composerRef}>
-                            <ComposerCard eventId={eventId} autoExpand={shouldCompose} />
-                        </div>
-                        {posts.map((post) => (
-                            <PostCard key={post.id} post={post} />
-                        ))}
-                        <div ref={loadMoreRef} className="h-1" />
-                        {isFetchingNextPage && <p className="text-center text-sm text-ink-muted py-2">{t('loadingMore')}</p>}
-                    </div>
-                )}
+{
+    moduleFlags.posts && (
+        <div className="flex flex-col gap-4 px-4 pb-24 lg:pb-10">
+            <div ref={composerRef}>
+                <ComposerCard eventId={eventId} autoExpand={shouldCompose} />
+            </div>
+            {posts.map((post) => (
+                <PostCard key={post.id} post={post} />
+            ))}
+            <div ref={loadMoreRef} className="h-1" />
+            {isFetchingNextPage && <p className="text-center text-sm text-ink-muted py-2">{t('loadingMore')}</p>}
+        </div>
+    );
+}
 ```
 
 to:
 
 ```tsx
-                {moduleFlags.posts && (
-                    <div className="flex flex-col gap-4 px-4 pb-24 lg:pb-10">
-                        <ComposerCard />
-                        {posts.map((post) => (
-                            <PostCard key={post.id} post={post} />
-                        ))}
-                        <div ref={loadMoreRef} className="h-1" />
-                        {isFetchingNextPage && <p className="text-center text-sm text-ink-muted py-2">{t('loadingMore')}</p>}
-                    </div>
-                )}
+{
+    moduleFlags.posts && (
+        <div className="flex flex-col gap-4 px-4 pb-24 lg:pb-10">
+            <ComposerCard />
+            {posts.map((post) => (
+                <PostCard key={post.id} post={post} />
+            ))}
+            <div ref={loadMoreRef} className="h-1" />
+            {isFetchingNextPage && <p className="text-center text-sm text-ink-muted py-2">{t('loadingMore')}</p>}
+        </div>
+    );
+}
 ```
 
 - [ ] **Step 3: Revert the bare `/feed` redirect to a plain redirect (drop query forwarding)**

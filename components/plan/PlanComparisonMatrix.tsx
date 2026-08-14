@@ -42,7 +42,10 @@ export function PlanComparisonMatrix({
                         <div key={plan.id} className="min-w-0">
                             <div className="flex flex-wrap items-center gap-1.5">
                                 <span className="truncate text-sm font-semibold normal-case tracking-normal text-ink">{plan.name}</span>
-                                <PlanComparisonBadges isCurrent={Boolean(currentPlanCode) && plan.code === currentPlanCode} isNext={nextPlanId === plan.id} />
+                                <PlanComparisonBadges
+                                    isCurrent={Boolean(currentPlanCode) && plan.code === currentPlanCode}
+                                    isNext={nextPlanId === plan.id}
+                                />
                             </div>
                             <p className="mt-1 text-xs font-normal normal-case leading-5 tracking-normal text-ink-muted">
                                 {localizedPlanDescription(plan)}

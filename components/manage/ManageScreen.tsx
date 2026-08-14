@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import type { ElementType } from 'react';
 import { useCallback, useEffect, useState } from 'react';
 
-import { type ManageTab,ManageTabButton } from '@/components/manage/ManageTabButton';
+import { type ManageTab, ManageTabButton } from '@/components/manage/ManageTabButton';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventInvitations } from '@/hooks/useEventInvitations';
 import { useEventMembers } from '@/hooks/useEventMembers';

@@ -8,15 +8,7 @@ import { useRef } from 'react';
 import { Modal } from '@/components/ui/modal';
 import type { QrLinkResponseDto } from '@/lib/api/types';
 
-export function QrPreviewModal({
-    qrLink,
-    open,
-    onClose,
-}: {
-    qrLink: QrLinkResponseDto;
-    open: boolean;
-    onClose: () => void;
-}) {
+export function QrPreviewModal({ qrLink, open, onClose }: { qrLink: QrLinkResponseDto; open: boolean; onClose: () => void }) {
     const t = useTranslations('ManagePage');
     const svgRef = useRef<SVGSVGElement | null>(null);
 

@@ -117,7 +117,14 @@ export function PlanAssignmentPanel() {
                         )}
                     </div>
                 )}
-                {eventUsage && <UsagePanel title={t('assignments.freshEventUsage')} planName={eventUsage.planTier} items={usageItems(eventUsage)} className="mt-4" />}
+                {eventUsage && (
+                    <UsagePanel
+                        title={t('assignments.freshEventUsage')}
+                        planName={eventUsage.planTier}
+                        items={usageItems(eventUsage)}
+                        className="mt-4"
+                    />
+                )}
             </form>
 
             <ConfirmActionModal

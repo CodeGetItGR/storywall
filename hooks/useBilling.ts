@@ -68,8 +68,7 @@ export function useUpgradeCheckout(eventId: string) {
 export function useStorageCheckout(eventId: string) {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (input: StorageCheckoutRequestDto) =>
-            api.post<CheckoutResponseDto>(endpoints.events.storageCheckout(eventId), input),
+        mutationFn: (input: StorageCheckoutRequestDto) => api.post<CheckoutResponseDto>(endpoints.events.storageCheckout(eventId), input),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
             queryClient.invalidateQueries({ queryKey: usageKeys.event(eventId) });

@@ -58,23 +58,23 @@ Extend `hooks/usePostModal.ts` to track two more URL params alongside
 
 ```ts
 function usePostModal() {
-  const postId = searchParams.get('post');
-  const mediaIndex = Number(searchParams.get('media') ?? 0);
-  const view = (searchParams.get('view') as 'media' | 'comments') ?? 'media';
+    const postId = searchParams.get('post');
+    const mediaIndex = Number(searchParams.get('media') ?? 0);
+    const view = (searchParams.get('view') as 'media' | 'comments') ?? 'media';
 
-  function open(id: string, opts?: { mediaIndex?: number; view?: 'media' | 'comments' }) {
-    // sets post, and media/view only when non-default, then router.push
-  }
+    function open(id: string, opts?: { mediaIndex?: number; view?: 'media' | 'comments' }) {
+        // sets post, and media/view only when non-default, then router.push
+    }
 
-  function setMediaIndex(index: number) {
-    // same params with media replaced, router.replace (no history entry per slide)
-  }
+    function setMediaIndex(index: number) {
+        // same params with media replaced, router.replace (no history entry per slide)
+    }
 
-  function close() {
-    // strips post, media, view; router.push
-  }
+    function close() {
+        // strips post, media, view; router.push
+    }
 
-  return { postId, mediaIndex, view, isOpen: postId !== null, open, setMediaIndex, close };
+    return { postId, mediaIndex, view, isOpen: postId !== null, open, setMediaIndex, close };
 }
 ```
 
@@ -138,13 +138,13 @@ header/author/reaction row + comment list + composer layout as-is.
   composer block used on desktop, rendered as a panel that covers ~85dvh
   sliding up from the bottom (`translate-y-full` ↔ `translate-y-0`
   transition) instead of `hidden`/`flex`.
-  - Sheet expanded state is local `useState`, seeded from
-    `usePostModal().view === 'comments'` on mount (not re-derived from
-    URL after that, so dragging the sheet down doesn't fight the URL and
-    vice versa — `view` only decides the *initial* state for this pass).
-  - Tapping the overlay or the sheet's own close affordance toggles the
-    local state; it does not change the URL. Closing the whole modal
-    (X / Escape / backdrop / back) behaves exactly as it does today.
+    - Sheet expanded state is local `useState`, seeded from
+      `usePostModal().view === 'comments'` on mount (not re-derived from
+      URL after that, so dragging the sheet down doesn't fight the URL and
+      vice versa — `view` only decides the _initial_ state for this pass).
+    - Tapping the overlay or the sheet's own close affordance toggles the
+      local state; it does not change the URL. Closing the whole modal
+      (X / Escape / backdrop / back) behaves exactly as it does today.
 
 ## `PostCard` changes
 

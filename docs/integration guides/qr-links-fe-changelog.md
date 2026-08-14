@@ -39,7 +39,7 @@ recovery action wherever you surface a `5035`.
 `ACTIVE | REVOKED | EXPIRED | TARGET_UNAVAILABLE`.
 
 **Why it matters:** you could previously infer "revoked" and "expired" from `revokedAt` and
-`expiresAt`, but you could *not* infer `TARGET_UNAVAILABLE` — it depends on the event's own state
+`expiresAt`, but you could _not_ infer `TARGET_UNAVAILABLE` — it depends on the event's own state
 and on whether the backing invitation still exists, neither of which is on the DTO. So a host's
 badge could confidently read "active" over a code that had already stopped working for everyone
 scanning it.
@@ -59,17 +59,17 @@ One row per link, revoked ones included:
 
 ```jsonc
 [
-  {
-    "qrLinkId": "8f2c…",
-    "label": "Entrance poster",
-    "targetType": "EVENT_JOIN",
-    "status": "ACTIVE",
-    "joinCount": 42,
-    "maxGuests": 50,
-    "remainingSlots": 8,
-    "lastJoinedAt": "2026-08-11T19:42:00Z",
-    "uploadCount": 137
-  }
+    {
+        "qrLinkId": "8f2c…",
+        "label": "Entrance poster",
+        "targetType": "EVENT_JOIN",
+        "status": "ACTIVE",
+        "joinCount": 42,
+        "maxGuests": 50,
+        "remainingSlots": 8,
+        "lastJoinedAt": "2026-08-11T19:42:00Z",
+        "uploadCount": 137,
+    },
 ]
 ```
 
@@ -79,12 +79,12 @@ without re-fetching every code's configuration. Poll it if you want live numbers
 
 ### The three things to get right
 
-**`remainingSlots` is the one to surface.** It's the only figure that lets a host act *before* a
+**`remainingSlots` is the one to surface.** It's the only figure that lets a host act _before_ a
 guest standing at the door gets refused. Warn when it's low and link straight to the `maxGuests`
 edit from §1. It floors at `0` and is `null` whenever `maxGuests` is.
 
 **`uploadCount` is not "uploads from this QR code".** It counts everything the guests this code
-brought in have *ever* uploaded, not just what they uploaded in the visit that began with the
+brought in have _ever_ uploaded, not just what they uploaded in the visit that began with the
 scan. "Photos from guests who joined here" is the honest label. Deleted media is excluded.
 
 **There is no scan count, so there is no conversion rate.** Resolving a code writes nothing — no

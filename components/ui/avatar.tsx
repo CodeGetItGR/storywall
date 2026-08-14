@@ -48,11 +48,7 @@ export default function Avatar({ src, initials = '?', color = '#ff7a59', size = 
         <div
             role="img"
             aria-label={alt ?? initials}
-            className={cn(
-                'rounded-full flex items-center justify-center font-semibold text-white select-none shrink-0',
-                sizeMap[size],
-                className
-            )}
+            className={cn('rounded-full flex items-center justify-center font-semibold text-white select-none shrink-0', sizeMap[size], className)}
             style={{ backgroundColor: color }}
         >
             {initials}

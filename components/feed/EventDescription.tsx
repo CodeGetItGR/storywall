@@ -19,15 +19,7 @@ function readViewCount(eventId: string) {
     return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
 }
 
-export function EventDescription({
-    eventId,
-    description,
-    className,
-}: {
-    eventId: string;
-    description: string;
-    className?: string;
-}) {
+export function EventDescription({ eventId, description, className }: { eventId: string; description: string; className?: string }) {
     const t = useTranslations('FeedPage');
     const sectionRef = useRef<HTMLElement | null>(null);
 

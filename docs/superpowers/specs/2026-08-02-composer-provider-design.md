@@ -41,13 +41,14 @@ throws if used outside the provider). Mounted in `providers/Providers.tsx`, nest
 
 ```tsx
 <EventProvider>
-  <ComposerProvider>
-    <ModalProvider>{children}</ModalProvider>
-  </ComposerProvider>
+    <ComposerProvider>
+        <ModalProvider>{children}</ModalProvider>
+    </ComposerProvider>
 </EventProvider>
 ```
 
 **State owned by the provider** (moved wholesale from `ComposerCard`'s internals):
+
 - `isPostComposerOpen: boolean`
 - `caption: string`
 - `images: PendingImage[]` (same shape as today: `key`, `file`, `previewUrl`, `status`, `mediaId?`,
@@ -59,6 +60,7 @@ throws if used outside the provider). Mounted in `providers/Providers.tsx`, nest
   `useCreateStory`)
 
 **Actions exposed via `useComposer()`:**
+
 - `openPostComposer()` — sets `isPostComposerOpen = true`. No `eventId` argument; reads
   `useActiveEvent()`/`useActiveMember()` internally. No-ops (or could show an error) if there's no
   active member, mirroring today's `canSubmit` guard.
@@ -81,15 +83,16 @@ throws if used outside the provider). Mounted in `providers/Providers.tsx`, nest
   feedback.
 
 **Rendered by the provider itself** (so it works regardless of which page is mounted):
+
 1. A hidden `<input type="file" accept="image/*" capture="environment" />`, ref-controlled,
    `onChange` → `handleStoryFileChange`, `value` reset after each change (same pattern as existing
    file inputs in the codebase).
 2. A `Modal` (reusing `components/ui/modal.tsx`, the same component `PostModal` already uses) that
-   renders the *expanded* composer form — the caption textarea, image thumbnail grid, add-photos
+   renders the _expanded_ composer form — the caption textarea, image thumbnail grid, add-photos
    button, cancel/post buttons — currently the `expanded` branch of `ComposerCard`'s JSX, moved
    here as the modal's body. Content is functionally identical to today's expanded state; only the
    container changes from an inline card to `<Modal open={isPostComposerOpen}
-   onClose={closePostComposer}>`.
+onClose={closePostComposer}>`.
 3. This means the router-based `?compose=1` deep link and its scroll-into-view behavior are no
    longer needed (see "Removed" below) — the modal opens instantly wherever `openPostComposer()`
    is called from.
@@ -118,7 +121,7 @@ to add a new story once one exists. Adds an Instagram-style badge:
 
 - Becomes a client component (needs `useComposer()`).
 - When `isCurrentUser`, the ring is wrapped in a `relative` container. The existing `<Link
-  href="/story/{firstStoryId}">` (ring + avatar) is unchanged — tapping it still opens the viewer.
+href="/story/{firstStoryId}">` (ring + avatar) is unchanged — tapping it still opens the viewer.
 - A new `<button>`, sibling to the `Link` (not nested inside it — `<button>` can't nest in `<a>`),
   absolutely positioned at the ring's bottom-right corner: small circle, `bg-gradient-brand`,
   white `Plus` icon, calls `openStoryCapture()`. `aria-label` distinct from the link's (e.g.

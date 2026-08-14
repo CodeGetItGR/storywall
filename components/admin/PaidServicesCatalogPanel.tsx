@@ -6,20 +6,23 @@ import { useState } from 'react';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminSection } from '@/components/admin/AdminSection';
-import {
-    useAdminPaidServices,
-    useCreatePaidService,
-    useDeletePaidService,
-    useRemoveEventAddon,
-    useUpdatePaidService,
-} from '@/hooks/useAdmin';
+import { useAdminPaidServices, useCreatePaidService, useDeletePaidService, useRemoveEventAddon, useUpdatePaidService } from '@/hooks/useAdmin';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
-import type { PaidServiceKind, PaidServiceRequestDto, PaidServiceResponseDto } from '@/lib/api/types';
+import type { BillingPeriod, PaidServiceKind, PaidServiceRequestDto, PaidServiceResponseDto } from '@/lib/api/types';
+
+const BILLING_PERIOD_BY_KIND: Record<PaidServiceKind, BillingPeriod> = {
+    STORAGE_PACK: 'MONTHLY',
+    RECURRING_ADDON: 'MONTHLY',
+};
 
 function serviceInput(formData: FormData, existing?: PaidServiceResponseDto): PaidServiceRequestDto {
     const kind = (existing?.kind ?? formData.get('kind')) as PaidServiceKind;
     return {
-        code: existing?.code ?? String(formData.get('code') ?? '').trim().toUpperCase(),
+        code:
+            existing?.code ??
+            String(formData.get('code') ?? '')
+                .trim()
+                .toUpperCase(),
         kind,
         name: String(formData.get('name') ?? '').trim(),
         description: String(formData.get('description') ?? '').trim() || null,
@@ -27,8 +30,12 @@ function serviceInput(formData: FormData, existing?: PaidServiceResponseDto): Pa
         isAssignable: formData.has('isAssignable'),
         isPublic: formData.has('isPublic'),
         priceAmountMinor: Number(formData.get('priceAmountMinor') ?? 0),
-        priceCurrency: String(formData.get('priceCurrency') ?? '').trim().toUpperCase(),
-        billingPeriod: kind === 'STORAGE_PACK' ? 'ONE_TIME' : 'MONTHLY',
+        priceCurrency: String(formData.get('priceCurrency') ?? '')
+            .trim()
+            .toUpperCase(),
+        // The cadence is enforced by kind server-side. Both current kinds happen
+        // to be monthly, including packs whose byte grant itself is permanent.
+        billingPeriod: BILLING_PERIOD_BY_KIND[kind],
         grantsStorageBytes: kind === 'STORAGE_PACK' ? Number(formData.get('grantsStorageBytes') ?? 0) : null,
         planTierIds: String(formData.get('planTierIds') ?? '')
             .split(',')
@@ -63,7 +70,15 @@ function PaidServiceForm({ service }: { service?: PaidServiceResponseDto }) {
     return (
         <form onSubmit={submit} className="grid gap-3 border-b border-border py-4 first:pt-0 lg:grid-cols-4">
             <AdminField label={t('fields.code')} required>
-                <input name="code" required maxLength={30} pattern="[A-Z0-9_]+" defaultValue={service?.code} disabled={Boolean(service)} className={adminInputClass()} />
+                <input
+                    name="code"
+                    required
+                    maxLength={30}
+                    pattern="[A-Z0-9_]+"
+                    defaultValue={service?.code}
+                    disabled={Boolean(service)}
+                    className={adminInputClass()}
+                />
             </AdminField>
             <AdminField label={t('fields.kind')} required>
                 <select name="kind" defaultValue={service?.kind ?? 'STORAGE_PACK'} disabled={Boolean(service)} className={adminInputClass()}>
@@ -81,32 +96,69 @@ function PaidServiceForm({ service }: { service?: PaidServiceResponseDto }) {
                 <input name="description" defaultValue={service?.description ?? ''} className={adminInputClass()} />
             </AdminField>
             <AdminField label={t('fields.priceAmountMinor')} required>
-                <input name="priceAmountMinor" type="number" min={0} required defaultValue={service?.priceAmountMinor ?? 0} className={adminInputClass()} />
+                <input
+                    name="priceAmountMinor"
+                    type="number"
+                    min={0}
+                    required
+                    defaultValue={service?.priceAmountMinor ?? 0}
+                    className={adminInputClass()}
+                />
             </AdminField>
             <AdminField label={t('fields.priceCurrency')} required>
                 <input name="priceCurrency" required maxLength={3} defaultValue={service?.priceCurrency ?? 'EUR'} className={adminInputClass()} />
             </AdminField>
             <AdminField label={t('fields.grantsStorageBytes')} optional>
-                <input name="grantsStorageBytes" type="number" min={1} defaultValue={service?.grantsStorageBytes ?? ''} className={adminInputClass()} />
+                <input
+                    name="grantsStorageBytes"
+                    type="number"
+                    min={1}
+                    defaultValue={service?.grantsStorageBytes ?? ''}
+                    className={adminInputClass()}
+                />
             </AdminField>
             <AdminField label={t('fields.planTierIds')} optional className="lg:col-span-2">
-                <input name="planTierIds" defaultValue={service?.planTierIds.join(', ') ?? ''} placeholder={t('fields.planTierIdsHint')} className={adminInputClass()} />
+                <input
+                    name="planTierIds"
+                    defaultValue={service?.planTierIds.join(', ') ?? ''}
+                    placeholder={t('fields.planTierIdsHint')}
+                    className={adminInputClass()}
+                />
             </AdminField>
             <div className="flex items-end gap-4 pb-2 text-xs font-semibold text-ink-muted">
-                <label><input name="isAssignable" type="checkbox" defaultChecked={service?.isAssignable ?? true} className="mr-1 accent-primary" />{t('fields.assignable')}</label>
-                <label><input name="isPublic" type="checkbox" defaultChecked={service?.isPublic ?? true} className="mr-1 accent-primary" />{t('fields.public')}</label>
+                <label>
+                    <input name="isAssignable" type="checkbox" defaultChecked={service?.isAssignable ?? true} className="mr-1 accent-primary" />
+                    {t('fields.assignable')}
+                </label>
+                <label>
+                    <input name="isPublic" type="checkbox" defaultChecked={service?.isPublic ?? true} className="mr-1 accent-primary" />
+                    {t('fields.public')}
+                </label>
             </div>
             <div className="flex items-end gap-2 lg:col-span-4">
-                <button type="submit" disabled={mutation.isPending} className="inline-flex min-h-10 items-center gap-2 rounded-md bg-ink px-4 text-sm font-semibold text-white disabled:opacity-50">
-                    {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}{service ? t('save') : t('create')}
+                <button
+                    type="submit"
+                    disabled={mutation.isPending}
+                    className="inline-flex min-h-10 items-center gap-2 rounded-md bg-ink px-4 text-sm font-semibold text-white disabled:opacity-50"
+                >
+                    {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                    {service ? t('save') : t('create')}
                 </button>
                 {service && (
-                    <button type="button" onClick={deleteCurrentService} disabled={deleteService.isPending} className="inline-flex min-h-10 items-center gap-2 rounded-md border border-border px-4 text-sm font-semibold text-rose-700 disabled:opacity-50">
-                        <Trash2 className="h-4 w-4" />{t('delete')}
+                    <button
+                        type="button"
+                        onClick={deleteCurrentService}
+                        disabled={deleteService.isPending}
+                        className="inline-flex min-h-10 items-center gap-2 rounded-md border border-border px-4 text-sm font-semibold text-rose-700 disabled:opacity-50"
+                    >
+                        <Trash2 className="h-4 w-4" />
+                        {t('delete')}
                     </button>
                 )}
             </div>
-            {(mutation.error || deleteService.error) && <p className="text-xs text-rose-600 lg:col-span-4">{t(`errors.${adminErrorMessageKey(mutation.error ?? deleteService.error)}`)}</p>}
+            {(mutation.error || deleteService.error) && (
+                <p className="text-xs text-rose-600 lg:col-span-4">{t(`errors.${adminErrorMessageKey(mutation.error ?? deleteService.error)}`)}</p>
+            )}
         </form>
     );
 }
@@ -145,13 +197,33 @@ export function PaidServicesCatalogPanel() {
                 </label>
                 <PaidServiceForm />
                 {services.isLoading && <p className="py-4 text-sm text-ink-muted">{t('loading')}</p>}
-                {services.data?.map((service) => <PaidServiceForm key={service.id} service={service} />)}
+                {services.data?.map((service) => (
+                    <PaidServiceForm key={service.id} service={service} />
+                ))}
             </AdminSection>
             <AdminSection title={t('removeAddon.title')} description={t('removeAddon.subtitle')}>
                 <form onSubmit={remove} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
-                    <input required value={eventId} onChange={handleEventIdChange} placeholder={t('removeAddon.eventId')} className={adminInputClass()} />
-                    <input required value={addonCode} onChange={handleAddonCodeChange} placeholder={t('removeAddon.code')} className={adminInputClass()} />
-                    <button type="submit" disabled={removeAddon.isPending} className="rounded-md bg-ink px-4 text-sm font-semibold text-white disabled:opacity-50">{t('removeAddon.action')}</button>
+                    <input
+                        required
+                        value={eventId}
+                        onChange={handleEventIdChange}
+                        placeholder={t('removeAddon.eventId')}
+                        className={adminInputClass()}
+                    />
+                    <input
+                        required
+                        value={addonCode}
+                        onChange={handleAddonCodeChange}
+                        placeholder={t('removeAddon.code')}
+                        className={adminInputClass()}
+                    />
+                    <button
+                        type="submit"
+                        disabled={removeAddon.isPending}
+                        className="rounded-md bg-ink px-4 text-sm font-semibold text-white disabled:opacity-50"
+                    >
+                        {t('removeAddon.action')}
+                    </button>
                 </form>
                 {removeAddon.isSuccess && <p className="mt-2 text-xs text-emerald-700">{t('removeAddon.success')}</p>}
                 {removeAddon.error && <p className="mt-2 text-xs text-rose-600">{t(`errors.${adminErrorMessageKey(removeAddon.error)}`)}</p>}

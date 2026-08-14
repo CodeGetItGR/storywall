@@ -1,7 +1,7 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import {ReactNode, useState} from 'react';
+import { ReactNode, useState } from 'react';
 
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { ApiError } from '@/lib/api/client';

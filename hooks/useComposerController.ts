@@ -438,7 +438,18 @@ export function useComposerController(): ComposerController {
             canComposeStory,
             canComposeSong,
         }),
-        [canCompose, canComposePost, canComposeSong, canComposeStory, createStory.isPending, openPostComposer, openSongComposer, openStoryCapture, storyError, uploadMedia.isPending]
+        [
+            canCompose,
+            canComposePost,
+            canComposeSong,
+            canComposeStory,
+            createStory.isPending,
+            openPostComposer,
+            openSongComposer,
+            openStoryCapture,
+            storyError,
+            uploadMedia.isPending,
+        ]
     );
 
     return {

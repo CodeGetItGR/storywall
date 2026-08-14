@@ -32,7 +32,11 @@ function ComposerModeToggle({
             disabled={disabled}
             className={
                 `inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ` +
-                (active ? (mode === 'post' ? 'bg-ink text-white' : 'bg-primary-light text-primary-dark') : 'bg-surface-muted text-ink-muted hover:bg-surface-muted/80')
+                (active
+                    ? mode === 'post'
+                        ? 'bg-ink text-white'
+                        : 'bg-primary-light text-primary-dark'
+                    : 'bg-surface-muted text-ink-muted hover:bg-surface-muted/80')
             }
         >
             {mode === 'song' && <Music3 className="h-3.5 w-3.5" />}
@@ -74,14 +78,7 @@ export function ComposerModal({
     const t = useTranslations('ComposerCard');
 
     return (
-        <Modal
-            open={isOpen}
-            onClose={closeComposer}
-            size="sm"
-            variant="sheet"
-            closeLabel={t('cancel')}
-            className="pb-[env(safe-area-inset-bottom)]"
-        >
+        <Modal open={isOpen} onClose={closeComposer} size="sm" variant="sheet" closeLabel={t('cancel')} className="pb-[env(safe-area-inset-bottom)]">
             <Modal.Body className="p-4">
                 <div className="mb-4 flex items-center gap-2 pr-10">
                     <ComposerModeToggle mode="post" currentMode={composerMode} onSelect={selectPostMode} />

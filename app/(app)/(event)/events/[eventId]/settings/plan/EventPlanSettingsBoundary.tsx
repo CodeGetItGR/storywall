@@ -1,15 +1,15 @@
 'use client';
 
-import {AlertTriangle, CheckCircle2, Clock3, CreditCard, Loader2, XCircle} from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Clock3, CreditCard, Loader2, XCircle } from 'lucide-react';
 import Link from 'next/link';
-import {useParams} from 'next/navigation';
-import {useLocale, useTranslations} from 'next-intl';
-import React, {ChangeEvent} from 'react';
-import {useCallback, useMemo, useState} from 'react';
+import { useParams } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
+import React, { ChangeEvent } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { StoragePackPurchase } from '@/components/plan/StoragePackPurchase';
-import {useApiErrorMessage, useRetryAfterCountdown} from '@/hooks/useApiErrorMessage';
-import {useAppConfig} from '@/hooks/useAppConfig';
+import { useApiErrorMessage, useRetryAfterCountdown } from '@/hooks/useApiErrorMessage';
+import { useAppConfig } from '@/hooks/useAppConfig';
 import {
     useCancelSubscription,
     useCheckout,
@@ -19,20 +19,13 @@ import {
     useRequestRefund,
     useUpgradeCheckout,
 } from '@/hooks/useBilling';
-import {ERROR_CODES, getErrorCode} from '@/lib/api/errors';
-import type {EventBillingResponseDto} from '@/lib/api/types';
-import {
-    billingCurrency,
-    checkoutSuccessUrl,
-    formatBillingDate,
-    formatMoney,
-    newestBillingOrder,
-    paidBillingTotal
-} from '@/lib/billing';
-import {publicAssignablePlans, scopedPlans} from '@/lib/planTiers';
-import {routes} from '@/lib/routes';
-import {getEventBillingStatusTone} from '@/lib/statusTones';
-import {cn} from '@/lib/utils';
+import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
+import type { EventBillingResponseDto } from '@/lib/api/types';
+import { billingCurrency, checkoutSuccessUrl, formatBillingDate, formatMoney, newestBillingOrder, paidBillingTotal } from '@/lib/billing';
+import { publicAssignablePlans, scopedPlans } from '@/lib/planTiers';
+import { routes } from '@/lib/routes';
+import { getEventBillingStatusTone } from '@/lib/statusTones';
+import { cn } from '@/lib/utils';
 
 const ORDER_PREVIEW_COUNT = 6;
 
@@ -229,11 +222,12 @@ export default function EventPlanSettingsPage() {
     };
     const hasRenewalPath = data.eventStatus !== 'DRAFT' && !coverage.unlimited && !subscription;
     const isRiskState = data.eventStatus === 'FROZEN' || data.eventStatus === 'PURGED' || !coverage.covered;
-    const StatusIcon = data.eventStatus === 'ACTIVE'
-        ? CheckCircle2
-        : data.eventStatus === 'DRAFT'
-            ? Clock3
-            : data.eventStatus === 'FROZEN'
+    const StatusIcon =
+        data.eventStatus === 'ACTIVE'
+            ? CheckCircle2
+            : data.eventStatus === 'DRAFT'
+              ? Clock3
+              : data.eventStatus === 'FROZEN'
                 ? AlertTriangle
                 : XCircle;
     const hadSubscription = insights.hadSubscription;
@@ -241,6 +235,11 @@ export default function EventPlanSettingsPage() {
     // grows without bound. Show a recent window until the host asks for the rest.
     const visibleOrders = showAllOrders ? data.orders : data.orders.slice(0, ORDER_PREVIEW_COUNT);
     const hiddenOrderCount = data.orders.length - visibleOrders.length;
+    const addonMonthlyTotal = data.addons.reduce((sum, addon) => sum + addon.priceAmountMinor, 0);
+    const renewalTotal =
+        currentPlan?.recurringPriceAmountMinor === null || currentPlan?.recurringPriceAmountMinor === undefined
+            ? null
+            : currentPlan.recurringPriceAmountMinor + addonMonthlyTotal;
     const upgradeButtonLabel = nextPlan ? t('actions.upgradeTo', { plan: nextPlan.name }) : t('actions.renew');
     const upgradeDueLabel =
         nextPlan && currentPlan && nextPlan.priceAmountMinor !== null && currentPlan.priceAmountMinor !== null
@@ -307,7 +306,6 @@ export default function EventPlanSettingsPage() {
                                 {t(`eventStatus.${data.eventStatus}`)}
                             </span>
                             <span className="text-sm font-semibold text-ink">{data.planTierName}</span>
-                            <span className="text-xs text-ink-muted">{data.planTierCode}</span>
                         </div>
                         <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-muted">
                             {data.eventStatus === 'PURGED'
@@ -346,8 +344,11 @@ export default function EventPlanSettingsPage() {
                     <div className="mt-4 border-t border-border pt-3">
                         <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('addons.title')}</p>
                         <div className="mt-2 flex flex-wrap gap-2">
-                            {data.addons.map((addon) => (
-                                <span key={addon.code} className="rounded-full bg-primary-light px-2.5 py-1 text-xs font-semibold text-primary-dark">
+                            {data.addons.map((addon, index) => (
+                                <span
+                                    key={`${addon.code}-${addon.activatedAt}-${index}`}
+                                    className="rounded-full bg-primary-light px-2.5 py-1 text-xs font-semibold text-primary-dark"
+                                >
                                     {t('addons.item', {
                                         name: addon.name,
                                         price: formatMoney(locale, addon.priceAmountMinor, insights.orderCurrency),
@@ -355,6 +356,15 @@ export default function EventPlanSettingsPage() {
                                 </span>
                             ))}
                         </div>
+                        <p className="mt-2 text-xs text-ink-muted">
+                            {renewalTotal === null
+                                ? t('addons.monthlyTotal', {
+                                      amount: formatMoney(locale, addonMonthlyTotal, insights.orderCurrency),
+                                  })
+                                : t('addons.renewalTotal', {
+                                      amount: formatMoney(locale, renewalTotal, currentPlan?.priceCurrency ?? insights.orderCurrency),
+                                  })}
+                        </p>
                     </div>
                 )}
                 {error && <p className="mt-3 text-xs text-rose-600">{error}</p>}
@@ -384,9 +394,7 @@ export default function EventPlanSettingsPage() {
                         <span className="text-ink-faint">{t('compare.to')}</span>
                         <span className="font-semibold text-ink">{nextPlan.name}</span>
                         <span className="text-ink-faint">-</span>
-                        <span>
-                            {upgradeChargeLabel ?? t('compare.upgradeChargeUnavailable')}
-                        </span>
+                        <span>{upgradeChargeLabel ?? t('compare.upgradeChargeUnavailable')}</span>
                         <button
                             type="button"
                             onClick={handleUpgradeClick}
@@ -447,7 +455,9 @@ export default function EventPlanSettingsPage() {
                                                     {formatMoney(locale, order.amountMinor, order.currency)}
                                                     {order.addonAmountMinor !== null && (
                                                         <span className="block text-[10px] font-normal text-ink-muted">
-                                                            {t('orders.addonAmount', { amount: formatMoney(locale, order.addonAmountMinor, order.currency) })}
+                                                            {t('orders.addonAmount', {
+                                                                amount: formatMoney(locale, order.addonAmountMinor, order.currency),
+                                                            })}
                                                         </span>
                                                     )}
                                                 </p>
@@ -507,7 +517,9 @@ export default function EventPlanSettingsPage() {
                                                     {formatMoney(locale, order.amountMinor, order.currency)}
                                                     {order.addonAmountMinor !== null && (
                                                         <span className="block text-[10px] font-normal text-ink-muted">
-                                                            {t('orders.addonAmount', { amount: formatMoney(locale, order.addonAmountMinor, order.currency) })}
+                                                            {t('orders.addonAmount', {
+                                                                amount: formatMoney(locale, order.addonAmountMinor, order.currency),
+                                                            })}
                                                         </span>
                                                     )}
                                                 </td>

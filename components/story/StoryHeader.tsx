@@ -18,7 +18,17 @@ interface StoryHeaderProps {
     onDeleteRequest: () => void;
 }
 
-export function StoryHeader({ authorName, authorId, timeStr, canManage, canDelete, showMenu, onToggleMenu, onClose, onDeleteRequest }: StoryHeaderProps) {
+export function StoryHeader({
+    authorName,
+    authorId,
+    timeStr,
+    canManage,
+    canDelete,
+    showMenu,
+    onToggleMenu,
+    onClose,
+    onDeleteRequest,
+}: StoryHeaderProps) {
     const t = useTranslations('StoryPage');
 
     return (

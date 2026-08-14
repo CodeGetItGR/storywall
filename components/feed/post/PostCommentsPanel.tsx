@@ -54,7 +54,9 @@ export function PostCommentsPanel({
                     'flex items-center justify-center': comments.length === 0,
                 })}
             >
-                <h3 className="text-sm font-bold text-ink mb-4">{comments.length === 0 ? t('noCommentsYet') : t('commentCount', { count: comments.length })}</h3>
+                <h3 className="text-sm font-bold text-ink mb-4">
+                    {comments.length === 0 ? t('noCommentsYet') : t('commentCount', { count: comments.length })}
+                </h3>
                 <CommentsList comments={comments} membersById={membersById} />
             </Modal.Body>
 

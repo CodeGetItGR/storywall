@@ -39,8 +39,7 @@ export function RightContextPanel() {
     const enabledModuleKeys = new Set(globallyEnabledModules.map((module_) => module_.moduleKey));
     const availableModuleKeys = new Set(activeEvent.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey));
     const includedModuleKeys =
-        currentPlan?.moduleKeys
-            .filter((moduleKey) => enabledModuleKeys.has(moduleKey) && availableModuleKeys.has(moduleKey)) ?? [];
+        currentPlan?.moduleKeys.filter((moduleKey) => enabledModuleKeys.has(moduleKey) && availableModuleKeys.has(moduleKey)) ?? [];
 
     return (
         <aside

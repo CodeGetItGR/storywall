@@ -83,10 +83,7 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmit, compact = false
     }
 
     return (
-        <form
-            onSubmit={handleSubmit}
-            className={`mb-5`}
-        >
+        <form onSubmit={handleSubmit} className={`mb-5`}>
             <div className={compact ? 'px-4 pt-4 text-ink' : 'bg-gradient-brand px-5 py-5 text-white'}>
                 <div className={`flex items-start gap-4 ${compact ? 'items-center' : ''}`}>
                     <div
@@ -148,7 +145,7 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmit, compact = false
                         </div>
                     </AddSongFieldShell>
 
-                    <AddSongFieldShell icon={SpotifyMark} label={t('spotifyUrl')} optional iconClassName={"text-[#1DB954]"}>
+                    <AddSongFieldShell icon={SpotifyMark} label={t('spotifyUrl')} optional iconClassName={'text-[#1DB954]'}>
                         <div className="relative">
                             <input
                                 type="url"

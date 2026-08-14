@@ -161,7 +161,9 @@ export default function SettingsTab({ event, canWrite }: { event: EventDetailRes
     return (
         <div className="px-4">
             <p className="text-sm text-ink-muted mb-5">{t('settings.subtitle')}</p>
-            {!canWrite && <p className="mb-5 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('settings.readOnly')}</p>}
+            {!canWrite && (
+                <p className="mb-5 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('settings.readOnly')}</p>
+            )}
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 <div>
@@ -277,7 +279,14 @@ export default function SettingsTab({ event, canWrite }: { event: EventDetailRes
 
                 <div className="grid gap-3 sm:grid-cols-2">
                     <FormFieldLabel label={t('settings.fields.startAt')} required labelClassName={labelClass}>
-                        <input type="datetime-local" required value={startAt} onChange={handleStartAtChange} disabled={disabled} className={inputClass} />
+                        <input
+                            type="datetime-local"
+                            required
+                            value={startAt}
+                            onChange={handleStartAtChange}
+                            disabled={disabled}
+                            className={inputClass}
+                        />
                     </FormFieldLabel>
                     <FormFieldLabel label={t('settings.fields.endAt')} optional labelClassName={labelClass}>
                         <input type="datetime-local" value={endAt} onChange={handleEndAtChange} disabled={disabled} className={inputClass} />
@@ -285,7 +294,13 @@ export default function SettingsTab({ event, canWrite }: { event: EventDetailRes
                 </div>
 
                 <FormFieldLabel label={t('settings.fields.rsvpDeadline')} optional labelClassName={labelClass}>
-                    <input type="datetime-local" value={rsvpDeadline} onChange={handleRsvpDeadlineChange} disabled={disabled} className={inputClass} />
+                    <input
+                        type="datetime-local"
+                        value={rsvpDeadline}
+                        onChange={handleRsvpDeadlineChange}
+                        disabled={disabled}
+                        className={inputClass}
+                    />
                 </FormFieldLabel>
 
                 {updateEvent.isError && !fieldErrors && <p className="text-xs text-rose-500">{toErrorMessage(updateEvent.error)}</p>}

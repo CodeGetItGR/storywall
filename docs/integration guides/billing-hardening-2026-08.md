@@ -14,7 +14,7 @@ lost or double-charged real payments, and the rest were the accounting around th
 ### C1 — a reversed order made the event permanently free
 
 Coverage is `max()` over the coverage windows of PAID orders, and an event with **no** such row at
-all reads as *grandfathered* — unmetered, never frozen, never purged. That default exists for events
+all reads as _grandfathered_ — unmetered, never frozen, never purged. That default exists for events
 that predate billing, and it was catastrophic for one whose only payment was reversed: refunding an
 order cleared its window and dropped it out of the PAID set, so the event stopped being metered
 entirely. Charge back after the wedding and the event stayed live forever, with the host-facing
@@ -31,11 +31,11 @@ paidThrough = max( latest covers_until over PAID orders,
 
 Because it composes through the existing `max()`, no case needed special-casing:
 
-| situation | before | after |
-|---|---|---|
-| live PAID order to 2027, an unrelated order reversed today | 2027 | 2027 |
-| only order reversed today | grandfathered | metered from today, lapses through the normal dunning window |
-| no orders at all (pre-billing event) | grandfathered | grandfathered |
+| situation                                                  | before        | after                                                        |
+| ---------------------------------------------------------- | ------------- | ------------------------------------------------------------ |
+| live PAID order to 2027, an unrelated order reversed today | 2027          | 2027                                                         |
+| only order reversed today                                  | grandfathered | metered from today, lapses through the normal dunning window |
+| no orders at all (pre-billing event)                       | grandfathered | grandfathered                                                |
 
 A CHECK constraint (`status <> 'REFUNDED' OR refunded_at IS NOT NULL`) keeps the old failure from
 returning silently one missed assignment later.
@@ -52,12 +52,12 @@ because settlement only accepts a PENDING order.
 The Stripe implementation retrieves the session and switches on its status, because "already
 expired" and "already complete" mean opposite things:
 
-| status | answer |
-|---|---|
-| `expired`, or `resource_missing` | true — already unpayable |
-| `open` | expire it, then true |
-| `complete` | **false** — a payment is already on its way |
-| any other `StripeException` | false, logged as an error |
+| status                           | answer                                      |
+| -------------------------------- | ------------------------------------------- |
+| `expired`, or `resource_missing` | true — already unpayable                    |
+| `open`                           | expire it, then true                        |
+| `complete`                       | **false** — a payment is already on its way |
+| any other `StripeException`      | false, logged as an error                   |
 
 When the answer is false the checkout is refused with `CHECKOUT_SESSION_UNRESOLVED` (5031) rather
 than forced. Neither remaining option is safe: cancelling races a settlement in flight, and reusing
@@ -99,7 +99,7 @@ lock. The migration cancels any duplicates already in flight, keeping the newest
 The webhook endpoint answers 200 whatever a handler does, on purpose: a deterministic failure
 retried forever helps nobody and burns the provider's retry budget for the deliveries that would
 have worked. The price of that is that the provider stops trying and this platform is the last party
-holding the delivery — and the ledger recorded only that *something* arrived, not what it said.
+holding the delivery — and the ledger recorded only that _something_ arrived, not what it said.
 Reconciliation re-derives a checkout outcome by asking the provider about the session. Nothing
 re-derives a refund, a lost dispute, or a subscription change.
 
@@ -121,15 +121,15 @@ replay path share one implementation and cannot drift.
 ### H3 — chargebacks did nothing on a default deployment
 
 `app.billing.sweep.enabled` shipped `false`, so on a default configuration a lapsed or charged-back
-event was never frozen. The documented reason for shipping it off was that *purging* is
+event was never frozen. The documented reason for shipping it off was that _purging_ is
 irreversible — but freezing is not, `revive` exists, and a payment undoes it automatically.
 
 **Fixed** by splitting the switch rather than flipping it:
 
-| property | default | what it gates |
-|---|---|---|
-| `app.billing.sweep.enabled` | **`true`** | freeze / revive — reversible |
-| `app.billing.sweep.purge-enabled` | `false` | purge — destroys media, undone by nothing |
+| property                          | default    | what it gates                             |
+| --------------------------------- | ---------- | ----------------------------------------- |
+| `app.billing.sweep.enabled`       | **`true`** | freeze / revive — reversible              |
+| `app.billing.sweep.purge-enabled` | `false`    | purge — destroys media, undone by nothing |
 
 ---
 
@@ -150,7 +150,7 @@ account where nothing in this codebase would have to change for it to start happ
 which makes the existing equality check mean "did the money arrive" rather than "was the right price
 displayed" — no new field, no new branch. A discount is logged when present.
 
-**M3 — reconciliation was unbounded, and settled deleted events.** It fetched *every* PENDING order
+**M3 — reconciliation was unbounded, and settled deleted events.** It fetched _every_ PENDING order
 ever, each costing a provider round-trip, in one untransacted loop. Now paged at
 `app.billing.reconcile-batch-size` (200), oldest first. Separately, `markOrderPaid` now refuses an
 event with `deletedAt` set — reconciliation could otherwise settle a stale activation for an event
@@ -166,7 +166,7 @@ has since moved off the order's tier by another route.
 
 **M5 — upgrades were sold on FROZEN and PURGED events.** A host could be sold a higher storage
 ceiling on a read-only event, or on one whose media was already destroyed, and the subscription would
-be repriced *upward* on a purged event. `startUpgrade` now rejects both with `EVENT_FROZEN`.
+be repriced _upward_ on a purged event. `startUpgrade` now rejects both with `EVENT_FROZEN`.
 
 **M6 — ordinary races became stuck ledger rows.** A `checkout.session.expired` arriving after an
 async success, or after the order was cancelled, threw — producing an unprocessed row
@@ -193,7 +193,7 @@ trading a payment for an audit row, which is the wrong way round.
 
 **Webhook body size cap.** The endpoint is unauthenticated and signature verification runs over the
 whole body, so without a ceiling an anonymous caller chose how much work each request cost. Bodies
-over 256 KiB are now rejected with `WEBHOOK_PAYLOAD_TOO_LARGE` (3011), checked *before* verification.
+over 256 KiB are now rejected with `WEBHOOK_PAYLOAD_TOO_LARGE` (3011), checked _before_ verification.
 The rate limit bounds how many requests arrive; this bounds how expensive one can be.
 
 **Quota is advisory once money is in flight — unchanged, and deliberate.** The active-event cap is
@@ -208,15 +208,15 @@ a decision, not an oversight.
 
 ## 5. Migration — `V29__billing_hardening.sql`
 
-| change | why |
-|---|---|
-| `event_orders.refunded_at` + backfill from `updated_at` + CHECK + partial index | C1 |
-| `event_orders.settled_by` → `users(id) ON DELETE SET NULL` | audit |
-| dedupe open orders, then `ux_event_orders_one_open_per_kind` | H1 |
-| `provider_webhook_events.payload` + `.signature` + CHECK (cleared once processed) | H2 |
+| change                                                                            | why   |
+| --------------------------------------------------------------------------------- | ----- |
+| `event_orders.refunded_at` + backfill from `updated_at` + CHECK + partial index   | C1    |
+| `event_orders.settled_by` → `users(id) ON DELETE SET NULL`                        | audit |
+| dedupe open orders, then `ux_event_orders_one_open_per_kind`                      | H1    |
+| `provider_webhook_events.payload` + `.signature` + CHECK (cleared once processed) | H2    |
 
 The backfill sets `refunded_at = updated_at` for existing REFUNDED rows: nothing else writes to a
-reversed order, so its last write *is* the reversal.
+reversed order, so its last write _is_ the reversal.
 
 > The main test suite runs H2 with Flyway disabled, so none of this DDL executes there.
 > `BillingMigrationTest` (testcontainers Postgres, skips itself without Docker) is the only place the
@@ -228,12 +228,12 @@ reversed order, so its last write *is* the reversal.
 
 **New error codes**
 
-| code | name | when |
-|---|---|---|
-| 3011 | `WEBHOOK_PAYLOAD_TOO_LARGE` | provider-facing only; never reaches an app client |
+| code | name                          | when                                                                                                                                                                 |
+| ---- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3011 | `WEBHOOK_PAYLOAD_TOO_LARGE`   | provider-facing only; never reaches an app client                                                                                                                    |
 | 5031 | `CHECKOUT_SESSION_UNRESOLVED` | opening a checkout while a previous session may still be settling. **Retryable** — show "still finishing your last payment, try again in a moment", not a hard error |
-| 5032 | `WEBHOOK_ALREADY_PROCESSED` | admin replay of a delivery that already succeeded |
-| 5033 | `WEBHOOK_NOT_REPLAYABLE` | admin replay of a delivery recorded before bodies were kept |
+| 5032 | `WEBHOOK_ALREADY_PROCESSED`   | admin replay of a delivery that already succeeded                                                                                                                    |
+| 5033 | `WEBHOOK_NOT_REPLAYABLE`      | admin replay of a delivery recorded before bodies were kept                                                                                                          |
 
 Also newly reachable: `startUpgrade` now returns **`EVENT_FROZEN`** for a FROZEN or PURGED event.
 The upgrade CTA should be hidden in those states rather than relying on the error.
@@ -258,13 +258,13 @@ admin list should only offer the replay action where it is true.
 
 New coverage, all in `src/test/java/event_social_media/`:
 
-| file | covers |
-|---|---|
-| `service/billing/CheckoutSessionExpiryTest` | C2 — both answers from `expireCheckout`, including the refusal leaving the order PENDING |
-| `service/billing/WebhookReplayTest` | H2 — replay, re-verification of the stored body, already-processed and body-less refusals |
-| `service/billing/OrderSettlementTest` (extended) | C1 — a reversal keeps the event metered; a reversal must not shorten a window another order still pays for |
-| `service/billing/StripePaymentProviderTest` (extended) | M2 — discount subtracted, tax not mistaken for one; M1 — charge fallback |
-| `migration/BillingMigrationTest` (extended) | V29 — `refunded_at` CHECK, one-open-order index, processed-delivery-keeps-no-body CHECK |
+| file                                                   | covers                                                                                                     |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| `service/billing/CheckoutSessionExpiryTest`            | C2 — both answers from `expireCheckout`, including the refusal leaving the order PENDING                   |
+| `service/billing/WebhookReplayTest`                    | H2 — replay, re-verification of the stored body, already-processed and body-less refusals                  |
+| `service/billing/OrderSettlementTest` (extended)       | C1 — a reversal keeps the event metered; a reversal must not shorten a window another order still pays for |
+| `service/billing/StripePaymentProviderTest` (extended) | M2 — discount subtracted, tax not mistaken for one; M1 — charge fallback                                   |
+| `migration/BillingMigrationTest` (extended)            | V29 — `refunded_at` CHECK, one-open-order index, processed-delivery-keeps-no-body CHECK                    |
 
 `OrderSettlementTest.aRefundTakesBackTheCoverageItPaidFor` previously asserted the C1 bug as intended
 behaviour — it asserted the event became unmetered after a refund. It now asserts the opposite.

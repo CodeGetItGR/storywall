@@ -36,8 +36,7 @@ export const adminKeys = {
     notificationSweep: ['admin', 'notifications', 'sweep'] as const,
     refundRequests: ['admin', 'refund-requests'] as const,
     metrics: ['admin', 'metrics'] as const,
-    paidServices: (kind?: PaidServiceKind, includeArchived?: boolean) =>
-        ['admin', 'paid-services', kind ?? 'ALL', Boolean(includeArchived)] as const,
+    paidServices: (kind?: PaidServiceKind, includeArchived?: boolean) => ['admin', 'paid-services', kind ?? 'ALL', Boolean(includeArchived)] as const,
 };
 
 // GET /api/admin/metrics - live platform dashboard counts.

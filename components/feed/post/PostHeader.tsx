@@ -38,5 +38,7 @@ export function PostHeader({ post, timeAgo }: PostHeaderProps) {
     const authorSubtitle = post.author?.nickname ?? post.author?.role;
     const isHostPost = post.author?.role === 'HOST';
 
-    return <PostAuthorAvatar avatarUrl={post.author?.avatarUrl} name={authorName} subtitle={authorSubtitle} timeAgo={timeAgo} isHostPost={isHostPost} />;
+    return (
+        <PostAuthorAvatar avatarUrl={post.author?.avatarUrl} name={authorName} subtitle={authorSubtitle} timeAgo={timeAgo} isHostPost={isHostPost} />
+    );
 }

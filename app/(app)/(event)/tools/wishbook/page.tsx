@@ -86,7 +86,7 @@ export default function WishbookPage() {
                             value={message}
                             onChange={handleMessageChange}
                             rows={4}
-                        placeholder={t('messagePlaceholder')}
+                            placeholder={t('messagePlaceholder')}
                             className="w-full bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 resize-none transition leading-relaxed"
                             aria-label={t('messageAriaLabel')}
                         />

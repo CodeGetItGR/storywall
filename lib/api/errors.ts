@@ -63,6 +63,7 @@ export const ERROR_CODES = {
     PAID_SERVICE_CURRENCY_MISMATCH: 5039,
     PAID_SERVICE_NOT_ON_PLAN: 5040,
     ADDON_NOT_ACTIVE: 5041,
+    ADDON_LOCKED_WHILE_ACTIVE: 5042,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the

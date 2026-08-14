@@ -85,5 +85,5 @@ export default defineConfig([
      */
     prettierConfig,
 
-    globalIgnores(['.next/**', 'node_modules/**', 'coverage/**', 'dist/**', 'out/**', 'next-env.d.ts', ".worktrees/**", "docs/**"]),
+    globalIgnores(['.next/**', 'node_modules/**', 'coverage/**', 'dist/**', 'out/**', 'next-env.d.ts', '.worktrees/**', 'docs/**']),
 ]);

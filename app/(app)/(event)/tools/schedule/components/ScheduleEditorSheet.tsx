@@ -36,15 +36,7 @@ interface ScheduleEditorFormProps {
     onClose: () => void;
 }
 
-function ScheduleEditorForm({
-    eventId,
-    sessions,
-    editingSession,
-    defaultStartAt,
-    createSession,
-    updateSession,
-    onClose,
-}: ScheduleEditorFormProps) {
+function ScheduleEditorForm({ eventId, sessions, editingSession, defaultStartAt, createSession, updateSession, onClose }: ScheduleEditorFormProps) {
     const t = useTranslations('SchedulePage');
     const toErrorMessage = useApiErrorMessage();
 
@@ -154,13 +146,21 @@ function ScheduleEditorForm({
     }
 
     const isSaving = createSession.isPending || updateSession.isPending;
-    const submitLabel = editingSession ? (updateSession.isPending ? t('host.updating') : t('host.update')) : createSession.isPending ? t('host.submitting') : t('host.submit');
+    const submitLabel = editingSession
+        ? updateSession.isPending
+            ? t('host.updating')
+            : t('host.update')
+        : createSession.isPending
+          ? t('host.submitting')
+          : t('host.submit');
 
     return (
         <>
             <div className="border-b border-border/70 bg-background/95 px-4 py-4 backdrop-blur-sm sm:px-5">
                 <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-border/70" aria-hidden="true" />
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-faint">{editingSession ? t('host.editingEyebrow') : t('host.eyebrow')}</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-faint">
+                    {editingSession ? t('host.editingEyebrow') : t('host.eyebrow')}
+                </p>
                 <h2 className="mt-1 text-base font-semibold text-ink">{editingSession ? t('host.editingTitle') : t('host.title')}</h2>
                 <p className="mt-1 max-w-xl text-sm leading-relaxed text-ink-muted">
                     {editingSession ? t('host.editingSubtitle', { title: editingSession.title }) : t('host.subtitle')}
@@ -169,7 +169,12 @@ function ScheduleEditorForm({
 
             <Modal.Body className="px-4 py-4 sm:px-5">
                 <form id={formId} className="grid gap-4" onSubmit={handleSubmit}>
-                    <FormFieldLabel label={t('host.fields.title')} required className="grid gap-1.5" labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                    <FormFieldLabel
+                        label={t('host.fields.title')}
+                        required
+                        className="grid gap-1.5"
+                        labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted"
+                    >
                         <input
                             type="text"
                             value={title}
@@ -180,7 +185,12 @@ function ScheduleEditorForm({
                         />
                     </FormFieldLabel>
 
-                    <FormFieldLabel label={t('host.fields.description')} optional className="grid gap-1.5" labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                    <FormFieldLabel
+                        label={t('host.fields.description')}
+                        optional
+                        className="grid gap-1.5"
+                        labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted"
+                    >
                         <textarea
                             value={description}
                             onChange={handleDescriptionChange}
@@ -190,7 +200,12 @@ function ScheduleEditorForm({
                     </FormFieldLabel>
 
                     <div className="grid gap-3 sm:grid-cols-2">
-                        <FormFieldLabel label={t('host.fields.startAt')} optional className="grid gap-1.5" labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                        <FormFieldLabel
+                            label={t('host.fields.startAt')}
+                            optional
+                            className="grid gap-1.5"
+                            labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted"
+                        >
                             <input
                                 type="datetime-local"
                                 value={startAt}
@@ -198,7 +213,12 @@ function ScheduleEditorForm({
                                 className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                             />
                         </FormFieldLabel>
-                        <FormFieldLabel label={t('host.fields.endAt')} optional className="grid gap-1.5" labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                        <FormFieldLabel
+                            label={t('host.fields.endAt')}
+                            optional
+                            className="grid gap-1.5"
+                            labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted"
+                        >
                             <input
                                 type="datetime-local"
                                 value={endAt}
@@ -212,7 +232,12 @@ function ScheduleEditorForm({
                     {isEndBeforeStart && <p className="text-xs font-medium text-rose-500">{t('host.endBeforeStart')}</p>}
 
                     <div className="grid gap-3 sm:grid-cols-2">
-                        <FormFieldLabel label={t('host.fields.locationName')} optional className="grid gap-1.5" labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                        <FormFieldLabel
+                            label={t('host.fields.locationName')}
+                            optional
+                            className="grid gap-1.5"
+                            labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted"
+                        >
                             <input
                                 type="text"
                                 value={locationName}
@@ -221,7 +246,12 @@ function ScheduleEditorForm({
                                 placeholder={t('host.placeholders.locationName')}
                             />
                         </FormFieldLabel>
-                        <FormFieldLabel label={t('host.fields.mapsUrl')} optional className="grid gap-1.5" labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                        <FormFieldLabel
+                            label={t('host.fields.mapsUrl')}
+                            optional
+                            className="grid gap-1.5"
+                            labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted"
+                        >
                             <input
                                 type="url"
                                 value={mapsUrl}
@@ -254,7 +284,11 @@ function ScheduleEditorForm({
                         className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-brand px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         {editingSession ? (
-                            updateSession.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <PencilLine className="h-4 w-4" />
+                            updateSession.isPending ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <PencilLine className="h-4 w-4" />
+                            )
                         ) : createSession.isPending ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (

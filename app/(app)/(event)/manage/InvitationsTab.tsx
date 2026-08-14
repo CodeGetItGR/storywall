@@ -90,9 +90,7 @@ export default function InvitationsTab({
             )}
 
             {limitNotice && (
-                <p className="mb-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900">
-                    {limitNotice}
-                </p>
+                <p className="mb-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900">{limitNotice}</p>
             )}
 
             {showCreate && canWrite && showInvites && (
@@ -105,14 +103,29 @@ export default function InvitationsTab({
             {showInvites ? (
                 <div className="flex flex-col divide-y divide-border">
                     {invitations.map((invitation) => (
-                        <InvitationRow key={invitation.id} eventId={eventId} invitation={invitation} canWrite={canWrite} onClampNotice={handleClampNotice} />
+                        <InvitationRow
+                            key={invitation.id}
+                            eventId={eventId}
+                            invitation={invitation}
+                            canWrite={canWrite}
+                            onClampNotice={handleClampNotice}
+                        />
                     ))}
                 </div>
             ) : (
                 <div className="flex flex-col divide-y divide-border">
                     {qrLinks.map((qrLink) => {
                         const stats = qrLinkStats.find((row) => row.qrLinkId === qrLink.id);
-                        return <QrLinkRow key={qrLink.id} eventId={eventId} qrLink={qrLink} stats={stats} canWrite={canWrite} onClampNotice={handleClampNotice} />;
+                        return (
+                            <QrLinkRow
+                                key={qrLink.id}
+                                eventId={eventId}
+                                qrLink={qrLink}
+                                stats={stats}
+                                canWrite={canWrite}
+                                onClampNotice={handleClampNotice}
+                            />
+                        );
                     })}
                 </div>
             )}

@@ -31,10 +31,21 @@ function SessionActions({
 
     return (
         <div className="flex shrink-0 items-center gap-1">
-            <button type="button" onClick={handleEditClick} className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/70 text-ink-muted transition-colors hover:border-primary/20 hover:bg-primary-light hover:text-primary-dark" aria-label={t('host.editSession', { title: session.title })}>
+            <button
+                type="button"
+                onClick={handleEditClick}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/70 text-ink-muted transition-colors hover:border-primary/20 hover:bg-primary-light hover:text-primary-dark"
+                aria-label={t('host.editSession', { title: session.title })}
+            >
                 <PencilLine className="h-3.5 w-3.5" />
             </button>
-            <button type="button" onClick={handleDeleteClick} disabled={deleteDisabled} className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/70 text-ink-muted transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-50" aria-label={t('host.deleteSession', { title: session.title })}>
+            <button
+                type="button"
+                onClick={handleDeleteClick}
+                disabled={deleteDisabled}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/70 text-ink-muted transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label={t('host.deleteSession', { title: session.title })}
+            >
                 <Trash2 className="h-3.5 w-3.5" />
             </button>
         </div>

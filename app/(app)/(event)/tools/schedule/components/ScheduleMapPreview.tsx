@@ -44,7 +44,9 @@ export function ScheduleMapPreview({ mapsUrl, title, openLabel, previewLabel, un
                 )}
                 aria-label={title}
             >
-                <span className="rounded-full bg-background/90 px-3 py-1 text-[11px] font-semibold text-ink shadow-sm backdrop-blur-sm">{openLabel}</span>
+                <span className="rounded-full bg-background/90 px-3 py-1 text-[11px] font-semibold text-ink shadow-sm backdrop-blur-sm">
+                    {openLabel}
+                </span>
                 <span className="rounded-full bg-background/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-faint shadow-sm backdrop-blur-sm">
                     {previewLabel}
                 </span>

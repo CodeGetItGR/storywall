@@ -33,7 +33,9 @@ export function ScheduleSessionsList({
     const t = useTranslations('SchedulePage');
     const sortedSessions = sortSessions(sessions);
     const groupedSessions = groupSessions(sortedSessions);
-    const datedKeys = Object.keys(groupedSessions).filter((key) => key !== 'unscheduled').sort();
+    const datedKeys = Object.keys(groupedSessions)
+        .filter((key) => key !== 'unscheduled')
+        .sort();
     const unscheduledSessions = groupedSessions.unscheduled ?? [];
 
     return (
@@ -45,9 +47,13 @@ export function ScheduleSessionsList({
                             <span className="text-[9px] font-medium uppercase leading-none text-ink-muted">
                                 {formatDate(locale, `${date}T00:00:00`, { month: 'short' })}
                             </span>
-                            <span className="text-sm font-bold leading-none text-ink">{formatDate(locale, `${date}T00:00:00`, { day: 'numeric' })}</span>
+                            <span className="text-sm font-bold leading-none text-ink">
+                                {formatDate(locale, `${date}T00:00:00`, { day: 'numeric' })}
+                            </span>
                         </div>
-                        <p className="text-sm font-bold text-ink">{formatDate(locale, `${date}T00:00:00`, { weekday: 'short', month: 'short', day: 'numeric' })}</p>
+                        <p className="text-sm font-bold text-ink">
+                            {formatDate(locale, `${date}T00:00:00`, { weekday: 'short', month: 'short', day: 'numeric' })}
+                        </p>
                     </div>
 
                     <div className="relative flex flex-col gap-4 pl-5">
@@ -55,7 +61,10 @@ export function ScheduleSessionsList({
 
                         {groupedSessions[date].map((session) => (
                             <div key={session.id} className="relative">
-                                <div className="absolute -left-5 top-3 h-3.5 w-3.5 rounded-full border-2 border-background bg-amber-200" aria-hidden="true" />
+                                <div
+                                    className="absolute -left-5 top-3 h-3.5 w-3.5 rounded-full border-2 border-background bg-amber-200"
+                                    aria-hidden="true"
+                                />
                                 <ScheduleSessionCard
                                     session={session}
                                     isHost={isHost}

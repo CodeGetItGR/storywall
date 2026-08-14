@@ -22,7 +22,7 @@ interface PostMediaColumnProps {
 export function PostMediaColumn({ postKey, post, clampedIndex, onIndexChange, commentsOpen, onShowComments }: PostMediaColumnProps) {
     const t = useTranslations('PostModal');
     const tCard = useTranslations('PostCard');
-    const authorDisplayName = isPlaylistDigestPost(post) ? tCard('playlistDigest') : post.author?.displayName ?? tCard('unknownAuthor');
+    const authorDisplayName = isPlaylistDigestPost(post) ? tCard('playlistDigest') : (post.author?.displayName ?? tCard('unknownAuthor'));
 
     return (
         <div className="relative w-full h-full lg:col-span-3 bg-black">

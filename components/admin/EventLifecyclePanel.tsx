@@ -87,7 +87,9 @@ export function EventLifecyclePanel() {
                     </button>
                 </div>
                 {freezeEvent.error && <p className="mt-2 text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(freezeEvent.error)}`)}</p>}
-                {frozenId && !freezeEvent.error && <p className="mt-2 text-sm text-emerald-700">{t('lifecycle.freezeSuccess', { eventId: frozenId })}</p>}
+                {frozenId && !freezeEvent.error && (
+                    <p className="mt-2 text-sm text-emerald-700">{t('lifecycle.freezeSuccess', { eventId: frozenId })}</p>
+                )}
             </form>
 
             <form onSubmit={handlePurge} className="border-b border-rose-200 pb-4">

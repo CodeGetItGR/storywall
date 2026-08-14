@@ -79,13 +79,28 @@ export function PlanCreateForm({
                     <AdminSection title={t('plans.sections.identity')}>
                         <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-6">
                             <AdminField label={t('fields.code')} required className="col-span-2 lg:col-span-2">
-                                <input required name="code" placeholder="ENTERPRISE" pattern="[A-Z0-9_]+" maxLength={30} className={adminInputClass()} />
+                                <input
+                                    required
+                                    name="code"
+                                    placeholder="ENTERPRISE"
+                                    pattern="[A-Z0-9_]+"
+                                    maxLength={30}
+                                    className={adminInputClass()}
+                                />
                             </AdminField>
                             <AdminField label={t('fields.name')} required className="col-span-2 lg:col-span-2">
                                 <input required name="name" maxLength={100} className={adminInputClass()} />
                             </AdminField>
                             <AdminField label={t('fields.sort')} required className="col-span-1 lg:col-span-1">
-                                <input required name="sortOrder" type="number" min={0} value={nextSortOrder} readOnly className={adminInputClass('max-w-24')} />
+                                <input
+                                    required
+                                    name="sortOrder"
+                                    type="number"
+                                    min={0}
+                                    value={nextSortOrder}
+                                    readOnly
+                                    className={adminInputClass('max-w-24')}
+                                />
                             </AdminField>
                             <AdminField label={t('fields.description')} optional className="col-span-2 lg:col-span-3">
                                 <input name="description" className={adminInputClass()} />
@@ -99,7 +114,14 @@ export function PlanCreateForm({
                                 <>
                                     <div className="col-span-2 grid grid-cols-[minmax(0,1fr)_6rem] gap-2 lg:col-span-2">
                                         <AdminField label={t('fields.storage')} optional>
-                                            <input name="storageAmount" type="number" min={0} step="0.01" placeholder={t('fields.blankUnlimited')} className={adminInputClass('max-w-32')} />
+                                            <input
+                                                name="storageAmount"
+                                                type="number"
+                                                min={0}
+                                                step="0.01"
+                                                placeholder={t('fields.blankUnlimited')}
+                                                className={adminInputClass('max-w-32')}
+                                            />
                                         </AdminField>
                                         <AdminField label={t('fields.unit')}>
                                             <select name="storageUnit" defaultValue="GB" className={adminInputClass('max-w-20')}>
@@ -112,12 +134,24 @@ export function PlanCreateForm({
                                         </AdminField>
                                     </div>
                                     <AdminField label={t('fields.maxMembers')} optional className="col-span-1 lg:col-span-1">
-                                        <input name="maxMembers" type="number" min={0} placeholder={t('fields.blankUnlimited')} className={adminInputClass('max-w-28')} />
+                                        <input
+                                            name="maxMembers"
+                                            type="number"
+                                            min={0}
+                                            placeholder={t('fields.blankUnlimited')}
+                                            className={adminInputClass('max-w-28')}
+                                        />
                                     </AdminField>
                                 </>
                             ) : (
                                 <AdminField label={t('fields.maxEventsPerUser')} optional className="col-span-2 lg:col-span-3">
-                                    <input name="maxActiveEvents" type="number" min={0} placeholder={t('fields.blankUnlimited')} className={adminInputClass('max-w-28')} />
+                                    <input
+                                        name="maxActiveEvents"
+                                        type="number"
+                                        min={0}
+                                        placeholder={t('fields.blankUnlimited')}
+                                        className={adminInputClass('max-w-28')}
+                                    />
                                 </AdminField>
                             )}
                         </div>
@@ -144,7 +178,14 @@ export function PlanCreateForm({
                             {scope === 'EVENT' && (
                                 <>
                                     <AdminField label={t('fields.recurringPrice')} optional className="col-span-1 lg:col-span-2">
-                                        <input name="recurringPrice" type="number" min={0} step="0.01" placeholder="15" className={adminInputClass('max-w-32')} />
+                                        <input
+                                            name="recurringPrice"
+                                            type="number"
+                                            min={0}
+                                            step="0.01"
+                                            placeholder="15"
+                                            className={adminInputClass('max-w-32')}
+                                        />
                                     </AdminField>
                                     <AdminField label={t('fields.includedMonths')} optional className="col-span-1">
                                         <input name="includedMonths" type="number" min={0} placeholder="3" className={adminInputClass('max-w-24')} />
@@ -160,7 +201,12 @@ export function PlanCreateForm({
                     <AdminSection title={t('plans.sections.availability')}>
                         <div className="grid gap-3 sm:grid-cols-3">
                             <AdminSwitch name="isDefault" label={t('fields.isDefault')} description={t('fields.isDefaultHint')} />
-                            <AdminSwitch name="isAssignable" label={t('fields.isAssignable')} description={t('fields.isAssignableHint')} defaultChecked />
+                            <AdminSwitch
+                                name="isAssignable"
+                                label={t('fields.isAssignable')}
+                                description={t('fields.isAssignableHint')}
+                                defaultChecked
+                            />
                             <AdminSwitch name="isPublic" label={t('fields.isPublic')} description={t('fields.isPublicHint')} defaultChecked />
                         </div>
                     </AdminSection>

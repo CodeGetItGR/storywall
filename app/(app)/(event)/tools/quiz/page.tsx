@@ -22,15 +22,18 @@ export default function QuizPage() {
     const selected = answers[current];
     const isLast = current === quizQuestions.length - 1;
 
-    const handleSelect = useCallback((idx: number) => {
-        if (revealed) return;
-        setAnswers((prev) => {
-            const next = [...prev];
-            next[current] = idx;
-            return next;
-        });
-        setRevealed(true);
-    }, [current, revealed]);
+    const handleSelect = useCallback(
+        (idx: number) => {
+            if (revealed) return;
+            setAnswers((prev) => {
+                const next = [...prev];
+                next[current] = idx;
+                return next;
+            });
+            setRevealed(true);
+        },
+        [current, revealed]
+    );
 
     function handleNext() {
         if (isLast) {
@@ -48,10 +51,13 @@ export default function QuizPage() {
         setRevealed(false);
     }
 
-    const handleAnswerClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-        const index = Number(event.currentTarget.dataset.answerIndex);
-        if (!Number.isNaN(index)) handleSelect(index);
-    }, [handleSelect]);
+    const handleAnswerClick = useCallback(
+        (event: React.MouseEvent<HTMLButtonElement>) => {
+            const index = Number(event.currentTarget.dataset.answerIndex);
+            if (!Number.isNaN(index)) handleSelect(index);
+        },
+        [handleSelect]
+    );
 
     const score = answers.filter((a, i) => a === quizQuestions[i].correct).length;
 

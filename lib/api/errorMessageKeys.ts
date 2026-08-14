@@ -9,6 +9,7 @@ export type ApiErrorMessageKey =
     | 'accountNotActive'
     | 'accountPlansDisabled'
     | 'addonAlreadyActive'
+    | 'addonLockedWhileActive'
     | 'addonNotActive'
     | 'activeEventLimit'
     | 'alreadyLinked'
@@ -73,6 +74,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.ACCOUNT_NOT_ACTIVE]: 'accountNotActive',
     [ERROR_CODES.ACCOUNT_PLANS_DISABLED]: 'accountPlansDisabled',
     [ERROR_CODES.ADDON_ALREADY_ACTIVE]: 'addonAlreadyActive',
+    [ERROR_CODES.ADDON_LOCKED_WHILE_ACTIVE]: 'addonLockedWhileActive',
     [ERROR_CODES.ADDON_NOT_ACTIVE]: 'addonNotActive',
     [ERROR_CODES.ACTIVE_EVENT_LIMIT_EXCEEDED]: 'activeEventLimit',
     [ERROR_CODES.ALREADY_LINKED]: 'alreadyLinked',

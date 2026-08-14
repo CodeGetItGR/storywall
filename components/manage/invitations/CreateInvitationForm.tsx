@@ -137,7 +137,12 @@ export function CreateInvitationForm({
                     </FormFieldLabel>
                 </div>
 
-                <FormFieldLabel label={t('invitations.fields.email')} optional className={cn(fieldLabelClass, 'mt-3')} labelClassName={fieldTextClass}>
+                <FormFieldLabel
+                    label={t('invitations.fields.email')}
+                    optional
+                    className={cn(fieldLabelClass, 'mt-3')}
+                    labelClassName={fieldTextClass}
+                >
                     <input type="email" value={email} onChange={handleEmailChange} className={fieldControlClass} />
                     {fieldErrors?.email && <span className="text-xs text-rose-500">{fieldErrors.email}</span>}
                 </FormFieldLabel>

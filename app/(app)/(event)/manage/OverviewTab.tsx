@@ -7,7 +7,13 @@ import { UsagePanel } from '@/components/plan/UsagePanel';
 import { useApiErrorMessage, useRetryAfterCountdown } from '@/hooks/useApiErrorMessage';
 import { useCheckout, useEventBilling } from '@/hooks/useBilling';
 import { useUpdateEvent } from '@/hooks/useEvent';
-import type { EventModuleResponseDto, EventUsageResponseDto, PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import type {
+    EventModuleResponseDto,
+    EventUsageResponseDto,
+    PaidServiceResponseDto,
+    PlanTierResponseDto,
+    PlatformModuleResponseDto,
+} from '@/lib/api/types';
 import { checkoutSuccessUrl, formatMoney } from '@/lib/billing';
 import { formatBytes } from '@/lib/format';
 import { findNextPlan, findPlanByCode } from '@/lib/planTiers';
@@ -74,12 +80,12 @@ export default function OverviewTab({
             (service.planTierIds.length === 0 || (currentPlan ? service.planTierIds.includes(currentPlan.id) : false))
     );
     const originalsActive = billing.data?.addons.some((addon) => addon.code === 'ORIGINALS') ?? false;
-    const activationAddonAmount = originalsService && currentPlan?.includedMonths
-        ? originalsService.priceAmountMinor * currentPlan.includedMonths
-        : 0;
-    const activationTotal = currentPlan?.priceAmountMinor === null || currentPlan?.priceAmountMinor === undefined
-        ? null
-        : currentPlan.priceAmountMinor + (originalsActive ? activationAddonAmount : 0);
+    const activationAddonAmount =
+        originalsService && currentPlan?.includedMonths ? originalsService.priceAmountMinor * currentPlan.includedMonths : 0;
+    const activationTotal =
+        currentPlan?.priceAmountMinor === null || currentPlan?.priceAmountMinor === undefined
+            ? null
+            : currentPlan.priceAmountMinor + (originalsActive ? activationAddonAmount : 0);
 
     async function activateOriginals() {
         setCheckoutError(null);
@@ -111,8 +117,7 @@ export default function OverviewTab({
     const enabledModuleKeys = new Set(globallyEnabledModules.map((module_) => module_.moduleKey));
     const availableModuleKeys = new Set(eventModules.filter((module) => module.isAvailable).map((module) => module.moduleKey));
     const includedModuleKeys =
-        currentPlan?.moduleKeys
-            .filter((moduleKey) => enabledModuleKeys.has(moduleKey) && availableModuleKeys.has(moduleKey)) ?? [];
+        currentPlan?.moduleKeys.filter((moduleKey) => enabledModuleKeys.has(moduleKey) && availableModuleKeys.has(moduleKey)) ?? [];
 
     return (
         <div className="flex flex-col gap-4 px-4 sm:gap-5">

@@ -22,10 +22,7 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
     const modulesQuery = useAdminPlatformModules();
     const accountPlansDisabled = scope === 'ACCOUNT';
     const plans = useMemo(() => [...(plansQuery.data ?? [])].sort((left, right) => left.sortOrder - right.sortOrder), [plansQuery.data]);
-    const selectedPlan = useMemo(
-        () => plans.find((plan) => plan.id === selectedPlanId) ?? plans[0] ?? null,
-        [plans, selectedPlanId]
-    );
+    const selectedPlan = useMemo(() => plans.find((plan) => plan.id === selectedPlanId) ?? plans[0] ?? null, [plans, selectedPlanId]);
 
     function handleIncludeArchivedChange(event: ChangeEvent<HTMLInputElement>) {
         setIncludeArchived(event.target.checked);
@@ -95,9 +92,7 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                         </div>
                         <div className="max-h-[34rem] overflow-auto">
                             {plans.length === 0 ? (
-                                <div className="border-b border-dashed border-border px-2 py-4 text-sm text-ink-muted">
-                                    {t('plans.empty')}
-                                </div>
+                                <div className="border-b border-dashed border-border px-2 py-4 text-sm text-ink-muted">{t('plans.empty')}</div>
                             ) : (
                                 <div className="space-y-1">
                                     {plans.map((plan) => {
@@ -126,13 +121,23 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                                                         <p className="truncate text-base font-semibold text-ink">{plan.code}</p>
                                                         <p className="truncate text-sm text-ink-muted">{plan.name}</p>
                                                     </div>
-                                                    <ChevronRight className={selected ? 'mt-0.5 h-4 w-4 text-primary-dark' : 'mt-0.5 h-4 w-4 text-ink-faint'} />
+                                                    <ChevronRight
+                                                        className={selected ? 'mt-0.5 h-4 w-4 text-primary-dark' : 'mt-0.5 h-4 w-4 text-ink-faint'}
+                                                    />
                                                 </div>
                                                 <div className="mt-2 flex flex-wrap gap-1.5 text-xs font-semibold text-ink-muted">
                                                     <span className="rounded-full bg-surface-muted px-2 py-1">{price}</span>
                                                     <span className="rounded-full bg-surface-muted px-2 py-1">{limit}</span>
-                                                    {!plan.isAssignable && <span className="rounded-full bg-amber-100 px-2 py-1 text-amber-700">{t('plans.archived')}</span>}
-                                                    {plan.isDefault && <span className="rounded-full bg-primary-light px-2 py-1 text-primary-dark">{t('plans.default')}</span>}
+                                                    {!plan.isAssignable && (
+                                                        <span className="rounded-full bg-amber-100 px-2 py-1 text-amber-700">
+                                                            {t('plans.archived')}
+                                                        </span>
+                                                    )}
+                                                    {plan.isDefault && (
+                                                        <span className="rounded-full bg-primary-light px-2 py-1 text-primary-dark">
+                                                            {t('plans.default')}
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </button>
                                         );
@@ -144,7 +149,12 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
 
                     <div className="min-w-0">
                         {selectedPlan ? (
-                            <PlanEditorCard key={`${selectedPlan.id}:${selectedPlan.moduleKeys.join(',')}`} plan={selectedPlan} modules={modulesQuery.data ?? []} scope={scope} />
+                            <PlanEditorCard
+                                key={`${selectedPlan.id}:${selectedPlan.moduleKeys.join(',')}`}
+                                plan={selectedPlan}
+                                modules={modulesQuery.data ?? []}
+                                scope={scope}
+                            />
                         ) : (
                             <AdminSection title={t('plans.emptyEditorTitle')} className="border-b border-border">
                                 <p className="text-sm text-ink-muted">{t('plans.emptyEditorBody')}</p>

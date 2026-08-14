@@ -24,11 +24,7 @@ function PlaylistScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDe
         return (
             <PlaylistDisabledState
                 backLabel={t('backToFeed')}
-                body={
-                    data.playlistInRegistry && data.unlockPlanNames
-                        ? t('disabledUpgradeBody', { plans: data.unlockPlanNames })
-                        : t('disabledBody')
-                }
+                body={data.playlistInRegistry && data.unlockPlanNames ? t('disabledUpgradeBody', { plans: data.unlockPlanNames }) : t('disabledBody')}
                 eventId={eventId}
                 title={t('disabledTitle')}
             />

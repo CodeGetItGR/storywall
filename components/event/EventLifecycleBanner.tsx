@@ -34,7 +34,12 @@ export function EventLifecycleBanner() {
 
     return (
         <div className="px-3 pt-3 sm:px-4">
-            <div className={cn('mx-auto flex max-w-5xl flex-col gap-3 rounded-lg border px-3 py-3 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-4', tone(status))}>
+            <div
+                className={cn(
+                    'mx-auto flex max-w-5xl flex-col gap-3 rounded-lg border px-3 py-3 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-4',
+                    tone(status)
+                )}
+            >
                 <div className="flex min-w-0 gap-2">
                     <span className="mt-0.5 shrink-0">
                         <Icon status={status} />

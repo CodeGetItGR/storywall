@@ -16,7 +16,7 @@ failures during join. Nothing told the host up front that the number they typed 
 
 Along the way we also found — and fixed — a boundary bug: shared QR links default to 50
 guests, and BASIC's plan limit is also 50 members, but the host already occupies one of
-those seats from event creation. So *every* default QR link on a fresh BASIC event was
+those seats from event creation. So _every_ default QR link on a fresh BASIC event was
 already one seat over what the plan could seat, before anyone had scanned anything.
 
 ## What changed
@@ -38,8 +38,8 @@ not the enforcement point.
 
 **Do this:** after creating or patching a QR link or invitation, compare the `maxGuests` you
 sent against the `maxGuests` in the response. If the response is lower, the host asked for
-more than the plan supports — show something like *"Capped to 12 guests — that's all your
-current plan has room for"* instead of silently displaying a number the host didn't ask for.
+more than the plan supports — show something like _"Capped to 12 guests — that's all your
+current plan has room for"_ instead of silently displaying a number the host didn't ask for.
 
 ```jsonc
 // Request

@@ -87,15 +87,20 @@ export function PlatformMetricsPanel() {
                     </div>
                     <AdminSection title={t('metrics.storage.title')}>
                         <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
-                            {([
-                                ['usedBytes', formatBytes(metrics.storage.usedBytes)],
-                                ['pendingPurgeBytes', formatBytes(metrics.storage.pendingPurgeBytes)],
-                                ['committedBytes', formatBytes(metrics.storage.committedBytes)],
-                                ['paidUsedBytes', formatBytes(metrics.storage.paidUsedBytes)],
-                                ['freeUsedBytes', formatBytes(metrics.storage.freeUsedBytes)],
-                                ['purchasedExtraBytes', formatBytes(metrics.storage.purchasedExtraBytes)],
-                                ['estimatedMonthlyCostMinor', formatMoney(locale, metrics.storage.estimatedMonthlyCostMinor, metrics.storage.costCurrency)],
-                            ] as const).map(([key, value]) => (
+                            {(
+                                [
+                                    ['usedBytes', formatBytes(metrics.storage.usedBytes)],
+                                    ['pendingPurgeBytes', formatBytes(metrics.storage.pendingPurgeBytes)],
+                                    ['committedBytes', formatBytes(metrics.storage.committedBytes)],
+                                    ['paidUsedBytes', formatBytes(metrics.storage.paidUsedBytes)],
+                                    ['freeUsedBytes', formatBytes(metrics.storage.freeUsedBytes)],
+                                    ['purchasedExtraBytes', formatBytes(metrics.storage.purchasedExtraBytes)],
+                                    [
+                                        'estimatedMonthlyCostMinor',
+                                        formatMoney(locale, metrics.storage.estimatedMonthlyCostMinor, metrics.storage.costCurrency),
+                                    ],
+                                ] as const
+                            ).map(([key, value]) => (
                                 <div key={key} className="border-b border-border pb-3">
                                     <dt className="text-xs text-ink-muted">{t(`metrics.storage.${key}`)}</dt>
                                     <dd className="mt-1 text-sm font-bold tabular-nums text-ink">{value}</dd>

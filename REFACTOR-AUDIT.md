@@ -76,7 +76,7 @@ down now. All three touched trees are 0 `react/jsx-no-bind` violations.
 `react/jsx-no-bind` (from `eslint-plugin-react`, already a transitive dep of
 `eslint-config-next` — added directly to `package.json` so it's resolvable
 from `eslint.config.mjs`) now errors on inline arrow-function/`.bind()`
-*literals* passed as JSX props, anywhere in the tree, including DOM elements
+_literals_ passed as JSX props, anywhere in the tree, including DOM elements
 and refs (`allowArrowFunctions: false`, `allowBind: false`). Passing a
 regular named function by reference is allowed (`allowFunctions: true`) —
 banning that too would flag ordinary callback-prop passthrough (e.g.

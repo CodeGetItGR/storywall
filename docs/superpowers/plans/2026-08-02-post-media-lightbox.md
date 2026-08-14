@@ -11,8 +11,9 @@
 **Note on verification:** This repo has no test framework installed (no jest/vitest/RTL — confirmed via `package.json` and a repo-wide search for `*.test.*`/`*.spec.*`). Each task verifies with `npx tsc --noEmit`, matching how prior work in this codebase (e.g. `docs/superpowers/plans/2026-08-01-post-engagement-modal.md`) was verified, plus a final manual browser pass (Task 9).
 
 **Note on spec deviations:**
+
 1. The design spec said the mobile collapsed overview shows `PostAuthorAvatar`. That component hardcodes dark (`text-ink`/`text-ink-muted`) text, which is unreadable over a photo. The overview instead renders the author name and caption directly in white — see Task 7.
-2. Task 3 adds a `lg:border-l` divider to the desktop comments panel. It wasn't in the spec, but now that the panel spans the full viewport edge-to-edge (rather than sitting in a boxed `max-w-4xl` modal), the panel needs *some* visual separation from the black media pane. One-line addition, easy to drop if unwanted.
+2. Task 3 adds a `lg:border-l` divider to the desktop comments panel. It wasn't in the spec, but now that the panel spans the full viewport edge-to-edge (rather than sitting in a boxed `max-w-4xl` modal), the panel needs _some_ visual separation from the black media pane. One-line addition, easy to drop if unwanted.
 
 ---
 
@@ -689,7 +690,13 @@ export function PostModal() {
     }
 
     return (
-        <Modal open={isOpen} onClose={close} size={hasMedia ? 'full' : 'lg'} closeLabel={t('close')} className={hasMedia ? undefined : 'min-h-[70vh]'}>
+        <Modal
+            open={isOpen}
+            onClose={close}
+            size={hasMedia ? 'full' : 'lg'}
+            closeLabel={t('close')}
+            className={hasMedia ? undefined : 'min-h-[70vh]'}
+        >
             {!hasMedia && (
                 <div className="z-10 bg-background/95 backdrop-blur-sm border-b border-border flex items-center justify-between px-4 py-5 w-full shrink-0">
                     <h2 className="text-base font-bold text-ink">{t('title')}</h2>
@@ -815,7 +822,12 @@ export function PostModal() {
                                         commentsOpen && 'opacity-0 pointer-events-none'
                                     )}
                                 >
-                                    <button type="button" onClick={() => setCommentsOpen(true)} className="w-full text-left" aria-label={t('showComments')}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setCommentsOpen(true)}
+                                        className="w-full text-left"
+                                        aria-label={t('showComments')}
+                                    >
                                         <p className="text-sm font-semibold text-white mb-1">{post.author?.displayName ?? tCard('unknownAuthor')}</p>
                                         {post.content && <p className="text-sm text-white/90 leading-snug line-clamp-2 mb-2">{post.content}</p>}
                                         <div className="flex items-center gap-4">
@@ -878,38 +890,42 @@ git commit -m "feat: full-screen media lightbox with carousel and mobile comment
 Find:
 
 ```tsx
-            {media.length === 1 && (
-                <div className="relative w-full aspect-4/3 bg-surface-muted overflow-hidden">
-                    <Image
-                        src={media[0].mediaUrl}
-                        alt={t('photoBy', { name: authorName })}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, 680px"
-                    />
-                </div>
-            )}
+{
+    media.length === 1 && (
+        <div className="relative w-full aspect-4/3 bg-surface-muted overflow-hidden">
+            <Image
+                src={media[0].mediaUrl}
+                alt={t('photoBy', { name: authorName })}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 680px"
+            />
+        </div>
+    );
+}
 ```
 
 Replace with:
 
 ```tsx
-            {media.length === 1 && (
-                <button
-                    type="button"
-                    onClick={() => openPostModal(post.id, { mediaIndex: 0 })}
-                    aria-label={t('viewPhoto', { name: authorName })}
-                    className="relative block w-full aspect-4/3 bg-surface-muted overflow-hidden"
-                >
-                    <Image
-                        src={media[0].mediaUrl}
-                        alt={t('photoBy', { name: authorName })}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, 680px"
-                    />
-                </button>
-            )}
+{
+    media.length === 1 && (
+        <button
+            type="button"
+            onClick={() => openPostModal(post.id, { mediaIndex: 0 })}
+            aria-label={t('viewPhoto', { name: authorName })}
+            className="relative block w-full aspect-4/3 bg-surface-muted overflow-hidden"
+        >
+            <Image
+                src={media[0].mediaUrl}
+                alt={t('photoBy', { name: authorName })}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 680px"
+            />
+        </button>
+    );
+}
 ```
 
 - [ ] **Step 2: Make each grid thumbnail clickable**
@@ -917,57 +933,61 @@ Replace with:
 Find:
 
 ```tsx
-            {media.length > 1 && (
-                <div className="grid grid-cols-2 gap-0.5 bg-surface-muted">
-                    {media.slice(0, 4).map((item, i) => (
-                        <div key={item.id} className="relative aspect-square overflow-hidden">
-                            <Image
-                                src={item.mediaUrl}
-                                alt={t('photoBy', { name: authorName })}
-                                fill
-                                className="object-cover"
-                                sizes="(max-width: 768px) 50vw, 340px"
-                            />
-                            {i === 3 && media.length > 4 && (
-                                <div className="absolute inset-0 bg-ink/50 flex items-center justify-center text-white text-lg font-semibold">
-                                    +{media.length - 4}
-                                </div>
-                            )}
+{
+    media.length > 1 && (
+        <div className="grid grid-cols-2 gap-0.5 bg-surface-muted">
+            {media.slice(0, 4).map((item, i) => (
+                <div key={item.id} className="relative aspect-square overflow-hidden">
+                    <Image
+                        src={item.mediaUrl}
+                        alt={t('photoBy', { name: authorName })}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 50vw, 340px"
+                    />
+                    {i === 3 && media.length > 4 && (
+                        <div className="absolute inset-0 bg-ink/50 flex items-center justify-center text-white text-lg font-semibold">
+                            +{media.length - 4}
                         </div>
-                    ))}
+                    )}
                 </div>
-            )}
+            ))}
+        </div>
+    );
+}
 ```
 
 Replace with:
 
 ```tsx
-            {media.length > 1 && (
-                <div className="grid grid-cols-2 gap-0.5 bg-surface-muted">
-                    {media.slice(0, 4).map((item, i) => (
-                        <button
-                            type="button"
-                            key={item.id}
-                            onClick={() => openPostModal(post.id, { mediaIndex: i })}
-                            aria-label={t('viewPhoto', { name: authorName })}
-                            className="relative block aspect-square overflow-hidden"
-                        >
-                            <Image
-                                src={item.mediaUrl}
-                                alt={t('photoBy', { name: authorName })}
-                                fill
-                                className="object-cover"
-                                sizes="(max-width: 768px) 50vw, 340px"
-                            />
-                            {i === 3 && media.length > 4 && (
-                                <div className="absolute inset-0 bg-ink/50 flex items-center justify-center text-white text-lg font-semibold">
-                                    +{media.length - 4}
-                                </div>
-                            )}
-                        </button>
-                    ))}
-                </div>
-            )}
+{
+    media.length > 1 && (
+        <div className="grid grid-cols-2 gap-0.5 bg-surface-muted">
+            {media.slice(0, 4).map((item, i) => (
+                <button
+                    type="button"
+                    key={item.id}
+                    onClick={() => openPostModal(post.id, { mediaIndex: i })}
+                    aria-label={t('viewPhoto', { name: authorName })}
+                    className="relative block aspect-square overflow-hidden"
+                >
+                    <Image
+                        src={item.mediaUrl}
+                        alt={t('photoBy', { name: authorName })}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 50vw, 340px"
+                    />
+                    {i === 3 && media.length > 4 && (
+                        <div className="absolute inset-0 bg-ink/50 flex items-center justify-center text-white text-lg font-semibold">
+                            +{media.length - 4}
+                        </div>
+                    )}
+                </button>
+            ))}
+        </div>
+    );
+}
 ```
 
 - [ ] **Step 3: Open straight into the expanded comments sheet from the comment button**
@@ -975,17 +995,17 @@ Replace with:
 Find:
 
 ```tsx
-    function openPost() {
-        openPostModal(post.id);
-    }
+function openPost() {
+    openPostModal(post.id);
+}
 ```
 
 Replace with:
 
 ```tsx
-    function openPost() {
-        openPostModal(post.id, { mediaIndex: 0, view: 'comments' });
-    }
+function openPost() {
+    openPostModal(post.id, { mediaIndex: 0, view: 'comments' });
+}
 ```
 
 - [ ] **Step 4: Type-check**
@@ -1016,7 +1036,7 @@ Click the photo on a post with exactly one media item. Confirm: the modal opens 
 
 - [ ] **Step 3: Desktop — multi-media post**
 
-Click the 2nd or 3rd thumbnail in a multi-media post's grid. Confirm the modal opens with *that* photo showing (not the first), the URL includes `media=<n>` matching the clicked index, and prev/next arrows plus a "n / total" counter are visible. Click through with the arrows and confirm the URL's `media` param updates via `read_network_requests`/URL bar without adding new browser-history entries (back button should return to the feed, not step through each photo).
+Click the 2nd or 3rd thumbnail in a multi-media post's grid. Confirm the modal opens with _that_ photo showing (not the first), the URL includes `media=<n>` matching the clicked index, and prev/next arrows plus a "n / total" counter are visible. Click through with the arrows and confirm the URL's `media` param updates via `read_network_requests`/URL bar without adding new browser-history entries (back button should return to the feed, not step through each photo).
 
 - [ ] **Step 4: Desktop — text-only post**
 

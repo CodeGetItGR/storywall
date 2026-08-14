@@ -7,11 +7,11 @@
 #              WARNING: Do not store sensitive information in this file,        #
 #               as its contents will be included in the Qodana report.          #
 #################################################################################
-version: "1.0"
+version: '1.0'
 
 #Specify inspection profile for code analysis
 profile:
-  name: qodana.starter
+    name: qodana.starter
 
 #Enable inspections
 #include:
@@ -45,9 +45,9 @@ profile:
 #Specify Qodana linter for analysis (Applied in CI/CD pipeline)
 linter: jetbrains/qodana-js:2026.2
 exclude:
-  - name: All
-    paths:
-      - docs\integration guides
-  - name: JSUnusedLocalSymbols
-    paths:
-      - docs\integration guides
+    - name: All
+      paths:
+          - docs\integration guides
+    - name: JSUnusedLocalSymbols
+      paths:
+          - docs\integration guides

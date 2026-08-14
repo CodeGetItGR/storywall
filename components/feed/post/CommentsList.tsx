@@ -38,7 +38,9 @@ export function CommentsList({ comments, membersById, compact = false, limit }: 
                                 <div className="flex items-baseline gap-1.5">
                                     <span className="text-[12px] font-semibold leading-tight text-ink">{name}</span>
                                     <span className="text-[10px] text-ink-faint">
-                                        {commentTimeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${commentTimeAgo.unit}`, { count: commentTimeAgo.value })}
+                                        {commentTimeAgo.unit === 'now'
+                                            ? t('justNow')
+                                            : t(`timeAgo.${commentTimeAgo.unit}`, { count: commentTimeAgo.value })}
                                     </span>
                                 </div>
                                 <p className="text-[12px] leading-snug text-ink">{comment.content}</p>
@@ -71,7 +73,9 @@ export function CommentsList({ comments, membersById, compact = false, limit }: 
                                 <div className="mb-1 flex items-baseline gap-2">
                                     <span className="text-sm font-semibold leading-tight text-ink">{name}</span>
                                     <span className="text-xs text-ink-faint">
-                                        {commentTimeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${commentTimeAgo.unit}`, { count: commentTimeAgo.value })}
+                                        {commentTimeAgo.unit === 'now'
+                                            ? t('justNow')
+                                            : t(`timeAgo.${commentTimeAgo.unit}`, { count: commentTimeAgo.value })}
                                     </span>
                                 </div>
                                 <p className="text-sm leading-relaxed text-ink">{comment.content}</p>

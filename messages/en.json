@@ -733,18 +733,20 @@
         "notApplicable": "Not applicable",
         "addons": {
             "title": "Active add-ons",
-            "item": "{name} · {price}/month"
+            "item": "{name} · {price}/month",
+            "monthlyTotal": "Add-ons add {amount}/month to renewal.",
+            "renewalTotal": "Next renewal: {amount}/month, including every active add-on."
         },
         "storagePacks": {
             "title": "Add storage",
-            "subtitle": "Permanently increase this event's storage limit with a one-time purchase.",
+            "subtitle": "Permanently increase this event's storage limit. The pack price is added to every monthly renewal.",
             "breakdown": "{plan} plan + {extra} purchased = {total} total",
             "unlimited": "This plan already has unlimited storage.",
             "selectorLabel": "Choose a storage allowance",
-            "selected": "Add {size} permanently for {price}",
+            "selected": "Add {size} permanently for {price}/month",
             "buy": "Buy storage",
             "retryIn": "Try again in {seconds}s",
-            "finalSale": "Storage packs are final, do not expire, and cannot be refunded."
+            "finalSale": "The storage allowance is permanent and non-refundable. Its price recurs monthly for the life of the event."
         },
         "actions": {
             "renew": "Renew preservation",
@@ -1479,11 +1481,12 @@
             "webhookNotReplayable": "This webhook cannot be replayed because its body was not stored.",
             "accountPlansDisabled": "Account plans are disabled; only event plans can be created or assigned.",
             "paidServiceInUse": "This service is referenced by an order. Archive it instead of deleting it.",
+            "addonLockedWhileActive": "Paid entitlements cannot be removed while an event is live. They lapse automatically if the event stops paying.",
             "addonNotActive": "That add-on is not active on this event."
         },
         "paidServices": {
             "title": "Paid services catalog",
-            "subtitle": "Manage recurring add-ons and one-time storage packs. Archive in-use services by making them non-public and non-assignable.",
+            "subtitle": "Manage monthly add-ons and storage packs. Archive in-use services by making them non-public and non-assignable.",
             "includeArchived": "Include archived",
             "loading": "Loading paid services...",
             "create": "Create service",
@@ -1491,16 +1494,30 @@
             "delete": "Delete",
             "kinds": { "STORAGE_PACK": "Storage pack", "RECURRING_ADDON": "Recurring add-on" },
             "fields": {
-                "code": "Code", "kind": "Kind", "name": "Name", "description": "Description", "sortOrder": "Sort order",
-                "priceAmountMinor": "Price (minor units)", "priceCurrency": "Currency", "grantsStorageBytes": "Granted bytes",
-                "planTierIds": "Plan tier IDs", "planTierIdsHint": "Comma-separated; empty means every plan", "assignable": "Assignable", "public": "Public"
+                "code": "Code",
+                "kind": "Kind",
+                "name": "Name",
+                "description": "Description",
+                "sortOrder": "Sort order",
+                "priceAmountMinor": "Price (minor units)",
+                "priceCurrency": "Currency",
+                "grantsStorageBytes": "Granted bytes",
+                "planTierIds": "Plan tier IDs",
+                "planTierIdsHint": "Comma-separated; empty means every plan",
+                "assignable": "Assignable",
+                "public": "Public"
             },
             "removeAddon": {
-                "title": "Remove event add-on", "subtitle": "Support-only tool. Removal applies at the next renewal and does not delete stored originals.",
-                "eventId": "Event UUID", "code": "Paid service code", "action": "Remove add-on", "success": "The add-on was removed."
+                "title": "Remove event entitlement",
+                "subtitle": "Post-refund correction tool for non-live events. Paid entitlements cannot be removed while an event is active.",
+                "eventId": "Event UUID",
+                "code": "Paid service code",
+                "action": "Remove add-on",
+                "success": "The add-on was removed."
             },
             "errors": {
                 "paidServiceInUse": "This service is already used by an order. Archive it instead.",
+                "addonLockedWhileActive": "This entitlement cannot be removed while the event is live. It lapses automatically if the event stops paying.",
                 "addonNotActive": "That add-on is not active on this event.",
                 "notFound": "The service or event was not found.",
                 "generic": "The change could not be saved. Check the fields and try again."
@@ -1712,6 +1729,7 @@
         "addonAlreadyActive": "This add-on is already active.",
         "paidServiceCurrencyMismatch": "Checkout is temporarily unavailable. Please contact support.",
         "paidServiceNotOnPlan": "That service is not available on this event's plan.",
+        "addonLockedWhileActive": "That entitlement cannot be removed while the event is live.",
         "addonNotActive": "That add-on is not active.",
         "eventFrozen": "This event is frozen. Renew it to make changes again.",
         "eventNotActive": "This event is not live yet.",
