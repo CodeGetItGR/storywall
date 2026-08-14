@@ -8,6 +8,8 @@ export type ApiErrorMessageKey =
     | 'accessDenied'
     | 'accountNotActive'
     | 'accountPlansDisabled'
+    | 'addonAlreadyActive'
+    | 'addonNotActive'
     | 'activeEventLimit'
     | 'alreadyLinked'
     | 'authenticationRequired'
@@ -28,6 +30,10 @@ export type ApiErrorMessageKey =
     | 'invitationExpired'
     | 'invitationNotFound'
     | 'malformedRequestBody'
+    | 'mediaFileCorrupt'
+    | 'mediaFileTooLarge'
+    | 'mediaImageTooManyPixels'
+    | 'mediaProcessingBusy'
     | 'memberLimit'
     | 'moduleUnavailable'
     | 'orderNotPending'
@@ -39,6 +45,11 @@ export type ApiErrorMessageKey =
     | 'planNotAnUpgrade'
     | 'planNotPriced'
     | 'planNotPurchasable'
+    | 'paidServiceCurrencyMismatch'
+    | 'paidServiceInUse'
+    | 'paidServiceNotOnPlan'
+    | 'paidServiceNotPurchasable'
+    | 'invalidPaidServiceKind'
     | 'qrLinkNotFound'
     | 'rateLimited'
     | 'refundAlreadyRequested'
@@ -50,6 +61,7 @@ export type ApiErrorMessageKey =
     | 'subscriptionAlreadyActive'
     | 'subscriptionCancelFailed'
     | 'subscriptionNotLive'
+    | 'unsupportedMediaFormat'
     | 'validationFailed'
     | 'webhookAlreadyProcessed'
     | 'webhookNotReplayable'
@@ -60,6 +72,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [AUTH_ERROR_CODES.AUTHENTICATION_REQUIRED]: 'authenticationRequired',
     [ERROR_CODES.ACCOUNT_NOT_ACTIVE]: 'accountNotActive',
     [ERROR_CODES.ACCOUNT_PLANS_DISABLED]: 'accountPlansDisabled',
+    [ERROR_CODES.ADDON_ALREADY_ACTIVE]: 'addonAlreadyActive',
+    [ERROR_CODES.ADDON_NOT_ACTIVE]: 'addonNotActive',
     [ERROR_CODES.ACTIVE_EVENT_LIMIT_EXCEEDED]: 'activeEventLimit',
     [ERROR_CODES.ALREADY_LINKED]: 'alreadyLinked',
     [ERROR_CODES.CHECKOUT_SESSION_UNRESOLVED]: 'checkoutSessionUnresolved',
@@ -81,6 +95,11 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.INVITATION_EXPIRED]: 'invitationExpired',
     [ERROR_CODES.INVITATION_NOT_FOUND]: 'invitationNotFound',
     [ERROR_CODES.MALFORMED_REQUEST_BODY]: 'malformedRequestBody',
+    [ERROR_CODES.MEDIA_FILE_CORRUPT]: 'mediaFileCorrupt',
+    [ERROR_CODES.MEDIA_FILE_TOO_LARGE]: 'mediaFileTooLarge',
+    [ERROR_CODES.MEDIA_IMAGE_TOO_MANY_PIXELS]: 'mediaImageTooManyPixels',
+    [ERROR_CODES.MEDIA_PROCESSING_BUSY]: 'mediaProcessingBusy',
+    [ERROR_CODES.INVALID_PAID_SERVICE_KIND]: 'invalidPaidServiceKind',
     [ERROR_CODES.MODULE_NOT_AVAILABLE]: 'moduleUnavailable',
     [ERROR_CODES.ORDER_NOT_PENDING]: 'orderNotPending',
     [ERROR_CODES.ORDER_NOT_REFUNDABLE]: 'orderNotRefundable',
@@ -91,6 +110,10 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.PLAN_TIER_NOT_AN_UPGRADE]: 'planNotAnUpgrade',
     [ERROR_CODES.PLAN_TIER_NOT_PRICED]: 'planNotPriced',
     [ERROR_CODES.PLAN_TIER_NOT_PURCHASABLE]: 'planNotPurchasable',
+    [ERROR_CODES.PAID_SERVICE_CURRENCY_MISMATCH]: 'paidServiceCurrencyMismatch',
+    [ERROR_CODES.PAID_SERVICE_IN_USE]: 'paidServiceInUse',
+    [ERROR_CODES.PAID_SERVICE_NOT_ON_PLAN]: 'paidServiceNotOnPlan',
+    [ERROR_CODES.PAID_SERVICE_NOT_PURCHASABLE]: 'paidServiceNotPurchasable',
     [ERROR_CODES.QR_LINK_NOT_FOUND]: 'qrLinkNotFound',
     [ERROR_CODES.RATE_LIMITED]: 'rateLimited',
     [ERROR_CODES.REFUND_ALREADY_REQUESTED]: 'refundAlreadyRequested',
@@ -101,6 +124,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.SUBSCRIPTION_ALREADY_ACTIVE]: 'subscriptionAlreadyActive',
     [ERROR_CODES.SUBSCRIPTION_CANCEL_FAILED]: 'subscriptionCancelFailed',
     [ERROR_CODES.SUBSCRIPTION_NOT_LIVE]: 'subscriptionNotLive',
+    [ERROR_CODES.UNSUPPORTED_MEDIA_FORMAT]: 'unsupportedMediaFormat',
     [ERROR_CODES.VALIDATION_FAILED]: 'validationFailed',
     [ERROR_CODES.WEBHOOK_ALREADY_PROCESSED]: 'webhookAlreadyProcessed',
     [ERROR_CODES.WEBHOOK_NOT_REPLAYABLE]: 'webhookNotReplayable',

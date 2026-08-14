@@ -95,6 +95,7 @@ export function ManageScreen({ activeEvent, eventId, isHost }: { activeEvent: Ev
                     rsvpBreakdown={rsvpBreakdown}
                     eventUsage={eventUsage}
                     planTiers={appConfig?.planTiers ?? []}
+                    paidServices={appConfig?.paidServices ?? []}
                     modules={appConfig?.modules ?? []}
                     eventModules={activeEvent.modules}
                     onSeeAllRsvp={handleSeeAllRsvp}

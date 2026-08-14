@@ -9,6 +9,10 @@ import type {
     AccountUsageResponseDto,
     EventUsageResponseDto,
     NotificationSweepResponseDto,
+    PaidServiceKind,
+    PaidServicePatchDto,
+    PaidServiceRequestDto,
+    PaidServiceResponseDto,
     PlanAssignmentRequestDto,
     PlanModulesRequestDto,
     PlanScope,
@@ -32,6 +36,8 @@ export const adminKeys = {
     notificationSweep: ['admin', 'notifications', 'sweep'] as const,
     refundRequests: ['admin', 'refund-requests'] as const,
     metrics: ['admin', 'metrics'] as const,
+    paidServices: (kind?: PaidServiceKind, includeArchived?: boolean) =>
+        ['admin', 'paid-services', kind ?? 'ALL', Boolean(includeArchived)] as const,
 };
 
 // GET /api/admin/metrics - live platform dashboard counts.
@@ -210,6 +216,66 @@ export function useDeletePlanTier() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: adminKeys.all });
             queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+        },
+    });
+}
+
+function paidServicesPath(kind?: PaidServiceKind, includeArchived?: boolean): string {
+    const searchParams = new URLSearchParams();
+    if (kind) searchParams.set('kind', kind);
+    if (includeArchived) searchParams.set('includeArchived', 'true');
+    const query = searchParams.toString();
+    return query ? `${endpoints.admin.paidServices.list}?${query}` : endpoints.admin.paidServices.list;
+}
+
+export function useAdminPaidServices(kind?: PaidServiceKind, includeArchived = false) {
+    return useQuery({
+        queryKey: adminKeys.paidServices(kind, includeArchived),
+        queryFn: () => api.get<PaidServiceResponseDto[]>(paidServicesPath(kind, includeArchived)),
+    });
+}
+
+export function useCreatePaidService() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (input: PaidServiceRequestDto) => api.post<PaidServiceResponseDto>(endpoints.admin.paidServices.list, input),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: adminKeys.all });
+            queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+        },
+    });
+}
+
+export function useUpdatePaidService() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, input }: { id: string; input: PaidServicePatchDto }) =>
+            api.patch<PaidServiceResponseDto>(endpoints.admin.paidServices.byId(id), input),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: adminKeys.all });
+            queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+        },
+    });
+}
+
+export function useDeletePaidService() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id: string) => api.del<void>(endpoints.admin.paidServices.byId(id)),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: adminKeys.all });
+            queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+        },
+    });
+}
+
+export function useRemoveEventAddon() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ eventId, code }: { eventId: string; code: string }) => api.del<void>(endpoints.admin.events.addon(eventId, code)),
+        onSuccess: (_, { eventId }) => {
+            queryClient.invalidateQueries({ queryKey: ['events', eventId, 'billing'] });
+            queryClient.invalidateQueries({ queryKey: ['billing'] });
         },
     });
 }

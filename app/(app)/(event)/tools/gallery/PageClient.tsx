@@ -1,13 +1,15 @@
 'use client';
 
-import { ImagePlus, Loader2, UploadCloud } from 'lucide-react';
+import { Download, ImagePlus, Loader2, UploadCloud, X } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import React, { useCallback, useMemo, useState } from 'react';
 
 import { EventRouteGate } from '@/components/routing/EventRouteGate';
-import { useEventMedia, useUploadMediaBatch } from '@/hooks/useMedia';
-import type { EventDetailResponseDto, EventMemberResponseDto } from '@/lib/api/types';
+import { useAppConfig } from '@/hooks/useAppConfig';
+import { useEventBilling } from '@/hooks/useBilling';
+import { useEventMedia, useOriginalMedia, useUploadMediaBatch } from '@/hooks/useMedia';
+import type { EventDetailResponseDto, EventMemberResponseDto, MediaResponseDto } from '@/lib/api/types';
 import { formatShortDateTime } from '@/lib/datetime';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { formatBytes } from '@/lib/format';
@@ -36,9 +38,14 @@ function GalleryScreen({
     const t = useTranslations('GalleryPage');
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [uploadNotice, setUploadNotice] = useState<string | null>(null);
+    const [selectedMedia, setSelectedMedia] = useState<MediaResponseDto | null>(null);
+    const [originalError, setOriginalError] = useState<string | null>(null);
 
     const { data: media = [], isLoading: isLoadingMedia } = useEventMedia(eventId);
     const uploadMediaBatch = useUploadMediaBatch();
+    const originalMedia = useOriginalMedia();
+    const { data: appConfig } = useAppConfig();
+    const billing = useEventBilling(eventId, isHost);
 
     const galleryModule = activeEvent?.modules.find((module) => module.moduleKey === 'gallery');
     const galleryEnabled = galleryModule?.isAvailable ?? false;
@@ -46,14 +53,22 @@ function GalleryScreen({
     const selectedSize = useMemo(() => selectedFiles.reduce((sum, file) => sum + file.size, 0), [selectedFiles]);
     const imageMedia = useMemo(() => media.filter((item) => item.mediaType === 'IMAGE'), [media]);
 
+    const maxFiles = appConfig?.media.maxBatchUploadFiles ?? MAX_FILES_PER_BATCH;
+    const maxImageBytes = appConfig?.media.maxImageBytes ?? 25 * 1024 * 1024;
+    const keepsOriginals = billing.data?.addons.some((addon) => addon.code === 'ORIGINALS') ?? false;
+
     const handleFilesChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         setUploadNotice(null);
         const files = Array.from(event.target.files ?? [])
             .filter((file) => file.type.startsWith('image/'))
-            .slice(0, MAX_FILES_PER_BATCH);
+            .filter((file) => file.size <= maxImageBytes)
+            .slice(0, maxFiles);
         setSelectedFiles(files);
+        if (files.length < (event.target.files?.length ?? 0)) {
+            setUploadNotice(t('selectionLimited', { count: maxFiles, size: formatBytes(maxImageBytes) }));
+        }
         event.target.value = '';
-    }, []);
+    }, [maxFiles, maxImageBytes, t]);
 
     const handleClearSelection = useCallback(() => {
         setSelectedFiles([]);
@@ -67,13 +82,37 @@ function GalleryScreen({
         const result = await uploadMediaBatch.mutateAsync({
             eventId,
             files: selectedFiles,
-            mediaType: 'IMAGE',
             uploaderMemberId: activeMember.id,
         });
 
         setSelectedFiles([]);
-        setUploadNotice(t('uploadComplete', { count: result.created.length, failed: result.failed.length }));
+        setUploadNotice(
+            result.failed.length > 0
+                ? result.failed.map((failure) => `${failure.filename}: ${failure.message}`).join(' ')
+                : t('uploadComplete', { count: result.created.length, failed: 0 })
+        );
     }, [activeMember, canUpload, eventId, selectedFiles, t, uploadMediaBatch]);
+
+    async function downloadOriginal() {
+        if (!selectedMedia) return;
+        setOriginalError(null);
+        try {
+            const result = await originalMedia.mutateAsync(selectedMedia.id);
+            window.location.assign(result.url);
+        } catch {
+            setOriginalError(t('originalUnavailable'));
+        }
+    }
+
+    function openMedia(event: React.MouseEvent<HTMLButtonElement>) {
+        const id = event.currentTarget.dataset.mediaId;
+        setSelectedMedia(imageMedia.find((item) => item.id === id) ?? null);
+    }
+
+    function closeMedia() {
+        setSelectedMedia(null);
+        setOriginalError(null);
+    }
 
     return (
         <div className="mx-auto max-w-5xl px-4 pb-24 lg:pb-8">
@@ -100,7 +139,7 @@ function GalleryScreen({
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <p className="text-sm font-bold text-ink">{t('uploadTitle')}</p>
-                        <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('uploadHint', { count: MAX_FILES_PER_BATCH })}</p>
+                        <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('uploadHint', { count: maxFiles })}</p>
                     </div>
                     <label
                         className={cn(
@@ -178,11 +217,11 @@ function GalleryScreen({
                     ) : (
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                             {imageMedia.map((item) => (
-                                <a
+                                <button
                                     key={item.id}
-                                    href={item.mediaUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
+                                    type="button"
+                                    data-media-id={item.id}
+                                    onClick={openMedia}
                                     className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
                                 >
                                     <div className="relative aspect-square bg-surface-muted">
@@ -198,7 +237,7 @@ function GalleryScreen({
                                         <p className="truncate text-xs font-semibold text-ink">{item.originalFilename}</p>
                                         <p className="mt-0.5 text-[11px] text-ink-muted">{formatShortDateTime(item.createdAt)}</p>
                                     </div>
-                                </a>
+                                </button>
                             ))}
                         </div>
                     )}
@@ -206,6 +245,25 @@ function GalleryScreen({
             ) : (
                 <div className="rounded-2xl border border-border bg-card px-4 py-4 text-sm leading-relaxed text-ink-muted shadow-sm">
                     {t('guestSavedForHost')}
+                </div>
+            )}
+            {selectedMedia && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4" role="dialog" aria-modal="true" aria-label={t('viewerLabel')}>
+                    <button type="button" onClick={closeMedia} className="absolute right-4 top-4 rounded-full bg-black/50 p-2 text-white" aria-label={t('closeViewer')}>
+                        <X className="h-5 w-5" />
+                    </button>
+                    <div className="flex max-h-full max-w-5xl flex-col items-center gap-3">
+                        <div className="relative h-[70vh] w-[90vw] max-w-5xl">
+                            <Image src={selectedMedia.mediaUrl} alt={selectedMedia.originalFilename} fill sizes="90vw" className="object-contain" />
+                        </div>
+                        {keepsOriginals && (
+                            <button type="button" onClick={downloadOriginal} disabled={originalMedia.isPending} className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink disabled:opacity-50">
+                                {originalMedia.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                                {t('downloadOriginal')}
+                            </button>
+                        )}
+                        {originalError && <p className="text-xs text-rose-200">{originalError}</p>}
+                    </div>
                 </div>
             )}
         </div>

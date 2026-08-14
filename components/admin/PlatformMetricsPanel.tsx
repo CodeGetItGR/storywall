@@ -1,12 +1,13 @@
 'use client';
 
 import { Activity, CalendarDays, type LucideIcon, RefreshCw, Users } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { AdminSection } from '@/components/admin/AdminSection';
 import { useAdminMetrics } from '@/hooks/useAdmin';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
-import { formatCount } from '@/lib/format';
+import { formatMoney } from '@/lib/billing';
+import { formatBytes, formatCount } from '@/lib/format';
 
 function MetricTile({ label, value, icon: Icon }: { label: string; value: number; icon: LucideIcon }) {
     return (
@@ -43,6 +44,7 @@ function MetricBreakdown({ title, values }: { title: string; values: Record<stri
 
 export function PlatformMetricsPanel() {
     const t = useTranslations('AdminPage');
+    const locale = useLocale();
     const metricsQuery = useAdminMetrics();
     const metrics = metricsQuery.data;
     function handleRefresh() {
@@ -83,6 +85,24 @@ export function PlatformMetricsPanel() {
                         <MetricBreakdown title={t('metrics.eventsByStatus')} values={metrics.eventsByStatus} />
                         <MetricBreakdown title={t('metrics.eventsByPlanTier')} values={metrics.eventsByPlanTier} />
                     </div>
+                    <AdminSection title={t('metrics.storage.title')}>
+                        <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
+                            {([
+                                ['usedBytes', formatBytes(metrics.storage.usedBytes)],
+                                ['pendingPurgeBytes', formatBytes(metrics.storage.pendingPurgeBytes)],
+                                ['committedBytes', formatBytes(metrics.storage.committedBytes)],
+                                ['paidUsedBytes', formatBytes(metrics.storage.paidUsedBytes)],
+                                ['freeUsedBytes', formatBytes(metrics.storage.freeUsedBytes)],
+                                ['purchasedExtraBytes', formatBytes(metrics.storage.purchasedExtraBytes)],
+                                ['estimatedMonthlyCostMinor', formatMoney(locale, metrics.storage.estimatedMonthlyCostMinor, metrics.storage.costCurrency)],
+                            ] as const).map(([key, value]) => (
+                                <div key={key} className="border-b border-border pb-3">
+                                    <dt className="text-xs text-ink-muted">{t(`metrics.storage.${key}`)}</dt>
+                                    <dd className="mt-1 text-sm font-bold tabular-nums text-ink">{value}</dd>
+                                </div>
+                            ))}
+                        </dl>
+                    </AdminSection>
                 </>
             )}
         </section>

@@ -58,6 +58,7 @@ export const endpoints = {
         checkout: (eventId: string) => `/api/events/${eventId}/checkout`,
         upgradeCheckout: (eventId: string) => `/api/events/${eventId}/upgrade-checkout`,
         subscriptionCheckout: (eventId: string) => `/api/events/${eventId}/subscription-checkout`,
+        storageCheckout: (eventId: string) => `/api/events/${eventId}/storage-checkout`,
         subscription: (eventId: string) => `/api/events/${eventId}/subscription`,
         refundEligibility: (eventId: string) => `/api/events/${eventId}/refund-eligibility`,
         refundRequests: (eventId: string) => `/api/events/${eventId}/refund-requests`,
@@ -114,6 +115,7 @@ export const endpoints = {
 
     medias: {
         byId: (id: string) => `/api/medias/${id}`,
+        original: (id: string) => `/api/medias/${id}/original`,
     },
 
     posts: {
@@ -204,6 +206,10 @@ export const endpoints = {
             byId: (id: string) => `/api/admin/plan-tiers/${id}`,
             modules: (id: string) => `/api/admin/plan-tiers/${id}/modules`,
         },
+        paidServices: {
+            list: '/api/admin/paid-services',
+            byId: (id: string) => `/api/admin/paid-services/${id}`,
+        },
         platformModules: {
             list: '/api/admin/platform-modules',
             byKey: (moduleKey: string) => `/api/admin/platform-modules/${moduleKey}`,
@@ -215,6 +221,7 @@ export const endpoints = {
             planTier: (eventId: string) => `/api/admin/events/${eventId}/plan-tier`,
             freeze: (eventId: string) => `/api/admin/events/${eventId}/freeze`,
             purge: (eventId: string) => `/api/admin/events/${eventId}/purge`,
+            addon: (eventId: string, code: string) => `/api/admin/events/${eventId}/addons/${encodeURIComponent(code)}`,
         },
     },
 } as const;

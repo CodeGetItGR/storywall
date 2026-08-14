@@ -133,8 +133,8 @@ export function useComposerController(): ComposerController {
     const maxMediaPerPost = appConfig?.media.maxMediaPerPost ?? 10;
     const maxBatchUploadFiles = appConfig?.media.maxBatchUploadFiles ?? 10;
     const maxImages = Math.min(maxMediaPerPost, maxBatchUploadFiles);
-    const maxFileSizeBytes = appConfig?.media.maxFileSizeBytes ?? 20 * 1024 * 1024;
-    const maxRequestSizeBytes = appConfig?.media.maxRequestSizeBytes ?? 220 * 1024 * 1024;
+    const maxImageBytes = appConfig?.media.maxImageBytes ?? 25 * 1024 * 1024;
+    const maxRequestSizeBytes = appConfig?.media.maxRequestSizeBytes ?? 260 * 1024 * 1024;
     const canSubmit = (caption.trim().length > 0 || images.length > 0) && !hasUnresolvedFailures && !isPostBusy && canComposePost;
 
     const openPostComposer = useCallback(() => {
@@ -187,7 +187,7 @@ export function useComposerController(): ComposerController {
 
         for (const file of incoming) {
             if (accepted.length >= room) break;
-            if (file.size > maxFileSizeBytes) {
+            if (file.size > maxImageBytes) {
                 oversizeNames.push(file.name);
                 continue;
             }
@@ -201,7 +201,7 @@ export function useComposerController(): ComposerController {
 
         if (incoming.length > room) setCountError(t('maxImagesReached', { count: maxImages }));
         if (oversizeNames.length > 0) {
-            setSizeError(t('fileTooLarge', { filename: oversizeNames.join(', '), size: formatBytes(maxFileSizeBytes) }));
+            setSizeError(t('fileTooLarge', { filename: oversizeNames.join(', '), size: formatBytes(maxImageBytes) }));
         } else if (requestTooLarge) {
             setSizeError(t('requestTooLarge', { size: formatBytes(maxRequestSizeBytes) }));
         }
@@ -278,7 +278,6 @@ export function useComposerController(): ComposerController {
             result = await uploadBatch.mutateAsync({
                 eventId: activeEvent!.id,
                 files: toUpload.map((img) => img.file),
-                mediaType: 'IMAGE',
                 uploaderMemberId: activeMember?.id,
             });
         } catch (error) {
@@ -307,7 +306,14 @@ export function useComposerController(): ComposerController {
         const failedByName = new Map<string, string[]>();
         result.failed.forEach((f) => {
             const arr = failedByName.get(f.filename) ?? [];
-            arr.push(f.errorCode === 'EVENT_STORAGE_LIMIT_EXCEEDED' ? t('storageLimitExceeded') : t('uploadFailed', { filename: f.filename }));
+            const errorKey = `uploadErrors.${f.errorCode}`;
+            arr.push(
+                f.errorCode === 'EVENT_STORAGE_LIMIT_EXCEEDED'
+                    ? t('storageLimitExceeded')
+                    : t.has(errorKey)
+                      ? t(errorKey, { filename: f.filename })
+                      : t('uploadFailed', { filename: f.filename })
+            );
             failedByName.set(f.filename, arr);
         });
 
@@ -405,7 +411,6 @@ export function useComposerController(): ComposerController {
             const media = await uploadMedia.mutateAsync({
                 eventId: activeEvent.id,
                 file,
-                mediaType: 'IMAGE',
                 uploaderMemberId: activeMember.id,
             });
             const story = await createStory.mutateAsync({

@@ -7,6 +7,7 @@ import {useLocale, useTranslations} from 'next-intl';
 import React, {ChangeEvent} from 'react';
 import {useCallback, useMemo, useState} from 'react';
 
+import { StoragePackPurchase } from '@/components/plan/StoragePackPurchase';
 import {useApiErrorMessage, useRetryAfterCountdown} from '@/hooks/useApiErrorMessage';
 import {useAppConfig} from '@/hooks/useAppConfig';
 import {
@@ -81,6 +82,15 @@ export default function EventPlanSettingsPage() {
         );
     }, [currentPlan, eventPlans]);
     const nextPlan = upgradeTargets[0];
+    const storagePacks = useMemo(
+        () =>
+            (appConfig?.paidServices ?? []).filter(
+                (service) =>
+                    service.kind === 'STORAGE_PACK' &&
+                    (service.planTierIds.length === 0 || (currentPlan ? service.planTierIds.includes(currentPlan.id) : false))
+            ),
+        [appConfig?.paidServices, currentPlan]
+    );
     // Server-side history, so a decision (and its note) survives a reload - the
     // page used to only know about a request the same tab had just submitted.
     const refundRequest = refundHistory.data?.[0] ?? null;
@@ -214,6 +224,7 @@ export default function EventPlanSettingsPage() {
             return t('orders.coverageRange', { from: formatDate(order.coversFrom), until: formatDate(order.coversUntil) });
         if (order.coversUntil) return t('orders.coverageThrough', { date: formatDate(order.coversUntil) });
         if (order.kind === 'UPGRADE') return t('orders.upgradeCoverage');
+        if (order.kind === 'STORAGE_PACK') return t('orders.storageCoverage');
         return t('orders.recordedCharge');
     };
     const hasRenewalPath = data.eventStatus !== 'DRAFT' && !coverage.unlimited && !subscription;
@@ -331,6 +342,21 @@ export default function EventPlanSettingsPage() {
                         </div>
                     </dl>
                 </div>
+                {data.addons.length > 0 && (
+                    <div className="mt-4 border-t border-border pt-3">
+                        <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('addons.title')}</p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                            {data.addons.map((addon) => (
+                                <span key={addon.code} className="rounded-full bg-primary-light px-2.5 py-1 text-xs font-semibold text-primary-dark">
+                                    {t('addons.item', {
+                                        name: addon.name,
+                                        price: formatMoney(locale, addon.priceAmountMinor, insights.orderCurrency),
+                                    })}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                )}
                 {error && <p className="mt-3 text-xs text-rose-600">{error}</p>}
             </section>
 
@@ -373,6 +399,8 @@ export default function EventPlanSettingsPage() {
                     </div>
                 )}
             </section>
+
+            {data.eventStatus === 'ACTIVE' && <StoragePackPurchase eventId={eventId} services={storagePacks} />}
 
             <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
                 <section className="min-w-0">
@@ -417,6 +445,11 @@ export default function EventPlanSettingsPage() {
                                                 </div>
                                                 <p className="shrink-0 text-right font-semibold text-ink">
                                                     {formatMoney(locale, order.amountMinor, order.currency)}
+                                                    {order.addonAmountMinor !== null && (
+                                                        <span className="block text-[10px] font-normal text-ink-muted">
+                                                            {t('orders.addonAmount', { amount: formatMoney(locale, order.addonAmountMinor, order.currency) })}
+                                                        </span>
+                                                    )}
                                                 </p>
                                             </div>
                                             <dl className="mt-3 grid gap-2">
@@ -472,6 +505,11 @@ export default function EventPlanSettingsPage() {
                                                 <td className="px-4 py-3 text-ink-muted">{formatDate(order.paidAt ?? order.createdAt)}</td>
                                                 <td className="py-3 pl-4 text-right font-semibold text-ink">
                                                     {formatMoney(locale, order.amountMinor, order.currency)}
+                                                    {order.addonAmountMinor !== null && (
+                                                        <span className="block text-[10px] font-normal text-ink-muted">
+                                                            {t('orders.addonAmount', { amount: formatMoney(locale, order.addonAmountMinor, order.currency) })}
+                                                        </span>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))

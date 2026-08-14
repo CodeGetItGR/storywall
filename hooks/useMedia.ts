@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
-import type { MediaBatchUploadResponseDto, MediaResponseDto, MediaTypeConvention } from '@/lib/api/types';
+import type { MediaBatchUploadResponseDto, MediaResponseDto, OriginalMediaUrlDto } from '@/lib/api/types';
 
 export const mediaKeys = {
     list: (eventId: string) => ['events', eventId, 'media'] as const,
@@ -35,7 +35,6 @@ export function useMediaItem(id: string | null) {
 interface UploadMediaInput {
     eventId: string;
     file: File;
-    mediaType: MediaTypeConvention;
     uploaderMemberId?: string;
 }
 
@@ -46,10 +45,9 @@ export function useUploadMedia() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ eventId, file, mediaType, uploaderMemberId }: UploadMediaInput) => {
+        mutationFn: ({ eventId, file, uploaderMemberId }: UploadMediaInput) => {
             const formData = new FormData();
             formData.append('file', file);
-            formData.append('mediaType', mediaType);
             if (uploaderMemberId) formData.append('uploaderMemberId', uploaderMemberId);
             return api.postForm<MediaResponseDto>(endpoints.events.media(eventId), formData);
         },
@@ -62,7 +60,6 @@ export function useUploadMedia() {
 interface UploadMediaBatchInput {
     eventId: string;
     files: File[];
-    mediaType: MediaTypeConvention;
     uploaderMemberId?: string;
 }
 
@@ -74,10 +71,9 @@ export function useUploadMediaBatch() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ eventId, files, mediaType, uploaderMemberId }: UploadMediaBatchInput) => {
+        mutationFn: ({ eventId, files, uploaderMemberId }: UploadMediaBatchInput) => {
             const formData = new FormData();
             files.forEach((file) => formData.append('files', file));
-            formData.append('mediaType', mediaType);
             if (uploaderMemberId) formData.append('uploaderMemberId', uploaderMemberId);
             return api.postForm<MediaBatchUploadResponseDto>(endpoints.events.mediaBatch(eventId), formData);
         },
@@ -86,6 +82,12 @@ export function useUploadMediaBatch() {
                 queryClient.invalidateQueries({ queryKey: mediaKeys.list(eventId) });
             }
         },
+    });
+}
+
+export function useOriginalMedia() {
+    return useMutation({
+        mutationFn: (id: string) => api.get<OriginalMediaUrlDto>(endpoints.medias.original(id)),
     });
 }
 

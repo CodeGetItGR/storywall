@@ -12,6 +12,8 @@ export type AdminErrorMessageKey =
     | 'webhookAlreadyProcessed'
     | 'webhookNotReplayable'
     | 'accountPlansDisabled'
+    | 'paidServiceInUse'
+    | 'addonNotActive'
     | 'generic';
 
 export function emptyToNull(value: FormDataEntryValue | null): string | null {
@@ -44,5 +46,7 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.WEBHOOK_ALREADY_PROCESSED) return 'webhookAlreadyProcessed';
     if (code === ERROR_CODES.WEBHOOK_NOT_REPLAYABLE) return 'webhookNotReplayable';
     if (code === ERROR_CODES.ACCOUNT_PLANS_DISABLED) return 'accountPlansDisabled';
+    if (code === ERROR_CODES.PAID_SERVICE_IN_USE) return 'paidServiceInUse';
+    if (code === ERROR_CODES.ADDON_NOT_ACTIVE) return 'addonNotActive';
     return 'generic';
 }

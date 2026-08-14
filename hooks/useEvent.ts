@@ -60,6 +60,7 @@ export function useUpdateEvent(eventId: string | null) {
         onSuccess: (event) => {
             queryClient.invalidateQueries({ queryKey: eventKeys.detail(event.id) });
             queryClient.invalidateQueries({ queryKey: myEventsKeys.all });
+            queryClient.invalidateQueries({ queryKey: ['events', event.id, 'billing'] });
         },
     });
 }

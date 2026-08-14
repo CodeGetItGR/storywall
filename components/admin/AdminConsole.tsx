@@ -6,6 +6,7 @@ import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { BillingOpsPanel } from '@/components/admin/BillingOpsPanel';
 import { EventLifecyclePanel } from '@/components/admin/EventLifecyclePanel';
 import { ModuleRegistryPanel } from '@/components/admin/ModuleRegistryPanel';
+import { PaidServicesCatalogPanel } from '@/components/admin/PaidServicesCatalogPanel';
 import { PlanAssignmentPanel } from '@/components/admin/PlanAssignmentPanel';
 import { PlanCatalogPanel } from '@/components/admin/PlanCatalogPanel';
 import { PlatformMetricsPanel } from '@/components/admin/PlatformMetricsPanel';
@@ -26,6 +27,7 @@ export function AdminConsole() {
             <main className="min-w-0">
                 {tab === 'metrics' && <PlatformMetricsPanel />}
                 {tab === 'eventPlans' && <PlanCatalogPanel scope="EVENT" />}
+                {tab === 'paidServices' && <PaidServicesCatalogPanel />}
                 {tab === 'modules' && <ModuleRegistryPanel />}
                 {tab === 'assignments' && <PlanAssignmentPanel />}
                 {tab === 'billingOps' && <BillingOpsPanel />}

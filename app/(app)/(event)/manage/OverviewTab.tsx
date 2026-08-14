@@ -1,13 +1,14 @@
 import { Clock, Loader2, Ticket, Users } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { ElementType, useState } from 'react';
 
 import Section from '@/components/manage/Section';
 import { UsagePanel } from '@/components/plan/UsagePanel';
 import { useApiErrorMessage, useRetryAfterCountdown } from '@/hooks/useApiErrorMessage';
-import { useCheckout } from '@/hooks/useBilling';
-import type { EventModuleResponseDto, EventUsageResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
-import { checkoutSuccessUrl } from '@/lib/billing';
+import { useCheckout, useEventBilling } from '@/hooks/useBilling';
+import { useUpdateEvent } from '@/hooks/useEvent';
+import type { EventModuleResponseDto, EventUsageResponseDto, PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import { checkoutSuccessUrl, formatMoney } from '@/lib/billing';
 import { formatBytes } from '@/lib/format';
 import { findNextPlan, findPlanByCode } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
@@ -31,6 +32,7 @@ export default function OverviewTab({
     rsvpBreakdown,
     eventUsage,
     planTiers,
+    paidServices,
     modules,
     eventModules,
     onSeeAllRsvp,
@@ -45,6 +47,7 @@ export default function OverviewTab({
     rsvpBreakdown: readonly { key: string; count: number; color: string }[];
     eventUsage: EventUsageResponseDto | null;
     planTiers: PlanTierResponseDto[];
+    paidServices: PaidServiceResponseDto[];
     modules: PlatformModuleResponseDto[];
     eventModules: EventModuleResponseDto[];
     onSeeAllRsvp: () => void;
@@ -54,11 +57,39 @@ export default function OverviewTab({
     endAt: string | null;
 }) {
     const t = useTranslations('ManagePage');
+    const locale = useLocale();
     const checkout = useCheckout(eventId);
+    const billing = useEventBilling(eventId, eventStatus === 'DRAFT');
+    const updateEvent = useUpdateEvent(eventId);
     const [checkoutError, setCheckoutError] = useState<string | null>(null);
     const toErrorMessage = useApiErrorMessage();
     const checkoutRetryIn = useRetryAfterCountdown(checkout.error);
     const canPay = eventStatus === 'DRAFT' && Boolean(endAt);
+    const currentPlan = eventUsage ? findPlanByCode(planTiers, 'EVENT', eventUsage.planTier) : undefined;
+    const nextPlan = eventUsage ? findNextPlan(planTiers, 'EVENT', eventUsage.planTier) : undefined;
+    const originalsService = paidServices.find(
+        (service) =>
+            service.code === 'ORIGINALS' &&
+            service.kind === 'RECURRING_ADDON' &&
+            (service.planTierIds.length === 0 || (currentPlan ? service.planTierIds.includes(currentPlan.id) : false))
+    );
+    const originalsActive = billing.data?.addons.some((addon) => addon.code === 'ORIGINALS') ?? false;
+    const activationAddonAmount = originalsService && currentPlan?.includedMonths
+        ? originalsService.priceAmountMinor * currentPlan.includedMonths
+        : 0;
+    const activationTotal = currentPlan?.priceAmountMinor === null || currentPlan?.priceAmountMinor === undefined
+        ? null
+        : currentPlan.priceAmountMinor + (originalsActive ? activationAddonAmount : 0);
+
+    async function activateOriginals() {
+        setCheckoutError(null);
+        try {
+            await updateEvent.mutateAsync({ keepOriginals: true });
+            await billing.refetch();
+        } catch (error) {
+            setCheckoutError(toErrorMessage(error));
+        }
+    }
     async function startCheckout() {
         setCheckoutError(null);
         try {
@@ -76,8 +107,6 @@ export default function OverviewTab({
         }
     }
     const rsvpTotal = rsvpBreakdown.reduce((sum, r) => sum + r.count, 0) || 1;
-    const currentPlan = eventUsage ? findPlanByCode(planTiers, 'EVENT', eventUsage.planTier) : undefined;
-    const nextPlan = eventUsage ? findNextPlan(planTiers, 'EVENT', eventUsage.planTier) : undefined;
     const globallyEnabledModules = modules.filter((module_) => module_.isEnabled);
     const enabledModuleKeys = new Set(globallyEnabledModules.map((module_) => module_.moduleKey));
     const availableModuleKeys = new Set(eventModules.filter((module) => module.isAvailable).map((module) => module.moduleKey));
@@ -91,6 +120,33 @@ export default function OverviewTab({
                 <div className="border-l-2 border-primary pl-3">
                     <p className="text-sm font-bold text-ink">{t('draft.title')}</p>
                     <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('draft.body')}</p>
+                    {originalsService && (
+                        <div className="mt-3 border-t border-border/70 pt-3">
+                            <div className="flex items-start justify-between gap-4">
+                                <div>
+                                    <p className="text-xs font-semibold text-ink">{t('draft.originals.title')}</p>
+                                    <p className="mt-1 text-xs leading-relaxed text-ink-muted">
+                                        {t('draft.originals.body', {
+                                            price: formatMoney(locale, originalsService.priceAmountMinor, originalsService.priceCurrency),
+                                        })}
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={activateOriginals}
+                                    disabled={originalsActive || updateEvent.isPending}
+                                    className="shrink-0 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-ink disabled:bg-surface-muted disabled:text-ink-muted"
+                                >
+                                    {originalsActive ? t('draft.originals.active') : t('draft.originals.add')}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                    {activationTotal !== null && currentPlan?.priceCurrency && (
+                        <p className="mt-3 text-xs font-semibold text-ink">
+                            {t('draft.activationTotal', { total: formatMoney(locale, activationTotal, currentPlan.priceCurrency) })}
+                        </p>
+                    )}
                     {checkoutError && <p className="mt-2 text-xs text-rose-600">{checkoutError}</p>}
                     <button
                         type="button"

@@ -130,6 +130,14 @@
         "addPhotos": "Add photos",
         "removeImage": "Remove image",
         "uploadFailed": "Couldn't upload {filename}",
+        "uploadErrors": {
+            "UNSUPPORTED_MEDIA_FORMAT": "{filename} uses a file type we don't support.",
+            "MEDIA_FILE_TOO_LARGE": "{filename} is too large.",
+            "MEDIA_FILE_CORRUPT": "{filename} appears damaged. Re-export it and try again.",
+            "MEDIA_IMAGE_TOO_MANY_PIXELS": "{filename} has dimensions that are too large. Resize it and try again.",
+            "MEDIA_PROCESSING_BUSY": "The server is busy processing {filename}. Wait a moment, then retry it.",
+            "STORAGE_UPLOAD_FAILED": "We couldn't store {filename}. Please retry it."
+        },
         "storyUploadFailed": "Couldn't upload your story. Please try again.",
         "storageLimitExceeded": "This event has no room left for new media on its current plan.",
         "moduleUnavailable": "This feature is not available on this event's current plan.",
@@ -570,7 +578,14 @@
             "body": "Set an end date before publishing. Your coverage is calculated from the event dates.",
             "payAndPublish": "Pay and publish",
             "addEndDate": "Add an end date to publish",
-            "retryIn": "Try again in {seconds}s"
+            "retryIn": "Try again in {seconds}s",
+            "activationTotal": "Activation total: {total}",
+            "originals": {
+                "title": "Keep original photos",
+                "body": "Store each untouched, full-resolution photo for {price} per month. This cannot be removed after publishing.",
+                "add": "Add",
+                "active": "Added"
+            }
         },
         "invitations": {
             "panels": {
@@ -716,6 +731,21 @@
         "no": "No",
         "emptyDate": "Not set",
         "notApplicable": "Not applicable",
+        "addons": {
+            "title": "Active add-ons",
+            "item": "{name} · {price}/month"
+        },
+        "storagePacks": {
+            "title": "Add storage",
+            "subtitle": "Permanently increase this event's storage limit with a one-time purchase.",
+            "breakdown": "{plan} plan + {extra} purchased = {total} total",
+            "unlimited": "This plan already has unlimited storage.",
+            "selectorLabel": "Choose a storage allowance",
+            "selected": "Add {size} permanently for {price}",
+            "buy": "Buy storage",
+            "retryIn": "Try again in {seconds}s",
+            "finalSale": "Storage packs are final, do not expire, and cannot be refunded."
+        },
         "actions": {
             "renew": "Renew preservation",
             "upgradeTo": "Upgrade to {plan}",
@@ -895,9 +925,12 @@
             "kind": {
                 "ACTIVATION": "Activation",
                 "RENEWAL": "Renewal",
-                "UPGRADE": "Upgrade"
+                "UPGRADE": "Upgrade",
+                "STORAGE_PACK": "Storage pack"
             },
             "upgradeCoverage": "Plan upgrade. Coverage unchanged.",
+            "storageCoverage": "Permanent storage increase.",
+            "addonAmount": "Includes {amount} for add-ons",
             "recordedCharge": "Recorded charge",
             "showAll": "Show {count} older orders"
         }
@@ -1253,6 +1286,7 @@
             "closeMenu": "Close menu",
             "accountPlans": "Account plans",
             "eventPlans": "Event plans",
+            "paidServices": "Paid services",
             "metrics": "Metrics",
             "plans": "Plans",
             "modules": "Modules",
@@ -1267,6 +1301,7 @@
             "metrics": "Metrics",
             "accountPlans": "Account plans",
             "eventPlans": "Event plans",
+            "paidServices": "Paid services",
             "plans": "Plans",
             "modules": "Modules",
             "assignments": "Assignments",
@@ -1418,7 +1453,17 @@
             "activeEvents": "Active events",
             "usersByAccountPlan": "Users by account plan",
             "eventsByStatus": "Events by status",
-            "eventsByPlanTier": "Events by event plan"
+            "eventsByPlanTier": "Events by event plan",
+            "storage": {
+                "title": "Storage economics",
+                "usedBytes": "Active storage used",
+                "pendingPurgeBytes": "Pending purge",
+                "committedBytes": "Committed capacity",
+                "paidUsedBytes": "Paid-event usage",
+                "freeUsedBytes": "Free-event usage",
+                "purchasedExtraBytes": "Purchased extra capacity",
+                "estimatedMonthlyCostMinor": "Estimated monthly storage cost"
+            }
         },
         "errors": {
             "planInUse": "This plan is in use. Archive it instead of deleting it.",
@@ -1432,7 +1477,34 @@
             "eventNotActive": "This event is not live, so that action does not apply.",
             "webhookAlreadyProcessed": "This webhook was already processed. Refresh the list.",
             "webhookNotReplayable": "This webhook cannot be replayed because its body was not stored.",
-            "accountPlansDisabled": "Account plans are disabled; only event plans can be created or assigned."
+            "accountPlansDisabled": "Account plans are disabled; only event plans can be created or assigned.",
+            "paidServiceInUse": "This service is referenced by an order. Archive it instead of deleting it.",
+            "addonNotActive": "That add-on is not active on this event."
+        },
+        "paidServices": {
+            "title": "Paid services catalog",
+            "subtitle": "Manage recurring add-ons and one-time storage packs. Archive in-use services by making them non-public and non-assignable.",
+            "includeArchived": "Include archived",
+            "loading": "Loading paid services...",
+            "create": "Create service",
+            "save": "Save changes",
+            "delete": "Delete",
+            "kinds": { "STORAGE_PACK": "Storage pack", "RECURRING_ADDON": "Recurring add-on" },
+            "fields": {
+                "code": "Code", "kind": "Kind", "name": "Name", "description": "Description", "sortOrder": "Sort order",
+                "priceAmountMinor": "Price (minor units)", "priceCurrency": "Currency", "grantsStorageBytes": "Granted bytes",
+                "planTierIds": "Plan tier IDs", "planTierIdsHint": "Comma-separated; empty means every plan", "assignable": "Assignable", "public": "Public"
+            },
+            "removeAddon": {
+                "title": "Remove event add-on", "subtitle": "Support-only tool. Removal applies at the next renewal and does not delete stored originals.",
+                "eventId": "Event UUID", "code": "Paid service code", "action": "Remove add-on", "success": "The add-on was removed."
+            },
+            "errors": {
+                "paidServiceInUse": "This service is already used by an order. Archive it instead.",
+                "addonNotActive": "That add-on is not active on this event.",
+                "notFound": "The service or event was not found.",
+                "generic": "The change could not be saved. Check the fields and try again."
+            }
         },
         "billingOps": {
             "notice": "Settling an order marks it paid with no provider payment behind it and activates the event exactly as a real payment would. On dev and staging this is the only way an event leaves DRAFT.",
@@ -1616,6 +1688,11 @@
         "upload": "Upload",
         "uploadComplete": "{count} uploaded, {failed} failed.",
         "uploadFailed": "We couldn't upload those photos. Please try again.",
+        "selectionLimited": "Only supported images up to {size} are accepted, with at most {count} per upload.",
+        "viewerLabel": "Photo viewer",
+        "closeViewer": "Close photo viewer",
+        "downloadOriginal": "Download original",
+        "originalUnavailable": "The original file is not available.",
         "libraryTitle": "Event photos",
         "photoCount": "{count} photos",
         "emptyTitle": "No photos yet",
@@ -1624,6 +1701,18 @@
     },
     "ApiErrors": {
         "generic": "Something went wrong. Please try again.",
+        "unsupportedMediaFormat": "This file type is not supported.",
+        "mediaFileTooLarge": "This file is larger than the allowed limit.",
+        "mediaFileCorrupt": "This file appears damaged. Re-export it and try again.",
+        "mediaImageTooManyPixels": "This image's dimensions are too large. Resize it and try again.",
+        "mediaProcessingBusy": "The server is busy processing images. Wait a moment and try again.",
+        "invalidPaidServiceKind": "That service cannot be purchased here.",
+        "paidServiceNotPurchasable": "That service is no longer available. Refresh and choose again.",
+        "paidServiceInUse": "That service is already referenced by an order and cannot be deleted.",
+        "addonAlreadyActive": "This add-on is already active.",
+        "paidServiceCurrencyMismatch": "Checkout is temporarily unavailable. Please contact support.",
+        "paidServiceNotOnPlan": "That service is not available on this event's plan.",
+        "addonNotActive": "That add-on is not active.",
         "eventFrozen": "This event is frozen. Renew it to make changes again.",
         "eventNotActive": "This event is not live yet.",
         "rateLimited": "Too many requests. Please wait a moment and try again.",

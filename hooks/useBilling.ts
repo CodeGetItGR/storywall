@@ -11,6 +11,7 @@ import type {
     EventBillingResponseDto,
     RefundEligibilityResponseDto,
     RefundRequestResponseDto,
+    StorageCheckoutRequestDto,
     SubscriptionSummaryDto,
     UpgradeCheckoutRequestDto,
 } from '@/lib/api/types';
@@ -60,6 +61,18 @@ export function useUpgradeCheckout(eventId: string) {
             queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
             queryClient.invalidateQueries({ queryKey: usageKeys.event(eventId) });
             queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+        },
+    });
+}
+
+export function useStorageCheckout(eventId: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (input: StorageCheckoutRequestDto) =>
+            api.post<CheckoutResponseDto>(endpoints.events.storageCheckout(eventId), input),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
+            queryClient.invalidateQueries({ queryKey: usageKeys.event(eventId) });
         },
     });
 }

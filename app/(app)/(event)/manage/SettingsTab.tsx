@@ -72,7 +72,7 @@ export default function SettingsTab({ event, canWrite }: { event: EventDetailRes
         coverObjectUrlRef.current = nextPreviewUrl;
         setCoverPreview(nextPreviewUrl);
         setSaved(false);
-        uploadMedia.mutate({ eventId: event.id, file, mediaType: 'IMAGE' }, { onSuccess: (media) => setPendingCoverMediaId(media.id) });
+        uploadMedia.mutate({ eventId: event.id, file }, { onSuccess: (media) => setPendingCoverMediaId(media.id) });
     }
 
     function handleRemovePendingCover() {

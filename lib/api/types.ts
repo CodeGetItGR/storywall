@@ -32,11 +32,48 @@ export type ModuleKey = string;
 export interface AppMediaConfigDto {
     maxFileSizeBytes: number;
     maxRequestSizeBytes: number;
+    maxImageBytes: number;
+    maxVideoBytes: number;
     maxBatchUploadFiles: number;
     maxMediaPerPost: number;
     presignedUrlTtlMinutes: number;
     publicHost: string | null;
 }
+
+export type PaidServiceKind = 'STORAGE_PACK' | 'RECURRING_ADDON';
+
+export interface PaidServiceResponseDto {
+    id: string;
+    code: string;
+    kind: PaidServiceKind;
+    name: string;
+    description: string | null;
+    sortOrder: number;
+    isAssignable: boolean;
+    isPublic: boolean;
+    priceAmountMinor: number;
+    priceCurrency: string;
+    billingPeriod: BillingPeriod;
+    grantsStorageBytes: number | null;
+    planTierIds: string[];
+}
+
+export interface PaidServiceRequestDto {
+    code: string;
+    kind: PaidServiceKind;
+    name: string;
+    description?: string | null;
+    sortOrder: number;
+    isAssignable: boolean;
+    isPublic: boolean;
+    priceAmountMinor: number;
+    priceCurrency: string;
+    billingPeriod: BillingPeriod;
+    grantsStorageBytes?: number | null;
+    planTierIds?: string[];
+}
+
+export type PaidServicePatchDto = Partial<Omit<PaidServiceRequestDto, 'code' | 'kind'>>;
 
 export interface PlanTierResponseDto {
     id: string;
@@ -84,6 +121,7 @@ export interface AppConfigResponseDto {
     media: AppMediaConfigDto;
     pagination: { defaultPageSize: number; maxPageSize: number };
     planTiers: PlanTierResponseDto[];
+    paidServices: PaidServiceResponseDto[];
     eventModuleKeys: ModuleKey[];
     modules: PlatformModuleResponseDto[];
     rsvp: AppRsvpConfigDto;
@@ -325,14 +363,21 @@ export interface SubscriptionSummaryDto {
 }
 export interface OrderSummaryDto {
     id: string;
-    kind: 'ACTIVATION' | 'RENEWAL' | 'UPGRADE';
+    kind: 'ACTIVATION' | 'RENEWAL' | 'UPGRADE' | 'STORAGE_PACK';
     status: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED';
     amountMinor: number;
+    addonAmountMinor: number | null;
     currency: string;
     coversFrom: string | null;
     coversUntil: string | null;
     paidAt: string | null;
     createdAt: string;
+}
+export interface EventAddonDto {
+    code: string;
+    name: string;
+    priceAmountMinor: number;
+    activatedAt: string;
 }
 export interface EventBillingResponseDto {
     eventStatus: EventStatus;
@@ -341,6 +386,7 @@ export interface EventBillingResponseDto {
     coverage: CoverageSummaryDto;
     subscription: SubscriptionSummaryDto | null;
     orders: OrderSummaryDto[];
+    addons: EventAddonDto[];
 }
 export type RefundRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 export interface RefundEligibilityResponseDto {
@@ -398,6 +444,18 @@ export interface PlatformMetricsResponseDto {
     activeEvents: number;
     eventsByStatus: Record<string, number>;
     eventsByPlanTier: Record<string, number>;
+    storage: PlatformStorageMetricsDto;
+}
+
+export interface PlatformStorageMetricsDto {
+    usedBytes: number;
+    pendingPurgeBytes: number;
+    committedBytes: number;
+    paidUsedBytes: number;
+    freeUsedBytes: number;
+    purchasedExtraBytes: number;
+    estimatedMonthlyCostMinor: number;
+    costCurrency: string;
 }
 
 export type QrTargetType = 'EVENT_JOIN' | 'MEDIA_UPLOAD' | 'INVITATION';
@@ -493,6 +551,7 @@ export interface EventPatchDto {
     brandingSettings?: Record<string, unknown>;
     rsvpDeadline?: string;
     isArchived?: boolean;
+    keepOriginals?: true;
 }
 
 export interface CoHostInviteRequestDto {
@@ -759,11 +818,21 @@ export interface EventUsageResponseDto {
     eventId: string;
     planTier: PlanTierCode;
     storageBytes: number;
+    planStorageBytes: number | null;
+    extraStorageBytes: number;
     storageLimitBytes: number | null;
     storagePercent: number;
     memberCount: number;
     memberLimit: number | null;
     memberPercent: number;
+}
+
+export interface StorageCheckoutRequestDto {
+    paidServiceCode: string;
+}
+
+export interface OriginalMediaUrlDto {
+    url: string;
 }
 
 export interface AccountUsageResponseDto {
