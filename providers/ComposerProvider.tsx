@@ -3,8 +3,8 @@
 import type { ReactNode } from 'react';
 
 import { ComposerModal } from '@/components/composer/ComposerModal';
-import { ComposerContext, useComposer } from '@/providers/composer/ComposerContext';
 import { useComposerController } from '@/hooks/useComposerController';
+import { ComposerContext, useComposer } from '@/providers/composer/ComposerContext';
 
 export function ComposerProvider({ children }: { children: ReactNode }) {
     const controller = useComposerController();
@@ -12,7 +12,7 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
     return (
         <ComposerContext.Provider value={controller.contextValue}>
             {children}
-            <ComposerModal controller={controller} />
+            <ComposerModal {...controller} />
         </ComposerContext.Provider>
     );
 }

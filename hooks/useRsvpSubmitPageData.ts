@@ -2,10 +2,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppRsvpConfig } from '@/hooks/useAppConfig';
 import { useCreateRsvp, useRsvp, useUpdateRsvp } from '@/hooks/useRsvps';
 import { ApiError } from '@/lib/api/client';
-import { getErrorMessage, isModuleNotAvailableError } from '@/lib/api/errors';
+import { isModuleNotAvailableError } from '@/lib/api/errors';
 import type { AttendanceStatus, RsvpPlusOnes } from '@/lib/api/types';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
@@ -16,6 +17,7 @@ export type AttendingStatus = 'attending' | 'not-attending';
 
 export function useRsvpSubmitPageData() {
     const t = useTranslations('RSVPPage');
+    const toErrorMessage = useApiErrorMessage();
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -95,7 +97,7 @@ export function useRsvpSubmitPageData() {
     const submitErrorMessage = submitError
         ? isModuleNotAvailableError(submitError)
             ? t('moduleUnavailable')
-            : getErrorMessage(submitError, t('submitError'))
+            : toErrorMessage(submitError, t('submitError'))
         : null;
 
     const handleGoBack = useCallback(() => {

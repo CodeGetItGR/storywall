@@ -2,7 +2,7 @@
 
 import { AlertTriangle, BarChart3, Copy, Pencil, QrCode, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, useCallback, useEffect, useState } from 'react';
+import { type ChangeEvent, useCallback, useState } from 'react';
 
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
@@ -45,8 +45,9 @@ export function QrLinkRow({
 
     const handleStartEditing = useCallback(() => {
         if (!canEditLimit) return;
+        setMaxGuests(qrLink.maxGuests ?? stats?.maxGuests ?? 50);
         setIsEditing(true);
-    }, [canEditLimit]);
+    }, [canEditLimit, qrLink.maxGuests, stats?.maxGuests]);
 
     const handlePreviewOpen = useCallback(() => {
         setPreviewOpen(true);
@@ -76,12 +77,6 @@ export function QrLinkRow({
         setIsEditing(false);
         setMaxGuests(qrLink.maxGuests ?? stats?.maxGuests ?? 50);
     }, [qrLink.maxGuests, stats?.maxGuests]);
-
-    useEffect(() => {
-        if (!isEditing) {
-            setMaxGuests(qrLink.maxGuests ?? stats?.maxGuests ?? 50);
-        }
-    }, [isEditing, qrLink.maxGuests, stats?.maxGuests]);
 
     async function handleCopy() {
         await navigator.clipboard.writeText(qrLink.publicUrl);

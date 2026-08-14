@@ -6,7 +6,7 @@ import React, { type ChangeEvent, useId, useMemo, useState } from 'react';
 
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { Modal } from '@/components/ui/modal';
-import { getErrorMessage } from '@/lib/api/errors';
+import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import type { EventSessionRequestDto, EventSessionResponseDto } from '@/lib/api/types';
 import { toDatetimeLocalValue } from '@/lib/datetime';
 
@@ -46,6 +46,7 @@ function ScheduleEditorForm({
     onClose,
 }: ScheduleEditorFormProps) {
     const t = useTranslations('SchedulePage');
+    const toErrorMessage = useApiErrorMessage();
 
     const initialTitle = editingSession?.title ?? '';
     const initialDescription = editingSession?.description ?? '';
@@ -148,7 +149,7 @@ function ScheduleEditorForm({
             setSaved(true);
             onClose();
         } catch (error) {
-            setSubmitError(getErrorMessage(error));
+            setSubmitError(toErrorMessage(error));
         }
     }
 

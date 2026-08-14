@@ -10,8 +10,8 @@ import { SchedulePageHeader } from '@/app/(app)/(event)/tools/schedule/component
 import { ScheduleSessionsList } from '@/app/(app)/(event)/tools/schedule/components/ScheduleSessionsList';
 import { EventRouteGate, EventRouteSpinner } from '@/components/routing/EventRouteGate';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
+import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCreateEventSession, useDeleteEventSession, useEventSessions, useUpdateEventSession } from '@/hooks/useEventSessions';
-import { getErrorMessage } from '@/lib/api/errors';
 import type { EventDetailResponseDto, EventSessionResponseDto } from '@/lib/api/types';
 import { toDatetimeLocalValue } from '@/lib/datetime';
 import { isEventWritable } from '@/lib/eventLifecycle';
@@ -23,6 +23,7 @@ export default function SchedulePage() {
 
 function ScheduleScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDetailResponseDto; eventId: string; isHost: boolean }) {
     const t = useTranslations('SchedulePage');
+    const toErrorMessage = useApiErrorMessage();
     const locale = useLocale();
     const router = useRouter();
     const canWrite = isEventWritable(activeEvent?.status);
@@ -98,7 +99,7 @@ function ScheduleScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDe
                 closeEditor();
             }
         } catch (error) {
-            setDeleteError(getErrorMessage(error));
+            setDeleteError(toErrorMessage(error));
         }
     }
 

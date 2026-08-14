@@ -8,10 +8,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { EventPlanPaymentStep } from '@/components/plan/EventPlanPaymentStep';
 import { EventPlanSelector } from '@/components/plan/EventPlanSelector';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
+import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateEvent } from '@/hooks/useEvent';
-import { ERROR_CODES, getErrorCode, getErrorMessage, getFieldErrors } from '@/lib/api/errors';
+import { ERROR_CODES, getErrorCode, getFieldErrors } from '@/lib/api/errors';
 import type { EventRequestDto, EventTypeConvention } from '@/lib/api/types';
 import { publicAssignablePlans } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
@@ -27,6 +28,7 @@ export default function CreateEventPage() {
     const { setActiveEventId } = useEventSwitcher();
     const createEvent = useCreateEvent();
     const { data: appConfig } = useAppConfig();
+    const toErrorMessage = useApiErrorMessage();
 
     const [title, setTitle] = useState('');
     const [eventType, setEventType] = useState<EventTypeConvention>('WEDDING');
@@ -80,7 +82,7 @@ export default function CreateEventPage() {
                 return;
             }
 
-            setError(getErrorMessage(err));
+            setError(toErrorMessage(err));
         }
     }
 

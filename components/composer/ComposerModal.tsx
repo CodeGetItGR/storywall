@@ -7,7 +7,6 @@ import { useTranslations } from 'next-intl';
 import { AddSongForm } from '@/components/playlist';
 import Avatar from '@/components/ui/avatar';
 import { Modal } from '@/components/ui/modal';
-
 import type { ComposerController } from '@/hooks/useComposerController';
 
 function ComposerModeToggle({
@@ -42,13 +41,42 @@ function ComposerModeToggle({
     );
 }
 
-export function ComposerModal({ controller }: { controller: ComposerController }) {
+export function ComposerModal({
+    canComposePost,
+    canComposeSong,
+    canSubmit,
+    caption,
+    closeComposer,
+    composerMode,
+    countError,
+    fileRef,
+    handleCaptionChange,
+    handlePickPhotos,
+    handlePostFilesChange,
+    handleRemoveImageClick,
+    handleRetryUploadClick,
+    images,
+    initials,
+    isOpen,
+    isPostBusy,
+    isSongBusy,
+    maxImages,
+    memberName,
+    selectPostMode,
+    selectSongMode,
+    sizeError,
+    songComposerKey,
+    submitError,
+    submitPlaylistSuggestion,
+    submitPost,
+    textareaRef,
+}: ComposerController) {
     const t = useTranslations('ComposerCard');
 
     return (
         <Modal
-            open={controller.isOpen}
-            onClose={controller.closeComposer}
+            open={isOpen}
+            onClose={closeComposer}
             size="sm"
             variant="sheet"
             closeLabel={t('cancel')}
@@ -56,18 +84,18 @@ export function ComposerModal({ controller }: { controller: ComposerController }
         >
             <Modal.Body className="p-4">
                 <div className="mb-4 flex items-center gap-2 pr-10">
-                    <ComposerModeToggle mode="post" currentMode={controller.composerMode} onSelect={controller.selectPostMode} />
-                    <ComposerModeToggle mode="song" currentMode={controller.composerMode} onSelect={controller.selectSongMode} disabled={!controller.canComposeSong} />
+                    <ComposerModeToggle mode="post" currentMode={composerMode} onSelect={selectPostMode} />
+                    <ComposerModeToggle mode="song" currentMode={composerMode} onSelect={selectSongMode} disabled={!canComposeSong} />
                 </div>
 
-                <div hidden={controller.composerMode !== 'post'}>
-                    <form onSubmit={controller.submitPost} className="flex flex-col gap-4">
+                <div hidden={composerMode !== 'post'}>
+                    <form onSubmit={submitPost} className="flex flex-col gap-4">
                         <div className="flex items-start gap-3">
-                            <Avatar initials={controller.initials} size="md" alt={controller.memberName || undefined} />
+                            <Avatar initials={initials} size="md" alt={memberName || undefined} />
                             <textarea
-                                ref={controller.textareaRef}
-                                value={controller.caption}
-                                onChange={controller.handleCaptionChange}
+                                ref={textareaRef}
+                                value={caption}
+                                onChange={handleCaptionChange}
                                 placeholder={t('captionPlaceholder')}
                                 aria-label={t('captionAriaLabel')}
                                 rows={3}
@@ -75,14 +103,14 @@ export function ComposerModal({ controller }: { controller: ComposerController }
                             />
                         </div>
 
-                        {controller.images.length > 0 && (
+                        {images.length > 0 && (
                             <div className="grid grid-cols-3 gap-2">
-                                {controller.images.map((img) => (
+                                {images.map((img) => (
                                     <div key={img.key} className="relative aspect-square overflow-hidden rounded-xl bg-surface-muted">
                                         <Image src={img.previewUrl} alt="" fill className="object-cover" sizes="200px" />
                                         <button
                                             type="button"
-                                            onClick={controller.handleRemoveImageClick}
+                                            onClick={handleRemoveImageClick}
                                             data-key={img.key}
                                             disabled={img.status === 'uploading'}
                                             aria-label={t('removeImage')}
@@ -100,8 +128,8 @@ export function ComposerModal({ controller }: { controller: ComposerController }
                                                 <span className="truncate">{img.error ?? t('uploadFailed', { filename: img.file.name })}</span>
                                                 <button
                                                     type="button"
-                                                    onClick={controller.handleRetryUploadClick}
-                                                    disabled={controller.isPostBusy}
+                                                    onClick={handleRetryUploadClick}
+                                                    disabled={isPostBusy}
                                                     className="shrink-0 underline disabled:cursor-not-allowed disabled:opacity-40"
                                                 >
                                                     {t('retry')}
@@ -113,27 +141,27 @@ export function ComposerModal({ controller }: { controller: ComposerController }
                             </div>
                         )}
 
-                        {(controller.sizeError || controller.countError || controller.submitError) && (
-                            <p className="text-xs text-destructive">{controller.sizeError ?? controller.countError ?? controller.submitError}</p>
+                        {(sizeError || countError || submitError) && (
+                            <p className="text-xs text-destructive">{sizeError ?? countError ?? submitError}</p>
                         )}
 
                         <div className="flex items-center justify-between">
                             <button
                                 type="button"
-                                onClick={controller.handlePickPhotos}
-                                disabled={!controller.canComposePost || controller.images.length >= controller.maxImages}
+                                onClick={handlePickPhotos}
+                                disabled={!canComposePost || images.length >= maxImages}
                                 className="flex items-center gap-2 text-sm font-medium text-ink-muted transition-colors hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
                             >
                                 <ImagePlus className="h-4 w-4" />
                                 {t('addPhotos')}
                             </button>
                             <input
-                                ref={controller.fileRef}
+                                ref={fileRef}
                                 type="file"
                                 accept="image/*"
                                 multiple
                                 className="sr-only"
-                                onChange={controller.handlePostFilesChange}
+                                onChange={handlePostFilesChange}
                                 aria-label={t('addPhotos')}
                                 tabIndex={-1}
                             />
@@ -141,31 +169,31 @@ export function ComposerModal({ controller }: { controller: ComposerController }
                             <div className="flex items-center gap-2">
                                 <button
                                     type="button"
-                                    onClick={controller.closeComposer}
-                                    disabled={controller.isPostBusy}
+                                    onClick={closeComposer}
+                                    disabled={isPostBusy}
                                     className="rounded-full px-4 py-2 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-40"
                                 >
                                     {t('cancel')}
                                 </button>
                                 <button
                                     type="submit"
-                                    disabled={!controller.canSubmit}
+                                    disabled={!canSubmit}
                                     className="flex items-center gap-2 rounded-full bg-gradient-brand px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                                 >
                                     <Send className="h-4 w-4" />
-                                    {controller.isPostBusy ? t('posting') : t('post')}
+                                    {isPostBusy ? t('posting') : t('post')}
                                 </button>
                             </div>
                         </div>
                     </form>
                 </div>
 
-                <div hidden={controller.composerMode !== 'song'}>
+                <div hidden={composerMode !== 'song'}>
                     <AddSongForm
-                        key={controller.songComposerKey}
-                        isSubmitting={controller.isSongBusy}
-                        canSubmit={controller.canComposeSong}
-                        onSubmit={controller.submitPlaylistSuggestion}
+                        key={songComposerKey}
+                        isSubmitting={isSongBusy}
+                        canSubmit={canComposeSong}
+                        onSubmit={submitPlaylistSuggestion}
                         compact
                     />
                 </div>

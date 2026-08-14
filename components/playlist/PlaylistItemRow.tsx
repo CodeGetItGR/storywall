@@ -6,8 +6,9 @@ import { useMemo, useState } from 'react';
 
 import { SpotifyMark, YouTubeMark } from '@/components/playlist/MusicServiceMarks';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
+import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCreatePlaylistVote, useDeletePlaylistSuggestion, useDeletePlaylistVote, usePlaylistVotes } from '@/hooks/usePlaylist';
-import { getErrorMessage, isModuleNotAvailableError } from '@/lib/api/errors';
+import { isModuleNotAvailableError } from '@/lib/api/errors';
 import type { PlaylistSuggestionResponseDto, PlaylistVoteType } from '@/lib/api/types';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { buildSpotifyEmbedUrl, buildYouTubeEmbedUrl } from '@/lib/playlistEmbeds';
@@ -20,6 +21,7 @@ type PlaylistItemRowProps = {
 
 export function PlaylistItemRow({ suggestion }: PlaylistItemRowProps) {
     const t = useTranslations('PlaylistPage');
+    const toErrorMessage = useApiErrorMessage();
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
     const isHost = useIsHost();
@@ -79,7 +81,7 @@ export function PlaylistItemRow({ suggestion }: PlaylistItemRowProps) {
                 voteType,
             });
         } catch (error) {
-            setVoteError(isModuleNotAvailableError(error) ? t('moduleUnavailable') : getErrorMessage(error, t('voteFailed')));
+            setVoteError(isModuleNotAvailableError(error) ? t('moduleUnavailable') : toErrorMessage(error, t('voteFailed')));
         }
     }
 

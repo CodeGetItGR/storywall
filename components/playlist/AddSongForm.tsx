@@ -6,7 +6,8 @@ import React, { type ChangeEvent, useState } from 'react';
 
 import { AddSongFieldShell } from '@/components/playlist/AddSongFieldShell';
 import { SpotifyMark, YouTubeMark } from '@/components/playlist/MusicServiceMarks';
-import { getErrorMessage, isModuleNotAvailableError } from '@/lib/api/errors';
+import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { isModuleNotAvailableError } from '@/lib/api/errors';
 
 type PlaylistSuggestionInput = {
     title: string;
@@ -25,6 +26,7 @@ type AddSongFormProps = {
 
 export function AddSongForm({ isSubmitting, canSubmit, onSubmit, compact = false }: AddSongFormProps) {
     const t = useTranslations('PlaylistPage');
+    const toErrorMessage = useApiErrorMessage();
     const [title, setTitle] = useState('');
     const [artist, setArtist] = useState('');
     const [youtubeUrl, setYoutubeUrl] = useState('');
@@ -76,7 +78,7 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmit, compact = false
             setSpotifyUrl('');
             setComment('');
         } catch (error) {
-            setSubmitError(isModuleNotAvailableError(error) ? t('moduleUnavailable') : getErrorMessage(error, t('submitFailed')));
+            setSubmitError(isModuleNotAvailableError(error) ? t('moduleUnavailable') : toErrorMessage(error, t('submitFailed')));
         }
     }
 

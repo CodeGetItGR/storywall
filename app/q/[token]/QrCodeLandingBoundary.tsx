@@ -8,10 +8,11 @@ import React, { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { InviteLayout } from '@/components/invite/InviteLayout';
 import { InviteTerminalState } from '@/components/invite/InviteTerminalState';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
+import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
 import { useMediaItem } from '@/hooks/useMedia';
 import { useQrLinkResolution } from '@/hooks/useQrLinks';
-import { ERROR_CODES, getErrorCode, getErrorMessage } from '@/lib/api/errors';
+import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import { getQrTerminalCopyKey } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
 
@@ -21,6 +22,7 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
     const t = useTranslations('QrCodePage');
     const router = useRouter();
     const { guestLogin } = useAuth();
+    const toErrorMessage = useApiErrorMessage();
 
     const { data: resolution, isLoading, error } = useQrLinkResolution(token);
     const { data: coverMedia } = useMediaItem(resolution?.status === 'ACTIVE' ? (resolution.coverMediaId ?? null) : null);
@@ -79,7 +81,7 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
             if (getErrorCode(err) === ERROR_CODES.INVITATION_EXHAUSTED) {
                 setGuestError(t('invitationExhausted'));
             } else {
-                setGuestError(getErrorMessage(err));
+                setGuestError(toErrorMessage(err));
             }
         } finally {
             setIsSubmitting(false);

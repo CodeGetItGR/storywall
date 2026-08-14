@@ -2,20 +2,20 @@
 
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useCreatePost, useCreateStory, useUploadMedia, useUploadMediaBatch } from '@/hooks';
+import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventModules } from '@/hooks/useEventModules';
 import { useCreatePlaylistSuggestion } from '@/hooks/usePlaylist';
-import { ERROR_CODES, getErrorCode, getErrorMessage, getQuotaExceededDetails, isModuleNotAvailableError } from '@/lib/api/errors';
+import { ERROR_CODES, getErrorCode, getQuotaExceededDetails, isModuleNotAvailableError } from '@/lib/api/errors';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { findNextPlan } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { initialsFromName } from '@/lib/utils';
-import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
-
 import type { ComposerContextValue } from '@/providers/composer/ComposerContext';
+import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
 
 type ComposerMode = 'post' | 'song';
 
@@ -81,6 +81,7 @@ function formatBytes(bytes: number): string {
 
 export function useComposerController(): ComposerController {
     const t = useTranslations('ComposerCard');
+    const toErrorMessage = useApiErrorMessage();
     const router = useRouter();
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
@@ -136,17 +137,17 @@ export function useComposerController(): ComposerController {
     const maxRequestSizeBytes = appConfig?.media.maxRequestSizeBytes ?? 220 * 1024 * 1024;
     const canSubmit = (caption.trim().length > 0 || images.length > 0) && !hasUnresolvedFailures && !isPostBusy && canComposePost;
 
-    function openPostComposer() {
+    const openPostComposer = useCallback(() => {
         if (!canComposePost) return;
         setComposerMode('post');
         setIsOpen(true);
-    }
+    }, [canComposePost]);
 
-    function openSongComposer() {
+    const openSongComposer = useCallback(() => {
         if (!canComposeSong) return;
         setComposerMode('song');
         setIsOpen(true);
-    }
+    }, [canComposeSong]);
 
     function selectPostMode() {
         setComposerMode('post');
@@ -259,7 +260,7 @@ export function useComposerController(): ComposerController {
         if (isModuleNotAvailableError(error)) {
             return t('moduleUnavailable');
         }
-        return getErrorMessage(error, t('genericSubmitFailed'));
+        return toErrorMessage(error, t('genericSubmitFailed'));
     }
 
     async function uploadPendingImages(): Promise<string[] | null> {
@@ -306,7 +307,7 @@ export function useComposerController(): ComposerController {
         const failedByName = new Map<string, string[]>();
         result.failed.forEach((f) => {
             const arr = failedByName.get(f.filename) ?? [];
-            arr.push(f.errorCode === 'EVENT_STORAGE_LIMIT_EXCEEDED' ? t('storageLimitExceeded') : f.message);
+            arr.push(f.errorCode === 'EVENT_STORAGE_LIMIT_EXCEEDED' ? t('storageLimitExceeded') : t('uploadFailed', { filename: f.filename }));
             failedByName.set(f.filename, arr);
         });
 
@@ -389,10 +390,10 @@ export function useComposerController(): ComposerController {
         closeComposer();
     }
 
-    function openStoryCapture() {
+    const openStoryCapture = useCallback(() => {
         if (!canComposeStory) return;
         storyInputRef.current?.click();
-    }
+    }, [canComposeStory]);
 
     async function handleStoryFileChange(event: React.ChangeEvent<HTMLInputElement>) {
         const file = event.target.files?.[0];

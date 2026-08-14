@@ -9,11 +9,11 @@ import React, { type ReactNode, useCallback, useState } from 'react';
 import { InviteLayout } from '@/components/invite/InviteLayout';
 import { InviteTerminalState } from '@/components/invite/InviteTerminalState';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
+import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
 import { useEventInvitationPreview } from '@/hooks/useEventInvitations';
 import { useMediaItem } from '@/hooks/useMedia';
 import { ApiError } from '@/lib/api/client';
-import { getErrorMessage } from '@/lib/api/errors';
 import { routes } from '@/lib/routes';
 
 const DEFAULT_HERO_IMAGE = '/images/couple-hero.png';
@@ -22,6 +22,7 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
     const t = useTranslations('InviteOnboardingPage');
     const router = useRouter();
     const { guestLogin } = useAuth();
+    const toErrorMessage = useApiErrorMessage();
 
     const { data: preview, isLoading, error } = useEventInvitationPreview(token);
     const { data: coverMedia } = useMediaItem(preview?.coverMediaId ?? null);
@@ -93,7 +94,7 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
             });
             router.push(routes.feed);
         } catch (err) {
-            setGuestError(getErrorMessage(err));
+            setGuestError(toErrorMessage(err));
         } finally {
             setIsSubmitting(false);
         }

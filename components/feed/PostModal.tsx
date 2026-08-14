@@ -6,14 +6,16 @@ import React, { useMemo, useState } from 'react';
 import { PostCommentsPanel, PostMediaColumn } from '@/components/feed/post';
 import { Modal } from '@/components/ui/modal';
 import { useCreateComment, useEventMembers, usePost, usePostComments, usePostModal } from '@/hooks';
+import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { ApiError } from '@/lib/api/client';
-import { getErrorMessage, isModuleNotAvailableError } from '@/lib/api/errors';
+import { isModuleNotAvailableError } from '@/lib/api/errors';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { cn, timeAgoParts } from '@/lib/utils';
 import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
 
 export function PostModal() {
     const t = useTranslations('PostModal');
+    const toErrorMessage = useApiErrorMessage();
     const { postId, isOpen, close, mediaIndex, view, setMediaIndex } = usePostModal();
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
@@ -75,7 +77,7 @@ export function PostModal() {
                 content: commentText.trim(),
             });
         } catch (error) {
-            setCommentError(isModuleNotAvailableError(error) ? t('moduleUnavailable') : getErrorMessage(error, t('commentFailed')));
+            setCommentError(isModuleNotAvailableError(error) ? t('moduleUnavailable') : toErrorMessage(error, t('commentFailed')));
             return;
         }
 

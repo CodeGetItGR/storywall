@@ -20,3 +20,4 @@
 
 - When removing a route or feature, remove route constants, redirects, links, translations, and files that only existed for it.
 - After refactors, search for stale references and run TypeScript plus lint.
+- Always fix lint errors before handing work back. Do not leave a known lint error unresolved unless it is genuinely blocked, and call out that blocker clearly.

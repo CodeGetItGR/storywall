@@ -1,8 +1,8 @@
 'use client';
 
 import { Download, Printer } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
 import { useTranslations } from 'next-intl';
+import { QRCodeSVG } from 'qrcode.react';
 import { useRef } from 'react';
 
 import { Modal } from '@/components/ui/modal';

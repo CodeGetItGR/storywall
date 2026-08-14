@@ -2,7 +2,7 @@
 
 import { Copy, Pencil, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, useCallback, useEffect, useState } from 'react';
+import { type ChangeEvent, useCallback, useState } from 'react';
 
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useDeleteEventInvitation, useUpdateEventInvitation } from '@/hooks/useEventInvitations';
@@ -63,15 +63,10 @@ export function InvitationRow({
         setMaxGuests(invitation.maxGuests);
     }, [invitation.maxGuests]);
 
-    useEffect(() => {
-        if (!isEditing) {
-            setMaxGuests(invitation.maxGuests);
-        }
-    }, [invitation.maxGuests, isEditing]);
-
     const handleStartEditing = useCallback(() => {
+        setMaxGuests(invitation.maxGuests);
         setIsEditing(true);
-    }, []);
+    }, [invitation.maxGuests]);
 
     const handleDeleteConfirmOpen = useCallback(() => {
         setDeleteConfirmOpen(true);

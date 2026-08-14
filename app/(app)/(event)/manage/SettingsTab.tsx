@@ -6,9 +6,10 @@ import { useTranslations } from 'next-intl';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
+import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useUpdateEvent } from '@/hooks/useEvent';
 import { useUploadMedia } from '@/hooks/useMedia';
-import { getErrorMessage, getFieldErrors } from '@/lib/api/errors';
+import { getFieldErrors } from '@/lib/api/errors';
 import type { EventDetailResponseDto, EventPatchDto } from '@/lib/api/types';
 import { toDatetimeLocalValue } from '@/lib/datetime';
 
@@ -18,6 +19,7 @@ const labelClass = 'text-xs font-semibold text-ink-muted uppercase tracking-wide
 
 export default function SettingsTab({ event, canWrite }: { event: EventDetailResponseDto; canWrite: boolean }) {
     const t = useTranslations('ManagePage');
+    const toErrorMessage = useApiErrorMessage();
 
     const initial = {
         title: event.title,
@@ -286,7 +288,7 @@ export default function SettingsTab({ event, canWrite }: { event: EventDetailRes
                     <input type="datetime-local" value={rsvpDeadline} onChange={handleRsvpDeadlineChange} disabled={disabled} className={inputClass} />
                 </FormFieldLabel>
 
-                {updateEvent.isError && !fieldErrors && <p className="text-xs text-rose-500">{getErrorMessage(updateEvent.error)}</p>}
+                {updateEvent.isError && !fieldErrors && <p className="text-xs text-rose-500">{toErrorMessage(updateEvent.error)}</p>}
 
                 <div className="flex items-center gap-3 mt-1">
                     <button

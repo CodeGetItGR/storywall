@@ -8,7 +8,8 @@ import React, { useMemo } from 'react';
 import { PostAuthorAvatar, ReactionCount } from '@/components/feed/post';
 import { CommentsList } from '@/components/feed/post/CommentsList';
 import { useEventMembers, usePostComments, usePostLike, usePostModal } from '@/hooks';
-import { getErrorMessage, isModuleNotAvailableError } from '@/lib/api/errors';
+import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { isModuleNotAvailableError } from '@/lib/api/errors';
 import type { PostResponseDto } from '@/lib/api/types';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { cn, timeAgoParts } from '@/lib/utils';
@@ -22,6 +23,7 @@ interface PostCardProps {
 
 export function PostCard({ post, showCommentLink = true, isLcpCandidate = false }: PostCardProps) {
     const t = useTranslations('PostCard');
+    const toErrorMessage = useApiErrorMessage();
     const { open: openPostModal } = usePostModal();
     const { liked, count: likeCount, toggle: handleLike, isPending: isLikePending, error: likeError } = usePostLike(post);
 
@@ -166,7 +168,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
 
             {likeError !== null && likeError !== undefined && (
                 <p className="px-4 pb-3 text-xs text-destructive">
-                    {isModuleNotAvailableError(likeError) ? t('moduleUnavailable') : getErrorMessage(likeError, t('reactionFailed'))}
+                    {isModuleNotAvailableError(likeError) ? t('moduleUnavailable') : toErrorMessage(likeError, t('reactionFailed'))}
                 </p>
             )}
 
