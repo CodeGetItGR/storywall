@@ -14,7 +14,15 @@ import { cn } from '@/lib/utils';
 
 import { fieldControlClass, fieldLabelClass, fieldTextClass, formPanelClass } from './shared';
 
-export function CreateInvitationForm({ eventId, onDone }: { eventId: string; onDone: () => void }) {
+export function CreateInvitationForm({
+    eventId,
+    onDone,
+    onClampNotice,
+}: {
+    eventId: string;
+    onDone: () => void;
+    onClampNotice?: (message: string) => void;
+}) {
     const t = useTranslations('ManagePage');
     const createInvitation = useCreateEventInvitation();
     const createQrLink = useCreateQrLink(eventId);
@@ -66,6 +74,9 @@ export function CreateInvitationForm({ eventId, onDone }: { eventId: string; onD
         };
         try {
             const invitation = await createInvitation.mutateAsync(input);
+            if (invitation.maxGuests !== maxGuests) {
+                onClampNotice?.(t('invitations.cappedToPlan', { count: invitation.maxGuests }));
+            }
             if (alsoCreateQr) {
                 await createQrLink.mutateAsync({
                     targetType: 'INVITATION',

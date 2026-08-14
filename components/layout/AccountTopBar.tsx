@@ -13,7 +13,7 @@ export function AccountTopBar() {
     const t = useTranslations('AccountTopBar');
     const router = useRouter();
     const { user, logout } = useAuth();
-    const accountLabel = user?.email ?? t('fallbackName');
+    const accountLabel = user?.displayName ?? t('fallbackName');
 
     async function handleLogout() {
         await logout();
@@ -25,8 +25,8 @@ export function AccountTopBar() {
             <div className="flex min-w-0 items-center gap-3">
                 <Avatar initials={getInitials(accountLabel)} size="sm" alt={accountLabel} />
                 <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold leading-tight text-ink">{t('profile')}</p>
-                    <p className="truncate text-xs leading-tight text-ink-muted">{accountLabel}</p>
+                    <p className="truncate text-sm font-semibold leading-tight text-ink">{accountLabel}</p>
+                    <p className="truncate text-xs leading-tight text-ink-muted">{user?.email ?? t('profile')}</p>
                 </div>
             </div>
 

@@ -13,7 +13,7 @@
     --color-popover: var(--popover);
     --color-popover-foreground: var(--popover-foreground);
     --color-primary: var(--primary);
-    --color-logo-color: var(--logo-color);
+    --color-logo: var(--logo);
     --color-primary-foreground: var(--primary-foreground);
     --color-secondary: var(--secondary);
     --color-secondary-foreground: var(--secondary-foreground);
@@ -144,7 +144,7 @@
     --sidebar-border: #f0e2d2;
     --sidebar-ring: #ff7a59;
 
-    --logo-color: linear-gradient(132deg, #c777b1 15.05%, #e48279 33.58%, #f2885c 42.44%, #fec463 78.7%);
+    --logo: linear-gradient(132deg, #c777b1 15.05%, #e48279 33.58%, #f2885c 42.44%, #fec463 78.7%);
 }
 
 /* ── Base layer ── */
@@ -176,6 +176,9 @@
 /* ── Brand gradient utilities ── */
 .bg-gradient-brand {
     background: linear-gradient(135deg, #ff6fa0 0%, #ff7a59 50%, #ffb259 100%);
+}
+.bg-gradient-logo {
+    background: var(--logo);
 }
 .text-gradient-brand {
     background: linear-gradient(135deg, #ff6fa0 0%, #ff7a59 60%);

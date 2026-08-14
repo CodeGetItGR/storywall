@@ -560,6 +560,7 @@
             "claimed": "Claimed",
             "unclaimed": "Unclaimed",
             "maxGuests": "Up to {count} guests",
+            "cappedToPlan": "Capped to {count, plural, one {# guest} other {# guests}} - that's all your current plan has room for.",
             "copyLink": "Copy link",
             "copied": "Copied!",
             "edit": "Edit",
@@ -619,6 +620,7 @@
                 "lowSlots": "{count} slots left",
                 "raiseLimit": "Raise the limit"
             },
+            "cappedToPlan": "Capped to {count, plural, one {# guest} other {# guests}} - that's all your current plan has room for.",
             "create": {
                 "cta": "New QR code",
                 "title": "New QR code",

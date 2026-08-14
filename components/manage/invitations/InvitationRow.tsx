@@ -2,7 +2,7 @@
 
 import { Copy, Pencil, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, useCallback, useState } from 'react';
+import { type ChangeEvent, useCallback, useEffect, useState } from 'react';
 
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useDeleteEventInvitation, useUpdateEventInvitation } from '@/hooks/useEventInvitations';
@@ -14,10 +14,12 @@ export function InvitationRow({
     eventId,
     invitation,
     canWrite,
+    onClampNotice,
 }: {
     eventId: string;
     invitation: EventInvitationResponseDto;
     canWrite: boolean;
+    onClampNotice?: (message: string) => void;
 }) {
     const t = useTranslations('ManagePage');
     const [isEditing, setIsEditing] = useState(false);
@@ -40,8 +42,13 @@ export function InvitationRow({
 
     async function handleSaveEdit() {
         if (!canWrite) return;
-        const patch: EventInvitationPatchDto = { maxGuests };
-        await updateInvitation.mutateAsync(patch);
+        const requestedMaxGuests = maxGuests;
+        const patch: EventInvitationPatchDto = { maxGuests: requestedMaxGuests };
+        const updated = await updateInvitation.mutateAsync(patch);
+        if (updated.maxGuests !== requestedMaxGuests) {
+            onClampNotice?.(t('invitations.cappedToPlan', { count: updated.maxGuests }));
+        }
+        setMaxGuests(updated.maxGuests);
         setIsEditing(false);
     }
 
@@ -55,6 +62,12 @@ export function InvitationRow({
         setIsEditing(false);
         setMaxGuests(invitation.maxGuests);
     }, [invitation.maxGuests]);
+
+    useEffect(() => {
+        if (!isEditing) {
+            setMaxGuests(invitation.maxGuests);
+        }
+    }, [invitation.maxGuests, isEditing]);
 
     const handleStartEditing = useCallback(() => {
         setIsEditing(true);

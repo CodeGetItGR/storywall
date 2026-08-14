@@ -1,5 +1,5 @@
 import { Menu } from '@base-ui/react/menu';
-import { LayoutDashboard } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import type { MouseEvent } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -24,7 +24,7 @@ export function ContextMenuTab({ active, items, label, pathname, searchParams, o
                 className="flex min-w-12 flex-col items-center gap-0.5 px-3 py-1 transition-opacity lg:hidden"
                 aria-current={active ? 'page' : undefined}
             >
-                <LayoutDashboard className={cn('h-5 w-5', active ? 'text-ink opacity-100' : 'text-ink opacity-70')} aria-hidden="true" />
+                <Settings className={cn('h-5 w-5', active ? 'text-ink opacity-100' : 'text-ink opacity-70')} aria-hidden="true" />
             </Menu.Trigger>
             <Menu.Portal>
                 <Menu.Positioner

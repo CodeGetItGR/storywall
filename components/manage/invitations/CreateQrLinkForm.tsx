@@ -16,10 +16,12 @@ export function CreateQrLinkForm({
     eventId,
     invitations,
     onDone,
+    onClampNotice,
 }: {
     eventId: string;
     invitations: EventInvitationResponseDto[];
     onDone: () => void;
+    onClampNotice?: (message: string) => void;
 }) {
     const t = useTranslations('ManagePage');
     const createQrLink = useCreateQrLink(eventId);
@@ -56,7 +58,10 @@ export function CreateQrLinkForm({
         };
 
         try {
-            await createQrLink.mutateAsync(input);
+            const qrLink = await createQrLink.mutateAsync(input);
+            if (!isInvitationTarget && qrLink.maxGuests !== maxGuests) {
+                onClampNotice?.(t('qr.cappedToPlan', { count: qrLink.maxGuests ?? maxGuests }));
+            }
             onDone();
         } catch {
             // error surfaced inline below

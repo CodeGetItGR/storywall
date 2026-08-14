@@ -26,7 +26,6 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const { liked, count: likeCount, toggle: handleLike, isPending: isLikePending, error: likeError } = usePostLike(post);
 
     const authorName = post.author?.displayName ?? t('unknownAuthor');
-    const authorSubtitle = post.author?.nickname ?? post.author?.role;
     const timeAgo = useMemo(() => timeAgoParts(post.createdAt), [post.createdAt]);
     const media = post.media;
     const isHostPost = post.author?.role === 'HOST';
@@ -56,19 +55,11 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     return (
         <article className={cn('relative border-2 border-b border-border/60 bg-card/60', isHostPost && 'pt-3 sm:pt-0 sm:pr-3')}>
             <div className="flex items-center justify-between px-4 pt-4 pb-3">
-                <PostAuthorAvatar avatarUrl={post.author?.avatarUrl} name={authorName} subtitle={authorSubtitle} timeAgo={timeAgo} />
+                <PostAuthorAvatar avatarUrl={post.author?.avatarUrl} name={authorName} timeAgo={timeAgo} isHostPost={!isHostPost} />
                 <div className="flex items-center gap-1">
                     {post.isPinned && (
                         <span className="flex h-8 w-8 items-center justify-center text-primary" aria-label={t('pinned')} title={t('pinned')}>
                             <Pin className="w-4 h-4" strokeWidth={1.8} />
-                        </span>
-                    )}
-                    {isHostPost && (
-                        <span
-                            aria-hidden="true"
-                            className="pointer-events-none px-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-muted"
-                        >
-                            {t('hostPost')}
                         </span>
                     )}
                     {isMyPost && (

@@ -2,7 +2,7 @@
 
 import { AlertTriangle, BarChart3, Copy, Pencil, QrCode, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, useCallback, useState } from 'react';
+import { type ChangeEvent, useCallback, useEffect, useState } from 'react';
 
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
@@ -19,11 +19,13 @@ export function QrLinkRow({
     qrLink,
     stats,
     canWrite,
+    onClampNotice,
 }: {
     eventId: string;
     qrLink: QrLinkResponseDto;
     stats?: QrLinkStatsDto;
     canWrite: boolean;
+    onClampNotice?: (message: string) => void;
 }) {
     const t = useTranslations('ManagePage');
     const [previewOpen, setPreviewOpen] = useState(false);
@@ -75,6 +77,12 @@ export function QrLinkRow({
         setMaxGuests(qrLink.maxGuests ?? stats?.maxGuests ?? 50);
     }, [qrLink.maxGuests, stats?.maxGuests]);
 
+    useEffect(() => {
+        if (!isEditing) {
+            setMaxGuests(qrLink.maxGuests ?? stats?.maxGuests ?? 50);
+        }
+    }, [isEditing, qrLink.maxGuests, stats?.maxGuests]);
+
     async function handleCopy() {
         await navigator.clipboard.writeText(qrLink.publicUrl);
         setCopied(true);
@@ -89,7 +97,12 @@ export function QrLinkRow({
 
     async function handleSaveLimit() {
         if (!canEditLimit) return;
-        await updateQrLink.mutateAsync({ maxGuests });
+        const requestedMaxGuests = maxGuests;
+        const updated = await updateQrLink.mutateAsync({ maxGuests: requestedMaxGuests });
+        if (updated.maxGuests !== requestedMaxGuests) {
+            onClampNotice?.(t('qr.cappedToPlan', { count: updated.maxGuests ?? requestedMaxGuests }));
+        }
+        setMaxGuests(updated.maxGuests ?? requestedMaxGuests);
         setIsEditing(false);
     }
 

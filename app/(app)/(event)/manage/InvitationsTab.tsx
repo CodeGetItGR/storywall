@@ -30,6 +30,7 @@ export default function InvitationsTab({
     const t = useTranslations('ManagePage');
     const [showCreate, setShowCreate] = useState(false);
     const [panel, setPanel] = useState<InvitationPanel>('invites');
+    const [limitNotice, setLimitNotice] = useState<string | null>(null);
 
     const handleShowCreate = useCallback(() => {
         if (!canWrite) return;
@@ -43,6 +44,11 @@ export default function InvitationsTab({
     const handlePanelSelect = useCallback((item: InvitationPanel) => {
         setPanel(item);
         setShowCreate(false);
+        setLimitNotice(null);
+    }, []);
+
+    const handleClampNotice = useCallback((message: string) => {
+        setLimitNotice(message);
     }, []);
 
     const showInvites = panel === 'invites';
@@ -83,22 +89,30 @@ export default function InvitationsTab({
                 </p>
             )}
 
-            {showCreate && canWrite && showInvites && <CreateInvitationForm eventId={eventId} onDone={handleHideCreate} />}
+            {limitNotice && (
+                <p className="mb-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900">
+                    {limitNotice}
+                </p>
+            )}
+
+            {showCreate && canWrite && showInvites && (
+                <CreateInvitationForm eventId={eventId} onDone={handleHideCreate} onClampNotice={handleClampNotice} />
+            )}
             {showCreate && canWrite && !showInvites && (
-                <CreateQrLinkForm eventId={eventId} invitations={invitations} onDone={handleHideCreate} />
+                <CreateQrLinkForm eventId={eventId} invitations={invitations} onDone={handleHideCreate} onClampNotice={handleClampNotice} />
             )}
 
             {showInvites ? (
                 <div className="flex flex-col divide-y divide-border">
                     {invitations.map((invitation) => (
-                        <InvitationRow key={invitation.id} eventId={eventId} invitation={invitation} canWrite={canWrite} />
+                        <InvitationRow key={invitation.id} eventId={eventId} invitation={invitation} canWrite={canWrite} onClampNotice={handleClampNotice} />
                     ))}
                 </div>
             ) : (
                 <div className="flex flex-col divide-y divide-border">
                     {qrLinks.map((qrLink) => {
                         const stats = qrLinkStats.find((row) => row.qrLinkId === qrLink.id);
-                        return <QrLinkRow key={qrLink.id} eventId={eventId} qrLink={qrLink} stats={stats} canWrite={canWrite} />;
+                        return <QrLinkRow key={qrLink.id} eventId={eventId} qrLink={qrLink} stats={stats} canWrite={canWrite} onClampNotice={handleClampNotice} />;
                     })}
                 </div>
             )}

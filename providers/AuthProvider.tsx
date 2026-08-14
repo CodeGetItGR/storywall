@@ -20,6 +20,7 @@ import {
 interface AuthUser {
     userId: string;
     email: string | null;
+    displayName: string;
     role: PlatformRole;
 }
 
@@ -86,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const value: AuthContextValue = {
-        user: authState.accessToken ? { userId: authState.userId!, email: authState.email, role: authState.role! } : null,
+        user: authState.accessToken ? { userId: authState.userId!, email: authState.email, displayName: authState.displayName!, role: authState.role! } : null,
         isAuthenticated: Boolean(authState.accessToken),
         isBootstrapping,
         register: async (input) => {
