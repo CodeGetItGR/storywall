@@ -3,12 +3,12 @@
 import { Menu } from '@base-ui/react/menu';
 import { CalendarDays, CreditCard, Images, LayoutDashboard, MessageSquareText, Plus, Settings2, Ticket } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import type { MouseEvent } from 'react';
+import { type MouseEvent, useCallback, useState } from 'react';
 
 import { type ContextNavItem, ContextNavSlot, isEventRoute, isPathActive, TabLink } from '@/components/layout/mobile-tab-bar';
+import { AccountDrawer } from '@/components/profile';
 import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { getInitials } from '@/lib/format';
@@ -21,12 +21,12 @@ const homeTabItem = { href: routes.feed, icon: '/icons/home.svg', key: 'home' } 
 function hostMenuItems(eventId: string) {
     return [
         { href: routes.manage, icon: LayoutDashboard, key: 'manage' },
+        { href: routes.auth.manage({ tab: 'rsvp' }), icon: Ticket, key: 'rsvps' },
+        { href: routes.auth.manage({ tab: 'invitations' }), icon: MessageSquareText, key: 'invitations' },
         { href: routes.tools.gallery, icon: Images, key: 'gallery' },
         { href: routes.tools.schedule, icon: CalendarDays, key: 'schedule' },
-        { href: routes.tools.rsvp, icon: Ticket, key: 'rsvps' },
-        { href: routes.auth.manage({ tab: 'invitations' }), icon: MessageSquareText, key: 'invitations' },
-        { href: routes.events.settingsPlan(eventId), icon: CreditCard, key: 'billing' },
         { href: routes.auth.manage({ tab: 'settings' }), icon: Settings2, key: 'settings' },
+        { href: routes.events.settingsPlan(eventId), icon: CreditCard, key: 'billing' },
     ] as const;
 }
 
@@ -38,6 +38,7 @@ const moduleBackedHostItems: Partial<Record<string, 'gallery' | 'rsvp'>> = {
 
 export function MobileTabBar() {
     const t = useTranslations('MobileTabBar');
+    const [accountOpen, setAccountOpen] = useState(false);
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams().toString();
@@ -48,15 +49,16 @@ export function MobileTabBar() {
     const isLoading = useEventContextLoading();
     const accountLabel = user?.displayName ?? t('items.profile');
     const isFeedDetailPage = pathname.startsWith('/feed/');
-    const showEventActions = !isLoading && Boolean(activeEvent) && isEventRoute(pathname);
-    const showEventHome = showEventActions;
+    const showEventNavigation = !isLoading && Boolean(activeEvent);
+    const showEventActions = showEventNavigation && isEventRoute(pathname);
+    const profileActive = pathname === routes.profile || pathname.startsWith(routes.profile + '/');
 
     const homeActive = isPathActive(pathname, homeTabItem.href);
     const availableModules = new Set(activeEvent?.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey) ?? []);
-    const playlistAvailable = showEventActions && availableModules.has('playlist');
+    const playlistAvailable = showEventNavigation && availableModules.has('playlist');
     const playlistActive = playlistAvailable && isPathActive(pathname, routes.tools.playlist);
     const contextItems: ContextNavItem[] =
-        showEventActions && activeEvent
+        showEventNavigation && activeEvent
             ? isHost
                 ? hostMenuItems(activeEvent.id)
                       .filter((item) => {
@@ -80,48 +82,67 @@ export function MobileTabBar() {
         if (href) router.push(href);
     }
 
+    const handleOpenAccount = useCallback(() => setAccountOpen(true), []);
+    const handleCloseAccount = useCallback(() => setAccountOpen(false), []);
+
     return (
         <>
-            <nav
-                aria-label={t('mobileNavigation')}
-                className="fixed bottom-0 left-1/2 z-40 grid h-16 w-9/10 -translate-x-1/2 grid-cols-3 items-center rounded-t-2xl border-t border-border bg-white/90 px-4 lg:hidden"
-            >
-                <div className="justify-self-start">
-                    {showEventHome && (
-                        <TabLink
-                            href={activeEvent ? routes.post.feed(activeEvent.id) : homeTabItem.href}
-                            icon={homeTabItem.icon}
-                            label={t(`items.${homeTabItem.key}`)}
-                            active={homeActive}
-                            onClick={handleHomeClick}
-                        />
-                    )}
-                </div>
-
-                <div className="justify-self-center">
-                    {playlistAvailable && (
-                        <TabLink href={routes.tools.playlist} icon="/icons/music.svg" label={t('items.playlist')} active={playlistActive} />
-                    )}
-                </div>
-                <div className="justify-self-end">
-                    <ContextNavSlot
-                        active={contextActive}
-                        items={contextItems}
-                        menuLabel={t('hostMenu.manage')}
-                        pathname={pathname}
-                        searchParams={searchParams}
-                        onItemClick={handleDashboardMenuClick}
+            <div className="fixed bottom-0 left-1/2 z-40 flex w-full max-w-lg -translate-x-1/2 items-end gap-2 px-3 lg:hidden">
+                <button
+                    type="button"
+                    onClick={handleOpenAccount}
+                    aria-label={t('openAccount')}
+                    aria-expanded={accountOpen}
+                    aria-controls="mobile-account-drawer"
+                    className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-t-2xl border border-b-0 border-border shadow-[0_-4px_18px_rgba(36,31,26,0.08)] transition-colors ${
+                        accountOpen || profileActive ? 'bg-primary-light' : 'bg-card hover:bg-surface-muted'
+                    }`}
+                >
+                    <Avatar
+                        initials={getInitials(accountLabel)}
+                        size="sm"
+                        alt={accountLabel}
+                        className={accountOpen || profileActive ? 'ring-2 ring-primary/40' : undefined}
                     />
-                </div>
-            </nav>
+                </button>
 
-            <Link
-                href={routes.profile}
-                aria-label={t('items.profile')}
-                className="fixed bottom-20 left-4 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-background shadow-md transition-transform hover:scale-105 lg:hidden"
-            >
-                <Avatar initials={getInitials(accountLabel)} size="sm" alt={accountLabel} />
-            </Link>
+                <nav
+                    aria-label={t('eventNavigation')}
+                    className="grid h-16 min-w-0 flex-1 grid-cols-3 items-center rounded-t-2xl border border-b-0 border-border bg-white/90 px-3 shadow-[0_-4px_18px_rgba(36,31,26,0.06)] backdrop-blur"
+                >
+                    <div className="justify-self-start">
+                        {showEventNavigation && (
+                            <TabLink
+                                href={activeEvent ? routes.post.feed(activeEvent.id) : homeTabItem.href}
+                                icon={homeTabItem.icon}
+                                label={t(`items.${homeTabItem.key}`)}
+                                active={homeActive}
+                                onClick={handleHomeClick}
+                            />
+                        )}
+                    </div>
+
+                    <div className="justify-self-center">
+                        {playlistAvailable && (
+                            <TabLink href={routes.tools.playlist} icon="/icons/music.svg" label={t('items.playlist')} active={playlistActive} />
+                        )}
+                    </div>
+                    <div className="justify-self-end">
+                        <ContextNavSlot
+                            active={contextActive}
+                            items={contextItems}
+                            menuLabel={t('eventMenu')}
+                            pathname={pathname}
+                            searchParams={searchParams}
+                            onItemClick={handleDashboardMenuClick}
+                        />
+                    </div>
+                </nav>
+            </div>
+
+            <div id="mobile-account-drawer">
+                <AccountDrawer open={accountOpen} onClose={handleCloseAccount} />
+            </div>
 
             {showEventActions && (canComposePost || canComposeStory || canComposeSong) && (
                 <Menu.Root>

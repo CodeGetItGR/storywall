@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
+import { AccountLogoutButton } from '@/components/profile/AccountLogoutButton';
 import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
-import { CURRENT_USER_ID, getUser } from '@/lib/mock-data';
+import { getInitials } from '@/lib/format';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 import { useComposer } from '@/providers/ComposerProvider';
@@ -33,12 +34,13 @@ function isEventRoute(pathname: string) {
 
 export function DesktopNavRail() {
     const t = useTranslations('DesktopNavRail');
+    const tProfile = useTranslations('ProfilePage');
     const pathname = usePathname();
-    const user = getUser(CURRENT_USER_ID);
     const { user: authUser } = useAuth();
     const { openPostComposer, canComposePost } = useComposer();
     const activeEvent = useActiveEvent();
     const showEventActions = Boolean(activeEvent) && isEventRoute(pathname);
+    const accountName = authUser?.displayName ?? tProfile('fallbackName');
     const navItems = [
         ...(activeEvent ? [{ href: routes.post.feed(activeEvent.id), icon: Home, key: 'home' }] : []),
         { href: routes.profile, icon: UserRound, key: 'profile' },
@@ -95,12 +97,15 @@ export function DesktopNavRail() {
             )}
 
             {/* Current user */}
-            <div className="border-t border-border px-4 py-4 flex items-center gap-3">
-                <Avatar initials={user.initials} color={user.avatarColor} size="sm" alt={user.name} />
-                <div className="overflow-hidden">
-                    <p className="text-sm font-medium text-ink truncate leading-tight">{user.name}</p>
-                    {authUser?.email && <p className="text-xs text-ink-muted truncate leading-tight">{authUser.email}</p>}
+            <div className="border-t border-border p-3">
+                <div className="flex items-center gap-3 px-1">
+                    <Avatar initials={getInitials(accountName)} size="sm" alt={accountName} />
+                    <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium leading-tight text-ink">{accountName}</p>
+                        {authUser?.email && <p className="truncate text-xs leading-tight text-ink-muted">{authUser.email}</p>}
+                    </div>
                 </div>
+                <AccountLogoutButton variant="rail" />
             </div>
         </nav>
     );

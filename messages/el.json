@@ -1,4 +1,8 @@
 {
+    "Common": {
+        "optional": "προαιρετικό",
+        "required": "υποχρεωτικό"
+    },
     "EventNotFound": {
         "title": "Αυτός ο εορτασμός φαίνεται να έχει χαθεί",
         "description": "Δεν μπορέσαμε να βρούμε εκδήλωση σε αυτόν τον σύνδεσμο. Ελέγξτε ξανά την πρόσκληση που λάβατε ή επιστρέψτε και επιλέξτε μια εκδήλωση από τη λίστα σας.",
@@ -7,9 +11,11 @@
     },
     "Countdown": {
         "days": "Ημέρες",
+        "daysShort": "ημ.",
         "hours": "Ώρες",
+        "hoursShort": "ώρ.",
         "minutes": "Λεπτά",
-        "seconds": "Δευτερόλεπτα"
+        "minutesShort": "λεπ."
     },
     "StoriesRow": {
         "ariaLabel": "Ιστορίες"
@@ -22,7 +28,9 @@
     },
     "FeedPage": {
         "scheduleBadge": "Πρόγραμμα",
-        "loadingMore": "Φόρτωση περισσότερων…"
+        "loadingMore": "Φόρτωση περισσότερων…",
+        "loading": "Φόρτωση ροής",
+        "aboutEvent": "Σχετικά με την εκδήλωση"
     },
     "FeedScheduleCard": {
         "eyebrow": "Πρόγραμμα",
@@ -57,10 +65,10 @@
         "unknownAuthor": "Άγνωστος",
         "playlistDigest": "Ενημέρωση λίστας",
         "pinned": "Καρφιτσωμένη",
-        "hostPost": "POST ΔΙΟΡΓΑΝΩΤΗ",
+        "hostPost": "ΔΗΜΟΣΙΕΥΣΗ ΔΙΟΡΓΑΝΩΤΗ",
         "openPlaylist": "Άνοιγμα λίστας",
         "moduleUnavailable": "Οι δημοσιεύσεις δεν είναι διαθέσιμες στο τρέχον πλάνο αυτής της εκδήλωσης.",
-        "reactionFailed": "Couldn't update your reaction. Please try again."
+        "reactionFailed": "Δεν μπορέσαμε να ενημερώσουμε την αντίδρασή σας. Δοκιμάστε ξανά."
     },
     "DesktopNavRail": {
         "mainNavigation": "Κύρια πλοήγηση",
@@ -75,13 +83,17 @@
             "profile": "Προφίλ"
         }
     },
-    "AccountTopBar": {
-        "profile": "Προφίλ",
-        "logout": "Αποσύνδεση",
-        "fallbackName": "Λογαριασμός"
+    "LanguageSwitcher": {
+        "label": "Γλώσσα",
+        "languages": {
+            "en": "EN",
+            "el": "EL"
+        }
     },
     "MobileTabBar": {
-        "mobileNavigation": "Πλοήγηση κινητού",
+        "eventNavigation": "Πλοήγηση εκδήλωσης",
+        "eventMenu": "Μενού εκδήλωσης",
+        "openAccount": "Άνοιγμα λογαριασμού",
         "compose": "Δημιουργία",
         "composeMenu": {
             "post": "Δημοσίευση",
@@ -95,7 +107,7 @@
             "invitations": "Προσκλήσεις",
             "settings": "Ρυθμίσεις",
             "billing": "Πλάνο & χρέωση",
-            "gallery": "Gallery"
+            "gallery": "Φωτογραφίες"
         },
         "guestMenu": {
             "schedule": "Πρόγραμμα"
@@ -126,10 +138,10 @@
         "cancel": "Ακύρωση",
         "post": "Δημοσίευση",
         "posting": "Δημοσίευση…",
-        "storageLimitExceeded": "This event has no room left for new media on its current plan.",
+        "storageLimitExceeded": "Δεν υπάρχει άλλος χώρος για νέα αρχεία στο τωρινό πλάνο της εκδήλωσης.",
         "moduleUnavailable": "Αυτή η λειτουργία δεν είναι διαθέσιμη στο τρέχον πλάνο αυτής της εκδήλωσης.",
-        "genericSubmitFailed": "Something went wrong. Please try again.",
-        "storageLimitExceededWithPlan": "This event has no room left for new media on its current plan. Upgrade to {plan} to add more.",
+        "genericSubmitFailed": "Κάτι πήγε στραβά. Δοκιμάστε ξανά.",
+        "storageLimitExceededWithPlan": "Δεν υπάρχει άλλος χώρος για νέα αρχεία. Αναβαθμίστε σε {plan} για περισσότερο χώρο.",
         "uploading": "Μεταφόρτωση…"
     },
     "EventLifecycleBanner": {
@@ -141,8 +153,8 @@
         },
         "FROZEN": {
             "title": "Η εκδήλωση είναι μόνο για ανάγνωση",
-            "hostBody": "Η κάλυψη έχει λήξει. Ανανεώστε τη διατήρηση για να ξεκλειδώσουν νέες δημοσιεύσεις, ιστορίες και uploads.",
-            "guestBody": "Η εκδήλωση παραμένει διαθέσιμη για προβολή, αλλά οι νέες δημοσιεύσεις και τα uploads έχουν σταματήσει.",
+            "hostBody": "Η κάλυψη έχει λήξει. Ανανεώστε τη διατήρηση για να επιτρέψετε ξανά δημοσιεύσεις, ιστορίες και μεταφορτώσεις.",
+            "guestBody": "Η εκδήλωση παραμένει διαθέσιμη για προβολή, αλλά οι νέες δημοσιεύσεις και μεταφορτώσεις έχουν σταματήσει.",
             "action": "Διαχείριση χρέωσης"
         },
         "PURGED": {
@@ -314,21 +326,30 @@
                 "description": "Γράψτε ένα γράμμα που θα ανοίξει την επέτειό τους"
             },
             "gallery": {
-                "label": "Gallery",
+                "label": "Φωτογραφίες",
                 "description": "Μεταφόρτωση και προβολή φωτογραφιών εκδήλωσης"
             }
         }
     },
     "ProfilePage": {
-        "yourEvents": "Τα events σου",
-        "eventUnavailable": "Το event δεν είναι διαθέσιμο",
+        "drawerLabel": "Ο λογαριασμός σου",
+        "closeDrawer": "Κλείσιμο λογαριασμού",
+        "fallbackName": "Λογαριασμός",
+        "logout": "Αποσύνδεση",
+        "yourEvents": "Οι εκδηλώσεις σου",
+        "loadingEvents": "Φόρτωση των εκδηλώσεών σου",
+        "activeEvent": "Τρέχουσα εκδήλωση",
+        "eventUnavailable": "Η εκδήλωση δεν είναι διαθέσιμη",
+        "preferences": {
+            "language": "Γλώσσα"
+        },
         "roleFallback": {
             "host": "Διοργανωτής/τρια",
             "attendee": "Καλεσμένος/η"
         },
         "emptyMemberships": {
-            "title": "Δεν υπάρχουν events ακόμα",
-            "body": "Συμμετέχεις σε ένα event με σύνδεσμο πρόσκλησης ή δημιούργησε το δικό σου για να ξεκινήσεις.",
+            "title": "Δεν υπάρχουν εκδηλώσεις ακόμα",
+            "body": "Μπες σε μια εκδήλωση από έναν σύνδεσμο πρόσκλησης ή δημιούργησε τη δική σου για να ξεκινήσεις.",
             "cta": "Ξεκίνα τώρα"
         },
         "dateAt": "στις",
@@ -364,7 +385,7 @@
         "types": {
             "BILLING_EXPIRING": {
                 "title": "Η κάλυψη της εκδήλωσής σας λήγει σύντομα",
-                "body": "Απομένουν {days} ημέρες στο πλάνο {plan}. Ανανεώστε για να παραμείνουν online οι φωτογραφίες."
+                "body": "Απομένουν {days} ημέρες στο πλάνο {plan}. Ανανεώστε για να παραμείνουν διαθέσιμες οι φωτογραφίες."
             },
             "BILLING_PAST_DUE": {
                 "title": "Η κάλυψη της εκδήλωσής σας έχει λήξει",
@@ -479,13 +500,13 @@
         },
         "payment": {
             "noCharge": "Χωρίς χρέωση",
-            "placeholder": "Η πληρωμή στο backend δεν έχει υλοποιηθεί ακόμη. Αυτό το προσωρινό βήμα κρατά τη σωστή ροή: επιλογή πλάνου, επιβεβαίωση πληρωμής και μετά δημιουργία εκδήλωσης.",
+            "placeholder": "Η πληρωμή δεν είναι διαθέσιμη ακόμη. Προς το παρόν επιλέξτε πλάνο, επιβεβαιώστε την πληρωμή και μετά δημιουργήστε την εκδήλωση.",
             "continue": "Συνέχεια στα στοιχεία"
         },
         "planLimits": {
             "storage": "αποθηκευτικός χώρος",
             "members": "μέλη",
-            "modules": "Περιλαμβανόμενα modules"
+            "modules": "Λειτουργίες που περιλαμβάνονται"
         }
     },
     "ManagePage": {
@@ -568,8 +589,8 @@
                 "submit": "Δημιουργία πρόσκλησης",
                 "subtitle": "Δημιουργήστε τον σύνδεσμο συμμετοχής και προαιρετικά στοιχεία προ-συμπλήρωσης.",
                 "prefillTitle": "Προ-συμπλήρωση καλεσμένου",
-                "alsoCreateQr": "Δημιουργία και QR code",
-                "alsoCreateQrHint": "Δημιουργεί ένα αντίστοιχο QR code που ανοίγει αυτή τη συγκεκριμένη πρόσκληση."
+                "alsoCreateQr": "Δημιουργία και κωδικού QR",
+                "alsoCreateQrHint": "Δημιουργεί έναν κωδικό QR που ανοίγει αυτή τη συγκεκριμένη πρόσκληση."
             },
             "fields": {
                 "inviteCode": "Κωδικός πρόσκλησης",
@@ -586,7 +607,7 @@
             "readOnly": "Η εκδήλωση είναι μόνο για ανάγνωση. Οι αλλαγές προσκλήσεων έχουν σταματήσει, αλλά οι υπάρχοντες σύνδεσμοι μπορούν ακόμη να αντιγραφούν.",
             "panels": {
                 "invites": "Προσκλήσεις",
-                "qr": "QR Codes"
+                "qr": "Κωδικοί QR"
             }
         },
         "settings": {
@@ -624,21 +645,21 @@
         "openDashboard": "Άνοιγμα πίνακα",
         "rsvpOverview": "Επισκόπηση RSVP",
         "usage": {
-            "eventTitle": "Plan usage"
+            "eventTitle": "Χρήση πλάνου"
         },
         "qr": {
-            "summary": "{count} QR codes",
-            "empty": "Δεν υπάρχουν QR codes ακόμη. Δημιουργήστε ένα για αφίσες, κάρτες τραπεζιών ή έντυπες προσκλήσεις.",
+            "summary": "{count, plural, one {# κωδικός QR} other {# κωδικοί QR}}",
+            "empty": "Δεν υπάρχουν κωδικοί QR ακόμη. Δημιουργήστε έναν για αφίσες, κάρτες τραπεζιών ή έντυπες προσκλήσεις.",
             "readOnly": "Η εκδήλωση είναι μόνο για ανάγνωση. Οι αλλαγές QR έχουν σταματήσει, αλλά οι υπάρχοντες κωδικοί μπορούν ακόμη να προβληθούν και να εκτυπωθούν.",
-            "untitled": "QR code χωρίς τίτλο",
+            "untitled": "Κωδικός QR χωρίς τίτλο",
             "preview": "Προβολή",
             "revoke": "Ανάκληση",
             "confirmRevoke": "Επιβεβαίωση ανάκλησης",
-            "revokeConfirmTitle": "Ανάκληση αυτού του QR code;",
+            "revokeConfirmTitle": "Να ανακληθεί αυτός ο κωδικός QR;",
             "revokeConfirmBody": "Οι μελλοντικές σαρώσεις θα δείχνουν ότι ο κωδικός δεν είναι πλέον ενεργός. Οι έντυπες κάρτες θα κρατήσουν το ίδιο URL, αλλά δεν θα βάζουν πλέον καλεσμένους.",
             "downloadSvg": "Λήψη SVG",
             "print": "Εκτύπωση",
-            "noInvitations": "Δημιουργήστε πρώτα μια πρόσκληση και μετά συνδέστε το QR code με αυτή.",
+            "noInvitations": "Δημιουργήστε πρώτα μια πρόσκληση και μετά συνδέστε τον κωδικό QR με αυτή.",
             "editLimit": "Επεξεργασία ορίου",
             "saving": "Αποθήκευση...",
             "stats": {
@@ -647,7 +668,7 @@
                 "joined": "Συμμετοχές",
                 "remainingSlots": "Θέσεις",
                 "maxGuests": "Όριο καλεσμένων",
-                "uploads": "Uploads από καλεσμένους",
+                "uploads": "Μεταφορτώσεις από καλεσμένους",
                 "notAvailable": "N/A",
                 "lastJoined": "Τελευταία συμμετοχή",
                 "lastJoinedAt": "Τελευταία συμμετοχή {date, date, medium}",
@@ -657,9 +678,9 @@
             },
             "cappedToPlan": "Περιορίστηκε σε {count, plural, one {# καλεσμένο} other {# καλεσμένους}} - αυτόν τον αριθμό χωρά το τρέχον πλάνο σας.",
             "create": {
-                "cta": "Νέο QR code",
-                "title": "Νέο QR code",
-                "submit": "Δημιουργία QR code",
+                "cta": "Νέος κωδικός QR",
+                "title": "Νέος κωδικός QR",
+                "submit": "Δημιουργία κωδικού QR",
                 "subtitle": "Δημιουργήστε έναν εκτυπώσιμο σύνδεσμο σάρωσης για αφίσες, κάρτες τραπεζιών ή προσκλήσεις."
             },
             "fields": {
@@ -689,32 +710,35 @@
         "loadError": "Δεν ήταν δυνατή η φόρτωση των στοιχείων χρέωσης.",
         "back": "Πίσω",
         "backToEvent": "Πίσω στην εκδήλωση",
-        "title": "Πλάνο και χρέωση",
-        "subtitle": "Κάλυψη, διατήρηση και πληρωμές για αυτή την εκδήλωση.",
+        "title": "Πλάνο και πληρωμές",
+        "subtitle": "Κάλυψη και πληρωμές για αυτή την εκδήλωση.",
         "yes": "Ναι",
         "no": "Όχι",
         "emptyDate": "Δεν έχει οριστεί",
         "notApplicable": "Δεν ισχύει",
         "actions": {
             "renew": "Ανανέωση διατήρησης",
-            "upgradeTo": "Upgrade to {plan}",
-            "openingCheckout": "Άνοιγμα checkout...",
+            "upgradeTo": "Αναβάθμιση σε {plan}",
+            "openingCheckout": "Μετάβαση στην πληρωμή...",
             "retryIn": "Δοκιμάστε ξανά σε {seconds} δευτ."
         },
         "compare": {
-            "title": "Plan differences",
-            "upgradeTitle": "What changes on {plan}",
-            "subtitle": "See the differences before you continue to billing.",
-            "upgradeSubtitle": "Compared with your current {plan} plan.",
-            "upgradeCharge": "{amount} έως τις {date}.",
-            "nextPlanHint": "Next upgrade: {plan}",
-            "highestPlan": "You are on the highest published tier.",
+            "title": "Σύγκριση πλάνων",
+            "upgradeTitle": "Τι αλλάζει με το {plan}",
+            "subtitle": "Δείτε τις διαφορές πριν προχωρήσετε στην πληρωμή.",
+            "upgradeSubtitle": "Σε σχέση με το πλάνο {plan} που έχετε τώρα.",
+            "upgradeCharge": "{amount} για την αναβάθμιση. Η κάλυψη ισχύει έως {date}.",
+            "upgradeChargeUnlimited": "{amount} για την αναβάθμιση. Η κάλυψη παραμένει απεριόριστη.",
+            "upgradeChargeNoDate": "{amount} για την αναβάθμιση.",
+            "upgradeChargeUnavailable": "Η τιμή της αναβάθμισης δεν είναι διαθέσιμη αυτή τη στιγμή.",
+            "nextPlanHint": "Επόμενη αναβάθμιση: {plan}",
+            "highestPlan": "Έχετε ήδη το καλύτερο διαθέσιμο πλάνο.",
             "field": "Πεδίο",
-            "current": "Current plan",
+            "current": "Τωρινό πλάνο",
             "next": "Επόμενο πλάνο",
-            "recommended": "Recommended",
-            "fromTo": "Upgrade path",
-            "to": "to",
+            "recommended": "Προτεινόμενο",
+            "fromTo": "Αναβάθμιση",
+            "to": "σε",
             "code": "Κωδικός",
             "name": "Όνομα",
             "scope": "Εύρος",
@@ -723,39 +747,39 @@
             "billing": "Χρέωση",
             "includedMonths": "Περιλαμβανόμενη κάλυψη",
             "monthCount": "{count, plural, one {# μήνας} other {# μήνες}}",
-            "moduleLegendOpen": "Οδηγός modules",
-            "moduleLegendClose": "Κλείσιμο οδηγού modules",
-            "moduleLegendTitle": "Included modules",
-            "moduleLegendBody": "Each item below explains what the module unlocks in this plan.",
-            "moduleLegendFallback": "Included in this plan.",
+            "moduleLegendOpen": "Οδηγός λειτουργιών",
+            "moduleLegendClose": "Κλείσιμο οδηγού λειτουργιών",
+            "moduleLegendTitle": "Λειτουργίες που περιλαμβάνονται",
+            "moduleLegendBody": "Δείτε τι σας προσφέρει κάθε λειτουργία αυτού του πλάνου.",
+            "moduleLegendFallback": "Περιλαμβάνεται σε αυτό το πλάνο.",
             "currencyValue": "Νόμισμα: {value}",
             "billingPeriodValue": "Χρέωση: {value}",
-            "recurringValue": "Επαναλαμβανόμενα minor: {value}",
+            "recurringValue": "Επαναλαμβανόμενη χρέωση: {value}",
             "includedMonthsValue": "Περιλαμβανόμενοι μήνες: {value}",
             "discount": "Έκπτωση",
             "discountWindowValue": "Παράθυρο: {from} - {to}",
-            "storage": "Storage",
-            "members": "Members",
+            "storage": "Αποθηκευτικός χώρος",
+            "members": "Καλεσμένοι",
             "limits": "Όρια",
-            "flags": "Σημαίες",
-            "modules": "Included modules",
-            "moduleChanges": "New modules",
-            "moduleCount": "{count} modules",
-            "noModuleChanges": "No new modules on this tier. The upgrade mainly increases limits.",
-            "allPlansTitle": "All published tiers",
-            "mediaCapacity": "Approx media",
-            "mediaAssumption": "Based on ~4 MB photos and ~90 MB videos.",
-            "mediaEstimate": "~{images} photos or ~{videos} short videos",
-            "storageValue": "Storage: {value}",
-            "membersValue": "Members: {value}",
-            "activeEventsValue": "Active events: {value}",
-            "defaultValue": "Default: {value}",
-            "assignableValue": "Assignable: {value}",
-            "publicValue": "Public: {value}",
-            "noPrice": "Contact us",
-            "unlimited": "Unlimited",
-            "unlimitedMedia": "Unlimited uploads",
-            "same": "No increase"
+            "flags": "Ρυθμίσεις",
+            "modules": "Λειτουργίες",
+            "moduleChanges": "Νέες λειτουργίες",
+            "moduleCount": "{count, plural, one {# λειτουργία} other {# λειτουργίες}}",
+            "noModuleChanges": "Δεν προστίθενται νέες λειτουργίες. Η αναβάθμιση αυξάνει κυρίως τα όρια.",
+            "allPlansTitle": "Όλα τα πλάνα",
+            "mediaCapacity": "Χωρητικότητα αρχείων",
+            "mediaAssumption": "Υπολογισμός με φωτογραφίες περίπου 4 MB και βίντεο περίπου 90 MB.",
+            "mediaEstimate": "περίπου {images} φωτογραφίες ή {videos} σύντομα βίντεο",
+            "storageValue": "Χώρος: {value}",
+            "membersValue": "Καλεσμένοι: {value}",
+            "activeEventsValue": "Ενεργές εκδηλώσεις: {value}",
+            "defaultValue": "Προεπιλεγμένο: {value}",
+            "assignableValue": "Μπορεί να επιλεγεί: {value}",
+            "publicValue": "Δημόσιο: {value}",
+            "noPrice": "Επικοινωνήστε μαζί μας",
+            "unlimited": "Χωρίς όριο",
+            "unlimitedMedia": "Απεριόριστες μεταφορτώσεις",
+            "same": "Καμία αύξηση"
         },
         "billingPeriod": {
             "MONTHLY": "Μηνιαίως",
@@ -786,31 +810,31 @@
         },
         "summary": {
             "DRAFT": "Η εκδήλωση δεν έχει δημοσιευτεί ακόμη. Η πληρωμή ενεργοποίησης γίνεται από τον πίνακα διοργανωτή όταν ολοκληρωθούν οι ημερομηνίες.",
-            "ACTIVE": "Η εκδήλωση καλύπτεται έως {date}. Οι καλεσμένοι μπορούν να χρησιμοποιούν το wall όσο η κάλυψη είναι ενεργή.",
+            "ACTIVE": "Η εκδήλωση καλύπτεται έως {date}. Οι καλεσμένοι μπορούν να χρησιμοποιούν τον πίνακα όσο η κάλυψη είναι ενεργή.",
             "ACTIVE_UNLIMITED": "Η εκδήλωση έχει απεριόριστη κάλυψη. Δεν υπάρχει ημερομηνία παγώματος ή διαγραφής.",
             "FROZEN": "Η κάλυψη έληξε στις {date}. Η εκδήλωση είναι μόνο για ανάγνωση μέχρι να ανανεωθεί η διατήρηση.",
-            "PURGED": "Η εκδήλωση πέρασε το παράθυρο διατήρησης πολυμέσων. Η ανανέωση μπορεί να την ενεργοποιήσει ξανά, αλλά τα διαγραμμένα αρχεία δεν επανέρχονται."
+            "PURGED": "Έχει λήξει και η περίοδος διατήρησης των αρχείων. Μπορείτε να ενεργοποιήσετε ξανά την εκδήλωση, αλλά τα διαγραμμένα αρχεία δεν επανέρχονται."
         },
         "facts": {
-            "covered": "Καλύπτεται",
+            "covered": "Ενεργή κάλυψη",
             "totalPaid": "Σύνολο πληρωμών",
             "orders": "Παραγγελίες",
             "pending": "Σε αναμονή"
         },
         "timeline": {
-            "title": "Χρονοδιάγραμμα κάλυψης",
+            "title": "Διάρκεια κάλυψης",
             "unlimited": "Απεριόριστη κάλυψη",
             "paidThrough": {
-                "label": "Πληρωμένο έως",
-                "hint": "Η πρόσβαση καλεσμένων μένει ενεργή έως τότε."
+                "label": "Κάλυψη έως",
+                "hint": "Οι καλεσμένοι έχουν πρόσβαση μέχρι τότε."
             },
             "freezesAt": {
-                "label": "Παγώνει",
-                "hint": "Η εκδήλωση γίνεται μόνο για ανάγνωση."
+                "label": "Περιορισμός πρόσβασης",
+                "hint": "Δεν θα μπορούν να γίνουν νέες δημοσιεύσεις."
             },
             "purgesAt": {
-                "label": "Διαγράφεται",
-                "hint": "Τα αποθηκευμένα πολυμέσα μπορούν να αφαιρεθούν οριστικά."
+                "label": "Διαγραφή αρχείων",
+                "hint": "Τα αποθηκευμένα αρχεία μπορεί να διαγραφούν οριστικά."
             }
         },
         "subscription": {
@@ -818,7 +842,7 @@
             "status": "Κατάσταση",
             "currentPeriodEnd": "Καλύπτει έως",
             "none": "Χωρίς συνδρομή",
-            "renewalHint": "Ξεκινήστε διατήρηση για να μείνει η εκδήλωση online μετά την αρχική περίοδο κάλυψης.",
+            "renewalHint": "Ξεκινήστε τη διατήρηση για να παραμείνει διαθέσιμη η εκδήλωση μετά την αρχική περίοδο κάλυψης.",
             "notRenewing": "Δεν ανανεώνεται",
             "ended": "Ολοκληρώθηκε",
             "liveUntil": "Ενεργό έως",
@@ -859,7 +883,7 @@
             "title": "Ιστορικό παραγγελιών",
             "lastOrder": "Τελευταία παραγγελία {date}",
             "coverageRange": "{from} έως {until}",
-            "empty": "Δεν υπάρχουν παραγγελίες ακόμη. Η ενεργοποίηση θα εμφανιστεί εδώ όταν ξεκινήσει το checkout.",
+            "empty": "Δεν υπάρχουν παραγγελίες ακόμη. Η ενεργοποίηση θα εμφανιστεί εδώ μόλις ξεκινήσει η πληρωμή.",
             "columns": {
                 "kind": "Τύπος",
                 "status": "Κατάσταση",
@@ -870,16 +894,16 @@
             "kind": {
                 "ACTIVATION": "Ενεργοποίηση",
                 "RENEWAL": "Ανανέωση",
-                "UPGRADE": "Upgrade"
+                "UPGRADE": "Αναβάθμιση"
             },
             "showAll": "Εμφάνιση {count} παλαιότερων παραγγελιών",
-            "upgradeCoverage": "Plan upgrade. Coverage unchanged.",
-            "recordedCharge": "Recorded charge",
-            "coverageThrough": "Covers through {date}"
+            "upgradeCoverage": "Αναβάθμιση πλάνου. Η διάρκεια κάλυψης δεν αλλάζει.",
+            "recordedCharge": "Καταχωρημένη χρέωση",
+            "coverageThrough": "Κάλυψη έως {date}"
         }
     },
     "CheckoutSuccessPage": {
-        "eyebrow": "Checkout",
+        "eyebrow": "Πληρωμή",
         "paidTitle": "Η πληρωμή ολοκληρώθηκε",
         "processingTitle": "Η πληρωμή επεξεργάζεται ακόμη",
         "paidBody": "Η εκδήλωσή σας ενημερώνεται τώρα.",
@@ -889,7 +913,7 @@
         "backToEvent": "Πίσω στην εκδήλωση"
     },
     "CheckoutCancelledPage": {
-        "title": "Το checkout ακυρώθηκε",
+        "title": "Η πληρωμή ακυρώθηκε",
         "body": "Δεν έγινε χρέωση. Μπορείτε να δοκιμάσετε ξανά όποτε είστε έτοιμοι.",
         "returnToEvent": "Επιστροφή στην εκδήλωση"
     },
@@ -902,10 +926,10 @@
         "endsAt": "Λήγει στις {time}",
         "saved": "Προστέθηκε",
         "host": {
-            "eyebrow": "Εργαλεία host",
-            "badge": "Προβολή host",
+            "eyebrow": "Εργαλεία διοργανωτή",
+            "badge": "Προβολή διοργανωτή",
             "title": "Προσθήκη στοιχείου προγράμματος",
-            "subtitle": "Δημιούργησε ένα session που θα εμφανιστεί στο πρόγραμμα των καλεσμένων και στην προεπισκόπηση του feed.",
+            "subtitle": "Δημιουργήστε μια ενότητα που θα εμφανίζεται στο πρόγραμμα των καλεσμένων και στην προεπισκόπηση της ροής.",
             "editingEyebrow": "Επεξεργασία στοιχείου",
             "editingTitle": "Επεξεργασία προγράμματος",
             "editingSubtitle": "Ενημέρωσε το “{title}” και αποθήκευσε τις αλλαγές.",
@@ -994,18 +1018,18 @@
         "emptySeat": "Κενή θέση"
     },
     "PlaylistPage": {
-        "backToFeed": "Πίσω στο feed",
+        "backToFeed": "Πίσω στη ροή",
         "title": "Λίστα Τραγουδιών",
         "cancel": "Ακύρωση",
         "suggestASong": "Προτείνετε ένα τραγούδι",
         "suggest": "Πρόταση",
-        "heroEyebrow": "Playlist studio",
+        "heroEyebrow": "Λίστα τραγουδιών",
         "heroTitle": "Δώστε σχήμα στη βραδιά με τα τραγούδια που μετράνε.",
-        "heroBody": "Προσθέστε ένα τραγούδι, βάλτε σύνδεσμο Spotify ή YouTube αν υπάρχει, και αφήστε το δωμάτιο να το ανεβάσει με ψήφους. Καθαρό, απλό και πραγματικά playable.",
+        "heroBody": "Προσθέστε ένα τραγούδι, βάλτε σύνδεσμο Spotify ή YouTube αν υπάρχει και αφήστε τους καλεσμένους να το ανεβάσουν με τις ψήφους τους.",
         "heroStatSongs": "Τραγούδια",
-        "heroStatEmbeds": "Playable links",
+        "heroStatEmbeds": "Σύνδεσμοι αναπαραγωγής",
         "heroStatNotes": "Σχόλια",
-        "heroLive": "Live",
+        "heroLive": "Ζωντανά",
         "formTitle": "Προσθέστε ένα κομμάτι στην ουρά",
         "formSubtitle": "Ο τίτλος είναι υποχρεωτικός. Όλα τα υπόλοιπα είναι προαιρετικά, οπότε μπορείτε να βάλετε σύνδεσμο και ένα σύντομο σχόλιο όταν τα έχετε.",
         "songTitle": "Τίτλος τραγουδιού",
@@ -1024,13 +1048,13 @@
         "moreDetails": "Περισσότερες λεπτομέρειες",
         "addToPlaylist": "Προσθήκη στη Λίστα",
         "submitFailed": "Δεν μπορέσαμε να προσθέσουμε το τραγούδι. Δοκιμάστε ξανά.",
-        "readOnly": "Η εκδήλωση είναι μόνο για ανάγνωση. Οι αλλαγές playlist έχουν σταματήσει.",
+        "readOnly": "Η εκδήλωση είναι μόνο για ανάγνωση. Οι αλλαγές στη λίστα τραγουδιών έχουν σταματήσει.",
         "allSongs": "Όλα τα τραγούδια",
         "disabledTitle": "Η λίστα αναπαραγωγής είναι απενεργοποιημένη",
-        "disabledBody": "Αυτό το event έχει κλειστό το module της λίστας αναπαραγωγής, οπότε οι προτάσεις και οι ψήφοι κρύβονται μέχρι να το ενεργοποιήσει ένας host.",
+        "disabledBody": "Η λίστα τραγουδιών δεν είναι ενεργή για αυτή την εκδήλωση. Οι προτάσεις και οι ψήφοι θα εμφανιστούν όταν την ενεργοποιήσει ο διοργανωτής.",
         "moments": {
             "ceremony": "Τελετή",
-            "cocktail": "Cocktail Hour",
+            "cocktail": "Ώρα για κοκτέιλ",
             "reception": "Δεξίωση",
             "firstDance": "Πρώτος Χορός"
         },
@@ -1058,7 +1082,7 @@
         "leaderboardShowingMore": "Εμφάνιση {shown} από {total}",
         "up": "Υπ.",
         "down": "Κάτ.",
-        "voteFailed": "Couldn't update your vote. Please try again.",
+        "voteFailed": "Δεν μπορέσαμε να ενημερώσουμε την ψήφο σας. Δοκιμάστε ξανά.",
         "moduleUnavailable": "Η λίστα τραγουδιών δεν είναι διαθέσιμη στο τρέχον πλάνο αυτής της εκδήλωσης.",
         "disabledUpgradeBody": "Η λίστα τραγουδιών δεν περιλαμβάνεται στο πλάνο αυτής της εκδήλωσης. Αναβαθμίστε σε {plans} για να ξεκλειδώσετε προτάσεις τραγουδιών και ψήφους."
     },
@@ -1186,33 +1210,33 @@
     "RightContextPanel": {
         "hostConsole": "Κονσόλα διοργανωτή",
         "hostQuickLinks": "Γρήγορη πρόσβαση",
-        "activeModules": "Ενεργά modules",
+        "activeModules": "Ενεργές λειτουργίες",
         "dashboard": "Πίνακας",
         "hostActions": "Ενέργειες",
-        "eventDate": "Ημερομηνία event",
+        "eventDate": "Ημερομηνία εκδήλωσης",
         "links": {
             "manage": "Πίνακας",
             "rsvps": "RSVP",
             "invitations": "Προσκλήσεις",
             "settings": "Ρυθμίσεις",
             "billing": "Πλάνο & χρέωση",
-            "gallery": "Gallery"
+            "gallery": "Φωτογραφίες"
         },
         "helper": {
-            "manage": "Επισκόπηση και έλεγχος event",
+            "manage": "Επισκόπηση και έλεγχος εκδήλωσης",
             "rsvps": "Δείτε συμμετοχές και απαντήσεις",
             "invitations": "Δημιουργία ή έλεγχος προσκλήσεων",
-            "settings": "Επεξεργασία λεπτομερειών event",
+            "settings": "Επεξεργασία στοιχείων εκδήλωσης",
             "billing": "Πληρωμές και ανανεώσεις",
             "gallery": "Έλεγχος φωτογραφιών καλεσμένων"
         },
-        "usageTitle": "Plan usage"
+        "usageTitle": "Χρήση πλάνου"
     },
     "AdminPage": {
         "checkingAccess": "Έλεγχος πρόσβασης διαχειριστή...",
         "eyebrow": "Διαχείριση πλατφόρμας",
         "title": "Λειτουργίες πλάνων",
-        "subtitle": "Διαχειριστείτε πλάνα, modules και αναθέσεις χωρίς deploy.",
+        "subtitle": "Διαχειριστείτε πλάνα, λειτουργίες και αναθέσεις από ένα σημείο.",
         "save": "Αποθήκευση",
         "cancel": "Άκυρο",
         "collapse": "Σύμπτυξη",
@@ -1220,7 +1244,7 @@
         "unlimited": "Απεριόριστο",
         "accessDenied": {
             "title": "Απαιτείται πρόσβαση διαχειριστή",
-            "body": "Χρειάζεστε λογαριασμό διαχειριστή για να διαχειριστείτε πλάνα, modules και αναθέσεις."
+            "body": "Χρειάζεστε λογαριασμό διαχειριστή για να διαχειριστείτε πλάνα, λειτουργίες και αναθέσεις."
         },
         "layout": {
             "console": "Κέντρο ελέγχου",
@@ -1229,35 +1253,35 @@
             "accountPlans": "Πλάνα λογαριασμών",
             "eventPlans": "Πλάνα εκδηλώσεων",
             "plans": "Πλάνα",
-            "modules": "Modules",
+            "modules": "Λειτουργίες",
             "assignments": "Αναθέσεις",
             "billingOps": "Χρεώσεις",
             "refunds": "Επιστροφές",
             "lifecycle": "Κύκλος ζωής",
-            "closeMenu": "???????? ?????",
-            "signOutConfirmTitle": "???????????? ?????? ?????? ?????????????? ??????????????????????;",
-            "signOutConfirmBody": "???????? ???????????? ???? ?????? ??? ??? ???? ???????????.",
-            "metrics": "Metrics"
+            "closeMenu": "Κλείσιμο μενού",
+            "signOutConfirmTitle": "Θέλετε να αποσυνδεθείτε;",
+            "signOutConfirmBody": "Θα χρειαστεί να συνδεθείτε ξανά για να συνεχίσετε.",
+            "metrics": "Στατιστικά"
         },
         "tabs": {
             "accountPlans": "Πλάνα λογαριασμών",
             "eventPlans": "Πλάνα εκδηλώσεων",
             "plans": "Πλάνα",
-            "modules": "Modules",
+            "modules": "Λειτουργίες",
             "assignments": "Αναθέσεις",
             "billingOps": "Χρεώσεις",
             "refunds": "Επιστροφές",
             "lifecycle": "Κύκλος ζωής",
-            "metrics": "Metrics"
+            "metrics": "Στατιστικά"
         },
         "fields": {
             "code": "Κωδικός",
-            "scope": "Scope",
+            "scope": "Κατηγορία",
             "name": "Όνομα",
             "sort": "Σειρά",
             "description": "Περιγραφή",
             "storage": "Αποθήκευση",
-            "storageBytes": "Bytes αποθήκευσης",
+            "storageBytes": "Χώρος αποθήκευσης σε bytes",
             "unit": "Μονάδα",
             "maxMembers": "Μέλη",
             "maxActiveEvents": "Ενεργές εκδηλώσεις",
@@ -1275,8 +1299,8 @@
             "isPublic": "Δημόσιο",
             "isPublicHint": "Εμφανίζεται στην επιλογή πλάνου από πελάτες.",
             "plan": "Πλάνο",
-            "recurringPrice": "Monthly price",
-            "includedMonths": "Included months"
+            "recurringPrice": "Μηνιαία τιμή",
+            "includedMonths": "Μήνες κάλυψης"
         },
         "plans": {
             "loading": "Φόρτωση πλάνων...",
@@ -1292,9 +1316,9 @@
             "members": "μέλη",
             "activeEvents": "ενεργές εκδηλώσεις",
             "eventsPerUser": "εκδηλώσεις ανά χρήστη",
-            "moduleCount": "{count, plural, one {# module} other {# modules}}",
-            "includedModules": "Περιλαμβανόμενα modules",
-            "saveModules": "Αποθήκευση modules",
+            "moduleCount": "{count, plural, one {# λειτουργία} other {# λειτουργίες}}",
+            "includedModules": "Λειτουργίες που περιλαμβάνονται",
+            "saveModules": "Αποθήκευση λειτουργιών",
             "destructiveHint": "Αρχειοθετήστε πλάνα αντί να τα διαγράφετε όταν μπορεί να χρησιμοποιούνται.",
             "deleteConfirmTitle": "Διαγραφή του {code};",
             "deleteConfirmBody": "Διαγράψτε μόνο πλάνα που δημιουργήθηκαν κατά λάθος και δεν έχουν ανατεθεί ποτέ. Τα πλάνα σε χρήση πρέπει να αρχειοθετούνται.",
@@ -1302,7 +1326,7 @@
                 "identity": "Στοιχεία πλάνου",
                 "limits": "Όρια",
                 "pricing": "Τιμολόγηση",
-                "modules": "Modules",
+                "modules": "Λειτουργίες",
                 "modulesHint": "Ενεργοποιήστε τα εργαλεία που ξεκλειδώνει αυτό το πλάνο εκδήλωσης.",
                 "availability": "Διαθεσιμότητα"
             },
@@ -1319,7 +1343,7 @@
                 "EVENT": {
                     "eyebrow": "Κατάλογος εκδηλώσεων",
                     "title": "Πλάνα εκδηλώσεων",
-                    "subtitle": "Όρια και modules που εφαρμόζονται σε μία εκδήλωση, όπως μέλη, αποθήκευση και διαθέσιμα εργαλεία."
+                    "subtitle": "Όρια και λειτουργίες για κάθε εκδήλωση, όπως καλεσμένοι, αποθηκευτικός χώρος και διαθέσιμα εργαλεία."
                 }
             },
             "create": {
@@ -1334,9 +1358,9 @@
             "archiveConfirmTitle": "Αρχειοθέτηση του {code};",
             "archiveConfirmBody": "Αυτό το πλάνο δεν θα μπορεί πλέον να ανατεθεί και θα κρυφτεί από τις κανονικές λίστες πλάνων. Μπορείτε να το επαναφέρετε αργότερα από την προβολή αρχειοθετημένων.",
             "makeDefaultConfirmTitle": "Να γίνει το {code} προεπιλογή;",
-            "makeDefaultConfirmBody": "Νέοι λογαριασμοί ή εκδηλώσεις σε αυτό το scope θα χρησιμοποιούν αυτό το πλάνο όταν δεν έχει επιλεγεί άλλο. Οι υπάρχουσες αναθέσεις δεν αλλάζουν.",
-            "modulesConfirmTitle": "Αποθήκευση modules για το {code};",
-            "modulesConfirmBody": "Αυτό αλλάζει ποια εργαλεία εκδήλωσης ξεκλειδώνει το πλάνο. Εκδηλώσεις σε αυτό το πλάνο μπορεί να αποκτήσουν ή να χάσουν πρόσβαση μετά το refresh του config.",
+            "makeDefaultConfirmBody": "Οι νέοι λογαριασμοί ή εκδηλώσεις αυτής της κατηγορίας θα χρησιμοποιούν αυτό το πλάνο όταν δεν έχει επιλεγεί άλλο. Οι υπάρχουσες αναθέσεις δεν αλλάζουν.",
+            "modulesConfirmTitle": "Αποθήκευση λειτουργιών για το {code};",
+            "modulesConfirmBody": "Αυτό αλλάζει τα εργαλεία που προσφέρει το πλάνο. Οι εκδηλώσεις μπορεί να αποκτήσουν ή να χάσουν πρόσβαση μετά την ανανέωση των ρυθμίσεων.",
             "restoreConfirmTitle": "Επαναφορά του {code};",
             "restoreConfirmBody": "Αυτό το πλάνο θα μπορεί να ανατεθεί ξανά και μπορεί να εμφανίζεται όπου περιλαμβάνονται αρχειοθετημένα πλάνα.",
             "saveConfirmTitle": "Αποθήκευση αλλαγών στο {code};",
@@ -1344,15 +1368,24 @@
             "selectorHint": "Επιλέξτε ένα πλάνο αριστερά για να το επεξεργαστείτε στο κύριο πάνελ.",
             "empty": "Δεν υπάρχουν πλάνα για προβολή.",
             "emptyEditorTitle": "Επιλέξτε πλάνο",
-            "emptyEditorBody": "Διαλέξτε ένα πλάνο από τη λίστα για να ανοίξει ο πλήρης editor.",
-            "accountDisabledNotice": "Account plans are disabled for new sales and assignment. Existing rows remain here for historical review and limited maintenance."
+            "emptyEditorBody": "Επιλέξτε ένα πλάνο από τη λίστα για να δείτε όλες τις ρυθμίσεις του.",
+            "saveSummary": {
+                "noChanges": "Δεν εντοπίστηκαν αλλαγές. Μπορείτε να ακυρώσετε και να συνεχίσετε την επεξεργασία.",
+                "review": "Ελέγξτε τις αλλαγές πριν εφαρμοστούν.",
+                "fields": "Στοιχεία πλάνου",
+                "to": "σε",
+                "modules": "Λειτουργίες",
+                "enabled": "Θα ενεργοποιηθεί",
+                "disabled": "Θα απενεργοποιηθεί"
+            },
+            "accountDisabledNotice": "Τα πλάνα λογαριασμού δεν είναι διαθέσιμα για νέες πωλήσεις ή αναθέσεις. Οι υπάρχουσες εγγραφές παραμένουν μόνο για ιστορικό και βασική διαχείριση."
         },
         "modules": {
-            "notice": "Τα platform modules ορίζονται από τον κώδικα του backend. Απενεργοποιήστε ένα module εδώ για να αποσυρθεί παντού στο επόμενο config refresh.",
-            "loading": "Φόρτωση modules...",
+            "notice": "Οι διαθέσιμες λειτουργίες ορίζονται από το σύστημα. Αν απενεργοποιήσετε μια λειτουργία εδώ, θα αφαιρεθεί παντού στην επόμενη ανανέωση των ρυθμίσεων.",
+            "loading": "Φόρτωση λειτουργιών...",
             "enabled": "Ενεργό",
             "confirmTitle": "Αποθήκευση του {module};",
-            "confirmBody": "Αυτό ενημερώνει το registry των platform modules. Η απενεργοποίηση module μπορεί να αφαιρέσει τη λειτουργία παντού μετά το refresh του config."
+            "confirmBody": "Αυτό ενημερώνει τη λίστα λειτουργιών. Η απενεργοποίηση μπορεί να αφαιρέσει τη λειτουργία παντού μετά την ανανέωση των ρυθμίσεων."
         },
         "assignments": {
             "userTitle": "Ανάθεση πλάνου λογαριασμού",
@@ -1370,12 +1403,12 @@
             "confirmUserTitle": "Ανάθεση πλάνου στον χρήστη {userId};",
             "confirmUserBody": "Αυτό αλλάζει το πλάνο λογαριασμού σε {plan} και μπορεί να αλλάξει άμεσα τα όρια λογαριασμού.",
             "confirmEventTitle": "Ανάθεση πλάνου στην εκδήλωση {eventId};",
-            "confirmEventBody": "Αυτό αλλάζει το πλάνο εκδήλωσης σε {plan} και μπορεί να αλλάξει άμεσα όρια αποθήκευσης, μελών και modules.",
-            "accountDisabledNotice": "Account-plan assignment is disabled by the backend. Users keep their existing account plan; only event-plan assignment remains available."
+            "confirmEventBody": "Αυτό αλλάζει το πλάνο εκδήλωσης σε {plan} και μπορεί να αλλάξει αμέσως τα όρια χώρου, καλεσμένων και λειτουργιών.",
+            "accountDisabledNotice": "Η ανάθεση πλάνου λογαριασμού είναι απενεργοποιημένη. Οι χρήστες κρατούν το υπάρχον πλάνο τους και μπορείτε να αναθέσετε μόνο πλάνα εκδηλώσεων."
         },
         "errors": {
             "planInUse": "Αυτό το πλάνο χρησιμοποιείται. Αρχειοθετήστε το αντί να το διαγράψετε.",
-            "onlyDefault": "Ορίστε πρώτα άλλο πλάνο ως προεπιλογή για αυτό το scope.",
+            "onlyDefault": "Ορίστε πρώτα άλλο πλάνο ως προεπιλογή για αυτή την κατηγορία.",
             "generic": "Κάτι πήγε στραβά. Δοκιμάστε ξανά.",
             "orderNotPending": "Αυτή η παραγγελία έχει ήδη διακανονιστεί ή ακυρωθεί.",
             "notFound": "Δεν βρέθηκε η εγγραφή. Ελέγξτε το id και δοκιμάστε ξανά.",
@@ -1383,18 +1416,18 @@
             "refundNotEligible": "Η εκδήλωση δεν πληροί πλέον τις προϋποθέσεις επιστροφής.",
             "orderNotRefundable": "Επιστρέφεται μόνο η πληρωμή ενεργοποίησης.",
             "eventNotActive": "Η εκδήλωση δεν είναι ενεργή, οπότε η ενέργεια δεν ισχύει.",
-            "webhookAlreadyProcessed": "This webhook was already processed. Refresh the list.",
-            "webhookNotReplayable": "This webhook cannot be replayed because its body was not stored.",
-            "accountPlansDisabled": "Account plans are disabled; only event plans can be created or assigned."
+            "webhookAlreadyProcessed": "Αυτό το webhook έχει ήδη επεξεργαστεί. Ανανεώστε τη λίστα.",
+            "webhookNotReplayable": "Αυτό το webhook δεν μπορεί να εκτελεστεί ξανά επειδή δεν αποθηκεύτηκαν τα δεδομένα του.",
+            "accountPlansDisabled": "Τα πλάνα λογαριασμού είναι απενεργοποιημένα. Μπορείτε να δημιουργείτε ή να αναθέτετε μόνο πλάνα εκδηλώσεων."
         },
         "billingOps": {
             "notice": "Ο διακανονισμός μιας παραγγελίας τη σημαίνει ως πληρωμένη χωρίς πραγματική πληρωμή και ενεργοποιεί την εκδήλωση όπως μια κανονική πληρωμή. Σε dev και staging είναι ο μόνος τρόπος να φύγει μια εκδήλωση από το DRAFT.",
             "settleTitle": "Διακανονισμός παραγγελίας",
             "settleSubtitle": "Για τραπεζικά εμβάσματα, δωρεάν εκδηλώσεις και πληρωμές που δεν έφτασε ποτέ το webhook τους.",
-            "sweepTitle": "Notification sweep",
-            "sweepSubtitle": "Run the quota notification rules now. The backend deduplicates results, so unchanged data usually creates zero new rows.",
-            "runSweep": "Run sweep",
-            "sweepSuccess": "Sweep complete: {result}",
+            "sweepTitle": "Έλεγχος ειδοποιήσεων",
+            "sweepSubtitle": "Ελέγξτε τώρα τους κανόνες ειδοποιήσεων για τα όρια χρήσης. Αν δεν έχει αλλάξει κάτι, συνήθως δεν δημιουργούνται νέες ειδοποιήσεις.",
+            "runSweep": "Έναρξη ελέγχου",
+            "sweepSuccess": "Ο έλεγχος ολοκληρώθηκε: {result}",
             "orderIdField": "UUID παραγγελίας",
             "settle": "Διακανονισμός",
             "settleThis": "Διακανονισμός",
@@ -1410,15 +1443,15 @@
             "noOrderRef": "Χωρίς αναφορά παραγγελίας",
             "unknownEventType": "Άγνωστο συμβάν",
             "confirmSettleTitle": "Διακανονισμός παραγγελίας {orderId};",
-            "confirmSettleBody": "Αυτό σημαίνει την παραγγελία ως πληρωμένη χωρίς πληρωμή από provider και μπορεί να ενεργοποιήσει την εκδήλωση. Επιβεβαιώστε μόνο αφού ελέγξετε την πληρωμή ή το comp.",
-            "confirmSweepTitle": "Run notification sweep?",
-            "confirmSweepBody": "This can create visible host notifications for quota warnings, offers, and tips. It cannot send arbitrary messages.",
+            "confirmSettleBody": "Αυτό καταχωρίζει την παραγγελία ως πληρωμένη χωρίς πληρωμή από πάροχο και μπορεί να ενεργοποιήσει την εκδήλωση. Επιβεβαιώστε μόνο αφού ελέγξετε την πληρωμή ή τη δωρεάν παροχή.",
+            "confirmSweepTitle": "Να γίνει έλεγχος ειδοποιήσεων;",
+            "confirmSweepBody": "Μπορεί να δημιουργηθούν ειδοποιήσεις προς τους διοργανωτές για όρια χρήσης, προσφορές και συμβουλές.",
             "orderIdPlaceholder": "order-id",
-            "replay": "Replay",
-            "replayed": "Replayed",
-            "notReplayable": "This delivery predates body storage and cannot be replayed.",
-            "confirmReplayTitle": "Replay this webhook?",
-            "confirmReplayBody": "This asks the backend to process the stored provider delivery again. Use it only after checking the delivery is safe to retry."
+            "replay": "Εκτέλεση ξανά",
+            "replayed": "Εκτελέστηκε ξανά",
+            "notReplayable": "Αυτή η παράδοση έγινε πριν αρχίσουν να αποθηκεύονται τα δεδομένα και δεν μπορεί να εκτελεστεί ξανά.",
+            "confirmReplayTitle": "Να εκτελεστεί ξανά αυτό το webhook;",
+            "confirmReplayBody": "Το αποθηκευμένο αίτημα του παρόχου θα υποβληθεί ξανά σε επεξεργασία. Συνεχίστε μόνο αφού βεβαιωθείτε ότι είναι ασφαλές."
         },
         "refunds": {
             "title": "Αιτήματα επιστροφής",
@@ -1462,23 +1495,23 @@
             "purgePartial": "Ορισμένα αρχεία της {eventId} δεν διαγράφηκαν. Η εκδήλωση παραμένει παγωμένη — δοκιμάστε ξανά.",
             "eventIdPlaceholder": "event-id",
             "freezeConfirmTitle": "Πάγωμα εκδήλωσης {eventId};",
-            "freezeConfirmBody": "Η εκδήλωση θα γίνει μόνο για ανάγνωση όσο εκτελείται η διαδικασία lifecycle. Οι διοργανωτές και καλεσμένοι δεν θα μπορούν να κάνουν αλλαγές.",
+            "freezeConfirmBody": "Η εκδήλωση θα γίνει μόνο για ανάγνωση όσο ολοκληρώνεται η αλλαγή. Οι διοργανωτές και οι καλεσμένοι δεν θα μπορούν να κάνουν αλλαγές.",
             "purgeConfirmTitle": "Οριστική διαγραφή εκδήλωσης {eventId};",
             "purgeConfirmBody": "Αυτό διαγράφει δεδομένα και αρχεία της εκδήλωσης όπου είναι δυνατό. Η ενέργεια δεν πρέπει να εκτελείται χωρίς τελικό έλεγχο."
         },
         "metrics": {
-            "eyebrow": "Live platform counts",
-            "title": "Platform metrics",
-            "subtitle": "Dashboard totals from the admin metrics endpoint. Group keys come from live plan and status data.",
-            "loading": "Loading metrics...",
-            "refresh": "Refresh",
-            "totalUsers": "Total users",
-            "activeUsers": "Active users",
-            "totalEvents": "Total events",
-            "activeEvents": "Active events",
-            "usersByAccountPlan": "Users by account plan",
-            "eventsByStatus": "Events by status",
-            "eventsByPlanTier": "Events by event plan"
+            "eyebrow": "Τρέχοντα στοιχεία πλατφόρμας",
+            "title": "Στατιστικά πλατφόρμας",
+            "subtitle": "Συνολικά στοιχεία χρηστών και εκδηλώσεων, ομαδοποιημένα ανά πλάνο και κατάσταση.",
+            "loading": "Φόρτωση στατιστικών...",
+            "refresh": "Ανανέωση",
+            "totalUsers": "Σύνολο χρηστών",
+            "activeUsers": "Ενεργοί χρήστες",
+            "totalEvents": "Σύνολο εκδηλώσεων",
+            "activeEvents": "Ενεργές εκδηλώσεις",
+            "usersByAccountPlan": "Χρήστες ανά πλάνο λογαριασμού",
+            "eventsByStatus": "Εκδηλώσεις ανά κατάσταση",
+            "eventsByPlanTier": "Εκδηλώσεις ανά πλάνο"
         }
     },
     "FeedQuickAccessBar": {
@@ -1490,7 +1523,7 @@
                 "subtitle": "Δείτε τον πίνακα"
             },
             "stories": {
-                "label": "Stories",
+                "label": "Ιστορίες",
                 "subtitle": "Δείτε τις τελευταίες στιγμές"
             },
             "rsvp": {
@@ -1499,7 +1532,7 @@
             },
             "schedule": {
                 "label": "Πρόγραμμα",
-                "subtitle": "Δείτε το timeline"
+                "subtitle": "Δείτε τη ροή του προγράμματος"
             },
             "venue": {
                 "label": "Χώρος",
@@ -1510,7 +1543,7 @@
                 "subtitle": "Προβολή λίστας"
             },
             "playlist": {
-                "label": "Playlist",
+                "label": "Μουσική",
                 "subtitle": "Προτείνετε τραγούδι"
             },
             "seating": {
@@ -1522,21 +1555,50 @@
                 "subtitle": "Αφήστε ένα μήνυμα"
             },
             "gallery": {
-                "label": "Gallery",
+                "label": "Φωτογραφίες",
                 "subtitle": "Μοιραστείτε φωτογραφίες"
             }
         }
     },
-    "PlanUsage": {
-        "currentPlan": "Current plan: {plan}",
-        "upgradeTo": "Upgrade to {plan}",
-        "unlimited": "Unlimited",
-        "items": {
-            "storage": "Storage",
-            "members": "Members",
-            "activeEvents": "Active events"
+    "PlanDescriptions": {
+        "BASIC": "Όλα όσα χρειάζεστε για να ξεκινήσετε την εκδήλωσή σας.",
+        "FREE": "Οι βασικές δυνατότητες για να ξεκινήσετε.",
+        "PLUS": "Περισσότερος χώρος και δυνατότητες για μια μεγαλύτερη εκδήλωση.",
+        "PRO": "Τα μεγαλύτερα όρια και όλες οι διαθέσιμες λειτουργίες.",
+        "fallback": "Δείτε τα όρια και τις λειτουργίες που περιλαμβάνει το {plan}."
+    },
+    "Modules": {
+        "posts": {
+            "name": "Δημοσιεύσεις",
+            "description": "Οι καλεσμένοι μοιράζονται μηνύματα, φωτογραφίες, αντιδράσεις και σχόλια στον πίνακα της εκδήλωσης."
         },
-        "includedModules": "Included modules"
+        "rsvp": {
+            "name": "RSVP",
+            "description": "Συγκεντρώστε απαντήσεις συμμετοχής, σημειώσεις, αριθμό θέσεων και απαντήσεις για το πρόγραμμα."
+        },
+        "playlist": {
+            "name": "Μουσική",
+            "description": "Οι καλεσμένοι προτείνουν τραγούδια και ψηφίζουν όσα θέλουν να ακούσουν."
+        },
+        "stories": {
+            "name": "Ιστορίες",
+            "description": "Μοιραστείτε στιγμές που μένουν διαθέσιμες για λίγο."
+        },
+        "gallery": {
+            "name": "Φωτογραφίες",
+            "description": "Οι καλεσμένοι ανεβάζουν φωτογραφίες σε ξεχωριστή συλλογή για τον διοργανωτή."
+        }
+    },
+    "PlanUsage": {
+        "currentPlan": "Τωρινό πλάνο: {plan}",
+        "upgradeTo": "Αναβάθμιση σε {plan}",
+        "unlimited": "Χωρίς όριο",
+        "items": {
+            "storage": "Αποθηκευτικός χώρος",
+            "members": "Καλεσμένοι",
+            "activeEvents": "Ενεργές εκδηλώσεις"
+        },
+        "includedModules": "Λειτουργίες που περιλαμβάνονται"
     },
     "ApiErrors": {
         "generic": "Κάτι πήγε στραβά. Δοκιμάστε ξανά.",
@@ -1583,7 +1645,7 @@
         "storageUploadFailed": "Δεν μπορέσαμε να ανεβάσουμε το αρχείο. Δοκιμάστε ξανά.",
         "duplicateReaction": "Η αντίδρασή σας έχει ήδη αποθηκευτεί.",
         "alreadyLinked": "Αυτό το στοιχείο είναι ήδη συνδεδεμένο.",
-        "webhookPayloadTooLarge": "Το payload του webhook είναι πολύ μεγάλο για επεξεργασία.",
+        "webhookPayloadTooLarge": "Τα δεδομένα του webhook είναι πολύ μεγάλα για επεξεργασία.",
         "planInUse": "Αυτό το πλάνο χρησιμοποιείται από λογαριασμούς ή εκδηλώσεις και δεν μπορεί να διαγραφεί.",
         "planIsOnlyDefault": "Ορίστε πρώτα άλλο προεπιλεγμένο πλάνο.",
         "orderNotPending": "Αυτή η παραγγελία δεν είναι πλέον σε εκκρεμότητα.",
@@ -1595,12 +1657,12 @@
         "internalError": "Κάτι πήγε στραβά από την πλευρά μας. Δοκιμάστε ξανά."
     },
     "GalleryPage": {
-        "hostEyebrow": "Gallery διοργανωτή",
-        "guestEyebrow": "Gallery καλεσμένου",
-        "title": "Gallery",
+        "hostEyebrow": "Φωτογραφίες διοργανωτή",
+        "guestEyebrow": "Φωτογραφίες καλεσμένου",
+        "title": "Φωτογραφίες",
         "hostSubtitle": "Οι φωτογραφίες των καλεσμένων αποθηκεύονται εδώ χωρίς να δημιουργούν δημοσιεύσεις στη ροή, ώστε να τις δείτε και να τις κατεβάσετε αργότερα.",
-        "guestSubtitle": "Μοιραστείτε φωτογραφίες από την εκδήλωση. Οι μεταφορτώσεις αποθηκεύονται στο gallery για τον διοργανωτή.",
-        "moduleUnavailable": "Το Gallery δεν είναι διαθέσιμο στο τρέχον πλάνο αυτής της εκδήλωσης.",
+        "guestSubtitle": "Μοιραστείτε φωτογραφίες από την εκδήλωση. Οι μεταφορτώσεις αποθηκεύονται στη συλλογή του διοργανωτή.",
+        "moduleUnavailable": "Οι φωτογραφίες δεν είναι διαθέσιμες στο τρέχον πλάνο αυτής της εκδήλωσης.",
         "eventFrozen": "Η εκδήλωση είναι μόνο για ανάγνωση. Οι υπάρχουσες φωτογραφίες είναι διαθέσιμες, αλλά οι νέες μεταφορτώσεις έχουν σταματήσει.",
         "uploadTitle": "Μεταφόρτωση φωτογραφιών",
         "uploadHint": "Επιλέξτε έως {count} εικόνες κάθε φορά.",
@@ -1614,6 +1676,6 @@
         "photoCount": "{count} φωτογραφίες",
         "emptyTitle": "Δεν υπάρχουν φωτογραφίες ακόμη",
         "emptyBody": "Οι φωτογραφίες από QR κάρτες ή αυτή τη σελίδα θα εμφανίζονται εδώ.",
-        "guestSavedForHost": "Οι φωτογραφίες που ανεβάζετε αποθηκεύονται στο gallery της εκδήλωσης για να τις δει αργότερα ο διοργανωτής."
+        "guestSavedForHost": "Οι φωτογραφίες που ανεβάζετε αποθηκεύονται στη συλλογή της εκδήλωσης για να τις δει αργότερα ο διοργανωτής."
     }
 }

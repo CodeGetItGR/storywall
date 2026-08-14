@@ -1,4 +1,8 @@
 {
+    "Common": {
+        "optional": "optional",
+        "required": "required"
+    },
     "EventNotFound": {
         "title": "This celebration seems to have wandered off",
         "description": "We couldn't find an event at this link. Double-check the invite you were sent, or head back and pick an event from your list.",
@@ -7,9 +11,11 @@
     },
     "Countdown": {
         "days": "Days",
+        "daysShort": "d",
         "hours": "Hours",
+        "hoursShort": "h",
         "minutes": "Minutes",
-        "seconds": "Seconds"
+        "minutesShort": "min"
     },
     "StoriesRow": {
         "ariaLabel": "Stories"
@@ -22,7 +28,9 @@
     },
     "FeedPage": {
         "scheduleBadge": "Schedule",
-        "loadingMore": "Loading more…"
+        "loadingMore": "Loading more…",
+        "loading": "Loading feed",
+        "aboutEvent": "About this event"
     },
     "FeedScheduleCard": {
         "eyebrow": "Schedule",
@@ -75,13 +83,17 @@
             "profile": "Profile"
         }
     },
-    "AccountTopBar": {
-        "profile": "Profile",
-        "logout": "Log out",
-        "fallbackName": "Account"
+    "LanguageSwitcher": {
+        "label": "Language",
+        "languages": {
+            "en": "EN",
+            "el": "EL"
+        }
     },
     "MobileTabBar": {
-        "mobileNavigation": "Mobile navigation",
+        "eventNavigation": "Event navigation",
+        "eventMenu": "Event menu",
+        "openAccount": "Open your account",
         "compose": "Create",
         "composeMenu": {
             "post": "Post",
@@ -320,8 +332,17 @@
         }
     },
     "ProfilePage": {
+        "drawerLabel": "Your account",
+        "closeDrawer": "Close account",
+        "fallbackName": "Account",
+        "logout": "Log out",
         "yourEvents": "Your events",
+        "loadingEvents": "Loading your events",
+        "activeEvent": "Current event",
         "eventUnavailable": "Event unavailable",
+        "preferences": {
+            "language": "Language"
+        },
         "roleFallback": {
             "host": "Host",
             "attendee": "Guest"
@@ -707,6 +728,9 @@
             "subtitle": "See the differences before you continue to billing.",
             "upgradeSubtitle": "Compared with your current {plan} plan.",
             "upgradeCharge": "{amount} due through {date}.",
+            "upgradeChargeUnlimited": "{amount} for the upgrade. Your coverage stays unlimited.",
+            "upgradeChargeNoDate": "{amount} for the upgrade.",
+            "upgradeChargeUnavailable": "The upgrade price is not available right now.",
             "nextPlanHint": "Next upgrade: {plan}",
             "highestPlan": "You are on the highest published tier.",
             "field": "Field",
@@ -1327,6 +1351,15 @@
             "empty": "No plans to show.",
             "emptyEditorTitle": "Select a plan",
             "emptyEditorBody": "Choose a plan from the list to open the full editor.",
+            "saveSummary": {
+                "noChanges": "No changes detected. You can cancel and keep editing.",
+                "review": "Review the exact updates before they are applied.",
+                "fields": "Plan fields",
+                "to": "to",
+                "modules": "Modules",
+                "enabled": "Will be enabled",
+                "disabled": "Will be disabled"
+            },
             "create": {
                 "title": "Create plan",
                 "subtitle": "Add a catalog tier without leaving this screen.",
@@ -1525,6 +1558,35 @@
                 "label": "Wishbook",
                 "subtitle": "Leave a note"
             }
+        }
+    },
+    "PlanDescriptions": {
+        "BASIC": "Everything you need to get your event started.",
+        "FREE": "The essentials for getting started.",
+        "PLUS": "More space and features for a bigger event.",
+        "PRO": "The highest limits and every available feature.",
+        "fallback": "See the limits and features included with {plan}."
+    },
+    "Modules": {
+        "posts": {
+            "name": "Posts",
+            "description": "Guests can share messages, photos, reactions, and comments on the event wall."
+        },
+        "rsvp": {
+            "name": "RSVP",
+            "description": "Collect guest attendance, notes, seat counts, and session replies."
+        },
+        "playlist": {
+            "name": "Playlist",
+            "description": "Guests can suggest songs and vote for the tracks they want to hear."
+        },
+        "stories": {
+            "name": "Stories",
+            "description": "Share short-lived moments from guests and hosts."
+        },
+        "gallery": {
+            "name": "Gallery",
+            "description": "Guests can upload event photos to a separate gallery for the host."
         }
     },
     "PlanUsage": {

@@ -49,9 +49,8 @@ usage limits, upgrade offers, tips — produced solely by a backend scheduled sw
 `recipientMemberId` is now nullable.
 
 Anything below in this document describing the notifications page as "the highest-value FE task,
-just needs wiring to the existing hook" is **out of date**: the page is now wired to the real
-read/read-all/delete endpoints, the dead client create hook has been removed, and the admin sweep
-action lives in Billing Ops.
+just needs wiring to the existing hook" is **out of date**: the existing `useNotifications` hook is
+built against the old contract and needs revising, not merely calling.
 
 **See [`frontend-integration-guide.md`](frontend-integration-guide.md) → "Notifications —
 repurposed for hosts"** for the current contract and the breaking-change list.
@@ -129,14 +128,16 @@ them yet:
 - **Co-host management** — `useEventHosts` etc. exist, zero UI callers.
 - **Event modules** — read-only in practice; `useUpdateEventModule`/create/delete are all
   unused, so there's no settings UI to actually enable/disable modules.
-- **Event sessions/agenda** — the real "Schedule" tool page now uses the CRUD hooks, so this is
-  no longer an integration gap.
+- **Event sessions/agenda** — full CRUD hooks exist but are unused; the real "Schedule" tool
+  page uses `lib/mock-data` instead.
 - **RSVP per-session responses** (`rsvp-session-responses`) — hooks exist, no callers.
 
 **Confirmed mock, not wired**:
 
-Notifications and Schedule have both moved off mock data. The remaining mock-only pages are the
-features with no backend yet: Gifts, Wishbook, Quiz, Seating, and Future Messages.
+- **Notifications** — the page still runs on `lib/mock-data`. ⚠️ **Superseded 2026-08-04**: the
+  existing hooks are built against the old guest-social contract, which no longer exists. This is
+  now a rewrite against the host-operational contract, not a swap. See #4 and the integration
+  guide.
 
 **Correctly left unwired** (no backend exists, confirmed placeholder-only): Gifts, Wishbook,
 Quiz, Seating, Venue (rich content) — all static/mock, no attempted calls to nonexistent
@@ -150,6 +151,6 @@ contract is gone, so that work is a rewrite against a new DTO shape, and its val
 whether host-facing quota messaging is a near-term priority. Note the sweep that produces these
 notifications is disabled by default, so the feed is empty until ops enables it.
 
-The biggest "hook exists, nobody calls it" gaps remain the event-modules management UI,
-co-host management UI, and RSVP per-session responses. Plan/usage screens are now wired in the
-event dashboard/right panel and plan settings flow.
+Absent that, the biggest "hook exists, nobody calls it" gaps remain the event-modules management UI
+and co-host management UI. Newly available and unwired: the plan/usage screens
+(`GET /api/events/{id}/usage`, `GET /api/me/usage`).

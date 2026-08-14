@@ -18,7 +18,7 @@ type UsagePanelProps = {
     title: string;
     planName: string;
     items: UsageItem[];
-    includedModules?: string[];
+    includedModuleKeys?: string[];
     nextPlanName?: string;
     upgradeHref?: string;
     className?: string;
@@ -28,12 +28,13 @@ function clampPercent(percent: number): number {
     return Math.max(0, Math.min(100, percent));
 }
 
-export function UsagePanel({ title, planName, items, includedModules = [], nextPlanName, upgradeHref, className }: UsagePanelProps) {
+export function UsagePanel({ title, planName, items, includedModuleKeys = [], nextPlanName, upgradeHref, className }: UsagePanelProps) {
     const t = useTranslations('PlanUsage');
+    const tModules = useTranslations('Modules');
 
     return (
-        <section className={cn('rounded-2xl border border-border bg-card p-4 shadow-sm', className)}>
-            <div className="mb-4 flex items-start justify-between gap-3">
+        <section className={cn('space-y-3', className)}>
+            <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                     <p className="text-sm font-semibold text-ink">{title}</p>
                     <p className="mt-0.5 text-xs text-ink-muted">{t('currentPlan', { plan: planName })}</p>
@@ -82,13 +83,13 @@ export function UsagePanel({ title, planName, items, includedModules = [], nextP
                 })}
             </div>
 
-            {includedModules.length > 0 && (
-                <div className="mt-4 border-t border-border pt-3">
+            {includedModuleKeys.length > 0 && (
+                <div className="border-t border-border pt-3">
                     <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('includedModules')}</p>
                     <div className="mt-2 flex flex-wrap gap-1.5">
-                        {includedModules.map((moduleName) => (
-                            <span key={moduleName} className="rounded-full bg-surface-muted px-2 py-1 text-[11px] font-medium text-ink-muted">
-                                {moduleName}
+                        {includedModuleKeys.map((moduleKey) => (
+                            <span key={moduleKey} className="rounded-full bg-surface-muted px-2 py-1 text-[11px] font-medium text-ink-muted">
+                                {tModules.has(`${moduleKey}.name`) ? tModules(`${moduleKey}.name`) : moduleKey}
                             </span>
                         ))}
                     </div>

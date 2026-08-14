@@ -699,6 +699,9 @@ export interface QrLinkRequestDto {
 export interface QrLinkPatchDto {
   targetType?: QrTargetType;
   targetId?: string;
+  /** 1..1000. Raises/lowers the shared code's guest limit — the fix for a 5035.
+   *  EVENT_JOIN / MEDIA_UPLOAD only; a 400 on an INVITATION-targeted link. */
+  maxGuests?: number;
   label?: string;
   metadata?: Record<string, unknown>;
   expiresAt?: string;
@@ -712,7 +715,14 @@ export interface QrLinkResponseDto {
   /** Absolute, stable, printable. Render THIS as the QR code — do not build the URL yourself. */
   publicUrl: string;
   targetType: QrTargetType;
+  /** The same derived state a scanner sees — computed by the backend, not stored. Use this for
+   *  the host's badge instead of inferring it from revokedAt/expiresAt, which cannot tell you
+   *  about TARGET_UNAVAILABLE. */
+  status: QrLinkStatus;
   targetId: string | null;
+  /** Read through from the backing invitation. Null only if that invitation has gone missing,
+   *  which also makes the code resolve as TARGET_UNAVAILABLE. */
+  maxGuests: number | null;
   label: string | null;
   metadata: Record<string, unknown>;
   expiresAt: string | null;   // null = never expires
@@ -720,6 +730,32 @@ export interface QrLinkResponseDto {
   createdByUserId: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/**
+ * GET /api/events/{eventId}/qr-links/stats — host only. One row per link, revoked ones included.
+ *
+ * Attribution is by backing invitation, not by scan: nothing is written when a code is scanned,
+ * so there is no scan count and no conversion rate here. Do not derive one.
+ */
+export interface QrLinkStatsDto {
+  qrLinkId: string;
+  label: string | null;
+  targetType: QrTargetType;
+  status: QrLinkStatus;
+  /** Guests who joined through this code and have not been removed since. */
+  joinCount: number;
+  /** Null when the backing invitation has gone missing (status is TARGET_UNAVAILABLE). */
+  maxGuests: number | null;
+  /** Joins remaining before the code starts refusing guests with 5035. Floors at 0, never
+   *  negative. Null whenever maxGuests is. Surface this — it is the only figure that lets a
+   *  host act before a guest gets turned away. */
+  remainingSlots: number | null;
+  /** Null until somebody joins. */
+  lastJoinedAt: string | null;
+  /** Media contributed by the guests this code brought in — everything they ever uploaded, not
+   *  only what they uploaded in the visit that began with the scan. Label it accordingly. */
+  uploadCount: number;
 }
 
 /**

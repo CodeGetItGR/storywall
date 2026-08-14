@@ -2,7 +2,7 @@
 
 import { CreditCard, Images, LayoutDashboard, MessageSquareText, Settings2, Ticket } from 'lucide-react';
 import Link from 'next/link';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 import { UsagePanel } from '@/components/plan/UsagePanel';
 import { useAppConfig } from '@/hooks/useAppConfig';
@@ -25,7 +25,6 @@ function hostLinks(eventId: string) {
 
 export function RightContextPanel() {
     const t = useTranslations('RightContextPanel');
-    const locale = useLocale();
     const activeEvent = useActiveEvent();
     const isHost = useIsHost();
     const isLoading = useEventContextLoading();
@@ -34,22 +33,14 @@ export function RightContextPanel() {
 
     if (isLoading || !activeEvent || !isHost) return null;
 
-    const eventDate = new Date(activeEvent.schedule.startAt);
-    const eventDateLabel = eventDate.toLocaleDateString(locale, {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-    });
-    const enabledModuleCount = activeEvent.modules.filter((module) => module.isAvailable).length;
     const currentPlan = eventUsage ? findPlanByCode(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
     const nextPlan = eventUsage ? findNextPlan(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
     const globallyEnabledModules = (appConfig?.modules ?? []).filter((module_) => module_.isEnabled);
-    const moduleNamesByKey = new Map(globallyEnabledModules.map((module_) => [module_.moduleKey, module_.name]));
+    const enabledModuleKeys = new Set(globallyEnabledModules.map((module_) => module_.moduleKey));
     const availableModuleKeys = new Set(activeEvent.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey));
-    const includedModules =
+    const includedModuleKeys =
         currentPlan?.moduleKeys
-            .filter((moduleKey) => moduleNamesByKey.has(moduleKey) && availableModuleKeys.has(moduleKey))
-            .map((moduleKey) => moduleNamesByKey.get(moduleKey) ?? moduleKey) ?? [];
+            .filter((moduleKey) => enabledModuleKeys.has(moduleKey) && availableModuleKeys.has(moduleKey)) ?? [];
 
     return (
         <aside
@@ -57,30 +48,13 @@ export function RightContextPanel() {
             className="fixed right-0 top-0 z-30 hidden h-screen w-75 flex-col overflow-y-auto border-l border-border bg-background no-scrollbar xl:flex"
         >
             <div className="flex flex-col gap-5 p-5">
-                <div className="rounded-[1.5rem] border border-border bg-linear-to-b from-surface-muted to-card p-4 shadow-[0_12px_30px_rgba(36,31,26,0.05)]">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-faint">{t('hostConsole')}</p>
-                    <h2 className="mt-2 text-lg font-semibold leading-tight text-ink text-balance">{activeEvent.title}</h2>
-                    <p className="mt-1 text-sm text-ink-muted">{eventDateLabel}</p>
-
-                    <div className="mt-4 grid grid-cols-2 gap-2">
-                        <div className="rounded-2xl bg-background/70 px-3 py-2">
-                            <p className="text-[11px] uppercase tracking-[0.16em] text-ink-faint">{t('hostQuickLinks')}</p>
-                            <p className="mt-1 text-sm font-medium text-ink">{t('dashboard')}</p>
-                        </div>
-                        <div className="rounded-2xl bg-background/70 px-3 py-2">
-                            <p className="text-[11px] uppercase tracking-[0.16em] text-ink-faint">{t('activeModules')}</p>
-                            <p className="mt-1 text-sm font-medium text-ink tabular-nums">{enabledModuleCount}</p>
-                        </div>
-                    </div>
-                </div>
-
                 {eventUsage && (
                     <UsagePanel
                         title={t('usageTitle')}
                         planName={currentPlan?.name ?? eventUsage.planTier}
                         nextPlanName={nextPlan?.name}
                         upgradeHref={routes.events.settingsPlan(activeEvent.id)}
-                        includedModules={includedModules}
+                        includedModuleKeys={includedModuleKeys}
                         items={[
                             {
                                 key: 'storage',
@@ -108,20 +82,15 @@ export function RightContextPanel() {
 
                 <div>
                     <p className="mb-2 text-sm font-semibold text-ink">{t('hostActions')}</p>
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                         {hostLinks(activeEvent.id).map(({ key, href, icon: Icon }) => (
                             <Link
                                 key={href}
                                 href={href}
-                                className="group flex items-center gap-3 rounded-2xl border border-border/70 bg-card px-3 py-3 transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-[0_10px_24px_rgba(36,31,26,0.06)]"
+                                className="group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
                             >
-                                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-muted text-ink-muted transition-colors group-hover:bg-primary-light group-hover:text-primary-dark">
-                                    <Icon className="h-4 w-4" aria-hidden="true" />
-                                </span>
-                                <span className="min-w-0">
-                                    <span className="block text-sm font-medium text-ink">{t(`links.${key}`)}</span>
-                                    <span className="block text-xs text-ink-muted">{t(`helper.${key}`)}</span>
-                                </span>
+                                <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                                <span className="min-w-0 truncate">{t(`links.${key}`)}</span>
                             </Link>
                         ))}
                     </div>

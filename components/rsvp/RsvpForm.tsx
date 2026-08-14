@@ -37,6 +37,7 @@ export function RsvpForm({
     submitError,
 }: RsvpFormProps) {
     const t = useTranslations('RSVPPage');
+    const tCommon = useTranslations('Common');
 
     return (
         <div className="p-3 mb-6">
@@ -44,7 +45,7 @@ export function RsvpForm({
             <form onSubmit={onSubmit} className="flex flex-col gap-4">
                 <div>
                     <p className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-2">
-                        {t('willYouAttend')} <span className="text-ink-faint">(required)</span>
+                        {t('willYouAttend')} <span className="text-ink-faint">({tCommon('required')})</span>
                     </p>
                     <div className="grid grid-cols-2 gap-2">
                         <button
@@ -126,7 +127,7 @@ export function RsvpForm({
 
                 <div>
                     <p className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-2">
-                        {t('messageForCouple')} <span className="text-ink-faint">(optional)</span>
+                        {t('messageForCouple')} <span className="text-ink-faint">({tCommon('optional')})</span>
                     </p>
                     <textarea
                         value={message}

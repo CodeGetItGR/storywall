@@ -79,12 +79,11 @@ export default function OverviewTab({
     const currentPlan = eventUsage ? findPlanByCode(planTiers, 'EVENT', eventUsage.planTier) : undefined;
     const nextPlan = eventUsage ? findNextPlan(planTiers, 'EVENT', eventUsage.planTier) : undefined;
     const globallyEnabledModules = modules.filter((module_) => module_.isEnabled);
-    const moduleNamesByKey = new Map(globallyEnabledModules.map((module_) => [module_.moduleKey, module_.name]));
+    const enabledModuleKeys = new Set(globallyEnabledModules.map((module_) => module_.moduleKey));
     const availableModuleKeys = new Set(eventModules.filter((module) => module.isAvailable).map((module) => module.moduleKey));
-    const includedModules =
+    const includedModuleKeys =
         currentPlan?.moduleKeys
-            .filter((moduleKey) => moduleNamesByKey.has(moduleKey) && availableModuleKeys.has(moduleKey))
-            .map((moduleKey) => moduleNamesByKey.get(moduleKey) ?? moduleKey) ?? [];
+            .filter((moduleKey) => enabledModuleKeys.has(moduleKey) && availableModuleKeys.has(moduleKey)) ?? [];
 
     return (
         <div className="flex flex-col gap-4 px-4 sm:gap-5">
@@ -170,7 +169,7 @@ export default function OverviewTab({
                     planName={currentPlan?.name ?? eventUsage.planTier}
                     nextPlanName={nextPlan?.name}
                     upgradeHref={routes.events.settingsPlan(eventId)}
-                    includedModules={includedModules}
+                    includedModuleKeys={includedModuleKeys}
                     items={[
                         {
                             key: 'storage',

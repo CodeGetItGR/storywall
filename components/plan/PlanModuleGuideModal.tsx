@@ -18,6 +18,7 @@ export function PlanModuleGuideModal({
     modules: PlatformModuleResponseDto[];
 }) {
     const t = useTranslations('EventPlanSettingsPage');
+    const tModules = useTranslations('Modules');
     const visibleModuleKeys = enabledModuleKeys(moduleKeys, modules);
 
     return (
@@ -35,8 +36,14 @@ export function PlanModuleGuideModal({
                                     <Icon className="h-4 w-4" />
                                 </span>
                                 <div>
-                                    <p className="text-sm font-semibold text-ink">{meta.name}</p>
-                                    <p className="mt-1 text-sm leading-6 text-ink-muted">{meta.description || t('compare.moduleLegendFallback')}</p>
+                                    <p className="text-sm font-semibold text-ink">
+                                        {tModules.has(`${moduleKey}.name`) ? tModules(`${moduleKey}.name`) : meta.name}
+                                    </p>
+                                    <p className="mt-1 text-sm leading-6 text-ink-muted">
+                                        {tModules.has(`${moduleKey}.description`)
+                                            ? tModules(`${moduleKey}.description`)
+                                            : meta.description || t('compare.moduleLegendFallback')}
+                                    </p>
                                 </div>
                             </div>
                         );

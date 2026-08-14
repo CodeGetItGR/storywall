@@ -5,6 +5,12 @@ Covers three related changes shipped 2026-08-05: a new **`GET /api/config`** end
 that previously didn't exist. See `frontend-integration-guide.md` §0 for base setup (auth
 header, error shape) — this doc only covers what's new.
 
+**2026-08-13:** `media` gained per-kind upload caps (`maxImageBytes`/`maxVideoBytes`) now that
+uploads are validated against the file's real, server-detected type rather than a client-claimed
+one, and the config response gained a `paidServices` array (the "keep originals" add-on and
+storage packs). See `billing-fe-guide.md` §5–§7b for the full purchase flows and
+`multi-image-post-upload-fe-integration.md` for the new upload error codes.
+
 ## GET /api/config
 
 Public — no `Authorization` header needed, safe to call before login (e.g. to gate the login
@@ -15,8 +21,10 @@ payload.
 interface AppConfigResponseDto {
   featureFlags: PlatformFeatureFlagResponseDto[];
   media: {
-    maxFileSizeBytes: number;
+    maxFileSizeBytes: number;      // outer container-level guard, not the real per-file limit — see below
     maxRequestSizeBytes: number;
+    maxImageBytes: number;         // per-kind cap, enforced after server-side format detection
+    maxVideoBytes: number;         // per-kind cap, enforced after server-side format detection
     maxBatchUploadFiles: number;
     maxMediaPerPost: number;
     presignedUrlTtlMinutes: number;
@@ -24,6 +32,7 @@ interface AppConfigResponseDto {
   };
   pagination: { defaultPageSize: number; maxPageSize: number };
   planTiers: PlanTierResponseDto[];   // was Record<'FREE'|'PLUS'|'PRO', {...}> — see plan-tiers-fe-integration.md
+  paidServices: PaidServiceResponseDto[];   // the "keep originals" add-on + storage packs — see billing-fe-guide.md §5
   eventModuleKeys: ('posts' | 'rsvp' | 'playlist' | 'stories' | 'gallery')[];
   rsvp: { minAdults: number; maxAdults: number; minChildren: number; maxChildren: number };
 }
@@ -49,12 +58,24 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
   `next/image`, add this to `images.remotePatterns` in `next.config.js` instead of hardcoding
   the R2 account hostname. Can be `null` in an environment where R2 isn't configured (e.g. some
   local dev setups) — handle that rather than assuming it's always a string.
-- **`media.maxFileSizeBytes` / `maxRequestSizeBytes` / `maxBatchUploadFiles`** — validate the
-  file picker against these instead of the hardcoded `20MB`/`220MB`/`10` currently baked into
-  the multi-image upload flow (see
-  [`multi-image-post-upload-fe-integration.md`](multi-image-post-upload-fe-integration.md)).
-  Client-side rejection is still just UX — the server enforces the real limit regardless.
+- **`media.maxFileSizeBytes` / `maxRequestSizeBytes`** — the outer, container-level guard
+  (200MB/file, 260MB/request as of 2026-08-13). This exists to protect the server, not to
+  express a real per-kind limit — don't show these to users as "the" size limit.
+- **`media.maxImageBytes` / `maxVideoBytes`** — the limits that actually matter to a user
+  (25MB/200MB as of 2026-08-13), enforced *after* the server detects the file's real type from
+  its bytes. Validate the file picker against whichever of these applies to the file's kind,
+  instead of hardcoding `25MB`/`200MB` — an admin can change these via config. See
+  [`multi-image-post-upload-fe-integration.md`](multi-image-post-upload-fe-integration.md) for
+  the resulting error codes. Client-side rejection is still just UX — the server enforces the
+  real limit regardless. Note there is a second, *dimensional* image limit (50 megapixels) that is
+  deliberately not surfaced here — it only fires on synthetic or extreme-panorama input and is
+  reported as `MEDIA_IMAGE_TOO_MANY_PIXELS` (3016) at upload time.
 - **`media.maxMediaPerPost`** — same idea for the post composer's "max 10 images" guard.
+- **`paidServices`** — the public catalog for the "keep originals" add-on and storage packs,
+  filtered to `isPublic && isAssignable` the same way `planTiers` is. Filter by `kind`
+  (`RECURRING_ADDON` vs `STORAGE_PACK`) to build the two different purchase UIs. See
+  [`billing-fe-guide.md`](billing-fe-guide.md) §5–§7b for the full opt-in/checkout flows and the
+  admin CRUD endpoints.
 - **`pagination`** — matches `Page<T>`'s actual `size` behavior on `GET
   /api/events/{eventId}/posts` (currently the only paginated endpoint). Useful if you want a
   page-size selector instead of a hardcoded `20`.

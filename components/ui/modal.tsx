@@ -18,8 +18,9 @@ interface ModalProps {
     open: boolean;
     onClose: () => void;
     size?: ModalSize;
-    variant?: 'center' | 'sheet';
+    variant?: 'center' | 'sheet' | 'drawer';
     closeLabel?: string;
+    ariaLabel?: string;
     className?: string;
     children: ReactNode;
     closeButtonPosition?: 'left' | 'right';
@@ -31,41 +32,50 @@ export function Modal({
     size = 'md',
     variant = 'center',
     closeLabel = 'Close',
+    ariaLabel,
     className,
     children,
     closeButtonPosition = 'right',
 }: ModalProps) {
     const isFull = size === 'full';
     const isSheet = variant === 'sheet';
+    const isDrawer = variant === 'drawer';
 
-    const onOpenChange = useCallback((nextOpen: boolean) => {
-        if (!nextOpen) onClose();
-    }, [onClose]);
+    const onOpenChange = useCallback(
+        (nextOpen: boolean) => {
+            if (!nextOpen) onClose();
+        },
+        [onClose]
+    );
 
     return (
-        <Dialog.Root
-            open={open}
-            onOpenChange={onOpenChange}
-        >
+        <Dialog.Root open={open} onOpenChange={onOpenChange}>
             <Dialog.Portal>
                 <Dialog.Backdrop className="fixed inset-0 z-50 bg-ink/60 backdrop-blur-sm" />
                 <Dialog.Popup
+                    aria-label={ariaLabel}
                     className={cn(
                         'fixed z-50 flex flex-col bg-background outline-none',
                         isFull
                             ? 'inset-0 w-screen h-dvh max-h-dvh rounded-none'
-                            : isSheet
+                            : isDrawer
                               ? cn(
-                                    'inset-x-0 bottom-0 mx-auto w-[calc(100vw-1rem)] max-h-[88dvh] overflow-hidden rounded-t-[1.75rem] rounded-b-none shadow-[0_-18px_50px_rgba(36,31,26,0.18)]',
-                                    'transition-[transform,opacity] duration-300 ease-out motion-safe:data-starting-style:translate-y-full motion-safe:data-starting-style:opacity-0',
-                                    'motion-safe:data-ending-style:translate-y-0 motion-safe:data-ending-style:opacity-100',
-                                    'sm:bottom-6 sm:max-w-2xl sm:rounded-b-3xl sm:rounded-t-3xl sm:shadow-[0_24px_60px_rgba(36,31,26,0.22)]'
+                                    'inset-y-0 left-0 h-dvh w-[min(88vw,22.5rem)] overflow-hidden rounded-r-[1.75rem] shadow-[18px_0_50px_rgba(36,31,26,0.18)]',
+                                    'transition-[transform,opacity] duration-300 ease-out motion-safe:data-starting-style:-translate-x-full motion-safe:data-starting-style:opacity-0',
+                                    'motion-safe:data-ending-style:translate-x-0 motion-safe:data-ending-style:opacity-100'
                                 )
-                            : cn(
-                                  'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
-                                  'w-[calc(100vw-2rem)] max-h-[90dvh] overflow-hidden rounded-2xl',
-                                  sizeMap[size]
-                              ),
+                              : isSheet
+                                ? cn(
+                                      'inset-x-0 bottom-0 mx-auto w-[calc(100vw-1rem)] max-h-[88dvh] overflow-hidden rounded-t-[1.75rem] rounded-b-none shadow-[0_-18px_50px_rgba(36,31,26,0.18)]',
+                                      'transition-[transform,opacity] duration-300 ease-out motion-safe:data-starting-style:translate-y-full motion-safe:data-starting-style:opacity-0',
+                                      'motion-safe:data-ending-style:translate-y-0 motion-safe:data-ending-style:opacity-100',
+                                      'sm:bottom-6 sm:max-w-2xl sm:rounded-b-3xl sm:rounded-t-3xl sm:shadow-[0_24px_60px_rgba(36,31,26,0.22)]'
+                                  )
+                                : cn(
+                                      'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
+                                      'w-[calc(100vw-2rem)] max-h-[90dvh] overflow-hidden rounded-2xl',
+                                      sizeMap[size]
+                                  ),
                         className
                     )}
                 >
@@ -73,8 +83,8 @@ export function Modal({
                         aria-label={closeLabel}
                         className={cn(
                             `absolute top-3 ${closeButtonPosition}-3 z-20 flex h-8 w-8 items-center justify-center rounded-full transition-colors`,
-                            isFull ? 'bg-black/40 hover:bg-black/60 text-white' : 'hover:bg-surface-muted text-ink-muted',
-                            )}
+                            isFull ? 'bg-black/40 hover:bg-black/60 text-white' : 'hover:bg-surface-muted text-ink-muted'
+                        )}
                     >
                         <X className="w-5 h-5" />
                     </Dialog.Close>

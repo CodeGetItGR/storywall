@@ -3,6 +3,7 @@
 import { type ReactNode } from 'react';
 
 import { PlanComparisonBadges } from '@/components/plan/PlanComparisonBadges';
+import { useLocalizedPlanDescription } from '@/hooks/useLocalizedPlanDescription';
 import type { PlanTierResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
@@ -18,12 +19,15 @@ export function PlanComparisonMatrix({
     rows,
     currentPlanCode,
     nextPlanId,
+    fieldLabel,
 }: {
     plans: PlanTierResponseDto[];
     rows: MatrixRow[];
     currentPlanCode?: string | null;
     nextPlanId?: string | null;
+    fieldLabel: ReactNode;
 }) {
+    const localizedPlanDescription = useLocalizedPlanDescription();
     const gridTemplateColumns = `12rem repeat(${plans.length}, minmax(12rem, 1fr))`;
 
     return (
@@ -33,14 +37,16 @@ export function PlanComparisonMatrix({
                     className="grid gap-4 border-b border-border px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-ink-faint"
                     style={{ gridTemplateColumns }}
                 >
-                    <div>Field</div>
+                    <div>{fieldLabel}</div>
                     {plans.map((plan) => (
                         <div key={plan.id} className="min-w-0">
                             <div className="flex flex-wrap items-center gap-1.5">
                                 <span className="truncate text-sm font-semibold normal-case tracking-normal text-ink">{plan.name}</span>
                                 <PlanComparisonBadges isCurrent={Boolean(currentPlanCode) && plan.code === currentPlanCode} isNext={nextPlanId === plan.id} />
                             </div>
-                            <p className="mt-1 text-xs font-normal normal-case leading-5 tracking-normal text-ink-muted">{plan.description?.trim() || '-'}</p>
+                            <p className="mt-1 text-xs font-normal normal-case leading-5 tracking-normal text-ink-muted">
+                                {localizedPlanDescription(plan)}
+                            </p>
                         </div>
                     ))}
                 </div>

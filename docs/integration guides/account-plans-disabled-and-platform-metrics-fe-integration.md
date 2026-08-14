@@ -135,9 +135,24 @@ GET /api/admin/metrics
   "totalEvents": 1522,
   "activeEvents": 812,
   "eventsByStatus": { "DRAFT": 340, "ACTIVE": 812, "FROZEN": 12, "PURGED": 358 },
-  "eventsByPlanTier": { "BASIC": 1100, "PLUS": 340, "PRO": 82 }
+  "eventsByPlanTier": { "BASIC": 1100, "PLUS": 340, "PRO": 82 },
+
+  "storage": {
+    "usedBytes": 812340000000,
+    "pendingPurgeBytes": 41000000000,
+    "committedBytes": 2400000000000,
+    "paidUsedBytes": 700000000000,
+    "freeUsedBytes": 112340000000,
+    "purchasedExtraBytes": 55000000000,
+    "estimatedMonthlyCostMinor": 1218,
+    "costCurrency": "EUR"
+  }
 }
 ```
+
+**2026-08-13:** the response gained a `storage` block, added alongside the media-compression and
+paid-storage work — see `billing-fe-guide.md` §5–§7b for the "keep originals" add-on and storage
+packs that feed into these numbers.
 
 ### Field notes
 
@@ -156,14 +171,49 @@ GET /api/admin/metrics
   four keys are always present.
 - **`eventsByPlanTier`** — every non-soft-deleted event grouped by its `EVENT`-scope plan code.
   Same "not a fixed key set" caveat as `usersByAccountPlan`.
+- **`storage.usedBytes`** — bytes of non-deleted media (display derivative + archival original
+  where the "keep originals" add-on applies). This is what the per-event storage quota counts.
+- **`storage.pendingPurgeBytes`** — bytes of soft-deleted media still sitting in R2, awaiting the
+  retention purge job. **Cloudflare bills for this; the quota does not** — it's the gap that
+  explains an R2 invoice that doesn't match `usedBytes`. Don't fold it into `usedBytes` in a
+  dashboard tile; show it as its own line so a spike here (e.g. after a bulk delete) is visible
+  rather than silently absorbed.
+- **`storage.committedBytes`** — sum of effective storage ceilings (plan + any purchased storage
+  packs) across every non-purged event with an enforced (non-null) plan limit. **This is
+  headroom sold, not spend** — it will sit far above `usedBytes` by design (most events never
+  fill their quota) and must never be labelled as cost in the UI.
+- **`storage.paidUsedBytes`** / **`storage.freeUsedBytes`** — `usedBytes` split by whether the
+  owning event has ever had paid coverage (`paidUsedBytes`) or is grandfathered/never-paid
+  (`freeUsedBytes`). Answers "how much of what we store is actually earning anything."
+- **`storage.purchasedExtraBytes`** — total bytes ever granted platform-wide by settled storage
+  packs (sum of `Event.extraStorageBytes` across all events). Grows monotonically; a pack
+  purchase never decreases it, even if unused.
+- **`storage.estimatedMonthlyCostMinor`** / **`storage.costCurrency`** — an **approximation**,
+  modelling `usedBytes` only (R2 has no egress fees, so this is close to the whole bill, but R2's
+  Class A/B operation charges are not modelled). Label it as an estimate in any UI, not an exact
+  figure. The per-GB rate is admin-configured, not hardcoded — a vendor price change doesn't
+  require a redeploy.
 
 All of it is computed live from the underlying rows on every call (no caching, no denormalized
 counters) — cheap enough for an admin dashboard refresh, not something to poll on a tight interval
-or use as a per-request check elsewhere.
+or use as a per-request check elsewhere. The storage figures in particular are full-table
+aggregates over `media`/`events`, so treat this endpoint as heavier than the user/event counts
+above if the media table grows large.
 
 ### TypeScript
 
 ```ts
+export interface PlatformStorageMetrics {
+  usedBytes: number;
+  pendingPurgeBytes: number;
+  committedBytes: number;
+  paidUsedBytes: number;
+  freeUsedBytes: number;
+  purchasedExtraBytes: number;
+  estimatedMonthlyCostMinor: number;
+  costCurrency: string;
+}
+
 export interface PlatformMetricsResponse {
   totalUsers: number;
   activeUsers: number;
@@ -173,6 +223,8 @@ export interface PlatformMetricsResponse {
   activeEvents: number;
   eventsByStatus: Record<string, number>;   // keys: DRAFT | ACTIVE | FROZEN | PURGED, missing = 0
   eventsByPlanTier: Record<string, number>;
+
+  storage: PlatformStorageMetrics;
 }
 ```
 
@@ -186,3 +238,6 @@ export interface PlatformMetricsResponse {
       rather than "0 of null" or a broken progress bar — this is now the common case, not an edge
       case, for anyone on the default plan.
 - [ ] Wire up the new admin dashboard tile(s) against `GET /api/admin/metrics` if desired.
+- [ ] If building storage tiles, keep `usedBytes`/`pendingPurgeBytes`/`committedBytes` visually
+      distinct — they answer different questions (real usage, unbilled-but-owed usage, and
+      headroom sold) and mixing them into one number misleads whoever reads the dashboard.

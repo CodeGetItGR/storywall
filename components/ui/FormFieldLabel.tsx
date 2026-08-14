@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -27,6 +28,7 @@ export function FormFieldLabel({
     indicator,
     indicatorClassName,
 }: FormFieldLabelProps) {
+    const t = useTranslations('Common');
     const resolvedIndicator = indicator ?? (required ? 'required' : optional ? 'optional' : undefined);
 
     return (
@@ -43,7 +45,7 @@ export function FormFieldLabel({
                             indicatorClassName
                         )}
                     >
-                        {resolvedIndicator === 'required' ? '*' : '(optional)'}
+                        {resolvedIndicator === 'required' ? '*' : `(${t('optional')})`}
                     </span>
                 )}
             </span>

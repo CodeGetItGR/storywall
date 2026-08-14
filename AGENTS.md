@@ -16,8 +16,19 @@
 - Create a reusable component only when it removes real duplication or names a clear UI concept.
 - Keep components focused: data fetching belongs in hooks or route/client containers; presentational components receive props.
 
+## Visual Hierarchy
+
+- Prefer compact, direct layouts for quick overviews and navigation.
+- Do not default to card surfaces for simple summaries, lists, or actions; use cards only when they clearly improve grouping, emphasis, or separation.
+- Keep overview blocks lightweight and scannable, with minimal text and no decorative chrome unless it serves a real purpose.
+
 ## Cleanup
 
 - When removing a route or feature, remove route constants, redirects, links, translations, and files that only existed for it.
 - After refactors, search for stale references and run TypeScript plus lint.
 - Always fix lint errors before handing work back. Do not leave a known lint error unresolved unless it is genuinely blocked, and call out that blocker clearly.
+
+## Localization
+
+- Always localize user-facing copy. Do not leave magic strings in JSX when the text is visible to users.
+- Prefer translation keys, shared copy helpers, or localized message maps for any visible label, error, helper text, tooltip, empty state, or CTA.

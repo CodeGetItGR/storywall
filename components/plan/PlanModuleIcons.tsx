@@ -1,10 +1,13 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import type { PlatformModuleResponseDto } from '@/lib/api/types';
 import { PLAN_COMPARISON_EMPTY } from '@/lib/planComparison';
 import { enabledModuleKeys, getModuleMeta } from '@/lib/planModules';
 
 export function PlanModuleIcons({ moduleKeys, modules }: { moduleKeys: string[]; modules: PlatformModuleResponseDto[] }) {
+    const tModules = useTranslations('Modules');
     const visibleModuleKeys = enabledModuleKeys(moduleKeys, modules);
 
     if (visibleModuleKeys.length === 0) return <span>{PLAN_COMPARISON_EMPTY}</span>;
@@ -13,7 +16,9 @@ export function PlanModuleIcons({ moduleKeys, modules }: { moduleKeys: string[];
         <div className="flex flex-wrap gap-1.5">
             {visibleModuleKeys.map((moduleKey) => {
                 const meta = getModuleMeta(moduleKey, modules);
-                const label = meta.description !== PLAN_COMPARISON_EMPTY ? `${meta.name}: ${meta.description}` : meta.name;
+                const name = tModules.has(`${moduleKey}.name`) ? tModules(`${moduleKey}.name`) : meta.name;
+                const description = tModules.has(`${moduleKey}.description`) ? tModules(`${moduleKey}.description`) : meta.description;
+                const label = description !== PLAN_COMPARISON_EMPTY ? `${name}: ${description}` : name;
                 const Icon = meta.Icon;
 
                 return (

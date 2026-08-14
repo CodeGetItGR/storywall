@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import type { ChangeEventHandler } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -21,6 +22,7 @@ export function AdminSwitch({
     required?: boolean;
     optional?: boolean;
 }) {
+    const t = useTranslations('Common');
     return (
         <label className="group flex min-h-12 cursor-pointer items-center justify-between gap-3 border-b border-border/70 py-2 transition last:border-b-0 hover:bg-surface-muted/45">
             <span className="min-w-0">
@@ -28,7 +30,7 @@ export function AdminSwitch({
                     <span>{label}</span>
                     {(required || optional) && (
                         <span className={cn('ml-1 text-[10px] font-medium', required ? 'text-ink-muted/80' : 'text-ink-faint')}>
-                            {required ? '*' : '(optional)'}
+                            {required ? '*' : `(${t('optional')})`}
                         </span>
                     )}
                 </span>

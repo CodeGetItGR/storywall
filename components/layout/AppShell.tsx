@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { type ReactNode, useEffect } from 'react';
 
-import { AccountTopBar, DesktopNavRail, MobileTabBar } from '@/components/layout';
+import { DesktopNavRail, MobileTabBar } from '@/components/layout';
 import { useAuth } from '@/hooks/useAuth';
 import { routes } from '@/lib/routes';
 
@@ -11,7 +11,6 @@ export function AppShell({ children }: { children: ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
     const { user, isBootstrapping } = useAuth();
-    const isProfilePage = pathname === routes.profile || pathname.startsWith(routes.profile + '/');
     const isChromeLessPage = pathname === routes.eventNotFound;
 
     useEffect(() => {
@@ -27,17 +26,6 @@ export function AppShell({ children }: { children: ReactNode }) {
 
     if (isChromeLessPage) {
         return <div className="h-full bg-background">{children}</div>;
-    }
-
-    if (isProfilePage) {
-        return (
-            <div className="flex h-full min-h-0 overflow-hidden bg-background">
-                <AccountTopBar />
-                <main className="h-full min-w-0 flex-1 overflow-y-auto pt-16">
-                    <div className="min-h-full lg:max-w-none">{children}</div>
-                </main>
-            </div>
-        );
     }
 
     return (

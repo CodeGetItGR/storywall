@@ -39,6 +39,7 @@ export default function EventPlanSettingsPage() {
     const { eventId } = useParams<{ eventId: string }>();
     const locale = useLocale();
     const t = useTranslations('EventPlanSettingsPage');
+    const tCommon = useTranslations('Common');
     const appConfigQuery = useAppConfig();
     const appConfig = appConfigQuery.data;
     const billing = useEventBilling(eventId, true);
@@ -238,6 +239,16 @@ export default function EventPlanSettingsPage() {
                   nextPlan.priceCurrency ?? currentPlan.priceCurrency ?? insights.orderCurrency
               )
             : null;
+    const upgradeChargeLabel = upgradeDueLabel
+        ? coverage.unlimited
+            ? t('compare.upgradeChargeUnlimited', { amount: upgradeDueLabel })
+            : coverage.paidThrough
+              ? t('compare.upgradeCharge', {
+                    amount: upgradeDueLabel,
+                    date: formatDate(coverage.paidThrough),
+                })
+              : t('compare.upgradeChargeNoDate', { amount: upgradeDueLabel })
+        : null;
 
     function handleUpgradeClick() {
         if (!nextPlan) return;
@@ -348,12 +359,7 @@ export default function EventPlanSettingsPage() {
                         <span className="font-semibold text-ink">{nextPlan.name}</span>
                         <span className="text-ink-faint">-</span>
                         <span>
-                            {upgradeDueLabel
-                                ? t('compare.upgradeCharge', {
-                                      amount: upgradeDueLabel,
-                                      date: formatDate(coverage.paidThrough),
-                                  })
-                                : t('compare.upgradeChargeUnavailable')}
+                            {upgradeChargeLabel ?? t('compare.upgradeChargeUnavailable')}
                         </span>
                         <button
                             type="button"
@@ -625,7 +631,7 @@ export default function EventPlanSettingsPage() {
                                     <p className="text-ink-muted">{t('refund.eligible')}</p>
                                     <label className="block">
                                         <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
-                                            {t('refund.reason')} <span className="text-ink-faint/80">(optional)</span>
+                                            {t('refund.reason')} <span className="text-ink-faint/80">({tCommon('optional')})</span>
                                         </span>
                                         <textarea
                                             value={refundReason}

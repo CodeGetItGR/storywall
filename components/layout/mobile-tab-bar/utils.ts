@@ -7,6 +7,10 @@ export function isPathActive(pathname: string, href: string, searchParams = '') 
         return pathname === itemPathname && searchParams === itemSearchParams;
     }
 
+    if (pathname === itemPathname && new URLSearchParams(searchParams).has('tab')) {
+        return false;
+    }
+
     return pathname === itemPathname || pathname.startsWith(itemPathname + '/');
 }
 

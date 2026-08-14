@@ -138,7 +138,7 @@ export function ManageScreen({ activeEvent, eventId, isHost }: { activeEvent: Ev
                     </div>
                 </div>
 
-                <div className="mx-4 mb-3 flex gap-1 rounded-full bg-surface-muted p-1">
+                <div className="mx-4 mb-3 hidden gap-1 rounded-full bg-surface-muted p-1 md:flex">
                     {tabItems.map(({ key, icon: Icon }) => (
                         <ManageTabButton key={key} tabKey={key} active={tab === key} Icon={Icon} label={t(`tabs.${key}`)} onSelect={navigateToTab} />
                     ))}

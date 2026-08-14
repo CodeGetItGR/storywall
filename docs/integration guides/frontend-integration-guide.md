@@ -31,6 +31,13 @@ does, extensively; see the new section below.
   Cloudflare R2 GET URL. Don't persist it client-side beyond the current session/cache window
   — re-fetch the parent resource to get a fresh URL once it expires. This applies everywhere
   a `MediaResponseDto` appears (post media, story media, cover media, avatars).
+- **Stored media is served as `Content-Disposition: attachment`.** `<img src>`, `<video src>`
+  and `fetch` are unaffected — this only changes what a browser does when the user *navigates
+  directly* to a presigned URL, which now downloads the file instead of rendering it. If you
+  have an "open in new tab" affordance that relied on the old behaviour, render the media in
+  your own lightbox instead. The header is deliberate: it is the second line of defence behind
+  server-side content-type detection against a file being served as something executable on the
+  bucket's origin.
 
 ---
 
@@ -397,8 +404,8 @@ missed:
 - **Co-host management** (`useEventHosts` and friends) — zero UI callers.
 - **Event modules management** (`useUpdateEventModule`/create/delete) — read-only in practice;
   no settings screen to actually flip `isEnabled` for a module.
-- **Event sessions / agenda** — now wired by the Schedule tool page through
-  `useEventSessions` plus create/update/delete mutations.
+- **Event sessions / agenda** (full CRUD hooks) — unused; the live "Schedule" tool page still
+  reads from `lib/mock-data` instead of these.
 - **RSVP per-session responses** (`rsvp-session-responses` hooks) — unused.
 
 ---
@@ -457,10 +464,10 @@ correctly — only #4 turned out to be a real gap.
    `knownReactionIds` map with GET-and-find fallback), not just a boolean; playlist votes do the
    same. Deletes correctly target the resource's own id.
 
-4. **Notifications — OK, contract changed.** Read/read-all/delete are wired to the real host
-   operational notification endpoints. `POST /api/notifications` is intentionally gone, and the
-   FE no longer exposes a create hook for it. The admin-only sweep endpoint is available from the
-   billing ops panel for demos/manual quota checks.
+4. **Notification read state — BE GAP, confirmed real.** `NotificationController` has no PATCH,
+   so there's no way to persist `readAt`. The FE already has a working `useNotifications` hook
+   and a "mark as read" UI (currently against mock data) — this is now a scoped backend task,
+   not an open question. See §1 above.
 
 5. **Relinking a member to an account — N/A today.** No host-driven relink UI exists; the
    self-claim hook has zero callers. Nothing blocked, not urgent.

@@ -79,6 +79,11 @@ Authorization: Bearer {accessToken}
 (who's been invited, `usedAt` to show claimed/unclaimed, etc). Host-only; carries PII
 (email/name) and tokens, so never expose this list to non-hosts.
 
+Invitations the backend generates to back a shared QR code are **excluded** from this list —
+they have no recipient and would otherwise appear as anonymous `QR-AB12CD34` rows among real
+guests. They're managed through `/api/qr-links` instead. An invitation you created yourself
+stays listed even if a QR code points at it.
+
 ### Get a single invitation (by id, not token)
 
 ```
@@ -187,9 +192,12 @@ function guestKey(): string {
 }
 ```
 
-**When it's required:** whenever the invitation's `maxGuests > 1`. Omitting it there is a
-`400`. For a one-person invitation it's optional and the previous behaviour is unchanged —
-but send it unconditionally and you never have to branch.
+**When it's required:** whenever the invitation's `maxGuests > 1`, and also behind any QR
+code — those are shared even when set to a single guest, so `maxGuests` alone doesn't
+answer it. Omitting it where it's required is a `400`. For a personal one-person invitation
+it's optional and the previous behaviour is unchanged — but send it unconditionally and you
+never have to branch. (In the QR flow, the resolve response tells you outright via
+`requiresGuestKey`; see `qr-links-fe-integration.md`.)
 
 **Why it exists.** The backend used to resolve a returning guest as "the member created from
 this invitation" — a single row. For a personal emailed invite that was right. For a link
@@ -215,8 +223,9 @@ can't walk past a full link:
 
 A slot is consumed on **join**, not on preview or scan. A guest the host later removes gives
 their slot back. Don't confuse this with `5009 EVENT_MEMBER_LIMIT_EXCEEDED`, which is the
-event's plan quota: `5035` means raise this link's `maxGuests` (via `PATCH`) or issue another
-link, `5009` means the host needs a bigger plan.
+event's plan quota: `5035` means raise this link's `maxGuests` or issue another link, `5009`
+means the host needs a bigger plan. Raise the limit with `PATCH /api/event-invitations/{id}`
+for an invitation the host created, or `PATCH /api/qr-links/{id}` for one behind a QR code.
 
 ### 3. Log in with an existing account, then join
 

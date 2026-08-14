@@ -22,6 +22,7 @@ function Evidence({ label, value }: { label: string; value: string }) {
 
 function RefundRow({ row }: { row: RefundRequestAdminDto }) {
     const t = useTranslations('AdminPage');
+    const tCommon = useTranslations('Common');
     const decide = useDecideRefundRequest();
     const [note, setNote] = useState('');
     const [confirming, setConfirming] = useState<'approve' | 'reject' | null>(null);
@@ -102,7 +103,7 @@ function RefundRow({ row }: { row: RefundRequestAdminDto }) {
             {pending && (
                 <div className="mt-3 border-t border-border pt-3">
                     <label className="text-xs font-semibold text-ink" htmlFor={`note-${request.id}`}>
-                        {t('refunds.noteLabel')} <span className="text-ink-faint">(optional)</span>
+                        {t('refunds.noteLabel')} <span className="text-ink-faint">({tCommon('optional')})</span>
                     </label>
                     <p className="text-[11px] text-ink-muted">{t('refunds.noteHint')}</p>
                     <textarea

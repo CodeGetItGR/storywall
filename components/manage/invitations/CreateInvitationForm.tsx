@@ -24,6 +24,7 @@ export function CreateInvitationForm({
     onClampNotice?: (message: string) => void;
 }) {
     const t = useTranslations('ManagePage');
+    const tCommon = useTranslations('Common');
     const createInvitation = useCreateEventInvitation();
     const createQrLink = useCreateQrLink(eventId);
     const [inviteCode, setInviteCode] = useState('');
@@ -151,7 +152,7 @@ export function CreateInvitationForm({
                 />
                 <span className="min-w-0">
                     <span className="block text-sm font-semibold text-ink">
-                        {t('invitations.create.alsoCreateQr')} <span className="text-ink-faint">(optional)</span>
+                        {t('invitations.create.alsoCreateQr')} <span className="text-ink-faint">({tCommon('optional')})</span>
                     </span>
                     <span className="mt-0.5 block text-xs leading-relaxed text-ink-muted">{t('invitations.create.alsoCreateQrHint')}</span>
                 </span>

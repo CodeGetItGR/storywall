@@ -1,18 +1,10 @@
 'use client';
 
-import { ProfileContent, ProfileEmptyState, ProfileLoadingState } from '@/components/profile';
+import { ProfileContent } from '@/components/profile';
 import { useProfilePageData } from '@/hooks/useProfilePageData';
 
 export default function ProfilePage() {
-    const { eventQueries, isEmpty, isLoading, memberships } = useProfilePageData();
+    const { eventQueries, isLoading, memberships } = useProfilePageData();
 
-    if (isLoading) {
-        return <ProfileLoadingState />;
-    }
-
-    if (isEmpty) {
-        return <ProfileEmptyState />;
-    }
-
-    return <ProfileContent eventQueries={eventQueries} memberships={memberships} />;
+    return <ProfileContent eventQueries={eventQueries} isLoading={isLoading} memberships={memberships} />;
 }

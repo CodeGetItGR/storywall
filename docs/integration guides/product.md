@@ -57,9 +57,14 @@ product:
 - **User plan tier** — governs how many *active* events a user may host simultaneously. This
   is the "how many parties can you run at once" axis.
 
-Upgrading one does not touch the other. Tiers today: `FREE` / `PLUS` / `PRO`, with storage,
-member, and active-event limits sourced from backend-managed plan catalog config (not
-hardcoded on either side) — see [`plan-tiers-fe-integration.md`](plan-tiers-fe-integration.md).
+Upgrading one does not touch the other. Event plan tiers today: `BASIC` / `PLUS` / `PRO`, at
+2GB / 20GB / 100GB of storage respectively; account plan tiers are `FREE` / `PLUS` / `PRO`,
+governing 1 / 5 / 25 simultaneous active events. Storage, member, and active-event limits are
+sourced from backend-managed plan catalog config (not hardcoded on either side) — see
+[`plan-tiers-fe-integration.md`](plan-tiers-fe-integration.md). **Account plans are currently
+soft-disabled** — new assignment/creation is blocked and the default `FREE` account plan no
+longer enforces an active-event limit — see
+[`account-plans-disabled-and-platform-metrics-fe-integration.md`](account-plans-disabled-and-platform-metrics-fe-integration.md).
 
 **Billing lifecycle**: checkout → payment (Stripe or a manual/admin-settled path) → an event
 is "covered" for a billing period → if payment lapses, a dunning window, then the event

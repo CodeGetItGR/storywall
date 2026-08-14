@@ -7,6 +7,7 @@ import { type MouseEvent, useMemo, useState } from 'react';
 import { PlanModuleGuideButton } from '@/components/plan/PlanModuleGuideButton';
 import { PlanModuleGuideModal } from '@/components/plan/PlanModuleGuideModal';
 import { PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
+import { useLocalizedPlanDescription } from '@/hooks/useLocalizedPlanDescription';
 import type { PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { enabledModuleKeys } from '@/lib/planModules';
 import { formatLimitValue, formatPlanMoney } from '@/lib/planTiers';
@@ -22,6 +23,7 @@ type EventPlanSelectorProps = {
 
 export function EventPlanSelector({ plans, modules, selectedCode, onSelect, onContinue }: EventPlanSelectorProps) {
     const t = useTranslations('CreateEventPage');
+    const localizedPlanDescription = useLocalizedPlanDescription();
     const [isModuleGuideOpen, setIsModuleGuideOpen] = useState(false);
     const moduleGuideKeys = useMemo(
         () => enabledModuleKeys(Array.from(new Set(plans.flatMap((plan) => plan.moduleKeys))), modules),
@@ -71,7 +73,7 @@ export function EventPlanSelector({ plans, modules, selectedCode, onSelect, onCo
                                 <p className="font-semibold text-ink">{plan.name}</p>
                                 <span className="text-sm font-semibold text-primary-dark">{formatPlanMoney(plan) ?? t('payment.noCharge')}</span>
                             </div>
-                            <p className="mt-1 text-sm text-ink-muted">{plan.description ?? t('planDescriptionFallback')}</p>
+                            <p className="mt-1 text-sm text-ink-muted">{localizedPlanDescription(plan)}</p>
                         </div>
                         {selectedCode === plan.code && (
                             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white">

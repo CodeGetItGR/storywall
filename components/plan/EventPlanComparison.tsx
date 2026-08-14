@@ -108,7 +108,13 @@ export function EventPlanComparison({
             </div>
 
             <div className="hidden md:block">
-                <PlanComparisonMatrix plans={displayPlans} rows={matrixRows} currentPlanCode={currentPlanCode} nextPlanId={nextPlanId} />
+                <PlanComparisonMatrix
+                    plans={displayPlans}
+                    rows={matrixRows}
+                    currentPlanCode={currentPlanCode}
+                    nextPlanId={nextPlanId}
+                    fieldLabel={t('compare.field')}
+                />
             </div>
 
             <p className="mt-3 text-xs leading-5 text-ink-faint">{t('compare.mediaAssumption')}</p>

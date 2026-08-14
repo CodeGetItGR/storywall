@@ -17,6 +17,7 @@ type PendingModuleUpdate = {
 
 function ModuleRow({ module }: { module: PlatformModuleResponseDto }) {
     const t = useTranslations('AdminPage');
+    const tCommon = useTranslations('Common');
     const updateModule = useUpdatePlatformModule();
     const [pendingUpdate, setPendingUpdate] = useState<PendingModuleUpdate | null>(null);
 
@@ -63,7 +64,7 @@ function ModuleRow({ module }: { module: PlatformModuleResponseDto }) {
                     <label className="inline-flex items-center gap-2 text-sm font-medium text-ink-muted">
                         <input type="checkbox" name="isEnabled" defaultChecked={module.isEnabled} className="h-4 w-4 accent-primary" />
                         <span>
-                            {t('modules.enabled')} <span className="text-ink-faint">(optional)</span>
+                            {t('modules.enabled')} <span className="text-ink-faint">({tCommon('optional')})</span>
                         </span>
                     </label>
                     <button

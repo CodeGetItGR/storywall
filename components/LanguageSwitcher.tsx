@@ -1,28 +1,26 @@
 'use client';
 
-import { Languages } from 'lucide-react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback, useTransition } from 'react';
 
 import { setLocale } from '@/i18n/actions';
 import { type Locale, locales } from '@/i18n/config';
 import { cn } from '@/lib/utils';
 
-const localeLabels: Record<Locale, string> = {
-    en: 'EN',
-    el: 'EL',
-};
-
 export function LanguageSwitcher({ className }: { className?: string }) {
     const locale = useLocale();
+    const t = useTranslations('LanguageSwitcher');
     const [isPending, startTransition] = useTransition();
 
-    const handleChange = useCallback((next: Locale) => {
-        if (next === locale) return;
-        startTransition(() => {
-            void setLocale(next);
-        });
-    }, [locale, startTransition]);
+    const handleChange = useCallback(
+        (next: Locale) => {
+            if (next === locale) return;
+            startTransition(() => {
+                void setLocale(next);
+            });
+        },
+        [locale, startTransition]
+    );
 
     const handleLocaleClick = useCallback(
         (event: MouseEvent<HTMLButtonElement>) => {
@@ -33,8 +31,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
     );
 
     return (
-        <div className={cn('flex items-center gap-1 bg-surface-muted rounded-full p-1', className)}>
-            <Languages className="w-3.5 h-3.5 text-ink-faint ml-1.5" aria-hidden="true" />
+        <div className={cn('inline-flex items-center gap-0.5 rounded-full bg-surface-muted p-0.5', className)} role="group" aria-label={t('label')}>
             {locales.map((l) => (
                 <button
                     key={l}
@@ -44,11 +41,11 @@ export function LanguageSwitcher({ className }: { className?: string }) {
                     disabled={isPending}
                     aria-pressed={locale === l}
                     className={cn(
-                        'px-2 py-1 rounded-full text-xs font-semibold transition-colors disabled:opacity-60',
+                        'min-w-10 rounded-full px-2.5 py-1 text-xs font-semibold transition-colors disabled:opacity-60',
                         locale === l ? 'bg-card text-ink shadow-sm' : 'text-ink-muted hover:text-ink'
                     )}
                 >
-                    {localeLabels[l]}
+                    {t(`languages.${l}`)}
                 </button>
             ))}
         </div>

@@ -4,7 +4,8 @@ Shipped 2026-08-11. Assumes you've read `frontend-integration-guide.md` §0 (bas
 header, error envelope). This doc covers the new QR-link endpoints and the one **breaking change**
 to guest login that comes with them — see [What changed in guest login](#what-changed-in-guest-login),
 which affects the existing invite flow too, not just QR codes. `docs/frontend-api-types.ts` has
-the shapes; `docs/invite-onboarding-fe-integration.md` was updated in place.
+the shapes; `docs/invite-onboarding-fe-integration.md` was updated in place. Already integrated
+against an earlier version of this doc? `docs/qr-links-fe-changelog.md` lists just the deltas.
 
 ## Why
 
@@ -23,7 +24,8 @@ and when someone scans it, ask the backend what it means.
   (`qrcode`, `qrcode.react`, whatever you like). Download/print/share UX is entirely yours.
 - **No scan analytics.** Resolving a QR performs zero writes — no scan counter, no
   `lastScannedAt`. This was deliberate: it keeps an anonymous endpoint free of write
-  amplification. If you want scan stats later, `TelemetryEvent` is the existing home for it.
+  amplification. Join and upload stats *are* available, derived from what guests actually did —
+  see [§3](#3-host-side-how-each-code-performed).
 - **No short-URL service.** `/q/{token}` is a route in your app, not a redirect hop.
 - **No new upload or join endpoints.** A resolved QR hands you an `inviteToken` and you continue
   through the existing `POST /api/auth/guest-login`.
@@ -56,6 +58,7 @@ POST /api/events/{eventId}/qr-links      ROLE_USER, must be a host of the event
   "publicUrl": "https://your-app/q/kJ8vQ2mR…",           // ← render THIS as the QR
   "targetType": "EVENT_JOIN",
   "targetId": "c91e…",     // the backing invitation
+  "maxGuests": 80,         // read through from that invitation; PATCH to change it
   "label": "Entrance poster",
   "metadata": { "printRun": "spring-2026" },
   "expiresAt": null,
@@ -82,7 +85,13 @@ POST /api/events/{eventId}/qr-links      ROLE_USER, must be a host of the event
   same event — a mismatch is a 400). It must be **omitted** for the other two, which mint their
   own backing invitation. Sending it anyway is a 400 rather than being ignored.
 - **`maxGuests`** applies to `EVENT_JOIN`/`MEDIA_UPLOAD`. For `INVITATION` the pointed-at
-  invitation's own limit governs, so this field is ignored there.
+  invitation's own limit governs, so this field is ignored there. It comes back on the response and
+  is changeable later via `PATCH`.
+- **The backing invitation is not the host's to manage.** For the two shared types the backend
+  creates it, and it is deliberately **excluded** from `GET /api/events/{eventId}/invitations` —
+  otherwise the host's invitation table fills up with anonymous `QR-AB12CD34` rows. Manage those
+  codes through `/api/qr-links` instead. An invitation you targeted explicitly with `INVITATION`
+  stays in the list, because you created it.
 - **`label` and `metadata` are host-only.** They never appear on the public resolve response. Do
   not put anything in `metadata` that a guest needs — they will not receive it.
 - **`token`** is on the host response so you can build deep links. Treat it as a credential:
@@ -104,10 +113,16 @@ DELETE /api/qr-links/{id}               → 204
 
 All host-only, all `ROLE_USER` + host of the link's own event.
 
-`PATCH` accepts `targetType`, `targetId`, `label`, `metadata`, `expiresAt` — all optional, omitted
-fields unchanged. **`token` and `publicUrl` never change.** That is the entire point: a host can
-switch a hundred printed cards from "join the event" to "upload your photos" and every card keeps
-working.
+`PATCH` accepts `targetType`, `targetId`, `maxGuests`, `label`, `metadata`, `expiresAt` — all
+optional, omitted fields unchanged. **`token` and `publicUrl` never change.** That is the entire
+point: a host can switch a hundred printed cards from "join the event" to "upload your photos" and
+every card keeps working.
+
+`maxGuests` is how you unblock a code that has filled up and started returning `5035`. It's read
+back on every `QrLinkResponseDto`, so you can render the current limit in the edit form. It applies
+to `EVENT_JOIN`/`MEDIA_UPLOAD` only — on an `INVITATION` link it's a `400`, because that invitation
+belongs to the host and is editable at `PATCH /api/event-invitations/{id}`. Lowering it below the
+number who already joined is allowed and evicts nobody; it just stops further joins.
 
 Switching between `EVENT_JOIN` and `MEDIA_UPLOAD` reuses the backing invitation, so guests who
 already joined through that code keep their membership. Switching *to* `INVITATION` requires a
@@ -118,7 +133,58 @@ already joined through that code keep their membership. Switching *to* `INVITATI
 holding the card is told it never existed — a worse answer to the same question. Revocation is
 one-way and idempotent.
 
-## 3. Guest side: resolving a scanned code
+## 3. Host side: how each code performed
+
+```
+GET /api/events/{eventId}/qr-links/stats      ROLE_USER, host only
+```
+
+```jsonc
+// 200 OK — one row per link, including revoked ones
+[
+  {
+    "qrLinkId": "8f2c…",
+    "label": "Entrance poster",
+    "targetType": "EVENT_JOIN",
+    "status": "ACTIVE",
+    "joinCount": 42,
+    "maxGuests": 50,
+    "remainingSlots": 8,
+    "lastJoinedAt": "2026-08-11T19:42:00Z",
+    "uploadCount": 137
+  }
+]
+```
+
+### Field notes
+
+- **`remainingSlots` is the one to put in front of the host.** It's the only figure that lets them
+  act *before* a guest standing at the door gets a `5035`. Surface a warning when it gets low and
+  link straight to the `maxGuests` edit.
+- **`status`** is the same derived value a scanner sees, computed by the same backend function, so
+  the host's badge can't disagree with the guest's screen. It's also on `QrLinkResponseDto` now.
+- **`joinCount`** counts guests who joined and haven't been removed. A removed guest hands their
+  slot back, exactly as the limit enforcement treats them.
+- **`uploadCount`** counts media contributed by the guests this code brought in — *everything they
+  ever uploaded*, not just what they uploaded in the visit that started with the scan. Label it
+  "photos from guests who joined here", not "photos from this QR code". Deleted media is excluded.
+- **`lastJoinedAt`** is null until somebody joins. Useful for "this poster has gone quiet".
+- **`maxGuests` and `remainingSlots` are null** when the backing invitation has gone missing —
+  which is also when `status` is `TARGET_UNAVAILABLE`.
+- **For `INVITATION` links, the counts belong to the invitation, not the code.** Anyone who used
+  that invitation's ordinary invite link is counted too. The invitation has two doors.
+
+### There is deliberately no scan count
+
+Resolving a code writes nothing — no counter, no row, no `lastScannedAt`. So there's no scan
+total and no conversion rate, because the denominator doesn't exist. Don't compute one from
+`joinCount`; it would be a ratio against a number nobody measured.
+
+The reason is that a scan isn't a join: keeping `GET /api/qr/{token}` a pure read is what stops an
+anonymous endpoint becoming a write path, and what makes a code's guest limit get spent by people
+who actually turned up rather than by everyone who pointed a phone at a poster.
+
+## 4. Guest side: resolving a scanned code
 
 ```
 GET /api/qr/{token}      PUBLIC — send no Authorization header
@@ -165,13 +231,16 @@ on `status`.
   write, so on `MEDIA_UPLOAD` you should disable the upload CTA up front rather than let the guest
   pick photos and fail at submit.
 - **`requiresGuestKey`** tells you whether the follow-up guest-login needs a `guestKey`. It's
-  `true` for every shared code. See below.
+  `true` for every `EVENT_JOIN` and `MEDIA_UPLOAD` code, **regardless of `maxGuests`** — a code
+  limited to one guest is still a code many strangers scan, and they must not be told apart by
+  the invitation alone. It's `true` for an `INVITATION` code only if that invitation admits more
+  than one. Read the field rather than inferring it. See below.
 - **Note what isn't here:** no QR-link id, no `label`, no `metadata`, no `maxGuests`, no invitation
   PII, no member or user data. Don't try to reconstruct context from anything but this response —
   the backend re-derives everything server-side from `inviteToken` on the next call, and won't
   trust a client-supplied event id or role.
 
-## 4. Guest side: continuing into the flow
+## 5. Guest side: continuing into the flow
 
 Same for all three target types — a stranger scanning a code has no account and no membership yet.
 
@@ -208,9 +277,10 @@ function guestKey(): string {
 }
 ```
 
-**Send it on every guest-login.** It is *required* whenever the invitation admits more than one
-guest — which is every QR link — and omitting it there is a `400`. For a one-person invitation it's
-optional and the old behaviour is unchanged, but there's no reason not to send it always.
+**Send it on every guest-login.** It is *required* behind any shared code — every `EVENT_JOIN` and
+`MEDIA_UPLOAD` link, whatever its `maxGuests` — and behind any invitation admitting more than one
+guest. Omitting it there is a `400`. For a personal one-person invitation it's optional and the old
+behaviour is unchanged, but there's no reason not to send it always.
 
 ### Why it exists
 
@@ -253,7 +323,8 @@ plan.
 
 Full shapes are in `docs/frontend-api-types.ts` under `// ---- Dynamic QR links ----`:
 `QrTargetType`, `QrLinkStatus`, `QrLinkRequestDto`, `QrLinkPatchDto`, `QrLinkResponseDto`,
-`QrLinkResolutionDto`. `GuestLoginRequestDto` in the same file now carries `guestKey?`.
+`QrLinkStatsDto`, `QrLinkResolutionDto`. `GuestLoginRequestDto` in the same file now carries
+`guestKey?`.
 
 The resolution DTO is a discriminated union in practice — narrow on `status` before touching
 anything but `status` and `targetType`:
@@ -288,6 +359,13 @@ switch (qr.status) {
       anything already printed.
 - [ ] Host UI: allow repointing `targetType` — and make clear in the copy that the printed code
       keeps working.
+- [ ] Host UI: expose `maxGuests` as an editable field, and offer raising it as the recovery
+      action when a guest hits `5035`.
+- [ ] Host UI: render link state from `status`, not from `revokedAt`/`expiresAt`.
+- [ ] Host UI: a stats view fed by `/qr-links/stats`, with a low-`remainingSlots` warning that
+      links to the `maxGuests` edit. Poll it during an event if you want live numbers.
+- [ ] Don't present `uploadCount` as "uploads from this QR" — it's uploads by the guests it
+      brought in.
 - [ ] Render `publicUrl` verbatim. Do not build the URL from `token` yourself.
 - [ ] Grey out upload CTAs when `eventStatus` is `FROZEN`.
 - [ ] Don't log or send `token` / `inviteToken` to analytics.

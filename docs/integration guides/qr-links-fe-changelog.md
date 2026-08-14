@@ -111,6 +111,23 @@ spirit — those rows only started appearing when QR links shipped — but if yo
 counted rows from this endpoint, re-check it. Personal invitations targeted by an `INVITATION`
 QR link are **not** filtered: those are real invitations the host created.
 
+## 5. `requiresGuestKey` is now true for a QR link set to one guest
+
+**The bug:** `requiresGuestKey` was derived from `maxGuests > 1`. That predicate was standing in
+for "is this code shared", and it's wrong at exactly one value. A host who printed an `EVENT_JOIN`
+code and set it to admit a single guest got `requiresGuestKey: false`, so the FE sent no
+`guestKey` — and the backend, falling back to "the one member created from this invitation",
+**handed the second scanner the first scanner's account**: their name, their membership, their JWT.
+Silently, with no `5035`, because the seat check never ran.
+
+**Now:** shared-ness is stored explicitly. `requiresGuestKey` is `true` for every `EVENT_JOIN` and
+`MEDIA_UPLOAD` link no matter what `maxGuests` says. The second scanner of a one-seat code gets a
+`409` / `5035` — full, which is the truth — instead of somebody else's session.
+
+**Do this:** nothing, if you were already reading `requiresGuestKey` from the resolve response and
+sending `guestKey` on every guest-login, as the guide asks. If you hardcoded the `maxGuests > 1`
+rule on the client, delete it and read the field.
+
 ---
 
 ## TypeScript

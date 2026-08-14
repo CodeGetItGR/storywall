@@ -14,6 +14,7 @@ import { formatLimitValue, formatPlanMoney } from '@/lib/planTiers';
 
 export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
     const t = useTranslations('AdminPage');
+    const tCommon = useTranslations('Common');
     const [includeArchived, setIncludeArchived] = useState(true);
     const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
     const [createOpen, setCreateOpen] = useState(false);
@@ -56,7 +57,7 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                     <label className="inline-flex min-h-10 items-center gap-2 border-b-2 border-border px-1 text-sm font-semibold text-ink-muted">
                         <input type="checkbox" checked={includeArchived} onChange={handleIncludeArchivedChange} className="h-4 w-4 accent-primary" />
                         <span>
-                            {t('plans.filters.includeArchived')} <span className="text-ink-faint">(optional)</span>
+                            {t('plans.filters.includeArchived')} <span className="text-ink-faint">({tCommon('optional')})</span>
                         </span>
                     </label>
                     {!accountPlansDisabled && (

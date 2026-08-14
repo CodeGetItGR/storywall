@@ -1,7 +1,11 @@
 # FE integration guide: plans, payments, subscriptions, refunds
 
 **The complete, current reference for the commercial side of the platform.** Everything a frontend
-needs to sell an event, keep it alive, and give money back. Current as of 2026-08-11.
+needs to sell an event, keep it alive, and give money back. Current as of 2026-08-13.
+
+**2026-08-13:** Two new purchases, both against a new admin-managed `paid_services` catalog: the
+"keep originals" recurring add-on (§7a) and one-time storage packs (§7b). `GET /api/admin/metrics`
+also gained a `storage` block — see `account-plans-disabled-and-platform-metrics-fe-integration.md`.
 
 **2026-08-11:** Account-scope plans (`scope: 'ACCOUNT'`) are disabled — see
 `account-plans-disabled-and-platform-metrics-fe-integration.md` for the full change and a new
@@ -26,6 +30,8 @@ and `app-config-fe-integration.md` for the rest of `GET /api/config`.
 5. [The event lifecycle](#5-the-event-lifecycle)
 6. [Activation: the first purchase](#6-activation-the-first-purchase)
 7. [Preservation: the subscription](#7-preservation-the-subscription)
+7a. [The "keep originals" add-on](#7a-the-keep-originals-add-on)
+7b. [Storage packs](#7b-storage-packs)
 8. [The billing read endpoint](#8-the-billing-read-endpoint)
 9. [Refunds](#9-refunds)
 10. [Notifications](#10-notifications)
@@ -438,6 +444,217 @@ at the boundary and tells us, which a later read of the billing endpoint picks u
 
 ---
 
+## 7a. The "keep originals" add-on
+
+Every plan already gets a compressed, normalized display copy of every photo — that never changes.
+The add-on stores the untouched original **alongside** it, for hosts who want the full-resolution
+file preserved. It costs storage: an add-on event holds derivative + original, so it reaches its
+quota sooner than the same event without it.
+
+**Catalog code:** `ORIGINALS`, kind `RECURRING_ADDON`, from the paid-services catalog —
+
+```
+GET /api/config → paidServices: PaidServiceResponse[]   // filtered to isPublic && isAssignable
+```
+
+```jsonc
+{
+  "id": "…",
+  "code": "ORIGINALS",
+  "kind": "RECURRING_ADDON",
+  "name": "Keep Originals",
+  "description": "Keeps the original, full-resolution file for every photo alongside the compressed feed copy.",
+  "sortOrder": 0,
+  "priceAmountMinor": 500,        // 5.00 EUR, monthly, once billing starts (see below)
+  "priceCurrency": "EUR",
+  "billingPeriod": "MONTHLY",
+  "grantsStorageBytes": null      // always null for a RECURRING_ADDON
+}
+```
+
+### Opting in — `DRAFT` only
+
+```http
+PATCH /api/events/{id}
+{ "keepOriginals": true }
+```
+
+**Only `true` is meaningful — there is no un-opting, and only while the event is `DRAFT`.** Opting
+in later → `409 EVENT_NOT_DRAFT` (5017). This is deliberate: an event never has a mix of
+pre-add-on and post-add-on photos. Show the toggle on the same screen as the plan picker, before
+the "Pay and publish" button — not as a settings-page option on a live event. Opting in twice →
+`409 ADDON_ALREADY_ACTIVE` (5038).
+
+There is no separate add-on checkout. Entitlement is the row created by the `PATCH` above; the price
+folds into whichever purchase happens next.
+
+### Getting back out — admin only
+
+```http
+DELETE /api/admin/events/{eventId}/addons/{paidServiceCode}
+```
+
+**There is no host-facing way to remove an add-on.** This is the same invariant as the DRAFT-only
+opt-in, seen from the other end: originals already stored would stay in the bucket on an event that
+had stopped paying for them. Build this into the admin panel only, alongside the refund queue — it
+is the tool support uses when unwinding a purchase.
+
+Takes effect at the event's **next renewal**: the removal does not reprice a live subscription and
+does not delete originals already stored. `409 ADDON_NOT_ACTIVE` (5041) if the event has no such
+add-on.
+
+### It is billed up front at activation, then monthly
+
+The add-on is **never free**. Activation buys the plan's whole `includedMonths` window in one
+payment, and the add-on is charged for that same window in the same payment:
+
+```
+activation amount = plan.priceAmountMinor
+                  + Σ(active recurring add-ons' price) × plan.includedMonths
+```
+
+So on a plan with `includedMonths: 3` and a €5/month add-on, opting in before paying adds €15 to
+the activation total. **Show this in the plan picker** — the toggle changes the price on the "Pay
+and publish" button, and a host who sees the number move only at the payment step will read it as a
+surprise charge.
+
+After that window, the add-on continues as a monthly charge on the preservation subscription (§7),
+billed as **one combined line**, not a second charge:
+
+```
+subscription-checkout amount = plan.recurringPriceAmountMinor + Σ(active recurring add-ons' price)
+```
+
+Both order kinds carry the breakdown in `addonAmountMinor` — on an `ACTIVATION` order that is the
+whole `× includedMonths` figure, on a `RENEWAL` it is one month's worth.
+
+**If the host opts in after opening checkout**, the open order is cancelled and a re-priced one is
+issued: the `orderId` (and redirect URL) you were holding changes. Re-read the order from the
+checkout response rather than reusing a cached one after any `PATCH` that sets `keepOriginals`.
+
+`POST /api/events/{eventId}/subscription-checkout` is otherwise unchanged (§7) — still no request
+body, the add-on is read server-side from the event's entitlements. The response order now carries
+the breakdown:
+
+```jsonc
+{ "id": "…", "kind": "RENEWAL", "status": "PAID",
+  "amountMinor": 2000,        // plan 1500 + add-on 500
+  "addonAmountMinor": 500,    // null when no add-on is active — the receipt line for it
+                              // (on an ACTIVATION order this is the × includedMonths total)
+  "currency": "EUR", … }
+```
+
+Render *"€15/month preservation + €5/month originals = €20/month"* from `amountMinor` and
+`addonAmountMinor` rather than re-deriving it from the catalog — the order is the historical
+receipt and the catalog price may have changed since.
+
+### Retrieving the original
+
+```http
+GET /api/medias/{id}/original   → 200 { url: "https://…" }   # presigned, short-lived
+```
+
+**Host or the uploading member only** — `403` for anyone else, including other guests. `404` if the
+event never opted in (no original was ever kept). This is a separate call from the normal feed URL:
+the feed always serves the small derivative, and this is the only way to reach the full-resolution
+file.
+
+### What the billing read endpoint adds
+
+`GET /api/events/{eventId}/billing` (§8) gains an `addons` array:
+
+```jsonc
+{
+  …,
+  "addons": [
+    { "code": "ORIGINALS", "name": "Keep Originals", "priceAmountMinor": 500,
+      "activatedAt": "2026-08-01T10:00:00Z" }
+  ]
+}
+```
+
+`priceAmountMinor` on each is what it currently adds to the next renewal quote — sum the array for
+the total add-on surcharge. Empty array on an event that never opted in. Each settled `RENEWAL`
+order separately carries its own `addonAmountMinor` (the frozen breakdown at the time it was paid,
+per the receipt note above) — the two are related but not the same number once a price changes.
+
+---
+
+## 7b. Storage packs
+
+A one-time purchase that **permanently raises** an event's storage ceiling — it never expires and is
+never refunded. Follows the same "buy ceiling, not time" shape as an admin plan upgrade: pay once,
+the limit goes up, nothing else about the event changes.
+
+**Catalog:** the same `paidServices` array as §7a, filtered to `kind: 'STORAGE_PACK'`:
+
+```jsonc
+{
+  "id": "…",
+  "code": "STORAGE_5GB",
+  "kind": "STORAGE_PACK",
+  "name": "+5 GB Storage",
+  "description": "Permanently raises this event's storage ceiling by 5 GB.",
+  "priceAmountMinor": 500,
+  "priceCurrency": "EUR",
+  "billingPeriod": "ONE_TIME",
+  "grantsStorageBytes": 5368709120
+}
+```
+
+### Buying one
+
+```http
+POST /api/events/{eventId}/storage-checkout
+{ "paidServiceCode": "STORAGE_5GB" }
+```
+
+Host-only, rate limited 10/min (shared bucket with the other checkout endpoints), same response
+shape and same two return routes as activation (§6 steps 3–5) — poll `GET /api/events/{id}/billing`
+and watch the order, exactly the same way. A `409 EVENT_NOT_ACTIVE` (5014) or `409 EVENT_FROZEN`
+(5016) if the event is not currently payable; buy after activating or renewing.
+
+**The body names a catalog code, nothing else** — price and byte grant both come from that row
+server-side, so a tampered body can at worst name a code that doesn't exist at all
+(`404 RESOURCE_NOT_FOUND`, 2001), a real code that's archived or not public
+(`409 PAID_SERVICE_NOT_PURCHASABLE`, 5036), or the wrong kind, e.g. the `ORIGINALS` code sent
+here instead of §7a's endpoint (`400 INVALID_PAID_SERVICE_KIND`, 3015).
+
+Buying two different packs in quick succession opens two independent orders — each pack gets its
+own concurrency slot, so a second pack never silently reuses the first one's checkout session.
+
+### What it changes
+
+Once the order settles, the event's effective storage ceiling rises immediately and stays raised
+forever — the "buy ceiling not time" note above is a promise, not just an event-order technicality.
+`GET /api/events/{eventId}/usage` (§3) now separates the plan's own limit from purchased extra:
+
+```jsonc
+{
+  "eventId": "…",
+  "planTier": "BASIC",
+  "storageBytes": 1900000000,
+  "planStorageBytes": 2147483648,      // the plan's own ceiling
+  "extraStorageBytes": 5368709120,     // sum of settled storage packs
+  "storageLimitBytes": 7516192768,     // planStorageBytes + extraStorageBytes — the number that gates uploads
+  "storagePercent": 25,
+  …
+}
+```
+
+Render *"2 GB plan + 5 GB purchased = 7 GB total"* from the two components; keep using
+`storageLimitBytes`/`storagePercent` as the numbers that actually gate `5008` — they already include
+purchased storage with no other change on your side. A `null` `planStorageBytes` (unlimited plan)
+still means unlimited regardless of `extraStorageBytes`.
+
+Storage packs are **final**. They are not refundable through the refund-request flow in §9 (that
+path only ever reverses the activation order), and the ceiling they bought survives an approved
+activation refund — an event returned to `DRAFT` and later re-activated keeps its purchased
+storage. This is policy, not an oversight: say so at the point of purchase, since a host who
+expects a pack to unwind with a refund has no way to find out otherwise until they ask.
+
+---
+
 ## 8. The billing read endpoint
 
 ```http
@@ -792,6 +1009,14 @@ name, for logs). Branch on `errorCode`.
 | `5019` `PLAN_TIER_NOT_PRICED` | 409 | catalog misconfiguration — no activation or monthly price | generic error + support contact; the host cannot fix this |
 | `5021` `PLAN_TIER_CURRENCY_UNSUPPORTED` | 409 | the plan's currency is not supported by the provider | admin-facing; host sees a generic failure |
 | `5034` `ACCOUNT_PLANS_DISABLED` | 409 | admin tries to create an `ACCOUNT`-scope plan, or move a user onto a different one | admin-facing; remove/disable the control (§13) |
+| `3015` `INVALID_PAID_SERVICE_KIND` | 400 | a `STORAGE_PACK` code sent to the add-on opt-in, or vice versa | refetch `paidServices`, the code was mislabeled client-side |
+| `2001` `RESOURCE_NOT_FOUND` | 404 | paid-service code doesn't exist in the catalog at all | refetch `paidServices`, the code was stale or mistyped |
+| `5036` `PAID_SERVICE_NOT_PURCHASABLE` | 409 | code exists but is archived or non-public | refetch `paidServices` and ask them to pick again |
+| `5037` `PAID_SERVICE_IN_USE` | 409 | admin deleting a paid service that is still referenced by an order | offer archiving instead (admin panel only) |
+| `5038` `ADDON_ALREADY_ACTIVE` | 409 | opting into an add-on that is already active on the event | refetch the event; the toggle is already on |
+| `5039` `PAID_SERVICE_CURRENCY_MISMATCH` | 409 | the event's active add-ons are priced in a different currency to its plan | catalog misconfiguration; host sees a generic failure and support has to fix the catalog |
+| `5040` `PAID_SERVICE_NOT_ON_PLAN` | 409 | the service is restricted to plan tiers this event is not on | filter the purchase UI by `planTierIds` (below) so this is unreachable from a fresh catalog |
+| `5041` `ADDON_NOT_ACTIVE` | 409 | admin removing an add-on the event never had | admin panel only; refetch the event's add-ons |
 
 ### Lifecycle and checkout
 
@@ -894,11 +1119,48 @@ unknown code or a scope mismatch errors rather than silently no-op'ing.
 | `PATCH /api/admin/platform-modules/{moduleKey}` | every field optional. **No create or delete** — the module set is fixed by backend code. `isEnabled: false` is the fastest way to withdraw a broken module platform-wide without a deploy. |
 | `PATCH /api/platform-feature-flags/{id}` | `description` (≤100), `isEnabled`, `configuration` (arbitrary JSON). `featureKey` is not patchable. |
 
+### The paid-services catalog (add-on + storage packs)
+
+Mirrors the plan-tier admin surface (above) field-for-field — same archive-don't-delete guidance,
+same validation shape.
+
+| endpoint | notes |
+|---|---|
+| `GET /api/admin/paid-services?kind=&includeArchived=` | both params optional. Unlike `/api/config`, returns non-public and archived services. |
+| `GET /api/admin/paid-services/{id}` | `404` if not found |
+| `POST /api/admin/paid-services` | create; validation below |
+| `PATCH /api/admin/paid-services/{id}` | partial update. **`code` and `kind` are immutable** and absent from the patch DTO. |
+| `DELETE /api/admin/paid-services/{id}` | `204`, or `409 PAID_SERVICE_IN_USE` (5037) if any order references it |
+
+Create/patch validation (`400` / `3001` unless noted):
+
+- `code` — required, non-blank, ≤30 chars, `^[A-Z0-9_]+$`. Unique across the whole catalog (not
+  scoped like plan codes).
+- `kind` — required on create, immutable after: `'STORAGE_PACK' | 'RECURRING_ADDON'`.
+- `grantsStorageBytes` — **required** for `STORAGE_PACK`, **rejected** if set on `RECURRING_ADDON`.
+- `billingPeriod` — **now enforced against `kind`**: `'ONE_TIME'` for `STORAGE_PACK`, `'MONTHLY'`
+  for `RECURRING_ADDON`, anything else → `400 VALIDATION_FAILED`. It used to be a free choice that
+  no pricing code read, so a `'YEARLY'` add-on would save, display in the public catalog, and bill
+  monthly anyway. Derive the field from `kind` in the admin form rather than offering a picker.
+- `planTierIds` — optional `string[]` of EVENT-scope plan tier ids this service is offered on.
+  **Omitted or `[]` means every plan**, which is what the whole seeded catalog uses; list tiers only
+  to restrict. On `PATCH` it replaces the set wholesale, so send `[]` to lift a restriction and omit
+  the field to leave it alone. Unknown id → `404`; an `ACCOUNT`-scope id → `400
+  INVALID_PLAN_TIER_SCOPE`. Buying a service the event's plan is not listed for → `409
+  PAID_SERVICE_NOT_ON_PLAN` (5040), so filter the host-facing purchase UI on this.
+- `priceAmountMinor >= 0`, `priceCurrency` exactly 3 chars, `name` ≤100 chars, `sortOrder >= 0`.
+  Keep every service's `priceCurrency` equal to the plans' — an add-on priced in another currency
+  cannot be added to the plan amount, and checkout refuses with `409
+  PAID_SERVICE_CURRENCY_MISMATCH` (5039) rather than mispricing the charge.
+
+Editing a service's price only affects **future** checkouts — a settled order keeps the price it was
+opened at, per §7a/§7b's "the order is the historical receipt" note.
+
 ### Platform metrics
 
 | endpoint | notes |
 |---|---|
-| `GET /api/admin/metrics` | dashboard counts: users/events totals, active counts, and both grouped by plan/status. No params, computed live on every call. Full field reference in `account-plans-disabled-and-platform-metrics-fe-integration.md`. |
+| `GET /api/admin/metrics` | dashboard counts: users/events totals, active counts, both grouped by plan/status, and a `storage` block (used/pending-purge/committed/paid-vs-free/purchased-extra bytes plus an estimated monthly cost). No params, computed live on every call. Full field reference in `account-plans-disabled-and-platform-metrics-fe-integration.md`. |
 
 ---
 
@@ -938,12 +1200,40 @@ export interface PlanTierResponse {
   moduleKeys: string[];         // always empty on ACCOUNT scope
 }
 
+// ---------- Paid services (add-on + storage packs) ----------
+export type PaidServiceKind = 'STORAGE_PACK' | 'RECURRING_ADDON';
+
+export interface PaidServiceResponse {
+  id: string;
+  code: string;                 // NOT a fixed union — admins create these at runtime
+  kind: PaidServiceKind;
+  name: string;
+  description: string | null;
+  sortOrder: number;
+  isAssignable: boolean;
+  isPublic: boolean;
+  priceAmountMinor: number;
+  priceCurrency: string;
+  billingPeriod: BillingPeriod; // 'ONE_TIME' for packs, 'MONTHLY' for the add-on — enforced
+  grantsStorageBytes: number | null;  // required-shaped for STORAGE_PACK, always null on RECURRING_ADDON
+  planTierIds: string[];        // plan tiers this is offered on; EMPTY MEANS EVERY PLAN
+}
+
+export interface EventAddon {
+  code: string;
+  name: string;
+  priceAmountMinor: number;     // what this add-on currently adds to the monthly renewal
+  activatedAt: string;
+}
+
 // ---------- Usage ----------
 export interface EventUsageResponse {
   eventId: string;
   planTier: string;             // plain string, not a union
   storageBytes: number;
-  storageLimitBytes: number | null;
+  planStorageBytes: number | null;   // the plan's own ceiling, before purchased extra
+  extraStorageBytes: number;         // bytes added by settled storage packs
+  storageLimitBytes: number | null;  // planStorageBytes + extraStorageBytes — what gates uploads
   storagePercent: number;
   memberCount: number;
   memberLimit: number | null;
@@ -976,6 +1266,7 @@ export interface EventBillingResponse {
   coverage: CoverageSummary;
   subscription: SubscriptionSummary | null;
   orders: OrderSummary[];       // newest first
+  addons: EventAddon[];         // empty if never opted in
 }
 
 export interface CoverageSummary {
@@ -996,12 +1287,14 @@ export interface SubscriptionSummary {
 
 export interface OrderSummary {
   id: string;
-  kind: 'ACTIVATION' | 'RENEWAL';
+  kind: 'ACTIVATION' | 'RENEWAL' | 'UPGRADE' | 'STORAGE_PACK';
   status: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED';
   amountMinor: number;
+  addonAmountMinor: number | null;  // the add-on's slice of amountMinor on an ACTIVATION
+                                    // (× includedMonths) or a RENEWAL (one month); else null
   currency: string;
-  coversFrom: string | null;
-  coversUntil: string | null;
+  coversFrom: string | null;    // null on UPGRADE and STORAGE_PACK — they buy ceiling, not time
+  coversUntil: string | null;   // null on UPGRADE and STORAGE_PACK
   paidAt: string | null;
   createdAt: string;
 }
@@ -1059,6 +1352,19 @@ export interface PlatformMetricsResponse {
   activeEvents: number;
   eventsByStatus: Record<string, number>;   // keys: DRAFT | ACTIVE | FROZEN | PURGED, missing = 0
   eventsByPlanTier: Record<string, number>;
+
+  storage: PlatformStorageMetrics;
+}
+
+export interface PlatformStorageMetrics {
+  usedBytes: number;                  // non-deleted media, derivative + original
+  pendingPurgeBytes: number;          // soft-deleted, still in R2 — Cloudflare bills it, quota does not
+  committedBytes: number;             // sum of effective limits sold — headroom, NOT spend
+  paidUsedBytes: number;              // usedBytes on events with any paid coverage history
+  freeUsedBytes: number;              // usedBytes on grandfathered / never-paid events
+  purchasedExtraBytes: number;        // total ever granted by settled storage packs
+  estimatedMonthlyCostMinor: number;  // approximation — storage only, no Class A/B ops modelled
+  costCurrency: string;
 }
 
 // ---------- Notifications ----------
@@ -1099,7 +1405,9 @@ Keep the `orderId` visible in dev builds so testers can settle their own orders.
 
 - Pricing / plan picker at event creation — `EVENT`-scope catalog, `sortOrder`, unlimited handling.
 - Draft event view — clearly "not published yet", with the `endAt` gate explained before the pay
-  button.
+  button. Include the "keep originals" toggle here (§7a) — it is only offered while `DRAFT`.
+- A storage-pack purchase UI on the plan-settings page (§7b) — pack picker + checkout button,
+  rendering the raised ceiling on the usage bar once it settles.
 - Checkout success (polling, never asserting) and cancelled routes.
 - `/events/{id}/settings/plan` — **required**; the destination of every billing notification and
   email. Coverage, subscription, order history, renewal button, refund section.
@@ -1110,6 +1418,8 @@ Keep the `orderId` visible in dev builds so testers can settle their own orders.
 **Admin**
 
 - Plan catalog CRUD, with archive preferred over delete.
+- Paid-services catalog CRUD (§13) — same archive-first pattern, one screen covering both the
+  add-on and every storage pack, filterable by `kind`.
 - Plan assignment for users and events, showing the returned usage snapshot.
 - Manual order settlement, and the unprocessed-webhook list.
 - Freeze / purge with a confirmation dialog that names the event.
@@ -1135,7 +1445,11 @@ Keep the `orderId` visible in dev builds so testers can settle their own orders.
 - **Changing an event's plan as a host.** Only admins can move an event between plans. No host-facing
   upgrade/downgrade flow exists.
 - **Partial refunds.** All-or-nothing on the activation order.
-- **Refunding a renewal.** Only `ACTIVATION` orders are refundable.
+- **Refunding a renewal, an upgrade, or a storage pack.** Only `ACTIVATION` orders are refundable.
+- **Downsizing storage.** A purchased storage pack never expires and cannot be sold back — the
+  ceiling only ever goes up.
+- **Opting into the "keep originals" add-on after activation.** DRAFT-only (§7a); there is no
+  "add originals to an existing event" flow, because it would leave earlier photos without one.
 - **Withdrawing a refund request.** A host cannot cancel a pending request; an admin has to reject
   it.
 - **A host-visible refund SLA.** There is no "we respond within N days" value to display, and nothing

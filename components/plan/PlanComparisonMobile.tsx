@@ -3,6 +3,7 @@
 import { type ReactNode } from 'react';
 
 import { PlanComparisonBadges } from '@/components/plan/PlanComparisonBadges';
+import { useLocalizedPlanDescription } from '@/hooks/useLocalizedPlanDescription';
 import type { PlanTierResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
@@ -24,6 +25,8 @@ export function PlanComparisonMobile({
     currentPlanCode?: string | null;
     nextPlanId?: string | null;
 }) {
+    const localizedPlanDescription = useLocalizedPlanDescription();
+
     return (
         <div className="divide-y divide-border">
             {plans.map((plan) => (
@@ -31,7 +34,7 @@ export function PlanComparisonMobile({
                     <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                             <h2 className="text-lg font-semibold text-ink">{plan.name}</h2>
-                            <p className="mt-1 text-sm leading-6 text-ink-muted">{plan.description?.trim() || '-'}</p>
+                            <p className="mt-1 text-sm leading-6 text-ink-muted">{localizedPlanDescription(plan)}</p>
                         </div>
                         <PlanComparisonBadges isCurrent={Boolean(currentPlanCode) && plan.code === currentPlanCode} isNext={nextPlanId === plan.id} />
                     </div>

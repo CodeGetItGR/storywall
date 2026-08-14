@@ -1,3 +1,5 @@
+import { useTranslations } from 'next-intl';
+
 import { Skeleton } from '@/components/ui/skeleton';
 
 function StorySkeleton() {
@@ -36,8 +38,10 @@ function PostSkeleton({ withMedia = false }: { withMedia?: boolean }) {
 }
 
 export function FeedPageSkeleton() {
+    const t = useTranslations('FeedPage');
+
     return (
-        <div className="mx-auto flex w-full flex-col lg:max-w-[42rem]" role="status" aria-label="Loading feed">
+        <div className="mx-auto flex w-full flex-col lg:max-w-[42rem]" role="status" aria-label={t('loading')}>
             <div className="sticky top-0 z-20 flex w-full items-center justify-between gap-4 bg-background/90 px-4 py-5 backdrop-blur-sm">
                 <Skeleton className="h-8 w-[8.5rem] rounded-full sm:h-12 sm:w-44" />
                 <Skeleton className="h-8 w-24 rounded-full" />

@@ -14,7 +14,7 @@ function BannerOverlay({ title }: { title: string }) {
 export function Banner({ image, title }: { image: string; title: string }) {
     return (
         <div className="relative w-full h-full px-3">
-            <Image src={image} alt="Banner" className="w-full h-full object-cover rounded-lg" width={150} height={150} priority loading="eager" />
+            <Image src={image} alt={title} className="w-full h-full object-cover rounded-lg" width={150} height={150} priority loading="eager" />
             <BannerOverlay title={title} />
         </div>
     );

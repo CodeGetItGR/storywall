@@ -1,6 +1,7 @@
 'use client';
 
 import { Sparkles } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
 
 import { eventDescriptionViewsKey } from '@/lib/storageKeys';
@@ -27,6 +28,7 @@ export function EventDescription({
     description: string;
     className?: string;
 }) {
+    const t = useTranslations('FeedPage');
     const sectionRef = useRef<HTMLElement | null>(null);
 
     useEffect(() => {
@@ -56,7 +58,7 @@ export function EventDescription({
                         <Sparkles className="h-4 w-4" aria-hidden="true" />
                     </div>
                     <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-faint">About this event</p>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-faint">{t('aboutEvent')}</p>
                         <p className="mt-1 max-w-[65ch] text-[15px] leading-7 text-ink-muted text-balance">{description}</p>
                     </div>
                 </div>

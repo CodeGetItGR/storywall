@@ -9,9 +9,9 @@ export function useProfilePageData() {
     const eventQueries = useEventDetails(memberships.map((member) => member.eventId));
 
     return {
+        displayName: user?.displayName ?? null,
         email: user?.email ?? null,
         eventQueries,
-        isEmpty: memberships.length === 0,
         isLoading,
         memberships,
     };
