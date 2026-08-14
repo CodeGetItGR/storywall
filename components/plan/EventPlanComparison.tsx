@@ -1,17 +1,19 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import { type MatrixRow, PlanComparisonMatrix } from '@/components/plan/PlanComparisonMatrix';
-import { type ComparisonRow, PlanComparisonMobile } from '@/components/plan/PlanComparisonMobile';
 import { PlanModuleGuideButton } from '@/components/plan/PlanModuleGuideButton';
 import { PlanModuleGuideModal } from '@/components/plan/PlanModuleGuideModal';
 import { PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
+import { PlanTierCards } from '@/components/plan/PlanTierCards';
 import type { PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import { formatBillingDate } from '@/lib/billing';
 import { formatPlanDiscount, mediaEstimate, PLAN_COMPARISON_EMPTY } from '@/lib/planComparison';
 import { enabledModuleKeys } from '@/lib/planModules';
-import { formatLimitValue, formatPlanMoney } from '@/lib/planTiers';
+import { formatLimitValue, formatPlanMoney, formatPlanRecurringMoney } from '@/lib/planTiers';
 
 export function EventPlanComparison({
     plans,
@@ -23,6 +25,7 @@ export function EventPlanComparison({
     currentPlanCode?: string | null;
 }) {
     const t = useTranslations('EventPlanSettingsPage');
+    const locale = useLocale();
     const [moduleLegendOpen, setModuleLegendOpen] = useState(false);
 
     const displayPlans = useMemo(() => [...plans].sort((left, right) => left.sortOrder - right.sortOrder), [plans]);
@@ -41,11 +44,29 @@ export function EventPlanComparison({
         setModuleLegendOpen(false);
     }
 
-    const rows: ComparisonRow[] = [
+    function formatDiscountWindow(plan: PlanTierResponseDto): string {
+        if (plan.discountPercent === null && !plan.discountLabel) return PLAN_COMPARISON_EMPTY;
+        if (!plan.discountStartsAt && !plan.discountEndsAt) return t('compare.noDiscountWindow');
+
+        const from = formatBillingDate(locale, plan.discountStartsAt) ?? t('emptyDate');
+        const until = formatBillingDate(locale, plan.discountEndsAt) ?? t('emptyDate');
+
+        return t('compare.discountWindowValue', { from, until });
+    }
+
+    const rows: MatrixRow[] = [
         {
             key: 'price',
-            label: t('compare.price'),
+            label: t('compare.activationPrice'),
             render: (plan) => <span className="font-semibold text-ink">{formatPlanMoney(plan) ?? t('compare.noPrice')}</span>,
+        },
+        {
+            key: 'monthlyPrice',
+            label: t('compare.monthlyPrice'),
+            render: (plan) => {
+                const recurringPrice = formatPlanRecurringMoney(plan);
+                return <span className="font-semibold text-ink">{recurringPrice ? t('compare.perMonthValue', { amount: recurringPrice }) : t('compare.noMonthlyPrice')}</span>;
+            },
         },
         {
             key: 'billing',
@@ -63,6 +84,11 @@ export function EventPlanComparison({
             key: 'discount',
             label: t('compare.discount'),
             render: (plan) => <span>{formatPlanDiscount(plan)}</span>,
+        },
+        {
+            key: 'discountWindow',
+            label: t('compare.discountWindow'),
+            render: (plan) => <span>{formatDiscountWindow(plan)}</span>,
         },
         {
             key: 'storage',
@@ -94,30 +120,28 @@ export function EventPlanComparison({
         },
     ];
 
-    const matrixRows: MatrixRow[] = rows.map((row) => ({
-        key: row.key,
-        label: row.label,
-        action: row.action,
-        render: row.render,
-    }));
-
     return (
         <section>
-            <div className="md:hidden">
-                <PlanComparisonMobile plans={displayPlans} rows={rows} currentPlanCode={currentPlanCode} nextPlanId={nextPlanId} />
+            <div className="space-y-3 md:hidden">
+                <div className="flex items-center justify-between gap-3 rounded-lg bg-surface-muted px-3 py-2 text-xs font-semibold text-ink-muted">
+                    <span>{t('compare.modules')}</span>
+                    <PlanModuleGuideButton onOpen={openModuleLegend} />
+                </div>
+
+                <PlanTierCards plans={displayPlans} modules={modules} currentPlanCode={currentPlanCode} nextPlanId={nextPlanId} />
+                <p className="text-xs leading-5 text-ink-faint">{t('compare.mediaAssumption')}</p>
             </div>
 
             <div className="hidden md:block">
                 <PlanComparisonMatrix
                     plans={displayPlans}
-                    rows={matrixRows}
+                    rows={rows}
                     currentPlanCode={currentPlanCode}
                     nextPlanId={nextPlanId}
                     fieldLabel={t('compare.field')}
                 />
+                <p className="mt-3 text-xs leading-5 text-ink-faint">{t('compare.mediaAssumption')}</p>
             </div>
-
-            <p className="mt-3 text-xs leading-5 text-ink-faint">{t('compare.mediaAssumption')}</p>
 
             <PlanModuleGuideModal open={moduleLegendOpen} onClose={closeModuleLegend} moduleKeys={allModuleKeys} modules={modules} />
         </section>

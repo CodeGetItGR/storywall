@@ -6,11 +6,19 @@ export function scopedPlans(plans: PlanTierResponseDto[], scope: PlanScope): Pla
 }
 
 export function formatPlanMoney(plan: PlanTierResponseDto): string | null {
-    if (plan.priceAmountMinor === null || !plan.priceCurrency) return null;
+    return formatPlanAmount(plan.priceAmountMinor, plan.priceCurrency);
+}
+
+export function formatPlanRecurringMoney(plan: PlanTierResponseDto): string | null {
+    return formatPlanAmount(plan.recurringPriceAmountMinor, plan.priceCurrency);
+}
+
+function formatPlanAmount(amountMinor: number | null, currency: string | null): string | null {
+    if (amountMinor === null || !currency) return null;
     return new Intl.NumberFormat(undefined, {
         style: 'currency',
-        currency: plan.priceCurrency,
-    }).format(plan.priceAmountMinor / 100);
+        currency,
+    }).format(amountMinor / 100);
 }
 
 export function formatLimitValue(value: number | null, unit: 'bytes' | 'count'): string | null {
