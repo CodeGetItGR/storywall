@@ -23,6 +23,7 @@ export type ApiErrorMessageKey =
     | 'eventFrozen'
     | 'eventNotActive'
     | 'eventNotDraft'
+    | 'eventPurgedNotRenewable'
     | 'forbidden'
     | 'internalError'
     | 'invalidCredentials'
@@ -88,6 +89,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.EVENT_MEMBER_LIMIT_EXCEEDED]: 'memberLimit',
     [ERROR_CODES.EVENT_NOT_ACTIVE]: 'eventNotActive',
     [ERROR_CODES.EVENT_NOT_DRAFT]: 'eventNotDraft',
+    [ERROR_CODES.EVENT_PURGED_NOT_RENEWABLE]: 'eventPurgedNotRenewable',
     [ERROR_CODES.EVENT_STORAGE_LIMIT_EXCEEDED]: 'storageLimit',
     [ERROR_CODES.FORBIDDEN]: 'forbidden',
     [ERROR_CODES.INTERNAL_ERROR]: 'internalError',

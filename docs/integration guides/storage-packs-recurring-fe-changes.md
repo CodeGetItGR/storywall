@@ -10,16 +10,16 @@ No new endpoints. One catalog field flips value, one new addon-array behaviour, 
 
 ## 0. The whole thing in one table
 
-| #   | what changed                                                                                              | your work                                                                      |
-| --- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| 1   | Storage packs are no longer a one-time deposit — their price now recurs on every renewal                  | mention of "one-time" anywhere in your storage-pack UI copy is now wrong — §1  |
-| 2   | `PaidServiceResponse.billingPeriod` for a `STORAGE_PACK` catalog row is now `"MONTHLY"`, not `"ONE_TIME"` | fix anything that branches on this value — §2                                  |
-| 3   | `GET /billing`'s `addons[]` array can now contain storage-pack rows, not just `ORIGINALS`                 | your renewal-cost breakdown must sum the whole array, not assume one kind — §3 |
-| 4   | Buying a pack while a subscription is live reprices it immediately                                        | nothing to build — informational, may explain a support ticket — §3            |
-| 5   | `409 ADDON_LOCKED_WHILE_ACTIVE` (5042) — admin entitlement removal now refused on any `ACTIVE` event      | new case in the admin panel's error handling — §4                              |
-| 6   | The admin "remove add-on" tool is no longer usable on a live event **at all**, including `ORIGINALS`      | update any admin copy that implied it always works — §4                        |
-| 7   | `Event.extraStorageBytes`, `GET /usage`, `GET /admin/metrics` storage fields                              | **unchanged** — nothing to do — §5                                             |
-| 8   | `POST /storage-checkout` request/response, refund rules                                                   | **unchanged** — nothing to do — §5                                             |
+| # | what changed | your work |
+|---|---|---|
+| 1 | Storage packs are no longer a one-time deposit — their price now recurs on every renewal | mention of "one-time" anywhere in your storage-pack UI copy is now wrong — §1 |
+| 2 | `PaidServiceResponse.billingPeriod` for a `STORAGE_PACK` catalog row is now `"MONTHLY"`, not `"ONE_TIME"` | fix anything that branches on this value — §2 |
+| 3 | `GET /billing`'s `addons[]` array can now contain storage-pack rows, not just `ORIGINALS` | your renewal-cost breakdown must sum the whole array, not assume one kind — §3 |
+| 4 | Buying a pack while a subscription is live reprices it immediately | nothing to build — informational, may explain a support ticket — §3 |
+| 5 | `409 ADDON_LOCKED_WHILE_ACTIVE` (5042) — admin entitlement removal now refused on any `ACTIVE` event | new case in the admin panel's error handling — §4 |
+| 6 | The admin "remove add-on" tool is no longer usable on a live event **at all**, including `ORIGINALS` | update any admin copy that implied it always works — §4 |
+| 7 | `Event.extraStorageBytes`, `GET /usage`, `GET /admin/metrics` storage fields | **unchanged** — nothing to do — §5 |
+| 8 | `POST /storage-checkout` request/response, refund rules | **unchanged** — nothing to do — §5 |
 
 ---
 
@@ -31,7 +31,7 @@ that extra data for as long as the event lives. That gap is now closed — a set
 the event's monthly preservation subscription exactly the way the "Keep Originals" add-on already
 does. The byte ceiling is still permanent and non-refundable; the **price** now recurs alongside it.
 
-Nothing changes about _buying_ one — same button, same checkout, same one-time Stripe Checkout
+Nothing changes about *buying* one — same button, same checkout, same one-time Stripe Checkout
 Session. What changed is what settlement does afterwards:
 
 - it grants a recurring entitlement (an `EventAddon` row) in addition to raising the byte ceiling,
@@ -54,13 +54,13 @@ then sees it on every renewal invoice is going to file a ticket.
 export type BillingPeriod = 'MONTHLY' | 'YEARLY' | 'ONE_TIME';
 
 export interface PaidServiceResponse {
-    code: string;
-    kind: 'STORAGE_PACK' | 'RECURRING_ADDON';
-    billingPeriod: BillingPeriod; // ← was 'ONE_TIME' for STORAGE_PACK, now always 'MONTHLY'
-    priceAmountMinor: number;
-    priceCurrency: string;
-    grantsStorageBytes: number | null;
-    // …
+  code: string;
+  kind: 'STORAGE_PACK' | 'RECURRING_ADDON';
+  billingPeriod: BillingPeriod;   // ← was 'ONE_TIME' for STORAGE_PACK, now always 'MONTHLY'
+  priceAmountMinor: number;
+  priceCurrency: string;
+  grantsStorageBytes: number | null;
+  // …
 }
 ```
 
@@ -150,20 +150,20 @@ covering — this endpoint now refuses rather than allow that state.
 ```jsonc
 // 409
 {
-    "type": "about:blank",
-    "title": "Conflict",
-    "status": 409,
-    "detail": "Event <id> is ACTIVE; paid entitlements cannot be removed while it is live. They lapse with the event itself.",
-    "instance": "/api/admin/events/<id>/addons/<code>",
-    "errorCode": 5042,
-    "errorKey": "ADDON_LOCKED_WHILE_ACTIVE",
+  "type": "about:blank",
+  "title": "Conflict",
+  "status": 409,
+  "detail": "Event <id> is ACTIVE; paid entitlements cannot be removed while it is live. They lapse with the event itself.",
+  "instance": "/api/admin/events/<id>/addons/<code>",
+  "errorCode": 5042,
+  "errorKey": "ADDON_LOCKED_WHILE_ACTIVE"
 }
 ```
 
-| code                               | HTTP | when                                                                                     | what to show                                                                                                                       |
-| ---------------------------------- | ---- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `5042` `ADDON_LOCKED_WHILE_ACTIVE` | 409  | removing any entitlement from an event whose `status` is `ACTIVE`                        | admin-facing; not retryable as-is — "Can't be removed while the event is live. It lapses automatically if the event stops paying." |
-| `5041` `ADDON_NOT_ACTIVE`          | 409  | the event never had this entitlement (unchanged, still reachable on non-`ACTIVE` events) | admin-facing; refetch the event's add-ons                                                                                          |
+| code | HTTP | when | what to show |
+|---|---|---|---|
+| `5042` `ADDON_LOCKED_WHILE_ACTIVE` | 409 | removing any entitlement from an event whose `status` is `ACTIVE` | admin-facing; not retryable as-is — "Can't be removed while the event is live. It lapses automatically if the event stops paying." |
+| `5041` `ADDON_NOT_ACTIVE` | 409 | the event never had this entitlement (unchanged, still reachable on non-`ACTIVE` events) | admin-facing; refetch the event's add-ons |
 
 **This is a behaviour change on an endpoint that used to always succeed for a valid code/event
 pair.** If the admin panel has a "remove" button next to every entitlement row unconditionally, it

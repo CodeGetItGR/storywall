@@ -9,6 +9,21 @@
         "ctaAuthenticated": "Go to profile",
         "ctaGuest": "Sign in"
     },
+    "PageErrorState": {
+        "retry": "Try again",
+        "plans": {
+            "title": "Plans are taking a minute",
+            "description": "We couldn't load the current plan catalog. Refresh it and the latest pricing will appear here."
+        },
+        "billing": {
+            "title": "Billing needs a refresh",
+            "description": "We couldn't load this event's billing details. Your event data is safe; try again or head back to the event."
+        },
+        "notifications": {
+            "title": "Notifications did not arrive",
+            "description": "We couldn't load your latest notifications. Try again and we'll check for fresh updates."
+        }
+    },
     "Countdown": {
         "days": "Days",
         "daysShort": "d",
@@ -421,6 +436,7 @@
         "notFoundDescription": "This post may have been removed.",
         "loadFailedTitle": "Couldn't load this post",
         "loadFailedDescription": "Something went wrong. Please try again later.",
+        "backToFeed": "Back to feed",
         "noCommentsYet": "No comments yet",
         "commentCount": "{count, plural, one {# Comment} other {# Comments}}",
         "unknownAuthor": "Unknown",
@@ -763,6 +779,12 @@
             "upgradeChargeUnlimited": "{amount} for the upgrade. Your coverage stays unlimited.",
             "upgradeChargeNoDate": "{amount} for the upgrade.",
             "upgradeChargeUnavailable": "The upgrade price is not available right now.",
+            "upgradeOptions": "Upgrade options",
+            "upgradeOptionsTitle": "Available from {plan}",
+            "upgradeCoverageThrough": "Your coverage still runs through {date}.",
+            "upgradeCoverageUnlimited": "Your coverage stays unlimited.",
+            "upgradeCoverageUnchanged": "Your coverage date does not change.",
+            "upgradeDueNow": "{amount} now",
             "nextPlanHint": "Next upgrade: {plan}",
             "highestPlan": "You are on the highest published tier.",
             "field": "Field",
@@ -779,6 +801,7 @@
             "activationPrice": "Activation price",
             "monthlyPrice": "Monthly renewal",
             "perMonthValue": "{amount}/month",
+            "perMonthSuffix": "/month",
             "noMonthlyPrice": "No monthly renewal",
             "billing": "Billing",
             "includedMonths": "Included coverage",
@@ -1742,6 +1765,7 @@
         "addonNotActive": "That add-on is not active.",
         "eventFrozen": "This event is frozen. Renew it to make changes again.",
         "eventNotActive": "This event is not live yet.",
+        "eventPurgedNotRenewable": "This event's media has already been purged, so it cannot be renewed. Create a new event to continue.",
         "rateLimited": "Too many requests. Please wait a moment and try again.",
         "rateLimitedWithWait": "Too many requests. Try again in {seconds}s.",
         "storageLimit": "Storage limit reached for this event.",

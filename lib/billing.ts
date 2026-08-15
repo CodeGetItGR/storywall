@@ -1,4 +1,4 @@
-import type { OrderSummaryDto } from '@/lib/api/types';
+import type { OrderSummaryDto, PlanTierResponseDto } from '@/lib/api/types';
 
 export function formatMoney(locale: string, minor: number, currency: string): string {
     return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(minor / 100);
@@ -38,4 +38,30 @@ export function paidBillingTotal(orders: OrderSummaryDto[]): number {
 
 export function billingCurrency(orders: OrderSummaryDto[], fallback = 'EUR'): string {
     return orders.find((order) => order.status === 'PAID')?.currency ?? orders[0]?.currency ?? fallback;
+}
+
+export function isPlanDiscountActive(plan: PlanTierResponseDto, now = new Date()): boolean {
+    if (!plan.discountPercent || plan.discountPercent <= 0) return false;
+
+    const startsAt = parseDiscountBoundary(plan.discountStartsAt);
+    if (startsAt && startsAt.getTime() > now.getTime()) return false;
+
+    const endsAt = parseDiscountBoundary(plan.discountEndsAt);
+    if (endsAt && endsAt.getTime() <= now.getTime()) return false;
+
+    return true;
+}
+
+export function discountedAmountMinor(amountMinor: number, plan: PlanTierResponseDto, now = new Date()): number {
+    if (!isPlanDiscountActive(plan, now)) return amountMinor;
+
+    const discountPercent = Math.min(Math.max(plan.discountPercent ?? 0, 0), 100);
+    return Math.max(0, Math.round(amountMinor * (1 - discountPercent / 100)));
+}
+
+function parseDiscountBoundary(value: string | null): Date | null {
+    if (!value) return null;
+
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
 }

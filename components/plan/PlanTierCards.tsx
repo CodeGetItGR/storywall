@@ -1,15 +1,18 @@
 'use client';
 
 import { CalendarDays, Database, ImageIcon, Percent, RefreshCw, Users } from 'lucide-react';
+import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
 import { type ReactNode } from 'react';
 
 import { PlanComparisonBadges } from '@/components/plan/PlanComparisonBadges';
 import { PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
+import { PlanPriceLabel } from '@/components/plan/PlanPriceLabel';
 import { useLocalizedPlanDescription } from '@/hooks/useLocalizedPlanDescription';
 import type { PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
-import { formatPlanDiscount, mediaEstimate, PLAN_COMPARISON_EMPTY } from '@/lib/planComparison';
-import { formatLimitValue, formatPlanMoney, formatPlanRecurringMoney } from '@/lib/planTiers';
+import { isPlanDiscountActive } from '@/lib/billing';
+import { formatPlanDiscount, mediaEstimate } from '@/lib/planComparison';
+import { formatLimitValue } from '@/lib/planTiers';
 import { cn } from '@/lib/utils';
 
 type PlanTierCardsProps = {
@@ -21,6 +24,7 @@ type PlanTierCardsProps = {
 
 export function PlanTierCards({ plans, modules, currentPlanCode, nextPlanId }: PlanTierCardsProps) {
     const t = useTranslations('EventPlanSettingsPage');
+    const locale = useLocale();
     const localizedPlanDescription = useLocalizedPlanDescription();
 
     return (
@@ -30,7 +34,7 @@ export function PlanTierCards({ plans, modules, currentPlanCode, nextPlanId }: P
                 const isNext = nextPlanId === plan.id;
                 const discount = formatPlanDiscount(plan);
                 const media = mediaEstimate(plan.storageBytes);
-                const recurringPrice = formatPlanRecurringMoney(plan);
+                const hasActiveDiscount = isPlanDiscountActive(plan);
 
                 return (
                     <article
@@ -51,7 +55,13 @@ export function PlanTierCards({ plans, modules, currentPlanCode, nextPlanId }: P
 
                         <div className="mt-5">
                             <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('compare.activationPrice')}</p>
-                            <p className="text-2xl font-bold text-ink">{formatPlanMoney(plan) ?? t('compare.noPrice')}</p>
+                            <PlanPriceLabel
+                                plan={plan}
+                                kind="activation"
+                                locale={locale}
+                                fallback={t('compare.noPrice')}
+                                className="block text-2xl font-bold text-ink"
+                            />
                             <p className="mt-1 text-sm font-semibold text-ink-muted">
                                 {plan.billingPeriod ? t(`billingPeriod.${plan.billingPeriod}`) : t('compare.noBilling')}
                             </p>
@@ -61,7 +71,15 @@ export function PlanTierCards({ plans, modules, currentPlanCode, nextPlanId }: P
                             <PlanTierMetric
                                 icon={<RefreshCw className="h-4 w-4" />}
                                 label={t('compare.monthlyPrice')}
-                                value={recurringPrice ? t('compare.perMonthValue', { amount: recurringPrice }) : t('compare.noMonthlyPrice')}
+                                value={
+                                    <PlanPriceLabel
+                                        plan={plan}
+                                        kind="recurring"
+                                        locale={locale}
+                                        fallback={t('compare.noMonthlyPrice')}
+                                        suffix={t('compare.perMonthSuffix')}
+                                    />
+                                }
                             />
                             <PlanTierMetric
                                 icon={<Database className="h-4 w-4" />}
@@ -83,11 +101,7 @@ export function PlanTierCards({ plans, modules, currentPlanCode, nextPlanId }: P
                                 label={t('compare.mediaCapacity')}
                                 value={media ? t('compare.mediaEstimate', { images: media.images, videos: media.videos }) : t('compare.unlimitedMedia')}
                             />
-                            <PlanTierMetric
-                                icon={<Percent className="h-4 w-4" />}
-                                label={t('compare.discount')}
-                                value={discount === PLAN_COMPARISON_EMPTY ? t('compare.noDiscount') : discount}
-                            />
+                            {hasActiveDiscount && <PlanTierMetric icon={<Percent className="h-4 w-4" />} label={t('compare.discount')} value={discount} />}
                         </dl>
 
                         <div className="mt-auto pt-5">
@@ -101,7 +115,7 @@ export function PlanTierCards({ plans, modules, currentPlanCode, nextPlanId }: P
     );
 }
 
-function PlanTierMetric({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
+function PlanTierMetric({ icon, label, value }: { icon: ReactNode; label: string; value: ReactNode }) {
     return (
         <div className="grid grid-cols-[1.5rem_minmax(0,1fr)] gap-2 rounded-md bg-surface-muted/70 px-3 py-2">
             <div className="mt-0.5 text-primary-dark">{icon}</div>

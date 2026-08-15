@@ -12,7 +12,7 @@ export const appConfigKeys = {
 export function useAppConfig() {
     return useQuery({
         queryKey: appConfigKeys.all,
-        queryFn: () => api.get<AppConfigResponseDto>(endpoints.config.get),
+        queryFn: () => api.publicGet<AppConfigResponseDto>(endpoints.config.get),
         staleTime: 5 * 60 * 1000,
         gcTime: 30 * 60 * 1000,
     });

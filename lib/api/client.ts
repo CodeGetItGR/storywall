@@ -113,8 +113,7 @@ async function rawFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
         },
     });
 
-    const contentType = res.headers.get('content-type');
-    const body = isJsonContentType(contentType) ? await res.json() : await res.text();
+    const body = await parseResponseBody(res);
 
     if (!res.ok) {
         throw new ApiError(res.status, body, undefined, res.headers.get('retry-after'));
@@ -137,8 +136,7 @@ async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise
         },
     });
 
-    const contentType = res.headers.get('content-type');
-    const body = isJsonContentType(contentType) ? await res.json() : await res.text();
+    const body = await parseResponseBody(res);
 
     if (res.status === 401 && !skipAuthRetry) {
         const newAccessToken = await reauthenticate();
@@ -152,6 +150,19 @@ async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise
     }
 
     return body as T;
+}
+
+async function parseResponseBody(res: Response): Promise<unknown> {
+    const contentType = res.headers.get('content-type');
+    const text = await res.text();
+    if (!text) return null;
+    if (!isJsonContentType(contentType)) return text;
+
+    try {
+        return JSON.parse(text);
+    } catch {
+        return text;
+    }
 }
 
 export const api = {

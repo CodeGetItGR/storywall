@@ -8,6 +8,7 @@ import React, { ChangeEvent } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 
 import { StoragePackPurchase } from '@/components/plan/StoragePackPurchase';
+import { PageErrorState } from '@/components/ui/PageErrorState';
 import { useApiErrorMessage, useRetryAfterCountdown } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import {
@@ -21,7 +22,7 @@ import {
 } from '@/hooks/useBilling';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { EventBillingResponseDto } from '@/lib/api/types';
-import { billingCurrency, checkoutSuccessUrl, formatBillingDate, formatMoney, newestBillingOrder, paidBillingTotal } from '@/lib/billing';
+import { billingCurrency, checkoutSuccessUrl, discountedAmountMinor, formatBillingDate, formatMoney, newestBillingOrder, paidBillingTotal } from '@/lib/billing';
 import { publicAssignablePlans, scopedPlans } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { getEventBillingStatusTone } from '@/lib/statusTones';
@@ -33,6 +34,7 @@ export default function EventPlanSettingsPage() {
     const { eventId } = useParams<{ eventId: string }>();
     const locale = useLocale();
     const t = useTranslations('EventPlanSettingsPage');
+    const tPageError = useTranslations('PageErrorState.billing');
     const tCommon = useTranslations('Common');
     const appConfigQuery = useAppConfig();
     const appConfig = appConfigQuery.data;
@@ -54,6 +56,7 @@ export default function EventPlanSettingsPage() {
     const [cancelError, setCancelError] = useState<string | null>(null);
     const [confirmingCancel, setConfirmingCancel] = useState(false);
     const [showAllOrders, setShowAllOrders] = useState(false);
+    const [renderedAtMs] = useState(() => Date.now());
     const data = billing.data;
     const planTiers = useMemo(() => appConfig?.planTiers ?? [], [appConfig?.planTiers]);
     const eventPlans = useMemo(() => publicAssignablePlans(planTiers, 'EVENT'), [planTiers]);
@@ -203,9 +206,13 @@ export default function EventPlanSettingsPage() {
 
     if (billing.error || !data || !insights) {
         return (
-            <main className="mx-auto max-w-5xl px-4 py-10">
-                <p className="text-sm text-rose-600">{t('loadError')}</p>
-            </main>
+            <PageErrorState
+                title={tPageError('title')}
+                description={tPageError('description')}
+                onRetry={billing.refetch}
+                actionHref={routes.manage}
+                actionLabel={t('backToEvent')}
+            />
         );
     }
 
@@ -220,7 +227,11 @@ export default function EventPlanSettingsPage() {
         if (order.kind === 'STORAGE_PACK') return t('orders.storageCoverage');
         return t('orders.recordedCharge');
     };
-    const hasRenewalPath = data.eventStatus !== 'DRAFT' && !coverage.unlimited && !subscription;
+    const subscriptionCollects =
+        subscription?.status === 'ACTIVE' &&
+        Boolean(subscription.currentPeriodEnd) &&
+        new Date(subscription.currentPeriodEnd ?? '').getTime() > renderedAtMs;
+    const hasRenewalPath = data.eventStatus !== 'DRAFT' && data.eventStatus !== 'PURGED' && !coverage.unlimited && !subscriptionCollects;
     const isRiskState = data.eventStatus === 'FROZEN' || data.eventStatus === 'PURGED' || !coverage.covered;
     const StatusIcon =
         data.eventStatus === 'ACTIVE'
@@ -239,15 +250,18 @@ export default function EventPlanSettingsPage() {
     const renewalTotal =
         currentPlan?.recurringPriceAmountMinor === null || currentPlan?.recurringPriceAmountMinor === undefined
             ? null
-            : currentPlan.recurringPriceAmountMinor + addonMonthlyTotal;
+            : discountedAmountMinor(currentPlan.recurringPriceAmountMinor, currentPlan) + addonMonthlyTotal;
     const upgradeButtonLabel = nextPlan ? t('actions.upgradeTo', { plan: nextPlan.name }) : t('actions.renew');
-    const upgradeDueLabel =
+    const upgradeListAmount =
         nextPlan && currentPlan && nextPlan.priceAmountMinor !== null && currentPlan.priceAmountMinor !== null
-            ? formatMoney(
-                  locale,
-                  nextPlan.priceAmountMinor - currentPlan.priceAmountMinor,
-                  nextPlan.priceCurrency ?? currentPlan.priceCurrency ?? insights.orderCurrency
-              )
+            ? nextPlan.priceAmountMinor - currentPlan.priceAmountMinor
+            : null;
+    const upgradeAmount = nextPlan && upgradeListAmount !== null ? discountedAmountMinor(upgradeListAmount, nextPlan) : null;
+    const upgradeCurrency = nextPlan?.priceCurrency ?? currentPlan?.priceCurrency ?? insights.orderCurrency;
+    const upgradeDueLabel = upgradeAmount !== null ? formatMoney(locale, upgradeAmount, upgradeCurrency) : null;
+    const upgradeListDueLabel =
+        upgradeListAmount !== null && upgradeAmount !== null && upgradeAmount !== upgradeListAmount
+            ? formatMoney(locale, upgradeListAmount, upgradeCurrency)
             : null;
     const upgradeChargeLabel = upgradeDueLabel
         ? coverage.unlimited
@@ -381,7 +395,7 @@ export default function EventPlanSettingsPage() {
                         </p>
                     </div>
                     <Link
-                        href={routes.plans({ plan: data.planTierCode })}
+                        href={routes.plans({ eventId, plan: data.planTierCode })}
                         className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-ink px-4 text-xs font-semibold text-white"
                     >
                         {t('compare.allPlansTitle')}
@@ -394,7 +408,15 @@ export default function EventPlanSettingsPage() {
                         <span className="text-ink-faint">{t('compare.to')}</span>
                         <span className="font-semibold text-ink">{nextPlan.name}</span>
                         <span className="text-ink-faint">-</span>
-                        <span>{upgradeChargeLabel ?? t('compare.upgradeChargeUnavailable')}</span>
+                        <span>
+                            {upgradeChargeLabel ?? t('compare.upgradeChargeUnavailable')}
+                            {upgradeListDueLabel && (
+                                <span className="ml-2 text-xs font-semibold text-ink-faint">
+                                    <span className="line-through">{upgradeListDueLabel}</span>
+                                    {nextPlan.discountLabel && <span className="ml-1">{nextPlan.discountLabel}</span>}
+                                </span>
+                            )}
+                        </span>
                         <button
                             type="button"
                             onClick={handleUpgradeClick}

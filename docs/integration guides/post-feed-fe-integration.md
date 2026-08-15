@@ -8,15 +8,15 @@ unaffected except for the same additive `PostResponseDto` fields.
 
 ## What changed
 
-|                      | Before                                | After                                                 |
-| -------------------- | ------------------------------------- | ----------------------------------------------------- |
-| Response shape       | `PostResponseDto[]`                   | `Page<PostResponseDto>`                               |
-| Page size            | unbounded (whole feed)                | 20/page by default, max 100                           |
-| Order                | undefined                             | pinned first, then newest                             |
-| Soft-deleted posts   | included                              | excluded                                              |
-| Author               | `authorMemberId` only                 | `authorMemberId` **+** `author` object (name, avatar) |
-| Media                | not included — separate call per post | `media[]`, presigned URLs, already ordered            |
-| Comments / reactions | not included                          | `commentCount` / `reactionCount`                      |
+| | Before | After |
+|---|---|---|
+| Response shape | `PostResponseDto[]` | `Page<PostResponseDto>` |
+| Page size | unbounded (whole feed) | 20/page by default, max 100 |
+| Order | undefined | pinned first, then newest |
+| Soft-deleted posts | included | excluded |
+| Author | `authorMemberId` only | `authorMemberId` **+** `author` object (name, avatar) |
+| Media | not included — separate call per post | `media[]`, presigned URLs, already ordered |
+| Comments / reactions | not included | `commentCount` / `reactionCount` |
 
 The net effect: rendering a feed used to take 1 (posts) + 1 (media list per post) + 1
 (media URL per attachment) + N (member lookups for author names) requests. It now takes
@@ -39,52 +39,52 @@ Authorization: Bearer {accessToken}
 
 ```json
 {
-    "content": [
+  "content": [
+    {
+      "id": "f1a2...uuid",
+      "eventId": "a1c2...uuid",
+      "authorMemberId": "b3f1...uuid",
+      "author": {
+        "memberId": "b3f1...uuid",
+        "displayName": "Jamie Rivera",
+        "nickname": "Maid of Honour",
+        "role": "ATTENDEE",
+        "avatarMediaId": "c4e5...uuid",
+        "avatarUrl": "https://...presigned..."
+      },
+      "type": "MEDIA",
+      "content": "So happy for you two!",
+      "isPinned": false,
+      "media": [
         {
-            "id": "f1a2...uuid",
-            "eventId": "a1c2...uuid",
-            "authorMemberId": "b3f1...uuid",
-            "author": {
-                "memberId": "b3f1...uuid",
-                "displayName": "Jamie Rivera",
-                "nickname": "Maid of Honour",
-                "role": "ATTENDEE",
-                "avatarMediaId": "c4e5...uuid",
-                "avatarUrl": "https://...presigned..."
-            },
-            "type": "MEDIA",
-            "content": "So happy for you two!",
-            "isPinned": false,
-            "media": [
-                {
-                    "id": "d5f6...uuid",
-                    "eventId": "a1c2...uuid",
-                    "uploaderMemberId": "b3f1...uuid",
-                    "storageKey": "events/.../photo.jpg",
-                    "mediaUrl": "https://...presigned...",
-                    "originalFilename": "photo.jpg",
-                    "mimeType": "image/jpeg",
-                    "mediaType": "IMAGE",
-                    "fileSize": 204800,
-                    "width": 1600,
-                    "height": 1200,
-                    "durationSeconds": null,
-                    "metadata": {},
-                    "createdAt": "2026-07-31T18:02:00Z",
-                    "deletedAt": null
-                }
-            ],
-            "commentCount": 3,
-            "reactionCount": 12,
-            "createdAt": "2026-07-31T18:02:00Z",
-            "updatedAt": "2026-07-31T18:02:00Z",
-            "deletedAt": null
+          "id": "d5f6...uuid",
+          "eventId": "a1c2...uuid",
+          "uploaderMemberId": "b3f1...uuid",
+          "storageKey": "events/.../photo.jpg",
+          "mediaUrl": "https://...presigned...",
+          "originalFilename": "photo.jpg",
+          "mimeType": "image/jpeg",
+          "mediaType": "IMAGE",
+          "fileSize": 204800,
+          "width": 1600,
+          "height": 1200,
+          "durationSeconds": null,
+          "metadata": {},
+          "createdAt": "2026-07-31T18:02:00Z",
+          "deletedAt": null
         }
-    ],
-    "totalElements": 47,
-    "totalPages": 3,
-    "number": 0,
-    "size": 20
+      ],
+      "commentCount": 3,
+      "reactionCount": 12,
+      "createdAt": "2026-07-31T18:02:00Z",
+      "updatedAt": "2026-07-31T18:02:00Z",
+      "deletedAt": null
+    }
+  ],
+  "totalElements": 47,
+  "totalPages": 3,
+  "number": 0,
+  "size": 20
 }
 ```
 
@@ -98,7 +98,7 @@ member has since left the event. `Post.authorMember` uses `ON DELETE SET NULL`, 
 post survives but authorship is dropped. Always null-check before rendering:
 
 ```ts
-const authorName = post.author?.displayName ?? 'Unknown';
+const authorName = post.author?.displayName ?? "Unknown";
 ```
 
 ### `author.avatarUrl` can be `null` even when `avatarMediaId` is set
@@ -118,11 +118,11 @@ refresh individual media URLs.
 
 ```ts
 interface Page<T> {
-    content: T[];
-    totalElements: number;
-    totalPages: number;
-    number: number; // current page, 0-indexed
-    size: number;
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number; // current page, 0-indexed
+  size: number;
 }
 ```
 
@@ -133,11 +133,11 @@ let page = 0;
 const posts: PostResponseDto[] = [];
 
 async function loadNextPage() {
-    const res = await fetch(`/api/events/${eventId}/posts?page=${page}&size=20`);
-    const data: Page<PostResponseDto> = await res.json();
-    posts.push(...data.content);
-    page += 1;
-    return page < data.totalPages; // more pages available?
+  const res = await fetch(`/api/events/${eventId}/posts?page=${page}&size=20`);
+  const data: Page<PostResponseDto> = await res.json();
+  posts.push(...data.content);
+  page += 1;
+  return page < data.totalPages; // more pages available?
 }
 ```
 
@@ -153,7 +153,7 @@ GET /api/posts/{postId}/media      → PostMediaResponseDto[] (rarely needed now
                                       the feed already embeds resolved media)
 ```
 
-Use `commentCount`/`reactionCount` from the feed row to decide _whether_ to show a
+Use `commentCount`/`reactionCount` from the feed row to decide *whether* to show a
 "3 comments" affordance; only call `GET /api/posts/{postId}/comments` when the user
 actually expands it.
 

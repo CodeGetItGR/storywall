@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback, useMemo, useState } from 'react';
 
 import { NotificationRow } from '@/components/notifications/NotificationRow';
+import { PageErrorState } from '@/components/ui/PageErrorState';
 import { useMarkAllNotificationsRead, useNotifications, useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { isBillingNotification } from '@/lib/notifications';
 import { cn } from '@/lib/utils';
@@ -13,6 +14,7 @@ type CategoryFilter = 'all' | 'billing' | 'activity';
 
 export default function NotificationsPage() {
     const t = useTranslations('NotificationsPage');
+    const tError = useTranslations('PageErrorState.notifications');
     const notificationsQuery = useNotifications();
     const unreadCountQuery = useUnreadNotificationCount();
     const markAllRead = useMarkAllNotificationsRead();
@@ -39,6 +41,10 @@ export default function NotificationsPage() {
     }, []);
 
     const filters: CategoryFilter[] = ['all', 'billing', 'activity'];
+
+    if (notificationsQuery.error) {
+        return <PageErrorState title={tError('title')} description={tError('description')} onRetry={notificationsQuery.refetch} />;
+    }
 
     return (
         <div className="mx-auto max-w-2xl pb-24 lg:pb-8">
@@ -85,8 +91,6 @@ export default function NotificationsPage() {
                     <div className="h-16 animate-pulse rounded-lg bg-surface-muted" />
                     <div className="h-16 animate-pulse rounded-lg bg-surface-muted" />
                 </div>
-            ) : notificationsQuery.error ? (
-                <p className="px-4 py-10 text-center text-sm text-rose-600">{t('loadError')}</p>
             ) : visible.length === 0 ? (
                 <div className="flex flex-col items-center justify-center px-4 py-24 text-center">
                     <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-surface-muted">

@@ -24,9 +24,9 @@ next time you fetch or refresh the feed.
 Digest posts are ordinary feed rows with two distinguishing traits:
 
 ```ts
-post.type === 'PLAYLIST'; // no other post type is ever system-generated today
-post.authorMemberId === null;
-post.author === null;
+post.type === "PLAYLIST"   // no other post type is ever system-generated today
+post.authorMemberId === null
+post.author === null
 ```
 
 `type: "PLAYLIST"` was already a valid value in `PostRequestDto`/`PostResponseDto` (reserved for
@@ -36,20 +36,20 @@ this use), so no type union changes are needed on the FE side.
 
 ```json
 {
-    "id": "9e21...uuid",
-    "eventId": "a1c2...uuid",
-    "authorMemberId": null,
-    "author": null,
-    "type": "PLAYLIST",
-    "content": "🎵 3 new songs were added to the playlist!",
-    "isPinned": false,
-    "media": [],
-    "commentCount": 0,
-    "reactionCount": 0,
-    "likedByCurrentUser": false,
-    "createdAt": "2026-08-05T09:00:00Z",
-    "updatedAt": "2026-08-05T09:00:00Z",
-    "deletedAt": null
+  "id": "9e21...uuid",
+  "eventId": "a1c2...uuid",
+  "authorMemberId": null,
+  "author": null,
+  "type": "PLAYLIST",
+  "content": "🎵 3 new songs were added to the playlist!",
+  "isPinned": false,
+  "media": [],
+  "commentCount": 0,
+  "reactionCount": 0,
+  "likedByCurrentUser": false,
+  "createdAt": "2026-08-05T09:00:00Z",
+  "updatedAt": "2026-08-05T09:00:00Z",
+  "deletedAt": null
 }
 ```
 
@@ -80,7 +80,7 @@ Treat it like any other feed post, with two adjustments:
 
 ```ts
 function isPlaylistDigest(post: PostResponseDto): boolean {
-    return post.type === 'PLAYLIST' && post.author === null;
+  return post.type === "PLAYLIST" && post.author === null;
 }
 ```
 

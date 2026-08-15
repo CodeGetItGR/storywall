@@ -14,7 +14,7 @@ import type {
     PlanTierResponseDto,
     PlatformModuleResponseDto,
 } from '@/lib/api/types';
-import { checkoutSuccessUrl, formatMoney } from '@/lib/billing';
+import { checkoutSuccessUrl, discountedAmountMinor, formatMoney } from '@/lib/billing';
 import { formatBytes } from '@/lib/format';
 import { findNextPlan, findPlanByCode } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
@@ -85,7 +85,7 @@ export default function OverviewTab({
     const activationTotal =
         currentPlan?.priceAmountMinor === null || currentPlan?.priceAmountMinor === undefined
             ? null
-            : currentPlan.priceAmountMinor + (originalsActive ? activationAddonAmount : 0);
+            : discountedAmountMinor(currentPlan.priceAmountMinor, currentPlan) + (originalsActive ? activationAddonAmount : 0);
 
     async function activateOriginals() {
         setCheckoutError(null);

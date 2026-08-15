@@ -13,16 +13,23 @@ export default function PlansPage() {
     }
 
     if (data.hasError) {
-        return <PlansErrorState message={data.errorMessage} />;
+        return <PlansErrorState onRetry={data.retry} />;
     }
 
     return (
         <PlansContent
+            checkoutError={data.checkoutError}
+            coverage={data.currentBilling?.coverage ?? null}
+            isCheckoutPending={data.isCheckoutPending}
             modules={data.modules}
             nextPlan={data.nextPlan}
+            onUpgrade={data.startUpgrade}
+            pendingPlanCode={data.pendingPlanCode}
             plans={data.plans}
+            retryIn={data.retryIn}
             selectedPlan={data.selectedPlan}
             selectedPlanCode={data.selectedPlanCode}
+            upgradeTargets={data.upgradeTargets}
         />
     );
 }

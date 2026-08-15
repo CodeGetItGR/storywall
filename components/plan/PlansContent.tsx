@@ -5,18 +5,39 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { EventPlanComparison } from '@/components/plan/EventPlanComparison';
-import type { AppConfigResponseDto, PlanTierResponseDto } from '@/lib/api/types';
+import { PlanUpgradeActions } from '@/components/plan/PlanUpgradeActions';
+import type { AppConfigResponseDto, CoverageSummaryDto, PlanTierResponseDto } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 
 interface PlansContentProps {
+    checkoutError: string | null;
+    coverage: CoverageSummaryDto | null;
+    isCheckoutPending: boolean;
     modules: AppConfigResponseDto['modules'];
     nextPlan: PlanTierResponseDto | null;
+    onUpgrade: (planTierCode: string) => void;
+    pendingPlanCode: string | null;
     plans: PlanTierResponseDto[];
+    retryIn: number;
     selectedPlan: PlanTierResponseDto | null;
     selectedPlanCode: string | null;
+    upgradeTargets: PlanTierResponseDto[];
 }
 
-export function PlansContent({ modules, nextPlan, plans, selectedPlan, selectedPlanCode }: PlansContentProps) {
+export function PlansContent({
+    checkoutError,
+    coverage,
+    isCheckoutPending,
+    modules,
+    nextPlan,
+    onUpgrade,
+    pendingPlanCode,
+    plans,
+    retryIn,
+    selectedPlan,
+    selectedPlanCode,
+    upgradeTargets,
+}: PlansContentProps) {
     const t = useTranslations('EventPlanSettingsPage');
 
     return (
@@ -43,6 +64,19 @@ export function PlansContent({ modules, nextPlan, plans, selectedPlan, selectedP
                         </p>
                         <p className="mt-1 text-sm text-ink-muted">{t('compare.nextPlanHint', { plan: nextPlan.name })}</p>
                     </div>
+                )}
+
+                {selectedPlan && (
+                    <PlanUpgradeActions
+                        checkoutError={checkoutError}
+                        coverage={coverage}
+                        currentPlan={selectedPlan}
+                        isCheckoutPending={isCheckoutPending}
+                        onUpgrade={onUpgrade}
+                        pendingPlanCode={pendingPlanCode}
+                        retryIn={retryIn}
+                        targets={upgradeTargets}
+                    />
                 )}
 
                 <div className="mt-6">

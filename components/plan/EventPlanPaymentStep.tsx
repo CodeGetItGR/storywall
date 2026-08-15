@@ -1,10 +1,11 @@
 'use client';
 
 import { CreditCard } from 'lucide-react';
+import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
 
+import { PlanPriceLabel } from '@/components/plan/PlanPriceLabel';
 import type { PlanTierResponseDto } from '@/lib/api/types';
-import { formatPlanMoney } from '@/lib/planTiers';
 
 type EventPlanPaymentStepProps = {
     plan: PlanTierResponseDto | undefined;
@@ -15,7 +16,7 @@ type EventPlanPaymentStepProps = {
 
 export function EventPlanPaymentStep({ plan, selectedCode, onBack, onContinue }: EventPlanPaymentStepProps) {
     const t = useTranslations('CreateEventPage');
-    const price = plan ? formatPlanMoney(plan) : null;
+    const locale = useLocale();
 
     return (
         <div className="space-y-4">
@@ -26,7 +27,13 @@ export function EventPlanPaymentStep({ plan, selectedCode, onBack, onContinue }:
                     </div>
                     <div>
                         <p className="font-semibold text-ink">{plan?.name ?? selectedCode}</p>
-                        <p className="text-sm text-ink-muted">{price ?? t('payment.noCharge')}</p>
+                        <p className="text-sm text-ink-muted">
+                            {plan ? (
+                                <PlanPriceLabel plan={plan} kind="activation" locale={locale} fallback={t('payment.noCharge')} />
+                            ) : (
+                                t('payment.noCharge')
+                            )}
+                        </p>
                     </div>
                 </div>
                 <p className="mt-4 text-sm leading-relaxed text-ink-muted">{t('payment.placeholder')}</p>

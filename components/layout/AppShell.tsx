@@ -12,15 +12,20 @@ export function AppShell({ children }: { children: ReactNode }) {
     const pathname = usePathname();
     const { user, isBootstrapping } = useAuth();
     const isChromeLessPage = pathname === routes.eventNotFound;
+    const isAuthenticated = Boolean(user);
 
     useEffect(() => {
         if (isBootstrapping) return;
+        if (!isAuthenticated && !isChromeLessPage) {
+            router.replace(routes.login);
+            return;
+        }
         if (user?.role === 'ADMIN') {
             router.replace(routes.admin);
         }
-    }, [isBootstrapping, router, user?.role]);
+    }, [isAuthenticated, isBootstrapping, isChromeLessPage, router, user?.role]);
 
-    if (isBootstrapping || user?.role === 'ADMIN') {
+    if (isBootstrapping || (!isAuthenticated && !isChromeLessPage) || user?.role === 'ADMIN') {
         return <div className="h-full bg-background" />;
     }
 

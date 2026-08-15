@@ -11,14 +11,14 @@ no API change — worth knowing, nothing to build.
 
 ## 0. The whole thing in one table
 
-| #   | what changed                                             | your work                                                                    |
-| --- | -------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| 1   | `SubscriptionSummary` gains `cancelAtPeriodEnd: boolean` | add the field; **it changes how you render an `ACTIVE` subscription** — §2   |
-| 2   | `DELETE /api/events/{eventId}/subscription` exists       | build the cancel button — §3                                                 |
-| 3   | `5026` (409) and `5027` (**502**)                        | two cases in your error handling; the 502 is not a generic server error — §4 |
-| 4   | Deleting an event now cancels its subscription           | delete any "cancel your subscription first" copy or pre-step — §5            |
-| 5   | Monthly renewals now appear in `orders[]`                | nothing, but the order history grows every month now — §5                    |
-| 6   | An order can stay `PENDING` in a new (rare) case         | nothing, if your polling already has a give-up path — §5                     |
+| # | what changed | your work |
+|---|---|---|
+| 1 | `SubscriptionSummary` gains `cancelAtPeriodEnd: boolean` | add the field; **it changes how you render an `ACTIVE` subscription** — §2 |
+| 2 | `DELETE /api/events/{eventId}/subscription` exists | build the cancel button — §3 |
+| 3 | `5026` (409) and `5027` (**502**) | two cases in your error handling; the 502 is not a generic server error — §4 |
+| 4 | Deleting an event now cancels its subscription | delete any "cancel your subscription first" copy or pre-step — §5 |
+| 5 | Monthly renewals now appear in `orders[]` | nothing, but the order history grows every month now — §5 |
+| 6 | An order can stay `PENDING` in a new (rare) case | nothing, if your polling already has a give-up path — §5 |
 
 ---
 
@@ -40,11 +40,11 @@ new subscription. Confirm before calling, and put the period-end date in the con
 
 ```ts
 export interface SubscriptionSummary {
-    id: string;
-    status: 'ACTIVE' | 'PAST_DUE' | 'CANCELLED';
-    currentPeriodEnd: string | null;
-    cancelAtPeriodEnd: boolean; // ← new. Always present, never null.
-    cancelledAt: string | null;
+  id: string;
+  status: 'ACTIVE' | 'PAST_DUE' | 'CANCELLED';
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;   // ← new. Always present, never null.
+  cancelledAt: string | null;
 }
 ```
 
@@ -55,16 +55,16 @@ Returned by `GET /api/events/{eventId}/billing` and by the new endpoint.
 This is the part that breaks existing UI silently. If you render on `status` alone, a cancelled
 subscription still reads as healthy and the host is told it will renew when it will not.
 
-| `status`   | `cancelAtPeriodEnd` | what it means                             | what to show                                                                           |
-| ---------- | ------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------- |
-| `ACTIVE`   | `false`             | renewing normally                         | "Renews on {currentPeriodEnd}"                                                         |
-| `ACTIVE`   | `true`              | **cancelled, paid month still running**   | "Won't renew. Your event stays live until {currentPeriodEnd}, then becomes read-only." |
-| `PAST_DUE` | `false`             | last payment failed, provider is retrying | your existing dunning banner                                                           |
-| `PAST_DUE` | `true`              | cancelled while a payment was failing     | treat as cancelled — the dunning is moot                                               |
+| `status` | `cancelAtPeriodEnd` | what it means | what to show |
+|---|---|---|---|
+| `ACTIVE` | `false` | renewing normally | "Renews on {currentPeriodEnd}" |
+| `ACTIVE` | `true` | **cancelled, paid month still running** | "Won't renew. Your event stays live until {currentPeriodEnd}, then becomes read-only." |
+| `PAST_DUE` | `false` | last payment failed, provider is retrying | your existing dunning banner |
+| `PAST_DUE` | `true` | cancelled while a payment was failing | treat as cancelled — the dunning is moot |
 
 ### `status: 'CANCELLED'` never arrives on this endpoint
 
-`GET /billing` only returns a _live_ subscription. Once the provider ends it at the period boundary,
+`GET /billing` only returns a *live* subscription. Once the provider ends it at the period boundary,
 `subscription` becomes **`null`**, not a row with `status: 'CANCELLED'`.
 
 So do not poll for `CANCELLED` — you will wait forever. The sequence a host actually sees is:
@@ -92,11 +92,11 @@ Host only. No request body. Returns the updated `SubscriptionSummary`.
 ```jsonc
 // 200
 {
-    "id": "…",
-    "status": "ACTIVE",
-    "currentPeriodEnd": "2026-09-12T00:00:00Z",
-    "cancelAtPeriodEnd": true,
-    "cancelledAt": null,
+  "id": "…",
+  "status": "ACTIVE",
+  "currentPeriodEnd": "2026-09-12T00:00:00Z",
+  "cancelAtPeriodEnd": true,
+  "cancelledAt": null
 }
 ```
 
@@ -115,10 +115,10 @@ Host only. No request body. Returns the updated `SubscriptionSummary`.
 
 Standard `ProblemDetail` envelope with numeric `errorCode`, as everywhere else.
 
-| code                                | HTTP    | when                                                 | what to show                                                                                                                              |
-| ----------------------------------- | ------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `5026` `SUBSCRIPTION_NOT_LIVE`      | 409     | nothing live to cancel                               | stale tab — refetch `/billing`. It was probably already cancelled, or the period already ended. Not an error worth alarming anyone about. |
-| `5027` `SUBSCRIPTION_CANCEL_FAILED` | **502** | the payment provider refused or could not be reached | "We couldn't stop it just now — please try again in a moment."                                                                            |
+| code | HTTP | when | what to show |
+|---|---|---|---|
+| `5026` `SUBSCRIPTION_NOT_LIVE` | 409 | nothing live to cancel | stale tab — refetch `/billing`. It was probably already cancelled, or the period already ended. Not an error worth alarming anyone about. |
+| `5027` `SUBSCRIPTION_CANCEL_FAILED` | **502** | the payment provider refused or could not be reached | "We couldn't stop it just now — please try again in a moment." |
 
 ### The 502 needs handling, not a generic error page
 

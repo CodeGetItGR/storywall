@@ -1,16 +1,18 @@
 'use client';
 
 import { Check } from 'lucide-react';
+import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
 import { type MouseEvent, useMemo, useState } from 'react';
 
 import { PlanModuleGuideButton } from '@/components/plan/PlanModuleGuideButton';
 import { PlanModuleGuideModal } from '@/components/plan/PlanModuleGuideModal';
 import { PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
+import { PlanPriceLabel } from '@/components/plan/PlanPriceLabel';
 import { useLocalizedPlanDescription } from '@/hooks/useLocalizedPlanDescription';
 import type { PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { enabledModuleKeys } from '@/lib/planModules';
-import { formatLimitValue, formatPlanMoney } from '@/lib/planTiers';
+import { formatLimitValue } from '@/lib/planTiers';
 import { cn } from '@/lib/utils';
 
 type EventPlanSelectorProps = {
@@ -23,6 +25,7 @@ type EventPlanSelectorProps = {
 
 export function EventPlanSelector({ plans, modules, selectedCode, onSelect, onContinue }: EventPlanSelectorProps) {
     const t = useTranslations('CreateEventPage');
+    const locale = useLocale();
     const localizedPlanDescription = useLocalizedPlanDescription();
     const [isModuleGuideOpen, setIsModuleGuideOpen] = useState(false);
     const moduleGuideKeys = useMemo(
@@ -71,7 +74,13 @@ export function EventPlanSelector({ plans, modules, selectedCode, onSelect, onCo
                         <div>
                             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                                 <p className="font-semibold text-ink">{plan.name}</p>
-                                <span className="text-sm font-semibold text-primary-dark">{formatPlanMoney(plan) ?? t('payment.noCharge')}</span>
+                                <PlanPriceLabel
+                                    plan={plan}
+                                    kind="activation"
+                                    locale={locale}
+                                    fallback={t('payment.noCharge')}
+                                    className="text-sm font-semibold text-primary-dark"
+                                />
                             </div>
                             <p className="mt-1 text-sm text-ink-muted">{localizedPlanDescription(plan)}</p>
                         </div>
