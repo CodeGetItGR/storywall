@@ -19,7 +19,6 @@ export default function PlansPage() {
     return (
         <PlansContent
             checkoutError={data.checkoutError}
-            coverage={data.currentBilling?.coverage ?? null}
             isCheckoutPending={data.isCheckoutPending}
             modules={data.modules}
             nextPlan={data.nextPlan}

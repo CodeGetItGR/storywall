@@ -21,6 +21,10 @@
 - Prefer compact, direct layouts for quick overviews and navigation.
 - Do not default to card surfaces for simple summaries, lists, or actions; use cards only when they clearly improve grouping, emphasis, or separation.
 - Keep overview blocks lightweight and scannable, with minimal text and no decorative chrome unless it serves a real purpose.
+- Creation forms for catalog items and other repeatable records belong in a modal, popover, or focused sheet opened by a clear action. Do not place a full creation form inline above the list it creates.
+- Editable collections must render as compact, read-only rows by default, using labels and formatted text instead of always-visible inputs. Open a modal, popover, or focused sheet to edit one selected item at a time.
+- Never render one full edit form per item in a collection. Keep browsing and editing as distinct modes so long lists remain scannable.
+- Destructive actions for an editable item should live in its focused edit flow and require confirmation when the action is difficult to undo.
 
 ## Cleanup
 

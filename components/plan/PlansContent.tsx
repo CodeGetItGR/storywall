@@ -5,13 +5,11 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { EventPlanComparison } from '@/components/plan/EventPlanComparison';
-import { PlanUpgradeActions } from '@/components/plan/PlanUpgradeActions';
-import type { AppConfigResponseDto, CoverageSummaryDto, PlanTierResponseDto } from '@/lib/api/types';
+import type { AppConfigResponseDto, PlanTierResponseDto } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 
 interface PlansContentProps {
     checkoutError: string | null;
-    coverage: CoverageSummaryDto | null;
     isCheckoutPending: boolean;
     modules: AppConfigResponseDto['modules'];
     nextPlan: PlanTierResponseDto | null;
@@ -26,7 +24,6 @@ interface PlansContentProps {
 
 export function PlansContent({
     checkoutError,
-    coverage,
     isCheckoutPending,
     modules,
     nextPlan,
@@ -66,22 +63,20 @@ export function PlansContent({
                     </div>
                 )}
 
-                {selectedPlan && (
-                    <PlanUpgradeActions
-                        checkoutError={checkoutError}
-                        coverage={coverage}
+                <div className="mt-6">
+                    <EventPlanComparison
+                        plans={plans}
+                        modules={modules}
+                        currentPlanCode={selectedPlanCode}
                         currentPlan={selectedPlan}
                         isCheckoutPending={isCheckoutPending}
                         onUpgrade={onUpgrade}
                         pendingPlanCode={pendingPlanCode}
                         retryIn={retryIn}
-                        targets={upgradeTargets}
+                        upgradeTargets={upgradeTargets}
                     />
-                )}
-
-                <div className="mt-6">
-                    <EventPlanComparison plans={plans} modules={modules} currentPlanCode={selectedPlanCode} />
                 </div>
+                {checkoutError && <p className="mt-3 text-xs text-rose-600">{checkoutError}</p>}
             </div>
         </main>
     );

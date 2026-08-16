@@ -1,7 +1,9 @@
 {
     "Common": {
         "optional": "optional",
-        "required": "required"
+        "required": "required",
+        "yes": "Yes",
+        "no": "No"
     },
     "EventNotFound": {
         "title": "This celebration seems to have wandered off",
@@ -785,6 +787,7 @@
             "upgradeCoverageUnlimited": "Your coverage stays unlimited.",
             "upgradeCoverageUnchanged": "Your coverage date does not change.",
             "upgradeDueNow": "{amount} now",
+            "upgradeButton": "Upgrade to {plan} - {amount}",
             "nextPlanHint": "Next upgrade: {plan}",
             "highestPlan": "You are on the highest published tier.",
             "field": "Field",
@@ -1453,6 +1456,10 @@
             "notice": "Platform modules are fixed by backend code. Disable a module here to withdraw it everywhere on the next config refresh.",
             "loading": "Loading modules...",
             "enabled": "Enabled",
+            "disabled": "Disabled",
+            "edit": "Edit",
+            "editTitle": "Edit module",
+            "empty": "No modules to show.",
             "confirmTitle": "Save {module}?",
             "confirmBody": "This updates the platform module registry. Disabling a module can remove that feature everywhere after config refresh."
         },
@@ -1521,9 +1528,22 @@
             "subtitle": "Manage monthly add-ons and storage packs. Archive in-use services by making them non-public and non-assignable.",
             "includeArchived": "Include archived",
             "loading": "Loading paid services...",
+            "empty": "No paid services to show.",
             "create": "Create service",
+            "createTitle": "Create paid service",
+            "createSubtitle": "Add one service to the catalog. It will appear in the list after it is saved.",
+            "edit": "Edit",
+            "editTitle": "Edit {code}",
+            "editSubtitle": "Update this service without turning the full catalog into a form.",
             "save": "Save changes",
             "delete": "Delete",
+            "deleteConfirmTitle": "Delete {code}?",
+            "deleteConfirmBody": "Only delete services created by mistake and never used by an order. In-use services should be made non-public and non-assignable.",
+            "archived": "Archived",
+            "allPlans": "All plans",
+            "notApplicable": "Not applicable",
+            "yes": "Yes",
+            "no": "No",
             "kinds": { "STORAGE_PACK": "Storage pack", "RECURRING_ADDON": "Recurring add-on" },
             "fields": {
                 "code": "Code",

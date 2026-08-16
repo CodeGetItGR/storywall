@@ -6,9 +6,17 @@ import type { PlatformModuleResponseDto } from '@/lib/api/types';
 import { PLAN_COMPARISON_EMPTY } from '@/lib/planComparison';
 import { enabledModuleKeys, getModuleMeta } from '@/lib/planModules';
 
-export function PlanModuleIcons({ moduleKeys, modules }: { moduleKeys: string[]; modules: PlatformModuleResponseDto[] }) {
+export function PlanModuleIcons({
+    moduleKeys,
+    modules,
+    showDisabled = false,
+}: {
+    moduleKeys: string[];
+    modules: PlatformModuleResponseDto[];
+    showDisabled?: boolean;
+}) {
     const tModules = useTranslations('Modules');
-    const visibleModuleKeys = enabledModuleKeys(moduleKeys, modules);
+    const visibleModuleKeys = showDisabled ? moduleKeys : enabledModuleKeys(moduleKeys, modules);
 
     if (visibleModuleKeys.length === 0) return <span>{PLAN_COMPARISON_EMPTY}</span>;
 

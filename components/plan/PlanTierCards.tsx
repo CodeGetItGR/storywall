@@ -8,6 +8,7 @@ import { type ReactNode } from 'react';
 import { PlanComparisonBadges } from '@/components/plan/PlanComparisonBadges';
 import { PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
 import { PlanPriceLabel } from '@/components/plan/PlanPriceLabel';
+import { PlanUpgradeButton } from '@/components/plan/PlanUpgradeButton';
 import { useLocalizedPlanDescription } from '@/hooks/useLocalizedPlanDescription';
 import type { PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { isPlanDiscountActive } from '@/lib/billing';
@@ -19,13 +20,31 @@ type PlanTierCardsProps = {
     plans: PlanTierResponseDto[];
     modules: PlatformModuleResponseDto[];
     currentPlanCode?: string | null;
+    currentPlan?: PlanTierResponseDto | null;
+    isCheckoutPending?: boolean;
     nextPlanId?: string | null;
+    onUpgrade?: (planTierCode: string) => void;
+    pendingPlanCode?: string | null;
+    retryIn?: number;
+    upgradeTargets?: PlanTierResponseDto[];
 };
 
-export function PlanTierCards({ plans, modules, currentPlanCode, nextPlanId }: PlanTierCardsProps) {
+export function PlanTierCards({
+    plans,
+    modules,
+    currentPlanCode,
+    currentPlan,
+    isCheckoutPending = false,
+    nextPlanId,
+    onUpgrade,
+    pendingPlanCode = null,
+    retryIn = 0,
+    upgradeTargets = [],
+}: PlanTierCardsProps) {
     const t = useTranslations('EventPlanSettingsPage');
     const locale = useLocale();
     const localizedPlanDescription = useLocalizedPlanDescription();
+    const upgradeTargetCodes = new Set(upgradeTargets.map((target) => target.code));
 
     return (
         <div className="grid gap-3">
@@ -35,6 +54,7 @@ export function PlanTierCards({ plans, modules, currentPlanCode, nextPlanId }: P
                 const discount = formatPlanDiscount(plan);
                 const media = mediaEstimate(plan.storageBytes);
                 const hasActiveDiscount = isPlanDiscountActive(plan);
+                const canUpgradeToPlan = Boolean(currentPlan && onUpgrade && upgradeTargetCodes.has(plan.code));
 
                 return (
                     <article
@@ -108,6 +128,19 @@ export function PlanTierCards({ plans, modules, currentPlanCode, nextPlanId }: P
                             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-faint">{t('compare.modules')}</p>
                             <PlanModuleIcons moduleKeys={plan.moduleKeys} modules={modules} />
                         </div>
+
+                        {canUpgradeToPlan && currentPlan && onUpgrade && (
+                            <div className="mt-4 border-t border-border pt-4">
+                                <PlanUpgradeButton
+                                    currentPlan={currentPlan}
+                                    isCheckoutPending={isCheckoutPending}
+                                    isPending={isCheckoutPending && pendingPlanCode === plan.code}
+                                    onUpgrade={onUpgrade}
+                                    retryIn={retryIn}
+                                    target={plan}
+                                />
+                            </div>
+                        )}
                     </article>
                 );
             })}

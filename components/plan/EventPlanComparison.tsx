@@ -10,6 +10,7 @@ import { PlanModuleGuideModal } from '@/components/plan/PlanModuleGuideModal';
 import { PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
 import { PlanPriceLabel } from '@/components/plan/PlanPriceLabel';
 import { PlanTierCards } from '@/components/plan/PlanTierCards';
+import { PlanUpgradeButton } from '@/components/plan/PlanUpgradeButton';
 import type { PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { mediaEstimate, PLAN_COMPARISON_EMPTY } from '@/lib/planComparison';
 import { enabledModuleKeys } from '@/lib/planModules';
@@ -19,10 +20,22 @@ export function EventPlanComparison({
     plans,
     modules,
     currentPlanCode,
+    currentPlan,
+    isCheckoutPending = false,
+    onUpgrade,
+    pendingPlanCode = null,
+    retryIn = 0,
+    upgradeTargets = [],
 }: {
     plans: PlanTierResponseDto[];
     modules: PlatformModuleResponseDto[];
     currentPlanCode?: string | null;
+    currentPlan?: PlanTierResponseDto | null;
+    isCheckoutPending?: boolean;
+    onUpgrade?: (planTierCode: string) => void;
+    pendingPlanCode?: string | null;
+    retryIn?: number;
+    upgradeTargets?: PlanTierResponseDto[];
 }) {
     const t = useTranslations('EventPlanSettingsPage');
     const locale = useLocale();
@@ -31,6 +44,7 @@ export function EventPlanComparison({
     const displayPlans = useMemo(() => [...plans].sort((left, right) => left.sortOrder - right.sortOrder), [plans]);
     const currentIndex = currentPlanCode ? displayPlans.findIndex((plan) => plan.code === currentPlanCode) : -1;
     const nextPlanId = currentIndex >= 0 ? (displayPlans[currentIndex + 1]?.id ?? null) : null;
+    const upgradeTargetCodes = new Set(upgradeTargets.map((plan) => plan.code));
     const allModuleKeys = useMemo(
         () => enabledModuleKeys(Array.from(new Set(displayPlans.flatMap((plan) => plan.moduleKeys))), modules),
         [displayPlans, modules]
@@ -106,6 +120,26 @@ export function EventPlanComparison({
         },
     ];
 
+    if (currentPlan && onUpgrade && upgradeTargets.length > 0) {
+        rows.push({
+            key: 'upgrade',
+            label: t('compare.upgradeOptions'),
+            render: (plan) =>
+                upgradeTargetCodes.has(plan.code) ? (
+                    <PlanUpgradeButton
+                        currentPlan={currentPlan}
+                        isCheckoutPending={isCheckoutPending}
+                        isPending={isCheckoutPending && pendingPlanCode === plan.code}
+                        onUpgrade={onUpgrade}
+                        retryIn={retryIn}
+                        target={plan}
+                    />
+                ) : (
+                    PLAN_COMPARISON_EMPTY
+                ),
+        });
+    }
+
     return (
         <section>
             <div className="space-y-3 md:hidden">
@@ -114,7 +148,18 @@ export function EventPlanComparison({
                     <PlanModuleGuideButton onOpen={openModuleLegend} />
                 </div>
 
-                <PlanTierCards plans={displayPlans} modules={modules} currentPlanCode={currentPlanCode} nextPlanId={nextPlanId} />
+                <PlanTierCards
+                    plans={displayPlans}
+                    modules={modules}
+                    currentPlanCode={currentPlanCode}
+                    currentPlan={currentPlan}
+                    isCheckoutPending={isCheckoutPending}
+                    nextPlanId={nextPlanId}
+                    onUpgrade={onUpgrade}
+                    pendingPlanCode={pendingPlanCode}
+                    retryIn={retryIn}
+                    upgradeTargets={upgradeTargets}
+                />
                 <p className="text-xs leading-5 text-ink-faint">{t('compare.mediaAssumption')}</p>
             </div>
 
