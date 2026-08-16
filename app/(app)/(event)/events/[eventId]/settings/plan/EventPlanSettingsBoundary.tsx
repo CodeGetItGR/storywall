@@ -22,7 +22,15 @@ import {
 } from '@/hooks/useBilling';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { EventBillingResponseDto } from '@/lib/api/types';
-import { billingCurrency, checkoutSuccessUrl, discountedAmountMinor, formatBillingDate, formatMoney, newestBillingOrder, paidBillingTotal } from '@/lib/billing';
+import {
+    billingCurrency,
+    discountedAmountMinor,
+    formatBillingDate,
+    formatMoney,
+    navigateToCheckout,
+    newestBillingOrder,
+    paidBillingTotal,
+} from '@/lib/billing';
 import { publicAssignablePlans, scopedPlans } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { getEventBillingStatusTone } from '@/lib/statusTones';
@@ -95,9 +103,7 @@ export default function EventPlanSettingsPage() {
         setError(null);
         try {
             const checkout = await renew.mutateAsync();
-            window.location.href = checkout.redirectUrl.includes('/checkout/success')
-                ? checkoutSuccessUrl(window.location.origin, eventId, checkout.orderId)
-                : checkout.redirectUrl;
+            navigateToCheckout(eventId, checkout);
         } catch (e) {
             setError(toErrorMessage(e));
         }
@@ -113,9 +119,7 @@ export default function EventPlanSettingsPage() {
 
         try {
             const checkout = await upgradeCheckout.mutateAsync({ planTierCode });
-            window.location.href = checkout.redirectUrl.includes('/checkout/success')
-                ? checkoutSuccessUrl(window.location.origin, eventId, checkout.orderId, planTierCode)
-                : checkout.redirectUrl;
+            navigateToCheckout(eventId, checkout, planTierCode);
         } catch (e) {
             const code = getErrorCode(e);
             if (code === ERROR_CODES.PLAN_TIER_NOT_AN_UPGRADE || code === ERROR_CODES.PLAN_TIER_NOT_PURCHASABLE) {

@@ -40,10 +40,11 @@ export function DesktopNavRail() {
     const { user: authUser } = useAuth();
     const { openPostComposer, canComposePost } = useComposer();
     const activeEvent = useActiveEvent();
+    const isDraft = activeEvent?.status === 'DRAFT';
     const showEventActions = Boolean(activeEvent) && isEventRoute(pathname);
     const accountName = authUser?.displayName ?? tProfile('fallbackName');
     const navItems = [
-        ...(activeEvent ? [{ href: routes.post.feed(activeEvent.id), icon: Home, key: 'home' }] : []),
+        ...(activeEvent ? [{ href: isDraft ? routes.manage : routes.post.feed(activeEvent.id), icon: Home, key: 'home' }] : []),
         { href: routes.profile, icon: UserRound, key: 'profile' },
     ];
 

@@ -8,7 +8,7 @@ import { useApiErrorMessage, useRetryAfterCountdown } from '@/hooks/useApiErrorM
 import { useStorageCheckout } from '@/hooks/useBilling';
 import { useEventUsage } from '@/hooks/useUsage';
 import type { PaidServiceResponseDto } from '@/lib/api/types';
-import { checkoutSuccessUrl, formatMoney } from '@/lib/billing';
+import { formatMoney, navigateToCheckout } from '@/lib/billing';
 import { formatBytes } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -27,11 +27,7 @@ export function StoragePackPurchase({ eventId, services }: { eventId: string; se
         setError(null);
         try {
             const result = await checkout.mutateAsync({ paidServiceCode: code });
-            window.location.assign(
-                result.redirectUrl.includes('/checkout/success')
-                    ? checkoutSuccessUrl(window.location.origin, eventId, result.orderId)
-                    : result.redirectUrl
-            );
+            navigateToCheckout(eventId, result);
         } catch (purchaseError) {
             setError(toErrorMessage(purchaseError));
         }

@@ -14,7 +14,7 @@ import type {
     PlanTierResponseDto,
     PlatformModuleResponseDto,
 } from '@/lib/api/types';
-import { checkoutSuccessUrl, discountedAmountMinor, formatMoney } from '@/lib/billing';
+import { discountedAmountMinor, formatMoney, navigateToCheckout } from '@/lib/billing';
 import { formatBytes } from '@/lib/format';
 import { findNextPlan, findPlanByCode } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
@@ -100,14 +100,7 @@ export default function OverviewTab({
         setCheckoutError(null);
         try {
             const result = await checkout.mutateAsync();
-            const successUrl = checkoutSuccessUrl(window.location.origin, eventId, result.orderId);
-            // The backend normally supplies its own return route. Preserve the order id for
-            // local/manual providers and navigate the hosted checkout at top level.
-            if (result.redirectUrl.includes('/checkout/success')) {
-                window.location.href = successUrl;
-            } else {
-                window.location.href = result.redirectUrl;
-            }
+            navigateToCheckout(eventId, result);
         } catch (error) {
             setCheckoutError(toErrorMessage(error));
         }
@@ -168,92 +161,102 @@ export default function OverviewTab({
                     </button>
                 </div>
             )}
-            <div className="grid grid-cols-3 gap-2 sm:gap-4">
-                <Stat
-                    label={t('stats.totalGuests.label')}
-                    value={`${memberCount}`}
-                    sub={t('stats.totalGuests.sub')}
-                    color="text-emerald-600"
-                    Icon={Users}
-                />
-                <Stat label={t('stats.daysToGo.label')} value={`${daysToGo}`} sub={t('stats.daysToGo.sub')} color="text-rose-500" Icon={Clock} />
-                <Stat
-                    label={t('stats.invitations.label')}
-                    value={`${invitationCount}`}
-                    sub={t('stats.invitations.sub')}
-                    color="text-sky-600"
-                    Icon={Ticket}
-                />
-            </div>
+            {eventStatus !== 'DRAFT' && (
+                <>
+                    <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                        <Stat
+                            label={t('stats.totalGuests.label')}
+                            value={`${memberCount}`}
+                            sub={t('stats.totalGuests.sub')}
+                            color="text-emerald-600"
+                            Icon={Users}
+                        />
+                        <Stat
+                            label={t('stats.daysToGo.label')}
+                            value={`${daysToGo}`}
+                            sub={t('stats.daysToGo.sub')}
+                            color="text-rose-500"
+                            Icon={Clock}
+                        />
+                        <Stat
+                            label={t('stats.invitations.label')}
+                            value={`${invitationCount}`}
+                            sub={t('stats.invitations.sub')}
+                            color="text-sky-600"
+                            Icon={Ticket}
+                        />
+                    </div>
 
-            <Section
-                title={t('rsvpBreakdown.title')}
-                className="border-t border-border pt-4"
-                action={
-                    <button onClick={onSeeAllRsvp} className="text-xs font-semibold text-primary hover:underline">
-                        {t('seeAll')}
-                    </button>
-                }
-            >
-                <div className="flex gap-2">
-                    {rsvpBreakdown.map(({ key, count, color }) => {
-                        const pct = Math.round((count / rsvpTotal) * 100);
-                        return (
-                            <div key={key} className="flex-1 text-center">
-                                <p className="text-xl font-bold text-ink tabular-nums">{count}</p>
-                                <div className="my-1.5 h-1.5 overflow-hidden rounded-full bg-border">
-                                    <div className={`h-full rounded-full ${color} transition-all`} style={{ width: `${pct}%` }} />
-                                </div>
-                                <p className="text-[10px] leading-tight text-ink-muted">{t(`rsvpBreakdown.${key}`)}</p>
-                            </div>
-                        );
-                    })}
-                </div>
-            </Section>
+                    <Section
+                        title={t('rsvpBreakdown.title')}
+                        className="border-t border-border pt-4"
+                        action={
+                            <button onClick={onSeeAllRsvp} className="text-xs font-semibold text-primary hover:underline">
+                                {t('seeAll')}
+                            </button>
+                        }
+                    >
+                        <div className="flex gap-2">
+                            {rsvpBreakdown.map(({ key, count, color }) => {
+                                const pct = Math.round((count / rsvpTotal) * 100);
+                                return (
+                                    <div key={key} className="flex-1 text-center">
+                                        <p className="text-xl font-bold text-ink tabular-nums">{count}</p>
+                                        <div className="my-1.5 h-1.5 overflow-hidden rounded-full bg-border">
+                                            <div className={`h-full rounded-full ${color} transition-all`} style={{ width: `${pct}%` }} />
+                                        </div>
+                                        <p className="text-[10px] leading-tight text-ink-muted">{t(`rsvpBreakdown.${key}`)}</p>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </Section>
 
-            <Section
-                title={t('invitationsCard.title')}
-                className="border-t border-border pt-4"
-                action={
-                    <button onClick={onSeeAllInvitations} className="text-xs font-semibold text-primary hover:underline">
-                        {t('seeAll')}
-                    </button>
-                }
-            >
-                <p className="text-xs text-ink-muted">{t('invitationsCard.summary', { count: invitationCount })}</p>
-            </Section>
+                    <Section
+                        title={t('invitationsCard.title')}
+                        className="border-t border-border pt-4"
+                        action={
+                            <button onClick={onSeeAllInvitations} className="text-xs font-semibold text-primary hover:underline">
+                                {t('seeAll')}
+                            </button>
+                        }
+                    >
+                        <p className="text-xs text-ink-muted">{t('invitationsCard.summary', { count: invitationCount })}</p>
+                    </Section>
 
-            {eventUsage && (
-                <UsagePanel
-                    className="rounded-none border-0 border-t border-border bg-transparent p-0 pt-4 shadow-none md:hidden"
-                    title={t('usage.eventTitle')}
-                    planName={currentPlan?.name ?? eventUsage.planTier}
-                    nextPlanName={nextPlan?.name}
-                    upgradeHref={routes.events.settingsPlan(eventId)}
-                    includedModuleKeys={includedModuleKeys}
-                    items={[
-                        {
-                            key: 'storage',
-                            used: eventUsage.storageBytes,
-                            limit: eventUsage.storageLimitBytes,
-                            percent: eventUsage.storagePercent,
-                            valueLabel:
-                                eventUsage.storageLimitBytes === null
-                                    ? formatBytes(eventUsage.storageBytes)
-                                    : `${formatBytes(eventUsage.storageBytes)} / ${formatBytes(eventUsage.storageLimitBytes)}`,
-                        },
-                        {
-                            key: 'members',
-                            used: eventUsage.memberCount,
-                            limit: eventUsage.memberLimit,
-                            percent: eventUsage.memberPercent,
-                            valueLabel:
-                                eventUsage.memberLimit === null
-                                    ? `${eventUsage.memberCount}`
-                                    : `${eventUsage.memberCount} / ${eventUsage.memberLimit}`,
-                        },
-                    ]}
-                />
+                    {eventUsage && (
+                        <UsagePanel
+                            className="rounded-none border-0 border-t border-border bg-transparent p-0 pt-4 shadow-none md:hidden"
+                            title={t('usage.eventTitle')}
+                            planName={currentPlan?.name ?? eventUsage.planTier}
+                            nextPlanName={nextPlan?.name}
+                            upgradeHref={routes.events.settingsPlan(eventId)}
+                            includedModuleKeys={includedModuleKeys}
+                            items={[
+                                {
+                                    key: 'storage',
+                                    used: eventUsage.storageBytes,
+                                    limit: eventUsage.storageLimitBytes,
+                                    percent: eventUsage.storagePercent,
+                                    valueLabel:
+                                        eventUsage.storageLimitBytes === null
+                                            ? formatBytes(eventUsage.storageBytes)
+                                            : `${formatBytes(eventUsage.storageBytes)} / ${formatBytes(eventUsage.storageLimitBytes)}`,
+                                },
+                                {
+                                    key: 'members',
+                                    used: eventUsage.memberCount,
+                                    limit: eventUsage.memberLimit,
+                                    percent: eventUsage.memberPercent,
+                                    valueLabel:
+                                        eventUsage.memberLimit === null
+                                            ? `${eventUsage.memberCount}`
+                                            : `${eventUsage.memberCount} / ${eventUsage.memberLimit}`,
+                                },
+                            ]}
+                        />
+                    )}
+                </>
             )}
         </div>
     );

@@ -5,7 +5,7 @@ import { useApiErrorMessage, useRetryAfterCountdown } from '@/hooks/useApiErrorM
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventBilling, useUpgradeCheckout } from '@/hooks/useBilling';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
-import { checkoutSuccessUrl } from '@/lib/billing';
+import { navigateToCheckout } from '@/lib/billing';
 import { publicAssignablePlans } from '@/lib/planTiers';
 
 export function usePlansPageData() {
@@ -56,9 +56,7 @@ export function usePlansPageData() {
 
             try {
                 const checkout = await upgradeCheckout.mutateAsync({ planTierCode: targetPlan });
-                window.location.href = checkout.redirectUrl.includes('/checkout/success')
-                    ? checkoutSuccessUrl(window.location.origin, eventId, checkout.orderId, targetPlan)
-                    : checkout.redirectUrl;
+                navigateToCheckout(eventId, checkout, targetPlan);
             } catch (error) {
                 const code = getErrorCode(error);
                 if (code === ERROR_CODES.PLAN_TIER_NOT_AN_UPGRADE || code === ERROR_CODES.PLAN_TIER_NOT_PURCHASABLE) {

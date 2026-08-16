@@ -50,6 +50,7 @@ export function MobileTabBar() {
     const accountLabel = user?.displayName ?? t('items.profile');
     const isFeedDetailPage = pathname.startsWith('/feed/');
     const showEventNavigation = !isLoading && Boolean(activeEvent);
+    const isDraft = activeEvent?.status === 'DRAFT';
     const showEventActions = showEventNavigation && isEventRoute(pathname);
     const profileActive = pathname === routes.profile || pathname.startsWith(routes.profile + '/');
 
@@ -61,6 +62,7 @@ export function MobileTabBar() {
         showEventNavigation && activeEvent
             ? isHost
                 ? hostMenuItems(activeEvent.id)
+                      .filter((item) => !isDraft || item.key === 'manage' || item.key === 'settings' || item.key === 'billing')
                       .filter((item) => {
                           const moduleKey = moduleBackedHostItems[item.key];
                           return !moduleKey || availableModules.has(moduleKey);
@@ -113,7 +115,7 @@ export function MobileTabBar() {
                     <div className="justify-self-start">
                         {showEventNavigation && (
                             <TabLink
-                                href={activeEvent ? routes.post.feed(activeEvent.id) : homeTabItem.href}
+                                href={activeEvent ? (isDraft ? routes.manage : routes.post.feed(activeEvent.id)) : homeTabItem.href}
                                 icon={homeTabItem.icon}
                                 label={t(`items.${homeTabItem.key}`)}
                                 active={homeActive}

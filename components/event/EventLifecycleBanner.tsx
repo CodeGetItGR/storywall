@@ -2,6 +2,7 @@
 
 import { AlertTriangle, Clock3, XCircle } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import type { EventStatus } from '@/lib/api/types';
@@ -23,11 +24,13 @@ function Icon({ status }: { status: Exclude<EventStatus, 'ACTIVE'> }) {
 
 export function EventLifecycleBanner() {
     const t = useTranslations('EventLifecycleBanner');
+    const pathname = usePathname();
     const activeEvent = useActiveEvent();
     const isHost = useIsHost();
     const status = activeEvent?.status;
 
     if (!activeEvent || !status || status === 'ACTIVE') return null;
+    if (pathname.startsWith(`/events/${activeEvent.id}/checkout/`)) return null;
 
     const actionHref = status === 'DRAFT' ? routes.manage : routes.events.settingsPlan(activeEvent.id);
     const showAction = isHost;

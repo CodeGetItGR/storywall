@@ -108,7 +108,7 @@ export function EventPlanSelector({ plans, modules, selectedCode, onSelect, onCo
                 onClick={onContinue}
                 className="mt-2 w-full rounded-full bg-gradient-brand py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             >
-                {t('continueToPayment')}
+                {t('continueToDetails')}
             </button>
         </div>
     );

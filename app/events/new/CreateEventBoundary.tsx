@@ -5,15 +5,15 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { EventPlanPaymentStep } from '@/components/plan/EventPlanPaymentStep';
 import { EventPlanSelector } from '@/components/plan/EventPlanSelector';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
-import { useCreateEvent } from '@/hooks/useEvent';
+import { useCreateEventCheckout } from '@/hooks/useEvent';
 import { ERROR_CODES, getErrorCode, getFieldErrors } from '@/lib/api/errors';
 import type { EventRequestDto, EventTypeConvention } from '@/lib/api/types';
+import { navigateToCheckout } from '@/lib/billing';
 import { publicAssignablePlans } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -26,7 +26,7 @@ export default function CreateEventPage() {
     const router = useRouter();
     const { user, isAuthenticated, isBootstrapping } = useAuth();
     const { setActiveEventId } = useEventSwitcher();
-    const createEvent = useCreateEvent();
+    const createEvent = useCreateEventCheckout();
     const { data: appConfig } = useAppConfig();
     const toErrorMessage = useApiErrorMessage();
 
@@ -37,7 +37,7 @@ export default function CreateEventPage() {
     const [timezone, setTimezone] = useState(() => Intl.DateTimeFormat().resolvedOptions().timeZone);
     const [locationName, setLocationName] = useState('');
     const [error, setError] = useState<string | null>(null);
-    const [step, setStep] = useState<'plan' | 'payment' | 'details'>('plan');
+    const [step, setStep] = useState<'plan' | 'details'>('plan');
     const eventPlans = useMemo(() => publicAssignablePlans(appConfig?.planTiers ?? [], 'EVENT'), [appConfig?.planTiers]);
     const [selectedPlanCode, setSelectedPlanCode] = useState<string>('');
 
@@ -57,7 +57,7 @@ export default function CreateEventPage() {
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
         setError(null);
-        if (!title.trim() || !startAt) return;
+        if (!title.trim() || !startAt || !endAt) return;
 
         const input: EventRequestDto = {
             title: title.trim(),
@@ -65,7 +65,7 @@ export default function CreateEventPage() {
             eventType,
             visibility: 'PRIVATE',
             startAt: new Date(startAt).toISOString(),
-            endAt: endAt ? new Date(endAt).toISOString() : undefined,
+            endAt: new Date(endAt).toISOString(),
             timezone,
             locationName: locationName.trim() || undefined,
             brandingSettings: {},
@@ -73,9 +73,9 @@ export default function CreateEventPage() {
         };
 
         try {
-            const event = await createEvent.mutateAsync(input);
+            const { checkout, event } = await createEvent.mutateAsync(input);
             setActiveEventId(event.id);
-            router.push(routes.manage);
+            navigateToCheckout(event.id, checkout);
         } catch (err) {
             if (getErrorCode(err) === ERROR_CODES.ACTIVE_EVENT_LIMIT_EXCEEDED) {
                 setError(t('activeEventLimitExceeded'));
@@ -114,16 +114,12 @@ export default function CreateEventPage() {
         setLocationName(e.target.value);
     }, []);
 
-    const goToPayment = useCallback(() => {
-        setStep('payment');
+    const goToDetails = useCallback(() => {
+        setStep('details');
     }, []);
 
     const goToPlan = useCallback(() => {
         setStep('plan');
-    }, []);
-
-    const goToDetails = useCallback(() => {
-        setStep('details');
     }, []);
 
     return (
@@ -146,12 +142,11 @@ export default function CreateEventPage() {
                         <div className="rounded-xl bg-card p-5 shadow-2xs">
                             <p className="mb-5 text-sm text-ink-muted">
                                 {step === 'plan' && t('steps.planSubtitle')}
-                                {step === 'payment' && t('steps.paymentSubtitle')}
                                 {step === 'details' && t('subtitle')}
                             </p>
 
-                            <div className="mb-5 grid gap-2 text-xs font-semibold sm:grid-cols-3">
-                                {(['plan', 'payment', 'details'] as const).map((item, index) => (
+                            <div className="mb-5 grid gap-2 text-xs font-semibold sm:grid-cols-2">
+                                {(['plan', 'details'] as const).map((item, index) => (
                                     <div
                                         key={item}
                                         className={cn(
@@ -170,16 +165,19 @@ export default function CreateEventPage() {
                                     modules={appConfig?.modules ?? []}
                                     selectedCode={selectedCode}
                                     onSelect={setSelectedPlanCode}
-                                    onContinue={goToPayment}
+                                    onContinue={goToDetails}
                                 />
-                            )}
-
-                            {step === 'payment' && (
-                                <EventPlanPaymentStep plan={selectedPlan} selectedCode={selectedCode} onBack={goToPlan} onContinue={goToDetails} />
                             )}
 
                             {step === 'details' && (
                                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={goToPlan}
+                                        className="self-start text-xs font-semibold text-ink-muted hover:text-ink"
+                                    >
+                                        {t('backToPlans')}
+                                    </button>
                                     {selectedPlan && (
                                         <div className="rounded-xl bg-primary-light px-4 py-3 text-sm text-primary-dark">
                                             {t('selectedPlan', { plan: selectedPlan.name })}
@@ -224,9 +222,10 @@ export default function CreateEventPage() {
                                                 className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
                                             />
                                         </FormFieldLabel>
-                                        <FormFieldLabel label={t('fields.endAt')} optional>
+                                        <FormFieldLabel label={t('fields.endAt')} required>
                                             <input
                                                 type="datetime-local"
+                                                required
                                                 value={endAt}
                                                 onChange={onEndAtChange}
                                                 className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
@@ -258,10 +257,10 @@ export default function CreateEventPage() {
 
                                     <button
                                         type="submit"
-                                        disabled={createEvent.isPending || !title.trim() || !startAt}
+                                        disabled={createEvent.isPending || !title.trim() || !startAt || !endAt}
                                         className="mt-2 w-full flex items-center justify-center gap-2 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                                     >
-                                        {createEvent.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t('submit')}
+                                        {createEvent.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t('submitAndPay')}
                                     </button>
                                 </form>
                             )}

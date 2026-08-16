@@ -1,9 +1,10 @@
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRef } from 'react';
 
 import { myEventsKeys } from '@/hooks/useMyEvents';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
-import type { EventDetailResponseDto, EventPatchDto, EventRequestDto, EventResponseDto } from '@/lib/api/types';
+import type { CheckoutResponseDto, EventDetailResponseDto, EventPatchDto, EventRequestDto, EventResponseDto } from '@/lib/api/types';
 
 export const eventKeys = {
     all: ['events'] as const,
@@ -46,6 +47,29 @@ export function useCreateEvent() {
         mutationFn: (input: EventRequestDto) => api.post<EventResponseDto>(endpoints.events.list, input),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: myEventsKeys.all });
+        },
+    });
+}
+
+// Creation and activation checkout are one user action. Retain the draft when
+// checkout opening fails so a retry cannot create duplicate events.
+export function useCreateEventCheckout() {
+    const queryClient = useQueryClient();
+    const draftRef = useRef<EventResponseDto | null>(null);
+
+    return useMutation({
+        mutationFn: async (input: EventRequestDto) => {
+            if (!draftRef.current) {
+                draftRef.current = await api.post<EventResponseDto>(endpoints.events.list, input);
+                await queryClient.invalidateQueries({ queryKey: myEventsKeys.all });
+            }
+
+            const checkout = await api.post<CheckoutResponseDto>(endpoints.events.checkout(draftRef.current.id));
+            return { checkout, event: draftRef.current };
+        },
+        onSuccess: ({ event }) => {
+            queryClient.invalidateQueries({ queryKey: eventKeys.detail(event.id) });
+            queryClient.invalidateQueries({ queryKey: ['events', event.id, 'billing'] });
         },
     });
 }

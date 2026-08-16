@@ -1,4 +1,13 @@
-import type { OrderSummaryDto, PlanTierResponseDto } from '@/lib/api/types';
+import type { CheckoutResponseDto, OrderSummaryDto, PlanTierResponseDto } from '@/lib/api/types';
+
+type PendingCheckout = {
+    orderId: string;
+    planTierCode?: string;
+};
+
+function pendingCheckoutKey(eventId: string): string {
+    return `storywall.pendingCheckout.${eventId}`;
+}
 
 export function formatMoney(locale: string, minor: number, currency: string): string {
     return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(minor / 100);
@@ -25,6 +34,42 @@ export function checkoutSuccessUrl(origin: string, eventId: string, orderId: str
     const params = new URLSearchParams({ orderId });
     if (planTierCode) params.set('planTierCode', planTierCode);
     return `${origin}/events/${eventId}/checkout/success?${params.toString()}`;
+}
+
+export function rememberPendingCheckout(eventId: string, orderId: string, planTierCode?: string | null): void {
+    if (typeof window === 'undefined') return;
+
+    const pending: PendingCheckout = { orderId };
+    if (planTierCode) pending.planTierCode = planTierCode;
+    window.sessionStorage.setItem(pendingCheckoutKey(eventId), JSON.stringify(pending));
+}
+
+export function readPendingCheckout(eventId: string): PendingCheckout | null {
+    if (typeof window === 'undefined') return null;
+
+    const value = window.sessionStorage.getItem(pendingCheckoutKey(eventId));
+    if (!value) return null;
+
+    try {
+        const pending = JSON.parse(value) as Partial<PendingCheckout>;
+        return typeof pending.orderId === 'string'
+            ? { orderId: pending.orderId, ...(typeof pending.planTierCode === 'string' ? { planTierCode: pending.planTierCode } : {}) }
+            : null;
+    } catch {
+        return null;
+    }
+}
+
+export function clearPendingCheckout(eventId: string): void {
+    if (typeof window !== 'undefined') window.sessionStorage.removeItem(pendingCheckoutKey(eventId));
+}
+
+export function navigateToCheckout(eventId: string, checkout: CheckoutResponseDto, planTierCode?: string | null): void {
+    rememberPendingCheckout(eventId, checkout.orderId, planTierCode);
+    const destination = checkout.redirectUrl.includes('/checkout/success')
+        ? checkoutSuccessUrl(window.location.origin, eventId, checkout.orderId, planTierCode)
+        : checkout.redirectUrl;
+    window.location.assign(destination);
 }
 
 export function newestBillingOrder(orders: OrderSummaryDto[], kind?: OrderSummaryDto['kind']): OrderSummaryDto | null {

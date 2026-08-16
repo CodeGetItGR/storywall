@@ -36,14 +36,18 @@ export function ManageScreen({ activeEvent, eventId, isHost }: { activeEvent: Ev
     const router = useRouter();
     const searchParams = useSearchParams();
     const tabParam = searchParams.get('tab');
-    const tab = tabParam === 'rsvp' || tabParam === 'invitations' || tabParam === 'settings' ? tabParam : 'overview';
+    const requestedTab = tabParam === 'rsvp' || tabParam === 'invitations' || tabParam === 'settings' ? tabParam : 'overview';
+    const isDraft = activeEvent.status === 'DRAFT';
+    const tab = isDraft && (requestedTab === 'rsvp' || requestedTab === 'invitations') ? 'overview' : requestedTab;
 
     const canWrite = isEventWritable(activeEvent?.status);
-    const { data: members = [] } = useEventMembers(isHost ? eventId : null);
-    const { data: rsvps = [] } = useEventRsvps(isHost ? eventId : null);
-    const { data: invitations = [] } = useEventInvitations(isHost ? eventId : null);
-    const { data: qrLinks = [] } = useEventQrLinks(isHost ? eventId : null);
-    const { data: qrLinkStats = [] } = useEventQrLinkStats(isHost ? eventId : null);
+    const canEditDetails = canWrite || isDraft;
+    const activeHostEventId = isHost && !isDraft ? eventId : null;
+    const { data: members = [] } = useEventMembers(activeHostEventId);
+    const { data: rsvps = [] } = useEventRsvps(activeHostEventId);
+    const { data: invitations = [] } = useEventInvitations(activeHostEventId);
+    const { data: qrLinks = [] } = useEventQrLinks(activeHostEventId);
+    const { data: qrLinkStats = [] } = useEventQrLinkStats(activeHostEventId);
     const { data: eventUsage = null } = useEventUsage(isHost ? eventId : null);
     const { data: appConfig } = useAppConfig();
 
@@ -76,6 +80,10 @@ export function ManageScreen({ activeEvent, eventId, isHost }: { activeEvent: Ev
             setDaysToGo(Math.max(0, Math.ceil((new Date(activeEvent.schedule.startAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))));
         }
     }, [activeEvent]);
+
+    useEffect(() => {
+        if (isDraft && requestedTab !== tab) router.replace(routes.manage);
+    }, [isDraft, requestedTab, router, tab]);
 
     const summary = activeEvent.rsvpSummary;
     const rsvpBreakdown = [
@@ -112,7 +120,7 @@ export function ManageScreen({ activeEvent, eventId, isHost }: { activeEvent: Ev
                 <InvitationsTab eventId={eventId} invitations={invitations} qrLinks={qrLinks} qrLinkStats={qrLinkStats} canWrite={canWrite} />
             )}
 
-            {tab === 'settings' && <SettingsTab event={activeEvent} canWrite={canWrite} />}
+            {tab === 'settings' && <SettingsTab event={activeEvent} canWrite={canEditDetails} canUploadCover={canWrite} />}
         </>
     );
 
@@ -140,9 +148,18 @@ export function ManageScreen({ activeEvent, eventId, isHost }: { activeEvent: Ev
                 </div>
 
                 <div className="mx-4 mb-3 hidden gap-1 rounded-full bg-surface-muted p-1 md:flex">
-                    {tabItems.map(({ key, icon: Icon }) => (
-                        <ManageTabButton key={key} tabKey={key} active={tab === key} Icon={Icon} label={t(`tabs.${key}`)} onSelect={navigateToTab} />
-                    ))}
+                    {tabItems
+                        .filter(({ key }) => !isDraft || key === 'overview' || key === 'settings')
+                        .map(({ key, icon: Icon }) => (
+                            <ManageTabButton
+                                key={key}
+                                tabKey={key}
+                                active={tab === key}
+                                Icon={Icon}
+                                label={t(`tabs.${key}`)}
+                                onSelect={navigateToTab}
+                            />
+                        ))}
                 </div>
             </div>
 

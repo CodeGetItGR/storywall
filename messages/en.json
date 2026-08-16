@@ -484,12 +484,12 @@
     "CreateEventPage": {
         "goBack": "Go back",
         "title": "Create an event",
-        "subtitle": "You can add more details — description, cover photo, RSVP deadline — after it's created.",
+        "subtitle": "Add the event details needed to open secure checkout.",
         "fields": {
             "title": "Event title",
             "eventType": "Event type",
             "startAt": "Starts",
-            "endAt": "Ends (optional)",
+            "endAt": "Ends",
             "timezone": "Timezone",
             "locationName": "Location (optional)",
             "visibility": "Visibility"
@@ -508,27 +508,23 @@
             "PRIVATE": "Private",
             "PUBLIC": "Public"
         },
-        "submit": "Create event",
+        "submitAndPay": "Continue to secure payment",
         "activeEventLimitExceeded": "You are already hosting as many active events as currently allowed. Archive an old event before creating another one.",
         "usageTitle": "Event usage",
         "activeEventLimitExceededWithPlan": "You are already hosting as many active events as currently allowed. Archive an old event before creating another one.",
         "unlimited": "Unlimited",
         "noPlans": "No public event plans are available yet.",
         "planDescriptionFallback": "Everything you need for this event tier.",
-        "continueToPayment": "Continue to payment",
+        "continueToDetails": "Continue to details",
         "backToPlans": "Back to plans",
         "selectedPlan": "Selected plan: {plan}",
         "steps": {
             "plan": "Plan",
-            "payment": "Payment",
             "details": "Details",
-            "planSubtitle": "Choose the event plan your guests will experience.",
-            "paymentSubtitle": "Payment is not connected yet, so this step confirms the selected plan for now."
+            "planSubtitle": "Choose the event plan your guests will experience."
         },
         "payment": {
-            "noCharge": "No charge",
-            "placeholder": "Backend payment is not implemented yet. This placeholder keeps the flow in the right order: choose a plan, confirm payment, then create the event.",
-            "continue": "Continue to details"
+            "noCharge": "No charge"
         },
         "planLimits": {
             "storage": "storage",
@@ -980,13 +976,17 @@
         "paidBody": "Your event is being updated now.",
         "processingBody": "We are waiting for the payment confirmation.",
         "timedOutBody": "We are still reconciling this payment. It will update shortly.",
+        "draftProcessingNote": "The event remains unpublished until the payment is confirmed. Guests will not be able to post yet, and you can return to setup while we keep checking.",
         "orderId": "Order {orderId}",
-        "backToEvent": "Back to event"
+        "backToEvent": "Back to event",
+        "backToSetup": "Back to event setup"
     },
     "CheckoutCancelledPage": {
         "title": "Checkout cancelled",
         "body": "Nothing was charged. You can try again whenever you are ready.",
-        "returnToEvent": "Return to event"
+        "retryPayment": "Try payment again",
+        "retrying": "Opening checkout...",
+        "returnToBilling": "Return to billing"
     },
     "SchedulePage": {
         "back": "Go back",

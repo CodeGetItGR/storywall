@@ -82,16 +82,18 @@ export function RightContextPanel() {
                 <div>
                     <p className="mb-2 text-sm font-semibold text-ink">{t('hostActions')}</p>
                     <div className="space-y-1">
-                        {hostLinks(activeEvent.id).map(({ key, href, icon: Icon }) => (
-                            <Link
-                                key={href}
-                                href={href}
-                                className="group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
-                            >
-                                <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                                <span className="min-w-0 truncate">{t(`links.${key}`)}</span>
-                            </Link>
-                        ))}
+                        {hostLinks(activeEvent.id)
+                            .filter(({ key }) => activeEvent.status !== 'DRAFT' || key === 'manage' || key === 'settings' || key === 'billing')
+                            .map(({ key, href, icon: Icon }) => (
+                                <Link
+                                    key={href}
+                                    href={href}
+                                    className="group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
+                                >
+                                    <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                                    <span className="min-w-0 truncate">{t(`links.${key}`)}</span>
+                                </Link>
+                            ))}
                     </div>
                 </div>
             </div>

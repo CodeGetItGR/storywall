@@ -17,7 +17,15 @@ const inputClass =
     'bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition disabled:cursor-not-allowed disabled:opacity-60';
 const labelClass = 'text-xs font-semibold text-ink-muted uppercase tracking-wide';
 
-export default function SettingsTab({ event, canWrite }: { event: EventDetailResponseDto; canWrite: boolean }) {
+export default function SettingsTab({
+    event,
+    canWrite,
+    canUploadCover = canWrite,
+}: {
+    event: EventDetailResponseDto;
+    canWrite: boolean;
+    canUploadCover?: boolean;
+}) {
     const t = useTranslations('ManagePage');
     const toErrorMessage = useApiErrorMessage();
 
@@ -62,7 +70,7 @@ export default function SettingsTab({ event, canWrite }: { event: EventDetailRes
     }, []);
 
     function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-        if (!canWrite) return;
+        if (!canUploadCover) return;
         const file = e.target.files?.[0];
         if (!file) return;
         if (coverObjectUrlRef.current) {
@@ -76,7 +84,7 @@ export default function SettingsTab({ event, canWrite }: { event: EventDetailRes
     }
 
     function handleRemovePendingCover() {
-        if (!canWrite) return;
+        if (!canUploadCover) return;
         if (coverObjectUrlRef.current) {
             URL.revokeObjectURL(coverObjectUrlRef.current);
             coverObjectUrlRef.current = null;
@@ -86,7 +94,7 @@ export default function SettingsTab({ event, canWrite }: { event: EventDetailRes
     }
 
     function handleChangeCoverClick() {
-        if (!canWrite) return;
+        if (!canUploadCover) return;
         fileRef.current?.click();
     }
 
@@ -181,7 +189,7 @@ export default function SettingsTab({ event, canWrite }: { event: EventDetailRes
                                     <button
                                         type="button"
                                         onClick={handleChangeCoverClick}
-                                        disabled={disabled}
+                                        disabled={disabled || !canUploadCover}
                                         className="px-3 py-1.5 rounded-full bg-ink/60 text-white text-xs font-semibold hover:bg-ink/80 transition-colors"
                                     >
                                         {t('settings.coverPhoto.change')}
@@ -203,7 +211,7 @@ export default function SettingsTab({ event, canWrite }: { event: EventDetailRes
                             <button
                                 type="button"
                                 onClick={handleChangeCoverClick}
-                                disabled={disabled}
+                                disabled={disabled || !canUploadCover}
                                 className="w-full flex flex-col items-center justify-center gap-2 border-2 border-dashed border-border rounded-2xl py-10 text-ink-faint hover:border-primary/40 hover:text-primary/60 hover:bg-primary-light/30 transition-colors"
                             >
                                 <ImagePlus className="w-7 h-7" />
@@ -217,7 +225,7 @@ export default function SettingsTab({ event, canWrite }: { event: EventDetailRes
                             accept="image/*"
                             className="sr-only"
                             onChange={handleFile}
-                            disabled={disabled}
+                            disabled={disabled || !canUploadCover}
                             aria-label={t('settings.coverPhoto.upload')}
                         />
                     </div>
