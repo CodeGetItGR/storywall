@@ -1,13 +1,15 @@
 'use client';
 
+import { Plus } from 'lucide-react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { EventListItem } from '@/components/profile/EventListItem';
-import { LanguagePreference } from '@/components/profile/LanguagePreference';
 import { ProfileEmptyState } from '@/components/profile/ProfileEmptyState';
 import { ProfileLoadingState } from '@/components/profile/ProfileLoadingState';
 import type { useEventDetails } from '@/hooks/useEvent';
 import type { EventMemberResponseDto } from '@/lib/api/types';
+import { routes } from '@/lib/routes';
 
 interface ProfileContentProps {
     eventQueries: ReturnType<typeof useEventDetails>;
@@ -20,12 +22,19 @@ export function ProfileContent({ eventQueries, isLoading, memberships }: Profile
 
     return (
         <div className="mx-auto max-w-2xl px-4 pt-6 pb-24 lg:pb-8">
-            <LanguagePreference />
-
-            <section className="mt-7" aria-labelledby="profile-events-heading">
-                <h2 id="profile-events-heading" className="mb-2 px-1 text-xs font-semibold tracking-wide text-ink-faint uppercase">
-                    {t('yourEvents')}
-                </h2>
+            <section aria-labelledby="profile-events-heading">
+                <div className="mb-3 flex items-center justify-between gap-3 px-1">
+                    <h2 id="profile-events-heading" className="text-xs font-semibold tracking-wide text-ink-faint uppercase">
+                        {t('yourEvents')}
+                    </h2>
+                    <Link
+                        href={routes.events.new}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-gradient-brand px-3.5 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                    >
+                        <Plus className="h-4 w-4" strokeWidth={2.4} aria-hidden="true" />
+                        {t('createEventCta')}
+                    </Link>
+                </div>
                 {isLoading ? (
                     <ProfileLoadingState />
                 ) : memberships.length === 0 ? (

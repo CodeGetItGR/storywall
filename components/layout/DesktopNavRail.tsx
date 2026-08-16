@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { AccountLogoutButton } from '@/components/profile/AccountLogoutButton';
 import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
@@ -95,6 +96,10 @@ export function DesktopNavRail() {
                     </button>
                 </div>
             )}
+
+            <div className="px-4 pb-4">
+                <LanguageSwitcher className="w-full justify-center" />
+            </div>
 
             {/* Current user */}
             <div className="border-t border-border p-3">

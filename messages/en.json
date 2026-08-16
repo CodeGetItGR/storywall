@@ -362,6 +362,7 @@
         "fallbackName": "Account",
         "logout": "Log out",
         "yourEvents": "Your events",
+        "createEventCta": "Create event",
         "loadingEvents": "Loading your events",
         "activeEvent": "Current event",
         "eventUnavailable": "Event unavailable",

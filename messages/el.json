@@ -362,6 +362,7 @@
         "fallbackName": "Λογαριασμός",
         "logout": "Αποσύνδεση",
         "yourEvents": "Οι εκδηλώσεις σου",
+        "createEventCta": "Δημιουργία εκδήλωσης",
         "loadingEvents": "Φόρτωση των εκδηλώσεών σου",
         "activeEvent": "Τρέχουσα εκδήλωση",
         "eventUnavailable": "Η εκδήλωση δεν είναι διαθέσιμη",

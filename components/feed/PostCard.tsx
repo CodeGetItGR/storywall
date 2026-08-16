@@ -7,13 +7,14 @@ import React, { useMemo } from 'react';
 
 import { PostAuthorAvatar, ReactionCount } from '@/components/feed/post';
 import { CommentsList } from '@/components/feed/post/CommentsList';
+import Badge from '@/components/ui/badge';
 import { useEventMembers, usePostComments, usePostLike, usePostModal } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { isModuleNotAvailableError } from '@/lib/api/errors';
 import type { PostResponseDto } from '@/lib/api/types';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { cn, timeAgoParts } from '@/lib/utils';
-import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
+import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
 
 interface PostCardProps {
     post: PostResponseDto;
@@ -36,8 +37,10 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
 
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
+    const isHost = useIsHost();
     const canWrite = isEventWritable(activeEvent?.status);
     const isMyPost = activeMember?.id !== undefined && post.authorMemberId === activeMember.id;
+    const showHostPostBadge = isHostPost && !isHost;
     const visibleComments = useMemo(() => comments.slice(0, 3), [comments]);
     const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
 
@@ -55,10 +58,11 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     }
 
     return (
-        <article className={cn('relative border-2 border-b border-border/60 bg-card/60', isHostPost && 'pt-3 sm:pt-0 sm:pr-3')}>
+        <article className={cn('relative border-2 border-b border-border/60 bg-card/60', showHostPostBadge && 'pt-3 sm:pt-0 sm:pr-3')}>
             <div className="flex items-center justify-between px-4 pt-4 pb-3">
-                <PostAuthorAvatar avatarUrl={post.author?.avatarUrl} name={authorName} timeAgo={timeAgo} isHostPost={!isHostPost} />
+                <PostAuthorAvatar avatarUrl={post.author?.avatarUrl} name={authorName} timeAgo={timeAgo} isHostPost={showHostPostBadge} />
                 <div className="flex items-center gap-1">
+                    {showHostPostBadge && <Badge variant="primary">{t('hostPost')}</Badge>}
                     {post.isPinned && (
                         <span className="flex h-8 w-8 items-center justify-center text-primary" aria-label={t('pinned')} title={t('pinned')}>
                             <Pin className="w-4 h-4" strokeWidth={1.8} />

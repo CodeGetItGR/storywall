@@ -20,7 +20,7 @@ export function ProfileEmptyState() {
                 href={routes.events.new}
                 className="rounded-full bg-gradient-brand px-5 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
             >
-                {t('emptyMemberships.cta')}
+                {t('createEventCta')}
             </Link>
         </div>
     );
