@@ -51,8 +51,8 @@ function ModuleEditDialog({ module, onClose }: { module: PlatformModuleResponseD
                     {module && (
                         <form key={module.moduleKey} onSubmit={handleSubmit} className="space-y-5">
                             <div className="pr-10">
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary-dark">{module.moduleKey}</p>
-                                <h2 className="mt-1 text-lg font-semibold text-ink">{t('modules.editTitle')}</h2>
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary-dark">{t('modules.editTitle')}</p>
+                                <h2 className="mt-1 text-lg font-semibold text-ink">{module.name}</h2>
                             </div>
 
                             <div className="grid gap-3 sm:grid-cols-[1fr_7rem]">
@@ -95,7 +95,7 @@ function ModuleEditDialog({ module, onClose }: { module: PlatformModuleResponseD
             <ConfirmActionModal
                 open={Boolean(pendingInput)}
                 onClose={closeConfirmation}
-                title={t('modules.confirmTitle', { module: module?.moduleKey ?? '' })}
+                title={t('modules.confirmTitle', { module: module?.name ?? '' })}
                 body={t('modules.confirmBody')}
                 cancelLabel={t('cancel')}
                 confirmLabel={t('save')}
@@ -121,7 +121,6 @@ function ModuleRow({ module, onEdit }: { module: PlatformModuleResponseDto; onEd
                 <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                         <h3 className="text-base font-semibold text-ink">{module.name}</h3>
-                        <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[11px] font-bold text-ink-muted">{module.moduleKey}</span>
                         <span
                             className={
                                 module.isEnabled

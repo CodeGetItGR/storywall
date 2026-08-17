@@ -1,3 +1,4 @@
+export * from './CreateCoHostInvitationForm';
 export * from './CreateInvitationForm';
 export * from './CreateQrLinkForm';
 export * from './InvitationPanelButton';

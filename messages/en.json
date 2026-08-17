@@ -178,7 +178,7 @@
         },
         "FROZEN": {
             "title": "This event is read-only",
-            "hostBody": "Coverage has ended. Renew preservation to unlock new posts, stories, and uploads.",
+            "hostBody": "Coverage has ended. Start a subscription to unlock new posts, stories, and uploads.",
             "guestBody": "The event is still available to view, but new posts and uploads are paused.",
             "action": "Manage billing"
         },
@@ -313,13 +313,16 @@
                 "badge": "{count} attending"
             },
             "gifts": {
-                "label": "Gift Registry",
-                "description": "Browse the couple's wish list and claim a gift",
-                "badge": "{count} reserved"
+                "accountLabel": "Gift account",
+                "accountDescription": "View the hosts' bank details for a monetary gift",
+                "label": "Gift account",
+                "description": "View the hosts' bank details for a monetary gift",
+                "badge": "{count} gifts"
             },
             "wishbook": {
+                "currentDescription": "Leave a message for the hosts",
                 "label": "Wishbook",
-                "description": "Leave a heartfelt message for Emma & James",
+                "description": "Leave a message for the hosts",
                 "badge": "{count} entries"
             },
             "schedule": {
@@ -592,6 +595,7 @@
             "title": "Not published yet",
             "body": "Set an end date before publishing. Your coverage is calculated from the event dates.",
             "payAndPublish": "Pay and publish",
+            "reviewAndPublish": "Review payment and publish",
             "addEndDate": "Add an end date to publish",
             "retryIn": "Try again in {seconds}s",
             "activationTotal": "Activation total: {total}",
@@ -600,11 +604,44 @@
                 "body": "Store each untouched, full-resolution photo for {price} per month. This cannot be removed after publishing.",
                 "add": "Add",
                 "active": "Added"
+            },
+            "modules": {
+                "title": "Optional event tools",
+                "body": "Add a tool before publishing. Its monthly price is included in this activation and every renewal.",
+                "perMonth": "per month",
+                "add": "Add",
+                "added": "Added"
             }
+        },
+        "draftModules": {
+            "title": "Optional event tools",
+            "body": "Add a tool before publishing. Its monthly price is included in this activation and every renewal.",
+            "perMonth": "per month",
+            "add": "Add",
+            "added": "Added"
+        },
+        "giftAccount": {
+            "title": "Gift account",
+            "body": "Add one bank account members can copy when they want to send a monetary gift.",
+            "configured": "Ready for members · {holder}",
+            "add": "Set up",
+            "edit": "Edit",
+            "editorTitle": "Gift account details",
+            "editorBody": "These details are visible only to event members and are not stored in this browser.",
+            "iban": "IBAN",
+            "accountHolder": "Account holder",
+            "note": "Note (optional)",
+            "invalidIban": "Check the IBAN. One or more digits appear to be incorrect.",
+            "save": "Save details",
+            "cancel": "Cancel",
+            "remove": "Remove",
+            "removeTitle": "Remove gift details?",
+            "removeBody": "Members will no longer see this bank account."
         },
         "invitations": {
             "panels": {
                 "invites": "Invites",
+                "coHosts": "Co-hosts",
                 "qr": "QR Codes"
             },
             "empty": "No invitations yet. Create one to generate a shareable link.",
@@ -640,7 +677,22 @@
             "placeholders": {
                 "inviteCode": "e.g. TABLE-7"
             },
-            "readOnly": "This event is read-only. Invitation changes are paused, but existing invite links can still be copied."
+            "readOnly": "This event is read-only. Invitation changes are paused, but existing invite links can still be copied.",
+            "coHosts": {
+                "cta": "Invite co-host",
+                "title": "Invite a co-host",
+                "subtitle": "They become a host only after signing in with this verified email and accepting.",
+                "summary": "{count, plural, one {# co-host invitation} other {# co-host invitations}}",
+                "empty": "No pending co-host invitations.",
+                "singleRecipient": "One verified recipient",
+                "email": "Email",
+                "firstName": "First name",
+                "lastName": "Last name",
+                "expiresAt": "Expires",
+                "emailNotice": "We send the invitation automatically. Another account cannot accept this link.",
+                "submit": "Send invitation",
+                "cancel": "Cancel"
+            }
         },
         "qr": {
             "summary": "{count} QR codes",
@@ -741,7 +793,7 @@
         "back": "Back",
         "backToEvent": "Back to event",
         "title": "Plan and billing",
-        "subtitle": "Coverage, preservation, and payments for this event.",
+        "subtitle": "Coverage, subscriptions, and payments for this event.",
         "yes": "Yes",
         "no": "No",
         "emptyDate": "Not set",
@@ -750,7 +802,10 @@
             "title": "Active add-ons",
             "item": "{name} · {price}/month",
             "monthlyTotal": "Add-ons add {amount}/month to renewal.",
-            "renewalTotal": "Next renewal: {amount}/month, including every active add-on."
+            "renewalTotal": "Next renewal: {amount}/month, including every active add-on.",
+            "manageTitle": "Paid add-ons",
+            "manageBody": "Open the add-ons page.",
+            "manageAction": "Manage add-ons"
         },
         "storagePacks": {
             "title": "Add storage",
@@ -760,11 +815,13 @@
             "selectorLabel": "Choose a storage allowance",
             "selected": "Add {size} permanently for {price}/month",
             "buy": "Buy storage",
+            "review": "Review purchase",
             "retryIn": "Try again in {seconds}s",
             "finalSale": "The storage allowance is permanent and non-refundable. Its price recurs monthly for the life of the event."
         },
         "actions": {
-            "renew": "Renew preservation",
+            "renew": "Start subscription",
+            "reviewRenewal": "Preview subscription",
             "upgradeTo": "Upgrade to {plan}",
             "openingCheckout": "Opening checkout...",
             "retryIn": "Try again in {seconds}s"
@@ -876,7 +933,7 @@
             "DRAFT": "The event is not published yet. Activation payment happens from the host dashboard after the event dates are complete.",
             "ACTIVE": "This event is covered through {date}. Guests can keep using the wall while coverage is active.",
             "ACTIVE_UNLIMITED": "This event has unlimited coverage. There is no freeze or purge date to manage.",
-            "FROZEN": "Coverage ended on {date}. The event is read-only until preservation is renewed.",
+            "FROZEN": "Coverage ended on {date}. The event is read-only until a subscription is started.",
             "PURGED": "The event has passed the media retention window. Renewing can reactivate the event, but deleted media cannot be restored."
         },
         "facts": {
@@ -902,21 +959,22 @@
             }
         },
         "subscription": {
-            "title": "Preservation",
+            "title": "Subscription",
             "status": "Status",
             "currentPeriodEnd": "Renews through",
             "none": "No subscription",
-            "renewalHint": "Start preservation to keep the event online after the included coverage period.",
+            "renewalHint": "Start a subscription to keep the event online after the included coverage period.",
             "notRenewing": "Not renewing",
             "ended": "Ended",
             "liveUntil": "Live until",
             "renewsOn": "Renews automatically on {date}.",
             "willNotRenew": "Won't renew. Your event stays live until {date}, then becomes read-only.",
             "pastDue": "The last payment failed. Your card is being retried — update it if this persists.",
-            "cancel": "Stop the subscription",
-            "cancelConfirm": "This stops future renewals. You keep the month you already paid for: the event stays live until {date}, then becomes read-only. No refund is issued.",
-            "cancelConfirmYes": "Yes, stop renewing",
-            "cancelConfirmNo": "Keep it running",
+            "cancel": "Cancel subscription",
+            "cancelConfirmTitle": "Cancel subscription?",
+            "cancelConfirmBody": "This stops future renewals. The month you already paid for stays live until {date}, then the event becomes read-only. No refund is issued.",
+            "cancelConfirmYes": "Cancel",
+            "cancelConfirmNo": "Keep",
             "noResume": "There is no undo. To keep the event live past this date, start a new subscription."
         },
         "activation": {
@@ -969,6 +1027,59 @@
             "showAll": "Show {count} older orders"
         }
     },
+    "EventAddonsSettingsPage": {
+        "backToBilling": "Back to billing",
+        "eyebrow": "Event add-ons",
+        "title": "Paid add-ons",
+        "subtitle": "Add optional paid services for this event. Active add-ons are included in future renewals.",
+        "empty": "No paid add-ons are available for this plan right now.",
+        "inactive": "Paid add-ons can be changed after the event is active."
+    },
+    "CheckoutReviewPage": {
+        "back": "Go back",
+        "backToBilling": "Back to billing",
+        "invalid": "This payment review is unavailable or no longer matches the event. Return to billing and choose the action again.",
+        "unavailable": "This purchase is no longer available. Nothing has been charged.",
+        "summaryTitle": "Purchase summary",
+        "event": "Event",
+        "eventFallback": "Current event",
+        "plan": "Plan",
+        "planChange": "{from} to {to}",
+        "paymentBreakdown": "Charge",
+        "dueNow": "Due now",
+        "futureRenewal": "Future monthly renewal",
+        "perMonth": "{amount}/month",
+        "whatHappens": "What happens after payment",
+        "continueToCheckout": "Continue to checkout",
+        "openingCheckout": "Opening secure checkout...",
+        "items": {
+            "planActivation": "{plan} plan activation",
+            "planPreservation": "{plan} subscription",
+            "planUpgrade": "Upgrade to {plan}"
+        },
+        "intent": {
+            "activation": {
+                "title": "Order preview",
+                "description": "Check the plan and included add-ons before publishing this event.",
+                "consequence": "The event is published after payment is confirmed and includes {months, plural, one {# month} other {# months}} of coverage."
+            },
+            "renewal": {
+                "title": "Subscription preview",
+                "description": "Check the monthly charge and active add-ons.",
+                "consequence": "The subscription starts after payment and renews automatically each month until you cancel it."
+            },
+            "upgrade": {
+                "title": "Order preview",
+                "description": "Check the upgrade charge and new monthly subscription.",
+                "consequence": "The upgraded plan and its limits become available after payment is confirmed. Your current coverage end date does not change."
+            },
+            "storage": {
+                "title": "Order preview",
+                "description": "Check the storage pack charge and new monthly subscription.",
+                "consequence": "The storage allowance is added permanently after payment is confirmed. Its monthly price remains part of future renewals and is non-refundable."
+            }
+        }
+    },
     "CheckoutSuccessPage": {
         "eyebrow": "Checkout",
         "paidTitle": "Payment received",
@@ -985,6 +1096,7 @@
         "title": "Checkout cancelled",
         "body": "Nothing was charged. You can try again whenever you are ready.",
         "retryPayment": "Try payment again",
+        "reviewPayment": "Review payment and try again",
         "retrying": "Opening checkout...",
         "returnToBilling": "Return to billing"
     },
@@ -1043,38 +1155,46 @@
         }
     },
     "GiftsPage": {
+        "accountTitle": "Gift account",
+        "accountSubtitle": "Use these bank details if you would like to send a monetary gift.",
         "goBack": "Go back",
-        "title": "Gift Registry",
-        "subtitle": "Emma and James are grateful for your love and presence. Any gift is truly appreciated.",
-        "filters": {
-            "all": "All",
-            "available": "Available",
-            "reserved": "Reserved"
-        },
-        "priority": {
-            "high": "Top pick",
-            "medium": "Wanted",
-            "low": "Nice to have"
-        },
-        "reserved": "Reserved",
-        "reservedByName": "Reserved by {name}",
-        "reserveGift": "Reserve Gift",
-        "viewOn": "View {name} on {category}"
+        "title": "Gift account",
+        "subtitle": "Use these bank details if you would like to send a monetary gift.",
+        "loading": "Loading gift details...",
+        "loadError": "Gift details could not be loaded.",
+        "emptyHost": "Add bank details so members can send a gift.",
+        "emptyMember": "The hosts have not added gift details yet.",
+        "fields": { "iban": "IBAN", "accountHolder": "Account holder", "note": "Note (optional)" },
+        "invalidIban": "Check the IBAN. One or more digits appear to be incorrect.",
+        "copyIban": "Copy IBAN",
+        "copied": "Copied",
+        "edit": "Edit",
+        "save": "Save details",
+        "cancel": "Cancel",
+        "remove": "Remove",
+        "removeTitle": "Remove gift details?",
+        "removeBody": "Members will no longer see this bank account."
     },
     "WishbookPage": {
+        "currentSubtitle": "Leave a message for the hosts.",
+        "currentPlaceholder": "Write your message...",
         "goBack": "Go back",
         "title": "Wishbook",
-        "subtitle": "Leave a heartfelt message for Emma & James. They'll treasure every word forever.",
-        "messagePlaceholder": "Write your message to Emma & James... Be as heartfelt as you like.",
+        "subtitle": "Leave a message for the hosts.",
+        "messagePlaceholder": "Write your message...",
         "messageAriaLabel": "Wishbook message",
         "addToWishbook": "Add to Wishbook",
         "messageCount": "{count, plural, one {# Message} other {# Messages}}",
-        "timeAgo": {
-            "hours": "{count}h ago",
-            "days": "{count}d ago"
-        },
-        "unlikeMessage": "Unlike message",
-        "likeMessage": "Like message"
+        "charactersLeft": "{count} characters left",
+        "loading": "Loading wishes...",
+        "empty": "No wishes yet. Be the first to leave one.",
+        "loadMore": "Load more",
+        "frozenReadOnly": "The event is paused. Existing wishes remain visible, but new ones cannot be added until it is renewed.",
+        "draftReadOnly": "Wishes can be added after the event is published.",
+        "delete": "Delete",
+        "deleteTitle": "Delete this wish?",
+        "deleteBody": "This removes the wish from the wishbook.",
+        "cancel": "Cancel"
     },
     "SeatingPage": {
         "backToTools": "Back to tools",
@@ -1317,16 +1437,23 @@
             "title": "Admin access required",
             "body": "You need an admin account to manage plans, modules, and assignments."
         },
+        "identifiers": {
+            "copy": "Copy {label}",
+            "copied": "Copied",
+            "eventId": "Event ID",
+            "orderId": "Order ID",
+            "requestId": "Request ID",
+            "providerEventId": "Provider event ID",
+            "deliveryId": "Delivery ID"
+        },
         "layout": {
             "console": "Control room",
             "signedInAs": "Signed in as",
             "signOut": "Sign out",
             "closeMenu": "Close menu",
-            "accountPlans": "Account plans",
             "eventPlans": "Event plans",
             "paidServices": "Paid services",
             "metrics": "Metrics",
-            "plans": "Plans",
             "modules": "Modules",
             "assignments": "Assignments",
             "billingOps": "Billing ops",
@@ -1337,10 +1464,8 @@
         },
         "tabs": {
             "metrics": "Metrics",
-            "accountPlans": "Account plans",
             "eventPlans": "Event plans",
             "paidServices": "Paid services",
-            "plans": "Plans",
             "modules": "Modules",
             "assignments": "Assignments",
             "billingOps": "Billing ops",
@@ -1349,24 +1474,26 @@
         },
         "fields": {
             "code": "Code",
-            "scope": "Scope",
             "name": "Name",
             "sort": "Sort",
             "description": "Description",
             "storage": "Storage",
-            "storageBytes": "Storage bytes",
             "unit": "Unit",
             "maxMembers": "Members",
-            "maxActiveEvents": "Active events",
             "maxEventsPerUser": "Max active events per user",
             "price": "Price",
-            "priceAmountMinor": "Price minor",
             "priceCurrency": "Currency",
             "billingPeriod": "Billing",
             "recurringPrice": "Monthly price",
             "includedMonths": "Included months",
             "discountPercent": "Discount %",
+            "discountLabel": "Promotion label",
+            "discountStartsAt": "Promotion starts",
+            "discountEndsAt": "Promotion ends",
+            "discountBoundHint": "Blank = live immediately",
+            "discountEndsAtHint": "Exclusive. Blank = never expires",
             "blankUnlimited": "Blank = unlimited",
+            "codeHint": "Filled in from the name. Change it only if the backend expects a specific code.",
             "isDefault": "Default",
             "isDefaultHint": "Use this when no plan has been chosen yet.",
             "isAssignable": "Assignable",
@@ -1391,17 +1518,43 @@
             "eventsPerUser": "events per user",
             "moduleCount": "{count, plural, one {# module} other {# modules}}",
             "includedModules": "Included modules",
+            "modules": {
+                "included": "Included",
+                "notIncluded": "Not included",
+                "paidAddon": "Paid add-on",
+                "unavailable": "Unavailable",
+                "removeAddon": "Remove from this plan",
+                "removeAddonFrom": "Remove {addon} from this plan",
+                "useExistingAddon": "Sell {addon}",
+                "createAddon": "Sell as add-on",
+                "createAddonTitle": "Sell {module} as a paid add-on",
+                "createAddonSubtitle": "Hosts on {plan} will be able to buy this module for their event. It is charged monthly.",
+                "saveAddon": "Create add-on",
+                "defaultAddonName": "{module} unlock"
+            },
             "accountDisabledNotice": "Account plans are disabled for new sales and assignment. Existing rows remain here for historical review and limited maintenance.",
             "saveModules": "Save modules",
             "destructiveHint": "Archive plans instead of deleting them once they may be in use.",
-            "deleteConfirmTitle": "Delete {code}?",
+            "deleteConfirmTitle": "Delete {plan}?",
             "deleteConfirmBody": "Only delete plans created by mistake and never assigned. In-use plans should be archived.",
+            "tabs": {
+                "details": "Details",
+                "limits": "Limits",
+                "pricing": "Pricing",
+                "modules": "Modules",
+                "danger": "Danger zone"
+            },
+            "pendingChanges": "{count, plural, one {# unsaved change} other {# unsaved changes}}",
+            "noPendingChanges": "No changes yet.",
             "sections": {
                 "identity": "Plan identity",
                 "limits": "Limits",
                 "pricing": "Pricing",
                 "modules": "Modules",
-                "modulesHint": "Toggle the tools this event plan unlocks.",
+                "modulesHint": "Toggle the tools this event plan unlocks. A tool that is off can still be sold as a paid add-on.",
+                "limitsHint": "Blank means no limit. These caps apply to every event on this plan.",
+                "promotion": "Promotion",
+                "promotionHint": "A discount inside its window is charged, not just advertised. Leave the percentage blank to run no promotion.",
                 "availability": "Availability"
             },
             "filters": {
@@ -1442,15 +1595,15 @@
                 "confirmBody": "This adds a new catalog plan immediately. Review limits, pricing, and availability before confirming."
             },
             "restore": "Restore",
-            "archiveConfirmTitle": "Archive {code}?",
+            "archiveConfirmTitle": "Archive {plan}?",
             "archiveConfirmBody": "This plan will stop being assignable and will be hidden from normal plan lists. You can restore it later from the archived plans view.",
-            "makeDefaultConfirmTitle": "Make {code} the default?",
+            "makeDefaultConfirmTitle": "Make {plan} the default?",
             "makeDefaultConfirmBody": "New accounts or events in this scope will use this plan when no plan has been chosen. Existing assignments are not changed.",
             "modulesConfirmTitle": "Save modules for {code}?",
             "modulesConfirmBody": "This changes which event tools the plan unlocks. Events on this plan may gain or lose access after config refresh.",
-            "restoreConfirmTitle": "Restore {code}?",
+            "restoreConfirmTitle": "Restore {plan}?",
             "restoreConfirmBody": "This plan will become assignable again and can appear anywhere archived plans are included.",
-            "saveConfirmTitle": "Save changes to {code}?",
+            "saveConfirmTitle": "Save changes to {plan}?",
             "saveConfirmBody": "This can change pricing, limits, or availability for the plan. Confirm that the edits are intentional."
         },
         "modules": {
@@ -1465,23 +1618,14 @@
             "confirmBody": "This updates the platform module registry. Disabling a module can remove that feature everywhere after config refresh."
         },
         "assignments": {
-            "userTitle": "Assign account plan",
-            "userSubtitle": "Use an ACCOUNT plan code for a user.",
             "eventTitle": "Assign event plan",
-            "eventSubtitle": "Use an EVENT plan code for one event.",
-            "userId": "User UUID",
+            "eventSubtitle": "Move one event onto a different event plan. Account-plan assignment is disabled by the backend, so only events can be reassigned here.",
             "eventId": "Event UUID",
-            "openUser": "Assign",
-            "openEvent": "Assign",
-            "assignUser": "Assign user plan",
             "assignEvent": "Assign event plan",
-            "freshAccountUsage": "Fresh account usage",
             "freshEventUsage": "Fresh event usage",
-            "confirmUserTitle": "Assign plan to {userId}?",
-            "confirmUserBody": "This changes the user account plan to {plan} and may alter account limits immediately.",
-            "confirmEventTitle": "Assign plan to {eventId}?",
-            "confirmEventBody": "This changes the event plan to {plan} and may alter storage, member, and module limits immediately.",
-            "accountDisabledNotice": "Account-plan assignment is disabled by the backend. Users keep their existing account plan; only event-plan assignment remains available."
+            "noAssignablePlans": "No assignable event plan exists yet. Create one, or restore an archived plan, before assigning.",
+            "confirmEventTitle": "Assign a plan to {event}?",
+            "confirmEventBody": "This changes the event plan to {plan} and may alter storage, member, and module limits immediately."
         },
         "metrics": {
             "eyebrow": "Live platform counts",
@@ -1489,6 +1633,10 @@
             "subtitle": "Dashboard totals from the admin metrics endpoint. Group keys come from live plan and status data.",
             "loading": "Loading metrics...",
             "refresh": "Refresh",
+            "attentionClear": "Nothing is waiting on you. No pending refunds, no unprocessed webhooks.",
+            "pendingRefunds": "Refund requests waiting for a decision",
+            "unprocessedWebhooks": "Provider deliveries never processed",
+            "openQueue": "Open",
             "totalUsers": "Total users",
             "activeUsers": "Active users",
             "totalEvents": "Total events",
@@ -1528,44 +1676,55 @@
             "title": "Paid services catalog",
             "subtitle": "Manage monthly add-ons and storage packs. Archive in-use services by making them non-public and non-assignable.",
             "includeArchived": "Include archived",
+            "kindFilterAll": "All kinds",
             "loading": "Loading paid services...",
             "empty": "No paid services to show.",
             "create": "Create service",
             "createTitle": "Create paid service",
             "createSubtitle": "Add one service to the catalog. It will appear in the list after it is saved.",
             "edit": "Edit",
-            "editTitle": "Edit {code}",
+            "editTitle": "Edit {name}",
             "editSubtitle": "Update this service without turning the full catalog into a form.",
             "save": "Save changes",
             "delete": "Delete",
-            "deleteConfirmTitle": "Delete {code}?",
+            "deleteConfirmTitle": "Delete {name}?",
             "deleteConfirmBody": "Only delete services created by mistake and never used by an order. In-use services should be made non-public and non-assignable.",
             "archived": "Archived",
             "allPlans": "All plans",
             "notApplicable": "Not applicable",
             "yes": "Yes",
             "no": "No",
-            "kinds": { "STORAGE_PACK": "Storage pack", "RECURRING_ADDON": "Recurring add-on" },
+            "kinds": { "STORAGE_PACK": "Storage pack", "RECURRING_ADDON": "Recurring add-on", "MODULE_UNLOCK": "Module unlock" },
             "fields": {
                 "code": "Code",
                 "kind": "Kind",
                 "name": "Name",
                 "description": "Description",
                 "sortOrder": "Sort order",
-                "priceAmountMinor": "Price (minor units)",
+                "price": "Price",
+                "priceHint": "Charged per month, in whole currency units.",
                 "priceCurrency": "Currency",
-                "grantsStorageBytes": "Granted bytes",
-                "planTierIds": "Plan tier IDs",
-                "planTierIdsHint": "Comma-separated; empty means every plan",
+                "grantsStorage": "Storage granted",
+                "grants": "Grants",
+                "grantsModuleKey": "Granted module",
+                "selectModule": "Select a module",
+                "availablePlans": "Available event plans",
+                "availablePlansHint": "Choose the event plans that can buy this service. Use every event plan for a global catalog item.",
+                "allEventPlans": "Available to every event plan",
+                "noEventPlans": "No event plans are available yet.",
                 "assignable": "Assignable",
                 "public": "Public"
             },
+            "moduleChangeWarning": "Changing the granted module affects every event that already has this entitlement. Prefer creating a new service and archiving this one.",
             "removeAddon": {
                 "title": "Remove event entitlement",
-                "subtitle": "Post-refund correction tool for non-live events. Paid entitlements cannot be removed while an event is active.",
+                "subtitle": "Post-refund correction tool. Use it to unwind an entitlement on an event that is no longer live.",
                 "eventId": "Event UUID",
-                "code": "Paid service code",
+                "code": "Paid service",
                 "action": "Remove add-on",
+                "activeWarning": "The backend refuses this while the event is ACTIVE. A live event's paid entitlement lapses on its own once the event stops paying, so freeze or refund first.",
+                "confirmTitle": "Remove {service} from this event?",
+                "confirmBody": "This takes {service} off {event}. The host loses whatever it granted as soon as config refreshes.",
                 "success": "The add-on was removed."
             },
             "errors": {
@@ -1598,7 +1757,6 @@
             "replayed": "Replayed",
             "notReplayable": "This delivery predates body storage and cannot be replayed.",
             "receivedAt": "Received {date}",
-            "orderId": "Order {orderId}",
             "noOrderRef": "No order reference",
             "unknownEventType": "Unknown event",
             "confirmReplayTitle": "Replay this webhook?",
@@ -1607,21 +1765,37 @@
             "confirmSettleBody": "This marks the order paid without a provider payment and can activate the event. Confirm only after verifying the payment or comp.",
             "confirmSweepTitle": "Run notification sweep?",
             "confirmSweepBody": "This can create visible host notifications for quota warnings, offers, and tips. It cannot send arbitrary messages.",
-            "orderIdPlaceholder": "order-id"
+            "orderIdPlaceholder": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "orderIdSourceHint": "Copy the order ID from an unprocessed webhook below, or from the refund request for the same event — the console has no order search.",
+            "orderIdInvalid": "That is not a valid order ID. It should look like 3fa85f64-5717-4562-b3fc-2c963f66afa6."
         },
         "refunds": {
             "title": "Refund requests",
-            "subtitle": "Approving returns the event to draft and takes it offline.",
+            "subtitle": "Approving refunds the payment, returns the event to draft, and takes it offline. Decide from the usage below rather than from the reason alone.",
             "loading": "Loading requests…",
             "empty": "No refund requests.",
+            "emptyPending": "Nothing pending. Every request has been decided.",
+            "filterPending": "Pending ({count})",
+            "filterAll": "All ({count})",
             "guests": "Guests",
+            "hosts": "Hosts",
             "posts": "Posts",
             "media": "Media",
             "storage": "Storage",
+            "paidAt": "Paid",
+            "eventWindow": "Event starts",
+            "noAmount": "No amount recorded",
+            "requestedAt": "Requested {date}",
+            "sendToLifecycle": "Freeze or purge this event",
+            "sendToAssignments": "Change this event's plan",
+            "sendToPaidServices": "Remove an entitlement",
             "notEligible": "No longer meets the refund conditions",
+            "rejectStillAvailable": "Approval is blocked, but you can still reject with a note explaining why.",
             "notRefundedByProvider": "Approved, but the provider did not return the money. Refund it manually.",
             "noteLabel": "Decision note",
             "noteHint": "This note is sent to the host.",
+            "noteRequiredForReject": "required to reject",
+            "noteRequiredHint": "A rejection needs a note — the host is told only what you write here.",
             "approve": "Approve",
             "reject": "Reject",
             "cancel": "Cancel",
@@ -1633,10 +1807,16 @@
                 "APPROVED": "Approved",
                 "REJECTED": "Rejected"
             },
-            "approveConfirmTitle": "Approve refund request?",
-            "rejectConfirmTitle": "Reject refund request?"
+            "approveConfirmTitle": "Approve the refund for {event}?",
+            "rejectConfirmTitle": "Reject the refund for {event}?"
         },
         "lifecycle": {
+            "title": "Event lifecycle",
+            "subtitle": "Freeze and purge both act on the event named below. Enter it once, then choose the action.",
+            "resolvedEvent": "Acting on: {title}",
+            "idSourceHint": "Copy the event ID from a refund request, or ask the host for the link to their event — the console has no event search.",
+            "idInvalid": "That is not a valid event ID. It should look like 3fa85f64-5717-4562-b3fc-2c963f66afa6.",
+            "purgeUnverified": "This ID did not come from a console row, so nothing here confirms which event it is. Check it before purging.",
             "freezeTitle": "Freeze event",
             "freezeSubtitle": "Makes the event read-only. Guests can still view it; nobody can post.",
             "eventIdField": "Event ID",
@@ -1649,10 +1829,10 @@
             "purge": "Purge media",
             "purgeSuccess": "All media for {eventId} was deleted.",
             "purgePartial": "Some files for {eventId} could not be deleted. The event stays frozen — run purge again.",
-            "eventIdPlaceholder": "event-id",
-            "freezeConfirmTitle": "Freeze event {eventId}?",
+            "eventIdPlaceholder": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "freezeConfirmTitle": "Freeze {event}?",
             "freezeConfirmBody": "The event will become read-only while lifecycle handling runs. Hosts and guests will not be able to make changes.",
-            "purgeConfirmTitle": "Permanently purge event {eventId}?",
+            "purgeConfirmTitle": "Permanently purge {event}?",
             "purgeConfirmBody": "This deletes event data and files wherever possible. Do not continue unless the final checks are complete."
         }
     },
@@ -1777,6 +1957,8 @@
         "mediaImageTooManyPixels": "This image's dimensions are too large. Resize it and try again.",
         "mediaProcessingBusy": "The server is busy processing images. Wait a moment and try again.",
         "invalidPaidServiceKind": "That service cannot be purchased here.",
+        "invalidIban": "Check the IBAN and try again.",
+        "coHostInviteNotYours": "This invitation belongs to another account or requires a verified email address.",
         "paidServiceNotPurchasable": "That service is no longer available. Refresh and choose again.",
         "paidServiceInUse": "That service is already referenced by an order and cannot be deleted.",
         "addonAlreadyActive": "This add-on is already active.",
@@ -1804,7 +1986,7 @@
         "planNotAnUpgrade": "These upgrade options are out of date. We refreshed the plan catalog.",
         "planCurrencyMismatch": "This plan is not available for your event.",
         "checkoutSessionUnresolved": "Your last payment is still finishing. Try again in a moment.",
-        "subscriptionAlreadyActive": "A preservation subscription is already running for this event.",
+        "subscriptionAlreadyActive": "A subscription is already running for this event.",
         "refundNotEligible": "This event no longer meets the refund conditions.",
         "refundAlreadyRequested": "A refund request is already pending for this event.",
         "orderNotRefundable": "Only the activation payment can be refunded.",

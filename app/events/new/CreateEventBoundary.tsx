@@ -10,10 +10,9 @@ import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
-import { useCreateEventCheckout } from '@/hooks/useEvent';
+import { useCreateEvent } from '@/hooks/useEvent';
 import { ERROR_CODES, getErrorCode, getFieldErrors } from '@/lib/api/errors';
 import type { EventRequestDto, EventTypeConvention } from '@/lib/api/types';
-import { navigateToCheckout } from '@/lib/billing';
 import { publicAssignablePlans } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -26,7 +25,7 @@ export default function CreateEventPage() {
     const router = useRouter();
     const { user, isAuthenticated, isBootstrapping } = useAuth();
     const { setActiveEventId } = useEventSwitcher();
-    const createEvent = useCreateEventCheckout();
+    const createEvent = useCreateEvent();
     const { data: appConfig } = useAppConfig();
     const toErrorMessage = useApiErrorMessage();
 
@@ -73,9 +72,9 @@ export default function CreateEventPage() {
         };
 
         try {
-            const { checkout, event } = await createEvent.mutateAsync(input);
+            const event = await createEvent.mutateAsync(input);
             setActiveEventId(event.id);
-            navigateToCheckout(event.id, checkout);
+            router.push(routes.events.checkoutReview(event.id, 'activation'));
         } catch (err) {
             if (getErrorCode(err) === ERROR_CODES.ACTIVE_EVENT_LIMIT_EXCEEDED) {
                 setError(t('activeEventLimitExceeded'));

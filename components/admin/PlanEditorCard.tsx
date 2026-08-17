@@ -1,50 +1,87 @@
 'use client';
 
-import { Archive, ArchiveRestore, Loader2, Pencil, Trash2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import React, { type ChangeEvent, useMemo, useRef, useState } from 'react';
+import { Archive, ArchiveRestore, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import React, { type ChangeEvent, useCallback, useMemo, useRef, useState } from 'react';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminSection } from '@/components/admin/AdminSection';
 import { AdminSwitch } from '@/components/admin/AdminSwitch';
+import { type AdminTabDefinition, AdminTabPanel, AdminTabs } from '@/components/admin/AdminTabs';
 import { PlanSaveSummary } from '@/components/admin/PlanSaveSummary';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { useDeletePlanTier, useSetPlanModules, useUpdatePlanTier } from '@/hooks/useAdmin';
+import { useCreatePaidService, useDeletePlanTier, useSetPlanModules, useUpdatePaidService, useUpdatePlanTier } from '@/hooks/useAdmin';
 import { moduleChangeSummary, type PendingPlanSave, planChangeSummary, planPatchFromFormData, sameStringSet } from '@/lib/adminPlanEditor';
-import { defaultCurrency, priceMinorToInput, STORAGE_UNITS, storageBytesToInput } from '@/lib/adminPlanForm';
+import { codeFromName, defaultCurrency, instantToLocalInput, priceInputToMinor, priceMinorToInput, STORAGE_UNITS, storageBytesToInput } from '@/lib/adminPlanForm';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
-import type { BillingPeriod, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import type { BillingPeriod, PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import { formatMoney } from '@/lib/billing';
 import { formatLimitValue, formatPlanMoney } from '@/lib/planTiers';
 import { cn } from '@/lib/utils';
 
 const BILLING_PERIODS: BillingPeriod[] = ['MONTHLY', 'YEARLY', 'ONE_TIME'];
 
+type UnlockDraft = {
+    moduleKey: string;
+    moduleName: string;
+    name: string;
+    description: string;
+    price: string;
+    priceCurrency: string;
+};
+
 export function PlanEditorCard({
     plan,
     modules,
+    paidServices,
+    eventPlans,
     scope,
 }: {
     plan: PlanTierResponseDto;
     modules: PlatformModuleResponseDto[];
+    paidServices: PaidServiceResponseDto[];
+    eventPlans: PlanTierResponseDto[];
     scope: 'ACCOUNT' | 'EVENT';
 }) {
     const t = useTranslations('AdminPage');
+    const locale = useLocale();
     const updatePlan = useUpdatePlanTier();
     const deletePlan = useDeletePlanTier();
     const setModules = useSetPlanModules();
+    const createPaidService = useCreatePaidService();
+    const updatePaidService = useUpdatePaidService();
     const formRef = useRef<HTMLFormElement>(null);
+    const [tab, setTab] = useState('details');
     const [moduleKeys, setModuleKeys] = useState(plan.moduleKeys);
-    const [isPlanDirty, setIsPlanDirty] = useState(false);
+    const [planChangeCount, setPlanChangeCount] = useState(0);
+    const [unlockDraft, setUnlockDraft] = useState<UnlockDraft | null>(null);
     const [makeDefaultOpen, setMakeDefaultOpen] = useState(false);
     const [pendingSave, setPendingSave] = useState<PendingPlanSave | null>(null);
     const [archiveOpen, setArchiveOpen] = useState(false);
     const [restoreOpen, setRestoreOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
-    const enabledModules = useMemo(() => [...modules].sort((left, right) => left.sortOrder - right.sortOrder), [modules]);
+
+    const isEvent = scope === 'EVENT';
+    const editorId = `plan-editor-${plan.id}`;
+    const orderedModules = useMemo(() => [...modules].sort((left, right) => left.sortOrder - right.sortOrder), [modules]);
     const storageInput = storageBytesToInput(plan.storageBytes);
-    const error = updatePlan.error ?? deletePlan.error ?? setModules.error;
+    const error = updatePlan.error ?? deletePlan.error ?? setModules.error ?? createPaidService.error ?? updatePaidService.error;
     const areModulesDirty = !sameStringSet(plan.moduleKeys, moduleKeys);
-    const canSave = isPlanDirty || areModulesDirty;
+    const moduleChangeCount = areModulesDirty ? moduleChangeSummary(plan.moduleKeys, moduleKeys, orderedModules).length : 0;
+    const changeCount = planChangeCount + moduleChangeCount;
+    const canSave = changeCount > 0;
+    const isSaving = updatePlan.isPending || setModules.isPending;
+
+    const tabs = useMemo<AdminTabDefinition[]>(() => {
+        const items: AdminTabDefinition[] = [
+            { key: 'details', label: t('plans.tabs.details') },
+            { key: 'limits', label: t('plans.tabs.limits') },
+            { key: 'pricing', label: t('plans.tabs.pricing') },
+        ];
+        if (isEvent) items.push({ key: 'modules', label: t('plans.tabs.modules'), badge: moduleKeys.length });
+        items.push({ key: 'danger', label: t('plans.tabs.danger'), tone: 'danger' });
+        return items;
+    }, [isEvent, moduleKeys.length, t]);
 
     function handleMakeDefaultClick() {
         setMakeDefaultOpen(true);
@@ -105,7 +142,7 @@ export function PlanEditorCard({
         if (pendingSave.moduleChanges.length > 0) {
             await setModules.mutateAsync({ id: plan.id, input: { moduleKeys: pendingSave.moduleKeys } });
         }
-        setIsPlanDirty(false);
+        setPlanChangeCount(0);
         setPendingSave(null);
     }
 
@@ -116,40 +153,144 @@ export function PlanEditorCard({
 
     function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
-        const formData = new FormData(event.currentTarget);
         if (!canSave) return;
-        const patch = planPatchFromFormData(plan, formData);
+        const patch = planPatchFromFormData(plan, new FormData(event.currentTarget));
         setPendingSave({
             patch,
             moduleKeys,
             changes: planChangeSummary(plan, patch, t),
-            moduleChanges: moduleChangeSummary(plan.moduleKeys, moduleKeys, enabledModules),
+            moduleChanges: moduleChangeSummary(plan.moduleKeys, moduleKeys, orderedModules),
         });
     }
 
     function handleFormChange() {
         if (!formRef.current) return;
         const patch = planPatchFromFormData(plan, new FormData(formRef.current));
-        setIsPlanDirty(planChangeSummary(plan, patch, t).length > 0);
-    }
-
-    function toggleModule(moduleKey: string) {
-        setModuleKeys((current) => (current.includes(moduleKey) ? current.filter((key) => key !== moduleKey) : [...current, moduleKey]));
+        setPlanChangeCount(planChangeSummary(plan, patch, t).length);
     }
 
     function handleModuleChange(event: ChangeEvent<HTMLInputElement>) {
-        toggleModule(event.currentTarget.value);
+        const moduleKey = event.currentTarget.value;
+        setModuleKeys((current) => (current.includes(moduleKey) ? current.filter((key) => key !== moduleKey) : [...current, moduleKey]));
+        // Including a module makes selling it as an add-on moot, so an open composer
+        // for it would be left dangling.
+        setUnlockDraft((current) => (current?.moduleKey === moduleKey ? null : current));
     }
 
-    const isEvent = scope === 'EVENT';
+    const moduleUnlocks = paidServices.filter((service) => service.kind === 'MODULE_UNLOCK' && service.grantsModuleKey);
+
+    function unlockAppliesToPlan(service: PaidServiceResponseDto) {
+        return service.planTierIds.length === 0 || service.planTierIds.includes(plan.id);
+    }
+
+    async function addUnlockToPlan(service: PaidServiceResponseDto) {
+        if (unlockAppliesToPlan(service)) return;
+        await updatePaidService.mutateAsync({ id: service.id, input: { planTierIds: [...service.planTierIds, plan.id] } });
+    }
+
+    async function removeUnlockFromPlan(service: PaidServiceResponseDto) {
+        if (!unlockAppliesToPlan(service)) return;
+
+        // An empty plan list means "every plan", so dropping this one plan has to
+        // be expressed as the remaining plans rather than as a shorter list.
+        const remainingPlanIds =
+            service.planTierIds.length === 0
+                ? eventPlans.filter((eventPlan) => eventPlan.id !== plan.id).map((eventPlan) => eventPlan.id)
+                : service.planTierIds.filter((id) => id !== plan.id);
+
+        await updatePaidService.mutateAsync({
+            id: service.id,
+            input: remainingPlanIds.length > 0 ? { planTierIds: remainingPlanIds } : { isAssignable: false, isPublic: false },
+        });
+    }
+
+    function handleUnlockAction(event: React.MouseEvent<HTMLButtonElement>) {
+        const service = moduleUnlocks.find((item) => item.id === event.currentTarget.dataset.serviceId);
+        if (!service) return;
+        if (event.currentTarget.dataset.action === 'remove') void removeUnlockFromPlan(service);
+        else void addUnlockToPlan(service);
+    }
+
+    function openUnlockEditor(event: React.MouseEvent<HTMLButtonElement>) {
+        const moduleKey = event.currentTarget.dataset.moduleKey;
+        const moduleItem = orderedModules.find((item) => item.moduleKey === moduleKey);
+        if (!moduleKey || !moduleItem) return;
+        setUnlockDraft({
+            moduleKey,
+            moduleName: moduleItem.name,
+            name: t('plans.modules.defaultAddonName', { module: moduleItem.name }),
+            description: '',
+            price: '0',
+            priceCurrency: defaultCurrency(plan),
+        });
+    }
+
+    const closeUnlockEditor = useCallback(() => setUnlockDraft(null), []);
+
+    function updateUnlockDraft(event: React.ChangeEvent<HTMLInputElement>) {
+        // The composer sits inside the plan form, so its inputs are controlled and
+        // deliberately unnamed: a stray `name` or `price` field would otherwise land
+        // in the plan's FormData and be read as a plan edit.
+        const field = event.currentTarget.dataset.field;
+        const { value } = event.currentTarget;
+        if (!field) return;
+        setUnlockDraft((current) => (current ? { ...current, [field]: value } : current));
+    }
+
+    async function createUnlock() {
+        if (!unlockDraft) return;
+
+        await createPaidService.mutateAsync({
+            // The code never reaches the form: it is an internal identifier derived
+            // from the name the admin typed.
+            code: codeFromName(
+                `unlock ${plan.code} ${unlockDraft.moduleKey}`,
+                paidServices.map((service) => service.code)
+            ),
+            kind: 'MODULE_UNLOCK',
+            name: unlockDraft.name.trim(),
+            description: unlockDraft.description.trim() || null,
+            sortOrder: Math.max(-1, ...paidServices.map((service) => service.sortOrder)) + 1,
+            isAssignable: true,
+            isPublic: true,
+            priceAmountMinor: priceInputToMinor(unlockDraft.price) ?? 0,
+            priceCurrency: unlockDraft.priceCurrency.trim().toUpperCase(),
+            billingPeriod: 'MONTHLY',
+            grantsStorageBytes: null,
+            grantsModuleKey: unlockDraft.moduleKey,
+            planTierIds: [plan.id],
+        });
+        setUnlockDraft(null);
+    }
+
+    const canCreateUnlock = Boolean(unlockDraft?.name.trim() && unlockDraft.priceCurrency.trim()) && !createPaidService.isPending;
+
+    function handleCreateUnlockClick() {
+        void createUnlock();
+    }
+
+    function handleComposerKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+        // The composer is not its own form — it is nested in the plan form — so Enter
+        // would submit the plan instead of creating the add-on.
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            if (canCreateUnlock) void createUnlock();
+            return;
+        }
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            event.stopPropagation();
+            setUnlockDraft(null);
+        }
+    }
 
     return (
-        <article className={cn('min-w-0', plan.isAssignable ? '' : 'opacity-80')}>
-            <div className="flex flex-col gap-4 border-b-2 border-ink pb-5 md:flex-row md:items-start md:justify-between">
+        <article className={cn('min-w-0', plan.isAssignable ? '' : 'opacity-90')}>
+            <header className="flex flex-col gap-4 border-b border-border pb-4 md:flex-row md:items-start md:justify-between">
                 <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-2xl font-bold tracking-tight text-ink">{plan.code}</h3>
-                        <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[11px] font-semibold text-ink-muted">{plan.scope}</span>
+                        <h3 className="truncate text-2xl font-bold tracking-tight text-ink">{plan.name}</h3>
+                        <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[11px] font-semibold text-ink-muted">{plan.code}</span>
                         {plan.isDefault && (
                             <span className="rounded-full bg-primary-light px-2 py-0.5 text-[11px] font-semibold text-primary-dark">
                                 {t('plans.default')}
@@ -161,287 +302,454 @@ export function PlanEditorCard({
                             </span>
                         )}
                     </div>
-                    <p className="mt-1 truncate text-base font-medium text-ink-muted">{plan.name}</p>
-                    <div className="mt-3 flex flex-wrap gap-1.5 text-xs font-semibold text-ink-muted">
+                    <div className="mt-2 flex flex-wrap gap-1.5 text-xs font-semibold text-ink-muted">
                         <span className="rounded-full bg-surface-muted px-2 py-1">{formatPlanMoney(plan) ?? t('plans.noPrice')}</span>
                         <span className="rounded-full bg-surface-muted px-2 py-1">
-                            {plan.scope === 'EVENT'
+                            {isEvent
                                 ? `${formatLimitValue(plan.maxMembers, 'count') ?? t('unlimited')} ${t('plans.members')}`
                                 : `${formatLimitValue(plan.maxActiveEvents, 'count') ?? t('unlimited')} ${t('plans.eventsPerUser')}`}
                         </span>
-                        {plan.scope === 'EVENT' && (
+                        {isEvent && (
                             <span className="rounded-full bg-surface-muted px-2 py-1">
                                 {formatLimitValue(plan.storageBytes, 'bytes') ?? t('unlimited')} {t('plans.storage')}
                             </span>
                         )}
-                        {plan.scope === 'EVENT' && plan.moduleKeys.length > 0 && (
-                            <span className="rounded-full bg-surface-muted px-2 py-1">
-                                {t('plans.moduleCount', { count: plan.moduleKeys.length })}
-                            </span>
-                        )}
                     </div>
                 </div>
 
-                <div className="flex shrink-0 flex-wrap gap-2">
-                    {!plan.isDefault && (
-                        <button
-                            type="button"
-                            onClick={handleMakeDefaultClick}
-                            className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-primary/40 bg-primary-light px-4 text-sm font-bold text-primary-dark transition hover:border-primary hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/25"
-                        >
-                            {t('plans.makeDefault')}
-                        </button>
-                    )}
-                </div>
-            </div>
-
-            <div className="pt-6">
-                <form ref={formRef} onSubmit={handleSubmit} onChange={handleFormChange}>
-                    <div
-                        className={cn(
-                            'grid gap-8',
-                            isEvent ? 'xl:grid-cols-[minmax(0,1.2fr)_minmax(24rem,0.8fr)]' : 'xl:grid-cols-[minmax(0,1.15fr)_minmax(20rem,0.85fr)]'
-                        )}
+                {!plan.isDefault && (
+                    <button
+                        type="button"
+                        onClick={handleMakeDefaultClick}
+                        disabled={updatePlan.isPending}
+                        className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md border border-primary/40 bg-primary-light px-4 text-sm font-bold text-primary-dark transition hover:border-primary hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/25 disabled:opacity-50"
                     >
-                        <div className="space-y-1">
-                            <AdminSection title={t('plans.sections.identity')}>
-                                <div className={cn('grid gap-3', isEvent ? 'grid-cols-2 lg:grid-cols-4' : 'grid-cols-2 lg:grid-cols-3')}>
-                                    <AdminField label={t('fields.name')} required className="col-span-2">
-                                        <input name="name" defaultValue={plan.name} required maxLength={100} className={adminInputClass()} />
-                                    </AdminField>
-                                    <AdminField
-                                        label={t('fields.description')}
-                                        optional
-                                        className={isEvent ? 'col-span-2 lg:col-span-3' : 'col-span-2 lg:col-span-2'}
-                                    >
-                                        <input name="description" defaultValue={plan.description ?? ''} className={adminInputClass()} />
-                                    </AdminField>
-                                    <AdminField label={t('fields.sort')} optional className="col-span-1 lg:col-span-1">
-                                        <input
-                                            name="sortOrder"
-                                            type="number"
-                                            min={0}
-                                            defaultValue={plan.sortOrder}
-                                            className={adminInputClass('max-w-24')}
-                                        />
-                                    </AdminField>
-                                </div>
-                            </AdminSection>
+                        {t('plans.makeDefault')}
+                    </button>
+                )}
+            </header>
 
-                            {plan.scope === 'EVENT' && (
-                                <AdminSection title={t('plans.sections.modules')}>
-                                    <div className="flex items-center justify-between gap-2">
-                                        <p className="text-sm text-ink-muted">{t('plans.sections.modulesHint')}</p>
-                                        <p className="text-xs font-semibold text-ink-muted">{t('save')}</p>
-                                    </div>
-                                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                                        {enabledModules.map((module) => (
-                                            <AdminSwitch
-                                                key={module.moduleKey}
-                                                name={module.moduleKey}
-                                                label={module.name}
-                                                description={module.description ?? module.moduleKey}
-                                                checked={moduleKeys.includes(module.moduleKey)}
-                                                onChange={handleModuleChange}
-                                            />
-                                        ))}
-                                    </div>
-                                </AdminSection>
-                            )}
+            <form ref={formRef} onSubmit={handleSubmit} onChange={handleFormChange}>
+                <AdminTabs id={editorId} tabs={tabs} active={tab} onSelect={setTab} className="mt-4" />
+
+                <AdminTabPanel id={editorId} tabKey="details" active={tab} className="pt-5">
+                    <div className="grid gap-3 sm:grid-cols-6">
+                        <AdminField label={t('fields.name')} required className="sm:col-span-4">
+                            <input name="name" defaultValue={plan.name} required maxLength={100} className={adminInputClass()} />
+                        </AdminField>
+                        <AdminField label={t('fields.sort')} optional className="sm:col-span-2">
+                            <input name="sortOrder" type="number" min={0} defaultValue={plan.sortOrder} className={adminInputClass('max-w-24')} />
+                        </AdminField>
+                        <AdminField label={t('fields.description')} optional className="sm:col-span-6">
+                            <input name="description" defaultValue={plan.description ?? ''} className={adminInputClass()} />
+                        </AdminField>
+                    </div>
+
+                    <AdminSection title={t('plans.sections.availability')} className="mt-1">
+                        <div className="grid gap-1 sm:grid-cols-2 sm:gap-x-8">
+                            <AdminSwitch
+                                name="isAssignable"
+                                label={t('fields.isAssignable')}
+                                description={t('fields.isAssignableHint')}
+                                defaultChecked={plan.isAssignable}
+                            />
+                            <AdminSwitch
+                                name="isPublic"
+                                label={t('fields.isPublic')}
+                                description={t('fields.isPublicHint')}
+                                defaultChecked={plan.isPublic}
+                            />
                         </div>
+                    </AdminSection>
+                </AdminTabPanel>
 
-                        <div className="space-y-1 xl:border-l xl:border-border xl:pl-8">
-                            <AdminSection title={t('plans.sections.limits')}>
-                                <div className="grid grid-cols-2 gap-3">
-                                    {plan.scope === 'EVENT' ? (
-                                        <>
-                                            <div className="col-span-2 grid grid-cols-[minmax(0,8rem)_5rem] gap-2">
-                                                <AdminField label={t('fields.storage')} optional>
-                                                    <input
-                                                        name="storageAmount"
-                                                        type="number"
-                                                        min={0}
-                                                        step="0.01"
-                                                        defaultValue={storageInput.amount}
-                                                        placeholder={t('fields.blankUnlimited')}
-                                                        className={adminInputClass('max-w-32')}
-                                                    />
-                                                </AdminField>
-                                                <AdminField label={t('fields.unit')}>
-                                                    <select
-                                                        name="storageUnit"
-                                                        defaultValue={storageInput.unit}
-                                                        className={adminInputClass('max-w-20')}
+                <AdminTabPanel id={editorId} tabKey="limits" active={tab} className="pt-5">
+                    <p className="mb-4 max-w-2xl text-sm leading-6 text-ink-muted">{t('plans.sections.limitsHint')}</p>
+                    {isEvent ? (
+                        <div className="grid gap-3 sm:grid-cols-[minmax(0,10rem)_6rem_minmax(0,10rem)]">
+                            <AdminField label={t('fields.storage')} optional>
+                                <input
+                                    name="storageAmount"
+                                    type="number"
+                                    min={0}
+                                    step="0.01"
+                                    defaultValue={storageInput.amount}
+                                    placeholder={t('fields.blankUnlimited')}
+                                    className={adminInputClass()}
+                                />
+                            </AdminField>
+                            <AdminField label={t('fields.unit')}>
+                                <select name="storageUnit" defaultValue={storageInput.unit} className={adminInputClass()}>
+                                    {STORAGE_UNITS.map((unit) => (
+                                        <option key={unit} value={unit}>
+                                            {unit}
+                                        </option>
+                                    ))}
+                                </select>
+                            </AdminField>
+                            <AdminField label={t('fields.maxMembers')} optional>
+                                <input
+                                    name="maxMembers"
+                                    type="number"
+                                    min={0}
+                                    defaultValue={plan.maxMembers ?? ''}
+                                    placeholder={t('fields.blankUnlimited')}
+                                    className={adminInputClass()}
+                                />
+                            </AdminField>
+                        </div>
+                    ) : (
+                        <AdminField label={t('fields.maxEventsPerUser')} optional className="max-w-64">
+                            <input
+                                name="maxActiveEvents"
+                                type="number"
+                                min={0}
+                                defaultValue={plan.maxActiveEvents ?? ''}
+                                placeholder={t('fields.blankUnlimited')}
+                                className={adminInputClass()}
+                            />
+                        </AdminField>
+                    )}
+                </AdminTabPanel>
+
+                <AdminTabPanel id={editorId} tabKey="pricing" active={tab} className="pt-5">
+                    <div className="grid gap-3 sm:grid-cols-4">
+                        <AdminField label={t('fields.price')} optional>
+                            <input
+                                name="price"
+                                type="number"
+                                min={0}
+                                step="0.01"
+                                defaultValue={priceMinorToInput(plan.priceAmountMinor)}
+                                className={adminInputClass()}
+                            />
+                        </AdminField>
+                        <AdminField label={t('fields.priceCurrency')} optional>
+                            <input name="priceCurrency" maxLength={3} defaultValue={defaultCurrency(plan)} className={adminInputClass('max-w-24')} />
+                        </AdminField>
+                        <AdminField label={t('fields.billingPeriod')} optional className="sm:col-span-2">
+                            <select name="billingPeriod" defaultValue={plan.billingPeriod ?? ''} className={adminInputClass('max-w-44')}>
+                                <option value="">{t('none')}</option>
+                                {BILLING_PERIODS.map((item) => (
+                                    <option key={item} value={item}>
+                                        {item}
+                                    </option>
+                                ))}
+                            </select>
+                        </AdminField>
+                        {isEvent && (
+                            <>
+                                <AdminField label={t('fields.recurringPrice')} optional>
+                                    <input
+                                        name="recurringPrice"
+                                        type="number"
+                                        min={0}
+                                        step="0.01"
+                                        defaultValue={priceMinorToInput(plan.recurringPriceAmountMinor)}
+                                        className={adminInputClass()}
+                                    />
+                                </AdminField>
+                                <AdminField label={t('fields.includedMonths')} optional>
+                                    <input
+                                        name="includedMonths"
+                                        type="number"
+                                        min={0}
+                                        defaultValue={plan.includedMonths ?? ''}
+                                        placeholder={t('none')}
+                                        className={adminInputClass()}
+                                    />
+                                </AdminField>
+                            </>
+                        )}
+                    </div>
+
+                    <AdminSection title={t('plans.sections.promotion')} description={t('plans.sections.promotionHint')} className="mt-1">
+                        <div className="grid gap-3 sm:grid-cols-4">
+                            <AdminField label={t('fields.discountPercent')} optional>
+                                <input
+                                    name="discountPercent"
+                                    type="number"
+                                    min={0}
+                                    max={100}
+                                    defaultValue={plan.discountPercent ?? ''}
+                                    placeholder={t('none')}
+                                    className={adminInputClass('max-w-24')}
+                                />
+                            </AdminField>
+                            <AdminField label={t('fields.discountLabel')} optional className="sm:col-span-3">
+                                <input
+                                    name="discountLabel"
+                                    maxLength={100}
+                                    defaultValue={plan.discountLabel ?? ''}
+                                    placeholder={t('none')}
+                                    className={adminInputClass()}
+                                />
+                            </AdminField>
+                            <AdminField label={t('fields.discountStartsAt')} optional hint={t('fields.discountBoundHint')} className="sm:col-span-2">
+                                <input
+                                    name="discountStartsAt"
+                                    type="datetime-local"
+                                    defaultValue={instantToLocalInput(plan.discountStartsAt)}
+                                    className={adminInputClass()}
+                                />
+                            </AdminField>
+                            <AdminField label={t('fields.discountEndsAt')} optional hint={t('fields.discountEndsAtHint')} className="sm:col-span-2">
+                                <input
+                                    name="discountEndsAt"
+                                    type="datetime-local"
+                                    defaultValue={instantToLocalInput(plan.discountEndsAt)}
+                                    className={adminInputClass()}
+                                />
+                            </AdminField>
+                        </div>
+                    </AdminSection>
+                </AdminTabPanel>
+
+                {isEvent && (
+                    <AdminTabPanel id={editorId} tabKey="modules" active={tab} className="pt-5">
+                        <p className="mb-3 max-w-2xl text-sm leading-6 text-ink-muted">{t('plans.sections.modulesHint')}</p>
+                        <div className="divide-y divide-border/70">
+                            {orderedModules.map((module) => {
+                                const included = moduleKeys.includes(module.moduleKey);
+                                const unlocks = moduleUnlocks.filter((service) => service.grantsModuleKey === module.moduleKey);
+                                const planUnlocks = unlocks.filter(unlockAppliesToPlan);
+                                const otherUnlocks = unlocks.filter((service) => !unlockAppliesToPlan(service));
+                                const composerOpen = unlockDraft?.moduleKey === module.moduleKey;
+
+                                return (
+                                    <div key={module.moduleKey} className="py-3 first:pt-0 last:pb-0">
+                                        <AdminSwitch
+                                            name={module.moduleKey}
+                                            label={module.name}
+                                            description={module.description ?? undefined}
+                                            checked={included}
+                                            onChange={handleModuleChange}
+                                            optional={false}
+                                        />
+                                        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                                            <span
+                                                className={cn(
+                                                    'rounded-full px-2 py-1 font-bold',
+                                                    included
+                                                        ? 'bg-emerald-100 text-emerald-800'
+                                                        : planUnlocks.length > 0
+                                                          ? 'bg-primary-light text-primary-dark'
+                                                          : 'bg-amber-100 text-amber-800'
+                                                )}
+                                            >
+                                                {included
+                                                    ? t('plans.modules.included')
+                                                    : planUnlocks.length > 0
+                                                      ? t('plans.modules.paidAddon')
+                                                      : t('plans.modules.unavailable')}
+                                            </span>
+
+                                            {planUnlocks.map((service) => (
+                                                <span
+                                                    key={service.id}
+                                                    className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-muted/70 py-1 pl-2.5 pr-1 font-semibold text-ink"
+                                                >
+                                                    {service.name}
+                                                    <span className="font-medium text-ink-muted">
+                                                        {formatMoney(locale, service.priceAmountMinor, service.priceCurrency)}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        data-action="remove"
+                                                        data-service-id={service.id}
+                                                        onClick={handleUnlockAction}
+                                                        disabled={updatePaidService.isPending}
+                                                        title={t('plans.modules.removeAddon')}
+                                                        aria-label={t('plans.modules.removeAddonFrom', { addon: service.name })}
+                                                        className="inline-flex h-5 w-5 items-center justify-center rounded-full text-ink-muted transition hover:bg-rose-100 hover:text-rose-700 disabled:opacity-50"
                                                     >
-                                                        {STORAGE_UNITS.map((unit) => (
-                                                            <option key={unit} value={unit}>
-                                                                {unit}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                </AdminField>
-                                            </div>
-                                            <AdminField label={t('fields.maxMembers')} optional className="col-span-1">
-                                                <input
-                                                    name="maxMembers"
-                                                    type="number"
-                                                    min={0}
-                                                    defaultValue={plan.maxMembers ?? ''}
-                                                    placeholder={t('fields.blankUnlimited')}
-                                                    className={adminInputClass('max-w-20')}
-                                                />
-                                            </AdminField>
-                                        </>
-                                    ) : (
-                                        <AdminField label={t('fields.maxEventsPerUser')} optional className="col-span-1">
-                                            <input
-                                                name="maxActiveEvents"
-                                                type="number"
-                                                min={0}
-                                                defaultValue={plan.maxActiveEvents ?? ''}
-                                                placeholder={t('fields.blankUnlimited')}
-                                                className={adminInputClass('max-w-28')}
-                                            />
-                                        </AdminField>
-                                    )}
-                                </div>
-                            </AdminSection>
-
-                            <AdminSection title={t('plans.sections.pricing')}>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <AdminField label={t('fields.price')} optional>
-                                        <input
-                                            name="price"
-                                            type="number"
-                                            min={0}
-                                            step="0.01"
-                                            defaultValue={priceMinorToInput(plan.priceAmountMinor)}
-                                            className={adminInputClass('max-w-32')}
-                                        />
-                                    </AdminField>
-                                    <AdminField label={t('fields.priceCurrency')} optional>
-                                        <input
-                                            name="priceCurrency"
-                                            maxLength={3}
-                                            defaultValue={defaultCurrency(plan)}
-                                            className={adminInputClass('max-w-20')}
-                                        />
-                                    </AdminField>
-                                    <AdminField label={t('fields.billingPeriod')} optional className="col-span-2">
-                                        <select name="billingPeriod" defaultValue={plan.billingPeriod ?? ''} className={adminInputClass('max-w-40')}>
-                                            <option value="">{t('none')}</option>
-                                            {BILLING_PERIODS.map((item) => (
-                                                <option key={item} value={item}>
-                                                    {item}
-                                                </option>
+                                                        <X className="h-3.5 w-3.5" aria-hidden="true" />
+                                                    </button>
+                                                </span>
                                             ))}
-                                        </select>
-                                    </AdminField>
-                                    {plan.scope === 'EVENT' && (
-                                        <>
-                                            <AdminField label={t('fields.recurringPrice')} optional>
-                                                <input
-                                                    name="recurringPrice"
-                                                    type="number"
-                                                    min={0}
-                                                    step="0.01"
-                                                    defaultValue={priceMinorToInput(plan.recurringPriceAmountMinor)}
-                                                    className={adminInputClass('max-w-32')}
-                                                />
-                                            </AdminField>
-                                            <AdminField label={t('fields.includedMonths')} optional>
-                                                <input
-                                                    name="includedMonths"
-                                                    type="number"
-                                                    min={0}
-                                                    defaultValue={plan.includedMonths ?? ''}
-                                                    placeholder={t('none')}
-                                                    className={adminInputClass('max-w-20')}
-                                                />
-                                            </AdminField>
-                                        </>
-                                    )}
-                                </div>
-                            </AdminSection>
 
-                            <AdminSection title={t('plans.sections.availability')}>
-                                <div className="grid gap-3">
-                                    <AdminSwitch
-                                        name="isAssignable"
-                                        label={t('fields.isAssignable')}
-                                        description={t('fields.isAssignableHint')}
-                                        defaultChecked={plan.isAssignable}
-                                    />
-                                    <AdminSwitch
-                                        name="isPublic"
-                                        label={t('fields.isPublic')}
-                                        description={t('fields.isPublicHint')}
-                                        defaultChecked={plan.isPublic}
-                                    />
-                                </div>
-                            </AdminSection>
+                                            {!included &&
+                                                otherUnlocks.map((service) => (
+                                                    <button
+                                                        key={service.id}
+                                                        type="button"
+                                                        data-service-id={service.id}
+                                                        onClick={handleUnlockAction}
+                                                        disabled={updatePaidService.isPending}
+                                                        className="inline-flex min-h-8 items-center gap-1.5 rounded-md border border-border px-2.5 font-bold text-ink-muted transition hover:bg-surface-muted disabled:opacity-50"
+                                                    >
+                                                        <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                                                        {t('plans.modules.useExistingAddon', { addon: service.name })}
+                                                    </button>
+                                                ))}
+
+                                            {!included && planUnlocks.length === 0 && !composerOpen && (
+                                                <button
+                                                    type="button"
+                                                    data-module-key={module.moduleKey}
+                                                    onClick={openUnlockEditor}
+                                                    className="inline-flex min-h-8 items-center gap-1.5 rounded-md border border-border px-2.5 font-bold text-ink-muted transition hover:bg-surface-muted"
+                                                >
+                                                    <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                                                    {t('plans.modules.createAddon')}
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {/* Composed in place rather than in a second dialog: stacking a
+                                            form modal on top of the plan modal left two lit surfaces
+                                            fighting each other, and this keeps the module list in view. */}
+                                        {composerOpen && unlockDraft && (
+                                            <div
+                                                onKeyDown={handleComposerKeyDown}
+                                                className="mt-3 rounded-lg border border-border bg-surface-muted/40 p-3"
+                                            >
+                                                <p className="text-sm font-bold text-ink">
+                                                    {t('plans.modules.createAddonTitle', { module: unlockDraft.moduleName })}
+                                                </p>
+                                                <p className="mt-0.5 text-xs leading-5 text-ink-muted">
+                                                    {t('plans.modules.createAddonSubtitle', { plan: plan.name })}
+                                                </p>
+
+                                                <div className="mt-3 grid gap-3 sm:grid-cols-[minmax(0,1fr)_7rem_6rem]">
+                                                    <AdminField label={t('paidServices.fields.name')} required>
+                                                        <input
+                                                            data-field="name"
+                                                            value={unlockDraft.name}
+                                                            onChange={updateUnlockDraft}
+                                                            className={adminInputClass()}
+                                                        />
+                                                    </AdminField>
+                                                    <AdminField label={t('paidServices.fields.price')} required>
+                                                        <input
+                                                            data-field="price"
+                                                            type="number"
+                                                            min={0}
+                                                            step="0.01"
+                                                            value={unlockDraft.price}
+                                                            onChange={updateUnlockDraft}
+                                                            className={adminInputClass()}
+                                                        />
+                                                    </AdminField>
+                                                    <AdminField label={t('paidServices.fields.priceCurrency')} required>
+                                                        <input
+                                                            data-field="priceCurrency"
+                                                            maxLength={3}
+                                                            value={unlockDraft.priceCurrency}
+                                                            onChange={updateUnlockDraft}
+                                                            className={adminInputClass()}
+                                                        />
+                                                    </AdminField>
+                                                    <AdminField
+                                                        label={t('paidServices.fields.description')}
+                                                        optional
+                                                        className="sm:col-span-3"
+                                                    >
+                                                        <input
+                                                            data-field="description"
+                                                            value={unlockDraft.description}
+                                                            onChange={updateUnlockDraft}
+                                                            className={adminInputClass()}
+                                                        />
+                                                    </AdminField>
+                                                </div>
+
+                                                <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                                                    <p className="text-[11px] leading-4 text-ink-faint">{t('paidServices.fields.priceHint')}</p>
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            type="button"
+                                                            onClick={closeUnlockEditor}
+                                                            className="inline-flex min-h-9 items-center rounded-md border border-border bg-background px-3 text-xs font-bold text-ink-muted transition hover:bg-surface-muted"
+                                                        >
+                                                            {t('cancel')}
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={handleCreateUnlockClick}
+                                                            disabled={!canCreateUnlock}
+                                                            className="inline-flex min-h-9 items-center gap-2 rounded-md bg-ink px-3 text-xs font-bold text-white transition hover:bg-ink/90 disabled:opacity-50"
+                                                        >
+                                                            {createPaidService.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                                                            {t('plans.modules.saveAddon')}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
-                    </div>
-                    <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t-2 border-border bg-surface-muted/45 px-4 py-4">
-                        <p className="text-sm font-medium text-ink-muted">{t('plans.saveConfirmBody')}</p>
-                        <button
-                            type="submit"
-                            disabled={!canSave || updatePlan.isPending || setModules.isPending}
-                            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-ink px-5 text-sm font-bold text-white shadow-[0_8px_18px_rgba(36,31,26,0.14)] transition hover:-translate-y-0.5 hover:bg-ink/90 disabled:opacity-50"
+                    </AdminTabPanel>
+                )}
+
+                <AdminTabPanel id={editorId} tabKey="danger" active={tab} className="pt-5">
+                    <p className="mb-3 max-w-2xl text-sm leading-6 text-ink-muted">{t('plans.destructiveHint')}</p>
+                    <div className="rounded-lg border border-rose-200 bg-rose-50/40 px-4 py-1">
+                        <DangerRow
+                            title={plan.isAssignable ? t('plans.archive') : t('plans.restore')}
+                            body={plan.isAssignable ? t('plans.archiveConfirmBody') : t('plans.restoreConfirmBody')}
                         >
-                            {updatePlan.isPending || setModules.isPending ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
+                            {plan.isAssignable ? (
+                                <button
+                                    type="button"
+                                    onClick={handleArchiveClick}
+                                    disabled={updatePlan.isPending}
+                                    className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-border bg-background px-3 text-xs font-bold text-ink-muted transition hover:border-ink-faint hover:bg-surface-muted disabled:opacity-50"
+                                >
+                                    <Archive className="h-3.5 w-3.5" aria-hidden="true" />
+                                    {t('plans.archive')}
+                                </button>
                             ) : (
-                                <Pencil className="h-4 w-4" />
+                                <button
+                                    type="button"
+                                    onClick={handleRestoreClick}
+                                    disabled={updatePlan.isPending}
+                                    className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-emerald-600 px-3 text-xs font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                                >
+                                    <ArchiveRestore className="h-3.5 w-3.5" aria-hidden="true" />
+                                    {t('plans.restore')}
+                                </button>
                             )}
-                            {t('save')}
-                        </button>
-                    </div>
-                </form>
-
-                {error && <p className="mt-3 text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(error)}`)}</p>}
-
-                <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t-2 border-rose-200 bg-rose-50/45 px-4 py-4">
-                    <p className="text-xs font-medium text-rose-900/70">{t('plans.destructiveHint')}</p>
-                    <div className="flex flex-wrap justify-end gap-2">
-                        {plan.isAssignable && (
+                        </DangerRow>
+                        <DangerRow title={t('plans.delete')} body={t('plans.deleteConfirmBody')}>
                             <button
                                 type="button"
-                                onClick={handleArchiveClick}
-                                disabled={updatePlan.isPending}
-                                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-border bg-background px-3 text-xs font-bold text-ink-muted transition hover:border-ink-faint hover:bg-surface-muted"
+                                onClick={handleDeleteOpenClick}
+                                disabled={deletePlan.isPending}
+                                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-rose-600 px-3 text-xs font-bold text-white transition hover:bg-rose-700 disabled:opacity-50"
                             >
-                                <Archive className="h-3.5 w-3.5" />
-                                {t('plans.archive')}
+                                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                                {t('plans.delete')}
                             </button>
-                        )}
-                        {!plan.isAssignable && (
-                            <button
-                                type="button"
-                                onClick={handleRestoreClick}
-                                disabled={updatePlan.isPending}
-                                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-emerald-600 px-3 text-xs font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
-                            >
-                                <ArchiveRestore className="h-3.5 w-3.5" />
-                                {t('plans.restore')}
-                            </button>
-                        )}
-                        <button
-                            type="button"
-                            onClick={handleDeleteOpenClick}
-                            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-rose-600 px-3 text-xs font-bold text-white transition hover:bg-rose-700"
-                        >
-                            <Trash2 className="h-3.5 w-3.5" />
-                            {t('plans.delete')}
-                        </button>
+                        </DangerRow>
                     </div>
+                </AdminTabPanel>
+
+                {/* Sticky so an edit made on one tab is never saved by accident from
+                    another, and never lost behind a scroll. */}
+                <div className="sticky bottom-0 z-10 -mx-4 mt-6 flex flex-wrap items-center justify-between gap-3 border-t-2 border-border bg-background/95 px-4 py-3 backdrop-blur sm:-mx-5 sm:px-5">
+                    <p className={cn('text-xs font-semibold', canSave ? 'text-ink' : 'text-ink-muted')}>
+                        {canSave ? t('plans.pendingChanges', { count: changeCount }) : t('plans.noPendingChanges')}
+                    </p>
+                    <button
+                        type="submit"
+                        disabled={!canSave || isSaving}
+                        className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-ink px-5 text-sm font-bold text-white shadow-[0_8px_18px_rgba(36,31,26,0.14)] transition hover:bg-ink/90 disabled:opacity-50"
+                    >
+                        {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Pencil className="h-4 w-4" />}
+                        {t('save')}
+                    </button>
                 </div>
-            </div>
+            </form>
+
+            {error && <p className="mt-3 text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(error)}`)}</p>}
 
             <ConfirmActionModal
                 open={makeDefaultOpen}
                 onClose={handleMakeDefaultClose}
-                title={t('plans.makeDefaultConfirmTitle', { code: plan.code })}
+                title={t('plans.makeDefaultConfirmTitle', { plan: plan.name })}
                 body={t('plans.makeDefaultConfirmBody')}
                 cancelLabel={t('cancel')}
                 confirmLabel={t('plans.makeDefault')}
@@ -453,11 +761,11 @@ export function PlanEditorCard({
             <ConfirmActionModal
                 open={Boolean(pendingSave)}
                 onClose={handleSaveClose}
-                title={t('plans.saveConfirmTitle', { code: plan.code })}
+                title={t('plans.saveConfirmTitle', { plan: plan.name })}
                 body={<PlanSaveSummary pendingSave={pendingSave} />}
                 cancelLabel={t('cancel')}
                 confirmLabel={t('save')}
-                isConfirming={updatePlan.isPending || setModules.isPending}
+                isConfirming={isSaving}
                 onConfirm={handleSaveConfirm}
                 tone="default"
                 size="md"
@@ -466,7 +774,7 @@ export function PlanEditorCard({
             <ConfirmActionModal
                 open={archiveOpen}
                 onClose={handleArchiveClose}
-                title={t('plans.archiveConfirmTitle', { code: plan.code })}
+                title={t('plans.archiveConfirmTitle', { plan: plan.name })}
                 body={t('plans.archiveConfirmBody')}
                 cancelLabel={t('cancel')}
                 confirmLabel={t('plans.archive')}
@@ -477,7 +785,7 @@ export function PlanEditorCard({
             <ConfirmActionModal
                 open={restoreOpen}
                 onClose={handleRestoreClose}
-                title={t('plans.restoreConfirmTitle', { code: plan.code })}
+                title={t('plans.restoreConfirmTitle', { plan: plan.name })}
                 body={t('plans.restoreConfirmBody')}
                 cancelLabel={t('cancel')}
                 confirmLabel={t('plans.restore')}
@@ -489,7 +797,7 @@ export function PlanEditorCard({
             <ConfirmActionModal
                 open={deleteOpen}
                 onClose={handleDeleteClose}
-                title={t('plans.deleteConfirmTitle', { code: plan.code })}
+                title={t('plans.deleteConfirmTitle', { plan: plan.name })}
                 body={t('plans.deleteConfirmBody')}
                 cancelLabel={t('cancel')}
                 confirmLabel={t('plans.delete')}
@@ -497,5 +805,17 @@ export function PlanEditorCard({
                 onConfirm={handleDeleteConfirm}
             />
         </article>
+    );
+}
+
+function DangerRow({ title, body, children }: { title: string; body: string; children: React.ReactNode }) {
+    return (
+        <div className="flex flex-col gap-3 border-t border-rose-200 py-4 first:border-t-0 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 sm:max-w-lg">
+                <p className="text-sm font-bold text-rose-900">{title}</p>
+                <p className="mt-1 text-xs leading-5 text-rose-900/70">{body}</p>
+            </div>
+            <div className="shrink-0">{children}</div>
+        </div>
     );
 }

@@ -9,13 +9,16 @@ guides it links out to:
 [`invite-onboarding-fe-integration.md`](invite-onboarding-fe-integration.md),
 [`multi-image-post-upload-fe-integration.md`](multi-image-post-upload-fe-integration.md),
 [`post-liked-by-current-user-integration-guide.md`](post-liked-by-current-user-integration-guide.md),
-[`app-config-fe-integration.md`](app-config-fe-integration.md), and
+[`app-config-fe-integration.md`](app-config-fe-integration.md),
 [`billing-fe-guide.md`](billing-fe-guide.md) (plans, payments, subscriptions, refunds — see the
-"Billing & payments" entry in §1 below).
+"Billing & payments" entry in §1 below), and
+[`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-integration.md).
 
-This doc was originally written 2026-08-04 directly from the controller/DTO source. Last
-refreshed 2026-08-09 to correct a stale claim that no billing integration existed — it now
-does, extensively; see the new section below.
+This doc was originally written 2026-08-04 directly from the controller/DTO source. Refreshed
+2026-08-09 to correct a stale claim that no billing integration existed — it now does,
+extensively; see the section below. Refreshed again 2026-08-16: **wishlist and wishbook moved out
+of §2 ("not wireable") and into §1** — they are real modules now — and co-host invitations gained
+a pending-invitation flow.
 
 ## 0. Base setup
 
@@ -24,9 +27,9 @@ does, extensively; see the new section below.
 - **Error shape**: every non-2xx response is an RFC 7807 `ApiError` — see the interface in
   `frontend-api-types.ts`. Validation failures (400) carry `errors.<fieldName>`.
 - **Pagination**: some list endpoints return `Page<T>` (Spring Data shape:
-  `content`/`totalElements`/`totalPages`/`number`/`size`), not a bare array — currently only
-  `GET /api/events/{eventId}/posts`. Every other list endpoint below returns a plain `T[]`.
-  Don't assume one shape across all list endpoints.
+  `content`/`totalElements`/`totalPages`/`number`/`size`), not a bare array — currently
+  `GET /api/events/{eventId}/posts` and `GET /api/events/{eventId}/wishbook`. Every other list
+  endpoint below returns a plain `T[]`. Don't assume one shape across all list endpoints.
 - **Media URLs are not permanent.** `MediaResponseDto.mediaUrl` is a presigned, time-limited
   Cloudflare R2 GET URL. Don't persist it client-side beyond the current session/cache window
   — re-fetch the parent resource to get a fresh URL once it expires. This applies everywhere
@@ -63,6 +66,12 @@ Summary: `GET /api/event-invitations/{inviteToken}/preview` (public) →
 guest-login / login+accept / register+accept. Host-side invite CRUD is `/api/event-invitations`
 and `/api/events/{eventId}/invitations` (list), all `ROLE_USER` + host-only.
 
+**As of 2026-08-16 an invitation carries a `role`.** The list endpoint returns co-host invitations
+alongside guest ones, so filter on `role` or they will show up in the guest list. Accepting a
+`role: 'HOST'` invitation is bound to the exact address it names, on a verified account — a
+mismatch is `403`/`5044 CO_HOST_INVITE_NOT_YOURS`, and the error deliberately doesn't say which of
+the two conditions failed. Guest invitations are unchanged and stay forwardable.
+
 ### Event selection / context
 
 | Method | Path | Auth | Notes |
@@ -78,7 +87,8 @@ and `/api/events/{eventId}/invitations` (list), all `ROLE_USER` + host-only.
 | POST | `/api/events` | `ROLE_USER` | atomically creates the `Event` + host's `EventMember` + `EventHost` |
 | PATCH | `/api/events/{id}` | host of the event | all fields editable **except `eventType`** (see §3) |
 | DELETE | `/api/events/{id}` | host of the event | |
-| POST | `/api/events/{eventId}/hosts` | existing host | invite a co-host (`{ userId }`) — target must be a registered, non-guest user |
+| POST | `/api/events/{eventId}/hosts` | existing host | promote a co-host **immediately** (`{ userId }`) — target must be a registered, non-guest user whose id you already hold |
+| POST | `/api/events/{eventId}/host-invitations` | existing host | new 2026-08-16 — invite a co-host **by email**, pending until they accept; works for people with no account yet. Returns an `EventInvitationResponseDto` with `role: 'HOST'`. See [`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-integration.md) §1 |
 | GET | `/api/events/{eventId}/hosts` | authenticated | |
 | PATCH | `/api/events/{eventId}/hosts/{id}` | host | only `displayOrder` is editable |
 | DELETE | `/api/event-hosts/{id}` | `ROLE_USER` | |
@@ -87,7 +97,7 @@ and `/api/events/{eventId}/invitations` (list), all `ROLE_USER` + host-only.
 
 | Method | Path | Auth | Notes |
 |---|---|---|---|
-| GET | `/api/events/{eventId}/modules` | authenticated | `EventModuleResponseDto[]` — see §3, only 5 keys exist by default |
+| GET | `/api/events/{eventId}/modules` | authenticated | `EventModuleResponseDto[]` — see §3; 7 keys exist (`posts`, `rsvp`, `playlist`, `stories`, `gallery`, `wishlist`, `wishbook`) |
 | PATCH | `/api/event-modules/{id}` | host | `isEnabled`, `configuration` |
 | GET/POST | `/api/event-sessions`, `/api/events/{eventId}/sessions` | authenticated / `ROLE_USER` | agenda items — bounded list, `displayOrder` |
 | PATCH/DELETE | `/api/event-sessions/{id}` | host | |
@@ -144,6 +154,43 @@ Fully covered in [`stories-fe-integration-guide.md`](stories-fe-integration-guid
 see §3), list (`GET /api/events/{eventId}/stories`), delete (author/host), mark-viewed
 (`POST /api/stories/{id}/views`, idempotent), list viewers (`GET /api/stories/{id}/views`,
 author/host only). No comments/reactions on stories — not supported, don't build for it.
+
+### Wishlist — new (2026-08-16)
+
+The `wishlist` module, deliberately scoped to **one bank account per event** — no named products,
+no per-item claiming, no "who gave what". Fully covered in
+[`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-integration.md) §3.
+
+| Method | Path | Auth | Notes |
+|---|---|---|---|
+| GET | `/api/events/{eventId}/gift-account` | any member, incl. guest tokens | `404` is the **normal empty state** — the host hasn't set one up. Not an error to surface. |
+| PUT | `/api/events/{eventId}/gift-account` | host | upsert; `400`/`5045 INVALID_IBAN` on failed mod-97 check digits |
+| DELETE | `/api/events/{eventId}/gift-account` | host | `204` |
+
+Deliberately **not** on `EventDetailResponseDto` — that endpoint is reachable by anonymous QR
+scanners, so nothing loaded there may carry a payment destination. The IBAN is stored encrypted at
+rest; don't undo that by caching it in localStorage, a URL, or an analytics event.
+
+Unlike every other module write path, the host may configure this while the event is still a
+`DRAFT` (it belongs in the setup wizard) and while it is `FROZEN` (so a lapsed host can still fix a
+typo). Reading has no lifecycle check at all.
+
+### Wishbook — new (2026-08-16)
+
+The `wishbook` module: written wishes every member can read. Fully covered in
+[`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-integration.md) §4.
+
+| Method | Path | Auth | Notes |
+|---|---|---|---|
+| GET | `/api/events/{eventId}/wishbook` | authenticated | **`Page<WishbookEntryResponseDto>`**, default 20/page, newest first — the second paginated endpoint, see §0 |
+| GET | `/api/events/{eventId}/wishbook/count` | authenticated | a plain number, for a summary tile |
+| POST | `/api/events/{eventId}/wishbook` | authenticated, incl. guest tokens | `{ message, guestName? }`; multiple wishes per guest are allowed by design |
+| DELETE | `/api/wishbook/{entryId}` | author or host | `204`. Note: **not** nested under the event |
+
+Draw the delete control off the server-computed `canDelete`, not off `authorMemberId` — deriving it
+client-side gets the host case wrong. Writing requires the event to be `ACTIVE` (`409 EVENT_FROZEN`
+or `409 EVENT_NOT_ACTIVE` otherwise); deleting works in any state, so a host can still take down
+something offensive after a freeze.
 
 ### RSVP — guest flow
 
@@ -330,6 +377,15 @@ joins, and event creation can return `409` with `EVENT_STORAGE_LIMIT_EXCEEDED` /
 prompt without a second round-trip. Full detail, plus the module-gating (`isAvailable`) rules that
 ship alongside the plan catalog: [`plan-tiers-fe-integration.md`](plan-tiers-fe-integration.md).
 
+**Modules can also be sold à la carte (2026-08-16).** A plan listing a module key is no longer the
+only way an event gets it: a `MODULE_UNLOCK` paid service grants one module to one event, and the
+commercial gate is the **OR** of the two. `POST /api/events/{eventId}/addons` with
+`{ paidServiceCode }` opts a **draft** event in — nothing is charged at that moment, the price
+folds into the activation order and then into every renewal. There is no mid-cycle purchase path,
+so the module picker belongs in the setup wizard; on a live event a plan-excluded module should
+render unavailable with no buy affordance, because that call always `409`s with `EVENT_NOT_DRAFT`.
+See [`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-integration.md) §2.
+
 ### Billing & payments — event activation, subscriptions, upgrades, refunds
 
 **Corrects a stale claim in an earlier version of this doc: there *is* now a full billing
@@ -421,13 +477,16 @@ genuine backend gap, not a FE oversight — nothing to wire against yet.
   something richer (multi-item day-by-day itinerary beyond `EventSession`), that doesn't exist.
   `EventSession` (title/description/start/end/location, `displayOrder`) is the closest real
   primitive and **is** wireable (see §1) if that covers the need.
-- **Gifts** — no `Gift` entity, controller, or migration anywhere in the codebase.
-- **Wishbook / wishlist** — same, nothing exists.
-- **Quiz** — same, nothing exists.
+- ~~**Gifts**~~ / ~~**Wishbook / wishlist**~~ — **shipped 2026-08-16, moved to §1.** "Gifts" is
+  the `wishlist` module and is one IBAN per event, nothing more: no `Gift` entity, no per-item
+  claiming, no gift registry. If the FE's Gifts page implies a product list, that layer still
+  doesn't exist and isn't planned.
+- **Quiz** — nothing exists.
 - **Seating** — same; the only occurrence in the entire codebase is a comment example in
   `EventMember.java:125` ("...or seating charts"), never implemented.
-- **Future / scheduled messages** — no entity or job/scheduler backing a "send this later"
-  flow.
+- **Future / scheduled messages** ("wish for the future" / time capsule) — no entity or
+  job/scheduler backing a "send this later" flow. Explicitly deferred to a later version, not an
+  oversight; don't build against a placeholder for it.
 - **Venue (rich content)** — partially real: `Event.locationName` / `Event.locationAddress` /
   `Event.mapsUrl` exist and are wireable today (via `PATCH /api/events/{id}` and
   `EventDetailResponseDto.location`). But if the FE's Venue page implies photos, maps embeds,
@@ -435,10 +494,11 @@ genuine backend gap, not a FE oversight — nothing to wire against yet.
 
 **Why this matters for module gating**: `EventModule.moduleKey` is now backed by a server-side
 `ModuleKey` enum (as of 2026-08-05 — see [`app-config-fe-integration.md`](app-config-fe-integration.md)),
-restricted to exactly `posts, rsvp, playlist, stories, gallery` (also the only keys `DevDataSeeder`
-creates). `POST /api/event-modules` with any other key now returns `400`/`INVALID_MODULE_KEY`
-instead of silently accepting it. There's still no `schedule`/`gifts`/`wishbook`/`quiz`/
-`seating`/`venue` module row for any event — and now there provably can't be one, short of adding
+restricted to exactly `posts, rsvp, playlist, stories, gallery, wishlist, wishbook` — also the only
+keys `DevDataSeeder` creates. The last two were added 2026-08-16.
+`POST /api/event-modules` with any other key now returns `400`/`INVALID_MODULE_KEY`
+instead of silently accepting it. There's still no `schedule`/`quiz`/`seating`/`venue` module row
+for any event — and now there provably can't be one, short of adding
 a new enum value server-side first. If FE module-gating logic does something like
 `modules.find(m => m.moduleKey === "schedule")?.isEnabled`, it'll still resolve to
 falsy/undefined and produce the right "hide this" behavior — but treat that as "this feature
@@ -492,10 +552,12 @@ correctly — only #4 turned out to be a real gap.
     for counts still doesn't exist, so this was purely a backend hardening, not a new FE
     requirement.
 
-**Extra — module gating.** `ModuleKeyConvention` is typed to exactly the 5 real keys, so
+**Extra — module gating.** `ModuleKeyConvention` is typed to exactly the real keys, so
 TypeScript already prevents gating against nonexistent keys — and as of 2026-08-05 the backend
 enforces the same set via a `ModuleKey` enum, so the two lists can now drift into a real `400`
-instead of silent inconsistency. Consider sourcing `ModuleKeyConvention` from `GET /api/config`'s
+instead of silent inconsistency. **That set grew to 7 on 2026-08-16** (`wishlist`, `wishbook`), so
+a hand-maintained union is now stale and will reject two valid keys. Source `ModuleKeyConvention`
+from `GET /api/config`'s
 `eventModuleKeys` instead of maintaining it by hand — see
 [`app-config-fe-integration.md`](app-config-fe-integration.md). The `tools/schedule` page isn't
 module-gated at all — it unconditionally renders mock data.

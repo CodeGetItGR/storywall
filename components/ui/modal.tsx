@@ -51,7 +51,10 @@ export function Modal({
     return (
         <Dialog.Root open={open} onOpenChange={onOpenChange}>
             <Dialog.Portal>
-                <Dialog.Backdrop className="fixed inset-0 z-50 bg-ink/60 backdrop-blur-sm" />
+                {/* Base UI skips the backdrop of a nested dialog, which left confirmations
+                    floating over a fully lit editor and read as two competing windows.
+                    Forcing it keeps the dialog on top the only lit layer. */}
+                <Dialog.Backdrop forceRender className="fixed inset-0 z-50 bg-ink/60 backdrop-blur-sm" />
                 <Dialog.Popup
                     aria-label={ariaLabel}
                     className={cn(

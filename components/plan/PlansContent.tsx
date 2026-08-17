@@ -45,23 +45,26 @@ export function PlansContent({
                     {t('back')}
                 </Link>
 
-                <div className="mt-2 max-w-4xl">
-                    <p className="text-[11px] font-semibold tracking-[0.18em] text-primary-dark uppercase">{t('compare.allPlansTitle')}</p>
-                    <h1 className="mt-1 text-2xl font-bold text-ink">{t('compare.title')}</h1>
-                    <p className="mt-1 text-sm text-ink-muted">
-                        {selectedPlan && nextPlan ? t('compare.upgradeSubtitle', { plan: selectedPlan.name }) : t('compare.subtitle')}
-                    </p>
-                </div>
+                <section className="mt-4">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                        <div className="max-w-3xl">
+                            <p className="text-[11px] font-semibold tracking-[0.18em] text-primary-dark uppercase">{t('compare.allPlansTitle')}</p>
+                            <h1 className="mt-1 text-2xl font-bold text-ink">{t('compare.title')}</h1>
+                            <p className="mt-1 text-sm leading-6 text-ink-muted">
+                                {selectedPlan && nextPlan ? t('compare.upgradeSubtitle', { plan: selectedPlan.name }) : t('compare.subtitle')}
+                            </p>
+                        </div>
 
-                {selectedPlan && nextPlan && (
-                    <div className="mt-6 border-t border-border py-4">
-                        <p className="text-[11px] font-semibold tracking-wide text-ink-faint uppercase">{t('compare.fromTo')}</p>
-                        <p className="mt-1 text-sm font-semibold text-ink">
-                            {selectedPlan.name} <span className="text-ink-faint">{t('compare.to')}</span> {nextPlan.name}
-                        </p>
-                        <p className="mt-1 text-sm text-ink-muted">{t('compare.nextPlanHint', { plan: nextPlan.name })}</p>
+                        {selectedPlan && nextPlan && (
+                            <div className="rounded-lg bg-surface-muted/55 px-3 py-2 text-sm lg:min-w-64">
+                                <p className="text-[11px] font-semibold tracking-wide text-ink-faint uppercase">{t('compare.fromTo')}</p>
+                                <p className="mt-1 font-semibold text-ink">
+                                    {selectedPlan.name} <span className="text-ink-faint">{t('compare.to')}</span> {nextPlan.name}
+                                </p>
+                            </div>
+                        )}
                     </div>
-                )}
+                </section>
 
                 <div className="mt-6">
                     <EventPlanComparison

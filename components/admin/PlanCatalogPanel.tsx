@@ -8,7 +8,7 @@ import { PlanCatalogRow } from '@/components/admin/PlanCatalogRow';
 import { PlanCreateForm } from '@/components/admin/PlanCreateForm';
 import { PlanEditorCard } from '@/components/admin/PlanEditorCard';
 import { Modal } from '@/components/ui/modal';
-import { useAdminPlanTiers, useAdminPlatformModules } from '@/hooks/useAdmin';
+import { useAdminPaidServices, useAdminPlanTiers, useAdminPlatformModules } from '@/hooks/useAdmin';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { PlanScope } from '@/lib/api/types';
 
@@ -20,6 +20,7 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
     const [createOpen, setCreateOpen] = useState(false);
     const plansQuery = useAdminPlanTiers(scope, includeArchived);
     const modulesQuery = useAdminPlatformModules();
+    const paidServicesQuery = useAdminPaidServices('MODULE_UNLOCK', true);
     const accountPlansDisabled = scope === 'ACCOUNT';
     const plans = useMemo(() => [...(plansQuery.data ?? [])].sort((left, right) => left.sortOrder - right.sortOrder), [plansQuery.data]);
     const selectedPlan = useMemo(() => plans.find((plan) => plan.id === selectedPlanId) ?? null, [plans, selectedPlanId]);
@@ -98,6 +99,8 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                             key={`${selectedPlan.id}:${selectedPlan.moduleKeys.join(',')}`}
                             plan={selectedPlan}
                             modules={modulesQuery.data ?? []}
+                            paidServices={paidServicesQuery.data ?? []}
+                            eventPlans={plans}
                             scope={scope}
                         />
                     )}

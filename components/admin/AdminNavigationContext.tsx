@@ -12,6 +12,16 @@ export type AdminTabItem = {
     icon: LucideIcon;
 };
 
+// The console has no event or order search: the only ids an admin can reach are
+// the ones a panel already shows them. Carrying that id — and the title, when a
+// row knows one — into the panel that acts on it is what keeps freeze, purge,
+// assignment, and add-on removal usable without database access.
+export type AdminFocus = {
+    eventId?: string;
+    eventTitle?: string;
+    orderId?: string;
+};
+
 const HASH_TO_TAB: Record<string, AdminTab> = {
     '#metrics': 'metrics',
     '#event-plans': 'eventPlans',
@@ -39,7 +49,9 @@ const AdminNavigationContext = createContext<
           tabs: AdminTabItem[];
           tab: AdminTab;
           activeHash: string;
+          focus: AdminFocus | null;
           setTab: (nextTab: AdminTab) => void;
+          sendTo: (nextTab: AdminTab, focus: AdminFocus) => void;
       }
     | undefined
 >(undefined);
@@ -52,6 +64,7 @@ function currentHashTab(): AdminTab {
 export function AdminNavigationProvider({ children }: { children: ReactNode }) {
     const t = useTranslations('AdminPage.tabs');
     const [tab, setTabState] = useState<AdminTab>(currentHashTab);
+    const [focus, setFocus] = useState<AdminFocus | null>(null);
 
     useEffect(() => {
         function syncFromHash() {
@@ -67,7 +80,17 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const setTab = useCallback((nextTab: AdminTab) => {
+        setFocus(null);
         setTabState(nextTab);
+        window.history.replaceState(null, '', TAB_TO_HASH[nextTab]);
+        window.dispatchEvent(new HashChangeEvent('hashchange'));
+    }, []);
+
+    // A new object on every call on purpose: handing the same event over twice
+    // has to re-prefill the destination form, not be swallowed as "unchanged".
+    const sendTo = useCallback((nextTab: AdminTab, nextFocus: AdminFocus) => {
+        setTabState(nextTab);
+        setFocus({ ...nextFocus });
         window.history.replaceState(null, '', TAB_TO_HASH[nextTab]);
         window.dispatchEvent(new HashChangeEvent('hashchange'));
     }, []);
@@ -91,9 +114,11 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             tabs,
             tab,
             activeHash: TAB_TO_HASH[tab],
+            focus,
             setTab,
+            sendTo,
         }),
-        [setTab, tab, tabs]
+        [focus, sendTo, setTab, tab, tabs]
     );
 
     return <AdminNavigationContext.Provider value={value}>{children}</AdminNavigationContext.Provider>;

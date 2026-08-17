@@ -11,6 +11,11 @@ one, and the config response gained a `paidServices` array (the "keep originals"
 storage packs). See `billing-fe-guide.md` §5–§7b for the full purchase flows and
 `multi-image-post-upload-fe-integration.md` for the new upload error codes.
 
+**2026-08-16:** `eventModuleKeys` grew from five keys to **seven** — `wishlist` and `wishbook` are
+now real modules — and `paidServices` gained a third `kind`, `MODULE_UNLOCK`, which sells a single
+module to a single event. See
+[`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-integration.md).
+
 ## GET /api/config
 
 Public — no `Authorization` header needed, safe to call before login (e.g. to gate the login
@@ -32,8 +37,8 @@ interface AppConfigResponseDto {
   };
   pagination: { defaultPageSize: number; maxPageSize: number };
   planTiers: PlanTierResponseDto[];   // was Record<'FREE'|'PLUS'|'PRO', {...}> — see plan-tiers-fe-integration.md
-  paidServices: PaidServiceResponseDto[];   // the "keep originals" add-on + storage packs — see billing-fe-guide.md §5
-  eventModuleKeys: ('posts' | 'rsvp' | 'playlist' | 'stories' | 'gallery')[];
+  paidServices: PaidServiceResponseDto[];   // "keep originals" add-on, storage packs, module unlocks — see billing-fe-guide.md §5
+  eventModuleKeys: ('posts' | 'rsvp' | 'playlist' | 'stories' | 'gallery' | 'wishlist' | 'wishbook')[];
   rsvp: { minAdults: number; maxAdults: number; minChildren: number; maxChildren: number };
 }
 ```
@@ -71,11 +76,13 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
   deliberately not surfaced here — it only fires on synthetic or extreme-panorama input and is
   reported as `MEDIA_IMAGE_TOO_MANY_PIXELS` (3016) at upload time.
 - **`media.maxMediaPerPost`** — same idea for the post composer's "max 10 images" guard.
-- **`paidServices`** — the public catalog for the "keep originals" add-on and storage packs,
-  filtered to `isPublic && isAssignable` the same way `planTiers` is. Filter by `kind`
-  (`RECURRING_ADDON` vs `STORAGE_PACK`) to build the two different purchase UIs. See
-  [`billing-fe-guide.md`](billing-fe-guide.md) §5–§7b for the full opt-in/checkout flows and the
-  admin CRUD endpoints.
+- **`paidServices`** — the public catalog for the "keep originals" add-on, storage packs, and
+  module unlocks, filtered to `isPublic && isAssignable` the same way `planTiers` is. Filter by
+  `kind` (`RECURRING_ADDON` / `STORAGE_PACK` / `MODULE_UNLOCK`) to build the three different
+  purchase UIs — the kind decides which endpoint will accept the code, so it is not cosmetic.
+  A `MODULE_UNLOCK` entry carries `grantsModuleKey`; match it against `eventModuleKeys` to label
+  the offer. See [`billing-fe-guide.md`](billing-fe-guide.md) §5–§7b for the full opt-in/checkout
+  flows and the admin CRUD endpoints.
 - **`pagination`** — matches `Page<T>`'s actual `size` behavior on `GET
   /api/events/{eventId}/posts` (currently the only paginated endpoint). Useful if you want a
   page-size selector instead of a hardcoded `20`.
@@ -100,7 +107,8 @@ just store it. It no longer does.
 ```
 
 now returns **`400`** with `errorCode: 3006` / `errorKey: "INVALID_MODULE_KEY"` for anything
-outside the five canonical keys: `posts | rsvp | playlist | stories | gallery`. This only
+outside the canonical keys — as of 2026-08-16 those are
+`posts | rsvp | playlist | stories | gallery | wishlist | wishbook`. This only
 affects **creating** a module (`POST /api/event-modules`) — `PATCH` doesn't take `moduleKey` at
 all (never did), so existing modules can't be renamed into an invalid state.
 

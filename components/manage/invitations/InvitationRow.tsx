@@ -32,6 +32,7 @@ export function InvitationRow({
 
     const guestName = [invitation.firstName, invitation.lastName].filter(Boolean).join(' ');
     const isUsed = Boolean(invitation.usedAt);
+    const isCoHost = invitation.role === 'HOST';
     const inviteLink = typeof window !== 'undefined' ? `${window.location.origin}${routes.inviteToken(invitation.inviteToken)}` : '';
 
     async function handleCopy() {
@@ -101,7 +102,7 @@ export function InvitationRow({
                 </div>
             </div>
 
-            {isEditing && canWrite ? (
+            {isEditing && canWrite && !isCoHost ? (
                 <div className="flex flex-wrap items-center gap-2">
                     <label className="flex items-center gap-2 text-xs text-ink-muted">
                         {t('invitations.fields.maxGuests')}
@@ -129,7 +130,9 @@ export function InvitationRow({
                 </div>
             ) : (
                 <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-xs text-ink-muted">{t('invitations.maxGuests', { count: invitation.maxGuests })}</p>
+                    <p className="text-xs text-ink-muted">
+                        {isCoHost ? t('invitations.coHosts.singleRecipient') : t('invitations.maxGuests', { count: invitation.maxGuests })}
+                    </p>
                     <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
                         <button
                             onClick={handleCopy}
@@ -140,13 +143,15 @@ export function InvitationRow({
                         </button>
                         {canWrite && (
                             <>
-                                <button
-                                    onClick={handleStartEditing}
-                                    className="flex items-center gap-1.5 rounded-full bg-surface-muted px-3 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-ink"
-                                >
-                                    <Pencil className="h-3.5 w-3.5" />
-                                    {t('invitations.edit')}
-                                </button>
+                                {!isCoHost && (
+                                    <button
+                                        onClick={handleStartEditing}
+                                        className="flex items-center gap-1.5 rounded-full bg-surface-muted px-3 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-ink"
+                                    >
+                                        <Pencil className="h-3.5 w-3.5" />
+                                        {t('invitations.edit')}
+                                    </button>
+                                )}
                                 <button
                                     onClick={handleDeleteConfirmOpen}
                                     className="flex items-center gap-1.5 rounded-full bg-surface-muted px-3 py-1.5 text-xs font-medium text-rose-500 transition-colors hover:bg-rose-50"

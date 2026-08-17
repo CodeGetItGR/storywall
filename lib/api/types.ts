@@ -11,7 +11,7 @@ export type PlatformRole = 'USER' | 'ADMIN' | 'GUEST';
 // eventType / Post.type / Reaction.reactionType are free strings server-side.
 // moduleKey is now a closed set on the backend and should match the config payload.
 export type EventTypeConvention = 'WEDDING' | 'BAPTISM' | 'BIRTHDAY' | 'CONFERENCE';
-export const EVENT_MODULE_KEYS = ['posts', 'rsvp', 'playlist', 'stories', 'gallery'] as const;
+export const EVENT_MODULE_KEYS = ['posts', 'rsvp', 'playlist', 'stories', 'gallery', 'wishlist', 'wishbook'] as const;
 export type ModuleKeyConvention = (typeof EVENT_MODULE_KEYS)[number];
 // Post.type is enforced server-side against this exact set (DB CHECK constraint
 // + matching DTO validation) — not a free-string convention like the others.
@@ -40,7 +40,7 @@ export interface AppMediaConfigDto {
     publicHost: string | null;
 }
 
-export type PaidServiceKind = 'STORAGE_PACK' | 'RECURRING_ADDON';
+export type PaidServiceKind = 'STORAGE_PACK' | 'RECURRING_ADDON' | 'MODULE_UNLOCK';
 
 export interface PaidServiceResponseDto {
     id: string;
@@ -55,6 +55,7 @@ export interface PaidServiceResponseDto {
     priceCurrency: string;
     billingPeriod: BillingPeriod;
     grantsStorageBytes: number | null;
+    grantsModuleKey: string | null;
     planTierIds: string[];
 }
 
@@ -70,6 +71,7 @@ export interface PaidServiceRequestDto {
     priceCurrency: string;
     billingPeriod: BillingPeriod;
     grantsStorageBytes?: number | null;
+    grantsModuleKey?: string | null;
     planTierIds?: string[];
 }
 
@@ -379,6 +381,10 @@ export interface EventAddonDto {
     priceAmountMinor: number;
     activatedAt: string;
 }
+
+export interface EventAddonRequestDto {
+    paidServiceCode: string;
+}
 export interface EventBillingResponseDto {
     eventStatus: EventStatus;
     planTierCode: string;
@@ -600,6 +606,44 @@ export interface EventInvitationResponseDto {
     expiresAt: string | null;
     usedAt: string | null;
     createdAt: string;
+    role: EventRole;
+}
+
+export interface CoHostInvitationRequestDto {
+    email: string;
+    firstName?: string;
+    lastName?: string;
+    expiresAt?: string;
+}
+
+export interface EventGiftAccountRequestDto {
+    iban: string;
+    accountHolder: string;
+    note?: string;
+}
+
+export interface EventGiftAccountResponseDto {
+    id: string;
+    eventId: string;
+    iban: string;
+    accountHolder: string;
+    note: string | null;
+    updatedAt: string;
+}
+
+export interface WishbookEntryRequestDto {
+    message: string;
+    guestName?: string;
+}
+
+export interface WishbookEntryResponseDto {
+    id: string;
+    eventId: string;
+    authorMemberId: string | null;
+    guestName: string;
+    message: string;
+    createdAt: string;
+    canDelete: boolean;
 }
 
 // GET /api/event-invitations/{inviteToken}/preview — public, unauthenticated.

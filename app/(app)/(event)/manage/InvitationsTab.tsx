@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
 import {
+    CreateCoHostInvitationForm,
     CreateInvitationForm,
     CreateQrLinkForm,
     type InvitationPanel,
@@ -52,11 +53,13 @@ export default function InvitationsTab({
     }, []);
 
     const showInvites = panel === 'invites';
+    const showCoHosts = panel === 'coHosts';
+    const visibleInvitations = invitations.filter((invitation) => invitation.role === (showCoHosts ? 'HOST' : 'ATTENDEE'));
 
     return (
         <div className="flex flex-col px-4">
             <div className="mb-4 flex gap-1 rounded-full bg-surface-muted p-1">
-                {(['invites', 'qr'] as const).map((item) => (
+                {(['invites', 'coHosts', 'qr'] as const).map((item) => (
                     <InvitationPanelButton
                         key={item}
                         item={item}
@@ -69,7 +72,11 @@ export default function InvitationsTab({
 
             <div className="mb-3 flex items-center justify-between">
                 <p className="text-xs text-ink-muted">
-                    {showInvites ? t('invitationsCard.summary', { count: invitations.length }) : t('qr.summary', { count: qrLinks.length })}
+                    {showCoHosts
+                        ? t('invitations.coHosts.summary', { count: visibleInvitations.length })
+                        : showInvites
+                          ? t('invitationsCard.summary', { count: visibleInvitations.length })
+                          : t('qr.summary', { count: qrLinks.length })}
                 </p>
                 {!showCreate && canWrite && (
                     <button
@@ -78,14 +85,14 @@ export default function InvitationsTab({
                         className="flex items-center gap-1.5 rounded-full bg-gradient-brand px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
                     >
                         <Plus className="h-3.5 w-3.5" />
-                        {showInvites ? t('invitations.create.cta') : t('qr.create.cta')}
+                        {showCoHosts ? t('invitations.coHosts.cta') : showInvites ? t('invitations.create.cta') : t('qr.create.cta')}
                     </button>
                 )}
             </div>
 
             {!canWrite && (
                 <p className="mb-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">
-                    {showInvites ? t('invitations.readOnly') : t('qr.readOnly')}
+                    {showInvites || showCoHosts ? t('invitations.readOnly') : t('qr.readOnly')}
                 </p>
             )}
 
@@ -96,13 +103,14 @@ export default function InvitationsTab({
             {showCreate && canWrite && showInvites && (
                 <CreateInvitationForm eventId={eventId} onDone={handleHideCreate} onClampNotice={handleClampNotice} />
             )}
-            {showCreate && canWrite && !showInvites && (
+            {showCreate && canWrite && showCoHosts && <CreateCoHostInvitationForm eventId={eventId} onDone={handleHideCreate} />}
+            {showCreate && canWrite && !showInvites && !showCoHosts && (
                 <CreateQrLinkForm eventId={eventId} invitations={invitations} onDone={handleHideCreate} onClampNotice={handleClampNotice} />
             )}
 
-            {showInvites ? (
+            {showInvites || showCoHosts ? (
                 <div className="flex flex-col divide-y divide-border">
-                    {invitations.map((invitation) => (
+                    {visibleInvitations.map((invitation) => (
                         <InvitationRow
                             key={invitation.id}
                             eventId={eventId}
@@ -130,10 +138,12 @@ export default function InvitationsTab({
                 </div>
             )}
 
-            {showInvites && invitations.length === 0 && !showCreate && (
-                <p className="py-10 text-center text-sm text-ink-muted">{t('invitations.empty')}</p>
+            {(showInvites || showCoHosts) && visibleInvitations.length === 0 && !showCreate && (
+                <p className="py-10 text-center text-sm text-ink-muted">{t(showCoHosts ? 'invitations.coHosts.empty' : 'invitations.empty')}</p>
             )}
-            {!showInvites && qrLinks.length === 0 && !showCreate && <p className="py-10 text-center text-sm text-ink-muted">{t('qr.empty')}</p>}
+            {!showInvites && !showCoHosts && qrLinks.length === 0 && !showCreate && (
+                <p className="py-10 text-center text-sm text-ink-muted">{t('qr.empty')}</p>
+            )}
         </div>
     );
 }

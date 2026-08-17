@@ -1,7 +1,13 @@
 # FE integration guide: plans, payments, subscriptions, refunds
 
 **The complete, current reference for the commercial side of the platform.** Everything a frontend
-needs to sell an event, keep it alive, and give money back. Current as of 2026-08-14.
+needs to sell an event, keep it alive, and give money back. Current as of 2026-08-16.
+
+**2026-08-16:** A third `PaidServiceKind`, `MODULE_UNLOCK` (§7c), sells a single module to a single
+event whose plan doesn't include it — so a module's availability is no longer decided by the plan
+alone. §4 and §13's catalog validation are updated accordingly, and there is a new host endpoint,
+`POST /api/events/{eventId}/addons`. Two new modules also exist (`wishlist`, `wishbook`); see
+`wishlist-wishbook-cohost-fe-integration.md` for what they do.
 
 **2026-08-14:** Storage packs (§7b) are no longer one-time — a settled pack now folds into the
 recurring subscription the same way the "keep originals" add-on already does, and admin entitlement
@@ -38,6 +44,7 @@ and `app-config-fe-integration.md` for the rest of `GET /api/config`.
 7. [Preservation: the subscription](#7-preservation-the-subscription)
 7a. [The "keep originals" add-on](#7a-the-keep-originals-add-on)
 7b. [Storage packs](#7b-storage-packs)
+7c. [Module unlocks](#7c-module-unlocks)
 8. [The billing read endpoint](#8-the-billing-read-endpoint)
 9. [Refunds](#9-refunds)
 10. [Notifications](#10-notifications)
@@ -226,22 +233,30 @@ The `*Percent` fields are precomputed server-side. Render them directly.
 
 ## 4. Modules
 
-A module (`gallery`, `posts`, `rsvp`, `playlist`, `stories`) is gated by three independent switches,
-ANDed together:
+A module (`posts`, `rsvp`, `playlist`, `stories`, `gallery`, and as of 2026-08-16 `wishlist` and
+`wishbook`) is gated by three independent switches, ANDed together:
 
 1. **The registry's `isEnabled`** — a platform-wide kill switch (admin, §13).
-2. **The plan's `moduleKeys`** — which modules the event's plan grants.
+2. **The event has paid for it** — either the plan's `moduleKeys` lists it, **or** the event holds a
+   `MODULE_UNLOCK` entitlement for it (§7c). This one is an OR of two routes, not two gates.
 3. **The event module's own `isEnabled`** — the per-event toggle in event settings.
 
 `EventModuleResponse.isAvailable` is the AND of all three. **Gate UI on `isAvailable`, never on
 `isEnabled`** — a module can be enabled for the event and still unavailable because the plan excludes
 it or the registry has it off platform-wide.
 
+An unlock is a commercial answer, not an override: it satisfies gate 2 only. A module withdrawn
+platform-wide at gate 1 stays dark for events that paid for it.
+
 `eventModuleKeys` on `GET /api/config` reflects the registry: a module disabled there disappears
-entirely, platform-wide, regardless of plan or per-event setting.
+entirely, platform-wide, regardless of plan, unlock, or per-event setting.
 
 `moduleKeys` on a plan is what upgrading onto that plan *would* grant — the data behind "upgrade to
-unlock Stories" messaging on a disabled module. Always empty for `ACCOUNT`-scope plans.
+unlock Stories" messaging on a disabled module. Always empty for `ACCOUNT`-scope plans. Since
+2026-08-16 that is not the only sales pitch available for a locked module: check `paidServices` for
+a `MODULE_UNLOCK` whose `grantsModuleKey` matches, and offer that instead where it exists — it is
+usually the cheaper answer for the host, and it is the only one on an event whose plan is already
+the top tier.
 
 ---
 
@@ -670,6 +685,86 @@ with a refund has no way to find out otherwise until they ask.
 
 ---
 
+## 7c. Module unlocks
+
+*New 2026-08-16.* Sells one module to one event whose plan doesn't include it. This is what makes a
+module free on the higher tiers and purchasable on the lower ones without maintaining two catalogs:
+strip the key from the cheaper plans' `moduleKeys`, publish a `MODULE_UNLOCK` for it, and leave it in
+the expensive plans' lists.
+
+**Catalog:** the same `paidServices` array as §7a/§7b, filtered to `kind: 'MODULE_UNLOCK'`:
+
+```jsonc
+{
+  "id": "…",
+  "code": "UNLOCK_WISHLIST",
+  "kind": "MODULE_UNLOCK",
+  "name": "Gift Wishlist",
+  "description": "Adds the wishlist module to this event.",
+  "priceAmountMinor": 300,
+  "priceCurrency": "EUR",
+  "billingPeriod": "MONTHLY",
+  "grantsStorageBytes": null,        // always null for a MODULE_UNLOCK
+  "grantsModuleKey": "wishlist"      // always set, and always a key from eventModuleKeys
+}
+```
+
+Join `grantsModuleKey` against `GET /api/config` → `modules[]` for the module's display name and
+description rather than reusing the service's own `name` — the registry row is what the rest of the
+UI labels that module with, and the two drifting apart is confusing on the one screen that shows
+both.
+
+### Buying one — `DRAFT` only, and it is not a checkout
+
+```http
+POST /api/events/{eventId}/addons
+{ "paidServiceCode": "UNLOCK_WISHLIST" }
+```
+
+Host-only, rate limited 30/min. Returns the same `AddonSummary` shape as the `addons` array in §8:
+
+```jsonc
+{ "code": "UNLOCK_WISHLIST", "name": "Gift Wishlist", "priceAmountMinor": 300, "activatedAt": "…" }
+```
+
+**Nothing is charged at this moment.** Like §7a's `keepOriginals` toggle, the entitlement is the row
+this creates, and the price folds into the activation payment (× `includedMonths`, per §7a's
+formula) and then into every renewal. Render it as a toggle in the draft setup flow next to the plan
+picker — **not** as a purchase button, and not on any live-event screen.
+
+The same endpoint also accepts `RECURRING_ADDON` codes, which is the generic route to what §7a does
+through `PATCH /api/events/{id}` with `keepOriginals`. Both paths create the same row; use whichever
+suits the screen. A `STORAGE_PACK` code sent here is a `400 INVALID_PAID_SERVICE_KIND` (3015) —
+storage is bought against a *live* event through §7b.
+
+| Status | Code | When | What to do |
+|---|---|---|---|
+| `409` | `EVENT_NOT_DRAFT` (5017) | the event is already live | see the limitation below — don't offer the control at all there |
+| `409` | `ADDON_ALREADY_ACTIVE` (5038) | already opted in | treat as success and refetch |
+| `400` | `INVALID_PAID_SERVICE_KIND` (3015) | a storage-pack code | refetch `paidServices` |
+| `404` | `RESOURCE_NOT_FOUND` (2001) | no such code | refetch `paidServices` |
+| `409` | `PAID_SERVICE_NOT_PURCHASABLE` (5036) | archived or non-public | hide the offer |
+| `409` | `PAID_SERVICE_NOT_ON_PLAN` (5040) | restricted to plans this event isn't on | filter the picker on `planTierIds` so this is unreachable |
+| `403` | `FORBIDDEN` (4001) | caller isn't a host of the event | — |
+
+### The limitation to design around
+
+**There is no mid-cycle purchase path.** Unlocking a module on a live event would mean charging
+immediately, which is the checkout-and-reprice shape only storage packs have. So the module picker
+belongs in the event setup wizard, before activation; on a live event, a module the plan doesn't
+include renders unavailable with **no buy affordance** — that call always `409`s.
+
+The upgrade path still works as a way out: moving the event onto a plan whose `moduleKeys` include
+the key opens it, because gate 2 is an OR (§4).
+
+### Getting back out
+
+There isn't a host-facing route, deliberately — same rule as §7a and §7b.
+`DELETE /api/admin/events/{eventId}/addons/{code}` is admin-only and refuses on any `ACTIVE` event
+(`409 ADDON_LOCKED_WHILE_ACTIVE`, 5042).
+
+---
+
 ## 8. The billing read endpoint
 
 ```http
@@ -1018,13 +1113,13 @@ name, for logs). Branch on `errorCode`.
 | `5009` `EVENT_MEMBER_LIMIT_EXCEEDED` | 409 | member add / invite acceptance exceeds the cap | upgrade prompt |
 | `5010` `ACTIVE_EVENT_LIMIT_EXCEEDED` | 409 | the account plan caps concurrent events | upgrade **or archive** (§3) |
 | `5011` `PLAN_TIER_IN_USE` | 409 | admin deleting a plan that is still assigned | offer archiving instead |
-| `5012` `MODULE_NOT_AVAILABLE` | 409 | a module action where `isAvailable` is false | "not included in this plan" |
+| `5012` `MODULE_NOT_AVAILABLE` | 409 | a module action where `isAvailable` is false | "not included in this plan" — and, if a matching `MODULE_UNLOCK` exists in `paidServices`, the §7c offer |
 | `5013` `PLAN_TIER_IS_ONLY_DEFAULT` | 409 | admin removing the last default plan | admin panel only |
 | `5015` `PLAN_TIER_NOT_PURCHASABLE` | 409 | the plan was archived or hidden since page load | refetch `/api/config`, ask them to pick again |
 | `5019` `PLAN_TIER_NOT_PRICED` | 409 | catalog misconfiguration — no activation or monthly price | generic error + support contact; the host cannot fix this |
 | `5021` `PLAN_TIER_CURRENCY_UNSUPPORTED` | 409 | the plan's currency is not supported by the provider | admin-facing; host sees a generic failure |
 | `5034` `ACCOUNT_PLANS_DISABLED` | 409 | admin tries to create an `ACCOUNT`-scope plan, or move a user onto a different one | admin-facing; remove/disable the control (§13) |
-| `3015` `INVALID_PAID_SERVICE_KIND` | 400 | a `STORAGE_PACK` code sent to the add-on opt-in, or vice versa | refetch `paidServices`, the code was mislabeled client-side |
+| `3015` `INVALID_PAID_SERVICE_KIND` | 400 | a code sent to an endpoint that doesn't serve its kind — a `STORAGE_PACK` code at the add-on opt-in (§7c), or a `RECURRING_ADDON`/`MODULE_UNLOCK` code at `storage-checkout` (§7b) | refetch `paidServices`, the code was mislabeled client-side |
 | `2001` `RESOURCE_NOT_FOUND` | 404 | paid-service code doesn't exist in the catalog at all | refetch `paidServices`, the code was stale or mistyped |
 | `5036` `PAID_SERVICE_NOT_PURCHASABLE` | 409 | code exists but is archived or non-public | refetch `paidServices` and ask them to pick again |
 | `5037` `PAID_SERVICE_IN_USE` | 409 | admin deleting a paid service that is still referenced by an order | offer archiving instead (admin panel only) |
@@ -1135,7 +1230,7 @@ unknown code or a scope mismatch errors rather than silently no-op'ing.
 | `PATCH /api/admin/platform-modules/{moduleKey}` | every field optional. **No create or delete** — the module set is fixed by backend code. `isEnabled: false` is the fastest way to withdraw a broken module platform-wide without a deploy. |
 | `PATCH /api/platform-feature-flags/{id}` | `description` (≤100), `isEnabled`, `configuration` (arbitrary JSON). `featureKey` is not patchable. |
 
-### The paid-services catalog (add-on + storage packs)
+### The paid-services catalog (add-on + storage packs + module unlocks)
 
 Mirrors the plan-tier admin surface (above) field-for-field — same archive-don't-delete guidance,
 same validation shape.
@@ -1152,10 +1247,19 @@ Create/patch validation (`400` / `3001` unless noted):
 
 - `code` — required, non-blank, ≤30 chars, `^[A-Z0-9_]+$`. Unique across the whole catalog (not
   scoped like plan codes).
-- `kind` — required on create, immutable after: `'STORAGE_PACK' | 'RECURRING_ADDON'`.
-- `grantsStorageBytes` — **required** for `STORAGE_PACK`, **rejected** if set on `RECURRING_ADDON`.
-- `billingPeriod` — **now enforced against `kind`**: `'MONTHLY'` for both `STORAGE_PACK` and
-  `RECURRING_ADDON`, anything else → `400 VALIDATION_FAILED`. It used to be a free choice that
+- `kind` — required on create, immutable after:
+  `'STORAGE_PACK' | 'RECURRING_ADDON' | 'MODULE_UNLOCK'`.
+- `grantsStorageBytes` — **required** for `STORAGE_PACK`, **rejected** on either other kind.
+- `grantsModuleKey` — **required** for `MODULE_UNLOCK`, **rejected** on either other kind. Must name
+  a module the registry actually has a row for, so populate the admin form's picker from
+  `GET /api/admin/platform-modules` rather than a hand-kept list — a key with no module behind it is
+  a catalog row that takes money for nothing, and is refused for that reason. Unlike `code` and
+  `kind` this one **is** patchable — and unlike a price edit, **repointing it is retroactive**:
+  entitlement is resolved live from this field, so every event that already bought the unlock loses
+  the old module and gains the new one at the next request. Warn on it in the admin form; the
+  non-destructive move is a new service code, archiving the old one.
+- `billingPeriod` — **enforced against `kind`**: `'MONTHLY'` for all three kinds,
+  anything else → `400 VALIDATION_FAILED`. It used to be a free choice that
   no pricing code read, so a `'YEARLY'` add-on would save, display in the public catalog, and bill
   monthly anyway. Derive the field from `kind` in the admin form rather than offering a picker — for
   now that means the field always resolves to `'MONTHLY'`, but keep deriving it since the intent is
@@ -1218,8 +1322,8 @@ export interface PlanTierResponse {
   moduleKeys: string[];         // always empty on ACCOUNT scope
 }
 
-// ---------- Paid services (add-on + storage packs) ----------
-export type PaidServiceKind = 'STORAGE_PACK' | 'RECURRING_ADDON';
+// ---------- Paid services (add-on + storage packs + module unlocks) ----------
+export type PaidServiceKind = 'STORAGE_PACK' | 'RECURRING_ADDON' | 'MODULE_UNLOCK';
 
 export interface PaidServiceResponse {
   id: string;
@@ -1233,7 +1337,8 @@ export interface PaidServiceResponse {
   priceAmountMinor: number;
   priceCurrency: string;
   billingPeriod: BillingPeriod; // always 'MONTHLY' — enforced against kind (§13)
-  grantsStorageBytes: number | null;  // required-shaped for STORAGE_PACK, always null on RECURRING_ADDON
+  grantsStorageBytes: number | null;  // set only on STORAGE_PACK, null on the other two
+  grantsModuleKey: string | null;     // set only on MODULE_UNLOCK, null on the other two
   planTierIds: string[];        // plan tiers this is offered on; EMPTY MEANS EVERY PLAN
 }
 
@@ -1242,6 +1347,11 @@ export interface EventAddon {
   name: string;
   priceAmountMinor: number;     // what this add-on currently adds to the monthly renewal
   activatedAt: string;
+}
+
+// POST /api/events/{eventId}/addons — host, DRAFT only. Returns an EventAddon (§7c).
+export interface EventAddonRequest {
+  paidServiceCode: string;      // a RECURRING_ADDON or MODULE_UNLOCK code
 }
 
 // ---------- Usage ----------
@@ -1423,7 +1533,8 @@ Keep the `orderId` visible in dev builds so testers can settle their own orders.
 
 - Pricing / plan picker at event creation — `EVENT`-scope catalog, `sortOrder`, unlimited handling.
 - Draft event view — clearly "not published yet", with the `endAt` gate explained before the pay
-  button. Include the "keep originals" toggle here (§7a) — it is only offered while `DRAFT`.
+  button. Include the "keep originals" toggle here (§7a) and the module-unlock picker (§7c) — both
+  are only offered while `DRAFT`, and the running total should reflect them before the host pays.
 - A storage-pack purchase UI on the plan-settings page (§7b) — pack picker + checkout button,
   rendering the raised ceiling on the usage bar once it settles.
 - Checkout success (polling, never asserting) and cancelled routes.
@@ -1436,8 +1547,10 @@ Keep the `orderId` visible in dev builds so testers can settle their own orders.
 **Admin**
 
 - Plan catalog CRUD, with archive preferred over delete.
-- Paid-services catalog CRUD (§13) — same archive-first pattern, one screen covering both the
-  add-on and every storage pack, filterable by `kind`.
+- Paid-services catalog CRUD (§13) — same archive-first pattern, one screen covering the add-on,
+  every storage pack, and every module unlock, filterable by `kind`. The `grantsStorageBytes` and
+  `grantsModuleKey` fields appear and disappear with `kind`; drive the module picker from the
+  registry, not a literal list.
 - Plan assignment for users and events, showing the returned usage snapshot.
 - Manual order settlement, and the unprocessed-webhook list.
 - Freeze / purge with a confirmation dialog that names the event.
@@ -1468,6 +1581,9 @@ Keep the `orderId` visible in dev builds so testers can settle their own orders.
   ceiling only ever goes up.
 - **Opting into the "keep originals" add-on after activation.** DRAFT-only (§7a); there is no
   "add originals to an existing event" flow, because it would leave earlier photos without one.
+- **Buying a module unlock for a live event.** DRAFT-only for the same structural reason (§7c) —
+  a mid-cycle unlock means charging mid-cycle, which only storage packs do. Don't put a buy button
+  on a locked module on a live event; the only route open there is an admin plan upgrade.
 - **Withdrawing a refund request.** A host cannot cancel a pending request; an admin has to reject
   it.
 - **A host-visible refund SLA.** There is no "we respond within N days" value to display, and nothing

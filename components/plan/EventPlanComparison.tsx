@@ -62,7 +62,9 @@ export function EventPlanComparison({
         {
             key: 'price',
             label: t('compare.activationPrice'),
-            render: (plan) => <PlanPriceLabel plan={plan} kind="activation" locale={locale} fallback={t('compare.noPrice')} className="font-semibold text-ink" />,
+            render: (plan) => (
+                <PlanPriceLabel plan={plan} kind="activation" locale={locale} fallback={t('compare.noPrice')} className="font-semibold text-ink" />
+            ),
         },
         {
             key: 'monthlyPrice',
@@ -143,7 +145,7 @@ export function EventPlanComparison({
     return (
         <section>
             <div className="space-y-3 md:hidden">
-                <div className="flex items-center justify-between gap-3 rounded-lg bg-surface-muted px-3 py-2 text-xs font-semibold text-ink-muted">
+                <div className="flex items-center justify-between gap-3 px-1 text-xs font-semibold text-ink-muted">
                     <span>{t('compare.modules')}</span>
                     <PlanModuleGuideButton onOpen={openModuleLegend} />
                 </div>

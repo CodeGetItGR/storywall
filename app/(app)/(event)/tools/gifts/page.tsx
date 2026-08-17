@@ -1,152 +1,214 @@
 'use client';
 
-import { ArrowLeft, Check, ExternalLink, Star } from 'lucide-react';
+import { ArrowLeft, Check, Copy, Gift, Loader2, Pencil, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import React, { useCallback, useState } from 'react';
+import { useState } from 'react';
 
-import { giftItems } from '@/lib/mock-data';
-import { cn } from '@/lib/utils';
+import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
+import { useDeleteGiftAccount, useGiftAccount, useSaveGiftAccount } from '@/hooks/useGiftAccount';
+import { ERROR_CODES, getErrorCode, getFieldErrors } from '@/lib/api/errors';
+import { useActiveEvent, useIsHost } from '@/providers/EventProvider';
 
-type Filter = 'all' | 'available' | 'reserved';
-
-const priorityColor: Record<string, string> = {
-    high: 'text-rose-500 bg-rose-50',
-    medium: 'text-amber-500 bg-amber-50',
-    low: 'text-sky-500 bg-sky-50',
-};
+function formatIban(value: string) {
+    return value
+        .replace(/\s/g, '')
+        .replace(/(.{4})/g, '$1 ')
+        .trim();
+}
 
 export default function GiftsPage() {
     const t = useTranslations('GiftsPage');
     const router = useRouter();
-    const [filter, setFilter] = useState<Filter>('all');
-    const [reserved, setReserved] = useState<Set<string>>(new Set(giftItems.filter((g) => g.reserved).map((g) => g.id)));
+    const event = useActiveEvent();
+    const isHost = useIsHost();
+    const eventId = event?.id ?? '';
+    const account = useGiftAccount(event?.id ?? null);
+    const save = useSaveGiftAccount(eventId);
+    const remove = useDeleteGiftAccount(eventId);
+    const [editing, setEditing] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [deleteOpen, setDeleteOpen] = useState(false);
+    const canEdit = isHost && event?.status !== 'PURGED';
 
-    const displayed = giftItems.filter((g) => {
-        if (filter === 'available') return !reserved.has(g.id);
-        if (filter === 'reserved') return reserved.has(g.id);
-        return true;
-    });
+    const showForm = canEdit && (editing || account.data === null);
 
-    function handleReserve(id: string) {
-        setReserved((prev) => {
-            const next = new Set(prev);
-            if (next.has(id)) next.delete(id);
-            else next.add(id);
-            return next;
-        });
+    function goBack() {
+        router.back();
+    }
+    function cancelEditing() {
+        setEditing(false);
+    }
+    function startEditing() {
+        setEditing(true);
+    }
+    function openDelete() {
+        setDeleteOpen(true);
+    }
+    function closeDelete() {
+        setDeleteOpen(false);
     }
 
-    const handleBack = useCallback(() => {
-        router.back();
-    }, [router]);
+    async function submit(e: React.SubmitEvent<HTMLFormElement>) {
+        e.preventDefault();
+        const data = new FormData(e.currentTarget);
+        await save.mutateAsync({
+            iban: String(data.get('iban') ?? ''),
+            accountHolder: String(data.get('accountHolder') ?? '').trim(),
+            note: String(data.get('note') ?? '').trim() || undefined,
+        });
+        setEditing(false);
+    }
 
-    const handleFilterClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-        const nextFilter = event.currentTarget.dataset.filter as Filter | undefined;
-        if (nextFilter) setFilter(nextFilter);
-    }, []);
+    async function copyIban() {
+        if (!account.data) return;
+        await navigator.clipboard.writeText(account.data.iban);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+    }
 
-    const handleReserveClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-        const giftId = event.currentTarget.dataset.giftId;
-        if (giftId) handleReserve(giftId);
-    }, []);
+    async function confirmDelete() {
+        await remove.mutateAsync();
+        setDeleteOpen(false);
+    }
+
+    const fieldErrors = getFieldErrors(save.error);
+    const invalidIban = getErrorCode(save.error) === ERROR_CODES.INVALID_IBAN;
 
     return (
-        <div className="max-w-2xl mx-auto px-4 pb-24 lg:pb-8">
-            {/* Header */}
-            <div className="flex items-center gap-3 py-4 mb-2">
+        <div className="mx-auto max-w-xl px-4 pb-24 lg:pb-8">
+            <header className="mb-5 flex items-center gap-3 py-4">
                 <button
-                    onClick={handleBack}
+                    onClick={goBack}
                     aria-label={t('goBack')}
-                    className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
+                    className="flex h-9 w-9 items-center justify-center rounded-full text-ink-muted hover:bg-surface-muted"
                 >
-                    <ArrowLeft className="w-5 h-5" />
+                    <ArrowLeft className="h-5 w-5" />
                 </button>
-                <h1 className="text-base font-bold text-ink">{t('title')}</h1>
-            </div>
+                <Gift className="h-5 w-5 text-rose-500" />
+                <h1 className="text-base font-bold text-ink">{t('accountTitle')}</h1>
+            </header>
 
-            <p className="text-sm text-ink-muted mb-5 leading-relaxed">{t('subtitle')}</p>
+            {account.isLoading && <p className="py-10 text-center text-sm text-ink-muted">{t('loading')}</p>}
+            {account.error && <p className="py-10 text-center text-sm text-rose-600">{t('loadError')}</p>}
 
-            {/* Filter pills */}
-            <div className="flex gap-2 mb-5">
-                {(['all', 'available', 'reserved'] as Filter[]).map((f) => (
-                    <button
-                        key={f}
-                        data-filter={f}
-                        onClick={handleFilterClick}
-                        className={cn(
-                            'px-4 py-1.5 rounded-full text-sm font-medium transition-colors capitalize',
-                            filter === f ? 'bg-primary text-white' : 'bg-surface-muted text-ink-muted hover:text-ink'
+            {!account.isLoading && !account.error && showForm && (
+                <form onSubmit={submit} className="space-y-4">
+                    <div>
+                        <label htmlFor="gift-iban" className="text-sm font-semibold text-ink">
+                            {t('fields.iban')}
+                        </label>
+                        <input
+                            id="gift-iban"
+                            name="iban"
+                            required
+                            maxLength={42}
+                            defaultValue={account.data?.iban ?? ''}
+                            className="mt-1.5 w-full rounded-xl bg-surface-muted px-4 py-3 font-mono text-sm uppercase text-ink outline-none focus:ring-2 focus:ring-primary/30"
+                        />
+                        {(invalidIban || fieldErrors?.iban) && <p className="mt-1 text-xs text-rose-600">{t('invalidIban')}</p>}
+                    </div>
+                    <div>
+                        <label htmlFor="gift-holder" className="text-sm font-semibold text-ink">
+                            {t('fields.accountHolder')}
+                        </label>
+                        <input
+                            id="gift-holder"
+                            name="accountHolder"
+                            required
+                            maxLength={140}
+                            defaultValue={account.data?.accountHolder ?? ''}
+                            className="mt-1.5 w-full rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="gift-note" className="text-sm font-semibold text-ink">
+                            {t('fields.note')}
+                        </label>
+                        <textarea
+                            id="gift-note"
+                            name="note"
+                            maxLength={500}
+                            rows={3}
+                            defaultValue={account.data?.note ?? ''}
+                            className="mt-1.5 w-full resize-none rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30"
+                        />
+                    </div>
+                    <div className="flex justify-end gap-2">
+                        {account.data && (
+                            <button
+                                type="button"
+                                onClick={cancelEditing}
+                                className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-ink-muted"
+                            >
+                                {t('cancel')}
+                            </button>
                         )}
-                    >
-                        {t(`filters.${f}`)}
-                    </button>
-                ))}
-            </div>
-
-            {/* Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {displayed.map((item) => {
-                    const isReserved = reserved.has(item.id);
-                    return (
-                        <div
-                            key={item.id}
-                            className={cn(
-                                'bg-card rounded-2xl border shadow-sm overflow-hidden transition-all',
-                                isReserved ? 'border-border opacity-70' : 'border-border/50 hover:shadow-md'
-                            )}
+                        <button
+                            type="submit"
+                            disabled={save.isPending}
+                            className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-5 py-2 text-sm font-semibold text-white disabled:opacity-50"
                         >
-                            {/* Category tag */}
-                            <div className="px-4 pt-4 pb-2 flex items-center justify-between">
-                                <span className="text-xs text-ink-muted font-medium">{item.category}</span>
-                                <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full', priorityColor[item.priority])}>
-                                    <Star className="w-2.5 h-2.5 inline mr-0.5 -mt-0.5" strokeWidth={2} />
-                                    {t(`priority.${item.priority}`)}
-                                </span>
-                            </div>
+                            {save.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                            {t('save')}
+                        </button>
+                    </div>
+                </form>
+            )}
 
-                            <div className="px-4 pb-4">
-                                <h3 className={cn('text-sm font-semibold text-ink leading-snug mb-1', isReserved && 'line-through text-ink-muted')}>
-                                    {item.name}
-                                </h3>
-                                {item.notes && <p className="text-xs text-ink-muted mb-2">{item.notes}</p>}
-                                <p className="text-lg font-bold text-ink tabular-nums mb-3">${item.price.toLocaleString()}</p>
-
-                                {isReserved ? (
-                                    <div className="flex items-center gap-2 text-xs text-emerald-600 font-medium">
-                                        <Check className="w-4 h-4" />
-                                        {item.reservedBy ? t('reservedByName', { name: item.reservedBy }) : t('reserved')}
-                                    </div>
-                                ) : (
-                                    <div className="flex gap-2">
-                                        <button
-                                            data-gift-id={item.id}
-                                            onClick={handleReserveClick}
-                                            className="flex-1 py-2 rounded-full bg-primary text-white text-xs font-semibold hover:bg-primary-dark transition-colors"
-                                        >
-                                            {t('reserveGift')}
-                                        </button>
-                                        {item.link && (
-                                            <a
-                                                href={item.link}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                aria-label={t('viewOn', {
-                                                    name: item.name,
-                                                    category: item.category,
-                                                })}
-                                                className="w-9 h-9 flex items-center justify-center rounded-full bg-surface-muted text-ink-muted hover:text-ink transition-colors"
-                                            >
-                                                <ExternalLink className="w-3.5 h-3.5" />
-                                            </a>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
+            {!account.isLoading && !account.error && !showForm && account.data && (
+                <div>
+                    <p className="text-sm leading-6 text-ink-muted">{account.data.note || t('accountSubtitle')}</p>
+                    <div className="mt-5 border-y border-border py-5">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">{t('fields.accountHolder')}</p>
+                        <p className="mt-1 text-sm font-semibold text-ink">{account.data.accountHolder}</p>
+                        <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-ink-faint">{t('fields.iban')}</p>
+                        <p className="mt-1 break-all font-mono text-lg font-semibold tracking-wide text-ink">{formatIban(account.data.iban)}</p>
+                        <button
+                            type="button"
+                            onClick={copyIban}
+                            className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-full bg-surface-muted px-4 text-sm font-semibold text-ink-muted"
+                        >
+                            {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
+                            {copied ? t('copied') : t('copyIban')}
+                        </button>
+                    </div>
+                    {canEdit && (
+                        <div className="mt-4 flex gap-2">
+                            <button
+                                type="button"
+                                onClick={startEditing}
+                                className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-semibold text-ink-muted"
+                            >
+                                <Pencil className="h-4 w-4" />
+                                {t('edit')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={openDelete}
+                                className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-50"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                                {t('remove')}
+                            </button>
                         </div>
-                    );
-                })}
-            </div>
+                    )}
+                </div>
+            )}
+
+            {!account.isLoading && !account.error && !showForm && !account.data && (
+                <p className="py-10 text-center text-sm text-ink-muted">{t(isHost ? 'emptyHost' : 'emptyMember')}</p>
+            )}
+            <ConfirmActionModal
+                open={deleteOpen}
+                onClose={closeDelete}
+                onConfirm={confirmDelete}
+                title={t('removeTitle')}
+                body={t('removeBody')}
+                confirmLabel={t('remove')}
+                cancelLabel={t('cancel')}
+                isConfirming={remove.isPending}
+            />
         </div>
     );
 }

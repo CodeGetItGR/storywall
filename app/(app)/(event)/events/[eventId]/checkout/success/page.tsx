@@ -6,7 +6,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
-import { useEventBilling } from '@/hooks/useBilling';
+import { billingKeys, useEventBilling } from '@/hooks/useBilling';
 import { eventKeys } from '@/hooks/useEvent';
 import { myEventsKeys } from '@/hooks/useMyEvents';
 import { clearPendingCheckout, readPendingCheckout } from '@/lib/billing';
@@ -40,6 +40,7 @@ export default function CheckoutSuccessPage() {
     useEffect(() => {
         if (!paid) return;
         clearPendingCheckout(eventId);
+        void queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
         void queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
         void queryClient.invalidateQueries({ queryKey: myEventsKeys.all });
     }, [eventId, paid, queryClient]);

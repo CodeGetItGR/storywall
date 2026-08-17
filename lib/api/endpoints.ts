@@ -45,6 +45,7 @@ export const endpoints = {
         hosts: (eventId: string) => `/api/events/${eventId}/hosts`,
         hostById: (eventId: string, id: string) => `/api/events/${eventId}/hosts/${id}`,
         invitations: (eventId: string) => `/api/events/${eventId}/invitations`,
+        hostInvitations: (eventId: string) => `/api/events/${eventId}/host-invitations`,
         qrLinks: (eventId: string) => `/api/events/${eventId}/qr-links`,
         qrLinkStats: (eventId: string) => `/api/events/${eventId}/qr-links/stats`,
         members: (eventId: string) => `/api/events/${eventId}/members`,
@@ -55,6 +56,10 @@ export const endpoints = {
         mediaBatch: (eventId: string) => `/api/events/${eventId}/media/batch`,
         usage: (eventId: string) => `/api/events/${eventId}/usage`,
         billing: (eventId: string) => `/api/events/${eventId}/billing`,
+        addons: (eventId: string) => `/api/events/${eventId}/addons`,
+        giftAccount: (eventId: string) => `/api/events/${eventId}/gift-account`,
+        wishbook: (eventId: string) => `/api/events/${eventId}/wishbook`,
+        wishbookCount: (eventId: string) => `/api/events/${eventId}/wishbook/count`,
         checkout: (eventId: string) => `/api/events/${eventId}/checkout`,
         upgradeCheckout: (eventId: string) => `/api/events/${eventId}/upgrade-checkout`,
         subscriptionCheckout: (eventId: string) => `/api/events/${eventId}/subscription-checkout`,
@@ -78,6 +83,10 @@ export const endpoints = {
         byId: (id: string) => `/api/event-invitations/${id}`,
         accept: (inviteToken: string) => `/api/event-invitations/${inviteToken}/accept`,
         preview: (inviteToken: string) => `/api/event-invitations/${inviteToken}/preview`,
+    },
+
+    wishbook: {
+        byId: (id: string) => `/api/wishbook/${id}`,
     },
 
     qrLinks: {

@@ -1,6 +1,6 @@
 'use client';
 
-import { QrCode } from 'lucide-react';
+import { QrCode, UserCog } from 'lucide-react';
 import { useCallback } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -32,6 +32,7 @@ export function InvitationPanelButton({
             )}
         >
             {item === 'qr' && <QrCode className="h-3.5 w-3.5" />}
+            {item === 'coHosts' && <UserCog className="h-3.5 w-3.5" />}
             {label}
         </button>
     );

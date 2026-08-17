@@ -6,7 +6,6 @@ import { usageKeys } from '@/hooks/useUsage';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type {
-    AccountUsageResponseDto,
     EventUsageResponseDto,
     NotificationSweepResponseDto,
     PaidServiceKind,
@@ -312,19 +311,8 @@ export function useUpdatePlatformModule() {
     });
 }
 
-export function useAssignUserPlanTier() {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: ({ userId, input }: { userId: string; input: PlanAssignmentRequestDto }) =>
-            api.patch<AccountUsageResponseDto>(endpoints.admin.users.planTier(userId), input),
-        onSuccess: (usage) => {
-            queryClient.invalidateQueries({ queryKey: usageKeys.me });
-            queryClient.setQueryData(usageKeys.me, usage);
-        },
-    });
-}
-
+// There is no account-plan assignment hook: PATCH /api/admin/users/{id}/plan-tier
+// always answers 409 ACCOUNT_PLANS_DISABLED, so the console does not offer it.
 export function useAssignEventPlanTier() {
     const queryClient = useQueryClient();
 

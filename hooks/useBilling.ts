@@ -8,6 +8,8 @@ import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type {
     CheckoutResponseDto,
+    EventAddonDto,
+    EventAddonRequestDto,
     EventBillingResponseDto,
     RefundEligibilityResponseDto,
     RefundRequestResponseDto,
@@ -49,7 +51,10 @@ export function useCheckout(eventId: string, subscription = false) {
     return useMutation({
         mutationFn: () =>
             api.post<CheckoutResponseDto>(subscription ? endpoints.events.subscriptionCheckout(eventId) : endpoints.events.checkout(eventId)),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
+            queryClient.invalidateQueries({ queryKey: ['events', eventId] });
+        },
     });
 }
 
@@ -72,6 +77,17 @@ export function useStorageCheckout(eventId: string) {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
             queryClient.invalidateQueries({ queryKey: usageKeys.event(eventId) });
+        },
+    });
+}
+
+export function useAddEventAddon(eventId: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (input: EventAddonRequestDto) => api.post<EventAddonDto>(endpoints.events.addons(eventId), input),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
+            queryClient.invalidateQueries({ queryKey: ['events', eventId] });
         },
     });
 }

@@ -8,6 +8,12 @@ Covers two flows:
 Build Part A first — it's how you'll generate real `inviteToken`s to test Part B with,
 instead of inserting rows manually.
 
+> **Updated 2026-08-16.** Invitations now carry a `role`, and a second kind exists: a
+> **co-host invitation**, created at `POST /api/events/{eventId}/host-invitations` and
+> accepted through the same `accept` endpoint, but only by the exact address it names on a
+> verified account. See [Co-host invitations](#co-host-invitations) in Part A and the new
+> `403`/`5044` case in Part B step 3.
+
 > **Updated 2026-08-11.** Guest login now takes a `guestKey`, and `maxGuests` is now
 > actually enforced. Both are **breaking for any invitation with `maxGuests > 1`** —
 > see [Shared invite links and `guestKey`](#shared-invite-links-and-guestkey). If you are
@@ -58,9 +64,13 @@ the invite link from:
   "maxGuests": 5,
   "expiresAt": "2026-09-01T00:00:00Z",
   "usedAt": null,
-  "createdAt": "2026-07-31T..."
+  "createdAt": "2026-07-31T...",
+  "role": "ATTENDEE"
 }
 ```
+
+`role` was added 2026-08-16 and is `"ATTENDEE"` for everything this endpoint creates. The other
+value, `"HOST"`, comes from the co-host endpoint below.
 Build the shareable link/QR as `https://your-app/invite/{inviteToken}` and/or the
 human-readable `inviteCode` for print materials.
 
@@ -68,6 +78,56 @@ Error cases:
 - `409 Conflict` — `inviteCode` already used for this event.
 - `400 Bad Request`, `errorCode: 3001` — validation failure (e.g. missing `inviteCode`),
   with field errors under `errors.<fieldName>`.
+
+### Co-host invitations
+
+*New 2026-08-16.* Asks somebody to **co-host** rather than attend. Use this when the host knows a
+person by email address; use `POST /api/events/{eventId}/hosts` (`{ userId }`) when they are
+already a registered user whose id you hold and the host wants to promote them **immediately**,
+with no acceptance step. Both paths end at the same `EventHost` row.
+
+```
+POST /api/events/{eventId}/host-invitations
+Authorization: Bearer {accessToken}
+
+{
+  "email": "sam@example.com",          // REQUIRED here, unlike a guest invitation
+  "firstName": "Sam",                  // optional, max 100
+  "lastName": "Ng",                    // optional, max 100
+  "expiresAt": "2026-09-01T00:00:00Z"  // optional, null = never expires
+}
+```
+
+Returns the same `EventInvitationResponseDto`, with `role: "HOST"`. Note what you **don't** send:
+
+- no `inviteCode` — the server mints one, prefixed `COHOST-`;
+- no `maxGuests` — pinned to `1`, because acceptance is bound to one named address. Don't offer
+  the control, and don't offer a `PATCH` that raises it.
+
+An email ("You've been invited to co-host {event}") goes out automatically; there is no separate
+send step.
+
+`409` if that address already belongs to a member of the event — they have nothing to accept, so
+promote them with `POST /api/events/{eventId}/hosts` instead. Surface that as a redirect to the
+promote action rather than a raw error.
+
+**The acceptance rule.** A co-host invitation can only be accepted by the exact address it names,
+on a **verified** account — see Part B step 3. Guest invitations are unchanged and stay forwardable;
+this one is not.
+
+**The preview endpoint does not expose `role`,** deliberately: it is public, and telling an unknown
+visitor that a link is a live co-host invitation is the disclosure the `5044` error is worded to
+avoid. Two consequences for the onboarding page, and the co-host email points at the same
+`/invite/{token}` route the guest one does:
+
+- The page cannot tell the two kinds apart, so it will offer "Join as guest" on a co-host link.
+- A co-host who takes that option becomes an ordinary **attendee** — guest login never grants
+  `HOST` — **and consumes the invitation's only slot**, so their real acceptance then fails with
+  `5035 INVITATION_EXHAUSTED` and the host has to issue a fresh invitation.
+
+Until the backend distinguishes them, the mitigation is copy: the email already says "you'll need
+to sign in with this email address", so make the sign-in option the visually primary one on that
+page rather than the guest shortcut.
 
 ### List invitations for an event
 
@@ -78,6 +138,10 @@ Authorization: Bearer {accessToken}
 → `EventInvitationResponseDto[]` — use this to render the host's "manage invitations" table
 (who's been invited, `usedAt` to show claimed/unclaimed, etc). Host-only; carries PII
 (email/name) and tokens, so never expose this list to non-hosts.
+
+**This returns both kinds.** Since 2026-08-16 co-host invitations come back in the same array —
+split on `role` (`"HOST"` vs `"ATTENDEE"`) or they will appear among the guests, with a
+`maxGuests` of 1 and a `COHOST-` code that looks like a mistake.
 
 Invitations the backend generates to back a shared QR code are **excluded** from this list —
 they have no recipient and would otherwise appear as anonymous `QR-AB12CD34` rows among real
@@ -245,12 +309,40 @@ Authorization: Bearer {accessToken}
 → creates an `EventMember` linking the existing user to the event and returns the member
 record. Order matters: **log in first, accept second** — `accept` requires `ROLE_USER`.
 
+On a **co-host** invitation (`role: "HOST"`) the same call additionally creates the `EventHost`
+row, so the caller appears in `EventDetailResponseDto.hosts` immediately. Nothing about the
+request differs — the endpoint is the same.
+
 Possible responses from `accept`:
 - `409 Conflict`, `errorCode: 5001` — caller is already a member of this event. Treat as
   success (they're in); don't surface this as an error to the user.
 - `409 Conflict`, `errorCode: 5035` — the link's `maxGuests` is used up. This one *is* an
   error: they're not in. Show "this invite link is full".
 - `410 Gone` — invitation has expired since the preview was loaded.
+- `403 Forbidden`, `errorCode: 5044` `CO_HOST_INVITE_NOT_YOURS` — **co-host invitations only.**
+  The signed-in account's email doesn't match the address the invitation names, *or* it matches
+  but the address is unverified. See below.
+
+#### Handling `5044`
+
+The response deliberately does not say which of the two conditions failed — a stranger holding a
+forwarded link must not learn that it is a live co-host invitation worth pursuing. So you cannot
+render "please verify your email" off the error alone. Branch on state you already hold:
+
+```ts
+if (err.errorCode === 5044) {
+  if (!currentUser.emailVerified) {
+    show('Verify your email address first, then open this link again.');
+    offerResendVerification();
+  } else {
+    show('This invitation was sent to a different account. Sign in with the address it was sent to.');
+  }
+}
+```
+
+`5044` is checked **last**, after expiry, already-a-member, `maxGuests`, and the event's member
+quota. So an expired or exhausted co-host link returns the ordinary `410`/`5035` rather than
+`5044`, and any of those is a terminal state for that link regardless of who is signed in.
 
 ### 4. Register a new account, then join
 
@@ -268,6 +360,7 @@ with the returned `accessToken`.
    b. "I have an account" → POST /auth/login  → POST /event-invitations/{token}/accept → done
    c. "Create an account" → POST /auth/register → POST /event-invitations/{token}/accept → done
 3. Any of the three can come back 409 / 5035 → "this invite link is full"
+4. 2b/2c can come back 403 / 5044 → co-host link opened by the wrong or unverified account
 ```
 
 No other endpoints are needed for this flow; steps 2b/2c reuse the existing auth endpoints

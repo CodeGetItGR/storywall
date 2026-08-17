@@ -1,36 +1,21 @@
 'use client';
 
-import { AlertTriangle, CheckCircle2, Clock3, CreditCard, Loader2, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Clock3, Loader2, PackagePlus, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import React, { ChangeEvent } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 
-import { StoragePackPurchase } from '@/components/plan/StoragePackPurchase';
+import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
+import { PageBackLink } from '@/components/ui/PageBackLink';
 import { PageErrorState } from '@/components/ui/PageErrorState';
 import { useApiErrorMessage, useRetryAfterCountdown } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
-import {
-    useCancelSubscription,
-    useCheckout,
-    useEventBilling,
-    useEventRefundRequests,
-    useRefundEligibility,
-    useRequestRefund,
-    useUpgradeCheckout,
-} from '@/hooks/useBilling';
+import { useCancelSubscription, useEventBilling, useEventRefundRequests, useRefundEligibility, useRequestRefund } from '@/hooks/useBilling';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { EventBillingResponseDto } from '@/lib/api/types';
-import {
-    billingCurrency,
-    discountedAmountMinor,
-    formatBillingDate,
-    formatMoney,
-    navigateToCheckout,
-    newestBillingOrder,
-    paidBillingTotal,
-} from '@/lib/billing';
+import { billingCurrency, discountedAmountMinor, formatBillingDate, formatMoney, newestBillingOrder, paidBillingTotal } from '@/lib/billing';
 import { publicAssignablePlans, scopedPlans } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { getEventBillingStatusTone } from '@/lib/statusTones';
@@ -49,14 +34,9 @@ export default function EventPlanSettingsPage() {
     const billing = useEventBilling(eventId, true);
     const refundEligibility = useRefundEligibility(eventId);
     const requestRefund = useRequestRefund(eventId);
-    const renew = useCheckout(eventId, true);
-    const upgradeCheckout = useUpgradeCheckout(eventId);
     const refundHistory = useEventRefundRequests(eventId);
     const toErrorMessage = useApiErrorMessage();
-    const renewRetryIn = useRetryAfterCountdown(renew.error);
-    const upgradeRetryIn = useRetryAfterCountdown(upgradeCheckout.error);
     const refundRetryIn = useRetryAfterCountdown(requestRefund.error);
-    const [error, setError] = useState<string | null>(null);
     const [refundReason, setRefundReason] = useState('');
     const [refundError, setRefundError] = useState<string | null>(null);
     const [confirmingRefund, setConfirmingRefund] = useState(false);
@@ -86,48 +66,16 @@ export default function EventPlanSettingsPage() {
         );
     }, [currentPlan, eventPlans]);
     const nextPlan = upgradeTargets[0];
-    const storagePacks = useMemo(
+    const paidAddonOffers = useMemo(
         () =>
             (appConfig?.paidServices ?? []).filter(
-                (service) =>
-                    service.kind === 'STORAGE_PACK' &&
-                    (service.planTierIds.length === 0 || (currentPlan ? service.planTierIds.includes(currentPlan.id) : false))
+                (service) => service.planTierIds.length === 0 || (currentPlan ? service.planTierIds.includes(currentPlan.id) : false)
             ),
         [appConfig?.paidServices, currentPlan]
     );
     // Server-side history, so a decision (and its note) survives a reload - the
     // page used to only know about a request the same tab had just submitted.
     const refundRequest = refundHistory.data?.[0] ?? null;
-
-    async function startRenewal() {
-        setError(null);
-        try {
-            const checkout = await renew.mutateAsync();
-            navigateToCheckout(eventId, checkout);
-        } catch (e) {
-            setError(toErrorMessage(e));
-        }
-    }
-
-    async function startUpgrade(planTierCode: string) {
-        setError(null);
-        try {
-            await appConfigQuery.refetch();
-        } catch {
-            // Stale config is handled again by the server; this is only a freshness attempt.
-        }
-
-        try {
-            const checkout = await upgradeCheckout.mutateAsync({ planTierCode });
-            navigateToCheckout(eventId, checkout, planTierCode);
-        } catch (e) {
-            const code = getErrorCode(e);
-            if (code === ERROR_CODES.PLAN_TIER_NOT_AN_UPGRADE || code === ERROR_CODES.PLAN_TIER_NOT_PURCHASABLE) {
-                await appConfigQuery.refetch();
-            }
-            setError(toErrorMessage(e));
-        }
-    }
 
     const askCancelConfirmation = useCallback(() => {
         setCancelError(null);
@@ -184,11 +132,16 @@ export default function EventPlanSettingsPage() {
         if (!data) return null;
         const lastOrder = newestBillingOrder(data.orders);
         const activationOrder = newestBillingOrder(data.orders, 'ACTIVATION');
+        const paidRenewalOrder = newestBillingOrder(
+            data.orders.filter((order) => order.status === 'PAID'),
+            'RENEWAL'
+        );
         const pendingOrders = data.orders.filter((order) => order.status === 'PENDING');
 
         return {
             lastOrder,
             activationOrder,
+            paidRenewalOrder,
             pendingOrders,
             paidTotalMinor: paidBillingTotal(data.orders),
             orderCurrency: billingCurrency(data.orders),
@@ -231,11 +184,26 @@ export default function EventPlanSettingsPage() {
         if (order.kind === 'STORAGE_PACK') return t('orders.storageCoverage');
         return t('orders.recordedCharge');
     };
+    const orderStatusClassName = (status: EventBillingResponseDto['orders'][number]['status']) =>
+        cn(
+            'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold',
+            status === 'PAID' && 'bg-emerald-50 text-emerald-700',
+            status === 'PENDING' && 'bg-amber-50 text-amber-700',
+            status === 'FAILED' && 'bg-red-50 text-red-700',
+            status === 'CANCELLED' && 'bg-surface-muted text-ink-muted'
+        );
     const subscriptionCollects =
         subscription?.status === 'ACTIVE' &&
         Boolean(subscription.currentPeriodEnd) &&
         new Date(subscription.currentPeriodEnd ?? '').getTime() > renderedAtMs;
+    const paidRenewalCoversNow =
+        Boolean(insights.paidRenewalOrder?.coversUntil) && new Date(insights.paidRenewalOrder?.coversUntil ?? '').getTime() > renderedAtMs;
+    const subscriptionIsLive = subscription?.status === 'ACTIVE' || subscription?.status === 'PAST_DUE' || paidRenewalCoversNow;
+    const subscriptionWillNotRenew = subscription?.cancelAtPeriodEnd ?? false;
+    const subscriptionPeriodEnd = subscription?.currentPeriodEnd ?? insights.paidRenewalOrder?.coversUntil ?? coverage.paidThrough;
+    const canCancelSubscription = Boolean(subscriptionIsLive && !subscriptionWillNotRenew);
     const hasRenewalPath = data.eventStatus !== 'DRAFT' && data.eventStatus !== 'PURGED' && !coverage.unlimited && !subscriptionCollects;
+    const canStartSubscription = hasRenewalPath && !subscriptionIsLive;
     const isRiskState = data.eventStatus === 'FROZEN' || data.eventStatus === 'PURGED' || !coverage.covered;
     const StatusIcon =
         data.eventStatus === 'ACTIVE'
@@ -278,39 +246,17 @@ export default function EventPlanSettingsPage() {
               : t('compare.upgradeChargeNoDate', { amount: upgradeDueLabel })
         : null;
 
-    function handleUpgradeClick() {
-        if (!nextPlan) return;
-        void startUpgrade(nextPlan.code);
-    }
-
     return (
         <main className="mx-auto max-w-5xl px-4 pb-24 pt-5 sm:pt-6 lg:pb-10">
-            <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="mb-5">
                 <div>
-                    <Link href={routes.manage} className="text-xs font-semibold text-primary-dark">
-                        {t('backToEvent')}
-                    </Link>
+                    <PageBackLink href={routes.manage}>{t('backToEvent')}</PageBackLink>
                     <h1 className="mt-2 text-2xl font-bold text-ink">{t('title')}</h1>
                     <p className="mt-1 text-sm text-ink-muted">{t('subtitle')}</p>
                 </div>
-                {hasRenewalPath && (
-                    <button
-                        type="button"
-                        onClick={startRenewal}
-                        disabled={renew.isPending || renewRetryIn > 0}
-                        className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-ink px-4 py-2.5 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
-                    >
-                        {renew.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5" />}
-                        {renewRetryIn > 0
-                            ? t('actions.retryIn', { seconds: renewRetryIn })
-                            : renew.isPending
-                              ? t('actions.openingCheckout')
-                              : t('actions.renew')}
-                    </button>
-                )}
             </div>
 
-            <section className={cn('rounded-lg border p-4', isRiskState ? 'border-amber-200 bg-amber-50/70' : 'border-border bg-card')}>
+            <section className={cn('rounded-lg p-4', isRiskState ? 'bg-amber-50/70' : 'bg-surface-muted/45')}>
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
@@ -359,7 +305,7 @@ export default function EventPlanSettingsPage() {
                     </dl>
                 </div>
                 {data.addons.length > 0 && (
-                    <div className="mt-4 border-t border-border pt-3">
+                    <div className="mt-4 rounded-lg bg-background/70 p-3">
                         <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('addons.title')}</p>
                         <div className="mt-2 flex flex-wrap gap-2">
                             {data.addons.map((addon, index) => (
@@ -385,28 +331,24 @@ export default function EventPlanSettingsPage() {
                         </p>
                     </div>
                 )}
-                {error && <p className="mt-3 text-xs text-rose-600">{error}</p>}
             </section>
 
-            <section className="mt-6 rounded-lg border border-border bg-card px-4 py-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="min-w-0">
-                        <h2 className="text-base font-bold text-ink">
-                            {nextPlan ? t('compare.upgradeTitle', { plan: nextPlan.name }) : t('compare.title')}
-                        </h2>
-                        <p className="mt-1 max-w-3xl text-sm leading-relaxed text-ink-muted">
-                            {nextPlan ? t('compare.upgradeSubtitle', { plan: data.planTierName }) : t('compare.highestPlan')}
-                        </p>
+            {nextPlan && currentPlan && (
+                <section className="mt-6 rounded-lg bg-surface-muted/45 px-4 py-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0">
+                            <h2 className="text-base font-bold text-ink">{t('compare.upgradeTitle', { plan: nextPlan.name })}</h2>
+                            <p className="mt-1 max-w-3xl text-sm leading-relaxed text-ink-muted">
+                                {t('compare.upgradeSubtitle', { plan: data.planTierName })}
+                            </p>
+                        </div>
+                        <Link
+                            href={routes.plans({ eventId, plan: data.planTierCode })}
+                            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-background/70 px-3 text-xs font-semibold text-ink-muted hover:text-ink"
+                        >
+                            {t('compare.allPlansTitle')}
+                        </Link>
                     </div>
-                    <Link
-                        href={routes.plans({ eventId, plan: data.planTierCode })}
-                        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-ink px-4 text-xs font-semibold text-white"
-                    >
-                        {t('compare.allPlansTitle')}
-                    </Link>
-                </div>
-
-                {nextPlan && currentPlan && (
                     <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-ink-muted">
                         <span className="font-semibold text-ink">{currentPlan.name}</span>
                         <span className="text-ink-faint">{t('compare.to')}</span>
@@ -421,61 +363,85 @@ export default function EventPlanSettingsPage() {
                                 </span>
                             )}
                         </span>
-                        <button
-                            type="button"
-                            onClick={handleUpgradeClick}
-                            disabled={upgradeCheckout.isPending || upgradeRetryIn > 0 || !upgradeDueLabel}
-                            className="inline-flex items-center gap-2 rounded-full bg-surface-muted px-3 py-1.5 text-xs font-semibold text-ink"
-                        >
-                            {upgradeCheckout.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5" />}
-                            {upgradeRetryIn > 0 ? t('actions.retryIn', { seconds: upgradeRetryIn }) : upgradeButtonLabel}
-                        </button>
+                        {upgradeDueLabel && (
+                            <Link
+                                href={routes.events.checkoutReview(eventId, 'upgrade', nextPlan.code)}
+                                className="inline-flex min-h-10 items-center rounded-full bg-surface-muted px-3 text-xs font-semibold text-ink"
+                            >
+                                {upgradeButtonLabel}
+                            </Link>
+                        )}
                     </div>
-                )}
-            </section>
+                </section>
+            )}
 
-            {data.eventStatus === 'ACTIVE' && <StoragePackPurchase eventId={eventId} services={storagePacks} />}
-
-            <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
-                <section className="min-w-0">
-                    <div className="mb-3 flex items-center justify-between">
-                        <h2 className="text-sm font-bold text-ink">{t('timeline.title')}</h2>
-                        {coverage.unlimited && <span className="text-xs font-semibold text-emerald-700">{t('timeline.unlimited')}</span>}
+            {data.eventStatus === 'ACTIVE' && paidAddonOffers.length > 0 && (
+                <section className="mt-6 flex flex-col gap-3 rounded-lg bg-surface-muted/45 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-start gap-3">
+                        <PackagePlus className="mt-0.5 h-5 w-5 text-primary-dark" aria-hidden="true" />
+                        <div>
+                            <h2 className="text-sm font-bold text-ink">{t('addons.manageTitle')}</h2>
+                            <p className="mt-1 text-sm leading-relaxed text-ink-muted">{t('addons.manageBody')}</p>
+                        </div>
                     </div>
-                    <div className="divide-y divide-border border-y border-border">
-                        {[
-                            { key: 'paidThrough', value: coverage.paidThrough },
-                            { key: 'freezesAt', value: coverage.freezesAt },
-                            { key: 'purgesAt', value: coverage.purgesAt },
-                        ].map((item) => (
-                            <div key={item.key} className="grid gap-1 py-3 text-sm sm:grid-cols-[9rem_1fr] sm:gap-4">
-                                <div>
-                                    <p className="font-semibold text-ink">{t(`timeline.${item.key}.label`)}</p>
-                                    <p className="mt-0.5 text-xs text-ink-muted">{t(`timeline.${item.key}.hint`)}</p>
+                    <Link
+                        href={routes.events.settingsAddons(eventId)}
+                        className="inline-flex min-h-10 items-center justify-center rounded-full bg-background/80 px-4 text-xs font-semibold text-ink"
+                    >
+                        {t('addons.manageAction')}
+                    </Link>
+                </section>
+            )}
+
+            <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
+                <section className="min-w-0 space-y-4">
+                    <section className="space-y-3">
+                        <div className="mb-3 flex items-center justify-between">
+                            <h2 className="text-sm font-bold text-ink">{t('timeline.title')}</h2>
+                            {coverage.unlimited && <span className="text-xs font-semibold text-emerald-700">{t('timeline.unlimited')}</span>}
+                        </div>
+                        <div className="space-y-3 rounded-lg bg-surface-muted/45 p-3">
+                            {[
+                                { key: 'paidThrough', value: coverage.paidThrough },
+                                { key: 'freezesAt', value: coverage.freezesAt },
+                                { key: 'purgesAt', value: coverage.purgesAt },
+                            ].map((item) => (
+                                <div key={item.key} className="text-sm">
+                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                                        <div className="min-w-0">
+                                            <p className="font-semibold text-ink">{t(`timeline.${item.key}.label`)}</p>
+                                            <p className="mt-0.5 text-xs leading-5 text-ink-muted">{t(`timeline.${item.key}.hint`)}</p>
+                                        </div>
+                                        <p className="shrink-0 font-semibold text-ink">
+                                            {coverage.unlimited ? t('notApplicable') : formatDate(item.value)}
+                                        </p>
+                                    </div>
                                 </div>
-                                <p className="text-ink">{coverage.unlimited ? t('notApplicable') : formatDate(item.value)}</p>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    </section>
 
-                    <div className="mt-7">
+                    <section className="space-y-3">
                         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                             <h2 className="text-sm font-bold text-ink">{t('orders.title')}</h2>
                             {insights.lastOrder && (
                                 <p className="text-xs text-ink-muted">{t('orders.lastOrder', { date: formatDate(insights.lastOrder.createdAt) })}</p>
                             )}
                         </div>
-                        <div className="border-y border-border md:hidden">
+                        <div className="md:hidden">
                             {data.orders.length === 0 ? (
-                                <p className="py-6 text-sm text-ink-muted">{t('orders.empty')}</p>
+                                <p className="rounded-md bg-surface-muted/60 p-3 text-sm text-ink-muted">{t('orders.empty')}</p>
                             ) : (
-                                <div className="divide-y divide-border">
+                                <div className="space-y-3 rounded-lg bg-surface-muted/45 p-3">
                                     {visibleOrders.map((order) => (
-                                        <div key={order.id} className="py-4 text-sm">
+                                        <article key={order.id} className="text-sm" title={order.id}>
                                             <div className="flex items-start justify-between gap-3">
-                                                <div className="min-w-0">
-                                                    <p className="font-semibold text-ink">{t(`orders.kind.${order.kind}`)}</p>
-                                                    <p className="mt-0.5 truncate text-xs text-ink-faint">{order.id}</p>
+                                                <div className="min-w-0 space-y-1">
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <p className="font-semibold text-ink">{t(`orders.kind.${order.kind}`)}</p>
+                                                        <span className={orderStatusClassName(order.status)}>{t(`orderStatus.${order.status}`)}</span>
+                                                    </div>
+                                                    <p className="text-xs text-ink-muted">{formatDate(order.paidAt ?? order.createdAt)}</p>
                                                 </div>
                                                 <p className="shrink-0 text-right font-semibold text-ink">
                                                     {formatMoney(locale, order.amountMinor, order.currency)}
@@ -488,58 +454,41 @@ export default function EventPlanSettingsPage() {
                                                     )}
                                                 </p>
                                             </div>
-                                            <dl className="mt-3 grid gap-2">
-                                                <div className="flex justify-between gap-3">
-                                                    <dt className="text-ink-muted">{t('orders.columns.status')}</dt>
-                                                    <dd className="font-medium text-ink">{t(`orderStatus.${order.status}`)}</dd>
-                                                </div>
-                                                <div className="flex justify-between gap-3">
-                                                    <dt className="text-ink-muted">{t('orders.columns.date')}</dt>
-                                                    <dd className="text-right font-medium text-ink">{formatDate(order.paidAt ?? order.createdAt)}</dd>
-                                                </div>
-                                                <div className="grid gap-1">
-                                                    <dt className="text-ink-muted">{t('orders.columns.coverage')}</dt>
-                                                    <dd className="font-medium text-ink">{orderCoverageLabel(order)}</dd>
-                                                </div>
-                                            </dl>
-                                        </div>
+                                            <p className="mt-1.5 text-xs leading-relaxed text-ink-muted">{orderCoverageLabel(order)}</p>
+                                        </article>
                                     ))}
                                 </div>
                             )}
                         </div>
-                        <div className="hidden border-y border-border md:block">
+                        <div className="hidden overflow-hidden rounded-lg bg-surface-muted/45 md:block">
                             <table className="w-full table-fixed text-left text-sm">
-                                <thead className="text-[11px] uppercase tracking-wide text-ink-faint">
+                                <thead className="bg-surface-muted text-[11px] uppercase tracking-wide text-ink-faint">
                                     <tr>
-                                        <th className="py-2 pr-4 font-semibold md:w-36">{t('orders.columns.kind')}</th>
-                                        <th className="px-4 py-2 font-semibold md:w-28">{t('orders.columns.status')}</th>
-                                        <th className="px-4 py-2 font-semibold md:w-[38%]">{t('orders.columns.coverage')}</th>
-                                        <th className="px-4 py-2 font-semibold md:w-36">{t('orders.columns.date')}</th>
-                                        <th className="py-2 pl-4 text-right font-semibold md:w-28">{t('orders.columns.amount')}</th>
+                                        <th className="px-3 py-2 font-semibold">{t('orders.columns.kind')}</th>
+                                        <th className="px-3 py-2 font-semibold md:w-28">{t('orders.columns.status')}</th>
+                                        <th className="px-3 py-2 font-semibold md:w-36">{t('orders.columns.date')}</th>
+                                        <th className="px-3 py-2 text-right font-semibold md:w-32">{t('orders.columns.amount')}</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-border">
+                                <tbody>
                                     {data.orders.length === 0 ? (
                                         <tr>
-                                            <td colSpan={5} className="py-6 text-sm text-ink-muted">
+                                            <td colSpan={4} className="px-3 py-6 text-sm text-ink-muted">
                                                 {t('orders.empty')}
                                             </td>
                                         </tr>
                                     ) : (
                                         visibleOrders.map((order) => (
-                                            <tr key={order.id}>
-                                                <td className="py-3 pr-4 font-medium text-ink">
-                                                    {t(`orders.kind.${order.kind}`)}
-                                                    <p className="mt-0.5 max-w-36 truncate text-xs font-normal text-ink-faint">{order.id}</p>
+                                            <tr key={order.id} className="align-top odd:bg-card/40" title={order.id}>
+                                                <td className="px-3 py-2.5">
+                                                    <p className="font-medium text-ink">{t(`orders.kind.${order.kind}`)}</p>
+                                                    <p className="mt-0.5 truncate text-xs text-ink-muted">{orderCoverageLabel(order)}</p>
                                                 </td>
-                                                <td className="px-4 py-3">
-                                                    <span className="rounded-full bg-surface-muted px-2 py-1 text-xs font-semibold text-ink-muted">
-                                                        {t(`orderStatus.${order.status}`)}
-                                                    </span>
+                                                <td className="px-3 py-2.5">
+                                                    <span className={orderStatusClassName(order.status)}>{t(`orderStatus.${order.status}`)}</span>
                                                 </td>
-                                                <td className="px-4 py-3 text-ink-muted">{orderCoverageLabel(order)}</td>
-                                                <td className="px-4 py-3 text-ink-muted">{formatDate(order.paidAt ?? order.createdAt)}</td>
-                                                <td className="py-3 pl-4 text-right font-semibold text-ink">
+                                                <td className="px-3 py-2.5 text-ink-muted">{formatDate(order.paidAt ?? order.createdAt)}</td>
+                                                <td className="px-3 py-2.5 text-right font-semibold text-ink">
                                                     {formatMoney(locale, order.amountMinor, order.currency)}
                                                     {order.addonAmountMinor !== null && (
                                                         <span className="block text-[10px] font-normal text-ink-muted">
@@ -564,140 +513,118 @@ export default function EventPlanSettingsPage() {
                                 {t('orders.showAll', { count: hiddenOrderCount })}
                             </button>
                         )}
-                    </div>
+                    </section>
                 </section>
 
                 <aside className="space-y-6 lg:min-w-0">
-                    <section>
-                        <h2 className="text-sm font-bold text-ink">{t('subscription.title')}</h2>
-                        <dl className="mt-3 divide-y divide-border border-y border-border text-sm">
-                            <div className="flex justify-between gap-4 py-3">
-                                <dt className="text-ink-muted">{t('subscription.status')}</dt>
-                                <dd className="text-right font-semibold text-ink">
-                                    {subscription
-                                        ? subscription.cancelAtPeriodEnd
-                                            ? t('subscription.notRenewing')
-                                            : t(`subscriptionStatus.${subscription.status}`)
-                                        : hadSubscription
-                                          ? t('subscription.ended')
-                                          : t('subscription.none')}
+                    <section className="space-y-3">
+                        <dl className="space-y-3 rounded-lg bg-surface-muted/45 p-3 text-sm">
+                            <div>
+                                <dt className="text-xs font-semibold text-ink">{t('subscription.title')}</dt>
+                                <dd className="mt-1 flex justify-between gap-4">
+                                    <span className="text-ink-muted">{t('subscription.status')}</span>
+                                    <span className="text-right font-semibold text-ink">
+                                        {subscriptionIsLive
+                                            ? subscriptionWillNotRenew
+                                                ? t('subscription.notRenewing')
+                                                : subscription?.status === 'PAST_DUE'
+                                                  ? t('subscriptionStatus.PAST_DUE')
+                                                  : t('subscriptionStatus.ACTIVE')
+                                            : subscription
+                                              ? t(`subscriptionStatus.${subscription.status}`)
+                                              : hadSubscription
+                                                ? t('subscription.ended')
+                                                : t('subscription.none')}
+                                    </span>
                                 </dd>
+                                {subscriptionPeriodEnd && subscriptionIsLive && (
+                                    <dd className="mt-1 flex justify-between gap-4 text-xs">
+                                        <span className="text-ink-muted">
+                                            {subscriptionWillNotRenew ? t('subscription.liveUntil') : t('subscription.currentPeriodEnd')}
+                                        </span>
+                                        <span className="text-right font-medium text-ink">{formatDate(subscriptionPeriodEnd)}</span>
+                                    </dd>
+                                )}
                             </div>
-                            <div className="flex justify-between gap-4 py-3">
-                                <dt className="text-ink-muted">
-                                    {subscription?.cancelAtPeriodEnd ? t('subscription.liveUntil') : t('subscription.currentPeriodEnd')}
-                                </dt>
-                                <dd className="text-right font-semibold text-ink">{formatDate(subscription?.currentPeriodEnd ?? null)}</dd>
+                            <div>
+                                <dt className="text-xs font-semibold text-ink">{t('activation.title')}</dt>
+                                <dd className="mt-1 flex justify-between gap-4">
+                                    <span className="text-ink-muted">{t('activation.amount')}</span>
+                                    <span className="text-right font-semibold text-ink">
+                                        {insights.activationOrder
+                                            ? formatMoney(locale, insights.activationOrder.amountMinor, insights.activationOrder.currency)
+                                            : t('emptyDate')}
+                                    </span>
+                                </dd>
+                                <dd className="mt-1 flex justify-between gap-4 text-xs">
+                                    <span className="text-ink-muted">{t('activation.paidAt')}</span>
+                                    <span className="text-right font-medium text-ink">{formatDate(insights.activationOrder?.paidAt ?? null)}</span>
+                                </dd>
                             </div>
                         </dl>
 
                         {/* ACTIVE alone no longer means "renewing" - split the copy on the
                             flag, or a cancelled subscription reads as healthy. */}
-                        {subscription && (
-                            <p className="mt-3 text-xs leading-relaxed text-ink-muted">
-                                {subscription.cancelAtPeriodEnd
-                                    ? t('subscription.willNotRenew', { date: formatDate(subscription.currentPeriodEnd) })
-                                    : subscription.status === 'PAST_DUE'
+                        {subscriptionIsLive && (
+                            <p className="mt-2 text-xs leading-relaxed text-ink-muted">
+                                {subscriptionWillNotRenew
+                                    ? t('subscription.willNotRenew', { date: formatDate(subscriptionPeriodEnd) })
+                                    : subscription?.status === 'PAST_DUE'
                                       ? t('subscription.pastDue')
-                                      : t('subscription.renewsOn', { date: formatDate(subscription.currentPeriodEnd) })}
+                                      : t('subscription.renewsOn', { date: formatDate(subscriptionPeriodEnd) })}
                             </p>
                         )}
 
-                        {subscription && !subscription.cancelAtPeriodEnd && (
-                            <div className="mt-3">
-                                {confirmingCancel ? (
-                                    <div className="rounded-lg bg-surface-muted p-3">
-                                        <p className="text-xs leading-relaxed text-ink">
-                                            {t('subscription.cancelConfirm', { date: formatDate(subscription.currentPeriodEnd) })}
-                                        </p>
-                                        {cancelError && <p className="mt-2 text-xs text-rose-600">{cancelError}</p>}
-                                        <div className="mt-2 flex flex-wrap gap-2">
-                                            <button
-                                                type="button"
-                                                onClick={confirmCancelSubscription}
-                                                disabled={cancelSubscription.isPending}
-                                                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-ink px-4 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
-                                            >
-                                                {cancelSubscription.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                                                {t('subscription.cancelConfirmYes')}
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={dismissCancelConfirmation}
-                                                className="inline-flex min-h-11 items-center justify-center rounded-full px-4 text-xs font-semibold text-ink-muted"
-                                            >
-                                                {t('subscription.cancelConfirmNo')}
-                                            </button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <button
-                                        type="button"
-                                        onClick={askCancelConfirmation}
-                                        className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-border px-3 py-2 text-xs font-semibold text-ink sm:w-auto"
-                                    >
-                                        {t('subscription.cancel')}
-                                    </button>
-                                )}
+                        {canCancelSubscription && (
+                            <div className="mt-2">
+                                <button
+                                    type="button"
+                                    onClick={askCancelConfirmation}
+                                    className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-surface-muted/70 px-3 py-2 text-xs font-semibold text-ink sm:w-auto"
+                                >
+                                    {t('subscription.cancel')}
+                                </button>
                             </div>
                         )}
 
-                        {subscription?.cancelAtPeriodEnd && (
-                            <p className="mt-3 text-xs leading-relaxed text-ink-muted">{t('subscription.noResume')}</p>
-                        )}
-                        {!subscription && hasRenewalPath && (
-                            <p className="mt-3 text-xs leading-relaxed text-ink-muted">{t('subscription.renewalHint')}</p>
+                        {subscriptionWillNotRenew && <p className="mt-2 text-xs leading-relaxed text-ink-muted">{t('subscription.noResume')}</p>}
+                        {canStartSubscription && (
+                            <div className="mt-2 space-y-3">
+                                <p className="text-xs leading-relaxed text-ink-muted">{t('subscription.renewalHint')}</p>
+                                <Link
+                                    href={routes.events.checkoutReview(eventId, 'renewal')}
+                                    className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-4 text-xs font-semibold text-white sm:w-auto"
+                                >
+                                    {t('actions.reviewRenewal')}
+                                </Link>
+                            </div>
                         )}
                     </section>
 
-                    <section>
-                        <h2 className="text-sm font-bold text-ink">{t('activation.title')}</h2>
-                        <dl className="mt-3 divide-y divide-border border-y border-border text-sm">
-                            <div className="flex justify-between gap-4 py-3">
-                                <dt className="text-ink-muted">{t('activation.order')}</dt>
-                                <dd className="max-w-36 truncate text-right font-semibold text-ink">
-                                    {insights.activationOrder?.id ?? t('emptyDate')}
-                                </dd>
-                            </div>
-                            <div className="flex justify-between gap-4 py-3">
-                                <dt className="text-ink-muted">{t('activation.paidAt')}</dt>
-                                <dd className="text-right font-semibold text-ink">{formatDate(insights.activationOrder?.paidAt ?? null)}</dd>
-                            </div>
-                            <div className="flex justify-between gap-4 py-3">
-                                <dt className="text-ink-muted">{t('activation.amount')}</dt>
-                                <dd className="text-right font-semibold text-ink">
-                                    {insights.activationOrder
-                                        ? formatMoney(locale, insights.activationOrder.amountMinor, insights.activationOrder.currency)
-                                        : t('emptyDate')}
-                                </dd>
-                            </div>
-                        </dl>
-                    </section>
-
-                    <section>
+                    <section className="space-y-3">
                         <h2 className="text-sm font-bold text-ink">{t('refund.title')}</h2>
-                        <div className="mt-3 border-y border-border py-3 text-sm">
+                        <div className="rounded-lg bg-surface-muted/45 p-3 text-sm">
                             {refundEligibility.isLoading || refundHistory.isLoading ? (
                                 <p className="text-ink-muted">{t('refund.loading')}</p>
                             ) : refundRequest ? (
-                                <div>
-                                    <p className="font-semibold text-ink">
-                                        {t('refund.requested', { status: t(`refundStatus.${refundRequest.status}`) })}
-                                    </p>
-                                    <p className="mt-1 text-xs text-ink-muted">
-                                        {refundRequest.amountMinor !== null && refundRequest.currency
-                                            ? t('refund.requestedAmount', {
-                                                  amount: formatMoney(locale, refundRequest.amountMinor, refundRequest.currency),
-                                              })
-                                            : t('refund.requestedNoAmount')}
-                                    </p>
+                                <div className="space-y-2">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <p className="font-semibold text-ink">
+                                            {refundRequest.amountMinor !== null && refundRequest.currency
+                                                ? formatMoney(locale, refundRequest.amountMinor, refundRequest.currency)
+                                                : t('refund.requestedNoAmount')}
+                                        </p>
+                                        <span className="rounded-full bg-background px-2 py-0.5 text-[11px] font-semibold text-ink-muted">
+                                            {t(`refundStatus.${refundRequest.status}`)}
+                                        </span>
+                                    </div>
                                     {refundRequest.decisionNote && (
-                                        <p className="mt-2 text-xs leading-relaxed text-ink-muted">{refundRequest.decisionNote}</p>
+                                        <p className="text-xs leading-relaxed text-ink-muted">{refundRequest.decisionNote}</p>
                                     )}
                                     {/* Approved but no money moved yet: say so rather than let the
                                         host assume the payment is already back. */}
                                     {refundRequest.status === 'APPROVED' && !refundRequest.providerRefunded && (
-                                        <p className="mt-2 text-xs leading-relaxed text-amber-700">{t('refund.notRefundedYet')}</p>
+                                        <p className="text-xs leading-relaxed text-amber-700">{t('refund.notRefundedYet')}</p>
                                     )}
                                 </div>
                             ) : refundEligibility.data?.hasPendingRequest ? (
@@ -712,8 +639,8 @@ export default function EventPlanSettingsPage() {
                                         <textarea
                                             value={refundReason}
                                             onChange={handleRefundReasonChange}
-                                            rows={3}
-                                            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-ink outline-none transition focus:border-primary/30 focus:ring-2 focus:ring-primary/15"
+                                            rows={2}
+                                            className="mt-1 w-full rounded-lg bg-background px-3 py-2 text-sm text-ink outline-none transition focus:ring-2 focus:ring-primary/15"
                                             placeholder={t('refund.reasonPlaceholder')}
                                         />
                                     </label>
@@ -743,8 +670,8 @@ export default function EventPlanSettingsPage() {
                                     ) : (
                                         <button
                                             type="submit"
-                                            disabled={requestRefund.isPending || !refundReason.trim()}
-                                            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-border px-3 py-2 text-xs font-semibold text-ink disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+                                            disabled={requestRefund.isPending}
+                                            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-background px-3 py-2 text-xs font-semibold text-ink disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
                                         >
                                             {requestRefund.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                                             {requestRefund.isPending ? t('refund.submitting') : t('refund.submit')}
@@ -767,6 +694,21 @@ export default function EventPlanSettingsPage() {
                     </section>
                 </aside>
             </div>
+            <ConfirmActionModal
+                open={confirmingCancel}
+                title={t('subscription.cancelConfirmTitle')}
+                body={
+                    <div className="space-y-2">
+                        <p>{t('subscription.cancelConfirmBody', { date: formatDate(subscriptionPeriodEnd) })}</p>
+                        {cancelError && <p className="text-xs text-rose-600">{cancelError}</p>}
+                    </div>
+                }
+                confirmLabel={t('subscription.cancelConfirmYes')}
+                cancelLabel={t('subscription.cancelConfirmNo')}
+                onClose={dismissCancelConfirmation}
+                onConfirm={confirmCancelSubscription}
+                isConfirming={cancelSubscription.isPending}
+            />
         </main>
     );
 }

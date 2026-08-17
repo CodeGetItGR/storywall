@@ -18,12 +18,14 @@ export function AdminField({
     className,
     required,
     optional,
+    hint,
 }: {
     label: string;
     children: ReactNode;
     className?: string;
     required?: boolean;
     optional?: boolean;
+    hint?: string;
 }) {
     return (
         <FormFieldLabel
@@ -33,6 +35,7 @@ export function AdminField({
             indicator={required ? 'required' : optional ? 'optional' : undefined}
         >
             {children}
+            {hint && <span className="text-[11px] leading-4 text-ink-faint">{hint}</span>}
         </FormFieldLabel>
     );
 }

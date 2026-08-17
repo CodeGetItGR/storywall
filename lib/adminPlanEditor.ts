@@ -1,4 +1,4 @@
-import { priceInputToMinor, storageInputToBytes } from '@/lib/adminPlanForm';
+import { localInputToInstant, priceInputToMinor, storageInputToBytes } from '@/lib/adminPlanForm';
 import { checked, emptyToNull, numberOrNull } from '@/lib/adminUtils';
 import type { BillingPeriod, PlanTierPatchDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { formatLimitValue } from '@/lib/planTiers';
@@ -29,8 +29,8 @@ export function planPatchFromFormData(plan: PlanTierResponseDto, formData: FormD
         includedMonths: plan.scope === 'EVENT' ? numberOrNull(formData.get('includedMonths')) : null,
         discountPercent: numberOrNull(formData.get('discountPercent')),
         discountLabel: emptyToNull(formData.get('discountLabel')),
-        discountStartsAt: emptyToNull(formData.get('discountStartsAt')),
-        discountEndsAt: emptyToNull(formData.get('discountEndsAt')),
+        discountStartsAt: localInputToInstant(formData.get('discountStartsAt')),
+        discountEndsAt: localInputToInstant(formData.get('discountEndsAt')),
     };
 }
 
@@ -86,6 +86,16 @@ export function planChangeSummary(plan: PlanTierResponseDto, patch: PlanTierPatc
             textLabel(patch.includedMonths === null ? null : String(patch.includedMonths))
         );
     }
+
+    // A promotion is money: a change here has to be visible in the confirmation,
+    // not applied quietly because the field lives further down the form.
+    const percentLabel = (value: number | null) => (value === null ? none : `${value}%`);
+    const dateLabel = (value: string | null | undefined) => (value ? new Date(value).toLocaleString() : none);
+
+    add(t('fields.discountPercent'), percentLabel(plan.discountPercent), percentLabel(patch.discountPercent ?? null));
+    add(t('fields.discountLabel'), textLabel(plan.discountLabel), textLabel(patch.discountLabel));
+    add(t('fields.discountStartsAt'), dateLabel(plan.discountStartsAt), dateLabel(patch.discountStartsAt));
+    add(t('fields.discountEndsAt'), dateLabel(plan.discountEndsAt), dateLabel(patch.discountEndsAt));
 
     add(t('fields.isAssignable'), booleanLabel(plan.isAssignable), booleanLabel(Boolean(patch.isAssignable)));
     add(t('fields.isPublic'), booleanLabel(plan.isPublic), booleanLabel(Boolean(patch.isPublic)));

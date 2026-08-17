@@ -1,11 +1,13 @@
-import { Clock, Loader2, Ticket, Users } from 'lucide-react';
+import { Clock, Ticket, Users } from 'lucide-react';
+import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { ElementType, useState } from 'react';
 
+import { GiftAccountSetup } from '@/components/manage/GiftAccountSetup';
 import Section from '@/components/manage/Section';
 import { UsagePanel } from '@/components/plan/UsagePanel';
-import { useApiErrorMessage, useRetryAfterCountdown } from '@/hooks/useApiErrorMessage';
-import { useCheckout, useEventBilling } from '@/hooks/useBilling';
+import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useAddEventAddon, useEventBilling } from '@/hooks/useBilling';
 import { useUpdateEvent } from '@/hooks/useEvent';
 import type {
     EventModuleResponseDto,
@@ -14,7 +16,7 @@ import type {
     PlanTierResponseDto,
     PlatformModuleResponseDto,
 } from '@/lib/api/types';
-import { discountedAmountMinor, formatMoney, navigateToCheckout } from '@/lib/billing';
+import { discountedAmountMinor, formatMoney } from '@/lib/billing';
 import { formatBytes } from '@/lib/format';
 import { findNextPlan, findPlanByCode } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
@@ -64,12 +66,11 @@ export default function OverviewTab({
 }) {
     const t = useTranslations('ManagePage');
     const locale = useLocale();
-    const checkout = useCheckout(eventId);
     const billing = useEventBilling(eventId, eventStatus === 'DRAFT');
     const updateEvent = useUpdateEvent(eventId);
+    const addAddon = useAddEventAddon(eventId);
     const [checkoutError, setCheckoutError] = useState<string | null>(null);
     const toErrorMessage = useApiErrorMessage();
-    const checkoutRetryIn = useRetryAfterCountdown(checkout.error);
     const canPay = eventStatus === 'DRAFT' && Boolean(endAt);
     const currentPlan = eventUsage ? findPlanByCode(planTiers, 'EVENT', eventUsage.planTier) : undefined;
     const nextPlan = eventUsage ? findNextPlan(planTiers, 'EVENT', eventUsage.planTier) : undefined;
@@ -80,12 +81,24 @@ export default function OverviewTab({
             (service.planTierIds.length === 0 || (currentPlan ? service.planTierIds.includes(currentPlan.id) : false))
     );
     const originalsActive = billing.data?.addons.some((addon) => addon.code === 'ORIGINALS') ?? false;
+    const activeAddonCodes = new Set(billing.data?.addons.map((addon) => addon.code) ?? []);
+    const moduleUnlocks = paidServices.filter(
+        (service) =>
+            service.kind === 'MODULE_UNLOCK' &&
+            service.grantsModuleKey &&
+            !currentPlan?.moduleKeys.includes(service.grantsModuleKey) &&
+            (service.planTierIds.length === 0 || (currentPlan ? service.planTierIds.includes(currentPlan.id) : false))
+    );
     const activationAddonAmount =
         originalsService && currentPlan?.includedMonths ? originalsService.priceAmountMinor * currentPlan.includedMonths : 0;
     const activationTotal =
         currentPlan?.priceAmountMinor === null || currentPlan?.priceAmountMinor === undefined
             ? null
-            : discountedAmountMinor(currentPlan.priceAmountMinor, currentPlan) + (originalsActive ? activationAddonAmount : 0);
+            : discountedAmountMinor(currentPlan.priceAmountMinor, currentPlan) +
+              (originalsActive ? activationAddonAmount : 0) +
+              moduleUnlocks
+                  .filter((service) => activeAddonCodes.has(service.code))
+                  .reduce((sum, service) => sum + service.priceAmountMinor * (currentPlan.includedMonths ?? 1), 0);
 
     async function activateOriginals() {
         setCheckoutError(null);
@@ -96,19 +109,24 @@ export default function OverviewTab({
             setCheckoutError(toErrorMessage(error));
         }
     }
-    async function startCheckout() {
+    async function activateModule(code: string) {
         setCheckoutError(null);
         try {
-            const result = await checkout.mutateAsync();
-            navigateToCheckout(eventId, result);
+            await addAddon.mutateAsync({ paidServiceCode: code });
+            await billing.refetch();
         } catch (error) {
             setCheckoutError(toErrorMessage(error));
         }
+    }
+    function handleModuleActivation(event: React.MouseEvent<HTMLButtonElement>) {
+        const code = event.currentTarget.dataset.serviceCode;
+        if (code) void activateModule(code);
     }
     const rsvpTotal = rsvpBreakdown.reduce((sum, r) => sum + r.count, 0) || 1;
     const globallyEnabledModules = modules.filter((module_) => module_.isEnabled);
     const enabledModuleKeys = new Set(globallyEnabledModules.map((module_) => module_.moduleKey));
     const availableModuleKeys = new Set(eventModules.filter((module) => module.isAvailable).map((module) => module.moduleKey));
+    const wishlistAvailable = availableModuleKeys.has('wishlist') || moduleUnlocks.some((service) => activeAddonCodes.has(service.code));
     const includedModuleKeys =
         currentPlan?.moduleKeys.filter((moduleKey) => enabledModuleKeys.has(moduleKey) && availableModuleKeys.has(moduleKey)) ?? [];
 
@@ -140,25 +158,61 @@ export default function OverviewTab({
                             </div>
                         </div>
                     )}
+                    {moduleUnlocks.length > 0 && (
+                        <div className="mt-3 border-t border-border/70 pt-3">
+                            <p className="text-xs font-semibold text-ink">{t('draftModules.title')}</p>
+                            <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('draftModules.body')}</p>
+                            <div className="mt-2 divide-y divide-border/70">
+                                {moduleUnlocks.map((service) => {
+                                    const module_ = modules.find((item) => item.moduleKey === service.grantsModuleKey);
+                                    const active = activeAddonCodes.has(service.code);
+                                    return (
+                                        <div key={service.id} className="flex items-center justify-between gap-3 py-2.5">
+                                            <div className="min-w-0">
+                                                <p className="truncate text-xs font-semibold text-ink">{module_?.name ?? service.name}</p>
+                                                <p className="text-xs text-ink-muted">
+                                                    {formatMoney(locale, service.priceAmountMinor, service.priceCurrency)}{' '}
+                                                    {t('draftModules.perMonth')}
+                                                </p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                data-service-code={service.code}
+                                                onClick={handleModuleActivation}
+                                                disabled={active || addAddon.isPending}
+                                                className="shrink-0 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-ink disabled:bg-surface-muted disabled:text-ink-muted"
+                                            >
+                                                {active ? t('draftModules.added') : t('draftModules.add')}
+                                            </button>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+                    {wishlistAvailable && <GiftAccountSetup eventId={eventId} />}
                     {activationTotal !== null && currentPlan?.priceCurrency && (
                         <p className="mt-3 text-xs font-semibold text-ink">
                             {t('draft.activationTotal', { total: formatMoney(locale, activationTotal, currentPlan.priceCurrency) })}
                         </p>
                     )}
                     {checkoutError && <p className="mt-2 text-xs text-rose-600">{checkoutError}</p>}
-                    <button
-                        type="button"
-                        onClick={startCheckout}
-                        disabled={!canPay || checkout.isPending || checkoutRetryIn > 0}
-                        className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
-                    >
-                        {checkout.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                        {checkoutRetryIn > 0
-                            ? t('draft.retryIn', { seconds: checkoutRetryIn })
-                            : endAt
-                              ? t('draft.payAndPublish')
-                              : t('draft.addEndDate')}
-                    </button>
+                    {canPay ? (
+                        <Link
+                            href={routes.events.checkoutReview(eventId, 'activation')}
+                            className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-4 text-sm font-semibold text-white sm:w-auto"
+                        >
+                            {t('draft.reviewAndPublish')}
+                        </Link>
+                    ) : (
+                        <button
+                            type="button"
+                            disabled
+                            className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-4 text-sm font-semibold text-white opacity-40 sm:w-auto"
+                        >
+                            {t('draft.addEndDate')}
+                        </button>
+                    )}
                 </div>
             )}
             {eventStatus !== 'DRAFT' && (

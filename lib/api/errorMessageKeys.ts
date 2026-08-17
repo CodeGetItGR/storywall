@@ -15,6 +15,7 @@ export type ApiErrorMessageKey =
     | 'alreadyLinked'
     | 'authenticationRequired'
     | 'checkoutSessionUnresolved'
+    | 'coHostInviteNotYours'
     | 'conflict'
     | 'duplicateMembership'
     | 'duplicateReaction'
@@ -27,6 +28,7 @@ export type ApiErrorMessageKey =
     | 'forbidden'
     | 'internalError'
     | 'invalidCredentials'
+    | 'invalidIban'
     | 'invalidRefreshToken'
     | 'invitationExhausted'
     | 'invitationExpired'
@@ -80,6 +82,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.ACTIVE_EVENT_LIMIT_EXCEEDED]: 'activeEventLimit',
     [ERROR_CODES.ALREADY_LINKED]: 'alreadyLinked',
     [ERROR_CODES.CHECKOUT_SESSION_UNRESOLVED]: 'checkoutSessionUnresolved',
+    [ERROR_CODES.CO_HOST_INVITE_NOT_YOURS]: 'coHostInviteNotYours',
     [ERROR_CODES.CONFLICT]: 'conflict',
     [ERROR_CODES.DUPLICATE_MEMBERSHIP]: 'duplicateMembership',
     [ERROR_CODES.DUPLICATE_REACTION]: 'duplicateReaction',
@@ -94,6 +97,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.FORBIDDEN]: 'forbidden',
     [ERROR_CODES.INTERNAL_ERROR]: 'internalError',
     [ERROR_CODES.INVALID_CREDENTIALS]: 'invalidCredentials',
+    [ERROR_CODES.INVALID_IBAN]: 'invalidIban',
     [ERROR_CODES.INVALID_REFRESH_TOKEN]: 'invalidRefreshToken',
     [ERROR_CODES.INVITATION_EXHAUSTED]: 'invitationExhausted',
     [ERROR_CODES.INVITATION_EXPIRED]: 'invitationExpired',

@@ -1,5 +1,7 @@
 type RouteQueryValue = string | number | boolean | null | undefined;
 
+export type CheckoutIntent = 'activation' | 'renewal' | 'upgrade' | 'storage';
+
 function withQuery(pathname: string, params: Record<string, RouteQueryValue>): string {
     const searchParams = new URLSearchParams();
 
@@ -21,6 +23,9 @@ export const routes = {
     events: {
         new: '/events/new',
         settingsPlan: (eventId: string) => `/events/${eventId}/settings/plan`,
+        settingsAddons: (eventId: string) => `/events/${eventId}/settings/addons`,
+        checkoutReview: (eventId: string, intent: CheckoutIntent, code?: string | null) =>
+            withQuery(`/events/${eventId}/checkout/review`, { intent, code }),
         checkoutSuccess: (eventId: string, orderId?: string | null) => withQuery(`/events/${eventId}/checkout/success`, { orderId }),
         checkoutCancelled: (eventId: string) => `/events/${eventId}/checkout/cancelled`,
     },

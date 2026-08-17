@@ -5,6 +5,7 @@ import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
 import type {
+    CoHostInvitationRequestDto,
     EventInvitationPatchDto,
     EventInvitationPreviewDto,
     EventInvitationRequestDto,
@@ -61,6 +62,15 @@ export function useCreateEventInvitation() {
                 queryKey: eventInvitationKeys.list(invitation.eventId),
             });
         },
+    });
+}
+
+export function useCreateCoHostInvitation(eventId: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (input: CoHostInvitationRequestDto) => api.post<EventInvitationResponseDto>(endpoints.events.hostInvitations(eventId), input),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: eventInvitationKeys.list(eventId) }),
     });
 }
 

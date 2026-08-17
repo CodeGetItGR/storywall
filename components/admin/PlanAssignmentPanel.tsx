@@ -1,18 +1,18 @@
 'use client';
 
-import { ChevronDown, Layers3, Loader2 } from 'lucide-react';
+import { Layers3, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import React, { useState } from 'react';
+import React, { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
+import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { UsagePanel } from '@/components/plan/UsagePanel';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useAdminPlanTiers, useAssignEventPlanTier } from '@/hooks/useAdmin';
-import { adminErrorMessageKey } from '@/lib/adminUtils';
+import { adminErrorMessageKey, isUuid } from '@/lib/adminUtils';
 import type { EventUsageResponseDto } from '@/lib/api/types';
 import { formatBytes } from '@/lib/format';
 import { scopedPlans } from '@/lib/planTiers';
-import { cn } from '@/lib/utils';
 
 function usageItems(usage: EventUsageResponseDto) {
     return [
@@ -38,104 +38,133 @@ function usageItems(usage: EventUsageResponseDto) {
 
 export function PlanAssignmentPanel() {
     const t = useTranslations('AdminPage');
+    const { focus } = useAdminNavigation();
     const plansQuery = useAdminPlanTiers(undefined, true);
     const assignEvent = useAssignEventPlanTier();
-    const [isEventFormExpanded, setIsEventFormExpanded] = useState(false);
+    const [eventId, setEventId] = useState('');
+    const [eventTitle, setEventTitle] = useState<string | null>(null);
+    const [pickedPlanCode, setPlanTierCode] = useState('');
     const [eventUsage, setEventUsage] = useState<EventUsageResponseDto | null>(null);
-    const [pendingEventAssignment, setPendingEventAssignment] = useState<{ eventId: string; planTierCode: string } | null>(null);
-    const eventPlans = scopedPlans(plansQuery.data ?? [], 'EVENT').filter((plan) => plan.isAssignable);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [appliedFocus, setAppliedFocus] = useState(focus);
+    const eventPlans = useMemo(() => scopedPlans(plansQuery.data ?? [], 'EVENT').filter((plan) => plan.isAssignable), [plansQuery.data]);
 
-    function handleToggleEventForm() {
-        setIsEventFormExpanded((current) => !current);
+    // Adjusting during render rather than in an effect: the prefilled id has to be
+    // on screen the moment the panel opens, not one paint later.
+    if (focus !== appliedFocus) {
+        setAppliedFocus(focus);
+        if (focus?.eventId) {
+            setEventId(focus.eventId);
+            setEventTitle(focus.eventTitle ?? null);
+            setEventUsage(null);
+        }
     }
 
-    async function handleAssignEvent(event: React.SubmitEvent<HTMLFormElement>) {
+    // A select with nothing chosen submits its first option silently, so what the
+    // form acts on is derived from the list rather than left empty.
+    const planTierCode = pickedPlanCode || eventPlans[0]?.code || '';
+
+    const handleEventIdChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+        setEventId(event.target.value);
+        setEventTitle(null);
+        setEventUsage(null);
+    }, []);
+
+    const handlePlanChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => setPlanTierCode(event.target.value), []);
+    const closeConfirm = useCallback(() => setConfirmOpen(false), []);
+
+    const trimmedId = eventId.trim();
+    const idIsValid = isUuid(trimmedId);
+    const showIdError = trimmedId.length > 0 && !idIsValid;
+    const selectedPlan = eventPlans.find((plan) => plan.code === planTierCode) ?? null;
+    const canSubmit = idIsValid && Boolean(planTierCode);
+
+    function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
-        const formData = new FormData(event.currentTarget);
-        const eventId = String(formData.get('eventId') ?? '').trim();
-        const planTierCode = String(formData.get('planTierCode') ?? '').trim();
-        if (!eventId || !planTierCode) return;
-        setPendingEventAssignment({ eventId, planTierCode });
+        if (!canSubmit) return;
+        setConfirmOpen(true);
     }
 
-    async function handleConfirmAssignEvent() {
-        if (!pendingEventAssignment) return;
-        const usage = await assignEvent.mutateAsync({
-            eventId: pendingEventAssignment.eventId,
-            input: { planTierCode: pendingEventAssignment.planTierCode },
-        });
+    const confirmAssign = useCallback(async () => {
+        const usage = await assignEvent.mutateAsync({ eventId: trimmedId, input: { planTierCode } });
         setEventUsage(usage);
-        setPendingEventAssignment(null);
-    }
-
-    function handleCloseAssignEventConfirm() {
-        setPendingEventAssignment(null);
-    }
+        setConfirmOpen(false);
+    }, [assignEvent, planTierCode, trimmedId]);
 
     return (
-        <section className="grid gap-3">
-            <form onSubmit={handleAssignEvent} className="border-b border-border pb-4">
-                <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                        <h2 className="text-base font-semibold text-ink">{t('assignments.eventTitle')}</h2>
-                        <p className="mt-1 text-sm text-ink-muted">{t('assignments.eventSubtitle')}</p>
-                    </div>
+        <section className="space-y-4">
+            <div className="border-b border-border pb-4">
+                <h2 className="text-xl font-semibold tracking-tight text-ink">{t('assignments.eventTitle')}</h2>
+                <p className="mt-1 max-w-2xl text-sm leading-6 text-ink-muted">{t('assignments.eventSubtitle')}</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="border-b border-border pb-5">
+                <div className="grid max-w-3xl gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(12rem,0.8fr)_auto] sm:items-end">
+                    <AdminField label={t('assignments.eventId')} required>
+                        <input
+                            value={eventId}
+                            onChange={handleEventIdChange}
+                            required
+                            spellCheck={false}
+                            aria-invalid={showIdError}
+                            placeholder={t('lifecycle.eventIdPlaceholder')}
+                            className={adminInputClass('font-mono')}
+                        />
+                    </AdminField>
+                    <AdminField label={t('fields.plan')} required>
+                        <select
+                            value={planTierCode}
+                            onChange={handlePlanChange}
+                            required
+                            disabled={eventPlans.length === 0}
+                            className={adminInputClass()}
+                        >
+                            {eventPlans.map((plan) => (
+                                <option key={plan.id} value={plan.code}>
+                                    {plan.name}
+                                </option>
+                            ))}
+                        </select>
+                    </AdminField>
                     <button
-                        type="button"
-                        onClick={handleToggleEventForm}
-                        aria-expanded={isEventFormExpanded}
-                        className="inline-flex shrink-0 items-center gap-1 rounded-full bg-ink px-3 py-1.5 text-xs font-semibold text-white"
+                        type="submit"
+                        disabled={assignEvent.isPending || !canSubmit}
+                        className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-ink px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-40"
                     >
-                        <ChevronDown className={cn('h-3.5 w-3.5 transition-transform', isEventFormExpanded && 'rotate-180')} />
-                        {isEventFormExpanded ? t('collapse') : t('assignments.openEvent')}
+                        {assignEvent.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Layers3 className="h-4 w-4" />}
+                        {t('assignments.assignEvent')}
                     </button>
                 </div>
-                {isEventFormExpanded && (
-                    <div className="grid gap-3 border-t border-border pt-4 sm:grid-cols-[minmax(0,1fr)_minmax(11rem,0.85fr)_auto] sm:items-end">
-                        <AdminField label={t('assignments.eventId')} required>
-                            <input name="eventId" required className={adminInputClass()} />
-                        </AdminField>
-                        <AdminField label={t('fields.plan')} required>
-                            <select name="planTierCode" required className={adminInputClass()}>
-                                {eventPlans.map((plan) => (
-                                    <option key={plan.id} value={plan.code}>
-                                        {plan.name} ({plan.code})
-                                    </option>
-                                ))}
-                            </select>
-                        </AdminField>
-                        <button
-                            type="submit"
-                            disabled={assignEvent.isPending}
-                            className="inline-flex min-h-9 items-center justify-center gap-2 rounded-full bg-ink px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-50"
-                        >
-                            {assignEvent.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Layers3 className="h-4 w-4" />}
-                            {t('assignments.assignEvent')}
-                        </button>
-                        {assignEvent.error && (
-                            <p className="text-sm text-rose-600 sm:col-span-3">{t(`errors.${adminErrorMessageKey(assignEvent.error)}`)}</p>
-                        )}
-                    </div>
+
+                {eventTitle ? (
+                    <p className="mt-2 text-sm font-semibold text-ink">{t('lifecycle.resolvedEvent', { title: eventTitle })}</p>
+                ) : (
+                    <p className="mt-2 max-w-2xl text-xs leading-5 text-ink-muted">{t('lifecycle.idSourceHint')}</p>
                 )}
-                {eventUsage && (
-                    <UsagePanel
-                        title={t('assignments.freshEventUsage')}
-                        planName={eventUsage.planTier}
-                        items={usageItems(eventUsage)}
-                        className="mt-4"
-                    />
-                )}
+                {showIdError && <p className="mt-1 text-xs font-semibold text-rose-600">{t('lifecycle.idInvalid')}</p>}
+                {!plansQuery.isLoading && eventPlans.length === 0 && <p className="mt-2 text-sm text-amber-700">{t('assignments.noAssignablePlans')}</p>}
+                {plansQuery.error && <p className="mt-2 text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(plansQuery.error)}`)}</p>}
+                {assignEvent.error && <p className="mt-2 text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(assignEvent.error)}`)}</p>}
             </form>
 
+            {eventUsage && (
+                <UsagePanel title={t('assignments.freshEventUsage')} planName={eventUsage.planTier} items={usageItems(eventUsage)} className="mt-1" />
+            )}
+
             <ConfirmActionModal
-                open={Boolean(pendingEventAssignment)}
-                onClose={handleCloseAssignEventConfirm}
-                title={pendingEventAssignment ? t('assignments.confirmEventTitle', { eventId: pendingEventAssignment.eventId }) : ''}
-                body={pendingEventAssignment ? t('assignments.confirmEventBody', { plan: pendingEventAssignment.planTierCode }) : ''}
+                open={confirmOpen}
+                onClose={closeConfirm}
+                title={t('assignments.confirmEventTitle', { event: eventTitle ?? trimmedId })}
+                body={
+                    <>
+                        <p>{t('assignments.confirmEventBody', { plan: selectedPlan?.name ?? planTierCode })}</p>
+                        <p className="mt-2 break-all font-mono text-xs text-ink-faint">{trimmedId}</p>
+                    </>
+                }
                 cancelLabel={t('cancel')}
                 confirmLabel={t('assignments.assignEvent')}
                 isConfirming={assignEvent.isPending}
-                onConfirm={handleConfirmAssignEvent}
+                onConfirm={confirmAssign}
                 tone="default"
             />
         </section>

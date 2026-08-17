@@ -31,10 +31,10 @@ export function PlanComparisonMatrix({
     const gridTemplateColumns = `12rem repeat(${plans.length}, minmax(12rem, 1fr))`;
 
     return (
-        <div className="overflow-x-auto border-y border-border">
+        <div className="overflow-x-auto rounded-lg bg-surface-muted/45 p-3">
             <div className="min-w-230">
                 <div
-                    className="grid gap-4 border-b border-border px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-ink-faint"
+                    className="grid gap-4 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint"
                     style={{ gridTemplateColumns }}
                 >
                     <div>{fieldLabel}</div>
@@ -54,9 +54,9 @@ export function PlanComparisonMatrix({
                     ))}
                 </div>
 
-                <div className="divide-y divide-border">
+                <div className="space-y-1">
                     {rows.map((row) => (
-                        <div key={row.key} className="grid gap-4 px-4 py-4" style={{ gridTemplateColumns }}>
+                        <div key={row.key} className="grid gap-4 rounded-md px-3 py-2.5 odd:bg-background/45" style={{ gridTemplateColumns }}>
                             <div className="flex min-w-0 items-start justify-between gap-3 text-sm font-semibold text-ink">
                                 <span className="min-w-0">{row.label}</span>
                                 {row.action ? <span className="shrink-0">{row.action}</span> : null}

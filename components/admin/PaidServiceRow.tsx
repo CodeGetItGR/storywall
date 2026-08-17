@@ -4,7 +4,7 @@ import { Pencil } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { type ReactNode, useCallback } from 'react';
 
-import type { PaidServiceResponseDto } from '@/lib/api/types';
+import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
 import { formatBytes } from '@/lib/format';
 
@@ -17,7 +17,24 @@ function ReadOnlyValue({ label, children }: { label: string; children: ReactNode
     );
 }
 
-export function PaidServiceRow({ service, onEdit }: { service: PaidServiceResponseDto; onEdit: (service: PaidServiceResponseDto) => void }) {
+function planLabels(service: PaidServiceResponseDto, eventPlans: PlanTierResponseDto[], allPlansLabel: string) {
+    if (service.planTierIds.length === 0) return allPlansLabel;
+
+    const plansById = new Map(eventPlans.map((plan) => [plan.id, plan]));
+    return service.planTierIds.map((id) => plansById.get(id)?.name ?? id).join(', ');
+}
+
+export function PaidServiceRow({
+    service,
+    eventPlans,
+    modules,
+    onEdit,
+}: {
+    service: PaidServiceResponseDto;
+    eventPlans: PlanTierResponseDto[];
+    modules: PlatformModuleResponseDto[];
+    onEdit: (service: PaidServiceResponseDto) => void;
+}) {
     const t = useTranslations('AdminPage.paidServices');
     const locale = useLocale();
     const archived = !service.isAssignable && !service.isPublic;
@@ -31,7 +48,6 @@ export function PaidServiceRow({ service, onEdit }: { service: PaidServiceRespon
                 <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                         <h3 className="truncate text-base font-semibold text-ink">{service.name}</h3>
-                        <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[11px] font-bold text-ink-muted">{service.code}</span>
                         {archived && (
                             <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-800">{t('archived')}</span>
                         )}
@@ -50,15 +66,15 @@ export function PaidServiceRow({ service, onEdit }: { service: PaidServiceRespon
 
             <dl className="mt-3 grid grid-cols-2 gap-x-5 gap-y-3 sm:grid-cols-3 lg:grid-cols-6">
                 <ReadOnlyValue label={t('fields.kind')}>{t(`kinds.${service.kind}`)}</ReadOnlyValue>
-                <ReadOnlyValue label={t('fields.priceAmountMinor')}>
-                    {formatMoney(locale, service.priceAmountMinor, service.priceCurrency)}
+                <ReadOnlyValue label={t('fields.price')}>{formatMoney(locale, service.priceAmountMinor, service.priceCurrency)}</ReadOnlyValue>
+                <ReadOnlyValue label={t('fields.grants')}>
+                    {service.grantsStorageBytes
+                        ? formatBytes(service.grantsStorageBytes)
+                        : service.grantsModuleKey
+                          ? (modules.find((module) => module.moduleKey === service.grantsModuleKey)?.name ?? t('notApplicable'))
+                          : t('notApplicable')}
                 </ReadOnlyValue>
-                <ReadOnlyValue label={t('fields.grantsStorageBytes')}>
-                    {service.grantsStorageBytes ? formatBytes(service.grantsStorageBytes) : t('notApplicable')}
-                </ReadOnlyValue>
-                <ReadOnlyValue label={t('fields.planTierIds')}>
-                    {service.planTierIds.length > 0 ? service.planTierIds.join(', ') : t('allPlans')}
-                </ReadOnlyValue>
+                <ReadOnlyValue label={t('fields.availablePlans')}>{planLabels(service, eventPlans, t('allPlans'))}</ReadOnlyValue>
                 <ReadOnlyValue label={t('fields.assignable')}>{service.isAssignable ? t('yes') : t('no')}</ReadOnlyValue>
                 <ReadOnlyValue label={t('fields.public')}>{service.isPublic ? t('yes') : t('no')}</ReadOnlyValue>
             </dl>

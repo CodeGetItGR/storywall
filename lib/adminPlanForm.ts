@@ -40,6 +40,49 @@ export function storageInputToBytes(amountValue: FormDataEntryValue | null, unit
     return Math.round(Number(amountText) * STORAGE_FACTORS[unit]);
 }
 
+// Promotion bounds travel as instants but are edited in the admin's own clock,
+// so the conversion happens at the form edge rather than in the request body.
+export function instantToLocalInput(value: string | null): string {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
+}
+
+export function localInputToInstant(value: FormDataEntryValue | null): string | null {
+    const text = typeof value === 'string' ? value.trim() : '';
+    if (!text) return null;
+    const date = new Date(text);
+    return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
 export function defaultCurrency(plan?: PlanTierResponseDto): string {
     return plan?.priceCurrency ?? 'EUR';
+}
+
+const MAX_CODE_LENGTH = 30;
+
+// A catalog code is an identifier, not prose, and no admin should have to invent
+// one. It is derived from the name they already typed and de-duped against the
+// codes the console has loaded, so the field can be prefilled or dropped entirely.
+export function codeFromName(name: string, takenCodes: string[] = []): string {
+    const base = name
+        .trim()
+        .toUpperCase()
+        .replace(/[^A-Z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '')
+        .slice(0, MAX_CODE_LENGTH);
+
+    if (!base) return '';
+
+    const taken = new Set(takenCodes);
+    if (!taken.has(base)) return base;
+
+    for (let suffix = 2; suffix < 1000; suffix += 1) {
+        const tail = `_${suffix}`;
+        const candidate = `${base.slice(0, MAX_CODE_LENGTH - tail.length).replace(/_+$/, '')}${tail}`;
+        if (!taken.has(candidate)) return candidate;
+    }
+
+    return `${base.slice(0, 20).replace(/_+$/, '')}_${Date.now().toString(36).toUpperCase()}`.slice(0, MAX_CODE_LENGTH);
 }

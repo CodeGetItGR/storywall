@@ -4,6 +4,7 @@ import { BookHeart, Calendar, ChevronRight, Gift, HelpCircle, Images, LayoutGrid
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import { useWishbookCount } from '@/hooks/useWishbook';
 import { routes } from '@/lib/routes';
 import { useActiveEvent } from '@/providers/EventProvider';
 
@@ -20,14 +21,14 @@ const tools = [
         icon: Gift,
         key: 'gifts',
         color: 'bg-rose-50 text-rose-500',
-        badgeCount: 3,
+        badgeCount: null,
     },
     {
         href: routes.tools.wishbook,
         icon: BookHeart,
         key: 'wishbook',
         color: 'bg-pink-50 text-pink-500',
-        badgeCount: 4,
+        badgeCount: null,
     },
     {
         href: routes.tools.schedule,
@@ -80,15 +81,18 @@ const tools = [
     },
 ] as const;
 
-const moduleBackedTools: Partial<Record<(typeof tools)[number]['key'], 'rsvp' | 'gallery' | 'playlist'>> = {
+const moduleBackedTools: Partial<Record<(typeof tools)[number]['key'], 'rsvp' | 'gallery' | 'playlist' | 'wishlist' | 'wishbook'>> = {
     rsvp: 'rsvp',
     gallery: 'gallery',
     playlist: 'playlist',
+    gifts: 'wishlist',
+    wishbook: 'wishbook',
 };
 
 export default function ToolsPage() {
     const t = useTranslations('ToolsPage');
     const activeEvent = useActiveEvent();
+    const wishbookCount = useWishbookCount(activeEvent?.id ?? null);
     const availableModules = new Set(activeEvent?.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey) ?? []);
     const visibleTools = tools.filter((tool) => {
         const moduleKey = moduleBackedTools[tool.key];
@@ -105,6 +109,7 @@ export default function ToolsPage() {
             <div className="flex flex-col gap-2">
                 {visibleTools.map((tool) => {
                     const Icon = tool.icon;
+                    const badgeCount = tool.key === 'wishbook' ? wishbookCount.data : tool.badgeCount;
                     return (
                         <Link
                             key={tool.href}
@@ -117,17 +122,25 @@ export default function ToolsPage() {
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
                                     <p className="text-sm font-semibold text-ink group-hover:text-primary transition-colors">
-                                        {t(`items.${tool.key}.label`)}
+                                        {t(tool.key === 'gifts' ? 'items.gifts.accountLabel' : `items.${tool.key}.label`)}
                                     </p>
-                                    {tool.badgeCount !== null && (
+                                    {badgeCount !== null && badgeCount !== undefined && (
                                         <span className="px-2 py-0.5 rounded-full bg-surface-muted text-ink-muted text-[11px] font-medium">
                                             {t(`items.${tool.key}.badge`, {
-                                                count: tool.badgeCount,
+                                                count: badgeCount,
                                             })}
                                         </span>
                                     )}
                                 </div>
-                                <p className="text-xs text-ink-muted mt-0.5 leading-snug">{t(`items.${tool.key}.description`)}</p>
+                                <p className="text-xs text-ink-muted mt-0.5 leading-snug">
+                                    {t(
+                                        tool.key === 'gifts'
+                                            ? 'items.gifts.accountDescription'
+                                            : tool.key === 'wishbook'
+                                              ? 'items.wishbook.currentDescription'
+                                              : `items.${tool.key}.description`
+                                    )}
+                                </p>
                             </div>
                             <ChevronRight
                                 className="w-4 h-4 text-ink-faint group-hover:text-ink-muted transition-colors shrink-0"

@@ -2,14 +2,14 @@
 
 import { Check, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import React, { useMemo, useRef } from 'react';
+import React, { type ChangeEvent, useCallback, useMemo, useRef, useState } from 'react';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminSection } from '@/components/admin/AdminSection';
 import { AdminSwitch } from '@/components/admin/AdminSwitch';
 import { Modal } from '@/components/ui/modal';
 import { useCreatePlanTier } from '@/hooks/useAdmin';
-import { priceInputToMinor, STORAGE_UNITS, storageInputToBytes } from '@/lib/adminPlanForm';
+import { codeFromName, localInputToInstant, priceInputToMinor, STORAGE_UNITS, storageInputToBytes } from '@/lib/adminPlanForm';
 import { adminErrorMessageKey, checked, emptyToNull, numberOrNull } from '@/lib/adminUtils';
 import type { BillingPeriod, PlanScope, PlanTierRequestDto, PlanTierResponseDto } from '@/lib/api/types';
 
@@ -29,7 +29,20 @@ export function PlanCreateForm({
     const t = useTranslations('AdminPage');
     const createPlan = useCreatePlanTier();
     const formRef = useRef<HTMLFormElement>(null);
+    const [name, setName] = useState('');
+    const [codeOverride, setCodeOverride] = useState<string | null>(null);
     const nextSortOrder = useMemo(() => Math.max(-1, ...plans.map((plan) => plan.sortOrder)) + 1, [plans]);
+
+    // The code is an identifier the admin should not have to invent: it follows the
+    // name until they deliberately type over it.
+    const code = codeOverride ?? codeFromName(name, plans.map((plan) => plan.code));
+
+    const handleNameChange = useCallback((event: ChangeEvent<HTMLInputElement>) => setName(event.target.value), []);
+    // Clearing the field hands the code back to the name rather than pinning it empty.
+    const handleCodeChange = useCallback(
+        (event: ChangeEvent<HTMLInputElement>) => setCodeOverride(event.target.value === '' ? null : event.target.value.toUpperCase()),
+        []
+    );
 
     async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -55,12 +68,14 @@ export function PlanCreateForm({
             includedMonths: scope === 'EVENT' ? numberOrNull(formData.get('includedMonths')) : null,
             discountPercent: numberOrNull(formData.get('discountPercent')),
             discountLabel: emptyToNull(formData.get('discountLabel')),
-            discountStartsAt: emptyToNull(formData.get('discountStartsAt')),
-            discountEndsAt: emptyToNull(formData.get('discountEndsAt')),
+            discountStartsAt: localInputToInstant(formData.get('discountStartsAt')),
+            discountEndsAt: localInputToInstant(formData.get('discountEndsAt')),
         };
 
         await createPlan.mutateAsync(input);
         formRef.current?.reset();
+        setName('');
+        setCodeOverride(null);
         onClose();
     }
 
@@ -77,21 +92,31 @@ export function PlanCreateForm({
                     </div>
 
                     <AdminSection title={t('plans.sections.identity')}>
-                        <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-6">
-                            <AdminField label={t('fields.code')} required className="col-span-2 lg:col-span-2">
+                        <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
+                            <AdminField label={t('fields.name')} required className="col-span-2">
+                                <input
+                                    required
+                                    name="name"
+                                    maxLength={100}
+                                    value={name}
+                                    onChange={handleNameChange}
+                                    className={adminInputClass()}
+                                />
+                            </AdminField>
+                            <AdminField label={t('fields.code')} required hint={t('fields.codeHint')}>
                                 <input
                                     required
                                     name="code"
                                     placeholder="ENTERPRISE"
                                     pattern="[A-Z0-9_]+"
                                     maxLength={30}
-                                    className={adminInputClass()}
+                                    value={code}
+                                    onChange={handleCodeChange}
+                                    spellCheck={false}
+                                    className={adminInputClass('font-mono')}
                                 />
                             </AdminField>
-                            <AdminField label={t('fields.name')} required className="col-span-2 lg:col-span-2">
-                                <input required name="name" maxLength={100} className={adminInputClass()} />
-                            </AdminField>
-                            <AdminField label={t('fields.sort')} required className="col-span-1 lg:col-span-1">
+                            <AdminField label={t('fields.sort')} required>
                                 <input
                                     required
                                     name="sortOrder"
@@ -102,17 +127,17 @@ export function PlanCreateForm({
                                     className={adminInputClass('max-w-24')}
                                 />
                             </AdminField>
-                            <AdminField label={t('fields.description')} optional className="col-span-2 lg:col-span-3">
+                            <AdminField label={t('fields.description')} optional className="col-span-2 md:col-span-4">
                                 <input name="description" className={adminInputClass()} />
                             </AdminField>
                         </div>
                     </AdminSection>
 
                     <AdminSection title={t('plans.sections.limits')}>
-                        <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-6">
+                        <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
                             {scope === 'EVENT' ? (
                                 <>
-                                    <div className="col-span-2 grid grid-cols-[minmax(0,1fr)_6rem] gap-2 lg:col-span-2">
+                                    <div className="col-span-2 grid grid-cols-[minmax(0,1fr)_6rem] gap-2">
                                         <AdminField label={t('fields.storage')} optional>
                                             <input
                                                 name="storageAmount"
@@ -133,7 +158,7 @@ export function PlanCreateForm({
                                             </select>
                                         </AdminField>
                                     </div>
-                                    <AdminField label={t('fields.maxMembers')} optional className="col-span-1 lg:col-span-1">
+                                    <AdminField label={t('fields.maxMembers')} optional className="col-span-1">
                                         <input
                                             name="maxMembers"
                                             type="number"
@@ -144,7 +169,7 @@ export function PlanCreateForm({
                                     </AdminField>
                                 </>
                             ) : (
-                                <AdminField label={t('fields.maxEventsPerUser')} optional className="col-span-2 lg:col-span-3">
+                                <AdminField label={t('fields.maxEventsPerUser')} optional className="col-span-2">
                                     <input
                                         name="maxActiveEvents"
                                         type="number"
@@ -158,14 +183,14 @@ export function PlanCreateForm({
                     </AdminSection>
 
                     <AdminSection title={t('plans.sections.pricing')}>
-                        <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-6">
-                            <AdminField label={t('fields.price')} optional className="col-span-1 lg:col-span-2">
+                        <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
+                            <AdminField label={t('fields.price')} optional className="col-span-1">
                                 <input name="price" type="number" min={0} step="0.01" placeholder="499" className={adminInputClass('max-w-32')} />
                             </AdminField>
                             <AdminField label={t('fields.priceCurrency')} optional className="col-span-1">
                                 <input name="priceCurrency" maxLength={3} placeholder="EUR" className={adminInputClass('max-w-20')} />
                             </AdminField>
-                            <AdminField label={t('fields.billingPeriod')} optional className="col-span-2 lg:col-span-2">
+                            <AdminField label={t('fields.billingPeriod')} optional className="col-span-2">
                                 <select name="billingPeriod" className={adminInputClass('max-w-40')}>
                                     <option value="">{t('none')}</option>
                                     {BILLING_PERIODS.map((item) => (
@@ -177,7 +202,7 @@ export function PlanCreateForm({
                             </AdminField>
                             {scope === 'EVENT' && (
                                 <>
-                                    <AdminField label={t('fields.recurringPrice')} optional className="col-span-1 lg:col-span-2">
+                                    <AdminField label={t('fields.recurringPrice')} optional className="col-span-1">
                                         <input
                                             name="recurringPrice"
                                             type="number"
@@ -192,8 +217,22 @@ export function PlanCreateForm({
                                     </AdminField>
                                 </>
                             )}
+                        </div>
+                    </AdminSection>
+
+                    <AdminSection title={t('plans.sections.promotion')} description={t('plans.sections.promotionHint')}>
+                        <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
                             <AdminField label={t('fields.discountPercent')} optional className="col-span-1">
                                 <input name="discountPercent" type="number" min={0} max={100} className={adminInputClass('max-w-24')} />
+                            </AdminField>
+                            <AdminField label={t('fields.discountLabel')} optional className="col-span-1 md:col-span-3">
+                                <input name="discountLabel" maxLength={100} className={adminInputClass()} />
+                            </AdminField>
+                            <AdminField label={t('fields.discountStartsAt')} optional hint={t('fields.discountBoundHint')} className="col-span-1 md:col-span-2">
+                                <input name="discountStartsAt" type="datetime-local" className={adminInputClass()} />
+                            </AdminField>
+                            <AdminField label={t('fields.discountEndsAt')} optional hint={t('fields.discountEndsAtHint')} className="col-span-1 md:col-span-2">
+                                <input name="discountEndsAt" type="datetime-local" className={adminInputClass()} />
                             </AdminField>
                         </div>
                     </AdminSection>

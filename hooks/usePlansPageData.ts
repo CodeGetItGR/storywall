@@ -1,24 +1,18 @@
-import { useSearchParams } from 'next/navigation';
-import { useCallback, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useMemo } from 'react';
 
-import { useApiErrorMessage, useRetryAfterCountdown } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
-import { useEventBilling, useUpgradeCheckout } from '@/hooks/useBilling';
-import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
-import { navigateToCheckout } from '@/lib/billing';
+import { useEventBilling } from '@/hooks/useBilling';
 import { publicAssignablePlans } from '@/lib/planTiers';
+import { routes } from '@/lib/routes';
 
 export function usePlansPageData() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const eventId = searchParams.get('eventId');
     const selectedPlanCode = searchParams.get('plan');
     const appConfig = useAppConfig();
     const billing = useEventBilling(eventId);
-    const upgradeCheckout = useUpgradeCheckout(eventId ?? '');
-    const retryIn = useRetryAfterCountdown(upgradeCheckout.error);
-    const toErrorMessage = useApiErrorMessage();
-    const [checkoutError, setCheckoutError] = useState<string | null>(null);
-    const [pendingPlanCode, setPendingPlanCode] = useState<string | null>(null);
     const plans = useMemo(() => publicAssignablePlans(appConfig.data?.planTiers ?? [], 'EVENT'), [appConfig.data?.planTiers]);
     const eventPlanCode = billing.data?.planTierCode ?? null;
     const currentPlanCode = eventPlanCode ?? selectedPlanCode;
@@ -42,49 +36,29 @@ export function usePlansPageData() {
     }, [eventId, plans, selectedPlan]);
 
     const startUpgrade = useCallback(
-        async (targetPlan: string) => {
+        (targetPlan: string) => {
             if (!eventId) return;
-
-            setCheckoutError(null);
-            setPendingPlanCode(targetPlan);
-
-            try {
-                await appConfig.refetch();
-            } catch {
-                // Fresh config improves the picker, but checkout still validates the target.
-            }
-
-            try {
-                const checkout = await upgradeCheckout.mutateAsync({ planTierCode: targetPlan });
-                navigateToCheckout(eventId, checkout, targetPlan);
-            } catch (error) {
-                const code = getErrorCode(error);
-                if (code === ERROR_CODES.PLAN_TIER_NOT_AN_UPGRADE || code === ERROR_CODES.PLAN_TIER_NOT_PURCHASABLE) {
-                    await appConfig.refetch();
-                }
-                setCheckoutError(toErrorMessage(error));
-                setPendingPlanCode(null);
-            }
+            router.push(routes.events.checkoutReview(eventId, 'upgrade', targetPlan));
         },
-        [appConfig, eventId, toErrorMessage, upgradeCheckout]
+        [eventId, router]
     );
 
     return {
-        checkoutError,
+        checkoutError: null,
         currentBilling: billing.data ?? null,
         eventId,
         hasError: Boolean(appConfig.error || (eventId && billing.error)),
-        isCheckoutPending: upgradeCheckout.isPending,
+        isCheckoutPending: false,
         isLoading: appConfig.isLoading || Boolean(eventId && billing.isLoading),
         modules: appConfig.data?.modules ?? [],
         nextPlan,
-        pendingPlanCode,
+        pendingPlanCode: null,
         plans,
         retry: () => {
             void appConfig.refetch();
             if (eventId) void billing.refetch();
         },
-        retryIn,
+        retryIn: 0,
         selectedPlan,
         selectedPlanCode: currentPlanCode,
         startUpgrade,

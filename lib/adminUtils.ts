@@ -17,6 +17,15 @@ export type AdminErrorMessageKey =
     | 'addonNotActive'
     | 'generic';
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Every id an admin types by hand is a UUID the backend answers with a 404 for.
+// Checking the shape before the call turns "we could not find that record" into
+// "that is not an id", which is the difference between a typo and a real miss.
+export function isUuid(value: string): boolean {
+    return UUID_PATTERN.test(value.trim());
+}
+
 export function emptyToNull(value: FormDataEntryValue | null): string | null {
     const text = typeof value === 'string' ? value.trim() : '';
     return text ? text : null;

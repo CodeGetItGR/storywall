@@ -65,6 +65,8 @@ export const ERROR_CODES = {
     ADDON_NOT_ACTIVE: 5041,
     ADDON_LOCKED_WHILE_ACTIVE: 5042,
     EVENT_PURGED_NOT_RENEWABLE: 5043,
+    CO_HOST_INVITE_NOT_YOURS: 5044,
+    INVALID_IBAN: 5045,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the

@@ -118,20 +118,20 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
 
                         {!showGuestForm ? (
                             <div className="flex flex-col gap-3">
+                                <Link
+                                    href={loginHref}
+                                    className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+                                >
+                                    {t('haveAccount')}
+                                    <ArrowRight className="w-4 h-4" />
+                                </Link>
                                 <button
                                     type="button"
                                     onClick={handleJoinAsGuest}
-                                    className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
-                                >
-                                    {t('joinAsGuest')}
-                                    <ArrowRight className="w-4 h-4" />
-                                </button>
-                                <Link
-                                    href={loginHref}
                                     className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-surface-muted text-ink text-sm font-semibold hover:bg-surface-muted/70 transition-colors"
                                 >
-                                    {t('haveAccount')}
-                                </Link>
+                                    {t('joinAsGuest')}
+                                </button>
                                 <Link
                                     href={registerHref}
                                     className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-surface-muted text-ink text-sm font-semibold hover:bg-surface-muted/70 transition-colors"
