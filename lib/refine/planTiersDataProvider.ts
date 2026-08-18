@@ -15,9 +15,7 @@ function queryPath(filters: DataProviderParams['filters']): string {
     const scope = filters?.find((filter) => 'field' in filter && filter.field === 'scope')?.value as PlanScope | undefined;
     if (scope) searchParams.set('scope', scope);
 
-    const includeArchived = filters?.find((filter) => 'field' in filter && filter.field === 'includeArchived')?.value as
-        | boolean
-        | undefined;
+    const includeArchived = filters?.find((filter) => 'field' in filter && filter.field === 'includeArchived')?.value as boolean | undefined;
     if (includeArchived) searchParams.set('includeArchived', 'true');
 
     const query = searchParams.toString();

@@ -100,6 +100,7 @@ export interface PlanTierResponseDto {
     discountStartsAt: string | null;
     discountEndsAt: string | null;
     moduleKeys: ModuleKey[];
+    paidModules: PaidServiceResponseDto[];
 }
 
 export interface PlatformModuleResponseDto {

@@ -45,7 +45,19 @@ function MetricBreakdown({ title, values }: { title: string; values: Record<stri
     );
 }
 
-function QueueCallout({ label, count, action, icon: Icon, onOpen }: { label: string; count: number; action: string; icon: LucideIcon; onOpen: () => void }) {
+function QueueCallout({
+    label,
+    count,
+    action,
+    icon: Icon,
+    onOpen,
+}: {
+    label: string;
+    count: number;
+    action: string;
+    icon: LucideIcon;
+    onOpen: () => void;
+}) {
     return (
         <button
             type="button"

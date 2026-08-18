@@ -49,9 +49,9 @@ and `app-config-fe-integration.md` for the rest of `GET /api/config`.
 5. [The event lifecycle](#5-the-event-lifecycle)
 6. [Activation: the first purchase](#6-activation-the-first-purchase)
 7. [Preservation: the subscription](#7-preservation-the-subscription)
-7a. [The "keep originals" add-on](#7a-the-keep-originals-add-on)
-7b. [Storage packs](#7b-storage-packs)
-7c. [Module unlocks](#7c-module-unlocks)
+   7a. [The "keep originals" add-on](#7a-the-keep-originals-add-on)
+   7b. [Storage packs](#7b-storage-packs)
+   7c. [Module unlocks](#7c-module-unlocks)
 8. [The billing read endpoint](#8-the-billing-read-endpoint)
 9. [Refunds](#9-refunds)
 10. [Notifications](#10-notifications)
@@ -73,21 +73,21 @@ default, not a free one.
 
 Two separate purchases, deliberately not one:
 
-| purchase | what it buys | when |
-|---|---|---|
-| **Activation** (one-time) | the event goes live, plus storage until `endAt` + the plan's `includedMonths` | before the event |
-| **Preservation** (monthly subscription) | keeps the photos online after that window runs out | months later, opt-in |
+| purchase                                | what it buys                                                                  | when                 |
+| --------------------------------------- | ----------------------------------------------------------------------------- | -------------------- |
+| **Activation** (one-time)               | the event goes live, plus storage until `endAt` + the plan's `includedMonths` | before the event     |
+| **Preservation** (monthly subscription) | keeps the photos online after that window runs out                            | months later, opt-in |
 
 **Nothing is auto-charged between the two.** No card is held on file after activation. When the
-included window nears its end the host is emailed and has to start a *second* checkout by hand. That
+included window nears its end the host is emailed and has to start a _second_ checkout by hand. That
 is a product decision, not a limitation — no surprise charge six months after someone's wedding.
 
 Two independent plan scopes, and confusing them is the most common integration mistake:
 
-| scope | assigned to | governs | meaningful fields |
-|---|---|---|---|
-| `EVENT` | a single event | that event's storage and guest count | `storageBytes`, `maxMembers`, `moduleKeys` |
-| `ACCOUNT` | a user | how many events they may run at once | `maxActiveEvents` |
+| scope     | assigned to    | governs                              | meaningful fields                          |
+| --------- | -------------- | ------------------------------------ | ------------------------------------------ |
+| `EVENT`   | a single event | that event's storage and guest count | `storageBytes`, `maxMembers`, `moduleKeys` |
+| `ACCOUNT` | a user         | how many events they may run at once | `maxActiveEvents`                          |
 
 An `EVENT` plan can never be assigned to a user and vice versa. Filter by `scope` up front — one
 table for event plans, one for account plans — rather than rendering both limit types generically.
@@ -113,32 +113,32 @@ account plans are disabled (§13, Assignment). Filter a pricing page by `scope =
 
 ```jsonc
 {
-  "id": "b1e2c3d4-…",
-  "code": "BASIC",
-  "scope": "EVENT",
-  "name": "Basic",
-  "description": "For a small party",
-  "sortOrder": 0,
-  "isDefault": true,
-  "isAssignable": true,
-  "isPublic": true,
+    "id": "b1e2c3d4-…",
+    "code": "BASIC",
+    "scope": "EVENT",
+    "name": "Basic",
+    "description": "For a small party",
+    "sortOrder": 0,
+    "isDefault": true,
+    "isAssignable": true,
+    "isPublic": true,
 
-  "storageBytes": 1073741824,
-  "maxMembers": 20,
-  "maxActiveEvents": null,
+    "storageBytes": 1073741824,
+    "maxMembers": 20,
+    "maxActiveEvents": null,
 
-  "priceAmountMinor": 10000,          // one-time activation charge — 100.00 EUR
-  "priceCurrency": "EUR",             // uppercase ISO 4217
-  "billingPeriod": "ONE_TIME",
-  "recurringPriceAmountMinor": 1500,  // monthly preservation charge — 15.00 EUR, same currency
-  "includedMonths": 3,                // free months after endAt before the subscription is needed
+    "priceAmountMinor": 10000, // one-time activation charge — 100.00 EUR
+    "priceCurrency": "EUR", // uppercase ISO 4217
+    "billingPeriod": "ONE_TIME",
+    "recurringPriceAmountMinor": 1500, // monthly preservation charge — 15.00 EUR, same currency
+    "includedMonths": 3, // free months after endAt before the subscription is needed
 
-  "discountPercent": null,
-  "discountLabel": null,
-  "discountStartsAt": null,
-  "discountEndsAt": null,
+    "discountPercent": null,
+    "discountLabel": null,
+    "discountStartsAt": null,
+    "discountEndsAt": null,
 
-  "moduleKeys": ["gallery", "posts", "rsvp"]
+    "moduleKeys": ["gallery", "posts", "rsvp"],
 }
 ```
 
@@ -150,7 +150,7 @@ account plans are disabled (§13, Assignment). Filter a pricing page by `scope =
   field, by design: one plan bills in one currency.
 - **The recurring period is always monthly.** There is no `recurringBillingPeriod`. A yearly option,
   if it ever exists, will be a separate plan row.
-- Suggested copy: *"€100 once, then €15/month after 3 months"*.
+- Suggested copy: _"€100 once, then €15/month after 3 months"_.
 - `recurringPriceAmountMinor` and `includedMonths` are **null on `ACCOUNT`-scope plans**. The API
   rejects them there, so do not render them.
 - `maxActiveEvents` is always null on `EVENT` plans; `storageBytes`/`maxMembers` are always null on
@@ -167,10 +167,10 @@ no denominator so it cannot drive a percentage.
 
 ```ts
 // Wrong — formatBytes(null) throws or prints "NaN MB"
-`${formatBytes(plan.storageBytes)} storage`
+`${formatBytes(plan.storageBytes)} storage`;
 
 // Right
-plan.storageBytes === null ? 'Unlimited storage' : `${formatBytes(plan.storageBytes)} storage`
+plan.storageBytes === null ? 'Unlimited storage' : `${formatBytes(plan.storageBytes)} storage`;
 ```
 
 An uncapped enterprise plan is a real, intended shape — not missing data.
@@ -191,27 +191,27 @@ string for the same reason. The wire value never changed; only the declared type
 
 Plan limits are enforced at write time. Flows that used to always succeed can return `409`.
 
-| code | name | returned from |
-|---|---|---|
+| code   | name                           | returned from                                               |
+| ------ | ------------------------------ | ----------------------------------------------------------- |
 | `5008` | `EVENT_STORAGE_LIMIT_EXCEEDED` | `POST /api/events/{id}/media`, `.../media/batch` (per file) |
-| `5009` | `EVENT_MEMBER_LIMIT_EXCEEDED` | `POST /api/events/{id}/members`, invite acceptance |
-| `5010` | `ACTIVE_EVENT_LIMIT_EXCEEDED` | `POST /api/events` |
+| `5009` | `EVENT_MEMBER_LIMIT_EXCEEDED`  | `POST /api/events/{id}/members`, invite acceptance          |
+| `5010` | `ACTIVE_EVENT_LIMIT_EXCEEDED`  | `POST /api/events`                                          |
 
 Every rejection carries a `details` object so you can render an upgrade prompt without a second
 round-trip:
 
 ```jsonc
 {
-  "status": 409,
-  "errorCode": 5008,
-  "errorKey": "EVENT_STORAGE_LIMIT_EXCEEDED",
-  "detail": "This event has no room left for new media on its current plan.",
-  "details": {
-    "planCode": "FREE",
-    "used": 2147480000,
-    "limit": 2147483648,
-    "incomingBytes": 10485760      // storage rejections only
-  }
+    "status": 409,
+    "errorCode": 5008,
+    "errorKey": "EVENT_STORAGE_LIMIT_EXCEEDED",
+    "detail": "This event has no room left for new media on its current plan.",
+    "details": {
+        "planCode": "FREE",
+        "used": 2147480000,
+        "limit": 2147483648,
+        "incomingBytes": 10485760, // storage rejections only
+    },
 }
 ```
 
@@ -221,7 +221,7 @@ round-trip:
 would overflow appear in `failed` with `errorCode: "EVENT_STORAGE_LIMIT_EXCEEDED"`, files that fit
 appear in `created`. A quota-full event does not fail the whole batch.
 
-**The archive escape hatch.** `5010` should offer *archive an event* alongside *upgrade* — archiving
+**The archive escape hatch.** `5010` should offer _archive an event_ alongside _upgrade_ — archiving
 (`PATCH` the event with `isArchived: true`) genuinely frees the seat. An upgrade-only prompt sells
 something the user may not need.
 
@@ -258,7 +258,7 @@ platform-wide at gate 1 stays dark for events that paid for it.
 `eventModuleKeys` on `GET /api/config` reflects the registry: a module disabled there disappears
 entirely, platform-wide, regardless of plan, unlock, or per-event setting.
 
-`moduleKeys` on a plan is what upgrading onto that plan *would* grant — the data behind "upgrade to
+`moduleKeys` on a plan is what upgrading onto that plan _would_ grant — the data behind "upgrade to
 unlock Stories" messaging on a disabled module. Always empty for `ACCOUNT`-scope plans. Since
 2026-08-16 that is not the only sales pitch available for a locked module: check `paidServices` for
 a `MODULE_UNLOCK` whose `grantsModuleKey` matches, and offer that instead where it exists — it is
@@ -281,19 +281,19 @@ DRAFT ──(activation paid)──► ACTIVE ──(unpaid + 14d dunning)──
 
 `status` is on both `EventResponse` and `EventDetailResponse`.
 
-| status | reads | writes | guests | notes |
-|---|---|---|---|---|
-| `DRAFT` | hosts only | hosts only | **cannot join or be invited** | not in listings for anyone else |
-| `ACTIVE` | yes | yes | yes | the normal state |
-| `FROZEN` | **yes** | **no** — `409 EVENT_FROZEN` | can still log in and browse | read-only; still in listings |
-| `PURGED` | yes, but the media is gone | no | can log in | files permanently deleted; rows remain |
+| status   | reads                      | writes                      | guests                        | notes                                  |
+| -------- | -------------------------- | --------------------------- | ----------------------------- | -------------------------------------- |
+| `DRAFT`  | hosts only                 | hosts only                  | **cannot join or be invited** | not in listings for anyone else        |
+| `ACTIVE` | yes                        | yes                         | yes                           | the normal state                       |
+| `FROZEN` | **yes**                    | **no** — `409 EVENT_FROZEN` | can still log in and browse   | read-only; still in listings           |
+| `PURGED` | yes, but the media is gone | no                          | can log in                    | files permanently deleted; rows remain |
 
 Three things worth internalising:
 
 - **A frozen event is not hidden.** Guests keep seeing the gallery, posts and stories. Only writes
   close. Freezing people out of a wedding album they were invited to would punish the wrong party.
 - **`PURGED` is not recoverable.** The event, members, posts and RSVPs survive; the images do not.
-  Paying again returns it to `ACTIVE` with nothing to restore. Say so plainly *before* the purge.
+  Paying again returns it to `ACTIVE` with nothing to restore. Say so plainly _before_ the purge.
 - **An approved refund returns an `ACTIVE` event to `DRAFT`** — the one backwards transition that is
   not about non-payment. See §9.
 
@@ -303,7 +303,7 @@ dunning window and keeps working. You learn about it from notifications (§10), 
 ### Frozen and purged UI
 
 `GET /api/events/{id}` still returns everything, and **module availability flags stay `true`** on a
-frozen event — modules are still *visible*, just not *writable*. Do not use module flags to decide
+frozen event — modules are still _visible_, just not _writable_. Do not use module flags to decide
 whether to show a compose box; use `status`.
 
 - `FROZEN` → persistent banner ("This event is read-only. Renew to add photos again"), disable every
@@ -362,8 +362,8 @@ otherwise). Rate limited to 10/min.
 ```jsonc
 // 200
 {
-  "orderId": "1f3c…",     // our order id — worth logging for support
-  "redirectUrl": "https://checkout.stripe.com/c/pay/cs_test_…"
+    "orderId": "1f3c…", // our order id — worth logging for support
+    "redirectUrl": "https://checkout.stripe.com/c/pay/cs_test_…",
 }
 ```
 
@@ -388,35 +388,34 @@ has anything to build against; this note exists so it isn't discovered at launch
 
 Built server-side from `app.billing.app-base-url` and **not configurable per request**:
 
-| route | meaning |
-|---|---|
-| `/events/{eventId}/checkout/success` | the host completed the hosted page |
-| `/events/{eventId}/checkout/cancelled` | the host backed out |
+| route                                  | meaning                            |
+| -------------------------------------- | ---------------------------------- |
+| `/events/{eventId}/checkout/success`   | the host completed the hosted page |
+| `/events/{eventId}/checkout/cancelled` | the host backed out                |
 
 Both must exist in the FE router or the host lands on a 404 immediately after paying.
 
-### Step 5 — success does *not* mean paid
+### Step 5 — success does _not_ mean paid
 
 **The single most important thing in this document.** Landing on `/checkout/success` means the host
 finished the provider's page. It does **not** mean we have been told about it. Activation happens
 when the signed webhook arrives — usually a second or two later, but not guaranteed and not ordered
 relative to the redirect.
 
-So the success page is a *waiting* state, not a confirmation:
+So the success page is a _waiting_ state, not a confirmation:
 
 ```ts
 // on /events/:id/checkout/success
 // Poll the billing endpoint and watch your own order, not the event status: the order is the only
 // signal that works for both purchases — a renewal never changes the event's status.
-const settled = await pollUntil(
-  () => api.get(`/api/events/${id}/billing`)
-          .then(b => b.orders.find(o => o.id === orderId)?.status === 'PAID'),
-  { intervalMs: 1500, timeoutMs: 30_000 }
-);
+const settled = await pollUntil(() => api.get(`/api/events/${id}/billing`).then((b) => b.orders.find((o) => o.id === orderId)?.status === 'PAID'), {
+    intervalMs: 1500,
+    timeoutMs: 30_000,
+});
 
 if (!settled) {
-  // Not a failure. Payments that arrive late are reconciled by a sweep within ~15 minutes.
-  showPending("Payment received — we're finishing up. This page will update shortly.");
+    // Not a failure. Payments that arrive late are reconciled by a sweep within ~15 minutes.
+    showPending("Payment received — we're finishing up. This page will update shortly.");
 }
 ```
 
@@ -447,7 +446,7 @@ Differences from activation, all of which matter to the UI:
 - `5020 SUBSCRIPTION_ALREADY_ACTIVE` if a live subscription exists — show the existing subscription
   from the billing endpoint instead of a second checkout button.
 - **The event's status does not change when it settles**, so poll the order per §6 step 5. On a
-  frozen event the status *does* eventually return to `ACTIVE`, but only on the next sweep run — do
+  frozen event the status _does_ eventually return to `ACTIVE`, but only on the next sweep run — do
   not make the success screen wait for it.
 
 ### Stopping it
@@ -464,11 +463,10 @@ that month and keeps it. So the response still reads `ACTIVE` with a future `cur
 
 ```jsonc
 // 200
-{ "id": "…", "status": "ACTIVE", "currentPeriodEnd": "2026-09-12T00:00:00Z",
-  "cancelAtPeriodEnd": true, "cancelledAt": null }
+{ "id": "…", "status": "ACTIVE", "currentPeriodEnd": "2026-09-12T00:00:00Z", "cancelAtPeriodEnd": true, "cancelledAt": null }
 ```
 
-Render that as *"Renews no more. Your event stays live until 12 Sep, then freezes."* — never as
+Render that as _"Renews no more. Your event stays live until 12 Sep, then freezes."_ — never as
 "cancelled" with the event already gone. `status` becomes `CANCELLED` only when the provider ends it
 at the boundary and tells us, which a later read of the billing endpoint picks up.
 
@@ -497,16 +495,16 @@ GET /api/config → paidServices: PaidServiceResponse[]   // filtered to isPubli
 
 ```jsonc
 {
-  "id": "…",
-  "code": "ORIGINALS",
-  "kind": "RECURRING_ADDON",
-  "name": "Keep Originals",
-  "description": "Keeps the original, full-resolution file for every photo alongside the compressed feed copy.",
-  "sortOrder": 0,
-  "priceAmountMinor": 500,        // 5.00 EUR, monthly, once billing starts (see below)
-  "priceCurrency": "EUR",
-  "billingPeriod": "MONTHLY",
-  "grantsStorageBytes": null      // always null for a RECURRING_ADDON
+    "id": "…",
+    "code": "ORIGINALS",
+    "kind": "RECURRING_ADDON",
+    "name": "Keep Originals",
+    "description": "Keeps the original, full-resolution file for every photo alongside the compressed feed copy.",
+    "sortOrder": 0,
+    "priceAmountMinor": 500, // 5.00 EUR, monthly, once billing starts (see below)
+    "priceCurrency": "EUR",
+    "billingPeriod": "MONTHLY",
+    "grantsStorageBytes": null, // always null for a RECURRING_ADDON
 }
 ```
 
@@ -582,7 +580,7 @@ the breakdown:
   "currency": "EUR", … }
 ```
 
-Render *"€15/month preservation + €5/month originals = €20/month"* from `amountMinor` and
+Render _"€15/month preservation + €5/month originals = €20/month"_ from `amountMinor` and
 `addonAmountMinor` rather than re-deriving it from the catalog — the order is the historical
 receipt and the catalog price may have changed since.
 
@@ -626,7 +624,7 @@ per the receipt note above) — the two are related but not the same number once
 
 A one-time checkout that **permanently raises** an event's storage ceiling — the byte grant never
 expires and is never refunded, following the same "buy ceiling, not time" shape as an admin plan
-upgrade. The *price*, however, is now recurring: like §7a's add-on, a settled pack folds into the
+upgrade. The _price_, however, is now recurring: like §7a's add-on, a settled pack folds into the
 event's monthly preservation subscription and is charged again on every renewal from then on — a
 host who buys +50 GB is paying for the platform's ongoing cost of storing it, not a single deposit.
 
@@ -634,15 +632,15 @@ host who buys +50 GB is paying for the platform's ongoing cost of storing it, no
 
 ```jsonc
 {
-  "id": "…",
-  "code": "STORAGE_5GB",
-  "kind": "STORAGE_PACK",
-  "name": "+5 GB Storage",
-  "description": "Permanently raises this event's storage ceiling by 5 GB.",
-  "priceAmountMinor": 500,
-  "priceCurrency": "EUR",
-  "billingPeriod": "MONTHLY",
-  "grantsStorageBytes": 5368709120
+    "id": "…",
+    "code": "STORAGE_5GB",
+    "kind": "STORAGE_PACK",
+    "name": "+5 GB Storage",
+    "description": "Permanently raises this event's storage ceiling by 5 GB.",
+    "priceAmountMinor": 500,
+    "priceCurrency": "EUR",
+    "billingPeriod": "MONTHLY",
+    "grantsStorageBytes": 5368709120,
 }
 ```
 
@@ -686,7 +684,7 @@ forever — the "buy ceiling not time" note above is a promise, not just an even
 }
 ```
 
-Render *"2 GB plan + 5 GB purchased = 7 GB total"* from the two components; keep using
+Render _"2 GB plan + 5 GB purchased = 7 GB total"_ from the two components; keep using
 `storageLimitBytes`/`storagePercent` as the numbers that actually gate `5008` — they already include
 purchased storage with no other change on your side. A `null` `planStorageBytes` (unlimited plan)
 still means unlimited regardless of `extraStorageBytes`.
@@ -708,7 +706,7 @@ with a refund has no way to find out otherwise until they ask.
 
 ## 7c. Module unlocks
 
-*New 2026-08-16.* Sells one module to one event whose plan doesn't include it. This is what makes a
+_New 2026-08-16._ Sells one module to one event whose plan doesn't include it. This is what makes a
 module free on the higher tiers and purchasable on the lower ones without maintaining two catalogs:
 strip the key from the cheaper plans' `moduleKeys`, publish a `MODULE_UNLOCK` for it, and leave it in
 the expensive plans' lists.
@@ -717,16 +715,16 @@ the expensive plans' lists.
 
 ```jsonc
 {
-  "id": "…",
-  "code": "UNLOCK_WISHLIST",
-  "kind": "MODULE_UNLOCK",
-  "name": "Gift Wishlist",
-  "description": "Adds the wishlist module to this event.",
-  "priceAmountMinor": 300,
-  "priceCurrency": "EUR",
-  "billingPeriod": "MONTHLY",
-  "grantsStorageBytes": null,        // always null for a MODULE_UNLOCK
-  "grantsModuleKey": "wishlist"      // always set, and always a key from eventModuleKeys
+    "id": "…",
+    "code": "UNLOCK_WISHLIST",
+    "kind": "MODULE_UNLOCK",
+    "name": "Gift Wishlist",
+    "description": "Adds the wishlist module to this event.",
+    "priceAmountMinor": 300,
+    "priceCurrency": "EUR",
+    "billingPeriod": "MONTHLY",
+    "grantsStorageBytes": null, // always null for a MODULE_UNLOCK
+    "grantsModuleKey": "wishlist", // always set, and always a key from eventModuleKeys
 }
 ```
 
@@ -737,13 +735,13 @@ both.
 
 ### Monthly or bought outright
 
-*New 2026-08-17.* **Read `billingPeriod` on every unlock and price it accordingly** — this is the
+_New 2026-08-17._ **Read `billingPeriod` on every unlock and price it accordingly** — this is the
 one kind where it is not always `'MONTHLY'`:
 
-| `billingPeriod` | What the host pays | Where it appears afterwards |
-| --- | --- | --- |
-| `'MONTHLY'` | `priceAmountMinor × includedMonths` on the activation, then every renewal | `addons[]`, and inside every renewal's `addonAmountMinor` |
-| `'ONE_TIME'` | `priceAmountMinor`, once, on the activation | `addons[]` only — **never** on a renewal |
+| `billingPeriod` | What the host pays                                                        | Where it appears afterwards                               |
+| --------------- | ------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `'MONTHLY'`     | `priceAmountMinor × includedMonths` on the activation, then every renewal | `addons[]`, and inside every renewal's `addonAmountMinor` |
+| `'ONE_TIME'`    | `priceAmountMinor`, once, on the activation                               | `addons[]` only — **never** on a renewal                  |
 
 A one-time unlock is **not** multiplied by the plan's `includedMonths`: the event's length says
 nothing about the price of a feature. It is also the one add-on charge a plan with
@@ -775,8 +773,7 @@ POST /api/events/{eventId}/addons
 Host-only, rate limited 30/min. Returns the same `AddonSummary` shape as the `addons` array in §8:
 
 ```jsonc
-{ "code": "UNLOCK_WISHLIST", "name": "Gift Wishlist", "priceAmountMinor": 300,
-  "billingPeriod": "ONE_TIME", "activatedAt": "…" }
+{ "code": "UNLOCK_WISHLIST", "name": "Gift Wishlist", "priceAmountMinor": 300, "billingPeriod": "ONE_TIME", "activatedAt": "…" }
 ```
 
 **Nothing is charged at this moment.** Like §7a's `keepOriginals` toggle, the entitlement is the row
@@ -787,17 +784,17 @@ picker — **not** as a purchase button, and not on any live-event screen.
 The same endpoint also accepts `RECURRING_ADDON` codes, which is the generic route to what §7a does
 through `PATCH /api/events/{id}` with `keepOriginals`. Both paths create the same row; use whichever
 suits the screen. A `STORAGE_PACK` code sent here is a `400 INVALID_PAID_SERVICE_KIND` (3015) —
-storage is bought against a *live* event through §7b.
+storage is bought against a _live_ event through §7b.
 
-| Status | Code | When | What to do |
-|---|---|---|---|
-| `409` | `EVENT_NOT_DRAFT` (5017) | the event is already live | see the limitation below — don't offer the control at all there |
-| `409` | `ADDON_ALREADY_ACTIVE` (5038) | already opted in | treat as success and refetch |
-| `400` | `INVALID_PAID_SERVICE_KIND` (3015) | a storage-pack code | refetch `paidServices` |
-| `404` | `RESOURCE_NOT_FOUND` (2001) | no such code | refetch `paidServices` |
-| `409` | `PAID_SERVICE_NOT_PURCHASABLE` (5036) | archived or non-public | hide the offer |
-| `409` | `PAID_SERVICE_NOT_ON_PLAN` (5040) | restricted to plans this event isn't on | filter the picker on `planTierIds` so this is unreachable |
-| `403` | `FORBIDDEN` (4001) | caller isn't a host of the event | — |
+| Status | Code                                  | When                                    | What to do                                                      |
+| ------ | ------------------------------------- | --------------------------------------- | --------------------------------------------------------------- |
+| `409`  | `EVENT_NOT_DRAFT` (5017)              | the event is already live               | see the limitation below — don't offer the control at all there |
+| `409`  | `ADDON_ALREADY_ACTIVE` (5038)         | already opted in                        | treat as success and refetch                                    |
+| `400`  | `INVALID_PAID_SERVICE_KIND` (3015)    | a storage-pack code                     | refetch `paidServices`                                          |
+| `404`  | `RESOURCE_NOT_FOUND` (2001)           | no such code                            | refetch `paidServices`                                          |
+| `409`  | `PAID_SERVICE_NOT_PURCHASABLE` (5036) | archived or non-public                  | hide the offer                                                  |
+| `409`  | `PAID_SERVICE_NOT_ON_PLAN` (5040)     | restricted to plans this event isn't on | filter the picker on `planTierIds` so this is unreachable       |
+| `403`  | `FORBIDDEN` (4001)                    | caller isn't a host of the event        | —                                                               |
 
 ### The limitation to design around
 
@@ -829,28 +826,38 @@ polling target after any checkout.
 
 ```jsonc
 {
-  "eventStatus": "ACTIVE",
-  "planTierCode": "EVENT_STANDARD",
-  "planTierName": "Standard",
-  "coverage": {
-    "unlimited": false,                    // true = created before billing existed
-    "paidThrough": "2026-09-12T00:00:00Z",
-    "covered": true,                       // does coverage reach right now
-    "freezesAt": "2026-09-26T00:00:00Z",   // null when unlimited
-    "purgesAt":  "2026-10-26T00:00:00Z"    // null when unlimited
-  },
-  "subscription": {                        // null when there is no live subscription
-    "id": "…",
-    "status": "ACTIVE",
-    "currentPeriodEnd": "2026-09-12T00:00:00Z",
-    "cancelAtPeriodEnd": false,            // true = cancelled, paid month still running
-    "cancelledAt": null
-  },
-  "orders": [                              // newest first; every order ever placed on this event
-    { "id": "…", "kind": "ACTIVATION", "status": "PAID",
-      "amountMinor": 4900, "currency": "EUR",
-      "coversFrom": "…", "coversUntil": "…", "paidAt": "…", "createdAt": "…" }
-  ]
+    "eventStatus": "ACTIVE",
+    "planTierCode": "EVENT_STANDARD",
+    "planTierName": "Standard",
+    "coverage": {
+        "unlimited": false, // true = created before billing existed
+        "paidThrough": "2026-09-12T00:00:00Z",
+        "covered": true, // does coverage reach right now
+        "freezesAt": "2026-09-26T00:00:00Z", // null when unlimited
+        "purgesAt": "2026-10-26T00:00:00Z", // null when unlimited
+    },
+    "subscription": {
+        // null when there is no live subscription
+        "id": "…",
+        "status": "ACTIVE",
+        "currentPeriodEnd": "2026-09-12T00:00:00Z",
+        "cancelAtPeriodEnd": false, // true = cancelled, paid month still running
+        "cancelledAt": null,
+    },
+    "orders": [
+        // newest first; every order ever placed on this event
+        {
+            "id": "…",
+            "kind": "ACTIVATION",
+            "status": "PAID",
+            "amountMinor": 4900,
+            "currency": "EUR",
+            "coversFrom": "…",
+            "coversUntil": "…",
+            "paidAt": "…",
+            "createdAt": "…",
+        },
+    ],
 }
 ```
 
@@ -883,12 +890,12 @@ host clicks "Request a refund"
 
 An activation payment is refundable only while **all four** hold:
 
-| gate | fails when |
-|---|---|
-| nobody but the host joined | any non-host member has ever existed, *including ones since removed* |
-| no content exists | any post or media has ever existed, *including soft-deleted ones* |
-| the refund window is open | more than 14 days (configurable) since the payment settled |
-| the event has not started | `startAt` is in the past |
+| gate                       | fails when                                                           |
+| -------------------------- | -------------------------------------------------------------------- |
+| nobody but the host joined | any non-host member has ever existed, _including ones since removed_ |
+| no content exists          | any post or media has ever existed, _including soft-deleted ones_    |
+| the refund window is open  | more than 14 days (configurable) since the payment settled           |
+| the event has not started  | `startAt` is in the past                                             |
 
 The "including deleted" part is deliberate and worth surfacing if a host asks: the bytes were stored
 and paid for whether or not they are still visible, so deleting a gallery does not make an event
@@ -908,12 +915,9 @@ Call it when the billing page loads. It decides whether you render the button at
 
 ```jsonc
 {
-  "eligible": false,
-  "reasons": [
-    "3 people have already joined this event.",
-    "Content has already been added to this event."
-  ],
-  "hasPendingRequest": false
+    "eligible": false,
+    "reasons": ["3 people have already joined this event.", "Content has already been added to this event."],
+    "hasPendingRequest": false,
 }
 ```
 
@@ -926,11 +930,11 @@ Call it when the billing page loads. It decides whether you render the button at
 
 Advisory only; everything is re-checked when a request is actually made.
 
-| state | show |
-|---|---|
-| `hasPendingRequest: true` | "Refund request under review" + the pending request |
-| `eligible: true` | the "Request a refund" button |
-| `eligible: false` | the button **disabled**, with `reasons` as the explanation — hiding it entirely just produces a support ticket |
+| state                     | show                                                                                                           |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `hasPendingRequest: true` | "Refund request under review" + the pending request                                                            |
+| `eligible: true`          | the "Request a refund" button                                                                                  |
+| `eligible: false`         | the button **disabled**, with `reasons` as the explanation — hiding it entirely just produces a support ticket |
 
 ### `POST /api/events/{eventId}/refund-requests` — host
 
@@ -954,33 +958,33 @@ refund screen is built on.
 
 ```jsonc
 [
-  {
-    "request": { /* RefundRequestResponse — §14 */ },
+    {
+        "request": {/* RefundRequestResponse — §14 */},
 
-    "eventTitle": "Anna & Nik's Wedding",
-    "eventStatus": "ACTIVE",
-    "eventStartAt": "2026-09-12T16:00:00Z",
-    "eventEndAt": "2026-09-13T02:00:00Z",
-    "paidAt": "2026-08-05T09:14:22Z",
+        "eventTitle": "Anna & Nik's Wedding",
+        "eventStatus": "ACTIVE",
+        "eventStartAt": "2026-09-12T16:00:00Z",
+        "eventEndAt": "2026-09-13T02:00:00Z",
+        "paidAt": "2026-08-05T09:14:22Z",
 
-    "hostDisplayName": "Nikos P.",
-    "hostEmail": "nikos@example.com",
+        "hostDisplayName": "Nikos P.",
+        "hostEmail": "nikos@example.com",
 
-    "currentlyEligible": true,
-    "ineligibilityReasons": [],
+        "currentlyEligible": true,
+        "ineligibilityReasons": [],
 
-    "guestCount": 0,
-    "hostCount": 1,
-    "postCount": 0,
-    "mediaCount": 0,
-    "storageBytes": 0
-  }
+        "guestCount": 0,
+        "hostCount": 1,
+        "postCount": 0,
+        "mediaCount": 0,
+        "storageBytes": 0,
+    },
 ]
 ```
 
 **Why these fields exist.** The server enforces the gates on approval regardless — but "the server
 will stop you" is not the same as "you can tell whether to say yes". The gates are four crude proxies
-for *did this host get what they paid for*, and the admin's actual job is the cases the gates cannot
+for _did this host get what they paid for_, and the admin's actual job is the cases the gates cannot
 see: an event created by mistake, a duplicate payment, the wrong tier bought. Deciding that from a
 request id and a paragraph of free text means clicking approve and hoping.
 
@@ -1037,11 +1041,11 @@ the destination of every billing email and in-app CTA.
 
 ### Dunning — produced by the scheduled sweep, hosts only
 
-| `type` | severity | fires at | payload |
-|---|---|---|---|
-| `BILLING_EXPIRING` | `WARNING` | 30 / 14 / 7 / 1 days before coverage ends | `paidThrough`, `daysRemaining`, `planTier` |
-| `BILLING_PAST_DUE` | `CRITICAL` | 0 / 3 / 7 days after it lapsed | `paidThrough`, `daysOverdue`, `daysUntilFreeze`, `planTier` |
-| `BILLING_PURGE_WARNING` | `CRITICAL` | 14 / 7 / 1 days before the media is deleted | `purgesAt`, `daysRemaining`, `storedBytes`, `planTier` |
+| `type`                  | severity   | fires at                                    | payload                                                     |
+| ----------------------- | ---------- | ------------------------------------------- | ----------------------------------------------------------- |
+| `BILLING_EXPIRING`      | `WARNING`  | 30 / 14 / 7 / 1 days before coverage ends   | `paidThrough`, `daysRemaining`, `planTier`                  |
+| `BILLING_PAST_DUE`      | `CRITICAL` | 0 / 3 / 7 days after it lapsed              | `paidThrough`, `daysOverdue`, `daysUntilFreeze`, `planTier` |
+| `BILLING_PURGE_WARNING` | `CRITICAL` | 14 / 7 / 1 days before the media is deleted | `purgesAt`, `daysRemaining`, `storedBytes`, `planTier`      |
 
 Only the most urgent crossed threshold fires, so a host gets roughly four messages across a 45-day
 arc, not forty-five. `daysUntilFreeze` and `daysRemaining` are precomputed server-side — render them
@@ -1049,28 +1053,28 @@ directly so the copy matches the email the host already received.
 
 ### Refund decisions — produced by the admin's action
 
-| `type` | severity | when |
-|---|---|---|
+| `type`            | severity   | when                                                      |
+| ----------------- | ---------- | --------------------------------------------------------- |
 | `REFUND_APPROVED` | `CRITICAL` | the refund went through and the event returned to `DRAFT` |
-| `REFUND_REJECTED` | `INFO` | the request was declined |
+| `REFUND_REJECTED` | `INFO`     | the request was declined                                  |
 
 The admin's note is included in the body. The payload carries what the UI needs without a second
 fetch:
 
 ```jsonc
 {
-  "refundRequestId": "…",
-  "orderId": "…",
-  "amountMinor": 4900,
-  "currency": "EUR",
-  "providerRefunded": true
+    "refundRequestId": "…",
+    "orderId": "…",
+    "amountMinor": 4900,
+    "currency": "EUR",
+    "providerRefunded": true,
 }
 ```
 
 `providerRefunded: false` on an approved refund means the money is being returned by hand — do not
 tell the host to expect it on their statement in the usual few days.
 
-`REFUND_APPROVED` is the only notification that reports an event *losing* its live status, so it
+`REFUND_APPROVED` is the only notification that reports an event _losing_ its live status, so it
 doubles as the explanation for a host who would otherwise find a draft they did not expect. Give it
 real weight in the feed.
 
@@ -1087,7 +1091,7 @@ row rather than crashing — if yours does not, fix that before this ships.
 **Every `/api/**` endpoint has a request budget.** Endpoints without a specific limit get a generous
 default (300/min per caller) that only a stuck client will ever hit.
 
-Authenticated callers are counted **per user id**, anonymous ones per IP. Admin routes are *not*
+Authenticated callers are counted **per user id**, anonymous ones per IP. Admin routes are _not_
 exempt — an admin account can move money and destroy media, which makes a runaway script holding
 admin credentials the most expensive kind to have.
 
@@ -1095,16 +1099,17 @@ admin credentials the most expensive kind to have.
 HTTP/1.1 429 Too Many Requests
 Retry-After: 42
 ```
+
 ```jsonc
 {
-  "type": "about:blank",
-  "title": "Too Many Requests",
-  "status": 429,
-  "detail": "Too many requests. Try again in 42 seconds.",
-  "instance": "/api/auth/login",
-  "errorCode": 3010,
-  "errorKey": "RATE_LIMITED",
-  "retryAfterSeconds": 42
+    "type": "about:blank",
+    "title": "Too Many Requests",
+    "status": 429,
+    "detail": "Too many requests. Try again in 42 seconds.",
+    "instance": "/api/auth/login",
+    "errorCode": 3010,
+    "errorKey": "RATE_LIMITED",
+    "retryAfterSeconds": 42,
 }
 ```
 
@@ -1123,16 +1128,16 @@ In your API client interceptor, not at call sites:
 
 ### The limits that will actually be hit
 
-| endpoint | limit | why it matters to you |
-|---|---|---|
-| `POST /api/auth/login` | 10 / min | a login form that retries on failure will trip this |
-| `POST /api/auth/register` | 5 / hour | a user who mistypes their email a few times locks themselves out for the hour — say so clearly |
-| `POST /api/auth/refresh` | 30 / min | **the one most likely to bite** — see below |
-| `POST /api/auth/guest-login` | 20 / min | guests re-opening an invite link |
-| `POST /api/events/{id}/checkout` | 10 / min | shared with `subscription-checkout` |
-| `DELETE /api/events/{id}/subscription` | 10 / hour | per user; generous for a button pressed once |
-| `POST /api/events/{id}/refund-requests` | 5 / hour | per user, not per event |
-| admin decisions and settlement | 30 / min | per admin |
+| endpoint                                | limit     | why it matters to you                                                                          |
+| --------------------------------------- | --------- | ---------------------------------------------------------------------------------------------- |
+| `POST /api/auth/login`                  | 10 / min  | a login form that retries on failure will trip this                                            |
+| `POST /api/auth/register`               | 5 / hour  | a user who mistypes their email a few times locks themselves out for the hour — say so clearly |
+| `POST /api/auth/refresh`                | 30 / min  | **the one most likely to bite** — see below                                                    |
+| `POST /api/auth/guest-login`            | 20 / min  | guests re-opening an invite link                                                               |
+| `POST /api/events/{id}/checkout`        | 10 / min  | shared with `subscription-checkout`                                                            |
+| `DELETE /api/events/{id}/subscription`  | 10 / hour | per user; generous for a button pressed once                                                   |
+| `POST /api/events/{id}/refund-requests` | 5 / hour  | per user, not per event                                                                        |
+| admin decisions and settlement          | 30 / min  | per admin                                                                                      |
 
 **The refresh storm.** If your client fires ten requests, all get a `401`, and all ten independently
 call `/refresh`, you will hit the limit under ordinary use. Deduplicate: one in-flight refresh, queue
@@ -1151,63 +1156,63 @@ name, for logs). Branch on `errorCode`.
 
 ### Validation and request shape
 
-| code | HTTP | when | what to show |
-|---|---|---|---|
-| `3001` `VALIDATION_FAILED` | 400 | any bean-validation failure, incl. all plan-tier field rules | field-level errors from `details` |
-| `3008` `EVENT_DATES_INCOMPLETE` | 400 | checkout with no `endAt`, or `endAt <= startAt` | "Set an end date before publishing" — link to the schedule form |
-| `3010` `RATE_LIMITED` | 429 | the caller's budget for the window is spent | §11 |
+| code                            | HTTP | when                                                         | what to show                                                    |
+| ------------------------------- | ---- | ------------------------------------------------------------ | --------------------------------------------------------------- |
+| `3001` `VALIDATION_FAILED`      | 400  | any bean-validation failure, incl. all plan-tier field rules | field-level errors from `details`                               |
+| `3008` `EVENT_DATES_INCOMPLETE` | 400  | checkout with no `endAt`, or `endAt <= startAt`              | "Set an end date before publishing" — link to the schedule form |
+| `3010` `RATE_LIMITED`           | 429  | the caller's budget for the window is spent                  | §11                                                             |
 
 ### Plans and quotas
 
-| code | HTTP | when | what to show |
-|---|---|---|---|
-| `5008` `EVENT_STORAGE_LIMIT_EXCEEDED` | 409 | upload exceeds the event plan's storage | upgrade prompt built from `details` |
-| `5009` `EVENT_MEMBER_LIMIT_EXCEEDED` | 409 | member add / invite acceptance exceeds the cap | upgrade prompt |
-| `5010` `ACTIVE_EVENT_LIMIT_EXCEEDED` | 409 | the account plan caps concurrent events | upgrade **or archive** (§3) |
-| `5011` `PLAN_TIER_IN_USE` | 409 | admin deleting a plan that is still assigned | offer archiving instead |
-| `5012` `MODULE_NOT_AVAILABLE` | 409 | a module action where `isAvailable` is false | "not included in this plan" — and, if a matching `MODULE_UNLOCK` exists in `paidServices`, the §7c offer |
-| `5013` `PLAN_TIER_IS_ONLY_DEFAULT` | 409 | admin removing the last default plan | admin panel only |
-| `5015` `PLAN_TIER_NOT_PURCHASABLE` | 409 | the plan was archived or hidden since page load | refetch `/api/config`, ask them to pick again |
-| `5019` `PLAN_TIER_NOT_PRICED` | 409 | catalog misconfiguration — no activation or monthly price | generic error + support contact; the host cannot fix this |
-| `5021` `PLAN_TIER_CURRENCY_UNSUPPORTED` | 409 | the plan's currency is not supported by the provider | admin-facing; host sees a generic failure |
-| `5034` `ACCOUNT_PLANS_DISABLED` | 409 | admin tries to create an `ACCOUNT`-scope plan, or move a user onto a different one | admin-facing; remove/disable the control (§13) |
-| `3015` `INVALID_PAID_SERVICE_KIND` | 400 | a code sent to an endpoint that doesn't serve its kind — a `STORAGE_PACK` code at the add-on opt-in (§7c), or a `RECURRING_ADDON`/`MODULE_UNLOCK` code at `storage-checkout` (§7b) | refetch `paidServices`, the code was mislabeled client-side |
-| `2001` `RESOURCE_NOT_FOUND` | 404 | paid-service code doesn't exist in the catalog at all | refetch `paidServices`, the code was stale or mistyped |
-| `5036` `PAID_SERVICE_NOT_PURCHASABLE` | 409 | code exists but is archived or non-public | refetch `paidServices` and ask them to pick again |
-| `5037` `PAID_SERVICE_IN_USE` | 409 | admin deleting a paid service that is still referenced by an order, or patching `billingPeriod` on one that events already hold | offer archiving instead, plus a new code at the new cadence (admin panel only) |
-| `5038` `ADDON_ALREADY_ACTIVE` | 409 | opting into an add-on that is already active on the event | refetch the event; the toggle is already on |
-| `5039` `PAID_SERVICE_CURRENCY_MISMATCH` | 409 | the event's active add-ons are priced in a different currency to its plan | catalog misconfiguration; host sees a generic failure and support has to fix the catalog |
-| `5040` `PAID_SERVICE_NOT_ON_PLAN` | 409 | the service is restricted to plan tiers this event is not on | filter the purchase UI by `planTierIds` (below) so this is unreachable from a fresh catalog |
-| `5041` `ADDON_NOT_ACTIVE` | 409 | admin removing an add-on the event never had | admin panel only; refetch the event's add-ons |
-| `5042` `ADDON_LOCKED_WHILE_ACTIVE` | 409 | admin removing an entitlement (add-on or storage pack) from an `ACTIVE` event | admin panel only; not fixable — the event must leave `ACTIVE` first (e.g. an activation refund) |
+| code                                    | HTTP | when                                                                                                                                                                               | what to show                                                                                             |
+| --------------------------------------- | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `5008` `EVENT_STORAGE_LIMIT_EXCEEDED`   | 409  | upload exceeds the event plan's storage                                                                                                                                            | upgrade prompt built from `details`                                                                      |
+| `5009` `EVENT_MEMBER_LIMIT_EXCEEDED`    | 409  | member add / invite acceptance exceeds the cap                                                                                                                                     | upgrade prompt                                                                                           |
+| `5010` `ACTIVE_EVENT_LIMIT_EXCEEDED`    | 409  | the account plan caps concurrent events                                                                                                                                            | upgrade **or archive** (§3)                                                                              |
+| `5011` `PLAN_TIER_IN_USE`               | 409  | admin deleting a plan that is still assigned                                                                                                                                       | offer archiving instead                                                                                  |
+| `5012` `MODULE_NOT_AVAILABLE`           | 409  | a module action where `isAvailable` is false                                                                                                                                       | "not included in this plan" — and, if a matching `MODULE_UNLOCK` exists in `paidServices`, the §7c offer |
+| `5013` `PLAN_TIER_IS_ONLY_DEFAULT`      | 409  | admin removing the last default plan                                                                                                                                               | admin panel only                                                                                         |
+| `5015` `PLAN_TIER_NOT_PURCHASABLE`      | 409  | the plan was archived or hidden since page load                                                                                                                                    | refetch `/api/config`, ask them to pick again                                                            |
+| `5019` `PLAN_TIER_NOT_PRICED`           | 409  | catalog misconfiguration — no activation or monthly price                                                                                                                          | generic error + support contact; the host cannot fix this                                                |
+| `5021` `PLAN_TIER_CURRENCY_UNSUPPORTED` | 409  | the plan's currency is not supported by the provider                                                                                                                               | admin-facing; host sees a generic failure                                                                |
+| `5034` `ACCOUNT_PLANS_DISABLED`         | 409  | admin tries to create an `ACCOUNT`-scope plan, or move a user onto a different one                                                                                                 | admin-facing; remove/disable the control (§13)                                                           |
+| `3015` `INVALID_PAID_SERVICE_KIND`      | 400  | a code sent to an endpoint that doesn't serve its kind — a `STORAGE_PACK` code at the add-on opt-in (§7c), or a `RECURRING_ADDON`/`MODULE_UNLOCK` code at `storage-checkout` (§7b) | refetch `paidServices`, the code was mislabeled client-side                                              |
+| `2001` `RESOURCE_NOT_FOUND`             | 404  | paid-service code doesn't exist in the catalog at all                                                                                                                              | refetch `paidServices`, the code was stale or mistyped                                                   |
+| `5036` `PAID_SERVICE_NOT_PURCHASABLE`   | 409  | code exists but is archived or non-public                                                                                                                                          | refetch `paidServices` and ask them to pick again                                                        |
+| `5037` `PAID_SERVICE_IN_USE`            | 409  | admin deleting a paid service that is still referenced by an order, or patching `billingPeriod` on one that events already hold                                                    | offer archiving instead, plus a new code at the new cadence (admin panel only)                           |
+| `5038` `ADDON_ALREADY_ACTIVE`           | 409  | opting into an add-on that is already active on the event                                                                                                                          | refetch the event; the toggle is already on                                                              |
+| `5039` `PAID_SERVICE_CURRENCY_MISMATCH` | 409  | the event's active add-ons are priced in a different currency to its plan                                                                                                          | catalog misconfiguration; host sees a generic failure and support has to fix the catalog                 |
+| `5040` `PAID_SERVICE_NOT_ON_PLAN`       | 409  | the service is restricted to plan tiers this event is not on                                                                                                                       | filter the purchase UI by `planTierIds` (below) so this is unreachable from a fresh catalog              |
+| `5041` `ADDON_NOT_ACTIVE`               | 409  | admin removing an add-on the event never had                                                                                                                                       | admin panel only; refetch the event's add-ons                                                            |
+| `5042` `ADDON_LOCKED_WHILE_ACTIVE`      | 409  | admin removing an entitlement (add-on or storage pack) from an `ACTIVE` event                                                                                                      | admin panel only; not fixable — the event must leave `ACTIVE` first (e.g. an activation refund)          |
 
 ### Lifecycle and checkout
 
-| code | HTTP | when | what to show |
-|---|---|---|---|
-| `5014` `EVENT_NOT_ACTIVE` | 409 | subscription checkout on a `DRAFT`; or a guest/module action on one | send to activation / "not published yet" |
-| `5016` `EVENT_FROZEN` | 409 | **any write** on a `FROZEN` or `PURGED` event | read-only banner + link to the plan page |
-| `5017` `EVENT_NOT_DRAFT` | 409 | activation checkout on an event already live/frozen/purged | usually a stale tab; refetch the event |
-| `5018` `ORDER_NOT_PENDING` | 409 | admin settling an already-settled order | admin panel only |
-| `5020` `SUBSCRIPTION_ALREADY_ACTIVE` | 409 | subscription checkout with one already live; also fired by the admin plan-tier-reassignment endpoint (§13) when the event's subscription is still collecting | show the existing subscription (host-facing); admin panel only for the reassignment case — cancel/replace the subscription first |
-| `5026` `SUBSCRIPTION_NOT_LIVE` | 409 | cancelling with no live subscription | stale tab; refetch `/billing` |
-| `5027` `SUBSCRIPTION_CANCEL_FAILED` | 502 | the provider would not stop it | "Couldn't stop it just now — try again shortly." It is **still billing**; do not show it as cancelled |
-| `5046` `CHECKOUT_AMOUNT_BELOW_MINIMUM` | 409 | a plan discount cut a checkout's price below what the provider will charge at all | catalog misconfiguration (discount set too steep); host sees a generic failure and support has to fix the discount |
+| code                                   | HTTP | when                                                                                                                                                         | what to show                                                                                                                     |
+| -------------------------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `5014` `EVENT_NOT_ACTIVE`              | 409  | subscription checkout on a `DRAFT`; or a guest/module action on one                                                                                          | send to activation / "not published yet"                                                                                         |
+| `5016` `EVENT_FROZEN`                  | 409  | **any write** on a `FROZEN` or `PURGED` event                                                                                                                | read-only banner + link to the plan page                                                                                         |
+| `5017` `EVENT_NOT_DRAFT`               | 409  | activation checkout on an event already live/frozen/purged                                                                                                   | usually a stale tab; refetch the event                                                                                           |
+| `5018` `ORDER_NOT_PENDING`             | 409  | admin settling an already-settled order                                                                                                                      | admin panel only                                                                                                                 |
+| `5020` `SUBSCRIPTION_ALREADY_ACTIVE`   | 409  | subscription checkout with one already live; also fired by the admin plan-tier-reassignment endpoint (§13) when the event's subscription is still collecting | show the existing subscription (host-facing); admin panel only for the reassignment case — cancel/replace the subscription first |
+| `5026` `SUBSCRIPTION_NOT_LIVE`         | 409  | cancelling with no live subscription                                                                                                                         | stale tab; refetch `/billing`                                                                                                    |
+| `5027` `SUBSCRIPTION_CANCEL_FAILED`    | 502  | the provider would not stop it                                                                                                                               | "Couldn't stop it just now — try again shortly." It is **still billing**; do not show it as cancelled                            |
+| `5046` `CHECKOUT_AMOUNT_BELOW_MINIMUM` | 409  | a plan discount cut a checkout's price below what the provider will charge at all                                                                            | catalog misconfiguration (discount set too steep); host sees a generic failure and support has to fix the discount               |
 
 ### Refunds
 
-| code | HTTP | when | what to show |
-|---|---|---|---|
-| `5022` `REFUND_NOT_ELIGIBLE` | 409 | a gate failed at request time, or the event was used while queued | the `detail` string — it is the joined `reasons`, written for the host |
-| `5023` `REFUND_ALREADY_REQUESTED` | 409 | a request is already awaiting a decision | refetch eligibility; show the pending panel |
-| `5024` `REFUND_REQUEST_NOT_PENDING` | 409 | admin decided an already-decided request | double-click or stale queue; refetch |
-| `5025` `ORDER_NOT_REFUNDABLE` | 409 | no settled activation payment, or it is no longer `PAID` | "There's no payment on this event to refund" |
+| code                                | HTTP | when                                                              | what to show                                                           |
+| ----------------------------------- | ---- | ----------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `5022` `REFUND_NOT_ELIGIBLE`        | 409  | a gate failed at request time, or the event was used while queued | the `detail` string — it is the joined `reasons`, written for the host |
+| `5023` `REFUND_ALREADY_REQUESTED`   | 409  | a request is already awaiting a decision                          | refetch eligibility; show the pending panel                            |
+| `5024` `REFUND_REQUEST_NOT_PENDING` | 409  | admin decided an already-decided request                          | double-click or stale queue; refetch                                   |
+| `5025` `ORDER_NOT_REFUNDABLE`       | 409  | no settled activation payment, or it is no longer `PAID`          | "There's no payment on this event to refund"                           |
 
 `403` on any host endpoint means the caller is not a host. Co-hosts count as hosts.
 
 ### Handle `5016` globally
 
-`EVENT_FROZEN` comes back from *every* write path — gallery upload, post, comment, reaction, story,
+`EVENT_FROZEN` comes back from _every_ write path — gallery upload, post, comment, reaction, story,
 playlist, RSVP, member changes. It is a single server-side gate, so handle it once in your error
 interceptor (banner + refetch the event to pick up the new `status`) rather than at twenty call
 sites.
@@ -1220,25 +1225,25 @@ All require `ROLE_ADMIN`; non-admins get `403`.
 
 ### Money and lifecycle
 
-| endpoint | effect |
-|---|---|
-| `POST /api/admin/orders/{orderId}/settle` | marks an order paid without a provider payment — bank transfer, comped event, lost webhook. Activates the event exactly as a real payment would. |
-| `POST /api/admin/events/{id}/freeze` | forces an event read-only. For testing the frozen state before the sweep is enabled everywhere. |
-| `POST /api/admin/events/{id}/purge` | **destroys the event's media in storage. Irreversible.** Returns `false` if some files could not be deleted (the event stays `FROZEN`; a later call retries). Needs a confirmation dialog that names the event. |
-| `GET /api/admin/webhooks/unprocessed` | deliveries received but never processed — settlements the platform may have lost. The remedy is usually `settle` above. |
-| `GET /api/admin/refund-requests` | the refund queue with usage evidence (§9) |
-| `POST /api/admin/refund-requests/{id}/approve` \| `/reject` | decide a request (§9) |
+| endpoint                                                    | effect                                                                                                                                                                                                          |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /api/admin/orders/{orderId}/settle`                   | marks an order paid without a provider payment — bank transfer, comped event, lost webhook. Activates the event exactly as a real payment would.                                                                |
+| `POST /api/admin/events/{id}/freeze`                        | forces an event read-only. For testing the frozen state before the sweep is enabled everywhere.                                                                                                                 |
+| `POST /api/admin/events/{id}/purge`                         | **destroys the event's media in storage. Irreversible.** Returns `false` if some files could not be deleted (the event stays `FROZEN`; a later call retries). Needs a confirmation dialog that names the event. |
+| `GET /api/admin/webhooks/unprocessed`                       | deliveries received but never processed — settlements the platform may have lost. The remedy is usually `settle` above.                                                                                         |
+| `GET /api/admin/refund-requests`                            | the refund queue with usage evidence (§9)                                                                                                                                                                       |
+| `POST /api/admin/refund-requests/{id}/approve` \| `/reject` | decide a request (§9)                                                                                                                                                                                           |
 
 ### The plan catalog
 
-| endpoint | notes |
-|---|---|
+| endpoint                                                     | notes                                                                                                      |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
 | `GET /api/admin/plan-tiers?scope=EVENT&includeArchived=true` | both params optional. Unlike `/api/config`, returns non-public and archived plans — the admin's full view. |
-| `GET /api/admin/plan-tiers/{id}` | `404` if not found |
-| `POST /api/admin/plan-tiers` | create; validation below |
-| `PATCH /api/admin/plan-tiers/{id}` | partial update. **`code` and `scope` are immutable** and absent from the patch DTO. |
-| `DELETE /api/admin/plan-tiers/{id}` | `204`, or `409 PLAN_TIER_IN_USE` if assigned to any user or event |
-| `PUT /api/admin/plan-tiers/{id}/modules` | sets `moduleKeys` |
+| `GET /api/admin/plan-tiers/{id}`                             | `404` if not found                                                                                         |
+| `POST /api/admin/plan-tiers`                                 | create; validation below                                                                                   |
+| `PATCH /api/admin/plan-tiers/{id}`                           | partial update. **`code` and `scope` are immutable** and absent from the patch DTO.                        |
+| `DELETE /api/admin/plan-tiers/{id}`                          | `204`, or `409 PLAN_TIER_IN_USE` if assigned to any user or event                                          |
+| `PUT /api/admin/plan-tiers/{id}/modules`                     | sets `moduleKeys`                                                                                          |
 
 Create/patch validation (server-enforced, `400` / `3001`):
 
@@ -1258,17 +1263,17 @@ catalog visibility. Delete is for a plan created by mistake and never assigned.
 
 ### Assignment
 
-| endpoint | body | returns |
-|---|---|---|
-| `PATCH /api/admin/users/{id}/plan-tier` | `{ "planTierCode": "PRO" }` | **always `409 ACCOUNT_PLANS_DISABLED`** — see below |
-| `PATCH /api/admin/events/{id}/plan-tier` | `{ "planTierCode": "PLUS" }` — must be `EVENT` scope | `EventUsageResponse` |
+| endpoint                                 | body                                                 | returns                                             |
+| ---------------------------------------- | ---------------------------------------------------- | --------------------------------------------------- |
+| `PATCH /api/admin/users/{id}/plan-tier`  | `{ "planTierCode": "PRO" }`                          | **always `409 ACCOUNT_PLANS_DISABLED`** — see below |
+| `PATCH /api/admin/events/{id}/plan-tier` | `{ "planTierCode": "PLUS" }` — must be `EVENT` scope | `EventUsageResponse`                                |
 
 **Account plans are disabled as of 2026-08-11** (`account-plans-disabled-and-platform-metrics-fe-integration.md`
 has the full change). `PATCH /api/admin/users/{id}/plan-tier` now unconditionally rejects with
 `errorCode: 5034 ACCOUNT_PLANS_DISABLED` — remove or disable any admin UI for reassigning a user's
 account plan. `POST /api/admin/plan-tiers` with `"scope": "ACCOUNT"` rejects the same way, so an
 account plan can no longer be created either. Everything else about `ACCOUNT`-scope plans (read,
-patch, delete) still works normally — only *create* and *assign* are blocked.
+patch, delete) still works normally — only _create_ and _assign_ are blocked.
 
 The event-plan assignment endpoint is unaffected: the response is still a fresh usage snapshot
 against the new plan's limits, so an admin sees immediately whether it's already exceeded — there
@@ -1277,24 +1282,24 @@ unknown code or a scope mismatch errors rather than silently no-op'ing.
 
 ### Modules and flags
 
-| endpoint | notes |
-|---|---|
-| `GET /api/admin/platform-modules` | every registry row including disabled, by `sortOrder` |
+| endpoint                                        | notes                                                                                                                                                                                      |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET /api/admin/platform-modules`               | every registry row including disabled, by `sortOrder`                                                                                                                                      |
 | `PATCH /api/admin/platform-modules/{moduleKey}` | every field optional. **No create or delete** — the module set is fixed by backend code. `isEnabled: false` is the fastest way to withdraw a broken module platform-wide without a deploy. |
-| `PATCH /api/platform-feature-flags/{id}` | `description` (≤100), `isEnabled`, `configuration` (arbitrary JSON). `featureKey` is not patchable. |
+| `PATCH /api/platform-feature-flags/{id}`        | `description` (≤100), `isEnabled`, `configuration` (arbitrary JSON). `featureKey` is not patchable.                                                                                        |
 
 ### The paid-services catalog (add-on + storage packs + module unlocks)
 
 Mirrors the plan-tier admin surface (above) field-for-field — same archive-don't-delete guidance,
 same validation shape.
 
-| endpoint | notes |
-|---|---|
+| endpoint                                              | notes                                                                                 |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | `GET /api/admin/paid-services?kind=&includeArchived=` | both params optional. Unlike `/api/config`, returns non-public and archived services. |
-| `GET /api/admin/paid-services/{id}` | `404` if not found |
-| `POST /api/admin/paid-services` | create; validation below |
-| `PATCH /api/admin/paid-services/{id}` | partial update. **`code` and `kind` are immutable** and absent from the patch DTO. |
-| `DELETE /api/admin/paid-services/{id}` | `204`, or `409 PAID_SERVICE_IN_USE` (5037) if any order references it |
+| `GET /api/admin/paid-services/{id}`                   | `404` if not found                                                                    |
+| `POST /api/admin/paid-services`                       | create; validation below                                                              |
+| `PATCH /api/admin/paid-services/{id}`                 | partial update. **`code` and `kind` are immutable** and absent from the patch DTO.    |
+| `DELETE /api/admin/paid-services/{id}`                | `204`, or `409 PAID_SERVICE_IN_USE` (5037) if any order references it                 |
 
 Create/patch validation (`400` / `3001` unless noted):
 
@@ -1328,20 +1333,20 @@ Create/patch validation (`400` / `3001` unless noted):
   **Omitted or `[]` means every plan**, which is what the whole seeded catalog uses; list tiers only
   to restrict. On `PATCH` it replaces the set wholesale, so send `[]` to lift a restriction and omit
   the field to leave it alone. Unknown id → `404`; an `ACCOUNT`-scope id → `400
-  INVALID_PLAN_TIER_SCOPE`. Buying a service the event's plan is not listed for → `409
-  PAID_SERVICE_NOT_ON_PLAN` (5040), so filter the host-facing purchase UI on this.
+INVALID_PLAN_TIER_SCOPE`. Buying a service the event's plan is not listed for → `409
+PAID_SERVICE_NOT_ON_PLAN` (5040), so filter the host-facing purchase UI on this.
 - `priceAmountMinor >= 0`, `priceCurrency` exactly 3 chars, `name` ≤100 chars, `sortOrder >= 0`.
   Keep every service's `priceCurrency` equal to the plans' — an add-on priced in another currency
   cannot be added to the plan amount, and checkout refuses with `409
-  PAID_SERVICE_CURRENCY_MISMATCH` (5039) rather than mispricing the charge.
+PAID_SERVICE_CURRENCY_MISMATCH` (5039) rather than mispricing the charge.
 
 Editing a service's price only affects **future** checkouts — a settled order keeps the price it was
 opened at, per §7a/§7b's "the order is the historical receipt" note.
 
 ### Platform metrics
 
-| endpoint | notes |
-|---|---|
+| endpoint                 | notes                                                                                                                                                                                                                                                                                                                                       |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `GET /api/admin/metrics` | dashboard counts: users/events totals, active counts, both grouped by plan/status, and a `storage` block (used/pending-purge/committed/paid-vs-free/purchased-extra bytes plus an estimated monthly cost). No params, computed live on every call. Full field reference in `account-plans-disabled-and-platform-metrics-fe-integration.md`. |
 
 ---
@@ -1354,87 +1359,87 @@ export type PlanScope = 'ACCOUNT' | 'EVENT';
 export type BillingPeriod = 'MONTHLY' | 'YEARLY' | 'ONE_TIME';
 
 export interface PlanTierResponse {
-  id: string;
-  code: string;                 // NOT a fixed union — admins create these at runtime
-  scope: PlanScope;
-  name: string;
-  description: string | null;
-  sortOrder: number;
-  isDefault: boolean;
-  isAssignable: boolean;
-  isPublic: boolean;
+    id: string;
+    code: string; // NOT a fixed union — admins create these at runtime
+    scope: PlanScope;
+    name: string;
+    description: string | null;
+    sortOrder: number;
+    isDefault: boolean;
+    isAssignable: boolean;
+    isPublic: boolean;
 
-  storageBytes: number | null;  // null = unlimited
-  maxMembers: number | null;    // null = unlimited
-  maxActiveEvents: number | null;
+    storageBytes: number | null; // null = unlimited
+    maxMembers: number | null; // null = unlimited
+    maxActiveEvents: number | null;
 
-  priceAmountMinor: number | null;
-  priceCurrency: string | null;
-  billingPeriod: BillingPeriod | null;
-  recurringPriceAmountMinor: number | null;  // null on ACCOUNT scope
-  includedMonths: number | null;             // null on ACCOUNT scope
+    priceAmountMinor: number | null;
+    priceCurrency: string | null;
+    billingPeriod: BillingPeriod | null;
+    recurringPriceAmountMinor: number | null; // null on ACCOUNT scope
+    includedMonths: number | null; // null on ACCOUNT scope
 
-  discountPercent: number | null;
-  discountLabel: string | null;
-  discountStartsAt: string | null;
-  discountEndsAt: string | null;
+    discountPercent: number | null;
+    discountLabel: string | null;
+    discountStartsAt: string | null;
+    discountEndsAt: string | null;
 
-  moduleKeys: string[];         // always empty on ACCOUNT scope
+    moduleKeys: string[]; // always empty on ACCOUNT scope
 }
 
 // ---------- Paid services (add-on + storage packs + module unlocks) ----------
 export type PaidServiceKind = 'STORAGE_PACK' | 'RECURRING_ADDON' | 'MODULE_UNLOCK';
 
 export interface PaidServiceResponse {
-  id: string;
-  code: string;                 // NOT a fixed union — admins create these at runtime
-  kind: PaidServiceKind;
-  name: string;
-  description: string | null;
-  sortOrder: number;
-  isAssignable: boolean;
-  isPublic: boolean;
-  priceAmountMinor: number;
-  priceCurrency: string;
-  billingPeriod: BillingPeriod; // 'MONTHLY', or 'ONE_TIME' on a MODULE_UNLOCK — see §13
-  grantsStorageBytes: number | null;  // set only on STORAGE_PACK, null on the other two
-  grantsModuleKey: string | null;     // set only on MODULE_UNLOCK, null on the other two
-  planTierIds: string[];        // plan tiers this is offered on; EMPTY MEANS EVERY PLAN
+    id: string;
+    code: string; // NOT a fixed union — admins create these at runtime
+    kind: PaidServiceKind;
+    name: string;
+    description: string | null;
+    sortOrder: number;
+    isAssignable: boolean;
+    isPublic: boolean;
+    priceAmountMinor: number;
+    priceCurrency: string;
+    billingPeriod: BillingPeriod; // 'MONTHLY', or 'ONE_TIME' on a MODULE_UNLOCK — see §13
+    grantsStorageBytes: number | null; // set only on STORAGE_PACK, null on the other two
+    grantsModuleKey: string | null; // set only on MODULE_UNLOCK, null on the other two
+    planTierIds: string[]; // plan tiers this is offered on; EMPTY MEANS EVERY PLAN
 }
 
 export interface EventAddon {
-  code: string;
-  name: string;
-  priceAmountMinor: number;     // what this costs at billingPeriod's cadence
-  billingPeriod: BillingPeriod; // 'MONTHLY' (on every renewal) or 'ONE_TIME' (paid at activation)
-  activatedAt: string;
+    code: string;
+    name: string;
+    priceAmountMinor: number; // what this costs at billingPeriod's cadence
+    billingPeriod: BillingPeriod; // 'MONTHLY' (on every renewal) or 'ONE_TIME' (paid at activation)
+    activatedAt: string;
 }
 
 // POST /api/events/{eventId}/addons — host, DRAFT only. Returns an EventAddon (§7c).
 export interface EventAddonRequest {
-  paidServiceCode: string;      // a RECURRING_ADDON or MODULE_UNLOCK code
+    paidServiceCode: string; // a RECURRING_ADDON or MODULE_UNLOCK code
 }
 
 // ---------- Usage ----------
 export interface EventUsageResponse {
-  eventId: string;
-  planTier: string;             // plain string, not a union
-  storageBytes: number;
-  planStorageBytes: number | null;   // the plan's own ceiling, before purchased extra
-  extraStorageBytes: number;         // bytes added by settled storage packs
-  storageLimitBytes: number | null;  // planStorageBytes + extraStorageBytes — what gates uploads
-  storagePercent: number;
-  memberCount: number;
-  memberLimit: number | null;
-  memberPercent: number;
+    eventId: string;
+    planTier: string; // plain string, not a union
+    storageBytes: number;
+    planStorageBytes: number | null; // the plan's own ceiling, before purchased extra
+    extraStorageBytes: number; // bytes added by settled storage packs
+    storageLimitBytes: number | null; // planStorageBytes + extraStorageBytes — what gates uploads
+    storagePercent: number;
+    memberCount: number;
+    memberLimit: number | null;
+    memberPercent: number;
 }
 
 export interface AccountUsageResponse {
-  userId: string;
-  planTier: string;
-  activeEvents: number;
-  activeEventLimit: number | null;
-  activeEventPercent: number;
+    userId: string;
+    planTier: string;
+    activeEvents: number;
+    activeEventLimit: number | null;
+    activeEventPercent: number;
 }
 
 // ---------- Lifecycle ----------
@@ -1443,126 +1448,121 @@ export type EventStatus = 'DRAFT' | 'ACTIVE' | 'FROZEN' | 'PURGED';
 
 // ---------- Checkout ----------
 export interface CheckoutResponse {
-  orderId: string;
-  redirectUrl: string;
+    orderId: string;
+    redirectUrl: string;
 }
 
 // ---------- Billing ----------
 export interface EventBillingResponse {
-  eventStatus: EventStatus;
-  planTierCode: string;
-  planTierName: string;
-  coverage: CoverageSummary;
-  subscription: SubscriptionSummary | null;
-  orders: OrderSummary[];       // newest first
-  addons: EventAddon[];         // empty if never opted in
+    eventStatus: EventStatus;
+    planTierCode: string;
+    planTierName: string;
+    coverage: CoverageSummary;
+    subscription: SubscriptionSummary | null;
+    orders: OrderSummary[]; // newest first
+    addons: EventAddon[]; // empty if never opted in
 }
 
 export interface CoverageSummary {
-  unlimited: boolean;           // grandfathered: never expires
-  paidThrough: string | null;   // null iff unlimited
-  covered: boolean;
-  freezesAt: string | null;     // null iff unlimited
-  purgesAt: string | null;      // null iff unlimited
+    unlimited: boolean; // grandfathered: never expires
+    paidThrough: string | null; // null iff unlimited
+    covered: boolean;
+    freezesAt: string | null; // null iff unlimited
+    purgesAt: string | null; // null iff unlimited
 }
 
 export interface SubscriptionSummary {
-  id: string;
-  status: 'ACTIVE' | 'PAST_DUE' | 'CANCELLED';
-  currentPeriodEnd: string | null;
-  cancelAtPeriodEnd: boolean;   // cancelled, but the paid month is still running
-  cancelledAt: string | null;
+    id: string;
+    status: 'ACTIVE' | 'PAST_DUE' | 'CANCELLED';
+    currentPeriodEnd: string | null;
+    cancelAtPeriodEnd: boolean; // cancelled, but the paid month is still running
+    cancelledAt: string | null;
 }
 
 export interface OrderSummary {
-  id: string;
-  kind: 'ACTIVATION' | 'RENEWAL' | 'UPGRADE' | 'STORAGE_PACK';
-  status: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED';
-  amountMinor: number;
-  addonAmountMinor: number | null;  // the add-on's slice of amountMinor on an ACTIVATION
-                                    // (× includedMonths) or a RENEWAL (one month); else null
-  currency: string;
-  coversFrom: string | null;    // null on UPGRADE and STORAGE_PACK — they buy ceiling, not time
-  coversUntil: string | null;   // null on UPGRADE and STORAGE_PACK
-  paidAt: string | null;
-  createdAt: string;
+    id: string;
+    kind: 'ACTIVATION' | 'RENEWAL' | 'UPGRADE' | 'STORAGE_PACK';
+    status: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED';
+    amountMinor: number;
+    addonAmountMinor: number | null; // the add-on's slice of amountMinor on an ACTIVATION
+    // (× includedMonths) or a RENEWAL (one month); else null
+    currency: string;
+    coversFrom: string | null; // null on UPGRADE and STORAGE_PACK — they buy ceiling, not time
+    coversUntil: string | null; // null on UPGRADE and STORAGE_PACK
+    paidAt: string | null;
+    createdAt: string;
 }
 
 // ---------- Refunds ----------
 export type RefundRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
 export interface RefundEligibilityResponse {
-  eligible: boolean;
-  reasons: string[];            // show verbatim
-  hasPendingRequest: boolean;
+    eligible: boolean;
+    reasons: string[]; // show verbatim
+    hasPendingRequest: boolean;
 }
 
 export interface RefundRequestResponse {
-  id: string;
-  eventId: string;
-  orderId: string;
-  status: RefundRequestStatus;
-  reason: string;               // the host's own words
-  amountMinor: number | null;
-  currency: string | null;
-  requestedById: string;
-  requestedAt: string;
-  decidedById: string | null;
-  decidedAt: string | null;
-  decisionNote: string | null;  // safe to show the host — written for them
-  providerRefunded: boolean;    // false on APPROVED = money returned by hand
+    id: string;
+    eventId: string;
+    orderId: string;
+    status: RefundRequestStatus;
+    reason: string; // the host's own words
+    amountMinor: number | null;
+    currency: string | null;
+    requestedById: string;
+    requestedAt: string;
+    decidedById: string | null;
+    decidedAt: string | null;
+    decisionNote: string | null; // safe to show the host — written for them
+    providerRefunded: boolean; // false on APPROVED = money returned by hand
 }
 
 export interface RefundRequestAdmin {
-  request: RefundRequestResponse;
-  eventTitle: string;
-  eventStatus: EventStatus;
-  eventStartAt: string | null;
-  eventEndAt: string | null;
-  paidAt: string | null;
-  hostDisplayName: string | null;
-  hostEmail: string | null;     // admin-only
-  currentlyEligible: boolean;
-  ineligibilityReasons: string[];
-  guestCount: number;
-  hostCount: number;
-  postCount: number;
-  mediaCount: number;
-  storageBytes: number;
+    request: RefundRequestResponse;
+    eventTitle: string;
+    eventStatus: EventStatus;
+    eventStartAt: string | null;
+    eventEndAt: string | null;
+    paidAt: string | null;
+    hostDisplayName: string | null;
+    hostEmail: string | null; // admin-only
+    currentlyEligible: boolean;
+    ineligibilityReasons: string[];
+    guestCount: number;
+    hostCount: number;
+    postCount: number;
+    mediaCount: number;
+    storageBytes: number;
 }
 
 // ---------- Admin metrics ----------
 export interface PlatformMetricsResponse {
-  totalUsers: number;
-  activeUsers: number;
-  usersByAccountPlan: Record<string, number>;
+    totalUsers: number;
+    activeUsers: number;
+    usersByAccountPlan: Record<string, number>;
 
-  totalEvents: number;
-  activeEvents: number;
-  eventsByStatus: Record<string, number>;   // keys: DRAFT | ACTIVE | FROZEN | PURGED, missing = 0
-  eventsByPlanTier: Record<string, number>;
+    totalEvents: number;
+    activeEvents: number;
+    eventsByStatus: Record<string, number>; // keys: DRAFT | ACTIVE | FROZEN | PURGED, missing = 0
+    eventsByPlanTier: Record<string, number>;
 
-  storage: PlatformStorageMetrics;
+    storage: PlatformStorageMetrics;
 }
 
 export interface PlatformStorageMetrics {
-  usedBytes: number;                  // non-deleted media, derivative + original
-  pendingPurgeBytes: number;          // soft-deleted, still in R2 — Cloudflare bills it, quota does not
-  committedBytes: number;             // sum of effective limits sold — headroom, NOT spend
-  paidUsedBytes: number;              // usedBytes on events with any paid coverage history
-  freeUsedBytes: number;              // usedBytes on grandfathered / never-paid events
-  purchasedExtraBytes: number;        // total ever granted by settled storage packs
-  estimatedMonthlyCostMinor: number;  // approximation — storage only, no Class A/B ops modelled
-  costCurrency: string;
+    usedBytes: number; // non-deleted media, derivative + original
+    pendingPurgeBytes: number; // soft-deleted, still in R2 — Cloudflare bills it, quota does not
+    committedBytes: number; // sum of effective limits sold — headroom, NOT spend
+    paidUsedBytes: number; // usedBytes on events with any paid coverage history
+    freeUsedBytes: number; // usedBytes on grandfathered / never-paid events
+    purchasedExtraBytes: number; // total ever granted by settled storage packs
+    estimatedMonthlyCostMinor: number; // approximation — storage only, no Class A/B ops modelled
+    costCurrency: string;
 }
 
 // ---------- Notifications ----------
-export type BillingNotificationType =
-  | 'BILLING_EXPIRING'
-  | 'BILLING_PAST_DUE'
-  | 'BILLING_PURGE_WARNING'
-  | 'REFUND_APPROVED'
-  | 'REFUND_REJECTED';
+export type BillingNotificationType = 'BILLING_EXPIRING' | 'BILLING_PAST_DUE' | 'BILLING_PURGE_WARNING' | 'REFUND_APPROVED' | 'REFUND_REJECTED';
 ```
 
 **Every `*AmountMinor` and `*Bytes` field is an integer in minor units / raw bytes.** Format at the
@@ -1575,11 +1575,11 @@ edge; never store a divided value.
 The provider is configurable (`app.billing.provider`). Unless an environment is explicitly set to
 `STRIPE`, it runs the **manual** provider, and the difference is visible to the FE:
 
-| | `MANUAL` (default: dev, staging) | `STRIPE` (production) |
-|---|---|---|
-| `redirectUrl` | points straight back at `/events/{id}/checkout/success` | a real `checkout.stripe.com` URL |
-| when the event activates | **only when an admin settles the order** | a second or two after the hosted page |
-| refund approval | `providerRefunded: false` — no charge exists to reverse | `true` on success |
+|                          | `MANUAL` (default: dev, staging)                        | `STRIPE` (production)                 |
+| ------------------------ | ------------------------------------------------------- | ------------------------------------- |
+| `redirectUrl`            | points straight back at `/events/{id}/checkout/success` | a real `checkout.stripe.com` URL      |
+| when the event activates | **only when an admin settles the order**                | a second or two after the hosted page |
+| refund approval          | `providerRefunded: false` — no charge exists to reverse | `true` on success                     |
 
 So on a dev environment the host "pays", lands on the success page, and the event stays `DRAFT` until
 someone calls `POST /api/admin/orders/{orderId}/settle`. **That is not a bug** — it is exactly why

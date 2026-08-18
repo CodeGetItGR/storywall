@@ -79,7 +79,12 @@ export function PlanEditorCard({
     return (
         <article className={cn('min-w-0', plan.isAssignable ? '' : 'opacity-90')}>
             {/* Header */}
-            <PlanEditorHeader plan={editorPlan} isEvent={isEvent} isMakingDefault={updatePlan.mutation.isPending} onMakeDefault={handleMakeDefaultClick} />
+            <PlanEditorHeader
+                plan={editorPlan}
+                isEvent={isEvent}
+                isMakingDefault={updatePlan.mutation.isPending}
+                onMakeDefault={handleMakeDefaultClick}
+            />
 
             {/* Form */}
             <form ref={formRef} id={`${editorId}-form`} onSubmit={handleSubmit} onChange={handleFormChange}>
@@ -87,7 +92,13 @@ export function PlanEditorCard({
                 <AdminTabs id={editorId} tabs={tabs} active={tab} onSelect={setTab} className="mt-4" />
 
                 {/* Details tab */}
-                <PlanEditorDetailsTab editorId={editorId} activeTab={tab} plan={editorPlan} visibility={visibility} onVisibilityChange={handleVisibilityChange} />
+                <PlanEditorDetailsTab
+                    editorId={editorId}
+                    activeTab={tab}
+                    plan={editorPlan}
+                    visibility={visibility}
+                    onVisibilityChange={handleVisibilityChange}
+                />
 
                 {/* Limits tab */}
                 <PlanEditorLimitsTab editorId={editorId} activeTab={tab} plan={editorPlan} isEvent={isEvent} />
@@ -118,7 +129,12 @@ export function PlanEditorCard({
                 )}
 
                 {/* Danger tab */}
-                <PlanEditorDangerTab editorId={editorId} activeTab={tab} isDeleting={deletePlan.mutation.isPending} onDeleteOpen={handleDeleteOpenClick} />
+                <PlanEditorDangerTab
+                    editorId={editorId}
+                    activeTab={tab}
+                    isDeleting={deletePlan.mutation.isPending}
+                    onDeleteOpen={handleDeleteOpenClick}
+                />
             </form>
 
             {/* Footer */}

@@ -1,6 +1,7 @@
 # FE integration guide: invite onboarding page
 
 Covers two flows:
+
 - **Part A** — the host-only UI for creating/managing invitations for an event.
 - **Part B** — the public onboarding page a visitor lands on after scanning a QR code /
   opening an invite link, where they join as a guest, log in, or register.
@@ -52,20 +53,21 @@ you don't need it to be meaningful — it just has to be unique within the event
 
 **201 response** (`EventInvitationResponseDto`) — this is where you get the token to build
 the invite link from:
+
 ```json
 {
-  "id": "e5f6...uuid",
-  "eventId": "a1c2...uuid",
-  "inviteCode": "TABLE-7",
-  "inviteToken": "b3f1...uuid",
-  "email": "taylor@example.com",
-  "firstName": "Taylor",
-  "lastName": "Smith",
-  "maxGuests": 5,
-  "expiresAt": "2026-09-01T00:00:00Z",
-  "usedAt": null,
-  "createdAt": "2026-07-31T...",
-  "role": "ATTENDEE"
+    "id": "e5f6...uuid",
+    "eventId": "a1c2...uuid",
+    "inviteCode": "TABLE-7",
+    "inviteToken": "b3f1...uuid",
+    "email": "taylor@example.com",
+    "firstName": "Taylor",
+    "lastName": "Smith",
+    "maxGuests": 5,
+    "expiresAt": "2026-09-01T00:00:00Z",
+    "usedAt": null,
+    "createdAt": "2026-07-31T...",
+    "role": "ATTENDEE"
 }
 ```
 
@@ -75,13 +77,14 @@ Build the shareable link/QR as `https://your-app/invite/{inviteToken}` and/or th
 human-readable `inviteCode` for print materials.
 
 Error cases:
+
 - `409 Conflict` — `inviteCode` already used for this event.
 - `400 Bad Request`, `errorCode: 3001` — validation failure (e.g. missing `inviteCode`),
   with field errors under `errors.<fieldName>`.
 
 ### Co-host invitations
 
-*New 2026-08-16.* Asks somebody to **co-host** rather than attend. Use this when the host knows a
+_New 2026-08-16._ Asks somebody to **co-host** rather than attend. Use this when the host knows a
 person by email address; use `POST /api/events/{eventId}/hosts` (`{ userId }`) when they are
 already a registered user whose id you hold and the host wants to promote them **immediately**,
 with no acceptance step. Both paths end at the same `EventHost` row.
@@ -135,6 +138,7 @@ page rather than the guest shortcut.
 GET /api/events/{eventId}/invitations
 Authorization: Bearer {accessToken}
 ```
+
 → `EventInvitationResponseDto[]` — use this to render the host's "manage invitations" table
 (who's been invited, `usedAt` to show claimed/unclaimed, etc). Host-only; carries PII
 (email/name) and tokens, so never expose this list to non-hosts.
@@ -154,6 +158,7 @@ stays listed even if a QR code points at it.
 GET /api/event-invitations/{id}
 Authorization: Bearer {accessToken}
 ```
+
 Same DTO as above. Note this takes the invitation's own `id`, not the `inviteToken` — use
 this for an edit screen you navigated to from the list above.
 
@@ -165,6 +170,7 @@ Authorization: Bearer {accessToken}
 
 { "maxGuests": 10 }
 ```
+
 Partial update — `firstName`, `lastName`, `email`, `maxGuests`, `expiresAt` are all
 independently optional; omitted fields are left unchanged. `inviteCode` and `inviteToken`
 are not patchable (immutable after creation).
@@ -175,6 +181,7 @@ are not patchable (immutable after creation).
 DELETE /api/event-invitations/{id}
 Authorization: Bearer {accessToken}
 ```
+
 Immediately invalidates the link — the preview/guest-login/accept endpoints below will all
 404 for that token afterward.
 
@@ -196,17 +203,17 @@ GET /api/event-invitations/{inviteToken}/preview
 
 ```json
 {
-  "inviteToken": "b3f1...uuid",
-  "eventId": "a1c2...uuid",
-  "eventTitle": "Alex & Jamie's Wedding",
-  "eventSubtitle": "Join us for the big day",
-  "eventDescription": "...",
-  "coverMediaId": "d4e5...uuid",
-  "firstName": "Taylor",
-  "lastName": "Smith",
-  "email": "taylor@example.com",
-  "expired": false,
-  "alreadyUsed": false
+    "inviteToken": "b3f1...uuid",
+    "eventId": "a1c2...uuid",
+    "eventTitle": "Alex & Jamie's Wedding",
+    "eventSubtitle": "Join us for the big day",
+    "eventDescription": "...",
+    "coverMediaId": "d4e5...uuid",
+    "firstName": "Taylor",
+    "lastName": "Smith",
+    "email": "taylor@example.com",
+    "expired": false,
+    "alreadyUsed": false
 }
 ```
 
@@ -247,12 +254,12 @@ POST /api/auth/guest-login
 
 ```ts
 function guestKey(): string {
-  let key = localStorage.getItem('guestKey');
-  if (!key) {
-    key = crypto.randomUUID();
-    localStorage.setItem('guestKey', key);
-  }
-  return key;
+    let key = localStorage.getItem('guestKey');
+    if (!key) {
+        key = crypto.randomUUID();
+        localStorage.setItem('guestKey', key);
+    }
+    return key;
 }
 ```
 
@@ -265,7 +272,7 @@ never have to branch. (In the QR flow, the resolve response tells you outright v
 
 **Why it exists.** The backend used to resolve a returning guest as "the member created from
 this invitation" — a single row. For a personal emailed invite that was right. For a link
-shared with a whole table it meant the *second* person to open it was logged in **as the
+shared with a whole table it meant the _second_ person to open it was logged in **as the
 first**: their account, their name, their membership. `guestKey` is what tells two users of
 the same link apart.
 
@@ -281,8 +288,12 @@ a membership is created — by `guest-login` **and** by `accept` below, so an ac
 can't walk past a full link:
 
 ```json
-{ "status": 409, "errorCode": 5035, "errorKey": "INVITATION_EXHAUSTED",
-  "detail": "This invite link has already been used by the maximum number of guests." }
+{
+    "status": 409,
+    "errorCode": 5035,
+    "errorKey": "INVITATION_EXHAUSTED",
+    "detail": "This invite link has already been used by the maximum number of guests."
+}
 ```
 
 A slot is consumed on **join**, not on preview or scan. A guest the host later removes gives
@@ -297,6 +308,7 @@ for an invitation the host created, or `PATCH /api/qr-links/{id}` for one behind
 POST /api/auth/login
 { "email": "...", "password": "..." }
 ```
+
 → returns `accessToken` / `refreshToken`.
 
 Then, using that `accessToken`:
@@ -314,13 +326,14 @@ row, so the caller appears in `EventDetailResponseDto.hosts` immediately. Nothin
 request differs — the endpoint is the same.
 
 Possible responses from `accept`:
+
 - `409 Conflict`, `errorCode: 5001` — caller is already a member of this event. Treat as
   success (they're in); don't surface this as an error to the user.
-- `409 Conflict`, `errorCode: 5035` — the link's `maxGuests` is used up. This one *is* an
+- `409 Conflict`, `errorCode: 5035` — the link's `maxGuests` is used up. This one _is_ an
   error: they're not in. Show "this invite link is full".
 - `410 Gone` — invitation has expired since the preview was loaded.
 - `403 Forbidden`, `errorCode: 5044` `CO_HOST_INVITE_NOT_YOURS` — **co-host invitations only.**
-  The signed-in account's email doesn't match the address the invitation names, *or* it matches
+  The signed-in account's email doesn't match the address the invitation names, _or_ it matches
   but the address is unverified. See below.
 
 #### Handling `5044`
@@ -331,12 +344,12 @@ render "please verify your email" off the error alone. Branch on state you alrea
 
 ```ts
 if (err.errorCode === 5044) {
-  if (!currentUser.emailVerified) {
-    show('Verify your email address first, then open this link again.');
-    offerResendVerification();
-  } else {
-    show('This invitation was sent to a different account. Sign in with the address it was sent to.');
-  }
+    if (!currentUser.emailVerified) {
+        show('Verify your email address first, then open this link again.');
+        offerResendVerification();
+    } else {
+        show('This invitation was sent to a different account. Sign in with the address it was sent to.');
+    }
 }
 ```
 

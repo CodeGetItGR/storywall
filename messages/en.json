@@ -511,7 +511,7 @@
             "PRIVATE": "Private",
             "PUBLIC": "Public"
         },
-        "submitAndPay": "Continue to secure payment",
+        "submitAndPay": "Pay {amount}",
         "activeEventLimitExceeded": "You are already hosting as many active events as currently allowed. Archive an old event before creating another one.",
         "usageTitle": "Event usage",
         "activeEventLimitExceededWithPlan": "You are already hosting as many active events as currently allowed. Archive an old event before creating another one.",
@@ -542,7 +542,8 @@
         "planLimits": {
             "storage": "storage",
             "members": "members",
-            "modules": "Event modules"
+            "modules": "Event modules",
+            "addonModules": "Available as add-on"
         },
         "paidModules": {
             "title": "Optional paid modules",
@@ -907,6 +908,7 @@
             "moduleLegendOpen": "Module guide",
             "moduleLegendClose": "Close module guide",
             "moduleLegendTitle": "Event modules",
+            "moduleLegendTitleForPlan": "{plan} modules",
             "moduleLegendBody": "Each item below comes from the current event module catalog.",
             "moduleLegendFallback": "Available for events.",
             "moduleLegendAddon": "Available as an add-on",

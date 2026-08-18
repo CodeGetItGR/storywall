@@ -49,7 +49,12 @@ export function usePlanEditorCard({ plan, modules, paidServices, eventPlans, sco
         setUnlockDraft: editor.setUnlockDraft,
     });
 
-    const error = updatePlan.mutation.error ?? deletePlan.mutation.error ?? setModules.mutation.error ?? unlocks.createPaidService.mutation.error ?? unlocks.updatePaidService.mutation.error;
+    const error =
+        updatePlan.mutation.error ??
+        deletePlan.mutation.error ??
+        setModules.mutation.error ??
+        unlocks.createPaidService.mutation.error ??
+        unlocks.updatePaidService.mutation.error;
     const isSaving = updatePlan.mutation.isPending || setModules.mutation.isPending;
 
     function handleMakeDefaultClick() {

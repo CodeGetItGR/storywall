@@ -5,7 +5,7 @@ import type * as React from 'react';
 import { useMemo, useRef, useState } from 'react';
 
 import { type AdminTabDefinition } from '@/components/admin/AdminTabs';
-import { moduleChangeSummary, planChangeSummary, planPatchFromFormData, sameStringSet,type UnlockDraft } from '@/lib/adminPlanEditor';
+import { moduleChangeSummary, planChangeSummary, planPatchFromFormData, sameStringSet, type UnlockDraft } from '@/lib/adminPlanEditor';
 import { type Visibility, visibilityOf } from '@/lib/adminVisibility';
 import type { PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 

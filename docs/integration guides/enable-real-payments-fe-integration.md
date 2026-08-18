@@ -7,8 +7,8 @@ confirmation.
 
 **Assumption stated up front, since the request that prompted this doc was verbal, not a ticket:**
 "the event shouldn't be allowed to be created unless the amount has been paid in full" is read here
-as *the event must not be treated as usable, or handed to the host as done, before its activation
-order is `PAID`* — not as a change to `POST /api/events` itself. That endpoint has always returned a
+as _the event must not be treated as usable, or handed to the host as done, before its activation
+order is `PAID`_ — not as a change to `POST /api/events` itself. That endpoint has always returned a
 `DRAFT` before any money moves, and that is intentional (§6 step 1 of `billing-fe-guide.md`): a draft
 is the host's private scratch space to fill in details before paying, invisible to everyone else,
 unable to invite guests. If "created" in your build currently means something more than that draft —
@@ -56,7 +56,7 @@ run against the real `STRIPE` provider, where settlement is asynchronous and arr
 This project ships with `app.billing.provider=MANUAL` by default (see `application.properties`) — the
 provider that takes no money and sends no webhooks, meant for local/backend-only testing
 (`ManualPaymentProvider`, `POST /api/admin/orders/{orderId}/settle`). It is easy to build a FE against
-`MANUAL` that quietly assumes settlement is synchronous — the redirect back from checkout *feels* like
+`MANUAL` that quietly assumes settlement is synchronous — the redirect back from checkout _feels_ like
 completion when there's no real webhook race to expose the gap. That assumption breaks the moment
 `STRIPE` is live, where the webhook can land seconds after the redirect, or fail to land at all and
 get picked up by the reconciliation sweep ~15 minutes later instead.

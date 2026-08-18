@@ -68,13 +68,20 @@ Don't treat a non-200 as "some files failed"; check the body instead:
 
 ```json
 {
-  "created": [
-    { "id": "d4e5...uuid", "eventId": "a1c2...uuid", "mediaUrl": "https://...", "originalFilename": "img1.jpg", "mediaType": "IMAGE", "...": "…rest of MediaResponseDto" }
-  ],
-  "failed": [
-    { "filename": "img2.jpg", "errorCode": "STORAGE_UPLOAD_FAILED", "message": "This file couldn't be uploaded. Please try again." },
-    { "filename": "img3.heic", "errorCode": "UNSUPPORTED_MEDIA_FORMAT", "message": "This file type is not supported." }
-  ]
+    "created": [
+        {
+            "id": "d4e5...uuid",
+            "eventId": "a1c2...uuid",
+            "mediaUrl": "https://...",
+            "originalFilename": "img1.jpg",
+            "mediaType": "IMAGE",
+            "...": "…rest of MediaResponseDto"
+        }
+    ],
+    "failed": [
+        { "filename": "img2.jpg", "errorCode": "STORAGE_UPLOAD_FAILED", "message": "This file couldn't be uploaded. Please try again." },
+        { "filename": "img3.heic", "errorCode": "UNSUPPORTED_MEDIA_FORMAT", "message": "This file type is not supported." }
+    ]
 }
 ```
 
@@ -124,7 +131,7 @@ Content-Type: application/json
 
 ## Attaching more images to an existing post later
 
-If the user adds images to a post *after* it's already created (rather than at
+If the user adds images to a post _after_ it's already created (rather than at
 creation time), upload via step 1 as usual, then attach each one individually:
 
 ```
@@ -144,21 +151,21 @@ Content-Type: application/json
 
 ## Error summary for this feature
 
-| Step | Code | HTTP | Meaning | Suggested handling |
-|---|---|---|---|---|
-| Batch upload | `TOO_MANY_FILES` (3003) | 400 | >10 files in one batch request | Split into multiple batches, or block selection past 10 client-side |
-| Batch upload | `REQUEST_TOO_LARGE` (3005) | 413 | Outer container guard tripped (200MB/file, 260MB/request) | Show the per-kind limits (25MB image / 200MB video) before upload |
-| Batch upload (per file) | `UNSUPPORTED_MEDIA_FORMAT` (3012) | 400 in single-upload, in `failed[]` for batch | Format not on the allowlist (includes HEIC) | Ask for a JPEG/PNG/WEBP/GIF or MP4/MOV/WEBM; convert HEIC client-side |
-| Batch upload (per file) | `MEDIA_FILE_TOO_LARGE` (3013) | 413 in single-upload, in `failed[]` for batch | Exceeds the per-kind cap (25MB image / 200MB video) | Show the specific kind's limit, offer to resize/retry |
-| Batch upload (per file) | `MEDIA_FILE_CORRUPT` (3014) | 400 in single-upload, in `failed[]` for batch | Recognised format but failed to decode | Ask the user to re-export/re-save and retry |
-| Batch upload (per file) | `MEDIA_IMAGE_TOO_MANY_PIXELS` (3016) | 413 in single-upload, in `failed[]` for batch | Image dimensions exceed the 50MP decode limit | Show the message, offer to resize; unrelated to file size |
-| Batch upload (per file) | `MEDIA_PROCESSING_BUSY` (3017) | 503 in single-upload, in `failed[]` for batch | Too many images being compressed at once | Transient — back off a few seconds and retry just that file |
-| Batch or single upload | — | 429 | More than 60 uploads/min from this caller (shared bucket) | Back off and retry; don't re-fire the batch immediately |
-| Batch upload (per file) | `STORAGE_UPLOAD_FAILED` (5004) | 409 in single-upload, in `failed[]` for batch | R2 upload failed after passing validation | Offer retry for just that file |
-| Post create | `VALIDATION_FAILED` (3001) | 400 | >10 `mediaIds`, or other field validation | Cap selection at 10 before allowing "Post" |
-| Post create | `DUPLICATE_MEDIA_ID_IN_REQUEST` (3004) | 400 | Same media id twice in `mediaIds` | Shouldn't happen from normal UI flow — dedupe defensively |
-| Post create / attach | `RESOURCE_NOT_FOUND` (2001) | 404 | A `mediaId` doesn't belong to this event | Drop stale ids and retry, or surface a generic error |
-| Standalone attach | `POST_MEDIA_LIMIT_EXCEEDED` (5007) | 409 | Post already has 10 media items | Disable "add more" once the post hits 10 |
+| Step                    | Code                                   | HTTP                                          | Meaning                                                   | Suggested handling                                                    |
+| ----------------------- | -------------------------------------- | --------------------------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------- |
+| Batch upload            | `TOO_MANY_FILES` (3003)                | 400                                           | >10 files in one batch request                            | Split into multiple batches, or block selection past 10 client-side   |
+| Batch upload            | `REQUEST_TOO_LARGE` (3005)             | 413                                           | Outer container guard tripped (200MB/file, 260MB/request) | Show the per-kind limits (25MB image / 200MB video) before upload     |
+| Batch upload (per file) | `UNSUPPORTED_MEDIA_FORMAT` (3012)      | 400 in single-upload, in `failed[]` for batch | Format not on the allowlist (includes HEIC)               | Ask for a JPEG/PNG/WEBP/GIF or MP4/MOV/WEBM; convert HEIC client-side |
+| Batch upload (per file) | `MEDIA_FILE_TOO_LARGE` (3013)          | 413 in single-upload, in `failed[]` for batch | Exceeds the per-kind cap (25MB image / 200MB video)       | Show the specific kind's limit, offer to resize/retry                 |
+| Batch upload (per file) | `MEDIA_FILE_CORRUPT` (3014)            | 400 in single-upload, in `failed[]` for batch | Recognised format but failed to decode                    | Ask the user to re-export/re-save and retry                           |
+| Batch upload (per file) | `MEDIA_IMAGE_TOO_MANY_PIXELS` (3016)   | 413 in single-upload, in `failed[]` for batch | Image dimensions exceed the 50MP decode limit             | Show the message, offer to resize; unrelated to file size             |
+| Batch upload (per file) | `MEDIA_PROCESSING_BUSY` (3017)         | 503 in single-upload, in `failed[]` for batch | Too many images being compressed at once                  | Transient — back off a few seconds and retry just that file           |
+| Batch or single upload  | —                                      | 429                                           | More than 60 uploads/min from this caller (shared bucket) | Back off and retry; don't re-fire the batch immediately               |
+| Batch upload (per file) | `STORAGE_UPLOAD_FAILED` (5004)         | 409 in single-upload, in `failed[]` for batch | R2 upload failed after passing validation                 | Offer retry for just that file                                        |
+| Post create             | `VALIDATION_FAILED` (3001)             | 400                                           | >10 `mediaIds`, or other field validation                 | Cap selection at 10 before allowing "Post"                            |
+| Post create             | `DUPLICATE_MEDIA_ID_IN_REQUEST` (3004) | 400                                           | Same media id twice in `mediaIds`                         | Shouldn't happen from normal UI flow — dedupe defensively             |
+| Post create / attach    | `RESOURCE_NOT_FOUND` (2001)            | 404                                           | A `mediaId` doesn't belong to this event                  | Drop stale ids and retry, or surface a generic error                  |
+| Standalone attach       | `POST_MEDIA_LIMIT_EXCEEDED` (5007)     | 409                                           | Post already has 10 media items                           | Disable "add more" once the post hits 10                              |
 
 ## Suggested page flow
 

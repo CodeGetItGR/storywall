@@ -14,11 +14,9 @@ type EventAddonsStepProps = {
     services: PaidServiceResponseDto[];
     selectedCodes: string[];
     onToggle: (code: string) => void;
-    onBack: () => void;
-    onContinue: () => void;
 };
 
-export function EventAddonsStep({ modules, services, selectedCodes, onToggle, onBack, onContinue }: EventAddonsStepProps) {
+export function EventAddonsStep({ modules, services, selectedCodes, onToggle }: EventAddonsStepProps) {
     const t = useTranslations('CreateEventPage');
     const locale = useLocale();
 
@@ -27,12 +25,14 @@ export function EventAddonsStep({ modules, services, selectedCodes, onToggle, on
     }
 
     return (
-        <div className="space-y-4">
+        <div className="flex h-full flex-col gap-4">
+            {/* Intro */}
             <div>
                 <h2 className="text-lg font-bold text-ink">{t('paidModules.title')}</h2>
                 <p className="mt-1 text-sm leading-6 text-ink-muted">{t('paidModules.body')}</p>
             </div>
 
+            {/* Add-on List */}
             {services.length === 0 ? (
                 <div className="rounded-xl bg-surface-muted px-4 py-5 text-center">
                     <p className="text-sm font-semibold text-ink">{t('paidModules.emptyTitle')}</p>
@@ -84,19 +84,8 @@ export function EventAddonsStep({ modules, services, selectedCodes, onToggle, on
                 </div>
             )}
 
+            {/* Note */}
             <p className="text-xs leading-5 text-ink-muted">{t('paidModules.skipHint')}</p>
-            <div className="flex gap-3">
-                <button type="button" onClick={onBack} className="min-h-11 flex-1 rounded-full border border-border text-sm font-semibold text-ink">
-                    {t('actions.back')}
-                </button>
-                <button
-                    type="button"
-                    onClick={onContinue}
-                    className="min-h-11 flex-[2] rounded-full bg-gradient-brand text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                >
-                    {t('continueToDetails')}
-                </button>
-            </div>
         </div>
     );
 }

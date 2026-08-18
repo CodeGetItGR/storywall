@@ -1,10 +1,13 @@
 'use client';
 
 import { useCreate, useUpdate } from '@refinedev/core';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import type * as React from 'react';
 import { useCallback, useMemo } from 'react';
 
+import { adminKeys } from '@/hooks/useAdmin';
+import { appConfigKeys } from '@/hooks/useAppConfig';
 import type { UnlockDraft } from '@/lib/adminPlanEditor';
 import { codeFromName, defaultCurrency, priceInputToMinor } from '@/lib/adminPlanForm';
 import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
@@ -20,8 +23,17 @@ type UsePlanEditorUnlocksArgs = {
 
 export function usePlanEditorUnlocks({ plan, eventPlans, paidServices, orderedModules, unlockDraft, setUnlockDraft }: UsePlanEditorUnlocksArgs) {
     const t = useTranslations('AdminPage');
-    const createPaidService = useCreate<PaidServiceResponseDto>();
-    const updatePaidService = useUpdate<PaidServiceResponseDto>();
+    const queryClient = useQueryClient();
+    // The admin drawer reads paid services through useAdminPaidServices' custom query key,
+    // not refine's own resource-keyed cache — refine's automatic invalidation on mutate
+    // never touches it, so the "Sell as add-on" badges here go stale until a full reload
+    // unless we invalidate adminKeys ourselves (same reason useDeletePaidService does it).
+    const invalidateAdminPaidServices = () => {
+        queryClient.invalidateQueries({ queryKey: adminKeys.all });
+        queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+    };
+    const createPaidService = useCreate<PaidServiceResponseDto>({ mutationOptions: { onSuccess: invalidateAdminPaidServices } });
+    const updatePaidService = useUpdate<PaidServiceResponseDto>({ mutationOptions: { onSuccess: invalidateAdminPaidServices } });
 
     const moduleUnlocks = useMemo(
         () => paidServices.filter((service) => service.kind === 'MODULE_UNLOCK' && service.grantsModuleKey && service.isAssignable),
@@ -34,7 +46,11 @@ export function usePlanEditorUnlocks({ plan, eventPlans, paidServices, orderedMo
 
     async function addUnlockToPlan(service: PaidServiceResponseDto) {
         if (unlockAppliesToPlan(service)) return;
-        await updatePaidService.mutateAsync({ resource: 'paid-services', id: service.id, values: { planTierIds: [...service.planTierIds, plan.id] } });
+        await updatePaidService.mutateAsync({
+            resource: 'paid-services',
+            id: service.id,
+            values: { planTierIds: [...service.planTierIds, plan.id] },
+        });
     }
 
     async function removeUnlockFromPlan(service: PaidServiceResponseDto) {
@@ -89,7 +105,10 @@ export function usePlanEditorUnlocks({ plan, eventPlans, paidServices, orderedMo
         await createPaidService.mutateAsync({
             resource: 'paid-services',
             values: {
-                code: codeFromName(`unlock ${plan.code} ${unlockDraft.moduleKey}`, paidServices.map((service) => service.code)),
+                code: codeFromName(
+                    `unlock ${plan.code} ${unlockDraft.moduleKey}`,
+                    paidServices.map((service) => service.code)
+                ),
                 kind: 'MODULE_UNLOCK',
                 name: unlockDraft.name.trim(),
                 description: unlockDraft.description.trim() || null,

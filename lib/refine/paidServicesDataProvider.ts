@@ -17,9 +17,7 @@ function queryPath(filters: DataProviderParams['filters']): string {
     const kind = filters?.find((filter) => 'field' in filter && filter.field === 'kind')?.value as PaidServiceKind | undefined;
     if (kind) searchParams.set('kind', kind);
 
-    const includeArchived = filters?.find((filter) => 'field' in filter && filter.field === 'includeArchived')?.value as
-        | boolean
-        | undefined;
+    const includeArchived = filters?.find((filter) => 'field' in filter && filter.field === 'includeArchived')?.value as boolean | undefined;
     if (includeArchived) searchParams.set('includeArchived', 'true');
 
     const query = searchParams.toString();

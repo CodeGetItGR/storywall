@@ -28,12 +28,7 @@ function billingPeriodInput(formData: FormData, kind: PaidServiceKind): BillingP
     return formData.get('billingPeriod') === 'ONE_TIME' ? 'ONE_TIME' : 'MONTHLY';
 }
 
-function serviceInput(
-    formData: FormData,
-    visibility: Visibility,
-    takenCodes: string[],
-    existing?: PaidServiceResponseDto
-): PaidServiceRequestDto {
+function serviceInput(formData: FormData, visibility: Visibility, takenCodes: string[], existing?: PaidServiceResponseDto): PaidServiceRequestDto {
     const kind = (existing?.kind ?? formData.get('kind')) as PaidServiceKind;
     const name = String(formData.get('name') ?? '').trim();
     const flags = visibilityFlags(visibility);

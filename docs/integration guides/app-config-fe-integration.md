@@ -16,10 +16,12 @@ now real modules — and `paidServices` gained a third `kind`, `MODULE_UNLOCK`, 
 module to a single event. See
 [`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-integration.md).
 
-**2026-08-18:** each entry in `planTiers` gained `paidModuleKeys` — the modules that plan doesn't
-include for free but sells as a `MODULE_UNLOCK` add-on. Previously the only way to know this was to
-filter `paidServices` by `kind === 'MODULE_UNLOCK'` and cross-reference `grantsModuleKey` /
-`planTierIds` against each plan by hand; that reconstruction is now done server-side.
+**2026-08-18:** each entry in `planTiers` gained `paidModules` — the full `MODULE_UNLOCK`
+`PaidServiceResponseDto` rows (price, currency, billing period, etc.) for modules that plan doesn't
+include for free but sells as an add-on. Previously the only way to know this was to filter
+`paidServices` by `kind === 'MODULE_UNLOCK'` and cross-reference `grantsModuleKey` / `planTierIds`
+against each plan by hand; that reconstruction, including the price/billing detail, is now done
+server-side.
 
 ## GET /api/config
 
@@ -29,22 +31,22 @@ payload.
 
 ```ts
 interface AppConfigResponseDto {
-  featureFlags: PlatformFeatureFlagResponseDto[];
-  media: {
-    maxFileSizeBytes: number;      // outer container-level guard, not the real per-file limit — see below
-    maxRequestSizeBytes: number;
-    maxImageBytes: number;         // per-kind cap, enforced after server-side format detection
-    maxVideoBytes: number;         // per-kind cap, enforced after server-side format detection
-    maxBatchUploadFiles: number;
-    maxMediaPerPost: number;
-    presignedUrlTtlMinutes: number;
-    publicHost: string | null; // hostname media URLs are served from
-  };
-  pagination: { defaultPageSize: number; maxPageSize: number };
-  planTiers: PlanTierResponseDto[];   // was Record<'FREE'|'PLUS'|'PRO', {...}> — see plan-tiers-fe-integration.md
-  paidServices: PaidServiceResponseDto[];   // "keep originals" add-on, storage packs, module unlocks — see billing-fe-guide.md §5
-  eventModuleKeys: ('posts' | 'rsvp' | 'playlist' | 'stories' | 'gallery' | 'wishlist' | 'wishbook')[];
-  rsvp: { minAdults: number; maxAdults: number; minChildren: number; maxChildren: number };
+    featureFlags: PlatformFeatureFlagResponseDto[];
+    media: {
+        maxFileSizeBytes: number; // outer container-level guard, not the real per-file limit — see below
+        maxRequestSizeBytes: number;
+        maxImageBytes: number; // per-kind cap, enforced after server-side format detection
+        maxVideoBytes: number; // per-kind cap, enforced after server-side format detection
+        maxBatchUploadFiles: number;
+        maxMediaPerPost: number;
+        presignedUrlTtlMinutes: number;
+        publicHost: string | null; // hostname media URLs are served from
+    };
+    pagination: { defaultPageSize: number; maxPageSize: number };
+    planTiers: PlanTierResponseDto[]; // was Record<'FREE'|'PLUS'|'PRO', {...}> — see plan-tiers-fe-integration.md
+    paidServices: PaidServiceResponseDto[]; // "keep originals" add-on, storage packs, module unlocks — see billing-fe-guide.md §5
+    eventModuleKeys: ('posts' | 'rsvp' | 'playlist' | 'stories' | 'gallery' | 'wishlist' | 'wishbook')[];
+    rsvp: { minAdults: number; maxAdults: number; minChildren: number; maxChildren: number };
 }
 ```
 
@@ -72,12 +74,12 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
   (200MB/file, 260MB/request as of 2026-08-13). This exists to protect the server, not to
   express a real per-kind limit — don't show these to users as "the" size limit.
 - **`media.maxImageBytes` / `maxVideoBytes`** — the limits that actually matter to a user
-  (25MB/200MB as of 2026-08-13), enforced *after* the server detects the file's real type from
+  (25MB/200MB as of 2026-08-13), enforced _after_ the server detects the file's real type from
   its bytes. Validate the file picker against whichever of these applies to the file's kind,
   instead of hardcoding `25MB`/`200MB` — an admin can change these via config. See
   [`multi-image-post-upload-fe-integration.md`](multi-image-post-upload-fe-integration.md) for
   the resulting error codes. Client-side rejection is still just UX — the server enforces the
-  real limit regardless. Note there is a second, *dimensional* image limit (50 megapixels) that is
+  real limit regardless. Note there is a second, _dimensional_ image limit (50 megapixels) that is
   deliberately not surfaced here — it only fires on synthetic or extreme-panorama input and is
   reported as `MEDIA_IMAGE_TOO_MANY_PIXELS` (3016) at upload time.
 - **`media.maxMediaPerPost`** — same idea for the post composer's "max 10 images" guard.
@@ -86,20 +88,21 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
   `kind` (`RECURRING_ADDON` / `STORAGE_PACK` / `MODULE_UNLOCK`) to build the three different
   purchase UIs — the kind decides which endpoint will accept the code, so it is not cosmetic.
   A `MODULE_UNLOCK` entry carries `grantsModuleKey`; match it against `eventModuleKeys` to label
-  the offer, or read `paidModuleKeys` on the relevant plan tier to skip that lookup entirely. See
-  [`billing-fe-guide.md`](billing-fe-guide.md) §5–§7b for the full opt-in/checkout flows and the
-  admin CRUD endpoints.
+  the offer, or read `paidModules` on the relevant plan tier to get the same rows pre-filtered to
+  that plan. See [`billing-fe-guide.md`](billing-fe-guide.md) §5–§7b for the full opt-in/checkout
+  flows and the admin CRUD endpoints.
 - **`pagination`** — matches `Page<T>`'s actual `size` behavior on `GET
-  /api/events/{eventId}/posts` (currently the only paginated endpoint). Useful if you want a
+/api/events/{eventId}/posts` (currently the only paginated endpoint). Useful if you want a
   page-size selector instead of a hardcoded `20`.
 - **`planTiers`** — the public pricing catalog: every assignable, public plan in both scopes,
   ordered by scope then `sortOrder`. Filter by `scope` to build a pricing table — `EVENT` plans
   are what a host buys for one event, `ACCOUNT` plans govern how many events they may run at once.
   This is now admin-editable at runtime, so treat it as data and never hardcode a tier name.
-  Each plan's `moduleKeys` are included for free; `paidModuleKeys` (added 2026-08-18) are the
-  modules that plan sells as a `MODULE_UNLOCK` add-on instead — use it to render a pricing table's
-  "included" vs. "available as add-on" module rows without cross-referencing `paidServices`
-  yourself.
+  Each plan's `moduleKeys` are included for free; `paidModules` (added 2026-08-18) is the list of
+  `MODULE_UNLOCK` paid services that plan sells instead, each with full price/billing detail — use
+  it to render a pricing table's "included" vs. "available as add-on, $X/mo" module rows without
+  cross-referencing `paidServices` yourself. `paidModules[].grantsModuleKey` is the module it
+  unlocks.
 - **`eventModuleKeys`** — the single source of truth for valid module keys, replacing whatever
   hardcoded list (e.g. `ModuleKeyConvention`) the FE currently maintains. See below — this is
   now also enforced server-side, so drift here means requests start failing, not silently
@@ -125,7 +128,7 @@ all (never did), so existing modules can't be renamed into an invalid state.
 **Action:** if `ModuleKeyConvention` (or equivalent) is currently a separately-maintained
 TypeScript union, consider sourcing it from `eventModuleKeys` in the config response instead —
 that removes the one remaining place the two lists could drift. This was previously flagged as
-low-risk *because* nothing enforced it either side; that's no longer true on the backend, so a
+low-risk _because_ nothing enforced it either side; that's no longer true on the backend, so a
 typo in a hardcoded FE list now produces a real `400` instead of a silently-accepted junk row.
 
 No change to reading modules — `GET /api/events/{eventId}/modules` and the module-gating pattern
@@ -137,10 +140,10 @@ No change to reading modules — `GET /api/events/{eventId}/modules` and the mod
 validation — this was called out as a known gap in `fe-be-open-questions.md` §10. It's now
 enforced:
 
-| Field | Min | Max |
-|---|---|---|
-| `adultCount` | 1 | 5 |
-| `childCount` | 0 | 4 |
+| Field        | Min | Max |
+| ------------ | --- | --- |
+| `adultCount` | 1   | 5   |
+| `childCount` | 0   | 4   |
 
 These match the bounds already used by the FE's guest-submission steppers, so **no currently
 working flow should change behavior** — this closes the gap between "the UI happens to prevent

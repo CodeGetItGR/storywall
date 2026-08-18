@@ -11,17 +11,17 @@ admin restriction.
 
 ## 0. The whole thing in one table
 
-| # | what changed | your work |
-|---|---|---|
-| 1 | A `MODULE_UNLOCK` can now be priced `billingPeriod: "ONE_TIME"` — charged once on the activation, never on a renewal | price and label the two cadences differently in the unlock picker — §2 |
-| 2 | **`billingPeriod` is a meaningful value again.** `storage-packs-recurring-fe-changes.md` §2 told you to delete branching on it — that advice is now wrong for unlocks | grep back for what you removed — §1 |
-| 3 | `AddonSummary` gained `billingPeriod` — on `POST /addons` **and** `addons[]` in `GET /billing` | your monthly total must sum only the `MONTHLY` rows — §3 |
-| 4 | A one-time unlock is **not** multiplied by `includedMonths`, and is charged even when `includedMonths` is `0` | fix any client-side activation-total preview — §2 |
-| 5 | Admin: `billingPeriod` is no longer patchable once any event holds the service → `409 PAID_SERVICE_IN_USE` (5037) | disable that one control on a sold service — §5 |
-| 6 | Admin: the create form should offer a cadence picker **only** for `MODULE_UNLOCK` | §5 |
-| 7 | `POST /api/events/{eventId}/addons` — request shape, rate limit, DRAFT-only rule, every error code | **unchanged** — §6 |
-| 8 | Module availability, the plan-vs-unlock OR gate, `isAvailable` | **unchanged** — §6 |
-| 9 | Storage packs, `ORIGINALS`, plan tiers, renewals, refunds | **unchanged** — §6 |
+| #   | what changed                                                                                                                                                          | your work                                                              |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| 1   | A `MODULE_UNLOCK` can now be priced `billingPeriod: "ONE_TIME"` — charged once on the activation, never on a renewal                                                  | price and label the two cadences differently in the unlock picker — §2 |
+| 2   | **`billingPeriod` is a meaningful value again.** `storage-packs-recurring-fe-changes.md` §2 told you to delete branching on it — that advice is now wrong for unlocks | grep back for what you removed — §1                                    |
+| 3   | `AddonSummary` gained `billingPeriod` — on `POST /addons` **and** `addons[]` in `GET /billing`                                                                        | your monthly total must sum only the `MONTHLY` rows — §3               |
+| 4   | A one-time unlock is **not** multiplied by `includedMonths`, and is charged even when `includedMonths` is `0`                                                         | fix any client-side activation-total preview — §2                      |
+| 5   | Admin: `billingPeriod` is no longer patchable once any event holds the service → `409 PAID_SERVICE_IN_USE` (5037)                                                     | disable that one control on a sold service — §5                        |
+| 6   | Admin: the create form should offer a cadence picker **only** for `MODULE_UNLOCK`                                                                                     | §5                                                                     |
+| 7   | `POST /api/events/{eventId}/addons` — request shape, rate limit, DRAFT-only rule, every error code                                                                    | **unchanged** — §6                                                     |
+| 8   | Module availability, the plan-vs-unlock OR gate, `isAvailable`                                                                                                        | **unchanged** — §6                                                     |
+| 9   | Storage packs, `ORIGINALS`, plan tiers, renewals, refunds                                                                                                             | **unchanged** — §6                                                     |
 
 ---
 
@@ -37,17 +37,17 @@ rows only. If you took that advice and deleted the branching, you need some of i
 failure mode if you don't is a UI that labels a one-time unlock "€3/month" and shows it on a renewal
 breakdown the host will never be charged.
 
-What has *not* changed is the other half of that advice: **`kind` is still the right signal for
+What has _not_ changed is the other half of that advice: **`kind` is still the right signal for
 "which endpoint buys this"**, and `billingPeriod` is the right signal for "how is it charged". They
 answer different questions — use both:
 
 ```ts
 // which endpoint / which screen
-service.kind === 'STORAGE_PACK'   // live event, real checkout
-service.kind === 'MODULE_UNLOCK'  // draft only, folds into activation
+service.kind === 'STORAGE_PACK'; // live event, real checkout
+service.kind === 'MODULE_UNLOCK'; // draft only, folds into activation
 
 // how to price and label it
-service.billingPeriod === 'ONE_TIME' ? `${price} once` : `${price}/month`
+service.billingPeriod === 'ONE_TIME' ? `${price} once` : `${price}/month`;
 ```
 
 Storage packs and `RECURRING_ADDON` are still always `MONTHLY` and always will be — both grant
@@ -63,21 +63,21 @@ Catalog rows come from `GET /api/config` → `paidServices[]`, unchanged in shap
 
 ```jsonc
 {
-  "code": "UNLOCK_WISHLIST",
-  "kind": "MODULE_UNLOCK",
-  "name": "Gift Wishlist",
-  "priceAmountMinor": 300,
-  "priceCurrency": "EUR",
-  "billingPeriod": "ONE_TIME",       // ← or "MONTHLY"; read it, don't assume
-  "grantsStorageBytes": null,
-  "grantsModuleKey": "wishlist"
+    "code": "UNLOCK_WISHLIST",
+    "kind": "MODULE_UNLOCK",
+    "name": "Gift Wishlist",
+    "priceAmountMinor": 300,
+    "priceCurrency": "EUR",
+    "billingPeriod": "ONE_TIME", // ← or "MONTHLY"; read it, don't assume
+    "grantsStorageBytes": null,
+    "grantsModuleKey": "wishlist",
 }
 ```
 
-| `billingPeriod` | Added to the activation | On every renewal after |
-|---|---|---|
-| `'MONTHLY'` | `priceAmountMinor × plan.includedMonths` | `priceAmountMinor` |
-| `'ONE_TIME'` | `priceAmountMinor` — flat | nothing |
+| `billingPeriod` | Added to the activation                  | On every renewal after |
+| --------------- | ---------------------------------------- | ---------------------- |
+| `'MONTHLY'`     | `priceAmountMinor × plan.includedMonths` | `priceAmountMinor`     |
+| `'ONE_TIME'`    | `priceAmountMinor` — flat                | nothing                |
 
 Two traps in that table, both in the one-time row:
 
@@ -95,7 +95,7 @@ one-time unlock is the more expensive-looking line on the activation total and t
 the life of the event — a picker that prices both the same way makes that impossible to see. If a
 catalog contains both cadences at once, sort or group them, don't interleave silently.
 
-Nothing about the *mechanics* of buying changes: same `POST /api/events/{eventId}/addons`, same
+Nothing about the _mechanics_ of buying changes: same `POST /api/events/{eventId}/addons`, same
 DRAFT-only rule, same "nothing is charged at this moment", same toggle-not-a-purchase-button
 rendering. Only the price you print next to it.
 
@@ -107,13 +107,13 @@ Returned by `POST /api/events/{eventId}/addons` and in `addons[]` on `GET /api/e
 
 ```ts
 export interface AddonSummary {
-  code: string;
-  name: string;
-  /** What this costs at `billingPeriod`'s cadence — NOT necessarily a monthly figure. */
-  priceAmountMinor: number;
-  /** NEW. 'MONTHLY' | 'ONE_TIME'. Only a MODULE_UNLOCK is ever 'ONE_TIME'. */
-  billingPeriod: BillingPeriod;
-  activatedAt: string;
+    code: string;
+    name: string;
+    /** What this costs at `billingPeriod`'s cadence — NOT necessarily a monthly figure. */
+    priceAmountMinor: number;
+    /** NEW. 'MONTHLY' | 'ONE_TIME'. Only a MODULE_UNLOCK is ever 'ONE_TIME'. */
+    billingPeriod: BillingPeriod;
+    activatedAt: string;
 }
 ```
 
@@ -180,11 +180,11 @@ upgrade onto a tier whose `moduleKeys` include the key (§4/§6 of the main guid
 
 `billingPeriod` on create/patch is enforced against `kind`:
 
-| `kind` | accepted | anything else |
-|---|---|---|
-| `STORAGE_PACK` | `MONTHLY` | `400 VALIDATION_FAILED` (3001) |
-| `RECURRING_ADDON` | `MONTHLY` | `400 VALIDATION_FAILED` (3001) |
-| `MODULE_UNLOCK` | `MONTHLY` **or** `ONE_TIME` | `400 VALIDATION_FAILED` (3001) |
+| `kind`            | accepted                    | anything else                  |
+| ----------------- | --------------------------- | ------------------------------ |
+| `STORAGE_PACK`    | `MONTHLY`                   | `400 VALIDATION_FAILED` (3001) |
+| `RECURRING_ADDON` | `MONTHLY`                   | `400 VALIDATION_FAILED` (3001) |
+| `MODULE_UNLOCK`   | `MONTHLY` **or** `ONE_TIME` | `400 VALIDATION_FAILED` (3001) |
 
 `YEARLY` is rejected everywhere — nothing in the platform bills yearly. So: show a real picker when
 `kind` is `MODULE_UNLOCK`, and derive `MONTHLY` silently otherwise.
@@ -194,19 +194,19 @@ upgrade onto a tier whose `moduleKeys` include the key (§4/§6 of the main guid
 ```jsonc
 // 409 on PATCH /api/admin/paid-services/{id} with a changed billingPeriod
 {
-  "status": 409,
-  "detail": "Cannot change billingPeriod on UNLOCK_WISHLIST: 12 event(s) already hold it, and what they were charged cannot be rewritten. Archive it with isAssignable=false and create a new service at the new billing period instead.",
-  "errorCode": 5037,
-  "errorKey": "PAID_SERVICE_IN_USE"
+    "status": 409,
+    "detail": "Cannot change billingPeriod on UNLOCK_WISHLIST: 12 event(s) already hold it, and what they were charged cannot be rewritten. Archive it with isAssignable=false and create a new service at the new billing period instead.",
+    "errorCode": 5037,
+    "errorKey": "PAID_SERVICE_IN_USE",
 }
 ```
 
-| code | HTTP | when | what to show |
-|---|---|---|---|
-| `5037` `PAID_SERVICE_IN_USE` | 409 | patching `billingPeriod` on a service any event holds — or deleting a referenced service, as before | admin-facing; not retryable — surface the archive-and-republish route |
+| code                         | HTTP | when                                                                                                | what to show                                                          |
+| ---------------------------- | ---- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `5037` `PAID_SERVICE_IN_USE` | 409  | patching `billingPeriod` on a service any event holds — or deleting a referenced service, as before | admin-facing; not retryable — surface the archive-and-republish route |
 
 The reason, worth putting in a tooltip because it will be asked: the field decides whether an
-entitlement an event *already holds* keeps being charged, and both directions are silently wrong.
+entitlement an event _already holds_ keeps being charged, and both directions are silently wrong.
 `MONTHLY → ONE_TIME` stops billing events that were only ever charged monthly, with no one-time
 charge to replace it — they are long past their activation. `ONE_TIME → MONTHLY` starts billing
 events that paid outright, on their next renewal, for a change they were never told about. The
@@ -215,7 +215,7 @@ right.
 
 **Every other field still patches normally on a held service** — name, description, price,
 sortOrder, flags, `planTierIds`. Disable this one control once the service has entitlements against
-it, not the whole form. (Note the existing separate warning on `grantsModuleKey`: repointing it *is*
+it, not the whole form. (Note the existing separate warning on `grantsModuleKey`: repointing it _is_
 retroactive and takes the old module away from everyone who bought it. Different field, different
 hazard, both worth a confirm step.)
 

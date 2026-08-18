@@ -11,11 +11,13 @@ export function PlanModuleGuideModal({
     onClose,
     modules,
     paidServices = [],
+    planName,
 }: {
     open: boolean;
     onClose: () => void;
     modules: PlatformModuleResponseDto[];
     paidServices?: PaidServiceResponseDto[];
+    planName?: string;
 }) {
     const t = useTranslations('EventPlanSettingsPage');
     const tModules = useTranslations('Modules');
@@ -29,7 +31,9 @@ export function PlanModuleGuideModal({
     return (
         <Modal open={open} onClose={onClose} size="sm" closeLabel={t('compare.moduleLegendClose')}>
             <Modal.Body className="px-4 pb-4 pt-12 sm:px-5">
-                <h2 className="text-lg font-semibold text-ink">{t('compare.moduleLegendTitle')}</h2>
+                <h2 className="text-lg font-semibold text-ink">
+                    {planName ? t('compare.moduleLegendTitleForPlan', { plan: planName }) : t('compare.moduleLegendTitle')}
+                </h2>
                 <p className="mt-2 text-sm leading-6 text-ink-muted">{t('compare.moduleLegendBody')}</p>
                 <div className="mt-4 divide-y divide-border border-y border-border">
                     {visibleModules.map((module_) => {

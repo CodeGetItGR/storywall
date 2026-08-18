@@ -28,7 +28,14 @@ export function PlanEditorPricingTab({
             {/* Pricing */}
             <div className="grid gap-3 sm:grid-cols-4">
                 <AdminField label={t('fields.price')} optional>
-                    <input name="price" type="number" min={0} step="0.01" defaultValue={priceMinorToInput(plan.priceAmountMinor)} className={adminInputClass()} />
+                    <input
+                        name="price"
+                        type="number"
+                        min={0}
+                        step="0.01"
+                        defaultValue={priceMinorToInput(plan.priceAmountMinor)}
+                        className={adminInputClass()}
+                    />
                 </AdminField>
                 <AdminField label={t('fields.priceCurrency')} optional>
                     <input name="priceCurrency" maxLength={3} defaultValue={defaultCurrency(plan)} className={adminInputClass('max-w-24')} />
@@ -93,10 +100,20 @@ export function PlanEditorPricingTab({
                         />
                     </AdminField>
                     <AdminField label={t('fields.discountStartsAt')} optional hint={t('fields.discountBoundHint')} className="sm:col-span-2">
-                        <input name="discountStartsAt" type="datetime-local" defaultValue={instantToLocalInput(plan.discountStartsAt)} className={adminInputClass()} />
+                        <input
+                            name="discountStartsAt"
+                            type="datetime-local"
+                            defaultValue={instantToLocalInput(plan.discountStartsAt)}
+                            className={adminInputClass()}
+                        />
                     </AdminField>
                     <AdminField label={t('fields.discountEndsAt')} optional hint={t('fields.discountEndsAtHint')} className="sm:col-span-2">
-                        <input name="discountEndsAt" type="datetime-local" defaultValue={instantToLocalInput(plan.discountEndsAt)} className={adminInputClass()} />
+                        <input
+                            name="discountEndsAt"
+                            type="datetime-local"
+                            defaultValue={instantToLocalInput(plan.discountEndsAt)}
+                            className={adminInputClass()}
+                        />
                     </AdminField>
                 </div>
             </AdminSection>

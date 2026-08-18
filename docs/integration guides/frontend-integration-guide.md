@@ -35,8 +35,8 @@ a pending-invitation flow.
   — re-fetch the parent resource to get a fresh URL once it expires. This applies everywhere
   a `MediaResponseDto` appears (post media, story media, cover media, avatars).
 - **Stored media is served as `Content-Disposition: attachment`.** `<img src>`, `<video src>`
-  and `fetch` are unaffected — this only changes what a browser does when the user *navigates
-  directly* to a presigned URL, which now downloads the file instead of rendering it. If you
+  and `fetch` are unaffected — this only changes what a browser does when the user _navigates
+  directly_ to a presigned URL, which now downloads the file instead of rendering it. If you
   have an "open in new tab" affordance that relied on the old behaviour, render the media in
   your own lightbox instead. The header is deliberate: it is the second line of defence behind
   server-side content-type detection against a file being served as something executable on the
@@ -51,13 +51,13 @@ match the feature list from the FE inventory.
 
 ### Authentication
 
-| Method | Path | Auth | Notes |
-|---|---|---|---|
-| POST | `/api/auth/register` | public | `email` + `password` (8-100 chars) → `AuthResponseDto`, immediately authenticated |
-| POST | `/api/auth/login` | public | captures IP/User-Agent server-side for session auditing |
-| POST | `/api/auth/refresh` | public | registered users only — see §3 for the guest gap |
-| POST | `/api/auth/logout` | public | body is `{ refreshToken }`; revokes it, access token still works until natural expiry (~15 min) |
-| POST | `/api/auth/guest-login` | public | body is `{ inviteToken }`; idempotent per token; returns `refreshToken: null` |
+| Method | Path                    | Auth   | Notes                                                                                           |
+| ------ | ----------------------- | ------ | ----------------------------------------------------------------------------------------------- |
+| POST   | `/api/auth/register`    | public | `email` + `password` (8-100 chars) → `AuthResponseDto`, immediately authenticated               |
+| POST   | `/api/auth/login`       | public | captures IP/User-Agent server-side for session auditing                                         |
+| POST   | `/api/auth/refresh`     | public | registered users only — see §3 for the guest gap                                                |
+| POST   | `/api/auth/logout`      | public | body is `{ refreshToken }`; revokes it, access token still works until natural expiry (~15 min) |
+| POST   | `/api/auth/guest-login` | public | body is `{ inviteToken }`; idempotent per token; returns `refreshToken: null`                   |
 
 ### Invite onboarding
 
@@ -74,42 +74,42 @@ the two conditions failed. Guest invitations are unchanged and stay forwardable.
 
 ### Event selection / context
 
-| Method | Path | Auth | Notes |
-|---|---|---|---|
-| GET | `/api/me/events` | any authenticated (incl. guest) | every `EventMemberResponseDto` for the caller — this is what backs "restore active event" |
-| GET | `/api/events` | authenticated | flat list, `EventResponseDto[]` |
-| GET | `/api/events/{id}` | authenticated | `EventDetailResponseDto` — grouped/enriched: `schedule`, `location`, resolved `coverMedia`, `hosts[]`, `modules[]`, `sessions[]`, `rsvpSummary` (aggregate only). Posts/comments/reactions/stories/individual RSVPs are deliberately excluded — fetch from their own endpoints. |
+| Method | Path               | Auth                            | Notes                                                                                                                                                                                                                                                                           |
+| ------ | ------------------ | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/me/events`   | any authenticated (incl. guest) | every `EventMemberResponseDto` for the caller — this is what backs "restore active event"                                                                                                                                                                                       |
+| GET    | `/api/events`      | authenticated                   | flat list, `EventResponseDto[]`                                                                                                                                                                                                                                                 |
+| GET    | `/api/events/{id}` | authenticated                   | `EventDetailResponseDto` — grouped/enriched: `schedule`, `location`, resolved `coverMedia`, `hosts[]`, `modules[]`, `sessions[]`, `rsvpSummary` (aggregate only). Posts/comments/reactions/stories/individual RSVPs are deliberately excluded — fetch from their own endpoints. |
 
 ### Event creation & host management
 
-| Method | Path | Auth | Notes |
-|---|---|---|---|
-| POST | `/api/events` | `ROLE_USER` | atomically creates the `Event` + host's `EventMember` + `EventHost` |
-| PATCH | `/api/events/{id}` | host of the event | all fields editable **except `eventType`** (see §3) |
-| DELETE | `/api/events/{id}` | host of the event | |
-| POST | `/api/events/{eventId}/hosts` | existing host | promote a co-host **immediately** (`{ userId }`) — target must be a registered, non-guest user whose id you already hold |
-| POST | `/api/events/{eventId}/host-invitations` | existing host | new 2026-08-16 — invite a co-host **by email**, pending until they accept; works for people with no account yet. Returns an `EventInvitationResponseDto` with `role: 'HOST'`. See [`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-integration.md) §1 |
-| GET | `/api/events/{eventId}/hosts` | authenticated | |
-| PATCH | `/api/events/{eventId}/hosts/{id}` | host | only `displayOrder` is editable |
-| DELETE | `/api/event-hosts/{id}` | `ROLE_USER` | |
+| Method | Path                                     | Auth              | Notes                                                                                                                                                                                                                                                                           |
+| ------ | ---------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| POST   | `/api/events`                            | `ROLE_USER`       | atomically creates the `Event` + host's `EventMember` + `EventHost`                                                                                                                                                                                                             |
+| PATCH  | `/api/events/{id}`                       | host of the event | all fields editable **except `eventType`** (see §3)                                                                                                                                                                                                                             |
+| DELETE | `/api/events/{id}`                       | host of the event |                                                                                                                                                                                                                                                                                 |
+| POST   | `/api/events/{eventId}/hosts`            | existing host     | promote a co-host **immediately** (`{ userId }`) — target must be a registered, non-guest user whose id you already hold                                                                                                                                                        |
+| POST   | `/api/events/{eventId}/host-invitations` | existing host     | new 2026-08-16 — invite a co-host **by email**, pending until they accept; works for people with no account yet. Returns an `EventInvitationResponseDto` with `role: 'HOST'`. See [`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-integration.md) §1 |
+| GET    | `/api/events/{eventId}/hosts`            | authenticated     |                                                                                                                                                                                                                                                                                 |
+| PATCH  | `/api/events/{eventId}/hosts/{id}`       | host              | only `displayOrder` is editable                                                                                                                                                                                                                                                 |
+| DELETE | `/api/event-hosts/{id}`                  | `ROLE_USER`       |                                                                                                                                                                                                                                                                                 |
 
 ### Event feed / modules
 
-| Method | Path | Auth | Notes |
-|---|---|---|---|
-| GET | `/api/events/{eventId}/modules` | authenticated | `EventModuleResponseDto[]` — see §3; 7 keys exist (`posts`, `rsvp`, `playlist`, `stories`, `gallery`, `wishlist`, `wishbook`) |
-| PATCH | `/api/event-modules/{id}` | host | `isEnabled`, `configuration` |
-| GET/POST | `/api/event-sessions`, `/api/events/{eventId}/sessions` | authenticated / `ROLE_USER` | agenda items — bounded list, `displayOrder` |
-| PATCH/DELETE | `/api/event-sessions/{id}` | host | |
+| Method       | Path                                                    | Auth                        | Notes                                                                                                                         |
+| ------------ | ------------------------------------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| GET          | `/api/events/{eventId}/modules`                         | authenticated               | `EventModuleResponseDto[]` — see §3; 7 keys exist (`posts`, `rsvp`, `playlist`, `stories`, `gallery`, `wishlist`, `wishbook`) |
+| PATCH        | `/api/event-modules/{id}`                               | host                        | `isEnabled`, `configuration`                                                                                                  |
+| GET/POST     | `/api/event-sessions`, `/api/events/{eventId}/sessions` | authenticated / `ROLE_USER` | agenda items — bounded list, `displayOrder`                                                                                   |
+| PATCH/DELETE | `/api/event-sessions/{id}`                              | host                        |                                                                                                                               |
 
 ### Posts
 
-| Method | Path | Auth | Notes |
-|---|---|---|---|
-| GET | `/api/events/{eventId}/posts` | authenticated | **`Page<PostResponseDto>`**, default 20/page, max 100, sorted pinned-desc then newest-first; `likedByCurrentUser` pre-resolved per post in one batched query |
-| GET | `/api/posts/{id}` | authenticated | |
-| POST | `/api/posts` | `ROLE_USER`, or guest scoped to that event | `type` is server-validated against exactly `TEXT \| MEDIA \| ANNOUNCEMENT \| PLAYLIST`; `mediaIds` max 10, no duplicates, must belong to the same event |
-| DELETE | `/api/posts/{id}` | `ROLE_USER` | |
+| Method | Path                          | Auth                                       | Notes                                                                                                                                                        |
+| ------ | ----------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| GET    | `/api/events/{eventId}/posts` | authenticated                              | **`Page<PostResponseDto>`**, default 20/page, max 100, sorted pinned-desc then newest-first; `likedByCurrentUser` pre-resolved per post in one batched query |
+| GET    | `/api/posts/{id}`             | authenticated                              |                                                                                                                                                              |
+| POST   | `/api/posts`                  | `ROLE_USER`, or guest scoped to that event | `type` is server-validated against exactly `TEXT \| MEDIA \| ANNOUNCEMENT \| PLAYLIST`; `mediaIds` max 10, no duplicates, must belong to the same event      |
+| DELETE | `/api/posts/{id}`             | `ROLE_USER`                                |                                                                                                                                                              |
 
 ### Multi-image post upload
 
@@ -127,11 +127,11 @@ single media record: `GET /api/medias/{id}`.
 
 ### Comments
 
-| Method | Path | Auth | Notes |
-|---|---|---|---|
-| GET | `/api/posts/{postId}/comments` | authenticated | flat list, not paginated, no nested-reply tree — `parentCommentId` is on the DTO but building threading is a client-side concern |
-| POST | `/api/comments` | authenticated | |
-| DELETE | `/api/comments/{id}` | authenticated | |
+| Method | Path                           | Auth          | Notes                                                                                                                            |
+| ------ | ------------------------------ | ------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/posts/{postId}/comments` | authenticated | flat list, not paginated, no nested-reply tree — `parentCommentId` is on the DTO but building threading is a client-side concern |
+| POST   | `/api/comments`                | authenticated |                                                                                                                                  |
+| DELETE | `/api/comments/{id}`           | authenticated |                                                                                                                                  |
 
 No PATCH — see §3.
 
@@ -141,11 +141,11 @@ Fully covered in
 [`post-liked-by-current-user-integration-guide.md`](post-liked-by-current-user-integration-guide.md)
 for the read side. Write side:
 
-| Method | Path | Auth | Notes |
-|---|---|---|---|
-| POST | `/api/reactions` | authenticated | `{ postId, memberId, reactionType }`; duplicate `(postId, memberId, reactionType)` → `409 DUPLICATE_REACTION` |
-| DELETE | `/api/reactions/{id}` | authenticated | **by the reaction's own id**, not by `postId`/`memberId` — see §3 |
-| GET | `/api/posts/{postId}/reactions` | authenticated | |
+| Method | Path                            | Auth          | Notes                                                                                                         |
+| ------ | ------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------- |
+| POST   | `/api/reactions`                | authenticated | `{ postId, memberId, reactionType }`; duplicate `(postId, memberId, reactionType)` → `409 DUPLICATE_REACTION` |
+| DELETE | `/api/reactions/{id}`           | authenticated | **by the reaction's own id**, not by `postId`/`memberId` — see §3                                             |
+| GET    | `/api/posts/{postId}/reactions` | authenticated |                                                                                                               |
 
 ### Stories
 
@@ -161,11 +161,11 @@ The `wishlist` module, deliberately scoped to **one bank account per event** —
 no per-item claiming, no "who gave what". Fully covered in
 [`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-integration.md) §3.
 
-| Method | Path | Auth | Notes |
-|---|---|---|---|
-| GET | `/api/events/{eventId}/gift-account` | any member, incl. guest tokens | `404` is the **normal empty state** — the host hasn't set one up. Not an error to surface. |
-| PUT | `/api/events/{eventId}/gift-account` | host | upsert; `400`/`5045 INVALID_IBAN` on failed mod-97 check digits |
-| DELETE | `/api/events/{eventId}/gift-account` | host | `204` |
+| Method | Path                                 | Auth                           | Notes                                                                                      |
+| ------ | ------------------------------------ | ------------------------------ | ------------------------------------------------------------------------------------------ |
+| GET    | `/api/events/{eventId}/gift-account` | any member, incl. guest tokens | `404` is the **normal empty state** — the host hasn't set one up. Not an error to surface. |
+| PUT    | `/api/events/{eventId}/gift-account` | host                           | upsert; `400`/`5045 INVALID_IBAN` on failed mod-97 check digits                            |
+| DELETE | `/api/events/{eventId}/gift-account` | host                           | `204`                                                                                      |
 
 Deliberately **not** on `EventDetailResponseDto` — that endpoint is reachable by anonymous QR
 scanners, so nothing loaded there may carry a payment destination. The IBAN is stored encrypted at
@@ -180,12 +180,12 @@ typo). Reading has no lifecycle check at all.
 The `wishbook` module: written wishes every member can read. Fully covered in
 [`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-integration.md) §4.
 
-| Method | Path | Auth | Notes |
-|---|---|---|---|
-| GET | `/api/events/{eventId}/wishbook` | authenticated | **`Page<WishbookEntryResponseDto>`**, default 20/page, newest first — the second paginated endpoint, see §0 |
-| GET | `/api/events/{eventId}/wishbook/count` | authenticated | a plain number, for a summary tile |
-| POST | `/api/events/{eventId}/wishbook` | authenticated, incl. guest tokens | `{ message, guestName? }`; multiple wishes per guest are allowed by design |
-| DELETE | `/api/wishbook/{entryId}` | author or host | `204`. Note: **not** nested under the event |
+| Method | Path                                   | Auth                              | Notes                                                                                                       |
+| ------ | -------------------------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/events/{eventId}/wishbook`       | authenticated                     | **`Page<WishbookEntryResponseDto>`**, default 20/page, newest first — the second paginated endpoint, see §0 |
+| GET    | `/api/events/{eventId}/wishbook/count` | authenticated                     | a plain number, for a summary tile                                                                          |
+| POST   | `/api/events/{eventId}/wishbook`       | authenticated, incl. guest tokens | `{ message, guestName? }`; multiple wishes per guest are allowed by design                                  |
+| DELETE | `/api/wishbook/{entryId}`              | author or host                    | `204`. Note: **not** nested under the event                                                                 |
 
 Draw the delete control off the server-computed `canDelete`, not off `authorMemberId` — deriving it
 client-side gets the host case wrong. Writing requires the event to be `ACTIVE` (`409 EVENT_FROZEN`
@@ -194,12 +194,12 @@ something offensive after a freeze.
 
 ### RSVP — guest flow
 
-| Method | Path | Auth | Notes |
-|---|---|---|---|
-| POST | `/api/rsvps` | authenticated | `{ eventMemberId, attendanceStatus, adultCount, childCount, submittedAt, ... }` |
-| PATCH | `/api/rsvps/{id}` | the RSVP's own member, or host | `attendanceStatus`, `phone`, `adultCount`, `childCount`, `notes` — counts are now bounds-validated server-side (adults 1-5, children 0-4), see [`app-config-fe-integration.md`](app-config-fe-integration.md) |
-| GET | `/api/rsvps/{id}` | authenticated | |
-| POST/GET/DELETE | `/api/rsvp-session-responses` | authenticated | per-session attendance, `{ rsvpId, eventSessionId, isAttending }` |
+| Method          | Path                          | Auth                           | Notes                                                                                                                                                                                                         |
+| --------------- | ----------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| POST            | `/api/rsvps`                  | authenticated                  | `{ eventMemberId, attendanceStatus, adultCount, childCount, submittedAt, ... }`                                                                                                                               |
+| PATCH           | `/api/rsvps/{id}`             | the RSVP's own member, or host | `attendanceStatus`, `phone`, `adultCount`, `childCount`, `notes` — counts are now bounds-validated server-side (adults 1-5, children 0-4), see [`app-config-fe-integration.md`](app-config-fe-integration.md) |
+| GET             | `/api/rsvps/{id}`             | authenticated                  |                                                                                                                                                                                                               |
+| POST/GET/DELETE | `/api/rsvp-session-responses` | authenticated                  | per-session attendance, `{ rsvpId, eventSessionId, isAttending }`                                                                                                                                             |
 
 ### RSVP — host dashboard
 
@@ -232,24 +232,24 @@ isArchived. Cover photo itself goes through the normal media-upload endpoint fir
 
 ### Playlist — voting rework and host leaderboard (2026-08-05) ⚠️ BREAKING
 
-| Method | Path | Auth | Notes |
-|---|---|---|---|
-| GET | `/api/events/{eventId}/playlist-suggestions` | authenticated | now carries `upvoteCount`, `downvoteCount`, `myVote` per song — see below |
-| GET | `/api/events/{eventId}/playlist-suggestions/leaderboard` | **HOST only** | new; ranked, ties share a `rank` |
-| POST | `/api/playlist-suggestions` | authenticated | `title` required, `artist`/`youtubeUrl`/`spotifyUrl`/`comment` optional |
-| DELETE | `/api/playlist-suggestions/{id}` | authenticated | own or host (service-enforced, not visible at controller level) |
-| GET | `/api/playlist-suggestions/{suggestionId}/votes` | authenticated | raw vote rows; no longer needed just to render counts, see below |
-| POST | `/api/playlist-votes` | authenticated | `{ playlistSuggestionId, voteType }` — now an upsert, see below |
-| DELETE | `/api/playlist-votes/{id}` | authenticated | unvote — same id-based delete pattern as reactions, see §3 |
+| Method | Path                                                     | Auth          | Notes                                                                     |
+| ------ | -------------------------------------------------------- | ------------- | ------------------------------------------------------------------------- |
+| GET    | `/api/events/{eventId}/playlist-suggestions`             | authenticated | now carries `upvoteCount`, `downvoteCount`, `myVote` per song — see below |
+| GET    | `/api/events/{eventId}/playlist-suggestions/leaderboard` | **HOST only** | new; ranked, ties share a `rank`                                          |
+| POST   | `/api/playlist-suggestions`                              | authenticated | `title` required, `artist`/`youtubeUrl`/`spotifyUrl`/`comment` optional   |
+| DELETE | `/api/playlist-suggestions/{id}`                         | authenticated | own or host (service-enforced, not visible at controller level)           |
+| GET    | `/api/playlist-suggestions/{suggestionId}/votes`         | authenticated | raw vote rows; no longer needed just to render counts, see below          |
+| POST   | `/api/playlist-votes`                                    | authenticated | `{ playlistSuggestionId, voteType }` — now an upsert, see below           |
+| DELETE | `/api/playlist-votes/{id}`                               | authenticated | unvote — same id-based delete pattern as reactions, see §3                |
 
 #### What broke
 
-| Change | What to do |
-|---|---|
-| `memberId` **removed** from `POST /api/playlist-votes` | The voter is now derived from the access token server-side, never from the request body. Stop sending it — unknown fields are ignored, so this degrades quietly rather than 400ing, but the value was never trusted anyway even before this change made it impossible to send. |
-| `authorMemberId` **removed** from `POST /api/playlist-suggestions` | Same reasoning — the author is now always the caller. **Anonymous suggestions are no longer possible.** If any UI let a member post a song with no name attached, that affordance is gone. |
-| `voteType` is now **required** on `POST /api/playlist-votes` | `"UPVOTE"` or `"DOWNVOTE"`. Previously a vote had no type at all — every existing vote in the database has been backfilled to `UPVOTE`, so nothing already cast changes meaning. |
-| A second vote from the same member is no longer a duplicate-conflict error | It's an **upsert**. Posting the opposite `voteType` switches the member's existing vote; re-posting the same `voteType` is a no-op that returns the current vote unchanged. There is no `ConflictException`/409 case to handle on this endpoint anymore. |
+| Change                                                                     | What to do                                                                                                                                                                                                                                                                     |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `memberId` **removed** from `POST /api/playlist-votes`                     | The voter is now derived from the access token server-side, never from the request body. Stop sending it — unknown fields are ignored, so this degrades quietly rather than 400ing, but the value was never trusted anyway even before this change made it impossible to send. |
+| `authorMemberId` **removed** from `POST /api/playlist-suggestions`         | Same reasoning — the author is now always the caller. **Anonymous suggestions are no longer possible.** If any UI let a member post a song with no name attached, that affordance is gone.                                                                                     |
+| `voteType` is now **required** on `POST /api/playlist-votes`               | `"UPVOTE"` or `"DOWNVOTE"`. Previously a vote had no type at all — every existing vote in the database has been backfilled to `UPVOTE`, so nothing already cast changes meaning.                                                                                               |
+| A second vote from the same member is no longer a duplicate-conflict error | It's an **upsert**. Posting the opposite `voteType` switches the member's existing vote; re-posting the same `voteType` is a no-op that returns the current vote unchanged. There is no `ConflictException`/409 case to handle on this endpoint anymore.                       |
 
 #### Voting semantics
 
@@ -292,24 +292,24 @@ creates one.
 
 #### What broke
 
-| Change | What to do |
-|---|---|
-| `POST /api/notifications` **removed** (404) | Delete any create call. Notifications cannot be authored by clients, by design. |
-| `type` values completely replaced | Old `POST_LIKED` / `COMMENT_ADDED` / `NEW_POST` / `NEW_ANNOUNCEMENT` / `RSVP_REMINDER` no longer occur. See the new enum below. |
-| `recipientMemberId` is now **nullable** | Account-level notifications have no membership. Any code dereferencing it unguarded will break. |
-| `DELETE` is now a **soft** delete | The notification disappears from the feed but the row is retained (it suppresses re-notification). Behaviourally the same to you; still returns `200`. |
-| Feed now **excludes** expired and dismissed rows | No client-side filtering needed. |
+| Change                                           | What to do                                                                                                                                             |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `POST /api/notifications` **removed** (404)      | Delete any create call. Notifications cannot be authored by clients, by design.                                                                        |
+| `type` values completely replaced                | Old `POST_LIKED` / `COMMENT_ADDED` / `NEW_POST` / `NEW_ANNOUNCEMENT` / `RSVP_REMINDER` no longer occur. See the new enum below.                        |
+| `recipientMemberId` is now **nullable**          | Account-level notifications have no membership. Any code dereferencing it unguarded will break.                                                        |
+| `DELETE` is now a **soft** delete                | The notification disappears from the feed but the row is retained (it suppresses re-notification). Behaviourally the same to you; still returns `200`. |
+| Feed now **excludes** expired and dismissed rows | No client-side filtering needed.                                                                                                                       |
 
 #### Endpoints
 
-| Method | Path | Auth | Notes |
-|---|---|---|---|
-| GET | `/api/notifications` | authenticated | The caller's feed, newest first, across all their events. Excludes dismissed and expired. Optional `?unreadOnly=true`. |
-| GET | `/api/notifications/unread-count` | authenticated | `{ "unreadCount": 3 }` — for the badge, without fetching the feed. |
-| GET | `/api/notifications/{id}` | authenticated | `403` for non-recipients. |
-| PATCH | `/api/notifications/{id}/read` | authenticated | Idempotent; returns the updated DTO. |
-| PATCH | `/api/notifications/read-all` | authenticated | `204 No Content`. |
-| DELETE | `/api/notifications/{id}` | authenticated | Dismiss (soft). `200`. |
+| Method | Path                              | Auth          | Notes                                                                                                                  |
+| ------ | --------------------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/notifications`              | authenticated | The caller's feed, newest first, across all their events. Excludes dismissed and expired. Optional `?unreadOnly=true`. |
+| GET    | `/api/notifications/unread-count` | authenticated | `{ "unreadCount": 3 }` — for the badge, without fetching the feed.                                                     |
+| GET    | `/api/notifications/{id}`         | authenticated | `403` for non-recipients.                                                                                              |
+| PATCH  | `/api/notifications/{id}/read`    | authenticated | Idempotent; returns the updated DTO.                                                                                   |
+| PATCH  | `/api/notifications/read-all`     | authenticated | `204 No Content`.                                                                                                      |
+| DELETE | `/api/notifications/{id}`         | authenticated | Dismiss (soft). `200`.                                                                                                 |
 
 #### The payload
 
@@ -321,7 +321,7 @@ creates one.
   what was true when the notification fired.
 - **`category`** — `LIMIT` | `OFFER` | `TIP` | `SYSTEM`. The natural grouping for tabs.
 - **`severity`** — `INFO` | `WARNING` | `CRITICAL`. Drives visual weight. Note 80%-full and
-  100%-full are the *same* `type` with different severities, so style on `severity`, not `type`.
+  100%-full are the _same_ `type` with different severities, so style on `severity`, not `type`.
 - **`ctaLabel` / `ctaRoute`** — at most one action. `ctaRoute` is **app-relative**
   (`/events/{id}/settings/plan`); route with it directly, never treat it as an external URL.
 - **`eventId` / `eventTitle`** — present for per-event notifications, `null` for account-level ones.
@@ -330,13 +330,13 @@ creates one.
   days".
 - **`payload`** — the raw measurement, for progress bars. Shape varies by `type`:
 
-| `type` | `payload` keys |
-|---|---|
-| `STORAGE_LIMIT_WARNING` | `usedBytes`, `limitBytes`, `percent`, `planTier` |
-| `MEMBER_LIMIT_WARNING` | `memberCount`, `memberLimit`, `percent`, `planTier` |
-| `EVENT_CAP_WARNING` | `activeEvents`, `activeEventLimit`, `percent`, `planTier` |
-| `UPGRADE_OFFER` | `storagePercent`, `memberPercent`, `planTier` |
-| `HOST_TIP` | `startAt` |
+| `type`                  | `payload` keys                                            |
+| ----------------------- | --------------------------------------------------------- |
+| `STORAGE_LIMIT_WARNING` | `usedBytes`, `limitBytes`, `percent`, `planTier`          |
+| `MEMBER_LIMIT_WARNING`  | `memberCount`, `memberLimit`, `percent`, `planTier`       |
+| `EVENT_CAP_WARNING`     | `activeEvents`, `activeEventLimit`, `percent`, `planTier` |
+| `UPGRADE_OFFER`         | `storagePercent`, `memberPercent`, `planTier`             |
+| `HOST_TIP`              | `startAt`                                                 |
 
 `percent` is **uncapped** — a value above 100 means the quota is exceeded. Clamp before feeding a
 progress bar.
@@ -349,7 +349,7 @@ progress bar.
 - **Only hosts ever receive these.** An attendee's feed is permanently empty. That's correct, not a
   bug.
 - **A host is told a given thing once.** Dismissing does not "reset" it — the same warning will not
-  come back. Crossing a *further* threshold (80% → 100%) produces a separate notification.
+  come back. Crossing a _further_ threshold (80% → 100%) produces a separate notification.
 
 ### Plans and usage
 
@@ -361,10 +361,10 @@ Every event carries a `planTier`, and so does every user account, and **they do 
 Upgrading an account does not upgrade its events. This is the easiest thing to get wrong in the UI —
 don't show an account's tier on an event's plan screen.
 
-| Method | Path | Auth | Notes |
-|---|---|---|---|
-| GET | `/api/events/{eventId}/usage` | **HOST only** | `403` for attendees and non-members. Storage/member consumption for that event. |
-| GET | `/api/me/usage` | authenticated | The caller's active-event count against their own cap. |
+| Method | Path                          | Auth          | Notes                                                                           |
+| ------ | ----------------------------- | ------------- | ------------------------------------------------------------------------------- |
+| GET    | `/api/events/{eventId}/usage` | **HOST only** | `403` for attendees and non-members. Storage/member consumption for that event. |
+| GET    | `/api/me/usage`               | authenticated | The caller's active-event count against their own cap.                          |
 
 Plan codes are **not** a fixed `FREE`/`PLUS`/`PRO` union any more — the catalog is admin-editable at
 runtime (`GET /api/config` → `planTiers[]`, filtered to `isAssignable && isPublic`). Any FE type
@@ -388,7 +388,7 @@ See [`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-i
 
 ### Billing & payments — event activation, subscriptions, upgrades, refunds
 
-**Corrects a stale claim in an earlier version of this doc: there *is* now a full billing
+**Corrects a stale claim in an earlier version of this doc: there _is_ now a full billing
 integration.** An event is not usable until paid for — `POST /api/events` returns a `DRAFT`, and
 only a completed checkout turns it `ACTIVE`. There is no free plan.
 
@@ -440,9 +440,9 @@ cache-it response — the single place to source values previously hardcoded on 
 
 ### Admin — notification sweep
 
-| Method | Path | Auth | Notes |
-|---|---|---|---|
-| POST | `/api/admin/notifications/sweep` | `ROLE_ADMIN` | Runs the quota rules immediately. Returns `{ "quota.storage": 1, "quota.members": 0, ... }` — notifications *actually created* per rule. |
+| Method | Path                             | Auth         | Notes                                                                                                                                    |
+| ------ | -------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| POST   | `/api/admin/notifications/sweep` | `ROLE_ADMIN` | Runs the quota rules immediately. Returns `{ "quota.storage": 1, "quota.members": 0, ... }` — notifications _actually created_ per rule. |
 
 This is **not** a broadcast/compose endpoint — it cannot author a message, only run the same rules
 the scheduler runs. It's safe to call repeatedly: everything is deduplicated, so a second call over

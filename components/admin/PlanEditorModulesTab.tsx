@@ -122,7 +122,8 @@ export function PlanEditorModulesTab({
                                     >
                                         {service.name}
                                         <span className="font-medium text-ink-muted">
-                                            {formatMoney(locale, service.priceAmountMinor, service.priceCurrency)} {billingSuffix(t, service.billingPeriod)}
+                                            {formatMoney(locale, service.priceAmountMinor, service.priceCurrency)}{' '}
+                                            {billingSuffix(t, service.billingPeriod)}
                                         </span>
                                         <button
                                             type="button"
@@ -151,7 +152,8 @@ export function PlanEditorModulesTab({
                                         >
                                             <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                                             {t('plans.modules.useExistingAddon', { addon: service.name })} (
-                                            {formatMoney(locale, service.priceAmountMinor, service.priceCurrency)} {billingSuffix(t, service.billingPeriod)})
+                                            {formatMoney(locale, service.priceAmountMinor, service.priceCurrency)}{' '}
+                                            {billingSuffix(t, service.billingPeriod)})
                                         </button>
                                     ))}
 
@@ -171,12 +173,21 @@ export function PlanEditorModulesTab({
                             {/* Unlock composer */}
                             {composerOpen && unlockDraft && (
                                 <div onKeyDown={handleComposerKeyDown} className="mt-3 rounded-lg border border-border bg-surface-muted/40 p-3">
-                                    <p className="text-sm font-bold text-ink">{t('plans.modules.createAddonTitle', { module: unlockDraft.moduleName })}</p>
-                                    <p className="mt-0.5 text-xs leading-5 text-ink-muted">{t('plans.modules.createAddonSubtitle', { plan: plan.name })}</p>
+                                    <p className="text-sm font-bold text-ink">
+                                        {t('plans.modules.createAddonTitle', { module: unlockDraft.moduleName })}
+                                    </p>
+                                    <p className="mt-0.5 text-xs leading-5 text-ink-muted">
+                                        {t('plans.modules.createAddonSubtitle', { plan: plan.name })}
+                                    </p>
 
                                     <div className="mt-3 grid gap-3 sm:grid-cols-4">
                                         <AdminField label={t('paidServices.fields.name')} required className="sm:col-span-4">
-                                            <input data-field="name" value={unlockDraft.name} onChange={onUpdateUnlockDraft} className={adminInputClass()} />
+                                            <input
+                                                data-field="name"
+                                                value={unlockDraft.name}
+                                                onChange={onUpdateUnlockDraft}
+                                                className={adminInputClass()}
+                                            />
                                         </AdminField>
                                         <AdminField label={t('paidServices.fields.price')} required className="sm:col-span-2">
                                             <input
@@ -199,19 +210,29 @@ export function PlanEditorModulesTab({
                                             />
                                         </AdminField>
                                         <AdminField label={t('paidServices.fields.billingPeriod')} className="sm:col-span-4" required>
-                                            <select data-field="billingPeriod" value={unlockDraft.billingPeriod} onChange={onUpdateUnlockDraft} className={adminInputClass()}>
+                                            <select
+                                                data-field="billingPeriod"
+                                                value={unlockDraft.billingPeriod}
+                                                onChange={onUpdateUnlockDraft}
+                                                className={adminInputClass()}
+                                            >
                                                 <option value="MONTHLY">{t('paidServices.fields.billingPeriodMonthlyShort')}</option>
                                                 <option value="ONE_TIME">{t('paidServices.fields.billingPeriodOnceShort')}</option>
                                             </select>
                                         </AdminField>
                                         <AdminField label={t('paidServices.fields.description')} optional className="sm:col-span-4">
-                                            <input data-field="description" value={unlockDraft.description} onChange={onUpdateUnlockDraft} className={adminInputClass()} />
+                                            <input
+                                                data-field="description"
+                                                value={unlockDraft.description}
+                                                onChange={onUpdateUnlockDraft}
+                                                className={adminInputClass()}
+                                            />
                                         </AdminField>
                                     </div>
 
                                     {/* Unlock actions */}
                                     <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                                        <p className="text-[11px] leading-4 text-ink-faint">{t('paidServices.fields.priceHint')}</p>
+                                        <p className="text-[11px] leading-4 text-ink-faint">{t('paidServices.fields.priceHintUnlock')}</p>
                                         <div className="flex items-center gap-2">
                                             <button
                                                 type="button"

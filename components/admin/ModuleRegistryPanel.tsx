@@ -191,10 +191,17 @@ export function ModuleRegistryPanel() {
                                             <span
                                                 className={cn(
                                                     'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold',
-                                                    module.isEnabled ? 'bg-status-good-wash text-status-good' : 'bg-status-neutral-wash text-status-neutral'
+                                                    module.isEnabled
+                                                        ? 'bg-status-good-wash text-status-good'
+                                                        : 'bg-status-neutral-wash text-status-neutral'
                                                 )}
                                             >
-                                                <span className={cn('h-1.5 w-1.5 rounded-full', module.isEnabled ? 'bg-status-good' : 'bg-status-neutral')} />
+                                                <span
+                                                    className={cn(
+                                                        'h-1.5 w-1.5 rounded-full',
+                                                        module.isEnabled ? 'bg-status-good' : 'bg-status-neutral'
+                                                    )}
+                                                />
                                                 {module.isEnabled ? t('modules.enabled') : t('modules.disabled')}
                                             </span>
                                         </td>

@@ -103,7 +103,9 @@ function WebhookRow({ webhook }: { webhook: UnprocessedWebhookDto }) {
                                 {replayWebhook.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                                 {replayWebhook.isSuccess ? t('billingOps.replayed') : t('billingOps.replay')}
                             </button>
-                            {replayWebhook.error && <p className="text-xs text-status-danger">{t(`errors.${adminErrorMessageKey(replayWebhook.error)}`)}</p>}
+                            {replayWebhook.error && (
+                                <p className="text-xs text-status-danger">{t(`errors.${adminErrorMessageKey(replayWebhook.error)}`)}</p>
+                            )}
                         </div>
                     )}
                     {webhook.orderId ? (

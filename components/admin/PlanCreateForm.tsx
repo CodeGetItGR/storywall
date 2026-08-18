@@ -46,7 +46,12 @@ export function PlanCreateForm({
 
     // The code is an identifier the admin should not have to invent: it follows the
     // name until they deliberately type over it.
-    const code = codeOverride ?? codeFromName(name, plans.map((plan) => plan.code));
+    const code =
+        codeOverride ??
+        codeFromName(
+            name,
+            plans.map((plan) => plan.code)
+        );
 
     const handleNameChange = useCallback((event: ChangeEvent<HTMLInputElement>) => setName(event.target.value), []);
     // Clearing the field hands the code back to the name rather than pinning it empty.
@@ -254,10 +259,20 @@ export function PlanCreateForm({
                         <AdminField label={t('fields.discountLabel')} optional className="col-span-1 md:col-span-3">
                             <input name="discountLabel" maxLength={100} className={adminInputClass()} />
                         </AdminField>
-                        <AdminField label={t('fields.discountStartsAt')} optional hint={t('fields.discountBoundHint')} className="col-span-1 md:col-span-2">
+                        <AdminField
+                            label={t('fields.discountStartsAt')}
+                            optional
+                            hint={t('fields.discountBoundHint')}
+                            className="col-span-1 md:col-span-2"
+                        >
                             <input name="discountStartsAt" type="datetime-local" className={adminInputClass()} />
                         </AdminField>
-                        <AdminField label={t('fields.discountEndsAt')} optional hint={t('fields.discountEndsAtHint')} className="col-span-1 md:col-span-2">
+                        <AdminField
+                            label={t('fields.discountEndsAt')}
+                            optional
+                            hint={t('fields.discountEndsAtHint')}
+                            className="col-span-1 md:col-span-2"
+                        >
                             <input name="discountEndsAt" type="datetime-local" className={adminInputClass()} />
                         </AdminField>
                     </div>
@@ -281,9 +296,7 @@ export function PlanCreateForm({
                     />
                 </AdminSection>
 
-                {createMutation.error && (
-                    <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(createMutation.error)}`)}</p>
-                )}
+                {createMutation.error && <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(createMutation.error)}`)}</p>}
             </form>
         </AdminDrawer>
     );
