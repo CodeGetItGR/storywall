@@ -16,6 +16,10 @@ export function AdminConsole() {
     const t = useTranslations('AdminPage');
     const { tab } = useAdminNavigation();
 
+    // The Paid Services panel supplies its own page head (title, stat tiles,
+    // primary action) — the shared eyebrow/title block would just duplicate it.
+    if (tab === 'paidServices') return <PaidServicesCatalogPanel />;
+
     return (
         <div className="mx-auto px-4 pb-16 pt-5 text-[15px] sm:px-6 lg:px-8 lg:pb-10 lg:pt-6">
             <header className="mb-5">
@@ -27,7 +31,6 @@ export function AdminConsole() {
             <main className="min-w-0">
                 {tab === 'metrics' && <PlatformMetricsPanel />}
                 {tab === 'eventPlans' && <PlanCatalogPanel scope="EVENT" />}
-                {tab === 'paidServices' && <PaidServicesCatalogPanel />}
                 {tab === 'modules' && <ModuleRegistryPanel />}
                 {tab === 'assignments' && <PlanAssignmentPanel />}
                 {tab === 'billingOps' && <BillingOpsPanel />}

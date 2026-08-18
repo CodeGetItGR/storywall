@@ -1,7 +1,14 @@
 # FE integration guide: plans, payments, subscriptions, refunds
 
 **The complete, current reference for the commercial side of the platform.** Everything a frontend
-needs to sell an event, keep it alive, and give money back. Current as of 2026-08-16.
+needs to sell an event, keep it alive, and give money back. Current as of 2026-08-17.
+
+**2026-08-17:** A `MODULE_UNLOCK` (§7c) can now be priced `billingPeriod: 'ONE_TIME'` — charged once
+on the activation and never on a renewal. So `billingPeriod` is a value to read again rather than a
+constant, `AddonSummary` carries it (§8), and it stops being patchable once events hold the service
+(§13). This doc is updated in place; **`one-time-module-unlocks-fe-integration.md` has the focused
+delta**, and is worth reading if you followed `storage-packs-recurring-fe-changes.md`'s advice to
+delete your `billingPeriod` branching.
 
 **2026-08-16:** A third `PaidServiceKind`, `MODULE_UNLOCK` (§7c), sells a single module to a single
 event whose plan doesn't include it — so a module's availability is no longer decided by the plan
@@ -367,6 +374,16 @@ Calling it twice is safe: our order id is also the provider's idempotency key, s
 same session rather than opening a second one. Still disable the button while the request is in
 flight.
 
+**Tax and consent are not handled by this platform today — flag before launch, not FE work by
+itself.** Automatic VAT/sales tax (Stripe Tax) is off by default (`BillingProperties.automaticTax`);
+switching it on is a backend + Stripe-account config change (jurisdictions must be registered on the
+Stripe account first), not something the FE can turn on. Turning it on also makes Stripe collect a
+billing address on the hosted page, which changes that page's shape but not anything the FE calls.
+Separately, the app records no explicit consent/ToS acceptance of its own before opening a recurring
+checkout — only whatever Stripe's hosted page itself shows. If either becomes a compliance
+requirement for the markets you launch into, it needs a product decision and backend work before FE
+has anything to build against; this note exists so it isn't discovered at launch.
+
 ### Step 4 — the two return routes you must implement
 
 Built server-side from `app.billing.app-base-url` and **not configurable per request**:
@@ -589,13 +606,17 @@ file.
   …,
   "addons": [
     { "code": "ORIGINALS", "name": "Keep Originals", "priceAmountMinor": 500,
-      "activatedAt": "2026-08-01T10:00:00Z" }
+      "billingPeriod": "MONTHLY", "activatedAt": "2026-08-01T10:00:00Z" },
+    { "code": "UNLOCK_WISHLIST", "name": "Gift Wishlist", "priceAmountMinor": 300,
+      "billingPeriod": "ONE_TIME", "activatedAt": "2026-08-01T10:00:00Z" }
   ]
 }
 ```
 
-`priceAmountMinor` on each is what it currently adds to the next renewal quote — sum the array for
-the total add-on surcharge. Empty array on an event that never opted in. Each settled `RENEWAL`
+`priceAmountMinor` on each is what it costs at its own `billingPeriod` — **so sum only the
+`'MONTHLY'` rows** for the next renewal quote. A `'ONE_TIME'` row was paid for once at activation
+and adds nothing to any future bill; it appears here because the host owns it, not because they owe
+it. Only a `MODULE_UNLOCK` is ever `'ONE_TIME'` (§7c). Empty array on an event that never opted in. Each settled `RENEWAL`
 order separately carries its own `addonAmountMinor` (the frozen breakdown at the time it was paid,
 per the receipt note above) — the two are related but not the same number once a price changes.
 
@@ -714,6 +735,36 @@ description rather than reusing the service's own `name` — the registry row is
 UI labels that module with, and the two drifting apart is confusing on the one screen that shows
 both.
 
+### Monthly or bought outright
+
+*New 2026-08-17.* **Read `billingPeriod` on every unlock and price it accordingly** — this is the
+one kind where it is not always `'MONTHLY'`:
+
+| `billingPeriod` | What the host pays | Where it appears afterwards |
+| --- | --- | --- |
+| `'MONTHLY'` | `priceAmountMinor × includedMonths` on the activation, then every renewal | `addons[]`, and inside every renewal's `addonAmountMinor` |
+| `'ONE_TIME'` | `priceAmountMinor`, once, on the activation | `addons[]` only — **never** on a renewal |
+
+A one-time unlock is **not** multiplied by the plan's `includedMonths`: the event's length says
+nothing about the price of a feature. It is also the one add-on charge a plan with
+`includedMonths: 0` still collects.
+
+Label the two differently in the picker — "€3/month" versus "€3 once" — because the decision the
+host is making is different. A one-time unlock is the more expensive-looking line on the activation
+total and the cheaper one over the life of the event, and a UI that prices both the same way makes
+that impossible to see.
+
+**Both are draft-only, and for a one-time unlock that is load-bearing.** The activation checkout is
+the only thing that ever charges it, so there is no "add it later" flow to build and no endpoint to
+build it against — `POST /api/events/{id}/addons` returns `409 EVENT_NOT_DRAFT` (5017) once the
+event is live, same as before. Surface the unlock picker during setup, before the activation
+checkout, and treat the activation as the point of no return for it. If the host wants the module
+afterwards, the answer is a plan upgrade (§6), not an unlock.
+
+Re-reading `GET /api/events/{id}/billing` after activation shows the unlock in `addons[]` with its
+`billingPeriod` — that is how you tell an owned one-time unlock from a recurring one when rendering
+the "what you're paying for" list. Sum only the `'MONTHLY'` rows when you show a monthly total.
+
 ### Buying one — `DRAFT` only, and it is not a checkout
 
 ```http
@@ -724,7 +775,8 @@ POST /api/events/{eventId}/addons
 Host-only, rate limited 30/min. Returns the same `AddonSummary` shape as the `addons` array in §8:
 
 ```jsonc
-{ "code": "UNLOCK_WISHLIST", "name": "Gift Wishlist", "priceAmountMinor": 300, "activatedAt": "…" }
+{ "code": "UNLOCK_WISHLIST", "name": "Gift Wishlist", "priceAmountMinor": 300,
+  "billingPeriod": "ONE_TIME", "activatedAt": "…" }
 ```
 
 **Nothing is charged at this moment.** Like §7a's `keepOriginals` toggle, the entitlement is the row
@@ -1122,7 +1174,7 @@ name, for logs). Branch on `errorCode`.
 | `3015` `INVALID_PAID_SERVICE_KIND` | 400 | a code sent to an endpoint that doesn't serve its kind — a `STORAGE_PACK` code at the add-on opt-in (§7c), or a `RECURRING_ADDON`/`MODULE_UNLOCK` code at `storage-checkout` (§7b) | refetch `paidServices`, the code was mislabeled client-side |
 | `2001` `RESOURCE_NOT_FOUND` | 404 | paid-service code doesn't exist in the catalog at all | refetch `paidServices`, the code was stale or mistyped |
 | `5036` `PAID_SERVICE_NOT_PURCHASABLE` | 409 | code exists but is archived or non-public | refetch `paidServices` and ask them to pick again |
-| `5037` `PAID_SERVICE_IN_USE` | 409 | admin deleting a paid service that is still referenced by an order | offer archiving instead (admin panel only) |
+| `5037` `PAID_SERVICE_IN_USE` | 409 | admin deleting a paid service that is still referenced by an order, or patching `billingPeriod` on one that events already hold | offer archiving instead, plus a new code at the new cadence (admin panel only) |
 | `5038` `ADDON_ALREADY_ACTIVE` | 409 | opting into an add-on that is already active on the event | refetch the event; the toggle is already on |
 | `5039` `PAID_SERVICE_CURRENCY_MISMATCH` | 409 | the event's active add-ons are priced in a different currency to its plan | catalog misconfiguration; host sees a generic failure and support has to fix the catalog |
 | `5040` `PAID_SERVICE_NOT_ON_PLAN` | 409 | the service is restricted to plan tiers this event is not on | filter the purchase UI by `planTierIds` (below) so this is unreachable from a fresh catalog |
@@ -1137,9 +1189,10 @@ name, for logs). Branch on `errorCode`.
 | `5016` `EVENT_FROZEN` | 409 | **any write** on a `FROZEN` or `PURGED` event | read-only banner + link to the plan page |
 | `5017` `EVENT_NOT_DRAFT` | 409 | activation checkout on an event already live/frozen/purged | usually a stale tab; refetch the event |
 | `5018` `ORDER_NOT_PENDING` | 409 | admin settling an already-settled order | admin panel only |
-| `5020` `SUBSCRIPTION_ALREADY_ACTIVE` | 409 | subscription checkout with one already live | show the existing subscription |
+| `5020` `SUBSCRIPTION_ALREADY_ACTIVE` | 409 | subscription checkout with one already live; also fired by the admin plan-tier-reassignment endpoint (§13) when the event's subscription is still collecting | show the existing subscription (host-facing); admin panel only for the reassignment case — cancel/replace the subscription first |
 | `5026` `SUBSCRIPTION_NOT_LIVE` | 409 | cancelling with no live subscription | stale tab; refetch `/billing` |
 | `5027` `SUBSCRIPTION_CANCEL_FAILED` | 502 | the provider would not stop it | "Couldn't stop it just now — try again shortly." It is **still billing**; do not show it as cancelled |
+| `5046` `CHECKOUT_AMOUNT_BELOW_MINIMUM` | 409 | a plan discount cut a checkout's price below what the provider will charge at all | catalog misconfiguration (discount set too steep); host sees a generic failure and support has to fix the discount |
 
 ### Refunds
 
@@ -1258,12 +1311,19 @@ Create/patch validation (`400` / `3001` unless noted):
   entitlement is resolved live from this field, so every event that already bought the unlock loses
   the old module and gains the new one at the next request. Warn on it in the admin form; the
   non-destructive move is a new service code, archiving the old one.
-- `billingPeriod` — **enforced against `kind`**: `'MONTHLY'` for all three kinds,
-  anything else → `400 VALIDATION_FAILED`. It used to be a free choice that
-  no pricing code read, so a `'YEARLY'` add-on would save, display in the public catalog, and bill
-  monthly anyway. Derive the field from `kind` in the admin form rather than offering a picker — for
-  now that means the field always resolves to `'MONTHLY'`, but keep deriving it since the intent is
-  "let `kind` decide," not "hardcode the one value that happens to be valid today."
+- `billingPeriod` — **enforced against `kind`**: `'MONTHLY'` for `STORAGE_PACK` and
+  `RECURRING_ADDON`, `'MONTHLY'` or `'ONE_TIME'` for `MODULE_UNLOCK`; anything else (and `'YEARLY'`
+  anywhere) → `400 VALIDATION_FAILED`. So the admin form should offer a picker **only** when `kind`
+  is `MODULE_UNLOCK`, and derive `'MONTHLY'` otherwise. The two storage-bearing kinds are fixed
+  because what they grant keeps costing money every month it is held; a module left switched on does
+  not, which is why it is the one kind that can be sold outright.
+- **`billingPeriod` is not patchable once events hold the service** → `409 PAID_SERVICE_IN_USE`
+  (5037). Changing it would rewrite what existing entitlements cost in one of two wrong directions:
+  `MONTHLY`→`ONE_TIME` silently stops billing events that were only ever charged monthly, and
+  `ONE_TIME`→`MONTHLY` starts billing events that already paid outright. The non-destructive move is
+  the usual one — archive with `isAssignable: false` and publish a new code at the new cadence. Every
+  other field on a held service still patches normally; disable just this control once the service
+  has been sold.
 - `planTierIds` — optional `string[]` of EVENT-scope plan tier ids this service is offered on.
   **Omitted or `[]` means every plan**, which is what the whole seeded catalog uses; list tiers only
   to restrict. On `PATCH` it replaces the set wholesale, so send `[]` to lift a restriction and omit
@@ -1336,7 +1396,7 @@ export interface PaidServiceResponse {
   isPublic: boolean;
   priceAmountMinor: number;
   priceCurrency: string;
-  billingPeriod: BillingPeriod; // always 'MONTHLY' — enforced against kind (§13)
+  billingPeriod: BillingPeriod; // 'MONTHLY', or 'ONE_TIME' on a MODULE_UNLOCK — see §13
   grantsStorageBytes: number | null;  // set only on STORAGE_PACK, null on the other two
   grantsModuleKey: string | null;     // set only on MODULE_UNLOCK, null on the other two
   planTierIds: string[];        // plan tiers this is offered on; EMPTY MEANS EVERY PLAN
@@ -1345,7 +1405,8 @@ export interface PaidServiceResponse {
 export interface EventAddon {
   code: string;
   name: string;
-  priceAmountMinor: number;     // what this add-on currently adds to the monthly renewal
+  priceAmountMinor: number;     // what this costs at billingPeriod's cadence
+  billingPeriod: BillingPeriod; // 'MONTHLY' (on every renewal) or 'ONE_TIME' (paid at activation)
   activatedAt: string;
 }
 

@@ -1,24 +1,26 @@
 'use client';
 
-import { ArrowLeft, ChevronDown, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { EventAddonsStep } from '@/components/event/create/EventAddonsStep';
+import { EventDetailsStep } from '@/components/event/create/EventDetailsStep';
+import { EventOverviewStep } from '@/components/event/create/EventOverviewStep';
 import { EventPlanSelector } from '@/components/plan/EventPlanSelector';
-import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateEvent } from '@/hooks/useEvent';
+import { api } from '@/lib/api/client';
+import { endpoints } from '@/lib/api/endpoints';
 import { ERROR_CODES, getErrorCode, getFieldErrors } from '@/lib/api/errors';
-import type { EventRequestDto, EventTypeConvention } from '@/lib/api/types';
+import type { EventAddonDto, EventAddonRequestDto, EventRequestDto, EventResponseDto, EventTypeConvention } from '@/lib/api/types';
+import { publicAssignableEventAddons } from '@/lib/planModules';
 import { publicAssignablePlans } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
-import { cn } from '@/lib/utils';
 import { useEventSwitcher } from '@/providers/EventProvider';
-
-const EVENT_TYPES: EventTypeConvention[] = ['WEDDING', 'BAPTISM', 'BIRTHDAY', 'CONFERENCE'];
 
 export default function CreateEventPage() {
     const t = useTranslations('CreateEventPage');
@@ -26,7 +28,7 @@ export default function CreateEventPage() {
     const { user, isAuthenticated, isBootstrapping } = useAuth();
     const { setActiveEventId } = useEventSwitcher();
     const createEvent = useCreateEvent();
-    const { data: appConfig } = useAppConfig();
+    const { data: appConfig, refetch: refetchAppConfig } = useAppConfig();
     const toErrorMessage = useApiErrorMessage();
 
     const [title, setTitle] = useState('');
@@ -36,13 +38,21 @@ export default function CreateEventPage() {
     const [timezone, setTimezone] = useState(() => Intl.DateTimeFormat().resolvedOptions().timeZone);
     const [locationName, setLocationName] = useState('');
     const [error, setError] = useState<string | null>(null);
-    const [step, setStep] = useState<'plan' | 'details'>('plan');
+    const [step, setStep] = useState<'plan' | 'addons' | 'details' | 'overview'>('plan');
     const eventPlans = useMemo(() => publicAssignablePlans(appConfig?.planTiers ?? [], 'EVENT'), [appConfig?.planTiers]);
     const [selectedPlanCode, setSelectedPlanCode] = useState<string>('');
+    const [selectedAddonCodes, setSelectedAddonCodes] = useState<string[]>([]);
+    const [createdDraftEventId, setCreatedDraftEventId] = useState<string | null>(null);
 
     const fieldErrors = getFieldErrors(createEvent.error);
     const selectedPlan = eventPlans.find((plan) => plan.code === selectedPlanCode) ?? eventPlans[0];
     const selectedCode = selectedPlan?.code ?? selectedPlanCode;
+    const availableAddons = useMemo(
+        () => publicAssignableEventAddons(appConfig?.paidServices ?? [], appConfig?.modules ?? [], selectedPlan),
+        [appConfig?.modules, appConfig?.paidServices, selectedPlan]
+    );
+    const selectedAddonServices = availableAddons.filter((service) => selectedAddonCodes.includes(service.code));
+    const selectedEligibleAddonCodes = selectedAddonServices.map((service) => service.code);
 
     useEffect(() => {
         if (isBootstrapping) return;
@@ -53,9 +63,27 @@ export default function CreateEventPage() {
         if (user?.role === 'ADMIN') router.replace(routes.admin);
     }, [isAuthenticated, isBootstrapping, router, user?.role]);
 
+    useEffect(() => {
+        if (step === 'plan') {
+            void refetchAppConfig();
+        }
+    }, [refetchAppConfig, step]);
+
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
         setError(null);
+        if (step === 'details') {
+            if (title.trim() && startAt && endAt) setStep('overview');
+            return;
+        }
+        if (step === 'addons') {
+            return;
+        }
+        if (step !== 'overview') return;
+        if (createdDraftEventId) {
+            router.push(routes.manage);
+            return;
+        }
         if (!title.trim() || !startAt || !endAt) return;
 
         const input: EventRequestDto = {
@@ -71,11 +99,30 @@ export default function CreateEventPage() {
             isArchived: false,
         };
 
+        let event: EventResponseDto | null = null;
+
         try {
-            const event = await createEvent.mutateAsync(input);
+            event = await createEvent.mutateAsync(input);
             setActiveEventId(event.id);
+
+            for (const service of selectedAddonServices) {
+                const addonInput: EventAddonRequestDto = { paidServiceCode: service.code };
+                await api.post<EventAddonDto>(endpoints.events.addons(event.id), addonInput);
+            }
+
             router.push(routes.events.checkoutReview(event.id, 'activation'));
         } catch (err) {
+            if (event) {
+                setCreatedDraftEventId(event.id);
+                setError(t('paidModules.applyFailed'));
+                return;
+            }
+
+            if (Object.keys(getFieldErrors(err) ?? {}).length > 0) {
+                setStep('details');
+                return;
+            }
+
             if (getErrorCode(err) === ERROR_CODES.ACTIVE_EVENT_LIMIT_EXCEEDED) {
                 setError(t('activeEventLimitExceeded'));
                 return;
@@ -113,12 +160,20 @@ export default function CreateEventPage() {
         setLocationName(e.target.value);
     }, []);
 
-    const goToDetails = useCallback(() => {
-        setStep('details');
+    const goToAddons = useCallback(() => {
+        setStep('addons');
     }, []);
 
     const goToPlan = useCallback(() => {
         setStep('plan');
+    }, []);
+
+    const goToDetails = useCallback(() => {
+        setStep('details');
+    }, []);
+
+    const toggleAddon = useCallback((code: string) => {
+        setSelectedAddonCodes((current) => (current.includes(code) ? current.filter((item) => item !== code) : [...current, code]));
     }, []);
 
     return (
@@ -141,128 +196,84 @@ export default function CreateEventPage() {
                         <div className="rounded-xl bg-card p-5 shadow-2xs">
                             <p className="mb-5 text-sm text-ink-muted">
                                 {step === 'plan' && t('steps.planSubtitle')}
+                                {step === 'addons' && t('steps.addonsSubtitle')}
                                 {step === 'details' && t('subtitle')}
+                                {step === 'overview' && t('steps.overviewSubtitle')}
                             </p>
 
-                            <div className="mb-5 grid gap-2 text-xs font-semibold sm:grid-cols-2">
-                                {(['plan', 'details'] as const).map((item, index) => (
+                            <div className="mb-5 grid grid-cols-4 gap-1.5 text-[11px] font-semibold sm:gap-2 sm:text-xs">
+                                {(['plan', 'addons', 'details', 'overview'] as const).map((item) => (
                                     <div
                                         key={item}
-                                        className={cn(
-                                            'rounded-full px-3 py-2 text-center transition',
+                                        className={`rounded-full px-1.5 py-2 text-center transition sm:px-3 ${
                                             step === item ? 'bg-ink text-white' : 'bg-surface-muted text-ink-muted'
-                                        )}
+                                        }`}
                                     >
-                                        {index + 1}. {t(`steps.${item}`)}
+                                        {t(`steps.${item}`)}
                                     </div>
                                 ))}
                             </div>
 
-                            {step === 'plan' && (
-                                <EventPlanSelector
-                                    plans={eventPlans}
-                                    modules={appConfig?.modules ?? []}
-                                    selectedCode={selectedCode}
-                                    onSelect={setSelectedPlanCode}
-                                    onContinue={goToDetails}
-                                />
-                            )}
+                            <form onSubmit={handleSubmit}>
+                                {step === 'plan' && (
+                                    <EventPlanSelector
+                                        plans={eventPlans}
+                                        modules={appConfig?.modules ?? []}
+                                        paidServices={appConfig?.paidServices ?? []}
+                                        selectedCode={selectedCode}
+                                        onSelect={setSelectedPlanCode}
+                                        onContinue={goToAddons}
+                                    />
+                                )}
 
-                            {step === 'details' && (
-                                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                                    <button
-                                        type="button"
-                                        onClick={goToPlan}
-                                        className="self-start text-xs font-semibold text-ink-muted hover:text-ink"
-                                    >
-                                        {t('backToPlans')}
-                                    </button>
-                                    {selectedPlan && (
-                                        <div className="rounded-xl bg-primary-light px-4 py-3 text-sm text-primary-dark">
-                                            {t('selectedPlan', { plan: selectedPlan.name })}
-                                        </div>
-                                    )}
-                                    <FormFieldLabel label={t('fields.title')} required>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={title}
-                                            onChange={onTitleChange}
-                                            placeholder={t('placeholders.title')}
-                                            className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
-                                        />
-                                        {fieldErrors?.title && <span className="text-xs text-rose-500">{fieldErrors.title}</span>}
-                                    </FormFieldLabel>
+                                {step === 'addons' && (
+                                    <EventAddonsStep
+                                        modules={appConfig?.modules ?? []}
+                                        services={availableAddons}
+                                        selectedCodes={selectedEligibleAddonCodes}
+                                        onToggle={toggleAddon}
+                                        onBack={goToPlan}
+                                        onContinue={goToDetails}
+                                    />
+                                )}
 
-                                    <FormFieldLabel label={t('fields.eventType')}>
-                                        <div className="relative">
-                                            <select
-                                                value={eventType}
-                                                onChange={onEventTypeChange}
-                                                className="w-full appearance-none bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition pr-10"
-                                            >
-                                                {EVENT_TYPES.map((type) => (
-                                                    <option key={type} value={type}>
-                                                        {t(`eventTypes.${type}`)}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted pointer-events-none" />
-                                        </div>
-                                    </FormFieldLabel>
+                                {step === 'details' && (
+                                    <EventDetailsStep
+                                        selectedPlan={selectedPlan}
+                                        title={title}
+                                        titleError={fieldErrors?.title}
+                                        eventType={eventType}
+                                        startAt={startAt}
+                                        endAt={endAt}
+                                        timezone={timezone}
+                                        locationName={locationName}
+                                        onTitleChange={onTitleChange}
+                                        onEventTypeChange={onEventTypeChange}
+                                        onStartAtChange={onStartAtChange}
+                                        onEndAtChange={onEndAtChange}
+                                        onTimezoneChange={onTimezoneChange}
+                                        onLocationNameChange={onLocationNameChange}
+                                        onBack={goToAddons}
+                                    />
+                                )}
 
-                                    <div className="grid gap-3 sm:grid-cols-2">
-                                        <FormFieldLabel label={t('fields.startAt')} required>
-                                            <input
-                                                type="datetime-local"
-                                                required
-                                                value={startAt}
-                                                onChange={onStartAtChange}
-                                                className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
-                                            />
-                                        </FormFieldLabel>
-                                        <FormFieldLabel label={t('fields.endAt')} required>
-                                            <input
-                                                type="datetime-local"
-                                                required
-                                                value={endAt}
-                                                onChange={onEndAtChange}
-                                                className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
-                                            />
-                                        </FormFieldLabel>
-                                    </div>
-
-                                    <FormFieldLabel label={t('fields.timezone')} required>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={timezone}
-                                            onChange={onTimezoneChange}
-                                            className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
-                                        />
-                                    </FormFieldLabel>
-
-                                    <FormFieldLabel label={t('fields.locationName')} optional>
-                                        <input
-                                            type="text"
-                                            value={locationName}
-                                            onChange={onLocationNameChange}
-                                            placeholder={t('placeholders.locationName')}
-                                            className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
-                                        />
-                                    </FormFieldLabel>
-
-                                    {error && <p className="text-xs text-rose-500 text-center">{error}</p>}
-
-                                    <button
-                                        type="submit"
-                                        disabled={createEvent.isPending || !title.trim() || !startAt || !endAt}
-                                        className="mt-2 w-full flex items-center justify-center gap-2 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-                                    >
-                                        {createEvent.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : t('submitAndPay')}
-                                    </button>
-                                </form>
-                            )}
+                                {step === 'overview' && selectedPlan && (
+                                    <EventOverviewStep
+                                        title={title.trim()}
+                                        eventType={eventType}
+                                        startAt={startAt}
+                                        endAt={endAt}
+                                        locationName={locationName.trim()}
+                                        plan={selectedPlan}
+                                        modules={appConfig?.modules ?? []}
+                                        addons={selectedAddonServices}
+                                        isPending={createEvent.isPending}
+                                        error={error}
+                                        hasDraft={Boolean(createdDraftEventId)}
+                                        onBack={goToDetails}
+                                    />
+                                )}
+                            </form>
                         </div>
                     </div>
                 </main>

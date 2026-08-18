@@ -45,6 +45,17 @@
     --color-accent-pink: var(--accent-pink);
     --color-accent-orange: var(--accent-orange);
 
+    /* ── Admin console extras (scoped under .admin-shell, see below) ── */
+    --color-line-strong: var(--line-strong);
+    --color-status-good: var(--status-good);
+    --color-status-good-wash: var(--status-good-wash);
+    --color-status-warn: var(--status-warn);
+    --color-status-warn-wash: var(--status-warn-wash);
+    --color-status-neutral: var(--status-neutral);
+    --color-status-neutral-wash: var(--status-neutral-wash);
+    --color-status-danger: var(--status-danger);
+    --color-status-danger-wash: var(--status-danger-wash);
+
     /* ── Radii ── */
     --radius-sm: 0.5rem;
     --radius-md: 0.75rem;
@@ -145,6 +156,46 @@
     --sidebar-ring: #ff7a59;
 
     --logo: linear-gradient(132deg, #c777b1 15.05%, #e48279 33.58%, #f2885c 42.44%, #fec463 78.7%);
+
+    /* Semantic status colors — not used by the host-facing app, so no
+       collision risk defining them once here rather than per-scope. */
+    --status-good: #1a7f5a;
+    --status-good-wash: #e5f5ee;
+    --status-warn: #93650f;
+    --status-warn-wash: #faf0da;
+    --status-neutral: #5b6172;
+    --status-neutral-wash: #edeff3;
+    --status-danger: #c23b3b;
+    --status-danger-wash: #fbebeb;
+    --line-strong: #d8dbe3;
+}
+
+/* ── Admin console: dedicated cool-slate palette ──
+   The platform admin is deliberately distinct from the host/guest-facing
+   warm skin (see AGENTS.md). Re-declaring the same token names the rest of
+   the app already reads (--ink, --canvas, --border, ...) inside this class
+   scope re-skins every existing admin primitive (AdminField, AdminSection,
+   buttons built on bg-ink/text-ink-muted/border-border, ...) with zero new
+   utility classes, since Tailwind's utilities resolve through these vars. */
+.admin-shell {
+    --background: #f2f3f7;
+    --canvas: #f2f3f7;
+    --card: #ffffff;
+    --popover: #ffffff;
+    --surface-muted: #eceef2;
+    --foreground: #12141c;
+    --card-foreground: #12141c;
+    --popover-foreground: #12141c;
+    --ink: #12141c;
+    --ink-muted: #5b6172;
+    --ink-faint: #9aa0b1;
+    --border: #e1e4ea;
+    --input: #e1e4ea;
+    --muted: #eceef2;
+    --muted-foreground: #5b6172;
+    --secondary: #eceef2;
+    --secondary-foreground: #12141c;
+    --line-strong: #ccd1db;
 }
 
 /* ── Base layer ── */

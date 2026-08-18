@@ -218,7 +218,11 @@ export default function EventPlanSettingsPage() {
     // grows without bound. Show a recent window until the host asks for the rest.
     const visibleOrders = showAllOrders ? data.orders : data.orders.slice(0, ORDER_PREVIEW_COUNT);
     const hiddenOrderCount = data.orders.length - visibleOrders.length;
-    const addonMonthlyTotal = data.addons.reduce((sum, addon) => sum + addon.priceAmountMinor, 0);
+    // A ONE_TIME add-on (a module unlock bought outright) was paid for at activation
+    // and never appears on a renewal, so it must not feed this total.
+    const addonMonthlyTotal = data.addons
+        .filter((addon) => addon.billingPeriod === 'MONTHLY')
+        .reduce((sum, addon) => sum + addon.priceAmountMinor, 0);
     const renewalTotal =
         currentPlan?.recurringPriceAmountMinor === null || currentPlan?.recurringPriceAmountMinor === undefined
             ? null
@@ -313,10 +317,15 @@ export default function EventPlanSettingsPage() {
                                     key={`${addon.code}-${addon.activatedAt}-${index}`}
                                     className="rounded-full bg-primary-light px-2.5 py-1 text-xs font-semibold text-primary-dark"
                                 >
-                                    {t('addons.item', {
-                                        name: addon.name,
-                                        price: formatMoney(locale, addon.priceAmountMinor, insights.orderCurrency),
-                                    })}
+                                    {addon.billingPeriod === 'ONE_TIME'
+                                        ? t('addons.itemOnce', {
+                                              name: addon.name,
+                                              price: formatMoney(locale, addon.priceAmountMinor, insights.orderCurrency),
+                                          })
+                                        : t('addons.item', {
+                                              name: addon.name,
+                                              price: formatMoney(locale, addon.priceAmountMinor, insights.orderCurrency),
+                                          })}
                                 </span>
                             ))}
                         </div>

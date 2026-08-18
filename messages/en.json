@@ -519,12 +519,22 @@
         "noPlans": "No public event plans are available yet.",
         "planDescriptionFallback": "Everything you need for this event tier.",
         "continueToDetails": "Continue to details",
+        "continueToAddons": "Continue to add-ons",
+        "continueToOverview": "Continue to overview",
         "backToPlans": "Back to plans",
+        "backToAddons": "Back to add-ons",
         "selectedPlan": "Selected plan: {plan}",
+        "actions": {
+            "back": "Back"
+        },
         "steps": {
             "plan": "Plan",
             "details": "Details",
-            "planSubtitle": "Choose the event plan your guests will experience."
+            "addons": "Add-ons",
+            "overview": "Overview",
+            "planSubtitle": "Choose the event plan your guests will experience.",
+            "addonsSubtitle": "Choose any optional paid add-ons for this event.",
+            "overviewSubtitle": "Review the event and every charge before continuing to payment."
         },
         "payment": {
             "noCharge": "No charge"
@@ -532,7 +542,36 @@
         "planLimits": {
             "storage": "storage",
             "members": "members",
-            "modules": "Included modules"
+            "modules": "Event modules"
+        },
+        "paidModules": {
+            "title": "Optional paid modules",
+            "body": "Add modules that are not included in the selected plan. They are added to the activation checkout before the event goes live.",
+            "toggle": "Select {module}",
+            "oncePrice": "{price} once",
+            "monthlyPrice": "{price}/month",
+            "selectedSummary": "Optional modules: {modules}",
+            "selectedOnce": "{module} ({price} once)",
+            "selectedMonthly": "{module} ({price}/month)",
+            "emptyTitle": "No add-ons available",
+            "emptyBody": "This plan already includes everything currently offered for event setup.",
+            "skipHint": "Add-ons are optional. Continue without selecting one if the plan already has everything you need.",
+            "continue": "Review event and pricing",
+            "applyFailed": "The event was created, but we could not add every selected module. Open the draft dashboard to finish setup before publishing.",
+            "openDraft": "Open draft dashboard"
+        },
+        "overview": {
+            "title": "Review your event",
+            "body": "Check the details and full price breakdown before the event is created and secure checkout opens.",
+            "event": "Event details",
+            "pricing": "Pricing details",
+            "pricingHint": "Activation includes {months, plural, one {# month} other {# months}} of coverage.",
+            "planActivation": "Plan activation",
+            "chargedOnce": "One-time add-on",
+            "monthlyForMonths": "{months, plural, one {# month} other {# months}} charged at activation",
+            "dueNow": "Due at activation",
+            "futureMonthly": "Future monthly renewal",
+            "futureMonthlyHint": "Starts after the included {months, plural, one {# month} other {# months}}. One-time add-ons do not renew."
         }
     },
     "ManagePage": {
@@ -615,8 +654,9 @@
         },
         "draftModules": {
             "title": "Optional event tools",
-            "body": "Add a tool before publishing. Its monthly price is included in this activation and every renewal.",
+            "body": "Add a tool before publishing. A monthly tool's price is included in this activation and every renewal; a one-time tool is charged once, here, and never again.",
             "perMonth": "per month",
+            "once": "once",
             "add": "Add",
             "added": "Added"
         },
@@ -801,8 +841,9 @@
         "addons": {
             "title": "Active add-ons",
             "item": "{name} · {price}/month",
-            "monthlyTotal": "Add-ons add {amount}/month to renewal.",
-            "renewalTotal": "Next renewal: {amount}/month, including every active add-on.",
+            "itemOnce": "{name} · {price} once",
+            "monthlyTotal": "Monthly add-ons add {amount}/month to renewal.",
+            "renewalTotal": "Next renewal: {amount}/month, including every active monthly add-on.",
             "manageTitle": "Paid add-ons",
             "manageBody": "Open the add-ons page.",
             "manageAction": "Manage add-ons"
@@ -865,9 +906,10 @@
             "monthCount": "{count, plural, one {# month} other {# months}}",
             "moduleLegendOpen": "Module guide",
             "moduleLegendClose": "Close module guide",
-            "moduleLegendTitle": "Included modules",
-            "moduleLegendBody": "Each item below explains what the module unlocks in this plan.",
-            "moduleLegendFallback": "Included in this plan.",
+            "moduleLegendTitle": "Event modules",
+            "moduleLegendBody": "Each item below comes from the current event module catalog.",
+            "moduleLegendFallback": "Available for events.",
+            "moduleLegendAddon": "Available as an add-on",
             "currencyValue": "Currency: {value}",
             "billingPeriodValue": "Billing: {value}",
             "recurringValue": "Recurring minor: {value}",
@@ -1451,6 +1493,9 @@
             "signedInAs": "Signed in as",
             "signOut": "Sign out",
             "closeMenu": "Close menu",
+            "groupOverview": "Overview",
+            "groupCatalog": "Catalog",
+            "groupOperations": "Operations",
             "eventPlans": "Event plans",
             "paidServices": "Paid services",
             "metrics": "Metrics",
@@ -1500,6 +1545,13 @@
             "isAssignableHint": "Admins can assign this plan to users or events.",
             "isPublic": "Public",
             "isPublicHint": "Shown in customer-facing plan selection.",
+            "visibility": "Visibility",
+            "visibilityLive": "Live",
+            "visibilityHidden": "Hidden",
+            "visibilityArchived": "Archived",
+            "visibilityLiveHint": "Public and assignable — visible during signup and can be assigned by admins.",
+            "visibilityHiddenHint": "Hidden from signup, but admins can still assign it manually.",
+            "visibilityArchivedHint": "Not assignable to anyone. Accounts or events already on this plan are unaffected.",
             "plan": "Plan"
         },
         "plans": {
@@ -1561,6 +1613,30 @@
                 "all": "All",
                 "includeArchived": "Include archived"
             },
+            "stats": {
+                "total": "Total plans",
+                "live": "Live",
+                "hidden": "Hidden",
+                "archived": "Archived"
+            },
+            "status": {
+                "ALL": "All",
+                "LIVE": "Live",
+                "HIDDEN": "Hidden",
+                "ARCHIVED": "Archived"
+            },
+            "columns": {
+                "plan": "Plan",
+                "code": "Code",
+                "price": "Price",
+                "limits": "Limits",
+                "modules": "Modules",
+                "status": "Status"
+            },
+            "search": {
+                "placeholder": "Search by name or code"
+            },
+            "rowCount": "{shown} of {total} plans",
             "panel": {
                 "ACCOUNT": {
                     "eyebrow": "Account catalog",
@@ -1689,12 +1765,34 @@
             "delete": "Delete",
             "deleteConfirmTitle": "Delete {name}?",
             "deleteConfirmBody": "Only delete services created by mistake and never used by an order. In-use services should be made non-public and non-assignable.",
-            "archived": "Archived",
             "allPlans": "All plans",
             "notApplicable": "Not applicable",
             "yes": "Yes",
             "no": "No",
             "kinds": { "STORAGE_PACK": "Storage pack", "RECURRING_ADDON": "Recurring add-on", "MODULE_UNLOCK": "Module unlock" },
+            "stats": {
+                "total": "Total services",
+                "live": "Live",
+                "hidden": "Hidden",
+                "archived": "Archived"
+            },
+            "status": {
+                "ALL": "All",
+                "LIVE": "Live",
+                "HIDDEN": "Hidden",
+                "ARCHIVED": "Archived"
+            },
+            "search": {
+                "placeholder": "Search by name, code, or description"
+            },
+            "rowCount": "{shown} of {total} services",
+            "columns": {
+                "service": "Service",
+                "kind": "Kind",
+                "price": "Price",
+                "plans": "Plans",
+                "status": "Status"
+            },
             "fields": {
                 "code": "Code",
                 "kind": "Kind",
@@ -1703,17 +1801,31 @@
                 "sortOrder": "Sort order",
                 "price": "Price",
                 "priceHint": "Charged per month, in whole currency units.",
+                "priceHintUnlock": "In whole currency units, charged at the billing period below.",
                 "priceCurrency": "Currency",
                 "grantsStorage": "Storage granted",
                 "grants": "Grants",
                 "grantsModuleKey": "Granted module",
                 "selectModule": "Select a module",
+                "billingPeriod": "Billing period",
+                "billingPeriodHint": "Once any event holds this service, this can no longer be changed — archive it and create a new one instead.",
+                "billingPeriodMonthly": "Monthly — charged on activation and every renewal",
+                "billingPeriodOnce": "One-time — charged once, on activation only",
+                "billingPeriodMonthlyShort": "Monthly",
+                "billingPeriodOnceShort": "One-time",
                 "availablePlans": "Available event plans",
                 "availablePlansHint": "Choose the event plans that can buy this service. Use every event plan for a global catalog item.",
                 "allEventPlans": "Available to every event plan",
                 "noEventPlans": "No event plans are available yet.",
                 "assignable": "Assignable",
-                "public": "Public"
+                "public": "Public",
+                "visibility": "Visibility",
+                "visibilityLive": "Live",
+                "visibilityHidden": "Hidden",
+                "visibilityArchived": "Archived",
+                "visibilityLiveHint": "Public and assignable — buyers can add it and admins can grant it.",
+                "visibilityHiddenHint": "Hidden from buyers, but admins can still grant it manually.",
+                "visibilityArchivedHint": "Not assignable to anyone. Entitlements already granted are unaffected."
             },
             "moduleChangeWarning": "Changing the granted module affects every event that already has this entitlement. Prefer creating a new service and archiving this one.",
             "removeAddon": {

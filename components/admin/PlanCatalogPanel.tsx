@@ -1,111 +1,280 @@
 'use client';
 
-import { Plus } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { type ChangeEvent, useCallback, useMemo, useState } from 'react';
+import { useList } from '@refinedev/core';
+import { Pencil, Plus, Search } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import React, { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 
-import { PlanCatalogRow } from '@/components/admin/PlanCatalogRow';
+import { AdminDrawer } from '@/components/admin/AdminDrawer';
+import { adminInputClass } from '@/components/admin/AdminField';
 import { PlanCreateForm } from '@/components/admin/PlanCreateForm';
 import { PlanEditorCard } from '@/components/admin/PlanEditorCard';
-import { Modal } from '@/components/ui/modal';
-import { useAdminPaidServices, useAdminPlanTiers, useAdminPlatformModules } from '@/hooks/useAdmin';
+import { PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
+import { useAdminPaidServices, useAdminPlatformModules } from '@/hooks/useAdmin';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
-import type { PlanScope } from '@/lib/api/types';
+import { type Visibility, visibilityOf } from '@/lib/adminVisibility';
+import type { PlanScope, PlanTierResponseDto } from '@/lib/api/types';
+import { formatLimitValue, formatPlanMoney } from '@/lib/planTiers';
+import { cn } from '@/lib/utils';
+
+const STATUS_FILTERS: Array<Visibility | 'ALL'> = ['ALL', 'LIVE', 'HIDDEN', 'ARCHIVED'];
+
+const STATUS_DOT: Record<Visibility, string> = {
+    LIVE: 'bg-status-good',
+    HIDDEN: 'bg-status-warn',
+    ARCHIVED: 'bg-status-neutral',
+};
+const STATUS_PILL: Record<Visibility, string> = {
+    LIVE: 'bg-status-good-wash text-status-good',
+    HIDDEN: 'bg-status-warn-wash text-status-warn',
+    ARCHIVED: 'bg-status-neutral-wash text-status-neutral',
+};
+
+function StatTile({ label, value, accent }: { label: string; value: number; accent?: string }) {
+    return (
+        <div className="rounded-xl border border-border bg-card px-4 py-3">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-ink-faint">{label}</p>
+            <p className={cn('mt-1 text-2xl font-extrabold tabular-nums text-ink', accent)}>{value}</p>
+        </div>
+    );
+}
 
 export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
-    const t = useTranslations('AdminPage');
-    const tCommon = useTranslations('Common');
-    const [includeArchived, setIncludeArchived] = useState(true);
-    const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+    const t = useTranslations('AdminPage.plans');
+    const tAdmin = useTranslations('AdminPage');
+    const locale = useLocale();
+
+    const [statusFilter, setStatusFilter] = useState<Visibility | 'ALL'>('ALL');
+    const [search, setSearch] = useState('');
     const [createOpen, setCreateOpen] = useState(false);
-    const plansQuery = useAdminPlanTiers(scope, includeArchived);
+    const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+
+    // A single unfiltered-by-status fetch backs the stat tiles and the table alike;
+    // status/search stay client-side so switching filters never re-hits the network.
+    const { result: plansResult, query: plansQuery } = useList<PlanTierResponseDto>({
+        resource: 'plan-tiers',
+        dataProviderName: 'plan-tiers',
+        filters: [
+            { field: 'scope', operator: 'eq', value: scope },
+            { field: 'includeArchived', operator: 'eq', value: true },
+        ],
+        pagination: { mode: 'off' },
+    });
     const modulesQuery = useAdminPlatformModules();
     const paidServicesQuery = useAdminPaidServices('MODULE_UNLOCK', true);
     const accountPlansDisabled = scope === 'ACCOUNT';
-    const plans = useMemo(() => [...(plansQuery.data ?? [])].sort((left, right) => left.sortOrder - right.sortOrder), [plansQuery.data]);
-    const selectedPlan = useMemo(() => plans.find((plan) => plan.id === selectedPlanId) ?? null, [plans, selectedPlanId]);
 
-    function handleIncludeArchivedChange(event: ChangeEvent<HTMLInputElement>) {
-        setIncludeArchived(event.target.checked);
-    }
+    const allPlans = useMemo(() => [...plansResult.data].sort((left, right) => left.sortOrder - right.sortOrder), [plansResult.data]);
+    const selectedPlan = useMemo(() => allPlans.find((plan) => plan.id === selectedPlanId) ?? null, [allPlans, selectedPlanId]);
 
-    const handleOpenCreate = useCallback(() => {
-        setCreateOpen(true);
+    const stats = useMemo(() => {
+        let live = 0;
+        let hidden = 0;
+        let archived = 0;
+        for (const plan of allPlans) {
+            const status = visibilityOf(plan);
+            if (status === 'LIVE') live += 1;
+            else if (status === 'HIDDEN') hidden += 1;
+            else archived += 1;
+        }
+        return { total: allPlans.length, live, hidden, archived };
+    }, [allPlans]);
+
+    const visiblePlans = useMemo(() => {
+        const needle = search.trim().toLowerCase();
+        return allPlans.filter((plan) => {
+            if (statusFilter !== 'ALL' && visibilityOf(plan) !== statusFilter) return false;
+            if (!needle) return true;
+            return plan.name.toLowerCase().includes(needle) || plan.code.toLowerCase().includes(needle);
+        });
+    }, [allPlans, statusFilter, search]);
+
+    const handleStatusFilterClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+        setStatusFilter(event.currentTarget.dataset.status as Visibility | 'ALL');
     }, []);
+    const handleSearchChange = useCallback((event: ChangeEvent<HTMLInputElement>) => setSearch(event.target.value), []);
 
-    const handleCloseCreate = useCallback(() => {
-        setCreateOpen(false);
-    }, []);
+    const openCreate = useCallback(() => setCreateOpen(true), []);
+    const closeCreate = useCallback(() => setCreateOpen(false), []);
 
-    const handleOpenEditor = useCallback((planId: string) => {
-        setSelectedPlanId(planId);
-    }, []);
-
-    const handleCloseEditor = useCallback(() => {
-        setSelectedPlanId(null);
-    }, []);
+    const openEdit = useCallback((planId: string) => setSelectedPlanId(planId), []);
+    const handleEditClick = useCallback(
+        (event: React.MouseEvent<HTMLButtonElement>) => {
+            const planId = event.currentTarget.dataset.planId;
+            if (planId) openEdit(planId);
+        },
+        [openEdit]
+    );
+    const closeEditor = useCallback(() => setSelectedPlanId(null), []);
 
     return (
         <section className="space-y-5">
             <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border pb-4">
                 <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary-dark">{t(`plans.panel.${scope}.eyebrow`)}</p>
-                    <h2 className="mt-1 text-xl font-semibold tracking-tight text-ink">{t(`plans.panel.${scope}.title`)}</h2>
-                    <p className="mt-2 max-w-2xl text-base leading-7 text-ink-muted">{t(`plans.panel.${scope}.subtitle`)}</p>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary-dark">{t(`panel.${scope}.eyebrow`)}</p>
+                    <h2 className="mt-1 text-xl font-semibold tracking-tight text-ink">{t(`panel.${scope}.title`)}</h2>
+                    <p className="mt-2 max-w-2xl text-base leading-7 text-ink-muted">{t(`panel.${scope}.subtitle`)}</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-3">
-                    <label className="inline-flex min-h-10 items-center gap-2 border-b-2 border-border px-1 text-sm font-semibold text-ink-muted">
-                        <input type="checkbox" checked={includeArchived} onChange={handleIncludeArchivedChange} className="h-4 w-4 accent-primary" />
-                        <span>
-                            {t('plans.filters.includeArchived')} <span className="text-ink-faint">({tCommon('optional')})</span>
-                        </span>
-                    </label>
-                    {!accountPlansDisabled && (
-                        <button
-                            type="button"
-                            onClick={handleOpenCreate}
-                            className="inline-flex min-h-10 items-center gap-2 rounded-md bg-ink px-4 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(36,31,26,0.14)] transition hover:-translate-y-0.5 hover:bg-ink/90 focus-visible:ring-2 focus-visible:ring-primary/30"
-                        >
-                            <Plus className="h-4 w-4" />
-                            {t('plans.create.open')}
-                        </button>
-                    )}
-                </div>
+                {!accountPlansDisabled && (
+                    <button
+                        type="button"
+                        onClick={openCreate}
+                        className="inline-flex min-h-10 items-center gap-2 rounded-md bg-ink px-4 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(36,31,26,0.14)] transition hover:-translate-y-0.5 hover:bg-ink/90 focus-visible:ring-2 focus-visible:ring-primary/30"
+                    >
+                        <Plus className="h-4 w-4" />
+                        {t('create.open')}
+                    </button>
+                )}
             </div>
 
             {accountPlansDisabled && (
-                <div className="border-b border-amber-200 bg-amber-50/70 px-4 py-3 text-sm font-medium leading-6 text-amber-900">
-                    {t('plans.accountDisabledNotice')}
+                <div className="rounded-lg border border-status-warn-wash bg-status-warn-wash/40 px-4 py-3 text-sm font-medium leading-6 text-status-warn">
+                    {t('accountDisabledNotice')}
                 </div>
             )}
 
-            {!accountPlansDisabled && <PlanCreateForm open={createOpen} onClose={handleCloseCreate} plans={plans} scope={scope} />}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <StatTile label={t('stats.total')} value={stats.total} />
+                <StatTile label={t('stats.live')} value={stats.live} accent="text-status-good" />
+                <StatTile label={t('stats.hidden')} value={stats.hidden} accent="text-status-warn" />
+                <StatTile label={t('stats.archived')} value={stats.archived} accent="text-status-neutral" />
+            </div>
 
-            {plansQuery.isLoading && <p className="text-sm text-ink-muted">{t('plans.loading')}</p>}
-            {plansQuery.error && <p className="text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(plansQuery.error)}`)}</p>}
-            {!plansQuery.isLoading && !plansQuery.error && plans.length === 0 && <p className="py-4 text-sm text-ink-muted">{t('plans.empty')}</p>}
-            {!plansQuery.isLoading && !plansQuery.error && (
-                <div>
-                    {plans.map((plan) => (
-                        <PlanCatalogRow key={plan.id} plan={plan} modules={modulesQuery.data ?? []} onEdit={handleOpenEditor} />
-                    ))}
-                </div>
-            )}
-
-            <Modal open={Boolean(selectedPlan)} onClose={handleCloseEditor} size="lg" closeLabel={t('cancel')}>
-                <Modal.Body className="px-4 pb-5 pt-12 sm:px-5">
-                    {selectedPlan && (
-                        <PlanEditorCard
-                            key={`${selectedPlan.id}:${selectedPlan.moduleKeys.join(',')}`}
-                            plan={selectedPlan}
-                            modules={modulesQuery.data ?? []}
-                            paidServices={paidServicesQuery.data ?? []}
-                            eventPlans={plans}
-                            scope={scope}
+            <section className="rounded-xl border border-border bg-card">
+                <div className="flex flex-wrap items-center gap-3 border-b border-border p-3">
+                    <div className="relative min-w-0 flex-1 sm:max-w-64">
+                        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+                        <input
+                            value={search}
+                            onChange={handleSearchChange}
+                            placeholder={t('search.placeholder')}
+                            className={adminInputClass('w-full pl-8')}
                         />
-                    )}
-                </Modal.Body>
-            </Modal>
+                    </div>
+                    <div className="flex flex-wrap gap-1 rounded-lg bg-canvas p-1">
+                        {STATUS_FILTERS.map((status) => (
+                            <button
+                                key={status}
+                                type="button"
+                                data-status={status}
+                                onClick={handleStatusFilterClick}
+                                aria-pressed={statusFilter === status}
+                                className={cn(
+                                    'rounded-md px-2.5 py-1.5 text-[12.5px] font-bold transition-colors',
+                                    statusFilter === status ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted'
+                                )}
+                            >
+                                {status === 'ALL' ? t('status.ALL') : t(`status.${status}`)}
+                            </button>
+                        ))}
+                    </div>
+                    <p className="ml-auto shrink-0 text-xs font-semibold text-ink-faint">
+                        {t('rowCount', { shown: visiblePlans.length, total: allPlans.length })}
+                    </p>
+                </div>
+
+                {plansQuery.isLoading && <p className="px-4 py-6 text-sm text-ink-muted">{t('loading')}</p>}
+                {plansQuery.error && <p className="px-4 py-6 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(plansQuery.error)}`)}</p>}
+                {!plansQuery.isLoading && !plansQuery.error && visiblePlans.length === 0 && (
+                    <p className="px-4 py-6 text-sm text-ink-muted">{t('empty')}</p>
+                )}
+
+                {!plansQuery.isLoading && !plansQuery.error && visiblePlans.length > 0 && (
+                    <div className="overflow-x-auto">
+                        <table className="w-full min-w-[820px] border-collapse text-sm">
+                            <thead>
+                                <tr className="border-b border-border text-left text-[11px] font-bold uppercase tracking-wide text-ink-faint">
+                                    <th className="px-4 py-2.5 font-bold">{t('columns.plan')}</th>
+                                    <th className="px-3 py-2.5 font-bold">{t('columns.code')}</th>
+                                    <th className="px-3 py-2.5 font-bold">{t('columns.price')}</th>
+                                    <th className="px-3 py-2.5 font-bold">{t('columns.limits')}</th>
+                                    {scope === 'EVENT' && <th className="px-3 py-2.5 font-bold">{t('columns.modules')}</th>}
+                                    <th className="px-3 py-2.5 font-bold">{t('columns.status')}</th>
+                                    <th className="px-3 py-2.5" />
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {visiblePlans.map((plan) => {
+                                    const status = visibilityOf(plan);
+                                    const limits =
+                                        plan.scope === 'EVENT'
+                                            ? [
+                                                  formatLimitValue(plan.maxMembers, 'count') ?? tAdmin('unlimited'),
+                                                  formatLimitValue(plan.storageBytes, 'bytes') ?? tAdmin('unlimited'),
+                                              ].join(' · ')
+                                            : (formatLimitValue(plan.maxActiveEvents, 'count') ?? tAdmin('unlimited'));
+                                    return (
+                                        <tr key={plan.id} className="border-b border-border last:border-b-0 hover:bg-canvas/60">
+                                            <td className="max-w-64 px-4 py-2.5">
+                                                <div className="flex items-center gap-2">
+                                                    <p className="truncate font-semibold text-ink">{plan.name}</p>
+                                                    {plan.isDefault && (
+                                                        <span className="shrink-0 rounded-full bg-primary-light px-2 py-0.5 text-[10.5px] font-bold text-primary-dark">
+                                                            {t('default')}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                {plan.description && <p className="truncate text-[11px] text-ink-faint">{plan.description}</p>}
+                                            </td>
+                                            <td className="px-3 py-2.5 font-mono text-[11px] text-ink-faint">{plan.code}</td>
+                                            <td className="px-3 py-2.5 font-mono text-ink">{formatPlanMoney(plan, locale) ?? t('noPrice')}</td>
+                                            <td className="px-3 py-2.5 text-ink-muted">{limits}</td>
+                                            {scope === 'EVENT' && (
+                                                <td className="max-w-56 px-3 py-2.5">
+                                                    <PlanModuleIcons moduleKeys={plan.moduleKeys} modules={modulesQuery.data ?? []} />
+                                                </td>
+                                            )}
+                                            <td className="px-3 py-2.5">
+                                                <span
+                                                    className={cn(
+                                                        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold',
+                                                        STATUS_PILL[status]
+                                                    )}
+                                                >
+                                                    <span className={cn('h-1.5 w-1.5 rounded-full', STATUS_DOT[status])} />
+                                                    {t(`status.${status}`)}
+                                                </span>
+                                            </td>
+                                            <td className="px-3 py-2.5 text-right">
+                                                <button
+                                                    type="button"
+                                                    data-plan-id={plan.id}
+                                                    onClick={handleEditClick}
+                                                    aria-label={t('edit')}
+                                                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-canvas hover:text-ink"
+                                                >
+                                                    <Pencil className="h-3.5 w-3.5" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </section>
+
+            {!accountPlansDisabled && <PlanCreateForm open={createOpen} onClose={closeCreate} plans={allPlans} scope={scope} />}
+
+            <AdminDrawer
+                open={Boolean(selectedPlan)}
+                onClose={closeEditor}
+                closeLabel={tAdmin('cancel')}
+                title={selectedPlan?.name ?? ''}
+                subtitle={selectedPlan?.code}
+            >
+                {selectedPlan && (
+                    <PlanEditorCard
+                        key={`${selectedPlan.id}:${selectedPlan.moduleKeys.join(',')}`}
+                        plan={selectedPlan}
+                        modules={modulesQuery.data ?? []}
+                        paidServices={paidServicesQuery.data ?? []}
+                        eventPlans={allPlans}
+                        scope={scope}
+                    />
+                )}
+            </AdminDrawer>
         </section>
     );
 }

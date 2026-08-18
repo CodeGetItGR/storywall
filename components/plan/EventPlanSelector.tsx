@@ -3,35 +3,33 @@
 import { Check } from 'lucide-react';
 import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
-import { type MouseEvent, useMemo, useState } from 'react';
+import { type MouseEvent, useState } from 'react';
 
 import { PlanModuleGuideButton } from '@/components/plan/PlanModuleGuideButton';
 import { PlanModuleGuideModal } from '@/components/plan/PlanModuleGuideModal';
 import { PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
 import { PlanPriceLabel } from '@/components/plan/PlanPriceLabel';
 import { useLocalizedPlanDescription } from '@/hooks/useLocalizedPlanDescription';
-import type { PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
-import { enabledModuleKeys } from '@/lib/planModules';
+import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import { publicEnabledModules } from '@/lib/planModules';
 import { formatLimitValue } from '@/lib/planTiers';
 import { cn } from '@/lib/utils';
 
 type EventPlanSelectorProps = {
     plans: PlanTierResponseDto[];
     modules: PlatformModuleResponseDto[];
+    paidServices: PaidServiceResponseDto[];
     selectedCode: string;
     onSelect: (code: string) => void;
     onContinue: () => void;
 };
 
-export function EventPlanSelector({ plans, modules, selectedCode, onSelect, onContinue }: EventPlanSelectorProps) {
+export function EventPlanSelector({ plans, modules, paidServices, selectedCode, onSelect, onContinue }: EventPlanSelectorProps) {
     const t = useTranslations('CreateEventPage');
     const locale = useLocale();
     const localizedPlanDescription = useLocalizedPlanDescription();
     const [isModuleGuideOpen, setIsModuleGuideOpen] = useState(false);
-    const moduleGuideKeys = useMemo(
-        () => enabledModuleKeys(Array.from(new Set(plans.flatMap((plan) => plan.moduleKeys))), modules),
-        [modules, plans]
-    );
+    const hasModuleGuide = publicEnabledModules(modules).length > 0;
 
     function handlePlanClick(event: MouseEvent<HTMLButtonElement>) {
         const code = event.currentTarget.dataset.planCode;
@@ -52,7 +50,7 @@ export function EventPlanSelector({ plans, modules, selectedCode, onSelect, onCo
 
     return (
         <div className="space-y-3">
-            {moduleGuideKeys.length > 0 && (
+            {hasModuleGuide && (
                 <div className="flex items-center justify-between gap-3 rounded-lg bg-surface-muted px-3 py-2 text-xs font-semibold text-ink-muted">
                     <span>{t('planLimits.modules')}</span>
                     <PlanModuleGuideButton onOpen={openModuleGuide} />
@@ -101,14 +99,14 @@ export function EventPlanSelector({ plans, modules, selectedCode, onSelect, onCo
                     </div>
                 </button>
             ))}
-            <PlanModuleGuideModal open={isModuleGuideOpen} onClose={closeModuleGuide} moduleKeys={moduleGuideKeys} modules={modules} />
+            <PlanModuleGuideModal open={isModuleGuideOpen} onClose={closeModuleGuide} modules={modules} paidServices={paidServices} />
             <button
                 type="button"
                 disabled={!selectedCode}
                 onClick={onContinue}
                 className="mt-2 w-full rounded-full bg-gradient-brand py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             >
-                {t('continueToDetails')}
+                {t('continueToAddons')}
             </button>
         </div>
     );

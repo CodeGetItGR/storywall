@@ -11,14 +11,14 @@ import { PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
 import { PlanPriceLabel } from '@/components/plan/PlanPriceLabel';
 import { PlanTierCards } from '@/components/plan/PlanTierCards';
 import { PlanUpgradeButton } from '@/components/plan/PlanUpgradeButton';
-import type { PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { mediaEstimate, PLAN_COMPARISON_EMPTY } from '@/lib/planComparison';
-import { enabledModuleKeys } from '@/lib/planModules';
 import { formatLimitValue } from '@/lib/planTiers';
 
 export function EventPlanComparison({
     plans,
     modules,
+    paidServices,
     currentPlanCode,
     currentPlan,
     isCheckoutPending = false,
@@ -29,6 +29,7 @@ export function EventPlanComparison({
 }: {
     plans: PlanTierResponseDto[];
     modules: PlatformModuleResponseDto[];
+    paidServices: PaidServiceResponseDto[];
     currentPlanCode?: string | null;
     currentPlan?: PlanTierResponseDto | null;
     isCheckoutPending?: boolean;
@@ -45,11 +46,6 @@ export function EventPlanComparison({
     const currentIndex = currentPlanCode ? displayPlans.findIndex((plan) => plan.code === currentPlanCode) : -1;
     const nextPlanId = currentIndex >= 0 ? (displayPlans[currentIndex + 1]?.id ?? null) : null;
     const upgradeTargetCodes = new Set(upgradeTargets.map((plan) => plan.code));
-    const allModuleKeys = useMemo(
-        () => enabledModuleKeys(Array.from(new Set(displayPlans.flatMap((plan) => plan.moduleKeys))), modules),
-        [displayPlans, modules]
-    );
-
     function openModuleLegend() {
         setModuleLegendOpen(true);
     }
@@ -176,7 +172,7 @@ export function EventPlanComparison({
                 <p className="mt-3 text-xs leading-5 text-ink-faint">{t('compare.mediaAssumption')}</p>
             </div>
 
-            <PlanModuleGuideModal open={moduleLegendOpen} onClose={closeModuleLegend} moduleKeys={allModuleKeys} modules={modules} />
+            <PlanModuleGuideModal open={moduleLegendOpen} onClose={closeModuleLegend} modules={modules} paidServices={paidServices} />
         </section>
     );
 }

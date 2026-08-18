@@ -107,7 +107,7 @@ export function EventLifecyclePanel() {
                     ) : (
                         <p className="mt-1.5 text-xs leading-5 text-ink-muted">{t('lifecycle.idSourceHint')}</p>
                     )}
-                    {showIdError && <p className="mt-1 text-xs font-semibold text-rose-600">{t('lifecycle.idInvalid')}</p>}
+                    {showIdError && <p className="mt-1 text-xs font-semibold text-status-danger">{t('lifecycle.idInvalid')}</p>}
                 </div>
             </div>
 
@@ -122,16 +122,18 @@ export function EventLifecyclePanel() {
                     {freezeEvent.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Snowflake className="h-4 w-4" />}
                     {t('lifecycle.freeze')}
                 </button>
-                {freezeEvent.error && <p className="mt-2 text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(freezeEvent.error)}`)}</p>}
-                {frozenId && !freezeEvent.error && <p className="mt-2 text-sm text-emerald-700">{t('lifecycle.freezeSuccess', { eventId: frozenId })}</p>}
+                {freezeEvent.error && <p className="mt-2 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(freezeEvent.error)}`)}</p>}
+                {frozenId && !freezeEvent.error && (
+                    <p className="mt-2 text-sm text-status-good">{t('lifecycle.freezeSuccess', { eventId: frozenId })}</p>
+                )}
             </form>
 
-            <form onSubmit={handlePurgeSubmit} className="border-b border-rose-200 pb-5">
-                <h3 className="flex items-center gap-2 text-base font-semibold text-rose-700">
+            <form onSubmit={handlePurgeSubmit} className="border-b border-status-danger-wash pb-5">
+                <h3 className="flex items-center gap-2 text-base font-semibold text-status-danger">
                     <AlertTriangle className="h-4 w-4" aria-hidden="true" />
                     {t('lifecycle.purgeTitle')}
                 </h3>
-                <p className="mt-1 max-w-2xl text-sm text-rose-700">{t('lifecycle.purgeWarning')}</p>
+                <p className="mt-1 max-w-2xl text-sm text-status-danger">{t('lifecycle.purgeWarning')}</p>
                 <div className="mt-3 max-w-xl">
                     <AdminField label={t('lifecycle.purgeConfirmField')} required>
                         <input
@@ -146,14 +148,14 @@ export function EventLifecyclePanel() {
                 <button
                     type="submit"
                     disabled={purgeEvent.isPending || !purgeArmed}
-                    className="mt-3 inline-flex min-h-9 items-center justify-center gap-2 rounded-full bg-rose-600 px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-40"
+                    className="mt-3 inline-flex min-h-9 items-center justify-center gap-2 rounded-full bg-status-danger px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-40"
                 >
                     {purgeEvent.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                     {t('lifecycle.purge')}
                 </button>
-                {purgeEvent.error && <p className="mt-2 text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(purgeEvent.error)}`)}</p>}
+                {purgeEvent.error && <p className="mt-2 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(purgeEvent.error)}`)}</p>}
                 {purgeResult && !purgeEvent.error && (
-                    <p className={purgeResult.complete ? 'mt-2 text-sm text-emerald-700' : 'mt-2 text-sm text-amber-700'}>
+                    <p className={purgeResult.complete ? 'mt-2 text-sm text-status-good' : 'mt-2 text-sm text-status-warn'}>
                         {purgeResult.complete
                             ? t('lifecycle.purgeSuccess', { eventId: purgeResult.eventId })
                             : t('lifecycle.purgePartial', { eventId: purgeResult.eventId })}
@@ -187,7 +189,7 @@ export function EventLifecyclePanel() {
                     <>
                         <p>{t('lifecycle.purgeConfirmBody')}</p>
                         <p className="mt-2 break-all font-mono text-xs text-ink-faint">{trimmedId}</p>
-                        {!eventTitle && <p className="mt-2 font-semibold text-rose-700">{t('lifecycle.purgeUnverified')}</p>}
+                        {!eventTitle && <p className="mt-2 font-semibold text-status-danger">{t('lifecycle.purgeUnverified')}</p>}
                     </>
                 }
                 cancelLabel={t('cancel')}

@@ -37,7 +37,7 @@ function SettleButton({ orderId, label }: { orderId: string; label: string }) {
                 {settleOrder.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                 {settleOrder.isSuccess ? t('billingOps.settled') : label}
             </button>
-            {settleOrder.error && <p className="text-xs text-rose-600">{t(`errors.${adminErrorMessageKey(settleOrder.error)}`)}</p>}
+            {settleOrder.error && <p className="text-xs text-status-danger">{t(`errors.${adminErrorMessageKey(settleOrder.error)}`)}</p>}
             <ConfirmActionModal
                 open={confirmOpen}
                 onClose={handleClose}
@@ -103,7 +103,7 @@ function WebhookRow({ webhook }: { webhook: UnprocessedWebhookDto }) {
                                 {replayWebhook.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                                 {replayWebhook.isSuccess ? t('billingOps.replayed') : t('billingOps.replay')}
                             </button>
-                            {replayWebhook.error && <p className="text-xs text-rose-600">{t(`errors.${adminErrorMessageKey(replayWebhook.error)}`)}</p>}
+                            {replayWebhook.error && <p className="text-xs text-status-danger">{t(`errors.${adminErrorMessageKey(replayWebhook.error)}`)}</p>}
                         </div>
                     )}
                     {webhook.orderId ? (
@@ -197,7 +197,7 @@ export function BillingOpsPanel() {
 
     return (
         <section className="space-y-5">
-            <div className="border-b border-amber-200 pb-3 text-sm text-amber-800">{t('billingOps.notice')}</div>
+            <div className="border-b border-status-warn-wash pb-3 text-sm text-status-warn">{t('billingOps.notice')}</div>
 
             <form onSubmit={handleSettle} className="border-b border-border pb-5">
                 <h2 className="text-base font-semibold text-ink">{t('billingOps.settleTitle')}</h2>
@@ -224,10 +224,10 @@ export function BillingOpsPanel() {
                     </button>
                 </div>
                 <p className="mt-2 max-w-2xl text-xs leading-5 text-ink-muted">{t('billingOps.orderIdSourceHint')}</p>
-                {showOrderIdError && <p className="mt-1 text-xs font-semibold text-rose-600">{t('billingOps.orderIdInvalid')}</p>}
-                {settleOrder.error && <p className="mt-2 text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(settleOrder.error)}`)}</p>}
+                {showOrderIdError && <p className="mt-1 text-xs font-semibold text-status-danger">{t('billingOps.orderIdInvalid')}</p>}
+                {settleOrder.error && <p className="mt-2 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(settleOrder.error)}`)}</p>}
                 {settledOrderId && !settleOrder.error && (
-                    <p className="mt-2 text-sm text-emerald-700">{t('billingOps.settleSuccess', { orderId: settledOrderId })}</p>
+                    <p className="mt-2 text-sm text-status-good">{t('billingOps.settleSuccess', { orderId: settledOrderId })}</p>
                 )}
             </form>
 
@@ -248,7 +248,7 @@ export function BillingOpsPanel() {
                     </button>
                 </div>
                 {webhooksQuery.isLoading && <p className="text-sm text-ink-muted">{t('billingOps.webhooksLoading')}</p>}
-                {webhooksQuery.error && <p className="text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(webhooksQuery.error)}`)}</p>}
+                {webhooksQuery.error && <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(webhooksQuery.error)}`)}</p>}
                 {!webhooksQuery.isLoading && !webhooksQuery.error && webhooks.length === 0 && (
                     <p className="py-3 text-sm text-ink-muted">{t('billingOps.webhooksEmpty')}</p>
                 )}
@@ -273,9 +273,9 @@ export function BillingOpsPanel() {
                         {t('billingOps.runSweep')}
                     </button>
                     {runSweep.data && (
-                        <p className="text-sm text-emerald-700">{t('billingOps.sweepSuccess', { result: formatRecordCounts(runSweep.data) })}</p>
+                        <p className="text-sm text-status-good">{t('billingOps.sweepSuccess', { result: formatRecordCounts(runSweep.data) })}</p>
                     )}
-                    {runSweep.error && <p className="text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(runSweep.error)}`)}</p>}
+                    {runSweep.error && <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(runSweep.error)}`)}</p>}
                 </div>
             </div>
 

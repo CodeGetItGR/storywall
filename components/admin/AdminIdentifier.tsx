@@ -33,7 +33,7 @@ export function AdminIdentifier({ label, value, className }: { label: string; va
                     title={copied ? t('identifiers.copied') : t('identifiers.copy', { label })}
                     className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-ink-faint transition hover:bg-surface-muted hover:text-ink"
                 >
-                    {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copied ? <Check className="h-3.5 w-3.5 text-status-good" /> : <Copy className="h-3.5 w-3.5" />}
                 </button>
             </div>
         </div>

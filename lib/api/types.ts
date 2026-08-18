@@ -378,7 +378,11 @@ export interface OrderSummaryDto {
 export interface EventAddonDto {
     code: string;
     name: string;
+    // What this costs at billingPeriod's cadence — not necessarily a monthly figure.
     priceAmountMinor: number;
+    // 'MONTHLY' (on every renewal) or 'ONE_TIME' (paid once, at activation). Only a
+    // MODULE_UNLOCK is ever 'ONE_TIME'.
+    billingPeriod: BillingPeriod;
     activatedAt: string;
 }
 

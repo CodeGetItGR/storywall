@@ -53,9 +53,12 @@ export function AdminTabs({
                             'focus-visible:rounded-t-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
                             isActive
                                 ? isDanger
-                                    ? 'border-rose-500 text-rose-700'
+                                    ? 'border-status-danger text-status-danger'
                                     : 'border-ink text-ink'
-                                : cn('border-transparent hover:border-border', isDanger ? 'text-rose-700/70 hover:text-rose-700' : 'text-ink-muted hover:text-ink')
+                                : cn(
+                                      'border-transparent hover:border-border',
+                                      isDanger ? 'text-status-danger/70 hover:text-status-danger' : 'text-ink-muted hover:text-ink'
+                                  )
                         )}
                     >
                         {tab.label}

@@ -141,10 +141,12 @@ export function PlanAssignmentPanel() {
                 ) : (
                     <p className="mt-2 max-w-2xl text-xs leading-5 text-ink-muted">{t('lifecycle.idSourceHint')}</p>
                 )}
-                {showIdError && <p className="mt-1 text-xs font-semibold text-rose-600">{t('lifecycle.idInvalid')}</p>}
-                {!plansQuery.isLoading && eventPlans.length === 0 && <p className="mt-2 text-sm text-amber-700">{t('assignments.noAssignablePlans')}</p>}
-                {plansQuery.error && <p className="mt-2 text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(plansQuery.error)}`)}</p>}
-                {assignEvent.error && <p className="mt-2 text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(assignEvent.error)}`)}</p>}
+                {showIdError && <p className="mt-1 text-xs font-semibold text-status-danger">{t('lifecycle.idInvalid')}</p>}
+                {!plansQuery.isLoading && eventPlans.length === 0 && (
+                    <p className="mt-2 text-sm text-status-warn">{t('assignments.noAssignablePlans')}</p>
+                )}
+                {plansQuery.error && <p className="mt-2 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(plansQuery.error)}`)}</p>}
+                {assignEvent.error && <p className="mt-2 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(assignEvent.error)}`)}</p>}
             </form>
 
             {eventUsage && (

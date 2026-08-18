@@ -9,11 +9,8 @@ import type {
     EventUsageResponseDto,
     NotificationSweepResponseDto,
     PaidServiceKind,
-    PaidServicePatchDto,
-    PaidServiceRequestDto,
     PaidServiceResponseDto,
     PlanAssignmentRequestDto,
-    PlanModulesRequestDto,
     PlanScope,
     PlanTierPatchDto,
     PlanTierRequestDto,
@@ -233,29 +230,6 @@ export function useAdminPaidServices(kind?: PaidServiceKind, includeArchived = f
     });
 }
 
-export function useCreatePaidService() {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: (input: PaidServiceRequestDto) => api.post<PaidServiceResponseDto>(endpoints.admin.paidServices.list, input),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: adminKeys.all });
-            queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
-        },
-    });
-}
-
-export function useUpdatePaidService() {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: ({ id, input }: { id: string; input: PaidServicePatchDto }) =>
-            api.patch<PaidServiceResponseDto>(endpoints.admin.paidServices.byId(id), input),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: adminKeys.all });
-            queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
-        },
-    });
-}
-
 export function useDeletePaidService() {
     const queryClient = useQueryClient();
     return useMutation({
@@ -274,19 +248,6 @@ export function useRemoveEventAddon() {
         onSuccess: (_, { eventId }) => {
             queryClient.invalidateQueries({ queryKey: ['events', eventId, 'billing'] });
             queryClient.invalidateQueries({ queryKey: ['billing'] });
-        },
-    });
-}
-
-export function useSetPlanModules() {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: ({ id, input }: { id: string; input: PlanModulesRequestDto }) =>
-            api.put<PlanTierResponseDto>(endpoints.admin.planTiers.modules(id), input),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: adminKeys.all });
-            queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
         },
     });
 }

@@ -50,14 +50,14 @@ function QueueCallout({ label, count, action, icon: Icon, onOpen }: { label: str
         <button
             type="button"
             onClick={onOpen}
-            className="group flex min-w-0 flex-1 items-center gap-3 border border-amber-300 bg-amber-50 px-4 py-3 text-left transition hover:bg-amber-100"
+            className="group flex min-w-0 flex-1 items-center gap-3 border border-status-warn-wash bg-status-warn-wash px-4 py-3 text-left transition hover:opacity-90"
         >
-            <Icon className="h-5 w-5 shrink-0 text-amber-700" aria-hidden="true" />
+            <Icon className="h-5 w-5 shrink-0 text-status-warn" aria-hidden="true" />
             <span className="min-w-0 flex-1">
-                <span className="block text-lg font-bold tabular-nums leading-tight text-amber-900">{formatCount(count)}</span>
-                <span className="block truncate text-xs font-semibold text-amber-800">{label}</span>
+                <span className="block text-lg font-bold tabular-nums leading-tight text-status-warn">{formatCount(count)}</span>
+                <span className="block truncate text-xs font-semibold text-status-warn">{label}</span>
             </span>
-            <span className="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-amber-900 group-hover:underline">
+            <span className="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-status-warn group-hover:underline">
                 {action}
                 <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
             </span>
@@ -85,7 +85,7 @@ function NeedsAttention() {
     return (
         <div className={cn('flex flex-wrap gap-3', clear && 'text-sm')}>
             {clear ? (
-                <p className="inline-flex items-center gap-2 border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+                <p className="inline-flex items-center gap-2 border border-status-good-wash bg-status-good-wash px-4 py-3 text-sm font-semibold text-status-good">
                     <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
                     {t('metrics.attentionClear')}
                 </p>
@@ -146,7 +146,7 @@ export function PlatformMetricsPanel() {
             <NeedsAttention />
 
             {metricsQuery.isLoading && <p className="text-sm text-ink-muted">{t('metrics.loading')}</p>}
-            {metricsQuery.error && <p className="text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(metricsQuery.error)}`)}</p>}
+            {metricsQuery.error && <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(metricsQuery.error)}`)}</p>}
             {metrics && (
                 <>
                     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

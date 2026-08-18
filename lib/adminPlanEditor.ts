@@ -1,5 +1,7 @@
 import { localInputToInstant, priceInputToMinor, storageInputToBytes } from '@/lib/adminPlanForm';
-import { checked, emptyToNull, numberOrNull } from '@/lib/adminUtils';
+import { emptyToNull, numberOrNull } from '@/lib/adminUtils';
+import type { Visibility } from '@/lib/adminVisibility';
+import { visibilityFlags } from '@/lib/adminVisibility';
 import type { BillingPeriod, PlanTierPatchDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { formatLimitValue } from '@/lib/planTiers';
 
@@ -12,13 +14,14 @@ export type PendingPlanSave = {
     moduleChanges: Array<{ label: string; tone: 'added' | 'removed' }>;
 };
 
-export function planPatchFromFormData(plan: PlanTierResponseDto, formData: FormData): PlanTierPatchDto {
+export function planPatchFromFormData(plan: PlanTierResponseDto, formData: FormData, visibility: Visibility): PlanTierPatchDto {
+    const flags = visibilityFlags(visibility);
     return {
         name: String(formData.get('name') ?? '').trim(),
         description: emptyToNull(formData.get('description')),
         sortOrder: Number(formData.get('sortOrder') ?? plan.sortOrder),
-        isPublic: checked(formData, 'isPublic'),
-        isAssignable: checked(formData, 'isAssignable'),
+        isPublic: flags.isPublic,
+        isAssignable: flags.isAssignable,
         storageBytes: plan.scope === 'EVENT' ? storageInputToBytes(formData.get('storageAmount'), formData.get('storageUnit')) : null,
         maxMembers: plan.scope === 'EVENT' ? numberOrNull(formData.get('maxMembers')) : null,
         maxActiveEvents: plan.scope === 'ACCOUNT' ? numberOrNull(formData.get('maxActiveEvents')) : null,

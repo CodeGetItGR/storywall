@@ -12,6 +12,7 @@ interface PlansContentProps {
     checkoutError: string | null;
     isCheckoutPending: boolean;
     modules: AppConfigResponseDto['modules'];
+    paidServices: AppConfigResponseDto['paidServices'];
     nextPlan: PlanTierResponseDto | null;
     onUpgrade: (planTierCode: string) => void;
     pendingPlanCode: string | null;
@@ -26,6 +27,7 @@ export function PlansContent({
     checkoutError,
     isCheckoutPending,
     modules,
+    paidServices,
     nextPlan,
     onUpgrade,
     pendingPlanCode,
@@ -70,6 +72,7 @@ export function PlansContent({
                     <EventPlanComparison
                         plans={plans}
                         modules={modules}
+                        paidServices={paidServices}
                         currentPlanCode={selectedPlanCode}
                         currentPlan={selectedPlan}
                         isCheckoutPending={isCheckoutPending}

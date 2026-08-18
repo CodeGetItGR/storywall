@@ -1,6 +1,8 @@
 'use client';
 
-import { Archive, ArchiveRestore, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { useCreate, useCustomMutation, useDelete, useUpdate } from '@refinedev/core';
+import { useQueryClient } from '@tanstack/react-query';
+import { Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import React, { type ChangeEvent, useCallback, useMemo, useRef, useState } from 'react';
 
@@ -9,11 +11,14 @@ import { AdminSection } from '@/components/admin/AdminSection';
 import { AdminSwitch } from '@/components/admin/AdminSwitch';
 import { type AdminTabDefinition, AdminTabPanel, AdminTabs } from '@/components/admin/AdminTabs';
 import { PlanSaveSummary } from '@/components/admin/PlanSaveSummary';
+import { VisibilitySegmentedControl } from '@/components/admin/VisibilitySegmentedControl';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { useCreatePaidService, useDeletePlanTier, useSetPlanModules, useUpdatePaidService, useUpdatePlanTier } from '@/hooks/useAdmin';
+import { appConfigKeys } from '@/hooks/useAppConfig';
 import { moduleChangeSummary, type PendingPlanSave, planChangeSummary, planPatchFromFormData, sameStringSet } from '@/lib/adminPlanEditor';
 import { codeFromName, defaultCurrency, instantToLocalInput, priceInputToMinor, priceMinorToInput, STORAGE_UNITS, storageBytesToInput } from '@/lib/adminPlanForm';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
+import { type Visibility, visibilityOf } from '@/lib/adminVisibility';
+import { endpoints } from '@/lib/api/endpoints';
 import type { BillingPeriod, PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
 import { formatLimitValue, formatPlanMoney } from '@/lib/planTiers';
@@ -45,32 +50,37 @@ export function PlanEditorCard({
 }) {
     const t = useTranslations('AdminPage');
     const locale = useLocale();
-    const updatePlan = useUpdatePlanTier();
-    const deletePlan = useDeletePlanTier();
-    const setModules = useSetPlanModules();
-    const createPaidService = useCreatePaidService();
-    const updatePaidService = useUpdatePaidService();
+    const queryClient = useQueryClient();
+    const invalidateAppConfig = () => {
+        queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+    };
+    const updatePlan = useUpdate<PlanTierResponseDto>({ dataProviderName: 'plan-tiers', mutationOptions: { onSuccess: invalidateAppConfig } });
+    // useDelete's mutationOptions doesn't expose onSuccess, unlike useCreate/useUpdate — invalidate manually after it resolves.
+    const deletePlan = useDelete<PlanTierResponseDto>();
+    const setModules = useCustomMutation<PlanTierResponseDto>({ mutationOptions: { onSuccess: invalidateAppConfig } });
+    const createPaidService = useCreate<PaidServiceResponseDto>({ mutationOptions: { onSuccess: invalidateAppConfig } });
+    const updatePaidService = useUpdate<PaidServiceResponseDto>({ mutationOptions: { onSuccess: invalidateAppConfig } });
     const formRef = useRef<HTMLFormElement>(null);
     const [tab, setTab] = useState('details');
     const [moduleKeys, setModuleKeys] = useState(plan.moduleKeys);
+    const [visibility, setVisibility] = useState<Visibility>(visibilityOf(plan));
     const [planChangeCount, setPlanChangeCount] = useState(0);
     const [unlockDraft, setUnlockDraft] = useState<UnlockDraft | null>(null);
     const [makeDefaultOpen, setMakeDefaultOpen] = useState(false);
     const [pendingSave, setPendingSave] = useState<PendingPlanSave | null>(null);
-    const [archiveOpen, setArchiveOpen] = useState(false);
-    const [restoreOpen, setRestoreOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
 
     const isEvent = scope === 'EVENT';
     const editorId = `plan-editor-${plan.id}`;
     const orderedModules = useMemo(() => [...modules].sort((left, right) => left.sortOrder - right.sortOrder), [modules]);
     const storageInput = storageBytesToInput(plan.storageBytes);
-    const error = updatePlan.error ?? deletePlan.error ?? setModules.error ?? createPaidService.error ?? updatePaidService.error;
+    const error =
+        updatePlan.mutation.error ?? deletePlan.mutation.error ?? setModules.mutation.error ?? createPaidService.mutation.error ?? updatePaidService.mutation.error;
     const areModulesDirty = !sameStringSet(plan.moduleKeys, moduleKeys);
     const moduleChangeCount = areModulesDirty ? moduleChangeSummary(plan.moduleKeys, moduleKeys, orderedModules).length : 0;
     const changeCount = planChangeCount + moduleChangeCount;
     const canSave = changeCount > 0;
-    const isSaving = updatePlan.isPending || setModules.isPending;
+    const isSaving = updatePlan.mutation.isPending || setModules.mutation.isPending;
 
     const tabs = useMemo<AdminTabDefinition[]>(() => {
         const items: AdminTabDefinition[] = [
@@ -92,34 +102,8 @@ export function PlanEditorCard({
     }
 
     async function handleMakeDefaultConfirm() {
-        await updatePlan.mutateAsync({ id: plan.id, input: { isDefault: true } });
+        await updatePlan.mutateAsync({ resource: 'plan-tiers', id: plan.id, values: { isDefault: true } });
         setMakeDefaultOpen(false);
-    }
-
-    function handleArchiveClick() {
-        setArchiveOpen(true);
-    }
-
-    function handleArchiveClose() {
-        setArchiveOpen(false);
-    }
-
-    async function handleArchiveConfirm() {
-        await updatePlan.mutateAsync({ id: plan.id, input: { isAssignable: false } });
-        setArchiveOpen(false);
-    }
-
-    function handleRestoreClick() {
-        setRestoreOpen(true);
-    }
-
-    function handleRestoreClose() {
-        setRestoreOpen(false);
-    }
-
-    async function handleRestoreConfirm() {
-        await updatePlan.mutateAsync({ id: plan.id, input: { isAssignable: true } });
-        setRestoreOpen(false);
     }
 
     function handleDeleteOpenClick() {
@@ -137,24 +121,30 @@ export function PlanEditorCard({
     async function handleSaveConfirm() {
         if (!pendingSave) return;
         if (pendingSave.changes.length > 0) {
-            await updatePlan.mutateAsync({ id: plan.id, input: pendingSave.patch });
+            await updatePlan.mutateAsync({ resource: 'plan-tiers', id: plan.id, values: pendingSave.patch });
         }
         if (pendingSave.moduleChanges.length > 0) {
-            await setModules.mutateAsync({ id: plan.id, input: { moduleKeys: pendingSave.moduleKeys } });
+            await setModules.mutateAsync({
+                url: endpoints.admin.planTiers.modules(plan.id),
+                method: 'put',
+                values: { moduleKeys: pendingSave.moduleKeys },
+                dataProviderName: 'plan-tiers',
+            });
         }
         setPlanChangeCount(0);
         setPendingSave(null);
     }
 
     async function handleDeleteConfirm() {
-        await deletePlan.mutateAsync(plan.id);
+        await deletePlan.mutateAsync({ resource: 'plan-tiers', id: plan.id, dataProviderName: 'plan-tiers' });
+        invalidateAppConfig();
         setDeleteOpen(false);
     }
 
     function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
         if (!canSave) return;
-        const patch = planPatchFromFormData(plan, new FormData(event.currentTarget));
+        const patch = planPatchFromFormData(plan, new FormData(event.currentTarget), visibility);
         setPendingSave({
             patch,
             moduleKeys,
@@ -163,10 +153,19 @@ export function PlanEditorCard({
         });
     }
 
-    function handleFormChange() {
+    function recomputePlanChanges(currentVisibility: Visibility) {
         if (!formRef.current) return;
-        const patch = planPatchFromFormData(plan, new FormData(formRef.current));
+        const patch = planPatchFromFormData(plan, new FormData(formRef.current), currentVisibility);
         setPlanChangeCount(planChangeSummary(plan, patch, t).length);
+    }
+
+    function handleFormChange() {
+        recomputePlanChanges(visibility);
+    }
+
+    function handleVisibilityChange(next: Visibility) {
+        setVisibility(next);
+        recomputePlanChanges(next);
     }
 
     function handleModuleChange(event: ChangeEvent<HTMLInputElement>) {
@@ -185,7 +184,7 @@ export function PlanEditorCard({
 
     async function addUnlockToPlan(service: PaidServiceResponseDto) {
         if (unlockAppliesToPlan(service)) return;
-        await updatePaidService.mutateAsync({ id: service.id, input: { planTierIds: [...service.planTierIds, plan.id] } });
+        await updatePaidService.mutateAsync({ resource: 'paid-services', id: service.id, values: { planTierIds: [...service.planTierIds, plan.id] } });
     }
 
     async function removeUnlockFromPlan(service: PaidServiceResponseDto) {
@@ -199,8 +198,9 @@ export function PlanEditorCard({
                 : service.planTierIds.filter((id) => id !== plan.id);
 
         await updatePaidService.mutateAsync({
+            resource: 'paid-services',
             id: service.id,
-            input: remainingPlanIds.length > 0 ? { planTierIds: remainingPlanIds } : { isAssignable: false, isPublic: false },
+            values: remainingPlanIds.length > 0 ? { planTierIds: remainingPlanIds } : { isAssignable: false, isPublic: false },
         });
     }
 
@@ -241,29 +241,32 @@ export function PlanEditorCard({
         if (!unlockDraft) return;
 
         await createPaidService.mutateAsync({
-            // The code never reaches the form: it is an internal identifier derived
-            // from the name the admin typed.
-            code: codeFromName(
-                `unlock ${plan.code} ${unlockDraft.moduleKey}`,
-                paidServices.map((service) => service.code)
-            ),
-            kind: 'MODULE_UNLOCK',
-            name: unlockDraft.name.trim(),
-            description: unlockDraft.description.trim() || null,
-            sortOrder: Math.max(-1, ...paidServices.map((service) => service.sortOrder)) + 1,
-            isAssignable: true,
-            isPublic: true,
-            priceAmountMinor: priceInputToMinor(unlockDraft.price) ?? 0,
-            priceCurrency: unlockDraft.priceCurrency.trim().toUpperCase(),
-            billingPeriod: 'MONTHLY',
-            grantsStorageBytes: null,
-            grantsModuleKey: unlockDraft.moduleKey,
-            planTierIds: [plan.id],
+            resource: 'paid-services',
+            values: {
+                // The code never reaches the form: it is an internal identifier derived
+                // from the name the admin typed.
+                code: codeFromName(
+                    `unlock ${plan.code} ${unlockDraft.moduleKey}`,
+                    paidServices.map((service) => service.code)
+                ),
+                kind: 'MODULE_UNLOCK',
+                name: unlockDraft.name.trim(),
+                description: unlockDraft.description.trim() || null,
+                sortOrder: Math.max(-1, ...paidServices.map((service) => service.sortOrder)) + 1,
+                isAssignable: true,
+                isPublic: true,
+                priceAmountMinor: priceInputToMinor(unlockDraft.price) ?? 0,
+                priceCurrency: unlockDraft.priceCurrency.trim().toUpperCase(),
+                billingPeriod: 'MONTHLY',
+                grantsStorageBytes: null,
+                grantsModuleKey: unlockDraft.moduleKey,
+                planTierIds: [plan.id],
+            },
         });
         setUnlockDraft(null);
     }
 
-    const canCreateUnlock = Boolean(unlockDraft?.name.trim() && unlockDraft.priceCurrency.trim()) && !createPaidService.isPending;
+    const canCreateUnlock = Boolean(unlockDraft?.name.trim() && unlockDraft.priceCurrency.trim()) && !createPaidService.mutation.isPending;
 
     function handleCreateUnlockClick() {
         void createUnlock();
@@ -297,7 +300,7 @@ export function PlanEditorCard({
                             </span>
                         )}
                         {!plan.isAssignable && (
-                            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+                            <span className="rounded-full bg-status-warn-wash px-2 py-0.5 text-[11px] font-semibold text-status-warn">
                                 {t('plans.archived')}
                             </span>
                         )}
@@ -321,7 +324,7 @@ export function PlanEditorCard({
                     <button
                         type="button"
                         onClick={handleMakeDefaultClick}
-                        disabled={updatePlan.isPending}
+                        disabled={updatePlan.mutation.isPending}
                         className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md border border-primary/40 bg-primary-light px-4 text-sm font-bold text-primary-dark transition hover:border-primary hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/25 disabled:opacity-50"
                     >
                         {t('plans.makeDefault')}
@@ -346,20 +349,21 @@ export function PlanEditorCard({
                     </div>
 
                     <AdminSection title={t('plans.sections.availability')} className="mt-1">
-                        <div className="grid gap-1 sm:grid-cols-2 sm:gap-x-8">
-                            <AdminSwitch
-                                name="isAssignable"
-                                label={t('fields.isAssignable')}
-                                description={t('fields.isAssignableHint')}
-                                defaultChecked={plan.isAssignable}
-                            />
-                            <AdminSwitch
-                                name="isPublic"
-                                label={t('fields.isPublic')}
-                                description={t('fields.isPublicHint')}
-                                defaultChecked={plan.isPublic}
-                            />
-                        </div>
+                        <VisibilitySegmentedControl
+                            title={t('fields.visibility')}
+                            value={visibility}
+                            onChange={handleVisibilityChange}
+                            labels={{
+                                LIVE: t('fields.visibilityLive'),
+                                HIDDEN: t('fields.visibilityHidden'),
+                                ARCHIVED: t('fields.visibilityArchived'),
+                            }}
+                            hints={{
+                                LIVE: t('fields.visibilityLiveHint'),
+                                HIDDEN: t('fields.visibilityHiddenHint'),
+                                ARCHIVED: t('fields.visibilityArchivedHint'),
+                            }}
+                        />
                     </AdminSection>
                 </AdminTabPanel>
 
@@ -531,10 +535,10 @@ export function PlanEditorCard({
                                                 className={cn(
                                                     'rounded-full px-2 py-1 font-bold',
                                                     included
-                                                        ? 'bg-emerald-100 text-emerald-800'
+                                                        ? 'bg-status-good-wash text-status-good'
                                                         : planUnlocks.length > 0
                                                           ? 'bg-primary-light text-primary-dark'
-                                                          : 'bg-amber-100 text-amber-800'
+                                                          : 'bg-status-warn-wash text-status-warn'
                                                 )}
                                             >
                                                 {included
@@ -558,10 +562,10 @@ export function PlanEditorCard({
                                                         data-action="remove"
                                                         data-service-id={service.id}
                                                         onClick={handleUnlockAction}
-                                                        disabled={updatePaidService.isPending}
+                                                        disabled={updatePaidService.mutation.isPending}
                                                         title={t('plans.modules.removeAddon')}
                                                         aria-label={t('plans.modules.removeAddonFrom', { addon: service.name })}
-                                                        className="inline-flex h-5 w-5 items-center justify-center rounded-full text-ink-muted transition hover:bg-rose-100 hover:text-rose-700 disabled:opacity-50"
+                                                        className="inline-flex h-5 w-5 items-center justify-center rounded-full text-ink-muted transition hover:bg-status-danger-wash hover:text-status-danger disabled:opacity-50"
                                                     >
                                                         <X className="h-3.5 w-3.5" aria-hidden="true" />
                                                     </button>
@@ -575,7 +579,7 @@ export function PlanEditorCard({
                                                         type="button"
                                                         data-service-id={service.id}
                                                         onClick={handleUnlockAction}
-                                                        disabled={updatePaidService.isPending}
+                                                        disabled={updatePaidService.mutation.isPending}
                                                         className="inline-flex min-h-8 items-center gap-1.5 rounded-md border border-border px-2.5 font-bold text-ink-muted transition hover:bg-surface-muted disabled:opacity-50"
                                                     >
                                                         <Plus className="h-3.5 w-3.5" aria-hidden="true" />
@@ -670,7 +674,7 @@ export function PlanEditorCard({
                                                             disabled={!canCreateUnlock}
                                                             className="inline-flex min-h-9 items-center gap-2 rounded-md bg-ink px-3 text-xs font-bold text-white transition hover:bg-ink/90 disabled:opacity-50"
                                                         >
-                                                            {createPaidService.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                                                            {createPaidService.mutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                                                             {t('plans.modules.saveAddon')}
                                                         </button>
                                                     </div>
@@ -686,39 +690,13 @@ export function PlanEditorCard({
 
                 <AdminTabPanel id={editorId} tabKey="danger" active={tab} className="pt-5">
                     <p className="mb-3 max-w-2xl text-sm leading-6 text-ink-muted">{t('plans.destructiveHint')}</p>
-                    <div className="rounded-lg border border-rose-200 bg-rose-50/40 px-4 py-1">
-                        <DangerRow
-                            title={plan.isAssignable ? t('plans.archive') : t('plans.restore')}
-                            body={plan.isAssignable ? t('plans.archiveConfirmBody') : t('plans.restoreConfirmBody')}
-                        >
-                            {plan.isAssignable ? (
-                                <button
-                                    type="button"
-                                    onClick={handleArchiveClick}
-                                    disabled={updatePlan.isPending}
-                                    className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-border bg-background px-3 text-xs font-bold text-ink-muted transition hover:border-ink-faint hover:bg-surface-muted disabled:opacity-50"
-                                >
-                                    <Archive className="h-3.5 w-3.5" aria-hidden="true" />
-                                    {t('plans.archive')}
-                                </button>
-                            ) : (
-                                <button
-                                    type="button"
-                                    onClick={handleRestoreClick}
-                                    disabled={updatePlan.isPending}
-                                    className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-emerald-600 px-3 text-xs font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
-                                >
-                                    <ArchiveRestore className="h-3.5 w-3.5" aria-hidden="true" />
-                                    {t('plans.restore')}
-                                </button>
-                            )}
-                        </DangerRow>
+                    <div className="rounded-lg border border-status-danger-wash bg-status-danger-wash/40 px-4 py-1">
                         <DangerRow title={t('plans.delete')} body={t('plans.deleteConfirmBody')}>
                             <button
                                 type="button"
                                 onClick={handleDeleteOpenClick}
-                                disabled={deletePlan.isPending}
-                                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-rose-600 px-3 text-xs font-bold text-white transition hover:bg-rose-700 disabled:opacity-50"
+                                disabled={deletePlan.mutation.isPending}
+                                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-status-danger px-3 text-xs font-bold text-white transition hover:opacity-90 disabled:opacity-50"
                             >
                                 <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                                 {t('plans.delete')}
@@ -744,7 +722,7 @@ export function PlanEditorCard({
                 </div>
             </form>
 
-            {error && <p className="mt-3 text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(error)}`)}</p>}
+            {error && <p className="mt-3 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(error)}`)}</p>}
 
             <ConfirmActionModal
                 open={makeDefaultOpen}
@@ -753,7 +731,7 @@ export function PlanEditorCard({
                 body={t('plans.makeDefaultConfirmBody')}
                 cancelLabel={t('cancel')}
                 confirmLabel={t('plans.makeDefault')}
-                isConfirming={updatePlan.isPending}
+                isConfirming={updatePlan.mutation.isPending}
                 onConfirm={handleMakeDefaultConfirm}
                 tone="default"
             />
@@ -772,36 +750,13 @@ export function PlanEditorCard({
             />
 
             <ConfirmActionModal
-                open={archiveOpen}
-                onClose={handleArchiveClose}
-                title={t('plans.archiveConfirmTitle', { plan: plan.name })}
-                body={t('plans.archiveConfirmBody')}
-                cancelLabel={t('cancel')}
-                confirmLabel={t('plans.archive')}
-                isConfirming={updatePlan.isPending}
-                onConfirm={handleArchiveConfirm}
-            />
-
-            <ConfirmActionModal
-                open={restoreOpen}
-                onClose={handleRestoreClose}
-                title={t('plans.restoreConfirmTitle', { plan: plan.name })}
-                body={t('plans.restoreConfirmBody')}
-                cancelLabel={t('cancel')}
-                confirmLabel={t('plans.restore')}
-                isConfirming={updatePlan.isPending}
-                onConfirm={handleRestoreConfirm}
-                tone="default"
-            />
-
-            <ConfirmActionModal
                 open={deleteOpen}
                 onClose={handleDeleteClose}
                 title={t('plans.deleteConfirmTitle', { plan: plan.name })}
                 body={t('plans.deleteConfirmBody')}
                 cancelLabel={t('cancel')}
                 confirmLabel={t('plans.delete')}
-                isConfirming={deletePlan.isPending}
+                isConfirming={deletePlan.mutation.isPending}
                 onConfirm={handleDeleteConfirm}
             />
         </article>
@@ -810,10 +765,10 @@ export function PlanEditorCard({
 
 function DangerRow({ title, body, children }: { title: string; body: string; children: React.ReactNode }) {
     return (
-        <div className="flex flex-col gap-3 border-t border-rose-200 py-4 first:border-t-0 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-3 border-t border-status-danger-wash py-4 first:border-t-0 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0 sm:max-w-lg">
-                <p className="text-sm font-bold text-rose-900">{title}</p>
-                <p className="mt-1 text-xs leading-5 text-rose-900/70">{body}</p>
+                <p className="text-sm font-bold text-status-danger">{title}</p>
+                <p className="mt-1 text-xs leading-5 text-status-danger/70">{body}</p>
             </div>
             <div className="shrink-0">{children}</div>
         </div>

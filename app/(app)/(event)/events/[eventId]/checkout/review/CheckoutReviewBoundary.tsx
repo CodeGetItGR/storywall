@@ -20,8 +20,17 @@ type ReviewLine = { label: string; amountMinor: number };
 
 const CHECKOUT_INTENTS: CheckoutIntent[] = ['activation', 'renewal', 'upgrade', 'storage'];
 
-function addonLines(addons: EventAddonDto[], multiplier = 1): ReviewLine[] {
-    return addons.map((addon) => ({ label: addon.name, amountMinor: addon.priceAmountMinor * multiplier }));
+// A ONE_TIME addon (only ever a MODULE_UNLOCK) is a flat charge at activation and never
+// recurs — it ignores includedMonths and is charged even when includedMonths is 0.
+function addonLines(addons: EventAddonDto[], includedMonths = 1): ReviewLine[] {
+    return addons.map((addon) => ({
+        label: addon.name,
+        amountMinor: addon.billingPeriod === 'ONE_TIME' ? addon.priceAmountMinor : addon.priceAmountMinor * includedMonths,
+    }));
+}
+
+function monthlyAddons(addons: EventAddonDto[]): EventAddonDto[] {
+    return addons.filter((addon) => addon.billingPeriod === 'MONTHLY');
 }
 
 export default function CheckoutReviewBoundary() {
@@ -77,7 +86,7 @@ export default function CheckoutReviewBoundary() {
 
     const addons = billing.data.addons;
     const includedMonths = currentPlan.includedMonths ?? 1;
-    const addonMonthlyTotal = addons.reduce((sum, addon) => sum + addon.priceAmountMinor, 0);
+    const addonMonthlyTotal = monthlyAddons(addons).reduce((sum, addon) => sum + addon.priceAmountMinor, 0);
     const currency =
         intent === 'storage'
             ? (service?.priceCurrency ?? currentPlan.priceCurrency ?? 'EUR')
@@ -128,7 +137,7 @@ export default function CheckoutReviewBoundary() {
                     label: t('items.planPreservation', { plan: currentPlan.name }),
                     amountMinor: discountedAmountMinor(currentPlan.recurringPriceAmountMinor, currentPlan),
                 },
-                ...addonLines(addons),
+                ...addonLines(monthlyAddons(addons)),
             ];
             recurringMinor = lines.reduce((sum, line) => sum + line.amountMinor, 0);
         }

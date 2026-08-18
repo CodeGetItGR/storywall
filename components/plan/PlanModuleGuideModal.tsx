@@ -3,23 +3,28 @@
 import { useTranslations } from 'next-intl';
 
 import { Modal } from '@/components/ui/modal';
-import type { PlatformModuleResponseDto } from '@/lib/api/types';
-import { enabledModuleKeys, getModuleMeta } from '@/lib/planModules';
+import type { PaidServiceResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import { getModuleMeta, publicEnabledModules } from '@/lib/planModules';
 
 export function PlanModuleGuideModal({
     open,
     onClose,
-    moduleKeys,
     modules,
+    paidServices = [],
 }: {
     open: boolean;
     onClose: () => void;
-    moduleKeys: string[];
     modules: PlatformModuleResponseDto[];
+    paidServices?: PaidServiceResponseDto[];
 }) {
     const t = useTranslations('EventPlanSettingsPage');
     const tModules = useTranslations('Modules');
-    const visibleModuleKeys = enabledModuleKeys(moduleKeys, modules);
+    const visibleModules = publicEnabledModules(modules);
+    const publicModuleUnlocks = new Set(
+        paidServices
+            .filter((service) => service.kind === 'MODULE_UNLOCK' && service.isPublic && service.isAssignable && service.grantsModuleKey)
+            .map((service) => service.grantsModuleKey)
+    );
 
     return (
         <Modal open={open} onClose={onClose} size="sm" closeLabel={t('compare.moduleLegendClose')}>
@@ -27,7 +32,8 @@ export function PlanModuleGuideModal({
                 <h2 className="text-lg font-semibold text-ink">{t('compare.moduleLegendTitle')}</h2>
                 <p className="mt-2 text-sm leading-6 text-ink-muted">{t('compare.moduleLegendBody')}</p>
                 <div className="mt-4 divide-y divide-border border-y border-border">
-                    {visibleModuleKeys.map((moduleKey) => {
+                    {visibleModules.map((module_) => {
+                        const moduleKey = module_.moduleKey;
                         const meta = getModuleMeta(moduleKey, modules);
                         const Icon = meta.Icon;
                         return (
@@ -44,6 +50,9 @@ export function PlanModuleGuideModal({
                                             ? tModules(`${moduleKey}.description`)
                                             : meta.description || t('compare.moduleLegendFallback')}
                                     </p>
+                                    {publicModuleUnlocks.has(moduleKey) && (
+                                        <p className="mt-1 text-xs font-semibold text-primary-dark">{t('compare.moduleLegendAddon')}</p>
+                                    )}
                                 </div>
                             </div>
                         );

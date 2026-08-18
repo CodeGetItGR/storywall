@@ -39,7 +39,7 @@ export function PlanSaveSummary({ pendingSave }: { pendingSave: PendingPlanSave 
                         {pendingSave.moduleChanges.map((change) => (
                             <li key={`${change.tone}:${change.label}`} className="flex items-center justify-between gap-3 py-2">
                                 <span className="font-semibold text-ink">{change.label}</span>
-                                <span className={change.tone === 'added' ? 'text-emerald-700' : 'text-rose-600'}>
+                                <span className={change.tone === 'added' ? 'text-status-good' : 'text-status-danger'}>
                                     {change.tone === 'added' ? t('enabled') : t('disabled')}
                                 </span>
                             </li>

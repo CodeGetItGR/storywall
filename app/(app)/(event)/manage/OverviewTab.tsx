@@ -98,7 +98,16 @@ export default function OverviewTab({
               (originalsActive ? activationAddonAmount : 0) +
               moduleUnlocks
                   .filter((service) => activeAddonCodes.has(service.code))
-                  .reduce((sum, service) => sum + service.priceAmountMinor * (currentPlan.includedMonths ?? 1), 0);
+                  .reduce(
+                      // A ONE_TIME unlock is a flat charge — it ignores includedMonths and is
+                      // charged even when includedMonths is 0, unlike a MONTHLY module or ORIGINALS.
+                      (sum, service) =>
+                          sum +
+                          (service.billingPeriod === 'ONE_TIME'
+                              ? service.priceAmountMinor
+                              : service.priceAmountMinor * (currentPlan.includedMonths ?? 1)),
+                      0
+                  );
 
     async function activateOriginals() {
         setCheckoutError(null);
@@ -172,7 +181,7 @@ export default function OverviewTab({
                                                 <p className="truncate text-xs font-semibold text-ink">{module_?.name ?? service.name}</p>
                                                 <p className="text-xs text-ink-muted">
                                                     {formatMoney(locale, service.priceAmountMinor, service.priceCurrency)}{' '}
-                                                    {t('draftModules.perMonth')}
+                                                    {service.billingPeriod === 'ONE_TIME' ? t('draftModules.once') : t('draftModules.perMonth')}
                                                 </p>
                                             </div>
                                             <button

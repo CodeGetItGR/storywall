@@ -70,6 +70,13 @@ already used. In practice `billingPeriod` is now a constant across the whole cat
 require `MONTHLY`; the API still models it as a real field rather than dropping it, since a
 different cadence is a validated, enforced value, not just an unread label).
 
+> **Superseded 2026-08-17 — read this before acting on the paragraph below.** `billingPeriod` is no
+> longer a constant. A `MODULE_UNLOCK` (a kind that did not exist when this was written) can be
+> `'ONE_TIME'`, meaning charged once at activation and never on a renewal. The advice to delete
+> `billingPeriod === 'ONE_TIME'` branching still holds **for storage packs**, which are still always
+> `MONTHLY` — but not as a blanket rule, and the renewal-sum formula in §3 has changed too. See
+> [`one-time-module-unlocks-fe-integration.md`](one-time-module-unlocks-fe-integration.md).
+
 **If any code branches on `billingPeriod === 'ONE_TIME'`** — e.g. to label a pack "one-time" in a
 pricing table, or to skip putting it in a "recurring costs" summary — that branch now silently stops
 firing for storage packs. Grep for it. The safer signal, if you need to distinguish a pack from the
@@ -112,6 +119,11 @@ now wrong for any event that has ever bought a pack. Sum the whole array:
 ```
 next renewal quote = plan.recurringPriceAmountMinor + Σ addons[].priceAmountMinor
 ```
+
+> **Superseded 2026-08-17.** Sum only the rows where `billingPeriod === 'MONTHLY'` — a one-time
+> module unlock appears in this array because the host *owns* it, not because they owe it, and
+> including it overstates the renewal. See
+> [`one-time-module-unlocks-fe-integration.md`](one-time-module-unlocks-fe-integration.md) §3.
 
 This matches what `applyPlanChange` computes server-side for live-subscription repricing, and what
 `startRenewal` computes for a manual renewal checkout — both already summed `addons[]` for

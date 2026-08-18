@@ -21,6 +21,7 @@ export default function PlansPage() {
             checkoutError={data.checkoutError}
             isCheckoutPending={data.isCheckoutPending}
             modules={data.modules}
+            paidServices={data.paidServices}
             nextPlan={data.nextPlan}
             onUpgrade={data.startUpgrade}
             pendingPlanCode={data.pendingPlanCode}

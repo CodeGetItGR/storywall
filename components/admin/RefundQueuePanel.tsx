@@ -86,7 +86,7 @@ function RefundRow({ row }: { row: RefundRequestAdminDto }) {
                         <span
                             className={cn(
                                 'rounded-full px-2 py-0.5 text-[11px] font-bold',
-                                pending ? 'bg-amber-100 text-amber-800' : 'bg-surface-muted text-ink-muted'
+                                pending ? 'bg-status-warn-wash text-status-warn' : 'bg-surface-muted text-ink-muted'
                             )}
                         >
                             {t(`refunds.status.${request.status}`)}
@@ -145,7 +145,7 @@ function RefundRow({ row }: { row: RefundRequestAdminDto }) {
             </div>
 
             {!row.currentlyEligible && (
-                <div className="mt-3 border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                <div className="mt-3 border border-status-warn-wash bg-status-warn-wash px-3 py-2 text-xs text-status-warn">
                     <p className="font-semibold">{t('refunds.notEligible')}</p>
                     {row.ineligibilityReasons.length > 0 && (
                         <ul className="mt-1 list-disc space-y-0.5 pl-4">
@@ -159,7 +159,7 @@ function RefundRow({ row }: { row: RefundRequestAdminDto }) {
             )}
 
             {request.status === 'APPROVED' && !request.providerRefunded && (
-                <div className="mt-3 flex items-start gap-2 border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+                <div className="mt-3 flex items-start gap-2 border border-status-danger-wash bg-status-danger-wash px-3 py-2 text-xs text-status-danger">
                     <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                     <span>{t('refunds.notRefundedByProvider')}</span>
                 </div>
@@ -213,7 +213,7 @@ function RefundRow({ row }: { row: RefundRequestAdminDto }) {
                         {rejectBlocked && <span className="text-[11px] text-ink-muted">{t('refunds.noteRequiredHint')}</span>}
                     </div>
 
-                    {decide.error && <p className="mt-2 text-xs text-rose-600">{t(`errors.${adminErrorMessageKey(decide.error)}`)}</p>}
+                    {decide.error && <p className="mt-2 text-xs text-status-danger">{t(`errors.${adminErrorMessageKey(decide.error)}`)}</p>}
                 </div>
             )}
 
@@ -301,7 +301,7 @@ export function RefundQueuePanel() {
             </div>
 
             {query.isLoading && <p className="text-sm text-ink-muted">{t('refunds.loading')}</p>}
-            {query.error && <p className="text-sm text-rose-600">{t(`errors.${adminErrorMessageKey(query.error)}`)}</p>}
+            {query.error && <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(query.error)}`)}</p>}
             {!query.isLoading && !query.error && visibleRows.length === 0 && (
                 <p className="py-3 text-sm text-ink-muted">{filter === 'pending' ? t('refunds.emptyPending') : t('refunds.empty')}</p>
             )}

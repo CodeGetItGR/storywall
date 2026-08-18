@@ -51,6 +51,7 @@ export function usePlansPageData() {
         isCheckoutPending: false,
         isLoading: appConfig.isLoading || Boolean(eventId && billing.isLoading),
         modules: appConfig.data?.modules ?? [],
+        paidServices: appConfig.data?.paidServices ?? [],
         nextPlan,
         pendingPlanCode: null,
         plans,
