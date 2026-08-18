@@ -14,6 +14,7 @@ export type ApiErrorMessageKey =
     | 'activeEventLimit'
     | 'alreadyLinked'
     | 'authenticationRequired'
+    | 'checkoutAmountBelowMinimum'
     | 'checkoutSessionUnresolved'
     | 'coHostInviteNotYours'
     | 'conflict'
@@ -81,6 +82,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.ADDON_NOT_ACTIVE]: 'addonNotActive',
     [ERROR_CODES.ACTIVE_EVENT_LIMIT_EXCEEDED]: 'activeEventLimit',
     [ERROR_CODES.ALREADY_LINKED]: 'alreadyLinked',
+    [ERROR_CODES.CHECKOUT_AMOUNT_BELOW_MINIMUM]: 'checkoutAmountBelowMinimum',
     [ERROR_CODES.CHECKOUT_SESSION_UNRESOLVED]: 'checkoutSessionUnresolved',
     [ERROR_CODES.CO_HOST_INVITE_NOT_YOURS]: 'coHostInviteNotYours',
     [ERROR_CODES.CONFLICT]: 'conflict',

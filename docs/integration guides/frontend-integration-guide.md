@@ -2,7 +2,7 @@
 
 Master reference for what's wireable against the backend today, what isn't, and where FE
 assumptions have drifted from actual backend behavior. Companion to
-[`frontend-api-types.ts`](frontend-api-types.ts) (the wire-shape source of truth — read that
+[`frontend-api-types.ts`](../frontend-api-types.ts) (the wire-shape source of truth — read that
 file alongside this one, don't duplicate its interfaces from memory) and the feature-specific
 guides it links out to:
 [`stories-fe-integration-guide.md`](stories-fe-integration-guide.md),
@@ -261,7 +261,7 @@ To clear a stance entirely (go back to no opinion) rather than flip it, use `DEL
 
 #### The enriched suggestion list
 
-`PlaylistSuggestionResponseDto` (full shape in [`frontend-api-types.ts`](frontend-api-types.ts)) now includes:
+`PlaylistSuggestionResponseDto` (full shape in [`frontend-api-types.ts`](../frontend-api-types.ts)) now includes:
 
 - **`upvoteCount`** / **`downvoteCount`** — `long`, always present, `0` for a song nobody has voted on. Never absent or `null` — a song with no votes is a real zero, not a missing field.
 - **`myVote`** — `"UPVOTE"` | `"DOWNVOTE"` | `null`. `null` means the calling member hasn't voted on that song, not that the data failed to load.
@@ -313,7 +313,7 @@ creates one.
 
 #### The payload
 
-`NotificationResponseDto` (full shape in [`frontend-api-types.ts`](frontend-api-types.ts)):
+`NotificationResponseDto` (full shape in [`frontend-api-types.ts`](../frontend-api-types.ts)):
 
 - **`title` / `body`** — pre-rendered server-side with the figures as they were measured
   ("This event has used 4.6 GB of its 2 GB storage"). **Render them verbatim**; don't rebuild the

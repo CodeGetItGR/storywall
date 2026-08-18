@@ -1,0 +1,75 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+
+import { AdminField, adminInputClass } from '@/components/admin/AdminField';
+import { AdminTabPanel } from '@/components/admin/AdminTabs';
+import { STORAGE_UNITS, storageBytesToInput } from '@/lib/adminPlanForm';
+import type { PlanTierResponseDto } from '@/lib/api/types';
+
+export function PlanEditorLimitsTab({
+    editorId,
+    activeTab,
+    plan,
+    isEvent,
+}: {
+    editorId: string;
+    activeTab: string;
+    plan: PlanTierResponseDto;
+    isEvent: boolean;
+}) {
+    const t = useTranslations('AdminPage');
+    const storageInput = storageBytesToInput(plan.storageBytes);
+
+    return (
+        <AdminTabPanel id={editorId} tabKey="limits" active={activeTab} className="pt-5">
+            {/* Limits */}
+            <p className="mb-4 max-w-2xl text-sm leading-6 text-ink-muted">{t('plans.sections.limitsHint')}</p>
+            {isEvent ? (
+                <div className="grid gap-3 sm:grid-cols-[minmax(0,10rem)_6rem_minmax(0,10rem)]">
+                    <AdminField label={t('fields.storage')} optional>
+                        <input
+                            name="storageAmount"
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            defaultValue={storageInput.amount}
+                            placeholder={t('fields.blankUnlimited')}
+                            className={adminInputClass()}
+                        />
+                    </AdminField>
+                    <AdminField label={t('fields.unit')}>
+                        <select name="storageUnit" defaultValue={storageInput.unit} className={adminInputClass()}>
+                            {STORAGE_UNITS.map((unit) => (
+                                <option key={unit} value={unit}>
+                                    {unit}
+                                </option>
+                            ))}
+                        </select>
+                    </AdminField>
+                    <AdminField label={t('fields.maxMembers')} optional>
+                        <input
+                            name="maxMembers"
+                            type="number"
+                            min={0}
+                            defaultValue={plan.maxMembers ?? ''}
+                            placeholder={t('fields.blankUnlimited')}
+                            className={adminInputClass()}
+                        />
+                    </AdminField>
+                </div>
+            ) : (
+                <AdminField label={t('fields.maxEventsPerUser')} optional className="max-w-64">
+                    <input
+                        name="maxActiveEvents"
+                        type="number"
+                        min={0}
+                        defaultValue={plan.maxActiveEvents ?? ''}
+                        placeholder={t('fields.blankUnlimited')}
+                        className={adminInputClass()}
+                    />
+                </AdminField>
+            )}
+        </AdminTabPanel>
+    );
+}

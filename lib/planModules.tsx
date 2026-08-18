@@ -1,4 +1,4 @@
-import { CalendarCheck, HelpCircle, Images, MessageSquareText, Music } from 'lucide-react';
+import { BookHeart, CalendarCheck, Gift, HelpCircle, Images, MessageSquareText, Music } from 'lucide-react';
 import type { ComponentType } from 'react';
 
 import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
@@ -10,6 +10,8 @@ const moduleIcons: Record<string, ComponentType<{ className?: string }>> = {
     playlist: Music,
     stories: Images,
     gallery: Images,
+    wishlist: Gift,
+    wishbook: BookHeart,
 };
 
 const moduleFallbacks: Record<string, { name: string; description: string }> = {
@@ -32,6 +34,14 @@ const moduleFallbacks: Record<string, { name: string; description: string }> = {
     gallery: {
         name: 'Gallery',
         description: 'Lets guests upload event photos into a dedicated gallery for the host to review.',
+    },
+    wishlist: {
+        name: 'Wishlist',
+        description: 'Shares the host’s gift account (IBAN) with guests who want to send a gift.',
+    },
+    wishbook: {
+        name: 'Wishbook',
+        description: 'Lets guests leave written wishes and messages for the host to keep.',
     },
 };
 

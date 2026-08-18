@@ -14,6 +14,16 @@ export type PendingPlanSave = {
     moduleChanges: Array<{ label: string; tone: 'added' | 'removed' }>;
 };
 
+export type UnlockDraft = {
+    moduleKey: string;
+    moduleName: string;
+    name: string;
+    description: string;
+    price: string;
+    priceCurrency: string;
+    billingPeriod: 'MONTHLY' | 'ONE_TIME';
+};
+
 export function planPatchFromFormData(plan: PlanTierResponseDto, formData: FormData, visibility: Visibility): PlanTierPatchDto {
     const flags = visibilityFlags(visibility);
     return {

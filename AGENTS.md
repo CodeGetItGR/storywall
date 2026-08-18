@@ -7,6 +7,9 @@
 - Put reusable hooks in `hooks/`. Hooks should gather data and expose plain values/actions to components.
 - Put utility functions, formatting helpers, route helpers, and domain logic in `lib/`, preferably under an existing domain file before creating a new one.
 - Avoid local React context in a page unless multiple distant descendants truly need shared mutable state. Prefer props for local page composition.
+- When a UI component is becoming large because it owns too much complex state or orchestration, consider extracting a focused hook and, only if multiple distant descendants truly need the same mutable state, a small context provider around that feature area.
+- Prefer hooks aggressively and early. Treat any non-trivial state, derived values, handlers, data fetching, mutation orchestration, or conditional business logic inside a component as a smell that should usually move into a hook or `lib/` helper. Keep components as declarative render shells with only trivial wiring and JSX.
+- Never leave substantial plain logic inside a component when it can be expressed in a hook. Smaller, more modular hooks are always preferred over one large component body.
 - Do not keep stale guard variables that can hide valid UI. Empty, loading, and error states should be explicit and tied to the data they actually depend on.
 - Prefer `React.SubmitEvent` for form submit handlers instead of `FormEvent`.
 
@@ -19,6 +22,7 @@
 ## Visual Hierarchy
 
 - For UI work, use the appropriate UI/UX skill before implementation. Choose the skill that matches the task, such as design-system for existing product surfaces, design-critique for review, UX copy for visible wording, accessibility-review for a11y checks, or user-research/research-synthesis when product behavior needs evidence.
+- For UI work, add a short JSX comment immediately above every meaningful visual section boundary in the component tree, such as `Header`, `Tabs`, `Details`, `Limits`, `Pricing`, `Modules`, `Danger`, or `Footer`. Treat this as a mandatory step when creating or refactoring UI.
 - Give every meaningful page section a clear boundary and purpose. Use spacing, headings, grouping, background tone, layout changes, or concise section intros deliberately so users can tell where one task area ends and the next begins.
 - Do not create separation by sprinkling borders everywhere. Use borders sparingly for true tables, dividers inside a compact group, or controls that need containment; avoid stacking multiple bordered blocks when whitespace, hierarchy, or a single grouped surface would be clearer.
 - Event host and member-facing UI should be mobile-first: design the small-screen flow first, then scale up to desktop without adding clutter. Prioritize thumb-friendly actions, compact summaries, and clear progressive disclosure.

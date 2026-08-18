@@ -1,7 +1,7 @@
 'use client';
 
 import type { LucideIcon } from 'lucide-react';
-import { Image, Images, MessageSquareText, Music4, Ticket } from 'lucide-react';
+import { BookHeart, Gift, Image, Images, MessageSquareText, Music4, Ticket } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
@@ -15,7 +15,7 @@ type QuickAccessItem = {
     href: string;
     icon: LucideIcon;
     visible: boolean;
-    key: 'posts' | 'stories' | 'rsvp' | 'playlist' | 'gallery';
+    key: 'posts' | 'stories' | 'rsvp' | 'playlist' | 'gallery' | 'gifts' | 'wishbook';
 };
 
 const quickAccessItems: QuickAccessItem[] = [
@@ -53,6 +53,20 @@ const quickAccessItems: QuickAccessItem[] = [
         icon: Images,
         visible: true,
         key: 'gallery',
+    },
+    {
+        moduleKey: 'wishlist',
+        href: routes.tools.gifts,
+        icon: Gift,
+        visible: true,
+        key: 'gifts',
+    },
+    {
+        moduleKey: 'wishbook',
+        href: routes.tools.wishbook,
+        icon: BookHeart,
+        visible: true,
+        key: 'wishbook',
     },
 ];
 

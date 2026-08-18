@@ -16,6 +16,11 @@ now real modules — and `paidServices` gained a third `kind`, `MODULE_UNLOCK`, 
 module to a single event. See
 [`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-integration.md).
 
+**2026-08-18:** each entry in `planTiers` gained `paidModuleKeys` — the modules that plan doesn't
+include for free but sells as a `MODULE_UNLOCK` add-on. Previously the only way to know this was to
+filter `paidServices` by `kind === 'MODULE_UNLOCK'` and cross-reference `grantsModuleKey` /
+`planTierIds` against each plan by hand; that reconstruction is now done server-side.
+
 ## GET /api/config
 
 Public — no `Authorization` header needed, safe to call before login (e.g. to gate the login
@@ -44,7 +49,7 @@ interface AppConfigResponseDto {
 ```
 
 Full type breakdown (`AppMediaConfigDto`, `PlanTierResponseDto`, etc.) is in
-[`frontend-api-types.ts`](frontend-api-types.ts) under "App config". See
+[`frontend-api-types.ts`](../frontend-api-types.ts) under "App config". See
 [`billing-fe-guide.md`](billing-fe-guide.md) for everything about the
 `planTiers` array specifically — the admin CRUD/assignment endpoints, scope semantics, and the
 `null`-means-unlimited convention.
@@ -81,8 +86,9 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
   `kind` (`RECURRING_ADDON` / `STORAGE_PACK` / `MODULE_UNLOCK`) to build the three different
   purchase UIs — the kind decides which endpoint will accept the code, so it is not cosmetic.
   A `MODULE_UNLOCK` entry carries `grantsModuleKey`; match it against `eventModuleKeys` to label
-  the offer. See [`billing-fe-guide.md`](billing-fe-guide.md) §5–§7b for the full opt-in/checkout
-  flows and the admin CRUD endpoints.
+  the offer, or read `paidModuleKeys` on the relevant plan tier to skip that lookup entirely. See
+  [`billing-fe-guide.md`](billing-fe-guide.md) §5–§7b for the full opt-in/checkout flows and the
+  admin CRUD endpoints.
 - **`pagination`** — matches `Page<T>`'s actual `size` behavior on `GET
   /api/events/{eventId}/posts` (currently the only paginated endpoint). Useful if you want a
   page-size selector instead of a hardcoded `20`.
@@ -90,6 +96,10 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
   ordered by scope then `sortOrder`. Filter by `scope` to build a pricing table — `EVENT` plans
   are what a host buys for one event, `ACCOUNT` plans govern how many events they may run at once.
   This is now admin-editable at runtime, so treat it as data and never hardcode a tier name.
+  Each plan's `moduleKeys` are included for free; `paidModuleKeys` (added 2026-08-18) are the
+  modules that plan sells as a `MODULE_UNLOCK` add-on instead — use it to render a pricing table's
+  "included" vs. "available as add-on" module rows without cross-referencing `paidServices`
+  yourself.
 - **`eventModuleKeys`** — the single source of truth for valid module keys, replacing whatever
   hardcoded list (e.g. `ModuleKeyConvention`) the FE currently maintains. See below — this is
   now also enforced server-side, so drift here means requests start failing, not silently

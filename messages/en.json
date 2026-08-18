@@ -1580,9 +1580,11 @@
                 "useExistingAddon": "Sell {addon}",
                 "createAddon": "Sell as add-on",
                 "createAddonTitle": "Sell {module} as a paid add-on",
-                "createAddonSubtitle": "Hosts on {plan} will be able to buy this module for their event. It is charged monthly.",
+                "createAddonSubtitle": "Hosts on {plan} will be able to buy this module for their event.",
                 "saveAddon": "Create add-on",
-                "defaultAddonName": "{module} unlock"
+                "defaultAddonName": "{module} unlock",
+                "billingOnce": "once",
+                "billingMonthly": "/mo"
             },
             "accountDisabledNotice": "Account plans are disabled for new sales and assignment. Existing rows remain here for historical review and limited maintenance.",
             "saveModules": "Save modules",
@@ -1746,7 +1748,8 @@
             "accountPlansDisabled": "Account plans are disabled; only event plans can be created or assigned.",
             "paidServiceInUse": "This service is referenced by an order. Archive it instead of deleting it.",
             "addonLockedWhileActive": "Paid entitlements cannot be removed while an event is live. They lapse automatically if the event stops paying.",
-            "addonNotActive": "That add-on is not active on this event."
+            "addonNotActive": "That add-on is not active on this event.",
+            "subscriptionAlreadyActive": "This event still has a live subscription collecting payments. Cancel or replace it before reassigning the plan."
         },
         "paidServices": {
             "title": "Paid services catalog",
@@ -2021,6 +2024,14 @@
         "gallery": {
             "name": "Gallery",
             "description": "Guests can upload event photos to a separate gallery for the host."
+        },
+        "wishlist": {
+            "name": "Wishlist",
+            "description": "Guests can view the host's gift account details to send a monetary gift."
+        },
+        "wishbook": {
+            "name": "Wishbook",
+            "description": "Guests can leave written wishes and messages for the host to keep."
         }
     },
     "PlanUsage": {
@@ -2098,6 +2109,7 @@
         "planNotAnUpgrade": "These upgrade options are out of date. We refreshed the plan catalog.",
         "planCurrencyMismatch": "This plan is not available for your event.",
         "checkoutSessionUnresolved": "Your last payment is still finishing. Try again in a moment.",
+        "checkoutAmountBelowMinimum": "This plan can't be checked out at its current price. Please contact support.",
         "subscriptionAlreadyActive": "A subscription is already running for this event.",
         "refundNotEligible": "This event no longer meets the refund conditions.",
         "refundAlreadyRequested": "A refund request is already pending for this event.",

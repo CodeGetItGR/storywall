@@ -2,7 +2,7 @@
 
 import { Dialog } from '@base-ui/react/dialog';
 import { X } from 'lucide-react';
-import { type ReactNode, useCallback } from 'react';
+import { createContext, type ReactNode, useCallback, useContext, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -16,9 +16,21 @@ interface AdminDrawerProps {
     children: ReactNode;
 }
 
+const DrawerFooterSlotContext = createContext<HTMLDivElement | null>(null);
+
+// Exposes the drawer's real footer container (outside the scrollable body) so
+// content deep inside `children` — e.g. a form component that owns its own
+// save-bar state — can portal its footer there instead of faking one with
+// `position: sticky` inside the scrolling area, which floats mid-list on short
+// content and overlays the tail of a long one instead of sitting below it.
+export function useAdminDrawerFooterSlot() {
+    return useContext(DrawerFooterSlotContext);
+}
+
 // A right slide-over scoped to one record, per AGENTS.md — editing and
 // browsing stay visually distinct modes instead of a full-screen modal.
 export function AdminDrawer({ open, onClose, title, subtitle, closeLabel, footer, children }: AdminDrawerProps) {
+    const [footerSlot, setFooterSlot] = useState<HTMLDivElement | null>(null);
     const onOpenChange = useCallback(
         (nextOpen: boolean) => {
             if (!nextOpen) onClose();
@@ -50,9 +62,13 @@ export function AdminDrawer({ open, onClose, title, subtitle, closeLabel, footer
                         </Dialog.Close>
                     </div>
 
-                    <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-5 py-4.5">{children}</div>
+                    <DrawerFooterSlotContext.Provider value={footerSlot}>
+                        <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-5 py-4.5">{children}</div>
+                    </DrawerFooterSlotContext.Provider>
 
-                    {footer && <div className="flex items-center justify-between gap-3 border-t border-border px-5 py-3.5">{footer}</div>}
+                    <div ref={setFooterSlot} className="flex items-center justify-between gap-3 border-t border-border px-5 py-3.5 empty:hidden">
+                        {footer}
+                    </div>
                 </Dialog.Popup>
             </Dialog.Portal>
         </Dialog.Root>
