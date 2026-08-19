@@ -6,6 +6,7 @@ import { type ReactNode, useEffect } from 'react';
 import { DesktopNavRail, MobileTabBar } from '@/components/layout';
 import { useAuth } from '@/hooks/useAuth';
 import { routes } from '@/lib/routes';
+import { cn } from '@/lib/utils';
 
 export function AppShell({ children }: { children: ReactNode }) {
     const router = useRouter();
@@ -13,6 +14,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     const { user, isBootstrapping } = useAuth();
     const isChromeLessPage = pathname === routes.eventNotFound;
     const isAuthenticated = Boolean(user);
+    const hasMobileTabBar = pathname !== routes.profile;
 
     useEffect(() => {
         if (isBootstrapping) return;
@@ -36,7 +38,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     return (
         <div className="flex h-full min-h-0 overflow-hidden bg-background">
             <DesktopNavRail />
-            <main className="h-full min-w-0 flex-1 overflow-y-auto pb-20 lg:pb-0 lg:pl-55">
+            <main className={cn('h-full min-w-0 flex-1 overflow-y-auto lg:pb-0 lg:pl-55', hasMobileTabBar && 'pb-20')}>
                 <div className="min-h-full lg:max-w-none">{children}</div>
             </main>
             <MobileTabBar />

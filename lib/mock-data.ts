@@ -1,18 +1,4 @@
-import type {
-    Comment,
-    GiftItem,
-    Notification,
-    PlaylistItem,
-    Post,
-    QuizQuestion,
-    RSVPGuest,
-    ScheduleEvent,
-    SeatingTable,
-    Story,
-    User,
-    VenueInfo,
-    WishbookEntry,
-} from './types';
+import type { Comment, GiftItem, Notification, PlaylistItem, Post, QuizQuestion, RSVPGuest, ScheduleEvent, Story, User, WishbookEntry } from './types';
 
 // ── Users ─────────────────────────────────────────────────
 export const CURRENT_USER_ID = 'u1';
@@ -761,68 +747,6 @@ export const playlist: PlaylistItem[] = [
     },
 ];
 
-// ── Seating ────────────────────────────────────────────────
-export const seatingTables: SeatingTable[] = [
-    {
-        id: 't1',
-        name: 'Bridal Party Table',
-        capacity: 10,
-        guests: [
-            { id: 'sg1', name: 'Emma Chen' },
-            { id: 'sg2', name: 'James Rivera' },
-            { id: 'sg3', name: 'Sophie Williams' },
-            { id: 'sg4', name: 'Marcus Thompson' },
-            { id: 'sg5', name: 'Lily Park' },
-            { id: 'sg6', name: 'David Kim' },
-        ],
-    },
-    {
-        id: 't2',
-        name: 'Family Table — Chen',
-        capacity: 10,
-        guests: [
-            { id: 'sg7', name: 'Rachel Chen' },
-            { id: 'sg8', name: 'Michael Chen' },
-            { id: 'sg9', name: 'Linda Chen' },
-            { id: 'sg10', name: 'Peter Chen' },
-            { id: 'sg11', name: 'Amy Chen' },
-        ],
-    },
-    {
-        id: 't3',
-        name: 'Family Table — Rivera',
-        capacity: 10,
-        guests: [
-            { id: 'sg12', name: 'Tom Rivera' },
-            { id: 'sg13', name: 'Patricia Rivera' },
-            { id: 'sg14', name: 'Carlos Rivera' },
-            { id: 'sg15', name: 'Maria Rivera' },
-        ],
-    },
-    {
-        id: 't4',
-        name: 'College Friends',
-        capacity: 8,
-        guests: [
-            { id: 'sg16', name: 'Aiden Walsh' },
-            { id: 'sg17', name: 'Priya Nair' },
-            { id: 'sg18', name: 'Tyler Brooks' },
-            { id: 'sg19', name: 'Mei Zhang' },
-            { id: 'sg20', name: 'Jack Sato' },
-        ],
-    },
-    {
-        id: 't5',
-        name: 'Work Friends',
-        capacity: 8,
-        guests: [
-            { id: 'sg21', name: 'Hannah Scott' },
-            { id: 'sg22', name: 'Finn Murphy' },
-            { id: 'sg23', name: 'Zoe Adams' },
-        ],
-    },
-];
-
 // ── Quiz ───────────────────────────────────────────────────
 export const quizQuestions: QuizQuestion[] = [
     {
@@ -897,27 +821,3 @@ export const wishbookEntries: WishbookEntry[] = [
         likes: 17,
     },
 ];
-
-// ── Venue ──────────────────────────────────────────────────
-export const venueInfo: VenueInfo = {
-    name: 'Rosewood Estate',
-    address: '1842 Valley View Lane',
-    city: 'Napa Valley, CA 94558',
-    description:
-        'A breathtaking 50-acre estate nestled in the heart of Napa Valley. Rosewood Estate offers a stunning ceremony garden, an open-air reception pavilion draped in Italian string lights, and a restored 1920s stone manor as backdrop. The property includes vineyard views, manicured rose gardens, and a private lake.',
-    amenities: [
-        'Ceremony Garden (up to 200)',
-        'Open-Air Pavilion',
-        'Bridal Suite',
-        "Groom's Retreat",
-        'Vineyard Views',
-        'Private Parking',
-        'Catering Kitchen',
-        'On-site Coordinator',
-    ],
-    heroImage: '/images/venue.png',
-    gallery: ['/images/venue.png', '/images/couple-hero.png'],
-    mapLink: 'https://maps.google.com',
-    phone: '+1 (707) 555-0182',
-    website: 'https://rosewoodenapa.com',
-};

@@ -1,11 +1,12 @@
 'use client';
 
-import { Heart, Home, Plus, UserRound } from 'lucide-react';
+import { Heart, Home as HomeIcon, type LucideIcon, Plus, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { ToolsMenu } from '@/components/layout/ToolsMenu';
 import { AccountLogoutButton } from '@/components/profile/AccountLogoutButton';
 import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,6 +18,21 @@ import { useActiveEvent } from '@/providers/EventProvider';
 
 function isPathActive(pathname: string, href: string) {
     return pathname === href || pathname.startsWith(href + '/');
+}
+
+function NavLink({ href, icon: Icon, label, active }: { href: string; icon: LucideIcon; label: string; active: boolean }) {
+    return (
+        <Link
+            href={href}
+            className={cn(
+                'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors',
+                active ? 'bg-primary-light text-primary-dark' : 'text-ink-muted hover:bg-surface-muted hover:text-ink'
+            )}
+        >
+            <Icon className={cn('w-5 h-5 shrink-0', active ? 'text-primary' : '')} strokeWidth={active ? 2.5 : 1.8} />
+            {label}
+        </Link>
+    );
 }
 
 function isEventRoute(pathname: string) {
@@ -43,10 +59,9 @@ export function DesktopNavRail() {
     const isDraft = activeEvent?.status === 'DRAFT';
     const showEventActions = Boolean(activeEvent) && isEventRoute(pathname);
     const accountName = authUser?.displayName ?? tProfile('fallbackName');
-    const navItems = [
-        ...(activeEvent ? [{ href: isDraft ? routes.manage : routes.post.feed(activeEvent.id), icon: Home, key: 'home' }] : []),
-        { href: routes.profile, icon: UserRound, key: 'profile' },
-    ];
+    const homeHref = activeEvent ? (isDraft ? routes.manage : routes.post.feed(activeEvent.id)) : null;
+    const homeActive = Boolean(homeHref) && (isPathActive(pathname, homeHref!) || isPathActive(pathname, routes.feed));
+    const profileActive = isPathActive(pathname, routes.profile);
 
     return (
         <nav
@@ -66,22 +81,11 @@ export function DesktopNavRail() {
 
             {/* Nav links */}
             <div className="flex-1 px-3 space-y-0.5 overflow-y-auto no-scrollbar">
-                {navItems.map(({ href, icon: Icon, key }) => {
-                    const active = isPathActive(pathname, href) || (key === 'home' && isPathActive(pathname, routes.feed));
-                    return (
-                        <Link
-                            key={href}
-                            href={href}
-                            className={cn(
-                                'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors',
-                                active ? 'bg-primary-light text-primary-dark' : 'text-ink-muted hover:bg-surface-muted hover:text-ink'
-                            )}
-                        >
-                            <Icon className={cn('w-5 h-5 shrink-0', active ? 'text-primary' : '')} strokeWidth={active ? 2.5 : 1.8} />
-                            {t(`items.${key}`)}
-                        </Link>
-                    );
-                })}
+                {homeHref && <NavLink href={homeHref} icon={HomeIcon} label={t('items.home')} active={homeActive} />}
+
+                {activeEvent && !isDraft && <ToolsMenu />}
+
+                <NavLink href={routes.profile} icon={UserRound} label={t('items.profile')} active={profileActive} />
             </div>
 
             {/* New Post CTA */}

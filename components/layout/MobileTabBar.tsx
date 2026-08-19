@@ -1,7 +1,7 @@
 'use client';
 
 import { Menu } from '@base-ui/react/menu';
-import { CalendarDays, CreditCard, Images, LayoutDashboard, MessageSquareText, Plus, Settings2, Ticket } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -11,6 +11,7 @@ import { type ContextNavItem, ContextNavSlot, isEventRoute, isPathActive, TabLin
 import { AccountDrawer } from '@/components/profile';
 import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
+import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
 import { getInitials } from '@/lib/format';
 import { routes } from '@/lib/routes';
 import { useComposer } from '@/providers/ComposerProvider';
@@ -18,21 +19,7 @@ import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/E
 
 const homeTabItem = { href: routes.feed, icon: '/icons/home.svg', key: 'home' } as const;
 
-function hostMenuItems(eventId: string) {
-    return [
-        { href: routes.manage, icon: LayoutDashboard, key: 'manage' },
-        { href: routes.auth.manage({ tab: 'rsvp' }), icon: Ticket, key: 'rsvps' },
-        { href: routes.auth.manage({ tab: 'invitations' }), icon: MessageSquareText, key: 'invitations' },
-        { href: routes.tools.gallery, icon: Images, key: 'gallery' },
-        { href: routes.tools.schedule, icon: CalendarDays, key: 'schedule' },
-        { href: routes.auth.manage({ tab: 'settings' }), icon: Settings2, key: 'settings' },
-        { href: routes.events.settingsPlan(eventId), icon: CreditCard, key: 'billing' },
-    ] as const;
-}
-
-const guestScheduleItem = { href: routes.tools.schedule, key: 'schedule' } as const;
-const moduleBackedHostItems: Partial<Record<string, 'gallery' | 'rsvp'>> = {
-    gallery: 'gallery',
+const moduleBackedHostItems: Partial<Record<string, 'rsvp'>> = {
     rsvps: 'rsvp',
 };
 
@@ -58,17 +45,22 @@ export function MobileTabBar() {
     const availableModules = new Set(activeEvent?.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey) ?? []);
     const playlistAvailable = showEventNavigation && availableModules.has('playlist');
     const playlistActive = playlistAvailable && isPathActive(pathname, routes.tools.playlist);
+    const hostItems = useHostMenuItems(activeEvent?.id ?? '');
+    const toolItems = useToolsMenuItems();
     const contextItems: ContextNavItem[] =
         showEventNavigation && activeEvent
             ? isHost
-                ? hostMenuItems(activeEvent.id)
-                      .filter((item) => !isDraft || item.key === 'manage' || item.key === 'settings' || item.key === 'billing')
-                      .filter((item) => {
-                          const moduleKey = moduleBackedHostItems[item.key];
-                          return !moduleKey || availableModules.has(moduleKey);
-                      })
-                      .map((item) => ({ ...item, label: t(`hostMenu.${item.key}`) }))
-                : [{ ...guestScheduleItem, icon: CalendarDays, label: t(`guestMenu.${guestScheduleItem.key}`) }]
+                ? [
+                      ...hostItems
+                          .filter((item) => !isDraft || item.key === 'manage')
+                          .filter((item) => {
+                              const moduleKey = moduleBackedHostItems[item.key];
+                              return !moduleKey || availableModules.has(moduleKey);
+                          }),
+                      // Hosts manage RSVPs from the admin "RSVP responses" item above, not the guest self-RSVP tool.
+                      ...(isDraft ? [] : toolItems.filter((item) => item.key !== 'rsvp')),
+                  ]
+                : toolItems
             : [];
     const contextActive = contextItems.some((item) => isPathActive(pathname, item.href, searchParams));
 
@@ -86,6 +78,8 @@ export function MobileTabBar() {
 
     const handleOpenAccount = useCallback(() => setAccountOpen(true), []);
     const handleCloseAccount = useCallback(() => setAccountOpen(false), []);
+
+    if (profileActive) return null;
 
     return (
         <>

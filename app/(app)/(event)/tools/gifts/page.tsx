@@ -1,10 +1,11 @@
 'use client';
 
-import { ArrowLeft, Check, Copy, Gift, Loader2, Pencil, Trash2 } from 'lucide-react';
+import { Check, Copy, Gift, Loader2, Pencil, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
+import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useDeleteGiftAccount, useGiftAccount, useSaveGiftAccount } from '@/hooks/useGiftAccount';
 import { ERROR_CODES, getErrorCode, getFieldErrors } from '@/lib/api/errors';
@@ -76,19 +77,7 @@ export default function GiftsPage() {
     const invalidIban = getErrorCode(save.error) === ERROR_CODES.INVALID_IBAN;
 
     return (
-        <div className="mx-auto max-w-xl px-4 pb-24 lg:pb-8">
-            <header className="mb-5 flex items-center gap-3 py-4">
-                <button
-                    onClick={goBack}
-                    aria-label={t('goBack')}
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-ink-muted hover:bg-surface-muted"
-                >
-                    <ArrowLeft className="h-5 w-5" />
-                </button>
-                <Gift className="h-5 w-5 text-rose-500" />
-                <h1 className="text-base font-bold text-ink">{t('accountTitle')}</h1>
-            </header>
-
+        <ModulePageShell maxWidth="xl" title={t('accountTitle')} icon={Gift} iconClassName="text-rose-500" backLabel={t('goBack')} onBack={goBack}>
             {account.isLoading && <p className="py-10 text-center text-sm text-ink-muted">{t('loading')}</p>}
             {account.error && <p className="py-10 text-center text-sm text-rose-600">{t('loadError')}</p>}
 
@@ -209,6 +198,6 @@ export default function GiftsPage() {
                 cancelLabel={t('cancel')}
                 isConfirming={remove.isPending}
             />
-        </div>
+        </ModulePageShell>
     );
 }

@@ -38,10 +38,10 @@ export function ManageScreen({ activeEvent, eventId, isHost }: { activeEvent: Ev
     const tabParam = searchParams.get('tab');
     const requestedTab = tabParam === 'rsvp' || tabParam === 'invitations' || tabParam === 'settings' ? tabParam : 'overview';
     const isDraft = activeEvent.status === 'DRAFT';
-    const tab = isDraft && (requestedTab === 'rsvp' || requestedTab === 'invitations') ? 'overview' : requestedTab;
+    const tab = isDraft ? 'overview' : requestedTab;
 
     const canWrite = isEventWritable(activeEvent?.status);
-    const canEditDetails = canWrite || isDraft;
+    const canEditDetails = canWrite;
     const activeHostEventId = isHost && !isDraft ? eventId : null;
     const { data: members = [] } = useEventMembers(activeHostEventId);
     const { data: rsvps = [] } = useEventRsvps(activeHostEventId);
@@ -147,10 +147,9 @@ export function ManageScreen({ activeEvent, eventId, isHost }: { activeEvent: Ev
                     </div>
                 </div>
 
-                <div className="mx-4 mb-3 hidden gap-1 rounded-full bg-surface-muted p-1 md:flex">
-                    {tabItems
-                        .filter(({ key }) => !isDraft || key === 'overview' || key === 'settings')
-                        .map(({ key, icon: Icon }) => (
+                {!isDraft && (
+                    <div className="mx-4 mb-3 hidden gap-1 rounded-full bg-surface-muted p-1 md:flex">
+                        {tabItems.map(({ key, icon: Icon }) => (
                             <ManageTabButton
                                 key={key}
                                 tabKey={key}
@@ -160,7 +159,8 @@ export function ManageScreen({ activeEvent, eventId, isHost }: { activeEvent: Ev
                                 onSelect={navigateToTab}
                             />
                         ))}
-                </div>
+                    </div>
+                )}
             </div>
 
             <div className="pt-4">{renderedTab}</div>

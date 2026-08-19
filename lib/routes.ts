@@ -47,11 +47,8 @@ export const routes = {
         gallery: '/tools/gallery',
         playlist: '/tools/playlist',
         quiz: '/tools/quiz',
-        futureMessages: '/tools/future-messages',
         gifts: '/tools/gifts',
         schedule: '/tools/schedule',
-        seating: '/tools/seating',
-        venue: '/tools/venue',
         wishbook: '/tools/wishbook',
     },
     auth: {

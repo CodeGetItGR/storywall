@@ -5,17 +5,20 @@ import { useTranslations } from 'next-intl';
 import type { ChangeEvent } from 'react';
 
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
-import type { EventTypeConvention, PlanTierResponseDto } from '@/lib/api/types';
+import type { EventTypeConvention } from '@/lib/api/types';
 
 const EVENT_TYPES: EventTypeConvention[] = ['WEDDING', 'BAPTISM', 'BIRTHDAY', 'CONFERENCE'];
 
 type EventDetailsStepProps = {
-    selectedPlan?: PlanTierResponseDto;
     title: string;
     titleError?: string | null;
     eventType: EventTypeConvention;
     startAt: string;
     endAt: string;
+    scheduleError?: string | null;
+    startAtMin: string;
+    startAtMax?: string;
+    endAtMin: string;
     timezone: string;
     locationName: string;
     onTitleChange: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -27,12 +30,15 @@ type EventDetailsStepProps = {
 };
 
 export function EventDetailsStep({
-    selectedPlan,
     title,
     titleError,
     eventType,
     startAt,
     endAt,
+    scheduleError,
+    startAtMin,
+    startAtMax,
+    endAtMin,
     timezone,
     locationName,
     onTitleChange,
@@ -46,12 +52,6 @@ export function EventDetailsStep({
 
     return (
         <div className="flex h-full flex-col gap-4">
-            {/* Plan Notice */}
-            {selectedPlan && (
-                <div className="rounded-xl bg-primary-light px-4 py-3 text-sm text-primary-dark">
-                    <p>{t('selectedPlan', { plan: selectedPlan.name })}</p>
-                </div>
-            )}
             {/* Form Fields */}
             <div className="space-y-4">
                 <FormFieldLabel label={t('fields.title')} required>
@@ -83,6 +83,7 @@ export function EventDetailsStep({
                     </div>
                 </FormFieldLabel>
 
+                {/* Schedule */}
                 <div className="grid gap-3 sm:grid-cols-2">
                     <FormFieldLabel label={t('fields.startAt')} required>
                         <input
@@ -90,6 +91,8 @@ export function EventDetailsStep({
                             required
                             value={startAt}
                             onChange={onStartAtChange}
+                            min={startAtMin}
+                            max={startAtMax}
                             className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
                         />
                     </FormFieldLabel>
@@ -99,10 +102,12 @@ export function EventDetailsStep({
                             required
                             value={endAt}
                             onChange={onEndAtChange}
+                            min={endAtMin}
                             className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
                         />
                     </FormFieldLabel>
                 </div>
+                {scheduleError && <p className="text-xs text-rose-500">{scheduleError}</p>}
 
                 <FormFieldLabel label={t('fields.timezone')} required>
                     <input
@@ -114,6 +119,7 @@ export function EventDetailsStep({
                     />
                 </FormFieldLabel>
 
+                {/* Location */}
                 <FormFieldLabel label={t('fields.locationName')} optional>
                     <input
                         type="text"

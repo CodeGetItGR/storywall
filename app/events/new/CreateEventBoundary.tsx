@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { EventAddonsStep } from '@/components/event/create/EventAddonsStep';
+import { EventCreateStepBreadcrumb } from '@/components/event/create/EventCreateStepBreadcrumb';
 import { EventDetailsStep } from '@/components/event/create/EventDetailsStep';
 import { EventOverviewStep } from '@/components/event/create/EventOverviewStep';
 import { EventPlanSelector } from '@/components/plan/EventPlanSelector';
@@ -16,8 +17,16 @@ import { useCreateEvent } from '@/hooks/useEvent';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { ERROR_CODES, getErrorCode, getFieldErrors } from '@/lib/api/errors';
-import type { EventAddonDto, EventAddonRequestDto, EventRequestDto, EventResponseDto, EventTypeConvention } from '@/lib/api/types';
-import { formatMoney } from '@/lib/billing';
+import type {
+    CheckoutResponseDto,
+    EventAddonDto,
+    EventAddonRequestDto,
+    EventRequestDto,
+    EventResponseDto,
+    EventTypeConvention,
+} from '@/lib/api/types';
+import { formatMoney, navigateToCheckout } from '@/lib/billing';
+import { getCurrentDatetimeLocalValue, getLaterDatetimeLocalValue, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
 import { publicAssignableEventAddons } from '@/lib/planModules';
 import { getPlanPriceDetails, publicAssignablePlans } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
@@ -57,6 +66,14 @@ export default function CreateEventPage() {
     );
     const selectedAddonServices = availableAddons.filter((service) => selectedAddonCodes.includes(service.code));
     const selectedEligibleAddonCodes = selectedAddonServices.map((service) => service.code);
+    const nowAt = getCurrentDatetimeLocalValue();
+    const startAtMax = isDatetimeLocalAfter(endAt, nowAt) ? endAt : undefined;
+    const endAtMin = getLaterDatetimeLocalValue(nowAt, startAt) ?? nowAt;
+    const scheduleError = startAt && isDatetimeLocalBefore(startAt, nowAt)
+        ? t('validation.startInPast')
+        : startAt && endAt && !isDatetimeLocalAfter(endAt, startAt)
+          ? t('validation.endBeforeStart')
+          : null;
     const overviewPayAmountLabel = useMemo(() => {
         if (!selectedPlan) return t('payment.noCharge');
 
@@ -93,7 +110,7 @@ export default function CreateEventPage() {
         e.preventDefault();
         setError(null);
         if (step === 'details') {
-            if (title.trim() && startAt && endAt) setStep('overview');
+            if (title.trim() && startAt && endAt && !scheduleError) setStep('overview');
             return;
         }
         if (step === 'addons') {
@@ -104,7 +121,7 @@ export default function CreateEventPage() {
             router.push(routes.manage);
             return;
         }
-        if (!title.trim() || !startAt || !endAt) return;
+        if (!title.trim() || !startAt || !endAt || scheduleError) return;
 
         const input: EventRequestDto = {
             title: title.trim(),
@@ -129,8 +146,6 @@ export default function CreateEventPage() {
                 const addonInput: EventAddonRequestDto = { paidServiceCode: service.code };
                 await api.post<EventAddonDto>(endpoints.events.addons(event.id), addonInput);
             }
-
-            router.push(routes.events.checkoutReview(event.id, 'activation'));
         } catch (err) {
             if (event) {
                 setCreatedDraftEventId(event.id);
@@ -149,6 +164,15 @@ export default function CreateEventPage() {
             }
 
             setError(toErrorMessage(err));
+            return;
+        }
+
+        try {
+            const checkout = await api.post<CheckoutResponseDto>(endpoints.events.checkout(event.id));
+            navigateToCheckout(event.id, checkout);
+        } catch (checkoutError) {
+            setCreatedDraftEventId(event.id);
+            setError(toErrorMessage(checkoutError));
         }
     }
 
@@ -214,30 +238,19 @@ export default function CreateEventPage() {
                             <h1 className="text-base font-bold text-ink">{t('title')}</h1>
                         </div>
 
+                        {/* Steps */}
+                        <EventCreateStepBreadcrumb step={step} onGoToPlan={goToPlan} onGoToAddons={goToAddons} onGoToDetails={goToDetails} />
+
                         {/* Form Shell */}
-                        <div className="min-h-0 flex-1 overflow-y-auto rounded-xl bg-card p-5 shadow-2xs">
+                        <div className="mt-3 min-h-0 flex-1 overflow-y-auto p-5">
                             <form id={CREATE_EVENT_FORM_ID} onSubmit={handleSubmit}>
                                 {/* Subtitle */}
-                                <p className="mb-5 text-sm text-ink-muted">
+                                <h2 className="text-lg font-bold text-ink mb-5">
                                     {step === 'plan' && t('steps.planSubtitle')}
                                     {step === 'addons' && t('steps.addonsSubtitle')}
                                     {step === 'details' && t('subtitle')}
                                     {step === 'overview' && t('steps.overviewSubtitle')}
-                                </p>
-
-                                {/* Steps */}
-                                <div className="mb-5 grid grid-cols-4 gap-1.5 text-[11px] font-semibold sm:gap-2 sm:text-xs">
-                                    {(['plan', 'addons', 'details', 'overview'] as const).map((item) => (
-                                        <div
-                                            key={item}
-                                            className={`rounded-full px-1.5 py-2 text-center transition sm:px-3 ${
-                                                step === item ? 'bg-ink text-white' : 'bg-surface-muted text-ink-muted'
-                                            }`}
-                                        >
-                                            {t(`steps.${item}`)}
-                                        </div>
-                                    ))}
-                                </div>
+                                </h2>
 
                                 {step === 'plan' && (
                                     <EventPlanSelector
@@ -259,12 +272,15 @@ export default function CreateEventPage() {
 
                                 {step === 'details' && (
                                     <EventDetailsStep
-                                        selectedPlan={selectedPlan}
                                         title={title}
                                         titleError={fieldErrors?.title}
                                         eventType={eventType}
                                         startAt={startAt}
                                         endAt={endAt}
+                                        scheduleError={scheduleError}
+                                        startAtMin={nowAt}
+                                        startAtMax={startAtMax}
+                                        endAtMin={endAtMin}
                                         timezone={timezone}
                                         locationName={locationName}
                                         onTitleChange={onTitleChange}
@@ -300,9 +316,7 @@ export default function CreateEventPage() {
                         isPending={createEvent.isPending}
                         hasDraft={Boolean(createdDraftEventId)}
                         payAmountLabel={overviewPayAmountLabel}
-                        title={title}
-                        startAt={startAt}
-                        endAt={endAt}
+                        canSubmitDetails={Boolean(title.trim() && startAt && endAt && !scheduleError)}
                         onGoToAddons={goToAddons}
                         onGoToDetails={goToDetails}
                         onGoToPlan={goToPlan}
@@ -332,9 +346,7 @@ function EventCreateFooter({
     isPending,
     hasDraft,
     payAmountLabel,
-    title,
-    startAt,
-    endAt,
+    canSubmitDetails,
     onGoToAddons,
     onGoToDetails,
     onGoToPlan,
@@ -345,15 +357,12 @@ function EventCreateFooter({
     isPending: boolean;
     hasDraft: boolean;
     payAmountLabel: string;
-    title: string;
-    startAt: string;
-    endAt: string;
+    canSubmitDetails: boolean;
     onGoToAddons: () => void;
     onGoToDetails: () => void;
     onGoToPlan: () => void;
 }) {
     const t = useTranslations('CreateEventPage');
-    const canSubmitDetails = Boolean(title.trim() && startAt && endAt);
 
     return (
         <footer className="shrink-0 border-t border-border/60 bg-background">

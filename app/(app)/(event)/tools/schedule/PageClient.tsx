@@ -1,21 +1,22 @@
 'use client';
 
+import { Calendar, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import { ScheduleEditorSheet } from '@/app/(app)/(event)/tools/schedule/components/ScheduleEditorSheet';
 import { ScheduleEmptyState } from '@/app/(app)/(event)/tools/schedule/components/ScheduleEmptyState';
-import { SchedulePageHeader } from '@/app/(app)/(event)/tools/schedule/components/SchedulePageHeader';
 import { ScheduleSessionsList } from '@/app/(app)/(event)/tools/schedule/components/ScheduleSessionsList';
 import { EventRouteGate, EventRouteSpinner } from '@/components/routing/EventRouteGate';
+import { ModuleNotice } from '@/components/tools/ModuleNotice';
+import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCreateEventSession, useDeleteEventSession, useEventSessions, useUpdateEventSession } from '@/hooks/useEventSessions';
 import type { EventDetailResponseDto, EventSessionResponseDto } from '@/lib/api/types';
 import { toDatetimeLocalValue } from '@/lib/datetime';
 import { isEventWritable } from '@/lib/eventLifecycle';
-import { routes } from '@/lib/routes';
 
 export default function SchedulePage() {
     return <EventRouteGate>{(context) => <ScheduleScreen {...context} />}</EventRouteGate>;
@@ -45,12 +46,7 @@ function ScheduleScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDe
     );
 
     function handleBack() {
-        if (window.history.length > 1) {
-            router.back();
-            return;
-        }
-
-        router.push(routes.tools.root);
+        router.back();
     }
 
     function openCreateEditor() {
@@ -110,17 +106,31 @@ function ScheduleScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDe
     if (isLoadingSessions) return <EventRouteSpinner />;
 
     return (
-        <div className="mx-auto max-w-2xl px-4 pb-24 lg:pb-8">
-            <SchedulePageHeader onBack={handleBack} onAddSession={openCreateEditor} canAddSession={canManageSchedule} />
-
-            {isHost && !canWrite && (
-                <p className="mb-4 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('host.readOnly')}</p>
-            )}
-
+        <ModulePageShell
+            title={t('title')}
+            icon={Calendar}
+            iconClassName="text-amber-500"
+            backLabel={t('back')}
+            onBack={handleBack}
+            subtitle={t('subtitle')}
+            action={
+                canManageSchedule && sessions.length > 0 ? (
+                    <button
+                        type="button"
+                        onClick={openCreateEditor}
+                        className="inline-flex h-9 items-center gap-1.5 rounded-full bg-gradient-brand px-3.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                    >
+                        <Plus className="h-4 w-4" />
+                        <span className="hidden sm:inline">{t('host.submit')}</span>
+                    </button>
+                ) : undefined
+            }
+            notice={isHost && !canWrite ? <ModuleNotice>{t('host.readOnly')}</ModuleNotice> : undefined}
+        >
             {deleteError && <p className="mb-4 text-xs font-medium text-rose-500">{deleteError}</p>}
 
             {sessions.length === 0 ? (
-                <ScheduleEmptyState isHost={isHost} canWrite={canWrite} />
+                <ScheduleEmptyState isHost={isHost} canWrite={canWrite} canAddSession={canManageSchedule} onAddSession={openCreateEditor} />
             ) : (
                 <ScheduleSessionsList
                     sessions={sessions}
@@ -157,6 +167,6 @@ function ScheduleScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDe
                 cancelLabel={t('host.cancelEdit')}
                 isConfirming={deleteSession.isPending}
             />
-        </div>
+        </ModulePageShell>
     );
 }

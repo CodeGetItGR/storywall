@@ -15,10 +15,7 @@ export function DraftEventRouteGuard({ children }: { children: ReactNode }) {
     const isHost = useIsHost();
     const isDraftHost = isHost && activeEvent?.status === 'DRAFT';
     const checkoutRoot = activeEvent ? `/events/${activeEvent.id}/checkout/` : null;
-    const isAllowedDraftRoute =
-        pathname === routes.manage ||
-        (activeEvent && pathname === routes.events.settingsPlan(activeEvent.id)) ||
-        (checkoutRoot !== null && pathname.startsWith(checkoutRoot));
+    const isAllowedDraftRoute = pathname === routes.manage || (checkoutRoot !== null && pathname.startsWith(checkoutRoot));
 
     useEffect(() => {
         if (!isLoading && isDraftHost && !isAllowedDraftRoute) router.replace(routes.manage);

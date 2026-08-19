@@ -35,7 +35,7 @@ export function ContextMenuTab({ active, items, label, pathname, searchParams, o
                     collisionPadding={{ top: 8, right: 12, bottom: 96, left: 12 }}
                     className="z-50"
                 >
-                    <Menu.Popup className="min-w-52 rounded-2xl border border-border bg-background py-1 shadow-[0_2px_16px_0_rgba(36,31,26,0.15)] outline-none">
+                    <Menu.Popup className="w-64 rounded-2xl border border-border bg-background p-1 shadow-[0_2px_16px_0_rgba(36,31,26,0.15)] outline-none">
                         {items.map((item) => {
                             const Icon = item.icon;
                             const itemActive = isPathActive(pathname, item.href, searchParams);
@@ -46,12 +46,15 @@ export function ContextMenuTab({ active, items, label, pathname, searchParams, o
                                     onClick={onItemClick}
                                     data-href={item.href}
                                     className={cn(
-                                        'mx-1 flex cursor-pointer justify-between rounded-lg px-4 py-2.5 text-sm font-medium outline-none transition-colors',
-                                        itemActive ? 'bg-surface-muted text-ink' : 'text-ink hover:bg-surface-muted'
+                                        'flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-1.5 outline-none transition-colors',
+                                        itemActive ? 'bg-surface-muted' : 'hover:bg-surface-muted'
                                     )}
                                 >
-                                    <span>{item.label}</span>
-                                    <Icon className="h-4 w-4 text-ink-muted" aria-hidden="true" />
+                                    <Icon className="h-4 w-4 shrink-0 text-ink-muted" aria-hidden="true" />
+                                    <span className="min-w-0 flex-1">
+                                        <span className="block truncate text-sm font-medium text-ink">{item.label}</span>
+                                        {item.description && <span className="block truncate text-xs text-ink-muted">{item.description}</span>}
+                                    </span>
                                 </Menu.Item>
                             );
                         })}

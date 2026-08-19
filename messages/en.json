@@ -118,16 +118,26 @@
             "song": "Song"
         },
         "hostMenu": {
-            "manage": "Dashboard",
-            "gallery": "Gallery",
-            "schedule": "Schedule",
-            "rsvps": "RSVPs",
-            "invitations": "Invitations",
-            "settings": "Settings",
-            "billing": "Plan & billing"
-        },
-        "guestMenu": {
-            "schedule": "Schedule"
+            "manage": {
+                "label": "Dashboard",
+                "description": "Overview of your event"
+            },
+            "rsvps": {
+                "label": "RSVP responses",
+                "description": "See who's coming"
+            },
+            "invitations": {
+                "label": "Invitations",
+                "description": "Manage and send invites"
+            },
+            "settings": {
+                "label": "Settings",
+                "description": "Event details and preferences"
+            },
+            "billing": {
+                "label": "Plan & billing",
+                "description": "Manage your subscription"
+            }
         },
         "items": {
             "home": "Home",
@@ -138,6 +148,34 @@
             "alerts": "Notifications"
         }
     },
+    "ToolsMenu": {
+        "items": {
+            "rsvp": {
+                "label": "RSVP",
+                "description": "Confirm your attendance"
+            },
+            "schedule": {
+                "label": "Schedule",
+                "description": "Full timeline of events leading up to the big day"
+            },
+            "gallery": {
+                "label": "Gallery",
+                "description": "Upload and browse event photos"
+            },
+            "playlist": {
+                "label": "Playlist",
+                "description": "Vote on songs and suggest tracks for the reception"
+            },
+            "wishbook": {
+                "label": "Wishbook",
+                "description": "Leave a message for the hosts"
+            },
+            "gifts": {
+                "label": "Gift account",
+                "description": "View the hosts' bank details for a monetary gift"
+            }
+        }
+    },
     "ComposerCard": {
         "placeholder": "Celebrate the moment",
         "eventReadOnly": "This event is read-only",
@@ -145,6 +183,7 @@
         "captionAriaLabel": "Post caption",
         "music": "Music",
         "addPhotos": "Add photos",
+        "addStory": "Add to story",
         "removeImage": "Remove image",
         "uploadFailed": "Couldn't upload {filename}",
         "uploadErrors": {
@@ -330,10 +369,6 @@
                 "description": "Full timeline of events leading up to the big day",
                 "badge": "{count} events"
             },
-            "venue": {
-                "label": "Venue",
-                "description": "Rosewood Estate — directions, parking & amenities"
-            },
             "gallery": {
                 "label": "Gallery",
                 "description": "Upload and browse event photos"
@@ -347,15 +382,6 @@
                 "label": "Couple Quiz",
                 "description": "How well do you know Emma & James?",
                 "badge": "{count} questions"
-            },
-            "seating": {
-                "label": "Seating",
-                "description": "Find your table assignment for the reception",
-                "badge": "{count} tables"
-            },
-            "futureMessages": {
-                "label": "Future Messages",
-                "description": "Write a letter to be opened on their anniversary"
             }
         }
     },
@@ -487,7 +513,7 @@
     "CreateEventPage": {
         "goBack": "Go back",
         "title": "Create an event",
-        "subtitle": "Add the event details needed to open secure checkout.",
+        "subtitle": "Add the event details.",
         "fields": {
             "title": "Event title",
             "eventType": "Event type",
@@ -500,6 +526,10 @@
         "placeholders": {
             "title": "e.g. Emma & James's Wedding",
             "locationName": "e.g. Rosewood Estate, Napa Valley"
+        },
+        "validation": {
+            "startInPast": "The start time must be now or later.",
+            "endBeforeStart": "The end time must be after the start time."
         },
         "eventTypes": {
             "WEDDING": "Wedding",
@@ -528,13 +558,14 @@
             "back": "Back"
         },
         "steps": {
+            "navigationLabel": "Event creation steps",
             "plan": "Plan",
             "details": "Details",
             "addons": "Add-ons",
             "overview": "Overview",
             "planSubtitle": "Choose the event plan your guests will experience.",
-            "addonsSubtitle": "Choose any optional paid add-ons for this event.",
-            "overviewSubtitle": "Review the event and every charge before continuing to payment."
+            "addonsSubtitle": "Optional paid modules",
+            "overviewSubtitle": "Review the event details and every charge before continuing to payment."
         },
         "payment": {
             "noCharge": "No charge"
@@ -546,14 +577,17 @@
             "addonModules": "Available as add-on"
         },
         "paidModules": {
-            "title": "Optional paid modules",
-            "body": "Add modules that are not included in the selected plan. They are added to the activation checkout before the event goes live.",
             "toggle": "Select {module}",
             "oncePrice": "{price} once",
             "monthlyPrice": "{price}/month",
             "selectedSummary": "Optional modules: {modules}",
             "selectedOnce": "{module} ({price} once)",
             "selectedMonthly": "{module} ({price}/month)",
+            "descriptions": {
+                "originals": "Keeps the original, full-resolution file for every photo alongside the compressed feed copy.",
+                "moduleUnlock": "Adds this module to the event.",
+                "genericAddon": "Optional paid add-on for this event."
+            },
             "emptyTitle": "No add-ons available",
             "emptyBody": "This plan already includes everything currently offered for event setup.",
             "skipHint": "Add-ons are optional. Continue without selecting one if the plan already has everything you need.",
@@ -562,8 +596,6 @@
             "openDraft": "Open draft dashboard"
         },
         "overview": {
-            "title": "Review your event",
-            "body": "Check the details and full price breakdown before the event is created and secure checkout opens.",
             "event": "Event details",
             "pricing": "Pricing details",
             "pricingHint": "Activation includes {months, plural, one {# month} other {# months}} of coverage.",
@@ -577,6 +609,7 @@
     },
     "ManagePage": {
         "title": "Host Dashboard",
+        "backToTools": "Back to tools",
         "hostView": "Host View",
         "status": {
             "DRAFT": "Draft",
@@ -614,12 +647,9 @@
             "declined": "Declined",
             "noResponse": "No response"
         },
-        "rsvpSeats": "Seats claimed",
-        "rsvpInsights": "{responded} responded · {pending} pending · {seats} seats claimed · {notes} notes",
-        "rsvpResponded": "responded",
+        "rsvpSeatsAndNotes": "{seats} seats claimed · {notes} notes",
         "rsvpAwaiting": "Awaiting reply",
         "seeAll": "See all",
-        "rsvpSummary": "{total} guests · {attending} attending",
         "rsvpStatus": {
             "ATTENDING": "Attending",
             "DECLINED": "Declined",
@@ -639,27 +669,14 @@
             "addEndDate": "Add an end date to publish",
             "retryIn": "Try again in {seconds}s",
             "activationTotal": "Activation total: {total}",
-            "originals": {
-                "title": "Keep original photos",
-                "body": "Store each untouched, full-resolution photo for {price} per month. This cannot be removed after publishing.",
-                "add": "Add",
-                "active": "Added"
-            },
-            "modules": {
-                "title": "Optional event tools",
-                "body": "Add a tool before publishing. Its monthly price is included in this activation and every renewal.",
-                "perMonth": "per month",
-                "add": "Add",
-                "added": "Added"
+            "selectedAddons": {
+                "title": "Selected add-ons",
+                "body": "Chosen during event creation. Add-ons can't be changed until after publishing."
             }
         },
         "draftModules": {
-            "title": "Optional event tools",
-            "body": "Add a tool before publishing. A monthly tool's price is included in this activation and every renewal; a one-time tool is charged once, here, and never again.",
             "perMonth": "per month",
-            "once": "once",
-            "add": "Add",
-            "added": "Added"
+            "once": "once"
         },
         "giftAccount": {
             "title": "Gift account",
@@ -805,6 +822,10 @@
                 "rsvpDeadline": "RSVP deadline",
                 "startAt": "Starts",
                 "endAt": "Ends"
+            },
+            "validation": {
+                "startInPast": "The start time must be now or later.",
+                "endBeforeStart": "The end time must be after the start time."
             },
             "placeholders": {
                 "subtitle": "e.g. Join us for an evening to remember",
@@ -1235,22 +1256,11 @@
         "loadMore": "Load more",
         "frozenReadOnly": "The event is paused. Existing wishes remain visible, but new ones cannot be added until it is renewed.",
         "draftReadOnly": "Wishes can be added after the event is published.",
+        "hostReadOnly": "As the host, you can view wishes but can't add your own.",
         "delete": "Delete",
         "deleteTitle": "Delete this wish?",
         "deleteBody": "This removes the wish from the wishbook.",
         "cancel": "Cancel"
-    },
-    "SeatingPage": {
-        "backToTools": "Back to tools",
-        "title": "Seating Chart",
-        "subtitle": "Find your table assignment for the reception. Search your name or browse all tables below.",
-        "searchPlaceholder": "Search your name...",
-        "searchAriaLabel": "Search guest name",
-        "clearSearch": "Clear search",
-        "noGuestsFound": "No guests found matching \"{search}\"",
-        "allTables": "All Tables",
-        "seatsCount": "{seats} / {capacity} seats",
-        "emptySeat": "Empty seat"
     },
     "PlaylistPage": {
         "backToFeed": "Back to feed",
@@ -1311,7 +1321,7 @@
         "leaderboardEyebrow": "Host leaderboard",
         "leaderboardTitle": "Songs ranked by support",
         "leaderboardBody": "Upvotes decide rank.",
-        "playlistEmpty": "No songs have been suggested yet. Open the sheet and add the first one.",
+        "playlistEmpty": "No songs have been suggested yet. Be the first to suggest one.",
         "loadingSongs": "Loading songs...",
         "leaderboardEmpty": "No songs have enough activity to rank yet.",
         "loadingLeaderboard": "Loading leaderboard...",
@@ -1374,69 +1384,6 @@
         "moduleUnavailable": "RSVP is not available on this event's current plan.",
         "eventReadOnly": "This event is read-only. RSVP changes are paused.",
         "whosComing": "Who's coming"
-    },
-    "VenuePage": {
-        "backToTools": "Back to tools",
-        "title": "Venue",
-        "heroImageAlt": "Rosewood Estate, Napa Valley — the wedding venue",
-        "venueName": "Rosewood Estate",
-        "venueRegion": "Napa Valley, California",
-        "aboutTheVenue": "About the Venue",
-        "aboutText": "Rosewood Estate is a stunning 40-acre vineyard estate in the heart of Napa Valley. With its sweeping rose garden ceremony lawn, grand pavilion reception hall, and breathtaking views of the vineyards, it's the perfect backdrop for Emma and James's celebration. The estate has hosted weddings for over 25 years.",
-        "address": "Address",
-        "addressValue": "1842 Silverado Trail, Napa, CA 94558",
-        "phone": "Phone",
-        "website": "Website",
-        "gettingThere": "Getting There",
-        "openInMaps": "Open in Maps",
-        "byCarLabel": "By car:",
-        "byCarText": "1 hour 20 min from San Francisco via US-101N and CA-37E. Free parking on-site.",
-        "shuttleLabel": "Shuttle:",
-        "shuttleText": "Complimentary shuttle departs from Union Square, SF at 2:30 PM on Oct 18.",
-        "amenities": "Amenities",
-        "amenityLabels": {
-            "parking": "Free parking for 200+ vehicles",
-            "accommodation": "On-site accommodation — The Inn at Rosewood",
-            "catering": "Full-service catering & bar",
-            "wifi": "High-speed WiFi throughout",
-            "accessible": "Accessible facilities & pathways",
-            "shuttle": "Complimentary shuttle from SF"
-        },
-        "gallery": "Gallery",
-        "galleryAlts": {
-            "mainLawn": "Rosewood Estate main lawn at sunset",
-            "vineyard": "The vineyard grounds",
-            "roseGarden": "Ceremony rose garden",
-            "pavilion": "Grand pavilion interior"
-        }
-    },
-    "FutureMessagesPage": {
-        "backToTools": "Back to tools",
-        "title": "Future Messages",
-        "intro": "Write a letter to Emma & James that will be delivered to them on a future anniversary. Your message will be sealed until they choose to open it.",
-        "messageSealed": "Message sealed!",
-        "sealedUntil": "Your letter has been locked away until {openOn}. Emma & James will treasure it when the time comes.",
-        "writeAnother": "Write another",
-        "writingALetter": "Writing a letter to Emma & James",
-        "openThisLetterOn": "Open this letter on...",
-        "openOnLabels": {
-            "1-year": "1st Anniversary (Oct 18, 2026)",
-            "5-years": "5th Anniversary (Oct 18, 2030)",
-            "10-years": "10th Anniversary (Oct 18, 2035)",
-            "25-years": "25th Anniversary (Oct 18, 2050)"
-        },
-        "openOnNames": {
-            "1-year": "1st Anniversary",
-            "5-years": "5th Anniversary",
-            "10-years": "10th Anniversary",
-            "25-years": "25th Anniversary"
-        },
-        "yourMessage": "Your message",
-        "messagePlaceholder": "Dear Emma and James, by the time you read this...",
-        "messageAriaLabel": "Future message content",
-        "sealAndSend": "Seal & Send to the Future",
-        "messagesSealed": "{count} messages sealed",
-        "opens": "Opens: {openOn}"
     },
     "RootLayout": {
         "title": "StoryWall — Emma & James · Oct 18, 2025",
@@ -2048,8 +1995,7 @@
         "includedModules": "Included modules"
     },
     "GalleryPage": {
-        "hostEyebrow": "Host gallery",
-        "guestEyebrow": "Guest gallery",
+        "backToTools": "Back to tools",
         "title": "Gallery",
         "hostSubtitle": "Guest uploads are stored here without creating feed posts, so you can review and download them later.",
         "guestSubtitle": "Share photos from the celebration. Uploads are saved to the event gallery for the host.",
@@ -2071,7 +2017,6 @@
         "libraryTitle": "Event photos",
         "photoCount": "{count} photos",
         "emptyTitle": "No photos yet",
-        "emptyBody": "Photos uploaded from QR cards or this page will appear here.",
         "guestSavedForHost": "Uploaded photos are saved privately to the event gallery for the host to review later."
     },
     "ApiErrors": {

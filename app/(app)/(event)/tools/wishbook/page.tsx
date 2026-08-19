@@ -1,21 +1,24 @@
 'use client';
 
-import { ArrowLeft, BookHeart, Loader2, Send, Trash2 } from 'lucide-react';
+import { BookHeart, Loader2, Send, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
+import { ModuleNotice } from '@/components/tools/ModuleNotice';
+import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCreateWishbookEntry, useDeleteWishbookEntry, useWishbook } from '@/hooks/useWishbook';
 import type { WishbookEntryResponseDto } from '@/lib/api/types';
-import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
+import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
 
 export default function WishbookPage() {
     const t = useTranslations('WishbookPage');
     const router = useRouter();
     const event = useActiveEvent();
     const member = useActiveMember();
+    const isHost = useIsHost();
     const eventId = event?.id ?? '';
     const wishbook = useWishbook(event?.id ?? null);
     const createEntry = useCreateWishbookEntry(eventId);
@@ -25,7 +28,7 @@ export default function WishbookPage() {
     const [deleteTarget, setDeleteTarget] = useState<WishbookEntryResponseDto | null>(null);
     const entries = wishbook.data?.pages.flatMap((page) => page.content) ?? [];
     const total = wishbook.data?.pages[0]?.totalElements ?? 0;
-    const canWrite = event?.status === 'ACTIVE';
+    const canWrite = event?.status === 'ACTIVE' && !isHost;
 
     async function submit(event_: React.SubmitEvent<HTMLFormElement>) {
         event_.preventDefault();
@@ -58,22 +61,7 @@ export default function WishbookPage() {
     }
 
     return (
-        <div className="mx-auto max-w-2xl px-4 pb-24 lg:pb-8">
-            <header className="mb-4 flex items-center gap-3 py-4">
-                <button
-                    onClick={goBack}
-                    aria-label={t('goBack')}
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-ink-muted hover:bg-surface-muted"
-                >
-                    <ArrowLeft className="h-5 w-5" />
-                </button>
-                <BookHeart className="h-5 w-5 text-pink-500" />
-                <div>
-                    <h1 className="text-base font-bold text-ink">{t('title')}</h1>
-                    <p className="text-xs text-ink-muted">{t('messageCount', { count: total })}</p>
-                </div>
-            </header>
-
+        <ModulePageShell title={t('title')} icon={BookHeart} iconClassName="text-pink-500" backLabel={t('goBack')} onBack={goBack} subtitle={t('subtitle')}>
             {canWrite ? (
                 <form onSubmit={submit} className="mb-6 border-b border-border pb-5">
                     <label className="text-sm font-semibold text-ink" htmlFor="wishbook-message">
@@ -102,15 +90,18 @@ export default function WishbookPage() {
                     {createEntry.error && <p className="mt-2 text-xs text-rose-600">{toErrorMessage(createEntry.error)}</p>}
                 </form>
             ) : (
-                <p className="mb-6 rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink-muted">
-                    {event?.status === 'FROZEN' ? t('frozenReadOnly') : t('draftReadOnly')}
-                </p>
+                <ModuleNotice tone={event?.status === 'FROZEN' ? 'info' : 'muted'}>
+                    {isHost ? t('hostReadOnly') : event?.status === 'FROZEN' ? t('frozenReadOnly') : t('draftReadOnly')}
+                </ModuleNotice>
             )}
 
             {wishbook.isLoading && <p className="py-10 text-center text-sm text-ink-muted">{t('loading')}</p>}
             {wishbook.error && <p className="py-10 text-center text-sm text-rose-600">{toErrorMessage(wishbook.error)}</p>}
             {!wishbook.isLoading && !wishbook.error && entries.length === 0 && (
                 <p className="py-10 text-center text-sm text-ink-muted">{t('empty')}</p>
+            )}
+            {!wishbook.isLoading && !wishbook.error && entries.length > 0 && (
+                <p className="mb-2 text-xs text-ink-faint">{t('messageCount', { count: total })}</p>
             )}
             <div className="divide-y divide-border">
                 {entries.map((entry) => (
@@ -161,6 +152,6 @@ export default function WishbookPage() {
                 cancelLabel={t('cancel')}
                 isConfirming={deleteEntry.isPending}
             />
-        </div>
+        </ModulePageShell>
     );
 }

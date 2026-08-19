@@ -26,10 +26,14 @@ export function EventProvider({ children }: { children: ReactNode }) {
     const { data: memberships = EMPTY_MEMBERSHIPS, isLoading: isLoadingMemberships } = useMyEvents();
     const [activeEventId, setActiveEventIdState] = useState<string | null>(null);
 
-    // Restore the last-active event whenever memberships load or change,
-    // defaulting to the first membership when nothing was previously selected
-    // or the stored id no longer matches any membership. Kept in an effect so
-    // render stays pure.
+    // Restore the last-active event once memberships load, defaulting to the
+    // first membership when nothing was previously selected. Only runs when
+    // activeEventId is still unset — if it's already set (either restored
+    // earlier or just set explicitly, e.g. right after creating a new event)
+    // it's left alone rather than re-validated against `memberships`, which
+    // can still be a stale, pre-refetch snapshot that hasn't caught up yet
+    // and would otherwise get clobbered back to some other event. Kept in an
+    // effect so render stays pure.
     useEffect(() => {
         if (memberships.length === 0) {
             // eslint-disable-next-line react-hooks/set-state-in-effect -- Sync derived active event once async memberships settle.
@@ -37,14 +41,14 @@ export function EventProvider({ children }: { children: ReactNode }) {
             return;
         }
 
-        if (activeEventId && memberships.some((m) => m.eventId === activeEventId)) {
+        if (activeEventId) {
             return;
         }
 
         const stored = typeof window !== 'undefined' ? window.sessionStorage.getItem(ACTIVE_EVENT_KEY) : null;
         const restored = memberships.find((m) => m.eventId === stored)?.eventId ?? memberships[0].eventId;
 
-        setActiveEventIdState((current) => (current === restored ? current : restored));
+        setActiveEventIdState(restored);
     }, [activeEventId, memberships]);
 
     function setActiveEventId(eventId: string) {

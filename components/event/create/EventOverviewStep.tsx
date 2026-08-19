@@ -50,44 +50,67 @@ export function EventOverviewStep({
     const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
 
     return (
-        <div className="flex h-full flex-col gap-5">
-            {/* Intro */}
-            <section>
-                <h2 className="text-lg font-bold text-ink">{t('overview.title')}</h2>
-                <p className="mt-1 text-sm leading-6 text-ink-muted">{t('overview.body')}</p>
-            </section>
-
+        <div className="flex h-full flex-col">
             {/* Event Summary */}
-            <section className="rounded-xl bg-surface-muted px-4 py-4">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-faint">{t('overview.event')}</h3>
+            <section
+                aria-labelledby="plan-details-heading"
+                className="border-b border-border/70 pb-5"
+            >
+                <h3 id="plan-details-heading" className="font-bold text-ink">
+                    {t('overview.event')}
+                </h3>
+
                 <p className="mt-2 font-semibold text-ink">{title}</p>
+
                 <p className="mt-1 text-sm text-ink-muted">
-                    {t(`eventTypes.${eventType}`)} · {dateFormatter.format(new Date(startAt))} – {dateFormatter.format(new Date(endAt))}
+                    {t(`eventTypes.${eventType}`)} ·{' '}
+                    {dateFormatter.format(new Date(startAt))} –{' '}
+                    {dateFormatter.format(new Date(endAt))}
                 </p>
-                {locationName && <p className="mt-1 text-sm text-ink-muted">{locationName}</p>}
+
+                {locationName && (
+                    <p className="mt-1 text-sm text-ink-muted">{locationName}</p>
+                )}
             </section>
 
             {/* Pricing */}
-            <section aria-labelledby="pricing-heading">
-                <div className="flex items-end justify-between gap-3">
-                    <div>
-                        <h3 id="pricing-heading" className="font-bold text-ink">
-                            {t('overview.pricing')}
-                        </h3>
-                        <p className="mt-1 text-xs text-ink-muted">{t('overview.pricingHint', { months: includedMonths })}</p>
-                    </div>
-                </div>
+            <section
+                aria-labelledby="pricing-heading"
+                className="border-b border-border/70 py-5"
+            >
+                <h3 id="pricing-heading" className="font-bold text-ink">
+                    {t('overview.pricing')}
+                </h3>
+
+                <p className="mt-1 text-xs text-ink-muted">
+                    {t('overview.pricingHint', { months: includedMonths })}
+                </p>
+
                 <div className="mt-3 divide-y divide-border/70">
                     <PriceRow
                         label={plan.name}
                         detail={t('overview.planActivation')}
-                        amount={planActivation && formatMoney(locale, planActivation.amountMinor, planActivation.currency)}
+                        amount={
+                            planActivation &&
+                            formatMoney(
+                                locale,
+                                planActivation.amountMinor,
+                                planActivation.currency,
+                            )
+                        }
                         fallback={t('payment.noCharge')}
                     />
+
                     {addons.map((addon) => {
-                        const name = addon.grantsModuleKey ? getModuleMeta(addon.grantsModuleKey, modules).name : addon.name;
+                        const name = addon.grantsModuleKey
+                            ? getModuleMeta(addon.grantsModuleKey, modules).name
+                            : addon.name;
+
                         const activationAmount =
-                            addon.billingPeriod === 'ONE_TIME' ? addon.priceAmountMinor : addon.priceAmountMinor * includedMonths;
+                            addon.billingPeriod === 'ONE_TIME'
+                                ? addon.priceAmountMinor
+                                : addon.priceAmountMinor * includedMonths;
+
                         return (
                             <PriceRow
                                 key={addon.id}
@@ -95,14 +118,21 @@ export function EventOverviewStep({
                                 detail={
                                     addon.billingPeriod === 'ONE_TIME'
                                         ? t('overview.chargedOnce')
-                                        : t('overview.monthlyForMonths', { months: includedMonths })
+                                        : t('overview.monthlyForMonths', {
+                                            months: includedMonths,
+                                        })
                                 }
-                                amount={formatMoney(locale, activationAmount, addon.priceCurrency)}
+                                amount={formatMoney(
+                                    locale,
+                                    activationAmount,
+                                    addon.priceCurrency,
+                                )}
                                 fallback={t('payment.noCharge')}
                             />
                         );
                     })}
-                    <div className="flex items-center justify-between gap-3 py-4 text-base font-bold text-ink">
+
+                    <div className="flex items-center justify-between gap-3 pt-4 text-base font-bold text-ink">
                         <span>{t('overview.dueNow')}</span>
                         <span>{activationTotalLabel}</span>
                     </div>
@@ -110,19 +140,34 @@ export function EventOverviewStep({
             </section>
 
             {/* Recurring Cost */}
-            <section className="rounded-xl bg-primary-light px-4 py-3 text-sm text-primary-dark">
-                <div className="flex items-center justify-between gap-3 font-semibold">
-                    <span>{t('overview.futureMonthly')}</span>
-                    <span>{currency ? formatMoney(locale, renewalTotal, currency) : t('payment.noCharge')}</span>
+            <section className="py-5">
+                <div className="rounded-xl bg-primary-light px-4 py-3 text-sm text-primary-dark">
+                    <div className="flex items-center justify-between gap-3 font-semibold">
+                        <span>{t('overview.futureMonthly')}</span>
+                        <span>
+                        {currency
+                            ? formatMoney(locale, renewalTotal, currency)
+                            : t('payment.noCharge')}
+                    </span>
+                    </div>
+
+                    <p className="mt-1 text-xs leading-5">
+                        {t('overview.futureMonthlyHint', {
+                            months: includedMonths,
+                        })}
+                    </p>
                 </div>
-                <p className="mt-1 text-xs leading-5">{t('overview.futureMonthlyHint', { months: includedMonths })}</p>
             </section>
 
             {/* Error State */}
             {error && (
-                <div className="rounded-lg bg-rose-50 px-3 py-2 text-center text-xs text-rose-600">
+                <div className="mt-auto rounded-lg bg-rose-50 px-3 py-2 text-center text-xs text-rose-600">
                     <p>{error}</p>
-                    {hasDraft && <p className="mt-1 font-semibold">{t('paidModules.openDraft')}</p>}
+                    {hasDraft && (
+                        <p className="mt-1 font-semibold">
+                            {t('paidModules.openDraft')}
+                        </p>
+                    )}
                 </div>
             )}
         </div>

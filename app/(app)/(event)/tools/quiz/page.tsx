@@ -1,10 +1,10 @@
 'use client';
 
-import { ArrowLeft, ArrowRight, CheckCircle2, HelpCircle, RefreshCw, XCircle } from 'lucide-react';
-import Link from 'next/link';
+import { ArrowRight, CheckCircle2, HelpCircle, RefreshCw, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import React, { useCallback, useState } from 'react';
 
+import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { quizQuestions } from '@/lib/mock-data';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -66,18 +66,13 @@ export default function QuizPage() {
         const grade = pct === 100 ? t('grades.perfect') : pct >= 80 ? t('grades.excellent') : pct >= 60 ? t('grades.good') : t('grades.okay');
 
         return (
-            <div className="max-w-2xl mx-auto px-4 pb-24 lg:pb-8">
-                <div className="flex items-center gap-3 py-4 mb-2">
-                    <Link
-                        href={routes.tools.root}
-                        aria-label={t('backToTools')}
-                        className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
-                    >
-                        <ArrowLeft className="w-5 h-5" />
-                    </Link>
-                    <h1 className="text-base font-bold text-ink">{t('resultsTitle')}</h1>
-                </div>
-
+            <ModulePageShell
+                title={t('resultsTitle')}
+                icon={HelpCircle}
+                iconClassName="text-orange-500"
+                backLabel={t('backToTools')}
+                backHref={routes.tools.root}
+            >
                 <div className="flex flex-col items-center text-center py-10 px-4">
                     <div className="w-28 h-28 rounded-full bg-gradient-brand flex flex-col items-center justify-center text-white mb-6 shadow-lg">
                         <p className="text-3xl font-bold tabular-nums">
@@ -126,27 +121,12 @@ export default function QuizPage() {
                         );
                     })}
                 </div>
-            </div>
+            </ModulePageShell>
         );
     }
 
     return (
-        <div className="max-w-2xl mx-auto px-4 pb-24 lg:pb-8">
-            {/* Header */}
-            <div className="flex items-center gap-3 py-4 mb-2">
-                <Link
-                    href={routes.tools.root}
-                    aria-label={t('backToTools')}
-                    className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
-                >
-                    <ArrowLeft className="w-5 h-5" />
-                </Link>
-                <div className="flex items-center gap-2">
-                    <HelpCircle className="w-5 h-5 text-orange-500" />
-                    <h1 className="text-base font-bold text-ink">{t('title')}</h1>
-                </div>
-            </div>
-
+        <ModulePageShell title={t('title')} icon={HelpCircle} iconClassName="text-orange-500" backLabel={t('backToTools')} backHref={routes.tools.root}>
             {/* Progress bar */}
             <div className="flex gap-1.5 mb-6">
                 {quizQuestions.map((_, i) => (
@@ -228,6 +208,6 @@ export default function QuizPage() {
                     <ArrowRight className="w-4 h-4" />
                 </button>
             )}
-        </div>
+        </ModulePageShell>
     );
 }

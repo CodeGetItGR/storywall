@@ -96,13 +96,6 @@ export interface PlaylistItem {
     voted?: boolean;
 }
 
-export interface SeatingTable {
-    id: string;
-    name: string;
-    capacity: number;
-    guests: { id: string; name: string }[];
-}
-
 export interface QuizQuestion {
     id: string;
     question: string;
@@ -119,15 +112,3 @@ export interface WishbookEntry {
     likes: number;
 }
 
-export interface VenueInfo {
-    name: string;
-    address: string;
-    city: string;
-    description: string;
-    amenities: string[];
-    heroImage: string;
-    gallery: string[];
-    mapLink: string;
-    phone: string;
-    website: string;
-}

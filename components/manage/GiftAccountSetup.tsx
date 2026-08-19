@@ -9,7 +9,7 @@ import { Modal } from '@/components/ui/modal';
 import { useDeleteGiftAccount, useGiftAccount, useSaveGiftAccount } from '@/hooks/useGiftAccount';
 import { ERROR_CODES, getErrorCode, getFieldErrors } from '@/lib/api/errors';
 
-export function GiftAccountSetup({ eventId }: { eventId: string }) {
+export function GiftAccountSetup({ eventId, className = 'mt-3 border-t border-border/70 pt-3' }: { eventId: string; className?: string }) {
     const t = useTranslations('ManagePage.giftAccount');
     const account = useGiftAccount(eventId);
     const save = useSaveGiftAccount(eventId);
@@ -52,7 +52,7 @@ export function GiftAccountSetup({ eventId }: { eventId: string }) {
 
     return (
         <>
-            <div className="mt-3 border-t border-border/70 pt-3">
+            <div className={className}>
                 <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
                         <p className="flex items-center gap-2 text-xs font-semibold text-ink">

@@ -1,4 +1,4 @@
-import { CheckCircle2, Clock, HelpCircle, Users } from 'lucide-react';
+import { CheckCircle2, Clock, HelpCircle, Users, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ElementType } from 'react';
 import { useMemo } from 'react';
@@ -46,47 +46,23 @@ export default function RsvpTab({ members, rsvps }: { members: Member[]; rsvps: 
     const pending = guests.filter((member) => !rsvpByMember.get(member.id)).length;
     const maybe = guests.filter((member) => rsvpByMember.get(member.id)?.attendanceStatus === 'MAYBE').length;
     const declined = guests.filter((member) => rsvpByMember.get(member.id)?.attendanceStatus === 'DECLINED').length;
-    const responded = guests.length - pending;
     const seatsClaimed = rsvps.reduce((sum, rsvp) => sum + rsvp.adultCount + rsvp.childCount, 0);
     const notesCount = rsvps.filter((rsvp) => Boolean(rsvp.notes?.trim())).length;
 
     return (
         <div className="px-4 flex flex-col gap-4">
-            <p className="text-xs text-ink-muted">{t('rsvpSummary', { total: guests.length, attending })}</p>
-
-            <div className="grid grid-cols-4 gap-3">
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
                 <SummaryCard label={t('stats.totalGuests.label')} value={guests.length} icon={Users} />
                 <SummaryCard label={t('rsvpBreakdown.attending')} value={attending} icon={CheckCircle2} />
+                <SummaryCard label={t('rsvpBreakdown.maybe')} value={maybe} icon={HelpCircle} />
+                <SummaryCard label={t('rsvpBreakdown.declined')} value={declined} icon={XCircle} />
                 <SummaryCard label={t('rsvpBreakdown.noResponse')} value={pending} icon={Clock} />
-                <SummaryCard label={t('rsvpSeats')} value={seatsClaimed} icon={HelpCircle} />
             </div>
+            <p className="text-xs text-ink-muted">{t('rsvpSeatsAndNotes', { seats: seatsClaimed, notes: notesCount })}</p>
 
-            <div className="flex flex-wrap gap-2 text-[11px] font-medium text-ink-muted">
-                <span className="rounded-full bg-surface-muted px-2.5 py-1">
-                    {t('rsvpInsights', { responded, pending, seats: seatsClaimed, notes: notesCount })}
-                </span>
-                <span className="rounded-full bg-surface-muted px-2.5 py-1">
-                    {t('rsvpBreakdown.maybe')}: {maybe}
-                </span>
-                <span className="rounded-full bg-surface-muted px-2.5 py-1">
-                    {t('rsvpBreakdown.declined')}: {declined}
-                </span>
-            </div>
-
+            {/* Guest list */}
             <div className="border-t border-border">
-                <div className="flex items-center justify-between border-b border-border py-3">
-                    <div>
-                        <p className="text-sm font-semibold text-ink">{t('tabs.rsvp')}</p>
-                        <p className="text-xs text-ink-muted">
-                            {responded} {t('rsvpResponded')}
-                        </p>
-                    </div>
-                    <div className="text-right">
-                        <p className="text-xs text-ink-muted">{t('rsvpBreakdown.attending')}</p>
-                        <p className="text-sm font-bold text-ink tabular-nums">{attending}</p>
-                    </div>
-                </div>
-
                 <div className="divide-y divide-border">
                     {sortedGuests.map((member) => {
                         const rsvp = rsvpByMember.get(member.id);

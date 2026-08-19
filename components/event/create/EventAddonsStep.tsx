@@ -18,6 +18,8 @@ type EventAddonsStepProps = {
 
 export function EventAddonsStep({ modules, services, selectedCodes, onToggle }: EventAddonsStepProps) {
     const t = useTranslations('CreateEventPage');
+    const tModules = useTranslations('Modules');
+    const tPaidDescriptions = useTranslations('CreateEventPage.paidModules.descriptions');
     const locale = useLocale();
 
     function handleToggle(event: ChangeEvent<HTMLInputElement>) {
@@ -26,12 +28,6 @@ export function EventAddonsStep({ modules, services, selectedCodes, onToggle }: 
 
     return (
         <div className="flex h-full flex-col gap-4">
-            {/* Intro */}
-            <div>
-                <h2 className="text-lg font-bold text-ink">{t('paidModules.title')}</h2>
-                <p className="mt-1 text-sm leading-6 text-ink-muted">{t('paidModules.body')}</p>
-            </div>
-
             {/* Add-on List */}
             {services.length === 0 ? (
                 <div className="rounded-xl bg-surface-muted px-4 py-5 text-center">
@@ -45,7 +41,7 @@ export function EventAddonsStep({ modules, services, selectedCodes, onToggle }: 
                         const Icon = moduleMeta?.Icon ?? Puzzle;
                         const checked = selectedCodes.includes(service.code);
                         const name = moduleMeta?.name ?? service.name;
-                        const description = service.description ?? moduleMeta?.description;
+                        const description = getAddonDescription(service.code, service.kind, service.grantsModuleKey, tModules, tPaidDescriptions);
                         const price = formatMoney(locale, service.priceAmountMinor, service.priceCurrency);
 
                         return (
@@ -88,4 +84,26 @@ export function EventAddonsStep({ modules, services, selectedCodes, onToggle }: 
             <p className="text-xs leading-5 text-ink-muted">{t('paidModules.skipHint')}</p>
         </div>
     );
+}
+
+function getAddonDescription(
+    code: string,
+    kind: PaidServiceResponseDto['kind'],
+    grantsModuleKey: string | null,
+    tModules: ReturnType<typeof useTranslations>,
+    tPaidDescriptions: ReturnType<typeof useTranslations>
+) {
+    if (grantsModuleKey && tModules.has(`${grantsModuleKey}.description`)) {
+        return tModules(`${grantsModuleKey}.description`);
+    }
+
+    if (kind === 'MODULE_UNLOCK') {
+        return tPaidDescriptions('moduleUnlock');
+    }
+
+    if (code === 'ORIGINALS') {
+        return tPaidDescriptions('originals');
+    }
+
+    return tPaidDescriptions('genericAddon');
 }

@@ -12,13 +12,66 @@ function pad(value: number): string {
     return String(value).padStart(2, '0');
 }
 
+function formatDatetimeLocalValue(date: Date): string {
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function roundUpToMinute(date: Date): Date {
+    const rounded = new Date(date);
+    rounded.setSeconds(0, 0);
+    if (date.getSeconds() > 0 || date.getMilliseconds() > 0) {
+        rounded.setMinutes(rounded.getMinutes() + 1);
+    }
+    return rounded;
+}
+
 export function toDatetimeLocalValue(iso: string | null): string {
     if (!iso) return '';
 
     const date = parseDate(iso);
     if (!date) return '';
 
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    return formatDatetimeLocalValue(date);
+}
+
+export function getCurrentDatetimeLocalValue(referenceDate = new Date()): string {
+    return formatDatetimeLocalValue(roundUpToMinute(referenceDate));
+}
+
+export function parseDatetimeLocalValue(value: string | null | undefined): Date | null {
+    if (!value) return null;
+
+    return parseDate(value);
+}
+
+export function getLaterDatetimeLocalValue(...values: Array<string | null | undefined>): string | null {
+    let latest: Date | null = null;
+
+    for (const value of values) {
+        const date = parseDatetimeLocalValue(value);
+        if (!date) continue;
+        if (!latest || date.getTime() > latest.getTime()) {
+            latest = date;
+        }
+    }
+
+    return latest ? formatDatetimeLocalValue(latest) : null;
+}
+
+export function isDatetimeLocalBefore(left: string | null | undefined, right: string | null | undefined): boolean {
+    const leftDate = parseDatetimeLocalValue(left);
+    const rightDate = parseDatetimeLocalValue(right);
+    if (!leftDate || !rightDate) return false;
+
+    return leftDate.getTime() < rightDate.getTime();
+}
+
+export function isDatetimeLocalAfter(left: string | null | undefined, right: string | null | undefined): boolean {
+    const leftDate = parseDatetimeLocalValue(left);
+    const rightDate = parseDatetimeLocalValue(right);
+    if (!leftDate || !rightDate) return false;
+
+    return leftDate.getTime() > rightDate.getTime();
 }
 
 export function formatDate(locale: string | undefined, value: string | number | Date, options: Intl.DateTimeFormatOptions): string {

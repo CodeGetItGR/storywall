@@ -1,6 +1,6 @@
 'use client';
 
-import { BookHeart, Calendar, ChevronRight, Gift, HelpCircle, Images, LayoutGrid, Mail, MapPin, Music, Users } from 'lucide-react';
+import { BookHeart, Calendar, ChevronRight, Gift, HelpCircle, Images, Music, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
@@ -38,13 +38,6 @@ const tools = [
         badgeCount: 9,
     },
     {
-        href: routes.tools.venue,
-        icon: MapPin,
-        key: 'venue',
-        color: 'bg-sky-50 text-sky-500',
-        badgeCount: null,
-    },
-    {
         href: routes.tools.gallery,
         icon: Images,
         key: 'gallery',
@@ -64,20 +57,6 @@ const tools = [
         key: 'quiz',
         color: 'bg-orange-50 text-orange-500',
         badgeCount: 5,
-    },
-    {
-        href: routes.tools.seating,
-        icon: LayoutGrid,
-        key: 'seating',
-        color: 'bg-indigo-50 text-indigo-500',
-        badgeCount: 5,
-    },
-    {
-        href: routes.tools.futureMessages,
-        icon: Mail,
-        key: 'futureMessages',
-        color: 'bg-teal-50 text-teal-500',
-        badgeCount: null,
     },
 ] as const;
 

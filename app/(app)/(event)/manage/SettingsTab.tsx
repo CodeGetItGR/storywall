@@ -11,7 +11,7 @@ import { useUpdateEvent } from '@/hooks/useEvent';
 import { useUploadMedia } from '@/hooks/useMedia';
 import { getFieldErrors } from '@/lib/api/errors';
 import type { EventDetailResponseDto, EventPatchDto } from '@/lib/api/types';
-import { toDatetimeLocalValue } from '@/lib/datetime';
+import { getCurrentDatetimeLocalValue, getLaterDatetimeLocalValue, isDatetimeLocalAfter, isDatetimeLocalBefore, toDatetimeLocalValue } from '@/lib/datetime';
 
 const inputClass =
     'bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition disabled:cursor-not-allowed disabled:opacity-60';
@@ -60,6 +60,14 @@ export default function SettingsTab({
     const updateEvent = useUpdateEvent(event.id);
     const uploadMedia = useUploadMedia();
     const fieldErrors = getFieldErrors(updateEvent.error);
+    const nowAt = getCurrentDatetimeLocalValue();
+    const startAtMax = isDatetimeLocalAfter(endAt, nowAt) ? endAt : undefined;
+    const endAtMin = getLaterDatetimeLocalValue(nowAt, startAt) ?? nowAt;
+    const scheduleError = startAt && isDatetimeLocalBefore(startAt, nowAt)
+        ? t('settings.validation.startInPast')
+        : startAt && endAt && !isDatetimeLocalAfter(endAt, startAt)
+          ? t('settings.validation.endBeforeStart')
+          : null;
 
     useEffect(() => {
         return () => {
@@ -137,6 +145,7 @@ export default function SettingsTab({
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
         if (!canWrite) return;
+        if (scheduleError) return;
         setSaved(false);
 
         const patch: EventPatchDto = {};
@@ -285,6 +294,7 @@ export default function SettingsTab({
                     />
                 </FormFieldLabel>
 
+                {/* Schedule */}
                 <div className="grid gap-3 sm:grid-cols-2">
                     <FormFieldLabel label={t('settings.fields.startAt')} required labelClassName={labelClass}>
                         <input
@@ -293,13 +303,23 @@ export default function SettingsTab({
                             value={startAt}
                             onChange={handleStartAtChange}
                             disabled={disabled}
+                            min={nowAt}
+                            max={startAtMax}
                             className={inputClass}
                         />
                     </FormFieldLabel>
                     <FormFieldLabel label={t('settings.fields.endAt')} optional labelClassName={labelClass}>
-                        <input type="datetime-local" value={endAt} onChange={handleEndAtChange} disabled={disabled} className={inputClass} />
+                        <input
+                            type="datetime-local"
+                            value={endAt}
+                            onChange={handleEndAtChange}
+                            disabled={disabled}
+                            min={endAtMin}
+                            className={inputClass}
+                        />
                     </FormFieldLabel>
                 </div>
+                {scheduleError && <p className="text-xs text-rose-500">{scheduleError}</p>}
 
                 <FormFieldLabel label={t('settings.fields.rsvpDeadline')} optional labelClassName={labelClass}>
                     <input
@@ -313,10 +333,11 @@ export default function SettingsTab({
 
                 {updateEvent.isError && !fieldErrors && <p className="text-xs text-rose-500">{toErrorMessage(updateEvent.error)}</p>}
 
+                {/* Actions */}
                 <div className="flex items-center gap-3 mt-1">
                     <button
                         type="submit"
-                        disabled={disabled || isSaving || isUploading || !title.trim() || !startAt}
+                        disabled={disabled || isSaving || isUploading || !title.trim() || !startAt || Boolean(scheduleError)}
                         className="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                         {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : t('settings.save')}

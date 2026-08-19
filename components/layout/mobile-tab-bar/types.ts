@@ -5,4 +5,5 @@ export interface ContextNavItem {
     icon: LucideIcon;
     key: string;
     label: string;
+    description?: string;
 }
