@@ -817,6 +817,7 @@
                 "startInPast": "The start time must be now or later.",
                 "endBeforeStart": "The end time must be after the start time."
             },
+            "startLocked": "This event has already started, so the start date cannot be changed.",
             "placeholders": {
                 "subtitle": "e.g. Join us for an evening to remember",
                 "description": "Tell your guests a little more about the celebration...",

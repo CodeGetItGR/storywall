@@ -67,10 +67,11 @@ export default function SettingsTab({
     const uploadMedia = useUploadMedia();
     const fieldErrors = getFieldErrors(updateEvent.error);
     const nowAt = getCurrentDatetimeLocalValue();
+    const eventHasStarted = Boolean(event.schedule.startAt && isDatetimeLocalBefore(toDatetimeLocalValue(event.schedule.startAt), nowAt));
     const startAtMax = isDatetimeLocalAfter(endAt, nowAt) ? endAt : undefined;
     const endAtMin = getLaterDatetimeLocalValue(nowAt, startAt) ?? nowAt;
     const scheduleError =
-        startAt && isDatetimeLocalBefore(startAt, nowAt)
+        !eventHasStarted && startAt && isDatetimeLocalBefore(startAt, nowAt)
             ? t('settings.validation.startInPast')
             : startAt && endAt && !isDatetimeLocalAfter(endAt, startAt)
               ? t('settings.validation.endBeforeStart')
@@ -163,7 +164,7 @@ export default function SettingsTab({
         if (locationAddress.trim() !== initial.locationAddress) patch.locationAddress = locationAddress.trim();
         if (mapsUrl.trim() !== initial.mapsUrl) patch.mapsUrl = mapsUrl.trim();
         if (rsvpDeadline && rsvpDeadline !== initial.rsvpDeadline) patch.rsvpDeadline = new Date(rsvpDeadline).toISOString();
-        if (startAt && startAt !== initial.startAt) patch.startAt = new Date(startAt).toISOString();
+        if (!eventHasStarted && startAt && startAt !== initial.startAt) patch.startAt = new Date(startAt).toISOString();
         if (endAt && endAt !== initial.endAt) patch.endAt = new Date(endAt).toISOString();
         if (pendingCoverMediaId) patch.coverMediaId = pendingCoverMediaId;
 
@@ -194,7 +195,7 @@ export default function SettingsTab({
                     <span className={labelClass}>{t('settings.coverPhoto.label')}</span>
                     <div className="mt-1.5">
                         {coverPreview ? (
-                            <div className="relative rounded-2xl overflow-hidden aspect-[21/9] bg-surface-muted">
+                            <div className="relative rounded-2xl overflow-hidden aspect-21/9 bg-surface-muted">
                                 <Image src={coverPreview} alt="" fill className="object-cover" sizes="700px" loading="lazy" />
                                 {isUploading && (
                                     <div className="absolute inset-0 bg-ink/40 flex items-center justify-center">
@@ -309,11 +310,12 @@ export default function SettingsTab({
                             required
                             value={startAt}
                             onChange={handleStartAtChange}
-                            disabled={disabled}
+                            disabled={disabled || eventHasStarted}
                             min={nowAt}
                             max={startAtMax}
                             className={inputClass}
                         />
+                        {eventHasStarted && <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('settings.startLocked')}</p>}
                     </FormFieldLabel>
                     <FormFieldLabel label={t('settings.fields.endAt')} optional labelClassName={labelClass}>
                         <input
