@@ -37,6 +37,11 @@ export function BillingOrdersPanel({
         if (order.coversFrom && order.coversUntil)
             return t('orders.coverageRange', { from: formatDate(order.coversFrom), until: formatDate(order.coversUntil) });
         if (order.coversUntil) return t('orders.coverageThrough', { date: formatDate(order.coversUntil) });
+        // A deferred renewal (opened while still covered) settles PAID with no window of its
+        // own - it collected nothing today. The subscription's own period end is the only
+        // date that means anything for it.
+        if (order.kind === 'RENEWAL' && order.status === 'PAID' && derived.subscription?.currentPeriodEnd)
+            return t('orders.coverageThrough', { date: formatDate(derived.subscription.currentPeriodEnd) });
         if (order.kind === 'UPGRADE') return t('orders.upgradeCoverage');
         if (order.kind === 'STORAGE_PACK') return t('orders.storageCoverage');
         return t('orders.recordedCharge');

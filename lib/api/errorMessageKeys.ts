@@ -50,6 +50,8 @@ export type ApiErrorMessageKey =
     | 'planNotAnUpgrade'
     | 'planNotPriced'
     | 'planNotPurchasable'
+    | 'renewalAlreadyCovered'
+    | 'eventScheduleLocked'
     | 'paidServiceCurrencyMismatch'
     | 'paidServiceInUse'
     | 'paidServiceNotOnPlan'
@@ -126,6 +128,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.PAID_SERVICE_NOT_PURCHASABLE]: 'paidServiceNotPurchasable',
     [ERROR_CODES.QR_LINK_NOT_FOUND]: 'qrLinkNotFound',
     [ERROR_CODES.RATE_LIMITED]: 'rateLimited',
+    [ERROR_CODES.RENEWAL_ALREADY_COVERED]: 'renewalAlreadyCovered',
+    [ERROR_CODES.EVENT_SCHEDULE_LOCKED]: 'eventScheduleLocked',
     [ERROR_CODES.REFUND_ALREADY_REQUESTED]: 'refundAlreadyRequested',
     [ERROR_CODES.REFUND_NOT_ELIGIBLE]: 'refundNotEligible',
     [ERROR_CODES.REFUND_REQUEST_NOT_PENDING]: 'refundNotPending',

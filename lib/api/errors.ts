@@ -68,6 +68,8 @@ export const ERROR_CODES = {
     CO_HOST_INVITE_NOT_YOURS: 5044,
     INVALID_IBAN: 5045,
     CHECKOUT_AMOUNT_BELOW_MINIMUM: 5046,
+    RENEWAL_ALREADY_COVERED: 5047,
+    EVENT_SCHEDULE_LOCKED: 5048,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the

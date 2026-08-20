@@ -2093,6 +2093,8 @@
         "accountPlansDisabled": "Account plan changes are currently disabled.",
         "invitationExhausted": "This invite link is full. Ask the host to raise its guest limit or send a new link.",
         "refundNotPending": "This refund request has already been decided.",
-        "internalError": "Something went wrong on our side. Please try again."
+        "internalError": "Something went wrong on our side. Please try again.",
+        "renewalAlreadyCovered": "This event is already paid up, so there's nothing to renew yet.",
+        "eventScheduleLocked": "This event's schedule can no longer be changed."
     }
 }
