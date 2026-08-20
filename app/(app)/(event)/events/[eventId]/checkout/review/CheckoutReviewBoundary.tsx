@@ -78,7 +78,7 @@ export default function CheckoutReviewBoundary() {
                 title={tPageError('title')}
                 description={t('invalid')}
                 onRetry={retry}
-                actionHref={routes.events.settingsPlan(eventId)}
+                actionHref={routes.auth.manage({ tab: 'billing' })}
                 actionLabel={t('backToBilling')}
             />
         );
@@ -176,7 +176,11 @@ export default function CheckoutReviewBoundary() {
     const totalMinor = lines.reduce((sum, line) => sum + line.amountMinor, 0);
     const isPending = activationCheckout.isPending || renewalCheckout.isPending || upgradeCheckout.isPending || storageCheckout.isPending;
     const backHref =
-        intent === 'storage' ? routes.events.settingsAddons(eventId) : intent === 'activation' ? routes.manage : routes.events.settingsPlan(eventId);
+        intent === 'storage'
+            ? routes.events.settingsAddons(eventId)
+            : intent === 'activation'
+              ? routes.manage
+              : routes.auth.manage({ tab: 'billing' });
 
     async function continueToCheckout() {
         if (!valid) return;

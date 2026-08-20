@@ -57,7 +57,7 @@ export default function InvitationsTab({
     const visibleInvitations = invitations.filter((invitation) => invitation.role === (showCoHosts ? 'HOST' : 'ATTENDEE'));
 
     return (
-        <div className="flex flex-col px-4">
+        <div className="flex flex-col">
             <div className="mb-4 flex gap-1 rounded-full bg-surface-muted p-1">
                 {(['invites', 'coHosts', 'qr'] as const).map((item) => (
                     <InvitationPanelButton

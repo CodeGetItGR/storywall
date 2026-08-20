@@ -121,22 +121,6 @@
             "manage": {
                 "label": "Dashboard",
                 "description": "Overview of your event"
-            },
-            "rsvps": {
-                "label": "RSVP responses",
-                "description": "See who's coming"
-            },
-            "invitations": {
-                "label": "Invitations",
-                "description": "Manage and send invites"
-            },
-            "settings": {
-                "label": "Settings",
-                "description": "Event details and preferences"
-            },
-            "billing": {
-                "label": "Plan & billing",
-                "description": "Manage your subscription"
             }
         },
         "items": {
@@ -620,12 +604,17 @@
         "openDashboard": "Open dashboard",
         "rsvpOverview": "RSVP overview",
         "newEvent": "New event",
-        "tabs": {
+        "sections": {
             "overview": "Overview",
+            "settings": "Settings",
             "rsvp": "RSVP",
             "invitations": "Invitations",
-            "settings": "Settings"
+            "plan": "Plan",
+            "coverage": "Coverage",
+            "orders": "Orders",
+            "refund": "Refund"
         },
+        "sectionSwitcher": "Change section",
         "stats": {
             "totalGuests": {
                 "label": "Members",
@@ -638,6 +627,10 @@
             "invitations": {
                 "label": "Invitations",
                 "sub": "Sent so far"
+            },
+            "seats": {
+                "label": "Seats claimed",
+                "sub": "Across all RSVPs"
             }
         },
         "rsvpBreakdown": {
@@ -647,8 +640,6 @@
             "declined": "Declined",
             "noResponse": "No response"
         },
-        "rsvpSeatsAndNotes": "{seats} seats claimed · {notes} notes",
-        "rsvpAwaiting": "Awaiting reply",
         "seeAll": "See all",
         "rsvpStatus": {
             "ATTENDING": "Attending",
@@ -658,7 +649,6 @@
         },
         "noGuestsYet": "No guests have joined yet — share an invite to get started.",
         "invitationsCard": {
-            "title": "Invitations",
             "summary": "{count} invitations sent"
         },
         "draft": {
@@ -847,27 +837,39 @@
         },
         "usage": {
             "eventTitle": "Plan usage"
-        }
+        },
+        "groups": {
+            "event": "Event",
+            "guests": "Guests",
+            "billing": "Billing"
+        },
+        "rsvpFilters": {
+            "all": "All",
+            "empty": "No guests match this filter."
+        },
+        "rsvpColumns": {
+            "guest": "Guest",
+            "party": "Seats",
+            "status": "Status",
+            "note": "Note"
+        },
+        "rsvpParty": "{count} seats"
     },
     "EventPlanSettingsPage": {
-        "loading": "Loading billing details...",
-        "loadError": "Unable to load billing details.",
         "back": "Back",
-        "backToEvent": "Back to event",
-        "title": "Plan and billing",
-        "subtitle": "Coverage, subscriptions, and payments for this event.",
-        "yes": "Yes",
-        "no": "No",
         "emptyDate": "Not set",
         "notApplicable": "Not applicable",
+        "billingStatus": {
+            "title": "Coverage"
+        },
         "addons": {
             "title": "Active add-ons",
             "item": "{name} · {price}/month",
             "itemOnce": "{name} · {price} once",
-            "monthlyTotal": "Monthly add-ons add {amount}/month to renewal.",
-            "renewalTotal": "Next renewal: {amount}/month, including every active monthly add-on.",
+            "monthlyTotal": "+{amount}/month at renewal.",
+            "renewalTotal": "Next renewal: {amount}/month.",
             "manageTitle": "Paid add-ons",
-            "manageBody": "Open the add-ons page.",
+            "manageBody": "Add or remove services.",
             "manageAction": "Manage add-ons"
         },
         "storagePacks": {
@@ -877,8 +879,7 @@
             "unlimited": "This plan already has unlimited storage.",
             "selectorLabel": "Choose a storage allowance",
             "selected": "Add {size} permanently for {price}/month",
-            "buy": "Buy storage",
-            "review": "Review purchase",
+            "buy": "Pay {amount}",
             "retryIn": "Try again in {seconds}s",
             "finalSale": "The storage allowance is permanent and non-refundable. Its price recurs monthly for the life of the event."
         },
@@ -995,32 +996,26 @@
             "REJECTED": "Rejected"
         },
         "summary": {
-            "DRAFT": "The event is not published yet. Activation payment happens from the host dashboard after the event dates are complete.",
-            "ACTIVE": "This event is covered through {date}. Guests can keep using the wall while coverage is active.",
-            "ACTIVE_UNLIMITED": "This event has unlimited coverage. There is no freeze or purge date to manage.",
-            "FROZEN": "Coverage ended on {date}. The event is read-only until a subscription is started.",
-            "PURGED": "The event has passed the media retention window. Renewing can reactivate the event, but deleted media cannot be restored."
+            "DRAFT": "Not published yet. You'll pay to activate once the event dates are set.",
+            "ACTIVE": "Covered through {date}.",
+            "ACTIVE_UNLIMITED": "Unlimited coverage.",
+            "FROZEN": "Coverage ended on {date}. The event is read-only until you renew.",
+            "PURGED": "Storage window passed. Renewing reactivates the event, but deleted media can't be restored."
         },
         "facts": {
-            "covered": "Covered",
-            "totalPaid": "Total paid",
-            "orders": "Orders",
-            "pending": "Pending"
+            "totalPaid": "Total paid"
         },
         "timeline": {
             "title": "Coverage timeline",
             "unlimited": "Unlimited coverage",
             "paidThrough": {
-                "label": "Paid through",
-                "hint": "Guest access stays active until this date."
+                "label": "Paid through"
             },
             "freezesAt": {
-                "label": "Freezes",
-                "hint": "The event becomes read-only."
+                "label": "Freezes"
             },
             "purgesAt": {
-                "label": "Purges",
-                "hint": "Stored media can be permanently removed."
+                "label": "Purges"
             }
         },
         "subscription": {
@@ -1028,19 +1023,19 @@
             "status": "Status",
             "currentPeriodEnd": "Renews through",
             "none": "No subscription",
-            "renewalHint": "Start a subscription to keep the event online after the included coverage period.",
+            "renewalHint": "Coverage ends soon.",
             "notRenewing": "Not renewing",
             "ended": "Ended",
             "liveUntil": "Live until",
             "renewsOn": "Renews automatically on {date}.",
-            "willNotRenew": "Won't renew. Your event stays live until {date}, then becomes read-only.",
-            "pastDue": "The last payment failed. Your card is being retried — update it if this persists.",
+            "willNotRenew": "Live until {date}.",
+            "pastDue": "The last payment failed. Update your card.",
             "cancel": "Cancel subscription",
             "cancelConfirmTitle": "Cancel subscription?",
-            "cancelConfirmBody": "This stops future renewals. The month you already paid for stays live until {date}, then the event becomes read-only. No refund is issued.",
+            "cancelConfirmBody": "Stays live until {date}, no refund.",
             "cancelConfirmYes": "Cancel",
             "cancelConfirmNo": "Keep",
-            "noResume": "There is no undo. To keep the event live past this date, start a new subscription."
+            "noResume": "To continue after that, start a new subscription."
         },
         "activation": {
             "title": "Activation",
@@ -1050,21 +1045,21 @@
         },
         "refund": {
             "title": "Refund",
-            "loading": "Checking refund eligibility...",
-            "eligible": "This activation payment can be reviewed for a refund. Approved refunds return the event to draft.",
-            "notEligible": "This payment is not eligible for refund right now.",
-            "pending": "A refund request is already pending review.",
+            "loading": "Checking...",
+            "eligible": "You can request a refund for the activation.",
+            "notEligible": "Refunds aren't available right now.",
+            "pending": "A request is already pending.",
             "reason": "Reason",
-            "reasonPlaceholder": "Add a short note for the admin team",
+            "reasonPlaceholder": "Optional note",
             "submit": "Request refund",
             "submitting": "Submitting...",
             "requested": "Refund request {status}",
             "requestedAmount": "Requested amount: {amount}",
-            "requestedNoAmount": "Requested amount will be calculated during review.",
-            "confirmBody": "Requesting a refund takes the event offline and returns it to draft if it is approved. Guests will lose access.",
+            "requestedNoAmount": "Amount will be set during review.",
+            "confirmBody": "The event returns to draft if approved. Guests lose access.",
             "confirmSubmit": "Yes, request a refund",
             "confirmCancel": "Cancel",
-            "notRefundedYet": "Approved. The money has not been returned yet — our team is processing it."
+            "notRefundedYet": "Approved. Your refund is being processed."
         },
         "orders": {
             "title": "Order history",
@@ -1090,6 +1085,9 @@
             "addonAmount": "Includes {amount} for add-ons",
             "recordedCharge": "Recorded charge",
             "showAll": "Show {count} older orders"
+        },
+        "panels": {
+            "plan": "Plan & add-ons"
         }
     },
     "EventAddonsSettingsPage": {
@@ -1229,7 +1227,11 @@
         "loadError": "Gift details could not be loaded.",
         "emptyHost": "Add bank details so members can send a gift.",
         "emptyMember": "The hosts have not added gift details yet.",
-        "fields": { "iban": "IBAN", "accountHolder": "Account holder", "note": "Note (optional)" },
+        "fields": {
+            "iban": "IBAN",
+            "accountHolder": "Account holder",
+            "note": "Note (optional)"
+        },
         "invalidIban": "Check the IBAN. One or more digits appear to be incorrect.",
         "copyIban": "Copy IBAN",
         "copied": "Copied",
@@ -1327,6 +1329,8 @@
         "loadingLeaderboard": "Loading leaderboard...",
         "leaderboardTopCount": "Top {count}",
         "leaderboardShowingMore": "Showing {shown} of {total}",
+        "leaderboardTrigger": "View leaderboard",
+        "leaderboardTriggerLeader": "Leading: {title}",
         "up": "Up",
         "down": "Down",
         "disabledUpgradeBody": "Playlist is not included in this event plan. Upgrade to {plans} to unlock song suggestions and votes."
@@ -1399,18 +1403,12 @@
         "links": {
             "manage": "Dashboard",
             "gallery": "Gallery",
-            "rsvps": "RSVPs",
-            "invitations": "Invitations",
-            "settings": "Settings",
-            "billing": "Plan & billing"
+            "rsvps": "RSVPs"
         },
         "helper": {
             "manage": "Overview and event controls",
             "gallery": "Review guest uploads",
-            "rsvps": "See attendance and replies",
-            "invitations": "Create or review invites",
-            "settings": "Edit event details",
-            "billing": "Payments and renewals"
+            "rsvps": "See attendance and replies"
         },
         "usageTitle": "Plan usage"
     },
@@ -1721,7 +1719,11 @@
             "notApplicable": "Not applicable",
             "yes": "Yes",
             "no": "No",
-            "kinds": { "STORAGE_PACK": "Storage pack", "RECURRING_ADDON": "Recurring add-on", "MODULE_UNLOCK": "Module unlock" },
+            "kinds": {
+                "STORAGE_PACK": "Storage pack",
+                "RECURRING_ADDON": "Recurring add-on",
+                "MODULE_UNLOCK": "Module unlock"
+            },
             "stats": {
                 "total": "Total services",
                 "live": "Live",

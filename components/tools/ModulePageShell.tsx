@@ -51,7 +51,7 @@ export function ModulePageShell({
                 onBack={onBack}
                 action={action}
             />
-            {subtitle && <p className="mb-5 text-sm leading-relaxed text-ink-muted">{subtitle}</p>}
+            {subtitle && <p className="mb-5 text-sm leading-relaxed text-ink-muted text-center">{subtitle}</p>}
             {notice}
             {children}
         </div>

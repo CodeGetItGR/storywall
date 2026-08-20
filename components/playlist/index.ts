@@ -5,3 +5,4 @@ export * from './PlaylistContent';
 export * from './PlaylistDisabledState';
 export * from './PlaylistItemRow';
 export * from './PlaylistLeaderboard';
+export * from './PlaylistLeaderboardSheet';

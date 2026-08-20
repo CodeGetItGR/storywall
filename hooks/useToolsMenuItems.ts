@@ -1,6 +1,6 @@
 'use client';
 
-import { BookHeart, CalendarCheck, CalendarDays, CreditCard, Gift, Images, LayoutDashboard, type LucideIcon, MessageSquareText, Settings2, Ticket } from 'lucide-react';
+import { BookHeart, CalendarCheck, CalendarDays, Gift, Images, LayoutDashboard, type LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { routes } from '@/lib/routes';
@@ -41,20 +41,17 @@ export function useToolsMenuItems(): ToolMenuItem[] {
         }));
 }
 
-const hostAdminDefinitions: { key: string; href: string; icon: LucideIcon }[] = [
-    { key: 'manage', href: routes.manage, icon: LayoutDashboard },
-    { key: 'rsvps', href: routes.auth.manage({ tab: 'rsvp' }), icon: Ticket },
-    { key: 'invitations', href: routes.auth.manage({ tab: 'invitations' }), icon: MessageSquareText },
-    { key: 'settings', href: routes.auth.manage({ tab: 'settings' }), icon: Settings2 },
-];
+/**
+ * The dashboard is one destination: its own section list handles RSVP,
+ * invitations, settings and billing, so the global menus link to it once.
+ */
+const hostAdminDefinitions: { key: string; href: string; icon: LucideIcon }[] = [{ key: 'manage', href: routes.manage, icon: LayoutDashboard }];
 
-/** The host's own administrative destinations, plus billing which needs the event id. */
-export function useHostMenuItems(eventId: string): ToolMenuItem[] {
+/** The host's own administrative destinations. */
+export function useHostMenuItems(): ToolMenuItem[] {
     const t = useTranslations('MobileTabBar.hostMenu');
 
-    const definitions = [...hostAdminDefinitions, { key: 'billing', href: routes.events.settingsPlan(eventId), icon: CreditCard }];
-
-    return definitions.map((item) => ({
+    return hostAdminDefinitions.map((item) => ({
         key: item.key,
         href: item.href,
         icon: item.icon,

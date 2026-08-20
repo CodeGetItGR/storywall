@@ -11,7 +11,13 @@ import { useUpdateEvent } from '@/hooks/useEvent';
 import { useUploadMedia } from '@/hooks/useMedia';
 import { getFieldErrors } from '@/lib/api/errors';
 import type { EventDetailResponseDto, EventPatchDto } from '@/lib/api/types';
-import { getCurrentDatetimeLocalValue, getLaterDatetimeLocalValue, isDatetimeLocalAfter, isDatetimeLocalBefore, toDatetimeLocalValue } from '@/lib/datetime';
+import {
+    getCurrentDatetimeLocalValue,
+    getLaterDatetimeLocalValue,
+    isDatetimeLocalAfter,
+    isDatetimeLocalBefore,
+    toDatetimeLocalValue,
+} from '@/lib/datetime';
 
 const inputClass =
     'bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition disabled:cursor-not-allowed disabled:opacity-60';
@@ -63,11 +69,12 @@ export default function SettingsTab({
     const nowAt = getCurrentDatetimeLocalValue();
     const startAtMax = isDatetimeLocalAfter(endAt, nowAt) ? endAt : undefined;
     const endAtMin = getLaterDatetimeLocalValue(nowAt, startAt) ?? nowAt;
-    const scheduleError = startAt && isDatetimeLocalBefore(startAt, nowAt)
-        ? t('settings.validation.startInPast')
-        : startAt && endAt && !isDatetimeLocalAfter(endAt, startAt)
-          ? t('settings.validation.endBeforeStart')
-          : null;
+    const scheduleError =
+        startAt && isDatetimeLocalBefore(startAt, nowAt)
+            ? t('settings.validation.startInPast')
+            : startAt && endAt && !isDatetimeLocalAfter(endAt, startAt)
+              ? t('settings.validation.endBeforeStart')
+              : null;
 
     useEffect(() => {
         return () => {
@@ -176,7 +183,7 @@ export default function SettingsTab({
     const disabled = !canWrite;
 
     return (
-        <div className="px-4">
+        <div>
             <p className="text-sm text-ink-muted mb-5">{t('settings.subtitle')}</p>
             {!canWrite && (
                 <p className="mb-5 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('settings.readOnly')}</p>

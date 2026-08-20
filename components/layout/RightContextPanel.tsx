@@ -1,6 +1,6 @@
 'use client';
 
-import { CreditCard, Images, LayoutDashboard, MessageSquareText, Settings2, Ticket } from 'lucide-react';
+import { Images, LayoutDashboard, Ticket } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
@@ -12,16 +12,13 @@ import { findNextPlan, findPlanByCode } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
-function hostLinks(eventId: string) {
-    return [
-        { key: 'manage', href: routes.manage, icon: LayoutDashboard },
-        { key: 'gallery', href: routes.tools.gallery, icon: Images },
-        { key: 'rsvps', href: routes.tools.rsvp, icon: Ticket },
-        { key: 'invitations', href: routes.auth.manage({ tab: 'invitations' }), icon: MessageSquareText },
-        { key: 'settings', href: routes.auth.manage({ tab: 'settings' }), icon: Settings2 },
-        { key: 'billing', href: routes.events.settingsPlan(eventId), icon: CreditCard },
-    ] as const;
-}
+// Dashboard sections are reached from the dashboard itself, so this panel links
+// to it once instead of repeating its sections as separate destinations.
+const hostLinks = [
+    { key: 'manage', href: routes.manage, icon: LayoutDashboard },
+    { key: 'gallery', href: routes.tools.gallery, icon: Images },
+    { key: 'rsvps', href: routes.tools.rsvp, icon: Ticket },
+] as const;
 
 export function RightContextPanel() {
     const t = useTranslations('RightContextPanel');
@@ -52,7 +49,7 @@ export function RightContextPanel() {
                         title={t('usageTitle')}
                         planName={currentPlan?.name ?? eventUsage.planTier}
                         nextPlanName={nextPlan?.name}
-                        upgradeHref={routes.events.settingsPlan(activeEvent.id)}
+                        upgradeHref={routes.auth.manage({ tab: 'billing' })}
                         includedModuleKeys={includedModuleKeys}
                         items={[
                             {
@@ -82,8 +79,8 @@ export function RightContextPanel() {
                 <div>
                     <p className="mb-2 text-sm font-semibold text-ink">{t('hostActions')}</p>
                     <div className="space-y-1">
-                        {hostLinks(activeEvent.id)
-                            .filter(({ key }) => activeEvent.status !== 'DRAFT' || key === 'manage' || key === 'settings' || key === 'billing')
+                        {hostLinks
+                            .filter(({ key }) => activeEvent.status !== 'DRAFT' || key === 'manage')
                             .map(({ key, href, icon: Icon }) => (
                                 <Link
                                     key={href}

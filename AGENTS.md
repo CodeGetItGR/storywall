@@ -60,3 +60,4 @@
 
 - Always localize user-facing copy. Do not leave magic strings in JSX when the text is visible to users.
 - Prefer translation keys, shared copy helpers, or localized message maps for any visible label, error, helper text, tooltip, empty state, or CTA.
+- Write user-facing copy for a non-technical reader, not a developer. State the fact or the action plainly in one short sentence; do not explain the underlying mechanism, justify why the system behaves that way, or spell out implications the user did not ask about. If a sentence can be cut without losing the actionable meaning, cut it.

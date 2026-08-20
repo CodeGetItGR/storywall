@@ -19,10 +19,6 @@ import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/E
 
 const homeTabItem = { href: routes.feed, icon: '/icons/home.svg', key: 'home' } as const;
 
-const moduleBackedHostItems: Partial<Record<string, 'rsvp'>> = {
-    rsvps: 'rsvp',
-};
-
 export function MobileTabBar() {
     const t = useTranslations('MobileTabBar');
     const [accountOpen, setAccountOpen] = useState(false);
@@ -45,19 +41,14 @@ export function MobileTabBar() {
     const availableModules = new Set(activeEvent?.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey) ?? []);
     const playlistAvailable = showEventNavigation && availableModules.has('playlist');
     const playlistActive = playlistAvailable && isPathActive(pathname, routes.tools.playlist);
-    const hostItems = useHostMenuItems(activeEvent?.id ?? '');
+    const hostItems = useHostMenuItems();
     const toolItems = useToolsMenuItems();
     const contextItems: ContextNavItem[] =
         showEventNavigation && activeEvent
             ? isHost
                 ? [
-                      ...hostItems
-                          .filter((item) => !isDraft || item.key === 'manage')
-                          .filter((item) => {
-                              const moduleKey = moduleBackedHostItems[item.key];
-                              return !moduleKey || availableModules.has(moduleKey);
-                          }),
-                      // Hosts manage RSVPs from the admin "RSVP responses" item above, not the guest self-RSVP tool.
+                      ...hostItems,
+                      // Hosts answer RSVPs from the dashboard's RSVP section, not the guest self-RSVP tool.
                       ...(isDraft ? [] : toolItems.filter((item) => item.key !== 'rsvp')),
                   ]
                 : toolItems

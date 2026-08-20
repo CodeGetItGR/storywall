@@ -1,1 +1,7 @@
-export { default } from './PageClient';
+import { redirect } from 'next/navigation';
+
+import { routes } from '@/lib/routes';
+
+export default function Page() {
+    redirect(routes.auth.manage({ tab: 'billing' }));
+}

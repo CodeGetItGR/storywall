@@ -1,14 +1,13 @@
 'use client';
 
-import { Music, Plus } from 'lucide-react';
+    import { ArrowUp, Music, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useCallback, useState } from 'react';
 
-import { PlaylistItemRow, PlaylistLeaderboard } from '@/components/playlist';
+import { PlaylistItemRow, PlaylistLeaderboardSheet } from '@/components/playlist';
 import { ModulePageHeader } from '@/components/tools/ModulePageHeader';
 import type { PlaylistSuggestionLeaderboardDto, PlaylistSuggestionResponseDto } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
-
-const HOST_LEADERBOARD_VISIBLE_SONGS = 3;
 
 interface PlaylistContentProps {
     canSuggest: boolean;
@@ -34,6 +33,16 @@ export function PlaylistContent({
     suggestionsLoading,
 }: PlaylistContentProps) {
     const t = useTranslations('PlaylistPage');
+    const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
+    const leader = leaderboard[0];
+
+    const handleLeaderboardOpen = useCallback(() => {
+        setIsLeaderboardOpen(true);
+    }, []);
+
+    const handleLeaderboardClose = useCallback(() => {
+        setIsLeaderboardOpen(false);
+    }, []);
 
     return (
         <div className="mx-auto max-w-2xl px-4 pb-24 lg:pb-8">
@@ -60,14 +69,24 @@ export function PlaylistContent({
             />
             {!isEventWritable && <p className="mb-5 rounded-lg bg-surface-muted px-4 py-3 text-sm text-ink-muted">{t('readOnly')}</p>}
 
+            {/* Leaderboard trigger (host only) */}
             {isHost && (
-                <section className="mb-8">
-                    <PlaylistLeaderboard
-                        leaderboard={leaderboard}
-                        isLoading={isLoadingLeaderboard}
-                        maxVisibleSongs={HOST_LEADERBOARD_VISIBLE_SONGS}
-                    />
-                </section>
+                <button
+                    type="button"
+                    onClick={handleLeaderboardOpen}
+                    disabled={isLoadingLeaderboard}
+                    className="mb-5 flex w-full items-center justify-between gap-3 rounded-full border border-border/70 bg-card px-4 py-2.5 text-left shadow-sm shadow-black/5 transition-colors hover:bg-surface-muted/45 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                    <span className="flex min-w-0 items-center gap-2">
+                        <ArrowUp className="h-4 w-4 shrink-0 text-ink-faint" />
+                        <span className="truncate text-sm font-medium text-ink">
+                            {leader ? t('leaderboardTriggerLeader', { title: leader.title }) : t('leaderboardEmpty')}
+                        </span>
+                    </span>
+                    <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.14em] text-ink-muted">
+                        {t('leaderboardTrigger')}
+                    </span>
+                </button>
             )}
 
             {suggestionsLoading ? (
@@ -93,6 +112,15 @@ export function PlaylistContent({
                         <PlaylistItemRow key={suggestion.id} suggestion={suggestion} />
                     ))}
                 </div>
+            )}
+
+            {isHost && (
+                <PlaylistLeaderboardSheet
+                    open={isLeaderboardOpen}
+                    onClose={handleLeaderboardClose}
+                    leaderboard={leaderboard}
+                    isLoading={isLoadingLeaderboard}
+                />
             )}
         </div>
     );

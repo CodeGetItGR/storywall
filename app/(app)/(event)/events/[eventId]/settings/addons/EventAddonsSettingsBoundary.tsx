@@ -55,7 +55,7 @@ export default function EventAddonsSettingsBoundary() {
                 title={tPageError('title')}
                 description={tPageError('description')}
                 onRetry={retry}
-                actionHref={routes.events.settingsPlan(eventId)}
+                actionHref={routes.auth.manage({ tab: 'billing' })}
                 actionLabel={t('backToBilling')}
             />
         );
@@ -63,7 +63,7 @@ export default function EventAddonsSettingsBoundary() {
 
     return (
         <main className="mx-auto max-w-3xl px-4 pb-24 pt-5 sm:pt-6 lg:pb-10">
-            <PageBackLink href={routes.events.settingsPlan(eventId)}>{t('backToBilling')}</PageBackLink>
+            <PageBackLink href={routes.auth.manage({ tab: 'billing' })}>{t('backToBilling')}</PageBackLink>
 
             <section className="mt-4">
                 <h1 className="text-2xl font-bold text-ink">{t('title')}</h1>

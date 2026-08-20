@@ -1,105 +1,140 @@
-import { CheckCircle2, Clock, HelpCircle, Users, XCircle } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import type { ElementType } from 'react';
-import { useMemo } from 'react';
+'use client';
 
-import { type RsvpDisplayStatus, rsvpStatusOrder, rsvpStatusTone } from '@/lib/statusTones';
+import { useTranslations } from 'next-intl';
+import { type MouseEvent, useCallback } from 'react';
+
+import { type RosterFilter, type RosterMember, type RosterRsvp, useRsvpRoster } from '@/hooks/useRsvpRoster';
+import { rsvpStatusTone } from '@/lib/statusTones';
 import { cn } from '@/lib/utils';
 
-type Member = { id: string; displayName: string; role: string };
-type Rsvp = {
-    eventMemberId: string;
-    attendanceStatus: 'ATTENDING' | 'DECLINED' | 'MAYBE';
-    notes: string | null;
-    adultCount: number;
-    childCount: number;
-};
+const filters: { key: RosterFilter; labelKey: string }[] = [
+    { key: 'all', labelKey: 'rsvpFilters.all' },
+    { key: 'ATTENDING', labelKey: 'rsvpBreakdown.attending' },
+    { key: 'MAYBE', labelKey: 'rsvpBreakdown.maybe' },
+    { key: 'DECLINED', labelKey: 'rsvpBreakdown.declined' },
+    { key: 'NO_RESPONSE', labelKey: 'rsvpBreakdown.noResponse' },
+];
 
-function SummaryCard({ label, value, icon: Icon }: { label: string; value: number; icon: ElementType }) {
-    return (
-        <div>
-            <Icon className="h-4 w-4 text-ink-faint" aria-hidden="true" />
-            <p className="mt-2 text-xl font-bold leading-none tracking-tight text-ink tabular-nums sm:text-2xl">{value}</p>
-            <p className="mt-1 text-[11px] font-semibold leading-tight text-ink-muted">{label}</p>
-        </div>
-    );
-}
-
-export default function RsvpTab({ members, rsvps }: { members: Member[]; rsvps: Rsvp[] }) {
+export default function RsvpTab({ members, rsvps }: { members: RosterMember[]; rsvps: RosterRsvp[] }) {
     const t = useTranslations('ManagePage');
-    const rsvpByMember = useMemo(() => new Map(rsvps.map((rsvp) => [rsvp.eventMemberId, rsvp])), [rsvps]);
+    const { filter, setFilter, counts, guestCount, visibleGuests, rsvpByMember, statusOf } = useRsvpRoster(members, rsvps);
 
-    const guests = useMemo(() => members.filter((member) => member.role !== 'HOST'), [members]);
-
-    const sortedGuests = useMemo(
-        () =>
-            [...guests].sort((left, right) => {
-                const leftStatus: RsvpDisplayStatus = rsvpByMember.get(left.id)?.attendanceStatus ?? 'NO_RESPONSE';
-                const rightStatus: RsvpDisplayStatus = rsvpByMember.get(right.id)?.attendanceStatus ?? 'NO_RESPONSE';
-                const orderDelta = rsvpStatusOrder[leftStatus] - rsvpStatusOrder[rightStatus];
-                return orderDelta !== 0 ? orderDelta : left.displayName.localeCompare(right.displayName);
-            }),
-        [guests, rsvpByMember]
+    const handleFilterClick = useCallback(
+        (event: MouseEvent<HTMLButtonElement>) => {
+            const next = event.currentTarget.dataset.filter as RosterFilter | undefined;
+            if (next) setFilter(next);
+        },
+        [setFilter]
     );
 
-    const attending = guests.filter((member) => rsvpByMember.get(member.id)?.attendanceStatus === 'ATTENDING').length;
-    const pending = guests.filter((member) => !rsvpByMember.get(member.id)).length;
-    const maybe = guests.filter((member) => rsvpByMember.get(member.id)?.attendanceStatus === 'MAYBE').length;
-    const declined = guests.filter((member) => rsvpByMember.get(member.id)?.attendanceStatus === 'DECLINED').length;
-    const seatsClaimed = rsvps.reduce((sum, rsvp) => sum + rsvp.adultCount + rsvp.childCount, 0);
-    const notesCount = rsvps.filter((rsvp) => Boolean(rsvp.notes?.trim())).length;
+    const rows = visibleGuests.map((member) => {
+        const rsvp = rsvpByMember.get(member.id);
+        const status = statusOf(member.id);
+
+        return {
+            id: member.id,
+            name: member.displayName,
+            status,
+            statusLabel: t(`rsvpStatus.${status}`),
+            partySize: rsvp ? rsvp.adultCount + rsvp.childCount : 0,
+            notes: rsvp?.notes ?? null,
+        };
+    });
 
     return (
-        <div className="px-4 flex flex-col gap-4">
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
-                <SummaryCard label={t('stats.totalGuests.label')} value={guests.length} icon={Users} />
-                <SummaryCard label={t('rsvpBreakdown.attending')} value={attending} icon={CheckCircle2} />
-                <SummaryCard label={t('rsvpBreakdown.maybe')} value={maybe} icon={HelpCircle} />
-                <SummaryCard label={t('rsvpBreakdown.declined')} value={declined} icon={XCircle} />
-                <SummaryCard label={t('rsvpBreakdown.noResponse')} value={pending} icon={Clock} />
-            </div>
-            <p className="text-xs text-ink-muted">{t('rsvpSeatsAndNotes', { seats: seatsClaimed, notes: notesCount })}</p>
-
-            {/* Guest list */}
-            <div className="border-t border-border">
-                <div className="divide-y divide-border">
-                    {sortedGuests.map((member) => {
-                        const rsvp = rsvpByMember.get(member.id);
-                        const status = rsvp?.attendanceStatus ?? 'NO_RESPONSE';
-                        const partySize = rsvp ? rsvp.adultCount + rsvp.childCount : 0;
-                        const statusLabel = rsvp ? t(`rsvpStatus.${status}`) : t('rsvpStatus.NO_RESPONSE');
+        <div className="flex flex-col gap-4">
+            {/* Filters */}
+            <div className="-mx-4 overflow-x-auto px-4 no-scrollbar lg:mx-0 lg:px-0">
+                <div className="inline-flex w-max gap-1 rounded-full bg-surface-muted p-1">
+                    {filters.map(({ key, labelKey }) => {
+                        const count = key === 'all' ? guestCount : counts[key];
+                        const isActive = filter === key;
 
                         return (
-                            <div key={member.id} className="py-3">
-                                <div className="flex items-start justify-between gap-3">
-                                    <div className="min-w-0">
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <p className="truncate text-sm font-semibold leading-tight text-ink">{member.displayName}</p>
-                                            {partySize > 1 && (
-                                                <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[11px] font-semibold text-ink-muted">
-                                                    +{partySize - 1}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <p className="mt-1 text-xs text-ink-muted">{status !== 'NO_RESPONSE' ? statusLabel : t('rsvpAwaiting')}</p>
-                                    </div>
-
-                                    <span
-                                        className={cn('shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold', rsvpStatusTone[status])}
-                                    >
-                                        {statusLabel}
-                                    </span>
-                                </div>
-
-                                {rsvp?.notes && <p className="mt-2 max-w-[70ch] text-xs leading-6 text-ink-muted">{rsvp.notes}</p>}
-                            </div>
+                            <button
+                                key={key}
+                                type="button"
+                                data-filter={key}
+                                onClick={handleFilterClick}
+                                aria-pressed={isActive}
+                                className={cn(
+                                    'inline-flex min-h-10 items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 text-xs font-semibold transition-colors',
+                                    isActive ? 'bg-background text-ink shadow-sm' : 'text-ink-muted hover:text-ink'
+                                )}
+                            >
+                                {t(labelKey)}
+                                <span className="tabular-nums text-ink-faint">{count}</span>
+                            </button>
                         );
                     })}
                 </div>
             </div>
 
-            {guests.length === 0 && <p className="py-8 text-center text-sm text-ink-muted">{t('noGuestsYet')}</p>}
+            {/* Roster */}
+            {guestCount === 0 ? (
+                <p className="py-8 text-center text-sm text-ink-muted">{t('noGuestsYet')}</p>
+            ) : rows.length === 0 ? (
+                <p className="py-8 text-center text-sm text-ink-muted">{t('rsvpFilters.empty')}</p>
+            ) : (
+                <>
+                    {/* Roster rows (small screens) */}
+                    <ul className="divide-y divide-border border-t border-border md:hidden">
+                        {rows.map((row) => (
+                            <li key={row.id} className="flex items-start justify-between gap-3 py-3">
+                                <div className="min-w-0">
+                                    <p className="truncate text-sm font-semibold leading-tight text-ink">{row.name}</p>
+                                    <p className="mt-0.5 text-xs text-ink-faint">{t('rsvpParty', { count: row.partySize })}</p>
+                                    {row.notes && <p className="mt-1 text-xs leading-6 text-ink-muted">{row.notes}</p>}
+                                </div>
+                                <span
+                                    className={cn('shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold', rsvpStatusTone[row.status])}
+                                >
+                                    {row.statusLabel}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+
+                    {/* Roster table (desktop) */}
+                    <div className="hidden overflow-x-auto md:block">
+                        <table className="w-full min-w-[640px] border-collapse text-sm">
+                            <thead>
+                                <tr className="border-b border-border text-left text-[11px] font-bold uppercase tracking-wide text-ink-faint">
+                                    <th className="py-2.5 pr-3 font-bold">{t('rsvpColumns.guest')}</th>
+                                    <th className="w-24 px-3 py-2.5 font-bold">{t('rsvpColumns.party')}</th>
+                                    <th className="w-36 px-3 py-2.5 font-bold">{t('rsvpColumns.status')}</th>
+                                    <th className="px-3 py-2.5 font-bold">{t('rsvpColumns.note')}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {rows.map((row) => (
+                                    <tr key={row.id} className="border-b border-border last:border-b-0">
+                                        <td className="max-w-64 py-2.5 pr-3">
+                                            <p className="truncate font-semibold text-ink">{row.name}</p>
+                                        </td>
+                                        <td className="px-3 py-2.5 tabular-nums text-ink-muted">{row.partySize}</td>
+                                        <td className="px-3 py-2.5">
+                                            <span
+                                                className={cn(
+                                                    'inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold',
+                                                    rsvpStatusTone[row.status]
+                                                )}
+                                            >
+                                                {row.statusLabel}
+                                            </span>
+                                        </td>
+                                        <td className="max-w-80 px-3 py-2.5 text-ink-muted">
+                                            <p className="truncate" title={row.notes ?? undefined}>
+                                                {row.notes ?? '—'}
+                                            </p>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </>
+            )}
         </div>
     );
 }

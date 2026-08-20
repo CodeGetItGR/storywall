@@ -22,7 +22,6 @@ export const routes = {
     invite: '/invite',
     events: {
         new: '/events/new',
-        settingsPlan: (eventId: string) => `/events/${eventId}/settings/plan`,
         settingsAddons: (eventId: string) => `/events/${eventId}/settings/addons`,
         checkoutReview: (eventId: string, intent: CheckoutIntent, code?: string | null) =>
             withQuery(`/events/${eventId}/checkout/review`, { intent, code }),
@@ -54,7 +53,10 @@ export const routes = {
     auth: {
         login: (params: { invite?: string | null; email?: string | null }) => withQuery('/login', params),
         register: (params: { invite?: string | null; email?: string | null }) => withQuery('/register', params),
-        manage: (params: { tab?: 'invitations' | 'overview' | 'rsvp' | 'settings' | null }) => withQuery('/manage', params),
+        manage: (params: {
+            // 'billing' is kept as an alias for the plan section so existing links keep working.
+            tab?: 'billing' | 'coverage' | 'invitations' | 'orders' | 'overview' | 'plan' | 'refund' | 'rsvp' | 'settings' | null;
+        }) => withQuery('/manage', params),
         rsvpSubmit: (attending: 'attending' | 'not-attending') => withQuery('/tools/rsvp/submit', { attending }),
     },
 } as const;

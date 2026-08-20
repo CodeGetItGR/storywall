@@ -89,7 +89,9 @@ export function StoragePackPurchase({ eventId, services }: { eventId: string; se
                             href={routes.events.checkoutReview(eventId, 'storage', selectedService.code)}
                             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-ink px-6 text-sm font-semibold text-white disabled:opacity-40"
                         >
-                            {t('review')}
+                            {t('buy', {
+                                amount: formatMoney(locale, selectedService.priceAmountMinor, selectedService.priceCurrency),
+                            })}
                         </Link>
                     </div>
                 )}

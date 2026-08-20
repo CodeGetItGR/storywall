@@ -32,7 +32,7 @@ export function EventLifecycleBanner() {
     if (!activeEvent || !status || status === 'ACTIVE') return null;
     if (pathname.startsWith(`/events/${activeEvent.id}/checkout/`)) return null;
 
-    const actionHref = status === 'DRAFT' ? routes.manage : routes.events.settingsPlan(activeEvent.id);
+    const actionHref = status === 'DRAFT' ? routes.manage : routes.auth.manage({ tab: 'billing' });
     const showAction = isHost;
 
     return (
