@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 
-import type { EventTypeConvention, PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import type { EventTypeConvention, PaidServiceResponseDto, PlanTierResponseDto, PlatformEventTypeResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
 import { getModuleMeta } from '@/lib/planModules';
 import { getPlanPriceDetails } from '@/lib/planTiers';
@@ -10,6 +10,7 @@ import { getPlanPriceDetails } from '@/lib/planTiers';
 type EventOverviewStepProps = {
     title: string;
     eventType: EventTypeConvention;
+    eventTypes: PlatformEventTypeResponseDto[];
     startAt: string;
     endAt: string;
     locationName: string;
@@ -23,6 +24,7 @@ type EventOverviewStepProps = {
 export function EventOverviewStep({
     title,
     eventType,
+    eventTypes,
     startAt,
     endAt,
     locationName,
@@ -48,6 +50,7 @@ export function EventOverviewStep({
     const renewalTotal = (planRenewal?.amountMinor ?? 0) + monthlyAddonTotal;
     const activationTotalLabel = currency ? formatMoney(locale, activationTotal, currency) : t('payment.noCharge');
     const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
+    const eventTypeName = eventTypes.find((type) => type.eventTypeKey === eventType)?.name ?? eventType;
 
     return (
         <div className="flex h-full flex-col">
@@ -63,7 +66,7 @@ export function EventOverviewStep({
                 <p className="mt-2 font-semibold text-ink">{title}</p>
 
                 <p className="mt-1 text-sm text-ink-muted">
-                    {t(`eventTypes.${eventType}`)} ·{' '}
+                    {eventTypeName} ·{' '}
                     {dateFormatter.format(new Date(startAt))} –{' '}
                     {dateFormatter.format(new Date(endAt))}
                 </p>

@@ -149,6 +149,7 @@ function ScheduleScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDe
                     open={editorOpen}
                     onOpenChange={handleEditorOpenChange}
                     eventId={eventId ?? ''}
+                    eventStatus={activeEvent.status}
                     sessions={sessions}
                     editingSession={editingSession}
                     defaultStartAt={defaultStartAt ?? ''}

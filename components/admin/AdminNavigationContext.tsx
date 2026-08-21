@@ -1,10 +1,19 @@
 'use client';
 
-import { BarChart3, CalendarDays, Layers3, LifeBuoy, type LucideIcon, PackagePlus, Receipt, Shield, Undo2 } from 'lucide-react';
+import { BarChart3, CalendarDays, Layers3, LifeBuoy, type LucideIcon, PackagePlus, Receipt, Shield, Tag, Undo2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-export type AdminTab = 'metrics' | 'eventPlans' | 'paidServices' | 'modules' | 'assignments' | 'billingOps' | 'refunds' | 'lifecycle';
+export type AdminTab =
+    | 'metrics'
+    | 'eventPlans'
+    | 'paidServices'
+    | 'modules'
+    | 'eventTypes'
+    | 'assignments'
+    | 'billingOps'
+    | 'refunds'
+    | 'lifecycle';
 
 export type AdminTabItem = {
     key: AdminTab;
@@ -27,6 +36,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#event-plans': 'eventPlans',
     '#paid-services': 'paidServices',
     '#modules': 'modules',
+    '#event-types': 'eventTypes',
     '#assignments': 'assignments',
     '#billing-ops': 'billingOps',
     '#refunds': 'refunds',
@@ -38,6 +48,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     eventPlans: '#event-plans',
     paidServices: '#paid-services',
     modules: '#modules',
+    eventTypes: '#event-types',
     assignments: '#assignments',
     billingOps: '#billing-ops',
     refunds: '#refunds',
@@ -101,6 +112,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'eventPlans', label: t('eventPlans'), icon: CalendarDays },
             { key: 'paidServices', label: t('paidServices'), icon: PackagePlus },
             { key: 'modules', label: t('modules'), icon: Shield },
+            { key: 'eventTypes', label: t('eventTypes'), icon: Tag },
             { key: 'assignments', label: t('assignments'), icon: Layers3 },
             { key: 'billingOps', label: t('billingOps'), icon: Receipt },
             { key: 'refunds', label: t('refunds'), icon: Undo2 },

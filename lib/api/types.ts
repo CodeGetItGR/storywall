@@ -8,9 +8,14 @@ export type AuthProvider = 'LOCAL' | 'OAUTH' | 'INVITE';
 export type AccountStatus = 'ACTIVE' | 'SUSPENDED' | 'DELETED';
 export type PlatformRole = 'USER' | 'ADMIN' | 'GUEST';
 
-// eventType / Post.type / Reaction.reactionType are free strings server-side.
+// eventType is now a closed set on the backend (EventTypeKey), validated on
+// POST /api/events against this exact union — an unknown value 400s with
+// INVALID_EVENT_TYPE. Not every key is necessarily offered right now: which
+// ones are currently enabled comes from GET /api/config's eventTypeKeys, not
+// this type — build pickers from that, not from this union directly.
+export type EventTypeConvention = 'WEDDING' | 'BAPTISM' | 'SOCIAL_EVENT' | 'BIRTHDAY' | 'CORPORATE' | 'FESTIVAL' | 'PRIVATE_PARTY' | 'CONFERENCE';
+// Post.type / Reaction.reactionType are free strings server-side.
 // moduleKey is now a closed set on the backend and should match the config payload.
-export type EventTypeConvention = 'WEDDING' | 'BAPTISM' | 'BIRTHDAY' | 'CONFERENCE';
 export const EVENT_MODULE_KEYS = ['posts', 'rsvp', 'playlist', 'stories', 'gallery', 'wishlist', 'wishbook'] as const;
 export type ModuleKeyConvention = (typeof EVENT_MODULE_KEYS)[number];
 // Post.type is enforced server-side against this exact set (DB CHECK constraint
@@ -112,6 +117,15 @@ export interface PlatformModuleResponseDto {
     sortOrder: number;
 }
 
+export interface PlatformEventTypeResponseDto {
+    id: string;
+    eventTypeKey: EventTypeConvention;
+    name: string;
+    description: string | null;
+    isEnabled: boolean;
+    sortOrder: number;
+}
+
 export interface AppRsvpConfigDto {
     minAdults: number;
     maxAdults: number;
@@ -127,6 +141,8 @@ export interface AppConfigResponseDto {
     paidServices: PaidServiceResponseDto[];
     eventModuleKeys: ModuleKey[];
     modules: PlatformModuleResponseDto[];
+    eventTypes: PlatformEventTypeResponseDto[];
+    eventTypeKeys: EventTypeConvention[];
     rsvp: AppRsvpConfigDto;
 }
 
@@ -1202,6 +1218,15 @@ export interface PlanAssignmentRequestDto {
 }
 
 export interface PlatformModulePatchDto {
+    name?: string;
+    description?: string | null;
+    isEnabled?: boolean;
+    sortOrder?: number;
+}
+
+// The EventTypeKey set itself is fixed in code — no create/delete, only
+// isEnabled + display metadata are admin-editable (mirrors PlatformModulePatchDto).
+export interface PlatformEventTypePatchDto {
     name?: string;
     description?: string | null;
     isEnabled?: boolean;

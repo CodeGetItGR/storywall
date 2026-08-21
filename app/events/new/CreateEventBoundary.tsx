@@ -53,6 +53,7 @@ export default function CreateEventPage() {
     const [error, setError] = useState<string | null>(null);
     const [step, setStep] = useState<'plan' | 'addons' | 'details' | 'overview'>('plan');
     const eventPlans = useMemo(() => publicAssignablePlans(appConfig?.planTiers ?? [], 'EVENT'), [appConfig?.planTiers]);
+    const eventTypes = appConfig?.eventTypes ?? [];
     const [selectedPlanCode, setSelectedPlanCode] = useState<string>('');
     const [selectedAddonCodes, setSelectedAddonCodes] = useState<string[]>([]);
     const [createdDraftEventId, setCreatedDraftEventId] = useState<string | null>(null);
@@ -60,6 +61,7 @@ export default function CreateEventPage() {
     const fieldErrors = getFieldErrors(createEvent.error);
     const selectedPlan = eventPlans.find((plan) => plan.code === selectedPlanCode) ?? eventPlans[0];
     const selectedCode = selectedPlan?.code ?? selectedPlanCode;
+    const selectedEventType = eventTypes.find((type) => type.eventTypeKey === eventType)?.eventTypeKey ?? eventTypes[0]?.eventTypeKey ?? eventType;
     const availableAddons = useMemo(
         () => publicAssignableEventAddons(appConfig?.paidServices ?? [], appConfig?.modules ?? [], selectedPlan),
         [appConfig?.modules, appConfig?.paidServices, selectedPlan]
@@ -126,7 +128,7 @@ export default function CreateEventPage() {
         const input: EventRequestDto = {
             title: title.trim(),
             planTierCode: selectedCode,
-            eventType,
+            eventType: selectedEventType,
             visibility: 'PRIVATE',
             startAt: new Date(startAt).toISOString(),
             endAt: new Date(endAt).toISOString(),
@@ -274,7 +276,8 @@ export default function CreateEventPage() {
                                     <EventDetailsStep
                                         title={title}
                                         titleError={fieldErrors?.title}
-                                        eventType={eventType}
+                                        eventType={selectedEventType}
+                                        eventTypes={eventTypes}
                                         startAt={startAt}
                                         endAt={endAt}
                                         scheduleError={scheduleError}
@@ -295,7 +298,8 @@ export default function CreateEventPage() {
                                 {step === 'overview' && selectedPlan && (
                                     <EventOverviewStep
                                         title={title.trim()}
-                                        eventType={eventType}
+                                        eventType={selectedEventType}
+                                        eventTypes={eventTypes}
                                         startAt={startAt}
                                         endAt={endAt}
                                         locationName={locationName.trim()}

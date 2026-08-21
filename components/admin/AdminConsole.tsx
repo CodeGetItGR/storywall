@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { BillingOpsPanel } from '@/components/admin/BillingOpsPanel';
 import { EventLifecyclePanel } from '@/components/admin/EventLifecyclePanel';
+import { EventTypeRegistryPanel } from '@/components/admin/EventTypeRegistryPanel';
 import { ModuleRegistryPanel } from '@/components/admin/ModuleRegistryPanel';
 import { PaidServicesCatalogPanel } from '@/components/admin/PaidServicesCatalogPanel';
 import { PlanAssignmentPanel } from '@/components/admin/PlanAssignmentPanel';
@@ -32,6 +33,7 @@ export function AdminConsole() {
                 {tab === 'metrics' && <PlatformMetricsPanel />}
                 {tab === 'eventPlans' && <PlanCatalogPanel scope="EVENT" />}
                 {tab === 'modules' && <ModuleRegistryPanel />}
+                {tab === 'eventTypes' && <EventTypeRegistryPanel />}
                 {tab === 'assignments' && <PlanAssignmentPanel />}
                 {tab === 'billingOps' && <BillingOpsPanel />}
                 {tab === 'refunds' && <RefundQueuePanel />}

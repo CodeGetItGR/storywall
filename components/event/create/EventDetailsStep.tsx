@@ -5,14 +5,13 @@ import { useTranslations } from 'next-intl';
 import type { ChangeEvent } from 'react';
 
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
-import type { EventTypeConvention } from '@/lib/api/types';
-
-const EVENT_TYPES: EventTypeConvention[] = ['WEDDING', 'BAPTISM', 'BIRTHDAY', 'CONFERENCE'];
+import type { EventTypeConvention, PlatformEventTypeResponseDto } from '@/lib/api/types';
 
 type EventDetailsStepProps = {
     title: string;
     titleError?: string | null;
     eventType: EventTypeConvention;
+    eventTypes: PlatformEventTypeResponseDto[];
     startAt: string;
     endAt: string;
     scheduleError?: string | null;
@@ -33,6 +32,7 @@ export function EventDetailsStep({
     title,
     titleError,
     eventType,
+    eventTypes,
     startAt,
     endAt,
     scheduleError,
@@ -73,9 +73,9 @@ export function EventDetailsStep({
                             onChange={onEventTypeChange}
                             className="w-full appearance-none bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition pr-10"
                         >
-                            {EVENT_TYPES.map((type) => (
-                                <option key={type} value={type}>
-                                    {t(`eventTypes.${type}`)}
+                            {eventTypes.map((type) => (
+                                <option key={type.eventTypeKey} value={type.eventTypeKey}>
+                                    {type.name}
                                 </option>
                             ))}
                         </select>

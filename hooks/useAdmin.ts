@@ -15,6 +15,8 @@ import type {
     PlanTierPatchDto,
     PlanTierRequestDto,
     PlanTierResponseDto,
+    PlatformEventTypePatchDto,
+    PlatformEventTypeResponseDto,
     PlatformMetricsResponseDto,
     PlatformModulePatchDto,
     PlatformModuleResponseDto,
@@ -28,6 +30,7 @@ export const adminKeys = {
     all: ['admin'] as const,
     planTiers: (scope?: PlanScope, includeArchived?: boolean) => ['admin', 'plan-tiers', scope ?? 'ALL', Boolean(includeArchived)] as const,
     platformModules: ['admin', 'platform-modules'] as const,
+    platformEventTypes: ['admin', 'platform-event-types'] as const,
     unprocessedWebhooks: ['admin', 'webhooks', 'unprocessed'] as const,
     notificationSweep: ['admin', 'notifications', 'sweep'] as const,
     refundRequests: ['admin', 'refund-requests'] as const,
@@ -267,6 +270,26 @@ export function useUpdatePlatformModule() {
             api.patch<PlatformModuleResponseDto>(endpoints.admin.platformModules.byKey(moduleKey), input),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: adminKeys.platformModules });
+            queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+        },
+    });
+}
+
+export function useAdminPlatformEventTypes() {
+    return useQuery({
+        queryKey: adminKeys.platformEventTypes,
+        queryFn: () => api.get<PlatformEventTypeResponseDto[]>(endpoints.admin.platformEventTypes.list),
+    });
+}
+
+export function useUpdatePlatformEventType() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ eventTypeKey, input }: { eventTypeKey: string; input: PlatformEventTypePatchDto }) =>
+            api.patch<PlatformEventTypeResponseDto>(endpoints.admin.platformEventTypes.byKey(eventTypeKey), input),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: adminKeys.platformEventTypes });
             queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
         },
     });

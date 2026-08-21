@@ -515,12 +515,6 @@
             "startInPast": "The start time must be now or later.",
             "endBeforeStart": "The end time must be after the start time."
         },
-        "eventTypes": {
-            "WEDDING": "Wedding",
-            "BAPTISM": "Baptism",
-            "BIRTHDAY": "Birthday",
-            "CONFERENCE": "Conference"
-        },
         "visibilities": {
             "PRIVATE": "Private",
             "PUBLIC": "Public"
@@ -1181,6 +1175,7 @@
             "editingTitle": "Edit schedule item",
             "editingSubtitle": "Update “{title}” and save your changes.",
             "endBeforeStart": "The end time must be after the start time.",
+            "startLocked": "This session has already started, so its start time can no longer be changed.",
             "fields": {
                 "title": "Title",
                 "description": "Description",
@@ -1448,6 +1443,7 @@
             "paidServices": "Paid services",
             "metrics": "Metrics",
             "modules": "Modules",
+            "eventTypes": "Event types",
             "assignments": "Assignments",
             "billingOps": "Billing ops",
             "refunds": "Refunds",
@@ -1460,6 +1456,7 @@
             "eventPlans": "Event plans",
             "paidServices": "Paid services",
             "modules": "Modules",
+            "eventTypes": "Event types",
             "assignments": "Assignments",
             "billingOps": "Billing ops",
             "refunds": "Refunds",
@@ -1642,6 +1639,17 @@
             "empty": "No modules to show.",
             "confirmTitle": "Save {module}?",
             "confirmBody": "This updates the platform module registry. Disabling a module can remove that feature everywhere after config refresh."
+        },
+        "eventTypes": {
+            "notice": "Event type keys are fixed by backend code. Disable a type here to withdraw it from the creation picker on the next config refresh.",
+            "loading": "Loading event types...",
+            "enabled": "Enabled",
+            "disabled": "Disabled",
+            "edit": "Edit",
+            "editTitle": "Edit event type",
+            "empty": "No event types to show.",
+            "confirmTitle": "Save {eventType}?",
+            "confirmBody": "This updates the platform event type registry. Disabling a type removes it from the event-creation picker after config refresh."
         },
         "assignments": {
             "eventTitle": "Assign event plan",
@@ -2095,6 +2103,11 @@
         "refundNotPending": "This refund request has already been decided.",
         "internalError": "Something went wrong on our side. Please try again.",
         "renewalAlreadyCovered": "This event is already paid up, so there's nothing to renew yet.",
-        "eventScheduleLocked": "This event's schedule can no longer be changed."
+        "eventScheduleLocked": "This event's schedule can no longer be changed.",
+        "eventModuleCompositionLocked": "Event modules can't be added, removed, or toggled after the event is created.",
+        "eventVisibilityNotSupported": "Public events aren't supported yet. This event must stay private.",
+        "eventTypeNotAvailable": "This event type isn't available yet.",
+        "eventSessionScheduleLocked": "This session has already started, so its schedule can no longer be changed.",
+        "invalidEventType": "Choose a valid event type."
     }
 }

@@ -26,6 +26,11 @@ export type ApiErrorMessageKey =
     | 'eventNotActive'
     | 'eventNotDraft'
     | 'eventPurgedNotRenewable'
+    | 'eventModuleCompositionLocked'
+    | 'eventVisibilityNotSupported'
+    | 'eventTypeNotAvailable'
+    | 'eventSessionScheduleLocked'
+    | 'invalidEventType'
     | 'forbidden'
     | 'internalError'
     | 'invalidCredentials'
@@ -97,6 +102,11 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.EVENT_NOT_ACTIVE]: 'eventNotActive',
     [ERROR_CODES.EVENT_NOT_DRAFT]: 'eventNotDraft',
     [ERROR_CODES.EVENT_PURGED_NOT_RENEWABLE]: 'eventPurgedNotRenewable',
+    [ERROR_CODES.EVENT_MODULE_COMPOSITION_LOCKED]: 'eventModuleCompositionLocked',
+    [ERROR_CODES.EVENT_VISIBILITY_NOT_SUPPORTED]: 'eventVisibilityNotSupported',
+    [ERROR_CODES.EVENT_TYPE_NOT_AVAILABLE]: 'eventTypeNotAvailable',
+    [ERROR_CODES.EVENT_SESSION_SCHEDULE_LOCKED]: 'eventSessionScheduleLocked',
+    [ERROR_CODES.INVALID_EVENT_TYPE]: 'invalidEventType',
     [ERROR_CODES.EVENT_STORAGE_LIMIT_EXCEEDED]: 'storageLimit',
     [ERROR_CODES.FORBIDDEN]: 'forbidden',
     [ERROR_CODES.INTERNAL_ERROR]: 'internalError',

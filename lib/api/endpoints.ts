@@ -223,6 +223,10 @@ export const endpoints = {
             list: '/api/admin/platform-modules',
             byKey: (moduleKey: string) => `/api/admin/platform-modules/${moduleKey}`,
         },
+        platformEventTypes: {
+            list: '/api/admin/platform-event-types',
+            byKey: (eventTypeKey: string) => `/api/admin/platform-event-types/${eventTypeKey}`,
+        },
         users: {
             planTier: (userId: string) => `/api/admin/users/${userId}/plan-tier`,
         },

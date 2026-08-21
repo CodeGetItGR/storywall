@@ -7,8 +7,8 @@ import React, { type ChangeEvent, useId, useMemo, useState } from 'react';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { Modal } from '@/components/ui/modal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import type { EventSessionRequestDto, EventSessionResponseDto } from '@/lib/api/types';
-import { toDatetimeLocalValue } from '@/lib/datetime';
+import type { EventSessionRequestDto, EventSessionResponseDto, EventStatus } from '@/lib/api/types';
+import { getCurrentDatetimeLocalValue, getLaterDatetimeLocalValue, isDatetimeLocalBefore, toDatetimeLocalValue } from '@/lib/datetime';
 
 type SessionMutator = {
     mutateAsync: (payload: EventSessionRequestDto) => Promise<unknown>;
@@ -19,6 +19,7 @@ interface ScheduleEditorSheetProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     eventId: string;
+    eventStatus: EventStatus;
     sessions: EventSessionResponseDto[];
     editingSession: EventSessionResponseDto | null;
     defaultStartAt: string;
@@ -28,6 +29,7 @@ interface ScheduleEditorSheetProps {
 
 interface ScheduleEditorFormProps {
     eventId: string;
+    eventStatus: EventStatus;
     sessions: EventSessionResponseDto[];
     editingSession: EventSessionResponseDto | null;
     defaultStartAt: string;
@@ -36,7 +38,16 @@ interface ScheduleEditorFormProps {
     onClose: () => void;
 }
 
-function ScheduleEditorForm({ eventId, sessions, editingSession, defaultStartAt, createSession, updateSession, onClose }: ScheduleEditorFormProps) {
+function ScheduleEditorForm({
+    eventId,
+    eventStatus,
+    sessions,
+    editingSession,
+    defaultStartAt,
+    createSession,
+    updateSession,
+    onClose,
+}: ScheduleEditorFormProps) {
     const t = useTranslations('SchedulePage');
     const toErrorMessage = useApiErrorMessage();
 
@@ -46,6 +57,13 @@ function ScheduleEditorForm({ eventId, sessions, editingSession, defaultStartAt,
     const initialEndAt = editingSession?.endAt ? toDatetimeLocalValue(editingSession.endAt) : '';
     const initialLocationName = editingSession?.locationName ?? '';
     const initialMapsUrl = editingSession?.mapsUrl ?? '';
+
+    // Mirrors the event-level schedule lock (SettingsTab's eventHasStarted): once a
+    // session's own startAt is in the past on a non-DRAFT event, the backend 409s
+    // on any change to it (EVENT_SESSION_SCHEDULE_LOCKED) — disable the field instead
+    // of letting a host attempt an edit that can only fail.
+    const nowAt = getCurrentDatetimeLocalValue();
+    const sessionHasStarted = Boolean(editingSession && eventStatus !== 'DRAFT' && isDatetimeLocalBefore(initialStartAt, nowAt));
 
     const [title, setTitle] = useState(initialTitle);
     const [description, setDescription] = useState(initialDescription);
@@ -59,6 +77,9 @@ function ScheduleEditorForm({ eventId, sessions, editingSession, defaultStartAt,
 
     const nextDisplayOrder = useMemo(() => sessions.reduce((max, session) => Math.max(max, session.displayOrder), -1) + 1, [sessions]);
     const isEndBeforeStart = Boolean(startAt && endAt && new Date(endAt).getTime() < new Date(startAt).getTime());
+    // endAt can't move into the past on a non-DRAFT event (pushing it further out is
+    // always fine) — floor the picker instead of letting that attempt 409 too.
+    const endAtMin = eventStatus !== 'DRAFT' ? (getLaterDatetimeLocalValue(nowAt, startAt) ?? nowAt) : startAt || undefined;
 
     function handleTitleChange(event: ChangeEvent<HTMLInputElement>) {
         setTitle(event.target.value);
@@ -210,8 +231,10 @@ function ScheduleEditorForm({ eventId, sessions, editingSession, defaultStartAt,
                                 type="datetime-local"
                                 value={startAt}
                                 onChange={handleStartAtChange}
-                                className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                                disabled={sessionHasStarted}
+                                className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
                             />
+                            {sessionHasStarted && <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('host.startLocked')}</p>}
                         </FormFieldLabel>
                         <FormFieldLabel
                             label={t('host.fields.endAt')}
@@ -223,7 +246,7 @@ function ScheduleEditorForm({ eventId, sessions, editingSession, defaultStartAt,
                                 type="datetime-local"
                                 value={endAt}
                                 onChange={handleEndAtChange}
-                                min={startAt || undefined}
+                                min={endAtMin}
                                 className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                             />
                         </FormFieldLabel>
@@ -306,6 +329,7 @@ export function ScheduleEditorSheet({
     open,
     onOpenChange,
     eventId,
+    eventStatus,
     sessions,
     editingSession,
     defaultStartAt,
@@ -326,6 +350,7 @@ export function ScheduleEditorSheet({
                 <ScheduleEditorForm
                     key={sheetKey}
                     eventId={eventId}
+                    eventStatus={eventStatus}
                     sessions={sessions}
                     editingSession={editingSession}
                     defaultStartAt={defaultStartAt}
