@@ -75,6 +75,7 @@ export const ERROR_CODES = {
     EVENT_TYPE_NOT_AVAILABLE: 5051,
     EVENT_SESSION_SCHEDULE_LOCKED: 5052,
     INVALID_EVENT_TYPE: 3018,
+    PLAN_TIER_NOT_AVAILABLE_FOR_EVENT_TYPE: 5053,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the

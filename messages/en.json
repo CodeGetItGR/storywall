@@ -500,7 +500,6 @@
         "subtitle": "Add the event details.",
         "fields": {
             "title": "Event title",
-            "eventType": "Event type",
             "startAt": "Starts",
             "endAt": "Ends",
             "timezone": "Timezone",
@@ -525,7 +524,9 @@
         "activeEventLimitExceededWithPlan": "You are already hosting as many active events as currently allowed. Archive an old event before creating another one.",
         "unlimited": "Unlimited",
         "noPlans": "No public event plans are available yet.",
+        "noEventTypes": "No event types are available yet.",
         "planDescriptionFallback": "Everything you need for this event tier.",
+        "continueToPlan": "Continue to plan",
         "continueToDetails": "Continue to details",
         "continueToAddons": "Continue to add-ons",
         "continueToOverview": "Continue to overview",
@@ -537,10 +538,12 @@
         },
         "steps": {
             "navigationLabel": "Event creation steps",
+            "type": "Event type",
             "plan": "Plan",
             "details": "Details",
             "addons": "Add-ons",
             "overview": "Overview",
+            "typeSubtitle": "What are we celebrating? 🎉",
             "planSubtitle": "Choose the event plan your guests will experience.",
             "addonsSubtitle": "Optional paid modules",
             "overviewSubtitle": "Review the event details and every charge before continuing to payment."
@@ -1531,6 +1534,11 @@
                 "billingOnce": "once",
                 "billingMonthly": "/mo"
             },
+            "eventTypes": {
+                "unrestricted": "Available for every event type.",
+                "restricted": "{count, plural, one {Restricted to # event type} other {Restricted to # event types}}"
+            },
+            "eventTypesRestrictedBadge": "{count, plural, one {# type only} other {# types only}}",
             "accountDisabledNotice": "Account plans are disabled for new sales and assignment. Existing rows remain here for historical review and limited maintenance.",
             "saveModules": "Save modules",
             "destructiveHint": "Archive plans instead of deleting them once they may be in use.",
@@ -1541,6 +1549,7 @@
                 "limits": "Limits",
                 "pricing": "Pricing",
                 "modules": "Modules",
+                "eventTypes": "Event types",
                 "danger": "Danger zone"
             },
             "pendingChanges": "{count, plural, one {# unsaved change} other {# unsaved changes}}",
@@ -1554,7 +1563,8 @@
                 "limitsHint": "Blank means no limit. These caps apply to every event on this plan.",
                 "promotion": "Promotion",
                 "promotionHint": "A discount inside its window is charged, not just advertised. Leave the percentage blank to run no promotion.",
-                "availability": "Availability"
+                "availability": "Availability",
+                "eventTypesHint": "Choose which event types can use this plan. Leave every type off to allow it for all event types."
             },
             "filters": {
                 "all": "All",
@@ -1607,7 +1617,10 @@
                 "to": "to",
                 "modules": "Modules",
                 "enabled": "Will be enabled",
-                "disabled": "Will be disabled"
+                "disabled": "Will be disabled",
+                "eventTypes": "Event types",
+                "included": "Will be included",
+                "excluded": "Will be excluded"
             },
             "create": {
                 "title": "Create plan",
@@ -1964,6 +1977,16 @@
         "PRO": "The highest limits and every available feature.",
         "fallback": "See the limits and features included with {plan}."
     },
+    "EventTypes": {
+        "WEDDING": { "name": "Wedding" },
+        "BAPTISM": { "name": "Baptism" },
+        "SOCIAL_EVENT": { "name": "Social Event" },
+        "BIRTHDAY": { "name": "Birthday" },
+        "CORPORATE": { "name": "Corporate" },
+        "FESTIVAL": { "name": "Festival" },
+        "PRIVATE_PARTY": { "name": "Private Party" },
+        "CONFERENCE": { "name": "Conference" }
+    },
     "Modules": {
         "posts": {
             "name": "Posts",
@@ -2062,6 +2085,7 @@
         "eventDatesIncomplete": "Add a start and end date to the event before paying.",
         "eventNotDraft": "This event has already been published.",
         "planNotPurchasable": "This plan cannot be bought directly. Contact us to switch to it.",
+        "planTierNotAvailableForEventType": "This plan is not available for the selected event type. Choose a different plan or event type.",
         "planNotPriced": "This plan has no price set yet. Please try again later.",
         "planCurrencyUnsupported": "This plan is not available in your currency yet.",
         "planNotAnUpgrade": "These upgrade options are out of date. We refreshed the plan catalog.",

@@ -130,7 +130,7 @@ export function PlanCreateForm({
         >
             <form id="plan-create-form" ref={formRef} onSubmit={handleSubmit} className="space-y-5">
                 <AdminSection title={t('plans.sections.identity')}>
-                    <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
+                    <div className="grid grid-cols-2 gap-2.5">
                         <AdminField label={t('fields.name')} required className="col-span-2">
                             <input required name="name" maxLength={100} value={name} onChange={handleNameChange} className={adminInputClass()} />
                         </AdminField>
@@ -158,14 +158,14 @@ export function PlanCreateForm({
                                 className={adminInputClass('max-w-24')}
                             />
                         </AdminField>
-                        <AdminField label={t('fields.description')} optional className="col-span-2 md:col-span-4">
+                        <AdminField label={t('fields.description')} optional className="col-span-2">
                             <input name="description" className={adminInputClass()} />
                         </AdminField>
                     </div>
                 </AdminSection>
 
                 <AdminSection title={t('plans.sections.limits')}>
-                    <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
+                    <div className="grid grid-cols-2 gap-2.5">
                         {scope === 'EVENT' ? (
                             <>
                                 <div className="col-span-2 grid grid-cols-[minmax(0,1fr)_6rem] gap-2">
@@ -214,7 +214,7 @@ export function PlanCreateForm({
                 </AdminSection>
 
                 <AdminSection title={t('plans.sections.pricing')}>
-                    <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
+                    <div className="grid grid-cols-2 gap-2.5">
                         <AdminField label={t('fields.price')} optional className="col-span-1">
                             <input name="price" type="number" min={0} step="0.01" placeholder="499" className={adminInputClass('max-w-32')} />
                         </AdminField>
@@ -252,27 +252,17 @@ export function PlanCreateForm({
                 </AdminSection>
 
                 <AdminSection title={t('plans.sections.promotion')} description={t('plans.sections.promotionHint')}>
-                    <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
+                    <div className="grid grid-cols-2 gap-2.5">
                         <AdminField label={t('fields.discountPercent')} optional className="col-span-1">
                             <input name="discountPercent" type="number" min={0} max={100} className={adminInputClass('max-w-24')} />
                         </AdminField>
-                        <AdminField label={t('fields.discountLabel')} optional className="col-span-1 md:col-span-3">
+                        <AdminField label={t('fields.discountLabel')} optional className="col-span-1">
                             <input name="discountLabel" maxLength={100} className={adminInputClass()} />
                         </AdminField>
-                        <AdminField
-                            label={t('fields.discountStartsAt')}
-                            optional
-                            hint={t('fields.discountBoundHint')}
-                            className="col-span-1 md:col-span-2"
-                        >
+                        <AdminField label={t('fields.discountStartsAt')} optional hint={t('fields.discountBoundHint')} className="col-span-1">
                             <input name="discountStartsAt" type="datetime-local" className={adminInputClass()} />
                         </AdminField>
-                        <AdminField
-                            label={t('fields.discountEndsAt')}
-                            optional
-                            hint={t('fields.discountEndsAtHint')}
-                            className="col-span-1 md:col-span-2"
-                        >
+                        <AdminField label={t('fields.discountEndsAt')} optional hint={t('fields.discountEndsAtHint')} className="col-span-1">
                             <input name="discountEndsAt" type="datetime-local" className={adminInputClass()} />
                         </AdminField>
                     </div>

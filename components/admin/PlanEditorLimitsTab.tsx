@@ -26,7 +26,7 @@ export function PlanEditorLimitsTab({
             {/* Limits */}
             <p className="mb-4 max-w-2xl text-sm leading-6 text-ink-muted">{t('plans.sections.limitsHint')}</p>
             {isEvent ? (
-                <div className="grid gap-3 sm:grid-cols-[minmax(0,10rem)_6rem_minmax(0,10rem)]">
+                <div className="grid grid-cols-[minmax(0,1fr)_5rem_minmax(0,1fr)] gap-3">
                     <AdminField label={t('fields.storage')} optional>
                         <input
                             name="storageAmount"

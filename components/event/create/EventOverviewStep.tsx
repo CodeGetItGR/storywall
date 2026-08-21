@@ -2,6 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 
+import { useLocalizedEventTypeName } from '@/hooks/useLocalizedEventTypeName';
 import type { EventTypeConvention, PaidServiceResponseDto, PlanTierResponseDto, PlatformEventTypeResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
 import { getModuleMeta } from '@/lib/planModules';
@@ -36,6 +37,7 @@ export function EventOverviewStep({
 }: EventOverviewStepProps) {
     const t = useTranslations('CreateEventPage');
     const locale = useLocale();
+    const localizedEventTypeName = useLocalizedEventTypeName();
     const includedMonths = plan.includedMonths ?? 1;
     const planActivation = getPlanPriceDetails(plan, 'activation');
     const planRenewal = getPlanPriceDetails(plan, 'recurring');
@@ -50,7 +52,8 @@ export function EventOverviewStep({
     const renewalTotal = (planRenewal?.amountMinor ?? 0) + monthlyAddonTotal;
     const activationTotalLabel = currency ? formatMoney(locale, activationTotal, currency) : t('payment.noCharge');
     const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
-    const eventTypeName = eventTypes.find((type) => type.eventTypeKey === eventType)?.name ?? eventType;
+    const matchedEventType = eventTypes.find((type) => type.eventTypeKey === eventType);
+    const eventTypeName = matchedEventType ? localizedEventTypeName(matchedEventType) : eventType;
 
     return (
         <div className="flex h-full flex-col">

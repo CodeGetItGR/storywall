@@ -9,6 +9,7 @@ import { EventAddonsStep } from '@/components/event/create/EventAddonsStep';
 import { EventCreateStepBreadcrumb } from '@/components/event/create/EventCreateStepBreadcrumb';
 import { EventDetailsStep } from '@/components/event/create/EventDetailsStep';
 import { EventOverviewStep } from '@/components/event/create/EventOverviewStep';
+import { EventTypeStep } from '@/components/event/create/EventTypeStep';
 import { EventPlanSelector } from '@/components/plan/EventPlanSelector';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
@@ -28,9 +29,11 @@ import type {
 import { formatMoney, navigateToCheckout } from '@/lib/billing';
 import { getCurrentDatetimeLocalValue, getLaterDatetimeLocalValue, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
 import { publicAssignableEventAddons } from '@/lib/planModules';
-import { getPlanPriceDetails, publicAssignablePlans } from '@/lib/planTiers';
+import { getPlanPriceDetails, publicAssignablePlansForEventType } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { useEventSwitcher } from '@/providers/EventProvider';
+
+type CreateEventStep = 'type' | 'plan' | 'addons' | 'details' | 'overview';
 
 const CREATE_EVENT_FORM_ID = 'create-event-form';
 
@@ -51,17 +54,20 @@ export default function CreateEventPage() {
     const [timezone, setTimezone] = useState(() => Intl.DateTimeFormat().resolvedOptions().timeZone);
     const [locationName, setLocationName] = useState('');
     const [error, setError] = useState<string | null>(null);
-    const [step, setStep] = useState<'plan' | 'addons' | 'details' | 'overview'>('plan');
-    const eventPlans = useMemo(() => publicAssignablePlans(appConfig?.planTiers ?? [], 'EVENT'), [appConfig?.planTiers]);
+    const [step, setStep] = useState<CreateEventStep>('type');
     const eventTypes = appConfig?.eventTypes ?? [];
     const [selectedPlanCode, setSelectedPlanCode] = useState<string>('');
     const [selectedAddonCodes, setSelectedAddonCodes] = useState<string[]>([]);
     const [createdDraftEventId, setCreatedDraftEventId] = useState<string | null>(null);
 
     const fieldErrors = getFieldErrors(createEvent.error);
+    const selectedEventType = eventTypes.find((type) => type.eventTypeKey === eventType)?.eventTypeKey ?? eventTypes[0]?.eventTypeKey ?? eventType;
+    const eventPlans = useMemo(
+        () => publicAssignablePlansForEventType(appConfig?.planTiers ?? [], 'EVENT', selectedEventType),
+        [appConfig?.planTiers, selectedEventType]
+    );
     const selectedPlan = eventPlans.find((plan) => plan.code === selectedPlanCode) ?? eventPlans[0];
     const selectedCode = selectedPlan?.code ?? selectedPlanCode;
-    const selectedEventType = eventTypes.find((type) => type.eventTypeKey === eventType)?.eventTypeKey ?? eventTypes[0]?.eventTypeKey ?? eventType;
     const availableAddons = useMemo(
         () => publicAssignableEventAddons(appConfig?.paidServices ?? [], appConfig?.modules ?? [], selectedPlan),
         [appConfig?.modules, appConfig?.paidServices, selectedPlan]
@@ -103,7 +109,7 @@ export default function CreateEventPage() {
     }, [isAuthenticated, isBootstrapping, router, user?.role]);
 
     useEffect(() => {
-        if (step === 'plan') {
+        if (step === 'type') {
             void refetchAppConfig();
         }
     }, [refetchAppConfig, step]);
@@ -186,8 +192,9 @@ export default function CreateEventPage() {
         setTitle(e.target.value);
     }, []);
 
-    const onEventTypeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-        setEventType(e.target.value as EventTypeConvention);
+    const onSelectEventType = useCallback((type: EventTypeConvention) => {
+        setEventType(type);
+        setSelectedPlanCode('');
     }, []);
 
     const onStartAtChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -204,6 +211,10 @@ export default function CreateEventPage() {
 
     const onLocationNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setLocationName(e.target.value);
+    }, []);
+
+    const goToType = useCallback(() => {
+        setStep('type');
     }, []);
 
     const goToAddons = useCallback(() => {
@@ -241,18 +252,29 @@ export default function CreateEventPage() {
                         </div>
 
                         {/* Steps */}
-                        <EventCreateStepBreadcrumb step={step} onGoToPlan={goToPlan} onGoToAddons={goToAddons} onGoToDetails={goToDetails} />
+                        <EventCreateStepBreadcrumb
+                            step={step}
+                            onGoToType={goToType}
+                            onGoToPlan={goToPlan}
+                            onGoToAddons={goToAddons}
+                            onGoToDetails={goToDetails}
+                        />
 
                         {/* Form Shell */}
                         <div className="mt-3 min-h-0 flex-1 overflow-y-auto p-5">
                             <form id={CREATE_EVENT_FORM_ID} onSubmit={handleSubmit}>
                                 {/* Subtitle */}
                                 <h2 className="text-lg font-bold text-ink mb-5">
+                                    {step === 'type' && t('steps.typeSubtitle')}
                                     {step === 'plan' && t('steps.planSubtitle')}
                                     {step === 'addons' && t('steps.addonsSubtitle')}
                                     {step === 'details' && t('subtitle')}
                                     {step === 'overview' && t('steps.overviewSubtitle')}
                                 </h2>
+
+                                {step === 'type' && (
+                                    <EventTypeStep eventTypes={eventTypes} selectedEventType={selectedEventType} onSelect={onSelectEventType} />
+                                )}
 
                                 {step === 'plan' && (
                                     <EventPlanSelector
@@ -276,8 +298,6 @@ export default function CreateEventPage() {
                                     <EventDetailsStep
                                         title={title}
                                         titleError={fieldErrors?.title}
-                                        eventType={selectedEventType}
-                                        eventTypes={eventTypes}
                                         startAt={startAt}
                                         endAt={endAt}
                                         scheduleError={scheduleError}
@@ -287,7 +307,6 @@ export default function CreateEventPage() {
                                         timezone={timezone}
                                         locationName={locationName}
                                         onTitleChange={onTitleChange}
-                                        onEventTypeChange={onEventTypeChange}
                                         onStartAtChange={onStartAtChange}
                                         onEndAtChange={onEndAtChange}
                                         onTimezoneChange={onTimezoneChange}
@@ -316,11 +335,13 @@ export default function CreateEventPage() {
                     <EventCreateFooter
                         step={step}
                         formId={CREATE_EVENT_FORM_ID}
+                        canContinueType={eventTypes.length > 0}
                         canContinue={Boolean(selectedCode)}
                         isPending={createEvent.isPending}
                         hasDraft={Boolean(createdDraftEventId)}
                         payAmountLabel={overviewPayAmountLabel}
                         canSubmitDetails={Boolean(title.trim() && startAt && endAt && !scheduleError)}
+                        onGoToType={goToType}
                         onGoToAddons={goToAddons}
                         onGoToDetails={goToDetails}
                         onGoToPlan={goToPlan}
@@ -346,22 +367,26 @@ function CreateEventRouteState({ content, isBlocked }: { content: React.ReactNod
 function EventCreateFooter({
     step,
     formId,
+    canContinueType,
     canContinue,
     isPending,
     hasDraft,
     payAmountLabel,
     canSubmitDetails,
+    onGoToType,
     onGoToAddons,
     onGoToDetails,
     onGoToPlan,
 }: {
-    step: 'plan' | 'addons' | 'details' | 'overview';
+    step: CreateEventStep;
     formId: string;
+    canContinueType: boolean;
     canContinue: boolean;
     isPending: boolean;
     hasDraft: boolean;
     payAmountLabel: string;
     canSubmitDetails: boolean;
+    onGoToType: () => void;
     onGoToAddons: () => void;
     onGoToDetails: () => void;
     onGoToPlan: () => void;
@@ -371,13 +396,33 @@ function EventCreateFooter({
     return (
         <footer className="shrink-0 border-t border-border/60 bg-background">
             <div className="mx-auto w-full max-w-2xl px-4 py-4">
-                {step === 'plan' && (
+                {step === 'type' && (
                     <div className="flex justify-end">
+                        <button
+                            type="button"
+                            disabled={!canContinueType}
+                            onClick={onGoToPlan}
+                            className="min-h-11 rounded-full bg-gradient-brand px-5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                            {t('continueToPlan')}
+                        </button>
+                    </div>
+                )}
+
+                {step === 'plan' && (
+                    <div className="flex gap-3">
+                        <button
+                            type="button"
+                            onClick={onGoToType}
+                            className="min-h-11 flex-1 rounded-full border border-border text-sm font-semibold text-ink"
+                        >
+                            {t('actions.back')}
+                        </button>
                         <button
                             type="button"
                             disabled={!canContinue}
                             onClick={onGoToAddons}
-                            className="min-h-11 rounded-full bg-gradient-brand px-5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                            className="min-h-11 flex-2 rounded-full bg-gradient-brand text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             {t('continueToAddons')}
                         </button>

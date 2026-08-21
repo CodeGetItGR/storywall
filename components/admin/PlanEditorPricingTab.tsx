@@ -26,7 +26,7 @@ export function PlanEditorPricingTab({
     return (
         <AdminTabPanel id={editorId} tabKey="pricing" active={activeTab} className="pt-5">
             {/* Pricing */}
-            <div className="grid gap-3 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3">
                 <AdminField label={t('fields.price')} optional>
                     <input
                         name="price"
@@ -40,7 +40,7 @@ export function PlanEditorPricingTab({
                 <AdminField label={t('fields.priceCurrency')} optional>
                     <input name="priceCurrency" maxLength={3} defaultValue={defaultCurrency(plan)} className={adminInputClass('max-w-24')} />
                 </AdminField>
-                <AdminField label={t('fields.billingPeriod')} optional className="sm:col-span-2">
+                <AdminField label={t('fields.billingPeriod')} optional className="col-span-2">
                     <select name="billingPeriod" defaultValue={plan.billingPeriod ?? ''} className={adminInputClass('max-w-44')}>
                         <option value="">{t('none')}</option>
                         {BILLING_PERIODS.map((item) => (
@@ -78,7 +78,7 @@ export function PlanEditorPricingTab({
 
             {/* Promotion */}
             <AdminSection title={t('plans.sections.promotion')} description={t('plans.sections.promotionHint')} className="mt-1">
-                <div className="grid gap-3 sm:grid-cols-4">
+                <div className="grid grid-cols-2 gap-3">
                     <AdminField label={t('fields.discountPercent')} optional>
                         <input
                             name="discountPercent"
@@ -90,7 +90,7 @@ export function PlanEditorPricingTab({
                             className={adminInputClass('max-w-24')}
                         />
                     </AdminField>
-                    <AdminField label={t('fields.discountLabel')} optional className="sm:col-span-3">
+                    <AdminField label={t('fields.discountLabel')} optional>
                         <input
                             name="discountLabel"
                             maxLength={100}
@@ -99,7 +99,7 @@ export function PlanEditorPricingTab({
                             className={adminInputClass()}
                         />
                     </AdminField>
-                    <AdminField label={t('fields.discountStartsAt')} optional hint={t('fields.discountBoundHint')} className="sm:col-span-2">
+                    <AdminField label={t('fields.discountStartsAt')} optional hint={t('fields.discountBoundHint')}>
                         <input
                             name="discountStartsAt"
                             type="datetime-local"
@@ -107,7 +107,7 @@ export function PlanEditorPricingTab({
                             className={adminInputClass()}
                         />
                     </AdminField>
-                    <AdminField label={t('fields.discountEndsAt')} optional hint={t('fields.discountEndsAtHint')} className="sm:col-span-2">
+                    <AdminField label={t('fields.discountEndsAt')} optional hint={t('fields.discountEndsAtHint')}>
                         <input
                             name="discountEndsAt"
                             type="datetime-local"

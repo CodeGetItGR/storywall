@@ -1,5 +1,9 @@
 # Agent Instructions
 
+## Workflow
+
+- Never dispatch parallel subagents (the Agent tool) unless the user has explicitly given permission for that specific task. Parallel agents burn through the 5-hour session limit fast. Do research and multi-file audits directly (Read/Grep/Glob/Bash) instead, even if it takes more turns. A single subagent for a narrow, well-scoped sub-task is fine; spawning several at once is not, absent explicit permission.
+
 ## Structure
 
 - Keep route `page.tsx` and `PageClient.tsx` files thin. They should compose hooks and components, not own full feature trees.

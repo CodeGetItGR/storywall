@@ -2,7 +2,13 @@ import { localInputToInstant, priceInputToMinor, storageInputToBytes } from '@/l
 import { emptyToNull, numberOrNull } from '@/lib/adminUtils';
 import type { Visibility } from '@/lib/adminVisibility';
 import { visibilityFlags } from '@/lib/adminVisibility';
-import type { BillingPeriod, PlanTierPatchDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import type {
+    BillingPeriod,
+    PlanTierPatchDto,
+    PlanTierResponseDto,
+    PlatformEventTypeResponseDto,
+    PlatformModuleResponseDto,
+} from '@/lib/api/types';
 import { formatLimitValue } from '@/lib/planTiers';
 
 export type PlanEditorTranslate = (key: string) => string;
@@ -10,8 +16,10 @@ export type PlanEditorTranslate = (key: string) => string;
 export type PendingPlanSave = {
     patch: PlanTierPatchDto;
     moduleKeys: string[];
+    eventTypeKeys: string[];
     changes: Array<{ label: string; before: string; after: string }>;
     moduleChanges: Array<{ label: string; tone: 'added' | 'removed' }>;
+    eventTypeChanges: Array<{ label: string; tone: 'added' | 'removed' }>;
 };
 
 export type UnlockDraft = {
@@ -126,6 +134,20 @@ export function moduleChangeSummary(
     const after = new Set(afterKeys);
     const added = afterKeys.filter((key) => !before.has(key)).map((key) => ({ label: moduleName(key), tone: 'added' as const }));
     const removed = beforeKeys.filter((key) => !after.has(key)).map((key) => ({ label: moduleName(key), tone: 'removed' as const }));
+
+    return [...added, ...removed];
+}
+
+export function eventTypeChangeSummary(
+    beforeKeys: string[],
+    afterKeys: string[],
+    eventTypes: PlatformEventTypeResponseDto[]
+): PendingPlanSave['eventTypeChanges'] {
+    const eventTypeName = (key: string) => eventTypes.find((eventType) => eventType.eventTypeKey === key)?.name ?? key;
+    const before = new Set(beforeKeys);
+    const after = new Set(afterKeys);
+    const added = afterKeys.filter((key) => !before.has(key)).map((key) => ({ label: eventTypeName(key), tone: 'added' as const }));
+    const removed = beforeKeys.filter((key) => !after.has(key)).map((key) => ({ label: eventTypeName(key), tone: 'removed' as const }));
 
     return [...added, ...removed];
 }

@@ -180,8 +180,8 @@ export function PlanEditorModulesTab({
                                         {t('plans.modules.createAddonSubtitle', { plan: plan.name })}
                                     </p>
 
-                                    <div className="mt-3 grid gap-3 sm:grid-cols-4">
-                                        <AdminField label={t('paidServices.fields.name')} required className="sm:col-span-4">
+                                    <div className="mt-3 grid grid-cols-2 gap-3">
+                                        <AdminField label={t('paidServices.fields.name')} required className="col-span-2">
                                             <input
                                                 data-field="name"
                                                 value={unlockDraft.name}
@@ -189,7 +189,7 @@ export function PlanEditorModulesTab({
                                                 className={adminInputClass()}
                                             />
                                         </AdminField>
-                                        <AdminField label={t('paidServices.fields.price')} required className="sm:col-span-2">
+                                        <AdminField label={t('paidServices.fields.price')} required>
                                             <input
                                                 data-field="price"
                                                 type="number"
@@ -209,7 +209,7 @@ export function PlanEditorModulesTab({
                                                 className={adminInputClass()}
                                             />
                                         </AdminField>
-                                        <AdminField label={t('paidServices.fields.billingPeriod')} className="sm:col-span-4" required>
+                                        <AdminField label={t('paidServices.fields.billingPeriod')} className="col-span-2" required>
                                             <select
                                                 data-field="billingPeriod"
                                                 value={unlockDraft.billingPeriod}
@@ -220,7 +220,7 @@ export function PlanEditorModulesTab({
                                                 <option value="ONE_TIME">{t('paidServices.fields.billingPeriodOnceShort')}</option>
                                             </select>
                                         </AdminField>
-                                        <AdminField label={t('paidServices.fields.description')} optional className="sm:col-span-4">
+                                        <AdminField label={t('paidServices.fields.description')} optional className="col-span-2">
                                             <input
                                                 data-field="description"
                                                 value={unlockDraft.description}

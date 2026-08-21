@@ -55,10 +55,10 @@ POST /api/events/{eventId}/host-invitations      // host only
 
 ```ts
 interface CoHostInvitationRequestDto {
-    email: string; // required, max 255 — NOT optional, unlike guest invitations
-    firstName?: string; // max 100
-    lastName?: string; // max 100
-    expiresAt?: string; // ISO-8601; omit for an invitation that never expires
+  email: string;          // required, max 255 — NOT optional, unlike guest invitations
+  firstName?: string;     // max 100
+  lastName?: string;      // max 100
+  expiresAt?: string;     // ISO-8601; omit for an invitation that never expires
 }
 ```
 
@@ -66,8 +66,8 @@ Returns `EventInvitationResponseDto`, which has **one new field**:
 
 ```ts
 interface EventInvitationResponseDto {
-    // ...everything it had before, plus:
-    role: 'HOST' | 'ATTENDEE'; // HOST = co-host invitation
+  // ...everything it had before, plus:
+  role: 'HOST' | 'ATTENDEE';   // HOST = co-host invitation
 }
 ```
 
@@ -90,7 +90,7 @@ POST /api/event-invitations/{inviteToken}/accept
 ```
 
 but for a `role: 'HOST'` invitation it now fails with **403 / `errorCode: 5044`
-(`CO_HOST_INVITE_NOT_YOURS`)** when the signed-in account's email doesn't match, _or_ when it
+(`CO_HOST_INVITE_NOT_YOURS`)** when the signed-in account's email doesn't match, *or* when it
 matches but the address is unverified.
 
 The response deliberately does not tell you which of the two it was — a stranger holding the link
@@ -100,12 +100,12 @@ must not learn that it is a live co-host invitation worth pursuing. So **you can
 ```ts
 // You already know the caller's own verification state from the session/me payload.
 if (err.errorCode === 5044) {
-    if (!currentUser.emailVerified) {
-        show('Verify your email address first, then open this link again.');
-        offerResendVerification();
-    } else {
-        show('This invitation was sent to a different account. Sign in with the address it was sent to.');
-    }
+  if (!currentUser.emailVerified) {
+    show('Verify your email address first, then open this link again.');
+    offerResendVerification();
+  } else {
+    show('This invitation was sent to a different account. Sign in with the address it was sent to.');
+  }
 }
 ```
 
@@ -145,13 +145,13 @@ in `EventDetailResponseDto.hosts` immediately.
 A paid-service catalog entry can now grant a module. `PaidServiceKind` has a third value:
 
 ```ts
-type PaidServiceKind = 'RECURRING_ADDON' | 'STORAGE_PACK' | 'MODULE_UNLOCK'; // MODULE_UNLOCK is new
+type PaidServiceKind = 'RECURRING_ADDON' | 'STORAGE_PACK' | 'MODULE_UNLOCK';  // MODULE_UNLOCK is new
 ```
 
 and `PaidServiceResponseDto` / `PaidServiceRequestDto` / `PaidServicePatchDto` all gained:
 
 ```ts
-grantsModuleKey: string | null; // required for MODULE_UNLOCK, must be null for the other kinds
+grantsModuleKey: string | null;   // required for MODULE_UNLOCK, must be null for the other kinds
 ```
 
 These appear in `GET /api/config` → `paidServices` like any other public service.
@@ -167,12 +167,7 @@ Returns the same `AddonSummary` shape `GET /api/events/{eventId}/billing` alread
 `addons` array:
 
 ```ts
-interface AddonSummary {
-    code: string;
-    name: string;
-    priceAmountMinor: number;
-    activatedAt: string;
-}
+interface AddonSummary { code: string; name: string; priceAmountMinor: number; activatedAt: string; }
 ```
 
 This is **not a checkout.** Nothing is charged at this moment — the price folds into the activation
@@ -180,16 +175,16 @@ order the host pays at the end of setup, and then into every monthly renewal. Sh
 the draft setup flow, not as a purchase button.
 
 It accepts `RECURRING_ADDON` and `MODULE_UNLOCK` codes. It rejects `STORAGE_PACK` codes with 400 —
-storage is bought against a _live_ event through the existing
+storage is bought against a *live* event through the existing
 `POST /api/events/{eventId}/storage-checkout`.
 
 Errors worth handling:
 
-| Status | `errorCode`            | Meaning                                                        |
-| ------ | ---------------------- | -------------------------------------------------------------- |
-| 409    | `EVENT_NOT_DRAFT`      | the event is already live — see the limitation below           |
-| 409    | `ADDON_ALREADY_ACTIVE` | already opted in; treat as success and refresh                 |
-| 400    | —                      | wrong kind, unknown code, or not sellable on this event's plan |
+| Status | `errorCode` | Meaning |
+|---|---|---|
+| 409 | `EVENT_NOT_DRAFT` | the event is already live — see the limitation below |
+| 409 | `ADDON_ALREADY_ACTIVE` | already opted in; treat as success and refresh |
+| 400 | — | wrong kind, unknown code, or not sellable on this event's plan |
 
 ### Limitation to design around
 
@@ -240,21 +235,21 @@ DELETE /api/events/{eventId}/gift-account      // host only → 204
 
 ```ts
 interface EventGiftAccountRequestDto {
-    iban: string; // required, max 42 chars as typed (spaces allowed)
-    accountHolder: string; // required, max 140
-    note?: string; // max 500
+  iban: string;           // required, max 42 chars as typed (spaces allowed)
+  accountHolder: string;  // required, max 140
+  note?: string;          // max 500
 }
 // Two length limits, and they fail differently. Over 42 characters as typed is a bean-validation
 // 400 with errors.iban; 42 or fewer but over 34 once spaces are stripped is a 400 / 5045, the same
 // error a bad check digit gives. No real IBAN exceeds 34 normalised characters.
 
 interface EventGiftAccountResponseDto {
-    id: string;
-    eventId: string;
-    iban: string; // normalised: uppercase, no spaces
-    accountHolder: string;
-    note: string | null;
-    updatedAt: string;
+  id: string;
+  eventId: string;
+  iban: string;           // normalised: uppercase, no spaces
+  accountHolder: string;
+  note: string | null;
+  updatedAt: string;
 }
 ```
 
@@ -309,18 +304,18 @@ DELETE /api/wishbook/{entryId}                  // author or host → 204
 
 ```ts
 interface WishbookEntryRequestDto {
-    message: string; // required, max 2000
-    guestName?: string; // max 120; defaults to the member's display name
+  message: string;      // required, max 2000
+  guestName?: string;   // max 120; defaults to the member's display name
 }
 
 interface WishbookEntryResponseDto {
-    id: string;
-    eventId: string;
-    authorMemberId: string | null; // null once the author's membership is removed
-    guestName: string;
-    message: string;
-    createdAt: string;
-    canDelete: boolean; // read this instead of computing it yourself
+  id: string;
+  eventId: string;
+  authorMemberId: string | null;   // null once the author's membership is removed
+  guestName: string;
+  message: string;
+  createdAt: string;
+  canDelete: boolean;              // read this instead of computing it yourself
 }
 ```
 
@@ -361,10 +356,10 @@ treat it as gone.
 
 ## 5. New error codes
 
-| Code | Key                        | Status | Where                                                               |
-| ---- | -------------------------- | ------ | ------------------------------------------------------------------- |
-| 5044 | `CO_HOST_INVITE_NOT_YOURS` | 403    | accepting a co-host invitation with the wrong or unverified account |
-| 5045 | `INVALID_IBAN`             | 400    | saving a gift account whose IBAN fails its check digits             |
+| Code | Key | Status | Where |
+|---|---|---|---|
+| 5044 | `CO_HOST_INVITE_NOT_YOURS` | 403 | accepting a co-host invitation with the wrong or unverified account |
+| 5045 | `INVALID_IBAN` | 400 | saving a gift account whose IBAN fails its check digits |
 
 Both follow the standard envelope — `errorCode` (number) and `errorKey` (string) on the RFC 7807
 body. Existing codes reused by these features: `MODULE_NOT_AVAILABLE`, `EVENT_FROZEN`,

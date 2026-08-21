@@ -27,14 +27,14 @@ export function PlanEditorDetailsTab({
     return (
         <AdminTabPanel id={editorId} tabKey="details" active={activeTab} className="pt-5">
             {/* Details */}
-            <div className="grid gap-3 sm:grid-cols-6">
-                <AdminField label={t('fields.name')} required className="sm:col-span-4">
+            <div className="grid grid-cols-2 gap-3">
+                <AdminField label={t('fields.name')} required className="col-span-2">
                     <input name="name" defaultValue={plan.name} required maxLength={100} className={adminInputClass()} />
                 </AdminField>
-                <AdminField label={t('fields.sort')} optional className="sm:col-span-2">
+                <AdminField label={t('fields.sort')} optional className="col-span-1">
                     <input name="sortOrder" type="number" min={0} defaultValue={plan.sortOrder} className={adminInputClass('max-w-24')} />
                 </AdminField>
-                <AdminField label={t('fields.description')} optional className="sm:col-span-6">
+                <AdminField label={t('fields.description')} optional className="col-span-2">
                     <input name="description" defaultValue={plan.description ?? ''} className={adminInputClass()} />
                 </AdminField>
             </div>

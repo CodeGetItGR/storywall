@@ -55,6 +55,7 @@ export type ApiErrorMessageKey =
     | 'planNotAnUpgrade'
     | 'planNotPriced'
     | 'planNotPurchasable'
+    | 'planTierNotAvailableForEventType'
     | 'renewalAlreadyCovered'
     | 'eventScheduleLocked'
     | 'paidServiceCurrencyMismatch'
@@ -132,6 +133,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.PLAN_TIER_NOT_AN_UPGRADE]: 'planNotAnUpgrade',
     [ERROR_CODES.PLAN_TIER_NOT_PRICED]: 'planNotPriced',
     [ERROR_CODES.PLAN_TIER_NOT_PURCHASABLE]: 'planNotPurchasable',
+    [ERROR_CODES.PLAN_TIER_NOT_AVAILABLE_FOR_EVENT_TYPE]: 'planTierNotAvailableForEventType',
     [ERROR_CODES.PAID_SERVICE_CURRENCY_MISMATCH]: 'paidServiceCurrencyMismatch',
     [ERROR_CODES.PAID_SERVICE_IN_USE]: 'paidServiceInUse',
     [ERROR_CODES.PAID_SERVICE_NOT_ON_PLAN]: 'paidServiceNotOnPlan',

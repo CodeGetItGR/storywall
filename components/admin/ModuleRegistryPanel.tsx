@@ -90,14 +90,14 @@ function ModuleEditDrawer({ module, onClose }: { module: PlatformModuleResponseD
             >
                 {module && (
                     <form key={module.moduleKey} id="module-edit-form" onSubmit={handleSubmit} className="space-y-5">
-                        <div className="grid gap-3 sm:grid-cols-[1fr_7rem]">
+                        <div className="grid grid-cols-[minmax(0,1fr)_7rem] gap-3">
                             <AdminField label={t('fields.name')} required>
                                 <input name="name" required maxLength={100} defaultValue={module.name} className={adminInputClass()} />
                             </AdminField>
                             <AdminField label={t('fields.sort')} optional>
                                 <input name="sortOrder" type="number" min={0} defaultValue={module.sortOrder} className={adminInputClass()} />
                             </AdminField>
-                            <AdminField label={t('fields.description')} optional className="sm:col-span-2">
+                            <AdminField label={t('fields.description')} optional className="col-span-2">
                                 <input name="description" defaultValue={module.description ?? ''} className={adminInputClass()} />
                             </AdminField>
                         </div>

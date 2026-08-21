@@ -1,23 +1,25 @@
 # FE integration guide: event lifecycle locks + configurable event types
 
-Covers four related changes shipped 2026-08-21, all about what stops being freely editable once
-an event exists or has started: **module composition is now locked server-side**, **event
-visibility only supports `PRIVATE`**, **`eventType` is now a closed, admin-toggleable set**, and
-**session `startAt`/`endAt` get the same schedule lock the event itself already had**. See
+Covers four related changes, all about what stops being freely editable once an event exists or
+has started: **which modules an event has is locked server-side, but the host can now switch an
+existing one on or off**, **event visibility only supports `PRIVATE`**, **`eventType` is now a
+closed, admin-toggleable set that drives which modules an event gets**, and **session
+`startAt`/`endAt` get the same schedule lock the event itself already had**. See
 `frontend-integration-guide.md` §0 for base setup (auth header, error shape) — this doc only
 covers what's new.
 
-None of these close a gap the FE was relying on — in every case the UI already didn't offer the
-now-blocked action (no module on/off toggle after creation, no public-event flow, no event-type
-picker on edit, no way to move a session's date on a live event). This closes the same gap
+Three of these four close a gap the FE was relying on — in every case the UI already didn't offer
+the now-blocked action (no public-event flow, no event-type picker on edit, no way to move a
+session's date on a live event). This closes the same gap
 `account-plans-disabled-and-platform-metrics-fe-integration.md` describes for account plans: the
 server now enforces what the UI already assumed, so a request that shouldn't have been possible
-gets a real `409` instead of silently succeeding.
+gets a real `409` instead of silently succeeding. §1 is the exception — it's a genuinely new
+capability, not a lock — read it even if you skip the rest.
 
-## 1. Event module composition is locked once the event exists
+## 1. Event module *composition* is locked, but `isEnabled` can now be toggled
 
-`POST /api/event-modules`, `PATCH /api/event-modules/{id}` (on `isEnabled` specifically), and
-`DELETE /api/event-modules/{id}` now always reject with **`409`**,
+**Which modules exist on an event** is still fixed the moment the event is created:
+`POST /api/event-modules` and `DELETE /api/event-modules/{id}` always reject with **`409`**,
 `errorCode: 5049` / `errorKey: "EVENT_MODULE_COMPOSITION_LOCKED"`.
 
 ```json
@@ -33,23 +35,45 @@ POST /api/event-modules
 }
 ```
 
-Why this is safe to ship without a FE change: `EventService#create` already seeds every
-`ModuleKey` for an event the moment it's created (`isEnabled: true`), and the host UI has never
-had a way to add, remove, or toggle a module afterward — this just makes the API agree with the
-UI. `POST` with an unknown `moduleKey` still returns the pre-existing `400` /
+`EventService#create` seeds one row per module the event's **type** supports (see §3) — not
+every `ModuleKey` any more — and there is still no way to add or remove a row afterward. `POST`
+with an unknown `moduleKey` still returns the pre-existing `400` /
 `errorCode: 3006 INVALID_MODULE_KEY` first — key validity is checked before the lock.
 
-**`PATCH` on `configuration` alone still works.** The lock only fires when `isEnabled` in the
-patch body differs from the module's current value — resending the current `isEnabled` (or
-omitting it) and changing only `configuration` still returns `200`. If any settings UI currently
-sends the full module object back on every save (including its unchanged `isEnabled`), it's
-unaffected; only an actual attempt to flip the toggle now fails.
+**`PATCH /api/event-modules/{id}` on `isEnabled` now works, asymmetrically:**
+
+- **Turning a module off always succeeds (`200`).** No commercial check — a host can switch off
+  any module their event currently has.
+- **Turning a module on is gated the same way availability always has been** — the event's plan
+  must include the module, or the event must hold a `MODULE_UNLOCK` entitlement for it (§ below,
+  and `one-time-module-unlocks-fe-integration.md`). If neither is true: **`409`**,
+  `errorCode: 5012` / `errorKey: "MODULE_NOT_AVAILABLE"`.
+
+```json
+PATCH /api/event-modules/{id}
+{ "isEnabled": true }
+
+→ 409  (event's plan doesn't include this module, and no unlock either)
+{
+  "status": 409,
+  "errorCode": 5012,
+  "errorKey": "MODULE_NOT_AVAILABLE",
+  "detail": "The gallery module is not available for this event."
+}
+```
+
+A module a host switched off can always be switched back on later, as long as the commercial gate
+still passes — the toggle itself never revokes what was paid for. `configuration` still patches
+independently of `isEnabled`, exactly as before.
+
+**Action:** if there's a hidden/disabled module-toggle affordance, it's real again — wire it up
+(or leave it hidden, your call), rendering it as **on/off**, not add/remove: the set of modules
+shown per event doesn't change, only whether each one is live. For a module the plan doesn't
+include, offer the `MODULE_UNLOCK` purchase flow instead of a bare toggle — flipping it straight
+to `true` will 409.
 
 Reading modules is unaffected: `GET /api/events/{eventId}/modules` and the gating pattern
 (`modules.find(m => m.moduleKey === 'posts')?.isEnabled`) work exactly as before.
-
-**Action:** if there's a hidden/disabled module-toggle affordance anywhere (e.g. a debug panel),
-remove it or expect it to 409 on every use.
 
 ## 2. Event visibility is now `PRIVATE`-only
 
@@ -175,6 +199,65 @@ There is no create or delete — the key set itself (`EventTypeKey`) is fixed in
 `isEnabled` (plus display metadata) is admin-editable. Adding a genuinely new type is a backend
 deploy, same as adding a new module.
 
+### Which modules a type gets: `GET /api/event-types/{eventTypeKey}/modules`
+
+Authenticated, not admin-only — this is the wizard's "step two and a half" read: after the host
+picks an event type and before they pay, show what they'd actually get. Optional
+`?planTierCode=` resolves it against a specific plan.
+
+```json
+GET /api/event-types/WEDDING/modules?planTierCode=EVENT_STANDARD
+
+→ 200
+[
+  { "eventTypeKey": "WEDDING", "moduleKey": "posts", "applicability": "DEFAULT_ON",
+    "defaultConfig": {}, "sortOrder": 0, "includedInPlan": true },
+  { "eventTypeKey": "WEDDING", "moduleKey": "wishlist", "applicability": "DEFAULT_OFF",
+    "defaultConfig": {}, "sortOrder": 4, "includedInPlan": false }
+]
+```
+
+- **`UNSUPPORTED` rows are omitted entirely** — they're not an offer, the module doesn't exist for
+  that type. Don't show them crossed out; just don't render them.
+- **`applicability`** is `DEFAULT_ON` or `DEFAULT_OFF` for every row you get back — it's what the
+  module's toggle starts at when the event is created, before the host touches anything.
+- **`includedInPlan`** is only present (non-null) when `planTierCode` was passed: `true` means the
+  named plan covers it going in; `false` means the row is real for this type but would need a
+  `MODULE_UNLOCK` purchase (or a plan upgrade) to switch on. Omit `planTierCode` for a
+  type-only preview (e.g. before a plan is chosen) and this field comes back `null` — treat that as
+  "unknown yet", not "not included".
+- Unknown `eventTypeKey` → `400` / `3018` `INVALID_EVENT_TYPE`, same code as event creation.
+  Unknown `planTierCode` → `404` / `2001` `RESOURCE_NOT_FOUND`.
+
+**Action:** this is the source of truth for the module-selection step of the creation wizard —
+build it from this call rather than from a hardcoded per-type module list, for the same
+"drifts silently otherwise" reason as `eventTypes`/`eventTypeKeys` above. Pair it with
+`GET /api/config` → `paidServices[]` (filtered to `kind: 'MODULE_UNLOCK'`) to price the rows where
+`includedInPlan === false`.
+
+### Admin: editing the matrix
+
+New, `ROLE_ADMIN`-only:
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/api/admin/event-types/{eventTypeKey}/modules` | every row, **including `UNSUPPORTED`** — the admin view needs to see and re-enable those, unlike the public preview above |
+| PATCH | `/api/admin/event-types/{eventTypeKey}/modules/{moduleKey}` | body: any of `applicability` (`UNSUPPORTED`\|`DEFAULT_OFF`\|`DEFAULT_ON`), `defaultConfig` (object), `sortOrder` |
+
+```json
+PATCH /api/admin/event-types/WEDDING/modules/gallery
+{ "applicability": "DEFAULT_ON", "defaultConfig": { "layout": "grid" } }
+
+→ 200
+{ "eventTypeKey": "WEDDING", "moduleKey": "gallery", "applicability": "DEFAULT_ON",
+  "defaultConfig": { "layout": "grid" }, "sortOrder": 3 }
+```
+
+Editing a cell only changes what **new** events of that type get from the moment it's saved —
+`eventType` is immutable and the matrix is read once, at creation, so nothing about an
+already-created event moves. Flipping a module to `UNSUPPORTED` after events of that type already
+exist does not retroactively remove their row.
+
 ## 4. Session schedule lock (mirrors the event-level one)
 
 `PATCH /api/event-sessions/{id}` now applies the same lock to a session's own `startAt`/`endAt`
@@ -217,7 +300,8 @@ does), no change needed — this only makes the server agree.
 | Code | Key | Meaning |
 |---|---|---|
 | 3018 | `INVALID_EVENT_TYPE` | `eventType` isn't one of the known keys at all |
-| 5049 | `EVENT_MODULE_COMPOSITION_LOCKED` | module add/remove/toggle attempted after event creation |
+| 5012 | `MODULE_NOT_AVAILABLE` | `PATCH /api/event-modules/{id}` tried to turn a module **on** and the event's plan doesn't include it and no unlock covers it either (§1) — turning one **off** never hits this |
+| 5049 | `EVENT_MODULE_COMPOSITION_LOCKED` | module add or remove attempted after event creation (`POST`/`DELETE` only — `PATCH`'s `isEnabled` is no longer locked, see §1) |
 | 5050 | `EVENT_VISIBILITY_NOT_SUPPORTED` | `visibility: PUBLIC` attempted on create or patch |
 | 5051 | `EVENT_TYPE_NOT_AVAILABLE` | `eventType` is real but currently disabled in the registry |
 | 5052 | `EVENT_SESSION_SCHEDULE_LOCKED` | session `startAt`/`endAt` change attempted after it started/went live |
@@ -233,13 +317,19 @@ before this change and is unaffected.)
       storing a junk value.
 - [ ] If a "social event" option is wanted in the type picker now, its key is `SOCIAL_EVENT` (new
       key, not `PRIVATE_PARTY`) and it's enabled by default.
-- [ ] Remove or disable any module on/off toggle reachable after event creation — it now always
-      409s with `EVENT_MODULE_COMPOSITION_LOCKED`.
+- [ ] Wire up (or re-enable) a module on/off toggle per event — it now works, asymmetrically: off
+      always succeeds, on 409s with `MODULE_NOT_AVAILABLE` (5012) unless the plan or an unlock
+      covers it. Route that 409 into the `MODULE_UNLOCK` purchase flow rather than a generic error.
 - [ ] Remove or disable any "make this event public" control — it now always 409s with
       `EVENT_VISIBILITY_NOT_SUPPORTED`.
+- [ ] Build (or rebuild) the event-creation wizard's module-selection step from
+      `GET /api/event-types/{eventTypeKey}/modules?planTierCode=` instead of a fixed per-type list.
 - [ ] If a session-editing form allows changing a past session's `startAt` (or moving `endAt` into
       the past on a live event), expect `EVENT_SESSION_SCHEDULE_LOCKED` and handle it the way the
       event-level schedule lock is (or should already be) handled.
 - [ ] If there's an admin panel for platform config, consider wiring a new tab against
       `GET/PATCH /api/admin/platform-event-types` alongside the existing module-registry admin UI
       — same shape, same interaction pattern.
+- [ ] Same for the type/module matrix: `GET/PATCH /api/admin/event-types/{eventTypeKey}/modules`
+      (`/{moduleKey}` for the patch) — a per-type grid of modules with an applicability picker is
+      the natural admin UI.

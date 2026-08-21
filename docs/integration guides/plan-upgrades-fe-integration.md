@@ -14,11 +14,11 @@ nothing.
 
 ## 1. The mental model
 
-| purchase                       | what it buys                                                       | changes coverage? |
-| ------------------------------ | ------------------------------------------------------------------ | ----------------- |
-| **Activation** (one-time)      | the event goes live, plus storage until `endAt` + `includedMonths` | ✅ sets it        |
-| **Preservation** (monthly)     | keeps the media online after that window                           | ✅ extends it     |
-| **Upgrade** (one-time) — _new_ | **a higher ceiling on the same event**                             | ❌ **never**      |
+| purchase | what it buys | changes coverage? |
+|---|---|---|
+| **Activation** (one-time) | the event goes live, plus storage until `endAt` + `includedMonths` | ✅ sets it |
+| **Preservation** (monthly) | keeps the media online after that window | ✅ extends it |
+| **Upgrade** (one-time) — *new* | **a higher ceiling on the same event** | ❌ **never** |
 
 **An upgrade buys ceiling, not time.** It widens `storageBytes` and `maxMembers` from the moment it
 settles and deliberately leaves `paidThrough` exactly where it was. The months already bought are
@@ -35,7 +35,7 @@ Two consequences worth internalising before you build the screen:
 ### Not supported
 
 - **Downgrades.** There is no mechanism to hand storage back, and an event already over the lower
-  tier's limits would be instantly non-compliant. Cheaper _and_ equal-priced targets are refused.
+  tier's limits would be instantly non-compliant. Cheaper *and* equal-priced targets are refused.
 - **Changing a `DRAFT`'s plan.** Nothing has been paid, so there is no difference to charge. The
   endpoint returns `5014` on a draft. There is currently **no** way to change a draft's plan at all
   — not via upgrade and not via `PATCH /api/events/{id}`. If a host picks the wrong tier before
@@ -63,8 +63,8 @@ Host-only (co-hosts count; `403` otherwise).
 ```jsonc
 // 200 — identical shape to the other two checkouts
 {
-    "orderId": "3cf8fc63-…",
-    "redirectUrl": "https://checkout.stripe.com/c/pay/cs_test_…",
+  "orderId": "3cf8fc63-…",
+  "redirectUrl": "https://checkout.stripe.com/c/pay/cs_test_…"
 }
 ```
 
@@ -97,17 +97,13 @@ render options that 409:
 
 ```ts
 function upgradeTargets(catalog: PlanTierResponse[], current: PlanTierResponse) {
-    return catalog
-        .filter(
-            (p) =>
-                p.scope === 'EVENT' &&
-                p.code !== current.code &&
-                p.priceAmountMinor !== null &&
-                current.priceAmountMinor !== null &&
-                p.priceCurrency === current.priceCurrency && // cross-currency is refused (5030)
-                p.priceAmountMinor > current.priceAmountMinor // strictly above (5029)
-        )
-        .sort((a, b) => a.sortOrder - b.sortOrder);
+  return catalog.filter(p =>
+    p.scope === 'EVENT' &&
+    p.code !== current.code &&
+    p.priceAmountMinor !== null && current.priceAmountMinor !== null &&
+    p.priceCurrency === current.priceCurrency &&          // cross-currency is refused (5030)
+    p.priceAmountMinor > current.priceAmountMinor         // strictly above (5029)
+  ).sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 // What the host will actually be charged. Same arithmetic the server does.
@@ -119,7 +115,7 @@ from the catalog at checkout time. If an admin repriced a plan between page load
 charge follows the catalog, not your screen — so re-read `/api/config` when opening the picker
 rather than using a cached copy.
 
-Suggested copy: _"Upgrade to Plus — €100 now. Your coverage still runs to 14 March 2027."_ Naming the
+Suggested copy: *"Upgrade to Plus — €100 now. Your coverage still runs to 14 March 2027."* Naming the
 unchanged date in the same sentence as the price is the clearest way to stop the host expecting more
 time.
 
@@ -129,9 +125,9 @@ time.
 
 Upgrade reuses **the same two routes** as the other checkouts — nothing new to add to the router:
 
-| route                                  | meaning                                                   |
-| -------------------------------------- | --------------------------------------------------------- |
-| `/events/{eventId}/checkout/success`   | the host completed the hosted page                        |
+| route | meaning |
+|---|---|
+| `/events/{eventId}/checkout/success` | the host completed the hosted page |
 | `/events/{eventId}/checkout/cancelled` | the host backed out; nothing charged, nothing to clean up |
 
 **Success still does not mean paid.** Poll `GET /api/events/{eventId}/billing` and watch your own
@@ -143,12 +139,11 @@ The one difference: **an upgrade never changes `eventStatus`.** The event was `A
 ```ts
 // on /events/:id/checkout/success, for an upgrade order
 const settled = await pollUntil(
-    () =>
-        api.get(`/api/events/${id}/billing`).then((b) => {
-            const order = b.orders.find((o) => o.id === orderId);
-            return order?.status === 'PAID' && b.planTierCode === targetCode;
-        }),
-    { intervalMs: 1500, timeoutMs: 30_000 }
+  () => api.get(`/api/events/${id}/billing`).then(b => {
+    const order = b.orders.find(o => o.id === orderId);
+    return order?.status === 'PAID' && b.planTierCode === targetCode;
+  }),
+  { intervalMs: 1500, timeoutMs: 30_000 }
 );
 ```
 
@@ -171,11 +166,11 @@ On timeout, show "still processing" — never "failed". A lost webhook is reconc
 ### `OrderKind` gained a third value
 
 ```ts
-export type OrderKind = 'ACTIVATION' | 'RENEWAL' | 'UPGRADE'; // was two
+export type OrderKind = 'ACTIVATION' | 'RENEWAL' | 'UPGRADE';   // was two
 ```
 
 Any exhaustive `switch`, lookup map, or icon/label table keyed on `kind` needs an `UPGRADE` arm.
-Order history is the obvious place. Suggested label: _"Upgrade to Plus"_.
+Order history is the obvious place. Suggested label: *"Upgrade to Plus"*.
 
 ### `coversFrom` / `coversUntil` are genuinely null on some paid orders
 
@@ -193,15 +188,11 @@ So an order row rendering `Covers {coversFrom} → {coversUntil}` will now print
 
 ```tsx
 // Right
-{
-    order.coversUntil ? (
-        <>Covers through {formatDate(order.coversUntil)}</>
-    ) : order.kind === 'UPGRADE' ? (
-        <>Plan upgrade — no change to coverage</>
-    ) : (
-        <>Recorded charge</>
-    );
-}
+{order.coversUntil
+  ? <>Covers through {formatDate(order.coversUntil)}</>
+  : order.kind === 'UPGRADE'
+    ? <>Plan upgrade — no change to coverage</>
+    : <>Recorded charge</>}
 ```
 
 ---
@@ -228,11 +219,11 @@ is set to stop at the end of the period already paid for. You will see:
 **This is the one state that needs host action.** Their auto-renewal will lapse on
 `currentPeriodEnd` unless they start a new subscription at the new tier. Prompt for it:
 
-> _"Your preservation subscription ends 7 September. Restart it to keep your photos online at the
-> Plus rate."_ → `POST /api/events/{id}/subscription-checkout`
+> *"Your preservation subscription ends 7 September. Restart it to keep your photos online at the
+> Plus rate."* → `POST /api/events/{id}/subscription-checkout`
 
-Note the ambiguity you have to live with: `cancelAtPeriodEnd: true` also means _the host asked to
-cancel_ (§7 of the consolidated guide). `SubscriptionSummary` does not expose the subscription's own
+Note the ambiguity you have to live with: `cancelAtPeriodEnd: true` also means *the host asked to
+cancel* (§7 of the consolidated guide). `SubscriptionSummary` does not expose the subscription's own
 plan tier, so the response alone cannot tell the two apart. The practical rule: if you have just
 settled an `UPGRADE` order and the subscription comes back `cancelAtPeriodEnd: true`, treat it as
 the fallback and prompt. Otherwise treat it as a host-requested cancellation.
@@ -243,14 +234,14 @@ the fallback and prompt. Otherwise treat it as a host-requested cancellation.
 
 Two new, and four existing ones reachable from a path that could not produce them before.
 
-| code                                    | HTTP | when                                                   | what to show                                                                                       |
-| --------------------------------------- | ---- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| `5029` `PLAN_TIER_NOT_AN_UPGRADE`       | 409  | target is the current plan, cheaper, or equally priced | should be unreachable if §3 filters correctly — treat as a stale catalog and refetch `/api/config` |
-| `5030` `PLAN_TIER_CURRENCY_MISMATCH`    | 409  | the two plans are priced in different currencies       | not a host-fixable problem; "This plan isn't available for your event" + log it                    |
-| `5014` `EVENT_NOT_ACTIVE`               | 409  | upgrade attempted on a `DRAFT`                         | send to activation instead                                                                         |
-| `5015` `PLAN_TIER_NOT_PURCHASABLE`      | 409  | target archived or made non-public since page load     | refetch `/api/config`, re-render the picker                                                        |
-| `5019` `PLAN_TIER_NOT_PRICED`           | 409  | either plan has no one-time price configured           | "This plan isn't available right now"; a catalog misconfiguration                                  |
-| `5021` `PLAN_TIER_CURRENCY_UNSUPPORTED` | 409  | target priced in a currency we cannot charge           | same as above                                                                                      |
+| code | HTTP | when | what to show |
+|---|---|---|---|
+| `5029` `PLAN_TIER_NOT_AN_UPGRADE` | 409 | target is the current plan, cheaper, or equally priced | should be unreachable if §3 filters correctly — treat as a stale catalog and refetch `/api/config` |
+| `5030` `PLAN_TIER_CURRENCY_MISMATCH` | 409 | the two plans are priced in different currencies | not a host-fixable problem; "This plan isn't available for your event" + log it |
+| `5014` `EVENT_NOT_ACTIVE` | 409 | upgrade attempted on a `DRAFT` | send to activation instead |
+| `5015` `PLAN_TIER_NOT_PURCHASABLE` | 409 | target archived or made non-public since page load | refetch `/api/config`, re-render the picker |
+| `5019` `PLAN_TIER_NOT_PRICED` | 409 | either plan has no one-time price configured | "This plan isn't available right now"; a catalog misconfiguration |
+| `5021` `PLAN_TIER_CURRENCY_UNSUPPORTED` | 409 | target priced in a currency we cannot charge | same as above |
 
 Also reachable: `404` for an unknown `planTierCode` (or an event that does not exist / is deleted),
 `403` for a non-host, `400` for a missing or over-length `planTierCode`, and `429` on the shared
@@ -265,18 +256,21 @@ catalog refetch, not an error dialog.
 
 ```ts
 // ---------- Changed ----------
-export type OrderKind = 'ACTIVATION' | 'RENEWAL' | 'UPGRADE'; // 'UPGRADE' is new
+export type OrderKind = 'ACTIVATION' | 'RENEWAL' | 'UPGRADE';   // 'UPGRADE' is new
 
 // ---------- New ----------
 export interface UpgradeCheckoutRequest {
-    planTierCode: string; // EVENT-scope code, max 50 chars
+  planTierCode: string;         // EVENT-scope code, max 50 chars
 }
 
 // Response is the existing CheckoutResponse — { orderId, redirectUrl }
 
 // ---------- Client ----------
 export async function startUpgrade(eventId: string, planTierCode: string) {
-    return api.post<CheckoutResponse>(`/api/events/${eventId}/upgrade-checkout`, { planTierCode } satisfies UpgradeCheckoutRequest);
+  return api.post<CheckoutResponse>(
+    `/api/events/${eventId}/upgrade-checkout`,
+    { planTierCode } satisfies UpgradeCheckoutRequest,
+  );
 }
 ```
 

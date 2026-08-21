@@ -9,20 +9,27 @@ import { useAdminDrawerFooterSlot } from '@/components/admin/AdminDrawer';
 import { appConfigKeys } from '@/hooks/useAppConfig';
 import { usePlanEditorState } from '@/hooks/usePlanEditorState';
 import { usePlanEditorUnlocks } from '@/hooks/usePlanEditorUnlocks';
-import { moduleChangeSummary, type PendingPlanSave, planChangeSummary, planPatchFromFormData } from '@/lib/adminPlanEditor';
+import {
+    eventTypeChangeSummary,
+    moduleChangeSummary,
+    type PendingPlanSave,
+    planChangeSummary,
+    planPatchFromFormData,
+} from '@/lib/adminPlanEditor';
 import { type Visibility } from '@/lib/adminVisibility';
 import { endpoints } from '@/lib/api/endpoints';
-import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformEventTypeResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 
 export type UsePlanEditorCardArgs = {
     plan: PlanTierResponseDto;
     modules: PlatformModuleResponseDto[];
+    eventTypes: PlatformEventTypeResponseDto[];
     paidServices: PaidServiceResponseDto[];
     eventPlans: PlanTierResponseDto[];
     scope: 'ACCOUNT' | 'EVENT';
 };
 
-export function usePlanEditorCard({ plan, modules, paidServices, eventPlans, scope }: UsePlanEditorCardArgs) {
+export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eventPlans, scope }: UsePlanEditorCardArgs) {
     const t = useTranslations('AdminPage');
     const queryClient = useQueryClient();
     const footerSlot = useAdminDrawerFooterSlot();
@@ -38,8 +45,9 @@ export function usePlanEditorCard({ plan, modules, paidServices, eventPlans, sco
     // useDelete's mutationOptions doesn't expose onSuccess, unlike useCreate/useUpdate — invalidate manually after it resolves.
     const deletePlan = useDelete<PlanTierResponseDto>();
     const setModules = useCustomMutation<PlanTierResponseDto>({ mutationOptions: { onSuccess: invalidateAppConfig } });
+    const setEventTypes = useCustomMutation<PlanTierResponseDto>({ mutationOptions: { onSuccess: invalidateAppConfig } });
 
-    const editor = usePlanEditorState({ plan, modules, scope });
+    const editor = usePlanEditorState({ plan, modules, eventTypes, scope });
     const unlocks = usePlanEditorUnlocks({
         plan,
         eventPlans,
@@ -53,9 +61,10 @@ export function usePlanEditorCard({ plan, modules, paidServices, eventPlans, sco
         updatePlan.mutation.error ??
         deletePlan.mutation.error ??
         setModules.mutation.error ??
+        setEventTypes.mutation.error ??
         unlocks.createPaidService.mutation.error ??
         unlocks.updatePaidService.mutation.error;
-    const isSaving = updatePlan.mutation.isPending || setModules.mutation.isPending;
+    const isSaving = updatePlan.mutation.isPending || setModules.mutation.isPending || setEventTypes.mutation.isPending;
 
     function handleMakeDefaultClick() {
         setMakeDefaultOpen(true);
@@ -95,6 +104,14 @@ export function usePlanEditorCard({ plan, modules, paidServices, eventPlans, sco
                 dataProviderName: 'plan-tiers',
             });
         }
+        if (pendingSave.eventTypeChanges.length > 0) {
+            await setEventTypes.mutateAsync({
+                url: endpoints.admin.planTiers.eventTypes(plan.id),
+                method: 'put',
+                values: { eventTypeKeys: pendingSave.eventTypeKeys },
+                dataProviderName: 'plan-tiers',
+            });
+        }
         editor.setPlanChangeCount(0);
         setPendingSave(null);
     }
@@ -112,8 +129,10 @@ export function usePlanEditorCard({ plan, modules, paidServices, eventPlans, sco
         setPendingSave({
             patch,
             moduleKeys: editor.moduleKeys,
+            eventTypeKeys: editor.eventTypeKeys,
             changes: planChangeSummary(plan, patch, t),
             moduleChanges: moduleChangeSummary(plan.moduleKeys, editor.moduleKeys, editor.orderedModules),
+            eventTypeChanges: eventTypeChangeSummary(plan.eventTypeKeys, editor.eventTypeKeys, editor.orderedEventTypes),
         });
     }
 
@@ -132,6 +151,10 @@ export function usePlanEditorCard({ plan, modules, paidServices, eventPlans, sco
         editor.handleModuleChange(event);
     }
 
+    function handleEventTypeChange(event: React.ChangeEvent<HTMLInputElement>) {
+        editor.handleEventTypeChange(event);
+    }
+
     return {
         plan,
         isEvent: editor.isEvent,
@@ -140,6 +163,7 @@ export function usePlanEditorCard({ plan, modules, paidServices, eventPlans, sco
         setTab: editor.setTab,
         visibility: editor.visibility,
         moduleKeys: editor.moduleKeys,
+        eventTypeKeys: editor.eventTypeKeys,
         unlockDraft: editor.unlockDraft,
         error,
         canSave: editor.canSave,
@@ -156,6 +180,7 @@ export function usePlanEditorCard({ plan, modules, paidServices, eventPlans, sco
         formRef: editor.formRef,
         editorId: `plan-editor-${plan.id}`,
         orderedModules: editor.orderedModules,
+        orderedEventTypes: editor.orderedEventTypes,
         moduleUnlocks: unlocks.moduleUnlocks,
         handleMakeDefaultClick,
         handleMakeDefaultClose,
@@ -169,6 +194,7 @@ export function usePlanEditorCard({ plan, modules, paidServices, eventPlans, sco
         handleFormChange,
         handleVisibilityChange,
         handleModuleChange,
+        handleEventTypeChange,
         openUnlockEditor: unlocks.openUnlockEditor,
         closeUnlockEditor: unlocks.closeUnlockEditor,
         updateUnlockDraft: unlocks.updateUnlockDraft,

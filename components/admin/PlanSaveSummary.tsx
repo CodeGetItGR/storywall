@@ -6,7 +6,7 @@ export function PlanSaveSummary({ pendingSave }: { pendingSave: PendingPlanSave 
     const t = useTranslations('AdminPage.plans.saveSummary');
 
     if (!pendingSave) return null;
-    const hasChanges = pendingSave.changes.length > 0 || pendingSave.moduleChanges.length > 0;
+    const hasChanges = pendingSave.changes.length > 0 || pendingSave.moduleChanges.length > 0 || pendingSave.eventTypeChanges.length > 0;
 
     if (!hasChanges) {
         return <p>{t('noChanges')}</p>;
@@ -41,6 +41,21 @@ export function PlanSaveSummary({ pendingSave }: { pendingSave: PendingPlanSave 
                                 <span className="font-semibold text-ink">{change.label}</span>
                                 <span className={change.tone === 'added' ? 'text-status-good' : 'text-status-danger'}>
                                     {change.tone === 'added' ? t('enabled') : t('disabled')}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+            {pendingSave.eventTypeChanges.length > 0 && (
+                <div className="space-y-2">
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-ink">{t('eventTypes')}</p>
+                    <ul className="divide-y divide-border border-y border-border">
+                        {pendingSave.eventTypeChanges.map((change) => (
+                            <li key={`${change.tone}:${change.label}`} className="flex items-center justify-between gap-3 py-2">
+                                <span className="font-semibold text-ink">{change.label}</span>
+                                <span className={change.tone === 'added' ? 'text-status-good' : 'text-status-danger'}>
+                                    {change.tone === 'added' ? t('included') : t('excluded')}
                                 </span>
                             </li>
                         ))}

@@ -3,17 +3,19 @@
 import { ChevronRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-const STEPS = ['plan', 'addons', 'details', 'overview'] as const;
+const STEPS = ['type', 'plan', 'addons', 'details', 'overview'] as const;
 
 export type CreateEventStep = (typeof STEPS)[number];
 
 export function EventCreateStepBreadcrumb({
     step,
+    onGoToType,
     onGoToPlan,
     onGoToAddons,
     onGoToDetails,
 }: {
     step: CreateEventStep;
+    onGoToType: () => void;
     onGoToPlan: () => void;
     onGoToAddons: () => void;
     onGoToDetails: () => void;
@@ -21,6 +23,7 @@ export function EventCreateStepBreadcrumb({
     const t = useTranslations('CreateEventPage');
     const currentIndex = STEPS.indexOf(step);
     const goTo: Partial<Record<CreateEventStep, () => void>> = {
+        type: onGoToType,
         plan: onGoToPlan,
         addons: onGoToAddons,
         details: onGoToDetails,

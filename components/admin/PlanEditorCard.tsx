@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { AdminTabs } from '@/components/admin/AdminTabs';
 import { PlanEditorDangerTab } from '@/components/admin/PlanEditorDangerTab';
 import { PlanEditorDetailsTab } from '@/components/admin/PlanEditorDetailsTab';
+import { PlanEditorEventTypesTab } from '@/components/admin/PlanEditorEventTypesTab';
 import { PlanEditorFooter } from '@/components/admin/PlanEditorFooter';
 import { PlanEditorHeader } from '@/components/admin/PlanEditorHeader';
 import { PlanEditorLimitsTab } from '@/components/admin/PlanEditorLimitsTab';
@@ -14,18 +15,20 @@ import { PlanSaveSummary } from '@/components/admin/PlanSaveSummary';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { usePlanEditorCard } from '@/hooks/usePlanEditorCard';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
-import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformEventTypeResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
 export function PlanEditorCard({
     plan,
     modules,
+    eventTypes,
     paidServices,
     eventPlans,
     scope,
 }: {
     plan: PlanTierResponseDto;
     modules: PlatformModuleResponseDto[];
+    eventTypes: PlatformEventTypeResponseDto[];
     paidServices: PaidServiceResponseDto[];
     eventPlans: PlanTierResponseDto[];
     scope: 'ACCOUNT' | 'EVENT';
@@ -39,6 +42,7 @@ export function PlanEditorCard({
         setTab,
         visibility,
         moduleKeys,
+        eventTypeKeys,
         unlockDraft,
         error,
         canSave,
@@ -66,15 +70,17 @@ export function PlanEditorCard({
         handleFormChange,
         handleVisibilityChange,
         handleModuleChange,
+        handleEventTypeChange,
         openUnlockEditor,
         closeUnlockEditor,
         updateUnlockDraft,
         handleCreateUnlockClick,
         canCreateUnlock,
         orderedModules,
+        orderedEventTypes,
         moduleUnlocks,
         handleUnlockAction,
-    } = usePlanEditorCard({ plan, modules, paidServices, eventPlans, scope });
+    } = usePlanEditorCard({ plan, modules, eventTypes, paidServices, eventPlans, scope });
 
     return (
         <article className={cn('min-w-0', plan.isAssignable ? '' : 'opacity-90')}>
@@ -125,6 +131,17 @@ export function PlanEditorCard({
                         isCreatingUnlock={createPaidService.mutation.isPending}
                         onUnlockAction={handleUnlockAction}
                         isUpdatingUnlocks={updatePaidService.mutation.isPending}
+                    />
+                )}
+
+                {/* Event types tab */}
+                {isEvent && (
+                    <PlanEditorEventTypesTab
+                        editorId={editorId}
+                        activeTab={tab}
+                        orderedEventTypes={orderedEventTypes}
+                        eventTypeKeys={eventTypeKeys}
+                        onEventTypeChange={handleEventTypeChange}
                     />
                 )}
 

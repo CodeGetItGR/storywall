@@ -90,7 +90,7 @@ function EventTypeEditDrawer({ eventType, onClose }: { eventType: PlatformEventT
             >
                 {eventType && (
                     <form key={eventType.eventTypeKey} id="event-type-edit-form" onSubmit={handleSubmit} className="space-y-5">
-                        <div className="grid gap-3 sm:grid-cols-[1fr_7rem]">
+                        <div className="grid grid-cols-[minmax(0,1fr)_7rem] gap-3">
                             <AdminField label={t('fields.name')} required>
                                 <input name="name" required maxLength={100} defaultValue={eventType.name} className={adminInputClass()} />
                             </AdminField>
@@ -103,7 +103,7 @@ function EventTypeEditDrawer({ eventType, onClose }: { eventType: PlatformEventT
                                     className={adminInputClass()}
                                 />
                             </AdminField>
-                            <AdminField label={t('fields.description')} optional className="sm:col-span-2">
+                            <AdminField label={t('fields.description')} optional className="col-span-2">
                                 <input name="description" defaultValue={eventType.description ?? ''} className={adminInputClass()} />
                             </AdminField>
                         </div>

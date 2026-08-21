@@ -25,11 +25,11 @@ A `PURGED` event's media has been destroyed and cannot be restored. The subscrip
 opens preserves media, so on a purged event it charges monthly for nothing — the server now refuses
 instead of taking the sale.
 
-| status   | renewal checkout                               |
-| -------- | ---------------------------------------------- |
-| `DRAFT`  | ❌ `5014 EVENT_NOT_ACTIVE` — activate first    |
-| `ACTIVE` | ✅                                             |
-| `FROZEN` | ✅ — this is the case the endpoint exists for  |
+| status | renewal checkout |
+|---|---|
+| `DRAFT` | ❌ `5014 EVENT_NOT_ACTIVE` — activate first |
+| `ACTIVE` | ✅ |
+| `FROZEN` | ✅ — this is the case the endpoint exists for |
 | `PURGED` | ❌ `5043 EVENT_PURGED_NOT_RENEWABLE` — **new** |
 
 **What to do:** hide (or disable) the "Keep this event online" CTA when `event.status === "PURGED"`,
@@ -46,20 +46,20 @@ renewal is meant to rescue. Freezing hides media; purging destroys it.
 **Where:** `POST /api/events/{eventId}/subscription-checkout`
 **HTTP:** `409` (unchanged)
 
-Previously _any_ non-cancelled subscription row blocked a second one. That stranded hosts: a
+Previously *any* non-cancelled subscription row blocked a second one. That stranded hosts: a
 `PAST_DUE` subscription — the card failed, nothing is being collected — is still "live" by that
-rule, so the event lapsed toward freezing while every attempt to pay was answered with _"you already
-have a subscription."_ There was no route out of it from inside the product.
+rule, so the event lapsed toward freezing while every attempt to pay was answered with *"you already
+have a subscription."* There was no route out of it from inside the product.
 
 The gate now asks whether the subscription is still **collecting money**:
 
-| existing subscription                                | renewal checkout   | why                                                 |
-| ---------------------------------------------------- | ------------------ | --------------------------------------------------- |
-| `ACTIVE`, `currentPeriodEnd` in the future           | ❌ `5020`          | the month is bought and paid for                    |
-| `ACTIVE` + `cancelAtPeriodEnd`, period still running | ❌ `5020`          | same — those days are already paid for              |
-| `PAST_DUE`                                           | ✅ **now allowed** | old one is closed automatically, new checkout opens |
-| `ACTIVE` with a missing/expired `currentPeriodEnd`   | ✅ **now allowed** | a lost `deleted` webhook; it collects nothing       |
-| none                                                 | ✅                 | —                                                   |
+| existing subscription | renewal checkout | why |
+|---|---|---|
+| `ACTIVE`, `currentPeriodEnd` in the future | ❌ `5020` | the month is bought and paid for |
+| `ACTIVE` + `cancelAtPeriodEnd`, period still running | ❌ `5020` | same — those days are already paid for |
+| `PAST_DUE` | ✅ **now allowed** | old one is closed automatically, new checkout opens |
+| `ACTIVE` with a missing/expired `currentPeriodEnd` | ✅ **now allowed** | a lost `deleted` webhook; it collects nothing |
+| none | ✅ | — |
 
 Two things follow for the client:
 
@@ -69,11 +69,11 @@ Two things follow for the client:
 - **The `5020` message is now specific and worth surfacing.** When the subscription is set to stop
   it reads:
 
-    > Event `<id>` already has a live subscription, which is set to stop on `<ISO timestamp>`.
+  > Event `<id>` already has a live subscription, which is set to stop on `<ISO timestamp>`.
 
-    That date is the host's actual answer — they are covered until then and should come back after.
-    Prefer rendering the server message (or your own copy built from `currentPeriodEnd` in
-    `GET /api/events/{eventId}/billing`) over a generic "already subscribed".
+  That date is the host's actual answer — they are covered until then and should come back after.
+  Prefer rendering the server message (or your own copy built from `currentPeriodEnd` in
+  `GET /api/events/{eventId}/billing`) over a generic "already subscribed".
 
 There is also a rarer `5020` variant, when the old subscription could not be closed at the provider:
 
@@ -94,11 +94,11 @@ discount is applied to what the host actually pays.**
 
 Applies to all three purchases:
 
-| purchase          | discounted amount                                                                   |
-| ----------------- | ----------------------------------------------------------------------------------- |
-| activation        | `priceAmountMinor` − discount, **then** add-ons are added at full price             |
-| renewal (monthly) | `recurringPriceAmountMinor` − discount, then add-ons at full price                  |
-| upgrade           | the **difference** between the tiers, discounted by the **target** plan's promotion |
+| purchase | discounted amount |
+|---|---|
+| activation | `priceAmountMinor` − discount, **then** add-ons are added at full price |
+| renewal (monthly) | `recurringPriceAmountMinor` − discount, then add-ons at full price |
+| upgrade | the **difference** between the tiers, discounted by the **target** plan's promotion |
 
 Rules worth knowing before you write the pricing component:
 
@@ -113,7 +113,7 @@ Rules worth knowing before you write the pricing component:
 
 **What to do:** wherever you show a plan price, apply the same in-window test and show the struck
 list price plus `discountLabel`. Any screen still showing the list price during a live promotion is
-now _lying in the other direction_ — the host is quoted more than the card will be charged, which is
+now *lying in the other direction* — the host is quoted more than the card will be charged, which is
 a better bug than the reverse but still a support ticket. The upgrade screen is the one to check
 first, since the discount there applies to a difference rather than to the sticker price.
 

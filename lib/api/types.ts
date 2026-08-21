@@ -106,6 +106,7 @@ export interface PlanTierResponseDto {
     discountEndsAt: string | null;
     moduleKeys: ModuleKey[];
     paidModules: PaidServiceResponseDto[];
+    eventTypeKeys: EventTypeConvention[];
 }
 
 export interface PlatformModuleResponseDto {
@@ -1211,6 +1212,10 @@ export type PlanTierPatchDto = Partial<Omit<PlanTierRequestDto, 'code' | 'scope'
 
 export interface PlanModulesRequestDto {
     moduleKeys: ModuleKey[];
+}
+
+export interface PlanEventTypesRequestDto {
+    eventTypeKeys: EventTypeConvention[];
 }
 
 export interface PlanAssignmentRequestDto {

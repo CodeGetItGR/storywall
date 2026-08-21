@@ -1,17 +1,13 @@
 'use client';
 
-import { ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ChangeEvent } from 'react';
 
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
-import type { EventTypeConvention, PlatformEventTypeResponseDto } from '@/lib/api/types';
 
 type EventDetailsStepProps = {
     title: string;
     titleError?: string | null;
-    eventType: EventTypeConvention;
-    eventTypes: PlatformEventTypeResponseDto[];
     startAt: string;
     endAt: string;
     scheduleError?: string | null;
@@ -21,7 +17,6 @@ type EventDetailsStepProps = {
     timezone: string;
     locationName: string;
     onTitleChange: (event: ChangeEvent<HTMLInputElement>) => void;
-    onEventTypeChange: (event: ChangeEvent<HTMLSelectElement>) => void;
     onStartAtChange: (event: ChangeEvent<HTMLInputElement>) => void;
     onEndAtChange: (event: ChangeEvent<HTMLInputElement>) => void;
     onTimezoneChange: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -31,8 +26,6 @@ type EventDetailsStepProps = {
 export function EventDetailsStep({
     title,
     titleError,
-    eventType,
-    eventTypes,
     startAt,
     endAt,
     scheduleError,
@@ -42,7 +35,6 @@ export function EventDetailsStep({
     timezone,
     locationName,
     onTitleChange,
-    onEventTypeChange,
     onStartAtChange,
     onEndAtChange,
     onTimezoneChange,
@@ -64,23 +56,6 @@ export function EventDetailsStep({
                         className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
                     />
                     {titleError && <span className="text-xs text-rose-500">{titleError}</span>}
-                </FormFieldLabel>
-
-                <FormFieldLabel label={t('fields.eventType')}>
-                    <div className="relative">
-                        <select
-                            value={eventType}
-                            onChange={onEventTypeChange}
-                            className="w-full appearance-none bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition pr-10"
-                        >
-                            {eventTypes.map((type) => (
-                                <option key={type.eventTypeKey} value={type.eventTypeKey}>
-                                    {type.name}
-                                </option>
-                            ))}
-                        </select>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted pointer-events-none" />
-                    </div>
                 </FormFieldLabel>
 
                 {/* Schedule */}

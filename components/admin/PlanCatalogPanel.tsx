@@ -10,7 +10,7 @@ import { adminInputClass } from '@/components/admin/AdminField';
 import { PlanCreateForm } from '@/components/admin/PlanCreateForm';
 import { PlanEditorCard } from '@/components/admin/PlanEditorCard';
 import { PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
-import { useAdminPaidServices, useAdminPlatformModules } from '@/hooks/useAdmin';
+import { useAdminPaidServices, useAdminPlatformEventTypes, useAdminPlatformModules } from '@/hooks/useAdmin';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import { type Visibility, visibilityOf } from '@/lib/adminVisibility';
 import type { PlanScope, PlanTierResponseDto } from '@/lib/api/types';
@@ -61,6 +61,7 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
         pagination: { mode: 'off' },
     });
     const modulesQuery = useAdminPlatformModules();
+    const eventTypesQuery = useAdminPlatformEventTypes();
     const paidServicesQuery = useAdminPaidServices('MODULE_UNLOCK', true);
     const accountPlansDisabled = scope === 'ACCOUNT';
 
@@ -213,6 +214,11 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                                                             {t('default')}
                                                         </span>
                                                     )}
+                                                    {plan.eventTypeKeys.length > 0 && (
+                                                        <span className="shrink-0 rounded-full bg-status-neutral-wash px-2 py-0.5 text-[10.5px] font-bold text-status-neutral">
+                                                            {t('eventTypesRestrictedBadge', { count: plan.eventTypeKeys.length })}
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 {plan.description && <p className="truncate text-[11px] text-ink-faint">{plan.description}</p>}
                                             </td>
@@ -266,9 +272,10 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
             >
                 {selectedPlan && (
                     <PlanEditorCard
-                        key={`${selectedPlan.id}:${selectedPlan.moduleKeys.join(',')}`}
+                        key={`${selectedPlan.id}:${selectedPlan.moduleKeys.join(',')}:${selectedPlan.eventTypeKeys.join(',')}`}
                         plan={selectedPlan}
                         modules={modulesQuery.data ?? []}
+                        eventTypes={eventTypesQuery.data ?? []}
                         paidServices={paidServicesQuery.data ?? []}
                         eventPlans={allPlans}
                         scope={scope}
