@@ -25,6 +25,7 @@ export function PlanEditorCard({
     paidServices,
     eventPlans,
     scope,
+    onSaved,
 }: {
     plan: PlanTierResponseDto;
     modules: PlatformModuleResponseDto[];
@@ -32,6 +33,7 @@ export function PlanEditorCard({
     paidServices: PaidServiceResponseDto[];
     eventPlans: PlanTierResponseDto[];
     scope: 'ACCOUNT' | 'EVENT';
+    onSaved: (name: string) => void;
 }) {
     const t = useTranslations('AdminPage');
     const {
@@ -80,7 +82,7 @@ export function PlanEditorCard({
         orderedEventTypes,
         moduleUnlocks,
         handleUnlockAction,
-    } = usePlanEditorCard({ plan, modules, eventTypes, paidServices, eventPlans, scope });
+    } = usePlanEditorCard({ plan, modules, eventTypes, paidServices, eventPlans, scope, onSaved });
 
     return (
         <article className={cn('min-w-0', plan.isAssignable ? '' : 'opacity-90')}>

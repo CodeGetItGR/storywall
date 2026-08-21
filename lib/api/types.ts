@@ -105,7 +105,10 @@ export interface PlanTierResponseDto {
     discountStartsAt: string | null;
     discountEndsAt: string | null;
     moduleKeys: ModuleKey[];
-    paidModules: PaidServiceResponseDto[];
+    // MODULE_UNLOCK upsells for this plan, server-cross-referenced. Only null
+    // from the admin catalog endpoints (GET /api/admin/plan-tiers, .../{id}),
+    // which don't compute it — never null from /api/config or /api/plan-tiers.
+    paidModules: PaidServiceResponseDto[] | null;
     eventTypeKeys: EventTypeConvention[];
 }
 

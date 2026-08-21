@@ -1,7 +1,17 @@
 # FE integration guide: plans, payments, subscriptions, refunds
 
 **The complete, current reference for the commercial side of the platform.** Everything a frontend
-needs to sell an event, keep it alive, and give money back. Current as of 2026-08-17.
+needs to sell an event, keep it alive, and give money back. Current as of 2026-08-21.
+
+**2026-08-21:** `EVENT`-scope plans can now be restricted to specific event types, and there is a new
+endpoint to read the restricted catalog: `GET /api/plan-tiers?eventType=X` (§2). This is what makes
+"same display name, different code, different price/addons per event type" possible — see §2 for the
+full field and endpoint reference. `POST /api/events` enforces the restriction server-side even for a
+stale client (§6, `409 PLAN_TIER_NOT_AVAILABLE_FOR_EVENT_TYPE`, 5053), and there's a matching admin
+endpoint to set it (§13). `paidModules` (§2, §4) is no longer exclusive to `GET /api/config` — the new
+endpoint populates it the same way, so a type-scoped plan picker can render module upsells without a
+second fetch of the full catalog. **`plan-tiers-by-event-type-fe-integration.md` has the focused
+delta.**
 
 **2026-08-17:** A `MODULE_UNLOCK` (§7c) can now be priced `billingPeriod: 'ONE_TIME'` — charged once
 on the activation and never on a renewal. So `billingPeriod` is a value to read again rather than a
@@ -138,7 +148,9 @@ account plans are disabled (§13, Assignment). Filter a pricing page by `scope =
   "discountStartsAt": null,
   "discountEndsAt": null,
 
-  "moduleKeys": ["gallery", "posts", "rsvp"]
+  "moduleKeys": ["gallery", "posts", "rsvp"],
+  "eventTypeKeys": [],           // empty = purchasable for every event type — see below
+  "paidModules": []              // MODULE_UNLOCK upsells for this plan — see §4
 }
 ```
 
@@ -184,6 +196,49 @@ plan and an `ACCOUNT` plan can both legitimately be called `FREE`.
 
 The usage endpoints (`GET /api/me/usage`, `GET /api/events/{id}/usage`) return `planTier` as a plain
 string for the same reason. The wire value never changed; only the declared type widened.
+
+### `eventTypeKeys` — the same display name, different plan per event type
+
+This is how "Basic" can mean something different — different price, different `moduleKeys`, a
+different set of `paidModules` — for a birthday than for a wedding, without any per-code repricing
+mechanism: they are simply two different `PlanTier` rows that happen to share a `name`. Nothing
+enforces uniqueness on `name`, only on `code` (and only per scope, per §2's "`code` is not a fixed
+union" above).
+
+- **Empty array** (the default every plan seeds with) means the plan is purchasable for **every**
+  event type. This is `eventTypeKeys: []`, not `null` — check length, not nullness.
+- **Non-empty** restricts the plan to those event types, both in the endpoint below and as a
+  server-enforced check at event creation (§6).
+- Always empty on `ACCOUNT`-scope plans — the restriction only makes sense per-event.
+
+### New: `GET /api/plan-tiers?eventType=WEDDING`
+
+Authenticated (any logged-in user — not `permitAll`, unlike `GET /api/config` which is public).
+Returns the `EVENT`-scope, assignable, public plans available for `eventType`: every plan with an
+empty `eventTypeKeys`, plus every plan whose `eventTypeKeys` contains it. Same `PlanTierResponseDto`
+shape as `GET /api/config`'s `planTiers`, `paidModules` included.
+
+```
+GET /api/plan-tiers?eventType=WEDDING
+→ 200
+[
+  { "code": "BASIC", "scope": "EVENT", "eventTypeKeys": [], "moduleKeys": [...], "paidModules": [...] },
+  { "code": "WEDDING_PLUS", "scope": "EVENT", "eventTypeKeys": ["WEDDING"], "moduleKeys": [...], "paidModules": [...] }
+]
+```
+
+An unknown `eventType` → `400` / `errorCode: 3018 INVALID_EVENT_TYPE` — the same error and same set
+of valid keys as event creation uses (`GET /api/config`'s `eventTypeKeys` array is the source of
+truth for what's valid).
+
+**Use this for the plan-picker step of event creation, once the host has already chosen a type.** It
+is a strict subset of the full catalog — every plan it returns also appears in `GET /api/config`,
+just possibly filtered out there if it's restricted to other types. Building a birthday-only catalog
+or a wedding-only catalog is then just: give the birthday plan and the wedding plan the same `name`
+("Basic"), different `code`s, different prices/`moduleKeys`, and set `eventTypeKeys` on each (or leave
+the birthday one unrestricted if there's only ever going to be one birthday plan). The FE never needs
+to know two rows share a display name — it just renders whatever this endpoint returns for the
+selected type.
 
 ---
 
@@ -330,7 +385,11 @@ whether to show a compose box; use `status`.
 ### Step 1 — creating the draft
 
 `planTierCode` is required on `POST /api/events` and must be a `code` from the `EVENT`-scope catalog.
-An archived or non-public plan → `409 PLAN_TIER_NOT_PURCHASABLE`.
+An archived or non-public plan → `409 PLAN_TIER_NOT_PURCHASABLE`. A plan whose `eventTypeKeys` (§2) has
+restricted it away from the request's `eventType` → `409 PLAN_TIER_NOT_AVAILABLE_FOR_EVENT_TYPE`
+(5053) — this is a server-side backstop for a stale client, not the primary UX; source the plan list
+from `GET /api/plan-tiers?eventType=X` (§2) so a restricted plan is never offered for the wrong type
+in the first place.
 
 Drafts are the host's private workspace: excluded from `GET /api/events` for everybody else, guests
 cannot be invited, every module reports unavailable. Show them in a clearly separate "not published
@@ -1154,8 +1213,10 @@ name, for logs). Branch on `errorCode`.
 | code | HTTP | when | what to show |
 |---|---|---|---|
 | `3001` `VALIDATION_FAILED` | 400 | any bean-validation failure, incl. all plan-tier field rules | field-level errors from `details` |
+| `3007` `INVALID_PLAN_TIER_SCOPE` | 400 | admin sets `eventTypeKeys` on an `ACCOUNT`-scope plan (§13), or `planTierIds` names one for a paid service | admin panel only |
 | `3008` `EVENT_DATES_INCOMPLETE` | 400 | checkout with no `endAt`, or `endAt <= startAt` | "Set an end date before publishing" — link to the schedule form |
 | `3010` `RATE_LIMITED` | 429 | the caller's budget for the window is spent | §11 |
+| `3018` `INVALID_EVENT_TYPE` | 400 | unknown `eventType` at `GET /api/plan-tiers?eventType=X` or admin's `.../event-types` (§2, §13) | refetch `GET /api/config`'s `eventTypeKeys`, the value was stale or mistyped |
 
 ### Plans and quotas
 
@@ -1193,6 +1254,7 @@ name, for logs). Branch on `errorCode`.
 | `5026` `SUBSCRIPTION_NOT_LIVE` | 409 | cancelling with no live subscription | stale tab; refetch `/billing` |
 | `5027` `SUBSCRIPTION_CANCEL_FAILED` | 502 | the provider would not stop it | "Couldn't stop it just now — try again shortly." It is **still billing**; do not show it as cancelled |
 | `5046` `CHECKOUT_AMOUNT_BELOW_MINIMUM` | 409 | a plan discount cut a checkout's price below what the provider will charge at all | catalog misconfiguration (discount set too steep); host sees a generic failure and support has to fix the discount |
+| `5053` `PLAN_TIER_NOT_AVAILABLE_FOR_EVENT_TYPE` | 409 | `POST /api/events`'s `planTierCode` has restricted itself away from the request's `eventType` (§2, §6) | source the plan list from `GET /api/plan-tiers?eventType=X` instead of a stale/cached one |
 
 ### Refunds
 
@@ -1239,6 +1301,7 @@ All require `ROLE_ADMIN`; non-admins get `403`.
 | `PATCH /api/admin/plan-tiers/{id}` | partial update. **`code` and `scope` are immutable** and absent from the patch DTO. |
 | `DELETE /api/admin/plan-tiers/{id}` | `204`, or `409 PLAN_TIER_IN_USE` if assigned to any user or event |
 | `PUT /api/admin/plan-tiers/{id}/modules` | sets `moduleKeys` |
+| `PUT /api/admin/plan-tiers/{id}/event-types` | sets `eventTypeKeys` — replace semantics, same as `/modules` above: `{ "eventTypeKeys": [...] }` is the plan's complete restriction, not a diff. `{ "eventTypeKeys": [] }` clears it back to "every type". Unknown key → `400 INVALID_EVENT_TYPE` (3018); `ACCOUNT`-scope plan → `400 INVALID_PLAN_TIER_SCOPE` (3007) |
 
 Create/patch validation (server-enforced, `400` / `3001`):
 
@@ -1380,6 +1443,8 @@ export interface PlanTierResponse {
   discountEndsAt: string | null;
 
   moduleKeys: string[];         // always empty on ACCOUNT scope
+  eventTypeKeys: string[];      // empty = purchasable for every event type; always empty on ACCOUNT scope
+  paidModules: PaidServiceResponse[] | null;  // MODULE_UNLOCK upsells; null only from admin catalog endpoints
 }
 
 // ---------- Paid services (add-on + storage packs + module unlocks) ----------

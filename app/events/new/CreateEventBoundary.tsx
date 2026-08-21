@@ -15,6 +15,7 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateEvent } from '@/hooks/useEvent';
+import { usePlanTiersForEventType } from '@/hooks/usePlanTiersForEventType';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { ERROR_CODES, getErrorCode, getFieldErrors } from '@/lib/api/errors';
@@ -29,7 +30,7 @@ import type {
 import { formatMoney, navigateToCheckout } from '@/lib/billing';
 import { getCurrentDatetimeLocalValue, getLaterDatetimeLocalValue, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
 import { publicAssignableEventAddons } from '@/lib/planModules';
-import { getPlanPriceDetails, publicAssignablePlansForEventType } from '@/lib/planTiers';
+import { getPlanPriceDetails } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { useEventSwitcher } from '@/providers/EventProvider';
 
@@ -62,10 +63,8 @@ export default function CreateEventPage() {
 
     const fieldErrors = getFieldErrors(createEvent.error);
     const selectedEventType = eventTypes.find((type) => type.eventTypeKey === eventType)?.eventTypeKey ?? eventTypes[0]?.eventTypeKey ?? eventType;
-    const eventPlans = useMemo(
-        () => publicAssignablePlansForEventType(appConfig?.planTiers ?? [], 'EVENT', selectedEventType),
-        [appConfig?.planTiers, selectedEventType]
-    );
+    const planTiersQuery = usePlanTiersForEventType(selectedEventType, isAuthenticated);
+    const eventPlans = useMemo(() => planTiersQuery.data ?? [], [planTiersQuery.data]);
     const selectedPlan = eventPlans.find((plan) => plan.code === selectedPlanCode) ?? eventPlans[0];
     const selectedCode = selectedPlan?.code ?? selectedPlanCode;
     const availableAddons = useMemo(
@@ -77,11 +76,12 @@ export default function CreateEventPage() {
     const nowAt = getCurrentDatetimeLocalValue();
     const startAtMax = isDatetimeLocalAfter(endAt, nowAt) ? endAt : undefined;
     const endAtMin = getLaterDatetimeLocalValue(nowAt, startAt) ?? nowAt;
-    const scheduleError = startAt && isDatetimeLocalBefore(startAt, nowAt)
-        ? t('validation.startInPast')
-        : startAt && endAt && !isDatetimeLocalAfter(endAt, startAt)
-          ? t('validation.endBeforeStart')
-          : null;
+    const scheduleError =
+        startAt && isDatetimeLocalBefore(startAt, nowAt)
+            ? t('validation.startInPast')
+            : startAt && endAt && !isDatetimeLocalAfter(endAt, startAt)
+              ? t('validation.endBeforeStart')
+              : null;
     const overviewPayAmountLabel = useMemo(() => {
         if (!selectedPlan) return t('payment.noCharge');
 
@@ -282,6 +282,7 @@ export default function CreateEventPage() {
                                         modules={appConfig?.modules ?? []}
                                         selectedCode={selectedCode}
                                         onSelect={setSelectedPlanCode}
+                                        isLoading={planTiersQuery.isLoading}
                                     />
                                 )}
 

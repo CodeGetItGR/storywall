@@ -23,6 +23,12 @@ include for free but sells as an add-on. Previously the only way to know this wa
 against each plan by hand; that reconstruction, including the price/billing detail, is now done
 server-side.
 
+**2026-08-21:** `paidModules` is no longer exclusive to this endpoint — `GET
+/api/plan-tiers?eventType=X` (see
+[`plan-tiers-by-event-type-fe-integration.md`](plan-tiers-by-event-type-fe-integration.md)) now
+populates it the same way, so the wizard's step-2 plan picker can render upsells without also
+fetching the full config catalog.
+
 ## GET /api/config
 
 Public — no `Authorization` header needed, safe to call before login (e.g. to gate the login
@@ -102,7 +108,8 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
   `MODULE_UNLOCK` paid services that plan sells instead, each with full price/billing detail — use
   it to render a pricing table's "included" vs. "available as add-on, $X/mo" module rows without
   cross-referencing `paidServices` yourself. `paidModules[].grantsModuleKey` is the module it
-  unlocks.
+  unlocks. Also populated (as of 2026-08-21) on `GET /api/plan-tiers?eventType=X`'s response —
+  null only from the admin catalog endpoints, which don't cross-reference it.
 - **`eventModuleKeys`** — the single source of truth for valid module keys, replacing whatever
   hardcoded list (e.g. `ModuleKeyConvention`) the FE currently maintains. See below — this is
   now also enforced server-side, so drift here means requests start failing, not silently

@@ -8,7 +8,10 @@ module composition, per-type defaults, and the buy-extra-modules flow are still 
 
 Authenticated (any logged-in user, not `permitAll` — the full public catalog is already visible
 pre-login via `GET /api/config`). Returns the EVENT-scope, assignable, public plans available for
-`eventType`, same shape as `PlanTierResponseDto` in `GET /api/config`'s `planTiers`.
+`eventType`, same shape as `PlanTierResponseDto` in `GET /api/config`'s `planTiers` — including
+`paidModules` (2026-08-21), populated the same way: each plan's `MODULE_UNLOCK` upsells with full
+price/billing detail, so step 2 of the wizard can render add-on offers without a second fetch of
+the full config catalog.
 
 ```
 GET /api/plan-tiers?eventType=WEDDING

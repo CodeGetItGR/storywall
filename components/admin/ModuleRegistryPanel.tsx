@@ -170,11 +170,10 @@ export function ModuleRegistryPanel() {
 
                 {!modulesQuery.isLoading && !modulesQuery.error && modules.length > 0 && (
                     <div className="overflow-x-auto">
-                        <table className="w-full min-w-[560px] border-collapse text-sm">
+                        <table className="w-full min-w-140 border-collapse text-sm">
                             <thead>
                                 <tr className="border-b border-border text-left text-[11px] font-bold uppercase tracking-wide text-ink-faint">
                                     <th className="px-4 py-2.5 font-bold">{t('fields.name')}</th>
-                                    <th className="px-3 py-2.5 font-bold">{t('fields.sort')}</th>
                                     <th className="px-3 py-2.5 font-bold">{t('modules.enabled')}</th>
                                     <th className="px-3 py-2.5" />
                                 </tr>
@@ -186,7 +185,6 @@ export function ModuleRegistryPanel() {
                                             <p className="truncate font-semibold text-ink">{module.name}</p>
                                             {module.description && <p className="truncate text-[11px] text-ink-faint">{module.description}</p>}
                                         </td>
-                                        <td className="px-3 py-2.5 tabular-nums text-ink-muted">{module.sortOrder}</td>
                                         <td className="px-3 py-2.5">
                                             <span
                                                 className={cn(

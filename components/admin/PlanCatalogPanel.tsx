@@ -3,7 +3,7 @@
 import { useList } from '@refinedev/core';
 import { Pencil, Plus, Search } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import React, { type ChangeEvent, useCallback, useMemo, useState } from 'react';
+import React, { type ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { adminInputClass } from '@/components/admin/AdminField';
@@ -13,7 +13,7 @@ import { PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
 import { useAdminPaidServices, useAdminPlatformEventTypes, useAdminPlatformModules } from '@/hooks/useAdmin';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import { type Visibility, visibilityOf } from '@/lib/adminVisibility';
-import type { PlanScope, PlanTierResponseDto } from '@/lib/api/types';
+import type { PlanScope, PlanTierResponseDto, PlatformEventTypeResponseDto } from '@/lib/api/types';
 import { formatLimitValue, formatPlanMoney } from '@/lib/planTiers';
 import { cn } from '@/lib/utils';
 
@@ -48,6 +48,7 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
     const [search, setSearch] = useState('');
     const [createOpen, setCreateOpen] = useState(false);
     const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+    const [savedMessage, setSavedMessage] = useState<string | null>(null);
 
     // A single unfiltered-by-status fetch backs the stat tiles and the table alike;
     // status/search stay client-side so switching filters never re-hits the network.
@@ -108,6 +109,28 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
     );
     const closeEditor = useCallback(() => setSelectedPlanId(null), []);
 
+    const handleCreated = useCallback(
+        (name: string) => {
+            setCreateOpen(false);
+            setSavedMessage(t('create.createSuccess', { plan: name }));
+        },
+        [t]
+    );
+    const handleSaved = useCallback(
+        (name: string) => {
+            setSelectedPlanId(null);
+            setSavedMessage(t('saveSuccess', { plan: name }));
+        },
+        [t]
+    );
+
+    // The banner is catalog-level state so it survives the drawer it was raised from closing.
+    useEffect(() => {
+        if (!savedMessage) return;
+        const timeoutId = setTimeout(() => setSavedMessage(null), 4000);
+        return () => clearTimeout(timeoutId);
+    }, [savedMessage]);
+
     return (
         <section className="space-y-5">
             <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border pb-4">
@@ -132,6 +155,13 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                 <div className="rounded-lg border border-status-warn-wash bg-status-warn-wash/40 px-4 py-3 text-sm font-medium leading-6 text-status-warn">
                     {t('accountDisabledNotice')}
                 </div>
+            )}
+
+            {/* Save/create confirmation */}
+            {savedMessage && (
+                <p role="status" className="rounded-lg bg-status-good-wash px-4 py-2.5 text-sm font-semibold text-status-good">
+                    {savedMessage}
+                </p>
             )}
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -186,7 +216,7 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                             <thead>
                                 <tr className="border-b border-border text-left text-[11px] font-bold uppercase tracking-wide text-ink-faint">
                                     <th className="px-4 py-2.5 font-bold">{t('columns.plan')}</th>
-                                    <th className="px-3 py-2.5 font-bold">{t('columns.code')}</th>
+                                    {scope === 'EVENT' && <th className="px-3 py-2.5 font-bold">{t('columns.eventTypes')}</th>}
                                     <th className="px-3 py-2.5 font-bold">{t('columns.price')}</th>
                                     <th className="px-3 py-2.5 font-bold">{t('columns.limits')}</th>
                                     {scope === 'EVENT' && <th className="px-3 py-2.5 font-bold">{t('columns.modules')}</th>}
@@ -204,6 +234,9 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                                                   formatLimitValue(plan.storageBytes, 'bytes') ?? tAdmin('unlimited'),
                                               ].join(' · ')
                                             : (formatLimitValue(plan.maxActiveEvents, 'count') ?? tAdmin('unlimited'));
+                                    const eventTypeNames = plan.eventTypeKeys
+                                        .map((key) => eventTypesQuery.data?.find((eventType) => eventType.eventTypeKey === key))
+                                        .filter((eventType): eventType is PlatformEventTypeResponseDto => Boolean(eventType));
                                     return (
                                         <tr key={plan.id} className="border-b border-border last:border-b-0 hover:bg-canvas/60">
                                             <td className="max-w-64 px-4 py-2.5">
@@ -214,15 +247,27 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                                                             {t('default')}
                                                         </span>
                                                     )}
-                                                    {plan.eventTypeKeys.length > 0 && (
-                                                        <span className="shrink-0 rounded-full bg-status-neutral-wash px-2 py-0.5 text-[10.5px] font-bold text-status-neutral">
-                                                            {t('eventTypesRestrictedBadge', { count: plan.eventTypeKeys.length })}
-                                                        </span>
-                                                    )}
                                                 </div>
                                                 {plan.description && <p className="truncate text-[11px] text-ink-faint">{plan.description}</p>}
                                             </td>
-                                            <td className="px-3 py-2.5 font-mono text-[11px] text-ink-faint">{plan.code}</td>
+                                            {scope === 'EVENT' && (
+                                                <td className="max-w-56 px-3 py-2.5">
+                                                    {eventTypeNames.length === 0 ? (
+                                                        <span className="text-xs font-semibold text-ink-faint">{t('eventTypes.allBadge')}</span>
+                                                    ) : (
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {eventTypeNames.map((eventType) => (
+                                                                <span
+                                                                    key={eventType.id}
+                                                                    className="rounded-full bg-status-neutral-wash px-2 py-0.5 text-[10.5px] font-bold text-status-neutral"
+                                                                >
+                                                                    {eventType.name}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </td>
+                                            )}
                                             <td className="px-3 py-2.5 font-mono text-ink">{formatPlanMoney(plan, locale) ?? t('noPrice')}</td>
                                             <td className="px-3 py-2.5 text-ink-muted">{limits}</td>
                                             {scope === 'EVENT' && (
@@ -261,7 +306,9 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                 )}
             </section>
 
-            {!accountPlansDisabled && <PlanCreateForm open={createOpen} onClose={closeCreate} plans={allPlans} scope={scope} />}
+            {!accountPlansDisabled && (
+                <PlanCreateForm open={createOpen} onClose={closeCreate} onCreated={handleCreated} plans={allPlans} scope={scope} />
+            )}
 
             <AdminDrawer
                 open={Boolean(selectedPlan)}
@@ -279,6 +326,7 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                         paidServices={paidServicesQuery.data ?? []}
                         eventPlans={allPlans}
                         scope={scope}
+                        onSaved={handleSaved}
                     />
                 )}
             </AdminDrawer>

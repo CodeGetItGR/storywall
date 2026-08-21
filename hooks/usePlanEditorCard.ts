@@ -1,6 +1,6 @@
 'use client';
 
-import { useCustomMutation, useDelete, useUpdate } from '@refinedev/core';
+import { useCustomMutation, useDelete, useInvalidate, useUpdate } from '@refinedev/core';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -9,13 +9,7 @@ import { useAdminDrawerFooterSlot } from '@/components/admin/AdminDrawer';
 import { appConfigKeys } from '@/hooks/useAppConfig';
 import { usePlanEditorState } from '@/hooks/usePlanEditorState';
 import { usePlanEditorUnlocks } from '@/hooks/usePlanEditorUnlocks';
-import {
-    eventTypeChangeSummary,
-    moduleChangeSummary,
-    type PendingPlanSave,
-    planChangeSummary,
-    planPatchFromFormData,
-} from '@/lib/adminPlanEditor';
+import { eventTypeChangeSummary, moduleChangeSummary, type PendingPlanSave, planChangeSummary, planPatchFromFormData } from '@/lib/adminPlanEditor';
 import { type Visibility } from '@/lib/adminVisibility';
 import { endpoints } from '@/lib/api/endpoints';
 import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformEventTypeResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
@@ -27,11 +21,13 @@ export type UsePlanEditorCardArgs = {
     paidServices: PaidServiceResponseDto[];
     eventPlans: PlanTierResponseDto[];
     scope: 'ACCOUNT' | 'EVENT';
+    onSaved: (name: string) => void;
 };
 
-export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eventPlans, scope }: UsePlanEditorCardArgs) {
+export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eventPlans, scope, onSaved }: UsePlanEditorCardArgs) {
     const t = useTranslations('AdminPage');
     const queryClient = useQueryClient();
+    const invalidate = useInvalidate();
     const footerSlot = useAdminDrawerFooterSlot();
     const [makeDefaultOpen, setMakeDefaultOpen] = useState(false);
     const [pendingSave, setPendingSave] = useState<PendingPlanSave | null>(null);
@@ -40,12 +36,23 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
     const invalidateAppConfig = () => {
         queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
     };
+    // useCreate/useUpdate invalidate their own resource's list automatically, but
+    // useCustomMutation (setModules/setEventTypes below hit arbitrary URLs, not the
+    // plan-tiers CRUD verbs) never does — invalidate the catalog list explicitly so
+    // module/event-type edits show up without a manual page reload.
+    const invalidatePlanTiersList = () => {
+        invalidate({ resource: 'plan-tiers', dataProviderName: 'plan-tiers', invalidates: ['list'] });
+    };
+    const onMutationSuccess = () => {
+        invalidateAppConfig();
+        invalidatePlanTiersList();
+    };
 
-    const updatePlan = useUpdate<PlanTierResponseDto>({ dataProviderName: 'plan-tiers', mutationOptions: { onSuccess: invalidateAppConfig } });
+    const updatePlan = useUpdate<PlanTierResponseDto>({ dataProviderName: 'plan-tiers', mutationOptions: { onSuccess: onMutationSuccess } });
     // useDelete's mutationOptions doesn't expose onSuccess, unlike useCreate/useUpdate — invalidate manually after it resolves.
     const deletePlan = useDelete<PlanTierResponseDto>();
-    const setModules = useCustomMutation<PlanTierResponseDto>({ mutationOptions: { onSuccess: invalidateAppConfig } });
-    const setEventTypes = useCustomMutation<PlanTierResponseDto>({ mutationOptions: { onSuccess: invalidateAppConfig } });
+    const setModules = useCustomMutation<PlanTierResponseDto>({ mutationOptions: { onSuccess: onMutationSuccess } });
+    const setEventTypes = useCustomMutation<PlanTierResponseDto>({ mutationOptions: { onSuccess: onMutationSuccess } });
 
     const editor = usePlanEditorState({ plan, modules, eventTypes, scope });
     const unlocks = usePlanEditorUnlocks({
@@ -114,6 +121,7 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
         }
         editor.setPlanChangeCount(0);
         setPendingSave(null);
+        onSaved(plan.name);
     }
 
     async function handleDeleteConfirm() {

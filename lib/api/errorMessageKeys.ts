@@ -31,6 +31,7 @@ export type ApiErrorMessageKey =
     | 'eventTypeNotAvailable'
     | 'eventSessionScheduleLocked'
     | 'invalidEventType'
+    | 'invalidPlanTierScope'
     | 'forbidden'
     | 'internalError'
     | 'invalidCredentials'
@@ -152,6 +153,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.SUBSCRIPTION_NOT_LIVE]: 'subscriptionNotLive',
     [ERROR_CODES.UNSUPPORTED_MEDIA_FORMAT]: 'unsupportedMediaFormat',
     [ERROR_CODES.VALIDATION_FAILED]: 'validationFailed',
+    [ERROR_CODES.INVALID_PLAN_TIER_SCOPE]: 'invalidPlanTierScope',
     [ERROR_CODES.WEBHOOK_ALREADY_PROCESSED]: 'webhookAlreadyProcessed',
     [ERROR_CODES.WEBHOOK_NOT_REPLAYABLE]: 'webhookNotReplayable',
     [ERROR_CODES.WEBHOOK_PAYLOAD_TOO_LARGE]: 'webhookPayloadTooLarge',

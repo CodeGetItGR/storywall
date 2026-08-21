@@ -8,6 +8,10 @@ export const endpoints = {
         get: '/api/config',
     },
 
+    planTiers: {
+        byEventType: (eventType: string) => `/api/plan-tiers?eventType=${encodeURIComponent(eventType)}`,
+    },
+
     auth: {
         register: '/api/auth/register',
         login: '/api/auth/login',

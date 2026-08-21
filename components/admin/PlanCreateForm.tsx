@@ -1,6 +1,6 @@
 'use client';
 
-import { useCreate } from '@refinedev/core';
+import { useCreate, useInvalidate } from '@refinedev/core';
 import { useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -21,22 +21,26 @@ const BILLING_PERIODS: BillingPeriod[] = ['MONTHLY', 'YEARLY', 'ONE_TIME'];
 export function PlanCreateForm({
     open,
     onClose,
+    onCreated,
     plans,
     scope,
 }: {
     open: boolean;
     onClose: () => void;
+    onCreated: (name: string) => void;
     plans: PlanTierResponseDto[];
     scope: PlanScope;
 }) {
     const t = useTranslations('AdminPage');
     const queryClient = useQueryClient();
-    const invalidateAppConfig = () => {
+    const invalidate = useInvalidate();
+    const onMutationSuccess = () => {
         queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+        invalidate({ resource: 'plan-tiers', dataProviderName: 'plan-tiers', invalidates: ['list'] });
     };
     const { mutateAsync: createPlan, mutation: createMutation } = useCreate<PlanTierResponseDto>({
         dataProviderName: 'plan-tiers',
-        mutationOptions: { onSuccess: invalidateAppConfig },
+        mutationOptions: { onSuccess: onMutationSuccess },
     });
     const formRef = useRef<HTMLFormElement>(null);
     const [name, setName] = useState('');
@@ -94,7 +98,7 @@ export function PlanCreateForm({
         setName('');
         setCodeOverride(null);
         setVisibility('LIVE');
-        onClose();
+        onCreated(input.name);
     }
 
     return (

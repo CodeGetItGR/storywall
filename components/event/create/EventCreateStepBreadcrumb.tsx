@@ -2,6 +2,7 @@
 
 import { ChevronRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { Fragment } from 'react';
 
 const STEPS = ['type', 'plan', 'addons', 'details', 'overview'] as const;
 
@@ -36,9 +37,9 @@ export function EventCreateStepBreadcrumb({
                 const isPast = index < currentIndex;
 
                 return (
-                    <>
-                        {index > 0 && <ChevronRight className="h-5.5 w-5.5 shrink-0 text-ink-faint" key={`chevron-${index}`} />}
-                        <span key={item} className="flex shrink-0 items-center gap-1">
+                    <Fragment key={item}>
+                        {index > 0 && <ChevronRight className="h-5.5 w-5.5 shrink-0 text-ink-faint" />}
+                        <span className="flex shrink-0 items-center gap-1">
                             {isPast ? (
                                 <button
                                     type="button"
@@ -53,7 +54,7 @@ export function EventCreateStepBreadcrumb({
                                 </span>
                             )}
                         </span>
-                    </>
+                    </Fragment>
                 );
             })}
         </nav>

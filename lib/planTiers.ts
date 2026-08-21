@@ -1,13 +1,9 @@
-import type { EventTypeConvention, ModuleKey, PlanScope, PlanTierResponseDto } from '@/lib/api/types';
+import type { ModuleKey, PlanScope, PlanTierResponseDto } from '@/lib/api/types';
 import { discountedAmountMinor, isPlanDiscountActive } from '@/lib/billing';
 import { formatBytes } from '@/lib/format';
 
 export function scopedPlans(plans: PlanTierResponseDto[], scope: PlanScope): PlanTierResponseDto[] {
     return plans.filter((plan) => plan.scope === scope).sort((left, right) => left.sortOrder - right.sortOrder);
-}
-
-export function isPlanAvailableForEventType(plan: PlanTierResponseDto, eventType: EventTypeConvention): boolean {
-    return plan.eventTypeKeys.length === 0 || plan.eventTypeKeys.includes(eventType);
 }
 
 export type PlanPriceKind = 'activation' | 'recurring';
@@ -54,14 +50,6 @@ export function formatLimitValue(value: number | null, unit: 'bytes' | 'count'):
 
 export function publicAssignablePlans(plans: PlanTierResponseDto[], scope: PlanScope): PlanTierResponseDto[] {
     return scopedPlans(plans, scope).filter((plan) => plan.isAssignable && plan.isPublic);
-}
-
-export function publicAssignablePlansForEventType(
-    plans: PlanTierResponseDto[],
-    scope: PlanScope,
-    eventType: EventTypeConvention
-): PlanTierResponseDto[] {
-    return publicAssignablePlans(plans, scope).filter((plan) => isPlanAvailableForEventType(plan, eventType));
 }
 
 export function findPlanByCode(plans: PlanTierResponseDto[], scope: PlanScope, code: string): PlanTierResponseDto | undefined {

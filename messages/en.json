@@ -524,6 +524,7 @@
         "activeEventLimitExceededWithPlan": "You are already hosting as many active events as currently allowed. Archive an old event before creating another one.",
         "unlimited": "Unlimited",
         "noPlans": "No public event plans are available yet.",
+        "loadingPlans": "Loading plans for this event type…",
         "noEventTypes": "No event types are available yet.",
         "planDescriptionFallback": "Everything you need for this event tier.",
         "continueToPlan": "Continue to plan",
@@ -1536,9 +1537,9 @@
             },
             "eventTypes": {
                 "unrestricted": "Available for every event type.",
-                "restricted": "{count, plural, one {Restricted to # event type} other {Restricted to # event types}}"
+                "restricted": "{count, plural, one {Restricted to # event type} other {Restricted to # event types}}",
+                "allBadge": "All types"
             },
-            "eventTypesRestrictedBadge": "{count, plural, one {# type only} other {# types only}}",
             "accountDisabledNotice": "Account plans are disabled for new sales and assignment. Existing rows remain here for historical review and limited maintenance.",
             "saveModules": "Save modules",
             "destructiveHint": "Archive plans instead of deleting them once they may be in use.",
@@ -1554,6 +1555,7 @@
             },
             "pendingChanges": "{count, plural, one {# unsaved change} other {# unsaved changes}}",
             "noPendingChanges": "No changes yet.",
+            "saveSuccess": "{plan} updated.",
             "sections": {
                 "identity": "Plan identity",
                 "limits": "Limits",
@@ -1584,7 +1586,7 @@
             },
             "columns": {
                 "plan": "Plan",
-                "code": "Code",
+                "eventTypes": "Event types",
                 "price": "Price",
                 "limits": "Limits",
                 "modules": "Modules",
@@ -1628,7 +1630,8 @@
                 "open": "New plan",
                 "submit": "Create",
                 "confirmTitle": "Create {code}?",
-                "confirmBody": "This adds a new catalog plan immediately. Review limits, pricing, and availability before confirming."
+                "confirmBody": "This adds a new catalog plan immediately. Review limits, pricing, and availability before confirming.",
+                "createSuccess": "{plan} created."
             },
             "restore": "Restore",
             "archiveConfirmTitle": "Archive {plan}?",
@@ -1718,7 +1721,8 @@
             "paidServiceInUse": "This service is referenced by an order. Archive it instead of deleting it.",
             "addonLockedWhileActive": "Paid entitlements cannot be removed while an event is live. They lapse automatically if the event stops paying.",
             "addonNotActive": "That add-on is not active on this event.",
-            "subscriptionAlreadyActive": "This event still has a live subscription collecting payments. Cancel or replace it before reassigning the plan."
+            "subscriptionAlreadyActive": "This event still has a live subscription collecting payments. Cancel or replace it before reassigning the plan.",
+            "invalidPlanTierScope": "Event-type restrictions only apply to event plans."
         },
         "paidServices": {
             "title": "Paid services catalog",
@@ -1978,14 +1982,14 @@
         "fallback": "See the limits and features included with {plan}."
     },
     "EventTypes": {
-        "WEDDING": { "name": "Wedding" },
-        "BAPTISM": { "name": "Baptism" },
-        "SOCIAL_EVENT": { "name": "Social Event" },
-        "BIRTHDAY": { "name": "Birthday" },
-        "CORPORATE": { "name": "Corporate" },
-        "FESTIVAL": { "name": "Festival" },
-        "PRIVATE_PARTY": { "name": "Private Party" },
-        "CONFERENCE": { "name": "Conference" }
+        "WEDDING": { "name": "Wedding", "tagline": "Rings, vows, and a night to remember." },
+        "BAPTISM": { "name": "Baptism", "tagline": "A blessing, family, and quiet joy." },
+        "SOCIAL_EVENT": { "name": "Social Event", "tagline": "Friends, food, and good vibes." },
+        "BIRTHDAY": { "name": "Birthday", "tagline": "Cake, candles, and confetti." },
+        "CORPORATE": { "name": "Corporate", "tagline": "Where business meets celebration." },
+        "FESTIVAL": { "name": "Festival", "tagline": "Music, crowds, and big energy." },
+        "PRIVATE_PARTY": { "name": "Private Party", "tagline": "Just the people who matter most." },
+        "CONFERENCE": { "name": "Conference", "tagline": "Talks, ideas, and new connections." }
     },
     "Modules": {
         "posts": {
@@ -2132,6 +2136,7 @@
         "eventVisibilityNotSupported": "Public events aren't supported yet. This event must stay private.",
         "eventTypeNotAvailable": "This event type isn't available yet.",
         "eventSessionScheduleLocked": "This session has already started, so its schedule can no longer be changed.",
-        "invalidEventType": "Choose a valid event type."
+        "invalidEventType": "Choose a valid event type.",
+        "invalidPlanTierScope": "That restriction only applies to event plans."
     }
 }

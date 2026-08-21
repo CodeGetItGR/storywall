@@ -16,6 +16,7 @@ export type AdminErrorMessageKey =
     | 'addonLockedWhileActive'
     | 'addonNotActive'
     | 'subscriptionAlreadyActive'
+    | 'invalidPlanTierScope'
     | 'generic';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -61,5 +62,6 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.ADDON_LOCKED_WHILE_ACTIVE) return 'addonLockedWhileActive';
     if (code === ERROR_CODES.ADDON_NOT_ACTIVE) return 'addonNotActive';
     if (code === ERROR_CODES.SUBSCRIPTION_ALREADY_ACTIVE) return 'subscriptionAlreadyActive';
+    if (code === ERROR_CODES.INVALID_PLAN_TIER_SCOPE) return 'invalidPlanTierScope';
     return 'generic';
 }
