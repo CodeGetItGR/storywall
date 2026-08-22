@@ -4,8 +4,11 @@ import { useTranslations } from 'next-intl';
 import type { ChangeEvent } from 'react';
 
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
+import { useEventTypeVoice } from '@/hooks/useEventTypeVoice';
+import type { EventTypeConvention } from '@/lib/api/types';
 
 type EventDetailsStepProps = {
+    eventType: EventTypeConvention;
     title: string;
     titleError?: string | null;
     startAt: string;
@@ -24,6 +27,7 @@ type EventDetailsStepProps = {
 };
 
 export function EventDetailsStep({
+    eventType,
     title,
     titleError,
     startAt,
@@ -41,6 +45,7 @@ export function EventDetailsStep({
     onLocationNameChange,
 }: EventDetailsStepProps) {
     const t = useTranslations('CreateEventPage');
+    const voice = useEventTypeVoice(eventType);
 
     return (
         <div className="flex h-full flex-col gap-4">
@@ -52,7 +57,7 @@ export function EventDetailsStep({
                         required
                         value={title}
                         onChange={onTitleChange}
-                        placeholder={t('placeholders.title')}
+                        placeholder={voice.titlePlaceholder}
                         className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
                     />
                     {titleError && <span className="text-xs text-rose-500">{titleError}</span>}
@@ -100,7 +105,7 @@ export function EventDetailsStep({
                         type="text"
                         value={locationName}
                         onChange={onLocationNameChange}
-                        placeholder={t('placeholders.locationName')}
+                        placeholder={voice.locationPlaceholder}
                         className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
                     />
                 </FormFieldLabel>

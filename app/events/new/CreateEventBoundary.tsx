@@ -297,6 +297,7 @@ export default function CreateEventPage() {
 
                                 {step === 'details' && (
                                     <EventDetailsStep
+                                        eventType={selectedEventType}
                                         title={title}
                                         titleError={fieldErrors?.title}
                                         startAt={startAt}

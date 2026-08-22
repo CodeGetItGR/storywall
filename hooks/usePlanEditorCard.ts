@@ -2,7 +2,7 @@
 
 import { useCustomMutation, useDelete, useInvalidate, useUpdate } from '@refinedev/core';
 import { useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { useAdminDrawerFooterSlot } from '@/components/admin/AdminDrawer';
@@ -26,6 +26,7 @@ export type UsePlanEditorCardArgs = {
 
 export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eventPlans, scope, onSaved }: UsePlanEditorCardArgs) {
     const t = useTranslations('AdminPage');
+    const locale = useLocale();
     const queryClient = useQueryClient();
     const invalidate = useInvalidate();
     const footerSlot = useAdminDrawerFooterSlot();
@@ -140,7 +141,7 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
             eventTypeKeys: editor.eventTypeKeys,
             changes: planChangeSummary(plan, patch, t),
             moduleChanges: moduleChangeSummary(plan.moduleKeys, editor.moduleKeys, editor.orderedModules),
-            eventTypeChanges: eventTypeChangeSummary(plan.eventTypeKeys, editor.eventTypeKeys, editor.orderedEventTypes),
+            eventTypeChanges: eventTypeChangeSummary(plan.eventTypeKeys, editor.eventTypeKeys, editor.orderedEventTypes, locale),
         });
     }
 

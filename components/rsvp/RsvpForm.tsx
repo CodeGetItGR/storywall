@@ -4,12 +4,14 @@ import { CheckCircle2, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type React from 'react';
 
-import type { RsvpPlusOnes } from '@/lib/api/types';
+import { useEventTypeVoice } from '@/hooks/useEventTypeVoice';
+import type { EventTypeConvention, RsvpPlusOnes } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
 type AttendingStatus = 'attending' | 'not-attending';
 
 interface RsvpFormProps {
+    eventType: EventTypeConvention | null;
     attending: AttendingStatus | null;
     onAttend: () => void;
     onDecline: () => void;
@@ -24,6 +26,7 @@ interface RsvpFormProps {
 }
 
 export function RsvpForm({
+    eventType,
     attending,
     onAttend,
     onDecline,
@@ -38,6 +41,7 @@ export function RsvpForm({
 }: RsvpFormProps) {
     const t = useTranslations('RSVPPage');
     const tCommon = useTranslations('Common');
+    const voice = useEventTypeVoice(eventType);
 
     return (
         <div className="p-3 mb-6">
@@ -127,7 +131,7 @@ export function RsvpForm({
 
                 <div>
                     <p className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-2">
-                        {t('messageForCouple')} <span className="text-ink-faint">({tCommon('optional')})</span>
+                        {voice.rsvpMessageLabel} <span className="text-ink-faint">({tCommon('optional')})</span>
                     </p>
                     <textarea
                         value={message}
@@ -135,7 +139,7 @@ export function RsvpForm({
                         rows={3}
                         placeholder={t('messagePlaceholder')}
                         className="w-full bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 resize-none transition leading-relaxed"
-                        aria-label={t('messageAriaLabel')}
+                        aria-label={voice.rsvpMessageLabel}
                     />
                 </div>
 

@@ -121,11 +121,34 @@ export interface PlatformModuleResponseDto {
     sortOrder: number;
 }
 
+// Every localized field from the backend is a locale map, not a fixed
+// {en, el}-only shape — read whichever key matches the active locale rather
+// than destructuring exactly two keys. See event-type-voice-pack-fe-integration.md.
+export type LocalizedText = Record<string, string>;
+
+export type EventTypeAccentToken = 'rose' | 'sky' | 'amber';
+
+export interface EventTypeVoicePack {
+    titlePlaceholder: LocalizedText;
+    locationPlaceholder: LocalizedText;
+    joinSubtitle: LocalizedText;
+    joinDisclaimer: LocalizedText;
+    inviteHeadline: LocalizedText;
+    rsvpMessageLabel: LocalizedText;
+    rsvpAttendingConfirmation: LocalizedText;
+    toolsSubtitle: LocalizedText;
+    toolsScheduleDescription: LocalizedText;
+    toolsPlaylistDescription: LocalizedText;
+}
+
 export interface PlatformEventTypeResponseDto {
     id: string;
     eventTypeKey: EventTypeConvention;
-    name: string;
-    description: string | null;
+    name: LocalizedText;
+    tagline: LocalizedText;
+    icon: string;
+    accentToken: EventTypeAccentToken;
+    voice: EventTypeVoicePack;
     isEnabled: boolean;
     sortOrder: number;
 }
@@ -1232,11 +1255,11 @@ export interface PlatformModulePatchDto {
     sortOrder?: number;
 }
 
-// The EventTypeKey set itself is fixed in code — no create/delete, only
-// isEnabled + display metadata are admin-editable (mirrors PlatformModulePatchDto).
+// The EventTypeKey set itself is fixed in code, and as of the voice-pack
+// change, display copy (name/tagline/voice) is deploy-managed, not
+// admin-editable — only isEnabled + sortOrder remain writable here. Sending
+// name/description now 400s server-side (event-type-voice-pack-fe-integration.md).
 export interface PlatformEventTypePatchDto {
-    name?: string;
-    description?: string | null;
     isEnabled?: boolean;
     sortOrder?: number;
 }

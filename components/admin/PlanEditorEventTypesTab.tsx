@@ -5,6 +5,7 @@ import type { ChangeEventHandler } from 'react';
 
 import { AdminSwitch } from '@/components/admin/AdminSwitch';
 import { AdminTabPanel } from '@/components/admin/AdminTabs';
+import { useLocalizedText } from '@/hooks/useLocalizedText';
 import type { PlatformEventTypeResponseDto } from '@/lib/api/types';
 
 export function PlanEditorEventTypesTab({
@@ -21,6 +22,7 @@ export function PlanEditorEventTypesTab({
     onEventTypeChange: ChangeEventHandler<HTMLInputElement>;
 }) {
     const t = useTranslations('AdminPage');
+    const localizedText = useLocalizedText();
     const unrestricted = eventTypeKeys.length === 0;
 
     return (
@@ -41,8 +43,8 @@ export function PlanEditorEventTypesTab({
                     <AdminSwitch
                         key={eventType.eventTypeKey}
                         name={eventType.eventTypeKey}
-                        label={eventType.name}
-                        description={eventType.description ?? undefined}
+                        label={localizedText(eventType.name)}
+                        description={localizedText(eventType.tagline) || undefined}
                         checked={eventTypeKeys.includes(eventType.eventTypeKey)}
                         onChange={onEventTypeChange}
                         optional={false}

@@ -10,7 +10,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
     return (
         <div className="min-h-screen bg-background flex flex-col lg:flex-row">
             <div className="flex flex-col items-center justify-center gap-3 min-h-1/4 py-14 md:py-8">
-                <Logo direction="col" iconClassName="h-10 w-auto sm:h-12 md:h-14" wordmarkClassName="h-8 w-auto sm:h-9 md:h-10" />
+                <Logo direction="col" iconClassName="h-12 w-auto sm:h-14 md:h-18" wordmarkClassName="h-8 w-auto sm:h-9 md:h-10" />
             </div>
 
             {/* Form panel */}

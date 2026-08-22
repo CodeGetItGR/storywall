@@ -328,7 +328,6 @@
     },
     "ToolsPage": {
         "title": "Εργαλεία",
-        "subtitle": "Όλα όσα χρειάζεστε για να απολαύσετε και να συμμετάσχετε στον γάμο",
         "items": {
             "rsvp": {
                 "label": "RSVP",
@@ -350,12 +349,10 @@
             },
             "schedule": {
                 "label": "Πρόγραμμα",
-                "description": "Το πλήρες πρόγραμμα της ημέρας",
                 "badge": "{count} εκδηλώσεις"
             },
             "playlist": {
                 "label": "Λίστα Τραγουδιών",
-                "description": "Προτείνετε τραγούδια και ψηφίστε όσα θέλετε να ακούσετε",
                 "badge": "{count} τραγούδια"
             },
             "quiz": {
@@ -505,10 +502,6 @@
             "timezone": "Ζώνη ώρας",
             "locationName": "Τοποθεσία (προαιρετικό)",
             "visibility": "Ορατότητα"
-        },
-        "placeholders": {
-            "title": "π.χ. Γάμος Έμμα & Τζέιμς",
-            "locationName": "π.χ. Rosewood Estate, Napa Valley"
         },
         "validation": {
             "startInPast": "Η ώρα έναρξης πρέπει να είναι από τώρα και μετά.",
@@ -1382,7 +1375,6 @@
         "title": "RSVP",
         "onTheList": "Είστε στη λίστα!",
         "rsvpReceived": "Το RSVP λήφθηκε",
-        "attendingConfirmation": "Ανυπομονούμε να γιορτάσουμε μαζί σας! Θα λαμβάνετε ενημερώσεις καθώς πλησιάζει η μεγάλη μέρα.",
         "declinedConfirmation": "Ευχαριστούμε που μας ενημερώσατε. Θα έχετε ακόμα πρόσβαση στο StoryWall.",
         "backToTheWall": "Πίσω στον Τοίχο",
         "stats": {
@@ -1400,9 +1392,7 @@
         "joyfullyAccept": "Ναι",
         "regretfullyDecline": "Όχι",
         "plusOnes": "Συνοδοί",
-        "messageForCouple": "Μήνυμα για την Έμμα & τον Τζέιμς",
         "messagePlaceholder": "Προαιρετικό — μοιραστείτε τον ενθουσιασμό σας ή ένα ξεχωριστό σημείωμα...",
-        "messageAriaLabel": "Μήνυμα για το ζευγάρι",
         "submitRsvp": "Υποβολή RSVP",
         "submitError": "Κάτι πήγε στραβά κατά την υποβολή του RSVP. Δοκιμάστε ξανά.",
         "whosComing": "Ποιοι έρχονται",
@@ -2001,15 +1991,17 @@
         "PRO": "Τα μεγαλύτερα όρια και όλες οι διαθέσιμες λειτουργίες.",
         "fallback": "Δείτε τα όρια και τις λειτουργίες που περιλαμβάνει το {plan}."
     },
-    "EventTypes": {
-        "WEDDING": { "name": "Γάμος", "tagline": "Δαχτυλίδια, όρκοι και μια βραδιά αξέχαστη." },
-        "BAPTISM": { "name": "Βάφτιση", "tagline": "Μια ευλογία, η οικογένεια και ήσυχη χαρά." },
-        "SOCIAL_EVENT": { "name": "Κοινωνική Εκδήλωση", "tagline": "Φίλοι, φαγητό και καλή διάθεση." },
-        "BIRTHDAY": { "name": "Γενέθλια", "tagline": "Τούρτα, κεριά και κομφετί." },
-        "CORPORATE": { "name": "Εταιρική Εκδήλωση", "tagline": "Εκεί που η δουλειά συναντά τον εορτασμό." },
-        "FESTIVAL": { "name": "Φεστιβάλ", "tagline": "Μουσική, κόσμος και ενέργεια." },
-        "PRIVATE_PARTY": { "name": "Ιδιωτικό Πάρτι", "tagline": "Μόνο οι άνθρωποι που μετράνε πραγματικά." },
-        "CONFERENCE": { "name": "Συνέδριο", "tagline": "Ομιλίες, ιδέες και νέες γνωριμίες." }
+    "EventVoiceFallback": {
+        "titlePlaceholder": "π.χ. Συνάντηση στο Rosewood Estate",
+        "locationPlaceholder": "π.χ. Rosewood Estate, Napa Valley",
+        "joinSubtitle": "Συνδεθείτε για να συμμετάσχετε στον εορτασμό.",
+        "joinDisclaimer": "Συμμετέχοντας συμφωνείτε να μοιραστείτε στιγμές από αυτή την εκδήλωση.",
+        "inviteHeadline": "Είστε καλεσμένοι",
+        "rsvpMessageLabel": "Μήνυμα για τους διοργανωτές",
+        "rsvpAttendingConfirmation": "Ανυπομονούμε να γιορτάσουμε μαζί σας! Θα λαμβάνετε ενημερώσεις καθώς πλησιάζει η ημέρα.",
+        "toolsSubtitle": "Όλα όσα χρειάζεστε για να απολαύσετε και να συμμετάσχετε στην εκδήλωση",
+        "toolsScheduleDescription": "Το πλήρες πρόγραμμα της ημέρας",
+        "toolsPlaylistDescription": "Προτείνετε τραγούδια και ψηφίστε όσα θέλετε να ακούσετε"
     },
     "Modules": {
         "posts": {

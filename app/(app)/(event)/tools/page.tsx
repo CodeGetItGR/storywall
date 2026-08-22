@@ -4,6 +4,7 @@ import { BookHeart, Calendar, ChevronRight, Gift, HelpCircle, Images, Music, Use
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import { useEventTypeVoice } from '@/hooks/useEventTypeVoice';
 import { useWishbookCount } from '@/hooks/useWishbook';
 import { routes } from '@/lib/routes';
 import { useActiveEvent } from '@/providers/EventProvider';
@@ -71,6 +72,7 @@ const moduleBackedTools: Partial<Record<(typeof tools)[number]['key'], 'rsvp' | 
 export default function ToolsPage() {
     const t = useTranslations('ToolsPage');
     const activeEvent = useActiveEvent();
+    const voice = useEventTypeVoice(activeEvent?.eventType);
     const wishbookCount = useWishbookCount(activeEvent?.id ?? null);
     const availableModules = new Set(activeEvent?.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey) ?? []);
     const visibleTools = tools.filter((tool) => {
@@ -82,7 +84,7 @@ export default function ToolsPage() {
         <div className="max-w-2xl mx-auto px-4 pb-24 lg:pb-8">
             <div className="pt-5 pb-6">
                 <h1 className="text-2xl font-bold text-ink">{t('title')}</h1>
-                <p className="text-sm text-ink-muted mt-1">{t('subtitle')}</p>
+                <p className="text-sm text-ink-muted mt-1">{voice.toolsSubtitle}</p>
             </div>
 
             <div className="flex flex-col gap-2">
@@ -112,13 +114,17 @@ export default function ToolsPage() {
                                     )}
                                 </div>
                                 <p className="text-xs text-ink-muted mt-0.5 leading-snug">
-                                    {t(
-                                        tool.key === 'gifts'
-                                            ? 'items.gifts.accountDescription'
-                                            : tool.key === 'wishbook'
-                                              ? 'items.wishbook.currentDescription'
-                                              : `items.${tool.key}.description`
-                                    )}
+                                    {tool.key === 'schedule'
+                                        ? voice.toolsScheduleDescription
+                                        : tool.key === 'playlist'
+                                          ? voice.toolsPlaylistDescription
+                                          : t(
+                                                tool.key === 'gifts'
+                                                    ? 'items.gifts.accountDescription'
+                                                    : tool.key === 'wishbook'
+                                                      ? 'items.wishbook.currentDescription'
+                                                      : `items.${tool.key}.description`
+                                            )}
                                 </p>
                             </div>
                             <ChevronRight

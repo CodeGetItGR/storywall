@@ -328,7 +328,6 @@
     },
     "ToolsPage": {
         "title": "Tools",
-        "subtitle": "Everything you need to enjoy and participate in the wedding",
         "items": {
             "rsvp": {
                 "label": "RSVP",
@@ -350,7 +349,6 @@
             },
             "schedule": {
                 "label": "Schedule",
-                "description": "Full timeline of events leading up to the big day",
                 "badge": "{count} events"
             },
             "gallery": {
@@ -359,7 +357,6 @@
             },
             "playlist": {
                 "label": "Playlist",
-                "description": "Vote on songs and suggest tracks for the reception",
                 "badge": "{count} songs"
             },
             "quiz": {
@@ -505,10 +502,6 @@
             "timezone": "Timezone",
             "locationName": "Location (optional)",
             "visibility": "Visibility"
-        },
-        "placeholders": {
-            "title": "e.g. Emma & James's Wedding",
-            "locationName": "e.g. Rosewood Estate, Napa Valley"
         },
         "validation": {
             "startInPast": "The start time must be now or later.",
@@ -1362,7 +1355,6 @@
         "title": "RSVP",
         "onTheList": "You're on the list!",
         "rsvpReceived": "RSVP received",
-        "attendingConfirmation": "We can't wait to celebrate with you! You'll receive updates as the big day approaches.",
         "declinedConfirmation": "Thank you for letting us know. You'll still have access to the StoryWall.",
         "backToTheWall": "Back to the Wall",
         "stats": {
@@ -1380,9 +1372,7 @@
         "joyfullyAccept": "Yes",
         "regretfullyDecline": "No",
         "plusOnes": "Plus ones",
-        "messageForCouple": "Message for Emma & James",
         "messagePlaceholder": "Optional — share your excitement or a special note...",
-        "messageAriaLabel": "Message for the couple",
         "submitRsvp": "Submit RSVP",
         "submitError": "Something went wrong submitting your RSVP. Please try again.",
         "moduleUnavailable": "RSVP is not available on this event's current plan.",
@@ -1981,15 +1971,17 @@
         "PRO": "The highest limits and every available feature.",
         "fallback": "See the limits and features included with {plan}."
     },
-    "EventTypes": {
-        "WEDDING": { "name": "Wedding", "tagline": "Rings, vows, and a night to remember." },
-        "BAPTISM": { "name": "Baptism", "tagline": "A blessing, family, and quiet joy." },
-        "SOCIAL_EVENT": { "name": "Social Event", "tagline": "Friends, food, and good vibes." },
-        "BIRTHDAY": { "name": "Birthday", "tagline": "Cake, candles, and confetti." },
-        "CORPORATE": { "name": "Corporate", "tagline": "Where business meets celebration." },
-        "FESTIVAL": { "name": "Festival", "tagline": "Music, crowds, and big energy." },
-        "PRIVATE_PARTY": { "name": "Private Party", "tagline": "Just the people who matter most." },
-        "CONFERENCE": { "name": "Conference", "tagline": "Talks, ideas, and new connections." }
+    "EventVoiceFallback": {
+        "titlePlaceholder": "e.g. Rosewood Estate Gathering",
+        "locationPlaceholder": "e.g. Rosewood Estate, Napa Valley",
+        "joinSubtitle": "Sign in to join the celebration.",
+        "joinDisclaimer": "By joining you agree to share moments from this event.",
+        "inviteHeadline": "You're invited",
+        "rsvpMessageLabel": "Message for the hosts",
+        "rsvpAttendingConfirmation": "We can't wait to celebrate with you! You'll receive updates as the day approaches.",
+        "toolsSubtitle": "Everything you need to enjoy and participate in the event",
+        "toolsScheduleDescription": "Full timeline of events leading up to the big day",
+        "toolsPlaylistDescription": "Vote on songs and suggest tracks for the celebration"
     },
     "Modules": {
         "posts": {

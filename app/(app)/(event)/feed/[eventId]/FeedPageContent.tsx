@@ -14,18 +14,17 @@ import { useFeedPage } from './FeedPageContext';
 
 export function FeedPageContent() {
     const { event, eventId, isFetchingNextPage, isHost, loadMoreRef, loadingMoreLabel, moduleFlags, posts, storedRsvpId } = useFeedPage();
-
+    console.log(event)
     return (
         <div className="mx-auto flex w-full flex-col lg:max-w-2xl">
             <Header countdownTime={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0} />
             <section>
-                <Banner image="/images/Banner.jpg" title={event.title} />
+                <Banner image={event.coverMedia?.mediaUrl ?? ''} title={event.title} />
             </section>
 
             <section className="mt-3">
                 <EventInfo
                     date={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0}
-                    type={event.eventType}
                     place={event.location.name ?? event.location.address ?? ''}
                     className="w-full px-4"
                 />

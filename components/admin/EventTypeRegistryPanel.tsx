@@ -11,7 +11,8 @@ import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { adminKeys } from '@/hooks/useAdmin';
 import { appConfigKeys } from '@/hooks/useAppConfig';
-import { adminErrorMessageKey, checked, emptyToNull } from '@/lib/adminUtils';
+import { useLocalizedText } from '@/hooks/useLocalizedText';
+import { adminErrorMessageKey, checked } from '@/lib/adminUtils';
 import type { PlatformEventTypePatchDto, PlatformEventTypeResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
@@ -19,6 +20,7 @@ function EventTypeEditDrawer({ eventType, onClose }: { eventType: PlatformEventT
     const t = useTranslations('AdminPage');
     const tCommon = useTranslations('Common');
     const queryClient = useQueryClient();
+    const localizedText = useLocalizedText();
 
     const { mutateAsync: updateEventType, mutation } = useUpdate<PlatformEventTypeResponseDto>({
         dataProviderName: 'platform-event-types',
@@ -41,8 +43,6 @@ function EventTypeEditDrawer({ eventType, onClose }: { eventType: PlatformEventT
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
         setPendingInput({
-            name: String(formData.get('name') ?? '').trim(),
-            description: emptyToNull(formData.get('description')),
             sortOrder: Number(formData.get('sortOrder') ?? eventType?.sortOrder ?? 0),
             isEnabled: checked(formData, 'isEnabled'),
         });
@@ -65,7 +65,7 @@ function EventTypeEditDrawer({ eventType, onClose }: { eventType: PlatformEventT
                 onClose={close}
                 closeLabel={t('cancel')}
                 title={t('eventTypes.editTitle')}
-                subtitle={eventType?.name}
+                subtitle={eventType ? localizedText(eventType.name) : undefined}
                 footer={
                     <>
                         <div />
@@ -90,10 +90,12 @@ function EventTypeEditDrawer({ eventType, onClose }: { eventType: PlatformEventT
             >
                 {eventType && (
                     <form key={eventType.eventTypeKey} id="event-type-edit-form" onSubmit={handleSubmit} className="space-y-5">
-                        <div className="grid grid-cols-[minmax(0,1fr)_7rem] gap-3">
-                            <AdminField label={t('fields.name')} required>
-                                <input name="name" required maxLength={100} defaultValue={eventType.name} className={adminInputClass()} />
-                            </AdminField>
+                        <div className="space-y-1 rounded-lg border border-border bg-canvas/60 px-3.5 py-3">
+                            <p className="text-sm font-semibold text-ink">{localizedText(eventType.name)}</p>
+                            <p className="text-xs leading-snug text-ink-faint">{localizedText(eventType.tagline)}</p>
+                        </div>
+
+                        <div className="w-28">
                             <AdminField label={t('fields.sort')} optional>
                                 <input
                                     name="sortOrder"
@@ -102,9 +104,6 @@ function EventTypeEditDrawer({ eventType, onClose }: { eventType: PlatformEventT
                                     defaultValue={eventType.sortOrder}
                                     className={adminInputClass()}
                                 />
-                            </AdminField>
-                            <AdminField label={t('fields.description')} optional className="col-span-2">
-                                <input name="description" defaultValue={eventType.description ?? ''} className={adminInputClass()} />
                             </AdminField>
                         </div>
 
@@ -123,7 +122,7 @@ function EventTypeEditDrawer({ eventType, onClose }: { eventType: PlatformEventT
             <ConfirmActionModal
                 open={Boolean(pendingInput)}
                 onClose={closeConfirmation}
-                title={t('eventTypes.confirmTitle', { eventType: eventType?.name ?? '' })}
+                title={t('eventTypes.confirmTitle', { eventType: eventType ? localizedText(eventType.name) : '' })}
                 body={t('eventTypes.confirmBody')}
                 cancelLabel={t('cancel')}
                 confirmLabel={t('save')}
@@ -138,6 +137,7 @@ function EventTypeEditDrawer({ eventType, onClose }: { eventType: PlatformEventT
 
 export function EventTypeRegistryPanel() {
     const t = useTranslations('AdminPage');
+    const localizedText = useLocalizedText();
     const { result: eventTypesResult, query: eventTypesQuery } = useList<PlatformEventTypeResponseDto>({
         resource: 'platform-event-types',
         dataProviderName: 'platform-event-types',
@@ -191,11 +191,9 @@ export function EventTypeRegistryPanel() {
                                 {eventTypes.map((eventType) => (
                                     <tr key={eventType.eventTypeKey} className="border-b border-border last:border-b-0 hover:bg-canvas/60">
                                         <td className="max-w-96 px-4 py-2.5">
-                                            <p className="truncate font-semibold text-ink">{eventType.name}</p>
+                                            <p className="truncate font-semibold text-ink">{localizedText(eventType.name)}</p>
                                             <p className="truncate font-mono text-[11px] text-ink-faint">{eventType.eventTypeKey}</p>
-                                            {eventType.description && (
-                                                <p className="truncate text-[11px] text-ink-faint">{eventType.description}</p>
-                                            )}
+                                            <p className="truncate text-[11px] text-ink-faint">{localizedText(eventType.tagline)}</p>
                                         </td>
                                         <td className="px-3 py-2.5">
                                             <span

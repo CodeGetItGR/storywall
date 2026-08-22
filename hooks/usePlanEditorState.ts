@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type * as React from 'react';
 import { useMemo, useRef, useState } from 'react';
 
@@ -25,6 +25,7 @@ type UsePlanEditorStateArgs = {
 
 export function usePlanEditorState({ plan, modules, eventTypes, scope }: UsePlanEditorStateArgs) {
     const t = useTranslations('AdminPage');
+    const locale = useLocale();
     const formRef = useRef<HTMLFormElement>(null);
     const [tab, setTab] = useState('details');
     const [moduleKeys, setModuleKeys] = useState(plan.moduleKeys);
@@ -39,7 +40,9 @@ export function usePlanEditorState({ plan, modules, eventTypes, scope }: UsePlan
     const areModulesDirty = !sameStringSet(plan.moduleKeys, moduleKeys);
     const moduleChangeCount = areModulesDirty ? moduleChangeSummary(plan.moduleKeys, moduleKeys, orderedModules).length : 0;
     const areEventTypesDirty = !sameStringSet(plan.eventTypeKeys, eventTypeKeys);
-    const eventTypeChangeCount = areEventTypesDirty ? eventTypeChangeSummary(plan.eventTypeKeys, eventTypeKeys, orderedEventTypes).length : 0;
+    const eventTypeChangeCount = areEventTypesDirty
+        ? eventTypeChangeSummary(plan.eventTypeKeys, eventTypeKeys, orderedEventTypes, locale).length
+        : 0;
     const changeCount = planChangeCount + moduleChangeCount + eventTypeChangeCount;
     const canSave = changeCount > 0;
     const tabs = useMemo<AdminTabDefinition[]>(() => {

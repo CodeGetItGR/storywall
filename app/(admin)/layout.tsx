@@ -3,7 +3,7 @@
 import { LogOut, Menu, Shield } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { type MouseEvent, type ReactNode, useState } from 'react';
+import { type MouseEvent, type ReactNode, useEffect, useState } from 'react';
 
 import { AdminNavigationProvider, type AdminTab, useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { RefineAdminProvider } from '@/components/admin/RefineAdminProvider';
@@ -149,11 +149,18 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     const [mobileNavOpen, setMobileNavOpen] = useState(false);
     const [signOutOpen, setSignOutOpen] = useState(false);
 
-    if (isBootstrapping) {
+    useEffect(() => {
+        if (isBootstrapping) return;
+        if (!user) {
+            router.replace(routes.login);
+        }
+    }, [isBootstrapping, router, user]);
+
+    if (isBootstrapping || !user) {
         return <div className="admin-shell h-full bg-canvas" />;
     }
 
-    if (user?.role !== 'ADMIN') {
+    if (user.role !== 'ADMIN') {
         return <>{children}</>;
     }
 

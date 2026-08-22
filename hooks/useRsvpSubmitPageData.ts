@@ -172,6 +172,7 @@ export function useRsvpSubmitPageData() {
     return {
         attending,
         canSubmitRsvp,
+        eventType: activeEvent?.eventType ?? null,
         isSubmitting,
         memberId,
         message,

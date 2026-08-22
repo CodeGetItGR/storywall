@@ -9,6 +9,7 @@ import type {
     PlatformEventTypeResponseDto,
     PlatformModuleResponseDto,
 } from '@/lib/api/types';
+import { resolveLocalizedText } from '@/lib/localizedText';
 import { formatLimitValue } from '@/lib/planTiers';
 
 export type PlanEditorTranslate = (key: string) => string;
@@ -141,9 +142,13 @@ export function moduleChangeSummary(
 export function eventTypeChangeSummary(
     beforeKeys: string[],
     afterKeys: string[],
-    eventTypes: PlatformEventTypeResponseDto[]
+    eventTypes: PlatformEventTypeResponseDto[],
+    locale: string
 ): PendingPlanSave['eventTypeChanges'] {
-    const eventTypeName = (key: string) => eventTypes.find((eventType) => eventType.eventTypeKey === key)?.name ?? key;
+    const eventTypeName = (key: string) => {
+        const eventType = eventTypes.find((item) => item.eventTypeKey === key);
+        return eventType ? resolveLocalizedText(eventType.name, locale, key) : key;
+    };
     const before = new Set(beforeKeys);
     const after = new Set(afterKeys);
     const added = afterKeys.filter((key) => !before.has(key)).map((key) => ({ label: eventTypeName(key), tone: 'added' as const }));

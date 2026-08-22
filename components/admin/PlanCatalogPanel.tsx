@@ -14,6 +14,7 @@ import { useAdminPaidServices, useAdminPlatformEventTypes, useAdminPlatformModul
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import { type Visibility, visibilityOf } from '@/lib/adminVisibility';
 import type { PlanScope, PlanTierResponseDto, PlatformEventTypeResponseDto } from '@/lib/api/types';
+import { resolveLocalizedText } from '@/lib/localizedText';
 import { formatLimitValue, formatPlanMoney } from '@/lib/planTiers';
 import { cn } from '@/lib/utils';
 
@@ -261,7 +262,7 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                                                                     key={eventType.id}
                                                                     className="rounded-full bg-status-neutral-wash px-2 py-0.5 text-[10.5px] font-bold text-status-neutral"
                                                                 >
-                                                                    {eventType.name}
+                                                                    {resolveLocalizedText(eventType.name, locale, eventType.eventTypeKey)}
                                                                 </span>
                                                             ))}
                                                         </div>

@@ -1,9 +1,17 @@
 import { useLocale } from 'next-intl';
-
+import { MapPin, Calendar} from 'lucide-react'
 import { formatDate } from '@/lib/datetime';
 import { cn } from '@/lib/utils';
 
-export function EventInfo({ date, type, place, className }: { date: number; type: string; place: string; className?: string }) {
+export function EventInfo({
+    date,
+    place,
+    className,
+}: {
+    date: number
+    place: string;
+    className?: string;
+}) {
     const locale = useLocale();
 
     const formatted = formatDate(locale, date, {
@@ -14,14 +22,13 @@ export function EventInfo({ date, type, place, className }: { date: number; type
 
     return (
         <div className={cn(className, 'flex justify-between items-center')}>
-            <p className="text-[1rem] alegreya-light">{formatted}</p>
-
-            <div className={'flex gap-2 text-[1rem] alegreya-light'}>
-                <p>{type}</p>
-                <p aria-hidden="true" className={cn({ hidden: !place })}>
-                    •
-                </p>
-                <p>{place}</p>
+            <div className={'flex gap-1 underline underline-offset-3 items-center'}>
+                <Calendar className={'w-4 h-4'}/>
+                <p className="text-[1rem] alegreya-light">{formatted}</p>
+            </div>
+            <div className={'flex gap-1 text-[1rem] alegreya-light underline underline-offset-3 items-center'}>
+                <MapPin className={'w-4 h-4'}/>
+                <p className={'text-ellipsis text-nowrap whitespace-nowrap'}>{place}</p>
             </div>
         </div>
     );

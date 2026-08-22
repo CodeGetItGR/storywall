@@ -3,10 +3,22 @@
 import { CheckCircle2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { useEventTypeVoice } from '@/hooks/useEventTypeVoice';
+import type { EventTypeConvention } from '@/lib/api/types';
+
 type AttendingStatus = 'attending' | 'not-attending';
 
-export function RsvpSubmittedView({ attending, onBackToWall }: { attending: AttendingStatus | null; onBackToWall: () => void }) {
+export function RsvpSubmittedView({
+    eventType,
+    attending,
+    onBackToWall,
+}: {
+    eventType: EventTypeConvention | null;
+    attending: AttendingStatus | null;
+    onBackToWall: () => void;
+}) {
     const t = useTranslations('RSVPPage');
+    const voice = useEventTypeVoice(eventType);
 
     return (
         <div className="flex flex-col items-center text-center py-20 px-4">
@@ -15,7 +27,7 @@ export function RsvpSubmittedView({ attending, onBackToWall }: { attending: Atte
             </div>
             <h2 className="text-2xl font-bold text-ink mb-2">{attending === 'attending' ? t('onTheList') : t('rsvpReceived')}</h2>
             <p className="text-sm text-ink-muted max-w-xs leading-relaxed">
-                {attending === 'attending' ? t('attendingConfirmation') : t('declinedConfirmation')}
+                {attending === 'attending' ? voice.rsvpAttendingConfirmation : t('declinedConfirmation')}
             </p>
             <button
                 onClick={onBackToWall}

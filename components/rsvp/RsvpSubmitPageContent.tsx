@@ -19,7 +19,7 @@ function RsvpSubmittedContent({ data }: { data: RsvpSubmitPageData }) {
     return (
         <div className="mx-auto max-w-2xl px-4 pb-24 lg:pb-8">
             <RsvpHeader onGoBack={data.onGoBack} />
-            <RsvpSubmittedView attending={data.attending} onBackToWall={data.onBackToWall} />
+            <RsvpSubmittedView eventType={data.eventType} attending={data.attending} onBackToWall={data.onBackToWall} />
         </div>
     );
 }
@@ -32,6 +32,7 @@ function RsvpSubmitFormContent({ data }: { data: RsvpSubmitPageData }) {
             <RsvpHeader onGoBack={data.onGoBack} />
 
             <RsvpForm
+                eventType={data.eventType}
                 attending={data.attending}
                 onAttend={data.onAttend}
                 onDecline={data.onDecline}
