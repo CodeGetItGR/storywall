@@ -1,11 +1,11 @@
 'use client';
 
-    import { ArrowUp, Music, Plus } from 'lucide-react';
+import { ArrowUp, Music, Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
 import { PlaylistItemRow, PlaylistLeaderboardSheet } from '@/components/playlist';
-import { ModulePageHeader } from '@/components/tools/ModulePageHeader';
+import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import type { PlaylistSuggestionLeaderboardDto, PlaylistSuggestionResponseDto } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 
@@ -19,6 +19,7 @@ interface PlaylistContentProps {
     onSuggest: () => void;
     suggestions: PlaylistSuggestionResponseDto[];
     suggestionsLoading: boolean;
+    showTitleIcon?: boolean;
 }
 
 export function PlaylistContent({
@@ -31,6 +32,7 @@ export function PlaylistContent({
     onSuggest,
     suggestions,
     suggestionsLoading,
+    showTitleIcon = false,
 }: PlaylistContentProps) {
     const t = useTranslations('PlaylistPage');
     const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
@@ -45,31 +47,33 @@ export function PlaylistContent({
     }, []);
 
     return (
-        <div className="mx-auto max-w-2xl px-4 pb-24 lg:pb-8">
-            <ModulePageHeader
-                title={t('title')}
-                icon={Music}
-                iconClassName="text-violet-500"
-                backLabel={t('backToFeed')}
-                backHref={routes.post.feed(eventId)}
-                action={
-                    suggestions.length > 0 ? (
-                        <button
-                            type="button"
-                            onClick={onSuggest}
-                            disabled={!canSuggest}
-                            aria-label={t('suggestASong')}
-                            className="inline-flex items-center gap-1.5 rounded-full bg-gradient-brand px-3 py-1.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20 disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-40"
-                        >
-                            <Plus className="h-4 w-4" />
-                            {t('suggest')}
-                        </button>
-                    ) : undefined
-                }
-            />
+        <ModulePageShell
+            maxWidth="2xl"
+            title={t('title')}
+            icon={Music}
+            iconClassName="text-violet-500"
+            showTitleIcon={showTitleIcon}
+            backLabel={t('backToFeed')}
+            backHref={routes.post.feed(eventId)}
+            action={
+                suggestions.length > 0 ? (
+                    <button
+                        type="button"
+                        onClick={onSuggest}
+                        disabled={!canSuggest}
+                        aria-label={t('suggestASong')}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-gradient-brand px-3 py-1.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20 disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-40"
+                    >
+                        <Plus className="h-4 w-4" />
+                        {t('suggest')}
+                    </button>
+                ) : undefined
+            }
+        >
+            {/* Status */}
             {!isEventWritable && <p className="mb-5 rounded-lg bg-surface-muted px-4 py-3 text-sm text-ink-muted">{t('readOnly')}</p>}
 
-            {/* Leaderboard trigger (host only) */}
+            {/* Leaderboard */}
             {isHost && (
                 <button
                     type="button"
@@ -89,11 +93,12 @@ export function PlaylistContent({
                 </button>
             )}
 
+            {/* Content */}
             {suggestionsLoading ? (
                 <div className="py-8 text-sm text-ink-muted">{t('loadingSongs')}</div>
             ) : suggestions.length === 0 ? (
-                <div className="py-8 text-sm text-ink-muted flex flex-col text-center justify-center items-center gap-5">
-                    <Music className="w-10 h-auto" />
+                <div className="flex flex-col items-center justify-center gap-5 py-8 text-center text-sm text-ink-muted">
+                    <Music className="h-10 w-auto" />
                     <p>{t('playlistEmpty')}</p>
                     <button
                         type="button"
@@ -122,6 +127,6 @@ export function PlaylistContent({
                     isLoading={isLoadingLeaderboard}
                 />
             )}
-        </div>
+        </ModulePageShell>
     );
 }

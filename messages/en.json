@@ -43,11 +43,21 @@
         "userStory": "{name}'s story",
         "yourStory": "Your story"
     },
-    "FeedPage": {
-        "scheduleBadge": "Schedule",
-        "loadingMore": "Loading more…",
-        "loading": "Loading feed",
-        "aboutEvent": "About this event"
+      "FeedPage": {
+          "scheduleBadge": "Schedule",
+          "loadingMore": "Loading more…",
+          "loading": "Loading feed",
+          "aboutEvent": "About this event",
+          "giftAccount": "Gift account",
+          "location": "Event location"
+      },
+    "EventLocationModal": {
+        "close": "Close",
+        "title": "Location",
+        "openInGoogleMaps": "Open in Google Maps",
+        "mapPreview": "Map preview",
+        "mapPreviewUnavailable": "Map preview isn't available for this link, but the location still opens in Google Maps.",
+        "openMap": "Open map for {title}"
     },
     "FeedScheduleCard": {
         "eyebrow": "Schedule",
@@ -659,7 +669,7 @@
             "perMonth": "per month",
             "once": "once"
         },
-        "giftAccount": {
+          "giftAccount": {
             "title": "Gift account",
             "body": "Add one bank account members can copy when they want to send a monetary gift.",
             "configured": "Ready for members · {holder}",
@@ -669,6 +679,7 @@
             "editorBody": "These details are visible only to event members and are not stored in this browser.",
             "iban": "IBAN",
             "accountHolder": "Account holder",
+            "bankName": "Bank name",
             "note": "Note (optional)",
             "invalidIban": "Check the IBAN. One or more digits appear to be incorrect.",
             "save": "Save details",
@@ -1210,19 +1221,19 @@
             "emptyBody": "The host hasn't published the run of show yet. Check back later."
         }
     },
-    "GiftsPage": {
+      "GiftsPage": {
         "accountTitle": "Gift account",
         "accountSubtitle": "Use these bank details if you would like to send a monetary gift.",
         "goBack": "Go back",
-        "title": "Gift account",
-        "subtitle": "Use these bank details if you would like to send a monetary gift.",
         "loading": "Loading gift details...",
         "loadError": "Gift details could not be loaded.",
+        "emptyTitle": "No gift account yet",
         "emptyHost": "Add bank details so members can send a gift.",
         "emptyMember": "The hosts have not added gift details yet.",
         "fields": {
             "iban": "IBAN",
             "accountHolder": "Account holder",
+            "bankName": "Bank name",
             "note": "Note (optional)"
         },
         "invalidIban": "Check the IBAN. One or more digits appear to be incorrect.",
@@ -1248,6 +1259,7 @@
         "charactersLeft": "{count} characters left",
         "loading": "Loading wishes...",
         "empty": "No wishes yet. Be the first to leave one.",
+        "emptyReadOnly": "No wishes yet.",
         "loadMore": "Load more",
         "frozenReadOnly": "The event is paused. Existing wishes remain visible, but new ones cannot be added until it is renewed.",
         "draftReadOnly": "Wishes can be added after the event is published.",
@@ -2132,3 +2144,5 @@
         "invalidPlanTierScope": "That restriction only applies to event plans."
     }
 }
+
+

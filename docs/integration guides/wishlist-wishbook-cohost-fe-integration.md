@@ -237,6 +237,7 @@ DELETE /api/events/{eventId}/gift-account      // host only → 204
 interface EventGiftAccountRequestDto {
   iban: string;           // required, max 42 chars as typed (spaces allowed)
   accountHolder: string;  // required, max 140
+  bankName: string;       // required, max 140 — added 2026-08-22
   note?: string;          // max 500
 }
 // Two length limits, and they fail differently. Over 42 characters as typed is a bean-validation
@@ -248,6 +249,7 @@ interface EventGiftAccountResponseDto {
   eventId: string;
   iban: string;           // normalised: uppercase, no spaces
   accountHolder: string;
+  bankName: string;
   note: string | null;
   updatedAt: string;
 }
@@ -268,6 +270,11 @@ give guests a copy button — an IBAN transcribed by hand is an IBAN sent to the
 **Handle 400 / `errorCode: 5045` (`INVALID_IBAN`).** The server runs the ISO 13616 mod-97 check.
 This fires on a transposed digit, which is the realistic mistake and the one worth catching loudly.
 Put the error on the field, not in a toast.
+
+**`bankName` is required on every write.** Show it next to `accountHolder` in the setup form and
+next to the IBAN wherever guests view it — knowing the bank is what lets a guest sanity-check a
+transfer before sending it. Accounts saved before 2026-08-22 have `bankName: ""` until the host next
+saves the form; render that as an empty field, not a placeholder value.
 
 **Do not cache or persist the IBAN outside the current view.** It is served only to members, kept off
 `GET /api/events/{id}` entirely (anonymous QR scanners hit that endpoint), and stored encrypted at

@@ -39,6 +39,7 @@ export function GiftAccountSetup({ eventId, className = 'mt-3 border-t border-bo
         await save.mutateAsync({
             iban: String(data.get('iban') ?? ''),
             accountHolder: String(data.get('accountHolder') ?? '').trim(),
+            bankName: String(data.get('bankName') ?? '').trim(),
             note: String(data.get('note') ?? '').trim() || undefined,
         });
         setOpen(false);
@@ -100,6 +101,16 @@ export function GiftAccountSetup({ eventId, className = 'mt-3 border-t border-bo
                                 required
                                 maxLength={140}
                                 defaultValue={account.data?.accountHolder ?? ''}
+                                className="mt-1.5 w-full rounded-xl bg-surface-muted px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                            />
+                        </label>
+                        <label className="block text-sm font-semibold text-ink">
+                            {t('bankName')}
+                            <input
+                                name="bankName"
+                                required
+                                maxLength={140}
+                                defaultValue={account.data?.bankName ?? ''}
                                 className="mt-1.5 w-full rounded-xl bg-surface-muted px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/30"
                             />
                         </label>

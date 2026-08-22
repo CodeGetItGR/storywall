@@ -667,6 +667,7 @@ export interface CoHostInvitationRequestDto {
 export interface EventGiftAccountRequestDto {
     iban: string;
     accountHolder: string;
+    bankName: string;
     note?: string;
 }
 
@@ -675,6 +676,7 @@ export interface EventGiftAccountResponseDto {
     eventId: string;
     iban: string;
     accountHolder: string;
+    bankName: string;
     note: string | null;
     updatedAt: string;
 }

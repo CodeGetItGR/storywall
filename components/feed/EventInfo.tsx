@@ -1,5 +1,6 @@
+import { Calendar, MapPin } from 'lucide-react';
 import { useLocale } from 'next-intl';
-import { MapPin, Calendar} from 'lucide-react'
+
 import { formatDate } from '@/lib/datetime';
 import { cn } from '@/lib/utils';
 
@@ -8,7 +9,7 @@ export function EventInfo({
     place,
     className,
 }: {
-    date: number
+    date: number;
     place: string;
     className?: string;
 }) {
@@ -21,14 +22,14 @@ export function EventInfo({
     }).toUpperCase();
 
     return (
-        <div className={cn(className, 'flex justify-between items-center')}>
-            <div className={'flex gap-1 underline underline-offset-3 items-center'}>
-                <Calendar className={'w-4 h-4'}/>
+        <div className={cn(className, 'flex items-center justify-between')}>
+            <div className="flex items-center gap-1">
+                <Calendar className="h-4 w-4" />
                 <p className="text-[1rem] alegreya-light">{formatted}</p>
             </div>
-            <div className={'flex gap-1 text-[1rem] alegreya-light underline underline-offset-3 items-center'}>
-                <MapPin className={'w-4 h-4'}/>
-                <p className={'text-ellipsis text-nowrap whitespace-nowrap'}>{place}</p>
+            <div className="flex items-center gap-1 text-[1rem] alegreya-light">
+                <MapPin className="h-4 w-4" />
+                <p className="text-nowrap text-ellipsis whitespace-nowrap">{place}</p>
             </div>
         </div>
     );

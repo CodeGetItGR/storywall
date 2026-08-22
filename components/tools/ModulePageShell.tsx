@@ -11,6 +11,7 @@ interface ModulePageShellProps {
     title: string;
     icon: LucideIcon;
     iconClassName?: string;
+    showTitleIcon?: boolean;
     backLabel: string;
     backHref?: string;
     onBack?: () => void;
@@ -32,6 +33,7 @@ export function ModulePageShell({
     title,
     icon,
     iconClassName,
+    showTitleIcon = true,
     backLabel,
     backHref,
     onBack,
@@ -46,6 +48,7 @@ export function ModulePageShell({
                 title={title}
                 icon={icon}
                 iconClassName={iconClassName}
+                showIcon={showTitleIcon}
                 backLabel={backLabel}
                 backHref={backHref}
                 onBack={onBack}

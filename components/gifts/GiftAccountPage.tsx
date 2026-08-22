@@ -1,0 +1,110 @@
+'use client';
+
+import { Check, Copy } from 'lucide-react';
+import { Gift } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+
+import { ModulePageShell } from '@/components/tools/ModulePageShell';
+import { useGiftAccount } from '@/hooks/useGiftAccount';
+import {cn} from "@/lib/utils";
+import { useActiveEvent, useIsHost } from '@/providers/EventProvider';
+
+function formatIban(value: string) {
+    return value
+        .replace(/\s/g, '')
+        .replace(/(.{4})/g, '$1 ')
+        .trim();
+}
+
+export function GiftAccountPage() {
+    const t = useTranslations('GiftsPage');
+    const router = useRouter();
+    const event = useActiveEvent();
+    const isHost = useIsHost();
+    const account = useGiftAccount(event?.id ?? null);
+    const [copied, setCopied] = useState(false);
+
+    const title = t('accountTitle');
+    const note = account.data?.note?.trim() || t('accountSubtitle');
+    const formattedIban = account.data ? formatIban(account.data.iban) : '';
+
+    function goBack() {
+        router.back();
+    }
+
+    async function copyIban() {
+        if (!account.data) return;
+        await navigator.clipboard.writeText(formattedIban);
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1500);
+    }
+
+    // Header
+    return (
+        <ModulePageShell
+            maxWidth="xl"
+            title={title}
+            icon={Gift}
+            iconClassName="text-rose-500"
+            showTitleIcon={false}
+            backLabel={t('goBack')}
+            onBack={goBack}
+        >
+            {!account.isLoading && !account.error && account.data && (
+                <div className="flex h-[calc(100dvh-7.5rem)] min-h-[30rem] flex-col">
+                    {/* Hero */}
+                    <section className="flex shrink-0 flex-col items-center px-2 pt-12 text-center">
+                        <Image src="/icons/present.svg" alt="" width={100} height={100} priority className="h-24 w-24" />
+                        <div className="mt-8 w-full max-h-[28vh] overflow-y-auto pr-1 text-left">
+                            <p className="text-[1.08rem] leading-8 whitespace-pre-line text-ink-muted">{note}</p>
+                        </div>
+                    </section>
+
+                    {/* Bank details */}
+                    <section className={cn("shrink-0 border-t border-border/70 pt-6 text-center", {
+                        'mt-5': !!note
+                    })}>
+                        <div className="space-y-5">
+                            <div>
+                                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ink-faint">{t('fields.bankName')}</p>
+                                <p className="mt-2 min-h-6 text-2xl font-semibold tracking-tight text-ink">{account.data.bankName}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ink-faint">{t('fields.accountHolder')}</p>
+                                <p className="mt-2 text-lg font-semibold text-ink">{account.data.accountHolder}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ink-faint">{t('fields.iban')}</p>
+                                <p className="mt-3 break-all font-mono text-2xl font-semibold tracking-[0.12em] text-ink">{formattedIban}</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={copyIban}
+                                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-surface-muted px-4 text-sm font-semibold text-ink-muted transition-colors hover:bg-surface-muted/80"
+                            >
+                                {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
+                                {copied ? t('copied') : t('copyIban')}
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            )}
+
+            {!account.isLoading && !account.error && !account.data && (
+                <section className="flex min-h-[calc(100dvh-7.5rem)] flex-col items-center justify-center px-4 pt-16 text-center">
+                    <Image src="/icons/present.svg" alt="" width={88} height={88} className="h-20 w-20 opacity-75" />
+                    <p className="mt-6 text-lg font-semibold text-ink">{t('emptyTitle')}</p>
+                    <p className="mt-3 max-w-sm text-base leading-7 text-ink-muted">
+                        {t(isHost ? 'emptyHost' : 'emptyMember')}
+                    </p>
+                </section>
+            )}
+
+            {account.isLoading && <p className="py-16 text-center text-sm text-ink-muted">{t('loading')}</p>}
+            {account.error && <p className="py-16 text-center text-sm text-rose-600">{t('loadError')}</p>}
+        </ModulePageShell>
+    );
+}
