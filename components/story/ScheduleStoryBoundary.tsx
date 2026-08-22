@@ -1,0 +1,83 @@
+'use client';
+
+import { CalendarDays } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
+
+import { EventRouteGate, EventRouteSpinner } from '@/components/routing/EventRouteGate';
+import { StoryHeader, StoryProgressBar } from '@/components/story';
+import { ScheduleStoryContent } from '@/components/story/ScheduleStoryContent';
+import { useEventSessions } from '@/hooks/useEventSessions';
+import { routes } from '@/lib/routes';
+
+function noop() {}
+
+export function ScheduleStoryBoundary() {
+    return (
+        <EventRouteGate missingEventRedirectTo={routes.feed}>
+            {({ activeEvent, eventId }) => <ScheduleStoryScreen eventId={eventId} title={activeEvent.title} />}
+        </EventRouteGate>
+    );
+}
+
+function ScheduleStoryScreen({ eventId, title }: { eventId: string; title: string }) {
+    const t = useTranslations('StoryPage');
+    const locale = useLocale();
+    const router = useRouter();
+    const { data: sessions = [], isLoading } = useEventSessions(eventId);
+
+    function handleCloseStory() {
+        router.back();
+    }
+
+    if (isLoading) {
+        return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink">
+                <EventRouteSpinner />
+            </div>
+        );
+    }
+
+    if (sessions.length === 0) {
+        router.replace(routes.feed);
+        return null;
+    }
+
+    return (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-ink">
+            <div className="relative h-full max-h-dvh w-full max-w-sm overflow-hidden bg-black">
+                {/* Header curtain */}
+                <div
+                    className="pointer-events-none absolute inset-x-0 top-0 z-10 h-32 bg-gradient-to-b from-slate-900 via-slate-900/92 to-transparent"
+                    aria-hidden="true"
+                />
+
+                {/* Static progress */}
+                <StoryProgressBar staticLabel={t('scheduleStaticProgress')} />
+
+                {/* Header */}
+                <StoryHeader
+                    authorName={t('scheduleAuthor')}
+                    authorId={eventId}
+                    timeStr={title}
+                    canManage={false}
+                    canDelete={false}
+                    showMenu={false}
+                    leadingVisual={
+                        <div
+                            className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white/60 bg-amber-100 text-amber-700"
+                            aria-hidden="true"
+                        >
+                            <CalendarDays className="h-4 w-4" />
+                        </div>
+                    }
+                    onToggleMenu={noop}
+                    onClose={handleCloseStory}
+                    onDeleteRequest={noop}
+                />
+
+                <ScheduleStoryContent sessions={sessions} locale={locale} />
+            </div>
+        </div>
+    );
+}

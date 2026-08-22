@@ -8,6 +8,7 @@ export * from './useEventInvitations';
 export * from './useEventMembers';
 export * from './useEventModules';
 export * from './useEventSessions';
+export * from './useGalleryArchive';
 export * from './useGiftAccount';
 export * from './useMedia';
 export * from './useMyEvents';

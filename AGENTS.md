@@ -1,5 +1,9 @@
 # Agent Instructions
 
+## Top Priority
+
+- Keep user-facing copy across the whole app simple and direct. Do not add decorative, explanatory, or marketing-style text when a plain label or short sentence is enough. Avoid extra eyebrow text, subtitles, helper copy, or framing unless it materially helps the user complete the task.
+
 ## Structure
 
 - Keep route `page.tsx` and `PageClient.tsx` files thin. They should compose hooks and components, not own full feature trees.

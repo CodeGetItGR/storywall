@@ -2,6 +2,7 @@
 
 import { MoreVertical, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import type { ReactNode } from 'react';
 
 import Avatar from '@/components/ui/avatar';
 import { avatarColorFromId, initialsFromName } from '@/lib/utils';
@@ -13,6 +14,7 @@ interface StoryHeaderProps {
     canManage: boolean;
     canDelete: boolean;
     showMenu: boolean;
+    leadingVisual?: ReactNode;
     onToggleMenu: () => void;
     onClose: () => void;
     onDeleteRequest: () => void;
@@ -25,6 +27,7 @@ export function StoryHeader({
     canManage,
     canDelete,
     showMenu,
+    leadingVisual,
     onToggleMenu,
     onClose,
     onDeleteRequest,
@@ -35,13 +38,15 @@ export function StoryHeader({
         <>
             <div className="absolute top-6 left-0 right-0 z-20 flex items-center justify-between px-4 pt-2">
                 <div className="flex items-center gap-2.5">
-                    <Avatar
-                        initials={initialsFromName(authorName)}
-                        color={avatarColorFromId(authorId)}
-                        size="sm"
-                        alt={authorName}
-                        className="border-2 border-white/60"
-                    />
+                    {leadingVisual ?? (
+                        <Avatar
+                            initials={initialsFromName(authorName)}
+                            color={avatarColorFromId(authorId)}
+                            size="sm"
+                            alt={authorName}
+                            className="border-2 border-white/60"
+                        />
+                    )}
                     <div>
                         <p className="text-white text-sm font-semibold leading-tight">{authorName}</p>
                         <p className="text-white/60 text-xs leading-tight">{timeStr}</p>

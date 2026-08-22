@@ -9,10 +9,8 @@ import { type MouseEvent, useCallback, useState } from 'react';
 
 import { type ContextNavItem, ContextNavSlot, isEventRoute, isPathActive, TabLink } from '@/components/layout/mobile-tab-bar';
 import { AccountDrawer } from '@/components/profile';
-import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
-import { getInitials } from '@/lib/format';
 import { routes } from '@/lib/routes';
 import { useComposer } from '@/providers/ComposerProvider';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
@@ -43,6 +41,7 @@ export function MobileTabBar() {
     const playlistActive = playlistAvailable && isPathActive(pathname, routes.tools.playlist);
     const hostItems = useHostMenuItems();
     const toolItems = useToolsMenuItems();
+    const showBottomRail = !profileActive;
     const contextItems: ContextNavItem[] =
         showEventNavigation && activeEvent
             ? isHost
@@ -69,61 +68,73 @@ export function MobileTabBar() {
 
     const handleOpenAccount = useCallback(() => setAccountOpen(true), []);
     const handleCloseAccount = useCallback(() => setAccountOpen(false), []);
+    const accountActive = accountOpen;
+    const railColumnCount = 1 + (showEventNavigation ? 1 : 0) + (showEventNavigation && playlistAvailable ? 1 : 0) + (showEventNavigation && contextItems.length > 0 ? 1 : 0);
 
-    if (profileActive) return null;
+    if (!showBottomRail) return null;
 
     return (
         <>
-            <div className="fixed bottom-0 left-1/2 z-40 flex w-full max-w-lg -translate-x-1/2 items-end gap-2 px-3 lg:hidden">
-                <button
-                    type="button"
-                    onClick={handleOpenAccount}
-                    aria-label={t('openAccount')}
-                    aria-expanded={accountOpen}
-                    aria-controls="mobile-account-drawer"
-                    className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-t-2xl border border-b-0 border-border shadow-[0_-4px_18px_rgba(36,31,26,0.08)] transition-colors ${
-                        accountOpen || profileActive ? 'bg-primary-light' : 'bg-card hover:bg-surface-muted'
-                    }`}
-                >
-                    <Avatar
-                        initials={getInitials(accountLabel)}
-                        size="sm"
-                        alt={accountLabel}
-                        className={accountOpen || profileActive ? 'ring-2 ring-primary/40' : undefined}
-                    />
-                </button>
-
+            <div className="fixed bottom-0 left-1/2 z-40 w-full max-w-lg -translate-x-1/2 px-3 lg:hidden">
                 <nav
                     aria-label={t('eventNavigation')}
-                    className="grid h-16 min-w-0 flex-1 grid-cols-3 items-center rounded-t-2xl border border-b-0 border-border bg-white/90 px-3 shadow-[0_-4px_18px_rgba(36,31,26,0.06)] backdrop-blur"
+                    className="grid h-16 min-w-0 overflow-hidden rounded-t-2xl border border-b-0 border-border bg-white/90 shadow-[0_-4px_18px_rgba(36,31,26,0.08)] backdrop-blur"
+                    style={{ gridTemplateColumns: `repeat(${railColumnCount}, minmax(0, 1fr))` }}
                 >
-                    <div className="justify-self-start">
-                        {showEventNavigation && (
-                            <TabLink
-                                href={activeEvent ? (isDraft ? routes.manage : routes.post.feed(activeEvent.id)) : homeTabItem.href}
-                                icon={homeTabItem.icon}
-                                label={t(`items.${homeTabItem.key}`)}
-                                active={homeActive}
-                                onClick={handleHomeClick}
+                    <div className="flex h-full items-center justify-center">
+                        <button
+                            type="button"
+                            onClick={handleOpenAccount}
+                            aria-label={t('openAccount')}
+                            aria-expanded={accountOpen}
+                            aria-controls="mobile-account-drawer"
+                            className={`flex h-full w-full items-center justify-center transition-colors ${
+                                accountActive ? 'bg-primary-light' : 'hover:bg-surface-muted'
+                            }`}
+                        >
+                            <Image
+                                src="/icons/profile.svg"
+                                alt={accountLabel}
+                                width={24}
+                                height={24}
+                                className={`h-6 w-6 transition-opacity ${accountActive ? 'opacity-100' : 'opacity-80'}`}
+                                loading="eager"
                             />
-                        )}
+                        </button>
                     </div>
 
-                    <div className="justify-self-center">
-                        {playlistAvailable && (
-                            <TabLink href={routes.tools.playlist} icon="/icons/music.svg" label={t('items.playlist')} active={playlistActive} />
-                        )}
-                    </div>
-                    <div className="justify-self-end">
-                        <ContextNavSlot
-                            active={contextActive}
-                            items={contextItems}
-                            menuLabel={t('eventMenu')}
-                            pathname={pathname}
-                            searchParams={searchParams}
-                            onItemClick={handleDashboardMenuClick}
-                        />
-                    </div>
+                    {showEventNavigation && (
+                        <>
+                            <div className="flex h-full items-center justify-center">
+                                <TabLink
+                                    href={activeEvent ? (isDraft ? routes.manage : routes.post.feed(activeEvent.id)) : homeTabItem.href}
+                                    icon={homeTabItem.icon}
+                                    label={t(`items.${homeTabItem.key}`)}
+                                    active={homeActive}
+                                    onClick={handleHomeClick}
+                                />
+                            </div>
+
+                            {playlistAvailable && (
+                                <div className="flex h-full items-center justify-center">
+                                    <TabLink href={routes.tools.playlist} icon="/icons/music.svg" label={t('items.playlist')} active={playlistActive} />
+                                </div>
+                            )}
+
+                            {contextItems.length > 0 && (
+                                <div className="flex h-full items-center justify-center">
+                                    <ContextNavSlot
+                                        active={contextActive}
+                                        items={contextItems}
+                                        menuLabel={t('eventMenu')}
+                                        pathname={pathname}
+                                        searchParams={searchParams}
+                                        onItemClick={handleDashboardMenuClick}
+                                    />
+                                </div>
+                            )}
+                        </>
+                    )}
                 </nav>
             </div>
 

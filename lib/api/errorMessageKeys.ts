@@ -43,6 +43,7 @@ export type ApiErrorMessageKey =
     | 'malformedRequestBody'
     | 'mediaFileCorrupt'
     | 'mediaFileTooLarge'
+    | 'mediaArchivePartNotFound'
     | 'mediaImageTooManyPixels'
     | 'mediaProcessingBusy'
     | 'memberLimit'
@@ -75,6 +76,7 @@ export type ApiErrorMessageKey =
     | 'subscriptionAlreadyActive'
     | 'subscriptionCancelFailed'
     | 'subscriptionNotLive'
+    | 'originalsAddonNotActive'
     | 'unsupportedMediaFormat'
     | 'validationFailed'
     | 'webhookAlreadyProcessed'
@@ -121,6 +123,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.MALFORMED_REQUEST_BODY]: 'malformedRequestBody',
     [ERROR_CODES.MEDIA_FILE_CORRUPT]: 'mediaFileCorrupt',
     [ERROR_CODES.MEDIA_FILE_TOO_LARGE]: 'mediaFileTooLarge',
+    [ERROR_CODES.MEDIA_ARCHIVE_PART_NOT_FOUND]: 'mediaArchivePartNotFound',
     [ERROR_CODES.MEDIA_IMAGE_TOO_MANY_PIXELS]: 'mediaImageTooManyPixels',
     [ERROR_CODES.MEDIA_PROCESSING_BUSY]: 'mediaProcessingBusy',
     [ERROR_CODES.INVALID_PAID_SERVICE_KIND]: 'invalidPaidServiceKind',
@@ -151,6 +154,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.SUBSCRIPTION_ALREADY_ACTIVE]: 'subscriptionAlreadyActive',
     [ERROR_CODES.SUBSCRIPTION_CANCEL_FAILED]: 'subscriptionCancelFailed',
     [ERROR_CODES.SUBSCRIPTION_NOT_LIVE]: 'subscriptionNotLive',
+    [ERROR_CODES.ORIGINALS_ADDON_NOT_ACTIVE]: 'originalsAddonNotActive',
     [ERROR_CODES.UNSUPPORTED_MEDIA_FORMAT]: 'unsupportedMediaFormat',
     [ERROR_CODES.VALIDATION_FAILED]: 'validationFailed',
     [ERROR_CODES.INVALID_PLAN_TIER_SCOPE]: 'invalidPlanTierScope',

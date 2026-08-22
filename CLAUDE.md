@@ -1,5 +1,9 @@
 # Agent Instructions
 
+## Top Priority
+
+- Keep user-facing copy across the whole app simple and direct. Do not add decorative, explanatory, or marketing-style text when a plain label or short sentence is enough. Avoid extra eyebrow text, subtitles, helper copy, or framing unless it materially helps the user complete the task.
+
 ## Workflow
 
 - Never dispatch parallel subagents (the Agent tool) unless the user has explicitly given permission for that specific task. Parallel agents burn through the 5-hour session limit fast. Do research and multi-file audits directly (Read/Grep/Glob/Bash) instead, even if it takes more turns. A single subagent for a narrow, well-scoped sub-task is fine; spawning several at once is not, absent explicit permission.

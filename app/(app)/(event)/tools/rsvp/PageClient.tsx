@@ -1,7 +1,7 @@
 'use client';
 
 import { Users } from 'lucide-react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import { EventRouteGate } from '@/components/routing/EventRouteGate';
@@ -23,6 +23,7 @@ export default function RSVPPage() {
 
 function RsvpScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDetailResponseDto; eventId: string; isHost: boolean }) {
     const t = useTranslations('ManagePage');
+    const router = useRouter();
 
     const { data: members = [] } = useEventMembers(isHost ? eventId : null);
     const { data: rsvps = [] } = useEventRsvps(isHost ? eventId : null);
@@ -34,16 +35,8 @@ function RsvpScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDetail
             icon={Users}
             iconClassName="text-emerald-500"
             backLabel={t('backToTools')}
-            backHref={routes.tools.root}
+            onBack={router.back}
             subtitle={activeEvent.title}
-            action={
-                <Link
-                    href={routes.auth.manage({ tab: 'rsvp' })}
-                    className="hidden rounded-full bg-surface-muted px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:bg-surface-muted/70 sm:inline-flex"
-                >
-                    {t('openDashboard')}
-                </Link>
-            }
         >
             <RsvpTab members={members} rsvps={rsvps} />
         </ModulePageShell>

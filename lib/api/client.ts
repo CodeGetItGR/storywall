@@ -148,7 +148,7 @@ async function rawFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
     return body as T;
 }
 
-async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise<T> {
+async function apiFetchResponse(path: string, options: ApiFetchOptions = {}): Promise<Response> {
     const { skipAuthRetry, ...init } = options;
     const accessToken = getAccessToken();
     const isFormData = init.body instanceof FormData;
@@ -162,19 +162,24 @@ async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise
         },
     });
 
-    const body = await parseResponseBody(res);
-
     if (res.status === 401 && !skipAuthRetry) {
         const newAccessToken = await reauthenticate();
         if (newAccessToken) {
-            return apiFetch<T>(path, { ...options, skipAuthRetry: true });
+            return apiFetchResponse(path, { ...options, skipAuthRetry: true });
         }
     }
 
     if (!res.ok) {
+        const body = await parseResponseBody(res);
         throw new ApiError(res.status, body, undefined, res.headers.get('retry-after'));
     }
 
+    return res;
+}
+
+async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise<T> {
+    const res = await apiFetchResponse(path, options);
+    const body = await parseResponseBody(res);
     return body as T;
 }
 
@@ -193,6 +198,7 @@ async function parseResponseBody(res: Response): Promise<unknown> {
 
 export const api = {
     get: <T>(path: string, options?: RequestInit) => apiFetch<T>(path, { ...options, method: 'GET' }),
+    download: (path: string, options?: RequestInit) => apiFetchResponse(path, { ...options, method: 'GET' }),
     publicGet: <T>(path: string, options?: RequestInit) => rawFetch<T>(path, { ...options, method: 'GET' }),
     post: <T>(path: string, data?: unknown, options?: RequestInit) =>
         apiFetch<T>(path, {

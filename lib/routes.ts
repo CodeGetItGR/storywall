@@ -33,6 +33,7 @@ export const routes = {
     admin: '/admin',
     notifications: '/notifications',
     profile: '/profile',
+    storySchedule: '/story/schedule',
     story: (storyId: string) => `/story/${storyId}`,
     post: {
         feed: (eventId: string) => `/feed/${eventId}`,
@@ -40,7 +41,6 @@ export const routes = {
     },
     inviteToken: (token: string) => `/invite/${token}`,
     tools: {
-        root: '/tools',
         rsvp: '/tools/rsvp',
         rsvpSubmit: '/tools/rsvp/submit',
         gallery: '/tools/gallery',

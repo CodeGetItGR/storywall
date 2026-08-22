@@ -58,6 +58,10 @@ export const endpoints = {
         rsvps: (eventId: string) => `/api/events/${eventId}/rsvps`,
         media: (eventId: string) => `/api/events/${eventId}/media`,
         mediaBatch: (eventId: string) => `/api/events/${eventId}/media/batch`,
+        mediaArchiveManifest: (eventId: string, variant: string = 'DISPLAY') =>
+            `/api/events/${eventId}/media/archive/manifest?variant=${encodeURIComponent(variant)}`,
+        mediaArchive: (eventId: string, part: number, variant: string = 'DISPLAY') =>
+            `/api/events/${eventId}/media/archive?variant=${encodeURIComponent(variant)}&part=${encodeURIComponent(String(part))}`,
         usage: (eventId: string) => `/api/events/${eventId}/usage`,
         billing: (eventId: string) => `/api/events/${eventId}/billing`,
         addons: (eventId: string) => `/api/events/${eventId}/addons`,

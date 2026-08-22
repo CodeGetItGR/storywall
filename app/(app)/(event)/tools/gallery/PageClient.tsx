@@ -2,12 +2,15 @@
 
 import { Download, ImagePlus, Images, Loader2, UploadCloud, X } from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React, { useCallback, useMemo, useState } from 'react';
 
+import { GalleryArchiveDownloadModal } from '@/components/gallery/GalleryArchiveDownloadModal';
 import { EventRouteGate } from '@/components/routing/EventRouteGate';
 import { ModuleNotice } from '@/components/tools/ModuleNotice';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
+import { Button } from '@/components/ui/button';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventBilling } from '@/hooks/useBilling';
 import { useEventMedia, useOriginalMedia, useUploadMediaBatch } from '@/hooks/useMedia';
@@ -15,7 +18,6 @@ import type { EventDetailResponseDto, EventMemberResponseDto, MediaResponseDto }
 import { formatShortDateTime } from '@/lib/datetime';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { formatBytes } from '@/lib/format';
-import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 import { useActiveMember } from '@/providers/EventProvider';
 
@@ -39,10 +41,12 @@ function GalleryScreen({
     isHost: boolean;
 }) {
     const t = useTranslations('GalleryPage');
+    const router = useRouter();
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [uploadNotice, setUploadNotice] = useState<string | null>(null);
     const [selectedMedia, setSelectedMedia] = useState<MediaResponseDto | null>(null);
     const [originalError, setOriginalError] = useState<string | null>(null);
+    const [archiveDownloadOpen, setArchiveDownloadOpen] = useState(false);
 
     const { data: media = [], isLoading: isLoadingMedia } = useEventMedia(eventId);
     const uploadMediaBatch = useUploadMediaBatch();
@@ -59,6 +63,14 @@ function GalleryScreen({
     const maxFiles = appConfig?.media.maxBatchUploadFiles ?? MAX_FILES_PER_BATCH;
     const maxImageBytes = appConfig?.media.maxImageBytes ?? 25 * 1024 * 1024;
     const keepsOriginals = billing.data?.addons.some((addon) => addon.code === 'ORIGINALS') ?? false;
+    const showArchiveDownload = isHost && galleryEnabled;
+    const openArchiveDownload = useCallback(() => {
+        setArchiveDownloadOpen(true);
+    }, []);
+
+    const closeArchiveDownload = useCallback(() => {
+        setArchiveDownloadOpen(false);
+    }, []);
 
     const handleFilesChange = useCallback(
         (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,8 +139,22 @@ function GalleryScreen({
             icon={Images}
             iconClassName="text-cyan-600"
             backLabel={t('backToTools')}
-            backHref={routes.tools.root}
+            onBack={router.back}
             subtitle={isHost ? t('hostSubtitle') : t('guestSubtitle')}
+            action={
+                showArchiveDownload ? (
+                    <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={openArchiveDownload}
+                        className="rounded-full border-border bg-background px-3 text-xs font-semibold text-ink-muted hover:text-ink"
+                    >
+                        <Download className="h-3.5 w-3.5" />
+                        {t('downloadGallery')}
+                    </Button>
+                ) : undefined
+            }
             notice={
                 <>
                     {!galleryEnabled && <ModuleNotice>{t('moduleUnavailable')}</ModuleNotice>}
@@ -136,6 +162,7 @@ function GalleryScreen({
                 </>
             }
         >
+            {/* Upload */}
             <section className="mb-5 rounded-2xl border border-border p-4 shadow-sm">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -198,6 +225,7 @@ function GalleryScreen({
                 {uploadMediaBatch.isError && <p className="mt-3 text-xs text-rose-500">{t('uploadFailed')}</p>}
             </section>
 
+            {/* Gallery */}
             <section>
                 {isLoadingMedia ? (
                     <div className="flex min-h-48 items-center justify-center rounded-2xl bg-card">
@@ -236,6 +264,8 @@ function GalleryScreen({
                     </div>
                 )}
             </section>
+
+            {/* Viewer */}
             {selectedMedia && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4"
@@ -269,6 +299,16 @@ function GalleryScreen({
                         {originalError && <p className="text-xs text-rose-200">{originalError}</p>}
                     </div>
                 </div>
+            )}
+
+            {/* Archive download */}
+            {showArchiveDownload && (
+                <GalleryArchiveDownloadModal
+                    eventId={eventId}
+                    open={archiveDownloadOpen}
+                    onClose={closeArchiveDownload}
+                    preferOriginals={keepsOriginals}
+                />
             )}
         </ModulePageShell>
     );

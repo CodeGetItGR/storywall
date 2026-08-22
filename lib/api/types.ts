@@ -22,6 +22,7 @@ export type ModuleKeyConvention = (typeof EVENT_MODULE_KEYS)[number];
 // + matching DTO validation) — not a free-string convention like the others.
 export type PostType = 'TEXT' | 'MEDIA' | 'ANNOUNCEMENT' | 'PLAYLIST';
 export type MediaTypeConvention = 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT';
+export type MediaArchiveVariant = 'DISPLAY' | 'ORIGINAL';
 export type PlanScope = 'ACCOUNT' | 'EVENT';
 export type BillingPeriod = 'MONTHLY' | 'YEARLY' | 'ONE_TIME';
 export type EventStatus = 'DRAFT' | 'ACTIVE' | 'FROZEN' | 'PURGED';
@@ -899,6 +900,23 @@ export interface MediaBatchFailedItemDto {
 export interface MediaBatchUploadResponseDto {
     created: MediaResponseDto[];
     failed: MediaBatchFailedItemDto[];
+}
+
+export interface MediaArchivePartDto {
+    part: number;
+    itemCount: number;
+    sizeBytes: number;
+}
+
+export interface MediaArchiveManifestDto {
+    variant: MediaArchiveVariant;
+    originalsAvailable: boolean;
+    photoCount: number;
+    videoCount: number;
+    displayTotalBytes: number;
+    originalTotalBytes: number;
+    itemsWithoutOriginal: number;
+    parts: MediaArchivePartDto[];
 }
 
 export interface QuotaExceededDetails {

@@ -41,16 +41,17 @@
         "addYourStory": "Add your story",
         "addAnotherStory": "Add another story",
         "userStory": "{name}'s story",
-        "yourStory": "Your story"
+        "yourStory": "Your story",
+        "scheduleStory": "Schedule"
     },
-      "FeedPage": {
-          "scheduleBadge": "Schedule",
-          "loadingMore": "Loading more…",
-          "loading": "Loading feed",
-          "aboutEvent": "About this event",
-          "giftAccount": "Gift account",
-          "location": "Event location"
-      },
+    "FeedPage": {
+        "scheduleBadge": "Schedule",
+        "loadingMore": "Loading more…",
+        "loading": "Loading feed",
+        "aboutEvent": "About this event",
+        "giftAccount": "Gift account",
+        "location": "Event location"
+    },
     "EventLocationModal": {
         "close": "Close",
         "title": "Location",
@@ -484,6 +485,8 @@
         "closeStory": "Close story",
         "userStory": "{name}'s story",
         "story": "Story",
+        "scheduleAuthor": "Schedule",
+        "scheduleStaticProgress": "Static schedule story",
         "previousStory": "Previous story",
         "nextStory": "Next story",
         "previous": "Previous",
@@ -594,7 +597,7 @@
     },
     "ManagePage": {
         "title": "Host Dashboard",
-        "backToTools": "Back to tools",
+        "backToTools": "Back",
         "hostView": "Host View",
         "status": {
             "DRAFT": "Draft",
@@ -669,7 +672,7 @@
             "perMonth": "per month",
             "once": "once"
         },
-          "giftAccount": {
+        "giftAccount": {
             "title": "Gift account",
             "body": "Add one bank account members can copy when they want to send a monetary gift.",
             "configured": "Ready for members · {holder}",
@@ -1174,6 +1177,9 @@
         "unscheduled": "Unscheduled",
         "endsAt": "Ends at {time}",
         "saved": "Added",
+        "story": {
+            "title": "Event schedule"
+        },
         "host": {
             "eyebrow": "Host tools",
             "badge": "Host view",
@@ -1221,7 +1227,7 @@
             "emptyBody": "The host hasn't published the run of show yet. Check back later."
         }
     },
-      "GiftsPage": {
+    "GiftsPage": {
         "accountTitle": "Gift account",
         "accountSubtitle": "Use these bank details if you would like to send a monetary gift.",
         "goBack": "Go back",
@@ -1341,7 +1347,7 @@
         "disabledUpgradeBody": "Playlist is not included in this event plan. Upgrade to {plans} to unlock song suggestions and votes."
     },
     "QuizPage": {
-        "backToTools": "Back to tools",
+        "backToTools": "Back",
         "title": "Couple Quiz",
         "resultsTitle": "Couple Quiz — Results",
         "quizComplete": "Quiz complete!",
@@ -2037,10 +2043,14 @@
         "includedModules": "Included modules"
     },
     "GalleryPage": {
-        "backToTools": "Back to tools",
+        "backToTools": "Back",
         "title": "Gallery",
         "hostSubtitle": "Guest uploads are stored here without creating feed posts, so you can review and download them later.",
         "guestSubtitle": "Share photos from the celebration. Uploads are saved to the event gallery for the host.",
+        "downloadGallery": "Download gallery",
+        "downloadGalleryTitle": "Download gallery",
+        "downloadGallerySubtitle": "Choose a version and download the archive parts one by one.",
+        "closeDownloadGallery": "Close download gallery",
         "moduleUnavailable": "Gallery is not available on this event's current plan.",
         "eventFrozen": "This event is read-only. Existing photos are still available, but new uploads are paused.",
         "uploadTitle": "Upload photos",
@@ -2056,6 +2066,25 @@
         "closeViewer": "Close photo viewer",
         "downloadOriginal": "Download original",
         "originalUnavailable": "The original file is not available.",
+        "archiveSummaryTitle": "Gallery summary",
+        "archiveTotalsWithOriginals": "{originals} originals · {display} compressed",
+        "archiveTotalsDisplayOnly": "{display} compressed",
+        "displayVariant": "Compressed",
+        "originalVariant": "Originals",
+        "archivePhotos": "Photos",
+        "archiveVideos": "Videos",
+        "archiveParts": "Parts",
+        "archiveWithoutOriginal": "{count} items will use the compressed copy.",
+        "archivePartListTitle": "Parts",
+        "archiveLoading": "Loading download details...",
+        "archiveManifestFailed": "We couldn't load the download list. Please try again.",
+        "archiveManifestRefreshed": "The gallery changed. Please try again.",
+        "archiveEmpty": "Nothing is ready to download yet.",
+        "archivePartLabel": "Part {part} of {total}",
+        "archivePartMeta": "{count} items · {size}",
+        "archiveDownload": "Download",
+        "archiveDownloading": "Downloading",
+        "archiveDownloadFailed": "We couldn't start that download. Please try again.",
         "libraryTitle": "Event photos",
         "photoCount": "{count} photos",
         "emptyTitle": "No photos yet",
@@ -2066,6 +2095,7 @@
         "unsupportedMediaFormat": "This file type is not supported.",
         "mediaFileTooLarge": "This file is larger than the allowed limit.",
         "mediaFileCorrupt": "This file appears damaged. Re-export it and try again.",
+        "mediaArchivePartNotFound": "That download part is no longer available. Please try again.",
         "mediaImageTooManyPixels": "This image's dimensions are too large. Resize it and try again.",
         "mediaProcessingBusy": "The server is busy processing images. Wait a moment and try again.",
         "invalidPaidServiceKind": "That service cannot be purchased here.",
@@ -2106,6 +2136,7 @@
         "orderNotRefundable": "Only the activation payment can be refunded.",
         "subscriptionNotLive": "There was no active subscription to stop - we have refreshed this page.",
         "subscriptionCancelFailed": "We couldn't stop it just now, so the subscription is still running and will still be charged. Please try again in a moment.",
+        "originalsAddonNotActive": "Original downloads are not available for this event.",
         "invalidCredentials": "The email or password is incorrect.",
         "invalidRefreshToken": "Your session expired. Please sign in again.",
         "accountNotActive": "This account is not active.",
@@ -2144,5 +2175,3 @@
         "invalidPlanTierScope": "That restriction only applies to event plans."
     }
 }
-
-

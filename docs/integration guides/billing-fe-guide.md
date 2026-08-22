@@ -656,6 +656,11 @@ event never opted in (no original was ever kept). This is a separate call from t
 the feed always serves the small derivative, and this is the only way to reach the full-resolution
 file.
 
+For bulk retrieval of the whole gallery at once (not one item at a time), see
+[`gallery-archive-download-fe-integration.md`](gallery-archive-download-fe-integration.md) — the
+host-only zip-download feature, which reads this same entitlement to decide whether the
+`ORIGINAL` variant is offered.
+
 ### What the billing read endpoint adds
 
 `GET /api/events/{eventId}/billing` (§8) gains an `addons` array:

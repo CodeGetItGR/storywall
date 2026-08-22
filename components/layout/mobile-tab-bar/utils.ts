@@ -20,8 +20,6 @@ export function isEventRoute(pathname: string) {
         pathname.startsWith(routes.feed + '/') ||
         pathname === routes.manage ||
         pathname.startsWith(routes.manage + '/') ||
-        pathname === routes.tools.root ||
-        pathname.startsWith(routes.tools.root + '/') ||
         pathname.startsWith('/story/') ||
         pathname.startsWith('/post/') ||
         pathname.startsWith('/events/')

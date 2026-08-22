@@ -11,8 +11,10 @@ guides it links out to:
 [`post-liked-by-current-user-integration-guide.md`](post-liked-by-current-user-integration-guide.md),
 [`app-config-fe-integration.md`](app-config-fe-integration.md),
 [`billing-fe-guide.md`](billing-fe-guide.md) (plans, payments, subscriptions, refunds — see the
-"Billing & payments" entry in §1 below), and
-[`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-integration.md).
+"Billing & payments" entry in §1 below),
+[`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-integration.md), and
+[`gallery-archive-download-fe-integration.md`](gallery-archive-download-fe-integration.md)
+(host-only bulk gallery zip download).
 
 This doc was originally written 2026-08-04 directly from the controller/DTO source. Refreshed
 2026-08-09 to correct a stale claim that no billing integration existed — it now does,

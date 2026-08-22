@@ -5,10 +5,12 @@ import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
 import { useEventMembers, useEventStories } from '@/hooks';
+import { useEventSessions } from '@/hooks/useEventSessions';
 import { groupStoriesByAuthor } from '@/lib/stories';
 import { useComposer } from '@/providers/ComposerProvider';
 import { useActiveMember } from '@/providers/EventProvider';
 
+import { ScheduleStoryAvatar } from './ScheduleStoryAvatar';
 import { StoryAvatar } from './StoryAvatar';
 
 interface StoriesRowProps {
@@ -21,6 +23,7 @@ export function StoriesRow({ eventId }: StoriesRowProps) {
     const activeMember = useActiveMember();
     const { data: stories = [] } = useEventStories(eventId);
     const { data: members = [] } = useEventMembers(eventId);
+    const { data: sessions = [], isLoading: isLoadingSessions } = useEventSessions(eventId);
     const { openStoryCapture, isCreatingStory, storyError, canComposeStory } = useComposer();
 
     const groups = useMemo(() => groupStoriesByAuthor(stories), [stories]);
@@ -28,6 +31,8 @@ export function StoriesRow({ eventId }: StoriesRowProps) {
 
     const ownGroup = activeMember ? groups.find((g) => g.authorMemberId === activeMember.id) : undefined;
     const otherGroups = groups.filter((g) => g.authorMemberId !== activeMember?.id);
+    const hasScheduleStory = !isLoadingSessions && sessions.length > 0;
+    const hasStartItems = Boolean(ownGroup || canComposeStory || hasScheduleStory);
 
     return (
         <section aria-label={t('ariaLabel')} className="flex items-start gap-4 overflow-x-auto no-scrollbar px-4 py-4">
@@ -49,7 +54,7 @@ export function StoriesRow({ eventId }: StoriesRowProps) {
                 </div>
             ) : null}
 
-            {(ownGroup || canComposeStory) && (
+            {hasStartItems && (
                 <>
                     {storyError && (
                         <p role="alert" className="text-xs text-destructive shrink-0 self-center max-w-32">
@@ -60,6 +65,9 @@ export function StoriesRow({ eventId }: StoriesRowProps) {
                     <div className="w-px h-14 bg-border self-center shrink-0" aria-hidden="true" />
                 </>
             )}
+
+            {/* Schedule story */}
+            {hasScheduleStory && <ScheduleStoryAvatar />}
 
             {/* Other stories */}
             {otherGroups.map((group) => {
