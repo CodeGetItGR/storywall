@@ -11,6 +11,7 @@ import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
+import { useAuthPageRedirect } from '@/hooks/useAuthPageRedirect';
 import { useAcceptEventInvitation } from '@/hooks/useEventInvitations';
 import { joinEventAfterAuth } from '@/lib/invite/joinAfterAuth';
 import { findNextPlan } from '@/lib/planTiers';
@@ -23,6 +24,7 @@ export default function LoginPage() {
     const inviteToken = searchParams.get('invite');
 
     const { login } = useAuth();
+    const { shouldRenderAuthPage } = useAuthPageRedirect();
     const acceptInvitation = useAcceptEventInvitation();
     const { data: appConfig } = useAppConfig();
     const toErrorMessage = useApiErrorMessage();
@@ -70,12 +72,16 @@ export default function LoginPage() {
                 }
             }
 
-            router.push(auth.role === 'ADMIN' ? routes.admin : routes.feed);
+            router.replace(auth.role === 'ADMIN' ? routes.admin : routes.feed);
         } catch (err) {
             setError(toErrorMessage(err));
         } finally {
             setIsSubmitting(false);
         }
+    }
+
+    if (!shouldRenderAuthPage) {
+        return <div className="min-h-screen bg-background" />;
     }
 
     return (
