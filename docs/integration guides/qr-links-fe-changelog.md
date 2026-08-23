@@ -130,6 +130,31 @@ rule on the client, delete it and read the field.
 
 ---
 
+## 6. `guestKey` is now server-generated — breaking (2026-08-22)
+
+**Unlike items 1-5, this one is not additive.** `guestKey` used to be a value the frontend minted
+once per device (`crypto.randomUUID()`) and sent on every guest-login. The backend now generates
+it and returns it in the guest-login response; the frontend's job is only to store and echo it.
+
+**Why:** a client-generated key was never actually tied to *this device's specific membership* —
+it was just an opaque string the client made up and the server trusted verbatim on lookup. Nothing
+stopped a client from sending an arbitrary or guessed value. Moving generation server-side removes
+that trust and makes the key what it was always meant to be: a handle the server hands out and
+recognises, not a credential a client asserts.
+
+**Do this:**
+- Stop calling `crypto.randomUUID()` (or equivalent) for `guestKey`. Delete that code.
+- On a first guest-login from a device, omit `guestKey` entirely rather than inventing one.
+- After every guest-login response, if it carries a `guestKey`, persist it (e.g. `localStorage`)
+  and send that stored value as `guestKey` on the next guest-login from the same device.
+- A `guestKey` you send that the server doesn't recognise is treated the same as omitting it — a
+  fresh membership and a new key are issued, not a `400`. There is no longer a "missing guestKey"
+  error to handle.
+
+See `qr-links-fe-integration.md` → [What changed in guest login](qr-links-fe-integration.md#what-changed-in-guest-login)
+for the full write-up, and `invite-onboarding-fe-integration.md` for the non-QR invite flow, which
+this equally affects.
+
 ## TypeScript
 
 All shapes are in `frontend-api-types.ts`. New/changed:

@@ -7,6 +7,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useAppConfig } from '@/hooks/useAppConfig';
 import { useUpdateEvent } from '@/hooks/useEvent';
 import { useUploadMedia } from '@/hooks/useMedia';
 import { getFieldErrors } from '@/lib/api/errors';
@@ -34,6 +35,7 @@ export default function SettingsTab({
 }) {
     const t = useTranslations('ManagePage');
     const toErrorMessage = useApiErrorMessage();
+    const { data: appConfig } = useAppConfig();
 
     const initial = {
         title: event.title,
@@ -76,6 +78,7 @@ export default function SettingsTab({
             : startAt && endAt && !isDatetimeLocalAfter(endAt, startAt)
               ? t('settings.validation.endBeforeStart')
               : null;
+    const maxDescriptionLength = appConfig?.contentLimits.eventDescriptionMaxLength ?? 2000;
 
     useEffect(() => {
         return () => {
@@ -123,7 +126,7 @@ export default function SettingsTab({
     }
 
     function handleDescriptionChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
-        setDescription(e.target.value);
+        setDescription(e.target.value.slice(0, maxDescriptionLength));
     }
 
     function handleLocationNameChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -271,8 +274,12 @@ export default function SettingsTab({
                         disabled={disabled}
                         placeholder={t('settings.placeholders.description')}
                         rows={4}
+                        maxLength={maxDescriptionLength}
                         className={`${inputClass} resize-none leading-relaxed`}
                     />
+                    <span className="text-right text-xs text-ink-faint">
+                        {description.length}/{maxDescriptionLength}
+                    </span>
                 </FormFieldLabel>
 
                 <div className="grid gap-3 sm:grid-cols-2">

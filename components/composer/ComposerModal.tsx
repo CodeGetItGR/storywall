@@ -62,6 +62,7 @@ export function ComposerModal({
     isOpen,
     isPostBusy,
     isSongBusy,
+    maxCaptionLength,
     maxImages,
     selectPostMode,
     selectSongMode,
@@ -100,18 +101,19 @@ export function ComposerModal({
                             placeholder={t('captionPlaceholder')}
                             aria-label={t('captionAriaLabel')}
                             rows={4}
+                            maxLength={maxCaptionLength}
                             className="min-h-36 w-full resize-none rounded-[1.5rem] bg-surface-muted px-5 py-4 text-base leading-relaxed text-ink placeholder:text-ink-faint outline-none transition focus:ring-2 focus:ring-primary/30 sm:min-h-32 sm:text-sm"
                         />
                         <div className="-mt-2 flex items-center justify-between gap-3 text-xs text-ink-faint">
                             <span>{t('photoLimitHint', { count: maxImages })}</span>
-                            <span>{t('captionCharacterCount', { count: caption.length })}</span>
+                            <span>{t('captionCharacterCount', { count: caption.length, max: maxCaptionLength })}</span>
                         </div>
 
                         {/* Media previews */}
                         {images.length > 0 && (
-                            <div className="grid grid-cols-3 gap-2">
+                            <div className="grid grid-cols-10 gap-2 flex-nowrap">
                                 {images.map((img) => (
-                                    <div key={img.key} className="relative aspect-square overflow-hidden rounded-xl bg-surface-muted">
+                                    <div key={img.key} className="relative aspect-square overflow-hidden rounded-xl bg-surface-muted col-span-2">
                                         <Image src={img.previewUrl} alt="" fill className="object-cover" sizes="200px" />
                                         <button
                                             type="button"

@@ -51,6 +51,7 @@ export interface ComposerController {
     canComposeStory: boolean;
     canComposeSong: boolean;
     maxImages: number;
+    maxCaptionLength: number;
     initials: string;
     openPostComposer: () => void;
     openSongComposer: () => void;
@@ -133,9 +134,15 @@ export function useComposerController(): ComposerController {
     const maxMediaPerPost = appConfig?.media.maxMediaPerPost ?? 10;
     const maxBatchUploadFiles = appConfig?.media.maxBatchUploadFiles ?? 10;
     const maxImages = Math.min(maxMediaPerPost, maxBatchUploadFiles);
+    const maxCaptionLength = appConfig?.contentLimits.postContentMaxLength ?? 500;
     const maxImageBytes = appConfig?.media.maxImageBytes ?? 25 * 1024 * 1024;
     const maxRequestSizeBytes = appConfig?.media.maxRequestSizeBytes ?? 260 * 1024 * 1024;
-    const canSubmit = (caption.trim().length > 0 || images.length > 0) && !hasUnresolvedFailures && !isPostBusy && canComposePost;
+    const canSubmit =
+        (caption.trim().length > 0 || images.length > 0) &&
+        caption.length <= maxCaptionLength &&
+        !hasUnresolvedFailures &&
+        !isPostBusy &&
+        canComposePost;
 
     const openPostComposer = useCallback(() => {
         if (!canComposePost) return;
@@ -229,7 +236,7 @@ export function useComposerController(): ComposerController {
     }
 
     function handleCaptionChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
-        setCaption(event.target.value);
+        setCaption(event.target.value.slice(0, maxCaptionLength));
     }
 
     function handlePickPhotos() {
@@ -475,6 +482,7 @@ export function useComposerController(): ComposerController {
         canComposeStory,
         canComposeSong,
         maxImages,
+        maxCaptionLength,
         initials,
         openPostComposer,
         openSongComposer,

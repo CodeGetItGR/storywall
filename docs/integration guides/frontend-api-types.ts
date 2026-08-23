@@ -430,6 +430,47 @@ interface MediaBatchFailureDto {
 // returns 400/errorCode 3003 TOO_MANY_FILES), 20MB/file, 220MB/request (exceeding returns
 // 413/errorCode 3005 REQUEST_TOO_LARGE).
 
+/**
+ * Host-only bulk download of an event's gallery, as zip parts.
+ *
+ * GET /api/events/{eventId}/media/archive/manifest?variant=DISPLAY|ORIGINAL  -> MediaArchiveManifestDto
+ * GET /api/events/{eventId}/media/archive?variant=…&part=N                   -> application/octet-stream (zip)
+ *
+ * Flow: fetch the manifest, show the host the size/count comparison, then hit the archive endpoint
+ * once per entry in `parts`. The archive response is chunked with no Content-Length — take the
+ * expected size from the manifest's part, not from the response headers.
+ *
+ * `variant` defaults to DISPLAY. Offer the ORIGINAL toggle only when `originalsAvailable` is true,
+ * and pre-select it when it is — but do not send it silently: originals can be several times the
+ * size, and the host should see which number they are committing to. Requesting ORIGINAL without
+ * the add-on returns 403/errorCode 5054 ORIGINALS_ADDON_NOT_ACTIVE.
+ *
+ * A `part` outside the current plan returns 400/errorCode 3019 MEDIA_ARCHIVE_PART_NOT_FOUND — the
+ * plan is recomputed per request, so an upload or delete since the manifest can shift it. Re-fetch
+ * the manifest and restart.
+ *
+ * Rate limits: 30/min on the manifest, 10/hour on the archive itself.
+ */
+type MediaArchiveVariant = "DISPLAY" | "ORIGINAL";
+interface MediaArchiveManifestDto {
+  variant: MediaArchiveVariant;      // the variant `parts` was planned for
+  originalsAvailable: boolean;       // whether the event holds the "keep originals" add-on
+  photoCount: number; videoCount: number;
+  displayTotalBytes: number;         // both totals returned on every call, so one request renders
+  originalTotalBytes: number;        // the whole choice — ORIGINAL counts the display copy for
+                                     // any item that has no original on file
+  itemsWithoutOriginal: number;      // items that would fall back to their display copy in an
+                                     // ORIGINAL archive: videos, un-normalized images, and anything
+                                     // uploaded before the add-on was switched on. Worth telling
+                                     // the host about rather than letting them find out
+  parts: MediaArchivePartDto[];      // empty when the gallery is empty
+}
+interface MediaArchivePartDto {
+  part: number;      // 1-based; pass back as the `part` query parameter
+  itemCount: number;
+  sizeBytes: number; // zips are written uncompressed, so this is within a few KB of the download
+}
+
 interface PostRequestDto {
   eventId: string;
   authorMemberId?: string;
@@ -624,6 +665,31 @@ interface AppMediaConfigDto {
 interface AppPaginationConfigDto { defaultPageSize: number; maxPageSize: number; }
 interface AppRsvpConfigDto { minAdults: number; maxAdults: number; minChildren: number; maxChildren: number; }
 
+/** Server-enforced `@Size(max=...)` on free-text fields — added 2026-08-23. Mirror these in form
+ *  maxLength/counters instead of hardcoding; a request over the limit is a 400 VALIDATION_FAILED. */
+interface AppContentLimitsDto {
+  postContentMaxLength: number;
+  commentContentMaxLength: number;
+  storyCaptionMaxLength: number;
+  wishbookMessageMaxLength: number;
+  playlistSuggestionCommentMaxLength: number;
+  rsvpNotesMaxLength: number;
+  eventDescriptionMaxLength: number;
+  eventSessionDescriptionMaxLength: number;
+  moderationReasonMaxLength: number;
+  reportDescriptionMaxLength: number;
+  reportResolutionNotesMaxLength: number;
+  catalogDescriptionMaxLength: number;
+}
+
+/** One `@RateLimit`-annotated endpoint's budget — added 2026-08-23. See `RATE_LIMITED` (3010) / 429
+ *  handling in frontend-integration-guide.md §0; this is just the reference data for those buckets. */
+interface AppRateLimitConfigDto {
+  name: string;         // bucket name; endpoints sharing a name share a budget
+  limit: number;         // requests allowed per window, per caller
+  windowSeconds: number;
+}
+
 // ---- Plan tiers ----
 
 export type PlanScope = 'ACCOUNT' | 'EVENT';
@@ -735,6 +801,13 @@ interface AppConfigResponseDto {
   /** Module keys of the entries in `modules` — a globally disabled module disappears from this. */
   eventModuleKeys: ModuleKey[];
   rsvp: AppRsvpConfigDto;
+  /** Added 2026-08-23. */
+  contentLimits: AppContentLimitsDto;
+  /** Every distinct `@RateLimit` bucket currently in effect. Added 2026-08-23. */
+  rateLimits: AppRateLimitConfigDto[];
+  /** Budget for any endpoint not listed in `rateLimits`. Added 2026-08-23. */
+  defaultRateLimit: number;
+  defaultRateLimitWindowSeconds: number;
 }
 
 /**
@@ -879,6 +952,7 @@ export interface EventGiftAccountRequestDto {
    *  max 34 once normalised — over that, or bad mod-97 check digits, is 400 / 5045 INVALID_IBAN. */
   iban: string;
   accountHolder: string;  // required, max 140
+  bankName: string;       // required, max 140
   note?: string;          // max 500
 }
 
@@ -894,6 +968,7 @@ export interface EventGiftAccountResponseDto {
   eventId: string;
   iban: string;           // normalised: uppercase, no spaces — group it in fours for display
   accountHolder: string;
+  bankName: string;
   note: string | null;
   updatedAt: string;
 }

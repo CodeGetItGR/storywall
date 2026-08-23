@@ -3,7 +3,7 @@ import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import { useAppRsvpConfig } from '@/hooks/useAppConfig';
+import { useAppConfig, useAppRsvpConfig } from '@/hooks/useAppConfig';
 import { useCreateRsvp, useRsvp, useUpdateRsvp } from '@/hooks/useRsvps';
 import { ApiError } from '@/lib/api/client';
 import { isModuleNotAvailableError } from '@/lib/api/errors';
@@ -27,11 +27,13 @@ export function useRsvpSubmitPageData() {
     const memberId = activeMember?.id ?? null;
     const isHost = useIsHost();
     const isContextLoading = useEventContextLoading();
+    const { data: appConfig } = useAppConfig();
     const rsvpConfig = useAppRsvpConfig();
     const minAdultPlusOnes = Math.max(0, (rsvpConfig?.minAdults ?? 1) - 1);
     const maxAdultPlusOnes = Math.max(minAdultPlusOnes, (rsvpConfig?.maxAdults ?? 5) - 1);
     const minChildCount = rsvpConfig?.minChildren ?? 0;
     const maxChildCount = rsvpConfig?.maxChildren ?? 4;
+    const maxMessageLength = appConfig?.contentLimits.rsvpNotesMaxLength ?? 500;
 
     const presetAttending = searchParams.get('attending');
 
@@ -70,8 +72,8 @@ export function useRsvpSubmitPageData() {
             adultCount: Math.max(minAdultPlusOnes, Math.min(maxAdultPlusOnes, existingRsvp.adultCount - 1)),
             childCount: Math.max(minChildCount, Math.min(maxChildCount, existingRsvp.childCount)),
         });
-        setMessage(existingRsvp.notes ?? '');
-    }, [existingRsvp, maxAdultPlusOnes, maxChildCount, minAdultPlusOnes, minChildCount]);
+        setMessage((existingRsvp.notes ?? '').slice(0, maxMessageLength));
+    }, [existingRsvp, maxAdultPlusOnes, maxChildCount, maxMessageLength, minAdultPlusOnes, minChildCount]);
 
     useEffect(() => {
         if (!isContextLoading && isHost) {
@@ -176,13 +178,14 @@ export function useRsvpSubmitPageData() {
         isSubmitting,
         memberId,
         message,
+        maxMessageLength,
         onAttend: () => setAttending('attending' as const),
         onBackToWall: handleBackToWall,
         onDecline: () => setAttending('not-attending' as const),
         onDecrementPlusOnes: handleDecrementPlusOnes,
         onGoBack: handleGoBack,
         onIncrementPlusOnes: handleIncrementPlusOnes,
-        onMessageChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => setMessage(event.target.value),
+        onMessageChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => setMessage(event.target.value.slice(0, maxMessageLength)),
         onSubmit: handleSubmit,
         plusOnes,
         submitErrorMessage,

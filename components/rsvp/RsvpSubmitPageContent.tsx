@@ -40,6 +40,7 @@ function RsvpSubmitFormContent({ data }: { data: RsvpSubmitPageData }) {
                 onIncrementPlusOnes={data.onIncrementPlusOnes}
                 onDecrementPlusOnes={data.onDecrementPlusOnes}
                 message={data.message}
+                maxMessageLength={data.maxMessageLength}
                 onMessageChange={data.onMessageChange}
                 onSubmit={data.onSubmit}
                 submitDisabled={!data.attending || !data.memberId || data.isSubmitting || !data.canSubmitRsvp}

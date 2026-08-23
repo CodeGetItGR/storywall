@@ -24,6 +24,7 @@ interface PostCommentsPanelProps {
     onSubmit: (e: React.SubmitEvent<HTMLFormElement>) => void;
     submitDisabled: boolean;
     inputDisabled?: boolean;
+    maxCommentLength: number;
 }
 
 export function PostCommentsPanel({
@@ -37,6 +38,7 @@ export function PostCommentsPanel({
     onSubmit,
     submitDisabled,
     inputDisabled,
+    maxCommentLength,
 }: PostCommentsPanelProps) {
     const t = useTranslations('PostModal');
 
@@ -70,6 +72,7 @@ export function PostCommentsPanel({
                 placeholder={t('commentPlaceholder')}
                 inputAriaLabel={t('commentTextAriaLabel')}
                 submitAriaLabel={t('postComment')}
+                maxLength={maxCommentLength}
             />
         </>
     );

@@ -7,6 +7,7 @@ import { PostCommentsPanel, PostMediaColumn } from '@/components/feed/post';
 import { Modal } from '@/components/ui/modal';
 import { useCreateComment, useEventMembers, usePost, usePostComments, usePostModal } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useAppConfig } from '@/hooks/useAppConfig';
 import { ApiError } from '@/lib/api/client';
 import { isModuleNotAvailableError } from '@/lib/api/errors';
 import { isEventWritable } from '@/lib/eventLifecycle';
@@ -22,6 +23,7 @@ export function PostModal() {
     const { data: post, error, isPending } = usePost(postId);
     const { data: comments = [] } = usePostComments(postId);
     const { data: members = [] } = useEventMembers(post?.eventId ?? null);
+    const { data: appConfig } = useAppConfig();
     const createComment = useCreateComment(post?.eventId ?? '');
     const [commentText, setCommentText] = useState('');
     const [commentError, setCommentError] = useState<string | null>(null);
@@ -55,6 +57,7 @@ export function PostModal() {
     const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
     const hasMedia = (post?.media.length ?? 0) > 0;
     const canComment = Boolean(activeMember) && isEventWritable(activeEvent?.status);
+    const maxCommentLength = appConfig?.contentLimits.commentContentMaxLength ?? 300;
 
     function handleShowComments() {
         setCommentsOpen(true);
@@ -96,6 +99,7 @@ export function PostModal() {
             onSubmit={handleSubmit}
             submitDisabled={!commentText.trim() || createComment.isPending || !canComment}
             inputDisabled={!canComment}
+            maxCommentLength={maxCommentLength}
         />
     );
 

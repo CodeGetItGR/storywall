@@ -7,6 +7,7 @@ import React, { type ChangeEvent, useState } from 'react';
 import { AddSongFieldShell } from '@/components/playlist/AddSongFieldShell';
 import { SpotifyMark, YouTubeMark } from '@/components/playlist/MusicServiceMarks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useAppConfig } from '@/hooks/useAppConfig';
 import { isModuleNotAvailableError } from '@/lib/api/errors';
 
 type PlaylistSuggestionInput = {
@@ -27,12 +28,14 @@ type AddSongFormProps = {
 export function AddSongForm({ isSubmitting, canSubmit, onSubmit, compact = false }: AddSongFormProps) {
     const t = useTranslations('PlaylistPage');
     const toErrorMessage = useApiErrorMessage();
+    const { data: appConfig } = useAppConfig();
     const [title, setTitle] = useState('');
     const [artist, setArtist] = useState('');
     const [youtubeUrl, setYoutubeUrl] = useState('');
     const [spotifyUrl, setSpotifyUrl] = useState('');
     const [comment, setComment] = useState('');
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const maxCommentLength = appConfig?.contentLimits.playlistSuggestionCommentMaxLength ?? 300;
 
     function handleTitleChange(event: ChangeEvent<HTMLInputElement>) {
         setTitle(event.target.value);
@@ -51,7 +54,7 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmit, compact = false
     }
 
     function handleCommentChange(event: ChangeEvent<HTMLTextAreaElement>) {
-        setComment(event.target.value);
+        setComment(event.target.value.slice(0, maxCommentLength));
     }
 
     async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
@@ -92,9 +95,7 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmit, compact = false
                         <BadgePlus className={compact ? 'h-5 w-5' : 'h-6 w-6'} />
                     </div>
                     <div className="min-w-0 flex items-center">
-                        <h2 className={`mt-1 font-semibold leading-tight text-base text-ink`}>
-                            {t('suggestASong')}
-                        </h2>
+                        <h2 className={`mt-1 font-semibold leading-tight text-base text-ink`}>{t('suggestASong')}</h2>
                     </div>
                 </div>
             </div>
@@ -161,8 +162,12 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmit, compact = false
                         onChange={handleCommentChange}
                         rows={4}
                         placeholder={t('commentPlaceholder')}
+                        maxLength={maxCommentLength}
                         className="w-full resize-none rounded-2xl border border-border/70 bg-background/80 px-4 py-3.5 text-sm leading-relaxed text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                     />
+                    <p className="mt-1 text-right text-xs text-ink-faint">
+                        {comment.length}/{maxCommentLength}
+                    </p>
                 </AddSongFieldShell>
 
                 {submitError && <p className="text-xs text-destructive">{submitError}</p>}

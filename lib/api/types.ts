@@ -161,6 +161,27 @@ export interface AppRsvpConfigDto {
     maxChildren: number;
 }
 
+export interface AppContentLimitsDto {
+    postContentMaxLength: number;
+    commentContentMaxLength: number;
+    storyCaptionMaxLength: number;
+    wishbookMessageMaxLength: number;
+    playlistSuggestionCommentMaxLength: number;
+    rsvpNotesMaxLength: number;
+    eventDescriptionMaxLength: number;
+    eventSessionDescriptionMaxLength: number;
+    moderationReasonMaxLength: number;
+    reportDescriptionMaxLength: number;
+    reportResolutionNotesMaxLength: number;
+    catalogDescriptionMaxLength: number;
+}
+
+export interface AppRateLimitConfigDto {
+    name: string;
+    limit: number;
+    windowSeconds: number;
+}
+
 export interface AppConfigResponseDto {
     featureFlags: PlatformFeatureFlagResponseDto[];
     media: AppMediaConfigDto;
@@ -172,6 +193,8 @@ export interface AppConfigResponseDto {
     eventTypes: PlatformEventTypeResponseDto[];
     eventTypeKeys: EventTypeConvention[];
     rsvp: AppRsvpConfigDto;
+    contentLimits: AppContentLimitsDto;
+    rateLimits: AppRateLimitConfigDto[];
 }
 
 // --- Β§2 Errors ---

@@ -179,7 +179,7 @@
         "music": "Music",
         "addPhotos": "Add photos",
         "photoLimitHint": "Up to {count} photos",
-        "captionCharacterCount": "{count} characters",
+        "captionCharacterCount": "{count}/{max}",
         "addStory": "Add to story",
         "removeImage": "Remove image",
         "uploadFailed": "Couldn't upload {filename}",

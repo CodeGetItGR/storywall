@@ -7,6 +7,7 @@ import React, { type ChangeEvent, useId, useMemo, useState } from 'react';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { Modal } from '@/components/ui/modal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useAppConfig } from '@/hooks/useAppConfig';
 import type { EventSessionRequestDto, EventSessionResponseDto, EventStatus } from '@/lib/api/types';
 import { getCurrentDatetimeLocalValue, getLaterDatetimeLocalValue, isDatetimeLocalBefore, toDatetimeLocalValue } from '@/lib/datetime';
 
@@ -50,6 +51,7 @@ function ScheduleEditorForm({
 }: ScheduleEditorFormProps) {
     const t = useTranslations('SchedulePage');
     const toErrorMessage = useApiErrorMessage();
+    const { data: appConfig } = useAppConfig();
 
     const initialTitle = editingSession?.title ?? '';
     const initialDescription = editingSession?.description ?? '';
@@ -74,6 +76,7 @@ function ScheduleEditorForm({
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [saved, setSaved] = useState(false);
     const formId = useId();
+    const maxDescriptionLength = appConfig?.contentLimits.eventSessionDescriptionMaxLength ?? 1000;
 
     const nextDisplayOrder = useMemo(() => sessions.reduce((max, session) => Math.max(max, session.displayOrder), -1) + 1, [sessions]);
     const isEndBeforeStart = Boolean(startAt && endAt && new Date(endAt).getTime() < new Date(startAt).getTime());
@@ -86,7 +89,7 @@ function ScheduleEditorForm({
     }
 
     function handleDescriptionChange(event: ChangeEvent<HTMLTextAreaElement>) {
-        setDescription(event.target.value);
+        setDescription(event.target.value.slice(0, maxDescriptionLength));
     }
 
     function handleStartAtChange(event: ChangeEvent<HTMLInputElement>) {
@@ -217,7 +220,11 @@ function ScheduleEditorForm({
                             onChange={handleDescriptionChange}
                             className="w-full min-h-24 rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                             placeholder={t('host.placeholders.description')}
+                            maxLength={maxDescriptionLength}
                         />
+                        <span className="text-right text-xs text-ink-faint">
+                            {description.length}/{maxDescriptionLength}
+                        </span>
                     </FormFieldLabel>
 
                     <div className="grid gap-3 sm:grid-cols-2">

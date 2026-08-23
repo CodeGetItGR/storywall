@@ -179,7 +179,7 @@
         "music": "Μουσική",
         "addPhotos": "Προσθήκη φωτογραφιών",
         "photoLimitHint": "Έως {count} φωτογραφίες",
-        "captionCharacterCount": "{count} χαρακτήρες",
+        "captionCharacterCount": "{count}/{max}",
         "addStory": "Προσθήκη στιγμιότυπου",
         "removeImage": "Αφαίρεση εικόνας",
         "uploadFailed": "Δεν ήταν δυνατή η μεταφόρτωση του {filename}",

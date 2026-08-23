@@ -29,6 +29,16 @@ server-side.
 populates it the same way, so the wizard's step-2 plan picker can render upsells without also
 fetching the full config catalog.
 
+**2026-08-23:** two new sections, both closing gaps where a limit was enforced server-side but
+never surfaced anywhere the FE could read it. `contentLimits` gives you every free-text
+`@Size(max=...)` bound (post/comment/story/wishbook/etc.) so counters and submit-disabling can be
+driven from data instead of hardcoded numbers. `rateLimits` gives you the per-endpoint request
+budgets for the guest content/interaction endpoints (posts, comments, reactions, RSVPs, etc.) —
+these were previously invisible; only the *global* default and the billing/auth limits were
+documented (see `frontend-integration-guide.md` §0 for generic `429` handling, which still
+applies unchanged). See §"New: content character limits" and §"New: per-endpoint rate limits"
+below.
+
 ## GET /api/config
 
 Public — no `Authorization` header needed, safe to call before login (e.g. to gate the login
@@ -53,6 +63,10 @@ interface AppConfigResponseDto {
   paidServices: PaidServiceResponseDto[];   // "keep originals" add-on, storage packs, module unlocks — see billing-fe-guide.md §5
   eventModuleKeys: ('posts' | 'rsvp' | 'playlist' | 'stories' | 'gallery' | 'wishlist' | 'wishbook')[];
   rsvp: { minAdults: number; maxAdults: number; minChildren: number; maxChildren: number };
+  contentLimits: AppContentLimitsDto;   // added 2026-08-23 — see below
+  rateLimits: AppRateLimitConfigDto[];  // added 2026-08-23 — see below
+  defaultRateLimit: number;             // added 2026-08-23
+  defaultRateLimitWindowSeconds: number; // added 2026-08-23
 }
 ```
 
@@ -115,6 +129,7 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
   now also enforced server-side, so drift here means requests start failing, not silently
   no-op'ing.
 - **`rsvp`** — see "RSVP guest-count bounds" below.
+- **`contentLimits`** / **`rateLimits`** — see the two new sections below.
 
 ## Module keys are now a closed, server-validated set
 
@@ -167,3 +182,109 @@ counts) — only an explicit out-of-bounds value is rejected.
 `rsvp.{minAdults,maxAdults,minChildren,maxChildren}`. If a host-side RSVP-count edit form gets
 built (flagged as not-yet-existing in `fe-be-open-questions.md` §10), source its bounds from
 there instead of re-hardcoding the same four numbers a third place.
+
+## New: content character limits (2026-08-23)
+
+Every free-text field across the app now has a server-enforced `@Size(max=...)`. Most of these
+were previously **unbounded on the backend** — a post, for example, could be any length; the FE
+just never sent anything long because nothing prompted it to. That gap is closed:
+
+```ts
+interface AppContentLimitsDto {
+  postContentMaxLength: number;                  // 500
+  commentContentMaxLength: number;                // 300
+  storyCaptionMaxLength: number;                  // 300
+  wishbookMessageMaxLength: number;                // 2000
+  playlistSuggestionCommentMaxLength: number;      // 300
+  rsvpNotesMaxLength: number;                      // 500
+  eventDescriptionMaxLength: number;                // 2000
+  eventSessionDescriptionMaxLength: number;         // 1000
+  moderationReasonMaxLength: number;                // 500
+  reportDescriptionMaxLength: number;               // 1000
+  reportResolutionNotesMaxLength: number;           // 1000
+  catalogDescriptionMaxLength: number;              // 1000
+}
+```
+
+| field | maps to | endpoint |
+|---|---|---|
+| `postContentMaxLength` | `PostRequestDto.content` | `POST /api/posts` |
+| `commentContentMaxLength` | `CommentRequestDto.content` | `POST /api/comments` |
+| `storyCaptionMaxLength` | `StoryRequestDto.caption` | `POST /api/stories` |
+| `wishbookMessageMaxLength` | `WishbookEntryRequestDto.message` | `POST /api/events/{eventId}/wishbook` |
+| `playlistSuggestionCommentMaxLength` | `PlaylistSuggestionRequestDto.comment` | `POST /api/playlist-suggestions` |
+| `rsvpNotesMaxLength` | `RsvpRequestDto`/`RsvpPatchDto.notes` | `POST`/`PATCH /api/rsvps` |
+| `eventDescriptionMaxLength` | `EventRequestDto`/`EventPatchDto.description` | `POST`/`PATCH /api/events` |
+| `eventSessionDescriptionMaxLength` | `EventSessionRequestDto`/`Patch.description` | `POST`/`PATCH /api/event-sessions` |
+| `moderationReasonMaxLength` | `ModerationActionRequestDto.reason` | `POST /api/moderation-actions` |
+| `reportDescriptionMaxLength` | `ReportRequestDto.description` | `POST /api/reports` |
+| `reportResolutionNotesMaxLength` | `ReportRequestDto.resolutionNotes` | `PATCH /api/reports/{id}` (admin) |
+| `catalogDescriptionMaxLength` | `description` on plan tiers, paid services, event types, modules | admin catalog CRUD |
+
+Exceeding a limit returns **`400`** with `errorCode: 3001` / `errorKey: "VALIDATION_FAILED"`, same
+shape as any other field-validation error. Nothing that was previously accepted has been
+retroactively invalidated — this only rejects *new* writes over the limit.
+
+**Action:** wire each textarea/input's `maxLength` and any live character counter to the matching
+field here instead of a hardcoded number, the same way you'd source `rsvp` bounds. This is the
+only place these numbers exist — the backend constants (`TextLimits.java`) have no other public
+surface, so a mismatched hardcoded FE limit is now a genuine correctness bug, not just staleness.
+
+Not included here: a handful of short fixed-width fields (names, emails, phone numbers, URLs,
+enum-like strings) also gained limits as part of the same pass, but those mirror pre-existing
+sibling-DTO conventions (e.g. `title`/`name` at 255) rather than being new judgment calls — treat
+`255` chars as the safe default for any single-line text input the FE doesn't already constrain.
+
+## New: per-endpoint rate limits (2026-08-23)
+
+Global `429` handling already applies to every `/api/**` endpoint (see
+`frontend-integration-guide.md` §0) — nothing changes about *how* you handle a `429`. What's new is
+that the guest content/interaction endpoints (posts, comments, reactions, stories, playlist
+suggestions/votes, wishbook, RSVPs, media, invites) previously had **no endpoint-specific limit at
+all** and silently fell back to the generous global default (300 req/min). They now have tighter,
+purpose-fit budgets to prevent spam/abuse:
+
+```ts
+interface AppRateLimitConfigDto { name: string; limit: number; windowSeconds: number; }
+```
+
+`GET /api/config` → `rateLimits` is the live list (sorted by `name`) — treat the table below as a
+reference, not the source of truth; read `rateLimits` at runtime if you want to build any
+client-side pre-throttling (e.g. disabling a submit button before the request even goes out).
+
+| bucket (`name`) | limit | window | endpoint(s) |
+|---|---|---|---|
+| `post.write` | 20 | 60s | `POST`/`DELETE /api/posts` |
+| `comment.write` | 40 | 60s | `POST`/`DELETE /api/comments` |
+| `reaction.write` | 80 | 60s | `POST`/`DELETE /api/reactions` |
+| `story.write` | 20 | 60s | `POST`/`DELETE /api/stories` |
+| `story.view` | 120 | 60s | `POST /api/stories/{id}/views` |
+| `playlist.suggestion.write` | 20 | 60s | `POST`/`DELETE /api/playlist-suggestions` |
+| `playlist.vote.write` | 80 | 60s | `POST`/`DELETE /api/playlist-votes` |
+| `wishbook.write` | 20 | 60s | `POST /api/events/{eventId}/wishbook`, `DELETE /api/wishbook/{entryId}` |
+| `post-media.write` | 60 | 60s | `POST`/`DELETE /api/post-medias` |
+| `rsvp.write` | 20 | 60s | `POST`/`PATCH`/`DELETE /api/rsvps` |
+| `rsvp.session-response.write` | 30 | 60s | `POST`/`DELETE /api/rsvp-session-responses` |
+| `event-member.claim` | 10 | 1 hour | `POST /api/event-members/{id}/claim` |
+| `event-invitation.accept` | 20 | 60s | `POST /api/event-invitations/{inviteToken}/accept` |
+| `admin.user-delete` | 5 | 1 hour | `DELETE /api/users/{id}` (admin) |
+| `admin.event-purge` | 5 | 1 hour | `POST /api/admin/events/{id}/purge` (admin) |
+
+Notes:
+
+- Each bucket is counted **per caller** (per authenticated user id), same as every other rate
+  limit in the app — not shared across users.
+- A pair of endpoints sharing a bucket (e.g. `post.write` covering both create and delete) share
+  one budget between them, not one each.
+- `event-member.claim` and `admin.*` use a **1-hour** window, not 60 seconds — don't assume every
+  bucket resets every minute when building a "try again in..." countdown; read `windowSeconds`.
+- The two admin buckets are deliberately tight "safety brake" limits on destructive, irreversible
+  actions (permanent user deletion, permanent media purge) — hitting one is expected to be rare
+  and is not something to build UI reassurance around beyond the standard `429` message.
+- `defaultRateLimit`/`defaultRateLimitWindowSeconds` (300/60 as of this writing) is what still
+  applies to every other endpoint not in this table — most GETs, admin CRUD, etc.
+
+**Action:** nothing is required — the existing global `429` handler already covers these. This
+table exists so you can, if useful, pre-emptively disable a "post" button after N rapid submits
+client-side, or explain a `429` on the composer with more specific copy than the generic message
+(e.g. "You're posting too quickly — wait a moment.").

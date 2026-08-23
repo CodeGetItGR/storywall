@@ -19,6 +19,7 @@ interface RsvpFormProps {
     onIncrementPlusOnes: (type: 'adult' | 'child') => () => void;
     onDecrementPlusOnes: (type: 'adult' | 'child') => () => void;
     message: string;
+    maxMessageLength: number;
     onMessageChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
     onSubmit: (e: React.SubmitEvent<HTMLFormElement>) => void;
     submitDisabled: boolean;
@@ -34,6 +35,7 @@ export function RsvpForm({
     onIncrementPlusOnes,
     onDecrementPlusOnes,
     message,
+    maxMessageLength,
     onMessageChange,
     onSubmit,
     submitDisabled,
@@ -138,9 +140,13 @@ export function RsvpForm({
                         onChange={onMessageChange}
                         rows={3}
                         placeholder={t('messagePlaceholder')}
+                        maxLength={maxMessageLength}
                         className="w-full bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 resize-none transition leading-relaxed"
                         aria-label={voice.rsvpMessageLabel}
                     />
+                    <p className="mt-1 text-right text-xs text-ink-faint">
+                        {message.length}/{maxMessageLength}
+                    </p>
                 </div>
 
                 {submitError && <p className="text-xs text-rose-500 text-center">{submitError}</p>}

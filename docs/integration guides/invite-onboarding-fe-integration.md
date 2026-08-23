@@ -8,6 +8,12 @@ Covers two flows:
 Build Part A first — it's how you'll generate real `inviteToken`s to test Part B with,
 instead of inserting rows manually.
 
+> **Updated 2026-08-22.** `guestKey` is now **server-generated**, not client-generated.
+> Stop minting one with `crypto.randomUUID()` and stop sending it on a guest's first
+> visit — omit it, and read the one the server returns in the guest-login response
+> instead. This is **breaking** for any shared invitation flow: see
+> [Shared invite links and `guestKey`](#shared-invite-links-and-guestkey).
+>
 > **Updated 2026-08-16.** Invitations now carry a `role`, and a second kind exists: a
 > **co-host invitation**, created at `POST /api/events/{eventId}/host-invitations` and
 > accepted through the same `accept` endpoint, but only by the exact address it names on a
@@ -37,7 +43,7 @@ Content-Type: application/json
   "eventId": "a1c2...uuid",   // required
   "inviteCode": "TABLE-7",    // required, non-blank, max 100 chars, unique per event
   "maxGuests": 5,             // required, positive int — how many joins this link allows
-                              // (enforced since 2026-08-11; >1 means guests must send a guestKey)
+                              // (enforced since 2026-08-11; >1 means guest-login returns a guestKey)
   "email": "taylor@example.com",   // optional, prefill
   "firstName": "Taylor",           // optional, prefill
   "lastName": "Smith",             // optional, prefill
@@ -230,7 +236,20 @@ POST /api/auth/guest-login
 {
   "inviteToken": "b3f1...uuid",
   "displayName": "Taylor Smith",
-  "guestKey": "9f2e-...",     // optional field, but send it always — see below
+  "guestKey": "9f2e-...",     // omit on first visit — see below
+}
+```
+
+**201 response** (`AuthResponseDto`):
+```json
+{
+  "accessToken": "...",
+  "refreshToken": null,
+  "userId": "...",
+  "email": null,
+  "displayName": "Taylor Smith",
+  "role": "GUEST",
+  "guestKey": "K7f3n2...44-char-string"   // present only for shared invitations — persist it
 }
 ```
 
@@ -243,24 +262,29 @@ POST /api/auth/guest-login
 
 #### Shared invite links and `guestKey`
 
-`guestKey` is an opaque string you generate once per device and keep in `localStorage`:
+`guestKey` is now **server-generated**, not something the frontend mints. The flow is:
 
 ```ts
-function guestKey(): string {
-  let key = localStorage.getItem('guestKey');
-  if (!key) {
-    key = crypto.randomUUID();
-    localStorage.setItem('guestKey', key);
-  }
-  return key;
+function storedGuestKey(): string | undefined {
+  return localStorage.getItem('guestKey') ?? undefined;
+}
+
+// after a successful guest-login response:
+if (response.guestKey) {
+  localStorage.setItem('guestKey', response.guestKey);
 }
 ```
 
-**When it's required:** whenever the invitation's `maxGuests > 1`, and also behind any QR
-code — those are shared even when set to a single guest, so `maxGuests` alone doesn't
-answer it. Omitting it where it's required is a `400`. For a personal one-person invitation
-it's optional and the previous behaviour is unchanged — but send it unconditionally and you
-never have to branch. (In the QR flow, the resolve response tells you outright via
+Send `storedGuestKey()` as the request's `guestKey` (omit the field if there is none stored
+yet). On the very first guest-login from a device there is nothing to send — that's expected,
+not an error. The response then carries a freshly minted `guestKey` for a shared invitation;
+persist it and echo it back on every later guest-login from that same device. A personal
+(non-shared) invitation never returns one — nothing to store.
+
+**Do not generate this value yourself** (no more `crypto.randomUUID()`) and do not send a
+stale or made-up key hoping to "claim" a membership — an unrecognised key is treated the same
+as sending none, and just gets you (or the caller) a new membership and a new key rather than
+an error. (In the QR flow, the resolve response still tells you whether one will come back via
 `requiresGuestKey`; see `qr-links-fe-integration.md`.)
 
 **Why it exists.** The backend used to resolve a returning guest as "the member created from
@@ -356,7 +380,7 @@ with the returned `accessToken`.
    - expired/alreadyUsed/404 → render terminal state, stop
    - else → render branded page with 3 options
 2. User picks:
-   a. "Join as guest"   → POST /auth/guest-login  { guestKey: guestKey() }  → done
+   a. "Join as guest"   → POST /auth/guest-login  { guestKey: storedGuestKey() }  → save response.guestKey → done
    b. "I have an account" → POST /auth/login  → POST /event-invitations/{token}/accept → done
    c. "Create an account" → POST /auth/register → POST /event-invitations/{token}/accept → done
 3. Any of the three can come back 409 / 5035 → "this invite link is full"

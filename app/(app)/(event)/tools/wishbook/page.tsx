@@ -35,6 +35,7 @@ export default function WishbookPage() {
     const title = wishbookModule?.name ?? t('title');
     const subtitle = wishbookModule?.description ?? undefined;
     const memberName = member?.displayName ?? '';
+    const maxMessageLength = appConfig?.contentLimits.wishbookMessageMaxLength ?? 2000;
 
     async function submit(event_: React.SubmitEvent<HTMLFormElement>) {
         event_.preventDefault();
@@ -53,7 +54,7 @@ export default function WishbookPage() {
         router.back();
     }
     function changeMessage(event_: React.ChangeEvent<HTMLTextAreaElement>) {
-        setMessage(event_.target.value);
+        setMessage(event_.target.value.slice(0, maxMessageLength));
     }
     function selectDeleteTarget(event_: React.MouseEvent<HTMLButtonElement>) {
         const entry = entries.find((item) => item.id === event_.currentTarget.dataset.entryId);
@@ -88,7 +89,7 @@ export default function WishbookPage() {
                     {memberName && <p className="truncate text-lg font-semibold text-ink">{memberName}</p>}
                     <textarea
                         id="wishbook-message"
-                        maxLength={2000}
+                        maxLength={maxMessageLength}
                         rows={8}
                         value={message}
                         onChange={changeMessage}
@@ -96,7 +97,7 @@ export default function WishbookPage() {
                         className="min-h-56 w-full resize-none rounded-[1.5rem] border border-border/70 bg-background px-5 py-4 text-base leading-8 text-ink outline-none transition-shadow focus:border-primary/30 focus:ring-2 focus:ring-primary/20"
                     />
                     <div className="flex items-center justify-between gap-3">
-                        <span className="text-xs text-ink-faint">{t('charactersLeft', { count: 2000 - message.length })}</span>
+                        <span className="text-xs text-ink-faint">{t('charactersLeft', { count: maxMessageLength - message.length })}</span>
                         <button
                             type="submit"
                             disabled={!message.trim() || createEntry.isPending}

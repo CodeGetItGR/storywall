@@ -14,6 +14,7 @@ interface PostCommentFormProps {
     placeholder: string;
     inputAriaLabel: string;
     submitAriaLabel: string;
+    maxLength: number;
 }
 
 export function PostCommentForm({
@@ -26,9 +27,10 @@ export function PostCommentForm({
     placeholder,
     inputAriaLabel,
     submitAriaLabel,
+    maxLength,
 }: PostCommentFormProps) {
     function handleChange(e: ChangeEvent<HTMLInputElement>) {
-        onValueChange(e.target.value);
+        onValueChange(e.target.value.slice(0, maxLength));
     }
 
     return (
@@ -49,6 +51,7 @@ export function PostCommentForm({
                         disabled={inputDisabled}
                         placeholder={placeholder}
                         aria-label={inputAriaLabel}
+                        maxLength={maxLength}
                         className="relative flex-1 bg-surface-muted rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition disabled:cursor-not-allowed disabled:opacity-60"
                     />
                     <button
@@ -60,6 +63,9 @@ export function PostCommentForm({
                         <Send className="w-4 h-4" />
                     </button>
                 </section>
+                <p className="text-right text-xs text-ink-faint">
+                    {value.length}/{maxLength}
+                </p>
             </div>
         </form>
     );
