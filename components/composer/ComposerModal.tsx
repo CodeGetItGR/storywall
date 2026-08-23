@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
 import { AddSongForm } from '@/components/playlist';
-import Avatar from '@/components/ui/avatar';
 import { Modal } from '@/components/ui/modal';
 import type { ComposerController } from '@/hooks/useComposerController';
 
@@ -60,12 +59,10 @@ export function ComposerModal({
     handleRemoveImageClick,
     handleRetryUploadClick,
     images,
-    initials,
     isOpen,
     isPostBusy,
     isSongBusy,
     maxImages,
-    memberName,
     selectPostMode,
     selectSongMode,
     sizeError,
@@ -78,28 +75,39 @@ export function ComposerModal({
     const t = useTranslations('ComposerCard');
 
     return (
-        <Modal open={isOpen} onClose={closeComposer} size="sm" variant="sheet" closeLabel={t('cancel')} className="pb-[env(safe-area-inset-bottom)]">
-            <Modal.Body className="p-4">
-                <div className="mb-4 flex items-center gap-2 pr-10">
+        <Modal
+            open={isOpen}
+            onClose={closeComposer}
+            size="sm"
+            variant="sheet"
+            closeLabel={t('cancel')}
+            className="w-screen max-w-none pb-[env(safe-area-inset-bottom)] sm:w-[calc(100vw-1rem)] sm:max-w-xl md:max-w-2xl"
+        >
+            <Modal.Body className="px-3 py-4 sm:p-5">
+                {/* Mode tabs */}
+                <div className="mb-4 flex flex-wrap items-center gap-2 pr-10">
                     <ComposerModeToggle mode="post" currentMode={composerMode} onSelect={selectPostMode} />
                     <ComposerModeToggle mode="song" currentMode={composerMode} onSelect={selectSongMode} disabled={!canComposeSong} />
                 </div>
 
+                {/* Post form */}
                 <div hidden={composerMode !== 'post'}>
                     <form onSubmit={submitPost} className="flex flex-col gap-4">
-                        <div className="flex items-start gap-3">
-                            <Avatar initials={initials} size="md" alt={memberName || undefined} />
-                            <textarea
-                                ref={textareaRef}
-                                value={caption}
-                                onChange={handleCaptionChange}
-                                placeholder={t('captionPlaceholder')}
-                                aria-label={t('captionAriaLabel')}
-                                rows={3}
-                                className="flex-1 resize-none rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink placeholder:text-ink-faint outline-none transition focus:ring-2 focus:ring-primary/30"
-                            />
+                        <textarea
+                            ref={textareaRef}
+                            value={caption}
+                            onChange={handleCaptionChange}
+                            placeholder={t('captionPlaceholder')}
+                            aria-label={t('captionAriaLabel')}
+                            rows={4}
+                            className="min-h-36 w-full resize-none rounded-[1.5rem] bg-surface-muted px-5 py-4 text-base leading-relaxed text-ink placeholder:text-ink-faint outline-none transition focus:ring-2 focus:ring-primary/30 sm:min-h-32 sm:text-sm"
+                        />
+                        <div className="-mt-2 flex items-center justify-between gap-3 text-xs text-ink-faint">
+                            <span>{t('photoLimitHint', { count: maxImages })}</span>
+                            <span>{t('captionCharacterCount', { count: caption.length })}</span>
                         </div>
 
+                        {/* Media previews */}
                         {images.length > 0 && (
                             <div className="grid grid-cols-3 gap-2">
                                 {images.map((img) => (
@@ -142,15 +150,15 @@ export function ComposerModal({
                             <p className="text-xs text-destructive">{sizeError ?? countError ?? submitError}</p>
                         )}
 
-                        <div className="flex items-center justify-between">
+                        {/* Actions */}
+                        <div className="flex gap-2 items-center justify-between">
                             <button
                                 type="button"
                                 onClick={handlePickPhotos}
                                 disabled={!canComposePost || images.length >= maxImages}
-                                className="flex items-center gap-2 text-sm font-medium text-ink-muted transition-colors hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
+                                className="min-w-6 h-auto items-center justify-center gap-2 rounded-full bg-surface-muted text-sm font-medium text-ink-muted transition-colors hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 p-4"
                             >
                                 <ImagePlus className="h-4 w-4" />
-                                {t('addPhotos')}
                             </button>
                             <input
                                 ref={fileRef}
@@ -163,28 +171,19 @@ export function ComposerModal({
                                 tabIndex={-1}
                             />
 
-                            <div className="flex items-center gap-2">
-                                <button
-                                    type="button"
-                                    onClick={closeComposer}
-                                    disabled={isPostBusy}
-                                    className="rounded-full px-4 py-2 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-40"
-                                >
-                                    {t('cancel')}
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={!canSubmit}
-                                    className="flex items-center gap-2 rounded-full bg-gradient-brand px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-                                >
-                                    <Send className="h-4 w-4" />
-                                    {isPostBusy ? t('posting') : t('post')}
-                                </button>
-                            </div>
+                            <button
+                                type="submit"
+                                disabled={!canSubmit}
+                                className="flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-full bg-gradient-brand px-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:px-4"
+                            >
+                                <Send className="h-4 w-4" />
+                                {isPostBusy ? t('posting') : t('post')}
+                            </button>
                         </div>
                     </form>
                 </div>
 
+                {/* Song form */}
                 <div hidden={composerMode !== 'song'}>
                     <AddSongForm
                         key={songComposerKey}

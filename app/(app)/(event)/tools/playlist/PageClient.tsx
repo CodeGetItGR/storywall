@@ -12,8 +12,8 @@ export default function PlaylistPage() {
     return <EventRouteGate>{(context) => <PlaylistScreen {...context} />}</EventRouteGate>;
 }
 
-function PlaylistScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDetailResponseDto; eventId: string; isHost: boolean }) {
-    const data = usePlaylistPageData({ activeEvent, eventId, isHost });
+function PlaylistScreen({ activeEvent, eventId }: { activeEvent: EventDetailResponseDto; eventId: string }) {
+    const data = usePlaylistPageData({ activeEvent, eventId });
     const t = useTranslations('PlaylistPage');
 
     if (data.isLoadingModules) {
@@ -36,9 +36,6 @@ function PlaylistScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDe
             canSuggest={data.canSuggest}
             eventId={eventId}
             isEventWritable={isEventWritable(activeEvent.status)}
-            isHost={isHost}
-            isLoadingLeaderboard={data.isLoadingLeaderboard}
-            leaderboard={data.leaderboard}
             onSuggest={data.onSuggest}
             suggestions={data.suggestions}
             suggestionsLoading={data.suggestionsLoading}

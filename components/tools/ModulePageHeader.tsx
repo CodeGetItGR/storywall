@@ -43,7 +43,7 @@ export function ModulePageHeader({
             )}
             <div className="flex min-w-0 flex-1 items-center justify-center gap-2">
                 {showIcon && <Icon className={cn('h-5 w-5 shrink-0', iconClassName)} aria-hidden="true" />}
-                <h1 className="truncate text-base font-bold text-ink">{title}</h1>
+                <h1 className="truncate text-base font-bold text-ink text-c">{title}</h1>
             </div>
             {action ?? <span className="h-9 w-9 shrink-0" aria-hidden="true" />}
         </div>

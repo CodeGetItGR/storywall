@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2, ThumbsDown, ThumbsUp, Trash2 } from 'lucide-react';
+import { Award, Loader2, ThumbsDown, ThumbsUp, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
@@ -17,9 +17,10 @@ import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventPro
 
 type PlaylistItemRowProps = {
     suggestion: PlaylistSuggestionResponseDto;
+    topRank?: number | null;
 };
 
-export function PlaylistItemRow({ suggestion }: PlaylistItemRowProps) {
+export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowProps) {
     const t = useTranslations('PlaylistPage');
     const toErrorMessage = useApiErrorMessage();
     const activeEvent = useActiveEvent();
@@ -108,12 +109,24 @@ export function PlaylistItemRow({ suggestion }: PlaylistItemRowProps) {
     }
 
     return (
-        <article className="overflow-hidden rounded-[1.5rem] border border-border/60 bg-card shadow-[0_18px_36px_rgba(35,28,22,0.07)] transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_48px_rgba(35,28,22,0.1)]">
+        <article
+            className={cn(
+                'overflow-hidden rounded-[1.5rem] border bg-card shadow-[0_18px_36px_rgba(35,28,22,0.07)] transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_48px_rgba(35,28,22,0.1)]',
+                topRank ? 'border-primary/45 ring-1 ring-primary/15' : 'border-border/60'
+            )}
+        >
             <div className="grid grid-cols-[auto,1fr] gap-0">
+                {/* Details */}
                 <div className="flex items-center justify-between gap-4 px-4 py-3.5 sm:px-5">
                     <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                             <h3 className="truncate text-base font-semibold text-ink">{suggestion.title}</h3>
+                            {topRank && (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-primary-light px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-primary-dark">
+                                    <Award className="h-3.5 w-3.5" />
+                                    {t('topSongBadge', { rank: topRank })}
+                                </span>
+                            )}
                             {previewSource && (
                                 <span
                                     className={cn(
@@ -154,6 +167,7 @@ export function PlaylistItemRow({ suggestion }: PlaylistItemRowProps) {
                         </div>
                     </div>
 
+                    {/* Voting */}
                     <div className="flex shrink-0 items-center gap-2">
                         <button
                             type="button"
@@ -212,6 +226,7 @@ export function PlaylistItemRow({ suggestion }: PlaylistItemRowProps) {
                 </div>
 
                 {previewEmbedUrl && (
+                    /* Preview */
                     <div className="border-t border-border/60 bg-linear-to-b from-background to-surface-muted/40 p-4 sm:p-5">
                         <div className="overflow-hidden rounded-[1.25rem] border border-border bg-background shadow-[0_12px_30px_rgba(35,28,22,0.06)]">
                             <iframe

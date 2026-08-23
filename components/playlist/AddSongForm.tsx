@@ -84,21 +84,17 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmit, compact = false
 
     return (
         <form onSubmit={handleSubmit} className={`mb-5`}>
-            <div className={compact ? 'px-4 pt-4 text-ink' : 'bg-gradient-brand px-5 py-5 text-white'}>
-                <div className={`flex items-start gap-4 ${compact ? 'items-center' : ''}`}>
+            <div className={'px-4 pt-4 text-ink mb-4'}>
+                <div className={`flex gap-4 items-center`}>
                     <div
                         className={`flex shrink-0 items-center justify-center rounded-2xl ${compact ? 'h-10 w-10 bg-primary-light text-primary-dark' : 'h-12 w-12 bg-white/15 text-white ring-1 ring-white/15 backdrop-blur-sm'}`}
                     >
                         <BadgePlus className={compact ? 'h-5 w-5' : 'h-6 w-6'} />
                     </div>
-                    <div className="min-w-0">
-                        <p className={`text-[11px] font-semibold uppercase tracking-[0.24em] ${compact ? 'text-ink-faint' : 'text-white/75'}`}>
+                    <div className="min-w-0 flex items-center">
+                        <h2 className={`mt-1 font-semibold leading-tight text-base text-ink`}>
                             {t('suggestASong')}
-                        </p>
-                        <h2 className={`mt-1 font-semibold leading-tight ${compact ? 'text-base text-ink' : 'text-lg text-white'}`}>
-                            {t('formTitle')}
                         </h2>
-                        {!compact && <p className="mt-1 max-w-xl text-sm leading-relaxed text-white/80">{t('formSubtitle')}</p>}
                     </div>
                 </div>
             </div>
