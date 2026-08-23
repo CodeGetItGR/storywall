@@ -11,6 +11,7 @@ import { EventRouteGate } from '@/components/routing/EventRouteGate';
 import { ModuleNotice } from '@/components/tools/ModuleNotice';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { Button } from '@/components/ui/button';
+import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventBilling } from '@/hooks/useBilling';
 import { useEventMedia, useOriginalMedia, useUploadMediaBatch } from '@/hooks/useMedia';
@@ -41,6 +42,7 @@ function GalleryScreen({
     isHost: boolean;
 }) {
     const t = useTranslations('GalleryPage');
+    const toErrorMessage = useApiErrorMessage();
     const router = useRouter();
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [uploadNotice, setUploadNotice] = useState<string | null>(null);
@@ -97,19 +99,32 @@ function GalleryScreen({
         if (!eventId || !activeMember || selectedFiles.length === 0 || !canUpload) return;
 
         setUploadNotice(null);
-        const result = await uploadMediaBatch.mutateAsync({
-            eventId,
-            files: selectedFiles,
-            uploaderMemberId: activeMember.id,
-        });
+        let result;
+        try {
+            result = await uploadMediaBatch.mutateAsync({
+                eventId,
+                files: selectedFiles,
+                uploaderMemberId: activeMember.id,
+            });
+        } catch (error) {
+            setUploadNotice(toErrorMessage(error, t('uploadFailed')));
+            return;
+        }
 
         setSelectedFiles([]);
         setUploadNotice(
             result.failed.length > 0
-                ? result.failed.map((failure) => `${failure.filename}: ${failure.message}`).join(' ')
+                ? result.failed
+                      .map((failure) => {
+                          const errorKey = `uploadErrors.${failure.errorCode}`;
+                          return t.has(errorKey)
+                              ? t(errorKey, { count: maxFiles, filename: failure.filename })
+                              : t('uploadFailedItem', { filename: failure.filename });
+                      })
+                      .join(' ')
                 : t('uploadComplete', { count: result.created.length, failed: 0 })
         );
-    }, [activeMember, canUpload, eventId, selectedFiles, t, uploadMediaBatch]);
+    }, [activeMember, canUpload, eventId, maxFiles, selectedFiles, t, toErrorMessage, uploadMediaBatch]);
 
     async function downloadOriginal() {
         if (!selectedMedia) return;
@@ -222,7 +237,6 @@ function GalleryScreen({
                 )}
 
                 {uploadNotice && <p className="mt-3 text-xs text-ink-muted">{uploadNotice}</p>}
-                {uploadMediaBatch.isError && <p className="mt-3 text-xs text-rose-500">{t('uploadFailed')}</p>}
             </section>
 
             {/* Gallery */}

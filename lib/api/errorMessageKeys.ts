@@ -18,6 +18,7 @@ export type ApiErrorMessageKey =
     | 'checkoutSessionUnresolved'
     | 'coHostInviteNotYours'
     | 'conflict'
+    | 'duplicateMediaIdInRequest'
     | 'duplicateMembership'
     | 'duplicateReaction'
     | 'emailAlreadyExists'
@@ -46,6 +47,7 @@ export type ApiErrorMessageKey =
     | 'mediaArchivePartNotFound'
     | 'mediaImageTooManyPixels'
     | 'mediaProcessingBusy'
+    | 'methodNotAllowed'
     | 'memberLimit'
     | 'moduleUnavailable'
     | 'orderNotPending'
@@ -58,6 +60,7 @@ export type ApiErrorMessageKey =
     | 'planNotPriced'
     | 'planNotPurchasable'
     | 'planTierNotAvailableForEventType'
+    | 'postMediaLimitExceeded'
     | 'renewalAlreadyCovered'
     | 'eventScheduleLocked'
     | 'paidServiceCurrencyMismatch'
@@ -77,7 +80,9 @@ export type ApiErrorMessageKey =
     | 'subscriptionCancelFailed'
     | 'subscriptionNotLive'
     | 'originalsAddonNotActive'
+    | 'requestTooLarge'
     | 'unsupportedMediaFormat'
+    | 'tooManyFiles'
     | 'validationFailed'
     | 'webhookAlreadyProcessed'
     | 'webhookNotReplayable'
@@ -97,6 +102,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.CHECKOUT_SESSION_UNRESOLVED]: 'checkoutSessionUnresolved',
     [ERROR_CODES.CO_HOST_INVITE_NOT_YOURS]: 'coHostInviteNotYours',
     [ERROR_CODES.CONFLICT]: 'conflict',
+    [ERROR_CODES.DUPLICATE_MEDIA_ID_IN_REQUEST]: 'duplicateMediaIdInRequest',
     [ERROR_CODES.DUPLICATE_MEMBERSHIP]: 'duplicateMembership',
     [ERROR_CODES.DUPLICATE_REACTION]: 'duplicateReaction',
     [ERROR_CODES.EMAIL_ALREADY_EXISTS]: 'emailAlreadyExists',
@@ -126,6 +132,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.MEDIA_ARCHIVE_PART_NOT_FOUND]: 'mediaArchivePartNotFound',
     [ERROR_CODES.MEDIA_IMAGE_TOO_MANY_PIXELS]: 'mediaImageTooManyPixels',
     [ERROR_CODES.MEDIA_PROCESSING_BUSY]: 'mediaProcessingBusy',
+    [ERROR_CODES.METHOD_NOT_ALLOWED]: 'methodNotAllowed',
     [ERROR_CODES.INVALID_PAID_SERVICE_KIND]: 'invalidPaidServiceKind',
     [ERROR_CODES.MODULE_NOT_AVAILABLE]: 'moduleUnavailable',
     [ERROR_CODES.ORDER_NOT_PENDING]: 'orderNotPending',
@@ -138,6 +145,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.PLAN_TIER_NOT_PRICED]: 'planNotPriced',
     [ERROR_CODES.PLAN_TIER_NOT_PURCHASABLE]: 'planNotPurchasable',
     [ERROR_CODES.PLAN_TIER_NOT_AVAILABLE_FOR_EVENT_TYPE]: 'planTierNotAvailableForEventType',
+    [ERROR_CODES.POST_MEDIA_LIMIT_EXCEEDED]: 'postMediaLimitExceeded',
     [ERROR_CODES.PAID_SERVICE_CURRENCY_MISMATCH]: 'paidServiceCurrencyMismatch',
     [ERROR_CODES.PAID_SERVICE_IN_USE]: 'paidServiceInUse',
     [ERROR_CODES.PAID_SERVICE_NOT_ON_PLAN]: 'paidServiceNotOnPlan',
@@ -155,7 +163,9 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.SUBSCRIPTION_CANCEL_FAILED]: 'subscriptionCancelFailed',
     [ERROR_CODES.SUBSCRIPTION_NOT_LIVE]: 'subscriptionNotLive',
     [ERROR_CODES.ORIGINALS_ADDON_NOT_ACTIVE]: 'originalsAddonNotActive',
+    [ERROR_CODES.REQUEST_TOO_LARGE]: 'requestTooLarge',
     [ERROR_CODES.UNSUPPORTED_MEDIA_FORMAT]: 'unsupportedMediaFormat',
+    [ERROR_CODES.TOO_MANY_FILES]: 'tooManyFiles',
     [ERROR_CODES.VALIDATION_FAILED]: 'validationFailed',
     [ERROR_CODES.INVALID_PLAN_TIER_SCOPE]: 'invalidPlanTierScope',
     [ERROR_CODES.WEBHOOK_ALREADY_PROCESSED]: 'webhookAlreadyProcessed',

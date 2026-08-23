@@ -29,6 +29,19 @@ interface ApiError {
   errors?: Record<string, string>; // only present on 400 validation failures, first message per field
 }
 
+// Cross-cutting cases GlobalExceptionHandler now maps to a specific status/errorCode instead of a
+// generic 500/9001 INTERNAL_ERROR (2026-08-23). None of these are endpoint-specific, so they apply
+// wherever the trigger condition can occur:
+//   - Malformed path/query param (bad UUID, unknown enum value) -> 400, errorCode 3001 VALIDATION_FAILED,
+//     `detail` names the offending parameter.
+//   - Wrong HTTP method for a mapped path (e.g. POST /api/sessions, which is GET-only) -> 405,
+//     errorCode 3020 METHOD_NOT_ALLOWED, `Allow` response header lists the supported methods.
+//   - Wrong Content-Type (e.g. JSON body to a multipart endpoint) -> 415, errorCode 3002
+//     MALFORMED_REQUEST_BODY.
+//   - A write that loses a DB-level unique-constraint race (e.g. two concurrent registrations for
+//     the same email) -> 409, errorCode 5001 CONFLICT, generic "conflicts with existing data" detail
+//     that does not leak the constraint name.
+
 // Spring Data's Page<T> JSON shape — trimmed to the fields worth relying on.
 interface Page<T> {
   content: T[];
