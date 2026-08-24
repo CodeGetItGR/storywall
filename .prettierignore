@@ -4,3 +4,4 @@ out
 coverage
 dist
 package-lock.json
+docs
