@@ -54,7 +54,7 @@ export default function EventAddonsSettingsBoundary() {
             <PageErrorState
                 title={tPageError('title')}
                 description={tPageError('description')}
-                onRetry={retry}
+                onRetryAction={retry}
                 actionHref={routes.auth.manage({ tab: 'billing' })}
                 actionLabel={t('backToBilling')}
             />

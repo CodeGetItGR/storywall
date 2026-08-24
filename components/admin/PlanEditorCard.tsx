@@ -3,37 +3,34 @@
 import { useTranslations } from 'next-intl';
 
 import { AdminTabs } from '@/components/admin/AdminTabs';
+import { PlanEditorAddonsTab } from '@/components/admin/PlanEditorAddonsTab';
 import { PlanEditorDangerTab } from '@/components/admin/PlanEditorDangerTab';
 import { PlanEditorDetailsTab } from '@/components/admin/PlanEditorDetailsTab';
-import { PlanEditorEventTypesTab } from '@/components/admin/PlanEditorEventTypesTab';
 import { PlanEditorFooter } from '@/components/admin/PlanEditorFooter';
 import { PlanEditorHeader } from '@/components/admin/PlanEditorHeader';
 import { PlanEditorLimitsTab } from '@/components/admin/PlanEditorLimitsTab';
-import { PlanEditorModulesTab } from '@/components/admin/PlanEditorModulesTab';
 import { PlanEditorPricingTab } from '@/components/admin/PlanEditorPricingTab';
 import { PlanSaveSummary } from '@/components/admin/PlanSaveSummary';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { usePlanEditorCard } from '@/hooks/usePlanEditorCard';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
-import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformEventTypeResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
 export function PlanEditorCard({
     plan,
     modules,
-    eventTypes,
     paidServices,
     eventPlans,
     scope,
-    onSaved,
+    onSavedAction,
 }: {
     plan: PlanTierResponseDto;
     modules: PlatformModuleResponseDto[];
-    eventTypes: PlatformEventTypeResponseDto[];
     paidServices: PaidServiceResponseDto[];
     eventPlans: PlanTierResponseDto[];
     scope: 'ACCOUNT' | 'EVENT';
-    onSaved: (name: string) => void;
+    onSavedAction: (name: string) => void;
 }) {
     const t = useTranslations('AdminPage');
     const {
@@ -43,8 +40,6 @@ export function PlanEditorCard({
         tab,
         setTab,
         visibility,
-        moduleKeys,
-        eventTypeKeys,
         unlockDraft,
         error,
         canSave,
@@ -71,18 +66,15 @@ export function PlanEditorCard({
         handleSubmit,
         handleFormChange,
         handleVisibilityChange,
-        handleModuleChange,
-        handleEventTypeChange,
         openUnlockEditor,
         closeUnlockEditor,
         updateUnlockDraft,
         handleCreateUnlockClick,
         canCreateUnlock,
         orderedModules,
-        orderedEventTypes,
         moduleUnlocks,
         handleUnlockAction,
-    } = usePlanEditorCard({ plan, modules, eventTypes, paidServices, eventPlans, scope, onSaved });
+    } = usePlanEditorCard({ plan, modules, paidServices, eventPlans, scope, onSavedAction: onSavedAction });
 
     return (
         <article className={cn('min-w-0', plan.isAssignable ? '' : 'opacity-90')}>
@@ -91,13 +83,13 @@ export function PlanEditorCard({
                 plan={editorPlan}
                 isEvent={isEvent}
                 isMakingDefault={updatePlan.mutation.isPending}
-                onMakeDefault={handleMakeDefaultClick}
+                onMakeDefaultAction={handleMakeDefaultClick}
             />
 
             {/* Form */}
             <form ref={formRef} id={`${editorId}-form`} onSubmit={handleSubmit} onChange={handleFormChange}>
                 {/* Tabs */}
-                <AdminTabs id={editorId} tabs={tabs} active={tab} onSelect={setTab} className="mt-4" />
+                <AdminTabs id={editorId} tabs={tabs} active={tab} onSelectAction={setTab} className="mt-4" />
 
                 {/* Details tab */}
                 <PlanEditorDetailsTab
@@ -105,7 +97,7 @@ export function PlanEditorCard({
                     activeTab={tab}
                     plan={editorPlan}
                     visibility={visibility}
-                    onVisibilityChange={handleVisibilityChange}
+                    onVisibilityChangeAction={handleVisibilityChange}
                 />
 
                 {/* Limits tab */}
@@ -114,36 +106,23 @@ export function PlanEditorCard({
                 {/* Pricing tab */}
                 <PlanEditorPricingTab editorId={editorId} activeTab={tab} plan={editorPlan} isEvent={isEvent} />
 
-                {/* Modules tab */}
+                {/* Add-ons tab */}
                 {isEvent && (
-                    <PlanEditorModulesTab
+                    <PlanEditorAddonsTab
                         editorId={editorId}
                         activeTab={tab}
                         plan={editorPlan}
                         orderedModules={orderedModules}
                         moduleUnlocks={moduleUnlocks}
-                        moduleKeys={moduleKeys}
                         unlockDraft={unlockDraft}
-                        onModuleChange={handleModuleChange}
-                        onOpenUnlockEditor={openUnlockEditor}
-                        onCloseUnlockEditor={closeUnlockEditor}
-                        onUpdateUnlockDraft={updateUnlockDraft}
-                        onCreateUnlock={handleCreateUnlockClick}
+                        onOpenUnlockEditorAction={openUnlockEditor}
+                        onCloseUnlockEditorAction={closeUnlockEditor}
+                        onUpdateUnlockDraftAction={updateUnlockDraft}
+                        onCreateUnlockAction={handleCreateUnlockClick}
                         canCreateUnlock={canCreateUnlock}
                         isCreatingUnlock={createPaidService.mutation.isPending}
                         onUnlockAction={handleUnlockAction}
                         isUpdatingUnlocks={updatePaidService.mutation.isPending}
-                    />
-                )}
-
-                {/* Event types tab */}
-                {isEvent && (
-                    <PlanEditorEventTypesTab
-                        editorId={editorId}
-                        activeTab={tab}
-                        orderedEventTypes={orderedEventTypes}
-                        eventTypeKeys={eventTypeKeys}
-                        onEventTypeChange={handleEventTypeChange}
                     />
                 )}
 
@@ -152,7 +131,7 @@ export function PlanEditorCard({
                     editorId={editorId}
                     activeTab={tab}
                     isDeleting={deletePlan.mutation.isPending}
-                    onDeleteOpen={handleDeleteOpenClick}
+                    onDeleteOpenAction={handleDeleteOpenClick}
                 />
             </form>
 
@@ -165,38 +144,38 @@ export function PlanEditorCard({
             {/* Confirmations */}
             <ConfirmActionModal
                 open={makeDefaultOpen}
-                onClose={handleMakeDefaultClose}
+                onCloseAction={handleMakeDefaultClose}
                 title={t('plans.makeDefaultConfirmTitle', { plan: editorPlan.name })}
                 body={t('plans.makeDefaultConfirmBody')}
                 cancelLabel={t('cancel')}
                 confirmLabel={t('plans.makeDefault')}
                 isConfirming={updatePlan.mutation.isPending}
-                onConfirm={handleMakeDefaultConfirm}
+                onConfirmAction={handleMakeDefaultConfirm}
                 tone="default"
             />
 
             <ConfirmActionModal
                 open={Boolean(pendingSave)}
-                onClose={handleSaveClose}
+                onCloseAction={handleSaveClose}
                 title={t('plans.saveConfirmTitle', { plan: editorPlan.name })}
                 body={<PlanSaveSummary pendingSave={pendingSave} />}
                 cancelLabel={t('cancel')}
                 confirmLabel={t('save')}
                 isConfirming={isSaving}
-                onConfirm={handleSaveConfirm}
+                onConfirmAction={handleSaveConfirm}
                 tone="default"
                 size="md"
             />
 
             <ConfirmActionModal
                 open={deleteOpen}
-                onClose={handleDeleteClose}
+                onCloseAction={handleDeleteClose}
                 title={t('plans.deleteConfirmTitle', { plan: editorPlan.name })}
                 body={t('plans.deleteConfirmBody')}
                 cancelLabel={t('cancel')}
                 confirmLabel={t('plans.delete')}
                 isConfirming={deletePlan.mutation.isPending}
-                onConfirm={handleDeleteConfirm}
+                onConfirmAction={handleDeleteConfirm}
             />
         </article>
     );

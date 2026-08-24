@@ -8,7 +8,7 @@ import { useRef } from 'react';
 import { Modal } from '@/components/ui/modal';
 import type { QrLinkResponseDto } from '@/lib/api/types';
 
-export function QrPreviewModal({ qrLink, open, onClose }: { qrLink: QrLinkResponseDto; open: boolean; onClose: () => void }) {
+export function QrPreviewModal({ qrLink, open, onCloseAction }: { qrLink: QrLinkResponseDto; open: boolean; onCloseAction: () => void }) {
     const t = useTranslations('ManagePage');
     const svgRef = useRef<SVGSVGElement | null>(null);
 
@@ -60,7 +60,7 @@ export function QrPreviewModal({ qrLink, open, onClose }: { qrLink: QrLinkRespon
     }
 
     return (
-        <Modal open={open} onClose={onClose} closeLabel={t('invitations.create.cancel')} size="sm">
+        <Modal open={open} onClose={onCloseAction} closeLabel={t('invitations.create.cancel')} size="sm">
             <Modal.Body className="p-6">
                 <div className="pr-8">
                     <p className="text-lg font-bold text-ink">{qrLink.label || t('qr.untitled')}</p>

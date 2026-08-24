@@ -1,141 +1,16 @@
 'use client';
 
-import { BadgeCheck, BellRing, Check, Loader2, RefreshCw } from 'lucide-react';
+import { BadgeCheck, BellRing, Loader2, RefreshCw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import React, { type ChangeEvent, useCallback, useState } from 'react';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
-import { AdminIdentifier } from '@/components/admin/AdminIdentifier';
 import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
+import { BillingOpsWebhookRow } from '@/components/admin/BillingOpsWebhookRow';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { useReplayWebhook, useRunNotificationSweep, useSettleOrder, useUnprocessedWebhooks } from '@/hooks/useAdmin';
+import { useRunNotificationSweep, useSettleOrder, useUnprocessedWebhooks } from '@/hooks/useAdmin';
 import { adminErrorMessageKey, isUuid } from '@/lib/adminUtils';
-import type { UnprocessedWebhookDto } from '@/lib/api/types';
 import { formatRecordCounts } from '@/lib/format';
-
-function SettleButton({ orderId, label }: { orderId: string; label: string }) {
-    const settleOrder = useSettleOrder();
-    const t = useTranslations('AdminPage');
-    const [confirmOpen, setConfirmOpen] = useState(false);
-
-    const handleOpen = useCallback(() => setConfirmOpen(true), []);
-    const handleClose = useCallback(() => setConfirmOpen(false), []);
-
-    const handleConfirm = useCallback(async () => {
-        await settleOrder.mutateAsync(orderId);
-        setConfirmOpen(false);
-    }, [orderId, settleOrder]);
-
-    return (
-        <div className="flex flex-col items-end gap-1">
-            <button
-                type="button"
-                onClick={handleOpen}
-                disabled={settleOrder.isPending || settleOrder.isSuccess}
-                className="inline-flex min-h-9 items-center gap-2 rounded-full bg-ink px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-50"
-            >
-                {settleOrder.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                {settleOrder.isSuccess ? t('billingOps.settled') : label}
-            </button>
-            {settleOrder.error && <p className="text-xs text-status-danger">{t(`errors.${adminErrorMessageKey(settleOrder.error)}`)}</p>}
-            <ConfirmActionModal
-                open={confirmOpen}
-                onClose={handleClose}
-                title={t('billingOps.confirmSettleTitle', { orderId })}
-                body={t('billingOps.confirmSettleBody')}
-                cancelLabel={t('cancel')}
-                confirmLabel={t('billingOps.settle')}
-                isConfirming={settleOrder.isPending}
-                onConfirm={handleConfirm}
-                tone="default"
-            />
-        </div>
-    );
-}
-
-function WebhookRow({ webhook }: { webhook: UnprocessedWebhookDto }) {
-    const t = useTranslations('AdminPage');
-    const replayWebhook = useReplayWebhook();
-    const [confirmReplayOpen, setConfirmReplayOpen] = useState(false);
-    const providerEventId = webhook.providerEventId ?? webhook.id;
-    const canReplay = webhook.replayable && Boolean(webhook.provider && providerEventId);
-
-    const handleOpenReplay = useCallback(() => setConfirmReplayOpen(true), []);
-    const handleCloseReplay = useCallback(() => setConfirmReplayOpen(false), []);
-
-    const handleReplay = useCallback(async () => {
-        if (!webhook.provider || !providerEventId) return;
-        await replayWebhook.mutateAsync({ provider: webhook.provider, providerEventId });
-        setConfirmReplayOpen(false);
-    }, [providerEventId, replayWebhook, webhook.provider]);
-
-    return (
-        <article className="border-b border-border py-4">
-            <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
-                <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-sm font-semibold text-ink">{webhook.eventType ?? t('billingOps.unknownEventType')}</p>
-                        {webhook.provider && (
-                            <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[11px] font-bold uppercase text-ink-muted">
-                                {webhook.provider}
-                            </span>
-                        )}
-                    </div>
-                    <p className="mt-0.5 text-xs text-ink-muted">
-                        {t('billingOps.receivedAt', { date: new Date(webhook.receivedAt).toLocaleString() })}
-                    </p>
-                    {webhook.payloadSummary && (
-                        <p className="mt-1 max-w-2xl truncate font-mono text-[11px] text-ink-faint" title={webhook.payloadSummary}>
-                            {webhook.payloadSummary}
-                        </p>
-                    )}
-                    {!webhook.replayable && <p className="mt-1 text-xs text-ink-faint">{t('billingOps.notReplayable')}</p>}
-                </div>
-                <div className="flex flex-wrap items-start gap-2 sm:justify-end">
-                    {canReplay && (
-                        <div className="flex flex-col items-end gap-1">
-                            <button
-                                type="button"
-                                onClick={handleOpenReplay}
-                                disabled={replayWebhook.isPending || replayWebhook.isSuccess}
-                                className="inline-flex min-h-9 items-center gap-2 rounded-full border border-border px-4 py-1.5 text-sm font-semibold text-ink disabled:opacity-50"
-                            >
-                                {replayWebhook.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-                                {replayWebhook.isSuccess ? t('billingOps.replayed') : t('billingOps.replay')}
-                            </button>
-                            {replayWebhook.error && (
-                                <p className="text-xs text-status-danger">{t(`errors.${adminErrorMessageKey(replayWebhook.error)}`)}</p>
-                            )}
-                        </div>
-                    )}
-                    {webhook.orderId ? (
-                        <SettleButton orderId={webhook.orderId} label={t('billingOps.settleThis')} />
-                    ) : (
-                        <p className="text-xs text-ink-faint">{t('billingOps.noOrderRef')}</p>
-                    )}
-                </div>
-            </div>
-
-            <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                {webhook.orderId && <AdminIdentifier label={t('identifiers.orderId')} value={webhook.orderId} />}
-                {webhook.providerEventId && <AdminIdentifier label={t('identifiers.providerEventId')} value={webhook.providerEventId} />}
-                <AdminIdentifier label={t('identifiers.deliveryId')} value={webhook.id} />
-            </div>
-
-            <ConfirmActionModal
-                open={confirmReplayOpen}
-                onClose={handleCloseReplay}
-                title={t('billingOps.confirmReplayTitle')}
-                body={t('billingOps.confirmReplayBody')}
-                cancelLabel={t('cancel')}
-                confirmLabel={t('billingOps.replay')}
-                isConfirming={replayWebhook.isPending}
-                onConfirm={handleReplay}
-                tone="default"
-            />
-        </article>
-    );
-}
 
 export function BillingOpsPanel() {
     const t = useTranslations('AdminPage');
@@ -256,7 +131,7 @@ export function BillingOpsPanel() {
                 )}
                 <div>
                     {webhooks.map((webhook) => (
-                        <WebhookRow key={webhook.id} webhook={webhook} />
+                        <BillingOpsWebhookRow key={webhook.id} webhook={webhook} />
                     ))}
                 </div>
             </div>
@@ -283,25 +158,25 @@ export function BillingOpsPanel() {
 
             <ConfirmActionModal
                 open={confirmSettleOpen}
-                onClose={handleCloseSettleConfirm}
+                onCloseAction={handleCloseSettleConfirm}
                 title={t('billingOps.confirmSettleTitle', { orderId: trimmedOrderId })}
                 body={t('billingOps.confirmSettleBody')}
                 cancelLabel={t('cancel')}
                 confirmLabel={t('billingOps.settle')}
                 isConfirming={settleOrder.isPending}
-                onConfirm={handleConfirmSettle}
+                onConfirmAction={handleConfirmSettle}
                 tone="default"
             />
 
             <ConfirmActionModal
                 open={confirmSweepOpen}
-                onClose={handleCloseSweep}
+                onCloseAction={handleCloseSweep}
                 title={t('billingOps.confirmSweepTitle')}
                 body={t('billingOps.confirmSweepBody')}
                 cancelLabel={t('cancel')}
                 confirmLabel={t('billingOps.runSweep')}
                 isConfirming={runSweep.isPending}
-                onConfirm={handleConfirmSweep}
+                onConfirmAction={handleConfirmSweep}
                 tone="default"
             />
         </section>

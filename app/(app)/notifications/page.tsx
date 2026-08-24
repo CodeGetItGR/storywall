@@ -43,7 +43,7 @@ export default function NotificationsPage() {
     const filters: CategoryFilter[] = ['all', 'billing', 'activity'];
 
     if (notificationsQuery.error) {
-        return <PageErrorState title={tError('title')} description={tError('description')} onRetry={notificationsQuery.refetch} />;
+        return <PageErrorState title={tError('title')} description={tError('description')} onRetryAction={notificationsQuery.refetch} />;
     }
 
     return (

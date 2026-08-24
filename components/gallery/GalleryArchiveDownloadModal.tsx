@@ -153,13 +153,16 @@ export function GalleryArchiveDownloadModal({ eventId, open, onClose, preferOrig
 
                         <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-ink-muted">
                             <span>
-                                {t('archivePhotos')}: <span className="font-semibold text-ink">{manifest ? formatCount(manifest.photoCount) : '0'}</span>
+                                {t('archivePhotos')}:{' '}
+                                <span className="font-semibold text-ink">{manifest ? formatCount(manifest.photoCount) : '0'}</span>
                             </span>
                             <span>
-                                {t('archiveVideos')}: <span className="font-semibold text-ink">{manifest ? formatCount(manifest.videoCount) : '0'}</span>
+                                {t('archiveVideos')}:{' '}
+                                <span className="font-semibold text-ink">{manifest ? formatCount(manifest.videoCount) : '0'}</span>
                             </span>
                             <span>
-                                {t('archiveParts')}: <span className="font-semibold text-ink">{manifest ? formatCount(manifest.parts.length) : '0'}</span>
+                                {t('archiveParts')}:{' '}
+                                <span className="font-semibold text-ink">{manifest ? formatCount(manifest.parts.length) : '0'}</span>
                             </span>
                         </div>
 
@@ -210,7 +213,11 @@ export function GalleryArchiveDownloadModal({ eventId, open, onClose, preferOrig
                                                 </p>
                                             </div>
                                             <span className="inline-flex shrink-0 items-center gap-2 rounded-full border border-border/70 bg-surface-muted px-3 py-1.5 text-xs font-semibold text-ink-muted">
-                                                {isDownloading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                                                {isDownloading ? (
+                                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                                ) : (
+                                                    <Download className="h-3.5 w-3.5" />
+                                                )}
                                                 {isDownloading ? t('archiveDownloading') : t('archiveDownload')}
                                             </span>
                                         </button>

@@ -18,10 +18,17 @@ type UsePlanEditorUnlocksArgs = {
     paidServices: PaidServiceResponseDto[];
     orderedModules: PlatformModuleResponseDto[];
     unlockDraft: UnlockDraft | null;
-    setUnlockDraft: (next: UnlockDraft | null | ((current: UnlockDraft | null) => UnlockDraft | null)) => void;
+    setUnlockDraftAction: (next: UnlockDraft | null | ((current: UnlockDraft | null) => UnlockDraft | null)) => void;
 };
 
-export function usePlanEditorUnlocks({ plan, eventPlans, paidServices, orderedModules, unlockDraft, setUnlockDraft }: UsePlanEditorUnlocksArgs) {
+export function usePlanEditorUnlocks({
+    plan,
+    eventPlans,
+    paidServices,
+    orderedModules,
+    unlockDraft,
+    setUnlockDraftAction,
+}: UsePlanEditorUnlocksArgs) {
     const t = useTranslations('AdminPage');
     const queryClient = useQueryClient();
     // The admin drawer reads paid services through useAdminPaidServices' custom query key,
@@ -79,7 +86,7 @@ export function usePlanEditorUnlocks({ plan, eventPlans, paidServices, orderedMo
         const moduleKey = event.currentTarget.dataset.moduleKey;
         const moduleItem = orderedModules.find((item) => item.moduleKey === moduleKey);
         if (!moduleKey || !moduleItem) return;
-        setUnlockDraft({
+        setUnlockDraftAction({
             moduleKey,
             moduleName: moduleItem.name,
             name: t('plans.modules.defaultAddonName', { module: moduleItem.name }),
@@ -90,13 +97,13 @@ export function usePlanEditorUnlocks({ plan, eventPlans, paidServices, orderedMo
         });
     }
 
-    const closeUnlockEditor = useCallback(() => setUnlockDraft(null), [setUnlockDraft]);
+    const closeUnlockEditor = useCallback(() => setUnlockDraftAction(null), [setUnlockDraftAction]);
 
     function updateUnlockDraft(event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
         const field = event.currentTarget.dataset.field;
         const { value } = event.currentTarget;
         if (!field) return;
-        setUnlockDraft((current) => (current ? { ...current, [field]: value } : current));
+        setUnlockDraftAction((current) => (current ? { ...current, [field]: value } : current));
     }
 
     async function createUnlock() {
@@ -123,7 +130,7 @@ export function usePlanEditorUnlocks({ plan, eventPlans, paidServices, orderedMo
                 planTierIds: [plan.id],
             },
         });
-        setUnlockDraft(null);
+        setUnlockDraftAction(null);
     }
 
     const canCreateUnlock = Boolean(unlockDraft?.name.trim() && unlockDraft.priceCurrency.trim()) && !createPaidService.mutation.isPending;

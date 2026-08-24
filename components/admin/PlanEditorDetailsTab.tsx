@@ -14,13 +14,13 @@ export function PlanEditorDetailsTab({
     activeTab,
     plan,
     visibility,
-    onVisibilityChange,
+    onVisibilityChangeAction,
 }: {
     editorId: string;
     activeTab: string;
     plan: PlanTierResponseDto;
     visibility: Visibility;
-    onVisibilityChange: (next: Visibility) => void;
+    onVisibilityChangeAction: (next: Visibility) => void;
 }) {
     const t = useTranslations('AdminPage');
 
@@ -44,7 +44,7 @@ export function PlanEditorDetailsTab({
                 <VisibilitySegmentedControl
                     title={t('fields.visibility')}
                     value={visibility}
-                    onChange={onVisibilityChange}
+                    onChangeAction={onVisibilityChangeAction}
                     labels={{
                         LIVE: t('fields.visibilityLive'),
                         HIDDEN: t('fields.visibilityHidden'),

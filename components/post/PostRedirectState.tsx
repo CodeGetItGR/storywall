@@ -1,5 +1,5 @@
-import { PageErrorState } from '@/components/ui/PageErrorState';
-import { routes } from '@/lib/routes';
+import { PostRedirectErrorState } from '@/components/post/PostRedirectErrorState';
+import { PostRedirectLoadingState } from '@/components/post/PostRedirectLoadingState';
 
 export function PostRedirectState({
     error,
@@ -19,12 +19,4 @@ export function PostRedirectState({
     }
 
     return <PostRedirectLoadingState label={loadingLabel} />;
-}
-
-function PostRedirectErrorState({ title, description, actionLabel }: { title: string; description: string; actionLabel: string }) {
-    return <PageErrorState title={title} description={description} actionHref={routes.feed} actionLabel={actionLabel} />;
-}
-
-function PostRedirectLoadingState({ label }: { label: string }) {
-    return <div className="flex min-h-[70vh] items-center justify-center text-sm text-ink-muted">{label}</div>;
 }

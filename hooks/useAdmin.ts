@@ -6,7 +6,9 @@ import { usageKeys } from '@/hooks/useUsage';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type {
+    EventTypeConvention,
     EventUsageResponseDto,
+    ModuleKey,
     NotificationSweepResponseDto,
     PaidServiceKind,
     PaidServiceResponseDto,
@@ -189,6 +191,66 @@ export function useCreatePlanTier() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: adminKeys.all });
             queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+        },
+    });
+}
+
+export function useSetPlanEventTypes() {
+    const queryClient = useQueryClient();
+    const plansKey = adminKeys.planTiers('EVENT', true);
+
+    return useMutation({
+        mutationFn: ({ planId, eventTypeKeys }: { planId: string; eventTypeKeys: EventTypeConvention[] }) =>
+            api.put<PlanTierResponseDto>(endpoints.admin.planTiers.eventTypes(planId), { eventTypeKeys }),
+        onMutate: async ({ planId, eventTypeKeys }) => {
+            await queryClient.cancelQueries({ queryKey: plansKey });
+            const previousPlans = queryClient.getQueryData<PlanTierResponseDto[]>(plansKey);
+            queryClient.setQueryData<PlanTierResponseDto[]>(plansKey, (plans = []) =>
+                plans.map((plan) => (plan.id === planId ? { ...plan, eventTypeKeys } : plan))
+            );
+            return { previousPlans };
+        },
+        onError: (_error, _variables, context) => {
+            if (context?.previousPlans) queryClient.setQueryData(plansKey, context.previousPlans);
+        },
+        onSuccess: (updatedPlan) => {
+            queryClient.setQueryData<PlanTierResponseDto[]>(plansKey, (plans = []) =>
+                plans.map((plan) => (plan.id === updatedPlan.id ? updatedPlan : plan))
+            );
+            queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: plansKey });
+        },
+    });
+}
+
+export function useSetPlanModules() {
+    const queryClient = useQueryClient();
+    const plansKey = adminKeys.planTiers('EVENT', true);
+
+    return useMutation({
+        mutationFn: ({ planId, moduleKeys }: { planId: string; moduleKeys: ModuleKey[] }) =>
+            api.put<PlanTierResponseDto>(endpoints.admin.planTiers.modules(planId), { moduleKeys }),
+        onMutate: async ({ planId, moduleKeys }) => {
+            await queryClient.cancelQueries({ queryKey: plansKey });
+            const previousPlans = queryClient.getQueryData<PlanTierResponseDto[]>(plansKey);
+            queryClient.setQueryData<PlanTierResponseDto[]>(plansKey, (plans = []) =>
+                plans.map((plan) => (plan.id === planId ? { ...plan, moduleKeys } : plan))
+            );
+            return { previousPlans };
+        },
+        onError: (_error, _variables, context) => {
+            if (context?.previousPlans) queryClient.setQueryData(plansKey, context.previousPlans);
+        },
+        onSuccess: (updatedPlan) => {
+            queryClient.setQueryData<PlanTierResponseDto[]>(plansKey, (plans = []) =>
+                plans.map((plan) => (plan.id === updatedPlan.id ? updatedPlan : plan))
+            );
+            queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: plansKey });
         },
     });
 }

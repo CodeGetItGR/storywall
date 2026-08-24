@@ -243,8 +243,8 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
 
             <ConfirmActionModal
                 open={confirmDeleteOpen}
-                onClose={handleCloseDeleteConfirm}
-                onConfirm={handleDeleteSuggestion}
+                onCloseAction={handleCloseDeleteConfirm}
+                onConfirmAction={handleDeleteSuggestion}
                 title={t('deleteSuggestionConfirmTitle')}
                 body={t('deleteSuggestionConfirmBody')}
                 confirmLabel={t('deleteSuggestionConfirm')}

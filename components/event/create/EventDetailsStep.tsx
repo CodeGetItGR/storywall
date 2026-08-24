@@ -19,11 +19,11 @@ type EventDetailsStepProps = {
     endAtMin: string;
     timezone: string;
     locationName: string;
-    onTitleChange: (event: ChangeEvent<HTMLInputElement>) => void;
-    onStartAtChange: (event: ChangeEvent<HTMLInputElement>) => void;
-    onEndAtChange: (event: ChangeEvent<HTMLInputElement>) => void;
-    onTimezoneChange: (event: ChangeEvent<HTMLInputElement>) => void;
-    onLocationNameChange: (event: ChangeEvent<HTMLInputElement>) => void;
+    onTitleChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
+    onStartAtChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
+    onEndAtChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
+    onTimezoneChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
+    onLocationNameChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
 };
 
 export function EventDetailsStep({
@@ -38,11 +38,11 @@ export function EventDetailsStep({
     endAtMin,
     timezone,
     locationName,
-    onTitleChange,
-    onStartAtChange,
-    onEndAtChange,
-    onTimezoneChange,
-    onLocationNameChange,
+    onTitleChangeAction,
+    onStartAtChangeAction,
+    onEndAtChangeAction,
+    onTimezoneChangeAction,
+    onLocationNameChangeAction,
 }: EventDetailsStepProps) {
     const t = useTranslations('CreateEventPage');
     const voice = useEventTypeVoice(eventType);
@@ -56,7 +56,7 @@ export function EventDetailsStep({
                         type="text"
                         required
                         value={title}
-                        onChange={onTitleChange}
+                        onChange={onTitleChangeAction}
                         placeholder={voice.titlePlaceholder}
                         className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
                     />
@@ -70,7 +70,7 @@ export function EventDetailsStep({
                             type="datetime-local"
                             required
                             value={startAt}
-                            onChange={onStartAtChange}
+                            onChange={onStartAtChangeAction}
                             min={startAtMin}
                             max={startAtMax}
                             className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
@@ -81,7 +81,7 @@ export function EventDetailsStep({
                             type="datetime-local"
                             required
                             value={endAt}
-                            onChange={onEndAtChange}
+                            onChange={onEndAtChangeAction}
                             min={endAtMin}
                             className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
                         />
@@ -94,7 +94,7 @@ export function EventDetailsStep({
                         type="text"
                         required
                         value={timezone}
-                        onChange={onTimezoneChange}
+                        onChange={onTimezoneChangeAction}
                         className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
                     />
                 </FormFieldLabel>
@@ -104,7 +104,7 @@ export function EventDetailsStep({
                     <input
                         type="text"
                         value={locationName}
-                        onChange={onLocationNameChange}
+                        onChange={onLocationNameChangeAction}
                         placeholder={voice.locationPlaceholder}
                         className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
                     />

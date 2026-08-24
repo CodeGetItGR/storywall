@@ -111,4 +111,3 @@ export interface WishbookEntry {
     createdAt: string;
     likes: number;
 }
-

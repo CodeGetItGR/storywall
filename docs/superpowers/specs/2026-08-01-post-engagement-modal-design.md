@@ -102,7 +102,7 @@ count correct after commenting from the modal without waiting on a refetch.
 ## `PostCard` changes
 
 - Heart button: replace local `useState` liked/count with
-  `usePostLike(post)`; `onClick` calls `toggle()`; disable while
+  `usePostLike(post)`; `onClickAction` calls `toggle()`; disable while
   `isPending` to prevent double-taps.
 - Comment affordance: instead of `<Link href="/post/${post.id}">`, render a
   button that opens the modal by pushing `?post=${post.id}` onto the
@@ -134,7 +134,7 @@ count correct after commenting from the modal without waiting on a refetch.
 - Loading: skeleton/placeholder while `usePost`/`usePostComments` are
   pending. Error: if the post 404s, show the same `EventNotFound`-style
   empty state, scoped to "post not found" copy.
-- Closing: calls `onClose`, which the feed page wires to remove `?post=`
+- Closing: calls `onCloseAction`, which the feed page wires to remove `?post=`
   from the URL. Also closable via Escape key and backdrop click.
 
 ## Routing
@@ -142,7 +142,7 @@ count correct after commenting from the modal without waiting on a refetch.
 - **Feed page** (`app/(app)/feed/[eventId]/page.tsx`): reads `post` from
   `useSearchParams()`. When present, renders `<PostModal postId={post} onClose={...} />`
   as an overlay on top of the existing feed content (not a route change —
-  the feed underneath stays mounted). `onClose` calls
+  the feed underneath stays mounted). `onCloseAction` calls
   `router.push(pathname)` (strips the query param) — using `push` (not
   `back`) so closing always lands on the plain feed URL regardless of how
   the modal was reached, while still letting the browser back button close

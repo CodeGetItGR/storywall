@@ -76,7 +76,7 @@ throws if used outside the provider). Mounted in `providers/Providers.tsx`, nest
   `activeEvent.id` / `activeMember.id` read internally instead of props. On success, closes and
   resets (matching current behavior).
 - `openStoryCapture()` — programmatically clicks the provider's hidden capture `<input>`.
-- (internal, not exposed) `handleStoryFileChange` — runs on the hidden input's `onChange`: same
+- (internal, not exposed) `handleStoryFileChange` — runs on the hidden input's `onChangeAction`: same
   sequence as today's `StoriesRow.handleFileChange` (`useUploadMedia` →
   `useCreateStory` → `router.push('/story/{id}')`), using `activeEvent.id` / `activeMember.id`
   from context. Sets `isCreatingStory` / `storyError` for consumers that want to show inline
@@ -85,7 +85,7 @@ throws if used outside the provider). Mounted in `providers/Providers.tsx`, nest
 **Rendered by the provider itself** (so it works regardless of which page is mounted):
 
 1. A hidden `<input type="file" accept="image/*" capture="environment" />`, ref-controlled,
-   `onChange` → `handleStoryFileChange`, `value` reset after each change (same pattern as existing
+   `onChangeAction` → `handleStoryFileChange`, `value` reset after each change (same pattern as existing
    file inputs in the codebase).
 2. A `Modal` (reusing `components/ui/modal.tsx`, the same component `PostModal` already uses) that
    renders the _expanded_ composer form — the caption textarea, image thumbnail grid, add-photos
@@ -101,7 +101,7 @@ onClose={closePostComposer}>`.
 
 Becomes just the collapsed placeholder row (avatar + fake input), which was previously the
 `!expanded` branch. No props (`eventId`/`autoExpand` both removed — callers don't pass anything).
-`onClick` calls `openPostComposer()`. Still rendered inline at the top of the feed's post list in
+`onClickAction` calls `openPostComposer()`. Still rendered inline at the top of the feed's post list in
 `app/(app)/feed/[eventId]/page.tsx`, unchanged position.
 
 ### `components/feed/StoriesRow.tsx`

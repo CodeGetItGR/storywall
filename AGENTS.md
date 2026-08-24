@@ -7,6 +7,8 @@
 ## Structure
 
 - Keep route `page.tsx` and `PageClient.tsx` files thin. They should compose hooks and components, not own full feature trees.
+- Do not use function-as-children or render-callback props to pass route, provider, or page context down the tree. Use an explicit provider with plain `children` plus a focused hook that exposes the required values, or pass ordinary props from a thin composition boundary when the data is only needed by one direct child.
+- Do not define extra file-local React components inline inside a component file. The primary component should match the file name; additional visual components belong in their own files, with shared helpers moved to `lib/` or hooks as appropriate. Utility/component-index files are the exception when they intentionally export a small related set of primitives.
 - Put feature UI in small files under `components/<domain>/`. Split loading, empty, content, rows, sheets, and forms when they can be understood independently.
 - Put reusable hooks in `hooks/`. Hooks should gather data and expose plain values/actions to components.
 - Put utility functions, formatting helpers, route helpers, and domain logic in `lib/`, preferably under an existing domain file before creating a new one.

@@ -1,56 +1,13 @@
 'use client';
 
-import { MapPin, PencilLine, Trash2 } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
 import { ScheduleMapPreview } from '@/app/(app)/(event)/tools/schedule/components/ScheduleMapPreview';
+import { ScheduleSessionActions } from '@/app/(app)/(event)/tools/schedule/components/ScheduleSessionActions';
 import type { EventSessionResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
-
-function SessionActions({
-    session,
-    onEdit,
-    onDelete,
-    deleteDisabled,
-}: {
-    session: EventSessionResponseDto;
-    onEdit: (session: EventSessionResponseDto) => void;
-    onDelete: (session: EventSessionResponseDto) => void;
-    deleteDisabled: boolean;
-}) {
-    const t = useTranslations('SchedulePage');
-
-    function handleEditClick() {
-        onEdit(session);
-    }
-
-    function handleDeleteClick() {
-        onDelete(session);
-    }
-
-    return (
-        <div className="flex shrink-0 items-center gap-1">
-            <button
-                type="button"
-                onClick={handleEditClick}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/70 text-ink-muted transition-colors hover:border-primary/20 hover:bg-primary-light hover:text-primary-dark"
-                aria-label={t('host.editSession', { title: session.title })}
-            >
-                <PencilLine className="h-3.5 w-3.5" />
-            </button>
-            <button
-                type="button"
-                onClick={handleDeleteClick}
-                disabled={deleteDisabled}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/70 text-ink-muted transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
-                aria-label={t('host.deleteSession', { title: session.title })}
-            >
-                <Trash2 className="h-3.5 w-3.5" />
-            </button>
-        </div>
-    );
-}
 
 interface ScheduleSessionCardProps {
     session: EventSessionResponseDto;
@@ -95,7 +52,9 @@ export function ScheduleSessionCard({
 
                 <div className="flex items-start gap-2">
                     {timeContent}
-                    {isHost && canManage && <SessionActions session={session} onEdit={onEdit} onDelete={onDelete} deleteDisabled={deleteDisabled} />}
+                    {isHost && canManage && (
+                        <ScheduleSessionActions session={session} onEditAction={onEdit} onDeleteAction={onDelete} deleteDisabled={deleteDisabled} />
+                    )}
                 </div>
             </div>
 

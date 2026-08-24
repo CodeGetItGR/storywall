@@ -61,13 +61,13 @@ export function PaidServiceDrawer({
     service,
     services,
     eventPlans,
-    onClose,
+    onCloseAction,
 }: {
     open: boolean;
     service: PaidServiceResponseDto | null;
     services: PaidServiceResponseDto[];
     eventPlans: PlanTierResponseDto[];
-    onClose: () => void;
+    onCloseAction: () => void;
 }) {
     const t = useTranslations('AdminPage.paidServices');
     const tAdmin = useTranslations('AdminPage');
@@ -113,14 +113,14 @@ export function PaidServiceDrawer({
         } else {
             await createService({ resource: 'paid-services', values: input });
         }
-        onClose();
+        onCloseAction();
     }
 
     async function confirmDelete() {
         if (!service) return;
         await deleteService({ resource: 'paid-services', id: service.id });
         invalidateAppConfig();
-        onClose();
+        onCloseAction();
     }
 
     function openDeleteConfirmation() {
@@ -135,7 +135,7 @@ export function PaidServiceDrawer({
         <>
             <AdminDrawer
                 open={open}
-                onClose={onClose}
+                onClose={onCloseAction}
                 closeLabel={tAdmin('cancel')}
                 title={service ? t('editTitle', { name: service.name }) : t('createTitle')}
                 subtitle={service ? t('editSubtitle') : t('createSubtitle')}
@@ -156,7 +156,7 @@ export function PaidServiceDrawer({
                         <div className="flex items-center gap-2">
                             <button
                                 type="button"
-                                onClick={onClose}
+                                onClick={onCloseAction}
                                 className="min-h-9 rounded-md border border-border px-3.5 text-sm font-semibold text-ink-muted"
                             >
                                 {tAdmin('cancel')}
@@ -320,7 +320,7 @@ export function PaidServiceDrawer({
                     <VisibilitySegmentedControl
                         title={t('fields.visibility')}
                         value={visibility}
-                        onChange={setVisibility}
+                        onChangeAction={setVisibility}
                         labels={{ LIVE: t('fields.visibilityLive'), HIDDEN: t('fields.visibilityHidden'), ARCHIVED: t('fields.visibilityArchived') }}
                         hints={{
                             LIVE: t('fields.visibilityLiveHint'),
@@ -335,12 +335,12 @@ export function PaidServiceDrawer({
 
             <ConfirmActionModal
                 open={deleteOpen}
-                onClose={closeDeleteConfirmation}
+                onCloseAction={closeDeleteConfirmation}
                 title={t('deleteConfirmTitle', { name: service?.name ?? '' })}
                 body={t('deleteConfirmBody')}
                 cancelLabel={tAdmin('cancel')}
                 confirmLabel={t('delete')}
-                onConfirm={confirmDelete}
+                onConfirmAction={confirmDelete}
                 isConfirming={deleteMutation.isPending}
                 icon={<Trash2 className="h-5 w-5" />}
             />

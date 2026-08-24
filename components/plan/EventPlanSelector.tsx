@@ -20,11 +20,11 @@ type EventPlanSelectorProps = {
     plans: PlanTierResponseDto[];
     modules: PlatformModuleResponseDto[];
     selectedCode: string;
-    onSelect: (code: string) => void;
+    onSelectAction: (code: string) => void;
     isLoading?: boolean;
 };
 
-export function EventPlanSelector({ plans, modules, selectedCode, onSelect, isLoading = false }: EventPlanSelectorProps) {
+export function EventPlanSelector({ plans, modules, selectedCode, onSelectAction, isLoading = false }: EventPlanSelectorProps) {
     const t = useTranslations('CreateEventPage');
     const locale = useLocale();
     const localizedPlanDescription = useLocalizedPlanDescription();
@@ -33,7 +33,7 @@ export function EventPlanSelector({ plans, modules, selectedCode, onSelect, isLo
 
     function handlePlanClick(event: MouseEvent<HTMLButtonElement>) {
         const code = event.currentTarget.dataset.planCode;
-        if (code) onSelect(code);
+        if (code) onSelectAction(code);
     }
 
     function openModuleGuide(event: MouseEvent<HTMLButtonElement>) {
@@ -128,14 +128,14 @@ export function EventPlanSelector({ plans, modules, selectedCode, onSelect, isLo
                             </button>
                             {hasModuleGuide && (
                                 <div className="absolute right-3 top-3 flex items-center gap-2 ">
-                                    <PlanModuleGuideButton planCode={plan.code} onOpen={openModuleGuide} />
+                                    <PlanModuleGuideButton planCode={plan.code} onOpenAction={openModuleGuide} />
                                 </div>
                             )}
                         </div>
                     ))}
                 <PlanModuleGuideModal
                     open={guidePlan !== null}
-                    onClose={closeModuleGuide}
+                    onCloseAction={closeModuleGuide}
                     modules={modules}
                     paidServices={guidePlan?.paidModules ?? []}
                     planName={guidePlan?.name}

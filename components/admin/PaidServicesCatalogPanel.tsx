@@ -8,6 +8,7 @@ import React, { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { AdminSection } from '@/components/admin/AdminSection';
+import { AdminStatTile } from '@/components/admin/AdminStatTile';
 import { PaidServiceDrawer, type Visibility, visibilityOf } from '@/components/admin/PaidServiceDrawer';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useAdminPlanTiers, useRemoveEventAddon } from '@/hooks/useAdmin';
@@ -29,15 +30,6 @@ const STATUS_PILL: Record<Visibility, string> = {
     HIDDEN: 'bg-status-warn-wash text-status-warn',
     ARCHIVED: 'bg-status-neutral-wash text-status-neutral',
 };
-
-function StatTile({ label, value, accent }: { label: string; value: number; accent?: string }) {
-    return (
-        <div className="rounded-xl border border-border bg-card px-4 py-3">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-ink-faint">{label}</p>
-            <p className={cn('mt-1 text-2xl font-extrabold tabular-nums text-ink', accent)}>{value}</p>
-        </div>
-    );
-}
 
 export function PaidServicesCatalogPanel() {
     const t = useTranslations('AdminPage.paidServices');
@@ -186,10 +178,10 @@ export function PaidServicesCatalogPanel() {
             </header>
 
             <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <StatTile label={t('stats.total')} value={stats.total} />
-                <StatTile label={t('stats.live')} value={stats.live} accent="text-status-good" />
-                <StatTile label={t('stats.hidden')} value={stats.hidden} accent="text-status-warn" />
-                <StatTile label={t('stats.archived')} value={stats.archived} accent="text-status-neutral" />
+                <AdminStatTile label={t('stats.total')} value={stats.total} />
+                <AdminStatTile label={t('stats.live')} value={stats.live} accent="text-status-good" />
+                <AdminStatTile label={t('stats.hidden')} value={stats.hidden} accent="text-status-warn" />
+                <AdminStatTile label={t('stats.archived')} value={stats.archived} accent="text-status-neutral" />
             </div>
 
             <section className="rounded-xl border border-border bg-card">
@@ -327,7 +319,7 @@ export function PaidServicesCatalogPanel() {
                 service={selectedService}
                 services={allServices}
                 eventPlans={eventPlans.data ?? []}
-                onClose={closeDrawer}
+                onCloseAction={closeDrawer}
             />
 
             <div className="mt-7">
@@ -382,7 +374,7 @@ export function PaidServicesCatalogPanel() {
 
             <ConfirmActionModal
                 open={confirmRemoveOpen}
-                onClose={closeRemoveConfirm}
+                onCloseAction={closeRemoveConfirm}
                 title={t('removeAddon.confirmTitle', { service: selectedAddon?.name ?? addonCode })}
                 body={
                     <>
@@ -393,7 +385,7 @@ export function PaidServicesCatalogPanel() {
                 cancelLabel={tAdmin('cancel')}
                 confirmLabel={t('removeAddon.action')}
                 isConfirming={removeAddon.isPending}
-                onConfirm={confirmRemove}
+                onConfirmAction={confirmRemove}
             />
         </div>
     );

@@ -2,33 +2,32 @@
 
 import { AlertTriangle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import React from 'react';
 
+import { QrStatsRow } from '@/components/manage/invitations/QrStatsRow';
 import { Modal } from '@/components/ui/modal';
 import type { QrLinkResponseDto, QrLinkStatsDto } from '@/lib/api/types';
-import { cn } from '@/lib/utils';
 
 export function QrStatsSheet({
     qrLink,
     stats,
     open,
-    onClose,
+    onCloseAction,
     canRaiseLimit,
-    onRaiseLimit,
+    onRaiseLimitAction,
 }: {
     qrLink: QrLinkResponseDto;
     stats: QrLinkStatsDto;
     open: boolean;
-    onClose: () => void;
+    onCloseAction: () => void;
     canRaiseLimit: boolean;
-    onRaiseLimit: () => void;
+    onRaiseLimitAction: () => void;
 }) {
     const t = useTranslations('ManagePage');
     const remainingSlots = stats.remainingSlots ?? null;
     const isLowOnSlots = remainingSlots !== null && remainingSlots <= 5;
 
     return (
-        <Modal open={open} onClose={onClose} closeLabel={t('invitations.create.cancel')} variant="sheet" size="md">
+        <Modal open={open} onClose={onCloseAction} closeLabel={t('invitations.create.cancel')} variant="sheet" size="md">
             <Modal.Body className="px-5 pt-6 pb-5">
                 <div className="pr-8">
                     <p className="text-base font-bold text-ink">{t('qr.stats.title')}</p>
@@ -53,7 +52,7 @@ export function QrStatsSheet({
                 {isLowOnSlots && canRaiseLimit && (
                     <button
                         type="button"
-                        onClick={onRaiseLimit}
+                        onClick={onRaiseLimitAction}
                         className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-brand px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
                     >
                         <AlertTriangle className="h-4 w-4" />
@@ -62,14 +61,5 @@ export function QrStatsSheet({
                 )}
             </Modal.Body>
         </Modal>
-    );
-}
-
-function QrStatsRow({ label, value, isWarning = false }: { label: string; value: React.ReactNode; isWarning?: boolean }) {
-    return (
-        <div className="flex items-center justify-between gap-4 px-3 py-2.5">
-            <p className="text-sm text-ink-muted">{label}</p>
-            <p className={cn('text-right text-sm font-semibold text-ink', isWarning && 'text-amber-700')}>{value}</p>
-        </div>
     );
 }

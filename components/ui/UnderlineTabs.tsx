@@ -15,21 +15,21 @@ export function UnderlineTabs({
     id,
     tabs,
     active,
-    onSelect,
+    onSelectAction,
     className,
 }: {
     id: string;
     tabs: UnderlineTabDefinition[];
     active: string;
-    onSelect: (key: string) => void;
+    onSelectAction: (key: string) => void;
     className?: string;
 }) {
     const handleClick = useCallback(
         (event: React.MouseEvent<HTMLButtonElement>) => {
             const key = event.currentTarget.dataset.tabKey;
-            if (key) onSelect(key);
+            if (key) onSelectAction(key);
         },
-        [onSelect]
+        [onSelectAction]
     );
 
     return (

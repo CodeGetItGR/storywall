@@ -1,11 +1,13 @@
 'use client';
 
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { CreateEventRouteState } from '@/components/event/create/CreateEventRouteState';
 import { EventAddonsStep } from '@/components/event/create/EventAddonsStep';
+import { EventCreateFooter } from '@/components/event/create/EventCreateFooter';
 import { EventCreateStepBreadcrumb } from '@/components/event/create/EventCreateStepBreadcrumb';
 import { EventDetailsStep } from '@/components/event/create/EventDetailsStep';
 import { EventOverviewStep } from '@/components/event/create/EventOverviewStep';
@@ -141,7 +143,6 @@ export default function CreateEventPage() {
             timezone,
             locationName: locationName.trim() || undefined,
             brandingSettings: {},
-            isArchived: false,
         };
 
         let event: EventResponseDto | null = null;
@@ -266,10 +267,10 @@ export default function CreateEventPage() {
                         {/* Steps */}
                         <EventCreateStepBreadcrumb
                             step={step}
-                            onGoToType={goToType}
-                            onGoToPlan={goToPlan}
-                            onGoToAddons={goToAddons}
-                            onGoToDetails={goToDetails}
+                            onGoToTypeAction={goToType}
+                            onGoToPlanAction={goToPlan}
+                            onGoToAddonsAction={goToAddons}
+                            onGoToDetailsAction={goToDetails}
                         />
 
                         {/* Form Shell */}
@@ -285,7 +286,7 @@ export default function CreateEventPage() {
                                 </h2>
 
                                 {step === 'type' && (
-                                    <EventTypeStep eventTypes={eventTypes} selectedEventType={selectedEventType} onSelect={onSelectEventType} />
+                                    <EventTypeStep eventTypes={eventTypes} selectedEventType={selectedEventType} onSelectAction={onSelectEventType} />
                                 )}
 
                                 {step === 'plan' && (
@@ -293,7 +294,7 @@ export default function CreateEventPage() {
                                         plans={eventPlans}
                                         modules={appConfig?.modules ?? []}
                                         selectedCode={selectedCode}
-                                        onSelect={setSelectedPlanCode}
+                                        onSelectAction={setSelectedPlanCode}
                                         isLoading={planTiersQuery.isLoading}
                                     />
                                 )}
@@ -303,7 +304,7 @@ export default function CreateEventPage() {
                                         modules={appConfig?.modules ?? []}
                                         services={availableAddons}
                                         selectedCodes={selectedEligibleAddonCodes}
-                                        onToggle={toggleAddon}
+                                        onToggleAction={toggleAddon}
                                     />
                                 )}
 
@@ -320,11 +321,11 @@ export default function CreateEventPage() {
                                         endAtMin={endAtMin}
                                         timezone={timezone}
                                         locationName={locationName}
-                                        onTitleChange={onTitleChange}
-                                        onStartAtChange={onStartAtChange}
-                                        onEndAtChange={onEndAtChange}
-                                        onTimezoneChange={onTimezoneChange}
-                                        onLocationNameChange={onLocationNameChange}
+                                        onTitleChangeAction={onTitleChange}
+                                        onStartAtChangeAction={onStartAtChange}
+                                        onEndAtChangeAction={onEndAtChange}
+                                        onTimezoneChangeAction={onTimezoneChange}
+                                        onLocationNameChangeAction={onLocationNameChange}
                                     />
                                 )}
 
@@ -355,160 +356,13 @@ export default function CreateEventPage() {
                         hasDraft={Boolean(createdDraftEventId)}
                         payAmountLabel={overviewPayAmountLabel}
                         canSubmitDetails={Boolean(title.trim() && startAt && endAt && !scheduleError)}
-                        onGoToType={goToType}
-                        onGoToAddons={goToAddons}
-                        onGoToDetails={goToDetails}
-                        onGoToPlan={goToPlan}
+                        onGoToTypeAction={goToType}
+                        onGoToAddonsAction={goToAddons}
+                        onGoToDetailsAction={goToDetails}
+                        onGoToPlanAction={goToPlan}
                     />
                 </main>
             }
         />
-    );
-}
-
-function CreateEventRouteState({ content, isBlocked }: { content: React.ReactNode; isBlocked: boolean }) {
-    if (!isBlocked) {
-        return content;
-    }
-
-    return (
-        <main className="flex h-full items-center justify-center bg-background">
-            <Loader2 className="h-6 w-6 animate-spin text-ink-muted" />
-        </main>
-    );
-}
-
-function EventCreateFooter({
-    step,
-    formId,
-    canContinueType,
-    canContinue,
-    isPending,
-    hasDraft,
-    payAmountLabel,
-    canSubmitDetails,
-    onGoToType,
-    onGoToAddons,
-    onGoToDetails,
-    onGoToPlan,
-}: {
-    step: CreateEventStep;
-    formId: string;
-    canContinueType: boolean;
-    canContinue: boolean;
-    isPending: boolean;
-    hasDraft: boolean;
-    payAmountLabel: string;
-    canSubmitDetails: boolean;
-    onGoToType: () => void;
-    onGoToAddons: () => void;
-    onGoToDetails: () => void;
-    onGoToPlan: () => void;
-}) {
-    const t = useTranslations('CreateEventPage');
-
-    return (
-        <footer className="shrink-0 border-t border-border/60 bg-background">
-            <div className="mx-auto w-full max-w-2xl px-4 py-4">
-                {step === 'type' && (
-                    <div className="flex justify-end">
-                        <button
-                            type="button"
-                            disabled={!canContinueType}
-                            onClick={onGoToPlan}
-                            className="min-h-11 rounded-full bg-gradient-brand px-5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                            {t('continueToPlan')}
-                        </button>
-                    </div>
-                )}
-
-                {step === 'plan' && (
-                    <div className="flex gap-3">
-                        <button
-                            type="button"
-                            onClick={onGoToType}
-                            className="min-h-11 flex-1 rounded-full border border-border text-sm font-semibold text-ink"
-                        >
-                            {t('actions.back')}
-                        </button>
-                        <button
-                            type="button"
-                            disabled={!canContinue}
-                            onClick={onGoToAddons}
-                            className="min-h-11 flex-2 rounded-full bg-gradient-brand text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                            {t('continueToAddons')}
-                        </button>
-                    </div>
-                )}
-
-                {step === 'addons' && (
-                    <div className="flex gap-3">
-                        <button
-                            type="button"
-                            onClick={onGoToPlan}
-                            className="min-h-11 flex-1 rounded-full border border-border text-sm font-semibold text-ink"
-                        >
-                            {t('actions.back')}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={onGoToDetails}
-                            className="min-h-11 flex-2 rounded-full bg-gradient-brand text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                        >
-                            {t('continueToDetails')}
-                        </button>
-                    </div>
-                )}
-
-                {step === 'details' && (
-                    <div className="flex gap-3">
-                        <button
-                            type="button"
-                            onClick={onGoToAddons}
-                            className="min-h-11 flex-1 rounded-full border border-border text-sm font-semibold text-ink"
-                        >
-                            {t('actions.back')}
-                        </button>
-                        <button
-                            form={formId}
-                            type="submit"
-                            disabled={!canSubmitDetails}
-                            className="min-h-11 flex-2 rounded-full bg-gradient-brand text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                            {t('continueToOverview')}
-                        </button>
-                    </div>
-                )}
-
-                {step === 'overview' && (
-                    <div className="flex gap-3">
-                        <button
-                            type="button"
-                            onClick={onGoToDetails}
-                            disabled={isPending}
-                            className="min-h-11 flex-1 rounded-full border border-border text-sm font-semibold text-ink"
-                        >
-                            {t('actions.back')}
-                        </button>
-                        <button
-                            form={formId}
-                            type="submit"
-                            disabled={isPending}
-                            className="flex min-h-11 flex-2 items-center justify-center gap-2 rounded-full bg-gradient-brand text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
-                        >
-                            {isPending ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : hasDraft ? (
-                                t('paidModules.openDraft')
-                            ) : (
-                                t('submitAndPay', { amount: payAmountLabel })
-                            )}
-                        </button>
-                    </div>
-                )}
-            </div>
-        </footer>
     );
 }

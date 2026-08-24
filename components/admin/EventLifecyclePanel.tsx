@@ -165,7 +165,7 @@ export function EventLifecyclePanel() {
 
             <ConfirmActionModal
                 open={confirmFreeze}
-                onClose={closeFreezeConfirm}
+                onCloseAction={closeFreezeConfirm}
                 title={t('lifecycle.freezeConfirmTitle', { event: eventLabel })}
                 body={
                     <>
@@ -176,14 +176,14 @@ export function EventLifecyclePanel() {
                 cancelLabel={t('cancel')}
                 confirmLabel={t('lifecycle.freeze')}
                 isConfirming={freezeEvent.isPending}
-                onConfirm={confirmFreezeAction}
+                onConfirmAction={confirmFreezeAction}
                 tone="default"
                 icon={<Snowflake className="h-5 w-5" aria-hidden="true" />}
             />
 
             <ConfirmActionModal
                 open={confirmPurge}
-                onClose={closePurgeConfirm}
+                onCloseAction={closePurgeConfirm}
                 title={t('lifecycle.purgeConfirmTitle', { event: eventLabel })}
                 body={
                     <>
@@ -195,7 +195,7 @@ export function EventLifecyclePanel() {
                 cancelLabel={t('cancel')}
                 confirmLabel={t('lifecycle.purge')}
                 isConfirming={purgeEvent.isPending}
-                onConfirm={confirmPurgeAction}
+                onConfirmAction={confirmPurgeAction}
                 icon={<Trash2 className="h-5 w-5" aria-hidden="true" />}
             />
         </section>

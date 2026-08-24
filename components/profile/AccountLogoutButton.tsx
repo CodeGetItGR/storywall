@@ -8,13 +8,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
-export function AccountLogoutButton({ onLogout, variant = 'default' }: { onLogout?: () => void; variant?: 'default' | 'rail' }) {
+export function AccountLogoutButton({ onLogoutAction, variant = 'default' }: { onLogoutAction?: () => void; variant?: 'default' | 'rail' }) {
     const t = useTranslations('ProfilePage');
     const router = useRouter();
     const { logout } = useAuth();
 
     async function handleLogout() {
-        onLogout?.();
+        onLogoutAction?.();
         await logout();
         router.replace(routes.login);
     }

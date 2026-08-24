@@ -1,9 +1,9 @@
 'use client';
 
-import { Check, Sparkles } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-export function PlanComparisonBadges({ isCurrent }: { isCurrent: boolean; }) {
+export function PlanComparisonBadges({ isCurrent }: { isCurrent: boolean }) {
     const t = useTranslations('EventPlanSettingsPage');
 
     return (

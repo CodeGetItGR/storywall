@@ -10,28 +10,31 @@ export type CreateEventStep = (typeof STEPS)[number];
 
 export function EventCreateStepBreadcrumb({
     step,
-    onGoToType,
-    onGoToPlan,
-    onGoToAddons,
-    onGoToDetails,
+    onGoToTypeAction,
+    onGoToPlanAction,
+    onGoToAddonsAction,
+    onGoToDetailsAction,
 }: {
     step: CreateEventStep;
-    onGoToType: () => void;
-    onGoToPlan: () => void;
-    onGoToAddons: () => void;
-    onGoToDetails: () => void;
+    onGoToTypeAction: () => void;
+    onGoToPlanAction: () => void;
+    onGoToAddonsAction: () => void;
+    onGoToDetailsAction: () => void;
 }) {
     const t = useTranslations('CreateEventPage');
     const currentIndex = STEPS.indexOf(step);
     const goTo: Partial<Record<CreateEventStep, () => void>> = {
-        type: onGoToType,
-        plan: onGoToPlan,
-        addons: onGoToAddons,
-        details: onGoToDetails,
+        type: onGoToTypeAction,
+        plan: onGoToPlanAction,
+        addons: onGoToAddonsAction,
+        details: onGoToDetailsAction,
     };
 
     return (
-        <nav aria-label={t('steps.navigationLabel')} className="flex items-center gap-1 overflow-x-auto pb-1 text-sm font-semibold w-auto justify-between">
+        <nav
+            aria-label={t('steps.navigationLabel')}
+            className="flex items-center gap-1 overflow-x-auto pb-1 text-sm font-semibold w-auto justify-between"
+        >
             {STEPS.map((item, index) => {
                 const isCurrent = item === step;
                 const isPast = index < currentIndex;

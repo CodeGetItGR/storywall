@@ -4,9 +4,10 @@ import { ArrowRight, Loader2, User } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import React, { type ReactNode, useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { InviteLayout } from '@/components/invite/InviteLayout';
+import { InviteOnboardingState } from '@/components/invite/InviteOnboardingState';
 import { InviteTerminalState } from '@/components/invite/InviteTerminalState';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
@@ -183,20 +184,4 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
             }
         />
     );
-}
-
-function InviteOnboardingState({ content, isLoading, terminalState }: { content: ReactNode; isLoading: boolean; terminalState: ReactNode }) {
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="w-6 h-6 animate-spin text-ink-muted" />
-            </div>
-        );
-    }
-
-    if (terminalState) {
-        return terminalState;
-    }
-
-    return content;
 }

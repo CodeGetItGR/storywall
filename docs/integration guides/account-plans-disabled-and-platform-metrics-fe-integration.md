@@ -15,7 +15,7 @@ at once) are being discontinued. Only the event-plan catalog (`PlanScope.EVENT` 
 caps on a single event) is supported going forward. Nothing about event plans, checkout,
 subscriptions, or refunds changed.
 
-## What this does *not* do
+## What this does _not_ do
 
 This is a **soft disable**, not a removal:
 
@@ -59,10 +59,10 @@ Only the default plan's cap was neutralized, since it can't be archived (see bel
 
 ### 2. Two admin write paths now always reject with a new error code
 
-| endpoint | before | now |
-|---|---|---|
-| `PATCH /api/admin/users/{id}/plan-tier` | moved the user onto the named `ACCOUNT` plan | **always** `409`, `errorCode: 5034 ACCOUNT_PLANS_DISABLED` |
-| `POST /api/admin/plan-tiers` with `"scope": "ACCOUNT"` | created a new account plan | **always** `409`, `errorCode: 5034 ACCOUNT_PLANS_DISABLED` |
+| endpoint                                               | before                                       | now                                                        |
+| ------------------------------------------------------ | -------------------------------------------- | ---------------------------------------------------------- |
+| `PATCH /api/admin/users/{id}/plan-tier`                | moved the user onto the named `ACCOUNT` plan | **always** `409`, `errorCode: 5034 ACCOUNT_PLANS_DISABLED` |
+| `POST /api/admin/plan-tiers` with `"scope": "ACCOUNT"` | created a new account plan                   | **always** `409`, `errorCode: 5034 ACCOUNT_PLANS_DISABLED` |
 
 ```json
 PATCH /api/admin/users/{userId}/plan-tier
@@ -99,7 +99,7 @@ Everything else about account-scope plans still works normally through the admin
 `GET /api/admin/plan-tiers?scope=ACCOUNT`, `GET /api/admin/plan-tiers/{id}`,
 `PATCH /api/admin/plan-tiers/{id}` (e.g. renaming one), and `DELETE /api/admin/plan-tiers/{id}`
 (blocked by the pre-existing `5011 PLAN_TIER_IN_USE` if still referenced, same as any plan). Only
-*creating* a new one and *assigning* one to a user are blocked. `PATCH .../plan-tier` for an
+_creating_ a new one and _assigning_ one to a user are blocked. `PATCH .../plan-tier` for an
 **event** plan (`PATCH /api/admin/events/{id}/plan-tier`) is completely unaffected.
 
 ### 3. Account plans no longer appear in the public catalog
@@ -128,25 +128,25 @@ GET /api/admin/metrics
 
 ```jsonc
 {
-  "totalUsers": 4213,
-  "activeUsers": 4108,
-  "usersByAccountPlan": { "FREE": 3960, "PLUS": 180, "PRO": 73 },
+    "totalUsers": 4213,
+    "activeUsers": 4108,
+    "usersByAccountPlan": { "FREE": 3960, "PLUS": 180, "PRO": 73 },
 
-  "totalEvents": 1522,
-  "activeEvents": 812,
-  "eventsByStatus": { "DRAFT": 340, "ACTIVE": 812, "FROZEN": 12, "PURGED": 358 },
-  "eventsByPlanTier": { "BASIC": 1100, "PLUS": 340, "PRO": 82 },
+    "totalEvents": 1522,
+    "activeEvents": 812,
+    "eventsByStatus": { "DRAFT": 340, "ACTIVE": 812, "FROZEN": 12, "PURGED": 358 },
+    "eventsByPlanTier": { "BASIC": 1100, "PLUS": 340, "PRO": 82 },
 
-  "storage": {
-    "usedBytes": 812340000000,
-    "pendingPurgeBytes": 41000000000,
-    "committedBytes": 2400000000000,
-    "paidUsedBytes": 700000000000,
-    "freeUsedBytes": 112340000000,
-    "purchasedExtraBytes": 55000000000,
-    "estimatedMonthlyCostMinor": 1218,
-    "costCurrency": "EUR"
-  }
+    "storage": {
+        "usedBytes": 812340000000,
+        "pendingPurgeBytes": 41000000000,
+        "committedBytes": 2400000000000,
+        "paidUsedBytes": 700000000000,
+        "freeUsedBytes": 112340000000,
+        "purchasedExtraBytes": 55000000000,
+        "estimatedMonthlyCostMinor": 1218,
+        "costCurrency": "EUR",
+    },
 }
 ```
 
@@ -204,27 +204,27 @@ above if the media table grows large.
 
 ```ts
 export interface PlatformStorageMetrics {
-  usedBytes: number;
-  pendingPurgeBytes: number;
-  committedBytes: number;
-  paidUsedBytes: number;
-  freeUsedBytes: number;
-  purchasedExtraBytes: number;
-  estimatedMonthlyCostMinor: number;
-  costCurrency: string;
+    usedBytes: number;
+    pendingPurgeBytes: number;
+    committedBytes: number;
+    paidUsedBytes: number;
+    freeUsedBytes: number;
+    purchasedExtraBytes: number;
+    estimatedMonthlyCostMinor: number;
+    costCurrency: string;
 }
 
 export interface PlatformMetricsResponse {
-  totalUsers: number;
-  activeUsers: number;
-  usersByAccountPlan: Record<string, number>;
+    totalUsers: number;
+    activeUsers: number;
+    usersByAccountPlan: Record<string, number>;
 
-  totalEvents: number;
-  activeEvents: number;
-  eventsByStatus: Record<string, number>;   // keys: DRAFT | ACTIVE | FROZEN | PURGED, missing = 0
-  eventsByPlanTier: Record<string, number>;
+    totalEvents: number;
+    activeEvents: number;
+    eventsByStatus: Record<string, number>; // keys: DRAFT | ACTIVE | FROZEN | PURGED, missing = 0
+    eventsByPlanTier: Record<string, number>;
 
-  storage: PlatformStorageMetrics;
+    storage: PlatformStorageMetrics;
 }
 ```
 

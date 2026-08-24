@@ -353,7 +353,6 @@ export interface EventRequestDto {
     coverMediaId?: string;
     brandingSettings: Record<string, unknown>; // required — send {} if none
     rsvpDeadline?: string;
-    isArchived: boolean; // required — send false explicitly
 }
 
 // Returned by GET /api/events (list) and POST /api/events — flat summary shape.
@@ -374,7 +373,6 @@ export interface EventResponseDto {
     coverMediaId: string | null;
     brandingSettings: Record<string, unknown>;
     rsvpDeadline: string | null;
-    isArchived: boolean;
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
@@ -417,7 +415,6 @@ export interface EventDetailResponseDto {
     location: EventLocationDto;
     coverMedia: MediaResponseDto | null; // resolved, with a fresh presigned mediaUrl
     brandingSettings: Record<string, unknown>;
-    isArchived: boolean;
     hosts: EventHostResponseDto[];
     modules: EventModuleResponseDto[];
     sessions: EventSessionResponseDto[];
@@ -648,7 +645,6 @@ export interface EventPatchDto {
     coverMediaId?: string;
     brandingSettings?: Record<string, unknown>;
     rsvpDeadline?: string;
-    isArchived?: boolean;
     keepOriginals?: true;
 }
 

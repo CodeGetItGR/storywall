@@ -3,11 +3,11 @@
 import { CalendarDays, Database, ImageIcon, Percent, Users } from 'lucide-react';
 import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
-import { type ReactNode } from 'react';
 
 import { PlanComparisonBadges } from '@/components/plan/PlanComparisonBadges';
 import { PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
 import { PlanPriceLabel } from '@/components/plan/PlanPriceLabel';
+import { PlanTierMetric } from '@/components/plan/PlanTierMetric';
 import { PlanUpgradeButton } from '@/components/plan/PlanUpgradeButton';
 import { useLocalizedPlanDescription } from '@/hooks/useLocalizedPlanDescription';
 import type { PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
@@ -23,7 +23,7 @@ type PlanTierCardsProps = {
     currentPlan?: PlanTierResponseDto | null;
     isCheckoutPending?: boolean;
     nextPlanId?: string | null;
-    onUpgrade?: (planTierCode: string) => void;
+    onUpgradeAction?: (planTierCode: string) => void;
     pendingPlanCode?: string | null;
     retryIn?: number;
     upgradeTargets?: PlanTierResponseDto[];
@@ -36,7 +36,7 @@ export function PlanTierCards({
     currentPlan,
     isCheckoutPending = false,
     nextPlanId,
-    onUpgrade,
+    onUpgradeAction,
     pendingPlanCode = null,
     retryIn = 0,
     upgradeTargets = [],
@@ -54,7 +54,7 @@ export function PlanTierCards({
                 const discount = formatPlanDiscount(plan);
                 const media = mediaEstimate(plan.storageBytes);
                 const hasActiveDiscount = isPlanDiscountActive(plan);
-                const canUpgradeToPlan = Boolean(currentPlan && onUpgrade && upgradeTargetCodes.has(plan.code));
+                const canUpgradeToPlan = Boolean(currentPlan && onUpgradeAction && upgradeTargetCodes.has(plan.code));
 
                 return (
                     <article
@@ -70,7 +70,7 @@ export function PlanTierCards({
                                 <h2 className="truncate text-lg font-bold text-ink">{plan.name}</h2>
                                 <p className="mt-1 text-sm leading-5 text-ink-muted">{localizedPlanDescription(plan)}</p>
                             </div>
-                            <PlanComparisonBadges isCurrent={isCurrent}/>
+                            <PlanComparisonBadges isCurrent={isCurrent} />
                         </div>
 
                         <div className="mt-4 grid gap-2 rounded-lg bg-surface-muted/55 p-3 min-[420px]:grid-cols-2">
@@ -137,13 +137,13 @@ export function PlanTierCards({
                             <PlanModuleIcons moduleKeys={plan.moduleKeys} modules={modules} />
                         </div>
 
-                        {canUpgradeToPlan && currentPlan && onUpgrade && (
+                        {canUpgradeToPlan && currentPlan && onUpgradeAction && (
                             <div className="mt-4 rounded-lg bg-surface-muted/45 p-2">
                                 <PlanUpgradeButton
                                     currentPlan={currentPlan}
                                     isCheckoutPending={isCheckoutPending}
                                     isPending={isCheckoutPending && pendingPlanCode === plan.code}
-                                    onUpgrade={onUpgrade}
+                                    onUpgrade={onUpgradeAction}
                                     retryIn={retryIn}
                                     target={plan}
                                 />
@@ -152,18 +152,6 @@ export function PlanTierCards({
                     </article>
                 );
             })}
-        </div>
-    );
-}
-
-function PlanTierMetric({ icon, label, value }: { icon: ReactNode; label: string; value: ReactNode }) {
-    return (
-        <div className="grid grid-cols-[1.25rem_minmax(0,1fr)] gap-2">
-            <div className="mt-0.5 text-primary-dark/80">{icon}</div>
-            <div className="min-w-0">
-                <dt className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{label}</dt>
-                <dd className="mt-0.5 text-sm font-semibold leading-5 text-ink">{value}</dd>
-            </div>
         </div>
     );
 }

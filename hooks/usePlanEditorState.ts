@@ -1,49 +1,30 @@
 'use client';
 
-import { useLocale, useTranslations } from 'next-intl';
-import type * as React from 'react';
+import { useTranslations } from 'next-intl';
 import { useMemo, useRef, useState } from 'react';
 
 import { type AdminTabDefinition } from '@/components/admin/AdminTabs';
-import {
-    eventTypeChangeSummary,
-    moduleChangeSummary,
-    planChangeSummary,
-    planPatchFromFormData,
-    sameStringSet,
-    type UnlockDraft,
-} from '@/lib/adminPlanEditor';
+import { planChangeSummary, planPatchFromFormData, type UnlockDraft } from '@/lib/adminPlanEditor';
 import { type Visibility, visibilityOf } from '@/lib/adminVisibility';
-import type { EventTypeConvention, PlanTierResponseDto, PlatformEventTypeResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import type { PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 
 type UsePlanEditorStateArgs = {
     plan: PlanTierResponseDto;
     modules: PlatformModuleResponseDto[];
-    eventTypes: PlatformEventTypeResponseDto[];
     scope: 'ACCOUNT' | 'EVENT';
 };
 
-export function usePlanEditorState({ plan, modules, eventTypes, scope }: UsePlanEditorStateArgs) {
+export function usePlanEditorState({ plan, modules, scope }: UsePlanEditorStateArgs) {
     const t = useTranslations('AdminPage');
-    const locale = useLocale();
     const formRef = useRef<HTMLFormElement>(null);
     const [tab, setTab] = useState('details');
-    const [moduleKeys, setModuleKeys] = useState(plan.moduleKeys);
-    const [eventTypeKeys, setEventTypeKeys] = useState(plan.eventTypeKeys);
     const [visibility, setVisibility] = useState<Visibility>(visibilityOf(plan));
     const [planChangeCount, setPlanChangeCount] = useState(0);
     const [unlockDraft, setUnlockDraft] = useState<UnlockDraft | null>(null);
 
     const isEvent = scope === 'EVENT';
     const orderedModules = useMemo(() => [...modules].sort((left, right) => left.sortOrder - right.sortOrder), [modules]);
-    const orderedEventTypes = useMemo(() => [...eventTypes].sort((left, right) => left.sortOrder - right.sortOrder), [eventTypes]);
-    const areModulesDirty = !sameStringSet(plan.moduleKeys, moduleKeys);
-    const moduleChangeCount = areModulesDirty ? moduleChangeSummary(plan.moduleKeys, moduleKeys, orderedModules).length : 0;
-    const areEventTypesDirty = !sameStringSet(plan.eventTypeKeys, eventTypeKeys);
-    const eventTypeChangeCount = areEventTypesDirty
-        ? eventTypeChangeSummary(plan.eventTypeKeys, eventTypeKeys, orderedEventTypes, locale).length
-        : 0;
-    const changeCount = planChangeCount + moduleChangeCount + eventTypeChangeCount;
+    const changeCount = planChangeCount;
     const canSave = changeCount > 0;
     const tabs = useMemo<AdminTabDefinition[]>(() => {
         const items: AdminTabDefinition[] = [
@@ -52,12 +33,11 @@ export function usePlanEditorState({ plan, modules, eventTypes, scope }: UsePlan
             { key: 'pricing', label: t('plans.tabs.pricing') },
         ];
         if (isEvent) {
-            items.push({ key: 'modules', label: t('plans.tabs.modules'), badge: moduleKeys.length });
-            items.push({ key: 'eventTypes', label: t('plans.tabs.eventTypes'), badge: eventTypeKeys.length });
+            items.push({ key: 'addons', label: t('plans.tabs.addons') });
         }
         items.push({ key: 'danger', label: t('plans.tabs.danger'), tone: 'danger' });
         return items;
-    }, [isEvent, moduleKeys.length, eventTypeKeys.length, t]);
+    }, [isEvent, t]);
 
     function recomputePlanChanges(currentVisibility: Visibility) {
         if (!formRef.current) return;
@@ -74,27 +54,10 @@ export function usePlanEditorState({ plan, modules, eventTypes, scope }: UsePlan
         recomputePlanChanges(next);
     }
 
-    function handleModuleChange(event: React.ChangeEvent<HTMLInputElement>) {
-        const moduleKey = event.currentTarget.value;
-        setModuleKeys((current) => (current.includes(moduleKey) ? current.filter((key) => key !== moduleKey) : [...current, moduleKey]));
-        setUnlockDraft((current) => (current?.moduleKey === moduleKey ? null : current));
-    }
-
-    function handleEventTypeChange(event: React.ChangeEvent<HTMLInputElement>) {
-        const eventTypeKey = event.currentTarget.value as EventTypeConvention;
-        setEventTypeKeys((current) =>
-            current.includes(eventTypeKey) ? current.filter((key) => key !== eventTypeKey) : [...current, eventTypeKey]
-        );
-    }
-
     return {
         formRef,
         tab,
         setTab,
-        moduleKeys,
-        setModuleKeys,
-        eventTypeKeys,
-        setEventTypeKeys,
         visibility,
         setVisibility,
         planChangeCount,
@@ -102,18 +65,11 @@ export function usePlanEditorState({ plan, modules, eventTypes, scope }: UsePlan
         unlockDraft,
         setUnlockDraft,
         orderedModules,
-        orderedEventTypes,
-        areModulesDirty,
-        moduleChangeCount,
-        areEventTypesDirty,
-        eventTypeChangeCount,
         changeCount,
         canSave,
         tabs,
         isEvent,
         handleFormChange,
         handleVisibilityChange,
-        handleModuleChange,
-        handleEventTypeChange,
     };
 }

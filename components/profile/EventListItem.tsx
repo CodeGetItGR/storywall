@@ -7,8 +7,8 @@ import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
+import { EventListItemSkeleton } from '@/components/profile/EventListItemSkeleton';
 import Avatar from '@/components/ui/avatar';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useEventMembers } from '@/hooks';
 import type { EventDetailResponseDto, EventMemberResponseDto } from '@/lib/api/types';
 import { formatEventListDate } from '@/lib/datetime';
@@ -20,27 +20,6 @@ interface EventListItemProps {
     member: EventMemberResponseDto;
     event: EventDetailResponseDto | undefined;
     isLoading: boolean;
-}
-
-function EventListItemSkeleton() {
-    return (
-        <div className="overflow-hidden rounded-2xl bg-card shadow-[0_10px_30px_rgba(36,31,26,0.08)]">
-            <Skeleton className="aspect-video w-full rounded-none" />
-            <div className="space-y-3 p-4">
-                <Skeleton className="h-3 w-40 rounded-full" />
-                <Skeleton className="h-5 w-48 rounded-full" />
-                <Skeleton className="h-3 w-32 rounded-full" />
-                <div className="flex items-center justify-between pt-1">
-                    <div className="flex -space-x-2">
-                        <Skeleton className="h-6 w-6 rounded-full ring-2 ring-card" />
-                        <Skeleton className="h-6 w-6 rounded-full ring-2 ring-card" />
-                        <Skeleton className="h-6 w-6 rounded-full ring-2 ring-card" />
-                    </div>
-                    <Skeleton className="h-7 w-16 rounded-full" />
-                </div>
-            </div>
-        </div>
-    );
 }
 
 export function EventListItem({ eventId, member, event, isLoading }: EventListItemProps) {

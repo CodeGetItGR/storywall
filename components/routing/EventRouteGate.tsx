@@ -2,21 +2,23 @@
 
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { type ReactNode, useEffect } from 'react';
+import { createContext, type ReactNode, useContext, useEffect } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
-type EventRouteGateContext = {
+type EventRouteContextValue = {
     activeEvent: EventDetailResponseDto;
     eventId: string;
     isHost: boolean;
 };
 
+const EventRouteContext = createContext<EventRouteContextValue | null>(null);
+
 type EventRouteGateProps = {
-    children: (context: EventRouteGateContext) => ReactNode;
+    children: ReactNode;
     missingEventRedirectTo?: string;
     requireHost?: boolean;
     guestRedirectTo?: string;
@@ -48,7 +50,16 @@ export function EventRouteGate({ children, missingEventRedirectTo, requireHost =
         return <EventRouteSpinner />;
     }
 
-    return children({ activeEvent, eventId: activeEvent.id, isHost });
+    const value = { activeEvent, eventId: activeEvent.id, isHost };
+    return <EventRouteContext.Provider value={value}>{children}</EventRouteContext.Provider>;
+}
+
+export function useEventRouteContext(): EventRouteContextValue {
+    const context = useContext(EventRouteContext);
+    if (!context) {
+        throw new Error('useEventRouteContext must be used within an EventRouteGate');
+    }
+    return context;
 }
 
 export function EventRouteSpinner() {

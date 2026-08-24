@@ -18,11 +18,11 @@ tiers specifically.
 
 ```json
 {
-  "planTiers": {
-    "FREE": { "storageBytes": 1073741824, "maxMembers": 20, "maxActiveEvents": 1 },
-    "PLUS": { "storageBytes": 10737418240, "maxMembers": 100, "maxActiveEvents": 5 },
-    "PRO":  { "storageBytes": 107374182400, "maxMembers": 500, "maxActiveEvents": 20 }
-  }
+    "planTiers": {
+        "FREE": { "storageBytes": 1073741824, "maxMembers": 20, "maxActiveEvents": 1 },
+        "PLUS": { "storageBytes": 10737418240, "maxMembers": 100, "maxActiveEvents": 5 },
+        "PRO": { "storageBytes": 107374182400, "maxMembers": 500, "maxActiveEvents": 20 }
+    }
 }
 ```
 
@@ -30,29 +30,29 @@ tiers specifically.
 
 ```json
 {
-  "planTiers": [
-    {
-      "id": "b1e2c3d4-...",
-      "code": "FREE",
-      "scope": "EVENT",
-      "name": "Free",
-      "description": null,
-      "sortOrder": 0,
-      "isDefault": true,
-      "isAssignable": true,
-      "isPublic": true,
-      "storageBytes": 1073741824,
-      "maxMembers": 20,
-      "maxActiveEvents": null,
-      "priceAmountMinor": null,
-      "priceCurrency": null,
-      "billingPeriod": null,
-      "discountPercent": null,
-      "discountLabel": null,
-      "discountStartsAt": null,
-      "discountEndsAt": null
-    }
-  ]
+    "planTiers": [
+        {
+            "id": "b1e2c3d4-...",
+            "code": "FREE",
+            "scope": "EVENT",
+            "name": "Free",
+            "description": null,
+            "sortOrder": 0,
+            "isDefault": true,
+            "isAssignable": true,
+            "isPublic": true,
+            "storageBytes": 1073741824,
+            "maxMembers": 20,
+            "maxActiveEvents": null,
+            "priceAmountMinor": null,
+            "priceCurrency": null,
+            "billingPeriod": null,
+            "discountPercent": null,
+            "discountLabel": null,
+            "discountStartsAt": null,
+            "discountEndsAt": null
+        }
+    ]
 }
 ```
 
@@ -85,10 +85,10 @@ must render as "Unlimited", never as "0 bytes", "0 members", or an empty progres
 
 ```ts
 // Wrong — formatBytes(null) will either throw or print garbage like "NaN MB"
-`${formatBytes(plan.storageBytes)} storage`
+`${formatBytes(plan.storageBytes)} storage`;
 
 // Right
-plan.storageBytes === null ? 'Unlimited storage' : `${formatBytes(plan.storageBytes)} storage`
+plan.storageBytes === null ? 'Unlimited storage' : `${formatBytes(plan.storageBytes)} storage`;
 ```
 
 This is the single most likely bug when wiring up a pricing table against this data — a plan
@@ -103,7 +103,7 @@ its scope:
 - **`EVENT`**-scope plans are what a host buys/is assigned for a single event. Only
   `storageBytes` and `maxMembers` are meaningful here — `maxActiveEvents` is always `null` on an
   `EVENT`-scope plan and should be ignored/hidden in the UI, not rendered as "0" or "Unlimited".
-- **`ACCOUNT`**-scope plans govern how many events a user may run *simultaneously*. Only
+- **`ACCOUNT`**-scope plans govern how many events a user may run _simultaneously_. Only
   `maxActiveEvents` is meaningful — `storageBytes`/`maxMembers` are always `null` here for the
   same reason.
 
@@ -174,6 +174,7 @@ POST /api/admin/plan-tiers
 ```
 
 Validation (server-enforced, `400` with `errorCode: 3001` on violation):
+
 - `code` — required, non-blank, max 30 chars, must match `^[A-Z0-9_]+$` (upper-case letters,
   digits, underscores only).
 - `scope`, `name`, `sortOrder`, `isDefault`, `isAssignable`, `isPublic` — all required.
@@ -295,14 +296,14 @@ GET /api/admin/platform-modules
 
 ```json
 [
-  {
-    "id": "b1e2c3d4-...",
-    "moduleKey": "stories",
-    "name": "Stories",
-    "description": "24-hour disappearing photo/video updates",
-    "isEnabled": true,
-    "sortOrder": 3
-  }
+    {
+        "id": "b1e2c3d4-...",
+        "moduleKey": "stories",
+        "name": "Stories",
+        "description": "24-hour disappearing photo/video updates",
+        "isEnabled": true,
+        "sortOrder": 3
+    }
 ]
 ```
 
@@ -331,11 +332,11 @@ previously always succeeded (uploading media, adding a member, creating an event
 
 **The three codes:**
 
-| Code | Name | Returned from |
-|---|---|---|
+| Code   | Name                           | Returned from                                                                                      |
+| ------ | ------------------------------ | -------------------------------------------------------------------------------------------------- |
 | `5008` | `EVENT_STORAGE_LIMIT_EXCEEDED` | `POST /api/events/{eventId}/media`, `POST /api/events/{eventId}/media/batch` (per-file, see below) |
-| `5009` | `EVENT_MEMBER_LIMIT_EXCEEDED` | `POST /api/events/{eventId}/members`, invite acceptance |
-| `5010` | `ACTIVE_EVENT_LIMIT_EXCEEDED` | `POST /api/events` |
+| `5009` | `EVENT_MEMBER_LIMIT_EXCEEDED`  | `POST /api/events/{eventId}/members`, invite acceptance                                            |
+| `5010` | `ACTIVE_EVENT_LIMIT_EXCEEDED`  | `POST /api/events`                                                                                 |
 
 **The `details` payload.** Every rejection carries a `details` object alongside the usual
 `errorCode`/`errorKey` fields, so the frontend can render an upgrade prompt without a second
@@ -343,16 +344,16 @@ round-trip to a usage endpoint:
 
 ```json
 {
-  "status": 409,
-  "errorCode": 5008,
-  "errorKey": "EVENT_STORAGE_LIMIT_EXCEEDED",
-  "detail": "This event has no room left for new media on its current plan.",
-  "details": {
-    "planCode": "FREE",
-    "used": 2147480000,
-    "limit": 2147483648,
-    "incomingBytes": 10485760
-  }
+    "status": 409,
+    "errorCode": 5008,
+    "errorKey": "EVENT_STORAGE_LIMIT_EXCEEDED",
+    "detail": "This event has no room left for new media on its current plan.",
+    "details": {
+        "planCode": "FREE",
+        "used": 2147480000,
+        "limit": 2147483648,
+        "incomingBytes": 10485760
+    }
 }
 ```
 

@@ -21,11 +21,11 @@ type PlaylistSuggestionInput = {
 type AddSongFormProps = {
     isSubmitting: boolean;
     canSubmit: boolean;
-    onSubmit: (input: PlaylistSuggestionInput) => Promise<void>;
+    onSubmitAction: (input: PlaylistSuggestionInput) => Promise<void>;
     compact?: boolean;
 };
 
-export function AddSongForm({ isSubmitting, canSubmit, onSubmit, compact = false }: AddSongFormProps) {
+export function AddSongForm({ isSubmitting, canSubmit, onSubmitAction, compact = false }: AddSongFormProps) {
     const t = useTranslations('PlaylistPage');
     const toErrorMessage = useApiErrorMessage();
     const { data: appConfig } = useAppConfig();
@@ -67,7 +67,7 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmit, compact = false
         setSubmitError(null);
 
         try {
-            await onSubmit({
+            await onSubmitAction({
                 title: trimmedTitle,
                 artist: trimmedArtist || undefined,
                 youtubeUrl: youtubeUrl.trim() || undefined,

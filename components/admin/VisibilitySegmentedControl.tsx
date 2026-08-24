@@ -8,18 +8,18 @@ import { cn } from '@/lib/utils';
 export function VisibilitySegmentedControl({
     title,
     value,
-    onChange,
+    onChangeAction,
     labels,
     hints,
 }: {
     title: string;
     value: Visibility;
-    onChange: (visibility: Visibility) => void;
+    onChangeAction: (visibility: Visibility) => void;
     labels: Record<Visibility, string>;
     hints: Record<Visibility, string>;
 }) {
     function handleClick(event: MouseEvent<HTMLButtonElement>) {
-        onChange(event.currentTarget.dataset.visibility as Visibility);
+        onChangeAction(event.currentTarget.dataset.visibility as Visibility);
     }
 
     return (

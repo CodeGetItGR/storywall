@@ -10,12 +10,12 @@ type PageErrorStateProps = {
     description: string;
     actionHref?: string;
     actionLabel?: string;
-    onRetry?: () => void;
+    onRetryAction?: () => void;
     retryLabel?: string;
     icon?: ReactNode;
 };
 
-export function PageErrorState({ title, description, actionHref, actionLabel, onRetry, retryLabel, icon }: PageErrorStateProps) {
+export function PageErrorState({ title, description, actionHref, actionLabel, onRetryAction, retryLabel, icon }: PageErrorStateProps) {
     const t = useTranslations('PageErrorState');
 
     return (
@@ -26,10 +26,10 @@ export function PageErrorState({ title, description, actionHref, actionLabel, on
             <h1 className="mb-3 max-w-md text-balance text-2xl font-bold text-ink lg:text-3xl">{title}</h1>
             <p className="mb-8 max-w-sm text-sm leading-relaxed text-ink-muted">{description}</p>
             <div className="flex flex-wrap items-center justify-center gap-3">
-                {onRetry && (
+                {onRetryAction && (
                     <button
                         type="button"
-                        onClick={onRetry}
+                        onClick={onRetryAction}
                         className="inline-flex min-h-11 items-center gap-2 rounded-full bg-gradient-brand px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
                     >
                         <RefreshCw className="h-4 w-4" />

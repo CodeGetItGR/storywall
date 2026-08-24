@@ -69,7 +69,11 @@ export function MobileTabBar() {
     const handleOpenAccount = useCallback(() => setAccountOpen(true), []);
     const handleCloseAccount = useCallback(() => setAccountOpen(false), []);
     const accountActive = accountOpen;
-    const railColumnCount = 1 + (showEventNavigation ? 1 : 0) + (showEventNavigation && playlistAvailable ? 1 : 0) + (showEventNavigation && contextItems.length > 0 ? 1 : 0);
+    const railColumnCount =
+        1 +
+        (showEventNavigation ? 1 : 0) +
+        (showEventNavigation && playlistAvailable ? 1 : 0) +
+        (showEventNavigation && contextItems.length > 0 ? 1 : 0);
 
     if (!showBottomRail) return null;
 
@@ -117,7 +121,12 @@ export function MobileTabBar() {
 
                             {playlistAvailable && (
                                 <div className="flex h-full items-center justify-center">
-                                    <TabLink href={routes.tools.playlist} icon="/icons/music.svg" label={t('items.playlist')} active={playlistActive} />
+                                    <TabLink
+                                        href={routes.tools.playlist}
+                                        icon="/icons/music.svg"
+                                        label={t('items.playlist')}
+                                        active={playlistActive}
+                                    />
                                 </div>
                             )}
 
@@ -139,7 +148,7 @@ export function MobileTabBar() {
             </div>
 
             <div id="mobile-account-drawer">
-                <AccountDrawer open={accountOpen} onClose={handleCloseAccount} />
+                <AccountDrawer open={accountOpen} onCloseAction={handleCloseAccount} />
             </div>
 
             {showEventActions && (canComposePost || canComposeStory || canComposeSong) && (

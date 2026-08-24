@@ -5,7 +5,15 @@ import { useTranslations } from 'next-intl';
 
 import type { StoryResponseDto } from '@/lib/api/types';
 
-export function StoryCaptionBar({ story, canManage, onShowViewers }: { story: StoryResponseDto; canManage: boolean; onShowViewers: () => void }) {
+export function StoryCaptionBar({
+    story,
+    canManage,
+    onShowViewersAction,
+}: {
+    story: StoryResponseDto;
+    canManage: boolean;
+    onShowViewersAction: () => void;
+}) {
     const t = useTranslations('StoryPage');
 
     if (!story.caption && !story.songUrl && !canManage) return null;
@@ -20,7 +28,7 @@ export function StoryCaptionBar({ story, canManage, onShowViewers }: { story: St
                 </a>
             )}
             {canManage && (
-                <button type="button" onClick={onShowViewers} className="inline-flex items-center gap-1.5 text-white/80 text-xs w-fit">
+                <button type="button" onClick={onShowViewersAction} className="inline-flex items-center gap-1.5 text-white/80 text-xs w-fit">
                     <Eye className="w-3.5 h-3.5" />
                     {t('viewedBy')}
                 </button>

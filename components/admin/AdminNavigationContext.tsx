@@ -1,12 +1,14 @@
 'use client';
 
-import { BarChart3, CalendarDays, Layers3, LifeBuoy, type LucideIcon, PackagePlus, Receipt, Shield, Tag, Undo2 } from 'lucide-react';
+import { BarChart3, Boxes, CalendarDays, Grid3X3, Layers3, LifeBuoy, type LucideIcon, PackagePlus, Receipt, Shield, Tag, Undo2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 export type AdminTab =
     | 'metrics'
     | 'eventPlans'
+    | 'planAvailability'
+    | 'planModules'
     | 'paidServices'
     | 'modules'
     | 'eventTypes'
@@ -34,6 +36,8 @@ export type AdminFocus = {
 const HASH_TO_TAB: Record<string, AdminTab> = {
     '#metrics': 'metrics',
     '#event-plans': 'eventPlans',
+    '#plan-availability': 'planAvailability',
+    '#plan-modules': 'planModules',
     '#paid-services': 'paidServices',
     '#modules': 'modules',
     '#event-types': 'eventTypes',
@@ -46,6 +50,8 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
 const TAB_TO_HASH: Record<AdminTab, string> = {
     metrics: '#metrics',
     eventPlans: '#event-plans',
+    planAvailability: '#plan-availability',
+    planModules: '#plan-modules',
     paidServices: '#paid-services',
     modules: '#modules',
     eventTypes: '#event-types',
@@ -110,6 +116,8 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
         () => [
             { key: 'metrics', label: t('metrics'), icon: BarChart3 },
             { key: 'eventPlans', label: t('eventPlans'), icon: CalendarDays },
+            { key: 'planAvailability', label: t('planAvailability'), icon: Grid3X3 },
+            { key: 'planModules', label: t('planModules'), icon: Boxes },
             { key: 'paidServices', label: t('paidServices'), icon: PackagePlus },
             { key: 'modules', label: t('modules'), icon: Shield },
             { key: 'eventTypes', label: t('eventTypes'), icon: Tag },

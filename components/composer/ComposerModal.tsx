@@ -1,48 +1,13 @@
 'use client';
 
-import { ImagePlus, Music3, Send, X } from 'lucide-react';
+import { ImagePlus, Send, X } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
+import { ComposerModeToggle } from '@/components/composer/ComposerModeToggle';
 import { AddSongForm } from '@/components/playlist';
 import { Modal } from '@/components/ui/modal';
 import type { ComposerController } from '@/hooks/useComposerController';
-
-function ComposerModeToggle({
-    mode,
-    currentMode,
-    onSelect,
-    disabled,
-}: {
-    mode: 'post' | 'song';
-    currentMode: 'post' | 'song';
-    onSelect: () => void;
-    disabled?: boolean;
-}) {
-    const t = useTranslations('ComposerCard');
-    const active = currentMode === mode;
-    const label = mode === 'post' ? t('post') : t('music');
-
-    return (
-        <button
-            type="button"
-            onClick={onSelect}
-            aria-pressed={active}
-            disabled={disabled}
-            className={
-                `inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ` +
-                (active
-                    ? mode === 'post'
-                        ? 'bg-ink text-white'
-                        : 'bg-primary-light text-primary-dark'
-                    : 'bg-surface-muted text-ink-muted hover:bg-surface-muted/80')
-            }
-        >
-            {mode === 'song' && <Music3 className="h-3.5 w-3.5" />}
-            {label}
-        </button>
-    );
-}
 
 export function ComposerModal({
     canComposePost,
@@ -87,8 +52,8 @@ export function ComposerModal({
             <Modal.Body className="px-3 py-4 sm:p-5">
                 {/* Mode tabs */}
                 <div className="mb-4 flex flex-wrap items-center gap-2 pr-10">
-                    <ComposerModeToggle mode="post" currentMode={composerMode} onSelect={selectPostMode} />
-                    <ComposerModeToggle mode="song" currentMode={composerMode} onSelect={selectSongMode} disabled={!canComposeSong} />
+                    <ComposerModeToggle mode="post" currentMode={composerMode} onSelectAction={selectPostMode} />
+                    <ComposerModeToggle mode="song" currentMode={composerMode} onSelectAction={selectSongMode} disabled={!canComposeSong} />
                 </div>
 
                 {/* Post form */}
@@ -191,7 +156,7 @@ export function ComposerModal({
                         key={songComposerKey}
                         isSubmitting={isSongBusy}
                         canSubmit={canComposeSong}
-                        onSubmit={submitPlaylistSuggestion}
+                        onSubmitAction={submitPlaylistSuggestion}
                         compact
                     />
                 </div>

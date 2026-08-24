@@ -89,8 +89,8 @@ export default function BillingTab({ eventId, section }: { eventId: string; sect
                 }
                 confirmLabel={t('subscription.cancelConfirmYes')}
                 cancelLabel={t('subscription.cancelConfirmNo')}
-                onClose={panel.dismissCancelConfirmation}
-                onConfirm={panel.confirmCancelSubscription}
+                onCloseAction={panel.dismissCancelConfirmation}
+                onConfirmAction={panel.confirmCancelSubscription}
                 isConfirming={panel.isCancelling}
             />
         </div>

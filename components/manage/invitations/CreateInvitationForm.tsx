@@ -16,12 +16,12 @@ import { fieldControlClass, fieldLabelClass, fieldTextClass, formPanelClass } fr
 
 export function CreateInvitationForm({
     eventId,
-    onDone,
-    onClampNotice,
+    onDoneAction,
+    onClampNoticeAction,
 }: {
     eventId: string;
-    onDone: () => void;
-    onClampNotice?: (message: string) => void;
+    onDoneAction: () => void;
+    onClampNoticeAction?: (message: string) => void;
 }) {
     const t = useTranslations('ManagePage');
     const tCommon = useTranslations('Common');
@@ -76,7 +76,7 @@ export function CreateInvitationForm({
         try {
             const invitation = await createInvitation.mutateAsync(input);
             if (invitation.maxGuests !== maxGuests) {
-                onClampNotice?.(t('invitations.cappedToPlan', { count: invitation.maxGuests }));
+                onClampNoticeAction?.(t('invitations.cappedToPlan', { count: invitation.maxGuests }));
             }
             if (alsoCreateQr) {
                 await createQrLink.mutateAsync({
@@ -85,7 +85,7 @@ export function CreateInvitationForm({
                     label: trimmedInviteCode,
                 });
             }
-            onDone();
+            onDoneAction();
         } catch {
             // error surfaced inline below
         }
@@ -100,7 +100,7 @@ export function CreateInvitationForm({
                 </div>
                 <button
                     type="button"
-                    onClick={onDone}
+                    onClick={onDoneAction}
                     aria-label={t('invitations.create.cancel')}
                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
                 >

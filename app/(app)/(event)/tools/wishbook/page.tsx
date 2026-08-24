@@ -4,7 +4,7 @@ import { BookHeart, Loader2, Send, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
@@ -34,7 +34,6 @@ export default function WishbookPage() {
     const wishbookModule = appConfig?.modules.find((module) => module.moduleKey === 'wishbook');
     const title = wishbookModule?.name ?? t('title');
     const subtitle = wishbookModule?.description ?? undefined;
-    const memberName = member?.displayName ?? '';
     const maxMessageLength = appConfig?.contentLimits.wishbookMessageMaxLength ?? 2000;
 
     async function submit(event_: React.SubmitEvent<HTMLFormElement>) {
@@ -97,7 +96,7 @@ export default function WishbookPage() {
                         className="min-h-56 w-full resize-none rounded-[1.5rem] border border-border/70 bg-background px-5 py-4 text-base leading-8 text-ink outline-none transition-shadow focus:border-primary/30 focus:ring-2 focus:ring-primary/20"
                     />
                     <div className="flex items-center justify-between gap-3">
-                        <span className="text-xs text-ink-faint">{t('charactersLeft', { current:message.length, max: maxMessageLength })}</span>
+                        <span className="text-xs text-ink-faint">{t('charactersLeft', { current: message.length, max: maxMessageLength })}</span>
                         <button
                             type="submit"
                             disabled={!message.trim() || createEntry.isPending}
@@ -163,8 +162,8 @@ export default function WishbookPage() {
 
             <ConfirmActionModal
                 open={Boolean(deleteTarget)}
-                onClose={closeDelete}
-                onConfirm={confirmDelete}
+                onCloseAction={closeDelete}
+                onConfirmAction={confirmDelete}
                 title={t('deleteTitle')}
                 body={t('deleteBody')}
                 confirmLabel={t('delete')}

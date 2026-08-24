@@ -19,13 +19,13 @@ export function QrLinkRow({
     qrLink,
     stats,
     canWrite,
-    onClampNotice,
+    onClampNoticeAction,
 }: {
     eventId: string;
     qrLink: QrLinkResponseDto;
     stats?: QrLinkStatsDto;
     canWrite: boolean;
-    onClampNotice?: (message: string) => void;
+    onClampNoticeAction?: (message: string) => void;
 }) {
     const t = useTranslations('ManagePage');
     const [previewOpen, setPreviewOpen] = useState(false);
@@ -95,7 +95,7 @@ export function QrLinkRow({
         const requestedMaxGuests = maxGuests;
         const updated = await updateQrLink.mutateAsync({ maxGuests: requestedMaxGuests });
         if (updated.maxGuests !== requestedMaxGuests) {
-            onClampNotice?.(t('qr.cappedToPlan', { count: updated.maxGuests ?? requestedMaxGuests }));
+            onClampNoticeAction?.(t('qr.cappedToPlan', { count: updated.maxGuests ?? requestedMaxGuests }));
         }
         setMaxGuests(updated.maxGuests ?? requestedMaxGuests);
         setIsEditing(false);
@@ -216,21 +216,21 @@ export function QrLinkRow({
                 </div>
             </div>
 
-            <QrPreviewModal qrLink={qrLink} open={previewOpen} onClose={handlePreviewClose} />
+            <QrPreviewModal qrLink={qrLink} open={previewOpen} onCloseAction={handlePreviewClose} />
             {stats && (
                 <QrStatsSheet
                     qrLink={qrLink}
                     stats={stats}
                     open={statsOpen}
-                    onClose={handleStatsClose}
+                    onCloseAction={handleStatsClose}
                     canRaiseLimit={canEditLimit}
-                    onRaiseLimit={handleRaiseLimitFromStats}
+                    onRaiseLimitAction={handleRaiseLimitFromStats}
                 />
             )}
             <ConfirmActionModal
                 open={revokeConfirmOpen}
-                onClose={handleRevokeConfirmClose}
-                onConfirm={handleRevoke}
+                onCloseAction={handleRevokeConfirmClose}
+                onConfirmAction={handleRevoke}
                 title={t('qr.revokeConfirmTitle')}
                 body={t('qr.revokeConfirmBody')}
                 confirmLabel={t('qr.confirmRevoke')}

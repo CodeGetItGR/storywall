@@ -9,12 +9,12 @@ export function PlanEditorHeader({
     plan,
     isEvent,
     isMakingDefault,
-    onMakeDefault,
+    onMakeDefaultAction,
 }: {
     plan: PlanTierResponseDto;
     isEvent: boolean;
     isMakingDefault: boolean;
-    onMakeDefault: () => void;
+    onMakeDefaultAction: () => void;
 }) {
     const t = useTranslations('AdminPage');
 
@@ -57,7 +57,7 @@ export function PlanEditorHeader({
             {!plan.isDefault && (
                 <button
                     type="button"
-                    onClick={onMakeDefault}
+                    onClick={onMakeDefaultAction}
                     disabled={isMakingDefault}
                     className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md border border-primary/40 bg-primary-light px-4 text-sm font-bold text-primary-dark transition hover:border-primary hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/25 disabled:opacity-50"
                 >

@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ManageSectionNav, sectionIcons } from '@/components/manage/ManageSectionNav';
+import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { Modal } from '@/components/ui/modal';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventInvitations } from '@/hooks/useEventInvitations';
@@ -13,7 +14,6 @@ import { useEventMembers } from '@/hooks/useEventMembers';
 import { useEventQrLinks, useEventQrLinkStats } from '@/hooks/useQrLinks';
 import { useEventRsvps } from '@/hooks/useRsvps';
 import { useEventUsage } from '@/hooks/useUsage';
-import type { EventDetailResponseDto } from '@/lib/api/types';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { isBillingSection, type ManageSection, manageSectionGroups, parseManageSection } from '@/lib/manageSections';
 import { routes } from '@/lib/routes';
@@ -26,7 +26,8 @@ import OverviewTab from '../../app/(app)/(event)/manage/OverviewTab';
 import RsvpTab from '../../app/(app)/(event)/manage/RsvpTab';
 import SettingsTab from '../../app/(app)/(event)/manage/SettingsTab';
 
-export function ManageScreen({ activeEvent, eventId, isHost }: { activeEvent: EventDetailResponseDto; eventId: string; isHost: boolean }) {
+export function ManageScreen() {
+    const { activeEvent, eventId, isHost } = useEventRouteContext();
     const t = useTranslations('ManagePage');
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -176,7 +177,9 @@ export function ManageScreen({ activeEvent, eventId, isHost }: { activeEvent: Ev
             {/* Body */}
             <div className="px-4 pt-4 lg:grid lg:grid-cols-[13.5rem_minmax(0,1fr)] lg:gap-8 lg:px-6 lg:pt-0">
                 {/* Sections (desktop) */}
-                {!isDraft && <ManageSectionNav active={section} onSelect={navigateToSection} className="sticky top-6 hidden self-start lg:flex" />}
+                {!isDraft && (
+                    <ManageSectionNav active={section} onSelectAction={navigateToSection} className="sticky top-6 hidden self-start lg:flex" />
+                )}
 
                 <div className={cn('min-w-0', isDraft && 'lg:col-span-2 lg:max-w-3xl')}>
                     {/* Section heading (desktop) */}
@@ -190,7 +193,7 @@ export function ManageScreen({ activeEvent, eventId, isHost }: { activeEvent: Ev
             {/* Section sheet (small screens) */}
             <Modal open={switcherOpen} onClose={closeSwitcher} variant="sheet" ariaLabel={t('sectionSwitcher')} closeLabel={t('sectionSwitcher')}>
                 <Modal.Body className="px-3 pb-6 pt-5">
-                    <ManageSectionNav active={section} onSelect={navigateToSection} />
+                    <ManageSectionNav active={section} onSelectAction={navigateToSection} />
                 </Modal.Body>
             </Modal>
         </div>

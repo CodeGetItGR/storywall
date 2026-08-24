@@ -91,8 +91,8 @@ export function BillingRefundPanel({ panel }: { panel: EventBillingPanel }) {
                 body={t('refund.confirmBody')}
                 confirmLabel={panel.refundRetryIn > 0 ? t('actions.retryIn', { seconds: panel.refundRetryIn }) : t('refund.confirmSubmit')}
                 cancelLabel={t('refund.confirmCancel')}
-                onClose={panel.cancelRefundConfirmation}
-                onConfirm={panel.submitRefundRequest}
+                onCloseAction={panel.cancelRefundConfirmation}
+                onConfirmAction={panel.submitRefundRequest}
                 isConfirming={panel.isRequestingRefund || panel.refundRetryIn > 0}
             />
         </>

@@ -77,7 +77,7 @@ export default function CheckoutReviewBoundary() {
             <PageErrorState
                 title={tPageError('title')}
                 description={t('invalid')}
-                onRetry={retry}
+                onRetryAction={retry}
                 actionHref={routes.auth.manage({ tab: 'billing' })}
                 actionLabel={t('backToBilling')}
             />

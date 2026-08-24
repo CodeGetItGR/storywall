@@ -22,7 +22,7 @@ export function EventPlanComparison({
     currentPlanCode,
     currentPlan,
     isCheckoutPending = false,
-    onUpgrade,
+    onUpgradeAction,
     pendingPlanCode = null,
     retryIn = 0,
     upgradeTargets = [],
@@ -33,7 +33,7 @@ export function EventPlanComparison({
     currentPlanCode?: string | null;
     currentPlan?: PlanTierResponseDto | null;
     isCheckoutPending?: boolean;
-    onUpgrade?: (planTierCode: string) => void;
+    onUpgradeAction?: (planTierCode: string) => void;
     pendingPlanCode?: string | null;
     retryIn?: number;
     upgradeTargets?: PlanTierResponseDto[];
@@ -113,12 +113,12 @@ export function EventPlanComparison({
         {
             key: 'modules',
             label: t('compare.modules'),
-            action: <PlanModuleGuideButton onOpen={openModuleLegend} />,
+            action: <PlanModuleGuideButton onOpenAction={openModuleLegend} />,
             render: (plan) => <PlanModuleIcons moduleKeys={plan.moduleKeys} modules={modules} />,
         },
     ];
 
-    if (currentPlan && onUpgrade && upgradeTargets.length > 0) {
+    if (currentPlan && onUpgradeAction && upgradeTargets.length > 0) {
         rows.push({
             key: 'upgrade',
             label: t('compare.upgradeOptions'),
@@ -128,7 +128,7 @@ export function EventPlanComparison({
                         currentPlan={currentPlan}
                         isCheckoutPending={isCheckoutPending}
                         isPending={isCheckoutPending && pendingPlanCode === plan.code}
-                        onUpgrade={onUpgrade}
+                        onUpgrade={onUpgradeAction}
                         retryIn={retryIn}
                         target={plan}
                     />
@@ -143,7 +143,7 @@ export function EventPlanComparison({
             <div className="space-y-3 md:hidden">
                 <div className="flex items-center justify-between gap-3 px-1 text-xs font-semibold text-ink-muted">
                     <span>{t('compare.modules')}</span>
-                    <PlanModuleGuideButton onOpen={openModuleLegend} />
+                    <PlanModuleGuideButton onOpenAction={openModuleLegend} />
                 </div>
 
                 <PlanTierCards
@@ -153,7 +153,7 @@ export function EventPlanComparison({
                     currentPlan={currentPlan}
                     isCheckoutPending={isCheckoutPending}
                     nextPlanId={nextPlanId}
-                    onUpgrade={onUpgrade}
+                    onUpgradeAction={onUpgradeAction}
                     pendingPlanCode={pendingPlanCode}
                     retryIn={retryIn}
                     upgradeTargets={upgradeTargets}
@@ -172,7 +172,7 @@ export function EventPlanComparison({
                 <p className="mt-3 text-xs leading-5 text-ink-faint">{t('compare.mediaAssumption')}</p>
             </div>
 
-            <PlanModuleGuideModal open={moduleLegendOpen} onClose={closeModuleLegend} modules={modules} paidServices={paidServices} />
+            <PlanModuleGuideModal open={moduleLegendOpen} onCloseAction={closeModuleLegend} modules={modules} paidServices={paidServices} />
         </section>
     );
 }

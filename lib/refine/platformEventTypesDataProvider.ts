@@ -22,10 +22,7 @@ export const platformEventTypesDataProvider: DataProvider = {
         throw new Error('platform-event-types does not support create');
     },
     update: async <TData extends BaseRecord = BaseRecord>({ id, variables }: Parameters<DataProvider['update']>[0]) => ({
-        data: (await api.patch<PlatformEventTypeResponseDto>(
-            endpoints.admin.platformEventTypes.byKey(String(id)),
-            variables
-        )) as unknown as TData,
+        data: (await api.patch<PlatformEventTypeResponseDto>(endpoints.admin.platformEventTypes.byKey(String(id)), variables)) as unknown as TData,
     }),
     deleteOne: async () => {
         throw new Error('platform-event-types does not support delete');

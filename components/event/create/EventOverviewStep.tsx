@@ -2,6 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 
+import { EventOverviewPriceRow } from '@/components/event/create/EventOverviewPriceRow';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
 import type {
     AppEventTypeResponseDto,
@@ -87,7 +88,7 @@ export function EventOverviewStep({
                 <p className="mt-1 text-xs text-ink-muted">{t('overview.pricingHint', { months: includedMonths })}</p>
 
                 <div className="mt-3 divide-y divide-border/70">
-                    <PriceRow
+                    <EventOverviewPriceRow
                         label={plan.name}
                         detail={t('overview.planActivation')}
                         amount={planActivation && formatMoney(locale, planActivation.amountMinor, planActivation.currency)}
@@ -101,7 +102,7 @@ export function EventOverviewStep({
                             addon.billingPeriod === 'ONE_TIME' ? addon.priceAmountMinor : addon.priceAmountMinor * includedMonths;
 
                         return (
-                            <PriceRow
+                            <EventOverviewPriceRow
                                 key={addon.id}
                                 label={name}
                                 detail={
@@ -147,18 +148,6 @@ export function EventOverviewStep({
                     {hasDraft && <p className="mt-1 font-semibold">{t('paidModules.openDraft')}</p>}
                 </div>
             )}
-        </div>
-    );
-}
-
-function PriceRow({ label, detail, amount, fallback }: { label: string; detail: string; amount: string | null; fallback: string }) {
-    return (
-        <div className="flex items-start justify-between gap-4 py-3 text-sm">
-            <div>
-                <p className="font-semibold text-ink">{label}</p>
-                <p className="mt-0.5 text-xs text-ink-muted">{detail}</p>
-            </div>
-            <span className="shrink-0 font-semibold text-ink">{amount ?? fallback}</span>
         </div>
     );
 }

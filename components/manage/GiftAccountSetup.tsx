@@ -151,8 +151,8 @@ export function GiftAccountSetup({ eventId, className = 'mt-3 border-t border-bo
             </Modal>
             <ConfirmActionModal
                 open={deleteOpen}
-                onClose={closeDelete}
-                onConfirm={confirmDelete}
+                onCloseAction={closeDelete}
+                onConfirmAction={confirmDelete}
                 title={t('removeTitle')}
                 body={t('removeBody')}
                 confirmLabel={t('remove')}

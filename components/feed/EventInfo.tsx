@@ -4,15 +4,7 @@ import { useLocale } from 'next-intl';
 import { formatDate } from '@/lib/datetime';
 import { cn } from '@/lib/utils';
 
-export function EventInfo({
-    date,
-    place,
-    className,
-}: {
-    date: number;
-    place: string;
-    className?: string;
-}) {
+export function EventInfo({ date, place, className }: { date: number; place: string; className?: string }) {
     const locale = useLocale();
 
     const formatted = formatDate(locale, date, {

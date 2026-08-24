@@ -9,8 +9,7 @@ export function useLocalizedEventTypeName() {
     const localizedText = useLocalizedText();
 
     return useCallback(
-        (eventType: Pick<PlatformEventTypeResponseDto, 'eventTypeKey' | 'name'>) =>
-            localizedText(eventType.name, eventType.eventTypeKey),
+        (eventType: Pick<PlatformEventTypeResponseDto, 'eventTypeKey' | 'name'>) => localizedText(eventType.name, eventType.eventTypeKey),
         [localizedText]
     );
 }

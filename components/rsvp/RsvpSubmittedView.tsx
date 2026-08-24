@@ -11,11 +11,11 @@ type AttendingStatus = 'attending' | 'not-attending';
 export function RsvpSubmittedView({
     eventType,
     attending,
-    onBackToWall,
+    onBackToWallAction,
 }: {
     eventType: EventTypeConvention | null;
     attending: AttendingStatus | null;
-    onBackToWall: () => void;
+    onBackToWallAction: () => void;
 }) {
     const t = useTranslations('RSVPPage');
     const voice = useEventTypeVoice(eventType);
@@ -30,7 +30,7 @@ export function RsvpSubmittedView({
                 {attending === 'attending' ? voice.rsvpAttendingConfirmation : t('declinedConfirmation')}
             </p>
             <button
-                onClick={onBackToWall}
+                onClick={onBackToWallAction}
                 className="mt-8 px-8 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
             >
                 {t('backToTheWall')}

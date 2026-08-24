@@ -97,7 +97,7 @@ openModal(), closeModal() }`. Deliberately minimal — it does not own
 ## `PostModal` changes
 
 - Wrap existing content in `<Modal open={isOpen} onClose={close} size="lg">`,
-  driven by `usePostModal()` instead of receiving `postId`/`onClose` props
+  driven by `usePostModal()` instead of receiving `postId`/`onCloseAction` props
   directly from `FeedPage`.
 - Move the comment list into `<Modal.Body>` so it scrolls internally
   instead of growing the shell.
@@ -106,7 +106,7 @@ min-h-0` inside the grid cell and keep `object-scale-down` so the image
   never forces the grid — and therefore the shell — wider or taller than
   available space.
 - Drop the existing manual `Escape`-key `useEffect` (now handled by
-  `Modal`) and the manual backdrop `onClick`/`stopPropagation` (now
+  `Modal`) and the manual backdrop `onClickAction`/`stopPropagation` (now
   handled by `Modal`).
 
 ## `FeedPage` changes
@@ -120,7 +120,7 @@ min-h-0` inside the grid cell and keep `object-scale-down` so the image
 ## Testing
 
 - `Modal`: renders children via portal into `#modal-root`; `Escape` and
-  backdrop click call `onClose`; body scroll is locked while open and
+  backdrop click call `onCloseAction`; body scroll is locked while open and
   restored on close; shell never exceeds `max-h-[90dvh]`.
 - `usePostModal`: `open(id)` sets `?post=id` preserving other params;
   `close()` strips `post` preserving other params; `postId`/`isOpen`

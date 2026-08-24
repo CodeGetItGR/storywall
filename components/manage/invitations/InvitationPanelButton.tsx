@@ -11,16 +11,16 @@ export function InvitationPanelButton({
     item,
     active,
     label,
-    onSelect,
+    onSelectAction,
 }: {
     item: InvitationPanel;
     active: boolean;
     label: string;
-    onSelect: (item: InvitationPanel) => void;
+    onSelectAction: (item: InvitationPanel) => void;
 }) {
     const handleClick = useCallback(() => {
-        onSelect(item);
-    }, [item, onSelect]);
+        onSelectAction(item);
+    }, [item, onSelectAction]);
 
     return (
         <button

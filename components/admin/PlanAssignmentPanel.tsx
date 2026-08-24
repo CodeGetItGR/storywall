@@ -155,7 +155,7 @@ export function PlanAssignmentPanel() {
 
             <ConfirmActionModal
                 open={confirmOpen}
-                onClose={closeConfirm}
+                onCloseAction={closeConfirm}
                 title={t('assignments.confirmEventTitle', { event: eventTitle ?? trimmedId })}
                 body={
                     <>
@@ -166,7 +166,7 @@ export function PlanAssignmentPanel() {
                 cancelLabel={t('cancel')}
                 confirmLabel={t('assignments.assignEvent')}
                 isConfirming={assignEvent.isPending}
-                onConfirm={confirmAssign}
+                onConfirmAction={confirmAssign}
                 tone="default"
             />
         </section>

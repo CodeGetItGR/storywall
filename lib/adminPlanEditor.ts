@@ -2,25 +2,14 @@ import { localInputToInstant, priceInputToMinor, storageInputToBytes } from '@/l
 import { emptyToNull, numberOrNull } from '@/lib/adminUtils';
 import type { Visibility } from '@/lib/adminVisibility';
 import { visibilityFlags } from '@/lib/adminVisibility';
-import type {
-    BillingPeriod,
-    PlanTierPatchDto,
-    PlanTierResponseDto,
-    PlatformEventTypeResponseDto,
-    PlatformModuleResponseDto,
-} from '@/lib/api/types';
-import { resolveLocalizedText } from '@/lib/localizedText';
+import type { BillingPeriod, PlanTierPatchDto, PlanTierResponseDto } from '@/lib/api/types';
 import { formatLimitValue } from '@/lib/planTiers';
 
 export type PlanEditorTranslate = (key: string) => string;
 
 export type PendingPlanSave = {
     patch: PlanTierPatchDto;
-    moduleKeys: string[];
-    eventTypeKeys: string[];
     changes: Array<{ label: string; before: string; after: string }>;
-    moduleChanges: Array<{ label: string; tone: 'added' | 'removed' }>;
-    eventTypeChanges: Array<{ label: string; tone: 'added' | 'removed' }>;
 };
 
 export type UnlockDraft = {
@@ -54,12 +43,6 @@ export function planPatchFromFormData(plan: PlanTierResponseDto, formData: FormD
         discountStartsAt: localInputToInstant(formData.get('discountStartsAt')),
         discountEndsAt: localInputToInstant(formData.get('discountEndsAt')),
     };
-}
-
-export function sameStringSet(left: string[], right: string[]): boolean {
-    if (left.length !== right.length) return false;
-    const rightSet = new Set(right);
-    return left.every((item) => rightSet.has(item));
 }
 
 export function planChangeSummary(plan: PlanTierResponseDto, patch: PlanTierPatchDto, t: PlanEditorTranslate) {
@@ -123,36 +106,4 @@ export function planChangeSummary(plan: PlanTierResponseDto, patch: PlanTierPatc
     add(t('fields.isPublic'), booleanLabel(plan.isPublic), booleanLabel(Boolean(patch.isPublic)));
 
     return changes;
-}
-
-export function moduleChangeSummary(
-    beforeKeys: string[],
-    afterKeys: string[],
-    modules: PlatformModuleResponseDto[]
-): PendingPlanSave['moduleChanges'] {
-    const moduleName = (key: string) => modules.find((module) => module.moduleKey === key)?.name ?? key;
-    const before = new Set(beforeKeys);
-    const after = new Set(afterKeys);
-    const added = afterKeys.filter((key) => !before.has(key)).map((key) => ({ label: moduleName(key), tone: 'added' as const }));
-    const removed = beforeKeys.filter((key) => !after.has(key)).map((key) => ({ label: moduleName(key), tone: 'removed' as const }));
-
-    return [...added, ...removed];
-}
-
-export function eventTypeChangeSummary(
-    beforeKeys: string[],
-    afterKeys: string[],
-    eventTypes: PlatformEventTypeResponseDto[],
-    locale: string
-): PendingPlanSave['eventTypeChanges'] {
-    const eventTypeName = (key: string) => {
-        const eventType = eventTypes.find((item) => item.eventTypeKey === key);
-        return eventType ? resolveLocalizedText(eventType.name, locale, key) : key;
-    };
-    const before = new Set(beforeKeys);
-    const after = new Set(afterKeys);
-    const added = afterKeys.filter((key) => !before.has(key)).map((key) => ({ label: eventTypeName(key), tone: 'added' as const }));
-    const removed = beforeKeys.filter((key) => !after.has(key)).map((key) => ({ label: eventTypeName(key), tone: 'removed' as const }));
-
-    return [...added, ...removed];
 }

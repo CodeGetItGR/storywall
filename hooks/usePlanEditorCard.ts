@@ -1,32 +1,29 @@
 'use client';
 
-import { useCustomMutation, useDelete, useInvalidate, useUpdate } from '@refinedev/core';
+import { useDelete, useInvalidate, useUpdate } from '@refinedev/core';
 import { useQueryClient } from '@tanstack/react-query';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { useAdminDrawerFooterSlot } from '@/components/admin/AdminDrawer';
 import { appConfigKeys } from '@/hooks/useAppConfig';
 import { usePlanEditorState } from '@/hooks/usePlanEditorState';
 import { usePlanEditorUnlocks } from '@/hooks/usePlanEditorUnlocks';
-import { eventTypeChangeSummary, moduleChangeSummary, type PendingPlanSave, planChangeSummary, planPatchFromFormData } from '@/lib/adminPlanEditor';
+import { type PendingPlanSave, planChangeSummary, planPatchFromFormData } from '@/lib/adminPlanEditor';
 import { type Visibility } from '@/lib/adminVisibility';
-import { endpoints } from '@/lib/api/endpoints';
-import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformEventTypeResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 
 export type UsePlanEditorCardArgs = {
     plan: PlanTierResponseDto;
     modules: PlatformModuleResponseDto[];
-    eventTypes: PlatformEventTypeResponseDto[];
     paidServices: PaidServiceResponseDto[];
     eventPlans: PlanTierResponseDto[];
     scope: 'ACCOUNT' | 'EVENT';
-    onSaved: (name: string) => void;
+    onSavedAction: (name: string) => void;
 };
 
-export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eventPlans, scope, onSaved }: UsePlanEditorCardArgs) {
+export function usePlanEditorCard({ plan, modules, paidServices, eventPlans, scope, onSavedAction }: UsePlanEditorCardArgs) {
     const t = useTranslations('AdminPage');
-    const locale = useLocale();
     const queryClient = useQueryClient();
     const invalidate = useInvalidate();
     const footerSlot = useAdminDrawerFooterSlot();
@@ -37,10 +34,7 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
     const invalidateAppConfig = () => {
         queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
     };
-    // useCreate/useUpdate invalidate their own resource's list automatically, but
-    // useCustomMutation (setModules/setEventTypes below hit arbitrary URLs, not the
-    // plan-tiers CRUD verbs) never does — invalidate the catalog list explicitly so
-    // module/event-type edits show up without a manual page reload.
+    // Keep the catalog and public config in sync after drawer edits.
     const invalidatePlanTiersList = () => {
         invalidate({ resource: 'plan-tiers', dataProviderName: 'plan-tiers', invalidates: ['list'] });
     };
@@ -52,27 +46,23 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
     const updatePlan = useUpdate<PlanTierResponseDto>({ dataProviderName: 'plan-tiers', mutationOptions: { onSuccess: onMutationSuccess } });
     // useDelete's mutationOptions doesn't expose onSuccess, unlike useCreate/useUpdate — invalidate manually after it resolves.
     const deletePlan = useDelete<PlanTierResponseDto>();
-    const setModules = useCustomMutation<PlanTierResponseDto>({ mutationOptions: { onSuccess: onMutationSuccess } });
-    const setEventTypes = useCustomMutation<PlanTierResponseDto>({ mutationOptions: { onSuccess: onMutationSuccess } });
 
-    const editor = usePlanEditorState({ plan, modules, eventTypes, scope });
+    const editor = usePlanEditorState({ plan, modules, scope });
     const unlocks = usePlanEditorUnlocks({
         plan,
         eventPlans,
         paidServices,
         orderedModules: editor.orderedModules,
         unlockDraft: editor.unlockDraft,
-        setUnlockDraft: editor.setUnlockDraft,
+        setUnlockDraftAction: editor.setUnlockDraft,
     });
 
     const error =
         updatePlan.mutation.error ??
         deletePlan.mutation.error ??
-        setModules.mutation.error ??
-        setEventTypes.mutation.error ??
         unlocks.createPaidService.mutation.error ??
         unlocks.updatePaidService.mutation.error;
-    const isSaving = updatePlan.mutation.isPending || setModules.mutation.isPending || setEventTypes.mutation.isPending;
+    const isSaving = updatePlan.mutation.isPending;
 
     function handleMakeDefaultClick() {
         setMakeDefaultOpen(true);
@@ -104,25 +94,9 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
         if (pendingSave.changes.length > 0) {
             await updatePlan.mutateAsync({ resource: 'plan-tiers', id: plan.id, values: pendingSave.patch });
         }
-        if (pendingSave.moduleChanges.length > 0) {
-            await setModules.mutateAsync({
-                url: endpoints.admin.planTiers.modules(plan.id),
-                method: 'put',
-                values: { moduleKeys: pendingSave.moduleKeys },
-                dataProviderName: 'plan-tiers',
-            });
-        }
-        if (pendingSave.eventTypeChanges.length > 0) {
-            await setEventTypes.mutateAsync({
-                url: endpoints.admin.planTiers.eventTypes(plan.id),
-                method: 'put',
-                values: { eventTypeKeys: pendingSave.eventTypeKeys },
-                dataProviderName: 'plan-tiers',
-            });
-        }
         editor.setPlanChangeCount(0);
         setPendingSave(null);
-        onSaved(plan.name);
+        onSavedAction(plan.name);
     }
 
     async function handleDeleteConfirm() {
@@ -137,11 +111,7 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
         const patch = planPatchFromFormData(plan, new FormData(event.currentTarget), editor.visibility);
         setPendingSave({
             patch,
-            moduleKeys: editor.moduleKeys,
-            eventTypeKeys: editor.eventTypeKeys,
             changes: planChangeSummary(plan, patch, t),
-            moduleChanges: moduleChangeSummary(plan.moduleKeys, editor.moduleKeys, editor.orderedModules),
-            eventTypeChanges: eventTypeChangeSummary(plan.eventTypeKeys, editor.eventTypeKeys, editor.orderedEventTypes, locale),
         });
     }
 
@@ -156,14 +126,6 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
         editor.handleVisibilityChange(next);
     }
 
-    function handleModuleChange(event: React.ChangeEvent<HTMLInputElement>) {
-        editor.handleModuleChange(event);
-    }
-
-    function handleEventTypeChange(event: React.ChangeEvent<HTMLInputElement>) {
-        editor.handleEventTypeChange(event);
-    }
-
     return {
         plan,
         isEvent: editor.isEvent,
@@ -171,8 +133,6 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
         tab: editor.tab,
         setTab: editor.setTab,
         visibility: editor.visibility,
-        moduleKeys: editor.moduleKeys,
-        eventTypeKeys: editor.eventTypeKeys,
         unlockDraft: editor.unlockDraft,
         error,
         canSave: editor.canSave,
@@ -189,7 +149,6 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
         formRef: editor.formRef,
         editorId: `plan-editor-${plan.id}`,
         orderedModules: editor.orderedModules,
-        orderedEventTypes: editor.orderedEventTypes,
         moduleUnlocks: unlocks.moduleUnlocks,
         handleMakeDefaultClick,
         handleMakeDefaultClose,
@@ -202,8 +161,6 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
         handleSubmit,
         handleFormChange,
         handleVisibilityChange,
-        handleModuleChange,
-        handleEventTypeChange,
         openUnlockEditor: unlocks.openUnlockEditor,
         closeUnlockEditor: unlocks.closeUnlockEditor,
         updateUnlockDraft: unlocks.updateUnlockDraft,

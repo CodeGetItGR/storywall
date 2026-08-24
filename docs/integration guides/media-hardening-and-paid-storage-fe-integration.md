@@ -6,6 +6,7 @@ plus the handful of behaviours that are genuinely new. If you only read one sect
 [§1](#1-what-changed-and-whether-it-touches-you) — most of this is transparent to the frontend.
 
 Related docs, referenced throughout rather than duplicated:
+
 - [`multi-image-post-upload-fe-integration.md`](multi-image-post-upload-fe-integration.md) — the
   upload/batch-upload endpoints and their error codes
 - [`billing-fe-guide.md`](billing-fe-guide.md) — plans, checkout, the "keep originals" add-on,
@@ -16,17 +17,17 @@ Related docs, referenced throughout rather than duplicated:
 
 ## 1. What changed, and whether it touches you
 
-| Change | FE-visible? | Where |
-|---|---|---|
-| Upload storage key/content-type derived from file bytes, not the client's filename/MIME | No — same request/response shape | [§2](#2-upload-hardening-nothing-to-change) |
-| Stored objects served `Content-Disposition: attachment` | **Only for direct navigation to a presigned URL** | [§2](#2-upload-hardening-nothing-to-change) |
-| Decompression-bomb pixel cap now covers GIF/WEBP too (previously only JPEG/PNG) | No — same error code, wider coverage | [§3](#3-compression-pipeline) |
-| New `503 MEDIA_PROCESSING_BUSY` under load | **Yes — new error code to handle** | [§3](#3-compression-pipeline) |
-| Deleted media is purged from storage in ~1 day instead of ~30 | No — nothing to undo a deletion today either way | [§4](#4-retention-nothing-to-build-context-only) |
-| Storage quota check is now exact (was racy under concurrent uploads) | No — same `409` you already handle | [§4](#4-retention-nothing-to-build-context-only) |
-| Add-ons can be restricted to specific plan tiers | **Yes — new field, new error code** | [§5](#5-paid-storage-and-add-on-changes) |
-| Admin can remove an add-on entitlement | **Yes — new admin-only endpoint** | [§5](#5-paid-storage-and-add-on-changes) |
-| Add-on/plan currency mismatch is now caught server-side | No — this is a catalog-misconfiguration guard, unreachable from a correct catalog | [§5](#5-paid-storage-and-add-on-changes) |
+| Change                                                                                  | FE-visible?                                                                       | Where                                            |
+| --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------ |
+| Upload storage key/content-type derived from file bytes, not the client's filename/MIME | No — same request/response shape                                                  | [§2](#2-upload-hardening-nothing-to-change)      |
+| Stored objects served `Content-Disposition: attachment`                                 | **Only for direct navigation to a presigned URL**                                 | [§2](#2-upload-hardening-nothing-to-change)      |
+| Decompression-bomb pixel cap now covers GIF/WEBP too (previously only JPEG/PNG)         | No — same error code, wider coverage                                              | [§3](#3-compression-pipeline)                    |
+| New `503 MEDIA_PROCESSING_BUSY` under load                                              | **Yes — new error code to handle**                                                | [§3](#3-compression-pipeline)                    |
+| Deleted media is purged from storage in ~1 day instead of ~30                           | No — nothing to undo a deletion today either way                                  | [§4](#4-retention-nothing-to-build-context-only) |
+| Storage quota check is now exact (was racy under concurrent uploads)                    | No — same `409` you already handle                                                | [§4](#4-retention-nothing-to-build-context-only) |
+| Add-ons can be restricted to specific plan tiers                                        | **Yes — new field, new error code**                                               | [§5](#5-paid-storage-and-add-on-changes)         |
+| Admin can remove an add-on entitlement                                                  | **Yes — new admin-only endpoint**                                                 | [§5](#5-paid-storage-and-add-on-changes)         |
+| Add-on/plan currency mismatch is now caught server-side                                 | No — this is a catalog-misconfiguration guard, unreachable from a correct catalog | [§5](#5-paid-storage-and-add-on-changes)         |
 
 ## 2. Upload hardening — nothing to change
 
@@ -135,10 +136,10 @@ column of the billing guide's error table.
 
 ## 6. Error code reference (this review only)
 
-| Code | HTTP | Meaning | FE handling |
-|---|---|---|---|
-| `3016` `MEDIA_IMAGE_TOO_MANY_PIXELS` | 413 | Image exceeds the 50MP decode cap — now enforced for every format including GIF/WEBP | Unchanged: show message, offer resize |
-| `3017` `MEDIA_PROCESSING_BUSY` | 503 | Server is at its concurrent-decode limit | New: retry the affected file after a short delay |
-| `5039` `PAID_SERVICE_CURRENCY_MISMATCH` | 409 | Catalog misconfiguration — add-on and plan priced in different currencies | Admin-facing; host sees a generic failure |
-| `5040` `PAID_SERVICE_NOT_ON_PLAN` | 409 | Service is restricted to plan tiers this event isn't on | Filter the purchase UI by `planTierIds` so this is unreachable |
-| `5041` `ADDON_NOT_ACTIVE` | 409 | Admin removing an add-on the event doesn't have | Admin panel only |
+| Code                                    | HTTP | Meaning                                                                              | FE handling                                                    |
+| --------------------------------------- | ---- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
+| `3016` `MEDIA_IMAGE_TOO_MANY_PIXELS`    | 413  | Image exceeds the 50MP decode cap — now enforced for every format including GIF/WEBP | Unchanged: show message, offer resize                          |
+| `3017` `MEDIA_PROCESSING_BUSY`          | 503  | Server is at its concurrent-decode limit                                             | New: retry the affected file after a short delay               |
+| `5039` `PAID_SERVICE_CURRENCY_MISMATCH` | 409  | Catalog misconfiguration — add-on and plan priced in different currencies            | Admin-facing; host sees a generic failure                      |
+| `5040` `PAID_SERVICE_NOT_ON_PLAN`       | 409  | Service is restricted to plan tiers this event isn't on                              | Filter the purchase UI by `planTierIds` so this is unreachable |
+| `5041` `ADDON_NOT_ACTIVE`               | 409  | Admin removing an add-on the event doesn't have                                      | Admin panel only                                               |

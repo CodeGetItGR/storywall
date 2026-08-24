@@ -18,12 +18,12 @@ out into `translations.eventTypes`, keyed by `eventTypeKey`) **and to the admin
 
 ```ts
 interface AppEventTypeDto {
-  id: string;
-  eventTypeKey: string;                   // e.g. "WEDDING"
-  icon: string;                           // an emoji, e.g. "💍"
-  accentToken: 'rose' | 'sky' | 'amber';  // a design-token name, never a hex/CSS value
-  isEnabled: boolean;
-  sortOrder: number;
+    id: string;
+    eventTypeKey: string; // e.g. "WEDDING"
+    icon: string; // an emoji, e.g. "💍"
+    accentToken: 'rose' | 'sky' | 'amber'; // a design-token name, never a hex/CSS value
+    isEnabled: boolean;
+    sortOrder: number;
 }
 ```
 
@@ -33,24 +33,24 @@ a picker before a locale is known) doesn't pull ~40 strings × 2 locales it isn'
 
 ```ts
 interface AppTranslationsDto {
-  eventTypes: Record<string /* eventTypeKey */, AppEventTypeTranslationDto>;
+    eventTypes: Record<string /* eventTypeKey */, AppEventTypeTranslationDto>;
 }
 
 interface AppEventTypeTranslationDto {
-  name: { en: string; el: string };
-  tagline: { en: string; el: string };
-  voice: {
-    titlePlaceholder: { en: string; el: string };
-    locationPlaceholder: { en: string; el: string };
-    joinSubtitle: { en: string; el: string };
-    joinDisclaimer: { en: string; el: string };
-    inviteHeadline: { en: string; el: string };
-    rsvpMessageLabel: { en: string; el: string };
-    rsvpAttendingConfirmation: { en: string; el: string };
-    toolsSubtitle: { en: string; el: string };
-    toolsScheduleDescription: { en: string; el: string };
-    toolsPlaylistDescription: { en: string; el: string };
-  };
+    name: { en: string; el: string };
+    tagline: { en: string; el: string };
+    voice: {
+        titlePlaceholder: { en: string; el: string };
+        locationPlaceholder: { en: string; el: string };
+        joinSubtitle: { en: string; el: string };
+        joinDisclaimer: { en: string; el: string };
+        inviteHeadline: { en: string; el: string };
+        rsvpMessageLabel: { en: string; el: string };
+        rsvpAttendingConfirmation: { en: string; el: string };
+        toolsSubtitle: { en: string; el: string };
+        toolsScheduleDescription: { en: string; el: string };
+        toolsPlaylistDescription: { en: string; el: string };
+    };
 }
 ```
 
@@ -93,15 +93,15 @@ a type's copy before switching it on has no need for the split:
 
 ```ts
 interface PlatformEventTypeResponseDto {
-  id: string;
-  eventTypeKey: string;              // e.g. "WEDDING"
-  name: { en: string; el: string };  // was `string` — now a locale map, same as tagline/voice below
-  tagline: { en: string; el: string };  // replaces `description`, which is gone
-  icon: string;
-  accentToken: 'rose' | 'sky' | 'amber';
-  voice: { /* same ten keys as AppEventTypeTranslationDto.voice above */ };
-  isEnabled: boolean;
-  sortOrder: number;
+    id: string;
+    eventTypeKey: string; // e.g. "WEDDING"
+    name: { en: string; el: string }; // was `string` — now a locale map, same as tagline/voice below
+    tagline: { en: string; el: string }; // replaces `description`, which is gone
+    icon: string;
+    accentToken: 'rose' | 'sky' | 'amber';
+    voice: {/* same ten keys as AppEventTypeTranslationDto.voice above */};
+    isEnabled: boolean;
+    sortOrder: number;
 }
 ```
 
@@ -151,7 +151,7 @@ as if it were designed for a birthday, not a wedding, with **no frontend deploy*
 Confirmed FE-only, no backend dependency, out of scope for this change: host display name
 resolution from `hosts[]`, the raw `event.eventType` enum leaking into the feed header, cover
 gradients, placeholder badge counts, per-event document metadata, and Quiz removal / retiring
-`lib/mock-data.ts`. Per-type *module composition* (which modules a type gets, as opposed to what
+`lib/mock-data.ts`. Per-type _module composition_ (which modules a type gets, as opposed to what
 they're called) is unchanged and still lives at
 `GET /api/event-types/{key}/modules` — see
 `event-lifecycle-locks-and-event-types-fe-integration.md`.

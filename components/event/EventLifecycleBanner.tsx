@@ -1,10 +1,10 @@
 'use client';
 
-import { AlertTriangle, Clock3, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
+import { EventLifecycleIcon } from '@/components/event/EventLifecycleIcon';
 import type { EventStatus } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -14,12 +14,6 @@ function tone(status: Exclude<EventStatus, 'ACTIVE'>) {
     if (status === 'DRAFT') return 'border-sky-200 bg-sky-50 text-sky-900';
     if (status === 'FROZEN') return 'border-amber-200 bg-amber-50 text-amber-950';
     return 'border-rose-200 bg-rose-50 text-rose-950';
-}
-
-function Icon({ status }: { status: Exclude<EventStatus, 'ACTIVE'> }) {
-    if (status === 'DRAFT') return <Clock3 className="h-4 w-4" aria-hidden="true" />;
-    if (status === 'FROZEN') return <AlertTriangle className="h-4 w-4" aria-hidden="true" />;
-    return <XCircle className="h-4 w-4" aria-hidden="true" />;
 }
 
 export function EventLifecycleBanner() {
@@ -45,7 +39,7 @@ export function EventLifecycleBanner() {
             >
                 <div className="flex min-w-0 gap-2">
                     <span className="mt-0.5 shrink-0">
-                        <Icon status={status} />
+                        <EventLifecycleIcon status={status} />
                     </span>
                     <div className="min-w-0">
                         <p className="font-semibold">{t(`${status}.title`)}</p>

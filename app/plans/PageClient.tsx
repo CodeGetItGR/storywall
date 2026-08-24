@@ -13,7 +13,7 @@ export default function PlansPage() {
     }
 
     if (data.hasError) {
-        return <PlansErrorState onRetry={data.retry} />;
+        return <PlansErrorState onRetryAction={data.retry} />;
     }
 
     return (

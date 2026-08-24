@@ -13,7 +13,7 @@ against an earlier version of this doc? `docs/qr-links-fe-changelog.md` lists ju
 ## Why
 
 A host prints a QR code onto a table card, a poster, a welcome sign. That object then sits in the
-physical world for months. Everything about the destination has to stay changeable *behind* it,
+physical world for months. Everything about the destination has to stay changeable _behind_ it,
 because the one thing nobody will do is reprint two hundred cards.
 
 So the QR encodes a URL and nothing else — `https://your-app/q/{token}` — with no event id, no
@@ -21,13 +21,13 @@ role, no guest data, and no query parameters. The backend owns what the token me
 repoint or kill it at any time. The frontend's entire job is: render the URL the backend gave you,
 and when someone scans it, ask the backend what it means.
 
-## What this does *not* do
+## What this does _not_ do
 
 - **No QR image generation.** The backend returns a URL string. Use a QR rendering library
   (`qrcode`, `qrcode.react`, whatever you like). Download/print/share UX is entirely yours.
 - **No scan analytics.** Resolving a QR performs zero writes — no scan counter, no
   `lastScannedAt`. This was deliberate: it keeps an anonymous endpoint free of write
-  amplification. Join and upload stats *are* available, derived from what guests actually did —
+  amplification. Join and upload stats _are_ available, derived from what guests actually did —
   see [§3](#3-host-side-how-each-code-performed).
 - **No short-URL service.** `/q/{token}` is a route in your app, not a redirect hop.
 - **No new upload or join endpoints.** A resolved QR hands you an `inviteToken` and you continue
@@ -44,31 +44,31 @@ POST /api/events/{eventId}/qr-links      ROLE_USER, must be a host of the event
 ```jsonc
 // request
 {
-  "targetType": "EVENT_JOIN",   // required: EVENT_JOIN | MEDIA_UPLOAD | INVITATION
-  "maxGuests": 80,              // optional, 1..1000, default 50. Shared types only.
-  "label": "Entrance poster",   // optional, max 100. Host-facing only, never public.
-  "metadata": { "printRun": "spring-2026" },  // optional, host-facing only
-  "expiresAt": null             // optional. Omit for "never", which is usually right.
+    "targetType": "EVENT_JOIN", // required: EVENT_JOIN | MEDIA_UPLOAD | INVITATION
+    "maxGuests": 80, // optional, 1..1000, default 50. Shared types only.
+    "label": "Entrance poster", // optional, max 100. Host-facing only, never public.
+    "metadata": { "printRun": "spring-2026" }, // optional, host-facing only
+    "expiresAt": null, // optional. Omit for "never", which is usually right.
 }
 ```
 
 ```jsonc
 // 201 Created
 {
-  "id": "8f2c…",
-  "eventId": "1a4b…",
-  "token": "kJ8vQ2mR…",                                  // 43 chars, opaque
-  "publicUrl": "https://your-app/q/kJ8vQ2mR…",           // ← render THIS as the QR
-  "targetType": "EVENT_JOIN",
-  "targetId": "c91e…",     // the backing invitation
-  "maxGuests": 80,         // read through from that invitation; PATCH to change it
-  "label": "Entrance poster",
-  "metadata": { "printRun": "spring-2026" },
-  "expiresAt": null,
-  "revokedAt": null,
-  "createdByUserId": "77aa…",
-  "createdAt": "2026-08-11T10:00:00Z",
-  "updatedAt": "2026-08-11T10:00:00Z"
+    "id": "8f2c…",
+    "eventId": "1a4b…",
+    "token": "kJ8vQ2mR…", // 43 chars, opaque
+    "publicUrl": "https://your-app/q/kJ8vQ2mR…", // ← render THIS as the QR
+    "targetType": "EVENT_JOIN",
+    "targetId": "c91e…", // the backing invitation
+    "maxGuests": 80, // read through from that invitation; PATCH to change it
+    "label": "Entrance poster",
+    "metadata": { "printRun": "spring-2026" },
+    "expiresAt": null,
+    "revokedAt": null,
+    "createdByUserId": "77aa…",
+    "createdAt": "2026-08-11T10:00:00Z",
+    "updatedAt": "2026-08-11T10:00:00Z",
 }
 ```
 
@@ -79,11 +79,11 @@ POST /api/events/{eventId}/qr-links      ROLE_USER, must be a host of the event
   release. Building `${window.location.origin}/q/${token}` yourself will work today and silently
   break the day the public origin diverges from wherever your app is served.
 - **`targetType`** decides which screen a scan lands on:
-  | value | what it means | who it's for |
-  |---|---|---|
-  | `EVENT_JOIN` | join the event, land on the event home | a poster, a welcome sign |
-  | `MEDIA_UPLOAD` | join the event, land in the gallery upload flow | table cards saying "share your photos" |
-  | `INVITATION` | resolve a specific personalised invitation | a QR printed on one person's invite card |
+    | value          | what it means                                   | who it's for                             |
+    | -------------- | ----------------------------------------------- | ---------------------------------------- |
+    | `EVENT_JOIN`   | join the event, land on the event home          | a poster, a welcome sign                 |
+    | `MEDIA_UPLOAD` | join the event, land in the gallery upload flow | table cards saying "share your photos"   |
+    | `INVITATION`   | resolve a specific personalised invitation      | a QR printed on one person's invite card |
 - **`targetId`** must be supplied for `INVITATION` (and must be an invitation belonging to the
   same event — a mismatch is a 400). It must be **omitted** for the other two, which mint their
   own backing invitation. Sending it anyway is a 400 rather than being ignored.
@@ -128,7 +128,7 @@ belongs to the host and is editable at `PATCH /api/event-invitations/{id}`. Lowe
 number who already joined is allowed and evicts nobody; it just stops further joins.
 
 Switching between `EVENT_JOIN` and `MEDIA_UPLOAD` reuses the backing invitation, so guests who
-already joined through that code keep their membership. Switching *to* `INVITATION` requires a
+already joined through that code keep their membership. Switching _to_ `INVITATION` requires a
 `targetId`.
 
 **Prefer `revoke` over `delete` for anything already printed.** Revoking makes future scans report
@@ -145,31 +145,31 @@ GET /api/events/{eventId}/qr-links/stats      ROLE_USER, host only
 ```jsonc
 // 200 OK — one row per link, including revoked ones
 [
-  {
-    "qrLinkId": "8f2c…",
-    "label": "Entrance poster",
-    "targetType": "EVENT_JOIN",
-    "status": "ACTIVE",
-    "joinCount": 42,
-    "maxGuests": 50,
-    "remainingSlots": 8,
-    "lastJoinedAt": "2026-08-11T19:42:00Z",
-    "uploadCount": 137
-  }
+    {
+        "qrLinkId": "8f2c…",
+        "label": "Entrance poster",
+        "targetType": "EVENT_JOIN",
+        "status": "ACTIVE",
+        "joinCount": 42,
+        "maxGuests": 50,
+        "remainingSlots": 8,
+        "lastJoinedAt": "2026-08-11T19:42:00Z",
+        "uploadCount": 137,
+    },
 ]
 ```
 
 ### Field notes
 
 - **`remainingSlots` is the one to put in front of the host.** It's the only figure that lets them
-  act *before* a guest standing at the door gets a `5035`. Surface a warning when it gets low and
+  act _before_ a guest standing at the door gets a `5035`. Surface a warning when it gets low and
   link straight to the `maxGuests` edit.
 - **`status`** is the same derived value a scanner sees, computed by the same backend function, so
   the host's badge can't disagree with the guest's screen. It's also on `QrLinkResponseDto` now.
 - **`joinCount`** counts guests who joined and haven't been removed. A removed guest hands their
   slot back, exactly as the limit enforcement treats them.
-- **`uploadCount`** counts media contributed by the guests this code brought in — *everything they
-  ever uploaded*, not just what they uploaded in the visit that started with the scan. Label it
+- **`uploadCount`** counts media contributed by the guests this code brought in — _everything they
+  ever uploaded_, not just what they uploaded in the visit that started with the scan. Label it
   "photos from guests who joined here", not "photos from this QR code". Deleted media is excluded.
 - **`lastJoinedAt`** is null until somebody joins. Useful for "this poster has gone quiet".
 - **`maxGuests` and `remainingSlots` are null** when the backing invitation has gone missing —
@@ -199,16 +199,16 @@ on `status`.
 ```jsonc
 // 200 OK — the only case that carries event details
 {
-  "status": "ACTIVE",
-  "targetType": "MEDIA_UPLOAD",
-  "eventId": "1a4b…",
-  "eventTitle": "Maria & Nikos",
-  "eventSubtitle": "Santorini, September",
-  "coverMediaId": "e70c…",
-  "eventStatus": "ACTIVE",
-  "inviteToken": "b3f1…",
-  "requiresAuth": true,
-  "requiresGuestKey": true
+    "status": "ACTIVE",
+    "targetType": "MEDIA_UPLOAD",
+    "eventId": "1a4b…",
+    "eventTitle": "Maria & Nikos",
+    "eventSubtitle": "Santorini, September",
+    "coverMediaId": "e70c…",
+    "eventStatus": "ACTIVE",
+    "inviteToken": "b3f1…",
+    "requiresAuth": true,
+    "requiresGuestKey": true,
 }
 ```
 
@@ -223,13 +223,13 @@ on `status`.
   or expired code deliberately returns no event title — a poster photographed off a wall should
   stop telling strangers whose wedding it was.
 - **The four statuses**, and what to show:
-  | status | HTTP | what happened | suggested UI |
-  |---|---|---|---|
-  | `ACTIVE` | 200 | usable | continue into the flow for `targetType` |
-  | `REVOKED` | 200 | the host turned it off | "This code is no longer active. Ask your host for a new one." |
-  | `EXPIRED` | 200 | past its `expiresAt` | "This code has expired." |
-  | `TARGET_UNAVAILABLE` | 200 | event deleted, not yet live, or purged | "This event isn't available." |
-  | *unknown token* | **404**, `errorCode 2004` | never issued | "We don't recognise this code." |
+    | status               | HTTP                      | what happened                          | suggested UI                                                  |
+    | -------------------- | ------------------------- | -------------------------------------- | ------------------------------------------------------------- |
+    | `ACTIVE`             | 200                       | usable                                 | continue into the flow for `targetType`                       |
+    | `REVOKED`            | 200                       | the host turned it off                 | "This code is no longer active. Ask your host for a new one." |
+    | `EXPIRED`            | 200                       | past its `expiresAt`                   | "This code has expired."                                      |
+    | `TARGET_UNAVAILABLE` | 200                       | event deleted, not yet live, or purged | "This event isn't available."                                 |
+    | _unknown token_      | **404**, `errorCode 2004` | never issued                           | "We don't recognise this code."                               |
 - **`eventStatus`** is `ACTIVE` or `FROZEN` only. A frozen event is readable but rejects every
   write, so on `MEDIA_UPLOAD` you should disable the upload CTA up front rather than let the guest
   pick photos and fail at submit.
@@ -272,23 +272,23 @@ Then route by `targetType`: `EVENT_JOIN` → event home, `MEDIA_UPLOAD` → gall
 
 > **Updated 2026-08-22 — breaking.** `guestKey` is now **server-generated**, not something the
 > frontend mints. Stop calling `crypto.randomUUID()` for it. Send whatever value (if any) you have
-> stored for this device, and persist the `guestKey` the guest-login *response* gives back instead.
+> stored for this device, and persist the `guestKey` the guest-login _response_ gives back instead.
 
 ```ts
 function storedGuestKey(): string | undefined {
-  return localStorage.getItem('guestKey') ?? undefined;
+    return localStorage.getItem('guestKey') ?? undefined;
 }
 
 // after a successful guest-login response:
 if (response.guestKey) {
-  localStorage.setItem('guestKey', response.guestKey);
+    localStorage.setItem('guestKey', response.guestKey);
 }
 ```
 
 **Send `storedGuestKey()` on every guest-login** (omit the field when there's nothing stored yet —
 that's the normal first-scan case, not an error). Behind a shared code — every `EVENT_JOIN` and
 `MEDIA_UPLOAD` link, whatever its `maxGuests`, and any invitation admitting more than one guest —
-the response comes back with a fresh `guestKey` the first time, and the *same* one on every later
+the response comes back with a fresh `guestKey` the first time, and the _same_ one on every later
 call that echoes it correctly. A personal one-person invitation never returns one — nothing to
 store. A stale or unrecognised key is treated the same as sending none (new membership, new key
 issued) rather than rejected, so there's no `400` to handle here anymore for a missing key.
@@ -312,8 +312,12 @@ moment a membership is created:
 
 ```jsonc
 // 409 Conflict
-{ "status": 409, "errorCode": 5035, "errorKey": "INVITATION_EXHAUSTED",
-  "detail": "This invite link has already been used by the maximum number of guests." }
+{
+    "status": 409,
+    "errorCode": 5035,
+    "errorKey": "INVITATION_EXHAUSTED",
+    "detail": "This invite link has already been used by the maximum number of guests.",
+}
 ```
 
 A slot is consumed **when someone joins, not when they scan**. Resolving a QR costs nothing, so a
@@ -326,10 +330,10 @@ plan.
 
 ## New error codes
 
-| code | key | HTTP | when |
-|---|---|---|---|
-| 2004 | `QR_LINK_NOT_FOUND` | 404 | the scanned token was never issued |
-| 5035 | `INVITATION_EXHAUSTED` | 409 | the link's `maxGuests` is used up |
+| code | key                    | HTTP | when                               |
+| ---- | ---------------------- | ---- | ---------------------------------- |
+| 2004 | `QR_LINK_NOT_FOUND`    | 404  | the scanned token was never issued |
+| 5035 | `INVITATION_EXHAUSTED` | 409  | the link's `maxGuests` is used up  |
 
 ### TypeScript
 
@@ -342,19 +346,19 @@ The resolution DTO is a discriminated union in practice — narrow on `status` b
 anything but `status` and `targetType`:
 
 ```ts
-const res = await fetch(`/api/qr/${token}`);          // no Authorization header
+const res = await fetch(`/api/qr/${token}`); // no Authorization header
 if (res.status === 404) return showUnknownCode();
 const qr: QrLinkResolutionDto = await res.json();
 
 switch (qr.status) {
-  case 'ACTIVE':
-    return startJoinFlow(qr);            // qr.inviteToken, qr.eventTitle etc. are set here
-  case 'REVOKED':
-    return showMessage('This code is no longer active.');
-  case 'EXPIRED':
-    return showMessage('This code has expired.');
-  case 'TARGET_UNAVAILABLE':
-    return showMessage("This event isn't available.");
+    case 'ACTIVE':
+        return startJoinFlow(qr); // qr.inviteToken, qr.eventTitle etc. are set here
+    case 'REVOKED':
+        return showMessage('This code is no longer active.');
+    case 'EXPIRED':
+        return showMessage('This code has expired.');
+    case 'TARGET_UNAVAILABLE':
+        return showMessage("This event isn't available.");
 }
 ```
 

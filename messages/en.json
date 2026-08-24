@@ -102,7 +102,6 @@
     },
     "DesktopNavRail": {
         "mainNavigation": "Main navigation",
-        "coupleNames": "Emma & James",
         "newPost": "New Post",
         "items": {
             "home": "Home",
@@ -250,7 +249,7 @@
         "showPassword": "Show password",
         "hidePassword": "Hide password",
         "submit": "Sign In",
-        "disclaimer": "By joining you agree to share moments from Emma & James's special day.",
+        "tabTitle": "Login",
         "noAccount": "Don't have an account?",
         "createAccountLink": "Create one",
         "expiredInvite": "This invitation has expired. Please ask your host for a new invite link.",
@@ -273,7 +272,7 @@
         "showPassword": "Show password",
         "hidePassword": "Hide password",
         "submit": "Create Account",
-        "disclaimer": "By joining you agree to share moments from Emma & James's special day.",
+        "tabTitle": "Register",
         "haveAccount": "Already have an account?",
         "signInLink": "Sign in",
         "expiredInvite": "This invitation has expired. Please ask your host for a new invite link.",
@@ -1397,8 +1396,8 @@
         "whosComing": "Who's coming"
     },
     "RootLayout": {
-        "title": "StoryWall — Emma & James · Oct 18, 2025",
-        "description": "The wedding social wall for Emma Chen & James Rivera. Share memories, RSVP, explore the venue, and celebrate together."
+        "title": "StoryWall",
+        "description": "Share memories, RSVP, and celebrate together on StoryWall."
     },
     "RightContextPanel": {
         "hostConsole": "Host console",
@@ -1451,6 +1450,8 @@
             "groupCatalog": "Catalog",
             "groupOperations": "Operations",
             "eventPlans": "Event plans",
+            "planAvailability": "Plan availability",
+            "planModules": "Plan modules",
             "paidServices": "Paid services",
             "metrics": "Metrics",
             "modules": "Modules",
@@ -1465,6 +1466,8 @@
         "tabs": {
             "metrics": "Metrics",
             "eventPlans": "Event plans",
+            "planAvailability": "Plan availability",
+            "planModules": "Plan modules",
             "paidServices": "Paid services",
             "modules": "Modules",
             "eventTypes": "Event types",
@@ -1510,6 +1513,46 @@
             "visibilityArchivedHint": "Not assignable to anyone. Accounts or events already on this plan are unaffected.",
             "plan": "Plan"
         },
+        "planMatrices": {
+            "discard": "Discard",
+            "review": "Review changes ({count})",
+            "apply": "Apply changes"
+        },
+        "planAvailability": {
+            "title": "Plan availability",
+            "subtitle": "Choose which event types can use each plan.",
+            "search": "Search plans",
+            "matrixLabel": "Plan availability by event type",
+            "loading": "Loading availability...",
+            "empty": "No plans found.",
+            "allTypes": "All event types",
+            "selectedTypes": "Selected event types",
+            "all": "All",
+            "useAll": "Use all",
+            "allTypesFor": "Make {plan} available for all event types",
+            "assignmentLabel": "Make {plan} available for {eventType}",
+            "lastType": "A plan must be available for at least one event type.",
+            "createTitle": "Event types",
+            "createHint": "Choose where this plan is available.",
+            "confirmTitle": "Apply plan availability changes?",
+            "confirmBody": "{count, plural, one {This changes which event types can use one plan.} other {This changes which event types can use # plans.}}"
+        },
+        "planModules": {
+            "title": "Plan modules",
+            "subtitle": "Choose the modules included in each plan.",
+            "search": "Search plans",
+            "matrixLabel": "Modules included by plan",
+            "loading": "Loading modules...",
+            "empty": "No plans found.",
+            "clear": "Clear",
+            "clearFor": "Remove all modules from {plan}",
+            "assignmentLabel": "Include {module} in {plan}",
+            "disabled": "Disabled",
+            "createTitle": "Included modules",
+            "createHint": "Choose the modules included in this plan.",
+            "confirmTitle": "Apply plan module changes?",
+            "confirmBody": "{count, plural, one {This changes the core features included in one plan.} other {This changes the core features included in # plans.}}"
+        },
         "plans": {
             "loading": "Loading plans...",
             "default": "Default",
@@ -1520,6 +1563,14 @@
             "delete": "Delete",
             "edit": "Edit",
             "snapshotTitle": "Plan snapshot",
+            "duplicate": {
+                "label": "Duplicate",
+                "action": "Duplicate {plan}",
+                "title": "Duplicate plan",
+                "subtitle": "Review the copied details from {plan} before creating it.",
+                "submit": "Create copy",
+                "copyName": "{plan} copy"
+            },
             "storage": "storage",
             "members": "members",
             "activeEvents": "active events",
@@ -1527,8 +1578,6 @@
             "moduleCount": "{count, plural, one {# module} other {# modules}}",
             "includedModules": "Included modules",
             "modules": {
-                "included": "Included",
-                "notIncluded": "Not included",
                 "paidAddon": "Paid add-on",
                 "unavailable": "Unavailable",
                 "removeAddon": "Remove from this plan",
@@ -1538,13 +1587,12 @@
                 "createAddonTitle": "Sell {module} as a paid add-on",
                 "createAddonSubtitle": "Hosts on {plan} will be able to buy this module for their event.",
                 "saveAddon": "Create add-on",
+                "addonsEmpty": "Every module is already included in this plan.",
                 "defaultAddonName": "{module} unlock",
                 "billingOnce": "once",
                 "billingMonthly": "/mo"
             },
             "eventTypes": {
-                "unrestricted": "Available for every event type.",
-                "restricted": "{count, plural, one {Restricted to # event type} other {Restricted to # event types}}",
                 "allBadge": "All types"
             },
             "accountDisabledNotice": "Account plans are disabled for new sales and assignment. Existing rows remain here for historical review and limited maintenance.",
@@ -1556,8 +1604,7 @@
                 "details": "Details",
                 "limits": "Limits",
                 "pricing": "Pricing",
-                "modules": "Modules",
-                "eventTypes": "Event types",
+                "addons": "Add-ons",
                 "danger": "Danger zone"
             },
             "pendingChanges": "{count, plural, one {# unsaved change} other {# unsaved changes}}",
@@ -1567,13 +1614,11 @@
                 "identity": "Plan identity",
                 "limits": "Limits",
                 "pricing": "Pricing",
-                "modules": "Modules",
-                "modulesHint": "Toggle the tools this event plan unlocks. A tool that is off can still be sold as a paid add-on.",
+                "addonsHint": "Sell modules that are not included in this plan as paid add-ons.",
                 "limitsHint": "Blank means no limit. These caps apply to every event on this plan.",
                 "promotion": "Promotion",
                 "promotionHint": "A discount inside its window is charged, not just advertised. Leave the percentage blank to run no promotion.",
-                "availability": "Availability",
-                "eventTypesHint": "Choose which event types can use this plan. Leave every type off to allow it for all event types."
+                "availability": "Availability"
             },
             "filters": {
                 "all": "All",
@@ -1623,13 +1668,7 @@
                 "noChanges": "No changes detected. You can cancel and keep editing.",
                 "review": "Review the exact updates before they are applied.",
                 "fields": "Plan fields",
-                "to": "to",
-                "modules": "Modules",
-                "enabled": "Will be enabled",
-                "disabled": "Will be disabled",
-                "eventTypes": "Event types",
-                "included": "Will be included",
-                "excluded": "Will be excluded"
+                "to": "to"
             },
             "create": {
                 "title": "Create plan",

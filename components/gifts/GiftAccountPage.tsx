@@ -9,7 +9,7 @@ import { useState } from 'react';
 
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { useGiftAccount } from '@/hooks/useGiftAccount';
-import {cn} from "@/lib/utils";
+import { cn } from '@/lib/utils';
 import { useActiveEvent, useIsHost } from '@/providers/EventProvider';
 
 function formatIban(value: string) {
@@ -64,9 +64,11 @@ export function GiftAccountPage() {
                     </section>
 
                     {/* Bank details */}
-                    <section className={cn("shrink-0 border-t border-border/70 pt-6 text-center", {
-                        'mt-5': !!note
-                    })}>
+                    <section
+                        className={cn('shrink-0 border-t border-border/70 pt-6 text-center', {
+                            'mt-5': !!note,
+                        })}
+                    >
                         <div className="space-y-5">
                             <div>
                                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ink-faint">{t('fields.bankName')}</p>
@@ -97,9 +99,7 @@ export function GiftAccountPage() {
                 <section className="flex min-h-[calc(100dvh-7.5rem)] flex-col items-center justify-center px-4 pt-16 text-center">
                     <Image src="/icons/present.svg" alt="" width={88} height={88} className="h-20 w-20 opacity-75" />
                     <p className="mt-6 text-lg font-semibold text-ink">{t('emptyTitle')}</p>
-                    <p className="mt-3 max-w-sm text-base leading-7 text-ink-muted">
-                        {t(isHost ? 'emptyHost' : 'emptyMember')}
-                    </p>
+                    <p className="mt-3 max-w-sm text-base leading-7 text-ink-muted">{t(isHost ? 'emptyHost' : 'emptyMember')}</p>
                 </section>
             )}
 

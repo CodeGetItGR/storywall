@@ -17,19 +17,9 @@ interface ModulePageHeaderProps {
     action?: ReactNode;
 }
 
-const backButtonClassName =
-    'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-muted';
+const backButtonClassName = 'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-muted';
 
-export function ModulePageHeader({
-    title,
-    icon: Icon,
-    iconClassName,
-    showIcon = true,
-    backLabel,
-    backHref,
-    onBack,
-    action,
-}: ModulePageHeaderProps) {
+export function ModulePageHeader({ title, icon: Icon, iconClassName, showIcon = true, backLabel, backHref, onBack, action }: ModulePageHeaderProps) {
     return (
         <div className="flex items-center gap-3 py-4">
             {backHref ? (

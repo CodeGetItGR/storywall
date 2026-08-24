@@ -14,12 +14,12 @@ export function InvitationRow({
     eventId,
     invitation,
     canWrite,
-    onClampNotice,
+    onClampNoticeAction,
 }: {
     eventId: string;
     invitation: EventInvitationResponseDto;
     canWrite: boolean;
-    onClampNotice?: (message: string) => void;
+    onClampNoticeAction?: (message: string) => void;
 }) {
     const t = useTranslations('ManagePage');
     const [isEditing, setIsEditing] = useState(false);
@@ -47,7 +47,7 @@ export function InvitationRow({
         const patch: EventInvitationPatchDto = { maxGuests: requestedMaxGuests };
         const updated = await updateInvitation.mutateAsync(patch);
         if (updated.maxGuests !== requestedMaxGuests) {
-            onClampNotice?.(t('invitations.cappedToPlan', { count: updated.maxGuests }));
+            onClampNoticeAction?.(t('invitations.cappedToPlan', { count: updated.maxGuests }));
         }
         setMaxGuests(updated.maxGuests);
         setIsEditing(false);
@@ -167,8 +167,8 @@ export function InvitationRow({
 
             <ConfirmActionModal
                 open={deleteConfirmOpen}
-                onClose={handleDeleteConfirmClose}
-                onConfirm={handleDelete}
+                onCloseAction={handleDeleteConfirmClose}
+                onConfirmAction={handleDelete}
                 title={t('invitations.revokeConfirmTitle')}
                 body={t('invitations.revokeConfirmBody')}
                 confirmLabel={t('invitations.confirmRevoke')}

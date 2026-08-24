@@ -36,34 +36,19 @@ const FALLBACK_STYLE = {
     surface: 'hover:border-primary/30 hover:bg-primary-light/25',
 };
 
-const EVENT_TYPE_ICON_SLUGS: Record<EventTypeConvention, string> = {
-    WEDDING: 'bouquet',
-    BAPTISM: 'church',
-    SOCIAL_EVENT: 'clinking-glasses',
-    BIRTHDAY: 'birthday-cake',
-    CORPORATE: 'briefcase',
-    FESTIVAL: 'admission-tickets',
-    PRIVATE_PARTY: 'party-popper',
-    CONFERENCE: 'microphone',
-};
-
-function eventTypeIconUrl(eventTypeKey: EventTypeConvention) {
-    return `https://api.iconify.design/fluent-emoji/${EVENT_TYPE_ICON_SLUGS[eventTypeKey]}.svg`;
-}
-
 type EventTypeStepProps = {
     eventTypes: AppEventTypeResponseDto[];
     selectedEventType: EventTypeConvention;
-    onSelect: (eventType: EventTypeConvention) => void;
+    onSelectAction: (eventType: EventTypeConvention) => void;
 };
 
-export function EventTypeStep({ eventTypes, selectedEventType, onSelect }: EventTypeStepProps) {
+export function EventTypeStep({ eventTypes, selectedEventType, onSelectAction }: EventTypeStepProps) {
     const t = useTranslations('CreateEventPage');
     const eventTypeCopy = useLocalizedAppEventTypeCopy();
 
     function handleClick(event: MouseEvent<HTMLButtonElement>) {
         const eventTypeKey = event.currentTarget.dataset.eventTypeKey as EventTypeConvention | undefined;
-        if (eventTypeKey) onSelect(eventTypeKey);
+        if (eventTypeKey) onSelectAction(eventTypeKey);
     }
 
     if (eventTypes.length === 0) {

@@ -24,18 +24,18 @@ export const sectionIcons: Record<ManageSection, LucideIcon> = {
  */
 export function ManageSectionNav({
     active,
-    onSelect,
+    onSelectAction,
     className,
 }: {
     active: ManageSection;
-    onSelect: (section: ManageSection) => void;
+    onSelectAction: (section: ManageSection) => void;
     className?: string;
 }) {
     const t = useTranslations('ManagePage');
 
     function handleClick(event: MouseEvent<HTMLButtonElement>) {
         const next = event.currentTarget.dataset.section as ManageSection | undefined;
-        if (next) onSelect(next);
+        if (next) onSelectAction(next);
     }
 
     return (

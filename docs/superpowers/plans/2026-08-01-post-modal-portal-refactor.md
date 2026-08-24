@@ -19,7 +19,7 @@
 - Modify `providers/Providers.tsx` — wire `ModalProvider` into the provider tree.
 - Create `hooks/usePostModal.ts` — URL-driven (`?post=`) open/close/state for the post modal.
 - Modify `hooks/index.ts` — export `usePostModal`.
-- Modify `components/feed/PostModal.tsx` — drop `postId`/`onClose` props in favor of `usePostModal()`; wrap content in `<Modal>`; move comments into `<Modal.Body>`; fix media panel overflow.
+- Modify `components/feed/PostModal.tsx` — drop `postId`/`onCloseAction` props in favor of `usePostModal()`; wrap content in `<Modal>`; move comments into `<Modal.Body>`; fix media panel overflow.
 - Modify `components/feed/PostCard.tsx` — replace its hand-rolled `openPost` URL logic with `usePostModal().open(post.id)`.
 - Modify `app/(app)/feed/[eventId]/page.tsx` — replace `openPostId`/`closeModal` URL logic with `usePostModal()`; render `<PostModal />` unconditionally.
 
@@ -327,7 +327,7 @@ git commit -m "chore: export usePostModal from hooks barrel"
 
 - [ ] **Step 1: Replace the entire file**
 
-Current behavior (data fetching, comment list, comment composer) is preserved; only the shell (portal/backdrop/Escape/sizing) and the props/state source change — `postId`/`onClose` come from `usePostModal()` instead of being passed in, and the comment list moves into `<Modal.Body>` so it scrolls internally instead of growing the shell. The media panel gets `min-w-0 min-h-0` so it can't force the grid past the shell's bounds.
+Current behavior (data fetching, comment list, comment composer) is preserved; only the shell (portal/backdrop/Escape/sizing) and the props/state source change — `postId`/`onCloseAction` come from `usePostModal()` instead of being passed in, and the comment list moves into `<Modal.Body>` so it scrolls internally instead of growing the shell. The media panel gets `min-w-0 min-h-0` so it can't force the grid past the shell's bounds.
 
 Replace the entire contents of `components/feed/PostModal.tsx` with:
 
@@ -486,7 +486,7 @@ export function PostModal() {
 - [ ] **Step 2: Type-check**
 
 Run: `npx tsc --noEmit`
-Expected: New errors at every call site that still passes `postId`/`onClose` props to `<PostModal />` (`app/(app)/feed/[eventId]/page.tsx`). That's expected — fixed in Task 8. Confirm there are no errors inside `PostModal.tsx` itself.
+Expected: New errors at every call site that still passes `postId`/`onCloseAction` props to `<PostModal />` (`app/(app)/feed/[eventId]/page.tsx`). That's expected — fixed in Task 8. Confirm there are no errors inside `PostModal.tsx` itself.
 
 - [ ] **Step 3: Commit**
 

@@ -65,7 +65,7 @@ export default function InvitationsTab({
                         item={item}
                         active={panel === item}
                         label={t(`invitations.panels.${item}`)}
-                        onSelect={handlePanelSelect}
+                        onSelectAction={handlePanelSelect}
                     />
                 ))}
             </div>
@@ -101,11 +101,16 @@ export default function InvitationsTab({
             )}
 
             {showCreate && canWrite && showInvites && (
-                <CreateInvitationForm eventId={eventId} onDone={handleHideCreate} onClampNotice={handleClampNotice} />
+                <CreateInvitationForm eventId={eventId} onDoneAction={handleHideCreate} onClampNoticeAction={handleClampNotice} />
             )}
-            {showCreate && canWrite && showCoHosts && <CreateCoHostInvitationForm eventId={eventId} onDone={handleHideCreate} />}
+            {showCreate && canWrite && showCoHosts && <CreateCoHostInvitationForm eventId={eventId} onDoneAction={handleHideCreate} />}
             {showCreate && canWrite && !showInvites && !showCoHosts && (
-                <CreateQrLinkForm eventId={eventId} invitations={invitations} onDone={handleHideCreate} onClampNotice={handleClampNotice} />
+                <CreateQrLinkForm
+                    eventId={eventId}
+                    invitations={invitations}
+                    onDoneAction={handleHideCreate}
+                    onClampNoticeAction={handleClampNotice}
+                />
             )}
 
             {showInvites || showCoHosts ? (
@@ -116,7 +121,7 @@ export default function InvitationsTab({
                             eventId={eventId}
                             invitation={invitation}
                             canWrite={canWrite}
-                            onClampNotice={handleClampNotice}
+                            onClampNoticeAction={handleClampNotice}
                         />
                     ))}
                 </div>
@@ -131,7 +136,7 @@ export default function InvitationsTab({
                                 qrLink={qrLink}
                                 stats={stats}
                                 canWrite={canWrite}
-                                onClampNotice={handleClampNotice}
+                                onClampNoticeAction={handleClampNotice}
                             />
                         );
                     })}

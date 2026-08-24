@@ -3,10 +3,11 @@
 import { ArrowRight, Loader2, ScanLine, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import React, { type ReactNode, useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { InviteLayout } from '@/components/invite/InviteLayout';
 import { InviteTerminalState } from '@/components/invite/InviteTerminalState';
+import { QrLandingState } from '@/components/invite/QrLandingState';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
@@ -150,20 +151,4 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
             }
         />
     );
-}
-
-function QrLandingState({ content, isLoading, terminalState }: { content: ReactNode; isLoading: boolean; terminalState: ReactNode }) {
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="w-6 h-6 animate-spin text-ink-muted" />
-            </div>
-        );
-    }
-
-    if (terminalState) {
-        return terminalState;
-    }
-
-    return content;
 }

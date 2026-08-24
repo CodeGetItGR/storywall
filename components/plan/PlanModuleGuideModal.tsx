@@ -8,13 +8,13 @@ import { getModuleMeta, publicEnabledModules } from '@/lib/planModules';
 
 export function PlanModuleGuideModal({
     open,
-    onClose,
+    onCloseAction,
     modules,
     paidServices = [],
     planName,
 }: {
     open: boolean;
-    onClose: () => void;
+    onCloseAction: () => void;
     modules: PlatformModuleResponseDto[];
     paidServices?: PaidServiceResponseDto[];
     planName?: string;
@@ -29,7 +29,7 @@ export function PlanModuleGuideModal({
     );
 
     return (
-        <Modal open={open} onClose={onClose} size="sm" closeLabel={t('compare.moduleLegendClose')}>
+        <Modal open={open} onClose={onCloseAction} size="sm" closeLabel={t('compare.moduleLegendClose')}>
             <Modal.Body className="px-4 pb-4 pt-12 sm:px-5">
                 <h2 className="text-lg font-semibold text-ink">
                     {planName ? t('compare.moduleLegendTitleForPlan', { plan: planName }) : t('compare.moduleLegendTitle')}

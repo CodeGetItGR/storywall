@@ -13,17 +13,17 @@ type EventAddonsStepProps = {
     modules: PlatformModuleResponseDto[];
     services: PaidServiceResponseDto[];
     selectedCodes: string[];
-    onToggle: (code: string) => void;
+    onToggleAction: (code: string) => void;
 };
 
-export function EventAddonsStep({ modules, services, selectedCodes, onToggle }: EventAddonsStepProps) {
+export function EventAddonsStep({ modules, services, selectedCodes, onToggleAction }: EventAddonsStepProps) {
     const t = useTranslations('CreateEventPage');
     const tModules = useTranslations('Modules');
     const tPaidDescriptions = useTranslations('CreateEventPage.paidModules.descriptions');
     const locale = useLocale();
 
     function handleToggle(event: ChangeEvent<HTMLInputElement>) {
-        onToggle(event.currentTarget.value);
+        onToggleAction(event.currentTarget.value);
     }
 
     return (

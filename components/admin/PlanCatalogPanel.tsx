@@ -1,12 +1,13 @@
 'use client';
 
 import { useList } from '@refinedev/core';
-import { Pencil, Plus, Search } from 'lucide-react';
+import { CopyPlus, Pencil, Plus, Search } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import React, { type ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { adminInputClass } from '@/components/admin/AdminField';
+import { AdminStatTile } from '@/components/admin/AdminStatTile';
 import { PlanCreateForm } from '@/components/admin/PlanCreateForm';
 import { PlanEditorCard } from '@/components/admin/PlanEditorCard';
 import { PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
@@ -31,15 +32,6 @@ const STATUS_PILL: Record<Visibility, string> = {
     ARCHIVED: 'bg-status-neutral-wash text-status-neutral',
 };
 
-function StatTile({ label, value, accent }: { label: string; value: number; accent?: string }) {
-    return (
-        <div className="rounded-xl border border-border bg-card px-4 py-3">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-ink-faint">{label}</p>
-            <p className={cn('mt-1 text-2xl font-extrabold tabular-nums text-ink', accent)}>{value}</p>
-        </div>
-    );
-}
-
 export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
     const t = useTranslations('AdminPage.plans');
     const tAdmin = useTranslations('AdminPage');
@@ -48,6 +40,7 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
     const [statusFilter, setStatusFilter] = useState<Visibility | 'ALL'>('ALL');
     const [search, setSearch] = useState('');
     const [createOpen, setCreateOpen] = useState(false);
+    const [duplicatePlanId, setDuplicatePlanId] = useState<string | null>(null);
     const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
     const [savedMessage, setSavedMessage] = useState<string | null>(null);
 
@@ -69,6 +62,7 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
 
     const allPlans = useMemo(() => [...plansResult.data].sort((left, right) => left.sortOrder - right.sortOrder), [plansResult.data]);
     const selectedPlan = useMemo(() => allPlans.find((plan) => plan.id === selectedPlanId) ?? null, [allPlans, selectedPlanId]);
+    const duplicatePlan = useMemo(() => allPlans.find((plan) => plan.id === duplicatePlanId) ?? null, [allPlans, duplicatePlanId]);
 
     const stats = useMemo(() => {
         let live = 0;
@@ -97,8 +91,21 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
     }, []);
     const handleSearchChange = useCallback((event: ChangeEvent<HTMLInputElement>) => setSearch(event.target.value), []);
 
-    const openCreate = useCallback(() => setCreateOpen(true), []);
-    const closeCreate = useCallback(() => setCreateOpen(false), []);
+    const openCreate = useCallback(() => {
+        setDuplicatePlanId(null);
+        setCreateOpen(true);
+    }, []);
+    const closeCreate = useCallback(() => {
+        setCreateOpen(false);
+        setDuplicatePlanId(null);
+    }, []);
+
+    const handleDuplicateClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+        const planId = event.currentTarget.dataset.planId;
+        if (!planId) return;
+        setDuplicatePlanId(planId);
+        setCreateOpen(true);
+    }, []);
 
     const openEdit = useCallback((planId: string) => setSelectedPlanId(planId), []);
     const handleEditClick = useCallback(
@@ -113,6 +120,7 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
     const handleCreated = useCallback(
         (name: string) => {
             setCreateOpen(false);
+            setDuplicatePlanId(null);
             setSavedMessage(t('create.createSuccess', { plan: name }));
         },
         [t]
@@ -166,10 +174,10 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
             )}
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <StatTile label={t('stats.total')} value={stats.total} />
-                <StatTile label={t('stats.live')} value={stats.live} accent="text-status-good" />
-                <StatTile label={t('stats.hidden')} value={stats.hidden} accent="text-status-warn" />
-                <StatTile label={t('stats.archived')} value={stats.archived} accent="text-status-neutral" />
+                <AdminStatTile label={t('stats.total')} value={stats.total} />
+                <AdminStatTile label={t('stats.live')} value={stats.live} accent="text-status-good" />
+                <AdminStatTile label={t('stats.hidden')} value={stats.hidden} accent="text-status-warn" />
+                <AdminStatTile label={t('stats.archived')} value={stats.archived} accent="text-status-neutral" />
             </div>
 
             <section className="rounded-xl border border-border bg-card">
@@ -213,16 +221,16 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
 
                 {!plansQuery.isLoading && !plansQuery.error && visiblePlans.length > 0 && (
                     <div className="overflow-x-auto">
-                        <table className="w-full min-w-[820px] border-collapse text-sm">
+                        <table className="w-full min-w-[820px] border-collapse text-[13px]">
                             <thead>
                                 <tr className="border-b border-border text-left text-[11px] font-bold uppercase tracking-wide text-ink-faint">
-                                    <th className="px-4 py-2.5 font-bold">{t('columns.plan')}</th>
-                                    {scope === 'EVENT' && <th className="px-3 py-2.5 font-bold">{t('columns.eventTypes')}</th>}
-                                    <th className="px-3 py-2.5 font-bold">{t('columns.price')}</th>
-                                    <th className="px-3 py-2.5 font-bold">{t('columns.limits')}</th>
-                                    {scope === 'EVENT' && <th className="px-3 py-2.5 font-bold">{t('columns.modules')}</th>}
-                                    <th className="px-3 py-2.5 font-bold">{t('columns.status')}</th>
-                                    <th className="px-3 py-2.5" />
+                                    <th className="px-3 py-2 font-bold">{t('columns.plan')}</th>
+                                    {scope === 'EVENT' && <th className="px-2.5 py-2 font-bold">{t('columns.eventTypes')}</th>}
+                                    <th className="px-2.5 py-2 font-bold">{t('columns.price')}</th>
+                                    <th className="px-2.5 py-2 font-bold">{t('columns.limits')}</th>
+                                    {scope === 'EVENT' && <th className="px-2.5 py-2 font-bold">{t('columns.modules')}</th>}
+                                    <th className="px-2.5 py-2 font-bold">{t('columns.status')}</th>
+                                    <th className="px-2.5 py-2" />
                                 </tr>
                             </thead>
                             <tbody>
@@ -240,11 +248,11 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                                         .filter((eventType): eventType is PlatformEventTypeResponseDto => Boolean(eventType));
                                     return (
                                         <tr key={plan.id} className="border-b border-border last:border-b-0 hover:bg-canvas/60">
-                                            <td className="max-w-64 px-4 py-2.5">
+                                            <td className="max-w-64 px-3 py-2">
                                                 <div className="flex items-center gap-2">
                                                     <p className="truncate font-semibold text-ink">{plan.name}</p>
                                                     {plan.isDefault && (
-                                                        <span className="shrink-0 rounded-full bg-primary-light px-2 py-0.5 text-[10.5px] font-bold text-primary-dark">
+                                                        <span className="shrink-0 rounded-full bg-primary-light px-1.5 py-0.5 text-[9.5px] font-bold text-primary-dark">
                                                             {t('default')}
                                                         </span>
                                                     )}
@@ -252,34 +260,39 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                                                 {plan.description && <p className="truncate text-[11px] text-ink-faint">{plan.description}</p>}
                                             </td>
                                             {scope === 'EVENT' && (
-                                                <td className="max-w-56 px-3 py-2.5">
+                                                <td className="max-w-48 px-2.5 py-2">
                                                     {eventTypeNames.length === 0 ? (
                                                         <span className="text-xs font-semibold text-ink-faint">{t('eventTypes.allBadge')}</span>
                                                     ) : (
                                                         <div className="flex flex-wrap gap-1">
-                                                            {eventTypeNames.map((eventType) => (
+                                                            {eventTypeNames.slice(0, 2).map((eventType) => (
                                                                 <span
                                                                     key={eventType.id}
-                                                                    className="rounded-full bg-status-neutral-wash px-2 py-0.5 text-[10.5px] font-bold text-status-neutral"
+                                                                    className="rounded-full bg-status-neutral-wash px-1.5 py-0.5 text-[9.5px] font-bold text-status-neutral"
                                                                 >
                                                                     {resolveLocalizedText(eventType.name, locale, eventType.eventTypeKey)}
                                                                 </span>
                                                             ))}
+                                                            {eventTypeNames.length > 2 && (
+                                                                <span className="rounded-full bg-status-neutral-wash px-1.5 py-0.5 text-[9.5px] font-bold text-status-neutral">
+                                                                    +{eventTypeNames.length - 2}
+                                                                </span>
+                                                            )}
                                                         </div>
                                                     )}
                                                 </td>
                                             )}
-                                            <td className="px-3 py-2.5 font-mono text-ink">{formatPlanMoney(plan, locale) ?? t('noPrice')}</td>
-                                            <td className="px-3 py-2.5 text-ink-muted">{limits}</td>
+                                            <td className="px-2.5 py-2 font-mono text-ink">{formatPlanMoney(plan, locale) ?? t('noPrice')}</td>
+                                            <td className="px-2.5 py-2 text-ink-muted">{limits}</td>
                                             {scope === 'EVENT' && (
-                                                <td className="max-w-56 px-3 py-2.5">
+                                                <td className="max-w-48 px-2.5 py-2">
                                                     <PlanModuleIcons moduleKeys={plan.moduleKeys} modules={modulesQuery.data ?? []} />
                                                 </td>
                                             )}
-                                            <td className="px-3 py-2.5">
+                                            <td className="px-2.5 py-2">
                                                 <span
                                                     className={cn(
-                                                        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold',
+                                                        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold',
                                                         STATUS_PILL[status]
                                                     )}
                                                 >
@@ -287,16 +300,30 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                                                     {t(`status.${status}`)}
                                                 </span>
                                             </td>
-                                            <td className="px-3 py-2.5 text-right">
-                                                <button
-                                                    type="button"
-                                                    data-plan-id={plan.id}
-                                                    onClick={handleEditClick}
-                                                    aria-label={t('edit')}
-                                                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-canvas hover:text-ink"
-                                                >
-                                                    <Pencil className="h-3.5 w-3.5" />
-                                                </button>
+                                            <td className="px-2.5 py-2 text-right">
+                                                <div className="flex items-center justify-end gap-0.5">
+                                                    {scope === 'EVENT' && (
+                                                        <button
+                                                            type="button"
+                                                            data-plan-id={plan.id}
+                                                            onClick={handleDuplicateClick}
+                                                            aria-label={t('duplicate.action', { plan: plan.name })}
+                                                            title={t('duplicate.label')}
+                                                            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-canvas hover:text-ink"
+                                                        >
+                                                            <CopyPlus className="h-3.5 w-3.5" />
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        type="button"
+                                                        data-plan-id={plan.id}
+                                                        onClick={handleEditClick}
+                                                        aria-label={t('edit')}
+                                                        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-faint transition-colors hover:bg-canvas hover:text-ink"
+                                                    >
+                                                        <Pencil className="h-3.5 w-3.5" />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     );
@@ -308,7 +335,17 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
             </section>
 
             {!accountPlansDisabled && (
-                <PlanCreateForm open={createOpen} onClose={closeCreate} onCreated={handleCreated} plans={allPlans} scope={scope} />
+                <PlanCreateForm
+                    key={duplicatePlan?.id ?? 'new-plan'}
+                    open={createOpen}
+                    onCloseAction={closeCreate}
+                    onCreatedAction={handleCreated}
+                    plans={allPlans}
+                    eventTypes={eventTypesQuery.data ?? []}
+                    modules={modulesQuery.data ?? []}
+                    scope={scope}
+                    sourcePlan={duplicatePlan}
+                />
             )}
 
             <AdminDrawer
@@ -323,11 +360,10 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                         key={`${selectedPlan.id}:${selectedPlan.moduleKeys.join(',')}:${selectedPlan.eventTypeKeys.join(',')}`}
                         plan={selectedPlan}
                         modules={modulesQuery.data ?? []}
-                        eventTypes={eventTypesQuery.data ?? []}
                         paidServices={paidServicesQuery.data ?? []}
                         eventPlans={allPlans}
                         scope={scope}
-                        onSaved={handleSaved}
+                        onSavedAction={handleSaved}
                     />
                 )}
             </AdminDrawer>

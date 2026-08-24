@@ -10,7 +10,7 @@ import { getFieldErrors } from '@/lib/api/errors';
 
 import { fieldControlClass, fieldLabelClass, fieldTextClass, formPanelClass } from './shared';
 
-export function CreateCoHostInvitationForm({ eventId, onDone }: { eventId: string; onDone: () => void }) {
+export function CreateCoHostInvitationForm({ eventId, onDoneAction }: { eventId: string; onDoneAction: () => void }) {
     const t = useTranslations('ManagePage.invitations.coHosts');
     const create = useCreateCoHostInvitation(eventId);
     const toErrorMessage = useApiErrorMessage();
@@ -26,7 +26,7 @@ export function CreateCoHostInvitationForm({ eventId, onDone }: { eventId: strin
                 lastName: String(data.get('lastName') ?? '').trim() || undefined,
                 expiresAt: String(data.get('expiresAt') ?? '') || undefined,
             });
-            onDone();
+            onDoneAction();
         } catch {
             /* surfaced below */
         }
@@ -41,7 +41,7 @@ export function CreateCoHostInvitationForm({ eventId, onDone }: { eventId: strin
                 </div>
                 <button
                     type="button"
-                    onClick={onDone}
+                    onClick={onDoneAction}
                     aria-label={t('cancel')}
                     className="flex h-8 w-8 items-center justify-center rounded-full text-ink-muted hover:bg-surface-muted"
                 >

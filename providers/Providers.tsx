@@ -3,17 +3,13 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode, useState } from 'react';
 
-import { useAppConfig } from '@/hooks/useAppConfig';
 import { ApiError } from '@/lib/api/client';
+import { AppConfigBootstrap } from '@/providers/AppConfigBootstrap';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { ComposerProvider } from '@/providers/ComposerProvider';
+import { DocumentTitleSync } from '@/providers/DocumentTitleSync';
 import { EventProvider } from '@/providers/EventProvider';
 import { ModalProvider } from '@/providers/ModalProvider';
-
-function AppConfigBootstrap() {
-    useAppConfig();
-    return null;
-}
 
 export function Providers({ children }: { children: ReactNode }) {
     const [queryClient] = useState(
@@ -37,6 +33,7 @@ export function Providers({ children }: { children: ReactNode }) {
             <AppConfigBootstrap />
             <AuthProvider>
                 <EventProvider>
+                    <DocumentTitleSync />
                     <ComposerProvider>
                         <ModalProvider>{children}</ModalProvider>
                     </ComposerProvider>

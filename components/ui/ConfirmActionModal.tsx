@@ -10,8 +10,8 @@ type ConfirmActionModalProps = {
     body: ReactNode;
     confirmLabel: string;
     cancelLabel: string;
-    onClose: () => void;
-    onConfirm: () => void | Promise<void>;
+    onCloseAction: () => void;
+    onConfirmAction: () => void | Promise<void>;
     isConfirming?: boolean;
     tone?: 'danger' | 'default';
     icon?: ReactNode;
@@ -24,15 +24,15 @@ export function ConfirmActionModal({
     body,
     confirmLabel,
     cancelLabel,
-    onClose,
-    onConfirm,
+    onCloseAction,
+    onConfirmAction,
     isConfirming = false,
     tone = 'danger',
     icon,
     size = 'sm',
 }: ConfirmActionModalProps) {
     return (
-        <Modal open={open} onClose={onClose} size={size} closeLabel={cancelLabel}>
+        <Modal open={open} onClose={onCloseAction} size={size} closeLabel={cancelLabel}>
             <Modal.Body className="px-4 pb-4 pt-12 sm:px-5">
                 <div className="flex flex-col gap-5">
                     <div className="flex items-start gap-3 pr-8">
@@ -53,7 +53,7 @@ export function ConfirmActionModal({
                     <div className="flex flex-wrap items-center justify-end gap-2">
                         <button
                             type="button"
-                            onClick={onClose}
+                            onClick={onCloseAction}
                             className="rounded-full bg-surface-muted px-4 py-2 text-sm font-medium text-ink-muted transition-colors hover:text-ink"
                             disabled={isConfirming}
                         >
@@ -61,7 +61,7 @@ export function ConfirmActionModal({
                         </button>
                         <button
                             type="button"
-                            onClick={onConfirm}
+                            onClick={onConfirmAction}
                             disabled={isConfirming}
                             className={
                                 tone === 'danger'

@@ -76,7 +76,7 @@ export function PlansContent({
                         currentPlanCode={selectedPlanCode}
                         currentPlan={selectedPlan}
                         isCheckoutPending={isCheckoutPending}
-                        onUpgrade={onUpgrade}
+                        onUpgradeAction={onUpgrade}
                         pendingPlanCode={pendingPlanCode}
                         retryIn={retryIn}
                         upgradeTargets={upgradeTargets}

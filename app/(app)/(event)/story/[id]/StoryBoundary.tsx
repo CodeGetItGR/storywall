@@ -199,14 +199,14 @@ export default function StoryBoundary({ id }: { id: string }) {
                     </button>
                 </div>
 
-                <StoryCaptionBar story={story} canManage={canManage} onShowViewers={handleShowViewers} />
+                <StoryCaptionBar story={story} canManage={canManage} onShowViewersAction={handleShowViewers} />
             </div>
 
             <StoryViewersModal open={showViewers} onClose={handleHideViewers} viewers={viewers} loading={viewersLoading} membersById={membersById} />
             <ConfirmActionModal
                 open={showDeleteConfirm}
-                onClose={handleCloseDeleteConfirm}
-                onConfirm={handleDelete}
+                onCloseAction={handleCloseDeleteConfirm}
+                onConfirmAction={handleDelete}
                 title={t('deleteStoryConfirmTitle')}
                 body={t('deleteStoryConfirmBody')}
                 confirmLabel={t('deleteStoryConfirm')}

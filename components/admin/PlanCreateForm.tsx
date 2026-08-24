@@ -1,6 +1,6 @@
 'use client';
 
-import { useCreate, useInvalidate } from '@refinedev/core';
+import { useCreate, useCustomMutation, useInvalidate } from '@refinedev/core';
 import { useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -9,27 +9,52 @@ import React, { type ChangeEvent, useCallback, useMemo, useRef, useState } from 
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminSection } from '@/components/admin/AdminSection';
+import { PlanCreateAssignments } from '@/components/admin/PlanCreateAssignments';
 import { VisibilitySegmentedControl } from '@/components/admin/VisibilitySegmentedControl';
 import { appConfigKeys } from '@/hooks/useAppConfig';
-import { codeFromName, localInputToInstant, priceInputToMinor, STORAGE_UNITS, storageInputToBytes } from '@/lib/adminPlanForm';
+import { usePlanCreateAssignments } from '@/hooks/usePlanCreateAssignments';
+import {
+    codeFromName,
+    instantToLocalInput,
+    localInputToInstant,
+    priceInputToMinor,
+    priceMinorToInput,
+    STORAGE_UNITS,
+    storageBytesToInput,
+    storageInputToBytes,
+} from '@/lib/adminPlanForm';
 import { adminErrorMessageKey, checked, emptyToNull, numberOrNull } from '@/lib/adminUtils';
-import { type Visibility, visibilityFlags } from '@/lib/adminVisibility';
-import type { BillingPeriod, PlanScope, PlanTierRequestDto, PlanTierResponseDto } from '@/lib/api/types';
+import { type Visibility, visibilityFlags, visibilityOf } from '@/lib/adminVisibility';
+import { endpoints } from '@/lib/api/endpoints';
+import type {
+    BillingPeriod,
+    PlanScope,
+    PlanTierRequestDto,
+    PlanTierResponseDto,
+    PlatformEventTypeResponseDto,
+    PlatformModuleResponseDto,
+} from '@/lib/api/types';
 
 const BILLING_PERIODS: BillingPeriod[] = ['MONTHLY', 'YEARLY', 'ONE_TIME'];
 
 export function PlanCreateForm({
     open,
-    onClose,
-    onCreated,
+    onCloseAction,
+    onCreatedAction,
     plans,
+    eventTypes,
+    modules,
     scope,
+    sourcePlan,
 }: {
     open: boolean;
-    onClose: () => void;
-    onCreated: (name: string) => void;
+    onCloseAction: () => void;
+    onCreatedAction: (name: string) => void;
     plans: PlanTierResponseDto[];
+    eventTypes: PlatformEventTypeResponseDto[];
+    modules: PlatformModuleResponseDto[];
     scope: PlanScope;
+    sourcePlan?: PlanTierResponseDto | null;
 }) {
     const t = useTranslations('AdminPage');
     const queryClient = useQueryClient();
@@ -42,11 +67,22 @@ export function PlanCreateForm({
         dataProviderName: 'plan-tiers',
         mutationOptions: { onSuccess: onMutationSuccess },
     });
+    const { mutateAsync: setPlanEventTypes, mutation: eventTypesMutation } = useCustomMutation<PlanTierResponseDto>({
+        mutationOptions: { onSuccess: onMutationSuccess },
+    });
+    const { mutateAsync: setPlanModules, mutation: modulesMutation } = useCustomMutation<PlanTierResponseDto>({
+        mutationOptions: { onSuccess: onMutationSuccess },
+    });
     const formRef = useRef<HTMLFormElement>(null);
-    const [name, setName] = useState('');
+    const initialName = sourcePlan ? t('plans.duplicate.copyName', { plan: sourcePlan.name }) : '';
+    const initialVisibility = sourcePlan ? visibilityOf(sourcePlan) : 'LIVE';
+    const sourceStorage = storageBytesToInput(sourcePlan?.storageBytes ?? null);
+    const [name, setName] = useState(initialName);
     const [codeOverride, setCodeOverride] = useState<string | null>(null);
-    const [visibility, setVisibility] = useState<Visibility>('LIVE');
+    const [visibility, setVisibility] = useState<Visibility>(initialVisibility);
+    const [createdPlanId, setCreatedPlanId] = useState<string | null>(null);
     const nextSortOrder = useMemo(() => Math.max(-1, ...plans.map((plan) => plan.sortOrder)) + 1, [plans]);
+    const assignments = usePlanCreateAssignments(eventTypes, modules, sourcePlan?.eventTypeKeys, sourcePlan?.moduleKeys);
 
     // The code is an identifier the admin should not have to invent: it follows the
     // name until they deliberately type over it.
@@ -63,6 +99,20 @@ export function PlanCreateForm({
         (event: ChangeEvent<HTMLInputElement>) => setCodeOverride(event.target.value === '' ? null : event.target.value.toUpperCase()),
         []
     );
+
+    function resetForm() {
+        formRef.current?.reset();
+        setName(initialName);
+        setCodeOverride(null);
+        setVisibility(initialVisibility);
+        assignments.resetAssignments();
+        setCreatedPlanId(null);
+    }
+
+    function handleClose() {
+        resetForm();
+        onCloseAction();
+    }
 
     async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -93,28 +143,46 @@ export function PlanCreateForm({
             discountEndsAt: localInputToInstant(formData.get('discountEndsAt')),
         };
 
-        await createPlan({ resource: 'plan-tiers', values: input });
-        formRef.current?.reset();
-        setName('');
-        setCodeOverride(null);
-        setVisibility('LIVE');
-        onCreated(input.name);
+        let planId = createdPlanId;
+        if (!planId) {
+            const created = await createPlan({ resource: 'plan-tiers', values: input });
+            planId = created.data.id;
+            setCreatedPlanId(planId);
+        }
+        if (assignments.availabilityMode === 'SELECTED') {
+            await setPlanEventTypes({
+                url: endpoints.admin.planTiers.eventTypes(planId),
+                method: 'put',
+                values: { eventTypeKeys: assignments.eventTypeKeys },
+                dataProviderName: 'plan-tiers',
+            });
+        }
+        if (assignments.moduleKeys.length > 0) {
+            await setPlanModules({
+                url: endpoints.admin.planTiers.modules(planId),
+                method: 'put',
+                values: { moduleKeys: assignments.moduleKeys },
+                dataProviderName: 'plan-tiers',
+            });
+        }
+        resetForm();
+        onCreatedAction(input.name);
     }
 
     return (
         <AdminDrawer
             open={open}
-            onClose={onClose}
+            onClose={handleClose}
             closeLabel={t('cancel')}
-            title={t('plans.create.title')}
-            subtitle={t('plans.create.subtitle')}
+            title={sourcePlan ? t('plans.duplicate.title') : t('plans.create.title')}
+            subtitle={sourcePlan ? t('plans.duplicate.subtitle', { plan: sourcePlan.name }) : t('plans.create.subtitle')}
             footer={
                 <>
                     <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[11px] font-semibold text-ink-muted">{scope}</span>
                     <div className="flex items-center gap-2">
                         <button
                             type="button"
-                            onClick={onClose}
+                            onClick={handleClose}
                             className="min-h-9 rounded-md border border-border px-3.5 text-sm font-semibold text-ink-muted"
                         >
                             {t('cancel')}
@@ -122,11 +190,18 @@ export function PlanCreateForm({
                         <button
                             type="submit"
                             form="plan-create-form"
-                            disabled={createMutation.isPending}
+                            disabled={
+                                createMutation.isPending ||
+                                eventTypesMutation.isPending ||
+                                modulesMutation.isPending ||
+                                (assignments.availabilityMode === 'SELECTED' && assignments.eventTypeKeys.length === 0)
+                            }
                             className="inline-flex min-h-9 items-center gap-2 rounded-md bg-ink px-3.5 text-sm font-semibold text-white disabled:opacity-50"
                         >
-                            {createMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-                            {t('plans.create.submit')}
+                            {(createMutation.isPending || eventTypesMutation.isPending || modulesMutation.isPending) && (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            )}
+                            {sourcePlan ? t('plans.duplicate.submit') : t('plans.create.submit')}
                         </button>
                     </div>
                 </>
@@ -163,7 +238,7 @@ export function PlanCreateForm({
                             />
                         </AdminField>
                         <AdminField label={t('fields.description')} optional className="col-span-2">
-                            <input name="description" className={adminInputClass()} />
+                            <input name="description" defaultValue={sourcePlan?.description ?? ''} className={adminInputClass()} />
                         </AdminField>
                     </div>
                 </AdminSection>
@@ -179,12 +254,13 @@ export function PlanCreateForm({
                                             type="number"
                                             min={0}
                                             step="0.01"
+                                            defaultValue={sourceStorage.amount}
                                             placeholder={t('fields.blankUnlimited')}
                                             className={adminInputClass('max-w-32')}
                                         />
                                     </AdminField>
                                     <AdminField label={t('fields.unit')}>
-                                        <select name="storageUnit" defaultValue="GB" className={adminInputClass('max-w-20')}>
+                                        <select name="storageUnit" defaultValue={sourceStorage.unit} className={adminInputClass('max-w-20')}>
                                             {STORAGE_UNITS.map((unit) => (
                                                 <option key={unit} value={unit}>
                                                     {unit}
@@ -198,6 +274,7 @@ export function PlanCreateForm({
                                         name="maxMembers"
                                         type="number"
                                         min={0}
+                                        defaultValue={sourcePlan?.maxMembers ?? ''}
                                         placeholder={t('fields.blankUnlimited')}
                                         className={adminInputClass('max-w-28')}
                                     />
@@ -209,6 +286,7 @@ export function PlanCreateForm({
                                     name="maxActiveEvents"
                                     type="number"
                                     min={0}
+                                    defaultValue={sourcePlan?.maxActiveEvents ?? ''}
                                     placeholder={t('fields.blankUnlimited')}
                                     className={adminInputClass('max-w-28')}
                                 />
@@ -220,13 +298,27 @@ export function PlanCreateForm({
                 <AdminSection title={t('plans.sections.pricing')}>
                     <div className="grid grid-cols-2 gap-2.5">
                         <AdminField label={t('fields.price')} optional className="col-span-1">
-                            <input name="price" type="number" min={0} step="0.01" placeholder="499" className={adminInputClass('max-w-32')} />
+                            <input
+                                name="price"
+                                type="number"
+                                min={0}
+                                step="0.01"
+                                defaultValue={priceMinorToInput(sourcePlan?.priceAmountMinor ?? null)}
+                                placeholder="499"
+                                className={adminInputClass('max-w-32')}
+                            />
                         </AdminField>
                         <AdminField label={t('fields.priceCurrency')} optional className="col-span-1">
-                            <input name="priceCurrency" maxLength={3} placeholder="EUR" className={adminInputClass('max-w-20')} />
+                            <input
+                                name="priceCurrency"
+                                maxLength={3}
+                                defaultValue={sourcePlan?.priceCurrency ?? ''}
+                                placeholder="EUR"
+                                className={adminInputClass('max-w-20')}
+                            />
                         </AdminField>
                         <AdminField label={t('fields.billingPeriod')} optional className="col-span-2">
-                            <select name="billingPeriod" className={adminInputClass('max-w-40')}>
+                            <select name="billingPeriod" defaultValue={sourcePlan?.billingPeriod ?? ''} className={adminInputClass('max-w-40')}>
                                 <option value="">{t('none')}</option>
                                 {BILLING_PERIODS.map((item) => (
                                     <option key={item} value={item}>
@@ -243,12 +335,20 @@ export function PlanCreateForm({
                                         type="number"
                                         min={0}
                                         step="0.01"
+                                        defaultValue={priceMinorToInput(sourcePlan?.recurringPriceAmountMinor ?? null)}
                                         placeholder="15"
                                         className={adminInputClass('max-w-32')}
                                     />
                                 </AdminField>
                                 <AdminField label={t('fields.includedMonths')} optional className="col-span-1">
-                                    <input name="includedMonths" type="number" min={0} placeholder="3" className={adminInputClass('max-w-24')} />
+                                    <input
+                                        name="includedMonths"
+                                        type="number"
+                                        min={0}
+                                        defaultValue={sourcePlan?.includedMonths ?? ''}
+                                        placeholder="3"
+                                        className={adminInputClass('max-w-24')}
+                                    />
                                 </AdminField>
                             </>
                         )}
@@ -258,16 +358,38 @@ export function PlanCreateForm({
                 <AdminSection title={t('plans.sections.promotion')} description={t('plans.sections.promotionHint')}>
                     <div className="grid grid-cols-2 gap-2.5">
                         <AdminField label={t('fields.discountPercent')} optional className="col-span-1">
-                            <input name="discountPercent" type="number" min={0} max={100} className={adminInputClass('max-w-24')} />
+                            <input
+                                name="discountPercent"
+                                type="number"
+                                min={0}
+                                max={100}
+                                defaultValue={sourcePlan?.discountPercent ?? ''}
+                                className={adminInputClass('max-w-24')}
+                            />
                         </AdminField>
                         <AdminField label={t('fields.discountLabel')} optional className="col-span-1">
-                            <input name="discountLabel" maxLength={100} className={adminInputClass()} />
+                            <input
+                                name="discountLabel"
+                                maxLength={100}
+                                defaultValue={sourcePlan?.discountLabel ?? ''}
+                                className={adminInputClass()}
+                            />
                         </AdminField>
                         <AdminField label={t('fields.discountStartsAt')} optional hint={t('fields.discountBoundHint')} className="col-span-1">
-                            <input name="discountStartsAt" type="datetime-local" className={adminInputClass()} />
+                            <input
+                                name="discountStartsAt"
+                                type="datetime-local"
+                                defaultValue={instantToLocalInput(sourcePlan?.discountStartsAt ?? null)}
+                                className={adminInputClass()}
+                            />
                         </AdminField>
                         <AdminField label={t('fields.discountEndsAt')} optional hint={t('fields.discountEndsAtHint')} className="col-span-1">
-                            <input name="discountEndsAt" type="datetime-local" className={adminInputClass()} />
+                            <input
+                                name="discountEndsAt"
+                                type="datetime-local"
+                                defaultValue={instantToLocalInput(sourcePlan?.discountEndsAt ?? null)}
+                                className={adminInputClass()}
+                            />
                         </AdminField>
                     </div>
                 </AdminSection>
@@ -280,7 +402,7 @@ export function PlanCreateForm({
                     <VisibilitySegmentedControl
                         title={t('fields.visibility')}
                         value={visibility}
-                        onChange={setVisibility}
+                        onChangeAction={setVisibility}
                         labels={{ LIVE: t('fields.visibilityLive'), HIDDEN: t('fields.visibilityHidden'), ARCHIVED: t('fields.visibilityArchived') }}
                         hints={{
                             LIVE: t('fields.visibilityLiveHint'),
@@ -290,7 +412,25 @@ export function PlanCreateForm({
                     />
                 </AdminSection>
 
-                {createMutation.error && <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(createMutation.error)}`)}</p>}
+                {scope === 'EVENT' && (
+                    <PlanCreateAssignments
+                        availabilityMode={assignments.availabilityMode}
+                        eventTypeKeys={assignments.eventTypeKeys}
+                        moduleKeys={assignments.moduleKeys}
+                        eventTypes={assignments.orderedEventTypes}
+                        modules={assignments.orderedModules}
+                        onSelectAllEventTypesAction={assignments.selectAllEventTypes}
+                        onSelectSpecificEventTypesAction={assignments.selectSpecificEventTypes}
+                        onEventTypeChangeAction={assignments.handleEventTypeChange}
+                        onModuleChangeAction={assignments.handleModuleChange}
+                    />
+                )}
+
+                {(createMutation.error || eventTypesMutation.error || modulesMutation.error) && (
+                    <p className="text-sm text-status-danger">
+                        {t(`errors.${adminErrorMessageKey(createMutation.error ?? eventTypesMutation.error ?? modulesMutation.error)}`)}
+                    </p>
+                )}
             </form>
         </AdminDrawer>
     );
