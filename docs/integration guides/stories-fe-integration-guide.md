@@ -15,40 +15,40 @@ of how many `EventSession` records that event has.
 
 ```ts
 interface StoryRequestDto {
-    eventId: string;
-    authorMemberId?: string;
-    mediaId: string; // required, must already exist
-    caption?: string;
-    songUrl?: string;
-    expiresAt?: string; // NEW: now optional — see "Expiry" below
+  eventId: string;
+  authorMemberId?: string;
+  mediaId: string;          // required, must already exist
+  caption?: string;
+  songUrl?: string;
+  expiresAt?: string;       // NEW: now optional — see "Expiry" below
 }
 
 interface StoryResponseDto extends StoryRequestDto {
-    id: string;
-    expiresAt: string; // always present in the response, even if omitted on create
-    createdAt: string;
-    deletedAt: string | null; // see "Known quirk" below — in practice always null
-    viewedByCurrentUser: boolean; // NEW — has the caller already viewed this story
+  id: string;
+  expiresAt: string;        // always present in the response, even if omitted on create
+  createdAt: string;
+  deletedAt: string | null; // see "Known quirk" below — in practice always null
+  viewedByCurrentUser: boolean; // NEW — has the caller already viewed this story
 }
 
 interface StoryViewResponseDto {
-    id: string;
-    storyId: string;
-    memberId: string; // the viewer's EventMember id
-    createdAt: string; // when they viewed it
+  id: string;
+  storyId: string;
+  memberId: string;         // the viewer's EventMember id
+  createdAt: string;        // when they viewed it
 }
 ```
 
 ## Endpoints
 
-| Method | Path                            | Auth                 | Notes                                    |
-| ------ | ------------------------------- | -------------------- | ---------------------------------------- |
-| GET    | `/api/events/{eventId}/stories` | event member         | all stories for the event                |
-| GET    | `/api/stories/{id}`             | event member         | single story                             |
-| POST   | `/api/stories`                  | event member         | create; `expiresAt` optional (see below) |
-| DELETE | `/api/stories/{id}`             | author or HOST       | **hard delete** — see known quirk        |
-| POST   | `/api/stories/{id}/views`       | event member         | **NEW** — mark viewed by caller          |
-| GET    | `/api/stories/{id}/views`       | story author or HOST | **NEW** — list viewers                   |
+| Method | Path | Auth | Notes |
+|---|---|---|---|
+| GET | `/api/events/{eventId}/stories` | event member | all stories for the event |
+| GET | `/api/stories/{id}` | event member | single story |
+| POST | `/api/stories` | event member | create; `expiresAt` optional (see below) |
+| DELETE | `/api/stories/{id}` | author or HOST | **hard delete** — see known quirk |
+| POST | `/api/stories/{id}/views` | event member | **NEW** — mark viewed by caller |
+| GET | `/api/stories/{id}/views` | story author or HOST | **NEW** — list viewers |
 
 ## Creating a story — `expiresAt` is now optional
 
@@ -56,18 +56,18 @@ interface StoryViewResponseDto {
 It no longer does. Omit the field and the server sets it to **24 hours from creation time**:
 
 ```ts
-await fetch('/api/stories', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
-    body: JSON.stringify({ eventId, mediaId, caption: 'Best day ever! 💍' }),
-    // no expiresAt — server defaults it to createdAt + 24h
+await fetch("/api/stories", {
+  method: "POST",
+  headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+  body: JSON.stringify({ eventId, mediaId, caption: "Best day ever! 💍" }),
+  // no expiresAt — server defaults it to createdAt + 24h
 });
 ```
 
 If you pass `expiresAt` explicitly, it's used as-is (no minimum/maximum enforced) — that path
 is unchanged.
 
-**Important: the default is _not_ clamped to the event's `endAt`.** A story posted on day 1 of
+**Important: the default is *not* clamped to the event's `endAt`.** A story posted on day 1 of
 a multi-day event still expires 24h later, even though the event (and its feed) is still
 active. This is deliberate — the feed stays live after the event ends, so tying story
 lifetime to event duration would either make stories outlive their "ephemeral" purpose (long
@@ -93,15 +93,15 @@ The `GET /api/stories/{id}/views` full-viewer-list endpoint is a separate, more 
 thing — "who has seen my story," which only the author/HOST get, same as Instagram-style
 stories. Don't confuse the two:
 
-| Question                        | Field/endpoint                         | Who can see it                                   |
-| ------------------------------- | -------------------------------------- | ------------------------------------------------ |
+| Question | Field/endpoint | Who can see it |
+|---|---|---|
 | "Have **I** viewed this story?" | `StoryResponseDto.viewedByCurrentUser` | anyone who can read the story (any event member) |
-| "Who has viewed this story?"    | `GET /api/stories/{id}/views`          | the story's author, or a HOST                    |
+| "Who has viewed this story?" | `GET /api/stories/{id}/views` | the story's author, or a HOST |
 
 ```ts
 function renderTrayItem(story: StoryResponseDto) {
-    ring.classList.toggle('seen', story.viewedByCurrentUser);
-    ring.classList.toggle('unseen', !story.viewedByCurrentUser);
+  ring.classList.toggle("seen", story.viewedByCurrentUser);
+  ring.classList.toggle("unseen", !story.viewedByCurrentUser);
 }
 ```
 
@@ -123,10 +123,10 @@ that story's event is resolved from the JWT, recorded once, and the same
 
 ```json
 {
-    "id": "e1a2...uuid",
-    "storyId": "f1a2...uuid",
-    "memberId": "b3f1...uuid",
-    "createdAt": "2026-08-01T20:14:03Z"
+  "id": "e1a2...uuid",
+  "storyId": "f1a2...uuid",
+  "memberId": "b3f1...uuid",
+  "createdAt": "2026-08-01T20:14:03Z"
 }
 ```
 
@@ -139,7 +139,7 @@ that story is stale** (still whatever it was before) — the field only refreshe
 way you'd already optimistically update `likedByCurrentUser` after reacting to a post:
 
 ```ts
-await fetch(`/api/stories/${story.id}/views`, { method: 'POST', headers: authHeaders });
+await fetch(`/api/stories/${story.id}/views`, { method: "POST", headers: authHeaders });
 story.viewedByCurrentUser = true; // optimistic; confirmed by the next GET anyway
 ```
 
@@ -157,11 +157,11 @@ the story itself is.
 
 ```ts
 async function loadViewers(storyId: string): Promise<StoryViewResponseDto[]> {
-    const res = await fetch(`/api/stories/${storyId}/views`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-    });
-    if (res.status === 403) return []; // caller isn't the author/HOST — hide the affordance
-    return res.json();
+  const res = await fetch(`/api/stories/${storyId}/views`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (res.status === 403) return []; // caller isn't the author/HOST — hide the affordance
+  return res.json();
 }
 ```
 
@@ -171,12 +171,12 @@ sheet), rather than fetching it for every story in the tray up front.
 
 ## Permissions summary
 
-| Action                     | Who                           |
-| -------------------------- | ----------------------------- |
-| Read stories / mark viewed | any member of the event       |
-| Create a story             | any member of the event       |
-| Delete a story             | the story's author, or a HOST |
-| List a story's viewers     | the story's author, or a HOST |
+| Action | Who |
+|---|---|
+| Read stories / mark viewed | any member of the event |
+| Create a story | any member of the event |
+| Delete a story | the story's author, or a HOST |
+| List a story's viewers | the story's author, or a HOST |
 
 ## Known quirk: `deletedAt` is always `null`
 

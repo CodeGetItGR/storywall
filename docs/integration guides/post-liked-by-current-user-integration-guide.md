@@ -9,21 +9,21 @@ everything else.
 
 ```ts
 interface PostResponseDto {
-    // ...existing fields unchanged...
-    commentCount: number;
-    reactionCount: number;
-    likedByCurrentUser: boolean; // NEW
-    // ...
+  // ...existing fields unchanged...
+  commentCount: number;
+  reactionCount: number;
+  likedByCurrentUser: boolean; // NEW
+  // ...
 }
 ```
 
 `true` if the requesting user has **any** reaction (any `reactionType`) on the post. Returned
 by both endpoints that already return `PostResponseDto`:
 
-| Method | Path                                      | Response                                                   |
-| ------ | ----------------------------------------- | ---------------------------------------------------------- |
-| GET    | `/api/events/{eventId}/posts?page=&size=` | `Page<PostResponseDto>` — every post in `content[]` has it |
-| GET    | `/api/posts/{id}`                         | `PostResponseDto`                                          |
+| Method | Path | Response |
+|---|---|---|
+| GET | `/api/events/{eventId}/posts?page=&size=` | `Page<PostResponseDto>` — every post in `content[]` has it |
+| GET | `/api/posts/{id}` | `PostResponseDto` |
 
 No request changes needed on your side — it's derived from the JWT on the backend. Nothing
 else in the response shape changed, and no existing field's meaning changed.
@@ -38,10 +38,10 @@ same answer inline, for free.
 ## Using it
 
 ```ts
-const page: Page<PostResponseDto> = await fetch(`/api/events/${eventId}/posts`).then((r) => r.json());
+const page: Page<PostResponseDto> = await fetch(`/api/events/${eventId}/posts`).then(r => r.json());
 
-page.content.forEach((post) => {
-    renderLikeButton(post.id, { liked: post.likedByCurrentUser, count: post.reactionCount });
+page.content.forEach(post => {
+  renderLikeButton(post.id, { liked: post.likedByCurrentUser, count: post.reactionCount });
 });
 ```
 
@@ -53,9 +53,9 @@ update it optimistically (flip it alongside `reactionCount`) when you call
 `POST /api/reactions` or `DELETE /api/reactions/{id}`, the same way you'd already be updating
 `reactionCount`. It only refreshes from the server on the next `GET`.
 
-## What it does _not_ tell you
+## What it does *not* tell you
 
-Only whether the caller reacted, not _which_ `reactionType` (e.g. `LIKE` vs. `LOVE`, if you
+Only whether the caller reacted, not *which* `reactionType` (e.g. `LIKE` vs. `LOVE`, if you
 support more than one). If your UI needs that distinction, you still need `GET
 /api/posts/{postId}/reactions` and match `memberId` yourself — `likedByCurrentUser` is a
 cheap boolean shortcut for the common "did I react at all" case, not a replacement for that
@@ -64,7 +64,7 @@ endpoint.
 ## Edge cases
 
 - **Caller isn't a member of the post's event.** `GET /api/events/{eventId}/posts` and `GET
-/api/posts/{id}` are `isAuthenticated()`-only, not membership-scoped — any logged-in user can
+  /api/posts/{id}` are `isAuthenticated()`-only, not membership-scoped — any logged-in user can
   read posts from an event they're not in. In that case `likedByCurrentUser` is simply `false`,
   no error.
 - **Guests.** Works the same as registered users — resolved from the same JWT principal used

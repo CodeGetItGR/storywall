@@ -3,10 +3,11 @@ import type { AuthResponseDto, ProblemDetail } from '@/lib/api/types';
 import {
     clearSession,
     getAccessToken,
-    getOrCreateGuestKey,
+    getStoredGuestKey,
     getStoredInviteToken,
     getStoredRefreshToken,
     setSession,
+    setStoredGuestKey,
     setStoredRefreshToken,
     subscribeAuthState,
 } from '@/lib/auth/tokenStore';
@@ -82,9 +83,10 @@ async function reauthenticate(): Promise<string | null> {
             if (inviteToken) {
                 const auth = await rawFetch<AuthResponseDto>(endpoints.auth.guestLogin, {
                     method: 'POST',
-                    body: JSON.stringify({ inviteToken, displayName: 'Guest', guestKey: getOrCreateGuestKey() ?? undefined }),
+                    body: JSON.stringify({ inviteToken, displayName: 'Guest', guestKey: getStoredGuestKey() ?? undefined }),
                 });
                 setSession(auth);
+                if (auth.guestKey) setStoredGuestKey(auth.guestKey);
                 return auth.accessToken;
             }
         } catch {

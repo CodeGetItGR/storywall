@@ -22,7 +22,6 @@ export const endpoints = {
 
     me: {
         events: '/api/me/events',
-        usage: '/api/me/usage',
     },
 
     notifications: {

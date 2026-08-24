@@ -104,13 +104,16 @@ export function setStoredInviteToken(inviteToken: string | null) {
     }
 }
 
-export function getOrCreateGuestKey(): string | null {
+export function getStoredGuestKey(): string | null {
     if (typeof window === 'undefined') return null;
+    return window.localStorage.getItem(GUEST_KEY_KEY);
+}
 
-    const existing = window.localStorage.getItem(GUEST_KEY_KEY);
-    if (existing) return existing;
-
-    const key = window.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    window.localStorage.setItem(GUEST_KEY_KEY, key);
-    return key;
+export function setStoredGuestKey(guestKey: string | null) {
+    if (typeof window === 'undefined') return;
+    if (guestKey) {
+        window.localStorage.setItem(GUEST_KEY_KEY, guestKey);
+    } else {
+        window.localStorage.removeItem(GUEST_KEY_KEY);
+    }
 }

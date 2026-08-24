@@ -532,9 +532,7 @@
             "PUBLIC": "Public"
         },
         "submitAndPay": "Pay {amount}",
-        "activeEventLimitExceeded": "You are already hosting as many active events as currently allowed. Archive an old event before creating another one.",
         "usageTitle": "Event usage",
-        "activeEventLimitExceededWithPlan": "You are already hosting as many active events as currently allowed. Archive an old event before creating another one.",
         "unlimited": "Unlimited",
         "noPlans": "No public event plans are available yet.",
         "loadingPlans": "Loading plans for this event type…",
@@ -1484,7 +1482,6 @@
             "storage": "Storage",
             "unit": "Unit",
             "maxMembers": "Members",
-            "maxEventsPerUser": "Max active events per user",
             "price": "Price",
             "priceCurrency": "Currency",
             "billingPeriod": "Billing",
@@ -1573,8 +1570,8 @@
             },
             "storage": "storage",
             "members": "members",
-            "activeEvents": "active events",
-            "eventsPerUser": "events per user",
+            "noQuotas": "No quotas",
+            "accountNoQuotas": "Account plans no longer grant usage quotas.",
             "moduleCount": "{count, plural, one {# module} other {# modules}}",
             "includedModules": "Included modules",
             "modules": {
@@ -1595,7 +1592,7 @@
             "eventTypes": {
                 "allBadge": "All types"
             },
-            "accountDisabledNotice": "Account plans are disabled for new sales and assignment. Existing rows remain here for historical review and limited maintenance.",
+            "accountDisabledNotice": "Account plans no longer grant quotas. Existing rows remain here for historical review and limited maintenance.",
             "saveModules": "Save modules",
             "destructiveHint": "Archive plans instead of deleting them once they may be in use.",
             "deleteConfirmTitle": "Delete {plan}?",
@@ -1652,7 +1649,7 @@
                 "ACCOUNT": {
                     "eyebrow": "Account catalog",
                     "title": "Account plans",
-                    "subtitle": "Limits that apply to a user's hosting account, such as active event capacity."
+                    "subtitle": "Historical account plan rows for pricing and maintenance."
                 },
                 "EVENT": {
                     "eyebrow": "Event catalog",
@@ -2167,8 +2164,6 @@
         "storageLimitWithPlan": "Storage limit reached on the {plan} plan. Upgrade to add more.",
         "memberLimit": "Guest limit reached for this event.",
         "memberLimitWithPlan": "Guest limit reached on the {plan} plan. Upgrade to invite more.",
-        "activeEventLimit": "You have reached your limit of live events.",
-        "activeEventLimitWithPlan": "The {plan} plan allows fewer live events. Upgrade or finish an event first.",
         "moduleUnavailable": "This feature is not included in the current plan.",
         "eventDatesIncomplete": "Add a start and end date to the event before paying.",
         "eventNotDraft": "This event has already been published.",

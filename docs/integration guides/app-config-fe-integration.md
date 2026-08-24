@@ -34,7 +34,7 @@ never surfaced anywhere the FE could read it. `contentLimits` gives you every fr
 `@Size(max=...)` bound (post/comment/story/wishbook/etc.) so counters and submit-disabling can be
 driven from data instead of hardcoded numbers. `rateLimits` gives you the per-endpoint request
 budgets for the guest content/interaction endpoints (posts, comments, reactions, RSVPs, etc.) —
-these were previously invisible; only the _global_ default and the billing/auth limits were
+these were previously invisible; only the *global* default and the billing/auth limits were
 documented (see `frontend-integration-guide.md` §0 for generic `429` handling, which still
 applies unchanged). See §"New: content character limits" and §"New: per-endpoint rate limits"
 below.
@@ -47,26 +47,26 @@ payload.
 
 ```ts
 interface AppConfigResponseDto {
-    featureFlags: PlatformFeatureFlagResponseDto[];
-    media: {
-        maxFileSizeBytes: number; // outer container-level guard, not the real per-file limit — see below
-        maxRequestSizeBytes: number;
-        maxImageBytes: number; // per-kind cap, enforced after server-side format detection
-        maxVideoBytes: number; // per-kind cap, enforced after server-side format detection
-        maxBatchUploadFiles: number;
-        maxMediaPerPost: number;
-        presignedUrlTtlMinutes: number;
-        publicHost: string | null; // hostname media URLs are served from
-    };
-    pagination: { defaultPageSize: number; maxPageSize: number };
-    planTiers: PlanTierResponseDto[]; // was Record<'FREE'|'PLUS'|'PRO', {...}> — see plan-tiers-fe-integration.md
-    paidServices: PaidServiceResponseDto[]; // "keep originals" add-on, storage packs, module unlocks — see billing-fe-guide.md §5
-    eventModuleKeys: ('posts' | 'rsvp' | 'playlist' | 'stories' | 'gallery' | 'wishlist' | 'wishbook')[];
-    rsvp: { minAdults: number; maxAdults: number; minChildren: number; maxChildren: number };
-    contentLimits: AppContentLimitsDto; // added 2026-08-23 — see below
-    rateLimits: AppRateLimitConfigDto[]; // added 2026-08-23 — see below
-    defaultRateLimit: number; // added 2026-08-23
-    defaultRateLimitWindowSeconds: number; // added 2026-08-23
+  featureFlags: PlatformFeatureFlagResponseDto[];
+  media: {
+    maxFileSizeBytes: number;      // outer container-level guard, not the real per-file limit — see below
+    maxRequestSizeBytes: number;
+    maxImageBytes: number;         // per-kind cap, enforced after server-side format detection
+    maxVideoBytes: number;         // per-kind cap, enforced after server-side format detection
+    maxBatchUploadFiles: number;
+    maxMediaPerPost: number;
+    presignedUrlTtlMinutes: number;
+    publicHost: string | null; // hostname media URLs are served from
+  };
+  pagination: { defaultPageSize: number; maxPageSize: number };
+  planTiers: PlanTierResponseDto[];   // was Record<'FREE'|'PLUS'|'PRO', {...}> — see plan-tiers-fe-integration.md
+  paidServices: PaidServiceResponseDto[];   // "keep originals" add-on, storage packs, module unlocks — see billing-fe-guide.md §5
+  eventModuleKeys: ('posts' | 'rsvp' | 'playlist' | 'stories' | 'gallery' | 'wishlist' | 'wishbook')[];
+  rsvp: { minAdults: number; maxAdults: number; minChildren: number; maxChildren: number };
+  contentLimits: AppContentLimitsDto;   // added 2026-08-23 — see below
+  rateLimits: AppRateLimitConfigDto[];  // added 2026-08-23 — see below
+  defaultRateLimit: number;             // added 2026-08-23
+  defaultRateLimitWindowSeconds: number; // added 2026-08-23
 }
 ```
 
@@ -94,12 +94,12 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
   (200MB/file, 260MB/request as of 2026-08-13). This exists to protect the server, not to
   express a real per-kind limit — don't show these to users as "the" size limit.
 - **`media.maxImageBytes` / `maxVideoBytes`** — the limits that actually matter to a user
-  (25MB/200MB as of 2026-08-13), enforced _after_ the server detects the file's real type from
+  (25MB/200MB as of 2026-08-13), enforced *after* the server detects the file's real type from
   its bytes. Validate the file picker against whichever of these applies to the file's kind,
   instead of hardcoding `25MB`/`200MB` — an admin can change these via config. See
   [`multi-image-post-upload-fe-integration.md`](multi-image-post-upload-fe-integration.md) for
   the resulting error codes. Client-side rejection is still just UX — the server enforces the
-  real limit regardless. Note there is a second, _dimensional_ image limit (50 megapixels) that is
+  real limit regardless. Note there is a second, *dimensional* image limit (50 megapixels) that is
   deliberately not surfaced here — it only fires on synthetic or extreme-panorama input and is
   reported as `MEDIA_IMAGE_TOO_MANY_PIXELS` (3016) at upload time.
 - **`media.maxMediaPerPost`** — same idea for the post composer's "max 10 images" guard.
@@ -112,7 +112,7 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
   that plan. See [`billing-fe-guide.md`](billing-fe-guide.md) §5–§7b for the full opt-in/checkout
   flows and the admin CRUD endpoints.
 - **`pagination`** — matches `Page<T>`'s actual `size` behavior on `GET
-/api/events/{eventId}/posts` (currently the only paginated endpoint). Useful if you want a
+  /api/events/{eventId}/posts` (currently the only paginated endpoint). Useful if you want a
   page-size selector instead of a hardcoded `20`.
 - **`planTiers`** — the public pricing catalog: every assignable, public plan in both scopes,
   ordered by scope then `sortOrder`. Filter by `scope` to build a pricing table — `EVENT` plans
@@ -150,7 +150,7 @@ all (never did), so existing modules can't be renamed into an invalid state.
 **Action:** if `ModuleKeyConvention` (or equivalent) is currently a separately-maintained
 TypeScript union, consider sourcing it from `eventModuleKeys` in the config response instead —
 that removes the one remaining place the two lists could drift. This was previously flagged as
-low-risk _because_ nothing enforced it either side; that's no longer true on the backend, so a
+low-risk *because* nothing enforced it either side; that's no longer true on the backend, so a
 typo in a hardcoded FE list now produces a real `400` instead of a silently-accepted junk row.
 
 No change to reading modules — `GET /api/events/{eventId}/modules` and the module-gating pattern
@@ -162,10 +162,10 @@ No change to reading modules — `GET /api/events/{eventId}/modules` and the mod
 validation — this was called out as a known gap in `fe-be-open-questions.md` §10. It's now
 enforced:
 
-| Field        | Min | Max |
-| ------------ | --- | --- |
-| `adultCount` | 1   | 5   |
-| `childCount` | 0   | 4   |
+| Field | Min | Max |
+|---|---|---|
+| `adultCount` | 1 | 5 |
+| `childCount` | 0 | 4 |
 
 These match the bounds already used by the FE's guest-submission steppers, so **no currently
 working flow should change behavior** — this closes the gap between "the UI happens to prevent
@@ -191,39 +191,39 @@ just never sent anything long because nothing prompted it to. That gap is closed
 
 ```ts
 interface AppContentLimitsDto {
-    postContentMaxLength: number; // 500
-    commentContentMaxLength: number; // 300
-    storyCaptionMaxLength: number; // 300
-    wishbookMessageMaxLength: number; // 2000
-    playlistSuggestionCommentMaxLength: number; // 300
-    rsvpNotesMaxLength: number; // 500
-    eventDescriptionMaxLength: number; // 2000
-    eventSessionDescriptionMaxLength: number; // 1000
-    moderationReasonMaxLength: number; // 500
-    reportDescriptionMaxLength: number; // 1000
-    reportResolutionNotesMaxLength: number; // 1000
-    catalogDescriptionMaxLength: number; // 1000
+  postContentMaxLength: number;                  // 500
+  commentContentMaxLength: number;                // 300
+  storyCaptionMaxLength: number;                  // 300
+  wishbookMessageMaxLength: number;                // 2000
+  playlistSuggestionCommentMaxLength: number;      // 300
+  rsvpNotesMaxLength: number;                      // 500
+  eventDescriptionMaxLength: number;                // 2000
+  eventSessionDescriptionMaxLength: number;         // 1000
+  moderationReasonMaxLength: number;                // 500
+  reportDescriptionMaxLength: number;               // 1000
+  reportResolutionNotesMaxLength: number;           // 1000
+  catalogDescriptionMaxLength: number;              // 1000
 }
 ```
 
-| field                                | maps to                                                          | endpoint                              |
-| ------------------------------------ | ---------------------------------------------------------------- | ------------------------------------- |
-| `postContentMaxLength`               | `PostRequestDto.content`                                         | `POST /api/posts`                     |
-| `commentContentMaxLength`            | `CommentRequestDto.content`                                      | `POST /api/comments`                  |
-| `storyCaptionMaxLength`              | `StoryRequestDto.caption`                                        | `POST /api/stories`                   |
-| `wishbookMessageMaxLength`           | `WishbookEntryRequestDto.message`                                | `POST /api/events/{eventId}/wishbook` |
-| `playlistSuggestionCommentMaxLength` | `PlaylistSuggestionRequestDto.comment`                           | `POST /api/playlist-suggestions`      |
-| `rsvpNotesMaxLength`                 | `RsvpRequestDto`/`RsvpPatchDto.notes`                            | `POST`/`PATCH /api/rsvps`             |
-| `eventDescriptionMaxLength`          | `EventRequestDto`/`EventPatchDto.description`                    | `POST`/`PATCH /api/events`            |
-| `eventSessionDescriptionMaxLength`   | `EventSessionRequestDto`/`Patch.description`                     | `POST`/`PATCH /api/event-sessions`    |
-| `moderationReasonMaxLength`          | `ModerationActionRequestDto.reason`                              | `POST /api/moderation-actions`        |
-| `reportDescriptionMaxLength`         | `ReportRequestDto.description`                                   | `POST /api/reports`                   |
-| `reportResolutionNotesMaxLength`     | `ReportRequestDto.resolutionNotes`                               | `PATCH /api/reports/{id}` (admin)     |
-| `catalogDescriptionMaxLength`        | `description` on plan tiers, paid services, event types, modules | admin catalog CRUD                    |
+| field | maps to | endpoint |
+|---|---|---|
+| `postContentMaxLength` | `PostRequestDto.content` | `POST /api/posts` |
+| `commentContentMaxLength` | `CommentRequestDto.content` | `POST /api/comments` |
+| `storyCaptionMaxLength` | `StoryRequestDto.caption` | `POST /api/stories` |
+| `wishbookMessageMaxLength` | `WishbookEntryRequestDto.message` | `POST /api/events/{eventId}/wishbook` |
+| `playlistSuggestionCommentMaxLength` | `PlaylistSuggestionRequestDto.comment` | `POST /api/playlist-suggestions` |
+| `rsvpNotesMaxLength` | `RsvpRequestDto`/`RsvpPatchDto.notes` | `POST`/`PATCH /api/rsvps` |
+| `eventDescriptionMaxLength` | `EventRequestDto`/`EventPatchDto.description` | `POST`/`PATCH /api/events` |
+| `eventSessionDescriptionMaxLength` | `EventSessionRequestDto`/`Patch.description` | `POST`/`PATCH /api/event-sessions` |
+| `moderationReasonMaxLength` | `ModerationActionRequestDto.reason` | `POST /api/moderation-actions` |
+| `reportDescriptionMaxLength` | `ReportRequestDto.description` | `POST /api/reports` |
+| `reportResolutionNotesMaxLength` | `ReportRequestDto.resolutionNotes` | `PATCH /api/reports/{id}` (admin) |
+| `catalogDescriptionMaxLength` | `description` on plan tiers, paid services, event types, modules | admin catalog CRUD |
 
 Exceeding a limit returns **`400`** with `errorCode: 3001` / `errorKey: "VALIDATION_FAILED"`, same
 shape as any other field-validation error. Nothing that was previously accepted has been
-retroactively invalidated — this only rejects _new_ writes over the limit.
+retroactively invalidated — this only rejects *new* writes over the limit.
 
 **Action:** wire each textarea/input's `maxLength` and any live character counter to the matching
 field here instead of a hardcoded number, the same way you'd source `rsvp` bounds. This is the
@@ -238,41 +238,37 @@ sibling-DTO conventions (e.g. `title`/`name` at 255) rather than being new judgm
 ## New: per-endpoint rate limits (2026-08-23)
 
 Global `429` handling already applies to every `/api/**` endpoint (see
-`frontend-integration-guide.md` §0) — nothing changes about _how_ you handle a `429`. What's new is
+`frontend-integration-guide.md` §0) — nothing changes about *how* you handle a `429`. What's new is
 that the guest content/interaction endpoints (posts, comments, reactions, stories, playlist
 suggestions/votes, wishbook, RSVPs, media, invites) previously had **no endpoint-specific limit at
 all** and silently fell back to the generous global default (300 req/min). They now have tighter,
 purpose-fit budgets to prevent spam/abuse:
 
 ```ts
-interface AppRateLimitConfigDto {
-    name: string;
-    limit: number;
-    windowSeconds: number;
-}
+interface AppRateLimitConfigDto { name: string; limit: number; windowSeconds: number; }
 ```
 
 `GET /api/config` → `rateLimits` is the live list (sorted by `name`) — treat the table below as a
 reference, not the source of truth; read `rateLimits` at runtime if you want to build any
 client-side pre-throttling (e.g. disabling a submit button before the request even goes out).
 
-| bucket (`name`)               | limit | window | endpoint(s)                                                             |
-| ----------------------------- | ----- | ------ | ----------------------------------------------------------------------- |
-| `post.write`                  | 20    | 60s    | `POST`/`DELETE /api/posts`                                              |
-| `comment.write`               | 40    | 60s    | `POST`/`DELETE /api/comments`                                           |
-| `reaction.write`              | 80    | 60s    | `POST`/`DELETE /api/reactions`                                          |
-| `story.write`                 | 20    | 60s    | `POST`/`DELETE /api/stories`                                            |
-| `story.view`                  | 120   | 60s    | `POST /api/stories/{id}/views`                                          |
-| `playlist.suggestion.write`   | 20    | 60s    | `POST`/`DELETE /api/playlist-suggestions`                               |
-| `playlist.vote.write`         | 80    | 60s    | `POST`/`DELETE /api/playlist-votes`                                     |
-| `wishbook.write`              | 20    | 60s    | `POST /api/events/{eventId}/wishbook`, `DELETE /api/wishbook/{entryId}` |
-| `post-media.write`            | 60    | 60s    | `POST`/`DELETE /api/post-medias`                                        |
-| `rsvp.write`                  | 20    | 60s    | `POST`/`PATCH`/`DELETE /api/rsvps`                                      |
-| `rsvp.session-response.write` | 30    | 60s    | `POST`/`DELETE /api/rsvp-session-responses`                             |
-| `event-member.claim`          | 10    | 1 hour | `POST /api/event-members/{id}/claim`                                    |
-| `event-invitation.accept`     | 20    | 60s    | `POST /api/event-invitations/{inviteToken}/accept`                      |
-| `admin.user-delete`           | 5     | 1 hour | `DELETE /api/users/{id}` (admin)                                        |
-| `admin.event-purge`           | 5     | 1 hour | `POST /api/admin/events/{id}/purge` (admin)                             |
+| bucket (`name`) | limit | window | endpoint(s) |
+|---|---|---|---|
+| `post.write` | 20 | 60s | `POST`/`DELETE /api/posts` |
+| `comment.write` | 40 | 60s | `POST`/`DELETE /api/comments` |
+| `reaction.write` | 80 | 60s | `POST`/`DELETE /api/reactions` |
+| `story.write` | 20 | 60s | `POST`/`DELETE /api/stories` |
+| `story.view` | 120 | 60s | `POST /api/stories/{id}/views` |
+| `playlist.suggestion.write` | 20 | 60s | `POST`/`DELETE /api/playlist-suggestions` |
+| `playlist.vote.write` | 80 | 60s | `POST`/`DELETE /api/playlist-votes` |
+| `wishbook.write` | 20 | 60s | `POST /api/events/{eventId}/wishbook`, `DELETE /api/wishbook/{entryId}` |
+| `post-media.write` | 60 | 60s | `POST`/`DELETE /api/post-medias` |
+| `rsvp.write` | 20 | 60s | `POST`/`PATCH`/`DELETE /api/rsvps` |
+| `rsvp.session-response.write` | 30 | 60s | `POST`/`DELETE /api/rsvp-session-responses` |
+| `event-member.claim` | 10 | 1 hour | `POST /api/event-members/{id}/claim` |
+| `event-invitation.accept` | 20 | 60s | `POST /api/event-invitations/{inviteToken}/accept` |
+| `admin.user-delete` | 5 | 1 hour | `DELETE /api/users/{id}` (admin) |
+| `admin.event-purge` | 5 | 1 hour | `POST /api/admin/events/{id}/purge` (admin) |
 
 Notes:
 

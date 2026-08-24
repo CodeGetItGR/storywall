@@ -8,10 +8,11 @@ import type { AuthResponseDto, PlatformRole } from '@/lib/api/types';
 import {
     clearSession,
     getAuthState,
-    getOrCreateGuestKey,
+    getStoredGuestKey,
     getStoredInviteToken,
     getStoredRefreshToken,
     setSession,
+    setStoredGuestKey,
     setStoredInviteToken,
     setStoredRefreshToken,
     subscribeAuthState,
@@ -42,6 +43,7 @@ function applyAuthResponse(auth: AuthResponseDto) {
     // out a real refresh token belonging to a registered user, so only write
     // when one was actually issued.
     if (auth.refreshToken) setStoredRefreshToken(auth.refreshToken);
+    if (auth.guestKey) setStoredGuestKey(auth.guestKey);
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -69,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     const auth = await api.post<AuthResponseDto>(endpoints.auth.guestLogin, {
                         inviteToken,
                         displayName: 'Guest',
-                        guestKey: getOrCreateGuestKey() ?? undefined,
+                        guestKey: getStoredGuestKey() ?? undefined,
                     });
                     if (!cancelled) applyAuthResponse(auth);
                 }
@@ -106,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const auth = await api.post<AuthResponseDto>(endpoints.auth.guestLogin, {
                 inviteToken,
                 displayName,
-                guestKey: getOrCreateGuestKey() ?? undefined,
+                guestKey: getStoredGuestKey() ?? undefined,
             });
             applyAuthResponse(auth);
             setStoredInviteToken(inviteToken);

@@ -6,7 +6,6 @@ to get more than one file at a time; the only existing paths were the per-item f
 guide). This adds two endpoints on top of those, doesn't change either of them.
 
 Related docs:
-
 - [`billing-fe-guide.md`](billing-fe-guide.md) §7a — the "keep originals" add-on this feature reads
   the entitlement from
 - [`frontend-api-types.ts`](../frontend-api-types.ts) — `MediaArchiveManifestDto` /
@@ -61,15 +60,15 @@ manifest twice. `parts` describes the plan for the `variant` you actually reques
 - **Pre-select `ORIGINAL` when it's available, but show both numbers before the host commits.**
   They're paying for the originals, so default to giving them the originals — but originals
   routinely run 5–10× the display size, and a host about to pull 38 GB on hotel wifi should see
-  that number, not discover it mid-download. Render something like _"38.9 GB (originals) · 4.1 GB
-  (compressed)"_ with the originals option pre-checked.
+  that number, not discover it mid-download. Render something like *"38.9 GB (originals) · 4.1 GB
+  (compressed)"* with the originals option pre-checked.
 - **Surface `itemsWithoutOriginal` when it's nonzero and `variant=ORIGINAL`.** It counts items
   that have no archival original on file and will silently fall back to their compressed copy in
   the zip — every video (videos are never re-encoded, so there's nothing to keep an original
-  _of_), plus any photo uploaded before the add-on was switched on. A host who paid for originals
+  *of*), plus any photo uploaded before the add-on was switched on. A host who paid for originals
   and gets a zip with some files smaller than expected should have been told why. One line is
-  enough: _"18 videos and 13 older photos will use the compressed copy — no original was kept for
-  those."_
+  enough: *"18 videos and 13 older photos will use the compressed copy — no original was kept for
+  those."*
 - `photoCount` / `videoCount` are of **live** media only — soft-deleted items are excluded, same
   as the feed.
 
@@ -79,7 +78,7 @@ An empty gallery returns `parts: []` — treat that as "nothing to download," do
 endpoint with `part=1` in that case, it'll `400`.
 
 Otherwise, drive the download UI off this array directly: one row/button per part, labelled from
-`itemCount` and `sizeBytes` (e.g. _"Part 1 of 2 — 210 items, 2.0 GB"_). Don't try to infer part
+`itemCount` and `sizeBytes` (e.g. *"Part 1 of 2 — 210 items, 2.0 GB"*). Don't try to infer part
 count or sizes from `displayTotalBytes`/`originalTotalBytes` divided by some assumed cap — the
 packing isn't uniform (see §3.1) and the cap itself is a config value you don't have visibility
 into from the frontend.
@@ -107,7 +106,6 @@ is written uncompressed (photos and videos are already compressed; re-compressin
 nothing and only costs CPU).
 
 **This is a slow, heavy request — build the UI like a large download, not like an API call:**
-
 - Don't block on it with a spinner-and-timeout pattern the way you would a normal fetch. Use a
   native download (browser `<a href>` navigation, or a background download task on native) so the
   OS/browser owns the progress and retry, rather than holding the response in JS memory.
@@ -144,12 +142,12 @@ nothing and only costs CPU).
 
 ## 4. Errors
 
-| Code                                  | HTTP | When                                                                            | FE handling                                                                                                                                                                                                                                                                                                               |
-| ------------------------------------- | ---- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ORIGINALS_ADDON_NOT_ACTIVE` (5054)   | 403  | `variant=ORIGINAL` requested on an event without the "keep originals" add-on    | Shouldn't be reachable if you gate the toggle on `originalsAvailable` (§2) — treat as a bug in your gating if it happens, not a state to design a message for                                                                                                                                                             |
-| `MEDIA_ARCHIVE_PART_NOT_FOUND` (3019) | 400  | `part` isn't in the current plan — either out of range, or the gallery is empty | Re-fetch the manifest and rebuild the part list. Reachable without any client bug: parts are recomputed per request rather than stored, so an upload or delete between your manifest call and the download can shift the plan. If you see this, silently re-fetch the manifest once before surfacing anything to the host |
-| Plain `403` (no specific code)        | 403  | Caller is a member but not a host of this event                                 | Don't show the bulk-download entry point to non-hosts at all — same rule as every other host-only action in this app                                                                                                                                                                                                      |
-| Plain `404`                           | 404  | Event doesn't exist                                                             | Shouldn't be reachable from a live event page                                                                                                                                                                                                                                                                             |
+| Code | HTTP | When | FE handling |
+|---|---|---|---|
+| `ORIGINALS_ADDON_NOT_ACTIVE` (5054) | 403 | `variant=ORIGINAL` requested on an event without the "keep originals" add-on | Shouldn't be reachable if you gate the toggle on `originalsAvailable` (§2) — treat as a bug in your gating if it happens, not a state to design a message for |
+| `MEDIA_ARCHIVE_PART_NOT_FOUND` (3019) | 400 | `part` isn't in the current plan — either out of range, or the gallery is empty | Re-fetch the manifest and rebuild the part list. Reachable without any client bug: parts are recomputed per request rather than stored, so an upload or delete between your manifest call and the download can shift the plan. If you see this, silently re-fetch the manifest once before surfacing anything to the host |
+| Plain `403` (no specific code) | 403 | Caller is a member but not a host of this event | Don't show the bulk-download entry point to non-hosts at all — same rule as every other host-only action in this app |
+| Plain `404` | 404 | Event doesn't exist | Shouldn't be reachable from a live event page |
 
 Both manifest and download share the host/existence checks — a `403`/`404` on the manifest means
 the download would fail the same way, so there's no need to call the download endpoint just to

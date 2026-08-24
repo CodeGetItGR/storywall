@@ -131,7 +131,6 @@ export function PlanCreateForm({
             isPublic: flags.isPublic,
             storageBytes: scope === 'EVENT' ? storageInputToBytes(formData.get('storageAmount'), formData.get('storageUnit')) : null,
             maxMembers: scope === 'EVENT' ? numberOrNull(formData.get('maxMembers')) : null,
-            maxActiveEvents: scope === 'ACCOUNT' ? numberOrNull(formData.get('maxActiveEvents')) : null,
             priceAmountMinor: priceInputToMinor(formData.get('price')),
             priceCurrency: emptyToNull(formData.get('priceCurrency'))?.toUpperCase() ?? null,
             billingPeriod: (emptyToNull(formData.get('billingPeriod')) as BillingPeriod | null) ?? null,
@@ -280,18 +279,7 @@ export function PlanCreateForm({
                                     />
                                 </AdminField>
                             </>
-                        ) : (
-                            <AdminField label={t('fields.maxEventsPerUser')} optional className="col-span-2">
-                                <input
-                                    name="maxActiveEvents"
-                                    type="number"
-                                    min={0}
-                                    defaultValue={sourcePlan?.maxActiveEvents ?? ''}
-                                    placeholder={t('fields.blankUnlimited')}
-                                    className={adminInputClass('max-w-28')}
-                                />
-                            </AdminField>
-                        )}
+                        ) : null}
                     </div>
                 </AdminSection>
 

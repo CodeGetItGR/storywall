@@ -59,16 +59,8 @@ export function PlanEditorLimitsTab({
                     </AdminField>
                 </div>
             ) : (
-                <AdminField label={t('fields.maxEventsPerUser')} optional className="max-w-64">
-                    <input
-                        name="maxActiveEvents"
-                        type="number"
-                        min={0}
-                        defaultValue={plan.maxActiveEvents ?? ''}
-                        placeholder={t('fields.blankUnlimited')}
-                        className={adminInputClass()}
-                    />
-                </AdminField>
+                /* Account quotas */
+                <p className="rounded-lg bg-surface-muted px-3 py-2 text-sm font-medium text-ink-muted">{t('plans.accountNoQuotas')}</p>
             )}
         </AdminTabPanel>
     );

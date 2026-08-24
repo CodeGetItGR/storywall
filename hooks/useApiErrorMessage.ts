@@ -32,18 +32,9 @@ export function useApiErrorMessage() {
             }
 
             const quotaCode = getErrorCode(error);
-            if (
-                quotaCode === ERROR_CODES.EVENT_STORAGE_LIMIT_EXCEEDED ||
-                quotaCode === ERROR_CODES.EVENT_MEMBER_LIMIT_EXCEEDED ||
-                quotaCode === ERROR_CODES.ACTIVE_EVENT_LIMIT_EXCEEDED
-            ) {
+            if (quotaCode === ERROR_CODES.EVENT_STORAGE_LIMIT_EXCEEDED || quotaCode === ERROR_CODES.EVENT_MEMBER_LIMIT_EXCEEDED) {
                 const details = getQuotaExceededDetails(error);
-                const key =
-                    quotaCode === ERROR_CODES.EVENT_STORAGE_LIMIT_EXCEEDED
-                        ? 'storageLimit'
-                        : quotaCode === ERROR_CODES.EVENT_MEMBER_LIMIT_EXCEEDED
-                          ? 'memberLimit'
-                          : 'activeEventLimit';
+                const key = quotaCode === ERROR_CODES.EVENT_STORAGE_LIMIT_EXCEEDED ? 'storageLimit' : 'memberLimit';
                 return details ? t(`${key}WithPlan`, { plan: details.planCode }) : t(key);
             }
 

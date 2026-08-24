@@ -11,7 +11,6 @@ export type ApiErrorMessageKey =
     | 'addonAlreadyActive'
     | 'addonLockedWhileActive'
     | 'addonNotActive'
-    | 'activeEventLimit'
     | 'alreadyLinked'
     | 'authenticationRequired'
     | 'checkoutAmountBelowMinimum'
@@ -96,7 +95,6 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.ADDON_ALREADY_ACTIVE]: 'addonAlreadyActive',
     [ERROR_CODES.ADDON_LOCKED_WHILE_ACTIVE]: 'addonLockedWhileActive',
     [ERROR_CODES.ADDON_NOT_ACTIVE]: 'addonNotActive',
-    [ERROR_CODES.ACTIVE_EVENT_LIMIT_EXCEEDED]: 'activeEventLimit',
     [ERROR_CODES.ALREADY_LINKED]: 'alreadyLinked',
     [ERROR_CODES.CHECKOUT_AMOUNT_BELOW_MINIMUM]: 'checkoutAmountBelowMinimum',
     [ERROR_CODES.CHECKOUT_SESSION_UNRESOLVED]: 'checkoutSessionUnresolved',

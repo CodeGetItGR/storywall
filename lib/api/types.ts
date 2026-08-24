@@ -95,7 +95,6 @@ export interface PlanTierResponseDto {
     isPublic: boolean;
     storageBytes: number | null;
     maxMembers: number | null;
-    maxActiveEvents: number | null;
     priceAmountMinor: number | null;
     priceCurrency: string | null;
     billingPeriod: BillingPeriod | null;
@@ -243,6 +242,7 @@ export interface AuthResponseDto {
     email: string | null;
     role: PlatformRole;
     displayName: string;
+    guestKey?: string;
 }
 
 export interface RegisterRequestDto {
@@ -986,14 +986,6 @@ export interface OriginalMediaUrlDto {
     url: string;
 }
 
-export interface AccountUsageResponseDto {
-    userId: string;
-    planTier: PlanTierCode;
-    activeEvents: number;
-    activeEventLimit: number | null;
-    activeEventPercent: number;
-}
-
 export interface PostRequestDto {
     eventId: string;
     authorMemberId?: string;
@@ -1281,7 +1273,6 @@ export interface PlanTierRequestDto {
     isPublic: boolean;
     storageBytes?: number | null;
     maxMembers?: number | null;
-    maxActiveEvents?: number | null;
     priceAmountMinor?: number | null;
     priceCurrency?: string | null;
     billingPeriod?: BillingPeriod | null;

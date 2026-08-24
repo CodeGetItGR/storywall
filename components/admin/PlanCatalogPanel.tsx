@@ -242,7 +242,7 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                                                   formatLimitValue(plan.maxMembers, 'count') ?? tAdmin('unlimited'),
                                                   formatLimitValue(plan.storageBytes, 'bytes') ?? tAdmin('unlimited'),
                                               ].join(' · ')
-                                            : (formatLimitValue(plan.maxActiveEvents, 'count') ?? tAdmin('unlimited'));
+                                            : t('noQuotas');
                                     const eventTypeNames = plan.eventTypeKeys
                                         .map((key) => eventTypesQuery.data?.find((eventType) => eventType.eventTypeKey === key))
                                         .filter((eventType): eventType is PlatformEventTypeResponseDto => Boolean(eventType));

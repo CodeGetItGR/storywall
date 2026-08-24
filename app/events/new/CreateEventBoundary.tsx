@@ -20,7 +20,7 @@ import { useCreateEvent } from '@/hooks/useEvent';
 import { usePlanTiersForEventType } from '@/hooks/usePlanTiersForEventType';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
-import { ERROR_CODES, getErrorCode, getFieldErrors } from '@/lib/api/errors';
+import { getFieldErrors } from '@/lib/api/errors';
 import type {
     CheckoutResponseDto,
     EventAddonDto,
@@ -164,11 +164,6 @@ export default function CreateEventPage() {
 
             if (Object.keys(getFieldErrors(err) ?? {}).length > 0) {
                 setStep('details');
-                return;
-            }
-
-            if (getErrorCode(err) === ERROR_CODES.ACTIVE_EVENT_LIMIT_EXCEEDED) {
-                setError(t('activeEventLimitExceeded'));
                 return;
             }
 

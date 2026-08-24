@@ -16,7 +16,7 @@ server now enforces what the UI already assumed, so a request that shouldn't hav
 gets a real `409` instead of silently succeeding. §1 is the exception — it's a genuinely new
 capability, not a lock — read it even if you skip the rest.
 
-## 1. Event module _composition_ is locked, but `isEnabled` can now be toggled
+## 1. Event module *composition* is locked, but `isEnabled` can now be toggled
 
 **Which modules exist on an event** is still fixed the moment the event is created:
 `POST /api/event-modules` and `DELETE /api/event-modules/{id}` always reject with **`409`**,
@@ -114,36 +114,36 @@ was accepted and stored as-is. It's now checked against two layers on `POST /api
    `WEDDING | BAPTISM | SOCIAL_EVENT | BIRTHDAY | CORPORATE | FESTIVAL | PRIVATE_PARTY | CONFERENCE`.
    An unknown value → **`400`**, `errorCode: 3018` / `errorKey: "INVALID_EVENT_TYPE"`.
 
-    ```json
-    POST /api/events
-    { "eventType": "SCHEDULE", ... }
+   ```json
+   POST /api/events
+   { "eventType": "SCHEDULE", ... }
 
-    → 400
-    {
-      "status": 400,
-      "errorCode": 3018,
-      "errorKey": "INVALID_EVENT_TYPE",
-      "detail": "eventType must be one of: WEDDING, BAPTISM, SOCIAL_EVENT, BIRTHDAY, CORPORATE, FESTIVAL, PRIVATE_PARTY, CONFERENCE"
-    }
-    ```
+   → 400
+   {
+     "status": 400,
+     "errorCode": 3018,
+     "errorKey": "INVALID_EVENT_TYPE",
+     "detail": "eventType must be one of: WEDDING, BAPTISM, SOCIAL_EVENT, BIRTHDAY, CORPORATE, FESTIVAL, PRIVATE_PARTY, CONFERENCE"
+   }
+   ```
 
 2. **Is it currently offered?** Real keys can still be switched off by an admin (data change, no
    deploy needed) via the new `platform_event_types` registry — mirrors how `ModuleKey` /
    `platform_modules` already works for modules. A real-but-disabled key → **`409`**,
    `errorCode: 5051` / `errorKey: "EVENT_TYPE_NOT_AVAILABLE"`.
 
-    ```json
-    POST /api/events
-    { "eventType": "CONFERENCE", ... }
+   ```json
+   POST /api/events
+   { "eventType": "CONFERENCE", ... }
 
-    → 409
-    {
-      "status": 409,
-      "errorCode": 5051,
-      "errorKey": "EVENT_TYPE_NOT_AVAILABLE",
-      "detail": "The CONFERENCE event type is not available yet."
-    }
-    ```
+   → 409
+   {
+     "status": 409,
+     "errorCode": 5051,
+     "errorKey": "EVENT_TYPE_NOT_AVAILABLE",
+     "detail": "The CONFERENCE event type is not available yet."
+   }
+   ```
 
 **`SOCIAL_EVENT` is a brand-new key** — it did not exist before this change in any form (not a
 rename or alias of `PRIVATE_PARTY`). At launch only `WEDDING`, `BAPTISM`, and `SOCIAL_EVENT` are
@@ -157,18 +157,18 @@ Two new fields on `AppConfigResponseDto`, same pattern as the existing `modules`
 
 ```ts
 interface AppConfigResponseDto {
-    // ...existing fields unchanged...
-    eventTypes: PlatformEventTypeResponseDto[]; // enabled rows, ordered by sortOrder
-    eventTypeKeys: string[]; // eventTypes[].eventTypeKey, same order
+  // ...existing fields unchanged...
+  eventTypes: PlatformEventTypeResponseDto[];  // enabled rows, ordered by sortOrder
+  eventTypeKeys: string[];                     // eventTypes[].eventTypeKey, same order
 }
 
 interface PlatformEventTypeResponseDto {
-    id: string;
-    eventTypeKey: string; // e.g. "WEDDING"
-    name: string; // display name, e.g. "Wedding"
-    description: string | null;
-    isEnabled: boolean; // always true within eventTypes — this array is pre-filtered
-    sortOrder: number;
+  id: string;
+  eventTypeKey: string;   // e.g. "WEDDING"
+  name: string;           // display name, e.g. "Wedding"
+  description: string | null;
+  isEnabled: boolean;     // always true within eventTypes — this array is pre-filtered
+  sortOrder: number;
 }
 ```
 
@@ -182,10 +182,10 @@ way the FE will pick up `CONFERENCE` etc. the moment an admin enables it, with n
 
 New, `ROLE_ADMIN`-only, mirrors `/api/admin/platform-modules` exactly:
 
-| Method | Path                                             | Notes                                                                                               |
-| ------ | ------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
-| GET    | `/api/admin/platform-event-types`                | every key, including disabled ones — use this to build the admin toggle list, not `GET /api/config` |
-| PATCH  | `/api/admin/platform-event-types/{eventTypeKey}` | body: any of `name`, `description`, `isEnabled`, `sortOrder`                                        |
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/api/admin/platform-event-types` | every key, including disabled ones — use this to build the admin toggle list, not `GET /api/config` |
+| PATCH | `/api/admin/platform-event-types/{eventTypeKey}` | body: any of `name`, `description`, `isEnabled`, `sortOrder` |
 
 ```json
 PATCH /api/admin/platform-event-types/CONFERENCE
@@ -239,10 +239,10 @@ build it from this call rather than from a hardcoded per-type module list, for t
 
 New, `ROLE_ADMIN`-only:
 
-| Method | Path                                                        | Notes                                                                                                                     |
-| ------ | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| GET    | `/api/admin/event-types/{eventTypeKey}/modules`             | every row, **including `UNSUPPORTED`** — the admin view needs to see and re-enable those, unlike the public preview above |
-| PATCH  | `/api/admin/event-types/{eventTypeKey}/modules/{moduleKey}` | body: any of `applicability` (`UNSUPPORTED`\|`DEFAULT_OFF`\|`DEFAULT_ON`), `defaultConfig` (object), `sortOrder`          |
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/api/admin/event-types/{eventTypeKey}/modules` | every row, **including `UNSUPPORTED`** — the admin view needs to see and re-enable those, unlike the public preview above |
+| PATCH | `/api/admin/event-types/{eventTypeKey}/modules/{moduleKey}` | body: any of `applicability` (`UNSUPPORTED`\|`DEFAULT_OFF`\|`DEFAULT_ON`), `defaultConfig` (object), `sortOrder` |
 
 ```json
 PATCH /api/admin/event-types/WEDDING/modules/gallery
@@ -281,10 +281,10 @@ PATCH /api/event-sessions/{id}
 
 Exact rules, identical shape to the event-level lock:
 
-- **`startAt`** can't be changed once it's in the past — _unless_ the new value equals the
+- **`startAt`** can't be changed once it's in the past — *unless* the new value equals the
   session's current `startAt` (a resubmit from an edit form that didn't touch this field is not a
   conflict), or the parent event is still `DRAFT` (nothing has gone out yet).
-- **`endAt`** can't be moved _into_ the past while the parent event is non-`DRAFT` — pushing it
+- **`endAt`** can't be moved *into* the past while the parent event is non-`DRAFT` — pushing it
   further into the future is always fine (a session running long is ordinary).
 - Everything else on the session (`title`, `description`, `locationName`, `mapsUrl`,
   `displayOrder`) is unaffected and stays freely editable regardless of schedule state.
@@ -297,14 +297,14 @@ does), no change needed — this only makes the server agree.
 
 ## Error code summary
 
-| Code | Key                               | Meaning                                                                                                                                                                         |
-| ---- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 3018 | `INVALID_EVENT_TYPE`              | `eventType` isn't one of the known keys at all                                                                                                                                  |
-| 5012 | `MODULE_NOT_AVAILABLE`            | `PATCH /api/event-modules/{id}` tried to turn a module **on** and the event's plan doesn't include it and no unlock covers it either (§1) — turning one **off** never hits this |
-| 5049 | `EVENT_MODULE_COMPOSITION_LOCKED` | module add or remove attempted after event creation (`POST`/`DELETE` only — `PATCH`'s `isEnabled` is no longer locked, see §1)                                                  |
-| 5050 | `EVENT_VISIBILITY_NOT_SUPPORTED`  | `visibility: PUBLIC` attempted on create or patch                                                                                                                               |
-| 5051 | `EVENT_TYPE_NOT_AVAILABLE`        | `eventType` is real but currently disabled in the registry                                                                                                                      |
-| 5052 | `EVENT_SESSION_SCHEDULE_LOCKED`   | session `startAt`/`endAt` change attempted after it started/went live                                                                                                           |
+| Code | Key | Meaning |
+|---|---|---|
+| 3018 | `INVALID_EVENT_TYPE` | `eventType` isn't one of the known keys at all |
+| 5012 | `MODULE_NOT_AVAILABLE` | `PATCH /api/event-modules/{id}` tried to turn a module **on** and the event's plan doesn't include it and no unlock covers it either (§1) — turning one **off** never hits this |
+| 5049 | `EVENT_MODULE_COMPOSITION_LOCKED` | module add or remove attempted after event creation (`POST`/`DELETE` only — `PATCH`'s `isEnabled` is no longer locked, see §1) |
+| 5050 | `EVENT_VISIBILITY_NOT_SUPPORTED` | `visibility: PUBLIC` attempted on create or patch |
+| 5051 | `EVENT_TYPE_NOT_AVAILABLE` | `eventType` is real but currently disabled in the registry |
+| 5052 | `EVENT_SESSION_SCHEDULE_LOCKED` | session `startAt`/`endAt` change attempted after it started/went live |
 
 (5052 is new; 5048 `EVENT_SCHEDULE_LOCKED` — the event-level equivalent of 5052 — already existed
 before this change and is unaffected.)

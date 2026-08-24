@@ -41,9 +41,7 @@ export function PlanEditorHeader({
                 <div className="mt-2 flex flex-wrap gap-1.5 text-xs font-semibold text-ink-muted">
                     <span className="rounded-full bg-surface-muted px-2 py-1">{formatPlanMoney(plan) ?? t('plans.noPrice')}</span>
                     <span className="rounded-full bg-surface-muted px-2 py-1">
-                        {isEvent
-                            ? `${formatLimitValue(plan.maxMembers, 'count') ?? t('unlimited')} ${t('plans.members')}`
-                            : `${formatLimitValue(plan.maxActiveEvents, 'count') ?? t('unlimited')} ${t('plans.eventsPerUser')}`}
+                        {isEvent ? `${formatLimitValue(plan.maxMembers, 'count') ?? t('unlimited')} ${t('plans.members')}` : t('plans.noQuotas')}
                     </span>
                     {isEvent && (
                         <span className="rounded-full bg-surface-muted px-2 py-1">
