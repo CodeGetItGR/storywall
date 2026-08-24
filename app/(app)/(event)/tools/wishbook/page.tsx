@@ -86,7 +86,6 @@ export default function WishbookPage() {
             {/* Composer */}
             {canWrite ? (
                 <form onSubmit={submit} className="mt-8 space-y-4">
-                    {memberName && <p className="truncate text-lg font-semibold text-ink">{memberName}</p>}
                     <textarea
                         id="wishbook-message"
                         maxLength={maxMessageLength}
@@ -94,10 +93,11 @@ export default function WishbookPage() {
                         value={message}
                         onChange={changeMessage}
                         aria-label={t('messageAriaLabel')}
+                        placeholder={t('currentPlaceholder')}
                         className="min-h-56 w-full resize-none rounded-[1.5rem] border border-border/70 bg-background px-5 py-4 text-base leading-8 text-ink outline-none transition-shadow focus:border-primary/30 focus:ring-2 focus:ring-primary/20"
                     />
                     <div className="flex items-center justify-between gap-3">
-                        <span className="text-xs text-ink-faint">{t('charactersLeft', { count: maxMessageLength - message.length })}</span>
+                        <span className="text-xs text-ink-faint">{t('charactersLeft', { current:message.length, max: maxMessageLength })}</span>
                         <button
                             type="submit"
                             disabled={!message.trim() || createEntry.isPending}
@@ -112,7 +112,7 @@ export default function WishbookPage() {
             ) : null}
 
             {/* Entries */}
-            <section className="mt-8">
+            <section className="mt-8" hidden={!isHost}>
                 {wishbook.isLoading && <p className="py-10 text-center text-sm text-ink-muted">{t('loading')}</p>}
                 {wishbook.error && <p className="py-10 text-center text-sm text-rose-600">{toErrorMessage(wishbook.error)}</p>}
                 {!wishbook.isLoading && !wishbook.error && entries.length === 0 && (
@@ -145,7 +145,7 @@ export default function WishbookPage() {
                                     </button>
                                 )}
                             </div>
-                            <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-ink">{entry.message}</p>
+                            <p className="mt-3 whitespace-pre-wrap wrap-break-word text-sm leading-6 text-ink">{entry.message}</p>
                         </article>
                     ))}
                 </div>

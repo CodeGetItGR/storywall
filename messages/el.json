@@ -32,7 +32,9 @@
         "hours": "Ώρες",
         "hoursShort": "ώρ.",
         "minutes": "Λεπτά",
-        "minutesShort": "λεπ."
+        "minutesShort": "λεπ.",
+        "seconds": "Δευτερόλεπτα",
+        "secondsShort": "δ."
     },
     "StoriesRow": {
         "ariaLabel": "Ιστορίες"
@@ -921,8 +923,7 @@
             "nextPlanHint": "Επόμενη αναβάθμιση: {plan}",
             "highestPlan": "Έχετε ήδη το καλύτερο διαθέσιμο πλάνο.",
             "field": "Πεδίο",
-            "current": "Τωρινό πλάνο",
-            "next": "Επόμενο πλάνο",
+            "current": "Τωρινό",
             "recommended": "Προτεινόμενο",
             "fromTo": "Αναβάθμιση",
             "to": "σε",
@@ -1261,7 +1262,7 @@
     "WishbookPage": {
         "currentSubtitle": "Αφήστε μια ευχή στους διοργανωτές.",
         "currentPlaceholder": "Γράψτε την ευχή σας...",
-        "charactersLeft": "Απομένουν {count} χαρακτήρες",
+        "charactersLeft": "{current} / {max} χαρακτήρες",
         "loading": "Φόρτωση ευχών...",
         "empty": "Δεν υπάρχουν ακόμη ευχές. Αφήστε την πρώτη.",
         "emptyReadOnly": "Δεν υπάρχουν ακόμη ευχές.",
@@ -1278,7 +1279,7 @@
         "subtitle": "Αφήστε ένα συγκινητικό μήνυμα για την Έμμα & τον Τζέιμς. Θα το θησαυρίσουν για πάντα.",
         "messagePlaceholder": "Γράψτε το μήνυμά σας στην Έμμα & τον Τζέιμς... Όσο πιο συγκινητικό θέλετε.",
         "messageAriaLabel": "Μήνυμα βιβλίου ευχών",
-        "addToWishbook": "Προσθήκη στο Βιβλίο Ευχών",
+        "addToWishbook": "Προσθήκη ευχής",
         "messageCount": "{count, plural, one {# Μήνυμα} other {# Μηνύματα}}",
         "timeAgo": {
             "hours": "πριν {count} ώ",

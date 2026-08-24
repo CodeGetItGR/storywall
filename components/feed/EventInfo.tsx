@@ -27,7 +27,7 @@ export function EventInfo({
                 <Calendar className="h-4 w-4" />
                 <p className="text-[1rem] alegreya-light">{formatted}</p>
             </div>
-            <div className="flex items-center gap-1 text-[1rem] alegreya-light">
+            <div className="flex items-center gap-1 text-[1rem] alegreya-light" hidden={!place}>
                 <MapPin className="h-4 w-4" />
                 <p className="text-nowrap text-ellipsis whitespace-nowrap">{place}</p>
             </div>

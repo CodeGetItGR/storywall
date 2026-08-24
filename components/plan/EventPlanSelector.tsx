@@ -127,7 +127,7 @@ export function EventPlanSelector({ plans, modules, selectedCode, onSelect, isLo
                                 )}
                             </button>
                             {hasModuleGuide && (
-                                <div className="pointer-events-none absolute right-3 top-3 flex items-center gap-2">
+                                <div className="absolute right-3 top-3 flex items-center gap-2 ">
                                     <PlanModuleGuideButton planCode={plan.code} onOpen={openModuleGuide} />
                                 </div>
                             )}

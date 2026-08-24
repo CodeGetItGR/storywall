@@ -156,7 +156,7 @@ export function MobileTabBar() {
                                 {canComposePost && (
                                     <Menu.Item
                                         onClick={openPostComposer}
-                                        className="mx-1 flex cursor-pointer justify-between rounded-lg px-4 py-2.5 text-sm font-medium text-ink outline-none transition-colors hover:bg-surface-muted"
+                                        className="mx-1 flex cursor-pointer justify-between gap-4 rounded-lg px-4 py-2.5 text-sm font-medium text-ink outline-none transition-colors hover:bg-surface-muted"
                                     >
                                         {t('composeMenu.post')}
                                         <Image

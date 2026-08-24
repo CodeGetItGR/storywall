@@ -192,10 +192,22 @@ export default function CreateEventPage() {
         setTitle(e.target.value);
     }, []);
 
-    const onSelectEventType = useCallback((type: EventTypeConvention) => {
-        setEventType(type);
-        setSelectedPlanCode('');
-    }, []);
+    const onSelectEventType = useCallback(
+        (type: EventTypeConvention) => {
+            if (type === eventType) return;
+            setEventType(type);
+            setSelectedPlanCode('');
+            setSelectedAddonCodes([]);
+            setTitle('');
+            setStartAt('');
+            setEndAt('');
+            setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
+            setLocationName('');
+            setError(null);
+            setCreatedDraftEventId(null);
+        },
+        [eventType]
+    );
 
     const onStartAtChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setStartAt(e.target.value);

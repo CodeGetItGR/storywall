@@ -44,7 +44,6 @@ export function PlanComparisonMatrix({
                                 <span className="truncate text-sm font-semibold normal-case tracking-normal text-ink">{plan.name}</span>
                                 <PlanComparisonBadges
                                     isCurrent={Boolean(currentPlanCode) && plan.code === currentPlanCode}
-                                    isNext={nextPlanId === plan.id}
                                 />
                             </div>
                             <p className="mt-1 text-xs font-normal normal-case leading-5 tracking-normal text-ink-muted">

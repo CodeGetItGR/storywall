@@ -2,8 +2,14 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 
-import { useLocalizedEventTypeName } from '@/hooks/useLocalizedEventTypeName';
-import type { EventTypeConvention, PaidServiceResponseDto, PlanTierResponseDto, PlatformEventTypeResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
+import type {
+    AppEventTypeResponseDto,
+    EventTypeConvention,
+    PaidServiceResponseDto,
+    PlanTierResponseDto,
+    PlatformModuleResponseDto,
+} from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
 import { getModuleMeta } from '@/lib/planModules';
 import { getPlanPriceDetails } from '@/lib/planTiers';
@@ -11,7 +17,7 @@ import { getPlanPriceDetails } from '@/lib/planTiers';
 type EventOverviewStepProps = {
     title: string;
     eventType: EventTypeConvention;
-    eventTypes: PlatformEventTypeResponseDto[];
+    eventTypes: AppEventTypeResponseDto[];
     startAt: string;
     endAt: string;
     locationName: string;
@@ -37,7 +43,7 @@ export function EventOverviewStep({
 }: EventOverviewStepProps) {
     const t = useTranslations('CreateEventPage');
     const locale = useLocale();
-    const localizedEventTypeName = useLocalizedEventTypeName();
+    const eventTypeCopy = useLocalizedAppEventTypeCopy();
     const includedMonths = plan.includedMonths ?? 1;
     const planActivation = getPlanPriceDetails(plan, 'activation');
     const planRenewal = getPlanPriceDetails(plan, 'recurring');
@@ -53,15 +59,12 @@ export function EventOverviewStep({
     const activationTotalLabel = currency ? formatMoney(locale, activationTotal, currency) : t('payment.noCharge');
     const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
     const matchedEventType = eventTypes.find((type) => type.eventTypeKey === eventType);
-    const eventTypeName = matchedEventType ? localizedEventTypeName(matchedEventType) : eventType;
+    const eventTypeName = matchedEventType ? eventTypeCopy(matchedEventType.eventTypeKey).name : eventType;
 
     return (
         <div className="flex h-full flex-col">
             {/* Event Summary */}
-            <section
-                aria-labelledby="plan-details-heading"
-                className="border-b border-border/70 pb-5"
-            >
+            <section aria-labelledby="plan-details-heading" className="border-b border-border/70 pb-5">
                 <h3 id="plan-details-heading" className="font-bold text-ink">
                     {t('overview.event')}
                 </h3>
@@ -69,53 +72,33 @@ export function EventOverviewStep({
                 <p className="mt-2 font-semibold text-ink">{title}</p>
 
                 <p className="mt-1 text-sm text-ink-muted">
-                    {eventTypeName} ·{' '}
-                    {dateFormatter.format(new Date(startAt))} –{' '}
-                    {dateFormatter.format(new Date(endAt))}
+                    {eventTypeName} · {dateFormatter.format(new Date(startAt))} – {dateFormatter.format(new Date(endAt))}
                 </p>
 
-                {locationName && (
-                    <p className="mt-1 text-sm text-ink-muted">{locationName}</p>
-                )}
+                {locationName && <p className="mt-1 text-sm text-ink-muted">{locationName}</p>}
             </section>
 
             {/* Pricing */}
-            <section
-                aria-labelledby="pricing-heading"
-                className="border-b border-border/70 py-5"
-            >
+            <section aria-labelledby="pricing-heading" className="border-b border-border/70 py-5">
                 <h3 id="pricing-heading" className="font-bold text-ink">
                     {t('overview.pricing')}
                 </h3>
 
-                <p className="mt-1 text-xs text-ink-muted">
-                    {t('overview.pricingHint', { months: includedMonths })}
-                </p>
+                <p className="mt-1 text-xs text-ink-muted">{t('overview.pricingHint', { months: includedMonths })}</p>
 
                 <div className="mt-3 divide-y divide-border/70">
                     <PriceRow
                         label={plan.name}
                         detail={t('overview.planActivation')}
-                        amount={
-                            planActivation &&
-                            formatMoney(
-                                locale,
-                                planActivation.amountMinor,
-                                planActivation.currency,
-                            )
-                        }
+                        amount={planActivation && formatMoney(locale, planActivation.amountMinor, planActivation.currency)}
                         fallback={t('payment.noCharge')}
                     />
 
                     {addons.map((addon) => {
-                        const name = addon.grantsModuleKey
-                            ? getModuleMeta(addon.grantsModuleKey, modules).name
-                            : addon.name;
+                        const name = addon.grantsModuleKey ? getModuleMeta(addon.grantsModuleKey, modules).name : addon.name;
 
                         const activationAmount =
-                            addon.billingPeriod === 'ONE_TIME'
-                                ? addon.priceAmountMinor
-                                : addon.priceAmountMinor * includedMonths;
+                            addon.billingPeriod === 'ONE_TIME' ? addon.priceAmountMinor : addon.priceAmountMinor * includedMonths;
 
                         return (
                             <PriceRow
@@ -125,14 +108,10 @@ export function EventOverviewStep({
                                     addon.billingPeriod === 'ONE_TIME'
                                         ? t('overview.chargedOnce')
                                         : t('overview.monthlyForMonths', {
-                                            months: includedMonths,
-                                        })
+                                              months: includedMonths,
+                                          })
                                 }
-                                amount={formatMoney(
-                                    locale,
-                                    activationAmount,
-                                    addon.priceCurrency,
-                                )}
+                                amount={formatMoney(locale, activationAmount, addon.priceCurrency)}
                                 fallback={t('payment.noCharge')}
                             />
                         );
@@ -150,11 +129,7 @@ export function EventOverviewStep({
                 <div className="rounded-xl bg-primary-light px-4 py-3 text-sm text-primary-dark">
                     <div className="flex items-center justify-between gap-3 font-semibold">
                         <span>{t('overview.futureMonthly')}</span>
-                        <span>
-                        {currency
-                            ? formatMoney(locale, renewalTotal, currency)
-                            : t('payment.noCharge')}
-                    </span>
+                        <span>{currency ? formatMoney(locale, renewalTotal, currency) : t('payment.noCharge')}</span>
                     </div>
 
                     <p className="mt-1 text-xs leading-5">
@@ -169,11 +144,7 @@ export function EventOverviewStep({
             {error && (
                 <div className="mt-auto rounded-lg bg-rose-50 px-3 py-2 text-center text-xs text-rose-600">
                     <p>{error}</p>
-                    {hasDraft && (
-                        <p className="mt-1 font-semibold">
-                            {t('paidModules.openDraft')}
-                        </p>
-                    )}
+                    {hasDraft && <p className="mt-1 font-semibold">{t('paidModules.openDraft')}</p>}
                 </div>
             )}
         </div>

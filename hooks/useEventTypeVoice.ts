@@ -8,14 +8,14 @@ import { useLocalizedText } from '@/hooks/useLocalizedText';
 import type { EventTypeConvention, EventTypeVoicePack } from '@/lib/api/types';
 
 // Resolves the ten-string voice pack for one event type, falling back to a
-// neutral FE string only if the backend hasn't shipped that type's copy yet.
+// neutral FE string only if config translations are unavailable.
 // See docs/integration guides/event-type-voice-pack-fe-integration.md.
 export function useEventTypeVoice(eventTypeKey: EventTypeConvention | null | undefined) {
     const { data: appConfig } = useAppConfig();
     const localizedText = useLocalizedText();
     const tFallback = useTranslations('EventVoiceFallback');
 
-    const voice = appConfig?.eventTypes.find((type) => type.eventTypeKey === eventTypeKey)?.voice;
+    const voice = eventTypeKey ? appConfig?.translations.eventTypes[eventTypeKey]?.voice : undefined;
 
     return useMemo(() => {
         function resolve(key: keyof EventTypeVoicePack) {

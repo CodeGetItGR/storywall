@@ -129,6 +129,15 @@ export type LocalizedText = Record<string, string>;
 
 export type EventTypeAccentToken = 'rose' | 'sky' | 'amber';
 
+export interface AppEventTypeResponseDto {
+    id: string;
+    eventTypeKey: EventTypeConvention;
+    icon: string;
+    accentToken: EventTypeAccentToken;
+    isEnabled: boolean;
+    sortOrder: number;
+}
+
 export interface EventTypeVoicePack {
     titlePlaceholder: LocalizedText;
     locationPlaceholder: LocalizedText;
@@ -140,6 +149,16 @@ export interface EventTypeVoicePack {
     toolsSubtitle: LocalizedText;
     toolsScheduleDescription: LocalizedText;
     toolsPlaylistDescription: LocalizedText;
+}
+
+export interface AppEventTypeTranslationDto {
+    name: LocalizedText;
+    tagline: LocalizedText;
+    voice: EventTypeVoicePack;
+}
+
+export interface AppTranslationsDto {
+    eventTypes: Record<string, AppEventTypeTranslationDto>;
 }
 
 export interface PlatformEventTypeResponseDto {
@@ -190,8 +209,9 @@ export interface AppConfigResponseDto {
     paidServices: PaidServiceResponseDto[];
     eventModuleKeys: ModuleKey[];
     modules: PlatformModuleResponseDto[];
-    eventTypes: PlatformEventTypeResponseDto[];
+    eventTypes: AppEventTypeResponseDto[];
     eventTypeKeys: EventTypeConvention[];
+    translations: AppTranslationsDto;
     rsvp: AppRsvpConfigDto;
     contentLimits: AppContentLimitsDto;
     rateLimits: AppRateLimitConfigDto[];

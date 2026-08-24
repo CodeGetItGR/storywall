@@ -70,7 +70,7 @@ export function PlanTierCards({
                                 <h2 className="truncate text-lg font-bold text-ink">{plan.name}</h2>
                                 <p className="mt-1 text-sm leading-5 text-ink-muted">{localizedPlanDescription(plan)}</p>
                             </div>
-                            <PlanComparisonBadges isCurrent={isCurrent} isNext={isNext} />
+                            <PlanComparisonBadges isCurrent={isCurrent}/>
                         </div>
 
                         <div className="mt-4 grid gap-2 rounded-lg bg-surface-muted/55 p-3 min-[420px]:grid-cols-2">

@@ -32,7 +32,9 @@
         "hours": "Hours",
         "hoursShort": "h",
         "minutes": "Minutes",
-        "minutesShort": "min"
+        "minutesShort": "min",
+        "seconds": "Seconds",
+        "secondsShort": "s"
     },
     "StoriesRow": {
         "ariaLabel": "Stories"
@@ -921,8 +923,7 @@
             "nextPlanHint": "Next upgrade: {plan}",
             "highestPlan": "You are on the highest published tier.",
             "field": "Field",
-            "current": "Current plan",
-            "next": "Next plan",
+            "current": "Current",
             "recommended": "Recommended",
             "fromTo": "Upgrade path",
             "to": "to",
@@ -1260,15 +1261,15 @@
     },
     "WishbookPage": {
         "currentSubtitle": "Leave a message for the hosts.",
-        "currentPlaceholder": "Write your message...",
+        "currentPlaceholder": "Write your wish...",
         "goBack": "Go back",
         "title": "Wishbook",
         "subtitle": "Leave a message for the hosts.",
         "messagePlaceholder": "Write your message...",
         "messageAriaLabel": "Wishbook message",
-        "addToWishbook": "Add to Wishbook",
+        "addToWishbook": "Add wish",
         "messageCount": "{count, plural, one {# Message} other {# Messages}}",
-        "charactersLeft": "{count} characters left",
+        "charactersLeft": "{current} / {max} characters",
         "loading": "Loading wishes...",
         "empty": "No wishes yet. Be the first to leave one.",
         "emptyReadOnly": "No wishes yet.",

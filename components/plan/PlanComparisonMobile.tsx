@@ -36,7 +36,7 @@ export function PlanComparisonMobile({
                             <h2 className="text-lg font-semibold text-ink">{plan.name}</h2>
                             <p className="mt-1 text-sm leading-6 text-ink-muted">{localizedPlanDescription(plan)}</p>
                         </div>
-                        <PlanComparisonBadges isCurrent={Boolean(currentPlanCode) && plan.code === currentPlanCode} isNext={nextPlanId === plan.id} />
+                        <PlanComparisonBadges isCurrent={Boolean(currentPlanCode) && plan.code === currentPlanCode} />
                     </div>
 
                     <dl className="mt-4 divide-y divide-border">

@@ -51,6 +51,7 @@ function GalleryScreen({
     const [archiveDownloadOpen, setArchiveDownloadOpen] = useState(false);
 
     const { data: media = [], isLoading: isLoadingMedia } = useEventMedia(eventId);
+    console.log(media)
     const uploadMediaBatch = useUploadMediaBatch();
     const originalMedia = useOriginalMedia();
     const { data: appConfig } = useAppConfig();
@@ -163,6 +164,7 @@ function GalleryScreen({
                         size="sm"
                         variant="outline"
                         onClick={openArchiveDownload}
+                        disabled={!media.length}
                         className="rounded-full border-border bg-background px-3 text-xs font-semibold text-ink-muted hover:text-ink"
                     >
                         <Download className="h-3.5 w-3.5" />

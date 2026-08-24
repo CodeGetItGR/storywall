@@ -4,31 +4,62 @@ import { Check } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
-import { useLocalizedEventTypeName } from '@/hooks/useLocalizedEventTypeName';
-import { useLocalizedText } from '@/hooks/useLocalizedText';
-import type { EventTypeAccentToken, EventTypeConvention, PlatformEventTypeResponseDto } from '@/lib/api/types';
+import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
+import type { AppEventTypeResponseDto, EventTypeAccentToken, EventTypeConvention } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
 // accentToken is a BE-owned design token (see event-type-voice-pack-fe-integration.md);
 // this is the only place that maps it to actual Tailwind classes.
-const ACCENT_TOKEN_STYLES: Record<EventTypeAccentToken, { badge: string; wash: string; ring: string }> = {
-    rose: { badge: 'bg-rose-100', wash: 'from-rose-50 to-white', ring: 'border-rose-300 bg-rose-50/70' },
-    sky: { badge: 'bg-sky-100', wash: 'from-sky-50 to-white', ring: 'border-sky-300 bg-sky-50/70' },
-    amber: { badge: 'bg-amber-100', wash: 'from-amber-50 to-white', ring: 'border-amber-300 bg-amber-50/70' },
+const ACCENT_TOKEN_STYLES: Record<
+    EventTypeAccentToken,
+    {
+        selected: string;
+        surface: string;
+    }
+> = {
+    rose: {
+        selected: 'border-rose-300 bg-rose-50/55 shadow-[0_18px_45px_rgba(244,63,94,0.16)]',
+        surface: 'hover:border-rose-200 hover:bg-rose-50/35',
+    },
+    sky: {
+        selected: 'border-sky-300 bg-sky-50/55 shadow-[0_18px_45px_rgba(14,165,233,0.16)]',
+        surface: 'hover:border-sky-200 hover:bg-sky-50/35',
+    },
+    amber: {
+        selected: 'border-amber-300 bg-amber-50/55 shadow-[0_18px_45px_rgba(245,158,11,0.16)]',
+        surface: 'hover:border-amber-200 hover:bg-amber-50/35',
+    },
 };
 
-const FALLBACK_STYLE = { badge: 'bg-surface-muted', wash: 'from-surface-muted to-white', ring: 'border-primary bg-primary-light/50' };
+const FALLBACK_STYLE = {
+    selected: 'border-primary bg-primary-light/45 shadow-[0_18px_45px_rgba(15,23,42,0.12)]',
+    surface: 'hover:border-primary/30 hover:bg-primary-light/25',
+};
+
+const EVENT_TYPE_ICON_SLUGS: Record<EventTypeConvention, string> = {
+    WEDDING: 'bouquet',
+    BAPTISM: 'church',
+    SOCIAL_EVENT: 'clinking-glasses',
+    BIRTHDAY: 'birthday-cake',
+    CORPORATE: 'briefcase',
+    FESTIVAL: 'admission-tickets',
+    PRIVATE_PARTY: 'party-popper',
+    CONFERENCE: 'microphone',
+};
+
+function eventTypeIconUrl(eventTypeKey: EventTypeConvention) {
+    return `https://api.iconify.design/fluent-emoji/${EVENT_TYPE_ICON_SLUGS[eventTypeKey]}.svg`;
+}
 
 type EventTypeStepProps = {
-    eventTypes: PlatformEventTypeResponseDto[];
+    eventTypes: AppEventTypeResponseDto[];
     selectedEventType: EventTypeConvention;
     onSelect: (eventType: EventTypeConvention) => void;
 };
 
 export function EventTypeStep({ eventTypes, selectedEventType, onSelect }: EventTypeStepProps) {
     const t = useTranslations('CreateEventPage');
-    const localizedEventTypeName = useLocalizedEventTypeName();
-    const localizedText = useLocalizedText();
+    const eventTypeCopy = useLocalizedAppEventTypeCopy();
 
     function handleClick(event: MouseEvent<HTMLButtonElement>) {
         const eventTypeKey = event.currentTarget.dataset.eventTypeKey as EventTypeConvention | undefined;
@@ -41,11 +72,12 @@ export function EventTypeStep({ eventTypes, selectedEventType, onSelect }: Event
 
     return (
         <div className="flex min-h-[60vh] flex-col justify-center">
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+            {/* Event Types */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {eventTypes.map((type) => {
                     const style = ACCENT_TOKEN_STYLES[type.accentToken] ?? FALLBACK_STYLE;
                     const isSelected = type.eventTypeKey === selectedEventType;
-                    const tagline = localizedText(type.tagline);
+                    const copy = eventTypeCopy(type.eventTypeKey);
 
                     return (
                         <button
@@ -55,20 +87,17 @@ export function EventTypeStep({ eventTypes, selectedEventType, onSelect }: Event
                             onClick={handleClick}
                             aria-pressed={isSelected}
                             className={cn(
-                                'relative flex flex-col items-center gap-3 rounded-2xl border bg-gradient-to-b p-5 text-center transition hover:-translate-y-0.5 hover:shadow-md',
-                                isSelected ? cn('border-2 shadow-sm', style.ring) : cn('border-border', style.wash)
+                                'group relative min-h-44 overflow-hidden rounded-lg border bg-card p-5 text-left transition duration-200 hover:-translate-y-0.5',
+                                isSelected ? cn('border-2', style.selected) : cn('border-border shadow-sm', style.surface)
                             )}
                         >
                             {isSelected && (
-                                <span className="absolute right-2.5 top-2.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white">
-                                    <Check className="h-3.5 w-3.5" />
+                                <span className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-full bg-ink text-white shadow-sm">
+                                    <Check className="h-4 w-4" />
                                 </span>
                             )}
-                            <span className={cn('flex h-16 w-16 items-center justify-center rounded-full text-4xl shadow-sm', style.badge)}>
-                                {type.icon || '✨'}
-                            </span>
-                            <span className="text-base font-bold text-ink">{localizedEventTypeName(type)}</span>
-                            {tagline && <span className="text-xs leading-snug text-ink-muted">{tagline}</span>}
+                            <span className="mt-5 block pr-8 text-xl font-bold text-ink">{copy.name}</span>
+                            {copy.tagline && <span className="mt-1.5 block max-w-64 text-sm leading-5 text-ink-muted">{copy.tagline}</span>}
                         </button>
                     );
                 })}

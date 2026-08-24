@@ -54,11 +54,11 @@ export function GiftAccountPage() {
             onBack={goBack}
         >
             {!account.isLoading && !account.error && account.data && (
-                <div className="flex h-[calc(100dvh-7.5rem)] min-h-[30rem] flex-col">
+                <div className="flex h-[calc(100dvh-7.5rem)] min-h-120 flex-col">
                     {/* Hero */}
                     <section className="flex shrink-0 flex-col items-center px-2 pt-12 text-center">
                         <Image src="/icons/present.svg" alt="" width={100} height={100} priority className="h-24 w-24" />
-                        <div className="mt-8 w-full max-h-[28vh] overflow-y-auto pr-1 text-left">
+                        <div className="mt-8 w-full max-h-[28vh] overflow-y-auto pr-1 text-center">
                             <p className="text-[1.08rem] leading-8 whitespace-pre-line text-ink-muted">{note}</p>
                         </div>
                     </section>
