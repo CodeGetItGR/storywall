@@ -1,12 +1,12 @@
 'use client';
 
 import { Plus } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import type { MouseEvent } from 'react';
+import { useCallback } from 'react';
 
 import Avatar from '@/components/ui/avatar';
 import type { EventMemberResponseDto } from '@/lib/api/types';
-import { routes } from '@/lib/routes';
 import type { StoryGroup } from '@/lib/stories';
 import { avatarColorFromId, cn, initialsFromName } from '@/lib/utils';
 import { useComposer } from '@/providers/ComposerProvider';
@@ -14,13 +14,26 @@ import { useComposer } from '@/providers/ComposerProvider';
 interface StoryAvatarProps {
     group: StoryGroup;
     member: EventMemberResponseDto;
+    onOpenStoryAction: (storyId: string) => void;
     isCurrentUser?: boolean;
 }
 
-export function StoryAvatar({ group, member, isCurrentUser }: StoryAvatarProps) {
+export function StoryAvatar({ group, member, onOpenStoryAction, isCurrentUser }: StoryAvatarProps) {
     const t = useTranslations('StoryAvatar');
     const { openStoryCapture, canComposeStory } = useComposer();
     const firstStoryId = group.stories[0].id;
+
+    const handleOpenStory = useCallback(() => {
+        onOpenStoryAction(firstStoryId);
+    }, [firstStoryId, onOpenStoryAction]);
+
+    const handleOpenComposeStory = useCallback(
+        (event: MouseEvent<HTMLButtonElement>) => {
+            event.stopPropagation();
+            openStoryCapture();
+        },
+        [openStoryCapture]
+    );
 
     const ring = (
         <div
@@ -45,36 +58,34 @@ export function StoryAvatar({ group, member, isCurrentUser }: StoryAvatarProps) 
         </span>
     );
 
-    if (!isCurrentUser) {
+    if (isCurrentUser) {
         return (
-            <Link
-                href={routes.story(firstStoryId)}
-                className="flex flex-col items-center gap-2 shrink-0 group"
-                aria-label={t('userStory', { name: member.displayName })}
-            >
-                {ring}
+            <div className="flex shrink-0 flex-col items-center gap-2">
+                <div className="relative">
+                    <button type="button" onClick={handleOpenStory} aria-label={t('yourStory')}>
+                        {ring}
+                    </button>
+                    {canComposeStory && (
+                        <button
+                            type="button"
+                            onClick={handleOpenComposeStory}
+                            aria-label={t('addAnotherStory')}
+                            className="absolute bottom-0 right-0 flex h-5 w-5 items-center justify-center rounded-full border-2 border-background bg-gradient-brand"
+                        >
+                            <Plus className="h-3 w-3 text-white" strokeWidth={3} />
+                        </button>
+                    )}
+                </div>
                 {label}
-            </Link>
+            </div>
         );
     }
 
     return (
-        <div className="flex flex-col items-center gap-2 shrink-0">
-            <div className="relative">
-                <Link href={routes.story(firstStoryId)} aria-label={t('yourStory')}>
-                    {ring}
-                </Link>
-                {canComposeStory && (
-                    <button
-                        type="button"
-                        onClick={openStoryCapture}
-                        aria-label={t('addAnotherStory')}
-                        className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-gradient-brand border-2 border-background flex items-center justify-center"
-                    >
-                        <Plus className="w-3 h-3 text-white" strokeWidth={3} />
-                    </button>
-                )}
-            </div>
+        <div className="flex shrink-0 flex-col items-center gap-2">
+            <button type="button" onClick={handleOpenStory} className="relative" aria-label={t('userStory', { name: member.displayName })}>
+                {ring}
+            </button>
             {label}
         </div>
     );

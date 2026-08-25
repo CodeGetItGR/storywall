@@ -30,10 +30,12 @@ import type {
     EventTypeConvention,
 } from '@/lib/api/types';
 import { formatMoney, navigateToCheckout } from '@/lib/billing';
-import { getCurrentDatetimeLocalValue, getLaterDatetimeLocalValue, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
+import { getScheduleDatetimeLocalBounds, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
+import { getEventEndPresets } from '@/lib/eventEndPresets';
 import { publicAssignableEventAddons } from '@/lib/planModules';
 import { getPlanPriceDetails } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
+import { getCurrentTimezone, getSupportedTimezones } from '@/lib/timezones';
 import { useEventSwitcher } from '@/providers/EventProvider';
 
 type CreateEventStep = 'type' | 'plan' | 'addons' | 'details' | 'overview';
@@ -54,7 +56,7 @@ export default function CreateEventPage() {
     const [eventType, setEventType] = useState<EventTypeConvention>('WEDDING');
     const [startAt, setStartAt] = useState('');
     const [endAt, setEndAt] = useState('');
-    const [timezone, setTimezone] = useState(() => Intl.DateTimeFormat().resolvedOptions().timeZone);
+    const [timezone, setTimezone] = useState(getCurrentTimezone);
     const [locationName, setLocationName] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [step, setStep] = useState<CreateEventStep>('type');
@@ -75,11 +77,11 @@ export default function CreateEventPage() {
     );
     const selectedAddonServices = availableAddons.filter((service) => selectedAddonCodes.includes(service.code));
     const selectedEligibleAddonCodes = selectedAddonServices.map((service) => service.code);
-    const nowAt = getCurrentDatetimeLocalValue();
-    const startAtMax = isDatetimeLocalAfter(endAt, nowAt) ? endAt : undefined;
-    const endAtMin = getLaterDatetimeLocalValue(nowAt, startAt) ?? nowAt;
+    const timezoneOptions = useMemo(() => getSupportedTimezones(timezone), [timezone]);
+    const endAtPresets = useMemo(() => getEventEndPresets(selectedEventType, startAt), [selectedEventType, startAt]);
+    const { startAtMin, startAtMax, endAtMin } = getScheduleDatetimeLocalBounds({ startAt, endAt });
     const scheduleError =
-        startAt && isDatetimeLocalBefore(startAt, nowAt)
+        startAt && isDatetimeLocalBefore(startAt, startAtMin)
             ? t('validation.startInPast')
             : startAt && endAt && !isDatetimeLocalAfter(endAt, startAt)
               ? t('validation.endBeforeStart')
@@ -197,7 +199,7 @@ export default function CreateEventPage() {
             setTitle('');
             setStartAt('');
             setEndAt('');
-            setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
+            setTimezone(getCurrentTimezone());
             setLocationName('');
             setError(null);
             setCreatedDraftEventId(null);
@@ -213,7 +215,11 @@ export default function CreateEventPage() {
         setEndAt(e.target.value);
     }, []);
 
-    const onTimezoneChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const onSelectEndAtPreset = useCallback((value: string) => {
+        setEndAt(value);
+    }, []);
+
+    const onTimezoneChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
         setTimezone(e.target.value);
     }, []);
 
@@ -311,14 +317,17 @@ export default function CreateEventPage() {
                                         startAt={startAt}
                                         endAt={endAt}
                                         scheduleError={scheduleError}
-                                        startAtMin={nowAt}
+                                        startAtMin={startAtMin}
                                         startAtMax={startAtMax}
                                         endAtMin={endAtMin}
+                                        endAtPresets={endAtPresets}
                                         timezone={timezone}
+                                        timezoneOptions={timezoneOptions}
                                         locationName={locationName}
                                         onTitleChangeAction={onTitleChange}
                                         onStartAtChangeAction={onStartAtChange}
                                         onEndAtChangeAction={onEndAtChange}
+                                        onSelectEndAtPresetAction={onSelectEndAtPreset}
                                         onTimezoneChangeAction={onTimezoneChange}
                                         onLocationNameChangeAction={onLocationNameChange}
                                     />

@@ -15,9 +15,10 @@ import { StoryAvatar } from './StoryAvatar';
 
 interface StoriesRowProps {
     eventId: string;
+    onOpenStoryAction: (storyId: string) => void;
 }
 
-export function StoriesRow({ eventId }: StoriesRowProps) {
+export function StoriesRow({ eventId, onOpenStoryAction }: StoriesRowProps) {
     const t = useTranslations('StoriesRow');
     const tAvatar = useTranslations('StoryAvatar');
     const activeMember = useActiveMember();
@@ -38,7 +39,7 @@ export function StoriesRow({ eventId }: StoriesRowProps) {
         <section aria-label={t('ariaLabel')} className="flex items-start gap-4 overflow-x-auto no-scrollbar px-4 py-4">
             {/* Current user slot */}
             {ownGroup && activeMember ? (
-                <StoryAvatar group={ownGroup} member={activeMember} isCurrentUser />
+                <StoryAvatar group={ownGroup} member={activeMember} isCurrentUser onOpenStoryAction={onOpenStoryAction} />
             ) : canComposeStory ? (
                 <div className="flex flex-col items-center gap-2 shrink-0">
                     <button
@@ -73,7 +74,7 @@ export function StoriesRow({ eventId }: StoriesRowProps) {
             {otherGroups.map((group) => {
                 const member = membersById.get(group.authorMemberId);
                 if (!member) return null;
-                return <StoryAvatar key={group.authorMemberId} group={group} member={member} />;
+                return <StoryAvatar key={group.authorMemberId} group={group} member={member} onOpenStoryAction={onOpenStoryAction} />;
             })}
         </section>
     );

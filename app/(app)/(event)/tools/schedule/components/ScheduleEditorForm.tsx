@@ -9,7 +9,13 @@ import { Modal } from '@/components/ui/modal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import type { EventSessionRequestDto, EventSessionResponseDto, EventStatus } from '@/lib/api/types';
-import { getCurrentDatetimeLocalValue, getLaterDatetimeLocalValue, isDatetimeLocalBefore, toDatetimeLocalValue } from '@/lib/datetime';
+import {
+    getCurrentDatetimeLocalValue,
+    getScheduleDatetimeLocalBounds,
+    isDatetimeLocalAfter,
+    isDatetimeLocalBefore,
+    toDatetimeLocalValue,
+} from '@/lib/datetime';
 
 export type ScheduleSessionMutator = {
     mutateAsync: (payload: EventSessionRequestDto) => Promise<unknown>;
@@ -67,10 +73,13 @@ export function ScheduleEditorForm({
     const maxDescriptionLength = appConfig?.contentLimits.eventSessionDescriptionMaxLength ?? 1000;
 
     const nextDisplayOrder = useMemo(() => sessions.reduce((max, session) => Math.max(max, session.displayOrder), -1) + 1, [sessions]);
-    const isEndBeforeStart = Boolean(startAt && endAt && new Date(endAt).getTime() < new Date(startAt).getTime());
-    // endAt can't move into the past on a non-DRAFT event (pushing it further out is
-    // always fine) — floor the picker instead of letting that attempt 409 too.
-    const endAtMin = eventStatus !== 'DRAFT' ? (getLaterDatetimeLocalValue(nowAt, startAt) ?? nowAt) : startAt || undefined;
+    const { startAtMin, startAtMax, endAtMin } = getScheduleDatetimeLocalBounds({ startAt, endAt });
+    const scheduleError =
+        !sessionHasStarted && startAt && isDatetimeLocalBefore(startAt, startAtMin)
+            ? t('host.startInPast')
+            : startAt && endAt && !isDatetimeLocalAfter(endAt, startAt)
+              ? t('host.endBeforeStart')
+              : null;
 
     function handleTitleChange(event: ChangeEvent<HTMLInputElement>) {
         setTitle(event.target.value);
@@ -122,8 +131,8 @@ export function ScheduleEditorForm({
         const trimmedTitle = title.trim();
         if (!trimmedTitle) return;
 
-        if (isEndBeforeStart) {
-            setSubmitError(t('host.endBeforeStart'));
+        if (scheduleError) {
+            setSubmitError(scheduleError);
             setSaved(false);
             return;
         }
@@ -227,6 +236,8 @@ export function ScheduleEditorForm({
                                 value={startAt}
                                 onChange={handleStartAtChange}
                                 disabled={sessionHasStarted}
+                                min={startAtMin}
+                                max={startAtMax}
                                 className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
                             />
                             {sessionHasStarted && <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('host.startLocked')}</p>}
@@ -247,7 +258,7 @@ export function ScheduleEditorForm({
                         </FormFieldLabel>
                     </div>
 
-                    {isEndBeforeStart && <p className="text-xs font-medium text-rose-500">{t('host.endBeforeStart')}</p>}
+                    {scheduleError && <p className="text-xs font-medium text-rose-500">{scheduleError}</p>}
 
                     <div className="grid gap-3 sm:grid-cols-2">
                         <FormFieldLabel

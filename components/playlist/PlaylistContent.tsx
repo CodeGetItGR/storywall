@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { PlaylistItemRow } from '@/components/playlist';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import type { PlaylistSuggestionResponseDto } from '@/lib/api/types';
+import { PLAYLIST_TOP_RANK_COUNT, shouldShowPlaylistTopRanks } from '@/lib/playlistRanking';
 import { routes } from '@/lib/routes';
 
 interface PlaylistContentProps {
@@ -28,6 +29,7 @@ export function PlaylistContent({
     showTitleIcon = false,
 }: PlaylistContentProps) {
     const t = useTranslations('PlaylistPage');
+    const showTopRanks = shouldShowPlaylistTopRanks(suggestions);
 
     return (
         <ModulePageShell
@@ -77,7 +79,11 @@ export function PlaylistContent({
             ) : (
                 <div className="flex flex-col gap-2.5">
                     {suggestions.map((suggestion, index) => (
-                        <PlaylistItemRow key={suggestion.id} suggestion={suggestion} topRank={index < 3 ? index + 1 : null} />
+                        <PlaylistItemRow
+                            key={suggestion.id}
+                            suggestion={suggestion}
+                            topRank={showTopRanks && index < PLAYLIST_TOP_RANK_COUNT ? index + 1 : null}
+                        />
                     ))}
                 </div>
             )}

@@ -1,7 +1,7 @@
 'use client';
 
 import { Menu } from '@base-ui/react/menu';
-import { Plus } from 'lucide-react';
+import { Camera, Music2, Plus, PlusCircle } from 'lucide-react';
 import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -79,10 +79,10 @@ export function MobileTabBar() {
 
     return (
         <>
-            <div className="fixed bottom-0 left-1/2 z-40 w-full max-w-lg -translate-x-1/2 px-3 lg:hidden">
+            <div className="fixed bottom-0 left-1/2 z-40 w-full max-w-lg -translate-x-1/2 lg:hidden">
                 <nav
                     aria-label={t('eventNavigation')}
-                    className="grid h-16 min-w-0 overflow-hidden rounded-t-2xl border border-b-0 border-border bg-white/90 shadow-[0_-4px_18px_rgba(36,31,26,0.08)] backdrop-blur"
+                    className="grid h-16 min-w-0 overflow-hidden rounded-t-lg border border-b-0 border-border bg-white/90 shadow-[0_-4px_18px_rgba(36,31,26,0.08)] backdrop-blur"
                     style={{ gridTemplateColumns: `repeat(${railColumnCount}, minmax(0, 1fr))` }}
                 >
                     <div className="flex h-full items-center justify-center">
@@ -155,59 +155,39 @@ export function MobileTabBar() {
                 <Menu.Root>
                     <Menu.Trigger
                         aria-label={t('compose')}
-                        className="fixed bottom-20 right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md transition-transform hover:scale-105 lg:hidden"
+                        className="group fixed bottom-20 right-4 z-100 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md transition-transform hover:scale-105 lg:hidden"
                     >
-                        <Plus className="h-6 w-6 text-white" strokeWidth={2.5} />
+                        <Plus className="h-6 w-6 text-white transition-transform duration-200 ease-out group-data-[popup-open]:rotate-45" strokeWidth={2.5} />
                     </Menu.Trigger>
                     <Menu.Portal>
+                        <Menu.Backdrop className="fixed inset-0 z-45 bg-black/10 backdrop-blur-[2px]" />
                         <Menu.Positioner side="top" align="end" sideOffset={8} className="z-50">
-                            <Menu.Popup className="min-w-36 rounded-2xl border border-border bg-background py-1 shadow-[0_2px_16px_0_rgba(36,31,26,0.15)] outline-none">
+                            <Menu.Popup className="flex w-46 flex-col gap-2 border-0 bg-transparent p-0 shadow-none outline-none">
                                 {canComposePost && (
                                     <Menu.Item
                                         onClick={openPostComposer}
-                                        className="mx-1 flex cursor-pointer justify-between gap-4 rounded-lg px-4 py-2.5 text-sm font-medium text-ink outline-none transition-colors hover:bg-surface-muted"
+                                        className="flex min-h-14 cursor-pointer items-center justify-between rounded-[1.45rem] border border-[#efc0dc] bg-background px-5 text-sm font-medium text-ink shadow-[0_6px_18px_rgba(36,31,26,0.08)] outline-none transition-transform hover:-translate-y-0.5 hover:border-[#f0b47f]"
                                     >
                                         {t('composeMenu.post')}
-                                        <Image
-                                            src="/icons/post.svg"
-                                            alt={t('composeMenu.post')}
-                                            width={20}
-                                            height={20}
-                                            className="h-5 w-5 transition-opacity"
-                                            loading="eager"
-                                        />
+                                        <Camera className="h-5 w-5 shrink-0 text-ink" aria-hidden="true" strokeWidth={1.8} />
                                     </Menu.Item>
                                 )}
                                 {canComposeStory && (
                                     <Menu.Item
                                         onClick={openStoryCapture}
-                                        className="mx-1 flex cursor-pointer justify-between rounded-lg px-4 py-2.5 text-sm font-medium text-ink outline-none transition-colors hover:bg-surface-muted"
+                                        className="flex min-h-14 cursor-pointer items-center justify-between rounded-[1.45rem] border border-[#efc0dc] bg-background px-5 text-sm font-medium text-ink shadow-[0_6px_18px_rgba(36,31,26,0.08)] outline-none transition-transform hover:-translate-y-0.5 hover:border-[#f0b47f]"
                                     >
                                         {t('composeMenu.story')}
-                                        <Image
-                                            src="/icons/story.svg"
-                                            alt={t('composeMenu.story')}
-                                            width={20}
-                                            height={20}
-                                            className="h-5 w-5 transition-opacity"
-                                            loading="eager"
-                                        />
+                                        <PlusCircle className="h-5 w-5 shrink-0 text-ink" aria-hidden="true" strokeWidth={1.8} />
                                     </Menu.Item>
                                 )}
                                 {canComposeSong && (
                                     <Menu.Item
                                         onClick={openSongComposer}
-                                        className="mx-1 flex cursor-pointer justify-between rounded-lg px-4 py-2.5 text-sm font-medium text-ink outline-none transition-colors hover:bg-surface-muted"
+                                        className="flex min-h-14 cursor-pointer items-center justify-between rounded-[1.45rem] border border-[#efc0dc] bg-background px-5 text-sm font-medium text-ink shadow-[0_6px_18px_rgba(36,31,26,0.08)] outline-none transition-transform hover:-translate-y-0.5 hover:border-[#f0b47f]"
                                     >
                                         {t('composeMenu.song')}
-                                        <Image
-                                            src="/icons/music.svg"
-                                            alt={t('composeMenu.song')}
-                                            width={20}
-                                            height={20}
-                                            className="h-5 w-5 transition-opacity"
-                                            loading="eager"
-                                        />
+                                        <Music2 className="h-5 w-5 shrink-0 text-ink" aria-hidden="true" strokeWidth={1.8} />
                                     </Menu.Item>
                                 )}
                             </Menu.Popup>

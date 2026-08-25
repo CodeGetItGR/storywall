@@ -54,14 +54,6 @@
         "giftAccount": "Gift account",
         "location": "Event location"
     },
-    "EventLocationModal": {
-        "close": "Close",
-        "title": "Location",
-        "openInGoogleMaps": "Open in Google Maps",
-        "mapPreview": "Map preview",
-        "mapPreviewUnavailable": "Map preview isn't available for this link, but the location still opens in Google Maps.",
-        "openMap": "Open map for {title}"
-    },
     "FeedScheduleCard": {
         "eyebrow": "Schedule",
         "title": "Guest program",
@@ -515,6 +507,7 @@
         "goBack": "Go back",
         "title": "Create an event",
         "subtitle": "Add the event details.",
+        "detailsHint": "You can add or edit more details after creation.",
         "fields": {
             "title": "Event title",
             "startAt": "Starts",
@@ -526,6 +519,13 @@
         "validation": {
             "startInPast": "The start time must be now or later.",
             "endBeforeStart": "The end time must be after the start time."
+        },
+        "endAtPresets": {
+            "fourHours": "4 hours",
+            "oneDay": "1 day",
+            "twoDays": "2 days",
+            "threeDays": "3 days",
+            "oneWeek": "1 week"
         },
         "visibilities": {
             "PRIVATE": "Private",
@@ -1192,6 +1192,7 @@
             "editingEyebrow": "Editing item",
             "editingTitle": "Edit schedule item",
             "editingSubtitle": "Update “{title}” and save your changes.",
+            "startInPast": "The start time must be now or later.",
             "endBeforeStart": "The end time must be after the start time.",
             "startLocked": "This session has already started, so its start time can no longer be changed.",
             "fields": {
@@ -1325,6 +1326,7 @@
         "removeVote": "Remove vote",
         "voteForThisSong": "Vote for this song",
         "downvoteThisSong": "Downvote this song",
+        "moreOptions": "More options",
         "deleteSuggestion": "Delete suggestion",
         "confirmDeleteSuggestion": "Confirm delete suggestion",
         "deleteSuggestionConfirmTitle": "Delete this suggestion?",

@@ -14,11 +14,12 @@ import { getFieldErrors } from '@/lib/api/errors';
 import type { EventDetailResponseDto, EventPatchDto } from '@/lib/api/types';
 import {
     getCurrentDatetimeLocalValue,
-    getLaterDatetimeLocalValue,
+    getScheduleDatetimeLocalBounds,
     isDatetimeLocalAfter,
     isDatetimeLocalBefore,
     toDatetimeLocalValue,
 } from '@/lib/datetime';
+import { getEventEndPresets } from '@/lib/eventEndPresets';
 
 const inputClass =
     'bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition disabled:cursor-not-allowed disabled:opacity-60';
@@ -34,6 +35,7 @@ export default function SettingsTab({
     canUploadCover?: boolean;
 }) {
     const t = useTranslations('ManagePage');
+    const tCreateEvent = useTranslations('CreateEventPage');
     const toErrorMessage = useApiErrorMessage();
     const { data: appConfig } = useAppConfig();
 
@@ -70,10 +72,10 @@ export default function SettingsTab({
     const fieldErrors = getFieldErrors(updateEvent.error);
     const nowAt = getCurrentDatetimeLocalValue();
     const eventHasStarted = Boolean(event.schedule.startAt && isDatetimeLocalBefore(toDatetimeLocalValue(event.schedule.startAt), nowAt));
-    const startAtMax = isDatetimeLocalAfter(endAt, nowAt) ? endAt : undefined;
-    const endAtMin = getLaterDatetimeLocalValue(nowAt, startAt) ?? nowAt;
+    const { startAtMin, startAtMax, endAtMin } = getScheduleDatetimeLocalBounds({ startAt, endAt });
+    const endAtPresets = React.useMemo(() => getEventEndPresets(event.eventType, startAt), [event.eventType, startAt]);
     const scheduleError =
-        !eventHasStarted && startAt && isDatetimeLocalBefore(startAt, nowAt)
+        !eventHasStarted && startAt && isDatetimeLocalBefore(startAt, startAtMin)
             ? t('settings.validation.startInPast')
             : startAt && endAt && !isDatetimeLocalAfter(endAt, startAt)
               ? t('settings.validation.endBeforeStart')
@@ -147,6 +149,11 @@ export default function SettingsTab({
 
     function handleEndAtChange(e: React.ChangeEvent<HTMLInputElement>) {
         setEndAt(e.target.value);
+    }
+
+    function handleEndAtPresetClick(e: React.MouseEvent<HTMLButtonElement>) {
+        const value = e.currentTarget.dataset.value;
+        if (value) setEndAt(value);
     }
 
     function handleRsvpDeadlineChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -318,7 +325,7 @@ export default function SettingsTab({
                             value={startAt}
                             onChange={handleStartAtChange}
                             disabled={disabled || eventHasStarted}
-                            min={nowAt}
+                            min={startAtMin}
                             max={startAtMax}
                             className={inputClass}
                         />
@@ -333,6 +340,21 @@ export default function SettingsTab({
                             min={endAtMin}
                             className={inputClass}
                         />
+                        {/* End Presets */}
+                        <div className="flex flex-wrap gap-1.5">
+                            {endAtPresets.map((preset) => (
+                                <button
+                                    key={preset.key}
+                                    type="button"
+                                    data-value={preset.value ?? undefined}
+                                    disabled={disabled || !preset.value}
+                                    onClick={handleEndAtPresetClick}
+                                    className="rounded-full bg-surface-muted/70 px-2.5 py-1 text-[11px] font-medium text-ink-muted transition hover:bg-surface-muted hover:text-ink disabled:cursor-not-allowed disabled:opacity-45"
+                                >
+                                    {tCreateEvent(`endAtPresets.${preset.labelKey}`)}
+                                </button>
+                            ))}
+                        </div>
                     </FormFieldLabel>
                 </div>
                 {scheduleError && <p className="text-xs text-rose-500">{scheduleError}</p>}

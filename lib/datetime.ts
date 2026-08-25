@@ -58,6 +58,33 @@ export function getLaterDatetimeLocalValue(...values: Array<string | null | unde
     return latest ? formatDatetimeLocalValue(latest) : null;
 }
 
+export function getScheduleDatetimeLocalBounds({
+    startAt,
+    endAt,
+    referenceDate = new Date(),
+}: {
+    startAt?: string | null;
+    endAt?: string | null;
+    referenceDate?: Date;
+}): { startAtMin: string; startAtMax?: string; endAtMin: string } {
+    const nowAt = getCurrentDatetimeLocalValue(referenceDate);
+    const startAtMax = isDatetimeLocalAfter(endAt, nowAt) ? (endAt ?? undefined) : undefined;
+    const endAtMin = getLaterDatetimeLocalValue(nowAt, startAt) ?? nowAt;
+
+    return { startAtMin: nowAt, startAtMax, endAtMin };
+}
+
+export function addDatetimeLocalDuration(value: string | null | undefined, duration: { days?: number; hours?: number }): string | null {
+    const date = parseDatetimeLocalValue(value);
+    if (!date) return null;
+
+    const nextDate = new Date(date);
+    nextDate.setDate(nextDate.getDate() + (duration.days ?? 0));
+    nextDate.setHours(nextDate.getHours() + (duration.hours ?? 0));
+
+    return formatDatetimeLocalValue(nextDate);
+}
+
 export function isDatetimeLocalBefore(left: string | null | undefined, right: string | null | undefined): boolean {
     const leftDate = parseDatetimeLocalValue(left);
     const rightDate = parseDatetimeLocalValue(right);

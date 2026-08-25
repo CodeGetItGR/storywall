@@ -10,12 +10,12 @@ import { Banner } from '@/components/feed/Banner';
 import { ComposerCard } from '@/components/feed/ComposerCard';
 import { EventDescription } from '@/components/feed/EventDescription';
 import { EventInfo } from '@/components/feed/EventInfo';
-import { EventLocationModal } from '@/components/feed/EventLocationModal';
 import { FeedPostRenderer } from '@/components/feed/FeedPostRenderer';
 import { Header } from '@/components/feed/Header';
 import { PostModal } from '@/components/feed/PostModal';
 import { RsvpPrompt } from '@/components/feed/RsvpPrompt';
 import { StoriesRow } from '@/components/feed/StoriesRow';
+import { StoryModal } from '@/components/story/StoryModal';
 import { routes } from '@/lib/routes';
 
 import { useFeedPage } from './FeedPageContext';
@@ -23,15 +23,15 @@ import { useFeedPage } from './FeedPageContext';
 export function FeedPageContent() {
     const t = useTranslations('FeedPage');
     const { event, eventId, isFetchingNextPage, isHost, loadMoreRef, loadingMoreLabel, moduleFlags, posts, storedRsvpId } = useFeedPage();
-    const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+    const [storyId, setStoryId] = useState<string | null>(null);
     const hasLocation = Boolean(event.location.name || event.location.address || event.location.mapsUrl);
 
-    function openLocationModal() {
-        setIsLocationModalOpen(true);
+    function openStoryModal(nextStoryId: string) {
+        setStoryId(nextStoryId);
     }
 
-    function closeLocationModal() {
-        setIsLocationModalOpen(false);
+    function closeStoryModal() {
+        setStoryId(null);
     }
 
     return (
@@ -46,14 +46,13 @@ export function FeedPageContent() {
                     actions={
                         <>
                             {hasLocation && (
-                                <button
-                                    type="button"
-                                    onClick={openLocationModal}
+                                <Link
+                                    href={routes.tools.schedule}
                                     aria-label={t('location')}
                                     className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-background/92 text-ink shadow-[0_8px_22px_rgba(36,31,26,0.18)] transition-transform hover:-translate-y-0.5"
                                 >
                                     <MapPin className="h-5 w-5" />
-                                </button>
+                                </Link>
                             )}
                             {moduleFlags.wishlist && (
                                 <Link
@@ -81,7 +80,7 @@ export function FeedPageContent() {
             {/* Stories */}
             {moduleFlags.stories && (
                 <section id="stories" className="top-0 border-b border-border bg-background/90 backdrop-blur-sm">
-                    <StoriesRow eventId={eventId} />
+                    <StoriesRow eventId={eventId} onOpenStoryAction={openStoryModal} />
                 </section>
             )}
 
@@ -112,15 +111,8 @@ export function FeedPageContent() {
 
             <PostModal />
 
-            {hasLocation && (
-                <EventLocationModal
-                    open={isLocationModalOpen}
-                    onClose={closeLocationModal}
-                    name={event.location.name}
-                    address={event.location.address}
-                    mapsUrl={event.location.mapsUrl}
-                />
-            )}
+            {/* Story Popup */}
+            <StoryModal open={storyId !== null} storyId={storyId} onCloseAction={closeStoryModal} />
         </div>
     );
 }

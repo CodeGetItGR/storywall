@@ -1,10 +1,11 @@
 'use client';
 
-import { Award, Loader2, ThumbsDown, ThumbsUp, Trash2 } from 'lucide-react';
+import { Award, ThumbsDown, ThumbsUp } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import { SpotifyMark, YouTubeMark } from '@/components/playlist/MusicServiceMarks';
+import { PlaylistItemActionsMenu } from '@/components/playlist/PlaylistItemActionsMenu';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCreatePlaylistVote, useDeletePlaylistSuggestion, useDeletePlaylistVote, usePlaylistVotes } from '@/hooks/usePlaylist';
@@ -111,13 +112,26 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
     return (
         <article
             className={cn(
-                'overflow-hidden rounded-[1.5rem] border bg-card shadow-[0_18px_36px_rgba(35,28,22,0.07)] transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_48px_rgba(35,28,22,0.1)]',
+                'relative overflow-hidden rounded-[1.5rem] border bg-card shadow-[0_18px_36px_rgba(35,28,22,0.07)] transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_48px_rgba(35,28,22,0.1)]',
                 topRank ? 'border-primary/45 ring-1 ring-primary/15' : 'border-border/60'
             )}
         >
+            {/* Actions */}
+            {canDeleteSuggestion && (
+                <div className="absolute top-2.5 right-2.5 z-10">
+                    <PlaylistItemActionsMenu
+                        deleteLabel={t('deleteSuggestion')}
+                        disabled={deleteSuggestion.isPending}
+                        isDeleting={deleteSuggestion.isPending}
+                        moreLabel={t('moreOptions')}
+                        onDelete={handleDeleteRequest}
+                    />
+                </div>
+            )}
+
             <div className="grid grid-cols-[auto,1fr] gap-0">
                 {/* Details */}
-                <div className="flex items-center justify-between gap-4 px-4 py-3.5 sm:px-5">
+                <div className={cn('flex items-center justify-between gap-4 px-4 py-3.5 sm:px-5')}>
                     <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                             <h3 className="truncate text-base font-semibold text-ink">{suggestion.title}</h3>
@@ -168,7 +182,7 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
                     </div>
 
                     {/* Voting */}
-                    <div className="flex shrink-0 items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-2 mt-10">
                         <button
                             type="button"
                             onClick={handleUpvoteClick}
@@ -206,22 +220,6 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
                         </button>
 
                         {(voteError || !canWrite) && <p className="basis-full text-right text-xs text-destructive">{voteError ?? t('readOnly')}</p>}
-
-                        {canDeleteSuggestion && (
-                            <button
-                                type="button"
-                                onClick={handleDeleteRequest}
-                                disabled={deleteSuggestion.isPending}
-                                aria-label={t('deleteSuggestion')}
-                                className={cn(
-                                    'flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-colors',
-                                    'text-ink-faint hover:bg-surface-muted hover:text-primary-dark',
-                                    deleteSuggestion.isPending && 'cursor-not-allowed opacity-60'
-                                )}
-                            >
-                                {deleteSuggestion.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                            </button>
-                        )}
                     </div>
                 </div>
 
@@ -241,6 +239,7 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
                 )}
             </div>
 
+            {/* Confirm Delete */}
             <ConfirmActionModal
                 open={confirmDeleteOpen}
                 onCloseAction={handleCloseDeleteConfirm}

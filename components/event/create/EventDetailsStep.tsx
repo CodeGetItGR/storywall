@@ -1,11 +1,14 @@
 'use client';
 
+import { ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { ChangeEvent } from 'react';
+import type { ChangeEvent, MouseEvent } from 'react';
+import { useCallback } from 'react';
 
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useEventTypeVoice } from '@/hooks/useEventTypeVoice';
 import type { EventTypeConvention } from '@/lib/api/types';
+import type { EventEndPreset } from '@/lib/eventEndPresets';
 
 type EventDetailsStepProps = {
     eventType: EventTypeConvention;
@@ -17,12 +20,15 @@ type EventDetailsStepProps = {
     startAtMin: string;
     startAtMax?: string;
     endAtMin: string;
+    endAtPresets: EventEndPreset[];
     timezone: string;
+    timezoneOptions: string[];
     locationName: string;
     onTitleChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
     onStartAtChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
     onEndAtChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
-    onTimezoneChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
+    onSelectEndAtPresetAction: (value: string) => void;
+    onTimezoneChangeAction: (event: ChangeEvent<HTMLSelectElement>) => void;
     onLocationNameChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
 };
 
@@ -36,16 +42,27 @@ export function EventDetailsStep({
     startAtMin,
     startAtMax,
     endAtMin,
+    endAtPresets,
     timezone,
+    timezoneOptions,
     locationName,
     onTitleChangeAction,
     onStartAtChangeAction,
     onEndAtChangeAction,
+    onSelectEndAtPresetAction,
     onTimezoneChangeAction,
     onLocationNameChangeAction,
 }: EventDetailsStepProps) {
     const t = useTranslations('CreateEventPage');
     const voice = useEventTypeVoice(eventType);
+
+    const handleEndAtPresetClick = useCallback(
+        (event: MouseEvent<HTMLButtonElement>) => {
+            const value = event.currentTarget.dataset.value;
+            if (value) onSelectEndAtPresetAction(value);
+        },
+        [onSelectEndAtPresetAction]
+    );
 
     return (
         <div className="flex h-full flex-col gap-4">
@@ -76,7 +93,7 @@ export function EventDetailsStep({
                             className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
                         />
                     </FormFieldLabel>
-                    <FormFieldLabel label={t('fields.endAt')} required>
+                    <FormFieldLabel label={t('fields.endAt')}>
                         <input
                             type="datetime-local"
                             required
@@ -85,18 +102,44 @@ export function EventDetailsStep({
                             min={endAtMin}
                             className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
                         />
+                        {/* End Presets */}
+                        <div className="flex flex-wrap gap-1.5">
+                            {endAtPresets.map((preset) => (
+                                <button
+                                    key={preset.key}
+                                    type="button"
+                                    data-value={preset.value ?? undefined}
+                                    disabled={!preset.value}
+                                    onClick={handleEndAtPresetClick}
+                                    className="rounded-full bg-surface-muted/70 px-2.5 py-1 text-[11px] font-medium text-ink-muted transition hover:bg-surface-muted hover:text-ink disabled:cursor-not-allowed disabled:opacity-45"
+                                >
+                                    {t(`endAtPresets.${preset.labelKey}`)}
+                                </button>
+                            ))}
+                        </div>
                     </FormFieldLabel>
                 </div>
                 {scheduleError && <p className="text-xs text-rose-500">{scheduleError}</p>}
 
                 <FormFieldLabel label={t('fields.timezone')} required>
-                    <input
-                        type="text"
-                        required
-                        value={timezone}
-                        onChange={onTimezoneChangeAction}
-                        className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
-                    />
+                    <span className="relative">
+                        <select
+                            required
+                            value={timezone}
+                            onChange={onTimezoneChangeAction}
+                            className="w-full appearance-none rounded-xl bg-surface-muted py-3 pr-12 pl-4 text-sm text-ink outline-none transition focus:ring-2 focus:ring-primary/30"
+                        >
+                            {timezoneOptions.map((option) => (
+                                <option key={option} value={option}>
+                                    {option}
+                                </option>
+                            ))}
+                        </select>
+                        <ChevronDown
+                            aria-hidden="true"
+                            className="pointer-events-none absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 text-ink-muted"
+                        />
+                    </span>
                 </FormFieldLabel>
 
                 {/* Location */}
@@ -109,6 +152,9 @@ export function EventDetailsStep({
                         className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
                     />
                 </FormFieldLabel>
+
+                {/* Creation Hint */}
+                <p className="pt-1 text-xs leading-relaxed text-ink-muted">{t('detailsHint')}</p>
             </div>
         </div>
     );
