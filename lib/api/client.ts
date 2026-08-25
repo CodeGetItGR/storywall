@@ -1,16 +1,6 @@
 import { endpoints } from '@/lib/api/endpoints';
-import type { AuthResponseDto, ProblemDetail } from '@/lib/api/types';
-import {
-    clearSession,
-    getAccessToken,
-    getStoredGuestKey,
-    getStoredInviteToken,
-    getStoredRefreshToken,
-    setSession,
-    setStoredGuestKey,
-    setStoredRefreshToken,
-    subscribeAuthState,
-} from '@/lib/auth/tokenStore';
+import type { AuthSessionDto, ProblemDetail } from '@/lib/api/types';
+import { clearSession, getAccessToken, setSession, subscribeAuthState } from '@/lib/auth/tokenStore';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 
@@ -60,42 +50,29 @@ type ApiFetchOptions = RequestInit & { skipAuthRetry?: boolean };
 
 // The refresh/guest-relogin flow is only ever run once at a time, no matter
 // how many requests 401 concurrently — every caller awaits the same promise.
+// The actual refresh/guest-login logic now lives server-side, behind
+// /api/auth/session (see app/api/auth/session/route.ts) — it reads the
+// httpOnly refresh/guest cookies this module never has access to.
 let refreshPromise: Promise<string | null> | null = null;
 
 async function reauthenticate(): Promise<string | null> {
     if (refreshPromise) return refreshPromise;
 
     refreshPromise = (async () => {
-        const refreshToken = getStoredRefreshToken();
-        const inviteToken = getStoredInviteToken();
-
         try {
-            if (refreshToken) {
-                const auth = await rawFetch<AuthResponseDto>(endpoints.auth.refresh, {
-                    method: 'POST',
-                    body: JSON.stringify({ refreshToken }),
-                });
-                setSession(auth);
-                if (auth.refreshToken) setStoredRefreshToken(auth.refreshToken);
-                return auth.accessToken;
+            const res = await fetch(endpoints.auth.session);
+            if (!res.ok) {
+                clearSession();
+                return null;
             }
 
-            if (inviteToken) {
-                const auth = await rawFetch<AuthResponseDto>(endpoints.auth.guestLogin, {
-                    method: 'POST',
-                    body: JSON.stringify({ inviteToken, displayName: 'Guest', guestKey: getStoredGuestKey() ?? undefined }),
-                });
-                setSession(auth);
-                if (auth.guestKey) setStoredGuestKey(auth.guestKey);
-                return auth.accessToken;
-            }
+            const session = (await res.json()) as AuthSessionDto;
+            setSession(session);
+            return session.accessToken;
         } catch {
             clearSession();
             return null;
         }
-
-        clearSession();
-        return null;
     })();
 
     try {
@@ -130,8 +107,8 @@ if (typeof window !== 'undefined') {
     });
 }
 
-// Bare fetch with no auth header and no retry-on-401 — used internally by
-// reauthenticate() so refresh/guest-login calls can't recurse into themselves.
+// Bare fetch straight to Spring with no auth header and no retry-on-401 —
+// used by api.publicGet for the handful of endpoints that don't require auth.
 async function rawFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
     const res = await fetch(`${API_BASE_URL}${path}`, {
         ...options,

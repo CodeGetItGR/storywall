@@ -245,6 +245,17 @@ export interface AuthResponseDto {
     guestKey?: string;
 }
 
+// What the browser actually gets back from our own /api/auth/* BFF routes —
+// same as AuthResponseDto minus refreshToken/guestKey, which never leave the
+// server (they live only in the httpOnly cookies those routes set).
+export interface AuthSessionDto {
+    accessToken: string;
+    userId: string;
+    email: string | null;
+    role: PlatformRole;
+    displayName: string;
+}
+
 export interface RegisterRequestDto {
     email: string;
     password: string;

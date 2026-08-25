@@ -18,6 +18,10 @@ export const endpoints = {
         refresh: '/api/auth/refresh',
         logout: '/api/auth/logout',
         guestLogin: '/api/auth/guest-login',
+        // Not a Spring route — same path served locally by this Next.js app's
+        // own route handler, which reads httpOnly cookies to (re)derive a
+        // session. See lib/auth/authCookies.ts.
+        session: '/api/auth/session',
     },
 
     me: {

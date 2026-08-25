@@ -1,13 +1,13 @@
 'use client';
 
-import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { useEvent } from '@/hooks/useEvent';
 import { useMyEvents } from '@/hooks/useMyEvents';
 import type { EventDetailResponseDto, EventMemberResponseDto } from '@/lib/api/types';
+import { getActiveEventCookie, setActiveEventCookie } from '@/lib/storageKeys';
 
-const ACTIVE_EVENT_KEY = 'storywall.activeEventId';
 const EMPTY_MEMBERSHIPS: EventMemberResponseDto[] = [];
 
 interface EventContextValue {
@@ -45,31 +45,35 @@ export function EventProvider({ children }: { children: ReactNode }) {
             return;
         }
 
-        const stored = typeof window !== 'undefined' ? window.sessionStorage.getItem(ACTIVE_EVENT_KEY) : null;
+        const stored = getActiveEventCookie();
         const restored = memberships.find((m) => m.eventId === stored)?.eventId ?? memberships[0].eventId;
 
         setActiveEventIdState(restored);
     }, [activeEventId, memberships]);
 
-    function setActiveEventId(eventId: string) {
+    const setActiveEventId = useCallback((eventId: string) => {
         setActiveEventIdState(eventId);
-        if (typeof window !== 'undefined') {
-            window.sessionStorage.setItem(ACTIVE_EVENT_KEY, eventId);
-        }
-    }
+        setActiveEventCookie(eventId);
+    }, []);
 
     const { data: activeEvent, isLoading: isLoadingEvent } = useEvent(activeEventId);
 
     const activeMember = useMemo(() => memberships.find((m) => m.eventId === activeEventId) ?? null, [memberships, activeEventId]);
 
-    const value: EventContextValue = {
-        memberships,
-        activeEvent: activeEvent ?? null,
-        activeMember,
-        isHost: activeMember?.role === 'HOST',
-        isLoading: isAuthenticated && (isLoadingMemberships || (Boolean(activeEventId) && isLoadingEvent)),
-        setActiveEventId,
-    };
+    const isHost = activeMember?.role === 'HOST';
+    const isLoading = isAuthenticated && (isLoadingMemberships || (Boolean(activeEventId) && isLoadingEvent));
+
+    const value: EventContextValue = useMemo(
+        () => ({
+            memberships,
+            activeEvent: activeEvent ?? null,
+            activeMember,
+            isHost,
+            isLoading,
+            setActiveEventId,
+        }),
+        [memberships, activeEvent, activeMember, isHost, isLoading, setActiveEventId]
+    );
 
     return <EventContext.Provider value={value}>{children}</EventContext.Provider>;
 }

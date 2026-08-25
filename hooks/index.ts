@@ -9,6 +9,7 @@ export * from './useEventMembers';
 export * from './useEventModules';
 export * from './useEventSessions';
 export * from './useGalleryArchive';
+export * from './useGallerySelection';
 export * from './useGiftAccount';
 export * from './useMedia';
 export * from './useMyEvents';

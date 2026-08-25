@@ -1,6 +1,6 @@
 'use client';
 
-import { Download, ImagePlus, Images, Loader2, UploadCloud, X } from 'lucide-react';
+import { Check, Download, ImagePlus, Images, Loader2, MousePointer2, UploadCloud, X } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -14,9 +14,11 @@ import { Button } from '@/components/ui/button';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventBilling } from '@/hooks/useBilling';
+import { useGallerySelection } from '@/hooks/useGallerySelection';
 import { useEventMedia, useOriginalMedia, useUploadMediaBatch } from '@/hooks/useMedia';
 import type { MediaResponseDto } from '@/lib/api/types';
 import { formatShortDateTime } from '@/lib/datetime';
+import { downloadBlob, downloadUrl } from '@/lib/download';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { formatBytes } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -34,6 +36,8 @@ export function GalleryScreen() {
     const [uploadNotice, setUploadNotice] = useState<string | null>(null);
     const [selectedMedia, setSelectedMedia] = useState<MediaResponseDto | null>(null);
     const [originalError, setOriginalError] = useState<string | null>(null);
+    const [selectionDownloadError, setSelectionDownloadError] = useState<string | null>(null);
+    const [isDownloadingSelection, setIsDownloadingSelection] = useState(false);
     const [archiveDownloadOpen, setArchiveDownloadOpen] = useState(false);
 
     const { data: media = [], isLoading: isLoadingMedia } = useEventMedia(eventId);
@@ -47,11 +51,14 @@ export function GalleryScreen() {
     const canUpload = Boolean(eventId && activeMember && galleryEnabled && isEventWritable(activeEvent?.status));
     const selectedSize = useMemo(() => selectedFiles.reduce((sum, file) => sum + file.size, 0), [selectedFiles]);
     const imageMedia = useMemo(() => media.filter((item) => item.mediaType === 'IMAGE'), [media]);
+    const gallerySelection = useGallerySelection(imageMedia);
 
     const maxFiles = appConfig?.media.maxBatchUploadFiles ?? MAX_FILES_PER_BATCH;
     const maxImageBytes = appConfig?.media.maxImageBytes ?? 25 * 1024 * 1024;
     const keepsOriginals = billing.data?.addons.some((addon) => addon.code === 'ORIGINALS') ?? false;
     const showArchiveDownload = isHost && galleryEnabled;
+    const showGalleryActions = galleryEnabled;
+    const canDownloadSelected = gallerySelection.selectedCount > 0 && !isDownloadingSelection;
     const openArchiveDownload = useCallback(() => {
         setArchiveDownloadOpen(true);
     }, []);
@@ -123,9 +130,70 @@ export function GalleryScreen() {
         }
     }
 
+    async function downloadGalleryItem(item: MediaResponseDto) {
+        const filename = item.originalFilename || `${item.id}.jpg`;
+        let url = item.mediaUrl;
+
+        if (keepsOriginals) {
+            try {
+                const result = await originalMedia.mutateAsync(item.id);
+                url = result.url;
+            } catch {
+                url = item.mediaUrl;
+            }
+        }
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Download failed');
+            downloadBlob(await response.blob(), filename);
+        } catch {
+            downloadUrl(url, filename);
+        }
+    }
+
+    async function downloadSelectedMedia() {
+        if (!canDownloadSelected) return;
+        setSelectionDownloadError(null);
+        setIsDownloadingSelection(true);
+
+        try {
+            for (const item of gallerySelection.selectedItems) {
+                await downloadGalleryItem(item);
+            }
+            gallerySelection.exitSelectionMode();
+        } catch {
+            setSelectionDownloadError(t('selectionDownloadFailed'));
+        } finally {
+            setIsDownloadingSelection(false);
+        }
+    }
+
     function openMedia(event: React.MouseEvent<HTMLButtonElement>) {
         const id = event.currentTarget.dataset.mediaId;
+        if (!id) return;
+        if (gallerySelection.consumeLongPressClick()) return;
+        if (gallerySelection.selectionMode) {
+            gallerySelection.toggleSelection(id);
+            return;
+        }
         setSelectedMedia(imageMedia.find((item) => item.id === id) ?? null);
+    }
+
+    function handleMediaPointerDown(event: React.PointerEvent<HTMLButtonElement>) {
+        const id = event.currentTarget.dataset.mediaId;
+        if (!id) return;
+        gallerySelection.startLongPressSelection(event, id);
+    }
+
+    function enterSelectionMode() {
+        gallerySelection.enterSelectionMode();
+        setSelectionDownloadError(null);
+    }
+
+    function exitSelectionMode() {
+        gallerySelection.exitSelectionMode();
+        setSelectionDownloadError(null);
     }
 
     function closeMedia() {
@@ -143,18 +211,69 @@ export function GalleryScreen() {
             onBack={router.back}
             subtitle={isHost ? t('hostSubtitle') : t('guestSubtitle')}
             action={
-                showArchiveDownload ? (
-                    <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={openArchiveDownload}
-                        disabled={!media.length}
-                        className="rounded-full border-border bg-background px-3 text-xs font-semibold text-ink-muted hover:text-ink"
-                    >
-                        <Download className="h-3.5 w-3.5" />
-                        {t('downloadGallery')}
-                    </Button>
+                showGalleryActions ? (
+                    <div className="flex items-center gap-2">
+                        {gallerySelection.selectionMode ? (
+                            <>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={gallerySelection.selectAll}
+                                    disabled={!imageMedia.length || gallerySelection.selectedCount === imageMedia.length}
+                                    className="hidden rounded-full border-border bg-background px-3 text-xs font-semibold text-ink-muted hover:text-ink sm:inline-flex"
+                                >
+                                    {t('selectAll')}
+                                </Button>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    onClick={downloadSelectedMedia}
+                                    disabled={!canDownloadSelected}
+                                    className="hidden rounded-full bg-ink px-3 text-xs font-semibold text-white sm:inline-flex"
+                                >
+                                    {isDownloadingSelection ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                                    {t('downloadSelected', { count: gallerySelection.selectedCount })}
+                                </Button>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={exitSelectionMode}
+                                    className="hidden rounded-full px-3 text-xs font-semibold text-ink-muted hover:text-ink sm:inline-flex"
+                                >
+                                    {t('cancelSelection')}
+                                </Button>
+                            </>
+                        ) : (
+                            <>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={enterSelectionMode}
+                                    disabled={!imageMedia.length}
+                                    className="rounded-full border-border bg-background px-3 text-xs font-semibold text-ink-muted hover:text-ink"
+                                >
+                                    <MousePointer2 className="h-3.5 w-3.5" />
+                                    {t('selectPhotos')}
+                                </Button>
+                                {showArchiveDownload && (
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={openArchiveDownload}
+                                        disabled={!media.length}
+                                        className="hidden rounded-full border-border bg-background px-3 text-xs font-semibold text-ink-muted hover:text-ink sm:inline-flex"
+                                    >
+                                        <Download className="h-3.5 w-3.5" />
+                                        {t('downloadGallery')}
+                                    </Button>
+                                )}
+                            </>
+                        )}
+                    </div>
                 ) : undefined
             }
             notice={
@@ -228,6 +347,38 @@ export function GalleryScreen() {
 
             {/* Gallery */}
             <section>
+                {gallerySelection.selectionMode && (
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-surface-muted px-3 py-2.5">
+                        <p className="text-xs font-semibold text-ink">{t('photosSelected', { count: gallerySelection.selectedCount })}</p>
+                        <div className="flex items-center gap-2 sm:hidden">
+                            <button
+                                type="button"
+                                onClick={gallerySelection.selectAll}
+                                disabled={!imageMedia.length || gallerySelection.selectedCount === imageMedia.length}
+                                className="min-h-9 rounded-full px-3 text-xs font-semibold text-ink-muted disabled:opacity-50"
+                            >
+                                {t('selectAll')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={downloadSelectedMedia}
+                                disabled={!canDownloadSelected}
+                                className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-ink px-3 text-xs font-semibold text-white disabled:opacity-50"
+                            >
+                                {isDownloadingSelection ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                                {t('download')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={exitSelectionMode}
+                                className="min-h-9 rounded-full px-3 text-xs font-semibold text-ink-muted"
+                            >
+                                {t('cancelSelection')}
+                            </button>
+                        </div>
+                    </div>
+                )}
+                {selectionDownloadError && <p className="mb-3 text-xs text-rose-600">{selectionDownloadError}</p>}
                 {isLoadingMedia ? (
                     <div className="flex min-h-48 items-center justify-center rounded-2xl bg-card">
                         <Loader2 className="h-6 w-6 animate-spin text-ink-muted" />
@@ -239,29 +390,59 @@ export function GalleryScreen() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                        {imageMedia.map((item) => (
-                            <button
-                                key={item.id}
-                                type="button"
-                                data-media-id={item.id}
-                                onClick={openMedia}
-                                className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
-                            >
-                                <div className="relative aspect-square bg-surface-muted">
-                                    <Image
-                                        src={item.mediaUrl}
-                                        alt={item.originalFilename}
-                                        fill
-                                        sizes="(min-width: 1024px) 25vw, 50vw"
-                                        className="object-cover"
-                                    />
-                                </div>
-                                <div className="px-3 py-2">
-                                    <p className="truncate text-xs font-semibold text-ink">{item.originalFilename}</p>
-                                    <p className="mt-0.5 text-[11px] text-ink-muted">{formatShortDateTime(item.createdAt)}</p>
-                                </div>
-                            </button>
-                        ))}
+                        {imageMedia.map((item) => {
+                            const isSelected = gallerySelection.selectedIds.has(item.id);
+                            return (
+                                <button
+                                    key={item.id}
+                                    type="button"
+                                    data-media-id={item.id}
+                                    aria-pressed={gallerySelection.selectionMode ? isSelected : undefined}
+                                    aria-label={
+                                        gallerySelection.selectionMode
+                                            ? t(isSelected ? 'unselectPhoto' : 'selectPhoto', { filename: item.originalFilename })
+                                            : item.originalFilename
+                                    }
+                                    onPointerDown={handleMediaPointerDown}
+                                    onPointerUp={gallerySelection.stopLongPressSelection}
+                                    onPointerCancel={gallerySelection.stopLongPressSelection}
+                                    onPointerLeave={gallerySelection.stopLongPressSelection}
+                                    onClick={openMedia}
+                                    className={cn(
+                                        'group overflow-hidden rounded-2xl border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md',
+                                        isSelected ? 'border-primary ring-4 ring-primary/15' : 'border-border',
+                                        gallerySelection.selectionMode && 'touch-none'
+                                    )}
+                                >
+                                    <div className="relative aspect-square bg-surface-muted">
+                                        <Image
+                                            src={item.mediaUrl}
+                                            alt={item.originalFilename}
+                                            fill
+                                            sizes="(min-width: 1024px) 25vw, 50vw"
+                                            className={cn(
+                                                'object-cover transition-transform group-hover:scale-[1.02]',
+                                                isSelected && 'brightness-75'
+                                            )}
+                                        />
+                                        {gallerySelection.selectionMode && (
+                                            <span
+                                                className={cn(
+                                                    'absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full border text-white shadow-sm',
+                                                    isSelected ? 'border-primary bg-primary' : 'border-white/80 bg-black/35'
+                                                )}
+                                            >
+                                                {isSelected && <Check className="h-4 w-4" />}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="px-3 py-2 text-left">
+                                        <p className="truncate text-xs font-semibold text-ink">{item.originalFilename}</p>
+                                        <p className="mt-0.5 text-[11px] text-ink-muted">{formatShortDateTime(item.createdAt)}</p>
+                                    </div>
+                                </button>
+                            );
+                        })}
                     </div>
                 )}
             </section>

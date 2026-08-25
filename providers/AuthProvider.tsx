@@ -1,22 +1,10 @@
 'use client';
 
-import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-import { api } from '@/lib/api/client';
-import { endpoints } from '@/lib/api/endpoints';
-import type { AuthResponseDto, PlatformRole } from '@/lib/api/types';
-import {
-    clearSession,
-    getAuthState,
-    getStoredGuestKey,
-    getStoredInviteToken,
-    getStoredRefreshToken,
-    setSession,
-    setStoredGuestKey,
-    setStoredInviteToken,
-    setStoredRefreshToken,
-    subscribeAuthState,
-} from '@/lib/auth/tokenStore';
+import { authClient } from '@/lib/api/authClient';
+import type { AuthSessionDto, PlatformRole } from '@/lib/api/types';
+import { clearSession, getAuthState, setSession, subscribeAuthState } from '@/lib/auth/tokenStore';
 
 interface AuthUser {
     userId: string;
@@ -29,22 +17,13 @@ interface AuthContextValue {
     user: AuthUser | null;
     isAuthenticated: boolean;
     isBootstrapping: boolean;
-    register: (input: { email: string; password: string; displayName: string }) => Promise<AuthResponseDto>;
-    login: (input: { email: string; password: string }) => Promise<AuthResponseDto>;
-    guestLogin: (input: { inviteToken: string; displayName: string }) => Promise<AuthResponseDto>;
+    register: (input: { email: string; password: string; displayName: string }) => Promise<AuthSessionDto>;
+    login: (input: { email: string; password: string }) => Promise<AuthSessionDto>;
+    guestLogin: (input: { inviteToken: string; displayName: string }) => Promise<AuthSessionDto>;
     logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-function applyAuthResponse(auth: AuthResponseDto) {
-    setSession(auth);
-    // Guests never receive a refresh token — persisting `null` here would wipe
-    // out a real refresh token belonging to a registered user, so only write
-    // when one was actually issued.
-    if (auth.refreshToken) setStoredRefreshToken(auth.refreshToken);
-    if (auth.guestKey) setStoredGuestKey(auth.guestKey);
-}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [authState, setAuthState] = useState(getAuthState());
@@ -53,30 +32,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => subscribeAuthState(setAuthState), []);
 
     // The access token is memory-only and doesn't survive a reload. On first
-    // mount, silently re-derive one from whatever persisted credential we have.
+    // mount, ask the BFF to re-derive one from whatever httpOnly cookie it
+    // holds (refresh token or guest identity) — see app/api/auth/session/route.ts.
     useEffect(() => {
         let cancelled = false;
 
         async function bootstrap() {
-            const refreshToken = getStoredRefreshToken();
-            const inviteToken = getStoredInviteToken();
-
             try {
-                if (refreshToken) {
-                    const auth = await api.post<AuthResponseDto>(endpoints.auth.refresh, {
-                        refreshToken,
-                    });
-                    if (!cancelled) applyAuthResponse(auth);
-                } else if (inviteToken) {
-                    const auth = await api.post<AuthResponseDto>(endpoints.auth.guestLogin, {
-                        inviteToken,
-                        displayName: 'Guest',
-                        guestKey: getStoredGuestKey() ?? undefined,
-                    });
-                    if (!cancelled) applyAuthResponse(auth);
+                const session = await authClient.session();
+                if (!cancelled) {
+                    if (session) setSession(session);
+                    else clearSession();
                 }
             } catch {
-                clearSession();
+                if (!cancelled) clearSession();
             } finally {
                 if (!cancelled) setIsBootstrapping(false);
             }
@@ -88,45 +57,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
     }, []);
 
-    const value: AuthContextValue = {
-        user: authState.accessToken
-            ? { userId: authState.userId!, email: authState.email, displayName: authState.displayName!, role: authState.role! }
-            : null,
-        isAuthenticated: Boolean(authState.accessToken),
-        isBootstrapping,
-        register: async (input) => {
-            const auth = await api.post<AuthResponseDto>(endpoints.auth.register, input);
-            applyAuthResponse(auth);
-            return auth;
-        },
-        login: async (input) => {
-            const auth = await api.post<AuthResponseDto>(endpoints.auth.login, input);
-            applyAuthResponse(auth);
-            return auth;
-        },
-        guestLogin: async ({ inviteToken, displayName }) => {
-            const auth = await api.post<AuthResponseDto>(endpoints.auth.guestLogin, {
-                inviteToken,
-                displayName,
-                guestKey: getStoredGuestKey() ?? undefined,
-            });
-            applyAuthResponse(auth);
-            setStoredInviteToken(inviteToken);
-            return auth;
-        },
-        logout: async () => {
-            const refreshToken = getStoredRefreshToken();
-            if (refreshToken) {
-                try {
-                    await api.post(endpoints.auth.logout, { refreshToken });
-                } catch {
-                    // Logout is best-effort server-side revocation; always clear
-                    // client state regardless of whether the request succeeded.
-                }
-            }
-            clearSession();
-        },
-    };
+    const register = useCallback(async (input: { email: string; password: string; displayName: string }) => {
+        const session = await authClient.register(input);
+        setSession(session);
+        return session;
+    }, []);
+
+    const login = useCallback(async (input: { email: string; password: string }) => {
+        const session = await authClient.login(input);
+        setSession(session);
+        return session;
+    }, []);
+
+    const guestLogin = useCallback(async (input: { inviteToken: string; displayName: string }) => {
+        const session = await authClient.guestLogin(input);
+        setSession(session);
+        return session;
+    }, []);
+
+    const logout = useCallback(async () => {
+        try {
+            await authClient.logout();
+        } catch {
+            // Logout is best-effort server-side revocation; always clear
+            // client state regardless of whether the request succeeded.
+        }
+        clearSession();
+    }, []);
+
+    const user = authState.accessToken
+        ? { userId: authState.userId!, email: authState.email, displayName: authState.displayName!, role: authState.role! }
+        : null;
+    const isAuthenticated = Boolean(authState.accessToken);
+
+    const value: AuthContextValue = useMemo(
+        () => ({ user, isAuthenticated, isBootstrapping, register, login, guestLogin, logout }),
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- `user` is derived fresh from authState each render; comparing its fields keeps this memo from invalidating on every authState change that doesn't actually affect them.
+        [
+            authState.accessToken,
+            authState.userId,
+            authState.email,
+            authState.displayName,
+            authState.role,
+            isBootstrapping,
+            register,
+            login,
+            guestLogin,
+            logout,
+        ]
+    );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
