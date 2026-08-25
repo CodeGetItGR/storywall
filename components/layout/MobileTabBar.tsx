@@ -157,7 +157,10 @@ export function MobileTabBar() {
                         aria-label={t('compose')}
                         className="group fixed bottom-20 right-4 z-100 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md transition-transform hover:scale-105 lg:hidden"
                     >
-                        <Plus className="h-6 w-6 text-white transition-transform duration-200 ease-out group-data-[popup-open]:rotate-45" strokeWidth={2.5} />
+                        <Plus
+                            className="h-6 w-6 text-white transition-transform duration-200 ease-out group-data-[popup-open]:rotate-45"
+                            strokeWidth={2.5}
+                        />
                     </Menu.Trigger>
                     <Menu.Portal>
                         <Menu.Backdrop className="fixed inset-0 z-45 bg-black/10 backdrop-blur-[2px]" />
