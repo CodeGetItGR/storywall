@@ -4,13 +4,14 @@ interface GallerySelectableItem {
     id: string;
 }
 
-export function useGallerySelection<TItem extends GallerySelectableItem>(items: TItem[], longPressMs = 450) {
+export function useGallerySelection<TItem extends GallerySelectableItem>(items: TItem[], longPressMs = 450, maxSelectedItems = Infinity) {
     const [selectionMode, setSelectionMode] = useState(false);
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+    const [selectedIdSet, setSelectedIdSet] = useState<Set<string>>(() => new Set());
     const longPressTimerRef = useRef<number | null>(null);
     const longPressTriggeredRef = useRef(false);
 
-    const selectedItems = useMemo(() => items.filter((item) => selectedIds.has(item.id)), [items, selectedIds]);
+    const selectedItems = useMemo(() => items.filter((item) => selectedIdSet.has(item.id)), [items, selectedIdSet]);
+    const selectedIds = useMemo(() => new Set(selectedItems.map((item) => item.id)), [selectedItems]);
 
     const clearLongPressTimer = useCallback(() => {
         if (longPressTimerRef.current === null) return;
@@ -23,37 +24,40 @@ export function useGallerySelection<TItem extends GallerySelectableItem>(items: 
     const enterSelectionMode = useCallback((id?: string) => {
         setSelectionMode(true);
         if (!id) return;
-        setSelectedIds((current) => {
+        setSelectedIdSet((current) => {
             if (current.has(id)) return current;
+            if (current.size >= maxSelectedItems) return current;
             const next = new Set(current);
             next.add(id);
             return next;
         });
-    }, []);
+    }, [maxSelectedItems]);
 
     const exitSelectionMode = useCallback(() => {
         clearLongPressTimer();
         longPressTriggeredRef.current = false;
         setSelectionMode(false);
-        setSelectedIds(new Set());
+        setSelectedIdSet(new Set());
     }, [clearLongPressTimer]);
 
     const toggleSelection = useCallback((id: string) => {
-        setSelectedIds((current) => {
+        setSelectedIdSet((current) => {
             const next = new Set(current);
             if (next.has(id)) {
                 next.delete(id);
-            } else {
+            } else if (next.size < maxSelectedItems) {
                 next.add(id);
+            } else {
+                return current;
             }
             return next;
         });
-    }, []);
+    }, [maxSelectedItems]);
 
     const selectAll = useCallback(() => {
         setSelectionMode(true);
-        setSelectedIds(new Set(items.map((item) => item.id)));
-    }, [items]);
+        setSelectedIdSet(new Set(items.slice(0, maxSelectedItems).map((item) => item.id)));
+    }, [items, maxSelectedItems]);
 
     const startLongPressSelection = useCallback(
         (event: PointerEvent, id: string) => {

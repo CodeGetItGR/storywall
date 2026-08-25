@@ -65,6 +65,10 @@ export const endpoints = {
             `/api/events/${eventId}/media/archive/manifest?variant=${encodeURIComponent(variant)}`,
         mediaArchive: (eventId: string, part: number, variant: string = 'DISPLAY') =>
             `/api/events/${eventId}/media/archive?variant=${encodeURIComponent(variant)}&part=${encodeURIComponent(String(part))}`,
+        mediaArchiveSelected: (eventId: string, mediaIds: string[], variant: string = 'DISPLAY') =>
+            `/api/events/${eventId}/media/archive/selected?variant=${encodeURIComponent(variant)}&mediaIds=${mediaIds
+                .map((id) => encodeURIComponent(id))
+                .join(',')}`,
         usage: (eventId: string) => `/api/events/${eventId}/usage`,
         billing: (eventId: string) => `/api/events/${eventId}/billing`,
         addons: (eventId: string) => `/api/events/${eventId}/addons`,

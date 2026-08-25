@@ -3,7 +3,11 @@
 Host-only bulk download of an event's gallery as a zip. New feature — there was previously no way
 to get more than one file at a time; the only existing paths were the per-item feed URL and
 [`GET /api/medias/{id}/original`](billing-fe-guide.md#retrieving-the-original) (§7a of the billing
-guide). This adds two endpoints on top of those, doesn't change either of them.
+guide). This adds three endpoints on top of those, doesn't change any of them.
+
+**2026-08-25:** Added §7, a third endpoint for downloading a host-picked subset of the gallery
+(e.g. a multi-select "download these 12 photos" UI) as one zip, instead of the whole gallery split
+into server-planned parts.
 
 Related docs:
 - [`billing-fe-guide.md`](billing-fe-guide.md) §7a — the "keep originals" add-on this feature reads
@@ -12,15 +16,17 @@ Related docs:
   `MediaArchivePartDto`, the wire shapes below
 - [`frontend-integration-guide.md`](frontend-integration-guide.md) §0 — auth header, error shape
 
-## 1. The two calls
+## 1. The calls
 
 ```http
 GET /api/events/{eventId}/media/archive/manifest?variant=DISPLAY|ORIGINAL
 GET /api/events/{eventId}/media/archive?variant=DISPLAY|ORIGINAL&part=1
+GET /api/events/{eventId}/media/archive/selected?variant=DISPLAY|ORIGINAL&mediaIds=id1,id2,...
 ```
 
-Both host-only (`403` for anyone else, including the member who uploaded the most photos). Both
-`404` if the event doesn't exist. `variant` defaults to `DISPLAY` on both if omitted.
+All three host-only (`403` for anyone else, including the member who uploaded the most photos). All
+`404` if the event doesn't exist. `variant` defaults to `DISPLAY` on all three if omitted. The third
+is for a multi-select "download these" flow rather than the whole gallery — see §7.
 
 **Always call the manifest first.** It's not just a preview — the download endpoint plans its
 parts by re-walking the gallery the same way the manifest does, so the manifest is how you learn
@@ -176,3 +182,43 @@ confirm it.
    there's nothing archive-specific about how the browser/OS should queue them.
 6. On `MEDIA_ARCHIVE_PART_NOT_FOUND`, silently re-fetch the manifest once and rebuild the list
    before telling the host anything went wrong.
+
+## 7. Downloading a selection
+
+For a multi-select UI — the host checks a handful of photos in the gallery grid and hits
+"download selected" — use this instead of the part-based flow. There's no manifest call for it:
+you already have `fileSize` for every item from the gallery feed the grid is rendering, so there's
+nothing to preview that you don't already have.
+
+```http
+GET /api/events/{eventId}/media/archive/selected?variant=ORIGINAL&mediaIds=3fa8...,9c21...,...
+Authorization: Bearer {accessToken}
+
+200 OK
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename="gallery-selected-12.zip"
+```
+
+Same direct-binary, chunked, no-`Content-Length` response as §3 — same download-UI guidance
+applies (native `<a href>` navigation, not a JS-held fetch). `mediaIds` is a comma-separated list
+of media ids, in the order they should appear in the zip; the `NNNN_` entry-numbering in the zip
+follows that order, starting at `0001` (there's no cross-part continuation here — a selection is
+always one zip).
+
+Duplicate ids in the list are silently collapsed to one entry rather than rejected — harmless if
+your selection state can produce one.
+
+**Shares the same 10-requests/hour budget as §3** (`media.archive.download`) — it's the same
+expensive per-object read through the server, just at a caller-chosen scope instead of a
+server-planned one. Don't build a workaround that re-requests the whole gallery as a series of
+small selections to dodge the part-based rate limit; it's the same bucket either way.
+
+### 7.1 Limits and errors
+
+| Code | HTTP | When | FE handling |
+|---|---|---|---|
+| `MEDIA_ARCHIVE_SELECTION_EMPTY` (3021) | 400 | `mediaIds` was empty | Don't show the download action until at least one item is selected |
+| `MEDIA_ARCHIVE_SELECTION_TOO_LARGE` (3022) | 400 | More items selected than `GET /api/config` → `media.maxArchiveSelectedItems`, or their combined size is over `media.maxArchivePartBytes` (the same cap §3's parts use) | Split the selection and download it in batches. Cap the multi-select UI at `maxArchiveSelectedItems` (see [`app-config-fe-integration.md`](app-config-fe-integration.md)) rather than surfacing the error after the fact. There's no client-visible size for the `ORIGINAL` copy of an item (`MediaResponseDto.fileSize` is always the `DISPLAY` size), so a pre-flight byte-cap check is only reliable at `variant=DISPLAY` — at `ORIGINAL` you can't predict this error client-side and should just handle the `400` |
+| `MEDIA_ARCHIVE_SELECTION_INVALID` (3023) | 400 | One or more `mediaIds` don't resolve to a live item of this event — wrong event, already deleted, or never existed | Reachable without a client bug: an item can be deleted between the grid being rendered and the download being triggered. Drop the missing ids from your selection state and let the host retry |
+
+`ORIGINALS_ADDON_NOT_ACTIVE` and the plain `403`/`404` cases behave exactly as in §4.

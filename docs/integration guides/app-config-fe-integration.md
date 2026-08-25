@@ -29,6 +29,14 @@ server-side.
 populates it the same way, so the wizard's step-2 plan picker can render upsells without also
 fetching the full config catalog.
 
+**2026-08-25:** `media` gained `maxArchiveSelectedItems` / `maxArchivePartBytes`, the two caps on
+the new selected-media gallery-archive download (`GET
+.../media/archive/selected` — see
+[`gallery-archive-download-fe-integration.md`](gallery-archive-download-fe-integration.md) §7).
+Previously the only way to know these was the hardcoded defaults in that doc's prose; source them
+from here instead so an admin-tunable cap doesn't silently drift out of sync with what the FE
+validates against before firing the request.
+
 **2026-08-23:** two new sections, both closing gaps where a limit was enforced server-side but
 never surfaced anywhere the FE could read it. `contentLimits` gives you every free-text
 `@Size(max=...)` bound (post/comment/story/wishbook/etc.) so counters and submit-disabling can be
@@ -55,6 +63,8 @@ interface AppConfigResponseDto {
     maxVideoBytes: number;         // per-kind cap, enforced after server-side format detection
     maxBatchUploadFiles: number;
     maxMediaPerPost: number;
+    maxArchiveSelectedItems: number; // added 2026-08-25 — see below
+    maxArchivePartBytes: number;     // added 2026-08-25 — see below
     presignedUrlTtlMinutes: number;
     publicHost: string | null; // hostname media URLs are served from
   };
@@ -103,6 +113,16 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
   deliberately not surfaced here — it only fires on synthetic or extreme-panorama input and is
   reported as `MEDIA_IMAGE_TOO_MANY_PIXELS` (3016) at upload time.
 - **`media.maxMediaPerPost`** — same idea for the post composer's "max 10 images" guard.
+- **`media.maxArchiveSelectedItems`** (100 as of 2026-08-25) — the item-count cap on
+  `GET /api/events/{eventId}/media/archive/selected` (see
+  [`gallery-archive-download-fe-integration.md`](gallery-archive-download-fe-integration.md) §7).
+  Cap a multi-select "download selected" UI at this number rather than letting the host pick 500
+  and discovering the limit from a `400` after the fact.
+- **`media.maxArchivePartBytes`** (2GB as of 2026-08-25) — the combined-size cap shared by one
+  gallery-archive part (§3 of the same guide) and one selected-media archive request (§7). A
+  selection whose items sum over this, even if under `maxArchiveSelectedItems`, is rejected the
+  same way — useful if you want to warn the host before they submit a selection of a few dozen
+  `ORIGINAL`-variant videos that's individually small in count but large in bytes.
 - **`paidServices`** — the public catalog for the "keep originals" add-on, storage packs, and
   module unlocks, filtered to `isPublic && isAssignable` the same way `planTiers` is. Filter by
   `kind` (`RECURRING_ADDON` / `STORAGE_PACK` / `MODULE_UNLOCK`) to build the three different

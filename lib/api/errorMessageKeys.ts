@@ -44,6 +44,9 @@ export type ApiErrorMessageKey =
     | 'mediaFileCorrupt'
     | 'mediaFileTooLarge'
     | 'mediaArchivePartNotFound'
+    | 'mediaArchiveSelectionEmpty'
+    | 'mediaArchiveSelectionTooLarge'
+    | 'mediaArchiveSelectionInvalid'
     | 'mediaImageTooManyPixels'
     | 'mediaProcessingBusy'
     | 'methodNotAllowed'
@@ -128,6 +131,9 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.MEDIA_FILE_CORRUPT]: 'mediaFileCorrupt',
     [ERROR_CODES.MEDIA_FILE_TOO_LARGE]: 'mediaFileTooLarge',
     [ERROR_CODES.MEDIA_ARCHIVE_PART_NOT_FOUND]: 'mediaArchivePartNotFound',
+    [ERROR_CODES.MEDIA_ARCHIVE_SELECTION_EMPTY]: 'mediaArchiveSelectionEmpty',
+    [ERROR_CODES.MEDIA_ARCHIVE_SELECTION_TOO_LARGE]: 'mediaArchiveSelectionTooLarge',
+    [ERROR_CODES.MEDIA_ARCHIVE_SELECTION_INVALID]: 'mediaArchiveSelectionInvalid',
     [ERROR_CODES.MEDIA_IMAGE_TOO_MANY_PIXELS]: 'mediaImageTooManyPixels',
     [ERROR_CODES.MEDIA_PROCESSING_BUSY]: 'mediaProcessingBusy',
     [ERROR_CODES.METHOD_NOT_ALLOWED]: 'methodNotAllowed',

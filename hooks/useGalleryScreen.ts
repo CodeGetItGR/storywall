@@ -11,13 +11,14 @@ import { useEventBilling } from '@/hooks/useBilling';
 import { useGallerySelection } from '@/hooks/useGallerySelection';
 import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
 import { useEventMedia, useOriginalMedia, useUploadMediaBatch } from '@/hooks/useMedia';
+import { api } from '@/lib/api/client';
+import { endpoints } from '@/lib/api/endpoints';
 import type { MediaResponseDto } from '@/lib/api/types';
 import { downloadBlob } from '@/lib/download';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { formatBytes } from '@/lib/format';
 import { useActiveMember } from '@/providers/EventProvider';
 import { useMobileChrome } from '@/providers/MobileChromeProvider';
-import { buildZipBlob } from '@/lib/zip';
 
 const MAX_FILES_PER_BATCH = 10;
 
@@ -49,13 +50,23 @@ export function useGalleryScreen() {
     const canUpload = Boolean(eventId && activeMember && galleryEnabled && isEventWritable(activeEvent?.status));
     const selectedSize = useMemo(() => selectedFiles.reduce((sum, file) => sum + file.size, 0), [selectedFiles]);
     const imageMedia = useMemo(() => media.filter((item) => item.mediaType === 'IMAGE'), [media]);
-    const gallerySelection = useGallerySelection(imageMedia);
+    const maxArchiveSelectedItems = appConfig?.media.maxArchiveSelectedItems ?? 100;
+    const maxArchivePartBytes = appConfig?.media.maxArchivePartBytes ?? 2 * 1024 * 1024 * 1024;
+    const gallerySelection = useGallerySelection(imageMedia, 450, maxArchiveSelectedItems);
+    const selectedArchiveSize = useMemo(
+        () => gallerySelection.selectedItems.reduce((sum, item) => sum + item.fileSize, 0),
+        [gallerySelection.selectedItems]
+    );
 
     const maxFiles = appConfig?.media.maxBatchUploadFiles ?? MAX_FILES_PER_BATCH;
     const maxImageBytes = appConfig?.media.maxImageBytes ?? 25 * 1024 * 1024;
     const keepsOriginals = billing.data?.addons.some((addon) => addon.code === 'ORIGINALS') ?? false;
     const showArchiveDownload = isHost && galleryEnabled;
-    const canDownloadSelected = gallerySelection.selectedCount > 0 && !isDownloadingSelection;
+    const canDownloadSelected =
+        gallerySelection.selectedCount > 0 &&
+        gallerySelection.selectedCount <= maxArchiveSelectedItems &&
+        selectedArchiveSize <= maxArchivePartBytes &&
+        !isDownloadingSelection;
 
     const handleFilesChange = useCallback(
         (event: ChangeEvent<HTMLInputElement>) => {
@@ -121,41 +132,22 @@ export function useGalleryScreen() {
     }, [originalMedia, selectedMedia, t]);
 
     const downloadSelectedMedia = useCallback(async () => {
-        if (!canDownloadSelected) return;
+        if (!canDownloadSelected || !eventId) return;
         setSelectionDownloadError(null);
         setIsDownloadingSelection(true);
 
         try {
-            const entries = await Promise.all(
-                gallerySelection.selectedItems.map(async (item) => {
-                    const filename = item.originalFilename || `${item.id}.jpg`;
-                    let url = item.mediaUrl;
-
-                    if (keepsOriginals) {
-                        try {
-                            const result = await originalMedia.mutateAsync(item.id);
-                            url = result.url;
-                        } catch {
-                            url = item.mediaUrl;
-                        }
-                    }
-
-                    const response = await fetch(url);
-                    if (!response.ok) throw new Error('Download failed');
-                    const blob = await response.blob();
-                    return { filename, data: new Uint8Array(await blob.arrayBuffer()) };
-                })
+            const response = await api.download(
+                endpoints.events.mediaArchiveSelected(eventId, gallerySelection.selectedItems.map((item) => item.id))
             );
-
-            const archive = await buildZipBlob(entries);
-            downloadBlob(archive, `gallery-selection-${gallerySelection.selectedCount}.zip`);
+            downloadBlob(await response.blob(), `gallery-selected-${gallerySelection.selectedCount}.zip`);
             gallerySelection.exitSelectionMode();
-        } catch {
-            setSelectionDownloadError(t('selectionDownloadFailed'));
+        } catch (error) {
+            setSelectionDownloadError(toErrorMessage(error, t('selectionDownloadFailed')));
         } finally {
             setIsDownloadingSelection(false);
         }
-    }, [canDownloadSelected, gallerySelection, keepsOriginals, originalMedia, t]);
+    }, [canDownloadSelected, eventId, gallerySelection, t, toErrorMessage]);
 
     const handleMediaClick = useCallback(
         (id: string) => {

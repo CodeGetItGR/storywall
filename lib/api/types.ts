@@ -42,6 +42,8 @@ export interface AppMediaConfigDto {
     maxVideoBytes: number;
     maxBatchUploadFiles: number;
     maxMediaPerPost: number;
+    maxArchiveSelectedItems: number;
+    maxArchivePartBytes: number;
     presignedUrlTtlMinutes: number;
     publicHost: string | null;
 }

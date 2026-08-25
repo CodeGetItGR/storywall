@@ -694,6 +694,8 @@ interface AppMediaConfigDto {
   maxRequestSizeBytes: number;
   maxBatchUploadFiles: number;
   maxMediaPerPost: number;
+  maxArchiveSelectedItems: number; // added 2026-08-25 — item cap on GET .../media/archive/selected
+  maxArchivePartBytes: number;     // added 2026-08-25 — combined-size cap for that request AND one gallery-archive part
   presignedUrlTtlMinutes: number;
   publicHost: string | null; // hostname media URLs are served from — feed into next/image's images.remotePatterns
 }
