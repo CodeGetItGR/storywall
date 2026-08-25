@@ -4,7 +4,13 @@ import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type ChangeEvent, type MouseEvent, useState } from 'react';
 
-import { PlanMatrixCheckbox, PlanMatrixPlanCell, PlanMatrixToolbar } from '@/components/admin/PlanMatrixParts';
+import {
+    PlanMatrixCheckbox,
+    PlanMatrixMobileCard,
+    PlanMatrixMobileRow,
+    PlanMatrixPlanCell,
+    PlanMatrixToolbar,
+} from '@/components/admin/PlanMatrixParts';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { usePlanModules } from '@/hooks/usePlanModules';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
@@ -74,44 +80,37 @@ export function PlanModulesPanel() {
                 {loadError && <p className="px-4 py-5 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(loadError)}`)}</p>}
                 {!loading && !loadError && matrix.plans.length === 0 && <p className="px-4 py-5 text-sm text-ink-muted">{t('planModules.empty')}</p>}
                 {!loading && !loadError && matrix.plans.length > 0 && (
-                    <div className="overflow-x-auto">
-                        <table className="w-full min-w-max border-collapse text-sm">
-                            <thead>
-                                <tr className="border-b border-border text-[10px] font-bold uppercase tracking-wide text-ink-faint">
-                                    <th className="sticky left-0 z-10 min-w-48 bg-card px-3 py-2 text-left">{t('fields.plan')}</th>
-                                    <th className="min-w-16 px-2 py-2 text-center">{t('planModules.clear')}</th>
-                                    {matrix.modules.map((moduleItem) => (
-                                        <th key={moduleItem.moduleKey} className="min-w-24 max-w-32 px-2 py-2 text-center">
-                                            <span className="block normal-case tracking-normal text-ink-muted">{moduleItem.name}</span>
-                                            {!moduleItem.isEnabled && (
-                                                <span className="block text-[9px] text-status-neutral">{t('planModules.disabled')}</span>
-                                            )}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {matrix.plans.map((plan) => {
-                                    const moduleKeys = matrix.moduleKeysFor(plan);
-                                    return (
-                                        <tr key={plan.id} className="border-b border-border last:border-b-0 hover:bg-canvas/50">
-                                            <PlanMatrixPlanCell plan={plan} statusLabel={t(`plans.status.${visibilityOf(plan)}`)} />
-                                            <td className="px-2 py-2 text-center">
+                    <>
+                        {/* Mobile cards */}
+                        <div className="space-y-3 p-3 md:hidden">
+                            {matrix.plans.map((plan) => {
+                                const moduleKeys = matrix.moduleKeysFor(plan);
+                                return (
+                                    <PlanMatrixMobileCard key={plan.id} plan={plan} statusLabel={t(`plans.status.${visibilityOf(plan)}`)}>
+                                        <PlanMatrixMobileRow
+                                            title={t('planModules.clear')}
+                                            caption={t('planModules.clearFor', { plan: plan.name })}
+                                            action={
                                                 <button
                                                     type="button"
                                                     aria-label={t('planModules.clearFor', { plan: plan.name })}
                                                     data-plan-id={plan.id}
                                                     disabled={moduleKeys.length === 0 || matrix.isApplying}
                                                     onClick={handleClearClick}
-                                                    className="mx-auto flex h-7 w-7 items-center justify-center rounded-md text-ink-faint hover:bg-status-danger-wash hover:text-status-danger disabled:cursor-default disabled:opacity-30"
+                                                    className="mx-auto flex h-7 w-7 items-center justify-center rounded-md border border-transparent text-ink-faint hover:bg-status-danger-wash hover:text-status-danger disabled:cursor-default disabled:opacity-30"
                                                 >
                                                     <X className="h-3.5 w-3.5" aria-hidden="true" />
                                                 </button>
-                                            </td>
-                                            {matrix.modules.map((moduleItem) => {
-                                                const included = moduleKeys.includes(moduleItem.moduleKey);
-                                                return (
-                                                    <td key={moduleItem.moduleKey} className="px-2 py-2 text-center">
+                                            }
+                                        />
+                                        {matrix.modules.map((moduleItem) => {
+                                            const included = moduleKeys.includes(moduleItem.moduleKey);
+                                            return (
+                                                <PlanMatrixMobileRow
+                                                    key={moduleItem.moduleKey}
+                                                    title={moduleItem.name}
+                                                    caption={!moduleItem.isEnabled ? t('planModules.disabled') : undefined}
+                                                    action={
                                                         <PlanMatrixCheckbox
                                                             checked={included}
                                                             disabled={(!moduleItem.isEnabled && !included) || matrix.isApplying}
@@ -120,15 +119,72 @@ export function PlanModulesPanel() {
                                                             data-assignment-key={moduleItem.moduleKey}
                                                             onClickAction={handleModuleClick}
                                                         />
-                                                    </td>
-                                                );
-                                            })}
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+                                                    }
+                                                />
+                                            );
+                                        })}
+                                    </PlanMatrixMobileCard>
+                                );
+                            })}
+                        </div>
+
+                        {/* Desktop table */}
+                        <div className="hidden overflow-x-auto md:block">
+                            <table className="w-full min-w-max border-collapse text-sm">
+                                <thead>
+                                    <tr className="border-b border-border text-[10px] font-bold uppercase tracking-wide text-ink-faint">
+                                        <th className="sticky left-0 z-10 min-w-48 bg-card px-3 py-2 text-left">{t('fields.plan')}</th>
+                                        <th className="min-w-16 px-2 py-2 text-center">{t('planModules.clear')}</th>
+                                        {matrix.modules.map((moduleItem) => (
+                                            <th key={moduleItem.moduleKey} className="min-w-24 max-w-32 px-2 py-2 text-center">
+                                                <span className="block normal-case tracking-normal text-ink-muted">{moduleItem.name}</span>
+                                                {!moduleItem.isEnabled && (
+                                                    <span className="block text-[9px] text-status-neutral">{t('planModules.disabled')}</span>
+                                                )}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {matrix.plans.map((plan) => {
+                                        const moduleKeys = matrix.moduleKeysFor(plan);
+                                        return (
+                                            <tr key={plan.id} className="border-b border-border last:border-b-0 hover:bg-canvas/50">
+                                                <PlanMatrixPlanCell plan={plan} statusLabel={t(`plans.status.${visibilityOf(plan)}`)} />
+                                                <td className="px-2 py-2 text-center">
+                                                    <button
+                                                        type="button"
+                                                        aria-label={t('planModules.clearFor', { plan: plan.name })}
+                                                        data-plan-id={plan.id}
+                                                        disabled={moduleKeys.length === 0 || matrix.isApplying}
+                                                        onClick={handleClearClick}
+                                                        className="mx-auto flex h-7 w-7 items-center justify-center rounded-md text-ink-faint hover:bg-status-danger-wash hover:text-status-danger disabled:cursor-default disabled:opacity-30"
+                                                    >
+                                                        <X className="h-3.5 w-3.5" aria-hidden="true" />
+                                                    </button>
+                                                </td>
+                                                {matrix.modules.map((moduleItem) => {
+                                                    const included = moduleKeys.includes(moduleItem.moduleKey);
+                                                    return (
+                                                        <td key={moduleItem.moduleKey} className="px-2 py-2 text-center">
+                                                            <PlanMatrixCheckbox
+                                                                checked={included}
+                                                                disabled={(!moduleItem.isEnabled && !included) || matrix.isApplying}
+                                                                label={t('planModules.assignmentLabel', { plan: plan.name, module: moduleItem.name })}
+                                                                data-plan-id={plan.id}
+                                                                data-assignment-key={moduleItem.moduleKey}
+                                                                onClickAction={handleModuleClick}
+                                                            />
+                                                        </td>
+                                                    );
+                                                })}
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
                 )}
             </section>
 

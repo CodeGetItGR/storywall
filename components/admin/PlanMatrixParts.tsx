@@ -74,15 +74,57 @@ export function PlanMatrixToolbar({
 }
 
 export function PlanMatrixPlanCell({ plan, statusLabel }: { plan: PlanTierResponseDto; statusLabel: string }) {
-    const status = visibilityOf(plan);
     return (
         <th className="sticky left-0 z-10 bg-card px-3 py-2 text-left" scope="row">
+            <PlanMatrixPlanSummary plan={plan} statusLabel={statusLabel} />
+        </th>
+    );
+}
+
+export function PlanMatrixPlanSummary({ plan, statusLabel }: { plan: PlanTierResponseDto; statusLabel: string }) {
+    const status = visibilityOf(plan);
+    return (
+        <>
             <p className="font-semibold leading-5 text-ink">{plan.name}</p>
-            <div className="flex items-center gap-2">
+            <div className="mt-1 flex items-center gap-2">
                 <span className="font-mono text-[10px] text-ink-faint">{plan.code}</span>
                 <span className={cn('rounded-full px-1.5 py-0.5 text-[9px] font-bold', STATUS_PILL[status])}>{statusLabel}</span>
             </div>
-        </th>
+        </>
+    );
+}
+
+export function PlanMatrixMobileCard({ children, plan, statusLabel }: { children: ReactNode; plan: PlanTierResponseDto; statusLabel: string }) {
+    return (
+        <article className="rounded-lg border border-border bg-card p-3">
+            {/* Header */}
+            <div className="border-b border-border pb-3">
+                <PlanMatrixPlanSummary plan={plan} statusLabel={statusLabel} />
+            </div>
+
+            {/* Rows */}
+            <div className="mt-3 space-y-2">{children}</div>
+        </article>
+    );
+}
+
+export function PlanMatrixMobileRow({
+    action,
+    caption,
+    title,
+}: {
+    action: ReactNode;
+    caption?: string;
+    title: string;
+}) {
+    return (
+        <div className="flex items-center justify-between gap-3 rounded-md bg-canvas px-3 py-2">
+            <div className="min-w-0">
+                <p className="text-sm font-medium text-ink">{title}</p>
+                {caption ? <p className="mt-0.5 text-[11px] text-ink-muted">{caption}</p> : null}
+            </div>
+            <div className="shrink-0">{action}</div>
+        </div>
     );
 }
 

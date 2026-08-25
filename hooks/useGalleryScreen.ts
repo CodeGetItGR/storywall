@@ -12,11 +12,12 @@ import { useGallerySelection } from '@/hooks/useGallerySelection';
 import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
 import { useEventMedia, useOriginalMedia, useUploadMediaBatch } from '@/hooks/useMedia';
 import type { MediaResponseDto } from '@/lib/api/types';
-import { downloadBlob, downloadUrl } from '@/lib/download';
+import { downloadBlob } from '@/lib/download';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { formatBytes } from '@/lib/format';
 import { useActiveMember } from '@/providers/EventProvider';
 import { useMobileChrome } from '@/providers/MobileChromeProvider';
+import { buildZipBlob } from '@/lib/zip';
 
 const MAX_FILES_PER_BATCH = 10;
 
@@ -108,31 +109,6 @@ export function useGalleryScreen() {
         );
     }, [activeMember, canUpload, eventId, maxFiles, selectedFiles, t, toErrorMessage, uploadMediaBatch]);
 
-    const downloadGalleryItem = useCallback(
-        async (item: MediaResponseDto) => {
-            const filename = item.originalFilename || `${item.id}.jpg`;
-            let url = item.mediaUrl;
-
-            if (keepsOriginals) {
-                try {
-                    const result = await originalMedia.mutateAsync(item.id);
-                    url = result.url;
-                } catch {
-                    url = item.mediaUrl;
-                }
-            }
-
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Download failed');
-                downloadBlob(await response.blob(), filename);
-            } catch {
-                downloadUrl(url, filename);
-            }
-        },
-        [keepsOriginals, originalMedia]
-    );
-
     const downloadOriginal = useCallback(async () => {
         if (!selectedMedia) return;
         setOriginalError(null);
@@ -150,16 +126,36 @@ export function useGalleryScreen() {
         setIsDownloadingSelection(true);
 
         try {
-            for (const item of gallerySelection.selectedItems) {
-                await downloadGalleryItem(item);
-            }
+            const entries = await Promise.all(
+                gallerySelection.selectedItems.map(async (item) => {
+                    const filename = item.originalFilename || `${item.id}.jpg`;
+                    let url = item.mediaUrl;
+
+                    if (keepsOriginals) {
+                        try {
+                            const result = await originalMedia.mutateAsync(item.id);
+                            url = result.url;
+                        } catch {
+                            url = item.mediaUrl;
+                        }
+                    }
+
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Download failed');
+                    const blob = await response.blob();
+                    return { filename, data: new Uint8Array(await blob.arrayBuffer()) };
+                })
+            );
+
+            const archive = await buildZipBlob(entries);
+            downloadBlob(archive, `gallery-selection-${gallerySelection.selectedCount}.zip`);
             gallerySelection.exitSelectionMode();
         } catch {
             setSelectionDownloadError(t('selectionDownloadFailed'));
         } finally {
             setIsDownloadingSelection(false);
         }
-    }, [canDownloadSelected, downloadGalleryItem, gallerySelection, t]);
+    }, [canDownloadSelected, gallerySelection, keepsOriginals, originalMedia, t]);
 
     const handleMediaClick = useCallback(
         (id: string) => {

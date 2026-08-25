@@ -3,7 +3,13 @@
 import { useTranslations } from 'next-intl';
 import { type ChangeEvent, type MouseEvent, useState } from 'react';
 
-import { PlanMatrixCheckbox, PlanMatrixPlanCell, PlanMatrixToolbar } from '@/components/admin/PlanMatrixParts';
+import {
+    PlanMatrixCheckbox,
+    PlanMatrixMobileCard,
+    PlanMatrixMobileRow,
+    PlanMatrixPlanCell,
+    PlanMatrixToolbar,
+} from '@/components/admin/PlanMatrixParts';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { usePlanAvailability } from '@/hooks/usePlanAvailability';
@@ -77,30 +83,18 @@ export function PlanAvailabilityPanel() {
                     <p className="px-4 py-5 text-sm text-ink-muted">{t('planAvailability.empty')}</p>
                 )}
                 {!loading && !loadError && matrix.plans.length > 0 && (
-                    <div className="overflow-x-auto">
-                        <table className="w-full min-w-max border-collapse text-sm">
-                            <thead>
-                                <tr className="border-b border-border text-[10px] font-bold uppercase tracking-wide text-ink-faint">
-                                    <th className="sticky left-0 z-10 min-w-48 bg-card px-3 py-2 text-left">{t('fields.plan')}</th>
-                                    <th className="min-w-20 px-2 py-2 text-center">{t('planAvailability.allTypes')}</th>
-                                    {matrix.eventTypes.map((eventType) => (
-                                        <th key={eventType.eventTypeKey} className="min-w-24 max-w-32 px-2 py-2 text-center">
-                                            <span className="block normal-case tracking-normal text-ink-muted">{localizedText(eventType.name)}</span>
-                                            {!eventType.isEnabled && (
-                                                <span className="block text-[9px] text-status-neutral">{t('eventTypes.disabled')}</span>
-                                            )}
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {matrix.plans.map((plan) => {
-                                    const eventTypeKeys = matrix.eventTypeKeysFor(plan);
-                                    const unrestricted = eventTypeKeys.length === 0;
-                                    return (
-                                        <tr key={plan.id} className="border-b border-border last:border-b-0 hover:bg-canvas/50">
-                                            <PlanMatrixPlanCell plan={plan} statusLabel={t(`plans.status.${visibilityOf(plan)}`)} />
-                                            <td className="px-2 py-2 text-center">
+                    <>
+                        {/* Mobile cards */}
+                        <div className="space-y-3 p-3 md:hidden">
+                            {matrix.plans.map((plan) => {
+                                const eventTypeKeys = matrix.eventTypeKeysFor(plan);
+                                const unrestricted = eventTypeKeys.length === 0;
+                                return (
+                                    <PlanMatrixMobileCard key={plan.id} plan={plan} statusLabel={t(`plans.status.${visibilityOf(plan)}`)}>
+                                        <PlanMatrixMobileRow
+                                            title={t('planAvailability.allTypes')}
+                                            caption={t('planAvailability.allTypesFor', { plan: plan.name })}
+                                            action={
                                                 <PlanMatrixCheckbox
                                                     checked={unrestricted}
                                                     disabled={unrestricted || matrix.isApplying}
@@ -110,12 +104,17 @@ export function PlanAvailabilityPanel() {
                                                 >
                                                     {unrestricted ? t('planAvailability.all') : t('planAvailability.useAll')}
                                                 </PlanMatrixCheckbox>
-                                            </td>
-                                            {matrix.eventTypes.map((eventType) => {
-                                                const included = unrestricted || eventTypeKeys.includes(eventType.eventTypeKey);
-                                                const lastSelected = !unrestricted && included && eventTypeKeys.length === 1;
-                                                return (
-                                                    <td key={eventType.eventTypeKey} className="px-2 py-2 text-center">
+                                            }
+                                        />
+                                        {matrix.eventTypes.map((eventType) => {
+                                            const included = unrestricted || eventTypeKeys.includes(eventType.eventTypeKey);
+                                            const lastSelected = !unrestricted && included && eventTypeKeys.length === 1;
+                                            return (
+                                                <PlanMatrixMobileRow
+                                                    key={eventType.eventTypeKey}
+                                                    title={localizedText(eventType.name)}
+                                                    caption={!eventType.isEnabled ? t('eventTypes.disabled') : undefined}
+                                                    action={
                                                         <PlanMatrixCheckbox
                                                             checked={included}
                                                             disabled={(!eventType.isEnabled && !included) || lastSelected || matrix.isApplying}
@@ -127,15 +126,76 @@ export function PlanAvailabilityPanel() {
                                                             data-assignment-key={eventType.eventTypeKey}
                                                             onClickAction={handleEventTypeClick}
                                                         />
-                                                    </td>
-                                                );
-                                            })}
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+                                                    }
+                                                />
+                                            );
+                                        })}
+                                    </PlanMatrixMobileCard>
+                                );
+                            })}
+                        </div>
+
+                        {/* Desktop table */}
+                        <div className="hidden overflow-x-auto md:block">
+                            <table className="w-full min-w-max border-collapse text-sm">
+                                <thead>
+                                    <tr className="border-b border-border text-[10px] font-bold uppercase tracking-wide text-ink-faint">
+                                        <th className="sticky left-0 z-10 min-w-48 bg-card px-3 py-2 text-left">{t('fields.plan')}</th>
+                                        <th className="min-w-20 px-2 py-2 text-center">{t('planAvailability.allTypes')}</th>
+                                        {matrix.eventTypes.map((eventType) => (
+                                            <th key={eventType.eventTypeKey} className="min-w-24 max-w-32 px-2 py-2 text-center">
+                                                <span className="block normal-case tracking-normal text-ink-muted">{localizedText(eventType.name)}</span>
+                                                {!eventType.isEnabled && (
+                                                    <span className="block text-[9px] text-status-neutral">{t('eventTypes.disabled')}</span>
+                                                )}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {matrix.plans.map((plan) => {
+                                        const eventTypeKeys = matrix.eventTypeKeysFor(plan);
+                                        const unrestricted = eventTypeKeys.length === 0;
+                                        return (
+                                            <tr key={plan.id} className="border-b border-border last:border-b-0 hover:bg-canvas/50">
+                                                <PlanMatrixPlanCell plan={plan} statusLabel={t(`plans.status.${visibilityOf(plan)}`)} />
+                                                <td className="px-2 py-2 text-center">
+                                                    <PlanMatrixCheckbox
+                                                        checked={unrestricted}
+                                                        disabled={unrestricted || matrix.isApplying}
+                                                        label={t('planAvailability.allTypesFor', { plan: plan.name })}
+                                                        data-plan-id={plan.id}
+                                                        onClickAction={handleAllClick}
+                                                    >
+                                                        {unrestricted ? t('planAvailability.all') : t('planAvailability.useAll')}
+                                                    </PlanMatrixCheckbox>
+                                                </td>
+                                                {matrix.eventTypes.map((eventType) => {
+                                                    const included = unrestricted || eventTypeKeys.includes(eventType.eventTypeKey);
+                                                    const lastSelected = !unrestricted && included && eventTypeKeys.length === 1;
+                                                    return (
+                                                        <td key={eventType.eventTypeKey} className="px-2 py-2 text-center">
+                                                            <PlanMatrixCheckbox
+                                                                checked={included}
+                                                                disabled={(!eventType.isEnabled && !included) || lastSelected || matrix.isApplying}
+                                                                label={t('planAvailability.assignmentLabel', {
+                                                                    plan: plan.name,
+                                                                    eventType: localizedText(eventType.name),
+                                                                })}
+                                                                data-plan-id={plan.id}
+                                                                data-assignment-key={eventType.eventTypeKey}
+                                                                onClickAction={handleEventTypeClick}
+                                                            />
+                                                        </td>
+                                                    );
+                                                })}
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
                 )}
             </section>
 
