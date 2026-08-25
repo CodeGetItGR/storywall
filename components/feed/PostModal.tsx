@@ -21,7 +21,13 @@ export function PostModal() {
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
     const { data: post, error, isPending } = usePost(postId);
-    const { data: comments = [] } = usePostComments(postId);
+    const {
+        data: commentPages,
+        fetchNextPage: fetchMoreComments,
+        hasNextPage: hasMoreComments,
+        isFetchingNextPage: isLoadingMoreComments,
+    } = usePostComments(postId);
+    const comments = useMemo(() => commentPages?.pages.flatMap((page) => page.content) ?? [], [commentPages?.pages]);
     const { data: members = [] } = useEventMembers(post?.eventId ?? null);
     const { data: appConfig } = useAppConfig();
     const createComment = useCreateComment(post?.eventId ?? '');
@@ -91,6 +97,9 @@ export function PostModal() {
         <PostCommentsPanel
             post={post}
             comments={comments}
+            hasMoreComments={hasMoreComments}
+            isLoadingMoreComments={isLoadingMoreComments}
+            onLoadMoreComments={fetchMoreComments}
             membersById={membersById}
             timeAgo={timeAgo}
             commentText={commentText}

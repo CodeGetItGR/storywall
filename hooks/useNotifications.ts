@@ -1,9 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { type InfiniteData, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
-import { normalizeList } from '@/lib/api/pagination';
+import type { Page } from '@/lib/api/pagination';
 import type { NotificationResponseDto, NotificationUnreadCountDto } from '@/lib/api/types';
 
 export const notificationKeys = {
@@ -12,16 +12,18 @@ export const notificationKeys = {
     unreadCount: ['notifications', 'unread-count'] as const,
 };
 
-// GET /api/notifications — always scoped to the caller's own inbox.
+const NOTIFICATIONS_PAGE_SIZE = 30;
+
+// GET /api/notifications — always scoped to the caller's own inbox. Paginated, newest first.
 export function useNotifications() {
     const { isAuthenticated } = useAuth();
 
-    return useQuery({
+    return useInfiniteQuery({
         queryKey: notificationKeys.all,
-        queryFn: async () => {
-            const res = await api.get<NotificationResponseDto[]>(endpoints.notifications.list);
-            return normalizeList(res).items;
-        },
+        queryFn: ({ pageParam }) =>
+            api.get<Page<NotificationResponseDto>>(`${endpoints.notifications.list}?page=${pageParam}&size=${NOTIFICATIONS_PAGE_SIZE}`),
+        initialPageParam: 0,
+        getNextPageParam: (lastPage) => (lastPage.number + 1 < lastPage.totalPages ? lastPage.number + 1 : undefined),
         enabled: isAuthenticated,
     });
 }
@@ -48,10 +50,17 @@ export function useMarkNotificationRead() {
         // and a failed call just leaves the server truth to the refetch below.
         onMutate: async (id: string) => {
             await queryClient.cancelQueries({ queryKey: notificationKeys.all });
-            const previous = queryClient.getQueryData<NotificationResponseDto[]>(notificationKeys.all);
-            queryClient.setQueryData<NotificationResponseDto[]>(notificationKeys.all, (rows) =>
-                rows?.map((row) => (row.id === id && !row.readAt ? { ...row, readAt: new Date().toISOString() } : row))
-            );
+            const previous = queryClient.getQueryData<InfiniteData<Page<NotificationResponseDto>>>(notificationKeys.all);
+            queryClient.setQueryData<InfiniteData<Page<NotificationResponseDto>>>(notificationKeys.all, (data) => {
+                if (!data) return data;
+                return {
+                    ...data,
+                    pages: data.pages.map((page) => ({
+                        ...page,
+                        content: page.content.map((row) => (row.id === id && !row.readAt ? { ...row, readAt: new Date().toISOString() } : row)),
+                    })),
+                };
+            });
             return { previous };
         },
         onError: (_error, _id, context) => {

@@ -8,6 +8,7 @@ import { PostCommentForm } from '@/components/feed/post/PostCommentForm';
 import { PostHeader } from '@/components/feed/post/PostHeader';
 import { ReactionCount } from '@/components/feed/post/ReactionCount';
 import { Modal } from '@/components/ui/modal';
+import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
 import type { CommentResponseDto, EventMemberResponseDto, PostResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
@@ -16,6 +17,9 @@ import { CommentsList } from './CommentsList';
 interface PostCommentsPanelProps {
     post: PostResponseDto;
     comments: CommentResponseDto[];
+    hasMoreComments: boolean;
+    isLoadingMoreComments: boolean;
+    onLoadMoreComments: () => void;
     membersById: Map<string, EventMemberResponseDto>;
     timeAgo: { unit: 'now' | 'minutes' | 'hours' | 'days'; value: number };
     commentText: string;
@@ -30,6 +34,9 @@ interface PostCommentsPanelProps {
 export function PostCommentsPanel({
     post,
     comments,
+    hasMoreComments,
+    isLoadingMoreComments,
+    onLoadMoreComments,
     membersById,
     timeAgo,
     commentText,
@@ -41,6 +48,7 @@ export function PostCommentsPanel({
     maxCommentLength,
 }: PostCommentsPanelProps) {
     const t = useTranslations('PostModal');
+    const loadMoreRef = useInfiniteScrollSentinel(hasMoreComments, onLoadMoreComments, comments.length);
 
     return (
         <>
@@ -57,9 +65,11 @@ export function PostCommentsPanel({
                 })}
             >
                 <h3 className="text-sm font-bold text-ink mb-4">
-                    {comments.length === 0 ? t('noCommentsYet') : t('commentCount', { count: comments.length })}
+                    {post.commentCount === 0 ? t('noCommentsYet') : t('commentCount', { count: post.commentCount })}
                 </h3>
                 <CommentsList comments={comments} membersById={membersById} />
+                <div ref={loadMoreRef} className="h-1" />
+                {isLoadingMoreComments && <p className="pt-2 text-center text-xs text-ink-muted">{t('loadingMore')}</p>}
             </Modal.Body>
 
             <PostCommentForm

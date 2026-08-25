@@ -11,6 +11,7 @@ export * from './useEventSessions';
 export * from './useGalleryArchive';
 export * from './useGallerySelection';
 export * from './useGiftAccount';
+export * from './useInfiniteScrollSentinel';
 export * from './useMedia';
 export * from './useMyEvents';
 export * from './useNotifications';

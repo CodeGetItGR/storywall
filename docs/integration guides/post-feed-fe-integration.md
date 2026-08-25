@@ -143,19 +143,22 @@ async function loadNextPage() {
 
 ## What did NOT change
 
-These sub-resource endpoints still exist, unchanged, for when you need the full list
-rather than just a count:
+These sub-resource endpoints still exist for when you need the full list rather than just
+a count — except `comments`, which is now paginated too (2026-08-25):
 
 ```
-GET /api/posts/{postId}/comments   → CommentResponseDto[]  (full comment thread)
-GET /api/posts/{postId}/reactions  → ReactionResponseDto[] (full reactor list)
+GET /api/posts/{postId}/comments   → Page<CommentResponseDto>  — see
+                                      comments-pagination-fe-integration.md
+GET /api/posts/{postId}/reactions  → ReactionResponseDto[] (full reactor list, unchanged)
 GET /api/posts/{postId}/media      → PostMediaResponseDto[] (rarely needed now —
                                       the feed already embeds resolved media)
 ```
 
 Use `commentCount`/`reactionCount` from the feed row to decide *whether* to show a
 "3 comments" affordance; only call `GET /api/posts/{postId}/comments` when the user
-actually expands it.
+actually expands it — see
+[`comments-pagination-fe-integration.md`](comments-pagination-fe-integration.md) for the
+paginated shape and why it sorts oldest-first.
 
 `GET /api/posts/{id}` (single post) and `POST /api/posts` (create) return the same
 enriched `PostResponseDto` shape shown above — no pagination envelope, since they're

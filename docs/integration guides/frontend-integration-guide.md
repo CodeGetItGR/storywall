@@ -12,9 +12,15 @@ guides it links out to:
 [`app-config-fe-integration.md`](app-config-fe-integration.md),
 [`billing-fe-guide.md`](billing-fe-guide.md) (plans, payments, subscriptions, refunds — see the
 "Billing & payments" entry in §1 below),
-[`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-integration.md), and
+[`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-integration.md),
 [`gallery-archive-download-fe-integration.md`](gallery-archive-download-fe-integration.md)
-(host-only bulk gallery zip download).
+(host-only bulk gallery zip download), and
+[`gallery-media-pagination-fe-integration.md`](gallery-media-pagination-fe-integration.md)
+(the gallery listing itself is now paginated), and
+[`admin-list-endpoints-pagination-fe-integration.md`](admin-list-endpoints-pagination-fe-integration.md)
+(users, audit logs, moderation actions, reports, and telemetry events are now paginated), and
+[`comments-pagination-fe-integration.md`](comments-pagination-fe-integration.md) (post
+comment threads are now paginated, oldest first).
 
 This doc was originally written 2026-08-04 directly from the controller/DTO source. Refreshed
 2026-08-09 to correct a stale claim that no billing integration existed — it now does,
@@ -30,7 +36,11 @@ a pending-invitation flow.
   `frontend-api-types.ts`. Validation failures (400) carry `errors.<fieldName>`.
 - **Pagination**: some list endpoints return `Page<T>` (Spring Data shape:
   `content`/`totalElements`/`totalPages`/`number`/`size`), not a bare array — currently
-  `GET /api/events/{eventId}/posts` and `GET /api/events/{eventId}/wishbook`. Every other list
+  `GET /api/events/{eventId}/posts`, `GET /api/events/{eventId}/wishbook`,
+  `GET /api/events/{eventId}/media`, `GET /api/notifications`, `GET /api/users`,
+  `GET /api/audit-logs`, `GET /api/moderation-actions`, `GET /api/reports`,
+  `GET /api/telemetry-events`, and `GET /api/posts/{postId}/comments` (the last one sorts
+  oldest-first — every other paginated endpoint sorts newest-first). Every other list
   endpoint below returns a plain `T[]`. Don't assume one shape across all list endpoints.
 - **Media URLs are not permanent.** `MediaResponseDto.mediaUrl` is a presigned, time-limited
   Cloudflare R2 GET URL. Don't persist it client-side beyond the current session/cache window
@@ -127,11 +137,11 @@ collect `mediaId`s → `POST /api/posts` with `mediaIds`. Batch upload always re
 with presigned URLs resolved — no separate fetch needed for the grid/lightbox/carousel. For a
 single media record: `GET /api/medias/{id}`.
 
-### Comments
+### Comments — paginated (2026-08-25) ⚠️ BREAKING
 
 | Method | Path | Auth | Notes |
 |---|---|---|---|
-| GET | `/api/posts/{postId}/comments` | authenticated | flat list, not paginated, no nested-reply tree — `parentCommentId` is on the DTO but building threading is a client-side concern |
+| GET | `/api/posts/{postId}/comments` | authenticated | Now returns a **page** (`Page<CommentResponseDto>`), oldest first, 30/page default (max 100). No nested-reply tree in the response — `parentCommentId` is on the DTO but building threading is still a client-side concern. See [`comments-pagination-fe-integration.md`](comments-pagination-fe-integration.md) for why it sorts oldest-first (unlike every other paginated endpoint) and a migration checklist. |
 | POST | `/api/comments` | authenticated | |
 | DELETE | `/api/comments/{id}` | authenticated | |
 
@@ -285,7 +295,7 @@ This means **`GET /api/playlist-suggestions/{suggestionId}/votes` is no longer n
 with `GET /api/events/{id}` per event for cover image / member count if the list view needs
 more than the membership record carries.
 
-### Notifications — repurposed for hosts (2026-08-04) ⚠️ BREAKING
+### Notifications — repurposed for hosts (2026-08-04), paginated (2026-08-25) ⚠️ BREAKING
 
 The notification feature no longer targets guests with social activity ("X liked your post"). It
 now delivers **operational messages to event hosts**: approaching usage limits, upgrade offers, and
@@ -301,12 +311,13 @@ creates one.
 | `recipientMemberId` is now **nullable** | Account-level notifications have no membership. Any code dereferencing it unguarded will break. |
 | `DELETE` is now a **soft** delete | The notification disappears from the feed but the row is retained (it suppresses re-notification). Behaviourally the same to you; still returns `200`. |
 | Feed now **excludes** expired and dismissed rows | No client-side filtering needed. |
+| `GET /api/notifications` now returns `Page<NotificationResponseDto>`, not an array (2026-08-25) | Read `response.content`, not the response itself. Default 30/page, max 100, via `?page=&size=`. `?unreadOnly=true` still works, combined with paging params. See [`Page<T>`](../frontend-api-types.ts) and the reusable paging loop in [`post-feed-fe-integration.md`](post-feed-fe-integration.md#pagination-ui). |
 
 #### Endpoints
 
 | Method | Path | Auth | Notes |
 |---|---|---|---|
-| GET | `/api/notifications` | authenticated | The caller's feed, newest first, across all their events. Excludes dismissed and expired. Optional `?unreadOnly=true`. |
+| GET | `/api/notifications` | authenticated | A **page** of the caller's feed, newest first, across all their events. Excludes dismissed and expired. Optional `?unreadOnly=true`, `?page=`, `?size=` (default 30, max 100). |
 | GET | `/api/notifications/unread-count` | authenticated | `{ "unreadCount": 3 }` — for the badge, without fetching the feed. |
 | GET | `/api/notifications/{id}` | authenticated | `403` for non-recipients. |
 | PATCH | `/api/notifications/{id}/read` | authenticated | Idempotent; returns the updated DTO. |
@@ -449,6 +460,14 @@ unchanged data returns all zeroes. Useful for an admin panel button ("run sweep 
 demoing the notification feed without waiting for the hourly cron.
 
 There is deliberately no admin endpoint to send an arbitrary notification or email to users.
+
+### Admin — list endpoint pagination (2026-08-25) ⚠️ BREAKING
+
+`GET /api/users`, `GET /api/audit-logs`, `GET /api/moderation-actions`, `GET /api/reports`, and
+`GET /api/telemetry-events` (all `ROLE_ADMIN`) used to return their entire table in one response;
+each now returns a `Page<T>` instead, 50/page by default (max 100), newest first. Full details,
+example response, and a migration checklist in
+[`admin-list-endpoints-pagination-fe-integration.md`](admin-list-endpoints-pagination-fe-integration.md).
 
 ### Other endpoints with hooks already built, but no UI wired to them yet
 

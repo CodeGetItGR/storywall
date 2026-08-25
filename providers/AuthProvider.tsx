@@ -93,18 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const value: AuthContextValue = useMemo(
         () => ({ user, isAuthenticated, isBootstrapping, register, login, guestLogin, logout }),
         // eslint-disable-next-line react-hooks/exhaustive-deps -- `user` is derived fresh from authState each render; comparing its fields keeps this memo from invalidating on every authState change that doesn't actually affect them.
-        [
-            authState.accessToken,
-            authState.userId,
-            authState.email,
-            authState.displayName,
-            authState.role,
-            isBootstrapping,
-            register,
-            login,
-            guestLogin,
-            logout,
-        ]
+        [isBootstrapping, register, login, guestLogin, logout, isAuthenticated]
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

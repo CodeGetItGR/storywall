@@ -1,8 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
-import { normalizeList } from '@/lib/api/pagination';
+import type { Page } from '@/lib/api/pagination';
 import type { MediaBatchUploadResponseDto, MediaResponseDto, OriginalMediaUrlDto } from '@/lib/api/types';
 
 export const mediaKeys = {
@@ -10,14 +10,15 @@ export const mediaKeys = {
     detail: (id: string) => ['medias', id] as const,
 };
 
-// GET /api/events/{eventId}/media — any event member.
+const MEDIA_PAGE_SIZE = 30;
+
+// GET /api/events/{eventId}/media — any event member. Paginated, newest first.
 export function useEventMedia(eventId: string | null) {
-    return useQuery({
+    return useInfiniteQuery({
         queryKey: mediaKeys.list(eventId ?? ''),
-        queryFn: async () => {
-            const res = await api.get<MediaResponseDto[]>(endpoints.events.media(eventId!));
-            return normalizeList(res).items;
-        },
+        queryFn: ({ pageParam }) => api.get<Page<MediaResponseDto>>(`${endpoints.events.media(eventId!)}?page=${pageParam}&size=${MEDIA_PAGE_SIZE}`),
+        initialPageParam: 0,
+        getNextPageParam: (lastPage) => (lastPage.number + 1 < lastPage.totalPages ? lastPage.number + 1 : undefined),
         enabled: Boolean(eventId),
     });
 }

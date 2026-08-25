@@ -111,6 +111,8 @@ interface UserResponseDto {
   status: AccountStatus; platformRole: PlatformRole;
   createdAt: string; updatedAt: string; deletedAt: string | null;
 }
+// GET /api/users now returns Page<UserResponseDto>, not UserResponseDto[].
+// Default 50/page, max 100 (?page=&size=), sorted createdAt desc then id desc (newest first).
 
 /** Read-only — no request DTO. POST /api/sessions was removed entirely. */
 interface SessionResponseDto {
@@ -165,6 +167,9 @@ interface NotificationResponseDto {
   createdAt: string;
   deletedAt: string | null;
 }
+// GET /api/notifications now returns Page<NotificationResponseDto>, not NotificationResponseDto[].
+// Default 30/page, max 100 (?page=&size=), sorted createdAt desc then id desc (newest first).
+// unreadOnly is unaffected — still ?unreadOnly=true, now combined with &page=&size=.
 
 // ---------------------------------------------------------------------------
 // Plans and usage
@@ -431,6 +436,8 @@ interface MediaResponseDto {
   metadata: Record<string, unknown>;
   createdAt: string; deletedAt: string | null;
 }
+// GET /api/events/{eventId}/media now returns Page<MediaResponseDto>, not MediaResponseDto[].
+// Default 30/page, max 100 (?page=&size=), sorted createdAt desc then id desc (newest first).
 
 /** Response of POST /api/events/{eventId}/media/batch — always 200, even if every file failed. */
 interface MediaBatchUploadResponseDto {
@@ -525,6 +532,10 @@ interface CommentResponseDto {
   id: string; postId: string; authorMemberId: string | null; parentCommentId: string | null;
   content: string; createdAt: string; updatedAt: string; deletedAt: string | null;
 }
+// GET /api/posts/{postId}/comments now returns Page<CommentResponseDto>, not CommentResponseDto[].
+// Default 30/page, max 100 (?page=&size=), sorted createdAt ASC then id ASC (oldest first — unlike
+// every other paginated endpoint, which sorts newest first) so a reply's parent is guaranteed to
+// appear on the same page or an earlier one, never a later one.
 
 interface ReactionRequestDto { postId: string; memberId: string; reactionType: string; } // all required, reactionType max 20
 interface ReactionResponseDto { id: string; postId: string; memberId: string; reactionType: string; createdAt: string; }
@@ -604,6 +615,8 @@ interface AuditLogResponseDto {
   id: string; eventId: string | null; actorMemberId: string | null; action: string; entityType: string;
   entityId: string | null; changes: Record<string, unknown>; ipAddress: string | null; createdAt: string;
 }
+// GET /api/audit-logs now returns Page<AuditLogResponseDto>, not AuditLogResponseDto[].
+// Default 50/page, max 100 (?page=&size=), sorted createdAt desc then id desc (newest first).
 
 interface ModerationActionRequestDto {
   eventId: string; // required
@@ -617,6 +630,8 @@ interface ModerationActionResponseDto {
   id: string; eventId: string; moderatorMemberId: string | null; targetType: string; targetId: string;
   actionType: string; reason: string | null; createdAt: string;
 }
+// GET /api/moderation-actions now returns Page<ModerationActionResponseDto>, not ModerationActionResponseDto[].
+// Default 50/page, max 100 (?page=&size=), sorted createdAt desc then id desc (newest first).
 
 interface ReportRequestDto {
   reporterMemberId?: string; // sent but IGNORED server-side — bound to the caller automatically
@@ -635,6 +650,8 @@ interface ReportResponseDto {
   reason: string; description: string | null; status: string | null; reviewedByMemberId: string | null;
   reviewedAt: string | null; resolutionNotes: string | null; createdAt: string; updatedAt: string;
 }
+// GET /api/reports now returns Page<ReportResponseDto>, not ReportResponseDto[].
+// Default 50/page, max 100 (?page=&size=), sorted createdAt desc then id desc (newest first).
 
 interface TelemetryEventRequestDto {
   eventName: string; // required, max 100
@@ -649,6 +666,8 @@ interface TelemetryEventResponseDto {
   sessionId: string | null; platform: string | null; ipAddress: string | null; userAgent: string | null;
   payload: Record<string, unknown>; createdAt: string;
 }
+// GET /api/telemetry-events now returns Page<TelemetryEventResponseDto>, not TelemetryEventResponseDto[].
+// Default 50/page, max 100 (?page=&size=), sorted createdAt desc then id desc (newest first).
 
 interface PlatformFeatureFlagRequestDto {
   featureKey: string;  // required, max 100

@@ -2,12 +2,13 @@
 
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { FeedPageSkeleton } from '@/components/feed/FeedPageSkeleton';
 import { useEventPosts } from '@/hooks';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEvent } from '@/hooks/useEvent';
+import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
 import { useRsvp } from '@/hooks/useRsvps';
 import { ApiError } from '@/lib/api/client';
 import { EVENT_MODULE_KEYS, type ModuleKeyConvention } from '@/lib/api/types';
@@ -21,7 +22,6 @@ import { FeedPageProvider } from './FeedPageContext';
 export function FeedPageBoundary({ eventId }: { eventId: string }) {
     const t = useTranslations('FeedPage');
     const router = useRouter();
-    const loadMoreRef = useRef<HTMLDivElement>(null);
     const activeMember = useActiveMember();
     const isHost = useIsHost();
     const memberId = activeMember?.id ?? null;
@@ -31,17 +31,7 @@ export function FeedPageBoundary({ eventId }: { eventId: string }) {
     const { setActiveEventId } = useEventSwitcher();
     const { data: postPages, fetchNextPage, hasNextPage, isFetchingNextPage } = useEventPosts(eventId);
     const posts = useMemo(() => postPages?.pages.flatMap((page) => page.content) ?? [], [postPages?.pages]);
-
-    useEffect(() => {
-        const sentinel = loadMoreRef.current;
-        if (!sentinel || !hasNextPage) return;
-
-        const observer = new IntersectionObserver(([entry]) => {
-            if (entry.isIntersecting) fetchNextPage();
-        });
-        observer.observe(sentinel);
-        return () => observer.disconnect();
-    }, [hasNextPage, fetchNextPage, posts.length]);
+    const loadMoreRef = useInfiniteScrollSentinel(hasNextPage, fetchNextPage, posts.length);
 
     useEffect(() => {
         if (event) setActiveEventId(eventId);

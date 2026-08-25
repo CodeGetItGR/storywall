@@ -19,7 +19,8 @@ interface PlaylistDigestCardProps {
 export function PlaylistDigestCard({ post }: PlaylistDigestCardProps) {
     const t = useTranslations('PostCard');
     const timeAgo = useMemo(() => timeAgoParts(post.createdAt), [post.createdAt]);
-    const { data: comments = [] } = usePostComments(post.id);
+    const { data: commentPages } = usePostComments(post.id);
+    const comments = useMemo(() => commentPages?.pages.flatMap((page) => page.content) ?? [], [commentPages?.pages]);
     const { data: members = [] } = useEventMembers(post.eventId);
     const visibleComments = useMemo(() => comments.slice(0, 3), [comments]);
     const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);

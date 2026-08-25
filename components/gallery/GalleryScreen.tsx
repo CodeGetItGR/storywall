@@ -15,6 +15,7 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventBilling } from '@/hooks/useBilling';
 import { useGallerySelection } from '@/hooks/useGallerySelection';
+import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
 import { useEventMedia, useOriginalMedia, useUploadMediaBatch } from '@/hooks/useMedia';
 import type { MediaResponseDto } from '@/lib/api/types';
 import { formatShortDateTime } from '@/lib/datetime';
@@ -40,7 +41,9 @@ export function GalleryScreen() {
     const [isDownloadingSelection, setIsDownloadingSelection] = useState(false);
     const [archiveDownloadOpen, setArchiveDownloadOpen] = useState(false);
 
-    const { data: media = [], isLoading: isLoadingMedia } = useEventMedia(eventId);
+    const { data: mediaPages, isLoading: isLoadingMedia, fetchNextPage, hasNextPage, isFetchingNextPage } = useEventMedia(eventId);
+    const media = useMemo(() => mediaPages?.pages.flatMap((page) => page.content) ?? [], [mediaPages?.pages]);
+    const loadMoreRef = useInfiniteScrollSentinel(hasNextPage, fetchNextPage, media.length);
     const uploadMediaBatch = useUploadMediaBatch();
     const originalMedia = useOriginalMedia();
     const { data: appConfig } = useAppConfig();
@@ -445,6 +448,8 @@ export function GalleryScreen() {
                         })}
                     </div>
                 )}
+                <div ref={loadMoreRef} className="h-1" />
+                {isFetchingNextPage && <p className="py-4 text-center text-sm text-ink-muted">{t('loadingMore')}</p>}
             </section>
 
             {/* Viewer */}

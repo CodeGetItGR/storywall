@@ -32,7 +32,8 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const timeAgo = useMemo(() => timeAgoParts(post.createdAt), [post.createdAt]);
     const media = post.media;
     const isHostPost = post.author?.role === 'HOST';
-    const { data: comments = [] } = usePostComments(post.id);
+    const { data: commentPages } = usePostComments(post.id);
+    const comments = useMemo(() => commentPages?.pages.flatMap((page) => page.content) ?? [], [commentPages?.pages]);
     const { data: members = [] } = useEventMembers(post.eventId);
 
     const activeEvent = useActiveEvent();

@@ -425,6 +425,7 @@
         },
         "loadError": "We couldn't load your notifications. Please try again.",
         "delete": "Delete notification",
+        "loadingMore": "Loading more…",
         "generic": {
             "title": "You have a new update"
         },
@@ -475,6 +476,7 @@
         "eventReadOnly": "This event is read-only. Comments are paused.",
         "commentFailed": "Couldn't post your comment. Please try again.",
         "moduleUnavailable": "Comments are not available on this event's current plan.",
+        "loadingMore": "Loading more…",
         "previousMedia": "Previous photo",
         "nextMedia": "Next photo",
         "showComments": "Show comments",
@@ -2146,7 +2148,8 @@
         "libraryTitle": "Event photos",
         "photoCount": "{count} photos",
         "emptyTitle": "No photos yet",
-        "guestSavedForHost": "Uploaded photos are saved privately to the event gallery for the host to review later."
+        "guestSavedForHost": "Uploaded photos are saved privately to the event gallery for the host to review later.",
+        "loadingMore": "Loading more…"
     },
     "ApiErrors": {
         "generic": "Something went wrong. Please try again.",

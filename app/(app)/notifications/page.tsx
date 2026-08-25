@@ -6,6 +6,7 @@ import { type MouseEvent, useCallback, useMemo, useState } from 'react';
 
 import { NotificationRow } from '@/components/notifications/NotificationRow';
 import { PageErrorState } from '@/components/ui/PageErrorState';
+import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
 import { useMarkAllNotificationsRead, useNotifications, useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { isBillingNotification } from '@/lib/notifications';
 import { cn } from '@/lib/utils';
@@ -20,7 +21,8 @@ export default function NotificationsPage() {
     const markAllRead = useMarkAllNotificationsRead();
     const [filter, setFilter] = useState<CategoryFilter>('all');
 
-    const notifications = useMemo(() => notificationsQuery.data ?? [], [notificationsQuery.data]);
+    const notifications = useMemo(() => notificationsQuery.data?.pages.flatMap((page) => page.content) ?? [], [notificationsQuery.data?.pages]);
+    const loadMoreRef = useInfiniteScrollSentinel(notificationsQuery.hasNextPage, notificationsQuery.fetchNextPage, notifications.length);
     const visible = useMemo(() => {
         if (filter === 'billing') return notifications.filter(isBillingNotification);
         if (filter === 'activity') return notifications.filter((notification) => !isBillingNotification(notification));
@@ -117,6 +119,8 @@ export default function NotificationsPage() {
                             ))}
                         </section>
                     )}
+                    <div ref={loadMoreRef} className="h-1" />
+                    {notificationsQuery.isFetchingNextPage && <p className="py-4 text-center text-sm text-ink-muted">{t('loadingMore')}</p>}
                 </div>
             )}
         </div>
