@@ -189,6 +189,10 @@ export function GalleryScreen() {
         gallerySelection.startLongPressSelection(event, id);
     }
 
+    const handleMediaContextMenu = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+        event.preventDefault();
+    }, []);
+
     function enterSelectionMode() {
         gallerySelection.enterSelectionMode();
         setSelectionDownloadError(null);
@@ -411,10 +415,12 @@ export function GalleryScreen() {
                                     onPointerCancel={gallerySelection.stopLongPressSelection}
                                     onPointerLeave={gallerySelection.stopLongPressSelection}
                                     onClick={openMedia}
+                                    onContextMenu={handleMediaContextMenu}
                                     className={cn(
                                         'group overflow-hidden rounded-2xl border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md',
+                                        'touch-pan-y select-none [-webkit-touch-callout:none]',
                                         isSelected ? 'border-primary ring-4 ring-primary/15' : 'border-border',
-                                        gallerySelection.selectionMode && 'touch-none'
+                                        gallerySelection.selectionMode && 'cursor-grab active:cursor-grabbing'
                                     )}
                                 >
                                     <div className="relative aspect-square bg-surface-muted">
@@ -423,6 +429,7 @@ export function GalleryScreen() {
                                             alt={item.originalFilename}
                                             fill
                                             sizes="(min-width: 1024px) 25vw, 50vw"
+                                            draggable={false}
                                             className={cn(
                                                 'object-cover transition-transform group-hover:scale-[1.02]',
                                                 isSelected && 'brightness-75'

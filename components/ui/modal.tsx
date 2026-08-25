@@ -51,37 +51,39 @@ export function Modal({
     return (
         <Dialog.Root open={open} onOpenChange={onOpenChange}>
             <Dialog.Portal>
+                {/* Backdrop */}
                 {/* Base UI skips the backdrop of a nested dialog, which left confirmations
                     floating over a fully lit editor and read as two competing windows.
                     Forcing it keeps the dialog on top the only lit layer. */}
-                <Dialog.Backdrop forceRender className="fixed inset-0 z-50 bg-ink/60 backdrop-blur-sm" />
+                <Dialog.Backdrop forceRender className="motion-overlay fixed inset-0 z-50 bg-ink/60 opacity-100 backdrop-blur-sm" />
+                {/* Surface */}
                 <Dialog.Popup
                     aria-label={ariaLabel}
                     className={cn(
-                        'fixed z-50 flex flex-col bg-background outline-none',
+                        'motion-surface fixed z-50 flex flex-col bg-background outline-none',
                         isFull
-                            ? 'inset-0 w-screen h-dvh max-h-dvh rounded-none'
+                            ? 'inset-0 h-dvh max-h-dvh w-screen rounded-none data-ending-style:opacity-0 data-starting-style:opacity-0'
                             : isDrawer
                               ? cn(
                                     'inset-y-0 left-0 h-dvh w-[min(88vw,22.5rem)] overflow-hidden rounded-r-[1.75rem] shadow-[18px_0_50px_rgba(36,31,26,0.18)]',
-                                    'transition-[transform,opacity] duration-300 ease-out motion-safe:data-starting-style:-translate-x-full motion-safe:data-starting-style:opacity-0',
-                                    'motion-safe:data-ending-style:translate-x-0 motion-safe:data-ending-style:opacity-100'
+                                    'data-ending-style:-translate-x-full data-ending-style:opacity-0 data-starting-style:-translate-x-full data-starting-style:opacity-0'
                                 )
                               : isSheet
                                 ? cn(
                                       'inset-x-0 bottom-0 mx-auto w-[calc(100vw-1rem)] max-h-[88dvh] overflow-hidden rounded-t-[1.75rem] rounded-b-none shadow-[0_-18px_50px_rgba(36,31,26,0.18)]',
-                                      'transition-[transform,opacity] duration-300 ease-out motion-safe:data-starting-style:translate-y-full motion-safe:data-starting-style:opacity-0',
-                                      'motion-safe:data-ending-style:translate-y-0 motion-safe:data-ending-style:opacity-100',
+                                      'data-ending-style:translate-y-full data-ending-style:opacity-0 data-starting-style:translate-y-full data-starting-style:opacity-0',
                                       'sm:bottom-6 sm:max-w-2xl sm:rounded-b-3xl sm:rounded-t-3xl sm:shadow-[0_24px_60px_rgba(36,31,26,0.22)]'
                                   )
                                 : cn(
                                       'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
                                       'w-[calc(100vw-2rem)] max-h-[90dvh] overflow-hidden rounded-2xl',
+                                      'scale-100 data-ending-style:scale-[0.96] data-ending-style:opacity-0 data-starting-style:scale-[0.96] data-starting-style:opacity-0',
                                       sizeMap[size]
                                   ),
                         className
                     )}
                 >
+                    {/* Close */}
                     <Dialog.Close
                         aria-label={closeLabel}
                         className={cn(

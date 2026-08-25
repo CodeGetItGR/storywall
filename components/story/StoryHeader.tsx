@@ -73,10 +73,10 @@ export function StoryHeader({
             </div>
 
             {canManage && showMenu && canDelete && (
-                <div className="absolute top-16 right-4 z-30 bg-background rounded-xl shadow-lg overflow-hidden">
+                <div className="motion-popover-enter absolute top-16 right-4 z-30 overflow-hidden rounded-xl bg-background shadow-lg">
                     <button
                         onClick={onDeleteRequest}
-                        className="px-4 py-2.5 text-sm text-destructive hover:bg-surface-muted transition-colors whitespace-nowrap disabled:opacity-50"
+                        className="motion-menu-item whitespace-nowrap px-4 py-2.5 text-sm text-destructive hover:bg-surface-muted disabled:opacity-50"
                     >
                         {t('deleteStory')}
                     </button>

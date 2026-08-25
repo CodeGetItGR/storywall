@@ -21,6 +21,21 @@
 - Do not keep stale guard variables that can hide valid UI. Empty, loading, and error states should be explicit and tied to the data they actually depend on.
 - Prefer `React.SubmitEvent` for form submit handlers instead of `FormEvent`.
 
+## Data Fetching
+
+- Default every new or refactored page to server-side prefetch + hydrate, not client fetch-on-mount. If a page/layout renders data owned by Spring and the route (or a server-resolvable context like the active event) already tells you what to fetch, fetch it in the server `page.tsx`/`layout.tsx` before the client ever mounts. A client component doing `useQuery`/`useInfiniteQuery` for known, route-derivable data with no server prefetch is a regression to flag, not the default.
+- The pattern (see [app/(app)/(event)/tools/gallery/page.tsx](<app/(app)/(event)/tools/gallery/page.tsx>), [app/(app)/(event)/manage/page.tsx](<app/(app)/(event)/manage/page.tsx>), [app/(app)/(event)/tools/wishbook/page.tsx](<app/(app)/(event)/tools/wishbook/page.tsx>) for reference):
+    1. `page.tsx` (or `layout.tsx`) becomes an `async` Server Component. `PageClient.tsx` and the hooks it calls stay completely unchanged — they just find warm data in the cache on hydration.
+    2. Build a per-request `makeQueryClient()` (from [lib/queryClient.ts](lib/queryClient.ts)) — never a module-level singleton, it would leak state across requests/users.
+    3. Fetch with `serverGet<T>(path, accessToken)` ([lib/api/serverFetch.ts](lib/api/serverFetch.ts)), using the access token off `ACCESS_TOKEN_HEADER` from `headers()` (set by `proxy.ts`), or — when the page needs "the active event" rather than an id already in the URL — via `resolveServerEventContext()` ([lib/auth/serverEventContext.ts](lib/auth/serverEventContext.ts)), which also exposes `isHost` for gating host-only calls.
+    4. Seed the cache with `queryClient.setQueryData(key, data)` using the **exact same query key factory the client hook exports** (e.g. `postKeys.list(eventId)`, `mediaKeys.list(eventId)`) — a mismatched key means the client refetches and the prefetch was wasted. For an infinite query, seed the `InfiniteData` shape the hook expects: `{ pages: [firstPage], pageParams: [0] }`, matching its `initialPageParam`.
+    5. Wrap the child in `<HydrationBoundary state={dehydrate(queryClient)}>`.
+    6. Wrap every prefetch call in try/catch and do nothing on failure (no thrown error, no fallback UI) — a stale/expired token or a transient Spring error should silently fall through to the client's normal fetch, never break the page. This mirrors `serverGet`'s own "best-effort" contract.
+    7. Mirror the client screen's own gating exactly (host-only, draft-state, etc.) — a prefetch for data the client wouldn't have requested anyway is wasted work, not a performance win.
+- Export a hook's page size constant and query key factory whenever a server prefetch needs to build the same query key or paginated request the hook uses internally, instead of duplicating the literal.
+- Next.js dedupes identical `fetch()` calls (same URL + headers) automatically within one render pass, so calling `resolveServerEventContext()` from both a layout and a child page is not a double network hit — don't hand-roll caching to avoid it.
+- This pattern only applies to reads. Do not attempt to prefetch or hydrate mutation state, and never move a mutation server-side just to mirror this pattern.
+
 ## Reuse
 
 - Reuse existing components and utilities before creating new abstractions.

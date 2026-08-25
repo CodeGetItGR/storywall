@@ -79,6 +79,7 @@ export function MobileTabBar() {
 
     return (
         <>
+            {/* Navigation */}
             <div className="fixed bottom-0 left-1/2 z-40 w-full max-w-lg -translate-x-1/2 lg:hidden">
                 <nav
                     aria-label={t('eventNavigation')}
@@ -147,56 +148,60 @@ export function MobileTabBar() {
                 </nav>
             </div>
 
+            {/* Account */}
             <div id="mobile-account-drawer">
                 <AccountDrawer open={accountOpen} onCloseAction={handleCloseAccount} />
             </div>
 
             {showEventActions && (canComposePost || canComposeStory || canComposeSong) && (
-                <Menu.Root>
-                    <Menu.Trigger
-                        aria-label={t('compose')}
-                        className="group fixed bottom-20 right-4 z-100 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md transition-transform hover:scale-105 lg:hidden"
-                    >
-                        <Plus
-                            className="h-6 w-6 text-white transition-transform duration-200 ease-out group-data-[popup-open]:rotate-45"
-                            strokeWidth={2.5}
-                        />
-                    </Menu.Trigger>
-                    <Menu.Portal>
-                        <Menu.Backdrop className="fixed inset-0 z-45 bg-black/10 backdrop-blur-[2px]" />
-                        <Menu.Positioner side="top" align="end" sideOffset={8} className="z-50">
-                            <Menu.Popup className="flex w-46 flex-col gap-2 border-0 bg-transparent p-0 shadow-none outline-none">
-                                {canComposePost && (
-                                    <Menu.Item
-                                        onClick={openPostComposer}
-                                        className="flex min-h-14 cursor-pointer items-center justify-between rounded-[1.45rem] border border-[#efc0dc] bg-background px-5 text-sm font-medium text-ink shadow-[0_6px_18px_rgba(36,31,26,0.08)] outline-none transition-transform hover:-translate-y-0.5 hover:border-[#f0b47f]"
-                                    >
-                                        {t('composeMenu.post')}
-                                        <Camera className="h-5 w-5 shrink-0 text-ink" aria-hidden="true" strokeWidth={1.8} />
-                                    </Menu.Item>
-                                )}
-                                {canComposeStory && (
-                                    <Menu.Item
-                                        onClick={openStoryCapture}
-                                        className="flex min-h-14 cursor-pointer items-center justify-between rounded-[1.45rem] border border-[#efc0dc] bg-background px-5 text-sm font-medium text-ink shadow-[0_6px_18px_rgba(36,31,26,0.08)] outline-none transition-transform hover:-translate-y-0.5 hover:border-[#f0b47f]"
-                                    >
-                                        {t('composeMenu.story')}
-                                        <PlusCircle className="h-5 w-5 shrink-0 text-ink" aria-hidden="true" strokeWidth={1.8} />
-                                    </Menu.Item>
-                                )}
-                                {canComposeSong && (
-                                    <Menu.Item
-                                        onClick={openSongComposer}
-                                        className="flex min-h-14 cursor-pointer items-center justify-between rounded-[1.45rem] border border-[#efc0dc] bg-background px-5 text-sm font-medium text-ink shadow-[0_6px_18px_rgba(36,31,26,0.08)] outline-none transition-transform hover:-translate-y-0.5 hover:border-[#f0b47f]"
-                                    >
-                                        {t('composeMenu.song')}
-                                        <Music2 className="h-5 w-5 shrink-0 text-ink" aria-hidden="true" strokeWidth={1.8} />
-                                    </Menu.Item>
-                                )}
-                            </Menu.Popup>
-                        </Menu.Positioner>
-                    </Menu.Portal>
-                </Menu.Root>
+                <>
+                    {/* Compose */}
+                    <Menu.Root>
+                        <Menu.Trigger
+                            aria-label={t('compose')}
+                            className="group fixed right-4 bottom-20 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md transition-transform hover:scale-105 data-[popup-open]:z-100 lg:hidden"
+                        >
+                            <Plus
+                                className="h-6 w-6 text-white transition-transform duration-200 ease-out group-data-[popup-open]:rotate-45"
+                                strokeWidth={2.5}
+                            />
+                        </Menu.Trigger>
+                        <Menu.Portal>
+                            <Menu.Backdrop className="motion-menu-backdrop fixed inset-0 z-45 bg-black/10 opacity-100 backdrop-blur-[2px]" />
+                            <Menu.Positioner side="top" align="end" sideOffset={8} className="z-50">
+                                <Menu.Popup className="motion-popover flex w-46 flex-col gap-2 border-0 bg-transparent p-0 shadow-none outline-none">
+                                    {canComposePost && (
+                                        <Menu.Item
+                                            onClick={openPostComposer}
+                                            className="motion-menu-item flex min-h-14 cursor-pointer items-center justify-between rounded-[1.45rem] border border-[#efc0dc] bg-background px-5 text-sm font-medium text-ink shadow-[0_6px_18px_rgba(36,31,26,0.08)] outline-none hover:-translate-y-0.5 hover:border-[#f0b47f]"
+                                        >
+                                            {t('composeMenu.post')}
+                                            <Camera className="h-5 w-5 shrink-0 text-ink" aria-hidden="true" strokeWidth={1.8} />
+                                        </Menu.Item>
+                                    )}
+                                    {canComposeStory && (
+                                        <Menu.Item
+                                            onClick={openStoryCapture}
+                                            className="motion-menu-item flex min-h-14 cursor-pointer items-center justify-between rounded-[1.45rem] border border-[#efc0dc] bg-background px-5 text-sm font-medium text-ink shadow-[0_6px_18px_rgba(36,31,26,0.08)] outline-none hover:-translate-y-0.5 hover:border-[#f0b47f]"
+                                        >
+                                            {t('composeMenu.story')}
+                                            <PlusCircle className="h-5 w-5 shrink-0 text-ink" aria-hidden="true" strokeWidth={1.8} />
+                                        </Menu.Item>
+                                    )}
+                                    {canComposeSong && (
+                                        <Menu.Item
+                                            onClick={openSongComposer}
+                                            className="motion-menu-item flex min-h-14 cursor-pointer items-center justify-between rounded-[1.45rem] border border-[#efc0dc] bg-background px-5 text-sm font-medium text-ink shadow-[0_6px_18px_rgba(36,31,26,0.08)] outline-none hover:-translate-y-0.5 hover:border-[#f0b47f]"
+                                        >
+                                            {t('composeMenu.song')}
+                                            <Music2 className="h-5 w-5 shrink-0 text-ink" aria-hidden="true" strokeWidth={1.8} />
+                                        </Menu.Item>
+                                    )}
+                                </Menu.Popup>
+                            </Menu.Positioner>
+                        </Menu.Portal>
+                    </Menu.Root>
+                </>
             )}
         </>
     );

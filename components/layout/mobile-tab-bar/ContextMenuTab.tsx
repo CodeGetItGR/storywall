@@ -33,9 +33,9 @@ export function ContextMenuTab({ active, items, label, pathname, searchParams, o
                     sideOffset={12}
                     positionMethod="fixed"
                     collisionPadding={{ top: 8, right: 12, bottom: 96, left: 12 }}
-                    className="z-50"
+                    className="z-200"
                 >
-                    <Menu.Popup className="w-64 rounded-2xl border border-border bg-background p-1 shadow-[0_2px_16px_0_rgba(36,31,26,0.15)] outline-none">
+                    <Menu.Popup className="motion-popover w-64 rounded-2xl border border-border bg-background p-1 shadow-[0_2px_16px_0_rgba(36,31,26,0.15)] outline-none">
                         {items.map((item) => {
                             const Icon = item.icon;
                             const itemActive = isPathActive(pathname, item.href, searchParams);
@@ -46,7 +46,7 @@ export function ContextMenuTab({ active, items, label, pathname, searchParams, o
                                     onClick={onItemClick}
                                     data-href={item.href}
                                     className={cn(
-                                        'flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-1.5 outline-none transition-colors',
+                                        'motion-menu-item flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-1.5 outline-none',
                                         itemActive ? 'bg-surface-muted' : 'hover:bg-surface-muted'
                                     )}
                                 >

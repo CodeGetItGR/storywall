@@ -155,8 +155,8 @@ export default function StoryBoundary({ id }: { id: string }) {
     const authorName = author?.displayName ?? t('unknownAuthor');
 
     return (
-        <div className="fixed inset-0 bg-ink z-50 flex flex-col items-center justify-center">
-            <div className="relative w-full max-w-sm h-full max-h-dvh bg-black overflow-hidden">
+        <div className="motion-story-route fixed inset-0 z-50 flex flex-col items-center justify-center bg-ink">
+            <div className="relative h-full max-h-dvh w-full max-w-sm overflow-hidden bg-black">
                 <StoryProgressBar stories={group.stories} activeIndex={storyIndex} progress={progress} />
 
                 <StoryHeader

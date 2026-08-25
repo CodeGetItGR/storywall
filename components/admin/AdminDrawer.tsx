@@ -41,14 +41,17 @@ export function AdminDrawer({ open, onClose, title, subtitle, closeLabel, footer
     return (
         <Dialog.Root open={open} onOpenChange={onOpenChange}>
             <Dialog.Portal>
-                <Dialog.Backdrop forceRender className="fixed inset-0 z-50 bg-[#0a0b0f]/38" />
+                {/* Backdrop */}
+                <Dialog.Backdrop forceRender className="motion-overlay fixed inset-0 z-50 bg-[#0a0b0f]/38 opacity-100" />
+                {/* Surface */}
                 <Dialog.Popup
                     className={cn(
-                        'fixed inset-y-0 right-0 z-50 flex h-dvh w-[min(440px,100vw)] flex-col overflow-hidden',
+                        'motion-surface fixed inset-y-0 right-0 z-50 flex h-dvh w-[min(440px,100vw)] flex-col overflow-hidden',
                         'border-l border-border bg-card text-ink shadow-[0_24px_60px_-20px_rgba(18,20,28,0.45)] outline-none',
-                        'transition-transform duration-200 ease-out motion-safe:data-starting-style:translate-x-full motion-safe:data-ending-style:translate-x-0'
+                        'data-ending-style:translate-x-full data-ending-style:opacity-0 data-starting-style:translate-x-full data-starting-style:opacity-0'
                     )}
                 >
+                    {/* Header */}
                     <div className="flex items-start justify-between gap-3 border-b border-border px-5 pb-3.5 pt-4.5">
                         <div className="min-w-0">
                             <Dialog.Title className="truncate text-[16.5px] font-extrabold tracking-tight text-ink">{title}</Dialog.Title>
@@ -62,10 +65,12 @@ export function AdminDrawer({ open, onClose, title, subtitle, closeLabel, footer
                         </Dialog.Close>
                     </div>
 
+                    {/* Content */}
                     <DrawerFooterSlotContext.Provider value={footerSlot}>
                         <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-5 py-4.5">{children}</div>
                     </DrawerFooterSlotContext.Provider>
 
+                    {/* Footer */}
                     <div ref={setFooterSlot} className="flex items-center justify-between gap-3 border-t border-border px-5 py-3.5 empty:hidden">
                         {footer}
                     </div>

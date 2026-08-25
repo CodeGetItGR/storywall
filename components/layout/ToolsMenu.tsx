@@ -41,7 +41,7 @@ export function ToolsMenu() {
             </Menu.Trigger>
             <Menu.Portal>
                 <Menu.Positioner side="right" align="start" sideOffset={12} className="z-50">
-                    <Menu.Popup className="w-64 rounded-2xl border border-border bg-background p-1 shadow-[0_2px_16px_0_rgba(36,31,26,0.15)] outline-none">
+                    <Menu.Popup className="motion-popover w-64 rounded-2xl border border-border bg-background p-1 shadow-[0_2px_16px_0_rgba(36,31,26,0.15)] outline-none">
                         {items.map((item) => {
                             const Icon = item.icon;
                             const itemActive = pathname === item.href || pathname.startsWith(item.href + '/');
@@ -52,7 +52,7 @@ export function ToolsMenu() {
                                     onClick={handleItemClick}
                                     data-href={item.href}
                                     className={cn(
-                                        'flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-1.5 outline-none transition-colors',
+                                        'motion-menu-item flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-1.5 outline-none',
                                         itemActive ? 'bg-surface-muted' : 'hover:bg-surface-muted'
                                     )}
                                 >

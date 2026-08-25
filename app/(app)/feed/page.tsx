@@ -1,29 +1,15 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-
+import { resolveServerEventContext } from '@/lib/auth/serverEventContext';
 import { routes } from '@/lib/routes';
-import { useEventSwitcher } from '@/providers/EventProvider';
 
 // Bare /feed has no event id, so it can't render a feed itself — it exists
 // only so links like the nav rail's "Home" tab and the post-login redirect
-// don't need to know an event id up front. It forwards to whichever event is
-// active (falling back to the user's first membership) as soon as that's
-// known, then the real page lives at /feed/[eventId].
-export default function FeedRedirectPage() {
-    const router = useRouter();
-    const { activeEvent, memberships, isLoading } = useEventSwitcher();
+// don't need to know an event id up front. Resolved and redirected entirely
+// server-side (same active-event resolution as the (event) layout) instead
+// of a client component waiting on membership data to know where to go.
+export default async function FeedRedirectPage() {
+    const context = await resolveServerEventContext();
 
-    useEffect(() => {
-        if (isLoading) return;
-        const eventId = activeEvent?.id ?? memberships[0]?.eventId;
-        if (!eventId) {
-            router.replace(routes.profile);
-            return;
-        }
-        router.replace(routes.post.feed(eventId));
-    }, [isLoading, activeEvent, memberships, router]);
-
-    return null;
+    redirect(context?.activeEventId ? routes.post.feed(context.activeEventId) : routes.profile);
 }

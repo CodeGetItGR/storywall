@@ -7,7 +7,7 @@ import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
 import type { WishbookEntryRequestDto, WishbookEntryResponseDto } from '@/lib/api/types';
 
-const PAGE_SIZE = 20;
+export const WISHBOOK_PAGE_SIZE = 20;
 export const wishbookKeys = {
     list: (eventId: string) => ['events', eventId, 'wishbook'] as const,
     count: (eventId: string) => ['events', eventId, 'wishbook', 'count'] as const,
@@ -17,7 +17,7 @@ export function useWishbook(eventId: string | null) {
     return useInfiniteQuery({
         queryKey: wishbookKeys.list(eventId ?? ''),
         queryFn: ({ pageParam }) =>
-            api.get<Page<WishbookEntryResponseDto>>(`${endpoints.events.wishbook(eventId!)}?page=${pageParam}&size=${PAGE_SIZE}`),
+            api.get<Page<WishbookEntryResponseDto>>(`${endpoints.events.wishbook(eventId!)}?page=${pageParam}&size=${WISHBOOK_PAGE_SIZE}`),
         initialPageParam: 0,
         getNextPageParam: (page) => (page.number + 1 < page.totalPages ? page.number + 1 : undefined),
         enabled: Boolean(eventId),

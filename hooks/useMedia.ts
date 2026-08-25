@@ -10,7 +10,7 @@ export const mediaKeys = {
     detail: (id: string) => ['medias', id] as const,
 };
 
-const MEDIA_PAGE_SIZE = 30;
+export const MEDIA_PAGE_SIZE = 30;
 
 // GET /api/events/{eventId}/media — any event member. Paginated, newest first.
 export function useEventMedia(eventId: string | null) {

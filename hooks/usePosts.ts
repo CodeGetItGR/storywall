@@ -30,7 +30,7 @@ export function patchPostInCaches(queryClient: QueryClient, eventId: string, pos
     });
 }
 
-const POSTS_PAGE_SIZE = 20;
+export const POSTS_PAGE_SIZE = 20;
 
 // GET /api/events/{eventId}/posts — any authenticated principal (not
 // scoped to event membership, matching EventController's read convention).
