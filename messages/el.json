@@ -2187,6 +2187,7 @@
         "selectPhotos": "Επιλογή",
         "selectAll": "Επιλογή όλων",
         "cancelSelection": "Άκυρο",
+        "top": "Πάνω",
         "photosSelected": "{count} επιλεγμένες",
         "downloadSelected": "Λήψη {count}",
         "download": "Λήψη",

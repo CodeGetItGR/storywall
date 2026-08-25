@@ -9,6 +9,7 @@ import { AuthProvider } from '@/providers/AuthProvider';
 import { ComposerProvider } from '@/providers/ComposerProvider';
 import { DocumentTitleSync } from '@/providers/DocumentTitleSync';
 import { EventProvider } from '@/providers/EventProvider';
+import { MobileChromeProvider } from '@/providers/MobileChromeProvider';
 import { ModalProvider } from '@/providers/ModalProvider';
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -21,7 +22,9 @@ export function Providers({ children }: { children: ReactNode }) {
                 <EventProvider>
                     <DocumentTitleSync />
                     <ComposerProvider>
-                        <ModalProvider>{children}</ModalProvider>
+                        <MobileChromeProvider>
+                            <ModalProvider>{children}</ModalProvider>
+                        </MobileChromeProvider>
                     </ComposerProvider>
                 </EventProvider>
             </AuthProvider>

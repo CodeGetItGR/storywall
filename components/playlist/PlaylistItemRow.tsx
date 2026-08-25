@@ -124,7 +124,7 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
                         disabled={deleteSuggestion.isPending}
                         isDeleting={deleteSuggestion.isPending}
                         moreLabel={t('moreOptions')}
-                        onDelete={handleDeleteRequest}
+                        onDeleteAction={handleDeleteRequest}
                     />
                 </div>
             )}

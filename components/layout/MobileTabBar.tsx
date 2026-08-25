@@ -14,6 +14,7 @@ import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
 import { routes } from '@/lib/routes';
 import { useComposer } from '@/providers/ComposerProvider';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
+import { useMobileChrome } from '@/providers/MobileChromeProvider';
 
 const homeTabItem = { href: routes.feed, icon: '/icons/home.svg', key: 'home' } as const;
 
@@ -25,6 +26,7 @@ export function MobileTabBar() {
     const searchParams = useSearchParams().toString();
     const { openPostComposer, openSongComposer, openStoryCapture, canComposePost, canComposeStory, canComposeSong } = useComposer();
     const { user } = useAuth();
+    const { isMobileTabBarHidden } = useMobileChrome();
     const activeEvent = useActiveEvent();
     const isHost = useIsHost();
     const isLoading = useEventContextLoading();
@@ -75,7 +77,7 @@ export function MobileTabBar() {
         (showEventNavigation && playlistAvailable ? 1 : 0) +
         (showEventNavigation && contextItems.length > 0 ? 1 : 0);
 
-    if (!showBottomRail) return null;
+    if (!showBottomRail || isMobileTabBarHidden) return null;
 
     return (
         <>
