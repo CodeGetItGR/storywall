@@ -80,7 +80,10 @@ export function GalleryUploadSection({
                     </div>
                     <div className="mt-3 flex flex-wrap gap-2">
                         {selectedFiles.map((file) => (
-                            <span key={`${file.name}-${file.size}`} className="rounded-full bg-card px-2.5 py-1 text-[11px] font-medium text-ink-muted">
+                            <span
+                                key={`${file.name}-${file.size}`}
+                                className="rounded-full bg-card px-2.5 py-1 text-[11px] font-medium text-ink-muted"
+                            >
                                 {file.name}
                             </span>
                         ))}

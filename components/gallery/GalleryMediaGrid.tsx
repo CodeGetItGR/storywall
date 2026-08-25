@@ -77,7 +77,9 @@ export function GalleryMediaGrid({
                                     data-media-id={item.id}
                                     aria-pressed={selectionMode ? isSelected : undefined}
                                     aria-label={
-                                        selectionMode ? t(isSelected ? 'unselectPhoto' : 'selectPhoto', { filename: item.originalFilename }) : item.originalFilename
+                                        selectionMode
+                                            ? t(isSelected ? 'unselectPhoto' : 'selectPhoto', { filename: item.originalFilename })
+                                            : item.originalFilename
                                     }
                                     onPointerDown={handleMediaPointerDown}
                                     onPointerUp={onMediaPointerEnd}
@@ -99,7 +101,10 @@ export function GalleryMediaGrid({
                                             fill
                                             sizes="(min-width: 1024px) 25vw, 50vw"
                                             draggable={false}
-                                            className={cn('object-cover transition-transform group-hover:scale-[1.02]', isSelected && 'brightness-75')}
+                                            className={cn(
+                                                'object-cover transition-transform group-hover:scale-[1.02]',
+                                                isSelected && 'brightness-75'
+                                            )}
                                         />
                                         {selectionMode && (
                                             <span

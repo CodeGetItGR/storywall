@@ -15,22 +15,25 @@ interface GalleryViewerProps {
     onDownloadOriginal: () => void;
 }
 
-export function GalleryViewer({
-    media,
-    keepsOriginals,
-    originalError,
-    isDownloadingOriginal,
-    onClose,
-    onDownloadOriginal,
-}: GalleryViewerProps) {
+export function GalleryViewer({ media, keepsOriginals, originalError, isDownloadingOriginal, onClose, onDownloadOriginal }: GalleryViewerProps) {
     const t = useTranslations('GalleryPage');
 
     if (!media) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4" role="dialog" aria-modal="true" aria-label={t('viewerLabel')}>
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4"
+            role="dialog"
+            aria-modal="true"
+            aria-label={t('viewerLabel')}
+        >
             {/* Viewer close button */}
-            <button type="button" onClick={onClose} className="absolute right-4 top-4 rounded-full bg-black/50 p-2 text-white" aria-label={t('closeViewer')}>
+            <button
+                type="button"
+                onClick={onClose}
+                className="absolute right-4 top-4 rounded-full bg-black/50 p-2 text-white"
+                aria-label={t('closeViewer')}
+            >
                 <X className="h-5 w-5" />
             </button>
             <div className="flex max-h-full max-w-5xl flex-col items-center gap-3">

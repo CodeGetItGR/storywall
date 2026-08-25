@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, type MouseEvent, type PointerEvent,useCallback, useEffect, useMemo, useState } from 'react';
+import { type ChangeEvent, type MouseEvent, type PointerEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
