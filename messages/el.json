@@ -86,6 +86,8 @@
         "viewPhotoAt": "Φωτογραφία {index} από {count}, {name}",
         "unknownAuthor": "Άγνωστος",
         "playlistDigest": "Ενημέρωση λίστας",
+        "playlistDigestCount": "{count, plural, one {Προστέθηκε # τραγούδι στη λίστα αναπαραγωγής} other {Προστέθηκαν # τραγούδια στη λίστα αναπαραγωγής}}",
+        "playlistDigestSingle": "Το \"{title}\" του/της {artist} μόλις προστέθηκε στη λίστα αναπαραγωγής",
         "pinned": "Καρφιτσωμένη",
         "hostPost": "ΔΗΜΟΣΙΕΥΣΗ ΔΙΟΡΓΑΝΩΤΗ",
         "openPlaylist": "Άνοιγμα λίστας",

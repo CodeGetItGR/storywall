@@ -9,6 +9,7 @@ import { PiMusicNotesPlusFill } from 'react-icons/pi';
 import { CommentsList } from '@/components/feed/post/CommentsList';
 import { useEventMembers, usePostComments } from '@/hooks';
 import type { PostResponseDto } from '@/lib/api/types';
+import { formatPlaylistDigestContent } from '@/lib/feed/playlistDigest';
 import { routes } from '@/lib/routes';
 import { timeAgoParts } from '@/lib/utils';
 
@@ -37,7 +38,7 @@ export function PlaylistDigestCard({ post }: PlaylistDigestCardProps) {
     const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
 
     return (
-        <article className="border-2 border-b border-border/60 p-1.5 bg-card/60">
+        <article className="bg-transparent p-1.5">
             {/* Playlist digest */}
             <div className="relative isolate overflow-hidden bg-linear-to-br from-[#9d3868] via-primary to-accent-orange px-4 py-4 text-white sm:px-5 rounded-xl">
                 <div
@@ -87,7 +88,7 @@ export function PlaylistDigestCard({ post }: PlaylistDigestCardProps) {
                 <div className="relative z-10 mt-4 grid grid-cols-[1fr_5rem] items-center gap-4">
                     <div className="min-w-0">
                         <p className="text-[0.7rem] font-normal uppercase leading-none text-white/75">{t('playlistDigest')}</p>
-                        <h2 className="mt-1.5 text-lg font-semibold leading-tight text-white">{post.content ?? t('playlistDigest')}</h2>
+                        <h2 className="mt-1.5 text-lg font-semibold leading-tight text-white">{formatPlaylistDigestContent(post.content, t)}</h2>
                         <p className="mt-1.5 text-xs text-white/75">
                             {timeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${timeAgo.unit}`, { count: timeAgo.value })}
                         </p>

@@ -176,13 +176,13 @@ export function MobileTabBar() {
                 <>
                     {/* Compose */}
                     <Menu.Root>
-                        <Menu.Trigger
-                            aria-label={t('compose')}
-                            className={cn(
-                                'group fixed right-4 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md transition-[bottom,opacity,transform] duration-300 ease-out hover:scale-105 data-[popup-open]:z-100 lg:hidden',
-                                isMobileTabBarHidden ? 'bottom-6' : 'bottom-20'
-                            )}
-                        >
+                    <Menu.Trigger
+                        aria-label={t('compose')}
+                        className={cn(
+                            'group fixed right-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md transition-[bottom,opacity,transform] duration-300 ease-out hover:scale-105 data-[popup-open]:z-[60] lg:hidden',
+                            isMobileTabBarHidden ? 'bottom-6 z-50' : 'bottom-20 z-30'
+                        )}
+                    >
                             <Plus
                                 className="h-6 w-6 text-white transition-transform duration-200 ease-out group-data-[popup-open]:rotate-45"
                                 strokeWidth={2.5}

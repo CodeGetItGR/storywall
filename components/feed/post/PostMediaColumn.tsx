@@ -6,6 +6,7 @@ import { CommentCount } from '@/components/feed/post/CommentCount';
 import { PostMediaCarousel } from '@/components/feed/post/PostMediaCarousel';
 import { ReactionCount } from '@/components/feed/post/ReactionCount';
 import type { PostResponseDto } from '@/lib/api/types';
+import { formatPlaylistDigestContent } from '@/lib/feed/playlistDigest';
 import { cn } from '@/lib/utils';
 
 import { isPlaylistDigestPost } from './postUtils';
@@ -42,7 +43,11 @@ export function PostMediaColumn({ postKey, post, clampedIndex, onIndexChange, co
             >
                 <button type="button" onClick={onShowComments} className="w-full text-left" aria-label={t('showComments')}>
                     <p className="text-sm font-semibold text-white mb-1">{authorDisplayName}</p>
-                    {post.content && <p className="text-sm text-white/90 leading-snug line-clamp-2 mb-2">{post.content}</p>}
+                    {post.content && (
+                        <p className="text-sm text-white/90 leading-snug line-clamp-2 mb-2">
+                            {isPlaylistDigestPost(post) ? formatPlaylistDigestContent(post.content, tCard) : post.content}
+                        </p>
+                    )}
                     <div className="flex items-center gap-4">
                         <ReactionCount count={post.reactionCount} wrapperClassName="text-white/90" />
                         <CommentCount count={post.commentCount} wrapperClassName="text-white/90" />
