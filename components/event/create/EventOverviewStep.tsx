@@ -20,7 +20,6 @@ type EventOverviewStepProps = {
     eventType: EventTypeConvention;
     eventTypes: AppEventTypeResponseDto[];
     startAt: string;
-    endAt: string;
     locationName: string;
     plan: PlanTierResponseDto;
     modules: PlatformModuleResponseDto[];
@@ -34,7 +33,6 @@ export function EventOverviewStep({
     eventType,
     eventTypes,
     startAt,
-    endAt,
     locationName,
     plan,
     modules,
@@ -73,7 +71,7 @@ export function EventOverviewStep({
                 <p className="mt-2 font-semibold text-ink">{title}</p>
 
                 <p className="mt-1 text-sm text-ink-muted">
-                    {eventTypeName} · {dateFormatter.format(new Date(startAt))} – {dateFormatter.format(new Date(endAt))}
+                    {eventTypeName} · {dateFormatter.format(new Date(startAt))}
                 </p>
 
                 {locationName && <p className="mt-1 text-sm text-ink-muted">{locationName}</p>}

@@ -520,7 +520,42 @@
         },
         "validation": {
             "startInPast": "The start time must be now or later.",
-            "endBeforeStart": "The end time must be after the start time."
+            "endBeforeStart": "The end time must be after the start time.",
+            "invalidTimezone": "Choose a timezone from the list."
+        },
+        "fieldLabels": {
+            "WEDDING": {
+                "title": "Couple's names",
+                "startAt": "Ceremony date and time"
+            },
+            "BAPTISM": {
+                "title": "Child's name",
+                "startAt": "Baptism date and time"
+            },
+            "SOCIAL_EVENT": {
+                "title": "Event name",
+                "startAt": "Event date and time"
+            },
+            "BIRTHDAY": {
+                "title": "Celebration name",
+                "startAt": "Party date and time"
+            },
+            "CORPORATE": {
+                "title": "Event name",
+                "startAt": "Event date and time"
+            },
+            "FESTIVAL": {
+                "title": "Festival name",
+                "startAt": "Opening date and time"
+            },
+            "PRIVATE_PARTY": {
+                "title": "Party name",
+                "startAt": "Party date and time"
+            },
+            "CONFERENCE": {
+                "title": "Conference name",
+                "startAt": "Start date and time"
+            }
         },
         "endAtPresets": {
             "fourHours": "4 hours",

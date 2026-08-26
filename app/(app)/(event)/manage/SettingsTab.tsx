@@ -263,17 +263,6 @@ export default function SettingsTab({
                     {fieldErrors?.title && <span className="text-xs text-rose-500">{fieldErrors.title}</span>}
                 </FormFieldLabel>
 
-                <FormFieldLabel label={t('settings.fields.subtitle')} optional labelClassName={labelClass}>
-                    <input
-                        type="text"
-                        value={subtitle}
-                        onChange={handleSubtitleChange}
-                        disabled={disabled}
-                        placeholder={t('settings.placeholders.subtitle')}
-                        className={inputClass}
-                    />
-                </FormFieldLabel>
-
                 <FormFieldLabel label={t('settings.fields.description')} optional labelClassName={labelClass}>
                     <textarea
                         value={description}

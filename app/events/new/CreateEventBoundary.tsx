@@ -30,8 +30,7 @@ import type {
     EventTypeConvention,
 } from '@/lib/api/types';
 import { formatMoney, navigateToCheckout } from '@/lib/billing';
-import { getScheduleDatetimeLocalBounds, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
-import { getEventEndPresets } from '@/lib/eventEndPresets';
+import { getScheduleDatetimeLocalBounds, isDatetimeLocalBefore } from '@/lib/datetime';
 import { publicAssignableEventAddons } from '@/lib/planModules';
 import { getPlanPriceDetails } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
@@ -55,7 +54,6 @@ export default function CreateEventPage() {
     const [title, setTitle] = useState('');
     const [eventType, setEventType] = useState<EventTypeConvention>('WEDDING');
     const [startAt, setStartAt] = useState('');
-    const [endAt, setEndAt] = useState('');
     const [timezone, setTimezone] = useState(getCurrentTimezone);
     const [locationName, setLocationName] = useState('');
     const [error, setError] = useState<string | null>(null);
@@ -77,15 +75,11 @@ export default function CreateEventPage() {
     );
     const selectedAddonServices = availableAddons.filter((service) => selectedAddonCodes.includes(service.code));
     const selectedEligibleAddonCodes = selectedAddonServices.map((service) => service.code);
-    const timezoneOptions = useMemo(() => getSupportedTimezones(timezone), [timezone]);
-    const endAtPresets = useMemo(() => getEventEndPresets(selectedEventType, startAt), [selectedEventType, startAt]);
-    const { startAtMin, startAtMax, endAtMin } = getScheduleDatetimeLocalBounds({ startAt, endAt });
-    const scheduleError =
-        startAt && isDatetimeLocalBefore(startAt, startAtMin)
-            ? t('validation.startInPast')
-            : startAt && endAt && !isDatetimeLocalAfter(endAt, startAt)
-              ? t('validation.endBeforeStart')
-              : null;
+    const timezoneOptions = useMemo(() => getSupportedTimezones(), []);
+    const isTimezoneValid = timezoneOptions.includes(timezone);
+    const { startAtMin } = getScheduleDatetimeLocalBounds({ startAt, endAt: null });
+    const scheduleError = startAt && isDatetimeLocalBefore(startAt, startAtMin) ? t('validation.startInPast') : null;
+    const timezoneError = timezone && !isTimezoneValid ? t('validation.invalidTimezone') : null;
     const overviewPayAmountLabel = useMemo(() => {
         if (!selectedPlan) return t('payment.noCharge');
 
@@ -122,7 +116,7 @@ export default function CreateEventPage() {
         e.preventDefault();
         setError(null);
         if (step === 'details') {
-            if (title.trim() && startAt && endAt && !scheduleError) setStep('overview');
+            if (title.trim() && startAt && isTimezoneValid && !scheduleError) setStep('overview');
             return;
         }
         if (step === 'addons') {
@@ -133,7 +127,7 @@ export default function CreateEventPage() {
             router.push(routes.manage);
             return;
         }
-        if (!title.trim() || !startAt || !endAt || scheduleError) return;
+        if (!title.trim() || !startAt || !isTimezoneValid || scheduleError) return;
 
         const input: EventRequestDto = {
             title: title.trim(),
@@ -141,9 +135,8 @@ export default function CreateEventPage() {
             eventType: selectedEventType,
             visibility: 'PRIVATE',
             startAt: new Date(startAt).toISOString(),
-            endAt: new Date(endAt).toISOString(),
             timezone,
-            locationName: locationName.trim() || undefined,
+            locationName: undefined,
             brandingSettings: {},
         };
 
@@ -198,7 +191,6 @@ export default function CreateEventPage() {
             setSelectedAddonCodes([]);
             setTitle('');
             setStartAt('');
-            setEndAt('');
             setTimezone(getCurrentTimezone());
             setLocationName('');
             setError(null);
@@ -211,20 +203,8 @@ export default function CreateEventPage() {
         setStartAt(e.target.value);
     }, []);
 
-    const onEndAtChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        setEndAt(e.target.value);
-    }, []);
-
-    const onSelectEndAtPreset = useCallback((value: string) => {
-        setEndAt(value);
-    }, []);
-
-    const onTimezoneChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const onTimezoneChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setTimezone(e.target.value);
-    }, []);
-
-    const onLocationNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        setLocationName(e.target.value);
     }, []);
 
     const goToType = useCallback(() => {
@@ -315,21 +295,14 @@ export default function CreateEventPage() {
                                         title={title}
                                         titleError={fieldErrors?.title}
                                         startAt={startAt}
-                                        endAt={endAt}
                                         scheduleError={scheduleError}
                                         startAtMin={startAtMin}
-                                        startAtMax={startAtMax}
-                                        endAtMin={endAtMin}
-                                        endAtPresets={endAtPresets}
                                         timezone={timezone}
+                                        timezoneError={timezoneError}
                                         timezoneOptions={timezoneOptions}
-                                        locationName={locationName}
                                         onTitleChangeAction={onTitleChange}
                                         onStartAtChangeAction={onStartAtChange}
-                                        onEndAtChangeAction={onEndAtChange}
-                                        onSelectEndAtPresetAction={onSelectEndAtPreset}
                                         onTimezoneChangeAction={onTimezoneChange}
-                                        onLocationNameChangeAction={onLocationNameChange}
                                     />
                                 )}
 
@@ -339,7 +312,6 @@ export default function CreateEventPage() {
                                         eventType={selectedEventType}
                                         eventTypes={eventTypes}
                                         startAt={startAt}
-                                        endAt={endAt}
                                         locationName={locationName.trim()}
                                         plan={selectedPlan}
                                         modules={appConfig?.modules ?? []}
@@ -359,7 +331,7 @@ export default function CreateEventPage() {
                         isPending={createEvent.isPending}
                         hasDraft={Boolean(createdDraftEventId)}
                         payAmountLabel={overviewPayAmountLabel}
-                        canSubmitDetails={Boolean(title.trim() && startAt && endAt && !scheduleError)}
+                        canSubmitDetails={Boolean(title.trim() && startAt && isTimezoneValid && !scheduleError)}
                         onGoToTypeAction={goToType}
                         onGoToAddonsAction={goToAddons}
                         onGoToDetailsAction={goToDetails}
