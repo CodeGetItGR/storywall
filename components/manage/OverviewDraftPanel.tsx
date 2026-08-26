@@ -25,7 +25,7 @@ export function OverviewDraftPanel({
     const locale = useLocale();
 
     return (
-        <div className="border-l-2 border-primary pl-3">
+        <div className="border-l-2 border-primary pl-3 lg:mt-5">
             {/* Intro */}
             <p className="text-sm font-bold text-ink">{t('draft.title')}</p>
             <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('draft.body')}</p>

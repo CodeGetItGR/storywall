@@ -6,7 +6,6 @@ import { useLocale, useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { CreateEventRouteState } from '@/components/event/create/CreateEventRouteState';
-import { EventAddonsStep } from '@/components/event/create/EventAddonsStep';
 import { EventCreateFooter } from '@/components/event/create/EventCreateFooter';
 import { EventCreateStepBreadcrumb } from '@/components/event/create/EventCreateStepBreadcrumb';
 import { EventDetailsStep } from '@/components/event/create/EventDetailsStep';
@@ -21,24 +20,16 @@ import { usePlanTiersForEventType } from '@/hooks/usePlanTiersForEventType';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { getFieldErrors } from '@/lib/api/errors';
-import type {
-    CheckoutResponseDto,
-    EventAddonDto,
-    EventAddonRequestDto,
-    EventRequestDto,
-    EventResponseDto,
-    EventTypeConvention,
-} from '@/lib/api/types';
+import type { CheckoutResponseDto, EventRequestDto, EventResponseDto, EventTypeConvention } from '@/lib/api/types';
 import { formatMoney, navigateToCheckout } from '@/lib/billing';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import { getScheduleDatetimeLocalBounds, isDatetimeLocalBefore } from '@/lib/datetime';
-import { publicAssignableEventAddons } from '@/lib/planModules';
 import { getPlanPriceDetails } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { getCurrentTimezone, getSupportedTimezones } from '@/lib/timezones';
 import { useEventSwitcher } from '@/providers/EventProvider';
 
-type CreateEventStep = 'type' | 'plan' | 'addons' | 'details' | 'overview';
+type CreateEventStep = 'type' | 'plan' | 'details' | 'overview';
 
 const CREATE_EVENT_FORM_ID = 'create-event-form';
 
@@ -60,7 +51,6 @@ export default function CreateEventPage() {
     const [step, setStep] = useState<CreateEventStep>('type');
     const eventTypes = appConfig?.eventTypes ?? [];
     const [selectedPlanCode, setSelectedPlanCode] = useState<string>('');
-    const [selectedAddonCodes, setSelectedAddonCodes] = useState<string[]>([]);
     const [createdDraftEventId, setCreatedDraftEventId] = useState<string | null>(null);
 
     const fieldErrors = getFieldErrors(createEvent.error);
@@ -69,12 +59,6 @@ export default function CreateEventPage() {
     const eventPlans = useMemo(() => planTiersQuery.data ?? [], [planTiersQuery.data]);
     const selectedPlan = eventPlans.find((plan) => plan.code === selectedPlanCode) ?? eventPlans[0];
     const selectedCode = selectedPlan?.code ?? selectedPlanCode;
-    const availableAddons = useMemo(
-        () => publicAssignableEventAddons(appConfig?.paidServices ?? [], appConfig?.modules ?? [], selectedPlan),
-        [appConfig?.modules, appConfig?.paidServices, selectedPlan]
-    );
-    const selectedAddonServices = availableAddons.filter((service) => selectedAddonCodes.includes(service.code));
-    const selectedEligibleAddonCodes = selectedAddonServices.map((service) => service.code);
     const initialSessionTitleKey = getCreateEventCatalogEntry(selectedEventType)?.initialSessionTitleKey;
     const initialSessionTitle = initialSessionTitleKey && t.has(initialSessionTitleKey) ? t(initialSessionTitleKey) : undefined;
     const timezoneOptions = useMemo(() => getSupportedTimezones(), []);
@@ -86,12 +70,9 @@ export default function CreateEventPage() {
         if (!selectedPlan) return t('payment.noCharge');
 
         const activation = getPlanPriceDetails(selectedPlan);
-        const activationAddonTotal = selectedAddonServices.reduce((sum, addon) => sum + addon.priceAmountMinor, 0);
-        const activationTotal = (activation?.amountMinor ?? 0) + activationAddonTotal;
-        const currency = activation?.currency ?? selectedAddonServices[0]?.priceCurrency;
 
-        return currency ? formatMoney(locale, activationTotal, currency) : t('payment.noCharge');
-    }, [locale, selectedAddonServices, selectedPlan, t]);
+        return activation ? formatMoney(locale, activation.amountMinor, activation.currency) : t('payment.noCharge');
+    }, [locale, selectedPlan, t]);
 
     useEffect(() => {
         if (isBootstrapping) return;
@@ -113,9 +94,6 @@ export default function CreateEventPage() {
         setError(null);
         if (step === 'details') {
             if (title.trim() && startAt && isTimezoneValid && !scheduleError) setStep('overview');
-            return;
-        }
-        if (step === 'addons') {
             return;
         }
         if (step !== 'overview') return;
@@ -141,18 +119,7 @@ export default function CreateEventPage() {
         try {
             event = await createEvent.mutateAsync(input);
             setActiveEventId(event.id);
-
-            for (const service of selectedAddonServices) {
-                const addonInput: EventAddonRequestDto = { paidServiceCode: service.code };
-                await api.post<EventAddonDto>(endpoints.events.addons(event.id), addonInput);
-            }
         } catch (err) {
-            if (event) {
-                setCreatedDraftEventId(event.id);
-                setError(t('paidModules.applyFailed'));
-                return;
-            }
-
             if (Object.keys(getFieldErrors(err) ?? {}).length > 0) {
                 setStep('details');
                 return;
@@ -184,7 +151,6 @@ export default function CreateEventPage() {
             if (type === eventType) return;
             setEventType(type);
             setSelectedPlanCode('');
-            setSelectedAddonCodes([]);
             setTitle('');
             setStartAt('');
             setTimezone(getCurrentTimezone());
@@ -206,20 +172,12 @@ export default function CreateEventPage() {
         setStep('type');
     }, []);
 
-    const goToAddons = useCallback(() => {
-        setStep('addons');
-    }, []);
-
     const goToPlan = useCallback(() => {
         setStep('plan');
     }, []);
 
     const goToDetails = useCallback(() => {
         setStep('details');
-    }, []);
-
-    const toggleAddon = useCallback((code: string) => {
-        setSelectedAddonCodes((current) => (current.includes(code) ? current.filter((item) => item !== code) : [...current, code]));
     }, []);
 
     return (
@@ -241,13 +199,7 @@ export default function CreateEventPage() {
                         </div>
 
                         {/* Steps */}
-                        <EventCreateStepBreadcrumb
-                            step={step}
-                            onGoToTypeAction={goToType}
-                            onGoToPlanAction={goToPlan}
-                            onGoToAddonsAction={goToAddons}
-                            onGoToDetailsAction={goToDetails}
-                        />
+                        <EventCreateStepBreadcrumb step={step} onGoToTypeAction={goToType} onGoToPlanAction={goToPlan} onGoToDetailsAction={goToDetails} />
 
                         {/* Form Shell */}
                         <div className="mt-3 min-h-0 flex-1 overflow-y-auto p-5">
@@ -256,7 +208,6 @@ export default function CreateEventPage() {
                                 <h2 className="text-lg font-bold text-ink mb-5">
                                     {step === 'type' && t('steps.typeSubtitle')}
                                     {step === 'plan' && t('steps.planSubtitle')}
-                                    {step === 'addons' && t('steps.addonsSubtitle')}
                                     {step === 'details' && t('subtitle')}
                                     {step === 'overview' && t('steps.overviewSubtitle')}
                                 </h2>
@@ -272,15 +223,6 @@ export default function CreateEventPage() {
                                         selectedCode={selectedCode}
                                         onSelectAction={setSelectedPlanCode}
                                         isLoading={planTiersQuery.isLoading}
-                                    />
-                                )}
-
-                                {step === 'addons' && (
-                                    <EventAddonsStep
-                                        modules={appConfig?.modules ?? []}
-                                        services={availableAddons}
-                                        selectedCodes={selectedEligibleAddonCodes}
-                                        onToggleAction={toggleAddon}
                                     />
                                 )}
 
@@ -308,8 +250,6 @@ export default function CreateEventPage() {
                                         eventTypes={eventTypes}
                                         startAt={startAt}
                                         plan={selectedPlan}
-                                        modules={appConfig?.modules ?? []}
-                                        addons={selectedAddonServices}
                                         error={error}
                                         hasDraft={Boolean(createdDraftEventId)}
                                     />
@@ -327,7 +267,6 @@ export default function CreateEventPage() {
                         payAmountLabel={overviewPayAmountLabel}
                         canSubmitDetails={Boolean(title.trim() && startAt && isTimezoneValid && !scheduleError)}
                         onGoToTypeAction={goToType}
-                        onGoToAddonsAction={goToAddons}
                         onGoToDetailsAction={goToDetails}
                         onGoToPlanAction={goToPlan}
                     />

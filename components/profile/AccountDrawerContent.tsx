@@ -26,7 +26,10 @@ export function AccountDrawerContent({ onCloseAction }: { onCloseAction: () => v
     return (
         <div className="flex h-full min-h-0 flex-col">
             <Modal.Body className="px-4 pt-14 pb-6">
-                <AccountIdentity displayName={displayName} email={email} />
+                <section className={'flex justify-between w-full'}>
+                    <AccountIdentity displayName={displayName} email={email} />
+                        <AccountLogoutButton onLogoutAction={onCloseAction} />
+                </section>
 
                 <Link
                     href={routes.events.new}
@@ -54,10 +57,6 @@ export function AccountDrawerContent({ onCloseAction }: { onCloseAction: () => v
                     />
                 </section>
             </Modal.Body>
-
-            <div className="border-t border-border bg-background p-4">
-                <AccountLogoutButton onLogoutAction={onCloseAction} />
-            </div>
         </div>
     );
 }

@@ -4,7 +4,7 @@ import { ChevronRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Fragment } from 'react';
 
-const STEPS = ['type', 'plan', 'addons', 'details', 'overview'] as const;
+const STEPS = ['type', 'plan', 'details', 'overview'] as const;
 
 export type CreateEventStep = (typeof STEPS)[number];
 
@@ -12,13 +12,11 @@ export function EventCreateStepBreadcrumb({
     step,
     onGoToTypeAction,
     onGoToPlanAction,
-    onGoToAddonsAction,
     onGoToDetailsAction,
 }: {
     step: CreateEventStep;
     onGoToTypeAction: () => void;
     onGoToPlanAction: () => void;
-    onGoToAddonsAction: () => void;
     onGoToDetailsAction: () => void;
 }) {
     const t = useTranslations('CreateEventPage');
@@ -26,7 +24,6 @@ export function EventCreateStepBreadcrumb({
     const goTo: Partial<Record<CreateEventStep, () => void>> = {
         type: onGoToTypeAction,
         plan: onGoToPlanAction,
-        addons: onGoToAddonsAction,
         details: onGoToDetailsAction,
     };
 

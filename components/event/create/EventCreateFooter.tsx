@@ -3,7 +3,7 @@
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-type CreateEventStep = 'type' | 'plan' | 'addons' | 'details' | 'overview';
+type CreateEventStep = 'type' | 'plan' | 'details' | 'overview';
 
 export function EventCreateFooter({
     step,
@@ -15,7 +15,6 @@ export function EventCreateFooter({
     payAmountLabel,
     canSubmitDetails,
     onGoToTypeAction,
-    onGoToAddonsAction,
     onGoToDetailsAction,
     onGoToPlanAction,
 }: {
@@ -28,7 +27,6 @@ export function EventCreateFooter({
     payAmountLabel: string;
     canSubmitDetails: boolean;
     onGoToTypeAction: () => void;
-    onGoToAddonsAction: () => void;
     onGoToDetailsAction: () => void;
     onGoToPlanAction: () => void;
 }) {
@@ -62,27 +60,8 @@ export function EventCreateFooter({
                         <button
                             type="button"
                             disabled={!canContinue}
-                            onClick={onGoToAddonsAction}
-                            className="min-h-11 flex-2 rounded-full bg-gradient-brand text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                            {t('continueToAddons')}
-                        </button>
-                    </div>
-                )}
-
-                {step === 'addons' && (
-                    <div className="flex gap-3">
-                        <button
-                            type="button"
-                            onClick={onGoToPlanAction}
-                            className="min-h-11 flex-1 rounded-full border border-border text-sm font-semibold text-ink"
-                        >
-                            {t('actions.back')}
-                        </button>
-                        <button
-                            type="button"
                             onClick={onGoToDetailsAction}
-                            className="min-h-11 flex-2 rounded-full bg-gradient-brand text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                            className="min-h-11 flex-2 rounded-full bg-gradient-brand text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             {t('continueToDetails')}
                         </button>
@@ -93,7 +72,7 @@ export function EventCreateFooter({
                     <div className="flex gap-3">
                         <button
                             type="button"
-                            onClick={onGoToAddonsAction}
+                            onClick={onGoToPlanAction}
                             className="min-h-11 flex-1 rounded-full border border-border text-sm font-semibold text-ink"
                         >
                             {t('actions.back')}

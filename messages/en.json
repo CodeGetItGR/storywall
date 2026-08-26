@@ -535,35 +535,35 @@
         "fieldLabels": {
             "WEDDING": {
                 "title": "Couple's names",
-                "startAt": "Date and time of the ceremony"
+                "startAt": "Ceremony date"
             },
             "BAPTISM": {
                 "title": "Child's name",
-                "startAt": "Date and time of the ceremony"
+                "startAt": "Ceremony date"
             },
             "SOCIAL_EVENT": {
                 "title": "Event name",
-                "startAt": "Event date and time"
+                "startAt": "Event date"
             },
             "BIRTHDAY": {
                 "title": "Celebration name",
-                "startAt": "Party date and time"
+                "startAt": "Party date"
             },
             "CORPORATE": {
                 "title": "Event name",
-                "startAt": "Event date and time"
+                "startAt": "Event date"
             },
             "FESTIVAL": {
                 "title": "Festival name",
-                "startAt": "Opening date and time"
+                "startAt": "Opening date"
             },
             "PRIVATE_PARTY": {
                 "title": "Party name",
-                "startAt": "Party date and time"
+                "startAt": "Party date"
             },
             "CONFERENCE": {
                 "title": "Conference name",
-                "startAt": "Start date and time"
+                "startAt": "Start date"
             }
         },
         "initialSessions": {
@@ -594,24 +594,16 @@
         "planDescriptionFallback": "Everything you need for this event tier.",
         "moreInfo": "More info",
         "moreInfoTitle": "Plan details",
-        "moreInfoSubtitle": "See the rest of this plan.",
         "moreInfoClose": "Close details",
-        "moreInfoActivation": "Activation price",
-        "moreInfoRecurring": "Renewal",
-        "moreInfoMembers": "Members",
-        "moreInfoStorage": "Storage",
-        "moreInfoCoverage": "Coverage",
         "moreInfoDiscount": "Discount",
-        "moreInfoDescription": "Description",
         "moreInfoModules": "Included modules",
         "moreInfoAddons": "Add-ons",
         "continueToPlan": "Continue to plan",
         "continueToDetails": "Continue to details",
-        "continueToAddons": "Continue to add-ons",
         "continueToOverview": "Continue to overview",
         "backToPlans": "Back to plans",
-        "backToAddons": "Back to add-ons",
         "selectedPlan": "Selected plan: {plan}",
+        "originalsHighlight": "Full-resolution original photos included",
         "actions": {
             "back": "Back"
         },
@@ -620,11 +612,9 @@
             "type": "Event type",
             "plan": "Plan",
             "details": "Details",
-            "addons": "Add-ons",
             "overview": "Overview",
             "typeSubtitle": "What are we celebrating? 🎉",
             "planSubtitle": "Choose the event plan your guests will experience.",
-            "addonsSubtitle": "Optional paid modules",
             "overviewSubtitle": "Review the event details and every charge before continuing to payment."
         },
         "payment": {
@@ -637,22 +627,7 @@
             "addonModules": "Available as add-on"
         },
         "paidModules": {
-            "toggle": "Select {module}",
             "oncePrice": "{price} once",
-            "monthlyPrice": "{price} once",
-            "selectedSummary": "Optional modules: {modules}",
-            "selectedOnce": "{module} ({price} once)",
-            "selectedMonthly": "{module} ({price} once)",
-            "descriptions": {
-                "originals": "Keeps the original, full-resolution file for every photo alongside the compressed feed copy.",
-                "moduleUnlock": "Adds this module to the event.",
-                "genericAddon": "Optional paid add-on for this event."
-            },
-            "emptyTitle": "No add-ons available",
-            "emptyBody": "This plan already includes everything currently offered for event setup.",
-            "skipHint": "Add-ons are optional. Continue without selecting one if the plan already has everything you need.",
-            "continue": "Review event and pricing",
-            "applyFailed": "The event was created, but we could not add every selected module. Open the draft dashboard to finish setup before publishing.",
             "openDraft": "Open draft dashboard"
         },
         "overview": {
@@ -660,7 +635,6 @@
             "pricing": "Pricing details",
             "pricingHint": "Activation is a one-time payment.",
             "planActivation": "Plan activation",
-            "chargedOnce": "One-time add-on",
             "monthlyForMonths": "Charged at activation",
             "dueNow": "Due at activation",
             "futureMonthly": "Future renewal",

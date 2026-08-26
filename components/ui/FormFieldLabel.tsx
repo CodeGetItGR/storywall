@@ -40,8 +40,8 @@ export function FormFieldLabel({
                         aria-hidden="true"
                         className={cn(
                             resolvedIndicator === 'required'
-                                ? 'ml-1 align-top text-[0.7em] font-medium text-ink-muted/80'
-                                : 'ml-1 text-[10px] font-medium normal-case tracking-normal text-ink-faint',
+                                ? 'ml-1 align-top text-[1.5em] font-medium text-ink-muted/80'
+                                : 'ml-1 text-[20px] font-medium normal-case tracking-normal text-ink-faint',
                             indicatorClassName
                         )}
                     >
