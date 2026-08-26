@@ -1,3 +1,4 @@
+import { Clock3 } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
@@ -25,14 +26,21 @@ export function OverviewDraftPanel({
     const locale = useLocale();
 
     return (
-        <div className="border-l-2 border-primary pl-3 lg:mt-5">
-            {/* Intro */}
-            <p className="text-sm font-bold text-ink">{t('draft.title')}</p>
-            <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('draft.body')}</p>
+        <div className="rounded-2xl border border-border bg-surface-muted/40 p-4 sm:p-5">
+            {/* Header */}
+            <div className="flex items-start gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <Clock3 className="h-4.5 w-4.5" aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                    <p className="text-sm font-bold text-ink">{t('draft.title')}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('draft.body')}</p>
+                </div>
+            </div>
 
             {/* Selected add-ons */}
             {selectedAddons.length > 0 && (
-                <div className="mt-3 border-t border-border/70 pt-3">
+                <div className="mt-4 border-t border-border/70 pt-4">
                     <p className="text-xs font-semibold text-ink">{t('draft.selectedAddons.title')}</p>
                     <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('draft.selectedAddons.body')}</p>
                     <ul className="mt-2 space-y-1.5">
@@ -49,30 +57,32 @@ export function OverviewDraftPanel({
             )}
 
             {/* Gift account */}
-            {wishlistAvailable && <GiftAccountSetup eventId={eventId} />}
+            {wishlistAvailable && <GiftAccountSetup eventId={eventId} className="mt-4 border-t border-border/70 pt-4" />}
 
             {/* Activation */}
-            {activationTotal !== null && (
-                <p className="mt-3 text-xs font-semibold text-ink">
-                    {t('draft.activationTotal', { total: formatMoney(locale, activationTotal, currency) })}
-                </p>
-            )}
-            {canPay ? (
-                <Link
-                    href={routes.events.checkoutReview(eventId, 'activation')}
-                    className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-4 text-sm font-semibold text-white sm:w-auto"
-                >
-                    {t('draft.reviewAndPublish')}
-                </Link>
-            ) : (
-                <button
-                    type="button"
-                    disabled
-                    className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-4 text-sm font-semibold text-white opacity-40 sm:w-auto"
-                >
-                    {t('draft.addEndDate')}
-                </button>
-            )}
+            <div className="mt-4 flex flex-col gap-3 border-t border-border/70 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                {activationTotal !== null && (
+                    <p className="text-sm font-semibold text-ink">
+                        {t('draft.activationTotal', { total: formatMoney(locale, activationTotal, currency) })}
+                    </p>
+                )}
+                {canPay ? (
+                    <Link
+                        href={routes.events.checkoutReview(eventId, 'activation')}
+                        className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-4 text-sm font-semibold text-white sm:w-auto"
+                    >
+                        {t('draft.reviewAndPublish')}
+                    </Link>
+                ) : (
+                    <button
+                        type="button"
+                        disabled
+                        className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-4 text-sm font-semibold text-white opacity-40 sm:w-auto"
+                    >
+                        {t('draft.addStartDate')}
+                    </button>
+                )}
+            </div>
         </div>
     );
 }

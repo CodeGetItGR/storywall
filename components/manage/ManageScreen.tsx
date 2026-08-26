@@ -113,7 +113,7 @@ export function ManageScreen() {
                     onSeeAllRsvp={handleSeeAllRsvp}
                     eventId={activeEvent.id}
                     eventStatus={activeEvent.status}
-                    endAt={activeEvent.schedule.endAt}
+                    startAt={activeEvent.schedule.startAt}
                 />
             )}
 

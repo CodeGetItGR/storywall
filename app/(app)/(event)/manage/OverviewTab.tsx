@@ -31,7 +31,7 @@ export default function OverviewTab({
     onSeeAllRsvp,
     eventId,
     eventStatus,
-    endAt,
+    startAt,
 }: {
     memberCount: number;
     daysToGo: number;
@@ -46,7 +46,7 @@ export default function OverviewTab({
     onSeeAllRsvp: () => void;
     eventId: string;
     eventStatus: EventStatus;
-    endAt: string | null;
+    startAt: string | null;
 }) {
     const t = useTranslations('ManagePage');
     const { currentPlan, nextPlan, selectedAddons, activationTotal, wishlistAvailable, includedModuleKeys } = useEventOverviewPlan({
@@ -63,7 +63,7 @@ export default function OverviewTab({
         return (
             <OverviewDraftPanel
                 eventId={eventId}
-                canPay={Boolean(endAt)}
+                canPay={Boolean(startAt)}
                 currency={currentPlan?.priceCurrency ?? 'EUR'}
                 selectedAddons={selectedAddons}
                 activationTotal={currentPlan?.priceCurrency ? activationTotal : null}

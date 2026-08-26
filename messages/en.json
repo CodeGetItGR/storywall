@@ -703,10 +703,10 @@
         },
         "draft": {
             "title": "Not published yet",
-            "body": "Set an end date before publishing. Your coverage is calculated from the event dates.",
+            "body": "Set a start date before publishing.",
             "payAndPublish": "Pay and publish",
             "reviewAndPublish": "Review payment and publish",
-            "addEndDate": "Add an end date to publish",
+            "addStartDate": "Add a start date to publish",
             "retryIn": "Try again in {seconds}s",
             "activationTotal": "Activation total: {total}",
             "selectedAddons": {
@@ -2228,7 +2228,7 @@
         "memberLimit": "Guest limit reached for this event.",
         "memberLimitWithPlan": "Guest limit reached on the {plan} plan. Upgrade to invite more.",
         "moduleUnavailable": "This feature is not included in the current plan.",
-        "eventDatesIncomplete": "Add a start and end date to the event before paying.",
+        "eventDatesIncomplete": "Add a start date to the event before paying.",
         "eventNotDraft": "This event has already been published.",
         "planNotPurchasable": "This plan cannot be bought directly. Contact us to switch to it.",
         "planTierNotAvailableForEventType": "This plan is not available for the selected event type. Choose a different plan or event type.",

@@ -392,17 +392,18 @@ Drafts are the host's private workspace: excluded from `GET /api/events` for eve
 cannot be invited, every module reports unavailable. Show them in a clearly separate "not published
 yet" section rather than mixed into the event list.
 
-### Step 2 — `endAt` is required at checkout, not at creation
+### Step 2 — `startAt` is required at checkout; `endAt` stays optional
 
-The one piece of validation in an unusual place. `endAt` is optional at creation (a draft exists so
-details can arrive gradually) but **mandatory at checkout**, because paid coverage is measured from
-it. Both of these are rejected with `400 EVENT_DATES_INCOMPLETE`:
+`startAt` is required from creation onward. `endAt` is optional throughout — this is a one-time
+payment with no billing period tied to it, so there's nothing that needs an end date to be priced.
+If an `endAt` is given, though, it still has to make sense. Rejected with `400
+EVENT_DATES_INCOMPLETE`:
 
-- `endAt` missing
+- `startAt` missing
 - `endAt <= startAt` (also enforced on `PATCH /api/events/{id}`)
 
-Gate the "Pay and publish" button on `endAt` being set and after `startAt`, and explain why —
-otherwise the 400 arrives at the worst possible moment.
+Gate the "Pay and publish" button on `startAt` being set (and, if `endAt` is set, on it being after
+`startAt`), and explain why — otherwise the 400 arrives at the worst possible moment.
 
 ### Step 3 — opening checkout
 
@@ -1179,7 +1180,7 @@ name, for logs). Branch on `errorCode`.
 |---|---|---|---|
 | `3001` `VALIDATION_FAILED` | 400 | any bean-validation failure, incl. all plan-tier field rules | field-level errors from `details` |
 | `3007` `INVALID_PLAN_TIER_SCOPE` | 400 | admin sets `eventTypeKeys` on an `ACCOUNT`-scope plan (§13), or `planTierIds` names one for a paid service | admin panel only |
-| `3008` `EVENT_DATES_INCOMPLETE` | 400 | checkout with no `endAt`, or `endAt <= startAt` | "Set an end date before publishing" — link to the schedule form |
+| `3008` `EVENT_DATES_INCOMPLETE` | 400 | checkout with no `startAt`, or `endAt <= startAt` | "Set a start date before publishing" — link to the schedule form |
 | `3010` `RATE_LIMITED` | 429 | the caller's budget for the window is spent | §11 |
 | `3018` `INVALID_EVENT_TYPE` | 400 | unknown `eventType` at `GET /api/plan-tiers?eventType=X` or admin's `.../event-types` (§2, §13) | refetch `GET /api/config`'s `eventTypeKeys`, the value was stale or mistyped |
 
