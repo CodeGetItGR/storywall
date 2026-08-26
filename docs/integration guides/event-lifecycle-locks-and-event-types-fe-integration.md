@@ -260,6 +260,11 @@ exist does not retroactively remove their row.
 
 ## 4. Session schedule lock (mirrors the event-level one)
 
+**Applies to non-main sessions only.** The event's main session (`isMain: true`) has its
+`startAt`/`endAt` locked unconditionally, not just once it's started — see
+[`event-session-main-flag-fe-integration.md`](event-session-main-flag-fe-integration.md), which
+supersedes this section for that one session.
+
 `PATCH /api/event-sessions/{id}` now applies the same lock to a session's own `startAt`/`endAt`
 that `PATCH /api/events/{id}` already applies to the event's — this part isn't new behavior, it's
 closing a gap where a session's date was still freely editable after the event's own date was

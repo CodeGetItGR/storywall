@@ -16,6 +16,7 @@ interface ScheduleEditorSheetProps {
     defaultStartAt: string;
     createSession: ScheduleSessionMutator;
     updateSession: ScheduleSessionMutator;
+    secondaryPrefillTitle?: string;
 }
 
 export function ScheduleEditorSheet({
@@ -28,6 +29,7 @@ export function ScheduleEditorSheet({
     defaultStartAt,
     createSession,
     updateSession,
+    secondaryPrefillTitle,
 }: ScheduleEditorSheetProps) {
     const t = useTranslations('SchedulePage');
 
@@ -35,7 +37,7 @@ export function ScheduleEditorSheet({
         onOpenChange(false);
     }
 
-    const sheetKey = `${editingSession?.id ?? 'new'}-${defaultStartAt}`;
+    const sheetKey = `${editingSession?.id ?? 'new'}-${defaultStartAt}-${secondaryPrefillTitle ?? ''}`;
 
     return (
         <Modal open={open} onClose={handleClose} size="md" variant="sheet" closeLabel={t('host.cancelEdit')} className="sm:max-w-2xl">
@@ -50,6 +52,7 @@ export function ScheduleEditorSheet({
                     createSession={createSession}
                     updateSession={updateSession}
                     onClose={handleClose}
+                    secondaryPrefillTitle={secondaryPrefillTitle}
                 />
             )}
         </Modal>

@@ -67,8 +67,9 @@ POST /api/events
 still returns the flat `EventResponseDto` — same shape as before, no `sessions` field on it (that's
 only on the detail DTO). If you need the new session's id — e.g. to let the host rename it inline
 right after creation — follow up with `GET /api/events/{id}` and read `sessions[]`
-(`EventDetailResponseDto.sessions`); the seeded one is the entry with `displayOrder === 0` on a
-freshly created event.
+(`EventDetailResponseDto.sessions`); the seeded one is the entry with `isMain === true`
+(previously identified by `displayOrder === 0` — prefer `isMain` now, see
+[`event-session-main-flag-fe-integration.md`](event-session-main-flag-fe-integration.md)).
 
 ## Whose job is the label text
 
@@ -98,10 +99,12 @@ and the host builds the agenda from scratch via the existing Stage 3 "add sessio
 - `POST /api/event-sessions` (Stage 3 "add agenda/session") is untouched — for event types that
   got a seeded session, this is now for *additional* entries (e.g. "Reception"); for types that
   didn't, it's unchanged from today.
-- `PATCH /api/event-sessions/{id}` — the seeded session is an ordinary session row from the moment
-  it exists. It can be renamed, rescheduled, or relocated like any other, subject to the existing
-  schedule lock (see `event-lifecycle-locks-and-event-types-fe-integration.md` §4) — DRAFT events
-  are exempt, same as elsewhere.
+- `PATCH /api/event-sessions/{id}` — the seeded session can be renamed and relocated like any
+  other. **Its schedule is no longer independently editable, as of the `isMain` change — see
+  [`event-session-main-flag-fe-integration.md`](event-session-main-flag-fe-integration.md).** This
+  paragraph originally said the seeded session's `startAt`/`endAt` could be freely rescheduled
+  subject only to the ordinary lock; that's now wrong for this specific session — read the linked
+  guide before building any "edit this session's time" UI.
 - No RSVP session-response back-fill happens for the seeded session beyond what already happens for
   any brand-new session on a brand-new event: there are no RSVPs yet at creation time, so there's
   nothing to back-fill.

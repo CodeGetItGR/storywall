@@ -25,7 +25,13 @@ comment threads are now paginated, oldest first), and
 record now carries their `rsvpId`, so you can tell whether they've responded without knowing
 that id in advance), and
 [`event-creation-initial-session-fe-integration.md`](event-creation-initial-session-fe-integration.md)
-(event creation can now seed a first `EventSession` anchored to `startAt`/`endAt`).
+(event creation can now seed a first `EventSession` anchored to `startAt`/`endAt`), and
+[`event-session-main-flag-fe-integration.md`](event-session-main-flag-fe-integration.md) (that
+seeded session is now flagged `isMain` and its schedule is a read-only mirror of the event's own),
+and
+[`event-session-secondary-flag-fe-integration.md`](event-session-secondary-flag-fe-integration.md)
+(an optional, freely-editable `isSecondary` flag for a second session per `eventType` convention,
+e.g. a wedding's venue/reception alongside its `isMain` ceremony).
 
 This doc was originally written 2026-08-04 directly from the controller/DTO source. Refreshed
 2026-08-09 to correct a stale claim that no billing integration existed — it now does,
@@ -33,7 +39,12 @@ extensively; see the section below. Refreshed again 2026-08-16: **wishlist and w
 of §2 ("not wireable") and into §1** — they are real modules now — and co-host invitations gained
 a pending-invitation flow. Refreshed again 2026-08-26: `EventMemberResponseDto` gained `rsvpId`,
 closing the gap where the FE had no reliable way to tell whether a member had already submitted
-an RSVP.
+an RSVP. Refreshed again same day: `EventSessionResponseDto` gained `isMain`, and the main
+session's `startAt`/`endAt` are now a read-only mirror of the event's own — see
+[`event-session-main-flag-fe-integration.md`](event-session-main-flag-fe-integration.md). Refreshed
+again same day: `EventSession` request/response/patch DTOs all gained a writable `isSecondary` flag
+(at most one per event, no backend semantics beyond that) — see
+[`event-session-secondary-flag-fe-integration.md`](event-session-secondary-flag-fe-integration.md).
 
 ## 0. Base setup
 

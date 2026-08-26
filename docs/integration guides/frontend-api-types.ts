@@ -386,15 +386,20 @@ interface EventSessionRequestDto {
   locationName?: string;  // max 255
   mapsUrl?: string;
   displayOrder: number;   // required
+  isSecondary?: boolean;  // NEW — see event-session-secondary-flag-fe-integration.md. Defaults to false; at most one per event.
 }
 interface EventSessionResponseDto {
   id: string; eventId: string; title: string; description: string | null;
   startAt: string | null; endAt: string | null; locationName: string | null; mapsUrl: string | null;
-  displayOrder: number; createdAt: string; deletedAt: string | null;
+  displayOrder: number;
+  isMain: boolean; // NEW — see event-session-main-flag-fe-integration.md. startAt/endAt are read-only when true.
+  isSecondary: boolean; // NEW — see event-session-secondary-flag-fe-integration.md. Purely conventional, freely editable.
+  createdAt: string; deletedAt: string | null;
 }
 interface EventSessionPatchDto { // every field optional
   title?: string; description?: string; startAt?: string; endAt?: string;
   locationName?: string; mapsUrl?: string; displayOrder?: number;
+  isSecondary?: boolean; // NEW — see event-session-secondary-flag-fe-integration.md
 }
 
 // --- RSVPs ---

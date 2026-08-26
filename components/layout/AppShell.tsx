@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { type ReactNode, useEffect } from 'react';
 
 import { DesktopNavRail, MobileTabBar } from '@/components/layout';
+import { HostOnboardingWizard } from '@/components/onboarding/HostOnboardingWizard';
 import { useAuth } from '@/hooks/useAuth';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -42,6 +43,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <div className="min-h-full lg:max-w-none">{children}</div>
             </main>
             <MobileTabBar />
+            <HostOnboardingWizard />
         </div>
     );
 }

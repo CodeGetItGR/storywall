@@ -825,6 +825,7 @@ export interface EventSessionRequestDto {
     locationName?: string;
     mapsUrl?: string;
     displayOrder: number;
+    isSecondary?: boolean; // defaults to false; at most one non-deleted session per event
 }
 
 export interface EventSessionResponseDto {
@@ -837,6 +838,8 @@ export interface EventSessionResponseDto {
     locationName: string | null;
     mapsUrl: string | null;
     displayOrder: number;
+    isMain: boolean; // system-managed, read-only — set only via initialSessionTitle at event creation
+    isSecondary: boolean;
     createdAt: string;
     deletedAt: string | null;
 }
@@ -849,6 +852,7 @@ export interface EventSessionPatchDto {
     locationName?: string;
     mapsUrl?: string;
     displayOrder?: number;
+    isSecondary?: boolean;
 }
 
 export interface RsvpRequestDto {

@@ -28,6 +28,8 @@ export type ApiErrorMessageKey =
     | 'eventVisibilityNotSupported'
     | 'eventTypeNotAvailable'
     | 'eventSessionScheduleLocked'
+    | 'eventSessionMainDatesReadOnly'
+    | 'eventSessionSecondaryAlreadyAssigned'
     | 'invalidEventType'
     | 'invalidPlanTierScope'
     | 'forbidden'
@@ -109,6 +111,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.EVENT_VISIBILITY_NOT_SUPPORTED]: 'eventVisibilityNotSupported',
     [ERROR_CODES.EVENT_TYPE_NOT_AVAILABLE]: 'eventTypeNotAvailable',
     [ERROR_CODES.EVENT_SESSION_SCHEDULE_LOCKED]: 'eventSessionScheduleLocked',
+    [ERROR_CODES.EVENT_SESSION_MAIN_DATES_READ_ONLY]: 'eventSessionMainDatesReadOnly',
+    [ERROR_CODES.EVENT_SESSION_SECONDARY_ALREADY_ASSIGNED]: 'eventSessionSecondaryAlreadyAssigned',
     [ERROR_CODES.INVALID_EVENT_TYPE]: 'invalidEventType',
     [ERROR_CODES.EVENT_STORAGE_LIMIT_EXCEEDED]: 'storageLimit',
     [ERROR_CODES.FORBIDDEN]: 'forbidden',

@@ -31,6 +31,10 @@ interface ScheduleEditorFormProps {
     createSession: ScheduleSessionMutator;
     updateSession: ScheduleSessionMutator;
     onClose: () => void;
+    // Prefills a brand-new session as the event's secondary one (e.g. a wedding's
+    // venue) when opened via the dedicated "add secondary session" action. Ignored
+    // when editing an existing session.
+    secondaryPrefillTitle?: string;
 }
 
 export function ScheduleEditorForm({
@@ -42,12 +46,14 @@ export function ScheduleEditorForm({
     createSession,
     updateSession,
     onClose,
+    secondaryPrefillTitle,
 }: ScheduleEditorFormProps) {
     const t = useTranslations('SchedulePage');
     const toErrorMessage = useApiErrorMessage();
     const { data: appConfig } = useAppConfig();
 
-    const initialTitle = editingSession?.title ?? '';
+    const createAsSecondary = !editingSession && Boolean(secondaryPrefillTitle);
+    const initialTitle = editingSession?.title ?? secondaryPrefillTitle ?? '';
     const initialDescription = editingSession?.description ?? '';
     const initialStartAt = editingSession?.startAt ? toDatetimeLocalValue(editingSession.startAt) : defaultStartAt;
     const initialEndAt = editingSession?.endAt ? toDatetimeLocalValue(editingSession.endAt) : '';
@@ -60,6 +66,11 @@ export function ScheduleEditorForm({
     // of letting a host attempt an edit that can only fail.
     const nowAt = getCurrentDatetimeLocalValue();
     const sessionHasStarted = Boolean(editingSession && eventStatus !== 'DRAFT' && isDatetimeLocalBefore(initialStartAt, nowAt));
+
+    // The main session's schedule is a permanent read-only mirror of the event's own
+    // (EVENT_SESSION_MAIN_DATES_READ_ONLY) — unconditional, unlike the lock above.
+    const isMainSession = Boolean(editingSession?.isMain);
+    const datesDisabled = sessionHasStarted || isMainSession;
 
     const [title, setTitle] = useState(initialTitle);
     const [description, setDescription] = useState(initialDescription);
@@ -75,9 +86,9 @@ export function ScheduleEditorForm({
     const nextDisplayOrder = useMemo(() => sessions.reduce((max, session) => Math.max(max, session.displayOrder), -1) + 1, [sessions]);
     const { startAtMin, startAtMax, endAtMin } = getScheduleDatetimeLocalBounds({ startAt, endAt });
     const scheduleError =
-        !sessionHasStarted && startAt && isDatetimeLocalBefore(startAt, startAtMin)
+        !datesDisabled && startAt && isDatetimeLocalBefore(startAt, startAtMin)
             ? t('host.startInPast')
-            : startAt && endAt && !isDatetimeLocalAfter(endAt, startAt)
+            : !datesDisabled && startAt && endAt && !isDatetimeLocalAfter(endAt, startAt)
               ? t('host.endBeforeStart')
               : null;
 
@@ -147,10 +158,11 @@ export function ScheduleEditorForm({
         };
 
         if (description.trim()) payload.description = description.trim();
-        if (startAt) payload.startAt = new Date(startAt).toISOString();
-        if (endAt) payload.endAt = new Date(endAt).toISOString();
+        if (!isMainSession && startAt) payload.startAt = new Date(startAt).toISOString();
+        if (!isMainSession && endAt) payload.endAt = new Date(endAt).toISOString();
         if (locationName.trim()) payload.locationName = locationName.trim();
         if (mapsUrl.trim()) payload.mapsUrl = mapsUrl.trim();
+        if (createAsSecondary) payload.isSecondary = true;
 
         try {
             if (editingSession) {
@@ -235,12 +247,12 @@ export function ScheduleEditorForm({
                                 type="datetime-local"
                                 value={startAt}
                                 onChange={handleStartAtChange}
-                                disabled={sessionHasStarted}
+                                disabled={datesDisabled}
                                 min={startAtMin}
                                 max={startAtMax}
                                 className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
                             />
-                            {sessionHasStarted && <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('host.startLocked')}</p>}
+                            {sessionHasStarted && !isMainSession && <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('host.startLocked')}</p>}
                         </FormFieldLabel>
                         <FormFieldLabel
                             label={t('host.fields.endAt')}
@@ -252,12 +264,14 @@ export function ScheduleEditorForm({
                                 type="datetime-local"
                                 value={endAt}
                                 onChange={handleEndAtChange}
+                                disabled={isMainSession}
                                 min={endAtMin}
-                                className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                                className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
                             />
                         </FormFieldLabel>
                     </div>
 
+                    {isMainSession && <p className="text-xs leading-relaxed text-ink-muted">{t('host.mainDatesLocked')}</p>}
                     {scheduleError && <p className="text-xs font-medium text-rose-500">{scheduleError}</p>}
 
                     <div className="grid gap-3 sm:grid-cols-2">

@@ -461,6 +461,20 @@
     }
 }
 
+@keyframes onboarding-guide-glow {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgb(255 122 89 / 0.35);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgb(255 122 89 / 0);
+    }
+}
+
+.motion-onboarding-guide {
+    animation: onboarding-guide-glow 2.6s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
     *,
     ::before,
