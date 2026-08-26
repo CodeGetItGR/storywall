@@ -2,10 +2,10 @@
 
 import useEmblaCarousel from 'embla-carousel-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
+import { ProtectedImage } from '@/components/common/ProtectedImage';
 import type { MediaResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
@@ -62,7 +62,7 @@ export function PostMediaCarousel({ media, initialIndex, onIndexChange, alt, cla
                 <div className="flex h-full">
                     {media.map((item, index) => (
                         <div key={item.id} className="relative shrink-0 grow-0 basis-full h-full">
-                            <Image
+                            <ProtectedImage
                                 src={item.mediaUrl}
                                 alt={alt}
                                 fill

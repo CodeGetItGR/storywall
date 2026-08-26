@@ -4,6 +4,7 @@ import { Dialog } from '@base-ui/react/dialog';
 import { X } from 'lucide-react';
 import { type ReactNode, useCallback } from 'react';
 
+import { useOverlayRouteHistory } from '@/hooks/useOverlayRouteHistory';
 import { cn } from '@/lib/utils';
 
 const sizeMap = {
@@ -24,6 +25,7 @@ interface ModalProps {
     className?: string;
     children: ReactNode;
     closeButtonPosition?: 'left' | 'right';
+    dismissOnBack?: boolean;
 }
 
 export function Modal({
@@ -36,16 +38,18 @@ export function Modal({
     className,
     children,
     closeButtonPosition = 'right',
+    dismissOnBack = true,
 }: ModalProps) {
     const isFull = size === 'full';
     const isSheet = variant === 'sheet';
     const isDrawer = variant === 'drawer';
+    const { requestClose } = useOverlayRouteHistory(open, onClose, dismissOnBack);
 
     const onOpenChange = useCallback(
         (nextOpen: boolean) => {
-            if (!nextOpen) onClose();
+            if (!nextOpen) requestClose();
         },
-        [onClose]
+        [requestClose]
     );
 
     return (

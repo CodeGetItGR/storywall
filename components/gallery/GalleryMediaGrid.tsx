@@ -1,11 +1,11 @@
 'use client';
 
 import { Check, ImagePlus, Loader2 } from 'lucide-react';
-import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import type { MouseEvent, PointerEvent, RefObject } from 'react';
 import { useCallback } from 'react';
 
+import { ProtectedImage } from '@/components/common/ProtectedImage';
 import type { MediaResponseDto } from '@/lib/api/types';
 import { formatShortDateTime } from '@/lib/datetime';
 import { cn } from '@/lib/utils';
@@ -95,12 +95,11 @@ export function GalleryMediaGrid({
                                     )}
                                 >
                                     <div className="relative aspect-square bg-surface-muted">
-                                        <Image
+                                        <ProtectedImage
                                             src={item.mediaUrl}
                                             alt={item.originalFilename}
                                             fill
                                             sizes="(min-width: 1024px) 25vw, 50vw"
-                                            draggable={false}
                                             className={cn(
                                                 'object-cover transition-transform group-hover:scale-[1.02]',
                                                 isSelected && 'brightness-75'

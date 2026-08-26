@@ -1,11 +1,11 @@
 'use client';
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
+import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { StoryCaptionBar, StoryHeader, StoryProgressBar, StoryViewersModal } from '@/components/story';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useDeleteStory, useEventMembers, useEventStories, useMarkStoryViewed, useMediaItem, useStory, useStoryViews } from '@/hooks';
@@ -172,7 +172,14 @@ export default function StoryBoundary({ id }: { id: string }) {
                 />
 
                 {media && (
-                    <Image src={media.mediaUrl} alt={t('userStory', { name: authorName })} fill className="object-cover" sizes="400px" priority />
+                    <ProtectedImage
+                        src={media.mediaUrl}
+                        alt={t('userStory', { name: authorName })}
+                        fill
+                        className="object-cover"
+                        sizes="400px"
+                        priority
+                    />
                 )}
 
                 {/* Tap zones */}

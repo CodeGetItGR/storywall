@@ -38,11 +38,7 @@ bugs in what shipped β€” each was an explicit scope decision at the time.
 
 ## 26-08-2026
 
-- Check why stories persist after 24h.
 - Event creation form step titles.
-- Keep originals is included in every plan and should be explicitly mentioned in the plan selection step.
-- Create set-up wizard for new hosts. Show them around.
-- Remove paid addons step.
 - Map pin opens schedule (it should open location)?
 
 - Plan selection step - Title and price needs to grow in size, below the title goes the member count, then the storage (we need to emphasize those, these are basically the differentiators between the plans), then the rest.

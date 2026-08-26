@@ -1,9 +1,10 @@
 'use client';
 
 import { Download, Loader2, X } from 'lucide-react';
-import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
+import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { useOverlayRouteHistory } from '@/hooks/useOverlayRouteHistory';
 import type { MediaResponseDto } from '@/lib/api/types';
 
 interface GalleryViewerProps {
@@ -17,6 +18,7 @@ interface GalleryViewerProps {
 
 export function GalleryViewer({ media, keepsOriginals, originalError, isDownloadingOriginal, onClose, onDownloadOriginal }: GalleryViewerProps) {
     const t = useTranslations('GalleryPage');
+    const { requestClose } = useOverlayRouteHistory(media !== null, onClose);
 
     if (!media) return null;
 
@@ -30,7 +32,7 @@ export function GalleryViewer({ media, keepsOriginals, originalError, isDownload
             {/* Viewer close button */}
             <button
                 type="button"
-                onClick={onClose}
+                onClick={requestClose}
                 className="absolute right-4 top-4 rounded-full bg-black/50 p-2 text-white"
                 aria-label={t('closeViewer')}
             >
@@ -39,7 +41,7 @@ export function GalleryViewer({ media, keepsOriginals, originalError, isDownload
             <div className="flex max-h-full max-w-5xl flex-col items-center gap-3">
                 {/* Viewer image */}
                 <div className="relative h-[70vh] w-[90vw] max-w-5xl">
-                    <Image src={media.mediaUrl} alt={media.originalFilename} fill sizes="90vw" className="object-contain" />
+                    <ProtectedImage src={media.mediaUrl} alt={media.originalFilename} fill sizes="90vw" className="object-contain" />
                 </div>
                 {/* Viewer actions */}
                 {keepsOriginals && (

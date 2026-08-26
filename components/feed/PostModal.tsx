@@ -92,6 +92,7 @@ export function PostModal() {
         <Modal
             open={isOpen}
             onClose={close}
+            dismissOnBack={false}
             size="lg"
             closeLabel={t('close')}
             closeButtonPosition={'left'}

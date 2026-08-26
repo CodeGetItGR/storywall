@@ -2,13 +2,14 @@
 
 import { Dialog } from '@base-ui/react/dialog';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { StoryCaptionBar, StoryHeader, StoryProgressBar, StoryViewersModal } from '@/components/story';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useDeleteStory, useEventMembers, useEventStories, useMarkStoryViewed, useMediaItem, useStory, useStoryViews } from '@/hooks';
+import { useOverlayRouteHistory } from '@/hooks/useOverlayRouteHistory';
 import { ApiError } from '@/lib/api/client';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { groupStoriesByAuthor } from '@/lib/stories';
@@ -32,6 +33,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
     const [showViewers, setShowViewers] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const { requestClose } = useOverlayRouteHistory(open, onCloseAction);
 
     const currentStoryId = open ? (activeStoryId ?? storyId) : activeStoryId;
 
@@ -79,9 +81,9 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
 
     const onOpenChange = useCallback(
         (nextOpen: boolean) => {
-            if (!nextOpen) onCloseAction();
+            if (!nextOpen) requestClose();
         },
-        [onCloseAction]
+        [requestClose]
     );
 
     useEffect(() => {
@@ -156,7 +158,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
     }
 
     function handleCloseStory() {
-        onCloseAction();
+        requestClose();
     }
 
     function handleToggleMenu() {
@@ -221,7 +223,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
 
                         {/* Media */}
                         {media && (
-                            <Image
+                            <ProtectedImage
                                 src={media.mediaUrl}
                                 alt={t('userStory', { name: authorName })}
                                 fill

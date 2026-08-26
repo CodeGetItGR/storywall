@@ -1,14 +1,14 @@
 'use client';
 
-    import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
+import { MdLogout } from 'react-icons/md';
 
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useAuth } from '@/hooks/useAuth';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
-import {MdLogout} from "react-icons/md";
 
 export function AccountLogoutButton({ onLogoutAction, variant = 'default' }: { onLogoutAction?: () => void; variant?: 'default' | 'rail' }) {
     const t = useTranslations('ProfilePage');
