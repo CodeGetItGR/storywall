@@ -41,7 +41,6 @@ export default function SettingsTab({
 
     const initial = {
         title: event.title,
-        subtitle: event.subtitle ?? '',
         description: event.description ?? '',
         locationName: event.location.name ?? '',
         locationAddress: event.location.address ?? '',
@@ -52,7 +51,6 @@ export default function SettingsTab({
     };
 
     const [title, setTitle] = useState(initial.title);
-    const [subtitle, setSubtitle] = useState(initial.subtitle);
     const [description, setDescription] = useState(initial.description);
     const [locationName, setLocationName] = useState(initial.locationName);
     const [locationAddress, setLocationAddress] = useState(initial.locationAddress);
@@ -123,10 +121,6 @@ export default function SettingsTab({
         setTitle(e.target.value);
     }
 
-    function handleSubtitleChange(e: React.ChangeEvent<HTMLInputElement>) {
-        setSubtitle(e.target.value);
-    }
-
     function handleDescriptionChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
         setDescription(e.target.value.slice(0, maxDescriptionLength));
     }
@@ -168,7 +162,6 @@ export default function SettingsTab({
 
         const patch: EventPatchDto = {};
         if (title.trim() !== initial.title) patch.title = title.trim();
-        if (subtitle.trim() !== initial.subtitle) patch.subtitle = subtitle.trim();
         if (description.trim() !== initial.description) patch.description = description.trim();
         if (locationName.trim() !== initial.locationName) patch.locationName = locationName.trim();
         if (locationAddress.trim() !== initial.locationAddress) patch.locationAddress = locationAddress.trim();

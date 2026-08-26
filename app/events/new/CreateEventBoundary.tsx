@@ -30,6 +30,7 @@ import type {
     EventTypeConvention,
 } from '@/lib/api/types';
 import { formatMoney, navigateToCheckout } from '@/lib/billing';
+import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import { getScheduleDatetimeLocalBounds, isDatetimeLocalBefore } from '@/lib/datetime';
 import { publicAssignableEventAddons } from '@/lib/planModules';
 import { getPlanPriceDetails } from '@/lib/planTiers';
@@ -55,7 +56,6 @@ export default function CreateEventPage() {
     const [eventType, setEventType] = useState<EventTypeConvention>('WEDDING');
     const [startAt, setStartAt] = useState('');
     const [timezone, setTimezone] = useState(getCurrentTimezone);
-    const [locationName, setLocationName] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [step, setStep] = useState<CreateEventStep>('type');
     const eventTypes = appConfig?.eventTypes ?? [];
@@ -75,6 +75,8 @@ export default function CreateEventPage() {
     );
     const selectedAddonServices = availableAddons.filter((service) => selectedAddonCodes.includes(service.code));
     const selectedEligibleAddonCodes = selectedAddonServices.map((service) => service.code);
+    const initialSessionTitleKey = getCreateEventCatalogEntry(selectedEventType)?.initialSessionTitleKey;
+    const initialSessionTitle = initialSessionTitleKey && t.has(initialSessionTitleKey) ? t(initialSessionTitleKey) : undefined;
     const timezoneOptions = useMemo(() => getSupportedTimezones(), []);
     const isTimezoneValid = timezoneOptions.includes(timezone);
     const { startAtMin } = getScheduleDatetimeLocalBounds({ startAt, endAt: null });
@@ -136,8 +138,8 @@ export default function CreateEventPage() {
             visibility: 'PRIVATE',
             startAt: new Date(startAt).toISOString(),
             timezone,
-            locationName: undefined,
             brandingSettings: {},
+            initialSessionTitle,
         };
 
         let event: EventResponseDto | null = null;
@@ -192,7 +194,6 @@ export default function CreateEventPage() {
             setTitle('');
             setStartAt('');
             setTimezone(getCurrentTimezone());
-            setLocationName('');
             setError(null);
             setCreatedDraftEventId(null);
         },
@@ -312,7 +313,6 @@ export default function CreateEventPage() {
                                         eventType={selectedEventType}
                                         eventTypes={eventTypes}
                                         startAt={startAt}
-                                        locationName={locationName.trim()}
                                         plan={selectedPlan}
                                         modules={appConfig?.modules ?? []}
                                         addons={selectedAddonServices}

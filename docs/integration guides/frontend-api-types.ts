@@ -218,7 +218,9 @@ interface EventRequestDto {
   coverMediaId?: string;
   brandingSettings: Record<string, unknown>; // required — send {} if none
   rsvpDeadline?: string;
-  isArchived: boolean;            // required — send false explicitly
+  initialSessionTitle?: string;   // max 255 — when set, seeds an EventSession anchored to
+                                   // startAt/endAt (displayOrder 0) in the same transaction; see
+                                   // fe-guides/event-creation-initial-session-fe-integration.md
 }
 
 /** Returned by GET /api/events (list) and POST /api/events — flat summary shape. */
@@ -230,7 +232,6 @@ interface EventResponseDto {
   coverMediaId: string | null;
   brandingSettings: Record<string, unknown>;
   rsvpDeadline: string | null;
-  isArchived: boolean;
   createdAt: string; updatedAt: string; deletedAt: string | null;
 }
 
@@ -243,7 +244,7 @@ interface EventPatchDto {
   startAt?: string; endAt?: string; timezone?: string;
   locationName?: string; locationAddress?: string; mapsUrl?: string;
   coverMediaId?: string; brandingSettings?: Record<string, unknown>;
-  rsvpDeadline?: string; isArchived?: boolean;
+  rsvpDeadline?: string;
 } // no eventType — not editable via PATCH
 
 // --- GET /api/events/{id} detail response (grouped/enriched — added 2026-07-30) ---
@@ -261,7 +262,6 @@ interface EventRsvpSummaryDto {
  * Returned by GET /api/events/{id} only (not the list endpoint). Everything that scales
  * with event activity — posts, comments, reactions, stories, individual media, individual
  * RSVPs, playlist suggestions/votes — is intentionally excluded; fetch those from their own
- * paginatable endpoints.
  */
 interface EventDetailResponseDto {
   id: string; title: string; subtitle: string | null; description: string | null;
@@ -270,7 +270,6 @@ interface EventDetailResponseDto {
   location: EventLocationDto;
   coverMedia: MediaResponseDto | null; // resolved, with a fresh presigned mediaUrl — not just an id
   brandingSettings: Record<string, unknown>;
-  isArchived: boolean;
   hosts: EventHostResponseDto[];       // small, bounded — co-hosts
   modules: EventModuleResponseDto[];   // fixed-size — one per module key
   sessions: EventSessionResponseDto[]; // bounded agenda items

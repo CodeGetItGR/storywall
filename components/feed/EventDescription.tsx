@@ -7,7 +7,7 @@ import { useEffect, useRef } from 'react';
 import { eventDescriptionViewsKey } from '@/lib/storageKeys';
 import { cn } from '@/lib/utils';
 
-const MAX_VISIBLE_VIEWS = 35;
+const MAX_VISIBLE_VIEWS = 2;
 
 function readViewCount(eventId: string) {
     if (typeof window === 'undefined') {

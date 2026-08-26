@@ -366,6 +366,7 @@ export interface EventRequestDto {
     coverMediaId?: string;
     brandingSettings: Record<string, unknown>; // required — send {} if none
     rsvpDeadline?: string;
+    initialSessionTitle?: string;
 }
 
 // Returned by GET /api/events (list) and POST /api/events — flat summary shape.

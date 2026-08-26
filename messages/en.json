@@ -89,6 +89,9 @@
         "reactionFailed": "Couldn't update your reaction. Please try again.",
         "playlistDigest": "Playlist update",
         "openPlaylist": "Open playlist",
+        "date": "Date",
+        "month": "Month",
+        "time": "Time",
         "pinned": "Pinned",
         "hostPost": "Host post"
     },
@@ -526,11 +529,11 @@
         "fieldLabels": {
             "WEDDING": {
                 "title": "Couple's names",
-                "startAt": "Ceremony date and time"
+                "startAt": "Date and time of the ceremony"
             },
             "BAPTISM": {
                 "title": "Child's name",
-                "startAt": "Baptism date and time"
+                "startAt": "Date and time of the ceremony"
             },
             "SOCIAL_EVENT": {
                 "title": "Event name",
@@ -555,6 +558,14 @@
             "CONFERENCE": {
                 "title": "Conference name",
                 "startAt": "Start date and time"
+            }
+        },
+        "initialSessions": {
+            "WEDDING": {
+                "title": "Ceremony"
+            },
+            "BAPTISM": {
+                "title": "Ceremony"
             }
         },
         "endAtPresets": {

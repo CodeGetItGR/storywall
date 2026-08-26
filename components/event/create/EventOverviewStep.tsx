@@ -20,7 +20,6 @@ type EventOverviewStepProps = {
     eventType: EventTypeConvention;
     eventTypes: AppEventTypeResponseDto[];
     startAt: string;
-    locationName: string;
     plan: PlanTierResponseDto;
     modules: PlatformModuleResponseDto[];
     addons: PaidServiceResponseDto[];
@@ -28,18 +27,7 @@ type EventOverviewStepProps = {
     hasDraft: boolean;
 };
 
-export function EventOverviewStep({
-    title,
-    eventType,
-    eventTypes,
-    startAt,
-    locationName,
-    plan,
-    modules,
-    addons,
-    error,
-    hasDraft,
-}: EventOverviewStepProps) {
+export function EventOverviewStep({ title, eventType, eventTypes, startAt, plan, modules, addons, error, hasDraft }: EventOverviewStepProps) {
     const t = useTranslations('CreateEventPage');
     const locale = useLocale();
     const eventTypeCopy = useLocalizedAppEventTypeCopy();
@@ -73,8 +61,6 @@ export function EventOverviewStep({
                 <p className="mt-1 text-sm text-ink-muted">
                     {eventTypeName} · {dateFormatter.format(new Date(startAt))}
                 </p>
-
-                {locationName && <p className="mt-1 text-sm text-ink-muted">{locationName}</p>}
             </section>
 
             {/* Pricing */}

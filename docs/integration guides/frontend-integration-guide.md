@@ -23,7 +23,9 @@ guides it links out to:
 comment threads are now paginated, oldest first), and
 [`rsvp-status-fe-integration.md`](rsvp-status-fe-integration.md) (a member's own membership
 record now carries their `rsvpId`, so you can tell whether they've responded without knowing
-that id in advance).
+that id in advance), and
+[`event-creation-initial-session-fe-integration.md`](event-creation-initial-session-fe-integration.md)
+(event creation can now seed a first `EventSession` anchored to `startAt`/`endAt`).
 
 This doc was originally written 2026-08-04 directly from the controller/DTO source. Refreshed
 2026-08-09 to correct a stale claim that no billing integration existed — it now does,
@@ -101,7 +103,7 @@ the two conditions failed. Guest invitations are unchanged and stay forwardable.
 
 | Method | Path | Auth | Notes |
 |---|---|---|---|
-| POST | `/api/events` | `ROLE_USER` | atomically creates the `Event` + host's `EventMember` + `EventHost` |
+| POST | `/api/events` | `ROLE_USER` | atomically creates the `Event` + host's `EventMember` + `EventHost` + (2026-08-26) an optional initial `EventSession` when `initialSessionTitle` is sent — see [`event-creation-initial-session-fe-integration.md`](event-creation-initial-session-fe-integration.md) |
 | PATCH | `/api/events/{id}` | host of the event | all fields editable **except `eventType`** (see §3) |
 | DELETE | `/api/events/{id}` | host of the event | |
 | POST | `/api/events/{eventId}/hosts` | existing host | promote a co-host **immediately** (`{ userId }`) — target must be a registered, non-guest user whose id you already hold |
@@ -246,8 +248,7 @@ get-by-id, patch (`maxGuests`, `firstName`, `lastName`, `email`, `expiresAt`), d
 ### Event settings
 
 `PATCH /api/events/{id}` — title, subtitle, description, visibility, startAt, endAt, timezone,
-locationName, locationAddress, mapsUrl, coverMediaId, brandingSettings, rsvpDeadline,
-isArchived. Cover photo itself goes through the normal media-upload endpoint first
+locationName, locationAddress, mapsUrl, coverMediaId, brandingSettings, rsvpDeadline. Cover photo itself goes through the normal media-upload endpoint first
 (`POST /api/events/{eventId}/media`), then the returned `mediaId` gets PATCHed onto
 `coverMediaId`. `eventType` is **not** patchable (§3).
 

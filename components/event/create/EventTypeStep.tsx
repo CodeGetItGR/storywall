@@ -1,11 +1,13 @@
 'use client';
 
 import { Check } from 'lucide-react';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
 import type { AppEventTypeResponseDto, EventTypeAccentToken, EventTypeConvention } from '@/lib/api/types';
+import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import { cn } from '@/lib/utils';
 
 // accentToken is a BE-owned design token (see event-type-voice-pack-fe-integration.md);
@@ -63,6 +65,7 @@ export function EventTypeStep({ eventTypes, selectedEventType, onSelectAction }:
                     const style = ACCENT_TOKEN_STYLES[type.accentToken] ?? FALLBACK_STYLE;
                     const isSelected = type.eventTypeKey === selectedEventType;
                     const copy = eventTypeCopy(type.eventTypeKey);
+                    const backgroundImageSrc = getCreateEventCatalogEntry(type.eventTypeKey)?.backgroundImageSrc;
 
                     return (
                         <button
@@ -73,16 +76,41 @@ export function EventTypeStep({ eventTypes, selectedEventType, onSelectAction }:
                             aria-pressed={isSelected}
                             className={cn(
                                 'group relative min-h-44 overflow-hidden rounded-lg border bg-card p-5 text-left transition duration-200 hover:-translate-y-0.5',
-                                isSelected ? cn('border-2', style.selected) : cn('border-border shadow-sm', style.surface)
+                                backgroundImageSrc && 'flex flex-col justify-end text-white',
+                                isSelected ? cn('border-2', style.selected) : cn('border-border shadow-sm', !backgroundImageSrc && style.surface)
                             )}
                         >
+                            {backgroundImageSrc && (
+                                <>
+                                    <Image
+                                        src={backgroundImageSrc}
+                                        alt=""
+                                        fill
+                                        sizes="(min-width: 640px) 320px, 100vw"
+                                        className="object-cover transition duration-300 group-hover:scale-105"
+                                    />
+                                    <span className="absolute inset-0 bg-black/10" />
+                                    <span className="absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-black/88 via-black/60 to-transparent backdrop-blur-[1px]" />
+                                </>
+                            )}
                             {isSelected && (
-                                <span className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-full bg-ink text-white shadow-sm">
+                                <span className="absolute right-4 top-4 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-ink text-white shadow-sm">
                                     <Check className="h-4 w-4" />
                                 </span>
                             )}
-                            <span className="mt-5 block pr-8 text-xl font-bold text-ink">{copy.name}</span>
-                            {copy.tagline && <span className="mt-1.5 block max-w-64 text-sm leading-5 text-ink-muted">{copy.tagline}</span>}
+                            <span className={cn('relative z-10 block pr-8 text-xl font-bold', backgroundImageSrc ? 'text-white' : 'mt-5 text-ink')}>
+                                {copy.name}
+                            </span>
+                            {copy.tagline && (
+                                <span
+                                    className={cn(
+                                        'relative z-10 mt-1.5 block max-w-64 text-sm leading-5',
+                                        backgroundImageSrc ? 'text-white/86' : 'text-ink-muted'
+                                    )}
+                                >
+                                    {copy.tagline}
+                                </span>
+                            )}
                         </button>
                     );
                 })}
