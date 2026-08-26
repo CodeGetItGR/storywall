@@ -1,16 +1,16 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig, useAppRsvpConfig } from '@/hooks/useAppConfig';
-import { useCreateRsvp, useRsvp, useUpdateRsvp } from '@/hooks/useRsvps';
+import { setMemberRsvpIdInCaches, useCreateRsvp, useRsvp, useUpdateRsvp } from '@/hooks/useRsvps';
 import { ApiError } from '@/lib/api/client';
 import { isModuleNotAvailableError } from '@/lib/api/errors';
 import type { AttendanceStatus, RsvpPlusOnes } from '@/lib/api/types';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
-import { rsvpStorageKey } from '@/lib/storageKeys';
 import { useActiveEvent, useActiveMember, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
 export type AttendingStatus = 'attending' | 'not-attending';
@@ -20,11 +20,13 @@ export function useRsvpSubmitPageData() {
     const toErrorMessage = useApiErrorMessage();
     const router = useRouter();
     const searchParams = useSearchParams();
+    const queryClient = useQueryClient();
 
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
     const eventId = activeEvent?.id ?? null;
     const memberId = activeMember?.id ?? null;
+    const rsvpId = activeMember?.rsvpId ?? null;
     const isHost = useIsHost();
     const isContextLoading = useEventContextLoading();
     const { data: appConfig } = useAppConfig();
@@ -47,17 +49,10 @@ export function useRsvpSubmitPageData() {
     });
     const [submitted, setSubmitted] = useState(false);
 
-    const rsvpId = useMemo(() => {
-        if (!memberId || typeof window === 'undefined') {
-            return undefined;
-        }
-
-        return window.localStorage.getItem(rsvpStorageKey(memberId));
-    }, [memberId]);
-
     const { data: existingRsvp, error: existingRsvpError } = useRsvp(rsvpId ?? null);
     const isStaleRsvp = existingRsvpError instanceof ApiError && existingRsvpError.status === 404;
     const effectiveRsvpId = isStaleRsvp ? null : rsvpId;
+    const hasExistingRsvp = Boolean(existingRsvp && effectiveRsvpId);
     const hydratedRef = useRef(false);
 
     useEffect(() => {
@@ -82,13 +77,13 @@ export function useRsvpSubmitPageData() {
     }, [isContextLoading, isHost, router]);
 
     useEffect(() => {
-        if (!memberId || !isStaleRsvp || !rsvpId) {
+        if (!eventId || !memberId || !isStaleRsvp || !rsvpId) {
             return;
         }
 
-        window.localStorage.removeItem(rsvpStorageKey(memberId));
+        setMemberRsvpIdInCaches(queryClient, memberId, null, eventId);
         router.refresh();
-    }, [isStaleRsvp, memberId, rsvpId, router]);
+    }, [eventId, isStaleRsvp, memberId, queryClient, rsvpId, router]);
 
     const createRsvp = useCreateRsvp(eventId ?? undefined);
     const updateRsvp = useUpdateRsvp(effectiveRsvpId ?? '', eventId ?? undefined);
@@ -151,7 +146,7 @@ export function useRsvpSubmitPageData() {
                         notes: message || undefined,
                     });
                 } else {
-                    const created = await createRsvp.mutateAsync({
+                    await createRsvp.mutateAsync({
                         eventMemberId: memberId,
                         attendanceStatus,
                         adultCount,
@@ -159,8 +154,6 @@ export function useRsvpSubmitPageData() {
                         notes: message || undefined,
                         submittedAt: new Date().toISOString(),
                     });
-
-                    localStorage.setItem(rsvpStorageKey(memberId), created.id);
                 }
             } catch {
                 return;
@@ -175,6 +168,7 @@ export function useRsvpSubmitPageData() {
         attending,
         canSubmitRsvp,
         eventType: activeEvent?.eventType ?? null,
+        hasExistingRsvp,
         isSubmitting,
         memberId,
         message,

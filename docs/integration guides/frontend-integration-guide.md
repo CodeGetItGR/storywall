@@ -18,15 +18,20 @@ guides it links out to:
 [`gallery-media-pagination-fe-integration.md`](gallery-media-pagination-fe-integration.md)
 (the gallery listing itself is now paginated), and
 [`admin-list-endpoints-pagination-fe-integration.md`](admin-list-endpoints-pagination-fe-integration.md)
-(users, audit logs, moderation actions, reports, and telemetry events are now paginated), and
+(users, audit logs, moderation actions, reports, and telemetry events are now paginated),
 [`comments-pagination-fe-integration.md`](comments-pagination-fe-integration.md) (post
-comment threads are now paginated, oldest first).
+comment threads are now paginated, oldest first), and
+[`rsvp-status-fe-integration.md`](rsvp-status-fe-integration.md) (a member's own membership
+record now carries their `rsvpId`, so you can tell whether they've responded without knowing
+that id in advance).
 
 This doc was originally written 2026-08-04 directly from the controller/DTO source. Refreshed
 2026-08-09 to correct a stale claim that no billing integration existed — it now does,
 extensively; see the section below. Refreshed again 2026-08-16: **wishlist and wishbook moved out
 of §2 ("not wireable") and into §1** — they are real modules now — and co-host invitations gained
-a pending-invitation flow.
+a pending-invitation flow. Refreshed again 2026-08-26: `EventMemberResponseDto` gained `rsvpId`,
+closing the gap where the FE had no reliable way to tell whether a member had already submitted
+an RSVP.
 
 ## 0. Base setup
 
@@ -88,7 +93,7 @@ the two conditions failed. Guest invitations are unchanged and stay forwardable.
 
 | Method | Path | Auth | Notes |
 |---|---|---|---|
-| GET | `/api/me/events` | any authenticated (incl. guest) | every `EventMemberResponseDto` for the caller — this is what backs "restore active event" |
+| GET | `/api/me/events` | any authenticated (incl. guest) | every `EventMemberResponseDto` for the caller — this is what backs "restore active event"; each entry's `rsvpId` (2026-08-26) tells you whether that membership has an RSVP yet, see [`rsvp-status-fe-integration.md`](rsvp-status-fe-integration.md) |
 | GET | `/api/events` | authenticated | flat list, `EventResponseDto[]` |
 | GET | `/api/events/{id}` | authenticated | `EventDetailResponseDto` — grouped/enriched: `schedule`, `location`, resolved `coverMedia`, `hosts[]`, `modules[]`, `sessions[]`, `rsvpSummary` (aggregate only). Posts/comments/reactions/stories/individual RSVPs are deliberately excluded — fetch from their own endpoints. |
 
@@ -210,8 +215,12 @@ something offensive after a freeze.
 |---|---|---|---|
 | POST | `/api/rsvps` | authenticated | `{ eventMemberId, attendanceStatus, adultCount, childCount, submittedAt, ... }` |
 | PATCH | `/api/rsvps/{id}` | the RSVP's own member, or host | `attendanceStatus`, `phone`, `adultCount`, `childCount`, `notes` — counts are now bounds-validated server-side (adults 1-5, children 0-4), see [`app-config-fe-integration.md`](app-config-fe-integration.md) |
-| GET | `/api/rsvps/{id}` | authenticated | |
+| GET | `/api/rsvps/{id}` | authenticated | requires already knowing the RSVP's own id — to check *whether* the caller has one at all, read `rsvpId` off their `EventMemberResponseDto` instead, see below |
 | POST/GET/DELETE | `/api/rsvp-session-responses` | authenticated | per-session attendance, `{ rsvpId, eventSessionId, isAttending }` |
+
+**"Has this member already RSVP'd?" (2026-08-26).** `EventMemberResponseDto.rsvpId` is `null`
+until they submit one, then holds the `Rsvp`'s id — no need to track it client-side across
+sessions. Fully covered in [`rsvp-status-fe-integration.md`](rsvp-status-fe-integration.md).
 
 ### RSVP — host dashboard
 
@@ -293,7 +302,8 @@ This means **`GET /api/playlist-suggestions/{suggestionId}/votes` is no longer n
 `GET /api/me/events` → `EventMemberResponseDto[]`, one per event the caller belongs to
 (covers both registered-user memberships and guest invitations sharing the same email). Join
 with `GET /api/events/{id}` per event for cover image / member count if the list view needs
-more than the membership record carries.
+more than the membership record carries. Each entry's `rsvpId` (2026-08-26) doubles as "has
+this member RSVP'd" — see [`rsvp-status-fe-integration.md`](rsvp-status-fe-integration.md).
 
 ### Notifications — repurposed for hosts (2026-08-04), paginated (2026-08-25) ⚠️ BREAKING
 

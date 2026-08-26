@@ -108,15 +108,7 @@ export function PlanMatrixMobileCard({ children, plan, statusLabel }: { children
     );
 }
 
-export function PlanMatrixMobileRow({
-    action,
-    caption,
-    title,
-}: {
-    action: ReactNode;
-    caption?: string;
-    title: string;
-}) {
+export function PlanMatrixMobileRow({ action, caption, title }: { action: ReactNode; caption?: string; title: string }) {
     return (
         <div className="flex items-center justify-between gap-3 rounded-md bg-canvas px-3 py-2">
             <div className="min-w-0">

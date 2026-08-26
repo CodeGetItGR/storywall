@@ -5,12 +5,14 @@ import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
 import Avatar from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
 import { avatarColorFromId, initialsFromName } from '@/lib/utils';
 
 interface StoryHeaderProps {
     authorName: string;
     authorId: string;
     timeStr: string;
+    tone?: 'dark' | 'light';
     canManage: boolean;
     canDelete: boolean;
     showMenu: boolean;
@@ -24,6 +26,7 @@ export function StoryHeader({
     authorName,
     authorId,
     timeStr,
+    tone = 'dark',
     canManage,
     canDelete,
     showMenu,
@@ -33,6 +36,7 @@ export function StoryHeader({
     onDeleteRequest,
 }: StoryHeaderProps) {
     const t = useTranslations('StoryPage');
+    const isLight = tone === 'light';
 
     return (
         <>
@@ -44,12 +48,12 @@ export function StoryHeader({
                             color={avatarColorFromId(authorId)}
                             size="sm"
                             alt={authorName}
-                            className="border-2 border-white/60"
+                            className={cn('border-2', isLight ? 'border-black/10' : 'border-white/60')}
                         />
                     )}
                     <div>
-                        <p className="text-white text-sm font-semibold leading-tight">{authorName}</p>
-                        <p className="text-white/60 text-xs leading-tight">{timeStr}</p>
+                        <p className={cn('text-sm font-semibold leading-tight', isLight ? 'text-ink' : 'text-white')}>{authorName}</p>
+                        <p className={cn('text-xs leading-tight', isLight ? 'text-ink-muted' : 'text-white/60')}>{timeStr}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -57,7 +61,10 @@ export function StoryHeader({
                         <button
                             onClick={onToggleMenu}
                             aria-label={t('moreOptions')}
-                            className="w-8 h-8 flex items-center justify-center rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
+                            className={cn(
+                                'flex h-8 w-8 items-center justify-center rounded-full transition-colors',
+                                isLight ? 'bg-black/8 text-ink hover:bg-black/12' : 'bg-black/30 text-white hover:bg-black/50'
+                            )}
                         >
                             <MoreVertical className="w-4 h-4" />
                         </button>
@@ -65,7 +72,10 @@ export function StoryHeader({
                     <button
                         onClick={onClose}
                         aria-label={t('closeStory')}
-                        className="w-8 h-8 flex items-center justify-center rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
+                        className={cn(
+                            'flex h-8 w-8 items-center justify-center rounded-full transition-colors',
+                            isLight ? 'bg-black/8 text-ink hover:bg-black/12' : 'bg-black/30 text-white hover:bg-black/50'
+                        )}
                     >
                         <X className="w-4 h-4" />
                     </button>

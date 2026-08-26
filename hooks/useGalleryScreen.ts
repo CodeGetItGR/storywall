@@ -138,7 +138,10 @@ export function useGalleryScreen() {
 
         try {
             const response = await api.download(
-                endpoints.events.mediaArchiveSelected(eventId, gallerySelection.selectedItems.map((item) => item.id))
+                endpoints.events.mediaArchiveSelected(
+                    eventId,
+                    gallerySelection.selectedItems.map((item) => item.id)
+                )
             );
             downloadBlob(await response.blob(), `gallery-selected-${gallerySelection.selectedCount}.zip`);
             gallerySelection.exitSelectionMode();

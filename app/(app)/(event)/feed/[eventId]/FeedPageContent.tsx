@@ -17,14 +17,16 @@ import { RsvpPrompt } from '@/components/feed/RsvpPrompt';
 import { StoriesRow } from '@/components/feed/StoriesRow';
 import { StoryModal } from '@/components/story/StoryModal';
 import { routes } from '@/lib/routes';
+import { cn } from '@/lib/utils';
 
 import { useFeedPage } from './FeedPageContext';
 
 export function FeedPageContent() {
     const t = useTranslations('FeedPage');
-    const { event, eventId, isFetchingNextPage, isHost, loadMoreRef, loadingMoreLabel, moduleFlags, posts, storedRsvpId } = useFeedPage();
+    const { currentMemberRsvpId, event, eventId, isFetchingNextPage, isHost, loadMoreRef, loadingMoreLabel, moduleFlags, posts } = useFeedPage();
     const [storyId, setStoryId] = useState<string | null>(null);
     const hasLocation = Boolean(event.location.name || event.location.address || event.location.mapsUrl);
+    const shouldShowRSVP = moduleFlags.rsvp && !isHost && currentMemberRsvpId === null;
 
     function openStoryModal(nextStoryId: string) {
         setStoryId(nextStoryId);
@@ -79,7 +81,7 @@ export function FeedPageContent() {
 
             {/* Stories */}
             {moduleFlags.stories && (
-                <section id="stories" className="top-0 border-b border-border bg-background/90 backdrop-blur-sm">
+                <section id="stories" className={cn('top-0 bg-background/90 backdrop-blur-sm')}>
                     <StoriesRow eventId={eventId} onOpenStoryAction={openStoryModal} />
                 </section>
             )}
@@ -87,8 +89,8 @@ export function FeedPageContent() {
             {event.description && <EventDescription eventId={event.id} description={event.description} />}
 
             {/* RSVP */}
-            {moduleFlags.rsvp && !isHost && storedRsvpId === null && (
-                <section>
+            {shouldShowRSVP && (
+                <section className={'px-4 pb-5'}>
                     <RsvpPrompt deadline={event.schedule.rsvpDeadline ?? null} />
                 </section>
             )}

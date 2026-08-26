@@ -1,5 +1,5 @@
 import { Menu } from '@base-ui/react/menu';
-import { Menu as MenuIcon } from 'lucide-react';
+import { Menu as MenuIcon, X } from 'lucide-react';
 import type { MouseEvent } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -21,10 +21,29 @@ export function ContextMenuTab({ active, items, label, pathname, searchParams, o
         <Menu.Root>
             <Menu.Trigger
                 aria-label={label}
-                className="flex min-w-12 flex-col items-center gap-0.5 px-3 py-1 transition-opacity lg:hidden"
+                className="group flex min-w-12 flex-col items-center gap-0.5 px-3 py-1 transition-opacity lg:hidden"
                 aria-current={active ? 'page' : undefined}
             >
-                <MenuIcon className={cn('h-5 w-5', active ? 'text-ink opacity-100' : 'text-ink opacity-70')} aria-hidden="true" />
+                <span
+                    className={cn(
+                        'relative flex h-10 w-10 items-center justify-center transition-all duration-200',
+                        active ? 'scale-105 opacity-100' : 'scale-100 opacity-50',
+                        'group-data-[popup-open]:scale-105 group-data-[popup-open]:opacity-100'
+                    )}
+                >
+                    <MenuIcon
+                        className={cn(
+                            'absolute h-5.5 w-5.5 transition-all duration-200',
+                            active ? 'text-ink opacity-100' : 'text-ink opacity-100',
+                            'group-data-[popup-open]:scale-90 group-data-[popup-open]:opacity-0'
+                        )}
+                        aria-hidden="true"
+                    />
+                    <X
+                        className="absolute h-5.5 w-5.5 scale-90 text-ink opacity-0 transition-all duration-200 group-data-[popup-open]:scale-100 group-data-[popup-open]:opacity-100"
+                        aria-hidden="true"
+                    />
+                </span>
             </Menu.Trigger>
             <Menu.Portal>
                 <Menu.Positioner

@@ -23,32 +23,27 @@ export function ScheduleStoryContent({ sessions, locale }: ScheduleStoryContentP
     const unscheduledSessions = groupedSessions.unscheduled ?? [];
 
     return (
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,#1f2937_0%,#111827_44%,#0b0f17_100%)]">
-            {/* Schedule content */}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#212a3d_0%,#1a2131_100%)]">
+            {/* Schedule Content */}
             <div className="h-full overflow-y-auto px-5 pb-10 pt-24 text-white">
-                <div className="mb-6">
-                    <h1 className="text-3xl font-bold leading-tight">{t('story.title')}</h1>
-                </div>
-
                 <div className="flex flex-col gap-6">
                     {datedKeys.map((date) => (
                         <section key={date}>
+                            {/* Date Header */}
                             <div className="mb-3 flex items-center gap-3">
-                                <div className="flex h-10 w-10 flex-col items-center justify-center rounded-xl bg-white/12">
-                                    <span className="text-[9px] font-semibold uppercase leading-none text-amber-100">
+                                <div className="flex h-11 w-11 flex-col items-center justify-center rounded-full bg-white text-center shadow-[0_10px_24px_rgba(0,0,0,0.16)]">
+                                    <span className="text-[10px] font-semibold uppercase leading-none text-amber-700">
                                         {formatDate(locale, `${date}T00:00:00`, { month: 'short' })}
                                     </span>
-                                    <span className="text-sm font-bold leading-none text-white">
+                                    <span className="text-base font-bold leading-none text-[#1b2232]">
                                         {formatDate(locale, `${date}T00:00:00`, { day: 'numeric' })}
                                     </span>
                                 </div>
-                                <p className="text-sm font-bold text-white">
-                                    {formatDate(locale, `${date}T00:00:00`, { weekday: 'long', month: 'short', day: 'numeric' })}
-                                </p>
+                                <p className="text-sm font-bold text-white/92">{formatDate(locale, `${date}T00:00:00`, { weekday: 'long' })}</p>
                             </div>
 
-                            <div className="relative flex flex-col gap-3 pl-5">
-                                <div className="absolute bottom-2 left-[8px] top-2 w-px bg-white/20" aria-hidden="true" />
+                            {/* Session List */}
+                            <div className="flex flex-col">
                                 {groupedSessions[date].map((session) => (
                                     <ScheduleStorySession key={session.id} session={session} locale={locale} />
                                 ))}
@@ -58,11 +53,13 @@ export function ScheduleStoryContent({ sessions, locale }: ScheduleStoryContentP
 
                     {unscheduledSessions.length > 0 && (
                         <section>
+                            {/* Unscheduled Header */}
                             <div className="mb-3 flex items-center gap-2">
                                 <Clock className="h-4 w-4 text-white/55" aria-hidden="true" />
-                                <p className="text-sm font-bold text-white">{t('unscheduled')}</p>
+                                <p className="text-sm font-bold text-white/92">{t('unscheduled')}</p>
                             </div>
-                            <div className="flex flex-col gap-3">
+                            {/* Unscheduled Sessions */}
+                            <div className="flex flex-col border-t border-white/10">
                                 {unscheduledSessions.map((session) => (
                                     <ScheduleStorySession key={session.id} session={session} locale={locale} />
                                 ))}

@@ -8,11 +8,11 @@ export function BannerOverlay({ title, actions }: { title: string; actions?: Rea
                 aria-hidden="true"
             />
             <div
-                className="absolute inset-y-0 right-0 w-[46%] rounded-r-[1.5rem] bg-[linear-gradient(270deg,rgba(28,20,16,0.28)_0%,rgba(28,20,16,0.14)_36%,rgba(28,20,16,0)_100%)]"
+                className="absolute inset-y-0 right-0 w-[34%] rounded-r-[1.5rem] bg-[linear-gradient(270deg,rgba(28,20,16,0.12)_0%,rgba(28,20,16,0.06)_34%,rgba(28,20,16,0)_100%)]"
                 aria-hidden="true"
             />
             <div
-                className="absolute inset-x-0 bottom-0 h-[52%] rounded-b-[1.5rem] bg-[linear-gradient(180deg,rgba(28,20,16,0)_0%,rgba(28,20,16,0.14)_22%,rgba(28,20,16,0.52)_100%)]"
+                className="absolute inset-x-0 bottom-0 h-[40%] rounded-b-[1.5rem] bg-[linear-gradient(180deg,rgba(28,20,16,0)_0%,rgba(28,20,16,0.08)_34%,rgba(28,20,16,0.28)_100%)]"
                 aria-hidden="true"
             />
             <div className="absolute inset-y-0 right-0 flex flex-col justify-between p-3">

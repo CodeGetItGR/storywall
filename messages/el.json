@@ -1398,6 +1398,8 @@
         "plusOnes": "Συνοδοί",
         "messagePlaceholder": "Προαιρετικό — μοιραστείτε τον ενθουσιασμό σας ή ένα ξεχωριστό σημείωμα...",
         "submitRsvp": "Υποβολή RSVP",
+        "alreadySubmittedButton": "Το RSVP έχει ήδη υποβληθεί",
+        "alreadySubmittedMessage": "Το RSVP σας έχει ήδη υποβληθεί για αυτή την εκδήλωση.",
         "submitError": "Κάτι πήγε στραβά κατά την υποβολή του RSVP. Δοκιμάστε ξανά.",
         "whosComing": "Ποιοι έρχονται",
         "moduleUnavailable": "Το RSVP δεν είναι διαθέσιμο στο τρέχον πλάνο αυτής της εκδήλωσης.",

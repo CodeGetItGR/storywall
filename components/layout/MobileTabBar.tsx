@@ -12,6 +12,7 @@ import { AccountDrawer } from '@/components/profile';
 import { useAuth } from '@/hooks/useAuth';
 import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
 import { routes } from '@/lib/routes';
+import { cn } from '@/lib/utils';
 import { useComposer } from '@/providers/ComposerProvider';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 import { useMobileChrome } from '@/providers/MobileChromeProvider';
@@ -95,18 +96,23 @@ export function MobileTabBar() {
                             aria-label={t('openAccount')}
                             aria-expanded={accountOpen}
                             aria-controls="mobile-account-drawer"
-                            className={`flex h-full w-full items-center justify-center transition-colors ${
-                                accountActive ? 'bg-primary-light' : 'hover:bg-surface-muted'
-                            }`}
+                            className="flex h-full w-full items-center justify-center transition-colors hover:bg-surface-muted"
                         >
-                            <Image
-                                src="/icons/profile.svg"
-                                alt={accountLabel}
-                                width={24}
-                                height={24}
-                                className={`h-6 w-6 transition-opacity ${accountActive ? 'opacity-100' : 'opacity-80'}`}
-                                loading="eager"
-                            />
+                            <span
+                                className={cn(
+                                    'flex h-10 w-10 items-center justify-center transition-all duration-200',
+                                    accountActive ? 'scale-105 opacity-100' : 'scale-100 opacity-50'
+                                )}
+                            >
+                                <Image
+                                    src="/icons/profile.svg"
+                                    alt={accountLabel}
+                                    width={22}
+                                    height={22}
+                                    className="h-5.5 w-5.5 transition-all duration-200"
+                                    loading="eager"
+                                />
+                            </span>
                         </button>
                     </div>
 

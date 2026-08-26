@@ -36,8 +36,8 @@ export function RsvpPrompt({ deadline, className }: { deadline: string | null; c
     );
 
     return (
-        <div className={cn('flex items-center justify-between gap-3 border-b border-border/50 bg-card p-3', className)}>
-            <div>
+        <div className={cn('flex items-center justify-between gap-2 bg-orangish py-3 px-4 rounded-full', className)}>
+            <div className={'pl-2'}>
                 <p className="text-sm font-bold text-ink">{t('willYouAttend')}</p>
                 {formattedDeadline && <p className="text-xs text-ink-muted mt-0.5">{t('until', { date: formattedDeadline })}</p>}
             </div>

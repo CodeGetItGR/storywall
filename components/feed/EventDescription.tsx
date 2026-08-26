@@ -44,7 +44,7 @@ export function EventDescription({ eventId, description, className }: { eventId:
 
     return (
         <section ref={sectionRef} className={cn('invisible pt-2', className)}>
-            <div className="border border-border/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(251,241,230,0.8))] px-4 py-4 shadow-[0_10px_30px_rgba(36,31,26,0.05)]">
+            <div className="px-4 py-4">
                 <div className="flex items-start gap-3">
                     <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-primary-light text-primary-dark">
                         <Sparkles className="h-4 w-4" aria-hidden="true" />

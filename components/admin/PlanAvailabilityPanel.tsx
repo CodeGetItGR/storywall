@@ -144,7 +144,9 @@ export function PlanAvailabilityPanel() {
                                         <th className="min-w-20 px-2 py-2 text-center">{t('planAvailability.allTypes')}</th>
                                         {matrix.eventTypes.map((eventType) => (
                                             <th key={eventType.eventTypeKey} className="min-w-24 max-w-32 px-2 py-2 text-center">
-                                                <span className="block normal-case tracking-normal text-ink-muted">{localizedText(eventType.name)}</span>
+                                                <span className="block normal-case tracking-normal text-ink-muted">
+                                                    {localizedText(eventType.name)}
+                                                </span>
                                                 {!eventType.isEnabled && (
                                                     <span className="block text-[9px] text-status-neutral">{t('eventTypes.disabled')}</span>
                                                 )}

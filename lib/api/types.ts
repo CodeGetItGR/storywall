@@ -802,6 +802,7 @@ export interface EventMemberResponseDto {
     isFeatured: boolean;
     avatarMediaId: string | null;
     joinedAt: string;
+    rsvpId: string | null;
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;

@@ -21,14 +21,14 @@ export function TabLink({ href, icon, label, active, onClick }: TabLinkProps) {
             aria-label={label}
             aria-current={active ? 'page' : undefined}
         >
-            <Image
-                src={icon}
-                alt={label}
-                width={20}
-                height={20}
-                className={cn('h-5 w-5 transition-opacity', active ? 'opacity-100' : 'opacity-70')}
-                loading="eager"
-            />
+            <span
+                className={cn(
+                    'flex h-10 w-10 items-center justify-center transition-all duration-200',
+                    active ? 'scale-105 opacity-100' : 'scale-100 opacity-50'
+                )}
+            >
+                <Image src={icon} alt={label} width={22} height={22} className="h-5.5 w-5.5 transition-all duration-200" loading="eager" />
+            </span>
         </Link>
     );
 }

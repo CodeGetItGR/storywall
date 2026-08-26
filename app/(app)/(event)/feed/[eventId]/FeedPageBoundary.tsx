@@ -1,5 +1,6 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo } from 'react';
@@ -9,11 +10,10 @@ import { useEventPosts } from '@/hooks';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEvent } from '@/hooks/useEvent';
 import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
-import { useRsvp } from '@/hooks/useRsvps';
+import { setMemberRsvpIdInCaches, useRsvp } from '@/hooks/useRsvps';
 import { ApiError } from '@/lib/api/client';
 import { EVENT_MODULE_KEYS, type ModuleKeyConvention } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
-import { rsvpStorageKey } from '@/lib/storageKeys';
 import { useActiveMember, useEventSwitcher, useIsHost } from '@/providers/EventProvider';
 
 import { FeedPageContent } from './FeedPageContent';
@@ -22,9 +22,10 @@ import { FeedPageProvider } from './FeedPageContext';
 export function FeedPageBoundary({ eventId }: { eventId: string }) {
     const t = useTranslations('FeedPage');
     const router = useRouter();
+    const queryClient = useQueryClient();
     const activeMember = useActiveMember();
     const isHost = useIsHost();
-    const memberId = activeMember?.id ?? null;
+    const currentMemberRsvpId = activeMember?.rsvpId ?? null;
     const { data: appConfig } = useAppConfig();
 
     const { data: event, error, isLoading } = useEvent(eventId);
@@ -43,25 +44,19 @@ export function FeedPageBoundary({ eventId }: { eventId: string }) {
         }
     }, [error, event, isLoading, router]);
 
-    const storedRsvpId = useMemo(() => {
-        if (!memberId || typeof window === 'undefined') {
-            return undefined;
-        }
-
-        return window.localStorage.getItem(rsvpStorageKey(memberId));
-    }, [memberId]);
-
-    const { error: submittedRsvpError } = useRsvp(storedRsvpId ?? null);
+    const { error: submittedRsvpError } = useRsvp(currentMemberRsvpId ?? null);
     const isStaleRsvp = submittedRsvpError instanceof ApiError && submittedRsvpError.status === 404;
 
     useEffect(() => {
-        if (!memberId || !isStaleRsvp || !storedRsvpId) {
+        if (!currentMemberRsvpId || !isStaleRsvp) {
             return;
         }
 
-        window.localStorage.removeItem(rsvpStorageKey(memberId));
+        if (activeMember) {
+            setMemberRsvpIdInCaches(queryClient, activeMember.id, null, eventId);
+        }
         router.refresh();
-    }, [isStaleRsvp, memberId, router, storedRsvpId]);
+    }, [activeMember, currentMemberRsvpId, eventId, isStaleRsvp, queryClient, router]);
 
     const moduleFlags = useMemo<Record<ModuleKeyConvention, boolean>>(() => {
         const registryKeys = new Set(
@@ -100,7 +95,7 @@ export function FeedPageBoundary({ eventId }: { eventId: string }) {
                 loadingMoreLabel: t('loadingMore'),
                 moduleFlags,
                 posts,
-                storedRsvpId,
+                currentMemberRsvpId,
             }}
         >
             <FeedPageContent />

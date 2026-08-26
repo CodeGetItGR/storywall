@@ -2,8 +2,8 @@
  * TypeScript type schema for the event_social_media API.
  *
  * Generated directly from the current backend DTOs/entities (not from prose docs) as of
- * 2026-07-30, last extended 2026-08-24 (account-level active-event cap removed outright — see
- * docs/fe-guides/account-event-quota-removed-fe-integration.md). Companion reference to
+ * 2026-07-30, last extended 2026-08-26 (EventMemberResponseDto gained rsvpId — see
+ * docs/fe-guides/rsvp-status-fe-integration.md). Companion reference to
  * docs/fe-guides/frontend-integration-guide.md, which covers
  * endpoints, auth rules, and error codes — this file is just the shapes.
  *
@@ -345,6 +345,7 @@ interface EventMemberResponseDto {
   role: EventRole; displayName: string; nickname: string | null;
   relationshipRole: string | null; customRelationshipRole: string | null;
   isFeatured: boolean; avatarMediaId: string | null; joinedAt: string;
+  rsvpId: string | null; // NEW 2026-08-26 — this member's own RSVP id, null if not submitted yet; see rsvp-status-fe-integration.md
   createdAt: string; updatedAt: string; deletedAt: string | null;
 }
 interface EventMemberPatchDto { // every field optional — isFeatured is HOST-only even on your own membership

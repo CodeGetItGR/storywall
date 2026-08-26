@@ -1392,6 +1392,8 @@
         "plusOnes": "Plus ones",
         "messagePlaceholder": "Optional — share your excitement or a special note...",
         "submitRsvp": "Submit RSVP",
+        "alreadySubmittedButton": "RSVP already submitted",
+        "alreadySubmittedMessage": "Your RSVP has already been submitted for this event.",
         "submitError": "Something went wrong submitting your RSVP. Please try again.",
         "moduleUnavailable": "RSVP is not available on this event's current plan.",
         "eventReadOnly": "This event is read-only. RSVP changes are paused.",

@@ -114,9 +114,15 @@ export function formatTime(locale: string, value: string | null, options: Intl.D
     return formatDate(locale, value, options);
 }
 
-export function formatTimeRange(locale: string, startAt: string | null, endAt: string | null, fallbackLabel: string): string {
-    const start = formatTime(locale, startAt);
-    const end = formatTime(locale, endAt);
+export function formatTimeRange(
+    locale: string,
+    startAt: string | null,
+    endAt: string | null,
+    fallbackLabel: string,
+    options: Intl.DateTimeFormatOptions = defaultTimeFormat
+): string {
+    const start = formatTime(locale, startAt, options);
+    const end = formatTime(locale, endAt, options);
 
     if (start && end && start !== end) return `${start} - ${end}`;
     if (start) return start;

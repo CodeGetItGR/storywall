@@ -21,17 +21,20 @@ export function useGallerySelection<TItem extends GallerySelectableItem>(items: 
 
     useEffect(() => clearLongPressTimer, [clearLongPressTimer]);
 
-    const enterSelectionMode = useCallback((id?: string) => {
-        setSelectionMode(true);
-        if (!id) return;
-        setSelectedIdSet((current) => {
-            if (current.has(id)) return current;
-            if (current.size >= maxSelectedItems) return current;
-            const next = new Set(current);
-            next.add(id);
-            return next;
-        });
-    }, [maxSelectedItems]);
+    const enterSelectionMode = useCallback(
+        (id?: string) => {
+            setSelectionMode(true);
+            if (!id) return;
+            setSelectedIdSet((current) => {
+                if (current.has(id)) return current;
+                if (current.size >= maxSelectedItems) return current;
+                const next = new Set(current);
+                next.add(id);
+                return next;
+            });
+        },
+        [maxSelectedItems]
+    );
 
     const exitSelectionMode = useCallback(() => {
         clearLongPressTimer();
@@ -40,19 +43,22 @@ export function useGallerySelection<TItem extends GallerySelectableItem>(items: 
         setSelectedIdSet(new Set());
     }, [clearLongPressTimer]);
 
-    const toggleSelection = useCallback((id: string) => {
-        setSelectedIdSet((current) => {
-            const next = new Set(current);
-            if (next.has(id)) {
-                next.delete(id);
-            } else if (next.size < maxSelectedItems) {
-                next.add(id);
-            } else {
-                return current;
-            }
-            return next;
-        });
-    }, [maxSelectedItems]);
+    const toggleSelection = useCallback(
+        (id: string) => {
+            setSelectedIdSet((current) => {
+                const next = new Set(current);
+                if (next.has(id)) {
+                    next.delete(id);
+                } else if (next.size < maxSelectedItems) {
+                    next.add(id);
+                } else {
+                    return current;
+                }
+                return next;
+            });
+        },
+        [maxSelectedItems]
+    );
 
     const selectAll = useCallback(() => {
         setSelectionMode(true);

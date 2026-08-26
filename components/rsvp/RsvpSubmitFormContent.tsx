@@ -16,6 +16,7 @@ export function RsvpSubmitFormContent({ data }: { data: RsvpSubmitPageData }) {
             <RsvpForm
                 eventType={data.eventType}
                 attending={data.attending}
+                formDisabled={data.hasExistingRsvp}
                 onAttend={data.onAttend}
                 onDecline={data.onDecline}
                 plusOnes={data.plusOnes}
@@ -25,8 +26,9 @@ export function RsvpSubmitFormContent({ data }: { data: RsvpSubmitPageData }) {
                 maxMessageLength={data.maxMessageLength}
                 onMessageChange={data.onMessageChange}
                 onSubmit={data.onSubmit}
-                submitDisabled={!data.attending || !data.memberId || data.isSubmitting || !data.canSubmitRsvp}
-                submitError={!data.canSubmitRsvp ? t('eventReadOnly') : data.submitErrorMessage}
+                submitDisabled={data.hasExistingRsvp || !data.attending || !data.memberId || data.isSubmitting || !data.canSubmitRsvp}
+                submitError={data.hasExistingRsvp ? t('alreadySubmittedMessage') : !data.canSubmitRsvp ? t('eventReadOnly') : data.submitErrorMessage}
+                submitLabel={data.hasExistingRsvp ? t('alreadySubmittedButton') : t('submitRsvp')}
             />
         </div>
     );

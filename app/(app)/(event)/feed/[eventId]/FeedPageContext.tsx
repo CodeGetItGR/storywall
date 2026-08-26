@@ -7,13 +7,13 @@ import type { EventDetailResponseDto, ModuleKeyConvention, PostResponseDto } fro
 type FeedPageContextValue = {
     event: EventDetailResponseDto;
     eventId: string;
+    currentMemberRsvpId: string | null;
     isFetchingNextPage: boolean;
     isHost: boolean;
     loadMoreRef: RefObject<HTMLDivElement | null>;
     loadingMoreLabel: string;
     moduleFlags: Record<ModuleKeyConvention, boolean>;
     posts: PostResponseDto[];
-    storedRsvpId: string | null | undefined;
 };
 
 const FeedPageContext = createContext<FeedPageContextValue | null>(null);
