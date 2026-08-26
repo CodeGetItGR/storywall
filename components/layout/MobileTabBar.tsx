@@ -91,9 +91,7 @@ export function MobileTabBar() {
                         aria-hidden={isMobileTabBarHidden}
                         className={cn(
                             'grid h-16 min-w-0 overflow-hidden rounded-t-lg border border-b-0 border-border shadow-[0_-4px_18px_rgba(36,31,26,0.08)] backdrop-blur transition-[opacity,transform,box-shadow] duration-300 ease-out',
-                            isMobileTabBarHidden
-                                ? 'pointer-events-none translate-y-4 opacity-0 shadow-none'
-                                : 'translate-y-0 opacity-100'
+                            isMobileTabBarHidden ? 'pointer-events-none translate-y-4 opacity-0 shadow-none' : 'translate-y-0 opacity-100'
                         )}
                         style={{
                             backgroundImage:

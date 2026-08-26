@@ -36,19 +36,19 @@ bugs in what shipped β€” each was an explicit scope decision at the time.
 - **`app/(app)/tools/schedule/page.tsx`**, **`app/(app)/tools/gifts/page.tsx`**, **`app/(app)/tools/wishbook/page.tsx`**, **`app/(app)/tools/quiz/page.tsx`**, **`app/(app)/tools/seating/page.tsx`**, **`app/(app)/tools/future-messages/page.tsx`** β€” still mock-data-driven.
 - **`app/(app)/tools/playlist/page.tsx`** now wired to the real playlist API and no longer part of the mock-data backlog.
 
-
 ## 26-08-2026
+
 - Posts comment and like icons (make them larger)
 - Change the placeholder of the composer bar (feed), same as the composer modal.
 - Check why stories persist after 24h.
-- Map pin opens schedule  (it should open location)?
+- Map pin opens schedule (it should open location)?
 - Add a subtle edit button at the feed banner so the host can edit the banner image.
 - Move the "Logout" button towards the top of the side bar to prevent accidental press. Also add some confirmation before logout.
 - Event creation form step titles.
 - In plan selection step, remove the plan modules hint (top right corner), and add a "more info" at the bottom of the card, and it should open a bottom-top pop-up with all the extra info.
 - Plan selection stop - Title and price needs to grow in size, below the title goes the member count, then the storage (we need to emphasize those, these are basically the differentiators between the plans), then the rest.
-- Remove paid addons step. 
+- Remove paid addons step.
 - Keep originals is included in every plan and should be explicitly mentioned in the plan selection step.
 - Create set-up wizard for new hosts. Show them around.
 - Change the schedule story's icon with the event's date badge (similar to how the schedule story shows when it opens).
-- When you press an image in a feed post, the comments modal briefly appears, this is a visual bug. 
+- When you press an image in a feed post, the comments modal briefly appears, this is a visual bug.
