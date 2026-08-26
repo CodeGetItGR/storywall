@@ -40,9 +40,6 @@ export function PostCommentForm({
         >
             {error && <p className="text-xs text-destructive px-4">{error}</p>}
             <div className="w-full space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
-                    {inputAriaLabel} <span className="text-ink-faint">*</span>
-                </p>
                 <section className="flex gap-3 w-full">
                     <input
                         type="text"

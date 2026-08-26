@@ -11,7 +11,7 @@ export function usePostModal() {
     function open(id: string) {
         const params = new URLSearchParams(searchParams.toString());
         params.set('post', id);
-        router.push(`${pathname}?${params.toString()}`);
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
     }
 
     function close() {
@@ -20,7 +20,7 @@ export function usePostModal() {
         params.delete('media');
         params.delete('view');
         const query = params.toString();
-        router.push(query ? `${pathname}?${query}` : pathname);
+        router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
     }
 
     return { postId, isOpen: postId !== null, open, close };

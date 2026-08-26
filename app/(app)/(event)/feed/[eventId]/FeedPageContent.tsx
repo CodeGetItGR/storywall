@@ -56,7 +56,7 @@ export function FeedPageContent() {
             {/* Header */}
             <Header countdownTime={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0} />
             {/* Hero */}
-            <section className={'pt-6'}>
+            <section className={'mt-3'}>
                 <Banner
                     image={event.coverMedia?.mediaUrl ?? null}
                     title={event.title}
