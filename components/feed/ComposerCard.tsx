@@ -28,9 +28,9 @@ export function ComposerCard() {
                         type="button"
                         onClick={openPostComposer}
                         className="flex min-w-0 flex-1 items-center rounded-[1.4rem] bg-surface-muted px-4 py-2.5 text-left text-sm text-ink-faint shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] transition-colors hover:text-ink-muted"
-                        aria-label={t('placeholder')}
+                        aria-label={t('captionPlaceholder')}
                     >
-                        <span className="truncate">{t('placeholder')}</span>
+                        <span className="truncate">{t('captionPlaceholder')}</span>
                     </button>
                     <AddImageButton aria-label={t('addImage')} onClick={openPostImagePicker} />
                 </div>

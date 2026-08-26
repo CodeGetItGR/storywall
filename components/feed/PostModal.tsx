@@ -141,7 +141,7 @@ export function PostModal() {
             {post && !hasMedia && <section className="w-full min-w-0 min-h-0 flex-1 flex flex-col">{commentsPanel}</section>}
 
             {post && hasMedia && (
-                <section className="relative w-full flex-1 min-h-0 lg:grid lg:grid-cols-5 overflow-hidden">
+                <section key={`${postId ?? 'post'}-${view}`} className="relative w-full flex-1 min-h-0 lg:grid lg:grid-cols-5 overflow-hidden">
                     <PostMediaColumn
                         postKey={postId ?? post.id}
                         post={post}

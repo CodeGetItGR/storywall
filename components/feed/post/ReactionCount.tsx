@@ -16,7 +16,7 @@ export function ReactionCount({
 }) {
     return (
         <div className={cn(wrapperClassName, 'flex items-center gap-2')}>
-            <Heart className={cn(iconClassName, 'w-4 h-4')} strokeWidth={iconStrokeWidth} />
+            <Heart className={cn(iconClassName, 'h-5 w-5')} strokeWidth={iconStrokeWidth} />
             <p className={'tabular-nums'}>{count}</p>
         </div>
     );

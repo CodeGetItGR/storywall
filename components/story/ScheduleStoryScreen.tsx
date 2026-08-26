@@ -1,11 +1,11 @@
 'use client';
 
-import { CalendarDays } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { EventRouteSpinner, useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { StoryHeader, StoryProgressBar } from '@/components/story';
+import { ScheduleStoryDateBadge } from '@/components/story/ScheduleStoryDateBadge';
 import { ScheduleStoryContent } from '@/components/story/ScheduleStoryContent';
 import { useEventSessions } from '@/hooks/useEventSessions';
 import { routes } from '@/lib/routes';
@@ -57,12 +57,7 @@ export function ScheduleStoryScreen() {
                     canDelete={false}
                     showMenu={false}
                     leadingVisual={
-                        <div
-                            className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white/60 bg-amber-100 text-amber-700"
-                            aria-hidden="true"
-                        >
-                            <CalendarDays className="h-4 w-4" />
-                        </div>
+                        <ScheduleStoryDateBadge date={activeEvent.schedule.startAt} locale={locale} size="sm" />
                     }
                     onToggleMenu={noop}
                     onClose={handleCloseStory}

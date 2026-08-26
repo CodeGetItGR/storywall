@@ -5,14 +5,12 @@ import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
 import { type MouseEvent, useState } from 'react';
 
-import { PlanModuleGuideButton } from '@/components/plan/PlanModuleGuideButton';
-import { PlanModuleGuideModal } from '@/components/plan/PlanModuleGuideModal';
 import { PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
+import { PlanMoreInfoSheet } from '@/components/plan/PlanMoreInfoSheet';
 import { PlanPriceLabel } from '@/components/plan/PlanPriceLabel';
 import { useLocalizedPlanDescription } from '@/hooks/useLocalizedPlanDescription';
 import type { PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
-import { publicEnabledModules } from '@/lib/planModules';
 import { formatLimitValue } from '@/lib/planTiers';
 import { cn } from '@/lib/utils';
 
@@ -28,23 +26,22 @@ export function EventPlanSelector({ plans, modules, selectedCode, onSelectAction
     const t = useTranslations('CreateEventPage');
     const locale = useLocale();
     const localizedPlanDescription = useLocalizedPlanDescription();
-    const [guidePlan, setGuidePlan] = useState<PlanTierResponseDto | null>(null);
-    const hasModuleGuide = publicEnabledModules(modules).length > 0;
+    const [moreInfoPlan, setMoreInfoPlan] = useState<PlanTierResponseDto | null>(null);
 
     function handlePlanClick(event: MouseEvent<HTMLButtonElement>) {
         const code = event.currentTarget.dataset.planCode;
         if (code) onSelectAction(code);
     }
 
-    function openModuleGuide(event: MouseEvent<HTMLButtonElement>) {
+    function openMoreInfo(event: MouseEvent<HTMLButtonElement>) {
         event.stopPropagation();
         const code = event.currentTarget.dataset.planCode;
         const plan = plans.find((planItem) => planItem.code === code);
-        if (plan) setGuidePlan(plan);
+        if (plan) setMoreInfoPlan(plan);
     }
 
-    function closeModuleGuide() {
-        setGuidePlan(null);
+    function closeMoreInfo() {
+        setMoreInfoPlan(null);
     }
 
     function renderLimit(value: number | null, unit: 'bytes' | 'count'): string {
@@ -85,33 +82,35 @@ export function EventPlanSelector({ plans, modules, selectedCode, onSelectAction
                                 data-plan-code={plan.code}
                                 onClick={handlePlanClick}
                                 className={cn(
-                                    'w-full rounded-xl border p-4 text-left transition hover:border-primary/40 hover:bg-primary-light/30',
-                                    hasModuleGuide && 'pr-16',
+                                    'w-full rounded-xl border p-5 text-left transition hover:border-primary/40 hover:bg-primary-light/30',
                                     selectedCode === plan.code ? 'border-primary bg-primary-light/50' : 'border-border bg-white'
                                 )}
                             >
-                                <div className="flex items-start justify-between gap-3">
-                                    <div>
-                                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                                            <p className="font-semibold text-ink">{plan.name}</p>
-                                            <PlanPriceLabel
-                                                plan={plan}
-                                                kind="activation"
-                                                locale={locale}
-                                                fallback={t('payment.noCharge')}
-                                                className="text-sm font-semibold text-primary-dark"
-                                            />
-                                        </div>
-                                        <p className="mt-1 text-sm text-ink-muted">{localizedPlanDescription(plan)}</p>
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="min-w-0">
+                                        <p className="truncate text-xl font-bold text-ink">{plan.name}</p>
+                                        <PlanPriceLabel
+                                            plan={plan}
+                                            kind="activation"
+                                            locale={locale}
+                                            fallback={t('payment.noCharge')}
+                                            className="mt-1 block text-2xl font-bold text-primary-dark"
+                                        />
                                     </div>
                                 </div>
-                                <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-ink-muted">
-                                    <span className="rounded-full bg-surface-muted px-2.5 py-1 flex items-center justify-center">
-                                        {renderLimit(plan.storageBytes, 'bytes')} {t('planLimits.storage')}
-                                    </span>
-                                    <span className="rounded-full bg-surface-muted px-2.5 py-1 flex items-center justify-center">
-                                        {renderLimit(plan.maxMembers, 'count')} {t('planLimits.members')}
-                                    </span>
+                                <p className="mt-2 text-sm leading-6 text-ink-muted">{localizedPlanDescription(plan)}</p>
+                                <div className="mt-4 space-y-2.5">
+                                    <div className="rounded-xl bg-surface-muted/70 px-3 py-3">
+                                        <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('planLimits.members')}</p>
+                                        <p className="mt-1 text-base font-bold text-ink">{renderLimit(plan.maxMembers, 'count')}</p>
+                                    </div>
+                                    <div className="rounded-xl bg-surface-muted/70 px-3 py-3">
+                                        <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('planLimits.storage')}</p>
+                                        <p className="mt-1 text-base font-bold text-ink">{renderLimit(plan.storageBytes, 'bytes')}</p>
+                                    </div>
+                                </div>
+                                <div className="mt-4">
+                                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('planLimits.modules')}</p>
                                     <PlanModuleIcons moduleKeys={plan.moduleKeys} modules={modules} />
                                 </div>
                                 {(plan.paidModules?.length ?? 0) > 0 && (
@@ -126,20 +125,19 @@ export function EventPlanSelector({ plans, modules, selectedCode, onSelectAction
                                     </div>
                                 )}
                             </button>
-                            {hasModuleGuide && (
-                                <div className="absolute right-3 top-3 flex items-center gap-2 ">
-                                    <PlanModuleGuideButton planCode={plan.code} onOpenAction={openModuleGuide} />
-                                </div>
-                            )}
+                            <div className="mt-3 flex justify-end">
+                                <button
+                                    type="button"
+                                    data-plan-code={plan.code}
+                                    onClick={openMoreInfo}
+                                    className="rounded-full border border-border bg-background px-4 py-2 text-sm font-semibold text-ink-muted transition-colors hover:border-primary/40 hover:text-ink"
+                                >
+                                    {t('moreInfo')}
+                                </button>
+                            </div>
                         </div>
                     ))}
-                <PlanModuleGuideModal
-                    open={guidePlan !== null}
-                    onCloseAction={closeModuleGuide}
-                    modules={modules}
-                    paidServices={guidePlan?.paidModules ?? []}
-                    planName={guidePlan?.name}
-                />
+                <PlanMoreInfoSheet open={moreInfoPlan !== null} onCloseAction={closeMoreInfo} plan={moreInfoPlan} modules={modules} />
             </div>
         </div>
     );

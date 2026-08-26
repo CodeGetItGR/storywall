@@ -4,7 +4,7 @@ import { MapPin } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Banner } from '@/components/feed/Banner';
 import { ComposerCard } from '@/components/feed/ComposerCard';
@@ -27,8 +27,21 @@ export function FeedPageContent() {
     useHideMobileTabBarOnScroll();
     const { currentMemberRsvpId, event, eventId, isFetchingNextPage, isHost, loadMoreRef, loadingMoreLabel, moduleFlags, posts } = useFeedPage();
     const [storyId, setStoryId] = useState<string | null>(null);
+    const [pageLoaded, setPageLoaded] = useState(false);
     const hasLocation = Boolean(event.location.name || event.location.address || event.location.mapsUrl);
     const shouldShowRSVP = moduleFlags.rsvp && !isHost && currentMemberRsvpId === null;
+
+    useEffect(() => {
+        const markLoaded = () => setPageLoaded(true);
+
+        if (document.readyState === 'complete') {
+            markLoaded();
+            return;
+        }
+
+        window.addEventListener('load', markLoaded, { once: true });
+        return () => window.removeEventListener('load', markLoaded);
+    }, []);
 
     function openStoryModal(nextStoryId: string) {
         setStoryId(nextStoryId);
@@ -43,10 +56,11 @@ export function FeedPageContent() {
             {/* Header */}
             <Header countdownTime={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0} />
             {/* Hero */}
-            <section>
+            <section className={'pt-6'}>
                 <Banner
                     image={event.coverMedia?.mediaUrl ?? null}
                     title={event.title}
+                    glowVisible={pageLoaded}
                     actions={
                         <>
                             {hasLocation && (

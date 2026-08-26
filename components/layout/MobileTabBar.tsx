@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { useComposer } from '@/providers/ComposerProvider';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 import { useMobileChrome } from '@/providers/MobileChromeProvider';
+import {PiMusicNotesPlusFill} from "react-icons/pi";
 
 const homeTabItem = { href: routes.feed, icon: '/icons/home.svg', key: 'home' } as const;
 
@@ -184,7 +185,7 @@ export function MobileTabBar() {
                         )}
                     >
                             <Plus
-                                className="h-6 w-6 text-white transition-transform duration-200 ease-out group-data-[popup-open]:rotate-45"
+                                className="h-6 w-6 text-white transition-transform duration-200 ease-out group-data-popup-open:rotate-45"
                                 strokeWidth={2.5}
                             />
                         </Menu.Trigger>
@@ -216,7 +217,7 @@ export function MobileTabBar() {
                                             className="motion-menu-item flex min-h-14 cursor-pointer items-center justify-between rounded-[1.45rem] border border-[#efc0dc] bg-background px-5 text-sm font-medium text-ink shadow-[0_6px_18px_rgba(36,31,26,0.08)] outline-none hover:-translate-y-0.5 hover:border-[#f0b47f]"
                                         >
                                             {t('composeMenu.song')}
-                                            <Music2 className="h-5 w-5 shrink-0 text-ink" aria-hidden="true" strokeWidth={1.8} />
+                                            <PiMusicNotesPlusFill className="h-5 w-5 shrink-0 text-ink" aria-hidden="true" strokeWidth={1.8} />
                                         </Menu.Item>
                                     )}
                                 </Menu.Popup>

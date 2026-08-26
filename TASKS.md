@@ -45,7 +45,7 @@ bugs in what shipped β€” each was an explicit scope decision at the time.
 - Remove paid addons step.
 - Map pin opens schedule (it should open location)?
 
-- Plan selection stop - Title and price needs to grow in size, below the title goes the member count, then the storage (we need to emphasize those, these are basically the differentiators between the plans), then the rest.
+- Plan selection step - Title and price needs to grow in size, below the title goes the member count, then the storage (we need to emphasize those, these are basically the differentiators between the plans), then the rest.
 - Move the "Logout" button towards the top of the side bar to prevent accidental press. Also add some confirmation before logout.
 - Posts comment and like icons (make them larger)
 - Change the placeholder of the composer bar (feed), same as the composer modal.

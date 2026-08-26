@@ -43,6 +43,10 @@ export function DesktopNavRail() {
                 <p className="text-sm font-bold text-ink">StoryWall</p>
             </div>
 
+            <div className="px-4 pb-2">
+                <AccountLogoutButton variant="rail" />
+            </div>
+
             {/* Nav links */}
             <div className="flex-1 px-3 space-y-0.5 overflow-y-auto no-scrollbar">
                 {showEventActions && homeHref && <DesktopNavLink href={homeHref} icon={HomeIcon} label={t('items.home')} active={homeActive} />}
@@ -79,7 +83,6 @@ export function DesktopNavRail() {
                         {authUser?.email && <p className="truncate text-xs leading-tight text-ink-muted">{authUser.email}</p>}
                     </div>
                 </div>
-                <AccountLogoutButton variant="rail" />
             </div>
         </nav>
     );

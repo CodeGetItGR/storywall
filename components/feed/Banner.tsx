@@ -3,7 +3,17 @@ import type { ReactNode } from 'react';
 
 import { BannerOverlay } from '@/components/feed/BannerOverlay';
 
-export function Banner({ image, title, actions }: { image: string | null; title: string; actions?: ReactNode }) {
+export function Banner({
+    image,
+    title,
+    actions,
+    glowVisible,
+}: {
+    image: string | null;
+    title: string;
+    actions?: ReactNode;
+    glowVisible: boolean;
+}) {
     return (
         <div className="relative w-full px-3">
             {/* Banner */}
@@ -18,13 +28,8 @@ export function Banner({ image, title, actions }: { image: string | null; title:
                         className="pointer-events-none absolute inset-y-0 right-0 z-0 w-1/2 bg-white/10 [clip-path:polygon(24%_0,100%_0,100%_100%,0_100%)]"
                         aria-hidden="true"
                     />
-                    <div
-                        aria-hidden="true"
-                        className="playlist-light-ray pointer-events-none absolute -top-20 z-20 h-[200%] w-48 rotate-24 bg-linear-to-r from-transparent via-[#fff2a8]/55 to-transparent blur-md mix-blend-screen"
-                        style={{ animationDuration: '5.8s' }}
-                    />
                 </div>
-                <BannerOverlay title={title} actions={actions} />
+                <BannerOverlay title={title} actions={actions} glowVisible={glowVisible} />
             </div>
         </div>
     );

@@ -50,12 +50,12 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     }
 
     function handleOpenSingleMedia() {
-        openPostModal(post.id, { mediaIndex: 0 });
+        openPostModal(post.id, { mediaIndex: 0, view: 'media' });
     }
 
     function handleMediaClick(event: React.MouseEvent<HTMLButtonElement>) {
         const index = Number(event.currentTarget.dataset.index ?? 0);
-        openPostModal(post.id, { mediaIndex: index });
+        openPostModal(post.id, { mediaIndex: index, view: 'media' });
     }
 
     return (
@@ -140,7 +140,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                         aria-label={liked ? t('unlikePost') : t('likePost')}
                         aria-pressed={liked}
                         className={cn(
-                            'flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+                            'flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-colors',
                             liked ? 'bg-primary-light text-primary' : 'text-ink-muted hover:bg-surface-muted',
                             !canWrite && 'cursor-not-allowed opacity-60 hover:bg-transparent'
                         )}
@@ -152,19 +152,19 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                         <button
                             type="button"
                             onClick={openPost}
-                            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-muted"
+                            className="flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-muted"
                             aria-label={t('comments', { count: post.commentCount })}
                         >
-                            <MessageCircle className="w-4 h-4" strokeWidth={1.8} />
+                            <MessageCircle className="h-5 w-5" strokeWidth={1.8} />
                             <span className="tabular-nums">{post.commentCount}</span>
                         </button>
                     ) : (
                         <button
                             type="button"
-                            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-muted"
+                            className="flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-muted"
                             aria-label={t('comments', { count: post.commentCount })}
                         >
-                            <MessageCircle className="w-4 h-4" strokeWidth={1.8} />
+                            <MessageCircle className="h-5 w-5" strokeWidth={1.8} />
                             <span className="tabular-nums">{post.commentCount}</span>
                         </button>
                     )}
