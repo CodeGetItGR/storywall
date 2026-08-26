@@ -28,13 +28,13 @@
     },
     "Countdown": {
         "days": "Ημέρες",
-        "daysShort": "ημ.",
+        "daysShort": "η",
         "hours": "Ώρες",
-        "hoursShort": "ώρ.",
+        "hoursShort": "ω",
         "minutes": "Λεπτά",
-        "minutesShort": "λεπ.",
+        "minutesShort": "λ",
         "seconds": "Δευτερόλεπτα",
-        "secondsShort": "δ."
+        "secondsShort": "δ"
     },
     "StoriesRow": {
         "ariaLabel": "Ιστορίες"

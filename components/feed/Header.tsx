@@ -9,7 +9,7 @@ export function Header({ countdownTime }: { countdownTime: number }) {
             <div className="relative flex items-center justify-between gap-4 px-4 py-5">
                 <Logo direction="row" wordmarkClassName="h-6 w-auto xxs:h-7 xs:h-8 sm:h-12" />
                 {/* Countdown */}
-                <Countdown time={countdownTime} className="ml-2" />
+                <Countdown time={countdownTime} className="sm:ml-2" />
             </div>
         </div>
     );

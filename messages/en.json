@@ -28,13 +28,13 @@
     },
     "Countdown": {
         "days": "Days",
-        "daysShort": "d",
+        "daysShort": "D",
         "hours": "Hours",
-        "hoursShort": "h",
+        "hoursShort": "H",
         "minutes": "Minutes",
-        "minutesShort": "min",
+        "minutesShort": "M",
         "seconds": "Seconds",
-        "secondsShort": "s"
+        "secondsShort": "S"
     },
     "StoriesRow": {
         "ariaLabel": "Stories"
