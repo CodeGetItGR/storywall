@@ -173,7 +173,7 @@
         "captionPlaceholder": "Μοιραστείτε μια ανάμνηση, μήνυμα ή στιγμή...",
         "captionAriaLabel": "Λεζάντα Δημοσίευσης",
         "music": "Μουσική",
-        "addPhotos": "Προσθήκη φωτογραφιών",
+        "addImage": "Προσθήκη εικόνας",
         "photoLimitHint": "Έως {count} φωτογραφίες",
         "captionCharacterCount": "{count}/{max}",
         "addStory": "Προσθήκη στιγμιότυπου",

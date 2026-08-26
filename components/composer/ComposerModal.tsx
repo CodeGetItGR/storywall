@@ -1,9 +1,10 @@
 'use client';
 
-import { ImagePlus, Send, X } from 'lucide-react';
+import { Send, X } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
+import { AddImageButton } from '@/components/composer/AddImageButton';
 import { ComposerModeToggle } from '@/components/composer/ComposerModeToggle';
 import { AddSongForm } from '@/components/playlist';
 import { Modal } from '@/components/ui/modal';
@@ -118,15 +119,12 @@ export function ComposerModal({
                         )}
 
                         {/* Actions */}
-                        <div className="flex gap-2 items-center justify-between">
-                            <button
-                                type="button"
+                        <div className="flex items-center justify-between gap-2">
+                            <AddImageButton
+                                aria-label={t('addImage')}
                                 onClick={handlePickPhotos}
                                 disabled={!canComposePost || images.length >= maxImages}
-                                className="min-w-6 h-auto items-center justify-center gap-2 rounded-full bg-surface-muted text-sm font-medium text-ink-muted transition-colors hover:text-primary disabled:cursor-not-allowed disabled:opacity-40 p-4"
-                            >
-                                <ImagePlus className="h-4 w-4" />
-                            </button>
+                            />
                             <input
                                 ref={fileRef}
                                 type="file"
@@ -134,7 +132,7 @@ export function ComposerModal({
                                 multiple
                                 className="sr-only"
                                 onChange={handlePostFilesChange}
-                                aria-label={t('addPhotos')}
+                                aria-label={t('addImage')}
                                 tabIndex={-1}
                             />
 

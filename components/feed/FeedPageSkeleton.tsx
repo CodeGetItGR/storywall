@@ -33,10 +33,13 @@ export function FeedPageSkeleton() {
 
             <section className="mt-5">
                 <div className="flex flex-col px-0 pb-24 lg:pb-10">
-                    <div className="rounded-2xl bg-card p-4 shadow-[0_2px_16px_0_rgba(36,31,26,0.07)]">
-                        <div className="flex items-center gap-3">
-                            <Skeleton className="h-10 w-10 rounded-full" />
-                            <Skeleton className="h-10 flex-1 rounded-full" />
+                    <div className="relative isolate mx-4 rounded-[1.75rem] bg-background/50 p-[1px] shadow-[0_14px_32px_rgba(36,31,26,0.12)] after:pointer-events-none after:absolute after:inset-[-3px] after:-z-10 after:rounded-[inherit] after:bg-linear-to-r after:from-[#c777b1]/20 after:via-primary/18 after:to-accent-orange/20 after:blur-xl sm:mx-5">
+                        <div className="rounded-[calc(1.75rem-1px)] bg-card/95 px-4 py-4 sm:px-5">
+                            <div className="flex items-center gap-3">
+                                <Skeleton className="h-10 w-10 rounded-full" />
+                                <Skeleton className="h-10 flex-1 rounded-full" />
+                                <Skeleton className="h-11 w-11 rounded-full" />
+                            </div>
                         </div>
                     </div>
                     <div className="mt-4 flex flex-col">

@@ -45,6 +45,7 @@ export function MobileTabBar() {
     const hostItems = useHostMenuItems();
     const toolItems = useToolsMenuItems();
     const showBottomRail = !profileActive;
+    const showComposerMenu = showEventActions && (canComposePost || canComposeStory || canComposeSong);
     const contextItems: ContextNavItem[] =
         showEventNavigation && activeEvent
             ? isHost
@@ -78,96 +79,111 @@ export function MobileTabBar() {
         (showEventNavigation && playlistAvailable ? 1 : 0) +
         (showEventNavigation && contextItems.length > 0 ? 1 : 0);
 
-    if (!showBottomRail || isMobileTabBarHidden) return null;
+    if (!showBottomRail && !showComposerMenu) return null;
 
     return (
         <>
             {/* Navigation */}
-            <div className="fixed bottom-0 left-1/2 z-40 w-full max-w-lg -translate-x-1/2 lg:hidden">
-                <nav
-                    aria-label={t('eventNavigation')}
-                    className="grid h-16 min-w-0 overflow-hidden rounded-t-lg border border-b-0 border-border bg-white/90 shadow-[0_-4px_18px_rgba(36,31,26,0.08)] backdrop-blur"
-                    style={{ gridTemplateColumns: `repeat(${railColumnCount}, minmax(0, 1fr))` }}
-                >
-                    <div className="flex h-full items-center justify-center">
-                        <button
-                            type="button"
-                            onClick={handleOpenAccount}
-                            aria-label={t('openAccount')}
-                            aria-expanded={accountOpen}
-                            aria-controls="mobile-account-drawer"
-                            className="flex h-full w-full items-center justify-center transition-colors hover:bg-surface-muted"
-                        >
-                            <span
-                                className={cn(
-                                    'flex h-10 w-10 items-center justify-center transition-all duration-200',
-                                    accountActive ? 'scale-105 opacity-100' : 'scale-100 opacity-50'
-                                )}
+            {showBottomRail && (
+                <div className="fixed bottom-0 left-1/2 z-40 w-full max-w-lg -translate-x-1/2 lg:hidden">
+                    <nav
+                        aria-label={t('eventNavigation')}
+                        aria-hidden={isMobileTabBarHidden}
+                        className={cn(
+                            'grid h-16 min-w-0 overflow-hidden rounded-t-lg border border-b-0 border-border shadow-[0_-4px_18px_rgba(36,31,26,0.08)] backdrop-blur transition-[opacity,transform,box-shadow] duration-300 ease-out',
+                            isMobileTabBarHidden
+                                ? 'pointer-events-none translate-y-4 opacity-0 shadow-none'
+                                : 'translate-y-0 opacity-100'
+                        )}
+                        style={{
+                            backgroundImage:
+                                'linear-gradient(to top, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.92) 58%, rgba(255,255,255,0.72) 100%)',
+                            gridTemplateColumns: `repeat(${railColumnCount}, minmax(0, 1fr))`,
+                        }}
+                    >
+                        <div className="flex h-full items-center justify-center">
+                            <button
+                                type="button"
+                                onClick={handleOpenAccount}
+                                aria-label={t('openAccount')}
+                                aria-expanded={accountOpen}
+                                aria-controls="mobile-account-drawer"
+                                className="flex h-full w-full items-center justify-center transition-colors hover:bg-surface-muted"
                             >
-                                <Image
-                                    src="/icons/profile.svg"
-                                    alt={accountLabel}
-                                    width={22}
-                                    height={22}
-                                    className="h-5.5 w-5.5 transition-all duration-200"
-                                    loading="eager"
-                                />
-                            </span>
-                        </button>
-                    </div>
+                                <span
+                                    className={cn(
+                                        'flex h-10 w-10 items-center justify-center transition-all duration-200',
+                                        accountActive ? 'scale-105 opacity-100' : 'scale-100 opacity-50'
+                                    )}
+                                >
+                                    <Image
+                                        src="/icons/profile.svg"
+                                        alt={accountLabel}
+                                        width={22}
+                                        height={22}
+                                        className="h-5.5 w-5.5 transition-all duration-200"
+                                        loading="eager"
+                                    />
+                                </span>
+                            </button>
+                        </div>
 
-                    {showEventNavigation && (
-                        <>
-                            <div className="flex h-full items-center justify-center">
-                                <TabLink
-                                    href={activeEvent ? (isDraft ? routes.manage : routes.post.feed(activeEvent.id)) : homeTabItem.href}
-                                    icon={homeTabItem.icon}
-                                    label={t(`items.${homeTabItem.key}`)}
-                                    active={homeActive}
-                                    onClick={handleHomeClick}
-                                />
-                            </div>
-
-                            {playlistAvailable && (
+                        {showEventNavigation && (
+                            <>
                                 <div className="flex h-full items-center justify-center">
                                     <TabLink
-                                        href={routes.tools.playlist}
-                                        icon="/icons/music.svg"
-                                        label={t('items.playlist')}
-                                        active={playlistActive}
+                                        href={activeEvent ? (isDraft ? routes.manage : routes.post.feed(activeEvent.id)) : homeTabItem.href}
+                                        icon={homeTabItem.icon}
+                                        label={t(`items.${homeTabItem.key}`)}
+                                        active={homeActive}
+                                        onClick={handleHomeClick}
                                     />
                                 </div>
-                            )}
 
-                            {contextItems.length > 0 && (
-                                <div className="flex h-full items-center justify-center">
-                                    <ContextNavSlot
-                                        active={contextActive}
-                                        items={contextItems}
-                                        menuLabel={t('eventMenu')}
-                                        pathname={pathname}
-                                        searchParams={searchParams}
-                                        onItemClick={handleDashboardMenuClick}
-                                    />
-                                </div>
-                            )}
-                        </>
-                    )}
-                </nav>
-            </div>
+                                {playlistAvailable && (
+                                    <div className="flex h-full items-center justify-center">
+                                        <TabLink
+                                            href={routes.tools.playlist}
+                                            icon="/icons/music.svg"
+                                            label={t('items.playlist')}
+                                            active={playlistActive}
+                                        />
+                                    </div>
+                                )}
+
+                                {contextItems.length > 0 && (
+                                    <div className="flex h-full items-center justify-center">
+                                        <ContextNavSlot
+                                            active={contextActive}
+                                            items={contextItems}
+                                            menuLabel={t('eventMenu')}
+                                            pathname={pathname}
+                                            searchParams={searchParams}
+                                            onItemClick={handleDashboardMenuClick}
+                                        />
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </nav>
+                </div>
+            )}
 
             {/* Account */}
             <div id="mobile-account-drawer">
                 <AccountDrawer open={accountOpen} onCloseAction={handleCloseAccount} />
             </div>
 
-            {showEventActions && (canComposePost || canComposeStory || canComposeSong) && (
+            {showComposerMenu && (
                 <>
                     {/* Compose */}
                     <Menu.Root>
                         <Menu.Trigger
                             aria-label={t('compose')}
-                            className="group fixed right-4 bottom-20 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md transition-transform hover:scale-105 data-[popup-open]:z-100 lg:hidden"
+                            className={cn(
+                                'group fixed right-4 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md transition-[bottom,opacity,transform] duration-300 ease-out hover:scale-105 data-[popup-open]:z-100 lg:hidden',
+                                isMobileTabBarHidden ? 'bottom-6' : 'bottom-20'
+                            )}
                         >
                             <Plus
                                 className="h-6 w-6 text-white transition-transform duration-200 ease-out group-data-[popup-open]:rotate-45"

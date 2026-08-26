@@ -173,7 +173,7 @@
         "captionPlaceholder": "Share a memory, message, or moment...",
         "captionAriaLabel": "Post caption",
         "music": "Music",
-        "addPhotos": "Add photos",
+        "addImage": "Add image",
         "photoLimitHint": "Up to {count} photos",
         "captionCharacterCount": "{count}/{max}",
         "addStory": "Add to story",

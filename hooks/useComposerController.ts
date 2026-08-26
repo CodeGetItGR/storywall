@@ -54,6 +54,7 @@ export interface ComposerController {
     maxCaptionLength: number;
     initials: string;
     openPostComposer: () => void;
+    openPostImagePicker: () => void;
     openSongComposer: () => void;
     openStoryCapture: () => void;
     selectPostMode: () => void;
@@ -239,10 +240,17 @@ export function useComposerController(): ComposerController {
         setCaption(event.target.value.slice(0, maxCaptionLength));
     }
 
-    function handlePickPhotos() {
+    const handlePickPhotos = useCallback(() => {
         if (!canComposePost) return;
         fileRef.current?.click();
-    }
+    }, [canComposePost]);
+
+    const openPostImagePicker = useCallback(() => {
+        if (!canComposePost) return;
+        setComposerMode('post');
+        setIsOpen(true);
+        requestAnimationFrame(() => handlePickPhotos());
+    }, [canComposePost, handlePickPhotos]);
 
     function handlePostFilesChange(event: React.ChangeEvent<HTMLInputElement>) {
         handleFiles(event.target.files);
@@ -436,6 +444,7 @@ export function useComposerController(): ComposerController {
     const contextValue: ComposerContextValue = useMemo(
         () => ({
             openPostComposer,
+            openPostImagePicker,
             openSongComposer,
             openStoryCapture,
             isCreatingStory: uploadMedia.isPending || createStory.isPending,
@@ -452,6 +461,7 @@ export function useComposerController(): ComposerController {
             canComposeStory,
             createStory.isPending,
             openPostComposer,
+            openPostImagePicker,
             openSongComposer,
             openStoryCapture,
             storyError,
@@ -485,6 +495,7 @@ export function useComposerController(): ComposerController {
         maxCaptionLength,
         initials,
         openPostComposer,
+        openPostImagePicker,
         openSongComposer,
         openStoryCapture,
         selectPostMode,

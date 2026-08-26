@@ -4,6 +4,7 @@ import { createContext, useContext } from 'react';
 
 export interface ComposerContextValue {
     openPostComposer: () => void;
+    openPostImagePicker: () => void;
     openSongComposer: () => void;
     openStoryCapture: () => void;
     isCreatingStory: boolean;

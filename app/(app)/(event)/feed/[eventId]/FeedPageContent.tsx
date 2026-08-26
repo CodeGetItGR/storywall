@@ -16,6 +16,7 @@ import { PostModal } from '@/components/feed/PostModal';
 import { RsvpPrompt } from '@/components/feed/RsvpPrompt';
 import { StoriesRow } from '@/components/feed/StoriesRow';
 import { StoryModal } from '@/components/story/StoryModal';
+import { useHideMobileTabBarOnScroll } from '@/hooks';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
@@ -23,6 +24,7 @@ import { useFeedPage } from './FeedPageContext';
 
 export function FeedPageContent() {
     const t = useTranslations('FeedPage');
+    useHideMobileTabBarOnScroll();
     const { currentMemberRsvpId, event, eventId, isFetchingNextPage, isHost, loadMoreRef, loadingMoreLabel, moduleFlags, posts } = useFeedPage();
     const [storyId, setStoryId] = useState<string | null>(null);
     const hasLocation = Boolean(event.location.name || event.location.address || event.location.mapsUrl);
