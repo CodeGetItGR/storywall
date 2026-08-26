@@ -32,7 +32,7 @@ export function Countdown({ time, className }: { time: number; className?: strin
     }, [time, now]);
 
     return (
-        <div className={cn(className, 'flex shrink-0 justify-between gap-1.5 xxs:gap-2 md:gap-3')}>
+        <div className={cn(className, 'flex shrink-0 justify-between gap-2 xxs:gap-2.5 md:gap-3')}>
             <CountdownCounter text={t('days')} shortText={t('daysShort')} count={days} />
             <CountdownCounter text={t('hours')} shortText={t('hoursShort')} count={hours} />
             <CountdownCounter text={t('minutes')} shortText={t('minutesShort')} count={minutes} />

@@ -18,19 +18,13 @@ import { type CheckoutIntent, routes } from '@/lib/routes';
 
 type ReviewLine = { label: string; amountMinor: number };
 
-const CHECKOUT_INTENTS: CheckoutIntent[] = ['activation', 'renewal', 'upgrade', 'storage'];
+const CHECKOUT_INTENTS: CheckoutIntent[] = ['activation', 'upgrade', 'storage'];
 
-// A ONE_TIME addon (only ever a MODULE_UNLOCK) is a flat charge at activation and never
-// recurs — it ignores includedMonths and is charged even when includedMonths is 0.
-function addonLines(addons: EventAddonDto[], includedMonths = 1): ReviewLine[] {
+function addonLines(addons: EventAddonDto[]): ReviewLine[] {
     return addons.map((addon) => ({
         label: addon.name,
-        amountMinor: addon.billingPeriod === 'ONE_TIME' ? addon.priceAmountMinor : addon.priceAmountMinor * includedMonths,
+        amountMinor: addon.priceAmountMinor,
     }));
-}
-
-function monthlyAddons(addons: EventAddonDto[]): EventAddonDto[] {
-    return addons.filter((addon) => addon.billingPeriod === 'MONTHLY');
 }
 
 export default function CheckoutReviewBoundary() {
@@ -43,12 +37,10 @@ export default function CheckoutReviewBoundary() {
     const billing = useEventBilling(eventId, true);
     const event = useEvent(eventId);
     const activationCheckout = useCheckout(eventId);
-    const renewalCheckout = useCheckout(eventId, true);
     const upgradeCheckout = useUpgradeCheckout(eventId);
     const storageCheckout = useStorageCheckout(eventId);
     const toErrorMessage = useApiErrorMessage();
     const [error, setError] = useState<string | null>(null);
-    const [renderedAtMs] = useState(() => Date.now());
     const retry = useCallback(() => {
         void appConfig.refetch();
         void billing.refetch();
@@ -85,25 +77,22 @@ export default function CheckoutReviewBoundary() {
     }
 
     const addons = billing.data.addons;
-    const includedMonths = currentPlan.includedMonths ?? 1;
-    const addonMonthlyTotal = monthlyAddons(addons).reduce((sum, addon) => sum + addon.priceAmountMinor, 0);
     const currency =
         intent === 'storage'
             ? (service?.priceCurrency ?? currentPlan.priceCurrency ?? 'EUR')
             : (targetPlan?.priceCurrency ?? currentPlan.priceCurrency ?? billing.data.orders[0]?.currency ?? 'EUR');
 
-    let title = t('intent.renewal.title');
-    let description = t('intent.renewal.description');
+    let title = t('intent.activation.title');
+    let description = t('intent.activation.description');
     let planLabel = currentPlan.name;
     let lines: ReviewLine[] = [];
-    let recurringMinor: number | null = null;
-    let consequence = t('intent.renewal.consequence');
+    let consequence = t('intent.activation.consequence');
     let valid = true;
 
     if (intent === 'activation') {
         title = t('intent.activation.title');
         description = t('intent.activation.description');
-        consequence = t('intent.activation.consequence', { months: includedMonths });
+        consequence = t('intent.activation.consequence');
         valid = billing.data.eventStatus === 'DRAFT' && currentPlan.priceAmountMinor !== null;
         if (currentPlan.priceAmountMinor !== null) {
             lines = [
@@ -111,35 +100,8 @@ export default function CheckoutReviewBoundary() {
                     label: t('items.planActivation', { plan: currentPlan.name }),
                     amountMinor: discountedAmountMinor(currentPlan.priceAmountMinor, currentPlan),
                 },
-                ...addonLines(addons, includedMonths),
+                ...addonLines(addons),
             ];
-        }
-    } else if (intent === 'renewal') {
-        const paidRenewalCoversNow = billing.data.orders.some(
-            (order) =>
-                order.kind === 'RENEWAL' &&
-                order.status === 'PAID' &&
-                Boolean(order.coversUntil) &&
-                new Date(order.coversUntil ?? '').getTime() > renderedAtMs
-        );
-        const subscriptionIsLive =
-            (billing.data.subscription !== null &&
-                (billing.data.subscription.status === 'ACTIVE' || billing.data.subscription.status === 'PAST_DUE')) ||
-            paidRenewalCoversNow;
-        valid =
-            billing.data.eventStatus !== 'DRAFT' &&
-            billing.data.eventStatus !== 'PURGED' &&
-            !subscriptionIsLive &&
-            currentPlan.recurringPriceAmountMinor !== null;
-        if (currentPlan.recurringPriceAmountMinor !== null) {
-            lines = [
-                {
-                    label: t('items.planPreservation', { plan: currentPlan.name }),
-                    amountMinor: discountedAmountMinor(currentPlan.recurringPriceAmountMinor, currentPlan),
-                },
-                ...addonLines(monthlyAddons(addons)),
-            ];
-            recurringMinor = lines.reduce((sum, line) => sum + line.amountMinor, 0);
         }
     } else if (intent === 'upgrade') {
         title = t('intent.upgrade.title');
@@ -154,9 +116,6 @@ export default function CheckoutReviewBoundary() {
                     amountMinor: discountedAmountMinor(targetPlan.priceAmountMinor - currentPlan.priceAmountMinor, targetPlan),
                 },
             ];
-            if (targetPlan.recurringPriceAmountMinor !== null) {
-                recurringMinor = discountedAmountMinor(targetPlan.recurringPriceAmountMinor, targetPlan) + addonMonthlyTotal;
-            }
         }
     } else {
         title = t('intent.storage.title');
@@ -166,15 +125,11 @@ export default function CheckoutReviewBoundary() {
         if (service) {
             planLabel = currentPlan.name;
             lines = [{ label: service.name, amountMinor: service.priceAmountMinor }];
-            if (currentPlan.recurringPriceAmountMinor !== null) {
-                recurringMinor =
-                    discountedAmountMinor(currentPlan.recurringPriceAmountMinor, currentPlan) + addonMonthlyTotal + service.priceAmountMinor;
-            }
         }
     }
 
     const totalMinor = lines.reduce((sum, line) => sum + line.amountMinor, 0);
-    const isPending = activationCheckout.isPending || renewalCheckout.isPending || upgradeCheckout.isPending || storageCheckout.isPending;
+    const isPending = activationCheckout.isPending || upgradeCheckout.isPending || storageCheckout.isPending;
     const backHref =
         intent === 'storage'
             ? routes.events.settingsAddons(eventId)
@@ -188,8 +143,6 @@ export default function CheckoutReviewBoundary() {
         try {
             if (intent === 'activation') {
                 navigateToCheckout(eventId, await activationCheckout.mutateAsync());
-            } else if (intent === 'renewal') {
-                navigateToCheckout(eventId, await renewalCheckout.mutateAsync());
             } else if (intent === 'upgrade' && targetPlan) {
                 navigateToCheckout(eventId, await upgradeCheckout.mutateAsync({ planTierCode: targetPlan.code }), targetPlan.code);
             } else if (intent === 'storage' && service) {
@@ -240,19 +193,9 @@ export default function CheckoutReviewBoundary() {
                     <div className={lines.length > 1 ? 'mt-5 flex items-center justify-between gap-6' : 'flex items-center justify-between gap-6'}>
                         <p className="text-sm font-semibold text-ink">{lines.length === 1 ? lines[0]?.label : t('dueNow')}</p>
                         <p className="shrink-0 text-xl font-bold text-ink">
-                            {intent === 'renewal'
-                                ? t('perMonth', { amount: formatMoney(locale, totalMinor, currency) })
-                                : formatMoney(locale, totalMinor, currency)}
+                            {formatMoney(locale, totalMinor, currency)}
                         </p>
                     </div>
-                    {recurringMinor !== null && intent !== 'renewal' && (
-                        <div className="mt-3 flex items-center justify-between gap-6 text-sm">
-                            <span className="text-ink-muted">{t('futureRenewal')}</span>
-                            <span className="shrink-0 font-semibold text-ink">
-                                {t('perMonth', { amount: formatMoney(locale, recurringMinor, currency) })}
-                            </span>
-                        </div>
-                    )}
                 </div>
             </section>
 

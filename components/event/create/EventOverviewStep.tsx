@@ -31,18 +31,10 @@ export function EventOverviewStep({ title, eventType, eventTypes, startAt, plan,
     const t = useTranslations('CreateEventPage');
     const locale = useLocale();
     const eventTypeCopy = useLocalizedAppEventTypeCopy();
-    const includedMonths = plan.includedMonths ?? 1;
-    const planActivation = getPlanPriceDetails(plan, 'activation');
-    const planRenewal = getPlanPriceDetails(plan, 'recurring');
-    const recurringAddons = addons.filter((addon) => addon.billingPeriod === 'MONTHLY');
-    const oneTimeAddons = addons.filter((addon) => addon.billingPeriod === 'ONE_TIME');
-    const activationAddonTotal =
-        recurringAddons.reduce((sum, addon) => sum + addon.priceAmountMinor * includedMonths, 0) +
-        oneTimeAddons.reduce((sum, addon) => sum + addon.priceAmountMinor, 0);
-    const monthlyAddonTotal = recurringAddons.reduce((sum, addon) => sum + addon.priceAmountMinor, 0);
-    const currency = planActivation?.currency ?? planRenewal?.currency ?? addons[0]?.priceCurrency;
+    const planActivation = getPlanPriceDetails(plan);
+    const activationAddonTotal = addons.reduce((sum, addon) => sum + addon.priceAmountMinor, 0);
+    const currency = planActivation?.currency ?? addons[0]?.priceCurrency;
     const activationTotal = planActivation ? planActivation.amountMinor + activationAddonTotal : activationAddonTotal;
-    const renewalTotal = (planRenewal?.amountMinor ?? 0) + monthlyAddonTotal;
     const activationTotalLabel = currency ? formatMoney(locale, activationTotal, currency) : t('payment.noCharge');
     const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
     const matchedEventType = eventTypes.find((type) => type.eventTypeKey === eventType);
@@ -69,7 +61,7 @@ export function EventOverviewStep({ title, eventType, eventTypes, startAt, plan,
                     {t('overview.pricing')}
                 </h3>
 
-                <p className="mt-1 text-xs text-ink-muted">{t('overview.pricingHint', { months: includedMonths })}</p>
+                <p className="mt-1 text-xs text-ink-muted">{t('overview.pricingHint')}</p>
 
                 <div className="mt-3 divide-y divide-border/70">
                     <EventOverviewPriceRow
@@ -82,21 +74,12 @@ export function EventOverviewStep({ title, eventType, eventTypes, startAt, plan,
                     {addons.map((addon) => {
                         const name = addon.grantsModuleKey ? getModuleMeta(addon.grantsModuleKey, modules).name : addon.name;
 
-                        const activationAmount =
-                            addon.billingPeriod === 'ONE_TIME' ? addon.priceAmountMinor : addon.priceAmountMinor * includedMonths;
-
                         return (
                             <EventOverviewPriceRow
                                 key={addon.id}
                                 label={name}
-                                detail={
-                                    addon.billingPeriod === 'ONE_TIME'
-                                        ? t('overview.chargedOnce')
-                                        : t('overview.monthlyForMonths', {
-                                              months: includedMonths,
-                                          })
-                                }
-                                amount={formatMoney(locale, activationAmount, addon.priceCurrency)}
+                                detail={t('overview.chargedOnce')}
+                                amount={formatMoney(locale, addon.priceAmountMinor, addon.priceCurrency)}
                                 fallback={t('payment.noCharge')}
                             />
                         );
@@ -106,22 +89,6 @@ export function EventOverviewStep({ title, eventType, eventTypes, startAt, plan,
                         <span>{t('overview.dueNow')}</span>
                         <span>{activationTotalLabel}</span>
                     </div>
-                </div>
-            </section>
-
-            {/* Recurring Cost */}
-            <section className="py-5">
-                <div className="rounded-xl bg-primary-light px-4 py-3 text-sm text-primary-dark">
-                    <div className="flex items-center justify-between gap-3 font-semibold">
-                        <span>{t('overview.futureMonthly')}</span>
-                        <span>{currency ? formatMoney(locale, renewalTotal, currency) : t('payment.noCharge')}</span>
-                    </div>
-
-                    <p className="mt-1 text-xs leading-5">
-                        {t('overview.futureMonthlyHint', {
-                            months: includedMonths,
-                        })}
-                    </p>
                 </div>
             </section>
 

@@ -57,8 +57,7 @@ export function EventPlanSelector({ plans, modules, selectedCode, onSelectAction
         for (const service of plan.paidModules ?? []) {
             if (!service.grantsModuleKey) continue;
             const price = formatMoney(locale, service.priceAmountMinor, service.priceCurrency);
-            detail[service.grantsModuleKey] =
-                service.billingPeriod === 'ONE_TIME' ? t('paidModules.oncePrice', { price }) : t('paidModules.monthlyPrice', { price });
+            detail[service.grantsModuleKey] = t('paidModules.oncePrice', { price });
         }
         return detail;
     }
@@ -91,7 +90,6 @@ export function EventPlanSelector({ plans, modules, selectedCode, onSelectAction
                                         <p className="truncate text-xl font-bold text-ink">{plan.name}</p>
                                         <PlanPriceLabel
                                             plan={plan}
-                                            kind="activation"
                                             locale={locale}
                                             fallback={t('payment.noCharge')}
                                             className="mt-1 block text-2xl font-bold text-primary-dark"

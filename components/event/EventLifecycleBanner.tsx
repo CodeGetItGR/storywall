@@ -12,8 +12,7 @@ import { useActiveEvent, useIsHost } from '@/providers/EventProvider';
 
 function tone(status: Exclude<EventStatus, 'ACTIVE'>) {
     if (status === 'DRAFT') return 'border-sky-200 bg-sky-50 text-sky-900';
-    if (status === 'FROZEN') return 'border-amber-200 bg-amber-50 text-amber-950';
-    return 'border-rose-200 bg-rose-50 text-rose-950';
+    return 'border-sky-200 bg-sky-50 text-sky-900';
 }
 
 export function EventLifecycleBanner() {
@@ -26,7 +25,7 @@ export function EventLifecycleBanner() {
     if (!activeEvent || !status || status === 'ACTIVE') return null;
     if (pathname.startsWith(`/events/${activeEvent.id}/checkout/`)) return null;
 
-    const actionHref = status === 'DRAFT' ? routes.manage : routes.auth.manage({ tab: 'billing' });
+    const actionHref = routes.manage;
     const showAction = isHost;
 
     return (

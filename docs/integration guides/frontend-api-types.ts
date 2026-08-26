@@ -262,6 +262,7 @@ interface EventRsvpSummaryDto {
  * Returned by GET /api/events/{id} only (not the list endpoint). Everything that scales
  * with event activity — posts, comments, reactions, stories, individual media, individual
  * RSVPs, playlist suggestions/votes — is intentionally excluded; fetch those from their own
+ * paginatable endpoints.
  */
 interface EventDetailResponseDto {
   id: string; title: string; subtitle: string | null; description: string | null;
@@ -812,12 +813,12 @@ export interface EventAddonRequestDto {
 export interface AddonSummary {
   code: string;
   name: string;
-  /** What this costs at `billingPeriod`'s cadence — not necessarily a monthly figure. */
+  /** What this costs, charged once at activation. */
   priceAmountMinor: number;
   /**
-   * `'MONTHLY'` — added to every renewal — or `'ONE_TIME'`, meaning it was paid for once on the
-   * activation and adds nothing to any future bill. Only a MODULE_UNLOCK is ever `'ONE_TIME'`.
-   * Rendering every row as "/month" overstates what the host owes, so read this. Added 2026-08-17.
+   * Always `'ONE_TIME'` — every add-on is folded into the one-time activation charge and never
+   * bills again. Kept as a field rather than dropped so a row from an older catalog entry still
+   * has somewhere to report its cadence. Added 2026-08-17.
    */
   billingPeriod: BillingPeriod;
   activatedAt: string;
@@ -868,7 +869,7 @@ export interface PlatformMetricsResponseDto {
 
   totalEvents: number;
   activeEvents: number;
-  /** Keyed by EventStatus name (DRAFT | ACTIVE | FROZEN | PURGED). Missing key = 0. */
+  /** Keyed by EventStatus name (DRAFT | ACTIVE). Missing key = 0. */
   eventsByStatus: Record<string, number>;
   /** Keyed by EVENT-scope plan code, e.g. 'BASIC'. Missing key = 0. */
   eventsByPlanTier: Record<string, number>;
@@ -967,9 +968,9 @@ export interface QrLinkResolutionDto {
   eventTitle?: string;
   eventSubtitle?: string | null;
   coverMediaId?: string | null;
-  /** Only these two can appear here — anything else resolves as TARGET_UNAVAILABLE instead.
-   *  FROZEN is readable but rejects every write, so grey out upload CTAs. */
-  eventStatus?: 'ACTIVE' | 'FROZEN';
+  /** Only ever 'ACTIVE' when present — any other event status resolves as TARGET_UNAVAILABLE
+   *  instead, so a draft event's codes simply stop working until it goes live. */
+  eventStatus?: 'ACTIVE';
   /** Feed this to POST /api/auth/guest-login. */
   inviteToken?: string;
   requiresAuth?: boolean;

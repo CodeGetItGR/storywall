@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
 import Section from '@/components/manage/Section';
-import { type BillingData, type BillingDerived, type BillingInsights, useBillingDate } from '@/hooks/useEventBillingPanel';
+import { type BillingData, type BillingDerived, type BillingInsights } from '@/hooks/useEventBillingPanel';
 import type { PaidServiceResponseDto, PlanTierResponseDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
 import { routes } from '@/lib/routes';
@@ -27,8 +27,7 @@ export function BillingPlanPanel({
 }) {
     const t = useTranslations('EventPlanSettingsPage');
     const locale = useLocale();
-    const formatDate = useBillingDate();
-    const { coverage, upgradeAmount, upgradeListAmount, upgradeCurrency, renewalTotal, addonMonthlyTotal } = derived;
+    const { upgradeAmount, upgradeListAmount, upgradeCurrency } = derived;
 
     const upgradeDueLabel = upgradeAmount !== null ? formatMoney(locale, upgradeAmount, upgradeCurrency) : null;
     const upgradeListDueLabel =
@@ -36,11 +35,7 @@ export function BillingPlanPanel({
             ? formatMoney(locale, upgradeListAmount, upgradeCurrency)
             : null;
     const upgradeChargeLabel = upgradeDueLabel
-        ? coverage.unlimited
-            ? t('compare.upgradeChargeUnlimited', { amount: upgradeDueLabel })
-            : coverage.paidThrough
-              ? t('compare.upgradeCharge', { amount: upgradeDueLabel, date: formatDate(coverage.paidThrough) })
-              : t('compare.upgradeChargeNoDate', { amount: upgradeDueLabel })
+        ? t('compare.upgradeChargeNoDate', { amount: upgradeDueLabel })
         : null;
 
     return (
@@ -67,11 +62,7 @@ export function BillingPlanPanel({
                         ))}
                     </div>
                     <p className="mt-2 text-xs text-ink-muted">
-                        {renewalTotal === null
-                            ? t('addons.monthlyTotal', { amount: formatMoney(locale, addonMonthlyTotal, insights.orderCurrency) })
-                            : t('addons.renewalTotal', {
-                                  amount: formatMoney(locale, renewalTotal, currentPlan?.priceCurrency ?? insights.orderCurrency),
-                              })}
+                        {t('addons.ownedTotal', { amount: formatMoney(locale, derived.addonTotal, currentPlan?.priceCurrency ?? insights.orderCurrency) })}
                     </p>
                 </Section>
             )}

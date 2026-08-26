@@ -100,9 +100,9 @@ POST /api/events/{eventId}/qr-links      ROLE_USER, must be a host of the event
 - **`token`** is on the host response so you can build deep links. Treat it as a credential:
   don't log it, don't put it in analytics events.
 
-Errors: `403` if the caller isn't a host of the event. `409` `errorCode 5014`/`5016` if the event
-is DRAFT (unpaid) or FROZEN — you cannot mint a code for an event nobody can join yet. `400`
-`errorCode 3001` for validation.
+Errors: `403` if the caller isn't a host of the event. `409` `errorCode 5014` if the event is
+DRAFT (unpaid) — you cannot mint a code for an event nobody can join yet. `400` `errorCode 3001`
+for validation.
 
 ## 2. Host side: list, inspect, repoint, revoke
 
@@ -228,11 +228,11 @@ on `status`.
   | `ACTIVE` | 200 | usable | continue into the flow for `targetType` |
   | `REVOKED` | 200 | the host turned it off | "This code is no longer active. Ask your host for a new one." |
   | `EXPIRED` | 200 | past its `expiresAt` | "This code has expired." |
-  | `TARGET_UNAVAILABLE` | 200 | event deleted, not yet live, or purged | "This event isn't available." |
+  | `TARGET_UNAVAILABLE` | 200 | event deleted or not yet live | "This event isn't available." |
   | *unknown token* | **404**, `errorCode 2004` | never issued | "We don't recognise this code." |
-- **`eventStatus`** is `ACTIVE` or `FROZEN` only. A frozen event is readable but rejects every
-  write, so on `MEDIA_UPLOAD` you should disable the upload CTA up front rather than let the guest
-  pick photos and fail at submit.
+- **`eventStatus`** is always `ACTIVE`. A code only resolves at all once the event is live — a
+  DRAFT (unpaid) event's codes report `TARGET_UNAVAILABLE` instead — so there's no lifecycle state
+  to branch on here.
 - **`requiresGuestKey`** tells you whether the follow-up guest-login will hand back a `guestKey`
   in its response, and therefore whether you should keep sending one you've already stored. It's
   `true` for every `EVENT_JOIN` and `MEDIA_UPLOAD` code, **regardless of `maxGuests`** — a code
@@ -380,5 +380,4 @@ switch (qr.status) {
 - [ ] Don't present `uploadCount` as "uploads from this QR" — it's uploads by the guests it
       brought in.
 - [ ] Render `publicUrl` verbatim. Do not build the URL from `token` yourself.
-- [ ] Grey out upload CTAs when `eventStatus` is `FROZEN`.
 - [ ] Don't log or send `token` / `inviteToken` to analytics.

@@ -10,7 +10,7 @@ guides it links out to:
 [`multi-image-post-upload-fe-integration.md`](multi-image-post-upload-fe-integration.md),
 [`post-liked-by-current-user-integration-guide.md`](post-liked-by-current-user-integration-guide.md),
 [`app-config-fe-integration.md`](app-config-fe-integration.md),
-[`billing-fe-guide.md`](billing-fe-guide.md) (plans, payments, subscriptions, refunds — see the
+[`billing-fe-guide.md`](billing-fe-guide.md) (plans, payments, refunds — see the
 "Billing & payments" entry in §1 below),
 [`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-integration.md),
 [`gallery-archive-download-fe-integration.md`](gallery-archive-download-fe-integration.md)
@@ -191,8 +191,8 @@ scanners, so nothing loaded there may carry a payment destination. The IBAN is s
 rest; don't undo that by caching it in localStorage, a URL, or an analytics event.
 
 Unlike every other module write path, the host may configure this while the event is still a
-`DRAFT` (it belongs in the setup wizard) and while it is `FROZEN` (so a lapsed host can still fix a
-typo). Reading has no lifecycle check at all.
+`DRAFT` (it belongs in the setup wizard), not just once `ACTIVE`. Reading has no lifecycle check at
+all.
 
 ### Wishbook — new (2026-08-16)
 
@@ -207,9 +207,9 @@ The `wishbook` module: written wishes every member can read. Fully covered in
 | DELETE | `/api/wishbook/{entryId}` | author or host | `204`. Note: **not** nested under the event |
 
 Draw the delete control off the server-computed `canDelete`, not off `authorMemberId` — deriving it
-client-side gets the host case wrong. Writing requires the event to be `ACTIVE` (`409 EVENT_FROZEN`
-or `409 EVENT_NOT_ACTIVE` otherwise); deleting works in any state, so a host can still take down
-something offensive after a freeze.
+client-side gets the host case wrong. Writing requires the event to be `ACTIVE` (`409
+EVENT_NOT_ACTIVE` otherwise); deleting works on a `DRAFT` event too, so a host can still take down
+something offensive before publishing.
 
 ### RSVP — guest flow
 
@@ -402,55 +402,50 @@ rules that ship alongside the plan catalog: [`billing-fe-guide.md`](billing-fe-g
 only way an event gets it: a `MODULE_UNLOCK` paid service grants one module to one event, and the
 commercial gate is the **OR** of the two. `POST /api/events/{eventId}/addons` with
 `{ paidServiceCode }` opts a **draft** event in — nothing is charged at that moment, the price
-folds into the activation order and then into every renewal. There is no mid-cycle purchase path,
-so the module picker belongs in the setup wizard; on a live event a plan-excluded module should
-render unavailable with no buy affordance, because that call always `409`s with `EVENT_NOT_DRAFT`.
+folds into the activation order, once. There is no mid-cycle purchase path, so the module picker
+belongs in the setup wizard; on a live event a plan-excluded module should render unavailable with no
+buy affordance, because that call always `409`s with `EVENT_NOT_DRAFT`.
 See [`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-integration.md) §2.
 
-### Billing & payments — event activation, subscriptions, upgrades, refunds
+### Billing & payments — event activation, upgrades, storage packs, refunds
 
-**Corrects a stale claim in an earlier version of this doc: there *is* now a full billing
-integration.** An event is not usable until paid for — `POST /api/events` returns a `DRAFT`, and
-only a completed checkout turns it `ACTIVE`. There is no free plan.
+An event is not usable until paid for — `POST /api/events` returns a `DRAFT`, and only a completed
+checkout turns it `ACTIVE`. There is no free plan. **As of 2026-08-26, every purchase on the platform
+is one-time** — the monthly "preservation" subscription is gone, and so is the lifecycle it existed
+for: an `ACTIVE` event stays `ACTIVE` permanently, with no coverage window, no dunning, no freeze, no
+purge.
 
 **Build against [`billing-fe-guide.md`](billing-fe-guide.md) — the single current, consolidated
-reference** for all of this (it supersedes three earlier delta docs, kept only as change history:
-`billing-payments-fe-integration.md`, `plan-tiers-fe-integration.md` for the payment parts,
-`refunds-rate-limits-fe-integration.md`). Summary of what it covers:
+reference** for all of this. Summary of what it covers:
 
-- **Two separate purchases per event**: one-time **activation** (goes live, covers storage until
-  `endAt` + the plan's included months) and monthly **preservation** (keeps media online after that
-  window lapses, opt-in, never auto-started). A third, **upgrade** (raises the ceiling on the same
-  event, priced as the difference, never extends coverage) — see
-  [`plan-upgrades-fe-integration.md`](plan-upgrades-fe-integration.md).
-- **Event lifecycle**: `DRAFT → ACTIVE →(unpaid 14d)→ FROZEN →(30d grace)→ PURGED`, any payment
-  restores from `FROZEN`. A frozen event stays fully readable, only writes 409 with `EVENT_FROZEN`
-  (a single global error to handle once). `PURGED` destroys media irreversibly; rows survive.
-- **Checkout**: `POST /api/events/{id}/checkout` (activation), `.../subscription-checkout`
-  (preservation), `.../upgrade-checkout` (ceiling) — all return `{ orderId, redirectUrl }`, redirect
-  top-level to Stripe's hosted page, never an iframe/popup. **Landing on `/checkout/success` does
-  not mean paid** — poll `GET /api/events/{id}/billing` for the order's own status; a lost webhook
-  is reconciled within ~15 minutes by a scheduled sweep.
-- **Cancelling preservation**: `DELETE /api/events/{id}/subscription` — takes effect at the end of
-  the already-paid period (`cancelAtPeriodEnd: true`), never immediately; no resume, only a fresh
-  `subscription-checkout`. See
-  [`subscription-cancellation-fe-changes.md`](subscription-cancellation-fe-changes.md).
+- **Four one-time purchases, not one**: **activation** (goes live, permanent, `DRAFT` only),
+  **upgrade** (moves an `ACTIVE` event onto a pricier plan for the price of the difference, `ACTIVE`
+  only), a **storage pack** (permanently raises the ceiling, `ACTIVE` only), and the **"keep
+  originals" add-on / a module unlock** (fold straight into the activation charge, `DRAFT` only,
+  no checkout of their own).
+- **Event lifecycle**: `DRAFT → ACTIVE`, full stop. An approved refund is the only backwards
+  transition, and it's a refund decision, never a lapsed payment — there is nothing left to lapse.
+- **Checkout**: `POST /api/events/{id}/checkout` (activation), `.../upgrade-checkout`,
+  `.../storage-checkout` — all return `{ orderId, redirectUrl }`, redirect top-level to Stripe's
+  hosted page, never an iframe/popup. **Landing on `/checkout/success` does not mean paid** — poll
+  `GET /api/events/{id}/billing` for the order's own status; a lost webhook is reconciled within ~15
+  minutes by a scheduled sweep.
 - **Refunds**: host-requested, admin-decided, activation-only, gated on the event being genuinely
   unused (no other members ever, no content ever, inside the refund window, not yet started).
-  Approval reverses the charge and drops the event back to `DRAFT`.
-- **Rate limiting is now global**: every `/api/**` endpoint has a request budget (default 300/min);
-  tighter limits on auth, checkout, and refund/admin-money routes. A new `3010 RATE_LIMITED` / `429`
-  with `Retry-After` — handle it once in the API client, never auto-retry a checkout or approval.
+  Approval reverses the activation charge (and any settled upgrade charge on the same event) and
+  drops the event back to `DRAFT`. A storage pack is never reversed by a refund, under any
+  circumstance.
+- **Rate limiting is global**: every `/api/**` endpoint has a request budget (default 300/min);
+  tighter limits on auth, checkout, and refund/admin-money routes. A `3010 RATE_LIMITED` / `429` with
+  `Retry-After` — handle it once in the API client, never auto-retry a checkout or approval.
 - **Dev/staging vs. production**: unless `app.billing.provider=STRIPE`, checkout runs a `MANUAL`
   provider — the redirect goes straight back to the success route and the event stays `DRAFT` until
   an admin calls `POST /api/admin/orders/{orderId}/settle`. Not a bug; keep `orderId` visible in dev
   builds.
-- Hardening notes (reversed-order coverage bug, concurrent-checkout races, tax-shorted refunds, and
-  the resulting new error codes `5031`–`5033`) if you need the "why" behind an edge case:
-  [`billing-hardening-2026-08.md`](billing-hardening-2026-08.md).
 
-All of `billing-fe-guide.md`'s admin-only endpoints (settle, freeze, purge, refund queue, plan-tier
-CRUD) require `ROLE_ADMIN` and live under `/api/admin`.
+All of `billing-fe-guide.md`'s admin-only endpoints (settle, webhook replay, refund queue, plan-tier
+CRUD) require `ROLE_ADMIN` and live under `/api/admin`. There is no admin freeze/purge endpoint any
+more.
 
 ### App config — new (2026-08-05)
 

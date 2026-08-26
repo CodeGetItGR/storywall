@@ -85,16 +85,10 @@ export default function CreateEventPage() {
     const overviewPayAmountLabel = useMemo(() => {
         if (!selectedPlan) return t('payment.noCharge');
 
-        const includedMonths = selectedPlan.includedMonths ?? 1;
-        const activation = getPlanPriceDetails(selectedPlan, 'activation');
-        const recurring = getPlanPriceDetails(selectedPlan, 'recurring');
-        const recurringAddons = selectedAddonServices.filter((addon) => addon.billingPeriod === 'MONTHLY');
-        const oneTimeAddons = selectedAddonServices.filter((addon) => addon.billingPeriod === 'ONE_TIME');
-        const activationAddonTotal =
-            recurringAddons.reduce((sum, addon) => sum + addon.priceAmountMinor * includedMonths, 0) +
-            oneTimeAddons.reduce((sum, addon) => sum + addon.priceAmountMinor, 0);
+        const activation = getPlanPriceDetails(selectedPlan);
+        const activationAddonTotal = selectedAddonServices.reduce((sum, addon) => sum + addon.priceAmountMinor, 0);
         const activationTotal = (activation?.amountMinor ?? 0) + activationAddonTotal;
-        const currency = activation?.currency ?? recurring?.currency ?? selectedAddonServices[0]?.priceCurrency;
+        const currency = activation?.currency ?? selectedAddonServices[0]?.priceCurrency;
 
         return currency ? formatMoney(locale, activationTotal, currency) : t('payment.noCharge');
     }, [locale, selectedAddonServices, selectedPlan, t]);

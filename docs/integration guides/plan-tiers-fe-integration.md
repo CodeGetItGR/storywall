@@ -367,7 +367,3 @@ quota-full event does not fail the whole batch.
 **Null limits.** A plan with a null limit never rejects — there is no cap to check against. Don't
 render a progress bar against a null limit; there is no denominator (see "Null means no limit"
 above, which applies equally here).
-
-**The archive escape hatch.** `ACTIVE_EVENT_LIMIT_EXCEEDED` tells the user to archive an event or
-upgrade. Archiving genuinely frees the seat — `PATCH` the event with `isArchived: true` — so the
-UI should offer that action alongside the upgrade prompt, not just the upgrade prompt alone.

@@ -45,18 +45,6 @@ export function PlanMoreInfoSheet({ open, onCloseAction, plan, modules }: PlanMo
                             <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('moreInfoActivation')}</p>
                             <PlanPriceLabel
                                 plan={plan}
-                                kind="activation"
-                                locale={locale}
-                                fallback={t('payment.noCharge')}
-                                className="mt-1 block text-base font-bold text-ink"
-                            />
-                        </div>
-
-                        <div className="rounded-xl bg-surface-muted/70 px-3 py-3">
-                            <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('moreInfoRecurring')}</p>
-                            <PlanPriceLabel
-                                plan={plan}
-                                kind="recurring"
                                 locale={locale}
                                 fallback={t('payment.noCharge')}
                                 className="mt-1 block text-base font-bold text-ink"
@@ -71,13 +59,6 @@ export function PlanMoreInfoSheet({ open, onCloseAction, plan, modules }: PlanMo
                         <div className="rounded-xl bg-surface-muted/70 px-3 py-3">
                             <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('moreInfoStorage')}</p>
                             <p className="mt-1 text-base font-bold text-ink">{formatLimitValue(plan.storageBytes, 'bytes') ?? t('unlimited')}</p>
-                        </div>
-
-                        <div className="rounded-xl bg-surface-muted/70 px-3 py-3">
-                            <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('moreInfoCoverage')}</p>
-                            <p className="mt-1 text-base font-bold text-ink">
-                                {plan.includedMonths === null ? t('unlimited') : t('monthCount', { count: plan.includedMonths })}
-                            </p>
                         </div>
 
                         {discount !== '-' && (

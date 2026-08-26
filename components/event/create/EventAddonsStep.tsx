@@ -67,9 +67,7 @@ export function EventAddonsStep({ modules, services, selectedCodes, onToggleActi
                                     <span className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                                         <span className="text-sm font-semibold text-ink">{name}</span>
                                         <span className="rounded-full bg-background px-2.5 py-1 text-xs font-semibold text-primary-dark">
-                                            {service.billingPeriod === 'ONE_TIME'
-                                                ? t('paidModules.oncePrice', { price })
-                                                : t('paidModules.monthlyPrice', { price })}
+                                            {t('paidModules.oncePrice', { price })}
                                         </span>
                                     </span>
                                     {description && <span className="mt-1 block text-xs leading-5 text-ink-muted">{description}</span>}

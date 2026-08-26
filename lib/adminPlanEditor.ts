@@ -35,8 +35,6 @@ export function planPatchFromFormData(plan: PlanTierResponseDto, formData: FormD
         priceAmountMinor: priceInputToMinor(formData.get('price')),
         priceCurrency: emptyToNull(formData.get('priceCurrency'))?.toUpperCase() ?? null,
         billingPeriod: (emptyToNull(formData.get('billingPeriod')) as BillingPeriod | null) ?? null,
-        recurringPriceAmountMinor: plan.scope === 'EVENT' ? priceInputToMinor(formData.get('recurringPrice')) : null,
-        includedMonths: plan.scope === 'EVENT' ? numberOrNull(formData.get('includedMonths')) : null,
         discountPercent: numberOrNull(formData.get('discountPercent')),
         discountLabel: emptyToNull(formData.get('discountLabel')),
         discountStartsAt: localInputToInstant(formData.get('discountStartsAt')),
@@ -75,19 +73,6 @@ export function planChangeSummary(plan: PlanTierResponseDto, patch: PlanTierPatc
         moneyLabel(patch.priceAmountMinor ?? null, patch.priceCurrency ?? null)
     );
     add(t('fields.billingPeriod'), textLabel(plan.billingPeriod), textLabel(patch.billingPeriod));
-
-    if (plan.scope === 'EVENT') {
-        add(
-            t('fields.recurringPrice'),
-            moneyLabel(plan.recurringPriceAmountMinor, plan.priceCurrency),
-            moneyLabel(patch.recurringPriceAmountMinor ?? null, patch.priceCurrency ?? null)
-        );
-        add(
-            t('fields.includedMonths'),
-            textLabel(plan.includedMonths === null ? null : String(plan.includedMonths)),
-            textLabel(patch.includedMonths === null ? null : String(patch.includedMonths))
-        );
-    }
 
     // A promotion is money: a change here has to be visible in the confirmation,
     // not applied quietly because the field lives further down the form.

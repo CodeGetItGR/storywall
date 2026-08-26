@@ -1,6 +1,6 @@
 'use client';
 
-import { BarChart3, Boxes, CalendarDays, Grid3X3, Layers3, LifeBuoy, type LucideIcon, PackagePlus, Receipt, Shield, Tag, Undo2 } from 'lucide-react';
+import { BarChart3, Boxes, CalendarDays, Grid3X3, Layers3, type LucideIcon, PackagePlus, Receipt, Shield, Tag, Undo2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
@@ -14,8 +14,7 @@ export type AdminTab =
     | 'eventTypes'
     | 'assignments'
     | 'billingOps'
-    | 'refunds'
-    | 'lifecycle';
+    | 'refunds';
 
 export type AdminTabItem = {
     key: AdminTab;
@@ -25,8 +24,8 @@ export type AdminTabItem = {
 
 // The console has no event or order search: the only ids an admin can reach are
 // the ones a panel already shows them. Carrying that id — and the title, when a
-// row knows one — into the panel that acts on it is what keeps freeze, purge,
-// assignment, and add-on removal usable without database access.
+// row knows one — into the panel that acts on it keeps assignment and add-on
+// removal usable without database access.
 export type AdminFocus = {
     eventId?: string;
     eventTitle?: string;
@@ -44,7 +43,6 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#assignments': 'assignments',
     '#billing-ops': 'billingOps',
     '#refunds': 'refunds',
-    '#lifecycle': 'lifecycle',
 };
 
 const TAB_TO_HASH: Record<AdminTab, string> = {
@@ -58,7 +56,6 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     assignments: '#assignments',
     billingOps: '#billing-ops',
     refunds: '#refunds',
-    lifecycle: '#lifecycle',
 };
 
 const AdminNavigationContext = createContext<
@@ -124,7 +121,6 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'assignments', label: t('assignments'), icon: Layers3 },
             { key: 'billingOps', label: t('billingOps'), icon: Receipt },
             { key: 'refunds', label: t('refunds'), icon: Undo2 },
-            { key: 'lifecycle', label: t('lifecycle'), icon: LifeBuoy },
         ],
         [t]
     );

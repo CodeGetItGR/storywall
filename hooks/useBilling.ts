@@ -14,7 +14,6 @@ import type {
     RefundEligibilityResponseDto,
     RefundRequestResponseDto,
     StorageCheckoutRequestDto,
-    SubscriptionSummaryDto,
     UpgradeCheckoutRequestDto,
 } from '@/lib/api/types';
 
@@ -46,11 +45,10 @@ export function useEventBilling(eventId: string | null, enabled = true) {
     });
 }
 
-export function useCheckout(eventId: string, subscription = false) {
+export function useCheckout(eventId: string) {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: () =>
-            api.post<CheckoutResponseDto>(subscription ? endpoints.events.subscriptionCheckout(eventId) : endpoints.events.checkout(eventId)),
+        mutationFn: () => api.post<CheckoutResponseDto>(endpoints.events.checkout(eventId)),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
             queryClient.invalidateQueries({ queryKey: ['events', eventId] });
@@ -88,23 +86,6 @@ export function useAddEventAddon(eventId: string) {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
             queryClient.invalidateQueries({ queryKey: ['events', eventId] });
-        },
-    });
-}
-
-// DELETE /api/events/{id}/subscription — stops the renewal, does not refund and
-// does not end the paid month. Idempotent, so a second press is harmless.
-// The response is the whole truth: never set `cancelAtPeriodEnd` optimistically,
-// because a 502 (5027) means the card is still being charged.
-export function useCancelSubscription(eventId: string) {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: () => api.del<SubscriptionSummaryDto>(endpoints.events.subscription(eventId)),
-        onSuccess: (subscription) => {
-            queryClient.setQueryData<EventBillingResponseDto>(billingKeys.event(eventId), (previous) =>
-                previous ? { ...previous, subscription } : previous
-            );
-            queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
         },
     });
 }

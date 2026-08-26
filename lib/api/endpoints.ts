@@ -77,9 +77,7 @@ export const endpoints = {
         wishbookCount: (eventId: string) => `/api/events/${eventId}/wishbook/count`,
         checkout: (eventId: string) => `/api/events/${eventId}/checkout`,
         upgradeCheckout: (eventId: string) => `/api/events/${eventId}/upgrade-checkout`,
-        subscriptionCheckout: (eventId: string) => `/api/events/${eventId}/subscription-checkout`,
         storageCheckout: (eventId: string) => `/api/events/${eventId}/storage-checkout`,
-        subscription: (eventId: string) => `/api/events/${eventId}/subscription`,
         refundEligibility: (eventId: string) => `/api/events/${eventId}/refund-eligibility`,
         refundRequests: (eventId: string) => `/api/events/${eventId}/refund-requests`,
         posts: (eventId: string) => `/api/events/${eventId}/posts`,
@@ -248,8 +246,6 @@ export const endpoints = {
         },
         events: {
             planTier: (eventId: string) => `/api/admin/events/${eventId}/plan-tier`,
-            freeze: (eventId: string) => `/api/admin/events/${eventId}/freeze`,
-            purge: (eventId: string) => `/api/admin/events/${eventId}/purge`,
             addon: (eventId: string, code: string) => `/api/admin/events/${eventId}/addons/${encodeURIComponent(code)}`,
         },
     },

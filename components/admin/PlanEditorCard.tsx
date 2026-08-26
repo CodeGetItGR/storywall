@@ -104,7 +104,7 @@ export function PlanEditorCard({
                 <PlanEditorLimitsTab editorId={editorId} activeTab={tab} plan={editorPlan} isEvent={isEvent} />
 
                 {/* Pricing tab */}
-                <PlanEditorPricingTab editorId={editorId} activeTab={tab} plan={editorPlan} isEvent={isEvent} />
+                <PlanEditorPricingTab editorId={editorId} activeTab={tab} plan={editorPlan} />
 
                 {/* Add-ons tab */}
                 {isEvent && (

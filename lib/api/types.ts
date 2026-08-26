@@ -25,7 +25,7 @@ export type MediaTypeConvention = 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT';
 export type MediaArchiveVariant = 'DISPLAY' | 'ORIGINAL';
 export type PlanScope = 'ACCOUNT' | 'EVENT';
 export type BillingPeriod = 'MONTHLY' | 'YEARLY' | 'ONE_TIME';
-export type EventStatus = 'DRAFT' | 'ACTIVE' | 'FROZEN' | 'PURGED';
+export type EventStatus = 'DRAFT' | 'ACTIVE';
 // Plan codes are admin-configurable at runtime. Known codes such as FREE,
 // PLUS, and PRO are conventions, not an exhaustive client-side union.
 export type PlanTierCode = string;
@@ -100,8 +100,6 @@ export interface PlanTierResponseDto {
     priceAmountMinor: number | null;
     priceCurrency: string | null;
     billingPeriod: BillingPeriod | null;
-    recurringPriceAmountMinor: number | null;
-    includedMonths: number | null;
     discountPercent: number | null;
     discountLabel: string | null;
     discountStartsAt: string | null;
@@ -286,7 +284,7 @@ export interface GuestLoginRequestDto {
 
 // Notifications are produced by backend sweeps/actions; clients can only read,
 // mark read, mark all read, and dismiss them.
-export type BillingNotificationType = 'BILLING_EXPIRING' | 'BILLING_PAST_DUE' | 'BILLING_PURGE_WARNING' | 'REFUND_APPROVED' | 'REFUND_REJECTED';
+export type BillingNotificationType = 'REFUND_APPROVED' | 'REFUND_REJECTED';
 
 export type NotificationCategory = 'LIMIT' | 'OFFER' | 'TIP' | 'SYSTEM' | 'BILLING' | (string & {});
 export type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
@@ -446,41 +444,21 @@ export interface CheckoutResponseDto {
 export interface UpgradeCheckoutRequestDto {
     planTierCode: PlanTierCode;
 }
-export interface CoverageSummaryDto {
-    unlimited: boolean;
-    paidThrough: string | null;
-    covered: boolean;
-    freezesAt: string | null;
-    purgesAt: string | null;
-}
-// `cancelAtPeriodEnd` splits ACTIVE in two: renewing, or cancelled-but-still-paid-up.
-// Rendering on `status` alone tells a host their event will renew when it will not.
-export interface SubscriptionSummaryDto {
-    id: string;
-    status: 'ACTIVE' | 'PAST_DUE' | 'CANCELLED';
-    currentPeriodEnd: string | null;
-    cancelAtPeriodEnd: boolean;
-    cancelledAt: string | null;
-}
 export interface OrderSummaryDto {
     id: string;
-    kind: 'ACTIVATION' | 'RENEWAL' | 'UPGRADE' | 'STORAGE_PACK';
+    kind: 'ACTIVATION' | 'UPGRADE' | 'STORAGE_PACK';
     status: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED';
     amountMinor: number;
     addonAmountMinor: number | null;
     currency: string;
-    coversFrom: string | null;
-    coversUntil: string | null;
     paidAt: string | null;
     createdAt: string;
 }
 export interface EventAddonDto {
     code: string;
     name: string;
-    // What this costs at billingPeriod's cadence — not necessarily a monthly figure.
+    // What this cost when bought.
     priceAmountMinor: number;
-    // 'MONTHLY' (on every renewal) or 'ONE_TIME' (paid once, at activation). Only a
-    // MODULE_UNLOCK is ever 'ONE_TIME'.
     billingPeriod: BillingPeriod;
     activatedAt: string;
 }
@@ -492,8 +470,6 @@ export interface EventBillingResponseDto {
     eventStatus: EventStatus;
     planTierCode: string;
     planTierName: string;
-    coverage: CoverageSummaryDto;
-    subscription: SubscriptionSummaryDto | null;
     orders: OrderSummaryDto[];
     addons: EventAddonDto[];
 }
@@ -625,7 +601,7 @@ export interface QrLinkResolutionDto {
     eventTitle?: string;
     eventSubtitle?: string | null;
     coverMediaId?: string | null;
-    eventStatus?: 'ACTIVE' | 'FROZEN';
+    eventStatus?: EventStatus;
     inviteToken?: string;
     requiresAuth?: boolean;
     requiresGuestKey?: boolean;
@@ -1291,8 +1267,6 @@ export interface PlanTierRequestDto {
     priceAmountMinor?: number | null;
     priceCurrency?: string | null;
     billingPeriod?: BillingPeriod | null;
-    recurringPriceAmountMinor?: number | null;
-    includedMonths?: number | null;
     discountPercent?: number | null;
     discountLabel?: string | null;
     discountStartsAt?: string | null;

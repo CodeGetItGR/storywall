@@ -1,11 +1,12 @@
 'use client';
 
 import { Menu } from '@base-ui/react/menu';
-import { Camera, Music2, Plus, PlusCircle } from 'lucide-react';
+import { Camera, Plus, PlusCircle } from 'lucide-react';
 import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback, useState } from 'react';
+import {PiMusicNotesPlusDuotone} from "react-icons/pi";
 
 import { type ContextNavItem, ContextNavSlot, isEventRoute, isPathActive, TabLink } from '@/components/layout/mobile-tab-bar';
 import { AccountDrawer } from '@/components/profile';
@@ -16,7 +17,6 @@ import { cn } from '@/lib/utils';
 import { useComposer } from '@/providers/ComposerProvider';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 import { useMobileChrome } from '@/providers/MobileChromeProvider';
-import {PiMusicNotesPlusDuotone, PiMusicNotesPlusFill} from "react-icons/pi";
 
 const homeTabItem = { href: routes.feed, icon: '/icons/home.svg', key: 'home' } as const;
 

@@ -4,9 +4,8 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { ScheduleStoryDateBadge } from '@/components/story/ScheduleStoryDateBadge';
-import { useActiveEvent } from '@/providers/EventProvider';
-
 import { routes } from '@/lib/routes';
+import { useActiveEvent } from '@/providers/EventProvider';
 
 export function ScheduleStoryAvatar() {
     const t = useTranslations('StoryAvatar');

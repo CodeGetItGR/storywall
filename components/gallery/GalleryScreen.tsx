@@ -18,7 +18,6 @@ export function GalleryScreen() {
     const t = useTranslations('GalleryPage');
     const router = useRouter();
     const {
-        activeEvent,
         eventId,
         isHost,
         galleryEnabled,
@@ -135,12 +134,7 @@ export function GalleryScreen() {
                     </div>
                 ) : undefined
             }
-            notice={
-                <>
-                    {!galleryEnabled && <ModuleNotice>{t('moduleUnavailable')}</ModuleNotice>}
-                    {activeEvent?.status === 'FROZEN' && <ModuleNotice tone="info">{t('eventFrozen')}</ModuleNotice>}
-                </>
-            }
+            notice={!galleryEnabled && <ModuleNotice>{t('moduleUnavailable')}</ModuleNotice>}
         >
             {/* Upload */}
             <GalleryUploadSection

@@ -15,7 +15,6 @@ export type AdminErrorMessageKey =
     | 'paidServiceInUse'
     | 'addonLockedWhileActive'
     | 'addonNotActive'
-    | 'subscriptionAlreadyActive'
     | 'invalidPlanTierScope'
     | 'methodNotAllowed'
     | 'generic';
@@ -62,7 +61,6 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.PAID_SERVICE_IN_USE) return 'paidServiceInUse';
     if (code === ERROR_CODES.ADDON_LOCKED_WHILE_ACTIVE) return 'addonLockedWhileActive';
     if (code === ERROR_CODES.ADDON_NOT_ACTIVE) return 'addonNotActive';
-    if (code === ERROR_CODES.SUBSCRIPTION_ALREADY_ACTIVE) return 'subscriptionAlreadyActive';
     if (code === ERROR_CODES.INVALID_PLAN_TIER_SCOPE) return 'invalidPlanTierScope';
     if (code === ERROR_CODES.METHOD_NOT_ALLOWED) return 'methodNotAllowed';
     return 'generic';

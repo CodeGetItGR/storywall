@@ -59,34 +59,13 @@ export function EventPlanComparison({
             key: 'price',
             label: t('compare.activationPrice'),
             render: (plan) => (
-                <PlanPriceLabel plan={plan} kind="activation" locale={locale} fallback={t('compare.noPrice')} className="font-semibold text-ink" />
-            ),
-        },
-        {
-            key: 'monthlyPrice',
-            label: t('compare.monthlyPrice'),
-            render: (plan) => (
-                <PlanPriceLabel
-                    plan={plan}
-                    kind="recurring"
-                    locale={locale}
-                    fallback={t('compare.noMonthlyPrice')}
-                    suffix={t('compare.perMonthSuffix')}
-                    className="font-semibold text-ink"
-                />
+                <PlanPriceLabel plan={plan} locale={locale} fallback={t('compare.noPrice')} className="font-semibold text-ink" />
             ),
         },
         {
             key: 'billing',
             label: t('compare.billing'),
             render: (plan) => <span>{plan.billingPeriod ? t(`billingPeriod.${plan.billingPeriod}`) : PLAN_COMPARISON_EMPTY}</span>,
-        },
-        {
-            key: 'includedMonths',
-            label: t('compare.includedMonths'),
-            render: (plan) => (
-                <span>{plan.includedMonths === null ? PLAN_COMPARISON_EMPTY : t('compare.monthCount', { count: plan.includedMonths })}</span>
-            ),
         },
         {
             key: 'storage',

@@ -35,19 +35,15 @@ export const ERROR_CODES = {
     METHOD_NOT_ALLOWED: 3020,
     EVENT_DATES_INCOMPLETE: 3008,
     EVENT_NOT_ACTIVE: 5014,
-    EVENT_FROZEN: 5016,
     EVENT_NOT_DRAFT: 5017,
     ORDER_NOT_PENDING: 5018,
     PLAN_TIER_NOT_PURCHASABLE: 5015,
     PLAN_TIER_NOT_PRICED: 5019,
     PLAN_TIER_CURRENCY_UNSUPPORTED: 5021,
-    SUBSCRIPTION_ALREADY_ACTIVE: 5020,
     REFUND_NOT_ELIGIBLE: 5022,
     REFUND_ALREADY_REQUESTED: 5023,
     REFUND_REQUEST_NOT_PENDING: 5024,
     ORDER_NOT_REFUNDABLE: 5025,
-    SUBSCRIPTION_NOT_LIVE: 5026,
-    SUBSCRIPTION_CANCEL_FAILED: 5027,
     PLAN_TIER_NOT_AN_UPGRADE: 5029,
     PLAN_TIER_CURRENCY_MISMATCH: 5030,
     CHECKOUT_SESSION_UNRESOLVED: 5031,
@@ -74,11 +70,9 @@ export const ERROR_CODES = {
     ADDON_NOT_ACTIVE: 5041,
     ADDON_LOCKED_WHILE_ACTIVE: 5042,
     ORIGINALS_ADDON_NOT_ACTIVE: 5054,
-    EVENT_PURGED_NOT_RENEWABLE: 5043,
     CO_HOST_INVITE_NOT_YOURS: 5044,
     INVALID_IBAN: 5045,
     CHECKOUT_AMOUNT_BELOW_MINIMUM: 5046,
-    RENEWAL_ALREADY_COVERED: 5047,
     EVENT_SCHEDULE_LOCKED: 5048,
     EVENT_MODULE_COMPOSITION_LOCKED: 5049,
     EVENT_VISIBILITY_NOT_SUPPORTED: 5050,
@@ -131,12 +125,6 @@ export function getQuotaExceededDetails(error: unknown): QuotaExceededDetails | 
 
 export function isModuleNotAvailableError(error: unknown): boolean {
     return getErrorCode(error) === ERROR_CODES.MODULE_NOT_AVAILABLE;
-}
-
-// A frozen event still reads fine — only writes close (guide §5). Callers use
-// this to swap a generic failure for "renew to keep editing".
-export function isEventFrozenError(error: unknown): boolean {
-    return getErrorCode(error) === ERROR_CODES.EVENT_FROZEN;
 }
 
 // Seconds the caller must wait after a 429, or undefined when this isn't one.

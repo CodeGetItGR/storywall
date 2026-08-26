@@ -1,6 +1,6 @@
 type RouteQueryValue = string | number | boolean | null | undefined;
 
-export type CheckoutIntent = 'activation' | 'renewal' | 'upgrade' | 'storage';
+export type CheckoutIntent = 'activation' | 'upgrade' | 'storage';
 
 function withQuery(pathname: string, params: Record<string, RouteQueryValue>): string {
     const searchParams = new URLSearchParams();

@@ -104,3 +104,4 @@ existing guidance.
 - [ ] If your event-settings UI reads or writes `Event.isArchived` for a reason unrelated to the
       active-event cap, flag it — that field was removed from the API in this same deploy and isn't
       covered by this doc.
+``

@@ -273,11 +273,7 @@ export function PaidServicesCatalogPanel() {
                                                 <p className="font-mono text-ink">
                                                     {formatMoney(locale, service.priceAmountMinor, service.priceCurrency)}
                                                 </p>
-                                                <p className="text-[11px] text-ink-faint">
-                                                    {service.billingPeriod === 'ONE_TIME'
-                                                        ? t('fields.billingPeriodOnceShort')
-                                                        : t('fields.billingPeriodMonthlyShort')}
-                                                </p>
+                                                <p className="text-[11px] text-ink-faint">{t('fields.billingPeriodOnceShort')}</p>
                                             </td>
                                             <td className="max-w-56 truncate px-3 py-2.5 text-ink-muted" title={planNames}>
                                                 {planNames}

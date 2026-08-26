@@ -6,8 +6,6 @@ export function scopedPlans(plans: PlanTierResponseDto[], scope: PlanScope): Pla
     return plans.filter((plan) => plan.scope === scope).sort((left, right) => left.sortOrder - right.sortOrder);
 }
 
-export type PlanPriceKind = 'activation' | 'recurring';
-
 export interface PlanPriceDetails {
     amountMinor: number;
     listAmountMinor: number;
@@ -17,15 +15,11 @@ export interface PlanPriceDetails {
 }
 
 export function formatPlanMoney(plan: PlanTierResponseDto, locale?: string): string | null {
-    return formatPlanAmount(plan, 'activation', locale);
+    return formatPlanAmount(plan, locale);
 }
 
-export function formatPlanRecurringMoney(plan: PlanTierResponseDto, locale?: string): string | null {
-    return formatPlanAmount(plan, 'recurring', locale);
-}
-
-export function getPlanPriceDetails(plan: PlanTierResponseDto, kind: PlanPriceKind): PlanPriceDetails | null {
-    const listAmountMinor = kind === 'activation' ? plan.priceAmountMinor : plan.recurringPriceAmountMinor;
+export function getPlanPriceDetails(plan: PlanTierResponseDto): PlanPriceDetails | null {
+    const listAmountMinor = plan.priceAmountMinor;
     if (listAmountMinor === null || !plan.priceCurrency) return null;
 
     const discountActive = isPlanDiscountActive(plan);
@@ -38,8 +32,8 @@ export function getPlanPriceDetails(plan: PlanTierResponseDto, kind: PlanPriceKi
     };
 }
 
-function formatPlanAmount(plan: PlanTierResponseDto, kind: PlanPriceKind, locale?: string): string | null {
-    const price = getPlanPriceDetails(plan, kind);
+function formatPlanAmount(plan: PlanTierResponseDto, locale?: string): string | null {
+    const price = getPlanPriceDetails(plan);
     return price ? new Intl.NumberFormat(locale, { style: 'currency', currency: price.currency }).format(price.amountMinor / 100) : null;
 }
 

@@ -35,7 +35,7 @@ import type {
     PlatformModuleResponseDto,
 } from '@/lib/api/types';
 
-const BILLING_PERIODS: BillingPeriod[] = ['MONTHLY', 'YEARLY', 'ONE_TIME'];
+const BILLING_PERIODS: BillingPeriod[] = ['ONE_TIME'];
 
 export function PlanCreateForm({
     open,
@@ -134,8 +134,6 @@ export function PlanCreateForm({
             priceAmountMinor: priceInputToMinor(formData.get('price')),
             priceCurrency: emptyToNull(formData.get('priceCurrency'))?.toUpperCase() ?? null,
             billingPeriod: (emptyToNull(formData.get('billingPeriod')) as BillingPeriod | null) ?? null,
-            recurringPriceAmountMinor: scope === 'EVENT' ? priceInputToMinor(formData.get('recurringPrice')) : null,
-            includedMonths: scope === 'EVENT' ? numberOrNull(formData.get('includedMonths')) : null,
             discountPercent: numberOrNull(formData.get('discountPercent')),
             discountLabel: emptyToNull(formData.get('discountLabel')),
             discountStartsAt: localInputToInstant(formData.get('discountStartsAt')),
@@ -315,31 +313,6 @@ export function PlanCreateForm({
                                 ))}
                             </select>
                         </AdminField>
-                        {scope === 'EVENT' && (
-                            <>
-                                <AdminField label={t('fields.recurringPrice')} optional className="col-span-1">
-                                    <input
-                                        name="recurringPrice"
-                                        type="number"
-                                        min={0}
-                                        step="0.01"
-                                        defaultValue={priceMinorToInput(sourcePlan?.recurringPriceAmountMinor ?? null)}
-                                        placeholder="15"
-                                        className={adminInputClass('max-w-32')}
-                                    />
-                                </AdminField>
-                                <AdminField label={t('fields.includedMonths')} optional className="col-span-1">
-                                    <input
-                                        name="includedMonths"
-                                        type="number"
-                                        min={0}
-                                        defaultValue={sourcePlan?.includedMonths ?? ''}
-                                        placeholder="3"
-                                        className={adminInputClass('max-w-24')}
-                                    />
-                                </AdminField>
-                            </>
-                        )}
                     </div>
                 </AdminSection>
 

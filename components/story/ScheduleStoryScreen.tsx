@@ -5,8 +5,8 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { EventRouteSpinner, useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { StoryHeader, StoryProgressBar } from '@/components/story';
-import { ScheduleStoryDateBadge } from '@/components/story/ScheduleStoryDateBadge';
 import { ScheduleStoryContent } from '@/components/story/ScheduleStoryContent';
+import { ScheduleStoryDateBadge } from '@/components/story/ScheduleStoryDateBadge';
 import { useEventSessions } from '@/hooks/useEventSessions';
 import { routes } from '@/lib/routes';
 

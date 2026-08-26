@@ -20,6 +20,10 @@ export function AccountLogoutButton({ onLogoutAction, variant = 'default' }: { o
         setConfirmOpen(true);
     }
 
+    function handleConfirmClose() {
+        setConfirmOpen(false);
+    }
+
     async function handleConfirmLogout() {
         try {
             await logout();
@@ -48,7 +52,7 @@ export function AccountLogoutButton({ onLogoutAction, variant = 'default' }: { o
 
             <ConfirmActionModal
                 open={confirmOpen}
-                onCloseAction={() => setConfirmOpen(false)}
+                onCloseAction={handleConfirmClose}
                 onConfirmAction={handleConfirmLogout}
                 title={t('logoutConfirmTitle')}
                 body={t('logoutConfirmBody')}

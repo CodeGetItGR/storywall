@@ -15,18 +15,10 @@ import { appConfigKeys } from '@/hooks/useAppConfig';
 import { codeFromName, priceInputToMinor, priceMinorToInput, STORAGE_UNITS, storageBytesToInput, storageInputToBytes } from '@/lib/adminPlanForm';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import { type Visibility, visibilityFlags, visibilityOf } from '@/lib/adminVisibility';
-import type { BillingPeriod, PaidServiceKind, PaidServiceRequestDto, PaidServiceResponseDto, PlanTierResponseDto } from '@/lib/api/types';
+import type { PaidServiceKind, PaidServiceRequestDto, PaidServiceResponseDto, PlanTierResponseDto } from '@/lib/api/types';
 
 export type { Visibility } from '@/lib/adminVisibility';
 export { visibilityOf } from '@/lib/adminVisibility';
-
-// Enforced against `kind` server-side too: the two storage-bearing kinds cost money for
-// as long as they're held, so they're pinned to MONTHLY. A MODULE_UNLOCK doesn't, so it's
-// the one kind that can be sold outright — the admin form offers a real picker only there.
-function billingPeriodInput(formData: FormData, kind: PaidServiceKind): BillingPeriod {
-    if (kind !== 'MODULE_UNLOCK') return 'MONTHLY';
-    return formData.get('billingPeriod') === 'ONE_TIME' ? 'ONE_TIME' : 'MONTHLY';
-}
 
 function serviceInput(formData: FormData, visibility: Visibility, takenCodes: string[], existing?: PaidServiceResponseDto): PaidServiceRequestDto {
     const kind = (existing?.kind ?? formData.get('kind')) as PaidServiceKind;
@@ -49,7 +41,7 @@ function serviceInput(formData: FormData, visibility: Visibility, takenCodes: st
         priceCurrency: String(formData.get('priceCurrency') ?? '')
             .trim()
             .toUpperCase(),
-        billingPeriod: billingPeriodInput(formData, kind),
+        billingPeriod: 'ONE_TIME',
         grantsStorageBytes: kind === 'STORAGE_PACK' ? storageInputToBytes(formData.get('storageAmount'), formData.get('storageUnit')) : null,
         grantsModuleKey: kind === 'MODULE_UNLOCK' ? String(formData.get('grantsModuleKey') ?? '') : null,
         planTierIds: formData.has('allEventPlans') ? [] : formData.getAll('planTierIds').map(String).filter(Boolean),
@@ -270,15 +262,6 @@ export function PaidServiceDrawer({
                                         {module_.name}
                                     </option>
                                 ))}
-                            </select>
-                        </AdminField>
-                    )}
-
-                    {displayedKind === 'MODULE_UNLOCK' && (
-                        <AdminField label={t('fields.billingPeriod')} required hint={t('fields.billingPeriodHint')}>
-                            <select name="billingPeriod" defaultValue={service?.billingPeriod ?? 'MONTHLY'} className={adminInputClass()}>
-                                <option value="MONTHLY">{t('fields.billingPeriodMonthly')}</option>
-                                <option value="ONE_TIME">{t('fields.billingPeriodOnce')}</option>
                             </select>
                         </AdminField>
                     )}

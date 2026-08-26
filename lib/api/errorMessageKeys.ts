@@ -22,10 +22,8 @@ export type ApiErrorMessageKey =
     | 'duplicateReaction'
     | 'emailAlreadyExists'
     | 'eventDatesIncomplete'
-    | 'eventFrozen'
     | 'eventNotActive'
     | 'eventNotDraft'
-    | 'eventPurgedNotRenewable'
     | 'eventModuleCompositionLocked'
     | 'eventVisibilityNotSupported'
     | 'eventTypeNotAvailable'
@@ -63,7 +61,6 @@ export type ApiErrorMessageKey =
     | 'planNotPurchasable'
     | 'planTierNotAvailableForEventType'
     | 'postMediaLimitExceeded'
-    | 'renewalAlreadyCovered'
     | 'eventScheduleLocked'
     | 'paidServiceCurrencyMismatch'
     | 'paidServiceInUse'
@@ -78,9 +75,6 @@ export type ApiErrorMessageKey =
     | 'resourceNotFound'
     | 'storageLimit'
     | 'storageUploadFailed'
-    | 'subscriptionAlreadyActive'
-    | 'subscriptionCancelFailed'
-    | 'subscriptionNotLive'
     | 'originalsAddonNotActive'
     | 'requestTooLarge'
     | 'unsupportedMediaFormat'
@@ -108,11 +102,9 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.DUPLICATE_REACTION]: 'duplicateReaction',
     [ERROR_CODES.EMAIL_ALREADY_EXISTS]: 'emailAlreadyExists',
     [ERROR_CODES.EVENT_DATES_INCOMPLETE]: 'eventDatesIncomplete',
-    [ERROR_CODES.EVENT_FROZEN]: 'eventFrozen',
     [ERROR_CODES.EVENT_MEMBER_LIMIT_EXCEEDED]: 'memberLimit',
     [ERROR_CODES.EVENT_NOT_ACTIVE]: 'eventNotActive',
     [ERROR_CODES.EVENT_NOT_DRAFT]: 'eventNotDraft',
-    [ERROR_CODES.EVENT_PURGED_NOT_RENEWABLE]: 'eventPurgedNotRenewable',
     [ERROR_CODES.EVENT_MODULE_COMPOSITION_LOCKED]: 'eventModuleCompositionLocked',
     [ERROR_CODES.EVENT_VISIBILITY_NOT_SUPPORTED]: 'eventVisibilityNotSupported',
     [ERROR_CODES.EVENT_TYPE_NOT_AVAILABLE]: 'eventTypeNotAvailable',
@@ -156,16 +148,12 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.PAID_SERVICE_NOT_PURCHASABLE]: 'paidServiceNotPurchasable',
     [ERROR_CODES.QR_LINK_NOT_FOUND]: 'qrLinkNotFound',
     [ERROR_CODES.RATE_LIMITED]: 'rateLimited',
-    [ERROR_CODES.RENEWAL_ALREADY_COVERED]: 'renewalAlreadyCovered',
     [ERROR_CODES.EVENT_SCHEDULE_LOCKED]: 'eventScheduleLocked',
     [ERROR_CODES.REFUND_ALREADY_REQUESTED]: 'refundAlreadyRequested',
     [ERROR_CODES.REFUND_NOT_ELIGIBLE]: 'refundNotEligible',
     [ERROR_CODES.REFUND_REQUEST_NOT_PENDING]: 'refundNotPending',
     [ERROR_CODES.RESOURCE_NOT_FOUND]: 'resourceNotFound',
     [ERROR_CODES.STORAGE_UPLOAD_FAILED]: 'storageUploadFailed',
-    [ERROR_CODES.SUBSCRIPTION_ALREADY_ACTIVE]: 'subscriptionAlreadyActive',
-    [ERROR_CODES.SUBSCRIPTION_CANCEL_FAILED]: 'subscriptionCancelFailed',
-    [ERROR_CODES.SUBSCRIPTION_NOT_LIVE]: 'subscriptionNotLive',
     [ERROR_CODES.ORIGINALS_ADDON_NOT_ACTIVE]: 'originalsAddonNotActive',
     [ERROR_CODES.REQUEST_TOO_LARGE]: 'requestTooLarge',
     [ERROR_CODES.UNSUPPORTED_MEDIA_FORMAT]: 'unsupportedMediaFormat',

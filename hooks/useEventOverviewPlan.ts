@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { useEventBilling } from '@/hooks/useBilling';
 import type {
     EventModuleResponseDto,
+    EventStatus,
     EventUsageResponseDto,
     PaidServiceResponseDto,
     PlanTierResponseDto,
@@ -27,7 +28,7 @@ export function useEventOverviewPlan({
     eventModules,
 }: {
     eventId: string;
-    eventStatus: 'DRAFT' | 'ACTIVE' | 'FROZEN' | 'PURGED';
+    eventStatus: EventStatus;
     eventUsage: EventUsageResponseDto | null;
     planTiers: PlanTierResponseDto[];
     paidServices: PaidServiceResponseDto[];
@@ -55,8 +56,7 @@ export function useEventOverviewPlan({
                 !currentPlan?.moduleKeys.includes(service.grantsModuleKey) &&
                 (service.planTierIds.length === 0 || (currentPlan ? service.planTierIds.includes(currentPlan.id) : false))
         );
-        const activationAddonAmount =
-            originalsService && currentPlan?.includedMonths ? originalsService.priceAmountMinor * currentPlan.includedMonths : 0;
+        const activationAddonAmount = originalsService ? originalsService.priceAmountMinor : 0;
         const activationTotal =
             currentPlan?.priceAmountMinor === null || currentPlan?.priceAmountMinor === undefined
                 ? null
@@ -64,16 +64,7 @@ export function useEventOverviewPlan({
                   (originalsActive ? activationAddonAmount : 0) +
                   moduleUnlocks
                       .filter((service) => activeAddonCodes.has(service.code))
-                      .reduce(
-                          // A ONE_TIME unlock is a flat charge — it ignores includedMonths and is
-                          // charged even when includedMonths is 0, unlike a MONTHLY module or ORIGINALS.
-                          (sum, service) =>
-                              sum +
-                              (service.billingPeriod === 'ONE_TIME'
-                                  ? service.priceAmountMinor
-                                  : service.priceAmountMinor * (currentPlan.includedMonths ?? 1)),
-                          0
-                      );
+                      .reduce((sum, service) => sum + service.priceAmountMinor, 0);
 
         const enabledModuleKeys = new Set(modules.filter((module_) => module_.isEnabled).map((module_) => module_.moduleKey));
         const availableModuleKeys = new Set(eventModules.filter((module_) => module_.isAvailable).map((module_) => module_.moduleKey));

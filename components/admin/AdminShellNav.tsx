@@ -18,7 +18,6 @@ const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'operations'> = {
     assignments: 'operations',
     billingOps: 'operations',
     refunds: 'operations',
-    lifecycle: 'operations',
 };
 const GROUP_ORDER = ['overview', 'catalog', 'operations'] as const;
 

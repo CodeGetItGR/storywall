@@ -7,8 +7,7 @@ import { BillingOrdersPanel } from '@/components/manage/billing/BillingOrdersPan
 import { BillingPlanPanel } from '@/components/manage/billing/BillingPlanPanel';
 import { BillingRefundPanel } from '@/components/manage/billing/BillingRefundPanel';
 import { BillingStatusHeader } from '@/components/manage/billing/BillingStatusHeader';
-import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { useBillingDate, useEventBillingPanel } from '@/hooks/useEventBillingPanel';
+import { useEventBillingPanel } from '@/hooks/useEventBillingPanel';
 import type { BillingSection } from '@/lib/manageSections';
 
 /**
@@ -17,10 +16,8 @@ import type { BillingSection } from '@/lib/manageSections';
  * instead of a second level of tabs.
  */
 export default function BillingTab({ eventId, section }: { eventId: string; section: BillingSection }) {
-    const t = useTranslations('EventPlanSettingsPage');
     const tPageError = useTranslations('PageErrorState.billing');
     const tPageErrorCommon = useTranslations('PageErrorState');
-    const formatDate = useBillingDate();
     const panel = useEventBillingPanel(eventId);
 
     if (panel.isLoading) {
@@ -67,32 +64,13 @@ export default function BillingTab({ eventId, section }: { eventId: string; sect
                 />
             )}
 
-            {section === 'coverage' && (
-                <BillingCoveragePanel eventId={eventId} derived={derived} insights={insights} onCancelSubscription={panel.askCancelConfirmation} />
-            )}
+            {section === 'coverage' && <BillingCoveragePanel derived={derived} insights={insights} />}
 
             {section === 'orders' && (
                 <BillingOrdersPanel data={data} derived={derived} insights={insights} onShowAllOrders={panel.handleShowAllOrders} />
             )}
 
             {section === 'refund' && <BillingRefundPanel panel={panel} />}
-
-            {/* Cancel confirmation */}
-            <ConfirmActionModal
-                open={panel.confirmingCancel}
-                title={t('subscription.cancelConfirmTitle')}
-                body={
-                    <div className="space-y-2">
-                        <p>{t('subscription.cancelConfirmBody', { date: formatDate(derived.subscriptionPeriodEnd) })}</p>
-                        {panel.cancelError && <p className="text-xs text-rose-600">{panel.cancelError}</p>}
-                    </div>
-                }
-                confirmLabel={t('subscription.cancelConfirmYes')}
-                cancelLabel={t('subscription.cancelConfirmNo')}
-                onCloseAction={panel.dismissCancelConfirmation}
-                onConfirmAction={panel.confirmCancelSubscription}
-                isConfirming={panel.isCancelling}
-            />
         </div>
     );
 }

@@ -107,10 +107,6 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
                                 {activeResolution.targetType === 'MEDIA_UPLOAD' ? t('mediaUploadEyebrow') : t('eventJoinEyebrow')}
                             </div>
 
-                            {activeResolution.eventStatus === 'FROZEN' && (
-                                <p className="text-sm leading-relaxed text-ink-muted">{t('frozenNotice')}</p>
-                            )}
-
                             <FormFieldLabel label={t('guestForm.displayNameLabel')} required>
                                 <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
                                     <User className="w-4 h-4 text-ink-muted shrink-0" />

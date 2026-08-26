@@ -284,11 +284,9 @@ rest server-side. Don't undo that by putting it in localStorage, a URL, or an an
 
 Unlike every other module write path, the host can configure this while the event is still a
 **DRAFT** — it belongs in the setup wizard alongside the other event details, before payment. It
-also stays editable when an event is `FROZEN`, so a host sorting out a lapsed payment can still fix
-a mistyped IBAN.
+stays editable once the event is `ACTIVE` too — there's no lifecycle gate on this endpoint at all.
 
-Reading is member-gated only, with no lifecycle check: guests of a frozen event can still see where
-to send a gift.
+Reading is member-gated only, with no lifecycle check either.
 
 Availability still applies — if the plan doesn't include `wishlist` and there is no unlock, `PUT`
 returns 409 `MODULE_NOT_AVAILABLE`.
@@ -350,14 +348,13 @@ by default; if you use `dangerouslySetInnerHTML`, `v-html`, or render into a can
 
 ### Lifecycle
 
-Writing requires the event to be `ACTIVE`. A frozen event returns **409 `EVENT_FROZEN`** ("renew to
-make changes") and a not-yet-paid draft returns **409 `EVENT_NOT_ACTIVE`** — two different remedies,
-so branch on the code rather than showing one generic message. Either way, render a read-only
-wishbook rather than a disabled-looking compose box with no explanation.
+Writing requires the event to be `ACTIVE`. A not-yet-paid draft returns **409 `EVENT_NOT_ACTIVE`**
+("activate the event to make changes"). Render a read-only wishbook rather than a disabled-looking
+compose box with no explanation.
 
-Deleting works regardless of event state, so a host can still take down something offensive after
-the event freezes. Deletion is soft server-side, but removed wishes never come back from the API —
-treat it as gone.
+Deleting works regardless of event state, so a host can still take down something offensive on a
+DRAFT event before it ever goes live. Deletion is soft server-side, but removed wishes never come
+back from the API — treat it as gone.
 
 ---
 
@@ -369,8 +366,8 @@ treat it as gone.
 | 5045 | `INVALID_IBAN` | 400 | saving a gift account whose IBAN fails its check digits |
 
 Both follow the standard envelope — `errorCode` (number) and `errorKey` (string) on the RFC 7807
-body. Existing codes reused by these features: `MODULE_NOT_AVAILABLE`, `EVENT_FROZEN`,
-`EVENT_NOT_ACTIVE`, `EVENT_NOT_DRAFT`, `ADDON_ALREADY_ACTIVE`, `FORBIDDEN` (4001).
+body. Existing codes reused by these features: `MODULE_NOT_AVAILABLE`, `EVENT_NOT_ACTIVE`,
+`EVENT_NOT_DRAFT`, `ADDON_ALREADY_ACTIVE`, `FORBIDDEN` (4001).
 
 ---
 

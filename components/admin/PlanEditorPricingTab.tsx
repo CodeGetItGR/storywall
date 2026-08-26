@@ -8,18 +8,16 @@ import { AdminTabPanel } from '@/components/admin/AdminTabs';
 import { defaultCurrency, instantToLocalInput, priceMinorToInput } from '@/lib/adminPlanForm';
 import type { BillingPeriod, PlanTierResponseDto } from '@/lib/api/types';
 
-const BILLING_PERIODS: BillingPeriod[] = ['MONTHLY', 'YEARLY', 'ONE_TIME'];
+const BILLING_PERIODS: BillingPeriod[] = ['ONE_TIME'];
 
 export function PlanEditorPricingTab({
     editorId,
     activeTab,
     plan,
-    isEvent,
 }: {
     editorId: string;
     activeTab: string;
     plan: PlanTierResponseDto;
-    isEvent: boolean;
 }) {
     const t = useTranslations('AdminPage');
 
@@ -50,30 +48,6 @@ export function PlanEditorPricingTab({
                         ))}
                     </select>
                 </AdminField>
-                {isEvent && (
-                    <>
-                        <AdminField label={t('fields.recurringPrice')} optional>
-                            <input
-                                name="recurringPrice"
-                                type="number"
-                                min={0}
-                                step="0.01"
-                                defaultValue={priceMinorToInput(plan.recurringPriceAmountMinor)}
-                                className={adminInputClass()}
-                            />
-                        </AdminField>
-                        <AdminField label={t('fields.includedMonths')} optional>
-                            <input
-                                name="includedMonths"
-                                type="number"
-                                min={0}
-                                defaultValue={plan.includedMonths ?? ''}
-                                placeholder={t('none')}
-                                className={adminInputClass()}
-                            />
-                        </AdminField>
-                    </>
-                )}
             </div>
 
             {/* Promotion */}

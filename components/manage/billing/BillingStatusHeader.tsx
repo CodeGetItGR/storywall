@@ -1,7 +1,7 @@
-import { AlertTriangle, CheckCircle2, Clock3, XCircle } from 'lucide-react';
+import { CheckCircle2, Clock3 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { type BillingData, type BillingDerived, type BillingInsights, useBillingDate } from '@/hooks/useEventBillingPanel';
+import { type BillingData, type BillingDerived, type BillingInsights } from '@/hooks/useEventBillingPanel';
 import { formatMoney } from '@/lib/billing';
 import { getEventBillingStatusTone } from '@/lib/statusTones';
 import { cn } from '@/lib/utils';
@@ -9,8 +9,6 @@ import { cn } from '@/lib/utils';
 const statusIcons = {
     ACTIVE: CheckCircle2,
     DRAFT: Clock3,
-    FROZEN: AlertTriangle,
-    PURGED: XCircle,
 } as const;
 
 /**
@@ -20,9 +18,7 @@ const statusIcons = {
 export function BillingStatusHeader({ data, derived, insights }: { data: BillingData; derived: BillingDerived; insights: BillingInsights }) {
     const t = useTranslations('EventPlanSettingsPage');
     const locale = useLocale();
-    const formatDate = useBillingDate();
     const StatusIcon = statusIcons[data.eventStatus];
-    const { coverage } = derived;
 
     return (
         <section className={cn(derived.isRiskState && 'border-l-2 border-amber-500 pl-3')}>
@@ -47,15 +43,7 @@ export function BillingStatusHeader({ data, derived, insights }: { data: Billing
 
             {/* Summary */}
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-muted">
-                {data.eventStatus === 'PURGED'
-                    ? t('summary.PURGED')
-                    : data.eventStatus === 'FROZEN'
-                      ? t('summary.FROZEN', { date: formatDate(coverage.paidThrough) })
-                      : data.eventStatus === 'DRAFT'
-                        ? t('summary.DRAFT')
-                        : coverage.unlimited
-                          ? t('summary.ACTIVE_UNLIMITED')
-                          : t('summary.ACTIVE', { date: formatDate(coverage.paidThrough) })}
+                {data.eventStatus === 'DRAFT' ? t('summary.DRAFT') : t('summary.ACTIVE')}
             </p>
         </section>
     );

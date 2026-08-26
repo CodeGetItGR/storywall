@@ -8,6 +8,7 @@ import { MetricStrip } from '@/components/ui/MetricStrip';
 import { useEventOverviewPlan } from '@/hooks/useEventOverviewPlan';
 import type {
     EventModuleResponseDto,
+    EventStatus,
     EventUsageResponseDto,
     PaidServiceResponseDto,
     PlanTierResponseDto,
@@ -44,7 +45,7 @@ export default function OverviewTab({
     eventModules: EventModuleResponseDto[];
     onSeeAllRsvp: () => void;
     eventId: string;
-    eventStatus: 'DRAFT' | 'ACTIVE' | 'FROZEN' | 'PURGED';
+    eventStatus: EventStatus;
     endAt: string | null;
 }) {
     const t = useTranslations('ManagePage');

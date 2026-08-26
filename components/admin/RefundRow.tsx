@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, Check, Layers3, LifeBuoy, PackageMinus, X } from 'lucide-react';
+import { AlertTriangle, Check, Layers3, PackageMinus, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { type ChangeEvent, useCallback, useState } from 'react';
 
@@ -40,10 +40,6 @@ export function RefundRow({ row }: { row: RefundRequestAdminDto }) {
     // answer, so the UI treats it as required (refunds guide §3).
     const rejectBlocked = !note.trim();
 
-    const handleSendToLifecycle = useCallback(
-        () => sendTo('lifecycle', { eventId: request.eventId, eventTitle: row.eventTitle }),
-        [request.eventId, row.eventTitle, sendTo]
-    );
     const handleSendToAssignments = useCallback(
         () => sendTo('assignments', { eventId: request.eventId, eventTitle: row.eventTitle }),
         [request.eventId, row.eventTitle, sendTo]
@@ -118,10 +114,6 @@ export function RefundRow({ row }: { row: RefundRequestAdminDto }) {
             </div>
 
             <div className="mt-2 flex flex-wrap gap-3 text-xs font-semibold text-ink-muted">
-                <button type="button" onClick={handleSendToLifecycle} className="inline-flex items-center gap-1.5 hover:text-ink hover:underline">
-                    <LifeBuoy className="h-3.5 w-3.5" />
-                    {t('refunds.sendToLifecycle')}
-                </button>
                 <button type="button" onClick={handleSendToAssignments} className="inline-flex items-center gap-1.5 hover:text-ink hover:underline">
                     <Layers3 className="h-3.5 w-3.5" />
                     {t('refunds.sendToAssignments')}

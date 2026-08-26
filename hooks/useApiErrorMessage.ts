@@ -9,13 +9,12 @@ import {
     getErrorCode,
     getQuotaExceededDetails,
     getRetryAfterSeconds,
-    isEventFrozenError,
     isModuleNotAvailableError,
     isRateLimitedError,
 } from '@/lib/api/errors';
 
 // One place that turns an ApiError into copy a person can act on, so the
-// cross-cutting codes from the billing guide (§3 quotas, §5 frozen, §11 the
+// cross-cutting codes from the billing guide (§3 quotas, §11 the
 // 429) don't have to be re-handled at every call site. Anything it doesn't
 // recognise uses localized generic copy instead of backend English detail.
 export function useApiErrorMessage() {
@@ -23,7 +22,6 @@ export function useApiErrorMessage() {
 
     return useCallback(
         (error: unknown, fallback?: string): string => {
-            if (isEventFrozenError(error)) return t('eventFrozen');
             if (getErrorCode(error) === ERROR_CODES.EVENT_NOT_ACTIVE) return t('eventNotActive');
 
             if (isRateLimitedError(error)) {

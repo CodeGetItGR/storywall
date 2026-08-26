@@ -9,13 +9,7 @@ export function notificationCtaRoute(notification: NotificationResponseDto): str
     return typeof route === 'string' && route.startsWith('/') ? route : null;
 }
 
-const BILLING_TYPES: readonly string[] = [
-    'BILLING_EXPIRING',
-    'BILLING_PAST_DUE',
-    'BILLING_PURGE_WARNING',
-    'REFUND_APPROVED',
-    'REFUND_REJECTED',
-] satisfies readonly BillingNotificationType[];
+const BILLING_TYPES: readonly string[] = ['REFUND_APPROVED', 'REFUND_REJECTED'] satisfies readonly BillingNotificationType[];
 
 export function isBillingNotification(notification: NotificationResponseDto): boolean {
     return notification.category === 'BILLING' || BILLING_TYPES.includes(notification.type);
@@ -27,10 +21,7 @@ export function isBillingNotificationType(type: string): type is BillingNotifica
 
 export function notificationSeverity(notification: NotificationResponseDto): NotificationSeverity {
     if (notification.severity) return notification.severity;
-    if (notification.type === 'BILLING_PAST_DUE' || notification.type === 'BILLING_PURGE_WARNING' || notification.type === 'REFUND_APPROVED') {
-        return 'CRITICAL';
-    }
-    if (notification.type === 'BILLING_EXPIRING') return 'WARNING';
+    if (notification.type === 'REFUND_APPROVED') return 'CRITICAL';
     return 'INFO';
 }
 

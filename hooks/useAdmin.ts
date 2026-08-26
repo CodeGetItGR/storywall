@@ -137,37 +137,6 @@ export function useDecideRefundRequest() {
     });
 }
 
-// POST /api/admin/events/{id}/freeze — forces an event read-only.
-export function useFreezeEvent() {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: (eventId: string) => api.post<void>(endpoints.admin.events.freeze(eventId)),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['events'] });
-            queryClient.invalidateQueries({ queryKey: ['billing'] });
-            queryClient.invalidateQueries({ queryKey: adminKeys.metrics });
-        },
-    });
-}
-
-// POST /api/admin/events/{id}/purge — DESTROYS the event's media in storage,
-// irreversibly. Resolves `false` when some files could not be deleted: the event
-// stays FROZEN and a later call retries, so that is a "partial" outcome to show,
-// not a failure to swallow.
-export function usePurgeEvent() {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: (eventId: string) => api.post<boolean>(endpoints.admin.events.purge(eventId)),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['events'] });
-            queryClient.invalidateQueries({ queryKey: ['billing'] });
-            queryClient.invalidateQueries({ queryKey: adminKeys.metrics });
-        },
-    });
-}
-
 function planTiersPath(scope?: PlanScope, includeArchived?: boolean): string {
     const searchParams = new URLSearchParams();
     if (scope) searchParams.set('scope', scope);

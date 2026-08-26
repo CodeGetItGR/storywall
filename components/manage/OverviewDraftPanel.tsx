@@ -40,8 +40,7 @@ export function OverviewDraftPanel({
                             <li key={`${addon.code}-${index}`} className="flex items-center justify-between gap-3 text-xs text-ink-muted">
                                 <span className="truncate font-semibold text-ink">{addon.name}</span>
                                 <span className="shrink-0">
-                                    {formatMoney(locale, addon.priceAmountMinor, currency)}{' '}
-                                    {addon.billingPeriod === 'ONE_TIME' ? t('draftModules.once') : t('draftModules.perMonth')}
+                                    {formatMoney(locale, addon.priceAmountMinor, currency)} {t('draftModules.once')}
                                 </span>
                             </li>
                         ))}

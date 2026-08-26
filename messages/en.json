@@ -597,7 +597,7 @@
         "moreInfoSubtitle": "See the rest of this plan.",
         "moreInfoClose": "Close details",
         "moreInfoActivation": "Activation price",
-        "moreInfoRecurring": "Monthly renewal",
+        "moreInfoRecurring": "Renewal",
         "moreInfoMembers": "Members",
         "moreInfoStorage": "Storage",
         "moreInfoCoverage": "Coverage",
@@ -639,10 +639,10 @@
         "paidModules": {
             "toggle": "Select {module}",
             "oncePrice": "{price} once",
-            "monthlyPrice": "{price}/month",
+            "monthlyPrice": "{price} once",
             "selectedSummary": "Optional modules: {modules}",
             "selectedOnce": "{module} ({price} once)",
-            "selectedMonthly": "{module} ({price}/month)",
+            "selectedMonthly": "{module} ({price} once)",
             "descriptions": {
                 "originals": "Keeps the original, full-resolution file for every photo alongside the compressed feed copy.",
                 "moduleUnlock": "Adds this module to the event.",
@@ -658,13 +658,13 @@
         "overview": {
             "event": "Event details",
             "pricing": "Pricing details",
-            "pricingHint": "Activation includes {months, plural, one {# month} other {# months}} of coverage.",
+            "pricingHint": "Activation is a one-time payment.",
             "planActivation": "Plan activation",
             "chargedOnce": "One-time add-on",
-            "monthlyForMonths": "{months, plural, one {# month} other {# months}} charged at activation",
+            "monthlyForMonths": "Charged at activation",
             "dueNow": "Due at activation",
-            "futureMonthly": "Future monthly renewal",
-            "futureMonthlyHint": "Starts after the included {months, plural, one {# month} other {# months}}. One-time add-ons do not renew."
+            "futureMonthly": "Future renewal",
+            "futureMonthlyHint": "There are no automatic renewals."
         }
     },
     "ManagePage": {
@@ -942,24 +942,27 @@
         },
         "addons": {
             "title": "Active add-ons",
-            "item": "{name} · {price}/month",
+            "item": "{name} · {price} once",
             "itemOnce": "{name} · {price} once",
-            "monthlyTotal": "+{amount}/month at renewal.",
-            "renewalTotal": "Next renewal: {amount}/month.",
+            "monthlyTotal": "{amount} paid once.",
+            "renewalTotal": "{amount} paid once.",
+            "ownedTotal": "{amount} paid once.",
+            "total": "Add-ons",
+            "ownedHint": "Add-ons are owned by this event and do not renew.",
             "manageTitle": "Paid add-ons",
             "manageBody": "Add or remove services.",
             "manageAction": "Manage add-ons"
         },
         "storagePacks": {
             "title": "Add storage",
-            "subtitle": "Permanently increase this event's storage limit. The pack price is added to every monthly renewal.",
+            "subtitle": "Permanently increase this event's storage limit.",
             "breakdown": "{plan} plan + {extra} purchased = {total} total",
             "unlimited": "This plan already has unlimited storage.",
             "selectorLabel": "Choose a storage allowance",
-            "selected": "Add {size} permanently for {price}/month",
+            "selected": "Add {size} permanently for {price} once",
             "buy": "Pay {amount}",
             "retryIn": "Try again in {seconds}s",
-            "finalSale": "The storage allowance is permanent and non-refundable. Its price recurs monthly for the life of the event."
+            "finalSale": "The storage allowance is permanent and non-refundable."
         },
         "actions": {
             "renew": "Start subscription",
@@ -997,10 +1000,10 @@
             "sortOrder": "Sort order",
             "price": "Price",
             "activationPrice": "Activation price",
-            "monthlyPrice": "Monthly renewal",
-            "perMonthValue": "{amount}/month",
-            "perMonthSuffix": "/month",
-            "noMonthlyPrice": "No monthly renewal",
+            "monthlyPrice": "Renewal",
+            "perMonthValue": "{amount}",
+            "perMonthSuffix": "",
+            "noMonthlyPrice": "No renewal",
             "billing": "Billing",
             "includedMonths": "Included coverage",
             "monthCount": "{count, plural, one {# month} other {# months}}",
@@ -1074,8 +1077,8 @@
         },
         "summary": {
             "DRAFT": "Not published yet. You'll pay to activate once the event dates are set.",
-            "ACTIVE": "Covered through {date}.",
-            "ACTIVE_UNLIMITED": "Unlimited coverage.",
+            "ACTIVE": "Paid and active.",
+            "ACTIVE_UNLIMITED": "Paid and active.",
             "FROZEN": "Coverage ended on {date}. The event is read-only until you renew.",
             "PURGED": "Storage window passed. Renewing reactivates the event, but deleted media can't be restored."
         },
@@ -1118,7 +1121,8 @@
             "title": "Activation",
             "order": "Order",
             "paidAt": "Paid",
-            "amount": "Amount"
+            "amount": "Amount",
+            "permanent": "Once paid, this event stays active."
         },
         "refund": {
             "title": "Refund",
@@ -1171,7 +1175,7 @@
         "backToBilling": "Back to billing",
         "eyebrow": "Event add-ons",
         "title": "Paid add-ons",
-        "subtitle": "Add optional paid services for this event. Active add-ons are included in future renewals.",
+        "subtitle": "Add optional paid services for this event.",
         "empty": "No paid add-ons are available for this plan right now.",
         "inactive": "Paid add-ons can be changed after the event is active."
     },
@@ -1187,21 +1191,21 @@
         "planChange": "{from} to {to}",
         "paymentBreakdown": "Charge",
         "dueNow": "Due now",
-        "futureRenewal": "Future monthly renewal",
-        "perMonth": "{amount}/month",
+        "futureRenewal": "Future renewal",
+        "perMonth": "{amount}",
         "whatHappens": "What happens after payment",
         "continueToCheckout": "Continue to checkout",
         "openingCheckout": "Opening secure checkout...",
         "items": {
             "planActivation": "{plan} plan activation",
-            "planPreservation": "{plan} subscription",
+            "planPreservation": "{plan} renewal",
             "planUpgrade": "Upgrade to {plan}"
         },
         "intent": {
             "activation": {
                 "title": "Order preview",
                 "description": "Check the plan and included add-ons before publishing this event.",
-                "consequence": "The event is published after payment is confirmed and includes {months, plural, one {# month} other {# months}} of coverage."
+                "consequence": "The event is published after payment is confirmed."
             },
             "renewal": {
                 "title": "Subscription preview",
@@ -1210,13 +1214,13 @@
             },
             "upgrade": {
                 "title": "Order preview",
-                "description": "Check the upgrade charge and new monthly subscription.",
-                "consequence": "The upgraded plan and its limits become available after payment is confirmed. Your current coverage end date does not change."
+                "description": "Check the upgrade charge.",
+                "consequence": "The upgraded plan and its limits become available after payment is confirmed."
             },
             "storage": {
                 "title": "Order preview",
-                "description": "Check the storage pack charge and new monthly subscription.",
-                "consequence": "The storage allowance is added permanently after payment is confirmed. Its monthly price remains part of future renewals and is non-refundable."
+                "description": "Check the storage pack charge.",
+                "consequence": "The storage allowance is added permanently after payment is confirmed and is non-refundable."
             }
         }
     },
@@ -1841,7 +1845,7 @@
         },
         "paidServices": {
             "title": "Paid services catalog",
-            "subtitle": "Manage monthly add-ons and storage packs. Archive in-use services by making them non-public and non-assignable.",
+            "subtitle": "Manage one-time add-ons and storage packs. Archive in-use services by making them non-public and non-assignable.",
             "includeArchived": "Include archived",
             "kindFilterAll": "All kinds",
             "loading": "Loading paid services...",
@@ -1862,7 +1866,7 @@
             "no": "No",
             "kinds": {
                 "STORAGE_PACK": "Storage pack",
-                "RECURRING_ADDON": "Recurring add-on",
+                "RECURRING_ADDON": "Add-on",
                 "MODULE_UNLOCK": "Module unlock"
             },
             "stats": {
@@ -1895,8 +1899,8 @@
                 "description": "Description",
                 "sortOrder": "Sort order",
                 "price": "Price",
-                "priceHint": "Charged per month, in whole currency units.",
-                "priceHintUnlock": "In whole currency units, charged at the billing period below.",
+                "priceHint": "Charged once, in whole currency units.",
+                "priceHintUnlock": "Charged once, in whole currency units.",
                 "priceCurrency": "Currency",
                 "grantsStorage": "Storage granted",
                 "grants": "Grants",
@@ -1904,7 +1908,7 @@
                 "selectModule": "Select a module",
                 "billingPeriod": "Billing period",
                 "billingPeriodHint": "Once any event holds this service, this can no longer be changed — archive it and create a new one instead.",
-                "billingPeriodMonthly": "Monthly — charged on activation and every renewal",
+                "billingPeriodMonthly": "One-time",
                 "billingPeriodOnce": "One-time — charged once, on activation only",
                 "billingPeriodMonthlyShort": "Monthly",
                 "billingPeriodOnceShort": "One-time",
@@ -1929,7 +1933,7 @@
                 "eventId": "Event UUID",
                 "code": "Paid service",
                 "action": "Remove add-on",
-                "activeWarning": "The backend refuses this while the event is ACTIVE. A live event's paid entitlement lapses on its own once the event stops paying, so freeze or refund first.",
+                "activeWarning": "The backend refuses this while the event is ACTIVE. Use this only after an activation refund returns the event to draft.",
                 "confirmTitle": "Remove {service} from this event?",
                 "confirmBody": "This takes {service} off {event}. The host loses whatever it granted as soon as config refreshes.",
                 "success": "The add-on was removed."

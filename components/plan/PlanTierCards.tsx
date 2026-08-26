@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarDays, Database, ImageIcon, Percent, Users } from 'lucide-react';
+import { Database, ImageIcon, Percent, Users } from 'lucide-react';
 import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
 
@@ -78,7 +78,6 @@ export function PlanTierCards({
                                 <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('compare.activationPrice')}</p>
                                 <PlanPriceLabel
                                     plan={plan}
-                                    kind="activation"
                                     locale={locale}
                                     fallback={t('compare.noPrice')}
                                     className="block text-xl font-bold text-ink"
@@ -86,17 +85,6 @@ export function PlanTierCards({
                                 <p className="mt-0.5 text-xs font-semibold text-ink-muted">
                                     {plan.billingPeriod ? t(`billingPeriod.${plan.billingPeriod}`) : t('compare.noBilling')}
                                 </p>
-                            </div>
-                            <div>
-                                <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('compare.monthlyPrice')}</p>
-                                <PlanPriceLabel
-                                    plan={plan}
-                                    kind="recurring"
-                                    locale={locale}
-                                    fallback={t('compare.noMonthlyPrice')}
-                                    suffix={t('compare.perMonthSuffix')}
-                                    className="block text-base font-bold text-ink"
-                                />
                             </div>
                         </div>
 
@@ -110,15 +98,6 @@ export function PlanTierCards({
                                 icon={<Users className="h-4 w-4" />}
                                 label={t('compare.members')}
                                 value={formatLimitValue(plan.maxMembers, 'count') ?? t('compare.unlimited')}
-                            />
-                            <PlanTierMetric
-                                icon={<CalendarDays className="h-4 w-4" />}
-                                label={t('compare.includedMonths')}
-                                value={
-                                    plan.includedMonths === null
-                                        ? t('compare.noCoverageLimit')
-                                        : t('compare.monthCount', { count: plan.includedMonths })
-                                }
                             />
                             <PlanTierMetric
                                 icon={<ImageIcon className="h-4 w-4" />}
