@@ -3,9 +3,9 @@
 import { MessageCircle, MoreHorizontal, Pin } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 
-import { PostAuthorAvatar, ReactionCount } from '@/components/feed/post';
+import { PostAuthorAvatar, PostMediaViewer, ReactionCount } from '@/components/feed/post';
 import { CommentsList } from '@/components/feed/post/CommentsList';
 import Badge from '@/components/ui/badge';
 import { useEventMembers, usePostComments, usePostLike, usePostModal } from '@/hooks';
@@ -26,6 +26,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const t = useTranslations('PostCard');
     const toErrorMessage = useApiErrorMessage();
     const { open: openPostModal } = usePostModal();
+    const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(null);
     const { liked, count: likeCount, toggle: handleLike, isPending: isLikePending, error: likeError } = usePostLike(post);
 
     const authorName = post.author?.displayName ?? t('unknownAuthor');
@@ -46,16 +47,20 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
 
     function openPost() {
-        openPostModal(post.id, { mediaIndex: 0, view: 'comments' });
+        openPostModal(post.id);
     }
 
     function handleOpenSingleMedia() {
-        openPostModal(post.id, { mediaIndex: 0, view: 'media' });
+        setSelectedMediaIndex(0);
     }
 
     function handleMediaClick(event: React.MouseEvent<HTMLButtonElement>) {
         const index = Number(event.currentTarget.dataset.index ?? 0);
-        openPostModal(post.id, { mediaIndex: index, view: 'media' });
+        setSelectedMediaIndex(index);
+    }
+
+    function closeMediaViewer() {
+        setSelectedMediaIndex(null);
     }
 
     return (
@@ -181,6 +186,16 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                 <div className="border-t border-border/50 px-4 pb-4 pt-2">
                     <CommentsList comments={visibleComments} membersById={membersById} compact limit={3} />
                 </div>
+            )}
+
+            {/* Fullscreen media viewer */}
+            {selectedMediaIndex !== null && (
+                <PostMediaViewer
+                    media={media}
+                    initialIndex={selectedMediaIndex}
+                    alt={t('photoBy', { name: authorName })}
+                    onCloseAction={closeMediaViewer}
+                />
             )}
         </article>
     );

@@ -15,7 +15,7 @@ export function Banner({
     glowVisible: boolean;
 }) {
     return (
-        <div className="relative w-full px-3">
+        <div className="relative w-full px-2">
             {/* Banner */}
             <div className="relative isolate overflow-hidden rounded-[1.5rem] bg-linear-to-br from-[#ead8cc] via-[#f4ece5] to-[#dcc6b2] shadow-[0_16px_40px_rgba(36,31,26,0.12)]">
                 <div className="relative aspect-16/11 w-full">

@@ -38,7 +38,7 @@ export function PlaylistDigestCard({ post }: PlaylistDigestCardProps) {
     const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
 
     return (
-        <article className="bg-transparent p-1.5">
+        <article className="bg-transparent p-2">
             {/* Playlist digest */}
             <div className="relative isolate overflow-hidden bg-linear-to-br from-[#9d3868] via-primary to-accent-orange px-4 py-4 text-white sm:px-5 rounded-xl">
                 <div
