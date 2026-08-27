@@ -298,6 +298,12 @@
         "moreInfoModules": "Included modules",
         "moreInfoAddons": "Add-ons"
     },
+    "PlansPage": {
+        "back": "Back",
+        "eyebrow": "All plans",
+        "title": "Plan overview",
+        "empty": "No public event plans are available yet."
+    },
     "HomePage": {
         "greeting": "Hi, {name}",
         "newEvent": "Create",
@@ -308,8 +314,37 @@
         },
         "modules": {
             "title": "What StoryWall offers",
-            "subtitle": "Every event can mix and match these modules.",
-            "seePlans": "See plans"
+            "seePlans": "See plans",
+            "createEvent": "Create an event",
+            "close": "Close",
+            "summary": {
+                "posts": "Guests post photos and messages to a shared wall.",
+                "stories": "Moments that disappear after 24 hours.",
+                "gallery": "Every guest photo collected in one album.",
+                "playlist": "Guests suggest songs and vote on them.",
+                "rsvp": "Know who is coming, and how many they bring.",
+                "wishlist": "Share your bank details for money gifts.",
+                "wishbook": "Guests write wishes you keep for good."
+            },
+            "detail": {
+                "posts": "Guests share photos and messages on the event wall. Everyone can react and comment, and your posts as host stand out.",
+                "stories": "Guests and hosts post short moments that stay up for 24 hours. You can see who viewed each one.",
+                "gallery": "Guests upload photos straight to the event album. Select several at once and download them all.",
+                "playlist": "Guests suggest songs from Spotify or YouTube and vote on them. The most wanted tracks rise to the top.",
+                "rsvp": "Guests answer whether they are coming and how many people they bring. They can leave you a message too.",
+                "wishlist": "Show your bank details to guests who want to send money instead of a gift. They can copy the IBAN with one tap.",
+                "wishbook": "Guests leave written wishes for you. Every message is saved so you can read them after the event."
+            },
+            "preview": {
+                "hostName": "Elena & Nikos",
+                "guestName": "Maria K.",
+                "postText": "The cake has arrived! See you all at seven.",
+                "postReply": "It looks amazing. Can't wait!",
+                "storyTime": "3h",
+                "storyCaption": "Getting ready",
+                "giftNote": "Thank you for being with us.",
+                "wishbookMessage": "Wishing you a lifetime of happiness together."
+            }
         },
         "carousel": {
             "previous": "Previous items",
