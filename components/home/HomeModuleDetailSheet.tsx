@@ -26,22 +26,6 @@ export function HomeModuleDetailSheet({ module: showcaseModule, onCloseAction }:
                     {/* Details */}
                     <h2 className="mt-6 text-lg font-semibold text-ink">{showcaseModule.name}</h2>
                     <p className="mt-2 text-sm leading-6 text-ink-muted">{showcaseModule.detail}</p>
-
-                    {/* Actions */}
-                    <div className="mt-6 flex flex-col gap-2">
-                        <Link
-                            href={routes.events.new}
-                            className="inline-flex min-h-11 items-center justify-center rounded-full bg-gradient-brand px-4 text-sm font-semibold text-white"
-                        >
-                            {t('modules.createEvent')}
-                        </Link>
-                        <Link
-                            href={routes.plans()}
-                            className="inline-flex min-h-11 items-center justify-center rounded-full border border-border px-4 text-sm font-semibold text-ink-muted"
-                        >
-                            {t('modules.seePlans')}
-                        </Link>
-                    </div>
                 </Modal.Body>
             )}
         </Modal>
