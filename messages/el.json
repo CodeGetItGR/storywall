@@ -282,6 +282,22 @@
         "subtitle": "Δημιουργήστε τη δική σας εκδήλωση ή συμμετέχετε σε μια στην οποία έχετε προσκληθεί.",
         "createEventCta": "Δημιουργία εκδήλωσης"
     },
+    "PlanCard": {
+        "unlimited": "Απεριόριστο",
+        "noCharge": "Χωρίς χρέωση",
+        "members": "μέλη",
+        "storage": "αποθηκευτικός χώρος",
+        "modules": "Λειτουργίες εκδήλωσης",
+        "addonModules": "Διαθέσιμη ως πρόσθετο",
+        "oncePrice": "{price} εφάπαξ",
+        "originalsHighlight": "Περιλαμβάνονται οι πρωτότυπες φωτογραφίες πλήρους ανάλυσης",
+        "moreInfo": "Περισσότερα",
+        "moreInfoTitle": "Στοιχεία πλάνου",
+        "moreInfoClose": "Κλείσιμο στοιχείων",
+        "moreInfoDiscount": "Έκπτωση",
+        "moreInfoModules": "Περιλαμβανόμενες λειτουργίες",
+        "moreInfoAddons": "Πρόσθετα"
+    },
     "HomePage": {
         "greeting": "Γεια σου, {name}",
         "newEvent": "Δημιουργία",
@@ -396,8 +412,8 @@
     },
     "AccountDrawer": {
         "drawerLabel": "Ο λογαριασμός σου",
-        "closeDrawer": "Κλείσιμο λογαριασμού",
         "fallbackName": "Λογαριασμός",
+        "home": "Αρχική",
         "logout": "Αποσύνδεση",
         "logoutConfirmTitle": "Αποσύνδεση;",
         "logoutConfirmBody": "Θα χρειαστεί να συνδεθείς ξανά.",
@@ -409,19 +425,11 @@
     },
     "EventsPage": {
         "yourEvents": "Οι εκδηλώσεις σου",
-        "allEvents": "Όλες οι εκδηλώσεις",
         "createEventCta": "Δημιουργία εκδήλωσης",
-        "loadingEvents": "Φόρτωση των εκδηλώσεών σου",
-        "activeEvent": "Τρέχουσα εκδήλωση",
         "eventUnavailable": "Η εκδήλωση δεν είναι διαθέσιμη",
         "roleFallback": {
             "host": "Διοργανωτής/τρια",
             "attendee": "Καλεσμένος/η"
-        },
-        "emptyMemberships": {
-            "title": "Δεν υπάρχουν εκδηλώσεις ακόμα",
-            "body": "Μπες σε μια εκδήλωση από έναν σύνδεσμο πρόσκλησης ή δημιούργησε τη δική σου για να ξεκινήσεις.",
-            "cta": "Ξεκίνα τώρα"
         },
         "dateAt": "στις",
         "goingCount": "{count} παρευρίσκονται"
@@ -611,23 +619,15 @@
         },
         "submitAndPay": "Πληρώστε {amount}",
         "usageTitle": "Χρήση εκδήλωσης",
-        "unlimited": "Απεριόριστο",
         "noPlans": "Δεν υπάρχουν ακόμη δημόσια διαθέσιμα πλάνα για εκδηλώσεις.",
         "loadingPlans": "Φόρτωση πλάνων για αυτόν τον τύπο εκδήλωσης…",
         "noEventTypes": "Δεν υπάρχουν ακόμη διαθέσιμοι τύποι εκδηλώσεων.",
         "planDescriptionFallback": "Ό,τι χρειάζεστε για αυτό το επίπεδο εκδήλωσης.",
-        "moreInfo": "Περισσότερα",
-        "moreInfoTitle": "Στοιχεία πλάνου",
-        "moreInfoClose": "Κλείσιμο στοιχείων",
-        "moreInfoDiscount": "Έκπτωση",
-        "moreInfoModules": "Περιλαμβανόμενες λειτουργίες",
-        "moreInfoAddons": "Πρόσθετα",
         "continueToPlan": "Συνέχεια στο πλάνο",
         "continueToDetails": "Συνέχεια στα στοιχεία",
         "continueToOverview": "Συνέχεια στην επισκόπηση",
         "backToPlans": "Πίσω στα πλάνα",
         "selectedPlan": "Επιλεγμένο πλάνο: {plan}",
-        "originalsHighlight": "Περιλαμβάνονται οι πρωτότυπες φωτογραφίες πλήρους ανάλυσης",
         "actions": {
             "back": "Πίσω"
         },
@@ -644,14 +644,7 @@
         "payment": {
             "noCharge": "Χωρίς χρέωση"
         },
-        "planLimits": {
-            "storage": "αποθηκευτικός χώρος",
-            "members": "μέλη",
-            "modules": "Λειτουργίες εκδήλωσης",
-            "addonModules": "Διαθέσιμη ως πρόσθετο"
-        },
         "paidModules": {
-            "oncePrice": "{price} εφάπαξ",
             "openDraft": "Άνοιγμα πρόχειρου ταμπλό"
         },
         "overview": {

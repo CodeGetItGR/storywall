@@ -3,10 +3,12 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { type ReactNode, useEffect } from 'react';
 
+import { AccountPanelShell } from '@/components/account/AccountPanelShell';
 import { DesktopNavRail, MobileTabBar } from '@/components/layout';
 import { HostOnboardingWizard } from '@/components/onboarding/HostOnboardingWizard';
 import { useAuth } from '@/hooks/useAuth';
 import { routes } from '@/lib/routes';
+import { AccountPanelProvider } from '@/providers/AccountPanelProvider';
 
 export function AppShell({ children }: { children: ReactNode }) {
     const router = useRouter();
@@ -30,11 +32,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         return <div className="h-full bg-background" />;
     }
 
-    if (isChromeLessPage) {
-        return <div className="h-full bg-background">{children}</div>;
-    }
-
-    return (
+    const shellContent = isChromeLessPage ? (
+        <div className="h-full bg-background">{children}</div>
+    ) : (
         <div className="flex h-full min-h-0 overflow-hidden bg-background">
             <DesktopNavRail />
             <main className="h-full min-w-0 flex-1 overflow-y-auto pb-20 lg:pb-0 lg:pl-55">
@@ -43,5 +43,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             <MobileTabBar />
             <HostOnboardingWizard />
         </div>
+    );
+
+    return (
+        <AccountPanelProvider>
+            <AccountPanelShell>{shellContent}</AccountPanelShell>
+        </AccountPanelProvider>
     );
 }

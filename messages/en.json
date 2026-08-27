@@ -282,6 +282,22 @@
         "subtitle": "Create your own event, or join one you've been invited to.",
         "createEventCta": "Create an event"
     },
+    "PlanCard": {
+        "unlimited": "Unlimited",
+        "noCharge": "No charge",
+        "members": "members",
+        "storage": "storage",
+        "modules": "Event modules",
+        "addonModules": "Available as add-on",
+        "oncePrice": "{price} once",
+        "originalsHighlight": "Full-resolution original photos included",
+        "moreInfo": "More info",
+        "moreInfoTitle": "Plan details",
+        "moreInfoClose": "Close details",
+        "moreInfoDiscount": "Discount",
+        "moreInfoModules": "Included modules",
+        "moreInfoAddons": "Add-ons"
+    },
     "HomePage": {
         "greeting": "Hi, {name}",
         "newEvent": "Create",
@@ -396,8 +412,8 @@
     },
     "AccountDrawer": {
         "drawerLabel": "Your account",
-        "closeDrawer": "Close account",
         "fallbackName": "Account",
+        "home": "Home",
         "logout": "Log out",
         "logoutConfirmTitle": "Log out?",
         "logoutConfirmBody": "You'll need to sign in again.",
@@ -409,19 +425,11 @@
     },
     "EventsPage": {
         "yourEvents": "Your events",
-        "allEvents": "All events",
         "createEventCta": "Create event",
-        "loadingEvents": "Loading your events",
-        "activeEvent": "Current event",
         "eventUnavailable": "Event unavailable",
         "roleFallback": {
             "host": "Host",
             "attendee": "Guest"
-        },
-        "emptyMemberships": {
-            "title": "No events yet",
-            "body": "Join an event with an invite link, or create your own to get started.",
-            "cta": "Get started"
         },
         "dateAt": "at",
         "goingCount": "{count} going"
@@ -611,23 +619,15 @@
         },
         "submitAndPay": "Pay {amount}",
         "usageTitle": "Event usage",
-        "unlimited": "Unlimited",
         "noPlans": "No public event plans are available yet.",
         "loadingPlans": "Loading plans for this event type…",
         "noEventTypes": "No event types are available yet.",
         "planDescriptionFallback": "Everything you need for this event tier.",
-        "moreInfo": "More info",
-        "moreInfoTitle": "Plan details",
-        "moreInfoClose": "Close details",
-        "moreInfoDiscount": "Discount",
-        "moreInfoModules": "Included modules",
-        "moreInfoAddons": "Add-ons",
         "continueToPlan": "Continue to plan",
         "continueToDetails": "Continue to details",
         "continueToOverview": "Continue to overview",
         "backToPlans": "Back to plans",
         "selectedPlan": "Selected plan: {plan}",
-        "originalsHighlight": "Full-resolution original photos included",
         "actions": {
             "back": "Back"
         },
@@ -644,14 +644,7 @@
         "payment": {
             "noCharge": "No charge"
         },
-        "planLimits": {
-            "storage": "storage",
-            "members": "members",
-            "modules": "Event modules",
-            "addonModules": "Available as add-on"
-        },
         "paidModules": {
-            "oncePrice": "{price} once",
             "openDraft": "Open draft dashboard"
         },
         "overview": {

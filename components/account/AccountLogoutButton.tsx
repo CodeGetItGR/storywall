@@ -10,7 +10,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
-export function AccountLogoutButton({ onLogoutAction, variant = 'default' }: { onLogoutAction?: () => void; variant?: 'default' | 'rail' }) {
+export function AccountLogoutButton({
+    onLogoutAction,
+    variant = 'default',
+}: {
+    onLogoutAction?: () => void;
+    variant?: 'default' | 'rail' | 'sidebar';
+}) {
     const t = useTranslations('AccountDrawer');
     const router = useRouter();
     const { logout } = useAuth();
@@ -40,13 +46,14 @@ export function AccountLogoutButton({ onLogoutAction, variant = 'default' }: { o
                 type="button"
                 onClick={handleLogoutClick}
                 className={cn(
-                    'flex items-center gap-2 rounded-xl text-sm font-semibold text-ink transition-colors hover:bg-surface-muted',
-                    variant === 'rail'
-                        ? 'min-h-9 justify-start px-3 py-2 text-ink-muted hover:text-ink'
-                        : 'min-h-11 justify-center border border-border bg-background px-4 py-2.5'
+                    'flex items-center gap-2 rounded-xl text-sm font-semibold transition-colors',
+                    variant === 'rail' && 'min-h-9 justify-start px-3 py-2 text-ink-muted hover:bg-surface-muted hover:text-ink',
+                    variant === 'default' && 'min-h-11 justify-center border border-border bg-background px-4 py-2.5 text-ink hover:bg-surface-muted',
+                    variant === 'sidebar' && 'min-h-11 w-full justify-start gap-3 px-3 py-3 text-white hover:bg-white/10'
                 )}
             >
-                <MdLogout className="h-6 w-6" aria-hidden="true" />
+                <MdLogout className={variant === 'sidebar' ? 'h-5 w-5' : 'h-6 w-6'} aria-hidden="true" />
+                {variant === 'sidebar' && t('logout')}
             </button>
 
             <ConfirmActionModal

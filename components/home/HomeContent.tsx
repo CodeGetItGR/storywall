@@ -1,7 +1,5 @@
 'use client';
 
-import { useCallback, useState } from 'react';
-
 import { EventsQuickRow } from '@/components/home/EventsQuickRow';
 import { HomeEmptyState } from '@/components/home/HomeEmptyState';
 import { HomeHeader } from '@/components/home/HomeHeader';
@@ -15,22 +13,18 @@ export function HomeContent() {
     const { eventQueries, isLoading, memberships } = useMyEventList();
     const items = useEventGridItems(memberships, eventQueries);
     const hasEvents = memberships.length > 0;
-    const [accountOpen, setAccountOpen] = useState(false);
-
-    const openAccount = useCallback(() => setAccountOpen(true), []);
-    const closeAccount = useCallback(() => setAccountOpen(false), []);
 
     return (
         <div className="relative min-h-full w-full overflow-hidden">
             {/* Ambient gradient */}
             <div
                 aria-hidden="true"
-                className="bg-gradient-logo pointer-events-none absolute inset-x-0 top-0 h-90 opacity-30 [mask-image:radial-gradient(ellipse_120%_100%_at_top,black,transparent_70%)]"
+                className="bg-gradient-logo pointer-events-none absolute inset-x-0 top-0 h-90 opacity-60 [mask-image:radial-gradient(ellipse_120%_100%_at_top,black,transparent_70%)]"
             />
 
             <div className="relative mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 pt-8 pb-12 lg:pt-14">
                 {/* Header */}
-                <HomeHeader open={accountOpen} onOpenAction={openAccount} onCloseAction={closeAccount} />
+                <HomeHeader />
 
                 {!isLoading && !hasEvents ? (
                     <HomeEmptyState />

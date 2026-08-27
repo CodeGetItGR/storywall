@@ -5,15 +5,15 @@ import { Camera, Plus, PlusCircle } from 'lucide-react';
 import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { type MouseEvent, useCallback, useState } from 'react';
+import { type MouseEvent } from 'react';
 import { PiMusicNotesPlusDuotone } from 'react-icons/pi';
 
-import { AccountDrawer } from '@/components/account';
 import { type ContextNavItem, ContextNavSlot, isEventRoute, isPathActive, TabLink } from '@/components/layout/mobile-tab-bar';
 import { useAuth } from '@/hooks/useAuth';
 import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
+import { useAccountPanel } from '@/providers/AccountPanelProvider';
 import { useComposer } from '@/providers/ComposerProvider';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 import { useMobileChrome } from '@/providers/MobileChromeProvider';
@@ -22,12 +22,12 @@ const homeTabItem = { href: routes.feed, icon: '/icons/home.svg', key: 'home' } 
 
 export function MobileTabBar() {
     const t = useTranslations('MobileTabBar');
-    const [accountOpen, setAccountOpen] = useState(false);
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams().toString();
     const { openPostComposer, openSongComposer, openStoryCapture, canComposePost, canComposeStory, canComposeSong } = useComposer();
     const { user } = useAuth();
+    const { open: accountOpen, openAccount } = useAccountPanel();
     const { isMobileTabBarHidden } = useMobileChrome();
     const activeEvent = useActiveEvent();
     const isHost = useIsHost();
@@ -69,8 +69,6 @@ export function MobileTabBar() {
         if (href) router.push(href);
     }
 
-    const handleOpenAccount = useCallback(() => setAccountOpen(true), []);
-    const handleCloseAccount = useCallback(() => setAccountOpen(false), []);
     const accountActive = accountOpen;
     const railColumnCount =
         1 +
@@ -98,10 +96,10 @@ export function MobileTabBar() {
                     <div className="flex h-full items-center justify-center">
                         <button
                             type="button"
-                            onClick={handleOpenAccount}
+                            onClick={openAccount}
                             aria-label={t('openAccount')}
+                            aria-haspopup="dialog"
                             aria-expanded={accountOpen}
-                            aria-controls="mobile-account-drawer"
                             className="flex h-full w-full items-center justify-center transition-colors hover:bg-surface-muted"
                         >
                             <span
@@ -160,11 +158,6 @@ export function MobileTabBar() {
                         </>
                     )}
                 </nav>
-            </div>
-
-            {/* Account */}
-            <div id="mobile-account-drawer">
-                <AccountDrawer open={accountOpen} onCloseAction={handleCloseAccount} />
             </div>
 
             {showComposerMenu && (

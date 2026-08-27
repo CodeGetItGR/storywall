@@ -4,18 +4,19 @@ import { Bell } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
-import { AccountDrawer } from '@/components/account';
 import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { getInitials } from '@/lib/format';
 import { routes } from '@/lib/routes';
+import { useAccountPanel } from '@/providers/AccountPanelProvider';
 
-export function HomeHeader({ open, onOpenAction, onCloseAction }: { open: boolean; onOpenAction: () => void; onCloseAction: () => void }) {
+export function HomeHeader() {
     const t = useTranslations('HomePage');
     const tAccount = useTranslations('AccountDrawer');
     const tNotifications = useTranslations('NotificationsPage');
     const { user } = useAuth();
+    const { open, openAccount } = useAccountPanel();
     const { data: unreadCount = 0 } = useUnreadNotificationCount();
     const accountName = user?.displayName ?? tAccount('fallbackName');
     const firstName = accountName.split(' ')[0];
@@ -32,11 +33,10 @@ export function HomeHeader({ open, onOpenAction, onCloseAction }: { open: boolea
                         </span>
                     )}
                 </Link>
-                <button type="button" onClick={onOpenAction} aria-label={tAccount('drawerLabel')} aria-haspopup="dialog" aria-expanded={open}>
+                <button type="button" onClick={openAccount} aria-label={tAccount('drawerLabel')} aria-haspopup="dialog" aria-expanded={open}>
                     <Avatar initials={getInitials(accountName)} size="md" alt={accountName} />
                 </button>
             </div>
-            <AccountDrawer open={open} onCloseAction={onCloseAction} />
         </div>
     );
 }

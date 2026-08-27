@@ -22,7 +22,6 @@ export const routes = {
     invite: '/invite',
     home: '/home',
     events: {
-        list: '/events',
         new: '/events/new',
         settingsAddons: (eventId: string) => `/events/${eventId}/settings/addons`,
         checkoutReview: (eventId: string, intent: CheckoutIntent, code?: string | null) =>

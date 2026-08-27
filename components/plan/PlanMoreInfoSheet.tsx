@@ -16,7 +16,7 @@ type PlanMoreInfoSheetProps = {
 };
 
 export function PlanMoreInfoSheet({ open, onCloseAction, plan, modules }: PlanMoreInfoSheetProps) {
-    const t = useTranslations('CreateEventPage');
+    const t = useTranslations('PlanCard');
     const tModules = useTranslations('Modules');
     const locale = useLocale();
 
@@ -86,7 +86,7 @@ export function PlanMoreInfoSheet({ open, onCloseAction, plan, modules }: PlanMo
                                             <div className="min-w-0">
                                                 <p className="text-sm font-semibold text-ink">
                                                     {name}{' '}
-                                                    <span className="font-normal text-ink-muted">· {t('paidModules.oncePrice', { price })}</span>
+                                                    <span className="font-normal text-ink-muted">· {t('oncePrice', { price })}</span>
                                                 </p>
                                                 <p className="mt-0.5 text-sm leading-6 text-ink-muted">{description}</p>
                                             </div>

@@ -4,12 +4,13 @@ import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { useMemo, useState } from 'react';
 
+import { PlanCard } from '@/components/plan/PlanCard';
+import { PlanComparisonBadges } from '@/components/plan/PlanComparisonBadges';
 import { type MatrixRow, PlanComparisonMatrix } from '@/components/plan/PlanComparisonMatrix';
 import { PlanModuleGuideButton } from '@/components/plan/PlanModuleGuideButton';
 import { PlanModuleGuideModal } from '@/components/plan/PlanModuleGuideModal';
 import { PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
 import { PlanPriceLabel } from '@/components/plan/PlanPriceLabel';
-import { PlanTierCards } from '@/components/plan/PlanTierCards';
 import { PlanUpgradeButton } from '@/components/plan/PlanUpgradeButton';
 import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { mediaEstimate, PLAN_COMPARISON_EMPTY } from '@/lib/planComparison';
@@ -123,18 +124,35 @@ export function EventPlanComparison({
                     <PlanModuleGuideButton onOpenAction={openModuleLegend} />
                 </div>
 
-                <PlanTierCards
-                    plans={displayPlans}
-                    modules={modules}
-                    currentPlanCode={currentPlanCode}
-                    currentPlan={currentPlan}
-                    isCheckoutPending={isCheckoutPending}
-                    nextPlanId={nextPlanId}
-                    onUpgradeAction={onUpgradeAction}
-                    pendingPlanCode={pendingPlanCode}
-                    retryIn={retryIn}
-                    upgradeTargets={upgradeTargets}
-                />
+                <div className="space-y-3">
+                    {displayPlans.map((plan) => {
+                        const isCurrent = Boolean(currentPlanCode) && plan.code === currentPlanCode;
+                        const isNext = nextPlanId === plan.id;
+                        const canUpgrade = Boolean(currentPlan && onUpgradeAction && upgradeTargetCodes.has(plan.code));
+
+                        return (
+                            <PlanCard
+                                key={plan.id}
+                                plan={plan}
+                                modules={modules}
+                                emphasis={isCurrent ? 'primary' : isNext ? 'secondary' : undefined}
+                                badge={isCurrent ? <PlanComparisonBadges isCurrent /> : undefined}
+                                footer={
+                                    canUpgrade && currentPlan && onUpgradeAction ? (
+                                        <PlanUpgradeButton
+                                            currentPlan={currentPlan}
+                                            isCheckoutPending={isCheckoutPending}
+                                            isPending={isCheckoutPending && pendingPlanCode === plan.code}
+                                            onUpgrade={onUpgradeAction}
+                                            retryIn={retryIn}
+                                            target={plan}
+                                        />
+                                    ) : undefined
+                                }
+                            />
+                        );
+                    })}
+                </div>
                 <p className="text-xs leading-5 text-ink-faint">{t('compare.mediaAssumption')}</p>
             </div>
 

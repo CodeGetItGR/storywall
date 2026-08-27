@@ -28,7 +28,7 @@ export function DesktopNavRail() {
     const accountName = authUser?.displayName ?? tAccount('fallbackName');
     const homeHref = activeEvent ? (isDraft ? routes.manage : routes.post.feed(activeEvent.id)) : null;
     const homeActive = Boolean(homeHref) && (isPathActive(pathname, homeHref!) || isPathActive(pathname, routes.feed));
-    const eventsActive = isPathActive(pathname, routes.events.list) || isPathActive(pathname, routes.home);
+    const eventsActive = isPathActive(pathname, routes.home);
 
     return (
         <nav
@@ -53,7 +53,7 @@ export function DesktopNavRail() {
 
                 {showEventActions && !isDraft && <ToolsMenu />}
 
-                <DesktopNavLink href={routes.events.list} icon={UsersRound} label={t('items.events')} active={eventsActive} />
+                <DesktopNavLink href={routes.home} icon={UsersRound} label={t('items.events')} active={eventsActive} />
             </div>
 
             {/* New Post CTA */}
