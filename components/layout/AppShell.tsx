@@ -7,15 +7,13 @@ import { DesktopNavRail, MobileTabBar } from '@/components/layout';
 import { HostOnboardingWizard } from '@/components/onboarding/HostOnboardingWizard';
 import { useAuth } from '@/hooks/useAuth';
 import { routes } from '@/lib/routes';
-import { cn } from '@/lib/utils';
 
 export function AppShell({ children }: { children: ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
     const { user, isBootstrapping } = useAuth();
-    const isChromeLessPage = pathname === routes.eventNotFound;
+    const isChromeLessPage = pathname === routes.eventNotFound || pathname === routes.home;
     const isAuthenticated = Boolean(user);
-    const hasMobileTabBar = pathname !== routes.profile;
 
     useEffect(() => {
         if (isBootstrapping) return;
@@ -39,7 +37,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     return (
         <div className="flex h-full min-h-0 overflow-hidden bg-background">
             <DesktopNavRail />
-            <main className={cn('h-full min-w-0 flex-1 overflow-y-auto lg:pb-0 lg:pl-55', hasMobileTabBar && 'pb-20')}>
+            <main className="h-full min-w-0 flex-1 overflow-y-auto pb-20 lg:pb-0 lg:pl-55">
                 <div className="min-h-full lg:max-w-none">{children}</div>
             </main>
             <MobileTabBar />

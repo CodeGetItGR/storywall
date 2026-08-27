@@ -7,7 +7,7 @@ import { useLocale } from 'next-intl';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
-import { EventListItemSkeleton } from '@/components/profile/EventListItemSkeleton';
+import { EventListItemSkeleton } from '@/components/events/EventListItemSkeleton';
 import Avatar from '@/components/ui/avatar';
 import { useEventMembers } from '@/hooks';
 import type { EventDetailResponseDto, EventMemberResponseDto } from '@/lib/api/types';
@@ -23,7 +23,7 @@ interface EventListItemProps {
 }
 
 export function EventListItem({ eventId, member, event, isLoading }: EventListItemProps) {
-    const t = useTranslations('ProfilePage');
+    const t = useTranslations('EventsPage');
     const locale = useLocale();
     const { data: eventMembers = [] } = useEventMembers(eventId);
 

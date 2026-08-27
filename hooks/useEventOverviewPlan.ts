@@ -62,9 +62,7 @@ export function useEventOverviewPlan({
                 ? null
                 : discountedAmountMinor(currentPlan.priceAmountMinor, currentPlan) +
                   (originalsActive ? activationAddonAmount : 0) +
-                  moduleUnlocks
-                      .filter((service) => activeAddonCodes.has(service.code))
-                      .reduce((sum, service) => sum + service.priceAmountMinor, 0);
+                  moduleUnlocks.filter((service) => activeAddonCodes.has(service.code)).reduce((sum, service) => sum + service.priceAmountMinor, 0);
 
         const enabledModuleKeys = new Set(modules.filter((module_) => module_.isEnabled).map((module_) => module_.moduleKey));
         const availableModuleKeys = new Set(eventModules.filter((module_) => module_.isAvailable).map((module_) => module_.moduleKey));

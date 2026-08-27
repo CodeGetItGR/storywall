@@ -1,14 +1,6 @@
 import type { ReactNode } from 'react';
 
-export function BannerOverlay({
-    title,
-    actions,
-    glowVisible,
-}: {
-    title: string;
-    actions?: ReactNode;
-    glowVisible: boolean;
-}) {
+export function BannerOverlay({ title, actions, glowVisible }: { title: string; actions?: ReactNode; glowVisible: boolean }) {
     return (
         <div className="absolute inset-0 overflow-hidden rounded-[1.5rem]">
             <div

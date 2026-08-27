@@ -11,7 +11,7 @@ interface AccountIdentityProps {
 }
 
 export function AccountIdentity({ displayName, email }: AccountIdentityProps) {
-    const t = useTranslations('ProfilePage');
+    const t = useTranslations('AccountDrawer');
     const accountName = displayName ?? t('fallbackName');
 
     return (

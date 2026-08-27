@@ -1,7 +1,15 @@
 import { redirect } from 'next/navigation';
 
+import { resolveServerEventContext } from '@/lib/auth/serverEventContext';
 import { routes } from '@/lib/routes';
 
-export default function Page() {
-    redirect(routes.login);
+// Same active-event resolution as app/(app)/feed/page.tsx, but also covers
+// the unauthenticated case: an already-logged-in user landing on "/" (e.g. a
+// bookmark) should go straight into the app, not be bounced to /login.
+export default async function Page() {
+    const context = await resolveServerEventContext();
+
+    if (!context) redirect(routes.login);
+
+    redirect(context.activeEventId ? routes.post.feed(context.activeEventId) : routes.home);
 }

@@ -1,14 +1,14 @@
 'use client';
 
-import { Heart, Home as HomeIcon, Plus, UserRound } from 'lucide-react';
+import { Heart, Home as HomeIcon, Plus, UsersRound } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
+import { AccountLogoutButton } from '@/components/account/AccountLogoutButton';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { DesktopNavLink } from '@/components/layout/DesktopNavLink';
 import { isEventRoute, isPathActive } from '@/components/layout/mobile-tab-bar';
 import { ToolsMenu } from '@/components/layout/ToolsMenu';
-import { AccountLogoutButton } from '@/components/profile/AccountLogoutButton';
 import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { getInitials } from '@/lib/format';
@@ -18,17 +18,17 @@ import { useActiveEvent } from '@/providers/EventProvider';
 
 export function DesktopNavRail() {
     const t = useTranslations('DesktopNavRail');
-    const tProfile = useTranslations('ProfilePage');
+    const tAccount = useTranslations('AccountDrawer');
     const pathname = usePathname();
     const { user: authUser } = useAuth();
     const { openPostComposer, canComposePost } = useComposer();
     const activeEvent = useActiveEvent();
     const isDraft = activeEvent?.status === 'DRAFT';
     const showEventActions = Boolean(activeEvent) && isEventRoute(pathname);
-    const accountName = authUser?.displayName ?? tProfile('fallbackName');
+    const accountName = authUser?.displayName ?? tAccount('fallbackName');
     const homeHref = activeEvent ? (isDraft ? routes.manage : routes.post.feed(activeEvent.id)) : null;
     const homeActive = Boolean(homeHref) && (isPathActive(pathname, homeHref!) || isPathActive(pathname, routes.feed));
-    const profileActive = isPathActive(pathname, routes.profile);
+    const eventsActive = isPathActive(pathname, routes.events.list) || isPathActive(pathname, routes.home);
 
     return (
         <nav
@@ -53,7 +53,7 @@ export function DesktopNavRail() {
 
                 {showEventActions && !isDraft && <ToolsMenu />}
 
-                <DesktopNavLink href={routes.profile} icon={UserRound} label={t('items.profile')} active={profileActive} />
+                <DesktopNavLink href={routes.events.list} icon={UsersRound} label={t('items.events')} active={eventsActive} />
             </div>
 
             {/* New Post CTA */}

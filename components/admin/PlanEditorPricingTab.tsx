@@ -10,15 +10,7 @@ import type { BillingPeriod, PlanTierResponseDto } from '@/lib/api/types';
 
 const BILLING_PERIODS: BillingPeriod[] = ['ONE_TIME'];
 
-export function PlanEditorPricingTab({
-    editorId,
-    activeTab,
-    plan,
-}: {
-    editorId: string;
-    activeTab: string;
-    plan: PlanTierResponseDto;
-}) {
+export function PlanEditorPricingTab({ editorId, activeTab, plan }: { editorId: string; activeTab: string; plan: PlanTierResponseDto }) {
     const t = useTranslations('AdminPage');
 
     return (

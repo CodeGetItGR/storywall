@@ -106,7 +106,7 @@
             "manage": "Διαχείριση",
             "notifications": "Ειδοποιήσεις",
             "admin": "Διαχείριση",
-            "profile": "Προφίλ"
+            "events": "Εκδηλώσεις"
         }
     },
     "LanguageSwitcher": {
@@ -135,7 +135,7 @@
         "items": {
             "home": "Αρχική",
             "playlist": "Τραγούδια",
-            "profile": "Προφίλ",
+            "account": "Λογαριασμός",
             "manage": "Διαχείριση",
             "post": "Δημοσίευση",
             "alerts": "Ειδοποιήσεις"
@@ -280,11 +280,24 @@
     "WelcomePage": {
         "title": "Ας ξεκινήσουμε",
         "subtitle": "Δημιουργήστε τη δική σας εκδήλωση ή συμμετέχετε σε μια στην οποία έχετε προσκληθεί.",
-        "createEventCta": "Δημιουργία εκδήλωσης",
-        "or": "ή",
-        "haveInviteLabel": "Έχετε σύνδεσμο ή κωδικό πρόσκλησης;",
-        "inviteInputPlaceholder": "Επικολλήστε τον σύνδεσμο ή τον κωδικό πρόσκλησης",
-        "goButton": "Συνέχεια"
+        "createEventCta": "Δημιουργία εκδήλωσης"
+    },
+    "HomePage": {
+        "greeting": "Γεια σου, {name}",
+        "newEvent": "Δημιουργία",
+        "stats": {
+            "events": "Εκδηλώσεις",
+            "upcoming": "Επερχόμενες",
+            "hosting": "Διοργανώνεις"
+        },
+        "modules": {
+            "title": "Τι προσφέρει το StoryWall",
+            "subtitle": "Κάθε εκδήλωση μπορεί να συνδυάσει αυτές τις ενότητες.",
+            "seePlans": "Δες τα πλάνα"
+        },
+        "nextEvent": {
+            "title": "Το επόμενο ραντεβού"
+        }
     },
     "InviteOnboardingPage": {
         "loading": "Φόρτωση της πρόσκλησής σας…",
@@ -381,7 +394,7 @@
             }
         }
     },
-    "ProfilePage": {
+    "AccountDrawer": {
         "drawerLabel": "Ο λογαριασμός σου",
         "closeDrawer": "Κλείσιμο λογαριασμού",
         "fallbackName": "Λογαριασμός",
@@ -390,14 +403,17 @@
         "logoutConfirmBody": "Θα χρειαστεί να συνδεθείς ξανά.",
         "logoutConfirmConfirm": "Αποσύνδεση",
         "logoutConfirmCancel": "Ακύρωση",
+        "preferences": {
+            "language": "Γλώσσα"
+        }
+    },
+    "EventsPage": {
         "yourEvents": "Οι εκδηλώσεις σου",
+        "allEvents": "Όλες οι εκδηλώσεις",
         "createEventCta": "Δημιουργία εκδήλωσης",
         "loadingEvents": "Φόρτωση των εκδηλώσεών σου",
         "activeEvent": "Τρέχουσα εκδήλωση",
         "eventUnavailable": "Η εκδήλωση δεν είναι διαθέσιμη",
-        "preferences": {
-            "language": "Γλώσσα"
-        },
         "roleFallback": {
             "host": "Διοργανωτής/τρια",
             "attendee": "Καλεσμένος/η"

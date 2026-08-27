@@ -3,17 +3,7 @@ import type { ReactNode } from 'react';
 
 import { BannerOverlay } from '@/components/feed/BannerOverlay';
 
-export function Banner({
-    image,
-    title,
-    actions,
-    glowVisible,
-}: {
-    image: string | null;
-    title: string;
-    actions?: ReactNode;
-    glowVisible: boolean;
-}) {
+export function Banner({ image, title, actions, glowVisible }: { image: string | null; title: string; actions?: ReactNode; glowVisible: boolean }) {
     return (
         <div className="relative w-full px-2">
             {/* Banner */}

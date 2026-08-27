@@ -42,11 +42,7 @@ export function ScheduleStoryDateBadge({ date, locale, size = 'md', className }:
 
     return (
         <div
-            className={cn(
-                'flex items-center justify-center rounded-full bg-gradient-brand p-0.75',
-                isSmall ? 'h-9 w-9' : 'h-15.5 w-15.5',
-                className
-            )}
+            className={cn('flex items-center justify-center rounded-full bg-gradient-brand p-0.75', isSmall ? 'h-9 w-9' : 'h-15.5 w-15.5', className)}
             role="img"
             aria-label={t('scheduleStory')}
             title={label}

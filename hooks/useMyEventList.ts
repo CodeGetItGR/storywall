@@ -2,7 +2,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useEventDetails } from '@/hooks/useEvent';
 import { useEventContextLoading, useMyMemberships } from '@/providers/EventProvider';
 
-export function useProfilePageData() {
+export function useMyEventList() {
     const { user } = useAuth();
     const memberships = useMyMemberships();
     const isLoading = useEventContextLoading();

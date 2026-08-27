@@ -20,7 +20,9 @@ export const routes = {
     login: '/login',
     register: '/register',
     invite: '/invite',
+    home: '/home',
     events: {
+        list: '/events',
         new: '/events/new',
         settingsAddons: (eventId: string) => `/events/${eventId}/settings/addons`,
         checkoutReview: (eventId: string, intent: CheckoutIntent, code?: string | null) =>
@@ -32,7 +34,6 @@ export const routes = {
     manage: '/manage',
     admin: '/admin',
     notifications: '/notifications',
-    profile: '/profile',
     storySchedule: '/story/schedule',
     story: (storyId: string) => `/story/${storyId}`,
     post: {

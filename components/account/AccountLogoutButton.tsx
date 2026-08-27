@@ -11,7 +11,7 @@ import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
 export function AccountLogoutButton({ onLogoutAction, variant = 'default' }: { onLogoutAction?: () => void; variant?: 'default' | 'rail' }) {
-    const t = useTranslations('ProfilePage');
+    const t = useTranslations('AccountDrawer');
     const router = useRouter();
     const { logout } = useAuth();
     const [confirmOpen, setConfirmOpen] = useState(false);

@@ -85,7 +85,8 @@ export function PlanMoreInfoSheet({ open, onCloseAction, plan, modules }: PlanMo
                                             </span>
                                             <div className="min-w-0">
                                                 <p className="text-sm font-semibold text-ink">
-                                                    {name} <span className="font-normal text-ink-muted">· {t('paidModules.oncePrice', { price })}</span>
+                                                    {name}{' '}
+                                                    <span className="font-normal text-ink-muted">· {t('paidModules.oncePrice', { price })}</span>
                                                 </p>
                                                 <p className="mt-0.5 text-sm leading-6 text-ink-muted">{description}</p>
                                             </div>

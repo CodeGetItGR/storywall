@@ -46,7 +46,8 @@ export function ScheduleScreen() {
     );
 
     const secondarySessionTitleKey = activeEvent ? getCreateEventCatalogEntry(activeEvent.eventType)?.secondarySessionTitleKey : undefined;
-    const secondarySessionTitle = secondarySessionTitleKey && tCreateEvent.has(secondarySessionTitleKey) ? tCreateEvent(secondarySessionTitleKey) : undefined;
+    const secondarySessionTitle =
+        secondarySessionTitleKey && tCreateEvent.has(secondarySessionTitleKey) ? tCreateEvent(secondarySessionTitleKey) : undefined;
     const hasSecondarySession = sessions.some((session) => session.isSecondary);
     const canAddSecondarySession = canManageSchedule && Boolean(secondarySessionTitle) && !hasSecondarySession;
 

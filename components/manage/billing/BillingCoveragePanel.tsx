@@ -4,13 +4,7 @@ import Section from '@/components/manage/Section';
 import { type BillingDerived, type BillingInsights, useBillingDate } from '@/hooks/useEventBillingPanel';
 import { formatMoney } from '@/lib/billing';
 
-export function BillingCoveragePanel({
-    derived,
-    insights,
-}: {
-    derived: BillingDerived;
-    insights: BillingInsights;
-}) {
+export function BillingCoveragePanel({ derived, insights }: { derived: BillingDerived; insights: BillingInsights }) {
     const t = useTranslations('EventPlanSettingsPage');
     const locale = useLocale();
     const formatDate = useBillingDate();
@@ -41,9 +35,7 @@ export function BillingCoveragePanel({
                 <dl className="space-y-2">
                     <div className="flex justify-between gap-4">
                         <dt className="text-ink-muted">{t('addons.total')}</dt>
-                        <dd className="text-right font-semibold text-ink">
-                            {formatMoney(locale, derived.addonTotal, insights.orderCurrency)}
-                        </dd>
+                        <dd className="text-right font-semibold text-ink">{formatMoney(locale, derived.addonTotal, insights.orderCurrency)}</dd>
                     </div>
                 </dl>
                 <p className="mt-2 text-xs leading-relaxed text-ink-muted">{t('addons.ownedHint')}</p>

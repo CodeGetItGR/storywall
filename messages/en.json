@@ -106,7 +106,7 @@
             "manage": "Manage",
             "notifications": "Notifications",
             "admin": "Admin",
-            "profile": "Profile"
+            "events": "Events"
         }
     },
     "LanguageSwitcher": {
@@ -135,7 +135,7 @@
         "items": {
             "home": "Home",
             "playlist": "Playlist",
-            "profile": "Profile",
+            "account": "Account",
             "manage": "Manage",
             "post": "Post",
             "alerts": "Notifications"
@@ -280,11 +280,24 @@
     "WelcomePage": {
         "title": "Let's get started",
         "subtitle": "Create your own event, or join one you've been invited to.",
-        "createEventCta": "Create an event",
-        "or": "or",
-        "haveInviteLabel": "Have an invite link or code?",
-        "inviteInputPlaceholder": "Paste your invite link or code",
-        "goButton": "Continue"
+        "createEventCta": "Create an event"
+    },
+    "HomePage": {
+        "greeting": "Hi, {name}",
+        "newEvent": "Create",
+        "stats": {
+            "events": "Events",
+            "upcoming": "Upcoming",
+            "hosting": "Hosting"
+        },
+        "modules": {
+            "title": "What StoryWall offers",
+            "subtitle": "Every event can mix and match these modules.",
+            "seePlans": "See plans"
+        },
+        "nextEvent": {
+            "title": "Coming up"
+        }
     },
     "InviteOnboardingPage": {
         "loading": "Loading your invitation…",
@@ -381,7 +394,7 @@
             }
         }
     },
-    "ProfilePage": {
+    "AccountDrawer": {
         "drawerLabel": "Your account",
         "closeDrawer": "Close account",
         "fallbackName": "Account",
@@ -390,14 +403,17 @@
         "logoutConfirmBody": "You'll need to sign in again.",
         "logoutConfirmConfirm": "Log out",
         "logoutConfirmCancel": "Cancel",
+        "preferences": {
+            "language": "Language"
+        }
+    },
+    "EventsPage": {
         "yourEvents": "Your events",
+        "allEvents": "All events",
         "createEventCta": "Create event",
         "loadingEvents": "Loading your events",
         "activeEvent": "Current event",
         "eventUnavailable": "Event unavailable",
-        "preferences": {
-            "language": "Language"
-        },
         "roleFallback": {
             "host": "Host",
             "attendee": "Guest"

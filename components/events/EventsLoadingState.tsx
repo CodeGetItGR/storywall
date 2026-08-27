@@ -1,9 +1,9 @@
 'use client';
 
-export function ProfileLoadingState() {
+export function EventsLoadingState({ count = 2 }: { count?: number }) {
     return (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {[0, 1].map((i) => (
+            {Array.from({ length: count }, (_, i) => (
                 <div key={i} className="overflow-hidden rounded-2xl bg-card">
                     <div className="aspect-video animate-pulse bg-surface-muted" />
                     <div className="space-y-2 p-4">

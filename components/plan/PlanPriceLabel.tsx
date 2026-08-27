@@ -23,9 +23,7 @@ export function PlanPriceLabel({ plan, locale, fallback, className }: PlanPriceL
                     <span className="line-through decoration-2">{formatMoney(locale, price.listAmountMinor, price.currency)}</span>
                 </span>
             )}
-            <span>
-                {formatMoney(locale, price.amountMinor, price.currency)}
-            </span>
+            <span>{formatMoney(locale, price.amountMinor, price.currency)}</span>
             {hasDiscount && price.discountLabel && <span className="ml-2 text-xs font-semibold text-primary-dark">{price.discountLabel}</span>}
         </span>
     );

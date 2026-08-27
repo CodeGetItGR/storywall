@@ -31,7 +31,7 @@ export function EventRouteGate({ children, missingEventRedirectTo, requireHost =
     const isHost = useIsHost();
     const isContextLoading = useEventContextLoading();
     const eventId = activeEvent?.id ?? null;
-    const resolvedMissingEventRedirectTo = missingEventRedirectTo ?? (isAuthenticated ? routes.profile : routes.login);
+    const resolvedMissingEventRedirectTo = missingEventRedirectTo ?? (isAuthenticated ? routes.home : routes.login);
 
     useEffect(() => {
         if (isContextLoading) return;

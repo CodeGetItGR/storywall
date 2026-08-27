@@ -34,9 +34,7 @@ export function BillingPlanPanel({
         upgradeListAmount !== null && upgradeAmount !== null && upgradeAmount !== upgradeListAmount
             ? formatMoney(locale, upgradeListAmount, upgradeCurrency)
             : null;
-    const upgradeChargeLabel = upgradeDueLabel
-        ? t('compare.upgradeChargeNoDate', { amount: upgradeDueLabel })
-        : null;
+    const upgradeChargeLabel = upgradeDueLabel ? t('compare.upgradeChargeNoDate', { amount: upgradeDueLabel }) : null;
 
     return (
         <div className="flex flex-col gap-5">
@@ -62,7 +60,9 @@ export function BillingPlanPanel({
                         ))}
                     </div>
                     <p className="mt-2 text-xs text-ink-muted">
-                        {t('addons.ownedTotal', { amount: formatMoney(locale, derived.addonTotal, currentPlan?.priceCurrency ?? insights.orderCurrency) })}
+                        {t('addons.ownedTotal', {
+                            amount: formatMoney(locale, derived.addonTotal, currentPlan?.priceCurrency ?? insights.orderCurrency),
+                        })}
                     </p>
                 </Section>
             )}

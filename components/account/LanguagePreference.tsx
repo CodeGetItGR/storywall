@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 export function LanguagePreference() {
-    const t = useTranslations('ProfilePage');
+    const t = useTranslations('AccountDrawer');
 
     return (
         <section className="rounded-2xl border border-border bg-card p-4" aria-labelledby="language-preference-heading">

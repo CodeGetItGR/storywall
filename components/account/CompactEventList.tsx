@@ -21,7 +21,7 @@ interface CompactEventListProps {
 
 export function CompactEventList({ activeEventId, eventQueries, isLoading, memberships, onSelect }: CompactEventListProps) {
     const locale = useLocale();
-    const t = useTranslations('ProfilePage');
+    const t = useTranslations('EventsPage');
 
     function handleSelect(event: MouseEvent<HTMLAnchorElement>) {
         const eventId = event.currentTarget.dataset.eventId;

@@ -58,9 +58,7 @@ export function EventPlanComparison({
         {
             key: 'price',
             label: t('compare.activationPrice'),
-            render: (plan) => (
-                <PlanPriceLabel plan={plan} locale={locale} fallback={t('compare.noPrice')} className="font-semibold text-ink" />
-            ),
+            render: (plan) => <PlanPriceLabel plan={plan} locale={locale} fallback={t('compare.noPrice')} className="font-semibold text-ink" />,
         },
         {
             key: 'billing',

@@ -252,7 +252,9 @@ export function ScheduleEditorForm({
                                 max={startAtMax}
                                 className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
                             />
-                            {sessionHasStarted && !isMainSession && <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('host.startLocked')}</p>}
+                            {sessionHasStarted && !isMainSession && (
+                                <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('host.startLocked')}</p>
+                            )}
                         </FormFieldLabel>
                         <FormFieldLabel
                             label={t('host.fields.endAt')}

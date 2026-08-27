@@ -192,9 +192,7 @@ export default function CheckoutReviewBoundary() {
                     )}
                     <div className={lines.length > 1 ? 'mt-5 flex items-center justify-between gap-6' : 'flex items-center justify-between gap-6'}>
                         <p className="text-sm font-semibold text-ink">{lines.length === 1 ? lines[0]?.label : t('dueNow')}</p>
-                        <p className="shrink-0 text-xl font-bold text-ink">
-                            {formatMoney(locale, totalMinor, currency)}
-                        </p>
+                        <p className="shrink-0 text-xl font-bold text-ink">{formatMoney(locale, totalMinor, currency)}</p>
                     </div>
                 </div>
             </section>

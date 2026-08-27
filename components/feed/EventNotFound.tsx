@@ -14,7 +14,7 @@ import { routes } from '@/lib/routes';
 export function EventNotFound() {
     const t = useTranslations('EventNotFound');
     const { isAuthenticated } = useAuth();
-    const href = isAuthenticated ? routes.profile : routes.login;
+    const href = isAuthenticated ? routes.home : routes.login;
     const cta = isAuthenticated ? t('ctaAuthenticated') : t('ctaGuest');
 
     return (

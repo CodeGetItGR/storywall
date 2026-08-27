@@ -107,15 +107,21 @@ export function EventPlanSelector({ plans, modules, selectedCode, onSelectAction
                                     <div className="mt-4 flex items-baseline gap-8">
                                         <div>
                                             <p className="text-2xl font-bold text-ink">{renderLimit(plan.maxMembers, 'count')}</p>
-                                            <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('planLimits.members')}</p>
+                                            <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+                                                {t('planLimits.members')}
+                                            </p>
                                         </div>
                                         <div>
                                             <p className="text-2xl font-bold text-ink">{renderLimit(plan.storageBytes, 'bytes')}</p>
-                                            <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('planLimits.storage')}</p>
+                                            <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+                                                {t('planLimits.storage')}
+                                            </p>
                                         </div>
                                     </div>
                                     <div className="mt-4">
-                                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('planLimits.modules')}</p>
+                                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+                                            {t('planLimits.modules')}
+                                        </p>
                                         <PlanModuleIcons moduleKeys={plan.moduleKeys} modules={modules} />
                                     </div>
                                     {(plan.paidModules?.length ?? 0) > 0 && (

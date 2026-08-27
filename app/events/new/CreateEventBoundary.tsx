@@ -199,7 +199,12 @@ export default function CreateEventPage() {
                         </div>
 
                         {/* Steps */}
-                        <EventCreateStepBreadcrumb step={step} onGoToTypeAction={goToType} onGoToPlanAction={goToPlan} onGoToDetailsAction={goToDetails} />
+                        <EventCreateStepBreadcrumb
+                            step={step}
+                            onGoToTypeAction={goToType}
+                            onGoToPlanAction={goToPlan}
+                            onGoToDetailsAction={goToDetails}
+                        />
 
                         {/* Form Shell */}
                         <div className="mt-3 min-h-0 flex-1 overflow-y-auto p-5">
