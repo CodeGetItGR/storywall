@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
 import { PostMediaCarousel } from '@/components/feed/post/PostMediaCarousel';
-import { useOverlayRouteHistory } from '@/hooks/useOverlayRouteHistory';
+import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import type { MediaResponseDto } from '@/lib/api/types';
 
 interface PostMediaViewerProps {
@@ -19,7 +19,7 @@ interface PostMediaViewerProps {
 export function PostMediaViewer({ media, initialIndex, alt, onCloseAction }: PostMediaViewerProps) {
     const t = useTranslations('PostModal');
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
-    const { requestClose } = useOverlayRouteHistory(true, onCloseAction);
+    const { requestClose } = useOverlayHistory(true, onCloseAction);
 
     const handleOpenChange = useCallback(
         (open: boolean) => {

@@ -9,7 +9,7 @@ import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { StoryCaptionBar, StoryHeader, StoryProgressBar, StoryViewersModal } from '@/components/story';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useDeleteStory, useEventMembers, useEventStories, useMarkStoryViewed, useMediaItem, useStory, useStoryViews } from '@/hooks';
-import { useOverlayRouteHistory } from '@/hooks/useOverlayRouteHistory';
+import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import { ApiError } from '@/lib/api/client';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { groupStoriesByAuthor } from '@/lib/stories';
@@ -33,7 +33,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
     const [showViewers, setShowViewers] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const { requestClose } = useOverlayRouteHistory(open, onCloseAction);
+    const { requestClose } = useOverlayHistory(open, onCloseAction);
 
     const currentStoryId = open ? (activeStoryId ?? storyId) : activeStoryId;
 

@@ -4,7 +4,7 @@ import { Download, Loader2, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
-import { useOverlayRouteHistory } from '@/hooks/useOverlayRouteHistory';
+import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import type { MediaResponseDto } from '@/lib/api/types';
 
 interface GalleryViewerProps {
@@ -18,7 +18,7 @@ interface GalleryViewerProps {
 
 export function GalleryViewer({ media, keepsOriginals, originalError, isDownloadingOriginal, onClose, onDownloadOriginal }: GalleryViewerProps) {
     const t = useTranslations('GalleryPage');
-    const { requestClose } = useOverlayRouteHistory(media !== null, onClose);
+    const { requestClose } = useOverlayHistory(media !== null, onClose);
 
     if (!media) return null;
 

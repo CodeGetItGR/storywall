@@ -4,7 +4,7 @@ import { Dialog } from '@base-ui/react/dialog';
 import { X } from 'lucide-react';
 import { type ReactNode, useCallback } from 'react';
 
-import { useOverlayRouteHistory } from '@/hooks/useOverlayRouteHistory';
+import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import { cn } from '@/lib/utils';
 
 const sizeMap = {
@@ -43,7 +43,7 @@ export function Modal({
     const isFull = size === 'full';
     const isSheet = variant === 'sheet';
     const isDrawer = variant === 'drawer';
-    const { requestClose } = useOverlayRouteHistory(open, onClose, dismissOnBack);
+    const { requestClose } = useOverlayHistory(open, onClose, dismissOnBack);
 
     const onOpenChange = useCallback(
         (nextOpen: boolean) => {
