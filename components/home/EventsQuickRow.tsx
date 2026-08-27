@@ -57,23 +57,21 @@ export function EventsQuickRow({ items, isLoading = false }: { items: EventGridI
     return (
         <section aria-labelledby="home-events-heading" className="flex w-full flex-col gap-3">
             {/* Section heading */}
-            <h2 id="home-events-heading" className="px-4 text-xs font-semibold uppercase tracking-wide text-ink-faint sm:px-8 lg:px-14 2xl:px-20">
-                {tEvents('yourEvents')}
-            </h2>
+            <div className="flex items-center justify-between gap-3 px-4 sm:px-8 lg:px-14 2xl:px-20">
+                <h2 id="home-events-heading" className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
+                    {tEvents('yourEvents')}
+                </h2>
+                <Link
+                    href={routes.events.new}
+                    className="inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-full bg-primary-light px-3 py-1 text-xs font-semibold text-primary-dark ring-1 ring-primary/12 transition-colors hover:bg-accent"
+                >
+                    <Plus className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
+                    <span>{t('newEvent')}</span>
+                </Link>
+            </div>
 
             {/* Event shortcuts */}
             <HomeHorizontalScroller previousLabel={tEvents('previous')} nextLabel={tEvents('next')}>
-                {/* Create event */}
-                <Link
-                    href={routes.events.new}
-                    className="flex h-52 w-40 shrink-0 flex-col items-center justify-center gap-2.5 rounded-2xl border border-dashed border-ink-faint text-ink-faint transition-colors hover:border-ink-muted hover:text-ink-muted"
-                >
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-muted">
-                        <Plus className="h-5 w-5" strokeWidth={1.8} />
-                    </span>
-                    <span className="text-sm font-medium">{t('newEvent')}</span>
-                </Link>
-
                 {isLoading
                     ? [0, 1, 2].map((key) => <QuickRowSkeleton key={key} />)
                     : items.map((item) =>
