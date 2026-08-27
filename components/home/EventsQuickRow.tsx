@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { HomeHorizontalScroller } from '@/components/home/HomeHorizontalScroller';
 import type { EventGridItem } from '@/hooks/useEventGridItems';
 import { formatEventListDate } from '@/lib/datetime';
 import { routes } from '@/lib/routes';
@@ -54,11 +55,14 @@ export function EventsQuickRow({ items, isLoading = false }: { items: EventGridI
     const tEvents = useTranslations('EventsPage');
 
     return (
-        <section aria-labelledby="home-events-heading" className="flex flex-col gap-3">
-            <h2 id="home-events-heading" className="px-1 text-xs font-semibold uppercase tracking-wide text-ink-faint">
+        <section aria-labelledby="home-events-heading" className="flex w-full flex-col gap-3">
+            {/* Section heading */}
+            <h2 id="home-events-heading" className="px-4 text-xs font-semibold uppercase tracking-wide text-ink-faint sm:px-8 lg:px-14 2xl:px-20">
                 {tEvents('yourEvents')}
             </h2>
-            <div className="flex items-stretch gap-3 overflow-x-auto no-scrollbar pb-2">
+
+            {/* Event shortcuts */}
+            <HomeHorizontalScroller previousLabel={tEvents('previous')} nextLabel={tEvents('next')}>
                 {/* Create event */}
                 <Link
                     href={routes.events.new}
@@ -75,7 +79,7 @@ export function EventsQuickRow({ items, isLoading = false }: { items: EventGridI
                     : items.map((item) =>
                           item.isLoading ? <QuickRowSkeleton key={item.member.eventId} /> : <EventQuickCard key={item.member.eventId} {...item} />
                       )}
-            </div>
+            </HomeHorizontalScroller>
         </section>
     );
 }

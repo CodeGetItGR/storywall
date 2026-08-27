@@ -49,7 +49,8 @@ export function AccountLogoutButton({
                     'flex items-center gap-2 rounded-xl text-sm font-semibold transition-colors',
                     variant === 'rail' && 'min-h-9 justify-start px-3 py-2 text-ink-muted hover:bg-surface-muted hover:text-ink',
                     variant === 'default' && 'min-h-11 justify-center border border-border bg-background px-4 py-2.5 text-ink hover:bg-surface-muted',
-                    variant === 'sidebar' && 'min-h-11 w-full justify-start gap-3 px-3 py-3 text-white hover:bg-white/10'
+                    variant === 'sidebar' &&
+                        'min-h-11 w-fit justify-start gap-2.5 rounded-full bg-white/8 px-4 py-2.5 text-white ring-1 ring-white/12 transition-[background-color,transform,box-shadow] hover:bg-white/14 active:scale-[0.99]'
                 )}
             >
                 <MdLogout className={variant === 'sidebar' ? 'h-5 w-5' : 'h-6 w-6'} aria-hidden="true" />

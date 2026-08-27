@@ -178,6 +178,8 @@
     --status-danger: #c23b3b;
     --status-danger-wash: #fbebeb;
     --line-strong: #d8dbe3;
+    --scrollbar-thumb: rgb(255 122 89 / 0.28);
+    --scrollbar-thumb-hover: rgb(232 93 61 / 0.42);
 }
 
 /* ── Admin console: dedicated cool-slate palette ──
@@ -206,6 +208,8 @@
     --secondary: #eceef2;
     --secondary-foreground: #12141c;
     --line-strong: #ccd1db;
+    --scrollbar-thumb: rgb(154 160 177 / 0.34);
+    --scrollbar-thumb-hover: rgb(91 97 114 / 0.48);
 }
 
 /* ── Base layer ── */
@@ -222,14 +226,27 @@
 }
 
 /* ── Scrollbar ── */
-::-webkit-scrollbar {
-    display: none;
-    width: 0;
-    height: 0;
-}
 * {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+    scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+    width: 0.25rem;
+    height: 0.25rem;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background-color: var(--scrollbar-thumb);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--scrollbar-thumb-hover);
 }
 
 /* ── Brand gradient utilities ── */
@@ -259,13 +276,18 @@
     padding: 2px;
 }
 
-/* ── Hide scrollbar (utility) ── */
-.no-scrollbar::-webkit-scrollbar {
-    display: none;
-}
-.no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+/* ── Hide scrollbar (touch utility) ── */
+@media (hover: none) and (pointer: coarse) and (max-width: 767px) {
+    .no-scrollbar::-webkit-scrollbar,
+    .touch-no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .no-scrollbar,
+    .touch-no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
 }
 
 .motion-overlay {
@@ -329,15 +351,16 @@
     transform-origin: left center;
     transition:
         transform 620ms var(--motion-ease-standard),
-        border-radius 520ms var(--motion-ease-standard),
+        border-radius 620ms var(--motion-ease-standard) 60ms,
         box-shadow 520ms var(--motion-ease-standard);
     will-change: transform, border-radius, box-shadow;
 }
 
 .account-panel-page[data-open='true'] {
+    z-index: 20;
     border-radius: 1.75rem;
     box-shadow: 0 25px 60px rgb(20 15 10 / 0.35);
-    transform: translate3d(55%, 0, 0) scale(0.82);
+    transform: translate3d(60%, 0, 0) scale(0.82);
     transition:
         transform 680ms var(--motion-ease-enter),
         border-radius 560ms var(--motion-ease-enter),

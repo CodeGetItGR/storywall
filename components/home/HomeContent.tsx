@@ -15,26 +15,39 @@ export function HomeContent() {
     const hasEvents = memberships.length > 0;
 
     return (
-        <div className="relative min-h-full w-full overflow-hidden">
+        <div className="relative h-full w-full overflow-y-auto overflow-x-hidden">
             {/* Ambient gradient */}
             <div
                 aria-hidden="true"
-                className="bg-gradient-logo pointer-events-none absolute inset-x-0 top-0 h-90 opacity-60 [mask-image:radial-gradient(ellipse_120%_100%_at_top,black,transparent_70%)]"
+                className="bg-gradient-logo pointer-events-none absolute inset-x-0 top-0 h-90 opacity-60 mask-[radial-gradient(ellipse_120%_100%_at_top,black,transparent_70%)]"
             />
 
-            <div className="relative mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 pt-8 pb-12 lg:pt-14">
+            <div className="relative flex w-full flex-col gap-6 pt-8 pb-12 lg:pt-14">
                 {/* Header */}
-                <HomeHeader />
+                <section className="px-4 sm:px-8 lg:px-14 2xl:px-20">
+                    <HomeHeader />
+                </section>
 
                 {!isLoading && !hasEvents ? (
-                    <HomeEmptyState />
+                    /* Empty state */
+                    <section className="px-4 sm:px-8 lg:px-14 2xl:px-20">
+                        <HomeEmptyState />
+                    </section>
                 ) : (
                     <>
                         {/* Stats */}
-                        {!isLoading && <HomeStats items={items} />}
+                        {!isLoading && (
+                            <section className="px-4 sm:px-8 lg:px-14 2xl:px-20">
+                                <HomeStats items={items} />
+                            </section>
+                        )}
 
                         {/* Next event */}
-                        {!isLoading && <HomeNextEventCard items={items} />}
+                        {!isLoading && (
+                            <section className="px-4 sm:px-8 lg:px-14 2xl:px-20">
+                                <HomeNextEventCard items={items} />
+                            </section>
+                        )}
 
                         {/* Your events */}
                         <EventsQuickRow items={items} isLoading={isLoading} />

@@ -7,7 +7,7 @@ import { setLocale } from '@/i18n/actions';
 import { type Locale, locales } from '@/i18n/config';
 import { cn } from '@/lib/utils';
 
-export function LanguageSwitcher({ className }: { className?: string }) {
+export function LanguageSwitcher({ className, variant = 'default' }: { className?: string; variant?: 'default' | 'sidebar' }) {
     const locale = useLocale();
     const t = useTranslations('LanguageSwitcher');
     const [isPending, startTransition] = useTransition();
@@ -31,7 +31,16 @@ export function LanguageSwitcher({ className }: { className?: string }) {
     );
 
     return (
-        <div className={cn('inline-flex items-center gap-0.5 rounded-full bg-surface-muted p-0.5', className)} role="group" aria-label={t('label')}>
+        <div
+            className={cn(
+                'inline-flex items-center rounded-full',
+                variant === 'sidebar' ? 'gap-3' : 'gap-0.5 p-0.5',
+                variant === 'sidebar' ? 'bg-transparent' : 'bg-surface-muted',
+                className
+            )}
+            role="group"
+            aria-label={t('label')}
+        >
             {locales.map((l) => (
                 <button
                     key={l}
@@ -41,8 +50,15 @@ export function LanguageSwitcher({ className }: { className?: string }) {
                     disabled={isPending}
                     aria-pressed={locale === l}
                     className={cn(
-                        'min-w-10 rounded-full px-2.5 py-1 text-xs font-semibold transition-colors disabled:opacity-60',
-                        locale === l ? 'bg-card text-ink shadow-sm' : 'text-ink-muted hover:text-ink'
+                        'rounded-full font-semibold transition-colors disabled:opacity-60',
+                        variant === 'sidebar'
+                            ? cn(
+                                  'px-0 py-0.5 text-sm',
+                                  locale === l ? 'text-white underline underline-offset-4' : 'text-white/55 hover:text-white/85'
+                              )
+                            : locale === l
+                              ? 'min-w-10 bg-card px-2.5 py-1 text-xs text-ink shadow-sm'
+                              : 'min-w-10 px-2.5 py-1 text-xs text-ink-muted hover:text-ink'
                     )}
                 >
                     {t(`languages.${l}`)}

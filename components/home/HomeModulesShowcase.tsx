@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import { HomeHorizontalScroller } from '@/components/home/HomeHorizontalScroller';
 import { getModuleMeta } from '@/lib/planModules';
 import { routes } from '@/lib/routes';
 
@@ -32,8 +33,9 @@ export function HomeModulesShowcase() {
     const t = useTranslations('HomePage');
 
     return (
-        <section aria-labelledby="home-modules-heading" className="flex flex-col gap-3">
-            <div className="flex items-end justify-between px-1">
+        <section aria-labelledby="home-modules-heading" className="flex w-full flex-col gap-3">
+            {/* Section heading */}
+            <div className="flex items-end justify-between px-4 sm:px-8 lg:px-14 2xl:px-20">
                 <div>
                     <h2 id="home-modules-heading" className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
                         {t('modules.title')}
@@ -44,11 +46,13 @@ export function HomeModulesShowcase() {
                     {t('modules.seePlans')}
                 </Link>
             </div>
-            <div className="flex items-stretch gap-3 overflow-x-auto no-scrollbar pb-2">
+
+            {/* Module shortcuts */}
+            <HomeHorizontalScroller previousLabel={t('carousel.previous')} nextLabel={t('carousel.next')}>
                 {SHOWCASE_MODULE_KEYS.map((moduleKey) => (
                     <ModuleCard key={moduleKey} moduleKey={moduleKey} />
                 ))}
-            </div>
+            </HomeHorizontalScroller>
         </section>
     );
 }

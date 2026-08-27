@@ -311,6 +311,10 @@
             "subtitle": "Every event can mix and match these modules.",
             "seePlans": "See plans"
         },
+        "carousel": {
+            "previous": "Previous items",
+            "next": "Next items"
+        },
         "nextEvent": {
             "title": "Coming up"
         }
