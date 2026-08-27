@@ -22,7 +22,7 @@ function ModuleCard({ module: showcaseModule, onOpenAction }: { module: Showcase
         <button
             type="button"
             onClick={handleClick}
-            className="group/module flex w-56 shrink-0 flex-col overflow-hidden rounded-[1.5rem] border border-border bg-card text-left shadow-[0_18px_36px_rgba(35,28,22,0.06)] transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_48px_rgba(35,28,22,0.1)]"
+            className="group/module flex w-56 shrink-0 flex-col overflow-hidden rounded-[1.5rem] border border-border bg-card text-left transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_48px_rgba(35,28,22,0.1)]"
         >
             {/* Screen replica */}
             <span className="relative block border-b border-border/60">

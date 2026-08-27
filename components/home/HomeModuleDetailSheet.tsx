@@ -1,12 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { modulePreviews } from '@/components/home/modulePreviews';
 import { Modal } from '@/components/ui/modal';
 import type { ShowcaseModule } from '@/hooks/useHomeModuleShowcase';
-import { routes } from '@/lib/routes';
 
 export function HomeModuleDetailSheet({ module: showcaseModule, onCloseAction }: { module: ShowcaseModule | null; onCloseAction: () => void }) {
     const t = useTranslations('HomePage');

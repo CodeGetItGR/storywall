@@ -11,8 +11,7 @@ export function HomeEmptyState() {
     const t = useTranslations('WelcomePage');
 
     return (
-        <div className="flex min-h-[75vh] flex-col items-center justify-center gap-6 px-4 text-center">
-            <Logo direction="col" iconClassName="h-10 w-auto" wordmarkClassName="h-6 w-auto" />
+        <div className="flex min-h-[35vh] flex-col items-center justify-center gap-6 px-4 text-center">
             <div>
                 <h2 className="text-xl font-bold text-ink">{t('title')}</h2>
                 <p className="mt-2 max-w-xs text-sm text-ink-muted">{t('subtitle')}</p>
