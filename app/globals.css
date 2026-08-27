@@ -305,6 +305,45 @@
     transform-origin: var(--transform-origin, top right);
 }
 
+.account-panel-sidebar {
+    opacity: 0;
+    transform: translate3d(-12%, 0, 0);
+    transition:
+        opacity 420ms var(--motion-ease-exit),
+        transform 560ms var(--motion-ease-standard);
+    will-change: opacity, transform;
+}
+
+.account-panel-sidebar[data-open='true'] {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    transition:
+        opacity 520ms var(--motion-ease-enter),
+        transform 680ms var(--motion-ease-enter);
+}
+
+.account-panel-page {
+    border-radius: 0;
+    box-shadow: none;
+    transform: translate3d(0, 0, 0) scale(1);
+    transform-origin: left center;
+    transition:
+        transform 620ms var(--motion-ease-standard),
+        border-radius 520ms var(--motion-ease-standard),
+        box-shadow 520ms var(--motion-ease-standard);
+    will-change: transform, border-radius, box-shadow;
+}
+
+.account-panel-page[data-open='true'] {
+    border-radius: 1.75rem;
+    box-shadow: 0 25px 60px rgb(20 15 10 / 0.35);
+    transform: translate3d(55%, 0, 0) scale(0.82);
+    transition:
+        transform 680ms var(--motion-ease-enter),
+        border-radius 560ms var(--motion-ease-enter),
+        box-shadow 560ms var(--motion-ease-enter);
+}
+
 @keyframes popover-enter {
     from {
         opacity: 0;
