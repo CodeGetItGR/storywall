@@ -54,8 +54,8 @@ export function ModulePreviewFrame({
 
     if (variant === 'page') {
         return (
-            <div aria-hidden="true" className={cn('relative h-full w-full', surface)}>
-                <div className="absolute inset-x-0 top-0 w-full">{children}</div>
+            <div aria-hidden="true" className={cn('relative h-full w-full flex items-center', surface)}>
+                <div className="w-full">{children}</div>
             </div>
         );
     }

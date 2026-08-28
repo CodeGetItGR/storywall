@@ -36,7 +36,7 @@ export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => 
                 </section>
 
                 {/* Navigation */}
-                <nav className="mt-7 flex max-w-[52vw] flex-col gap-1">
+                <nav className="mt-7 flex max-w-[52vw] flex-col gap-4">
                     <AccountSidebarNavLink href={routes.home} icon={CalendarDays} label={t('events')} onNavigateAction={onCloseAction} />
                     <AccountSidebarNavLink href={routes.plans()} icon={WalletCards} label={t('plans')} onNavigateAction={onCloseAction} />
                     <AccountSidebarNavLink href={routes.modules} icon={Layers3} label={t('modules')} onNavigateAction={onCloseAction} />

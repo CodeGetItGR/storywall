@@ -15,7 +15,7 @@ export function StoriesPreview({ variant }: ModulePreviewProps) {
 
     return (
         <ModulePreviewFrame variant={variant} surfaceClassName="bg-black">
-            <div className="relative h-96 w-full overflow-hidden bg-black">
+            <div className="relative h-100 w-full overflow-hidden bg-black">
                 {/* Story media */}
                 <Image src="/images/post-flowers.png" alt="" fill className="object-cover" sizes="320px" />
 

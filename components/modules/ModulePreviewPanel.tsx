@@ -1,11 +1,13 @@
 import { modulePreviews } from '@/components/home/modulePreviews';
 import type { ShowcaseModule } from '@/hooks/useHomeModuleShowcase';
+import {cn} from "@/lib/utils";
 
-export function ModulePreviewPanel({ module: showcaseModule }: { module: ShowcaseModule }) {
+export function ModulePreviewPanel({ module: showcaseModule, ltr, previewMode }: { module: ShowcaseModule, ltr?: boolean,previewMode?:boolean,  }) {
     const Preview = modulePreviews[showcaseModule.key];
 
     return (
-        <div className="min-w-0 shrink-0 basis-[calc(100%-2.5rem)] overflow-hidden rounded-[1.75rem] bg-card shadow-[0_22px_55px_rgba(70,44,30,0.16)]">
+        <div className={cn("min-w-0 shrink-0 basis-[calc(100%-2.5rem)] overflow-hidden bg-card",
+            {"rounded-r-[1.75rem]":ltr && previewMode, "rounded-l-[1.75rem]":!ltr && previewMode})}>
             {Preview && <Preview variant="page" />}
         </div>
     );

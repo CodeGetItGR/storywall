@@ -36,7 +36,7 @@ export function ModulesContent() {
                 {/* Draggable module rows */}
                 <section aria-label={t('listLabel')} className="mx-auto flex w-full max-w-3xl flex-col gap-12 sm:gap-16">
                     {modules.map((showcaseModule, index) => (
-                        <ModuleRevealRow key={showcaseModule.key} module={showcaseModule} descriptionSide={index % 2 === 0 ? 'left' : 'right'} />
+                        <ModuleRevealRow key={showcaseModule.key} module={showcaseModule} alignment={index % 2 === 0 ? 'left' : 'right'} />
                     ))}
                 </section>
             </div>
