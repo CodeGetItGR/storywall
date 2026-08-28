@@ -19,6 +19,7 @@ export type OverlayHistoryRegistration = {
 const activeLayers: ActiveOverlayLayer[] = [];
 const skippableAnchors = new Set<string>();
 let listening = false;
+let registrationCount = 0;
 
 function getOverlayStack(state: History['state']): string[] {
     if (!state || typeof state !== 'object') return [];
@@ -62,7 +63,17 @@ function stopListeningWhenIdle() {
 
 function handlePopState(event: PopStateEvent) {
     const destinationAnchor = getOverlayAnchor(event.state);
-    if (destinationAnchor && skippableAnchors.delete(destinationAnchor)) {
+    const shouldSkipAnchor = destinationAnchor !== null && skippableAnchors.has(destinationAnchor);
+
+    // A skip is only ever valid for the traversal immediately following the
+    // close that armed it. An anchor is written into a history entry and can
+    // never be cleaned off again — by the time the layer is removed we may not
+    // be on that entry any more — so any other traversal has to disarm it
+    // here. Left armed, a marker from an overlay closed long ago silently eats
+    // a later Back and drops the user one page further than they asked for.
+    skippableAnchors.clear();
+
+    if (shouldSkipAnchor) {
         window.history.back();
         stopListeningWhenIdle();
         return;
@@ -112,17 +123,23 @@ export function registerOverlayHistory(layer: OverlayLayer): OverlayHistoryRegis
     const openedHref = window.location.href;
     const currentState = window.history.state && typeof window.history.state === 'object' ? window.history.state : {};
     const currentStack = getOverlayStack(window.history.state);
-    const activeLayer: ActiveOverlayLayer = { ...layer, active: true, openedHref };
+
+    // The caller's id comes from useId(), which is stable per tree position —
+    // re-opening the same modal reuses it. Markers left in old history entries
+    // outlive the overlay that wrote them, so a bare useId would let a stale
+    // entry be mistaken for this registration. Qualify it per registration.
+    const id = `${layer.id}#${(registrationCount += 1)}`;
+    const activeLayer: ActiveOverlayLayer = { ...layer, id, active: true, openedHref };
     activeLayers.push(activeLayer);
     ensureListening();
 
     // Mark the entry underneath the overlay without changing its URL. This lets
     // us skip that same-page entry later when a close button dismisses the UI.
-    window.history.replaceState({ ...currentState, [OVERLAY_ANCHOR_KEY]: layer.id }, '', openedHref);
+    window.history.replaceState({ ...currentState, [OVERLAY_ANCHOR_KEY]: id }, '', openedHref);
     window.history.pushState(
         {
             ...currentState,
-            [OVERLAY_HISTORY_KEY]: [...currentStack, layer.id],
+            [OVERLAY_HISTORY_KEY]: [...currentStack, id],
             [OVERLAY_ANCHOR_KEY]: undefined,
         },
         '',
@@ -133,13 +150,13 @@ export function registerOverlayHistory(layer: OverlayLayer): OverlayHistoryRegis
         if (!activeLayer.active) return;
         activeLayer.active = false;
 
-        const index = activeLayers.findIndex((activeLayer) => activeLayer.id === layer.id);
+        const index = activeLayers.findIndex((candidate) => candidate.id === id);
         if (index >= 0) activeLayers.splice(index, 1);
 
         // A controlled close may coincide with route navigation. Removing only
         // our state marker cannot undo or otherwise compete with that navigation.
-        removeLayerFromCurrentEntry(layer.id);
-        if (markAnchorSkippable && activeLayer.openedHref === window.location.href) skippableAnchors.add(layer.id);
+        removeLayerFromCurrentEntry(id);
+        if (markAnchorSkippable && activeLayer.openedHref === window.location.href) skippableAnchors.add(id);
         stopListeningWhenIdle();
     }
 

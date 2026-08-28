@@ -201,7 +201,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
         <Dialog.Root open={open} onOpenChange={onOpenChange}>
             <Dialog.Portal>
                 {/* Backdrop */}
-                <Dialog.Backdrop className="motion-story-overlay fixed inset-0 z-[60] bg-black opacity-100" />
+                <Dialog.Backdrop className="motion-story-overlay fixed inset-0 z-[60] bg-black opacity-100 data-closed:pointer-events-none" />
                 {/* Story */}
                 <Dialog.Popup aria-label={t('story')} className="motion-story-frame fixed inset-0 z-[60] bg-black outline-none">
                     <div className="relative h-full w-full overflow-hidden bg-black">

@@ -58,8 +58,15 @@ export function Modal({
                 {/* Backdrop */}
                 {/* Base UI skips the backdrop of a nested dialog, which left confirmations
                     floating over a fully lit editor and read as two competing windows.
-                    Forcing it keeps the dialog on top the only lit layer. */}
-                <Dialog.Backdrop forceRender className="motion-overlay fixed inset-0 z-50 bg-ink/60 opacity-100 backdrop-blur-sm" />
+                    Forcing it keeps the dialog on top the only lit layer.
+                    forceRender means this element is also rendered while the dialog is
+                    closed, so the closed state must be explicitly inert: a full-screen
+                    fixed layer that outlives its dialog swallows every click on the page
+                    and looks identical to the app having hung. */}
+                <Dialog.Backdrop
+                    forceRender
+                    className="motion-overlay fixed inset-0 z-50 bg-ink/60 opacity-100 backdrop-blur-sm data-closed:pointer-events-none data-closed:opacity-0"
+                />
                 {/* Surface */}
                 <Dialog.Popup
                     aria-label={ariaLabel}

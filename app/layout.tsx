@@ -7,6 +7,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { ReactNode } from 'react';
 
+import { OverlayLeakProbe } from '@/components/dev/OverlayLeakProbe';
 import { Providers } from '@/providers/Providers';
 
 const geist = Geist({ subsets: ['latin'] });
@@ -47,7 +48,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                 <NextIntlClientProvider>
                     <Providers>{children}</Providers>
                 </NextIntlClientProvider>
-                {process.env.NODE_ENV === 'production' && <Analytics />}
+                {process.env.NODE_ENV === 'production' ? <Analytics /> : <OverlayLeakProbe />}
             </body>
         </html>
     );

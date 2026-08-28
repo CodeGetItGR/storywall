@@ -26,7 +26,18 @@ let state: AuthState = {
 type Listener = (state: AuthState) => void;
 const listeners = new Set<Listener>();
 
+// Bumped on every write. An async caller that decided what the session should
+// be (the bootstrap probe, most of all) can snapshot this before it awaits and
+// check it again after, so a slow in-flight probe can't overwrite a session
+// that a login — or a logout — established while it was still running.
+let generation = 0;
+
+export function getSessionGeneration(): number {
+    return generation;
+}
+
 function emit() {
+    generation += 1;
     for (const listener of listeners) listener(state);
 }
 

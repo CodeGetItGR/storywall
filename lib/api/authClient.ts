@@ -41,8 +41,8 @@ export const authClient = {
 
     // Bootstrap/reactive-refresh: 401 means there's no re-derivable session
     // (no refresh cookie, no guest cookie, or both rejected) — not an error.
-    session: async (): Promise<AuthSessionDto | null> => {
-        const res = await fetch(endpoints.auth.session);
+    session: async (signal?: AbortSignal): Promise<AuthSessionDto | null> => {
+        const res = await fetch(endpoints.auth.session, { signal });
         if (res.status === 401) return null;
 
         const body = await parseBody(res);

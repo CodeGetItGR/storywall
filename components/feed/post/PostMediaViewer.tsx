@@ -32,7 +32,7 @@ export function PostMediaViewer({ media, initialIndex, alt, onCloseAction }: Pos
         <Dialog.Root open onOpenChange={handleOpenChange}>
             <Dialog.Portal>
                 {/* Fullscreen media backdrop */}
-                <Dialog.Backdrop className="fixed inset-0 z-50 bg-black" />
+                <Dialog.Backdrop className="fixed inset-0 z-50 bg-black data-closed:pointer-events-none" />
 
                 {/* Fullscreen media viewer */}
                 <Dialog.Popup aria-label={alt} className="fixed inset-0 z-50 bg-black outline-none">

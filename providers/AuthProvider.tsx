@@ -4,7 +4,9 @@ import { createContext, type ReactNode, useCallback, useContext, useEffect, useM
 
 import { authClient } from '@/lib/api/authClient';
 import type { AuthSessionDto, PlatformRole } from '@/lib/api/types';
-import { clearSession, getAuthState, setSession, subscribeAuthState } from '@/lib/auth/tokenStore';
+import { clearSession, getAuthState, getSessionGeneration, setSession, subscribeAuthState } from '@/lib/auth/tokenStore';
+
+const BOOTSTRAP_TIMEOUT_MS = 8000;
 
 interface AuthUser {
     userId: string;
@@ -34,19 +36,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // The access token is memory-only and doesn't survive a reload. On first
     // mount, ask the BFF to re-derive one from whatever httpOnly cookie it
     // holds (refresh token or guest identity) — see app/api/auth/session/route.ts.
+    //
+    // Every consumer of `isBootstrapping` renders a blank placeholder while it
+    // is true (see components/layout/AppShell.tsx), so this probe must always
+    // settle: an unbounded request would leave the whole app on an empty screen
+    // with no error state and no way out but a reload. It is bounded by
+    // BOOTSTRAP_TIMEOUT_MS and treated as "no session" if it doesn't answer,
+    // which lands on the login screen instead of nothing at all.
     useEffect(() => {
         let cancelled = false;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), BOOTSTRAP_TIMEOUT_MS);
+        const startedAt = getSessionGeneration();
+
+        // Only apply the probe's verdict if nothing else wrote to the store
+        // while it was in flight. A login that lands first owns the session —
+        // a late "no session" answer to a question asked before the user
+        // signed in must not clear it back out.
+        function applyIfCurrent(apply: () => void) {
+            if (cancelled || getSessionGeneration() !== startedAt) return;
+            apply();
+        }
 
         async function bootstrap() {
             try {
-                const session = await authClient.session();
-                if (!cancelled) {
-                    if (session) setSession(session);
-                    else clearSession();
-                }
+                const session = await authClient.session(controller.signal);
+                applyIfCurrent(() => (session ? setSession(session) : clearSession()));
             } catch {
-                if (!cancelled) clearSession();
+                applyIfCurrent(clearSession);
             } finally {
+                clearTimeout(timeoutId);
+                // Unlike the session verdict, this always applies: the app must
+                // leave its blank bootstrapping state even when the probe was
+                // superseded, aborted, or failed.
                 if (!cancelled) setIsBootstrapping(false);
             }
         }
@@ -54,6 +76,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         bootstrap();
         return () => {
             cancelled = true;
+            clearTimeout(timeoutId);
+            controller.abort();
         };
     }, []);
 
@@ -85,15 +109,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         clearSession();
     }, []);
 
-    const user = authState.accessToken
-        ? { userId: authState.userId!, email: authState.email, displayName: authState.displayName!, role: authState.role! }
-        : null;
-    const isAuthenticated = Boolean(authState.accessToken);
+    // Memoized on the individual fields rather than on `authState`, so a write
+    // that swaps the state object without changing who is signed in (a token
+    // refresh) doesn't hand every consumer a new identity — while a write that
+    // does change them propagates, which keying the memo on `isAuthenticated`
+    // alone did not: a role or display name arriving later left consumers
+    // holding the previous user.
+    const { accessToken, userId, email, displayName, role } = authState;
+    const user = useMemo(
+        () => (accessToken ? { userId: userId!, email, displayName: displayName!, role: role! } : null),
+        [accessToken, userId, email, displayName, role]
+    );
+    const isAuthenticated = Boolean(accessToken);
 
     const value: AuthContextValue = useMemo(
         () => ({ user, isAuthenticated, isBootstrapping, register, login, guestLogin, logout }),
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- `user` is derived fresh from authState each render; comparing its fields keeps this memo from invalidating on every authState change that doesn't actually affect them.
-        [isBootstrapping, register, login, guestLogin, logout, isAuthenticated]
+        [user, isAuthenticated, isBootstrapping, register, login, guestLogin, logout]
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
