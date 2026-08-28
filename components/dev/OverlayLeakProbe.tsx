@@ -5,66 +5,99 @@ import { useEffect } from 'react';
 // Development-only diagnostic for the "page renders but nothing responds to
 // clicks" failure. Every modal surface in the app is a full-screen fixed layer
 // (Base UI's own InternalBackdrop, plus each Dialog.Backdrop). If one of those
-// outlives the dialog that owned it, it keeps swallowing every pointer event on
-// the page while looking, at a glance, like the app has simply hung.
+// outlives the dialog that owned it, it keeps intercepting pointer events while
+// looking, at a glance, like the app has simply hung.
 //
-// This watches for exactly that shape — a viewport-sized fixed element that
-// still accepts pointer events while no dialog is mounted — and reports it with
-// enough detail to identify the owner. Renders nothing and is stripped from
-// production builds.
+// Detection is by hit-test rather than by inspecting styles: document
+// .elementFromPoint resolves through the same hit-testing the browser uses to
+// route real clicks, so whatever it reports at a point is what a click there
+// would land on. That sidesteps having to model pointer-events, inert, opacity
+// and stacking order separately — an overlay that this still sees on top of a
+// real control is, by definition, one that would eat the click.
+//
+// Renders nothing and is stripped from production builds.
 
-const COVERAGE_RATIO = 0.9;
 const SETTLE_MS = 250;
+const INTERACTIVE_SELECTOR = 'a[href], button:not(:disabled), [role="button"]:not([aria-disabled="true"])';
+const SAMPLE_LIMIT = 12;
 
-type Blocker = { element: Element; description: string };
+type Interception = { control: Element; blocker: Element };
 
-function findBlockers(): Blocker[] {
-    const blockers: Blocker[] = [];
+function describe(element: Element): string {
+    const style = getComputedStyle(element);
+    return [
+        element.tagName.toLowerCase(),
+        element.id ? `#${element.id}` : null,
+        element.className && typeof element.className === 'string' ? `class="${element.className}"` : null,
+        element.getAttribute('role') ? `role="${element.getAttribute('role')}"` : null,
+        element.hasAttribute('inert') ? 'inert' : null,
+        element.hasAttribute('data-base-ui-inert') ? 'data-base-ui-inert (Base UI InternalBackdrop)' : null,
+        element.hasAttribute('data-open') ? 'data-open' : null,
+        element.hasAttribute('data-closed') ? 'data-closed' : null,
+        `position=${style.position}`,
+        `pointer-events=${style.pointerEvents}`,
+        `opacity=${style.opacity}`,
+        `z-index=${style.zIndex}`,
+    ]
+        .filter(Boolean)
+        .join(' ');
+}
 
-    for (const element of document.querySelectorAll('body *')) {
-        const style = getComputedStyle(element);
-        if (style.position !== 'fixed' || style.pointerEvents === 'none') continue;
-        if (style.display === 'none' || style.visibility === 'hidden') continue;
+function isFullScreenLayer(element: Element): boolean {
+    if (getComputedStyle(element).position !== 'fixed') return false;
 
-        const rect = element.getBoundingClientRect();
-        const coversViewport = rect.width >= window.innerWidth * COVERAGE_RATIO && rect.height >= window.innerHeight * COVERAGE_RATIO;
-        if (!coversViewport) continue;
+    const rect = element.getBoundingClientRect();
+    return rect.width >= window.innerWidth * 0.9 && rect.height >= window.innerHeight * 0.9;
+}
 
-        blockers.push({
-            element,
-            description: [
-                element.tagName.toLowerCase(),
-                element.className ? `class="${String(element.className)}"` : null,
-                element.getAttribute('role') ? `role="${element.getAttribute('role')}"` : null,
-                element.hasAttribute('data-base-ui-inert') ? 'data-base-ui-inert (Base UI InternalBackdrop)' : null,
-                element.hasAttribute('data-closed') ? 'data-closed' : null,
-                element.hasAttribute('data-open') ? 'data-open' : null,
-                `opacity=${style.opacity}`,
-                `z-index=${style.zIndex}`,
-            ]
-                .filter(Boolean)
-                .join(' '),
-        });
+// A control is "reachable" when hit-testing its own centre resolves to itself
+// or to something within it — a label or icon inside a button is still the
+// button as far as the click is concerned.
+function findInterceptions(): Interception[] {
+    const interceptions: Interception[] = [];
+    const controls = document.querySelectorAll(INTERACTIVE_SELECTOR);
+    let sampled = 0;
+
+    for (const control of controls) {
+        if (sampled >= SAMPLE_LIMIT) break;
+
+        const rect = control.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) continue;
+
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+        if (x < 0 || y < 0 || x > window.innerWidth || y > window.innerHeight) continue;
+
+        sampled += 1;
+
+        const hit = document.elementFromPoint(x, y);
+        if (!hit || hit === control || control.contains(hit) || hit.contains(control)) continue;
+        if (!isFullScreenLayer(hit)) continue;
+
+        interceptions.push({ control, blocker: hit });
     }
 
-    return blockers;
+    return interceptions;
 }
 
 function report(trigger: string) {
-    const blockers = findBlockers();
-    if (blockers.length === 0) return;
+    // An overlay intercepting clicks while a dialog is genuinely mounted is the
+    // normal, correct state. Only an orphan is the bug.
+    if (document.querySelector('[role="dialog"], [role="alertdialog"]') !== null) return;
 
-    // A blocker while a dialog is genuinely mounted is the normal, correct
-    // state. Only an orphan — no dialog anywhere in the DOM — is the bug.
-    const hasDialog = document.querySelector('[role="dialog"], [role="alertdialog"]') !== null;
-    if (hasDialog) return;
+    const interceptions = findInterceptions();
+    if (interceptions.length === 0) return;
 
+    const blockers = new Set(interceptions.map((interception) => interception.blocker));
     console.error(
-        `[OverlayLeakProbe] ${blockers.length} full-screen element(s) are still swallowing clicks after "${trigger}", but no dialog is mounted. ` +
-            `This is the state where the app looks fine and nothing responds.`
+        `[OverlayLeakProbe] after "${trigger}": ${interceptions.length} on-screen control(s) are unclickable — a full-screen layer ` +
+            `is intercepting their clicks and no dialog is mounted. This is the state where the app looks fine and nothing responds.`
     );
     for (const blocker of blockers) {
-        console.error('[OverlayLeakProbe]  ->', blocker.description, blocker.element);
+        console.error('[OverlayLeakProbe]  blocker:', describe(blocker), blocker);
+    }
+    for (const { control } of interceptions) {
+        console.error('[OverlayLeakProbe]  unreachable:', describe(control), control);
     }
 }
 
@@ -74,32 +107,40 @@ export function OverlayLeakProbe() {
 
         let timeoutId: ReturnType<typeof setTimeout> | undefined;
         // The leak appears mid-teardown, so every check waits for the DOM to
-        // stop changing rather than reporting a backdrop that is still on its
-        // way out.
+        // stop changing rather than reporting a backdrop still on its way out.
         function scheduleReport(trigger: string) {
             clearTimeout(timeoutId);
             timeoutId = setTimeout(() => report(trigger), SETTLE_MS);
         }
 
         const observer = new MutationObserver(() => scheduleReport('dom change'));
-        observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class', 'inert'] });
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['style', 'class', 'inert'],
+        });
 
         const onPopState = () => scheduleReport('browser back/forward');
         window.addEventListener('popstate', onPopState);
 
         // Manual escape hatch: run window.__overlayLeakCheck() from the console
         // the moment the app stops responding, whether or not the probe fired.
-        (window as unknown as { __overlayLeakCheck?: () => Blocker[] }).__overlayLeakCheck = () => {
-            const blockers = findBlockers();
-            console.warn('[OverlayLeakProbe] full-screen click blockers:', blockers.length, blockers);
-            return blockers;
+        // Reports what is on top at the centre of the viewport either way, so a
+        // silent result still tells you something.
+        (window as unknown as { __overlayLeakCheck?: () => void }).__overlayLeakCheck = () => {
+            const interceptions = findInterceptions();
+            const centre = document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2);
+            console.warn('[OverlayLeakProbe] unclickable controls:', interceptions.length, interceptions);
+            console.warn('[OverlayLeakProbe] topmost element at viewport centre:', centre && describe(centre), centre);
+            console.warn('[OverlayLeakProbe] dialog mounted:', document.querySelector('[role="dialog"], [role="alertdialog"]') !== null);
         };
 
         return () => {
             clearTimeout(timeoutId);
             observer.disconnect();
             window.removeEventListener('popstate', onPopState);
-            delete (window as unknown as { __overlayLeakCheck?: () => Blocker[] }).__overlayLeakCheck;
+            delete (window as unknown as { __overlayLeakCheck?: () => void }).__overlayLeakCheck;
         };
     }, []);
 
