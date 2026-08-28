@@ -21,6 +21,8 @@ export const routes = {
     register: '/register',
     invite: '/invite',
     home: '/home',
+    modules: '/modules',
+    profile: '/profile',
     events: {
         new: '/events/new',
         settingsAddons: (eventId: string) => `/events/${eventId}/settings/addons`,

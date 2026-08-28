@@ -1,7 +1,7 @@
 'use client';
 
 import { Menu } from '@base-ui/react/menu';
-import { Camera, Plus, PlusCircle } from 'lucide-react';
+import { ArrowLeft, Camera, Menu as MenuIcon, Plus, PlusCircle } from 'lucide-react';
 import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -69,6 +69,10 @@ export function MobileTabBar() {
         if (href) router.push(href);
     }
 
+    function handleBackClick() {
+        router.back();
+    }
+
     const accountActive = accountOpen;
     const railColumnCount =
         1 +
@@ -90,38 +94,63 @@ export function MobileTabBar() {
                     style={{
                         backgroundImage:
                             'linear-gradient(to top, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.92) 58%, rgba(255,255,255,0.72) 100%)',
-                        gridTemplateColumns: `repeat(${railColumnCount}, minmax(0, 1fr))`,
+                        gridTemplateColumns: showEventNavigation ? `repeat(${railColumnCount}, minmax(0, 1fr))` : 'repeat(2, minmax(0, 1fr))',
                     }}
                 >
-                    <div className="flex h-full items-center justify-center">
-                        <button
-                            type="button"
-                            onClick={openAccount}
-                            aria-label={t('openAccount')}
-                            aria-haspopup="dialog"
-                            aria-expanded={accountOpen}
-                            className="flex h-full w-full items-center justify-center transition-colors hover:bg-surface-muted"
-                        >
-                            <span
-                                className={cn(
-                                    'flex h-10 w-10 items-center justify-center transition-all duration-200',
-                                    accountActive ? 'scale-105 opacity-100' : 'scale-100 opacity-50'
-                                )}
-                            >
-                                <Image
-                                    src="/icons/profile.svg"
-                                    alt={accountLabel}
-                                    width={22}
-                                    height={22}
-                                    className="h-5.5 w-5.5 transition-all duration-200"
-                                    loading="eager"
-                                />
-                            </span>
-                        </button>
-                    </div>
-
-                    {showEventNavigation && (
+                    {!showEventNavigation ? (
                         <>
+                            <button
+                                type="button"
+                                onClick={openAccount}
+                                aria-label={t('menu')}
+                                aria-haspopup="dialog"
+                                aria-expanded={accountOpen}
+                                className="flex h-full w-full items-center justify-center gap-2 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted"
+                            >
+                                <MenuIcon
+                                    className={cn('h-5 w-5 transition-opacity', accountActive ? 'opacity-100' : 'opacity-55')}
+                                    aria-hidden="true"
+                                />
+                                <span>{t('menu')}</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleBackClick}
+                                className="flex h-full w-full items-center justify-center gap-2 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted"
+                            >
+                                <ArrowLeft className="h-5 w-5 opacity-55" aria-hidden="true" />
+                                <span>{t('back')}</span>
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <div className="flex h-full items-center justify-center">
+                                <button
+                                    type="button"
+                                    onClick={openAccount}
+                                    aria-label={t('openAccount')}
+                                    aria-haspopup="dialog"
+                                    aria-expanded={accountOpen}
+                                    className="flex h-full w-full items-center justify-center transition-colors hover:bg-surface-muted"
+                                >
+                                    <span
+                                        className={cn(
+                                            'flex h-10 w-10 items-center justify-center transition-all duration-200',
+                                            accountActive ? 'scale-105 opacity-100' : 'scale-100 opacity-50'
+                                        )}
+                                    >
+                                        <Image
+                                            src="/icons/profile.svg"
+                                            alt={accountLabel}
+                                            width={22}
+                                            height={22}
+                                            className="h-5.5 w-5.5 transition-all duration-200"
+                                            loading="eager"
+                                        />
+                                    </span>
+                                </button>
+                            </div>
+
                             <div className="flex h-full items-center justify-center">
                                 <TabLink
                                     href={activeEvent ? (isDraft ? routes.manage : routes.post.feed(activeEvent.id)) : homeTabItem.href}

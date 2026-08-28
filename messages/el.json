@@ -119,6 +119,8 @@
     "MobileTabBar": {
         "eventNavigation": "Πλοήγηση εκδήλωσης",
         "eventMenu": "Μενού εκδήλωσης",
+        "menu": "Μενού",
+        "back": "Πίσω",
         "openAccount": "Άνοιγμα λογαριασμού",
         "compose": "Δημιουργία",
         "composeMenu": {
@@ -315,6 +317,7 @@
         "modules": {
             "title": "Τι προσφέρει το StoryWall",
             "seePlans": "Δες τα πλάνα",
+            "viewAll": "Προβολή όλων",
             "createEvent": "Δημιουργία εκδήλωσης",
             "close": "Κλείσιμο",
             "summary": {
@@ -452,7 +455,11 @@
     "AccountDrawer": {
         "drawerLabel": "Ο λογαριασμός σου",
         "fallbackName": "Λογαριασμός",
-        "home": "Αρχική",
+        "events": "Εκδηλώσεις",
+        "home": "Εκδηλώσεις",
+        "modules": "Λειτουργίες",
+        "plans": "Πλάνα",
+        "profile": "Προφίλ",
         "logout": "Αποσύνδεση",
         "logoutConfirmTitle": "Αποσύνδεση;",
         "logoutConfirmBody": "Θα χρειαστεί να συνδεθείς ξανά.",
@@ -462,10 +469,37 @@
             "language": "Γλώσσα"
         }
     },
+    "ModulesPage": {
+        "title": "Τι προσφέρει το StoryWall",
+        "plans": "Δες τα πλάνα",
+        "listLabel": "Λειτουργίες StoryWall",
+        "showDescription": "Προβολή περιγραφής για {name}",
+        "showPreview": "Προβολή προεπισκόπησης για {name}"
+    },
+    "ProfilePage": {
+        "eyebrow": "Λογαριασμός",
+        "title": "Προφίλ",
+        "fallbackName": "Λογαριασμός",
+        "save": "Αποθήκευση",
+        "fields": {
+            "photo": "Φωτογραφία προφίλ",
+            "firstName": "Όνομα",
+            "lastName": "Επώνυμο"
+        },
+        "password": {
+            "title": "Επαναφορά κωδικού",
+            "current": "Τρέχων κωδικός",
+            "new": "Νέος κωδικός",
+            "confirm": "Επιβεβαίωση κωδικού",
+            "submit": "Επαναφορά κωδικού"
+        }
+    },
     "EventsPage": {
         "yourEvents": "Οι εκδηλώσεις σου",
         "createEventCta": "Δημιουργία εκδήλωσης",
         "eventUnavailable": "Η εκδήλωση δεν είναι διαθέσιμη",
+        "previous": "Προηγούμενες εκδηλώσεις",
+        "next": "Επόμενες εκδηλώσεις",
         "roleFallback": {
             "host": "Διοργανωτής/τρια",
             "attendee": "Καλεσμένος/η"

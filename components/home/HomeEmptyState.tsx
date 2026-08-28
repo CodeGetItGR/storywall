@@ -4,7 +4,6 @@ import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
-import { Logo } from '@/components/common/Logo';
 import { routes } from '@/lib/routes';
 
 export function HomeEmptyState() {

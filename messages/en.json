@@ -119,6 +119,8 @@
     "MobileTabBar": {
         "eventNavigation": "Event navigation",
         "eventMenu": "Event menu",
+        "menu": "Menu",
+        "back": "Back",
         "openAccount": "Open your account",
         "compose": "Create",
         "composeMenu": {
@@ -315,6 +317,7 @@
         "modules": {
             "title": "What StoryWall offers",
             "seePlans": "See plans",
+            "viewAll": "View all",
             "createEvent": "Create an event",
             "close": "Close",
             "summary": {
@@ -452,7 +455,11 @@
     "AccountDrawer": {
         "drawerLabel": "Your account",
         "fallbackName": "Account",
-        "home": "Home",
+        "events": "Events",
+        "home": "Events",
+        "modules": "Modules",
+        "plans": "Plans",
+        "profile": "Profile",
         "logout": "Log out",
         "logoutConfirmTitle": "Log out?",
         "logoutConfirmBody": "You'll need to sign in again.",
@@ -462,10 +469,37 @@
             "language": "Language"
         }
     },
+    "ModulesPage": {
+        "title": "What StoryWall offers",
+        "plans": "See plans",
+        "listLabel": "StoryWall modules",
+        "showDescription": "Show {name} description",
+        "showPreview": "Show {name} preview"
+    },
+    "ProfilePage": {
+        "eyebrow": "Account",
+        "title": "Profile",
+        "fallbackName": "Account",
+        "save": "Save",
+        "fields": {
+            "photo": "Profile photo",
+            "firstName": "Name",
+            "lastName": "Last name"
+        },
+        "password": {
+            "title": "Reset password",
+            "current": "Current password",
+            "new": "New password",
+            "confirm": "Confirm password",
+            "submit": "Reset password"
+        }
+    },
     "EventsPage": {
         "yourEvents": "Your events",
         "createEventCta": "Create event",
         "eventUnavailable": "Event unavailable",
+        "previous": "Previous events",
+        "next": "Next events",
         "roleFallback": {
             "host": "Host",
             "attendee": "Guest"

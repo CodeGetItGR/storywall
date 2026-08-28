@@ -16,7 +16,7 @@ export type ShowcaseModule = {
     detail: string;
 };
 
-export function useHomeModuleShowcase() {
+export function useHomeModuleShowcase({ limit }: { limit?: number } = {}) {
     const t = useTranslations('HomePage');
     const tModules = useTranslations('Modules');
     const { data: appConfig } = useAppConfig();
@@ -35,7 +35,9 @@ export function useHomeModuleShowcase() {
             (moduleKey) => modulePreviews[moduleKey] && (enabledKeys.size === 0 || enabledKeys.has(moduleKey))
         );
 
-        return keys.map((moduleKey) => {
+        const visibleKeys = typeof limit === 'number' ? keys.slice(0, limit) : keys;
+
+        return visibleKeys.map((moduleKey) => {
             const meta = getModuleMeta(moduleKey, platformModules);
             return {
                 key: moduleKey,
@@ -44,7 +46,7 @@ export function useHomeModuleShowcase() {
                 detail: t(`modules.detail.${moduleKey}`),
             };
         });
-    }, [enabledKeys, platformModules, t, tModules]);
+    }, [enabledKeys, limit, platformModules, t, tModules]);
 
     const openModule = useMemo(() => modules.find((module_) => module_.key === openModuleKey) ?? null, [modules, openModuleKey]);
 

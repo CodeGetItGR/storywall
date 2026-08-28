@@ -1,6 +1,6 @@
 'use client';
 
-import { Home } from 'lucide-react';
+import { CalendarDays, Layers3, UserRound, WalletCards } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { AccountLogoutButton } from '@/components/account/AccountLogoutButton';
@@ -37,7 +37,10 @@ export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => 
 
                 {/* Navigation */}
                 <nav className="mt-7 flex max-w-[52vw] flex-col gap-1">
-                    <AccountSidebarNavLink href={routes.home} icon={Home} label={t('home')} onNavigateAction={onCloseAction} />
+                    <AccountSidebarNavLink href={routes.home} icon={CalendarDays} label={t('events')} onNavigateAction={onCloseAction} />
+                    <AccountSidebarNavLink href={routes.plans()} icon={WalletCards} label={t('plans')} onNavigateAction={onCloseAction} />
+                    <AccountSidebarNavLink href={routes.modules} icon={Layers3} label={t('modules')} onNavigateAction={onCloseAction} />
+                    <AccountSidebarNavLink href={routes.profile} icon={UserRound} label={t('profile')} onNavigateAction={onCloseAction} />
                 </nav>
 
                 {/* Footer */}
