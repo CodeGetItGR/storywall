@@ -473,6 +473,8 @@
         "title": "Τι προσφέρει το StoryWall",
         "plans": "Δες τα πλάνα",
         "listLabel": "Λειτουργίες StoryWall",
+        "quickNavLabel": "Μετάβαση σε λειτουργία",
+        "scrollTop": "Επιστροφή στην αρχή",
         "showDescription": "Προβολή περιγραφής για {name}",
         "showPreview": "Προβολή προεπισκόπησης για {name}"
     },

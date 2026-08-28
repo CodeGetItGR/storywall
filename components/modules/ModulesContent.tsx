@@ -4,7 +4,9 @@ import { ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import { ModuleQuickNav } from '@/components/modules/ModuleQuickNav';
 import { ModuleRevealRow } from '@/components/modules/ModuleRevealRow';
+import { ModuleScrollTopButton } from '@/components/modules/ModuleScrollTopButton';
 import { useHomeModuleShowcase } from '@/hooks/useHomeModuleShowcase';
 import { routes } from '@/lib/routes';
 
@@ -33,6 +35,9 @@ export function ModulesContent() {
                     </Link>
                 </section>
 
+                {/* Quick navigation */}
+                <ModuleQuickNav modules={modules} label={t('quickNavLabel')} />
+
                 {/* Draggable module rows */}
                 <section aria-label={t('listLabel')} className="mx-auto flex w-full max-w-3xl flex-col gap-12 sm:gap-16">
                     {modules.map((showcaseModule, index) => (
@@ -40,6 +45,9 @@ export function ModulesContent() {
                     ))}
                 </section>
             </div>
+
+            {/* Scroll to top */}
+            <ModuleScrollTopButton label={t('scrollTop')} />
         </main>
     );
 }

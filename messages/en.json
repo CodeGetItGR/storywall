@@ -473,6 +473,8 @@
         "title": "What StoryWall offers",
         "plans": "See plans",
         "listLabel": "StoryWall modules",
+        "quickNavLabel": "Jump to a module",
+        "scrollTop": "Back to top",
         "showDescription": "Show {name} description",
         "showPreview": "Show {name} preview"
     },
