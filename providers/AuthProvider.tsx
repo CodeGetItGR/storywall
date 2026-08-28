@@ -3,7 +3,7 @@
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { authClient } from '@/lib/api/authClient';
-import type { AuthSessionDto, PlatformRole, UserResponseDto } from '@/lib/api/types';
+import type { AccountStatus, AuthProvider as AuthProviderName, AuthSessionDto, PlatformRole, UserResponseDto } from '@/lib/api/types';
 import { clearSession, getAuthState, getSessionGeneration, setSession, subscribeAuthState, updateSessionProfile } from '@/lib/auth/tokenStore';
 
 const BOOTSTRAP_TIMEOUT_MS = 8000;
@@ -11,9 +11,13 @@ const BOOTSTRAP_TIMEOUT_MS = 8000;
 interface AuthUser {
     userId: string;
     email: string | null;
-    displayName: string;
+    displayName: string | null;
     lastName: string | null;
     profilePictureUrl: string | null;
+    authProvider: AuthProviderName;
+    isGuestAccount: boolean;
+    status: AccountStatus;
+    createdAt: string;
     role: PlatformRole;
 }
 
@@ -126,10 +130,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // does change them propagates, which keying the memo on `isAuthenticated`
     // alone did not: a role or display name arriving later left consumers
     // holding the previous user.
-    const { accessToken, userId, email, displayName, lastName, profilePictureUrl, role } = authState;
+    const { accessToken, userId, email, displayName, lastName, profilePictureUrl, authProvider, isGuestAccount, status, createdAt, role } = authState;
     const user = useMemo(
-        () => (accessToken ? { userId: userId!, email, displayName: displayName!, lastName, profilePictureUrl, role: role! } : null),
-        [accessToken, userId, email, displayName, lastName, profilePictureUrl, role]
+        () =>
+            accessToken
+                ? {
+                      userId: userId!,
+                      email,
+                      displayName,
+                      lastName,
+                      profilePictureUrl,
+                      authProvider: authProvider!,
+                      isGuestAccount: isGuestAccount!,
+                      status: status!,
+                      createdAt: createdAt!,
+                      role: role!,
+                  }
+                : null,
+        [accessToken, userId, email, displayName, lastName, profilePictureUrl, authProvider, isGuestAccount, status, createdAt, role]
     );
     const isAuthenticated = Boolean(accessToken);
 

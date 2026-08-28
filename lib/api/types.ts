@@ -241,7 +241,13 @@ export interface AuthResponseDto {
     userId: string;
     email: string | null;
     role: PlatformRole;
-    displayName: string;
+    displayName: string | null;
+    lastName: string | null;
+    profilePictureUrl: string | null;
+    authProvider: AuthProvider;
+    isGuestAccount: boolean;
+    status: AccountStatus;
+    createdAt: string;
     guestKey?: string;
 }
 
@@ -253,9 +259,13 @@ export interface AuthSessionDto {
     userId: string;
     email: string | null;
     role: PlatformRole;
-    displayName: string;
-    lastName?: string | null;
-    profilePictureUrl?: string | null;
+    displayName: string | null;
+    lastName: string | null;
+    profilePictureUrl: string | null;
+    authProvider: AuthProvider;
+    isGuestAccount: boolean;
+    status: AccountStatus;
+    createdAt: string;
 }
 
 export interface RegisterRequestDto {

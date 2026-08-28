@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+
 import { ModuleQuickNav } from '@/components/modules/ModuleQuickNav';
 import { ModuleRevealRow } from '@/components/modules/ModuleRevealRow';
 import { ModuleScrollTopButton } from '@/components/modules/ModuleScrollTopButton';

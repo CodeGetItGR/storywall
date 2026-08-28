@@ -12,6 +12,12 @@ export function toSessionDto(auth: AuthResponseDto): AuthSessionDto {
         email: auth.email,
         role: auth.role,
         displayName: auth.displayName,
+        lastName: auth.lastName,
+        profilePictureUrl: auth.profilePictureUrl,
+        authProvider: auth.authProvider,
+        isGuestAccount: auth.isGuestAccount,
+        status: auth.status,
+        createdAt: auth.createdAt,
     };
 }
 

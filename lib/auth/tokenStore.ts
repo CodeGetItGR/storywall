@@ -15,6 +15,10 @@ interface AuthState {
     displayName: string | null;
     lastName: string | null;
     profilePictureUrl: string | null;
+    authProvider: AuthSessionDto['authProvider'] | null;
+    isGuestAccount: boolean | null;
+    status: AuthSessionDto['status'] | null;
+    createdAt: string | null;
 }
 
 let state: AuthState = {
@@ -25,6 +29,10 @@ let state: AuthState = {
     displayName: null,
     lastName: null,
     profilePictureUrl: null,
+    authProvider: null,
+    isGuestAccount: null,
+    status: null,
+    createdAt: null,
 };
 
 type Listener = (state: AuthState) => void;
@@ -55,15 +63,18 @@ export function getAuthState(): AuthState {
 }
 
 export function setSession(session: AuthSessionDto) {
-    const isSameUser = state.userId === session.userId;
     state = {
         accessToken: session.accessToken,
         userId: session.userId,
         email: session.email,
         role: session.role,
         displayName: session.displayName,
-        lastName: session.lastName ?? (isSameUser ? state.lastName : null),
-        profilePictureUrl: session.profilePictureUrl ?? (isSameUser ? state.profilePictureUrl : null),
+        lastName: session.lastName,
+        profilePictureUrl: session.profilePictureUrl,
+        authProvider: session.authProvider,
+        isGuestAccount: session.isGuestAccount,
+        status: session.status,
+        createdAt: session.createdAt,
     };
     emit();
 }
@@ -79,7 +90,19 @@ export function updateSessionProfile(profile: Pick<AuthSessionDto, 'displayName'
 }
 
 export function clearSession() {
-    state = { accessToken: null, userId: null, email: null, role: null, displayName: null, lastName: null, profilePictureUrl: null };
+    state = {
+        accessToken: null,
+        userId: null,
+        email: null,
+        role: null,
+        displayName: null,
+        lastName: null,
+        profilePictureUrl: null,
+        authProvider: null,
+        isGuestAccount: null,
+        status: null,
+        createdAt: null,
+    };
     emit();
 }
 

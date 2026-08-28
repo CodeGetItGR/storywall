@@ -3,7 +3,6 @@
 import { EventsQuickRow } from '@/components/home/EventsQuickRow';
 import { HomeEmptyState } from '@/components/home/HomeEmptyState';
 import { HomeHeader } from '@/components/home/HomeHeader';
-import { HomeModulesShowcase } from '@/components/home/HomeModulesShowcase';
 import { HomeNextEventCard } from '@/components/home/HomeNextEventCard';
 import { HomeStats } from '@/components/home/HomeStats';
 import { useEventGridItems } from '@/hooks/useEventGridItems';
