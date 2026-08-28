@@ -10,6 +10,7 @@ import { useCreateEventInvitation } from '@/hooks/useEventInvitations';
 import { useCreateQrLink } from '@/hooks/useQrLinks';
 import { getFieldErrors } from '@/lib/api/errors';
 import type { EventInvitationRequestDto } from '@/lib/api/types';
+import { generateInviteCode } from '@/lib/eventInvitations';
 import { cn } from '@/lib/utils';
 
 import { fieldControlClass, fieldLabelClass, fieldTextClass, formPanelClass } from './shared';
@@ -27,7 +28,6 @@ export function CreateInvitationForm({
     const tCommon = useTranslations('Common');
     const createInvitation = useCreateEventInvitation();
     const createQrLink = useCreateQrLink(eventId);
-    const [inviteCode, setInviteCode] = useState('');
     const [maxGuests, setMaxGuests] = useState(1);
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
@@ -37,10 +37,7 @@ export function CreateInvitationForm({
     const fieldErrors = getFieldErrors(createInvitation.error);
     const toErrorMessage = useApiErrorMessage();
     const isSubmitting = createInvitation.isPending || createQrLink.isPending;
-
-    function handleInviteCodeChange(event: ChangeEvent<HTMLInputElement>) {
-        setInviteCode(event.target.value);
-    }
+    const formError = fieldErrors?.inviteCode ?? (!fieldErrors ? toErrorMessage(createInvitation.error) : null);
 
     function handleMaxGuestsChange(event: ChangeEvent<HTMLInputElement>) {
         setMaxGuests(Math.max(1, Number(event.target.value)));
@@ -64,10 +61,10 @@ export function CreateInvitationForm({
 
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
-        const trimmedInviteCode = inviteCode.trim();
+        const inviteCode = generateInviteCode();
         const input: EventInvitationRequestDto = {
             eventId,
-            inviteCode: trimmedInviteCode,
+            inviteCode,
             maxGuests,
             firstName: firstName.trim() || undefined,
             lastName: lastName.trim() || undefined,
@@ -82,7 +79,7 @@ export function CreateInvitationForm({
                 await createQrLink.mutateAsync({
                     targetType: 'INVITATION',
                     targetId: invitation.id,
-                    label: trimmedInviteCode,
+                    label: inviteCode,
                 });
             }
             onDoneAction();
@@ -93,6 +90,7 @@ export function CreateInvitationForm({
 
     return (
         <form onSubmit={handleSubmit} className={formPanelClass}>
+            {/* Header */}
             <div className="mb-4 flex items-start justify-between gap-3">
                 <div>
                     <p className="text-sm font-bold text-ink">{t('invitations.create.title')}</p>
@@ -108,25 +106,22 @@ export function CreateInvitationForm({
                 </button>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-                <FormFieldLabel label={t('invitations.fields.inviteCode')} required className={fieldLabelClass} labelClassName={fieldTextClass}>
-                    <input
-                        type="text"
-                        required
-                        maxLength={100}
-                        value={inviteCode}
-                        onChange={handleInviteCodeChange}
-                        placeholder={t('invitations.placeholders.inviteCode')}
-                        className={cn(fieldControlClass, 'placeholder:text-ink-faint')}
-                    />
-                    {fieldErrors?.inviteCode && <span className="text-xs text-rose-500">{fieldErrors.inviteCode}</span>}
-                </FormFieldLabel>
+            {/* Limits */}
+            <div>
                 <FormFieldLabel label={t('invitations.fields.maxGuests')} required className={fieldLabelClass} labelClassName={fieldTextClass}>
-                    <input type="number" required min={1} value={maxGuests} onChange={handleMaxGuestsChange} className={fieldControlClass} />
+                    <input
+                        type="number"
+                        required
+                        min={1}
+                        value={maxGuests}
+                        onChange={handleMaxGuestsChange}
+                        className={cn(fieldControlClass, 'sm:max-w-48')}
+                    />
                 </FormFieldLabel>
             </div>
 
-            <div className="mt-4 rounded-xl bg-surface-muted/60 p-3">
+            {/* Guest prefill */}
+            <div className="mt-4">
                 <p className="mb-3 text-xs font-semibold text-ink">{t('invitations.create.prefillTitle')}</p>
                 <div className="grid gap-3 sm:grid-cols-2">
                     <FormFieldLabel label={t('invitations.fields.firstName')} optional className={fieldLabelClass} labelClassName={fieldTextClass}>
@@ -148,6 +143,7 @@ export function CreateInvitationForm({
                 </FormFieldLabel>
             </div>
 
+            {/* QR option */}
             <label className="mt-4 flex items-start gap-3 rounded-xl border border-border bg-background px-3 py-3">
                 <input
                     type="checkbox"
@@ -163,13 +159,14 @@ export function CreateInvitationForm({
                 </span>
             </label>
 
-            {createInvitation.isError && !fieldErrors && <p className="mt-3 text-xs text-rose-500">{toErrorMessage(createInvitation.error)}</p>}
+            {/* Actions */}
+            {createInvitation.isError && formError && <p className="mt-3 text-xs text-rose-500">{formError}</p>}
             {createQrLink.isError && <p className="mt-3 text-xs text-rose-500">{toErrorMessage(createQrLink.error)}</p>}
 
             <button
                 type="submit"
-                disabled={isSubmitting || !inviteCode.trim()}
-                className="mt-4 flex items-center justify-center gap-2 rounded-full bg-gradient-brand py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                disabled={isSubmitting}
+                className="mt-4 flex items-center justify-center gap-2 rounded-full bg-gradient-brand py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 px-4"
             >
                 {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : t('invitations.create.submit')}
             </button>
