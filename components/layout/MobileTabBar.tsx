@@ -5,7 +5,7 @@ import { ArrowLeft, Camera, Menu as MenuIcon, Plus, PlusCircle } from 'lucide-re
 import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { type MouseEvent, useState } from 'react';
+import { type CSSProperties, type MouseEvent, useEffect, useState } from 'react';
 import { PiMusicNotesPlusDuotone } from 'react-icons/pi';
 
 import { type ContextNavItem, ContextNavSlot, isFeedRoute, isPathActive, TabLink } from '@/components/layout/mobile-tab-bar';
@@ -22,6 +22,7 @@ const homeTabItem = { href: routes.feed, icon: '/icons/home.svg', key: 'home' } 
 
 export function MobileTabBar() {
     const [composerMenuOpen, setComposerMenuOpen] = useState(false);
+    const [composerButtonLowered, setComposerButtonLowered] = useState(false);
     const t = useTranslations('MobileTabBar');
     const router = useRouter();
     const pathname = usePathname();
@@ -58,6 +59,14 @@ export function MobileTabBar() {
             : [];
     const contextActive = contextItems.some((item) => isPathActive(pathname, item.href, searchParams));
 
+    useEffect(() => {
+        const timeoutId = window.setTimeout(() => {
+            setComposerButtonLowered(isMobileTabBarHidden);
+        }, isMobileTabBarHidden ? 100 : 0);
+
+        return () => window.clearTimeout(timeoutId);
+    }, [isMobileTabBarHidden]);
+
     function handleHomeClick(event: MouseEvent<HTMLAnchorElement>) {
         if (!isFeedDetailPage) return;
 
@@ -84,6 +93,10 @@ export function MobileTabBar() {
         (showEventNavigation ? 1 : 0) +
         (showEventNavigation && playlistAvailable ? 1 : 0) +
         (showEventNavigation && contextItems.length > 0 ? 1 : 0);
+    const composerButtonStyle = {
+        transform: composerButtonLowered ? 'translate3d(0, 4rem, 0)' : 'translate3d(0, 0, 0)',
+        transition: 'transform 300ms cubic-bezier(0.77, 0, 0.175, 1)',
+    } satisfies CSSProperties;
 
     return (
         <>
@@ -201,14 +214,17 @@ export function MobileTabBar() {
                         <Menu.Trigger
                             aria-label={t('compose')}
                             className={cn(
-                                'group fixed right-4 bottom-20 z-60 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md transition-[bottom,opacity,transform] duration-300 ease-out hover:scale-105 lg:hidden',
+                                'group fixed right-4 bottom-20 z-60 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md will-change-transform lg:hidden',
                                 composerMenuOpen && 'invisible'
                             )}
+                            style={composerButtonStyle}
                         >
-                            <Plus
-                                className="h-6 w-6 text-white transition-transform duration-200 ease-out group-data-popup-open:rotate-45"
-                                strokeWidth={2.5}
-                            />
+                            <span className="flex h-full w-full items-center justify-center transition-transform duration-150 ease-out group-hover:scale-105 group-active:scale-95">
+                                <Plus
+                                    className="h-6 w-6 text-white transition-transform duration-200 ease-out group-data-popup-open:rotate-45"
+                                    strokeWidth={2.5}
+                                />
+                            </span>
                         </Menu.Trigger>
                         <Menu.Portal>
                             <Menu.Backdrop className="motion-menu-backdrop fixed inset-0 z-45 bg-black/10 opacity-100 backdrop-blur-[2px]" />
@@ -217,9 +233,12 @@ export function MobileTabBar() {
                                 type="button"
                                 aria-label={t('compose')}
                                 onClick={handleComposerMenuClose}
-                                className="fixed right-4 bottom-20 z-60 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md transition-transform duration-300 ease-out hover:scale-105 lg:hidden"
+                                className="group fixed right-4 bottom-20 z-60 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md will-change-transform lg:hidden"
+                                style={composerButtonStyle}
                             >
-                                <Plus className="h-6 w-6 rotate-45 text-white" strokeWidth={2.5} />
+                                <span className="flex h-full w-full items-center justify-center transition-transform duration-150 ease-out group-hover:scale-105 group-active:scale-95">
+                                    <Plus className="h-6 w-6 rotate-45 text-white" strokeWidth={2.5} />
+                                </span>
                             </button>
                             <Menu.Positioner side="top" align="end" sideOffset={8} className="z-50">
                                 <Menu.Popup className="motion-popover flex w-46 flex-col gap-2 border-0 bg-transparent p-0 shadow-none outline-none">
