@@ -26,8 +26,8 @@ export function BannerOverlay({ title, actions, glowVisible }: { title: string; 
                 <div className="flex flex-col items-end gap-2  justify-between h-full">{actions}</div>
             </div>
             <div className="absolute inset-x-0 bottom-0 px-4 pb-4 pt-16">
-                <div className="inline-flex max-w-[50%] rounded-2xl bg-[rgba(18,12,9,0.26)] px-3 py-2 backdrop-blur-[2px]">
-                    <h1 className="text-2xl alegreya-light text-[#F2D274] drop-shadow-[0_1px_10px_rgba(0,0,0,0.32)]">{title}</h1>
+                <div className="inline-flex px-3 py-2">
+                    <h1 className="text-2xl alegreya-light text-white drop-shadow-[0_1px_10px_rgba(0,0,0,0.32)]">{title}</h1>
                 </div>
             </div>
         </div>
