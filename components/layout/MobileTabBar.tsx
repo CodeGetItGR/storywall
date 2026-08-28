@@ -5,7 +5,7 @@ import { ArrowLeft, Camera, Menu as MenuIcon, Plus, PlusCircle } from 'lucide-re
 import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { type MouseEvent } from 'react';
+import { type MouseEvent, useState } from 'react';
 import { PiMusicNotesPlusDuotone } from 'react-icons/pi';
 
 import { type ContextNavItem, ContextNavSlot, isFeedRoute, isPathActive, TabLink } from '@/components/layout/mobile-tab-bar';
@@ -21,6 +21,7 @@ import { useMobileChrome } from '@/providers/MobileChromeProvider';
 const homeTabItem = { href: routes.feed, icon: '/icons/home.svg', key: 'home' } as const;
 
 export function MobileTabBar() {
+    const [composerMenuOpen, setComposerMenuOpen] = useState(false);
     const t = useTranslations('MobileTabBar');
     const router = useRouter();
     const pathname = usePathname();
@@ -71,6 +72,10 @@ export function MobileTabBar() {
 
     function handleBackClick() {
         router.back();
+    }
+
+    function handleComposerMenuClose() {
+        setComposerMenuOpen(false);
     }
 
     const accountActive = accountOpen;
@@ -192,11 +197,12 @@ export function MobileTabBar() {
             {showComposerMenu && (
                 <>
                     {/* Compose */}
-                    <Menu.Root>
+                    <Menu.Root open={composerMenuOpen} onOpenChange={setComposerMenuOpen}>
                         <Menu.Trigger
                             aria-label={t('compose')}
                             className={cn(
-                                'group fixed right-4 bottom-20 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md transition-[bottom,opacity,transform] duration-300 ease-out hover:scale-105 lg:hidden data-popup-open:z-60',
+                                'group fixed right-4 bottom-20 z-60 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md transition-[bottom,opacity,transform] duration-300 ease-out hover:scale-105 lg:hidden',
+                                composerMenuOpen && 'invisible'
                             )}
                         >
                             <Plus
@@ -206,6 +212,15 @@ export function MobileTabBar() {
                         </Menu.Trigger>
                         <Menu.Portal>
                             <Menu.Backdrop className="motion-menu-backdrop fixed inset-0 z-45 bg-black/10 opacity-100 backdrop-blur-[2px]" />
+                            {/* Compose close control */}
+                            <button
+                                type="button"
+                                aria-label={t('compose')}
+                                onClick={handleComposerMenuClose}
+                                className="fixed right-4 bottom-20 z-60 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md transition-transform duration-300 ease-out hover:scale-105 lg:hidden"
+                            >
+                                <Plus className="h-6 w-6 rotate-45 text-white" strokeWidth={2.5} />
+                            </button>
                             <Menu.Positioner side="top" align="end" sideOffset={8} className="z-50">
                                 <Menu.Popup className="motion-popover flex w-46 flex-col gap-2 border-0 bg-transparent p-0 shadow-none outline-none">
                                     {canComposePost && (
