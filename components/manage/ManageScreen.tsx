@@ -175,7 +175,7 @@ export function ManageScreen() {
             </div>
 
             {/* Body */}
-            <div className="px-4 pt-4 lg:grid lg:grid-cols-[13.5rem_minmax(0,1fr)] lg:gap-8 lg:px-6 lg:pt-0">
+            <div className="px-4 pt-4 lg:grid lg:grid-cols-[13.5rem_minmax(0,1fr)] lg:gap-8 lg:px-6 lg:pt-5">
                 {/* Sections (desktop) */}
                 {!isDraft && (
                     <ManageSectionNav active={section} onSelectAction={navigateToSection} className="sticky top-6 hidden self-start lg:flex" />

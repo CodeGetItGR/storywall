@@ -33,7 +33,7 @@ export function GalleryUploadSection({
     const t = useTranslations('GalleryPage');
 
     return (
-        <section className="mb-5 rounded-2xl border border-border p-4 shadow-sm">
+        <section className="mb-5 rounded-md border border-border p-4 ">
             {/* Upload header */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>

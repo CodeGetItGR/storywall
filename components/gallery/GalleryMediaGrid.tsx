@@ -88,7 +88,7 @@ export function GalleryMediaGrid({
                                     onClick={handleMediaClick}
                                     onContextMenu={onMediaContextMenu}
                                     className={cn(
-                                        'group overflow-hidden rounded-2xl border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md',
+                                        'group overflow-hidden rounded-md border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md',
                                         'touch-pan-y select-none [-webkit-touch-callout:none]',
                                         isSelected ? 'border-primary ring-4 ring-primary/15' : 'border-border',
                                         selectionMode && 'cursor-grab active:cursor-grabbing'

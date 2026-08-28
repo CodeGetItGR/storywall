@@ -196,8 +196,7 @@ export function MobileTabBar() {
                         <Menu.Trigger
                             aria-label={t('compose')}
                             className={cn(
-                                'group fixed right-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md transition-[bottom,opacity,transform] duration-300 ease-out hover:scale-105 data-[popup-open]:z-[60] lg:hidden',
-                                isMobileTabBarHidden ? 'bottom-6 z-50' : 'bottom-20 z-30'
+                                'group fixed right-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md transition-[bottom,opacity,transform] duration-300 ease-out hover:scale-105 lg:hidden data-popup-open:z-60',
                             )}
                         >
                             <Plus
