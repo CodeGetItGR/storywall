@@ -1,43 +1,105 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import type { ChangeEvent, SubmitEvent } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 
+import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
+import { api } from '@/lib/api/client';
+import { endpoints } from '@/lib/api/endpoints';
+import { ERROR_CODES,getErrorCode, getErrorMessage, getFieldErrors } from '@/lib/api/errors';
+import type { ChangePasswordRequestDto, MeUpdateRequestDto, UserResponseDto } from '@/lib/api/types';
+import { routes } from '@/lib/routes';
 
-function splitDisplayName(displayName: string): { firstName: string; lastName: string } {
-    const [firstName = '', ...lastNameParts] = displayName.trim().split(/\s+/).filter(Boolean);
-    return { firstName, lastName: lastNameParts.join(' ') };
+type ProfileFieldErrors = Partial<Record<'displayName' | 'lastName', string>>;
+type PasswordFieldErrors = Partial<Record<'currentPassword' | 'newPassword' | 'confirmPassword', string>>;
+
+function toProfileFieldErrors(error: unknown): ProfileFieldErrors {
+    const fields = getFieldErrors(error);
+    return {
+        displayName: fields?.displayName,
+        lastName: fields?.lastName,
+    };
+}
+
+function toPasswordFieldErrors(error: unknown): PasswordFieldErrors {
+    const fields = getFieldErrors(error);
+    return {
+        currentPassword: fields?.currentPassword,
+        newPassword: fields?.newPassword,
+    };
 }
 
 export function useProfileForm() {
-    const { user } = useAuth();
-    const initialName = useMemo(() => splitDisplayName(user?.displayName ?? ''), [user?.displayName]);
-    const [firstName, setFirstName] = useState(initialName.firstName);
-    const [lastName, setLastName] = useState(initialName.lastName);
-    const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
+    const router = useRouter();
+    const { logout, updateProfile, user } = useAuth();
+    const toErrorMessage = useApiErrorMessage();
+    const profileQuery = useQuery({
+        queryKey: ['me'],
+        queryFn: () => api.get<UserResponseDto>(endpoints.me.profile),
+        enabled: Boolean(user),
+    });
+
+    const profile = profileQuery.data;
+    const sourceDisplayName = profile?.displayName ?? user?.displayName ?? '';
+    const sourceLastName = profile?.lastName ?? user?.lastName ?? '';
+    const sourceProfilePictureUrl = profile?.profilePictureUrl ?? user?.profilePictureUrl ?? '';
+
+    const [profileDraft, setProfileDraft] = useState({ displayName: '', lastName: '' });
+    const [profileDirty, setProfileDirty] = useState({ displayName: false, lastName: false });
+    const [selectedProfilePicture, setSelectedProfilePicture] = useState<File | null>(null);
+    const [selectedProfilePictureUrl, setSelectedProfilePictureUrl] = useState<string | null>(null);
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [profileError, setProfileError] = useState<string | null>(null);
+    const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
+    const [passwordError, setPasswordError] = useState<string | null>(null);
+    const [profileFieldErrors, setProfileFieldErrors] = useState<ProfileFieldErrors>({});
+    const [passwordFieldErrors, setPasswordFieldErrors] = useState<PasswordFieldErrors>({});
+    const [isSavingProfile, setIsSavingProfile] = useState(false);
+    const [isSavingProfilePicture, setIsSavingProfilePicture] = useState(false);
+    const [isSavingPassword, setIsSavingPassword] = useState(false);
 
-    const profilePhotoUrl = useMemo(() => (profilePhoto ? URL.createObjectURL(profilePhoto) : null), [profilePhoto]);
+    useEffect(() => {
+        if (profile) updateProfile(profile);
+    }, [profile, updateProfile]);
 
     useEffect(() => {
         return () => {
-            if (profilePhotoUrl) URL.revokeObjectURL(profilePhotoUrl);
+            if (selectedProfilePictureUrl) URL.revokeObjectURL(selectedProfilePictureUrl);
         };
-    }, [profilePhotoUrl]);
+    }, [selectedProfilePictureUrl]);
 
-    function updateProfilePhoto(file: File | null) {
-        setProfilePhoto(file);
-    }
+    const displayName = profileDirty.displayName ? profileDraft.displayName : sourceDisplayName;
+    const lastName = profileDirty.lastName ? profileDraft.lastName : sourceLastName;
+    const profilePictureUrl = selectedProfilePictureUrl ?? sourceProfilePictureUrl;
 
-    function handleFirstNameChange(event: ChangeEvent<HTMLInputElement>) {
-        setFirstName(event.target.value);
+    const accountName = useMemo(() => [displayName.trim(), lastName.trim()].filter(Boolean).join(' ') || user?.displayName || '', [displayName, lastName, user?.displayName]);
+    const canChangePassword = user?.role === 'USER' || user?.role === 'ADMIN';
+    const hasProfileChanges = displayName !== sourceDisplayName || lastName !== sourceLastName;
+    const hasProfilePictureChange = Boolean(selectedProfilePicture);
+    const passwordMismatch = confirmPassword.length > 0 && newPassword !== confirmPassword;
+
+    function handleDisplayNameChange(event: ChangeEvent<HTMLInputElement>) {
+        setProfileDirty((current) => ({ ...current, displayName: true }));
+        setProfileDraft((current) => ({ ...current, displayName: event.target.value }));
     }
 
     function handleLastNameChange(event: ChangeEvent<HTMLInputElement>) {
-        setLastName(event.target.value);
+        setProfileDirty((current) => ({ ...current, lastName: true }));
+        setProfileDraft((current) => ({ ...current, lastName: event.target.value }));
+    }
+
+    function handleProfilePictureChange(event: ChangeEvent<HTMLInputElement>) {
+        const file = event.target.files?.[0] ?? null;
+        setProfileError(null);
+        setProfileSuccess(null);
+        if (selectedProfilePictureUrl) URL.revokeObjectURL(selectedProfilePictureUrl);
+        setSelectedProfilePictureUrl(file ? URL.createObjectURL(file) : null);
+        setSelectedProfilePicture(file);
     }
 
     function handleCurrentPasswordChange(event: ChangeEvent<HTMLInputElement>) {
@@ -52,29 +114,138 @@ export function useProfileForm() {
         setConfirmPassword(event.target.value);
     }
 
-    function handlePersonalInfoSubmit(event: SubmitEvent<HTMLFormElement>) {
+    async function handlePersonalInfoSubmit(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
+        if (!hasProfileChanges || isSavingProfile) return;
+
+        setIsSavingProfile(true);
+        setProfileError(null);
+        setProfileSuccess(null);
+        setProfileFieldErrors({});
+
+        const patch: MeUpdateRequestDto = {};
+        if (displayName !== sourceDisplayName) patch.displayName = displayName;
+        if (lastName !== sourceLastName) patch.lastName = lastName;
+
+        try {
+            const updated = await api.patch<UserResponseDto>(endpoints.me.profile, patch);
+            updateProfile(updated);
+            setProfileDraft({ displayName: '', lastName: '' });
+            setProfileDirty({ displayName: false, lastName: false });
+            setProfileSuccess('updated');
+        } catch (error) {
+            setProfileFieldErrors(toProfileFieldErrors(error));
+            setProfileError(toErrorMessage(error));
+        } finally {
+            setIsSavingProfile(false);
+        }
     }
 
-    function handlePasswordSubmit(event: SubmitEvent<HTMLFormElement>) {
+    async function handleProfilePictureSubmit(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
+        await uploadProfilePicture();
+    }
+
+    async function uploadProfilePicture() {
+        if (!selectedProfilePicture || isSavingProfilePicture) return;
+
+        setIsSavingProfilePicture(true);
+        setProfileError(null);
+        setProfileSuccess(null);
+
+        const formData = new FormData();
+        formData.append('file', selectedProfilePicture);
+
+        try {
+            const updated = await api.postForm<UserResponseDto>(endpoints.me.profilePicture, formData);
+            updateProfile(updated);
+            if (selectedProfilePictureUrl) URL.revokeObjectURL(selectedProfilePictureUrl);
+            setSelectedProfilePicture(null);
+            setSelectedProfilePictureUrl(null);
+            setProfileSuccess('pictureUpdated');
+        } catch (error) {
+            setProfileError(toErrorMessage(error, getErrorMessage(error)));
+        } finally {
+            setIsSavingProfilePicture(false);
+        }
+    }
+
+    useEffect(() => {
+        if (!selectedProfilePicture) return;
+        void uploadProfilePicture();
+        // Deliberately react only to a newly selected file; the upload guard
+        // prevents duplicate submits while the request is in flight.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedProfilePicture]);
+
+    async function handlePasswordSubmit(event: SubmitEvent<HTMLFormElement>) {
+        event.preventDefault();
+        if (!canChangePassword || isSavingPassword) return;
+
+        setPasswordError(null);
+        setPasswordFieldErrors({});
+
+        if (newPassword !== confirmPassword) {
+            setPasswordFieldErrors({ confirmPassword: 'mismatch' });
+            return;
+        }
+
+        setIsSavingPassword(true);
+
+        try {
+            await api.post<void>(endpoints.me.changePassword, {
+                currentPassword,
+                newPassword,
+            } satisfies ChangePasswordRequestDto);
+            await logout();
+            router.replace(routes.auth.login({ passwordChanged: '1' }));
+        } catch (error) {
+            const fieldErrors = toPasswordFieldErrors(error);
+            setPasswordFieldErrors(fieldErrors);
+            if (getErrorCode(error) === ERROR_CODES.INVALID_CREDENTIALS) {
+                setPasswordFieldErrors({ ...fieldErrors, currentPassword: 'invalid' });
+            }
+            if (getErrorCode(error) === ERROR_CODES.VALIDATION_FAILED && !fieldErrors.currentPassword && !fieldErrors.newPassword) {
+                setPasswordError('noPassword');
+            } else {
+                setPasswordError(toErrorMessage(error, getErrorMessage(error)));
+            }
+        } finally {
+            setIsSavingPassword(false);
+        }
     }
 
     return {
+        accountName,
+        canChangePassword,
         confirmPassword,
         currentPassword,
+        displayName,
         email: user?.email ?? '',
-        firstName,
         handleConfirmPasswordChange,
         handleCurrentPasswordChange,
-        handleFirstNameChange,
+        handleDisplayNameChange,
         handleLastNameChange,
         handleNewPasswordChange,
         handlePasswordSubmit,
         handlePersonalInfoSubmit,
+        handleProfilePictureChange,
+        handleProfilePictureSubmit,
+        hasProfileChanges,
+        hasProfilePictureChange,
+        isSavingPassword,
+        isSavingProfile,
+        isSavingProfilePicture,
         lastName,
-        profilePhotoUrl,
         newPassword,
-        updateProfilePhoto,
+        passwordError,
+        passwordFieldErrors,
+        passwordMismatch,
+        profileError,
+        profileFieldErrors,
+        profilePictureName: selectedProfilePicture?.name ?? null,
+        profilePictureUrl,
+        profileQueryError: profileQuery.error ? toErrorMessage(profileQuery.error) : null,
+        profileSuccess,
     };
 }

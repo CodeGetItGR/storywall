@@ -13,6 +13,8 @@ interface AuthState {
     email: string | null;
     role: AuthSessionDto['role'] | null;
     displayName: string | null;
+    lastName: string | null;
+    profilePictureUrl: string | null;
 }
 
 let state: AuthState = {
@@ -21,6 +23,8 @@ let state: AuthState = {
     email: null,
     role: null,
     displayName: null,
+    lastName: null,
+    profilePictureUrl: null,
 };
 
 type Listener = (state: AuthState) => void;
@@ -51,18 +55,31 @@ export function getAuthState(): AuthState {
 }
 
 export function setSession(session: AuthSessionDto) {
+    const isSameUser = state.userId === session.userId;
     state = {
         accessToken: session.accessToken,
         userId: session.userId,
         email: session.email,
         role: session.role,
         displayName: session.displayName,
+        lastName: session.lastName ?? (isSameUser ? state.lastName : null),
+        profilePictureUrl: session.profilePictureUrl ?? (isSameUser ? state.profilePictureUrl : null),
+    };
+    emit();
+}
+
+export function updateSessionProfile(profile: Pick<AuthSessionDto, 'displayName' | 'lastName' | 'profilePictureUrl'>) {
+    state = {
+        ...state,
+        displayName: profile.displayName,
+        lastName: profile.lastName ?? null,
+        profilePictureUrl: profile.profilePictureUrl ?? null,
     };
     emit();
 }
 
 export function clearSession() {
-    state = { accessToken: null, userId: null, email: null, role: null, displayName: null };
+    state = { accessToken: null, userId: null, email: null, role: null, displayName: null, lastName: null, profilePictureUrl: null };
     emit();
 }
 

@@ -22,6 +22,7 @@ export default function LoginPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const inviteToken = searchParams.get('invite');
+    const passwordChanged = searchParams.get('passwordChanged') === '1';
 
     const { login } = useAuth();
     const { shouldRenderAuthPage } = useAuthPageRedirect();
@@ -89,6 +90,10 @@ export default function LoginPage() {
             {/*<h2 className="text-2xl font-bold text-ink mb-5 text-center">{t('title')}</h2>*/}
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                {/* Status */}
+                {passwordChanged && <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{t('passwordChanged')}</p>}
+
+                {/* Email */}
                 <FormFieldLabel label={t('fields.email')} required>
                     <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
                         <Mail className="w-4 h-4 text-ink-muted shrink-0" />
@@ -103,6 +108,7 @@ export default function LoginPage() {
                     </div>
                 </FormFieldLabel>
 
+                {/* Password */}
                 <FormFieldLabel label={t('fields.password')} required>
                     <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
                         <Lock className="w-4 h-4 text-ink-muted shrink-0" />
@@ -126,12 +132,14 @@ export default function LoginPage() {
                     </div>
                 </FormFieldLabel>
 
+                {/* Feedback */}
                 {error && (
                     <p role="alert" className="text-xs text-center text-red-500 -mt-1">
                         {error}
                     </p>
                 )}
 
+                {/* Actions */}
                 <button
                     type="submit"
                     disabled={isSubmitting}

@@ -254,6 +254,8 @@ export interface AuthSessionDto {
     email: string | null;
     role: PlatformRole;
     displayName: string;
+    lastName?: string | null;
+    profilePictureUrl?: string | null;
 }
 
 export interface RegisterRequestDto {
@@ -336,7 +338,10 @@ export interface UserRequestDto {
 
 export interface UserResponseDto {
     id: string;
-    email: string;
+    email: string | null;
+    displayName: string | null;
+    lastName: string | null;
+    profilePictureUrl: string | null;
     authProvider: AuthProvider;
     isGuestAccount: boolean;
     status: AccountStatus;
@@ -344,6 +349,16 @@ export interface UserResponseDto {
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
+}
+
+export interface MeUpdateRequestDto {
+    displayName?: string;
+    lastName?: string;
+}
+
+export interface ChangePasswordRequestDto {
+    currentPassword: string;
+    newPassword: string;
 }
 
 // --- §5 Event domain ---

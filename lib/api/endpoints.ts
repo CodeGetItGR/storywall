@@ -25,6 +25,9 @@ export const endpoints = {
     },
 
     me: {
+        profile: '/api/me',
+        profilePicture: '/api/me/profile-picture',
+        changePassword: '/api/me/change-password',
         events: '/api/me/events',
     },
 

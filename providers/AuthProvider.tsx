@@ -3,8 +3,8 @@
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { authClient } from '@/lib/api/authClient';
-import type { AuthSessionDto, PlatformRole } from '@/lib/api/types';
-import { clearSession, getAuthState, getSessionGeneration, setSession, subscribeAuthState } from '@/lib/auth/tokenStore';
+import type { AuthSessionDto, PlatformRole, UserResponseDto } from '@/lib/api/types';
+import { clearSession, getAuthState, getSessionGeneration, setSession, subscribeAuthState, updateSessionProfile } from '@/lib/auth/tokenStore';
 
 const BOOTSTRAP_TIMEOUT_MS = 8000;
 
@@ -12,6 +12,8 @@ interface AuthUser {
     userId: string;
     email: string | null;
     displayName: string;
+    lastName: string | null;
+    profilePictureUrl: string | null;
     role: PlatformRole;
 }
 
@@ -23,6 +25,7 @@ interface AuthContextValue {
     login: (input: { email: string; password: string }) => Promise<AuthSessionDto>;
     guestLogin: (input: { inviteToken: string; displayName: string }) => Promise<AuthSessionDto>;
     logout: () => Promise<void>;
+    updateProfile: (profile: Pick<UserResponseDto, 'displayName' | 'lastName' | 'profilePictureUrl'>) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -109,22 +112,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         clearSession();
     }, []);
 
+    const updateProfile = useCallback((profile: Pick<UserResponseDto, 'displayName' | 'lastName' | 'profilePictureUrl'>) => {
+        updateSessionProfile({
+            displayName: profile.displayName ?? '',
+            lastName: profile.lastName,
+            profilePictureUrl: profile.profilePictureUrl,
+        });
+    }, []);
+
     // Memoized on the individual fields rather than on `authState`, so a write
     // that swaps the state object without changing who is signed in (a token
     // refresh) doesn't hand every consumer a new identity — while a write that
     // does change them propagates, which keying the memo on `isAuthenticated`
     // alone did not: a role or display name arriving later left consumers
     // holding the previous user.
-    const { accessToken, userId, email, displayName, role } = authState;
+    const { accessToken, userId, email, displayName, lastName, profilePictureUrl, role } = authState;
     const user = useMemo(
-        () => (accessToken ? { userId: userId!, email, displayName: displayName!, role: role! } : null),
-        [accessToken, userId, email, displayName, role]
+        () => (accessToken ? { userId: userId!, email, displayName: displayName!, lastName, profilePictureUrl, role: role! } : null),
+        [accessToken, userId, email, displayName, lastName, profilePictureUrl, role]
     );
     const isAuthenticated = Boolean(accessToken);
 
     const value: AuthContextValue = useMemo(
-        () => ({ user, isAuthenticated, isBootstrapping, register, login, guestLogin, logout }),
-        [user, isAuthenticated, isBootstrapping, register, login, guestLogin, logout]
+        () => ({ user, isAuthenticated, isBootstrapping, register, login, guestLogin, logout, updateProfile }),
+        [user, isAuthenticated, isBootstrapping, register, login, guestLogin, logout, updateProfile]
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -31,7 +31,10 @@ seeded session is now flagged `isMain` and its schedule is a read-only mirror of
 and
 [`event-session-secondary-flag-fe-integration.md`](event-session-secondary-flag-fe-integration.md)
 (an optional, freely-editable `isSecondary` flag for a second session per `eventType` convention,
-e.g. a wedding's venue/reception alongside its `isMain` ceremony).
+e.g. a wedding's venue/reception alongside its `isMain` ceremony), and
+[`account-profile-and-password-fe-integration.md`](account-profile-and-password-fe-integration.md)
+(self-service `GET /api/me`, profile editing via `PATCH /api/me`, changing your own password, and the
+previously-undocumented forgot/reset-password flow).
 
 This doc was originally written 2026-08-04 directly from the controller/DTO source. Refreshed
 2026-08-09 to correct a stale claim that no billing integration existed — it now does,
@@ -45,6 +48,17 @@ session's `startAt`/`endAt` are now a read-only mirror of the event's own — se
 again same day: `EventSession` request/response/patch DTOs all gained a writable `isSecondary` flag
 (at most one per event, no backend semantics beyond that) — see
 [`event-session-secondary-flag-fe-integration.md`](event-session-secondary-flag-fe-integration.md).
+Refreshed again 2026-08-28: `UserResponseDto` gained `displayName`/`lastName`/`profilePicUrl`, and
+three new self-service endpoints were added — `GET /api/me`, `PATCH /api/me`, and
+`POST /api/me/change-password` — see
+[`account-profile-and-password-fe-integration.md`](account-profile-and-password-fe-integration.md).
+Refreshed again same day: profile picture is now a real file upload rather than a client-supplied
+URL. `profilePicUrl` was renamed to `profilePictureUrl` (a short-lived presigned URL, same as
+`MediaResponseDto.mediaUrl`) and removed from `PATCH /api/me`'s request body; setting it now goes
+through a new `POST /api/me/profile-picture` multipart endpoint, which runs the upload through the
+same magic-byte validation and EXIF-stripping pipeline as event media. See
+[`account-profile-and-password-fe-integration.md`](account-profile-and-password-fe-integration.md)
+§3.
 
 ## 0. Base setup
 
@@ -88,6 +102,12 @@ match the feature list from the FE inventory.
 | POST | `/api/auth/refresh` | public | registered users only — see §3 for the guest gap |
 | POST | `/api/auth/logout` | public | body is `{ refreshToken }`; revokes it, access token still works until natural expiry (~15 min) |
 | POST | `/api/auth/guest-login` | public | body is `{ inviteToken }`; idempotent per token; returns `refreshToken: null` |
+| POST | `/api/auth/forgot-password` | public | always `204`, same response whether or not the address has an account — see [`account-profile-and-password-fe-integration.md`](account-profile-and-password-fe-integration.md) |
+| POST | `/api/auth/reset-password` | public | consumes the mailed token, sets a new password, revokes every session |
+| GET | `/api/me` | `USER`/`GUEST`/`ADMIN` | (2026-08-28) fetch your own account details |
+| PATCH | `/api/me` | `USER`/`GUEST`/`ADMIN` | (2026-08-28) edit your own `displayName`/`lastName` |
+| POST | `/api/me/profile-picture` | `USER`/`GUEST`/`ADMIN` | (2026-08-28) multipart upload; sets `profilePictureUrl`, replacing any existing picture |
+| POST | `/api/me/change-password` | `USER`/`ADMIN` | (2026-08-28) requires `currentPassword`; revokes every session on success |
 
 ### Invite onboarding
 

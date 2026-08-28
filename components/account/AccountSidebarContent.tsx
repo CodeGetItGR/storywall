@@ -14,7 +14,7 @@ import { routes } from '@/lib/routes';
 export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => void }) {
     const t = useTranslations('AccountDrawer');
     const { user } = useAuth();
-    const accountName = user?.displayName ?? t('fallbackName');
+    const accountName = [user?.displayName, user?.lastName].filter(Boolean).join(' ') || user?.displayName || t('fallbackName');
 
     return (
         <div className="bg-gradient-brand flex h-full flex-col overflow-y-auto px-6 pt-16 pb-8 text-white">
@@ -22,7 +22,7 @@ export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => 
                 <section className={'flex flex-col pb-3 border-b border-border'}>
                     {/* Identity */}
                     <div className="flex items-center gap-4">
-                        <Avatar initials={getInitials(accountName)} size="xl" alt={accountName} className="ring-2 ring-white/40" />
+                        <Avatar src={user?.profilePictureUrl} initials={getInitials(accountName)} size="xl" alt={accountName} className="ring-2 ring-white/40" />
                         <div className="min-w-0">
                             <p className="truncate text-lg font-bold">{accountName}</p>
                             {user?.email && <p className="truncate text-sm text-white/70">{user.email}</p>}

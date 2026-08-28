@@ -238,6 +238,7 @@
     "LoginPage": {
         "title": "Welcome back",
         "subtitle": "Sign in to join the celebration.",
+        "passwordChanged": "Your password was changed. Sign in again.",
         "fields": {
             "email": "Email",
             "password": "Password"
@@ -479,21 +480,37 @@
         "showPreview": "Show {name} preview"
     },
     "ProfilePage": {
-        "eyebrow": "Account",
         "title": "Profile",
         "fallbackName": "Account",
         "save": "Save",
+        "saving": "Saving…",
+        "profileUpdated": "Profile updated.",
         "fields": {
-            "photo": "Profile photo",
-            "firstName": "Name",
+            "displayName": "Name",
             "lastName": "Last name"
         },
+        "picture": {
+            "title": "Profile picture",
+            "hint": "Upload a JPG, PNG, WEBP, or GIF.",
+            "clickHint": "Click your avatar to choose a new image.",
+            "change": "Change",
+            "save": "Upload photo",
+            "saving": "Uploading…",
+            "updated": "Profile picture updated."
+        },
         "password": {
-            "title": "Reset password",
+            "title": "Change password",
+            "signOutNotice": "You will be signed out on every device after this change.",
             "current": "Current password",
             "new": "New password",
             "confirm": "Confirm password",
-            "submit": "Reset password"
+            "submit": "Change password",
+            "saving": "Changing…",
+            "errors": {
+                "currentPasswordInvalid": "Your current password is incorrect.",
+                "confirmMismatch": "The new passwords do not match.",
+                "noPassword": "This account does not use a password."
+            }
         }
     },
     "EventsPage": {

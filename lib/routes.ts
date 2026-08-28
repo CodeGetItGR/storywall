@@ -53,7 +53,7 @@ export const routes = {
         wishbook: '/tools/wishbook',
     },
     auth: {
-        login: (params: { invite?: string | null; email?: string | null }) => withQuery('/login', params),
+        login: (params: { invite?: string | null; email?: string | null; passwordChanged?: string | null }) => withQuery('/login', params),
         register: (params: { invite?: string | null; email?: string | null }) => withQuery('/register', params),
         manage: (params: {
             // 'billing' is kept as an alias for the plan section so existing links keep working.
