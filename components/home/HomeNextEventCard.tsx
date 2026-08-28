@@ -31,7 +31,7 @@ export function HomeNextEventCard({ items }: { items: EventGridItem[] }) {
                 {t('nextEvent.title')}
             </h2>
             <Link
-                href={routes.post.feed(member.eventId)}
+                href={routes.events.feed(member.eventId)}
                 className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card/60 transition-colors hover:border-ink-muted"
             >
                 {event.coverMedia?.mediaUrl && (

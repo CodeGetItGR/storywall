@@ -15,14 +15,9 @@ export function isPathActive(pathname: string, href: string, searchParams = '') 
 }
 
 export function isEventRoute(pathname: string) {
-    return (
-        pathname === routes.feed ||
-        pathname.startsWith(routes.feed + '/') ||
-        pathname === '/manage' ||
-        pathname.startsWith('/manage/') ||
-        pathname.startsWith('/tools/') ||
-        pathname.startsWith('/story/') ||
-        pathname.startsWith('/post/') ||
-        pathname.startsWith('/events/')
-    );
+    return pathname === routes.feed || pathname.startsWith(routes.feed + '/') || pathname.startsWith('/post/') || pathname.startsWith('/events/');
+}
+
+export function isFeedRoute(pathname: string) {
+    return pathname === routes.feed || pathname.startsWith(routes.feed + '/') || /^\/events\/[^/]+\/feed(\/|$)/.test(pathname);
 }

@@ -11,5 +11,5 @@ export default async function Page() {
 
     if (!context) redirect(routes.login);
 
-    redirect(context.activeEventId ? routes.post.feed(context.activeEventId) : routes.home);
+    redirect(context.activeEventId ? routes.events.feed(context.activeEventId) : routes.home);
 }

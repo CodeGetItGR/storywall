@@ -32,7 +32,7 @@ export function ScheduleStoryScreen() {
     }
 
     if (sessions.length === 0) {
-        router.replace(routes.feed);
+        router.replace(routes.events.feed(eventId));
         return null;
     }
 

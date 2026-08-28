@@ -42,7 +42,7 @@ export function EventRouteGate({ children, missingEventRedirectTo, requireHost =
         }
 
         if (requireHost && !isHost) {
-            router.replace(guestRedirectTo ?? routes.post.feed(eventId));
+            router.replace(guestRedirectTo ?? routes.events.feed(eventId));
         }
     }, [eventId, guestRedirectTo, isContextLoading, isHost, requireHost, resolvedMissingEventRedirectTo, router]);
 

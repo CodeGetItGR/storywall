@@ -17,7 +17,7 @@ import { routes } from '@/lib/routes';
 // protected route has to be added here deliberately rather than relying on
 // an exclusion pattern that could silently leave a public route ungated —
 // or, worse, gate one that was meant to stay public.
-const PROTECTED_PREFIXES = ['/admin', '/feed', '/notifications', '/profile', '/event-not-found', '/manage', '/post/', '/story/', '/tools/'];
+const PROTECTED_PREFIXES = ['/admin', '/feed', '/notifications', '/profile', '/event-not-found', '/post/'];
 
 function isProtectedPath(pathname: string): boolean {
     if (PROTECTED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix))) return true;

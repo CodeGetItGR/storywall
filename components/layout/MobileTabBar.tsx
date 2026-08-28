@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl';
 import { type MouseEvent } from 'react';
 import { PiMusicNotesPlusDuotone } from 'react-icons/pi';
 
-import { type ContextNavItem, ContextNavSlot, isEventRoute, isPathActive, TabLink } from '@/components/layout/mobile-tab-bar';
+import { type ContextNavItem, ContextNavSlot, isFeedRoute, isPathActive, TabLink } from '@/components/layout/mobile-tab-bar';
 import { useAuth } from '@/hooks/useAuth';
 import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
 import { routes } from '@/lib/routes';
@@ -33,18 +33,18 @@ export function MobileTabBar() {
     const isHost = useIsHost();
     const isLoading = useEventContextLoading();
     const accountLabel = user?.displayName ?? t('items.account');
-    const isFeedDetailPage = pathname.startsWith('/feed/');
+    const isFeedDetailPage = isFeedRoute(pathname);
     const showEventNavigation = !isLoading && Boolean(activeEvent);
     const isDraft = activeEvent?.status === 'DRAFT';
-    const showEventActions = showEventNavigation && isEventRoute(pathname);
+    const homeHref = activeEvent ? (isDraft ? routes.events.manage(activeEvent.id) : routes.events.feed(activeEvent.id)) : homeTabItem.href;
 
-    const homeActive = isPathActive(pathname, homeTabItem.href);
+    const homeActive = isPathActive(pathname, homeHref) || isPathActive(pathname, homeTabItem.href);
     const availableModules = new Set(activeEvent?.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey) ?? []);
     const playlistAvailable = showEventNavigation && availableModules.has('playlist');
     const playlistActive = playlistAvailable && Boolean(activeEvent) && isPathActive(pathname, routes.events.tools.playlist(activeEvent?.id ?? ''));
     const hostItems = useHostMenuItems();
     const toolItems = useToolsMenuItems();
-    const showComposerMenu = showEventActions && (canComposePost || canComposeStory || canComposeSong);
+    const showComposerMenu = showEventNavigation && isFeedRoute(pathname) && (canComposePost || canComposeStory || canComposeSong);
     const contextItems: ContextNavItem[] =
         showEventNavigation && activeEvent
             ? isHost
@@ -153,7 +153,7 @@ export function MobileTabBar() {
 
                             <div className="flex h-full items-center justify-center">
                                 <TabLink
-                                    href={activeEvent ? (isDraft ? routes.events.manage(activeEvent.id) : routes.post.feed(activeEvent.id)) : homeTabItem.href}
+                                    href={homeHref}
                                     icon={homeTabItem.icon}
                                     label={t(`items.${homeTabItem.key}`)}
                                     active={homeActive}

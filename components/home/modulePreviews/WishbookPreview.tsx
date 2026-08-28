@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { ModulePreviewFrame, type ModulePreviewProps } from '@/components/home/modulePreviews/previewFrame';
 
-/** Replica of app/(app)/(event)/tools/wishbook/PageClient.tsx — the wishbook illustration and guest composer. */
+/** Replica of app/(app)/(event)/events/[eventId]/tools/wishbook/PageClient.tsx — the wishbook illustration and guest composer. */
 export function WishbookPreview({ variant }: ModulePreviewProps) {
     const t = useTranslations('WishbookPage');
     const tHome = useTranslations('HomePage');

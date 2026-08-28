@@ -11,14 +11,15 @@ import { getActiveEventCookie, setActiveEventCookie } from '@/lib/storageKeys';
 
 const EMPTY_MEMBERSHIPS: EventMemberResponseDto[] = [];
 
-// Matches the eventId segment of any event-scoped route (/feed/:id,
+// Matches the eventId segment of any event-scoped route (/events/:id/feed,
 // /events/:id/manage, /events/:id/tools/*, /events/:id/story/*,
 // /events/:id/checkout/*, /events/:id/settings/*) — every page that renders
 // event-specific content carries its event id in the URL, so this is the
 // single source of truth for "which event is active" rather than a value
-// that only a handful of pages remembered to keep in sync.
+// that only a handful of pages remembered to keep in sync. `/events/new`
+// is excluded — that segment is a literal route, not an event id.
 function urlEventId(pathname: string): string | null {
-    return pathname.match(/^\/(?:feed|events)\/([^/]+)/)?.[1] ?? null;
+    return pathname.match(/^\/events\/(?!new(?:\/|$))([^/]+)/)?.[1] ?? null;
 }
 
 interface EventContextValue {

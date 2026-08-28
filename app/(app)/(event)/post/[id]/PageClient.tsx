@@ -16,7 +16,7 @@ export default function PostRedirectPage({ params }: { params: Promise<{ id: str
     const { data: post, error } = usePost(id);
 
     useEffect(() => {
-        if (post) router.replace(routes.post.feedWithPost(post.eventId, post.id));
+        if (post) router.replace(routes.events.feed(post.eventId, { post: post.id }));
     }, [post, router]);
 
     const notFound = error instanceof ApiError && error.status === 404;

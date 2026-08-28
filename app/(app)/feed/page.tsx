@@ -11,5 +11,5 @@ import { routes } from '@/lib/routes';
 export default async function FeedRedirectPage() {
     const context = await resolveServerEventContext();
 
-    redirect(context?.activeEventId ? routes.post.feed(context.activeEventId) : routes.home);
+    redirect(context?.activeEventId ? routes.events.feed(context.activeEventId) : routes.home);
 }

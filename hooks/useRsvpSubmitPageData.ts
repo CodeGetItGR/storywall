@@ -102,8 +102,8 @@ export function useRsvpSubmitPageData() {
     }, [router]);
 
     const handleBackToWall = useCallback(() => {
-        router.push(routes.feed);
-    }, [router]);
+        router.push(eventId ? routes.events.feed(eventId) : routes.feed);
+    }, [eventId, router]);
 
     const handleIncrementPlusOnes = useCallback(
         (type: 'adult' | 'child') => () => {

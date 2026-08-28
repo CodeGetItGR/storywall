@@ -41,6 +41,7 @@ export const routes = {
         },
         story: (eventId: string, storyId: string) => `/events/${eventId}/story/${storyId}`,
         storySchedule: (eventId: string) => `/events/${eventId}/story/schedule`,
+        feed: (eventId: string, params: { post?: string | null } = {}) => withQuery(`/events/${eventId}/feed`, params),
         settingsAddons: (eventId: string) => `/events/${eventId}/settings/addons`,
         checkoutReview: (eventId: string, intent: CheckoutIntent, code?: string | null) =>
             withQuery(`/events/${eventId}/checkout/review`, { intent, code }),
@@ -50,10 +51,6 @@ export const routes = {
     plans: (params: { eventId?: string | null; plan?: string | null } = {}) => withQuery('/plans', params),
     admin: '/admin',
     notifications: '/notifications',
-    post: {
-        feed: (eventId: string) => `/feed/${eventId}`,
-        feedWithPost: (eventId: string, postId: string) => withQuery(`/feed/${eventId}`, { post: postId }),
-    },
     inviteToken: (token: string) => `/invite/${token}`,
     auth: {
         login: (params: { invite?: string | null; email?: string | null; passwordChanged?: string | null }) => withQuery('/login', params),

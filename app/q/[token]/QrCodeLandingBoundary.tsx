@@ -75,7 +75,7 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
                 activeResolution?.eventId
                     ? activeResolution.targetType === 'MEDIA_UPLOAD'
                         ? routes.events.tools.gallery(activeResolution.eventId)
-                        : routes.post.feed(activeResolution.eventId)
+                        : routes.events.feed(activeResolution.eventId)
                     : routes.feed
             );
         } catch (err) {

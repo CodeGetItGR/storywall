@@ -24,7 +24,7 @@ export function HostOnboardingWizard() {
     const event = useActiveEvent();
     const isHost = useIsHost();
     const pathname = usePathname();
-    const isOnEventRoute = isEventRoute(pathname) || pathname.startsWith('/tools/');
+    const isOnEventRoute = isEventRoute(pathname);
     const { isOpen, isComplete, stepIndex, open, next, back, dismiss, complete } = useOnboardingProgress(event?.id ?? null);
 
     const stepIds = useMemo(() => (event ? getOnboardingStepIds(event.eventType) : []), [event]);

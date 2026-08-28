@@ -14,7 +14,7 @@ export function PlaylistDisabledState({ backLabel, body, eventId, title }: { bac
             iconClassName="text-violet-500"
             showTitleIcon={false}
             backLabel={backLabel}
-            backHref={routes.post.feed(eventId)}
+            backHref={routes.events.feed(eventId)}
         >
             <div className="mt-8 rounded-2xl border border-border bg-card px-5 py-6 shadow-sm">
                 <div className="flex items-start gap-3">

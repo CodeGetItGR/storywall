@@ -39,7 +39,7 @@ export function PlaylistContent({
             iconClassName="text-violet-500"
             showTitleIcon={showTitleIcon}
             backLabel={t('backToFeed')}
-            backHref={routes.post.feed(eventId)}
+            backHref={routes.events.feed(eventId)}
             action={
                 suggestions.length > 0 ? (
                     <button

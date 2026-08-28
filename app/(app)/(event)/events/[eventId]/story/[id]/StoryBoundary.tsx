@@ -101,7 +101,7 @@ export default function StoryBoundary({ id }: { id: string }) {
         if (nextGroup) {
             router.replace(routes.events.story(storyEventId, nextGroup.stories[0].id));
         } else {
-            router.replace(routes.feed);
+            router.replace(routes.events.feed(storyEventId));
         }
     }
 

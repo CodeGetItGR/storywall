@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { AccountLogoutButton } from '@/components/account/AccountLogoutButton';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { DesktopNavLink } from '@/components/layout/DesktopNavLink';
-import { isEventRoute, isPathActive } from '@/components/layout/mobile-tab-bar';
+import { isEventRoute, isFeedRoute, isPathActive } from '@/components/layout/mobile-tab-bar';
 import { ToolsMenu } from '@/components/layout/ToolsMenu';
 import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
@@ -25,8 +25,9 @@ export function DesktopNavRail() {
     const activeEvent = useActiveEvent();
     const isDraft = activeEvent?.status === 'DRAFT';
     const showEventActions = Boolean(activeEvent) && isEventRoute(pathname);
+    const showComposerAction = Boolean(activeEvent) && isFeedRoute(pathname);
     const accountName = authUser?.displayName ?? tAccount('fallbackName');
-    const homeHref = activeEvent ? (isDraft ? routes.events.manage(activeEvent.id) : routes.post.feed(activeEvent.id)) : null;
+    const homeHref = activeEvent ? (isDraft ? routes.events.manage(activeEvent.id) : routes.events.feed(activeEvent.id)) : null;
     const homeActive = Boolean(homeHref) && (isPathActive(pathname, homeHref!) || isPathActive(pathname, routes.feed));
     const eventsActive = isPathActive(pathname, routes.home);
 
@@ -57,7 +58,7 @@ export function DesktopNavRail() {
             </div>
 
             {/* New Post CTA */}
-            {showEventActions && canComposePost && (
+            {showComposerAction && canComposePost && (
                 <div className="px-4 pb-4">
                     <button
                         type="button"
