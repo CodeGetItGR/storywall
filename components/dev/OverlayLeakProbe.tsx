@@ -21,6 +21,21 @@ const SETTLE_MS = 250;
 const INTERACTIVE_SELECTOR = 'a[href], button:not(:disabled), [role="button"]:not([aria-disabled="true"])';
 const SAMPLE_LIMIT = 12;
 
+// Any overlay that is legitimately open is entitled to cover the page — a menu
+// or popover backdrop blocks exactly as deliberately as a dialog's does. Base
+// UI marks an open surface with data-open; AccountPanelShell renders
+// data-open="false" when closed, so presence alone is not enough to test.
+const OPEN_OVERLAY_SELECTOR =
+    '[role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"], [role="tooltip"], [data-open]:not([data-open="false"])';
+
+// Controls the page has deliberately taken out of reach. Their own subtree is
+// inert (AccountPanelShell does this to the page behind the account panel) or
+// they opt out of pointer events entirely — being unclickable is the intent.
+function isDeliberatelyUnreachable(control: Element): boolean {
+    if (getComputedStyle(control).pointerEvents === 'none') return true;
+    return control.closest('[inert], [aria-hidden="true"], [hidden]') !== null;
+}
+
 type Interception = { control: Element; blocker: Element };
 
 function describe(element: Element): string {
@@ -63,6 +78,7 @@ function findInterceptions(): Interception[] {
 
         const rect = control.getBoundingClientRect();
         if (rect.width === 0 || rect.height === 0) continue;
+        if (isDeliberatelyUnreachable(control)) continue;
 
         const x = rect.left + rect.width / 2;
         const y = rect.top + rect.height / 2;
@@ -81,23 +97,29 @@ function findInterceptions(): Interception[] {
 }
 
 function report(trigger: string) {
-    // An overlay intercepting clicks while a dialog is genuinely mounted is the
-    // normal, correct state. Only an orphan is the bug.
-    if (document.querySelector('[role="dialog"], [role="alertdialog"]') !== null) return;
+    // An overlay intercepting clicks while one is genuinely open is the normal,
+    // correct state. Only an orphan — a layer still covering the page after
+    // every overlay has closed — is the bug.
+    if (document.querySelector(OPEN_OVERLAY_SELECTOR) !== null) return;
 
     const interceptions = findInterceptions();
     if (interceptions.length === 0) return;
 
-    const blockers = new Set(interceptions.map((interception) => interception.blocker));
-    console.error(
-        `[OverlayLeakProbe] after "${trigger}": ${interceptions.length} on-screen control(s) are unclickable — a full-screen layer ` +
-            `is intercepting their clicks and no dialog is mounted. This is the state where the app looks fine and nothing responds.`
-    );
-    for (const blocker of blockers) {
-        console.error('[OverlayLeakProbe]  blocker:', describe(blocker), blocker);
+    // Each blocker is reported once, with a sample of what it swallows, so a
+    // truncated console still shows which element is at fault.
+    const byBlocker = new Map<Element, Element[]>();
+    for (const { blocker, control } of interceptions) {
+        byBlocker.set(blocker, [...(byBlocker.get(blocker) ?? []), control]);
     }
-    for (const { control } of interceptions) {
-        console.error('[OverlayLeakProbe]  unreachable:', describe(control), control);
+
+    for (const [blocker, controls] of byBlocker) {
+        console.error(
+            `[OverlayLeakProbe] after "${trigger}": a full-screen layer is swallowing clicks for ${controls.length} on-screen ` +
+                `control(s) while no overlay is open — the app looks fine and nothing responds.\n  blocker: ${describe(blocker)}`,
+            blocker,
+            '\n  sample unreachable control:',
+            controls[0]
+        );
     }
 }
 
