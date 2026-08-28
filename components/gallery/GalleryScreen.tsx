@@ -68,43 +68,59 @@ export function GalleryScreen() {
             backLabel={t('backToTools')}
             onBack={router.back}
             subtitle={isHost ? t('hostSubtitle') : t('guestSubtitle')}
-            action={
-                showGalleryActions ? (
+            notice={!galleryEnabled && <ModuleNotice>{t('moduleUnavailable')}</ModuleNotice>}
+        >
+            {/* Upload */}
+            <GalleryUploadSection
+                canUpload={canUpload}
+                selectedFiles={selectedFiles}
+                selectedSize={selectedSize}
+                uploadNotice={uploadNotice}
+                maxFiles={maxFiles}
+                isUploading={uploadMediaBatch.isPending}
+                onFilesChange={handleFilesChange}
+                onClearSelection={handleClearSelection}
+                onUpload={handleUpload}
+            />
+
+            <section className={'mb-5'}>
+                { showGalleryActions ? (
                     <div className="flex items-center gap-2">
                         {/* Header actions */}
                         {gallerySelection.selectionMode ? (
-                            <>
+                            <div className={'w-full flex justify-between gap-2'}>
                                 <Button
                                     type="button"
                                     size="sm"
-                                    variant="outline"
-                                    onClick={gallerySelection.selectAll}
-                                    disabled={!imageMedia.length || gallerySelection.selectedCount === imageMedia.length}
-                                    className="hidden rounded-full border-border bg-background px-3 text-xs font-semibold text-ink-muted hover:text-ink sm:inline-flex"
+                                    variant="ghost"
+                                    onClick={exitSelectionMode}
+                                    className="rounded-full px-3 text-xs font-semibold text-ink-muted hover:text-ink inline-flex"
                                 >
-                                    {t('selectAll')}
+                                    {t('cancelSelection')}
                                 </Button>
+
                                 <Button
                                     type="button"
                                     size="sm"
                                     onClick={downloadSelectedMedia}
                                     disabled={!canDownloadSelected}
-                                    className="hidden rounded-full bg-ink px-3 text-xs font-semibold text-white sm:inline-flex"
+                                    className="rounded-full bg-ink px-3 text-xs font-semibold text-white hidden sm:inline-flex"
                                 >
                                     {t('downloadSelected', { count: gallerySelection.selectedCount })}
                                 </Button>
                                 <Button
                                     type="button"
                                     size="sm"
-                                    variant="ghost"
-                                    onClick={exitSelectionMode}
-                                    className="hidden rounded-full px-3 text-xs font-semibold text-ink-muted hover:text-ink sm:inline-flex"
+                                    variant="outline"
+                                    onClick={gallerySelection.selectAll}
+                                    disabled={!imageMedia.length || gallerySelection.selectedCount === imageMedia.length}
+                                    className="rounded-full border-border bg-background px-3 text-xs font-semibold text-ink-muted hover:text-ink hidden sm:inline-flex"
                                 >
-                                    {t('cancelSelection')}
+                                    {t('selectAll')}
                                 </Button>
-                            </>
+                            </div>
                         ) : (
-                            <>
+                            <div className={'w-full flex justify-between gap-2'}>
                                 <Button
                                     type="button"
                                     size="sm"
@@ -123,31 +139,17 @@ export function GalleryScreen() {
                                         variant="outline"
                                         onClick={openArchiveDownload}
                                         disabled={!imageMedia.length}
-                                        className="hidden rounded-full border-border bg-background px-3 text-xs font-semibold text-ink-muted hover:text-ink sm:inline-flex"
+                                        className="rounded-full border-border bg-background px-3 text-xs font-semibold text-ink-muted hover:text-ink inline-flex"
                                     >
                                         <Download className="h-3.5 w-3.5" />
                                         {t('downloadGallery')}
                                     </Button>
                                 )}
-                            </>
+                            </div>
                         )}
                     </div>
-                ) : undefined
-            }
-            notice={!galleryEnabled && <ModuleNotice>{t('moduleUnavailable')}</ModuleNotice>}
-        >
-            {/* Upload */}
-            <GalleryUploadSection
-                canUpload={canUpload}
-                selectedFiles={selectedFiles}
-                selectedSize={selectedSize}
-                uploadNotice={uploadNotice}
-                maxFiles={maxFiles}
-                isUploading={uploadMediaBatch.isPending}
-                onFilesChange={handleFilesChange}
-                onClearSelection={handleClearSelection}
-                onUpload={handleUpload}
-            />
+                ) : undefined}
+            </section>
 
             {/* Selection bar */}
             <GallerySelectionBar
