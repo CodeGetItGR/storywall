@@ -32,7 +32,7 @@ export default function CheckoutCancelledPage() {
                 ) : (
                     <Link
                         className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white sm:w-auto"
-                        href={routes.auth.manage({ tab: 'billing' })}
+                        href={routes.events.manage(eventId, { tab: 'billing' })}
                     >
                         {t('returnToBilling')}
                     </Link>

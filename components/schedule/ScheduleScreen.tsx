@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
-import { ScheduleEditorSheet } from '@/app/(app)/(event)/tools/schedule/components/ScheduleEditorSheet';
-import { ScheduleEmptyState } from '@/app/(app)/(event)/tools/schedule/components/ScheduleEmptyState';
-import { ScheduleSessionsList } from '@/app/(app)/(event)/tools/schedule/components/ScheduleSessionsList';
+import { ScheduleEditorSheet } from '@/app/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleEditorSheet';
+import { ScheduleEmptyState } from '@/app/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleEmptyState';
+import { ScheduleSessionsList } from '@/app/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleSessionsList';
 import { EventRouteSpinner, useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ModuleNotice } from '@/components/tools/ModuleNotice';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';

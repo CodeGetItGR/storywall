@@ -2,6 +2,9 @@ import { redirect } from 'next/navigation';
 
 import { routes } from '@/lib/routes';
 
-export default function Page() {
-    redirect(routes.auth.manage({ tab: 'billing' }));
+type PageProps = { params: Promise<{ eventId: string }> };
+
+export default async function Page({ params }: PageProps) {
+    const { eventId } = await params;
+    redirect(routes.events.manage(eventId, { tab: 'billing' }));
 }

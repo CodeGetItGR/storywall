@@ -21,7 +21,13 @@ export interface ServerEventContext {
 // app/(app)/(event)/layout.tsx; that layout also calls this, so on any page
 // under the (event) group the memberships fetch below is deduped by Next's
 // per-request fetch memoization rather than hitting Spring twice.
-export async function resolveServerEventContext(): Promise<ServerEventContext | null> {
+//
+// Pass `eventId` from a page's own route param (every event-scoped page has
+// one now) to resolve host status for that specific event instead of
+// whatever the cookie last pointed at — the cookie fallback exists only for
+// the handful of bare-path redirect stubs that don't have an eventId of
+// their own to resolve with.
+export async function resolveServerEventContext(eventId?: string): Promise<ServerEventContext | null> {
     const [headerList, cookieStore] = await Promise.all([headers(), cookies()]);
     const accessToken = headerList.get(ACCESS_TOKEN_HEADER);
     if (!accessToken) return null;
@@ -29,7 +35,7 @@ export async function resolveServerEventContext(): Promise<ServerEventContext | 
     try {
         const membershipsRes = await serverGet<EventMemberResponseDto[]>(endpoints.me.events, accessToken);
         const memberships = normalizeList(membershipsRes).items;
-        const requestedEventId = cookieStore.get(ACTIVE_EVENT_COOKIE)?.value ?? memberships[0]?.eventId;
+        const requestedEventId = eventId ?? cookieStore.get(ACTIVE_EVENT_COOKIE)?.value ?? memberships[0]?.eventId;
         const activeMembership = memberships.find((m) => m.eventId === requestedEventId);
 
         return {

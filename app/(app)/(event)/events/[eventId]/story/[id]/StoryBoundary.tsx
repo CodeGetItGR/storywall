@@ -89,15 +89,17 @@ export default function StoryBoundary({ id }: { id: string }) {
 
     if (!story || !group || storyIndex < 0) return null;
 
+    const storyEventId = story.eventId;
+
     function goNext() {
         if (!group) return;
         if (storyIndex < group.stories.length - 1) {
-            router.replace(routes.story(group.stories[storyIndex + 1].id));
+            router.replace(routes.events.story(storyEventId, group.stories[storyIndex + 1].id));
             return;
         }
         const nextGroup = groups[groupIndex + 1];
         if (nextGroup) {
-            router.replace(routes.story(nextGroup.stories[0].id));
+            router.replace(routes.events.story(storyEventId, nextGroup.stories[0].id));
         } else {
             router.replace(routes.feed);
         }
@@ -106,12 +108,12 @@ export default function StoryBoundary({ id }: { id: string }) {
     function goPrev() {
         if (!group) return;
         if (storyIndex > 0) {
-            router.replace(routes.story(group.stories[storyIndex - 1].id));
+            router.replace(routes.events.story(storyEventId, group.stories[storyIndex - 1].id));
             return;
         }
         const prevGroup = groups[groupIndex - 1];
         if (prevGroup) {
-            router.replace(routes.story(prevGroup.stories[prevGroup.stories.length - 1].id));
+            router.replace(routes.events.story(storyEventId, prevGroup.stories[prevGroup.stories.length - 1].id));
         }
     }
 

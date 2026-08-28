@@ -1,6 +1,7 @@
 'use client';
 
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { useEvent } from '@/hooks/useEvent';
@@ -10,51 +11,62 @@ import { getActiveEventCookie, setActiveEventCookie } from '@/lib/storageKeys';
 
 const EMPTY_MEMBERSHIPS: EventMemberResponseDto[] = [];
 
+// Matches the eventId segment of any event-scoped route (/feed/:id,
+// /events/:id/manage, /events/:id/tools/*, /events/:id/story/*,
+// /events/:id/checkout/*, /events/:id/settings/*) — every page that renders
+// event-specific content carries its event id in the URL, so this is the
+// single source of truth for "which event is active" rather than a value
+// that only a handful of pages remembered to keep in sync.
+function urlEventId(pathname: string): string | null {
+    return pathname.match(/^\/(?:feed|events)\/([^/]+)/)?.[1] ?? null;
+}
+
 interface EventContextValue {
     memberships: EventMemberResponseDto[];
     activeEvent: EventDetailResponseDto | null;
     activeMember: EventMemberResponseDto | null;
     isHost: boolean;
     isLoading: boolean;
-    setActiveEventId: (eventId: string) => void;
 }
 
 const EventContext = createContext<EventContextValue | null>(null);
 
 export function EventProvider({ children }: { children: ReactNode }) {
+    const pathname = usePathname();
     const { isAuthenticated } = useAuth();
     const { data: memberships = EMPTY_MEMBERSHIPS, isLoading: isLoadingMemberships } = useMyEvents();
-    const [activeEventId, setActiveEventIdState] = useState<string | null>(null);
+    const routeEventId = urlEventId(pathname);
 
-    // Restore the last-active event once memberships load, defaulting to the
-    // first membership when nothing was previously selected. Only runs when
-    // activeEventId is still unset — if it's already set (either restored
-    // earlier or just set explicitly, e.g. right after creating a new event)
-    // it's left alone rather than re-validated against `memberships`, which
-    // can still be a stale, pre-refetch snapshot that hasn't caught up yet
-    // and would otherwise get clobbered back to some other event. Kept in an
-    // effect so render stays pure.
+    // Fallback only for chrome that needs to point at "your event" while on
+    // a page with no event id in the URL at all (nav rail Home link, mobile
+    // tab bar home tab) — restored from the last event a URL actually named.
+    const [lastEventId, setLastEventId] = useState<string | null>(null);
+
     useEffect(() => {
         if (memberships.length === 0) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect -- Sync derived active event once async memberships settle.
-            if (activeEventId !== null) setActiveEventIdState(null);
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- Sync derived fallback once async memberships settle.
+            if (lastEventId !== null) setLastEventId(null);
             return;
         }
 
-        if (activeEventId) {
-            return;
-        }
+        if (lastEventId) return;
 
         const stored = getActiveEventCookie();
-        const restored = memberships.find((m) => m.eventId === stored)?.eventId ?? memberships[0].eventId;
+        setLastEventId(memberships.find((m) => m.eventId === stored)?.eventId ?? memberships[0].eventId);
+    }, [lastEventId, memberships]);
 
-        setActiveEventIdState(restored);
-    }, [activeEventId, memberships]);
+    // Whenever the URL names an event, persist it as the fallback too (and
+    // to the cookie) — so id-less chrome pages and the bare-path redirect
+    // stubs (resolved server-side from this same cookie) point at whatever
+    // event was last actually visited.
+    useEffect(() => {
+        if (!routeEventId) return;
+        setActiveEventCookie(routeEventId);
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Only updates when the route's event actually changed.
+        if (routeEventId !== lastEventId) setLastEventId(routeEventId);
+    }, [routeEventId, lastEventId]);
 
-    const setActiveEventId = useCallback((eventId: string) => {
-        setActiveEventIdState(eventId);
-        setActiveEventCookie(eventId);
-    }, []);
+    const activeEventId = routeEventId ?? lastEventId;
 
     const { data: activeEvent, isLoading: isLoadingEvent } = useEvent(activeEventId);
 
@@ -70,9 +82,8 @@ export function EventProvider({ children }: { children: ReactNode }) {
             activeMember,
             isHost,
             isLoading,
-            setActiveEventId,
         }),
-        [memberships, activeEvent, activeMember, isHost, isLoading, setActiveEventId]
+        [memberships, activeEvent, activeMember, isHost, isLoading]
     );
 
     return <EventContext.Provider value={value}>{children}</EventContext.Provider>;
@@ -104,9 +115,4 @@ export function useIsHost(): boolean {
 
 export function useEventContextLoading(): boolean {
     return useEventContext().isLoading;
-}
-
-export function useEventSwitcher() {
-    const { memberships, activeEvent, setActiveEventId, isLoading } = useEventContext();
-    return { memberships, activeEvent, setActiveEventId, isLoading };
 }

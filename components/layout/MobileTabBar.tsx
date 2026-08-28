@@ -41,7 +41,7 @@ export function MobileTabBar() {
     const homeActive = isPathActive(pathname, homeTabItem.href);
     const availableModules = new Set(activeEvent?.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey) ?? []);
     const playlistAvailable = showEventNavigation && availableModules.has('playlist');
-    const playlistActive = playlistAvailable && isPathActive(pathname, routes.tools.playlist);
+    const playlistActive = playlistAvailable && Boolean(activeEvent) && isPathActive(pathname, routes.events.tools.playlist(activeEvent?.id ?? ''));
     const hostItems = useHostMenuItems();
     const toolItems = useToolsMenuItems();
     const showComposerMenu = showEventActions && (canComposePost || canComposeStory || canComposeSong);
@@ -153,7 +153,7 @@ export function MobileTabBar() {
 
                             <div className="flex h-full items-center justify-center">
                                 <TabLink
-                                    href={activeEvent ? (isDraft ? routes.manage : routes.post.feed(activeEvent.id)) : homeTabItem.href}
+                                    href={activeEvent ? (isDraft ? routes.events.manage(activeEvent.id) : routes.post.feed(activeEvent.id)) : homeTabItem.href}
                                     icon={homeTabItem.icon}
                                     label={t(`items.${homeTabItem.key}`)}
                                     active={homeActive}
@@ -161,10 +161,10 @@ export function MobileTabBar() {
                                 />
                             </div>
 
-                            {playlistAvailable && (
+                            {playlistAvailable && activeEvent && (
                                 <div className="flex h-full items-center justify-center">
                                     <TabLink
-                                        href={routes.tools.playlist}
+                                        href={routes.events.tools.playlist(activeEvent.id)}
                                         icon="/icons/music.svg"
                                         label={t('items.playlist')}
                                         active={playlistActive}

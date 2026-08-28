@@ -1,6 +1,8 @@
 type RouteQueryValue = string | number | boolean | null | undefined;
 
 export type CheckoutIntent = 'activation' | 'upgrade' | 'storage';
+// 'billing' is kept as an alias for the plan section so existing links keep working.
+export type ManageTab = 'billing' | 'coverage' | 'invitations' | 'orders' | 'overview' | 'plan' | 'refund' | 'rsvp' | 'settings';
 
 function withQuery(pathname: string, params: Record<string, RouteQueryValue>): string {
     const searchParams = new URLSearchParams();
@@ -25,6 +27,20 @@ export const routes = {
     profile: '/profile',
     events: {
         new: '/events/new',
+        manage: (eventId: string, params: { tab?: ManageTab | null } = {}) => withQuery(`/events/${eventId}/manage`, params),
+        tools: {
+            rsvp: (eventId: string) => `/events/${eventId}/tools/rsvp`,
+            rsvpSubmit: (eventId: string, attending?: 'attending' | 'not-attending' | null) =>
+                withQuery(`/events/${eventId}/tools/rsvp/submit`, { attending }),
+            gallery: (eventId: string) => `/events/${eventId}/tools/gallery`,
+            playlist: (eventId: string) => `/events/${eventId}/tools/playlist`,
+            quiz: (eventId: string) => `/events/${eventId}/tools/quiz`,
+            gifts: (eventId: string) => `/events/${eventId}/tools/gifts`,
+            schedule: (eventId: string) => `/events/${eventId}/tools/schedule`,
+            wishbook: (eventId: string) => `/events/${eventId}/tools/wishbook`,
+        },
+        story: (eventId: string, storyId: string) => `/events/${eventId}/story/${storyId}`,
+        storySchedule: (eventId: string) => `/events/${eventId}/story/schedule`,
         settingsAddons: (eventId: string) => `/events/${eventId}/settings/addons`,
         checkoutReview: (eventId: string, intent: CheckoutIntent, code?: string | null) =>
             withQuery(`/events/${eventId}/checkout/review`, { intent, code }),
@@ -32,33 +48,15 @@ export const routes = {
         checkoutCancelled: (eventId: string) => `/events/${eventId}/checkout/cancelled`,
     },
     plans: (params: { eventId?: string | null; plan?: string | null } = {}) => withQuery('/plans', params),
-    manage: '/manage',
     admin: '/admin',
     notifications: '/notifications',
-    storySchedule: '/story/schedule',
-    story: (storyId: string) => `/story/${storyId}`,
     post: {
         feed: (eventId: string) => `/feed/${eventId}`,
         feedWithPost: (eventId: string, postId: string) => withQuery(`/feed/${eventId}`, { post: postId }),
     },
     inviteToken: (token: string) => `/invite/${token}`,
-    tools: {
-        rsvp: '/tools/rsvp',
-        rsvpSubmit: '/tools/rsvp/submit',
-        gallery: '/tools/gallery',
-        playlist: '/tools/playlist',
-        quiz: '/tools/quiz',
-        gifts: '/tools/gifts',
-        schedule: '/tools/schedule',
-        wishbook: '/tools/wishbook',
-    },
     auth: {
         login: (params: { invite?: string | null; email?: string | null; passwordChanged?: string | null }) => withQuery('/login', params),
         register: (params: { invite?: string | null; email?: string | null }) => withQuery('/register', params),
-        manage: (params: {
-            // 'billing' is kept as an alias for the plan section so existing links keep working.
-            tab?: 'billing' | 'coverage' | 'invitations' | 'orders' | 'overview' | 'plan' | 'refund' | 'rsvp' | 'settings' | null;
-        }) => withQuery('/manage', params),
-        rsvpSubmit: (attending: 'attending' | 'not-attending') => withQuery('/tools/rsvp/submit', { attending }),
     },
 } as const;

@@ -126,7 +126,7 @@ export default function OverviewTab({
                     title={t('usage.eventTitle')}
                     planName={currentPlan?.name ?? eventUsage.planTier}
                     nextPlanName={nextPlan?.name}
-                    upgradeHref={routes.auth.manage({ tab: 'billing' })}
+                    upgradeHref={routes.events.manage(eventId, { tab: 'billing' })}
                     includedModuleKeys={includedModuleKeys}
                     items={[
                         {

@@ -32,10 +32,10 @@ export function HomeNextEventCard({ items }: { items: EventGridItem[] }) {
             </h2>
             <Link
                 href={routes.post.feed(member.eventId)}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card/60 transition-colors hover:border-ink-muted"
+                className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card/60 transition-colors hover:border-ink-muted"
             >
                 {event.coverMedia?.mediaUrl && (
-                    <div className="relative aspect-16/9 w-full overflow-hidden bg-surface-muted">
+                    <div className="relative aspect-video w-full overflow-hidden bg-surface-muted">
                         <Image
                             src={event.coverMedia.mediaUrl}
                             alt=""

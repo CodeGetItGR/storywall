@@ -20,11 +20,11 @@ import { routes } from '@/lib/routes';
 import { eventStatusBadgeTone } from '@/lib/statusTones';
 import { cn } from '@/lib/utils';
 
-import BillingTab from '../../app/(app)/(event)/manage/BillingTab';
-import InvitationsTab from '../../app/(app)/(event)/manage/InvitationsTab';
-import OverviewTab from '../../app/(app)/(event)/manage/OverviewTab';
-import RsvpTab from '../../app/(app)/(event)/manage/RsvpTab';
-import SettingsTab from '../../app/(app)/(event)/manage/SettingsTab';
+import BillingTab from '../../app/(app)/(event)/events/[eventId]/manage/BillingTab';
+import InvitationsTab from '../../app/(app)/(event)/events/[eventId]/manage/InvitationsTab';
+import OverviewTab from '../../app/(app)/(event)/events/[eventId]/manage/OverviewTab';
+import RsvpTab from '../../app/(app)/(event)/events/[eventId]/manage/RsvpTab';
+import SettingsTab from '../../app/(app)/(event)/events/[eventId]/manage/SettingsTab';
 
 export function ManageScreen() {
     const { activeEvent, eventId, isHost } = useEventRouteContext();
@@ -58,9 +58,10 @@ export function ManageScreen() {
             if (next === 'overview') nextParams.delete('tab');
             else nextParams.set('tab', next);
             const query = nextParams.toString();
-            router.replace(query ? `${routes.manage}?${query}` : routes.manage);
+            const manageRoot = routes.events.manage(eventId);
+            router.replace(query ? `${manageRoot}?${query}` : manageRoot);
         },
-        [router, searchParams]
+        [eventId, router, searchParams]
     );
 
     const handleSeeAllRsvp = useCallback(() => {
@@ -78,8 +79,8 @@ export function ManageScreen() {
     }, [activeEvent]);
 
     useEffect(() => {
-        if (isDraft && requestedSection !== section) router.replace(routes.manage);
-    }, [isDraft, requestedSection, router, section]);
+        if (isDraft && requestedSection !== section) router.replace(routes.events.manage(eventId));
+    }, [eventId, isDraft, requestedSection, router, section]);
 
     const summary = activeEvent.rsvpSummary;
     const rsvpBreakdown = [

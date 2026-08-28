@@ -70,7 +70,7 @@ export default function CheckoutReviewBoundary() {
                 title={tPageError('title')}
                 description={t('invalid')}
                 onRetryAction={retry}
-                actionHref={routes.auth.manage({ tab: 'billing' })}
+                actionHref={routes.events.manage(eventId, { tab: 'billing' })}
                 actionLabel={t('backToBilling')}
             />
         );
@@ -134,8 +134,8 @@ export default function CheckoutReviewBoundary() {
         intent === 'storage'
             ? routes.events.settingsAddons(eventId)
             : intent === 'activation'
-              ? routes.manage
-              : routes.auth.manage({ tab: 'billing' });
+              ? routes.events.manage(eventId)
+              : routes.events.manage(eventId, { tab: 'billing' });
 
     async function continueToCheckout() {
         if (!valid) return;

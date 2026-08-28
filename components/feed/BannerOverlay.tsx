@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 export function BannerOverlay({ title, actions, glowVisible }: { title: string; actions?: ReactNode; glowVisible: boolean }) {
     return (
         <div className="absolute inset-0 overflow-hidden rounded-[1.5rem]">
+            {/* Image frame */}
             <div
                 className="absolute inset-0 rounded-[1.5rem] ring-1 ring-black/5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
                 aria-hidden="true"
@@ -12,7 +13,7 @@ export function BannerOverlay({ title, actions, glowVisible }: { title: string; 
                 aria-hidden="true"
             />
             <div
-                className="absolute inset-x-0 bottom-0 h-[40%] rounded-b-[1.5rem] bg-[linear-gradient(180deg,rgba(28,20,16,0)_0%,rgba(28,20,16,0.08)_34%,rgba(28,20,16,0.28)_100%)]"
+                className="absolute inset-x-0 bottom-0 h-[58%] rounded-b-[1.5rem] bg-[linear-gradient(180deg,rgba(28,20,16,0)_0%,rgba(28,20,16,0.18)_38%,rgba(20,17,16,0.72)_100%)]"
                 aria-hidden="true"
             />
             {glowVisible && (
@@ -22,11 +23,13 @@ export function BannerOverlay({ title, actions, glowVisible }: { title: string; 
                     style={{ animationDuration: '5.8s' }}
                 />
             )}
+            {/* Actions */}
             <div className="absolute inset-y-0 right-0 flex flex-col justify-between p-3">
                 <div className="flex flex-col items-end gap-2  justify-between h-full">{actions}</div>
             </div>
+            {/* Title */}
             <div className="absolute inset-x-0 bottom-0 px-4 pb-4 pt-16">
-                <div className="inline-flex px-3 py-2">
+                <div className="inline-flex max-w-[calc(100%-4rem)] px-1">
                     <h1 className="text-2xl alegreya-light text-white drop-shadow-[0_1px_10px_rgba(0,0,0,0.32)]">{title}</h1>
                 </div>
             </div>

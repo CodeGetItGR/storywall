@@ -34,17 +34,6 @@ export function HostOnboardingWizard() {
     const secondarySessionTitleKey = event ? getCreateEventCatalogEntry(event.eventType)?.secondarySessionTitleKey : undefined;
     const venueTitle = secondarySessionTitleKey && tCreateEvent.has(secondarySessionTitleKey) ? tCreateEvent(secondarySessionTitleKey) : '';
 
-    const dashboardItems = [
-        {
-            key: 'settings',
-            icon: Settings,
-            iconClassName: 'text-slate-500',
-            href: routes.auth.manage({ tab: 'settings' }),
-            label: t('dashboard.items.settings'),
-        },
-        { key: 'schedule', icon: Calendar, iconClassName: 'text-amber-500', href: routes.tools.schedule, label: t('dashboard.items.schedule') },
-    ];
-
     function handleContinue() {
         if (isLastStep) {
             complete();
@@ -54,6 +43,23 @@ export function HostOnboardingWizard() {
     }
 
     if (!event || !isHost || event.status === 'DRAFT' || !isOnEventRoute) return null;
+
+    const dashboardItems = [
+        {
+            key: 'settings',
+            icon: Settings,
+            iconClassName: 'text-slate-500',
+            href: routes.events.manage(event.id, { tab: 'settings' }),
+            label: t('dashboard.items.settings'),
+        },
+        {
+            key: 'schedule',
+            icon: Calendar,
+            iconClassName: 'text-amber-500',
+            href: routes.events.tools.schedule(event.id),
+            label: t('dashboard.items.schedule'),
+        },
+    ];
 
     return (
         <>
@@ -98,13 +104,13 @@ export function HostOnboardingWizard() {
                             icon={UserPlus}
                             title={t('invite.title')}
                             body={t('invite.body')}
-                            linkHref={routes.auth.manage({ tab: 'invitations' })}
+                            linkHref={routes.events.manage(event.id, { tab: 'invitations' })}
                             linkLabel={t('invite.link')}
                             onLinkClick={dismiss}
                         />
                     )}
 
-                    {stepId === 'tools' && <OnboardingToolsStep eventModules={event.modules} onNavigate={dismiss} />}
+                    {stepId === 'tools' && <OnboardingToolsStep eventId={event.id} eventModules={event.modules} onNavigate={dismiss} />}
 
                     {stepId === 'done' && <OnboardingInfoStep icon={Sparkles} title={t('done.title')} body={t('done.body')} />}
                 </Modal.Body>

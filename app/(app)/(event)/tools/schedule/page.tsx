@@ -1,33 +1,12 @@
-import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+import { redirect } from 'next/navigation';
 
-import { eventSessionKeys } from '@/hooks/useEventSessions';
-import { endpoints } from '@/lib/api/endpoints';
-import { normalizeList } from '@/lib/api/pagination';
-import { serverGet } from '@/lib/api/serverFetch';
-import type { EventSessionResponseDto } from '@/lib/api/types';
 import { resolveServerEventContext } from '@/lib/auth/serverEventContext';
-import { makeQueryClient } from '@/lib/queryClient';
+import { routes } from '@/lib/routes';
 
-import SchedulePage from './PageClient';
-
-// Prefetches the active event's sessions so ScheduleScreen renders the list
-// immediately instead of its loading state.
-export default async function Page() {
-    const queryClient = makeQueryClient();
+// Bare /tools/schedule has no event id — kept only so old bookmarks/links
+// keep working. See app/(app)/(event)/manage/page.tsx for the pattern.
+export default async function ScheduleRedirectPage() {
     const context = await resolveServerEventContext();
 
-    if (context?.activeEventId) {
-        try {
-            const sessions = await serverGet<EventSessionResponseDto[]>(endpoints.events.sessions(context.activeEventId), context.accessToken);
-            queryClient.setQueryData(eventSessionKeys.list(context.activeEventId), normalizeList(sessions).items);
-        } catch {
-            // Best-effort — useEventSessions fetches normally on the client if this fails.
-        }
-    }
-
-    return (
-        <HydrationBoundary state={dehydrate(queryClient)}>
-            <SchedulePage />
-        </HydrationBoundary>
-    );
+    redirect(context?.activeEventId ? routes.events.tools.schedule(context.activeEventId) : routes.home);
 }

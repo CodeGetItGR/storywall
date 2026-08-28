@@ -14,7 +14,7 @@ import { setMemberRsvpIdInCaches, useRsvp } from '@/hooks/useRsvps';
 import { ApiError } from '@/lib/api/client';
 import { EVENT_MODULE_KEYS, type ModuleKeyConvention } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
-import { useActiveMember, useEventSwitcher, useIsHost } from '@/providers/EventProvider';
+import { useActiveMember, useIsHost } from '@/providers/EventProvider';
 
 import { FeedPageContent } from './FeedPageContent';
 import { FeedPageProvider } from './FeedPageContext';
@@ -29,14 +29,9 @@ export function FeedPageBoundary({ eventId }: { eventId: string }) {
     const { data: appConfig } = useAppConfig();
 
     const { data: event, error, isLoading } = useEvent(eventId);
-    const { setActiveEventId } = useEventSwitcher();
     const { data: postPages, fetchNextPage, hasNextPage, isFetchingNextPage } = useEventPosts(eventId);
     const posts = useMemo(() => postPages?.pages.flatMap((page) => page.content) ?? [], [postPages?.pages]);
     const loadMoreRef = useInfiniteScrollSentinel(hasNextPage, fetchNextPage, posts.length);
-
-    useEffect(() => {
-        if (event) setActiveEventId(eventId);
-    }, [event, eventId, setActiveEventId]);
 
     useEffect(() => {
         if (!isLoading && (!event || (error instanceof ApiError && error.status === 404))) {

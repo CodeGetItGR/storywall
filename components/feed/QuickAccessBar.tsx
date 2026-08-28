@@ -18,58 +18,6 @@ type QuickAccessItem = {
     key: 'posts' | 'stories' | 'rsvp' | 'playlist' | 'gallery' | 'gifts' | 'wishbook';
 };
 
-const quickAccessItems: QuickAccessItem[] = [
-    {
-        moduleKey: 'posts',
-        href: '#posts',
-        icon: MessageSquareText,
-        visible: false,
-        key: 'posts',
-    },
-    {
-        moduleKey: 'stories',
-        href: '#stories',
-        icon: Image,
-        visible: false,
-        key: 'stories',
-    },
-    {
-        moduleKey: 'rsvp',
-        href: routes.tools.rsvpSubmit,
-        icon: Ticket,
-        visible: false,
-        key: 'rsvp',
-    },
-    {
-        moduleKey: 'playlist',
-        href: routes.tools.playlist,
-        icon: Music4,
-        visible: true,
-        key: 'playlist',
-    },
-    {
-        moduleKey: 'gallery',
-        href: routes.tools.gallery,
-        icon: Images,
-        visible: true,
-        key: 'gallery',
-    },
-    {
-        moduleKey: 'wishlist',
-        href: routes.tools.gifts,
-        icon: Gift,
-        visible: true,
-        key: 'gifts',
-    },
-    {
-        moduleKey: 'wishbook',
-        href: routes.tools.wishbook,
-        icon: BookHeart,
-        visible: true,
-        key: 'wishbook',
-    },
-];
-
 export function QuickAccessBar() {
     const t = useTranslations('FeedQuickAccessBar');
     const activeEvent = useActiveEvent();
@@ -78,17 +26,30 @@ export function QuickAccessBar() {
     const enabledItems = useMemo(() => {
         if (!activeEvent) return [];
 
+        const eventId = activeEvent.id;
+        const quickAccessItems: QuickAccessItem[] = [
+            { moduleKey: 'posts', href: '#posts', icon: MessageSquareText, visible: false, key: 'posts' },
+            { moduleKey: 'stories', href: '#stories', icon: Image, visible: false, key: 'stories' },
+            {
+                moduleKey: 'rsvp',
+                href: isHost ? routes.events.tools.rsvp(eventId) : routes.events.tools.rsvpSubmit(eventId),
+                icon: Ticket,
+                visible: false,
+                key: 'rsvp',
+            },
+            { moduleKey: 'playlist', href: routes.events.tools.playlist(eventId), icon: Music4, visible: true, key: 'playlist' },
+            { moduleKey: 'gallery', href: routes.events.tools.gallery(eventId), icon: Images, visible: true, key: 'gallery' },
+            { moduleKey: 'wishlist', href: routes.events.tools.gifts(eventId), icon: Gift, visible: true, key: 'gifts' },
+            { moduleKey: 'wishbook', href: routes.events.tools.wishbook(eventId), icon: BookHeart, visible: true, key: 'wishbook' },
+        ];
+
         const availableModules = new Set(activeEvent.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey));
 
         return activeEvent.modules
             .filter((module) => module.isAvailable)
             .map((module) => {
                 const item = quickAccessItems.find((entry) => entry.moduleKey === module.moduleKey && entry.visible);
-                if (!item || !availableModules.has(item.moduleKey)) {
-                    return null;
-                }
-
-                return item.moduleKey === 'rsvp' ? { ...item, href: isHost ? routes.tools.rsvp : routes.tools.rsvpSubmit } : item;
+                return item && availableModules.has(item.moduleKey) ? item : null;
             })
             .filter((item): item is QuickAccessItem => !!item);
     }, [activeEvent, isHost]);

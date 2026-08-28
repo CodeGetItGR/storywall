@@ -12,14 +12,6 @@ import { findNextPlan, findPlanByCode } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
-// Dashboard sections are reached from the dashboard itself, so this panel links
-// to it once instead of repeating its sections as separate destinations.
-const hostLinks = [
-    { key: 'manage', href: routes.manage, icon: LayoutDashboard },
-    { key: 'gallery', href: routes.tools.gallery, icon: Images },
-    { key: 'rsvps', href: routes.tools.rsvp, icon: Ticket },
-] as const;
-
 export function RightContextPanel() {
     const t = useTranslations('RightContextPanel');
     const activeEvent = useActiveEvent();
@@ -29,6 +21,14 @@ export function RightContextPanel() {
     const { data: appConfig } = useAppConfig();
 
     if (isLoading || !activeEvent || !isHost) return null;
+
+    // Dashboard sections are reached from the dashboard itself, so this panel
+    // links to it once instead of repeating its sections as separate destinations.
+    const hostLinks = [
+        { key: 'manage', href: routes.events.manage(activeEvent.id), icon: LayoutDashboard },
+        { key: 'gallery', href: routes.events.tools.gallery(activeEvent.id), icon: Images },
+        { key: 'rsvps', href: routes.events.tools.rsvp(activeEvent.id), icon: Ticket },
+    ] as const;
 
     const currentPlan = eventUsage ? findPlanByCode(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
     const nextPlan = eventUsage ? findNextPlan(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
@@ -49,7 +49,7 @@ export function RightContextPanel() {
                         title={t('usageTitle')}
                         planName={currentPlan?.name ?? eventUsage.planTier}
                         nextPlanName={nextPlan?.name}
-                        upgradeHref={routes.auth.manage({ tab: 'billing' })}
+                        upgradeHref={routes.events.manage(activeEvent.id, { tab: 'billing' })}
                         includedModuleKeys={includedModuleKeys}
                         items={[
                             {

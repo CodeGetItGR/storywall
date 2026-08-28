@@ -433,7 +433,7 @@ export function useComposerController(): ComposerController {
                 authorMemberId: activeMember.id,
                 mediaId: media.id,
             });
-            router.push(routes.story(story.id));
+            router.push(routes.events.story(activeEvent.id, story.id));
         } catch (error) {
             setStoryError(getComposerErrorMessage(error));
         }

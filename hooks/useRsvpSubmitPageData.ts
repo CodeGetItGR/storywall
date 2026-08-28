@@ -71,10 +71,10 @@ export function useRsvpSubmitPageData() {
     }, [existingRsvp, maxAdultPlusOnes, maxChildCount, maxMessageLength, minAdultPlusOnes, minChildCount]);
 
     useEffect(() => {
-        if (!isContextLoading && isHost) {
-            router.replace(routes.tools.rsvp);
+        if (!isContextLoading && isHost && eventId) {
+            router.replace(routes.events.tools.rsvp(eventId));
         }
-    }, [isContextLoading, isHost, router]);
+    }, [eventId, isContextLoading, isHost, router]);
 
     useEffect(() => {
         if (!eventId || !memberId || !isStaleRsvp || !rsvpId) {

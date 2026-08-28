@@ -72,11 +72,11 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
                 displayName: displayName.trim(),
             });
             router.push(
-                activeResolution?.targetType === 'MEDIA_UPLOAD'
-                    ? routes.tools.gallery
-                    : activeResolution?.eventId
-                      ? routes.post.feed(activeResolution.eventId)
-                      : routes.feed
+                activeResolution?.eventId
+                    ? activeResolution.targetType === 'MEDIA_UPLOAD'
+                        ? routes.events.tools.gallery(activeResolution.eventId)
+                        : routes.post.feed(activeResolution.eventId)
+                    : routes.feed
             );
         } catch (err) {
             if (getErrorCode(err) === ERROR_CODES.INVITATION_EXHAUSTED) {

@@ -48,3 +48,4 @@ bugs in what shipped β€” each was an explicit scope decision at the time.
 - In plan selection step, remove the plan modules hint (top right corner), and add a "more info" at the bottom of the card, and it should open a bottom-top pop-up with all the extra info.
 - Change the schedule story's icon with the event's date badge (similar to how the schedule story shows when it opens).
 - When you press an image in a feed post, the comments modal briefly appears, this is a visual bug.
+

@@ -1,14 +1,10 @@
 'use client';
 
-import { ArrowUpRight } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-
 import { ModuleQuickNav } from '@/components/modules/ModuleQuickNav';
 import { ModuleRevealRow } from '@/components/modules/ModuleRevealRow';
 import { ModuleScrollTopButton } from '@/components/modules/ModuleScrollTopButton';
 import { useHomeModuleShowcase } from '@/hooks/useHomeModuleShowcase';
-import { routes } from '@/lib/routes';
 
 export function ModulesContent() {
     const t = useTranslations('ModulesPage');
@@ -26,13 +22,6 @@ export function ModulesContent() {
                 {/* Header */}
                 <section className="mx-auto flex w-full max-w-3xl items-center justify-between gap-4 px-5 sm:px-8">
                     <h1 className="text-3xl font-bold text-ink sm:text-4xl">{t('title')}</h1>
-                    <Link
-                        href={routes.plans()}
-                        className="inline-flex shrink-0 items-center gap-2 rounded-full bg-card px-4 py-2 text-sm font-semibold text-ink shadow-[0_12px_32px_rgba(35,28,22,0.1)] transition-colors hover:bg-primary-light hover:text-primary-dark"
-                    >
-                        <span>{t('plans')}</span>
-                        <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-                    </Link>
                 </section>
 
                 {/* Quick navigation */}

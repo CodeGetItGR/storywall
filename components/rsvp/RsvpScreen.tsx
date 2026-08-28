@@ -4,7 +4,7 @@ import { Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
-import RsvpTab from '@/app/(app)/(event)/manage/RsvpTab';
+import RsvpTab from '@/app/(app)/(event)/events/[eventId]/manage/RsvpTab';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { useEventMembers } from '@/hooks/useEventMembers';

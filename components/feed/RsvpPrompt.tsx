@@ -8,7 +8,7 @@ import { useCallback } from 'react';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
-export function RsvpPrompt({ deadline, className }: { deadline: string | null; className?: string }) {
+export function RsvpPrompt({ eventId, deadline, className }: { eventId: string; deadline: string | null; className?: string }) {
     const t = useTranslations('RsvpPrompt');
     const locale = useLocale();
     const router = useRouter();
@@ -23,9 +23,9 @@ export function RsvpPrompt({ deadline, className }: { deadline: string | null; c
 
     const go = useCallback(
         (attending: 'attending' | 'not-attending') => {
-            router.push(routes.auth.rsvpSubmit(attending));
+            router.push(routes.events.tools.rsvpSubmit(eventId, attending));
         },
-        [router]
+        [eventId, router]
     );
 
     const handleClick = useCallback(

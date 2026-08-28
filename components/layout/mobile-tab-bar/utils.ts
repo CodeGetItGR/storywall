@@ -18,8 +18,9 @@ export function isEventRoute(pathname: string) {
     return (
         pathname === routes.feed ||
         pathname.startsWith(routes.feed + '/') ||
-        pathname === routes.manage ||
-        pathname.startsWith(routes.manage + '/') ||
+        pathname === '/manage' ||
+        pathname.startsWith('/manage/') ||
+        pathname.startsWith('/tools/') ||
         pathname.startsWith('/story/') ||
         pathname.startsWith('/post/') ||
         pathname.startsWith('/events/')

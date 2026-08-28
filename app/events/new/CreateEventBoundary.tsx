@@ -27,7 +27,6 @@ import { getScheduleDatetimeLocalBounds, isDatetimeLocalBefore } from '@/lib/dat
 import { getPlanPriceDetails } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { getCurrentTimezone, getSupportedTimezones } from '@/lib/timezones';
-import { useEventSwitcher } from '@/providers/EventProvider';
 
 type CreateEventStep = 'type' | 'plan' | 'details' | 'overview';
 
@@ -38,7 +37,6 @@ export default function CreateEventPage() {
     const locale = useLocale();
     const router = useRouter();
     const { user, isAuthenticated, isBootstrapping } = useAuth();
-    const { setActiveEventId } = useEventSwitcher();
     const createEvent = useCreateEvent();
     const { data: appConfig, refetch: refetchAppConfig } = useAppConfig();
     const toErrorMessage = useApiErrorMessage();
@@ -98,7 +96,7 @@ export default function CreateEventPage() {
         }
         if (step !== 'overview') return;
         if (createdDraftEventId) {
-            router.push(routes.manage);
+            router.push(routes.events.manage(createdDraftEventId));
             return;
         }
         if (!title.trim() || !startAt || !isTimezoneValid || scheduleError) return;
@@ -118,7 +116,6 @@ export default function CreateEventPage() {
 
         try {
             event = await createEvent.mutateAsync(input);
-            setActiveEventId(event.id);
         } catch (err) {
             if (Object.keys(getFieldErrors(err) ?? {}).length > 0) {
                 setStep('details');

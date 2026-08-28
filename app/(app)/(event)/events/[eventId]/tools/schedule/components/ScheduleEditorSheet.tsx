@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import { ScheduleEditorForm, type ScheduleSessionMutator } from '@/app/(app)/(event)/tools/schedule/components/ScheduleEditorForm';
+import { ScheduleEditorForm, type ScheduleSessionMutator } from '@/app/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleEditorForm';
 import { Modal } from '@/components/ui/modal';
 import type { EventSessionResponseDto, EventStatus } from '@/lib/api/types';
 

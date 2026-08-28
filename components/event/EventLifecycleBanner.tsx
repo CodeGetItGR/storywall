@@ -24,10 +24,11 @@ export function EventLifecycleBanner() {
 
     if (!activeEvent || !status || status === 'ACTIVE') return null;
     if (pathname.startsWith(`/events/${activeEvent.id}/checkout/`)) return null;
-    // The manage page already surfaces this status via its badge and overview panel.
-    if (pathname === routes.manage) return null;
 
-    const actionHref = routes.manage;
+    const actionHref = routes.events.manage(activeEvent.id);
+    // The manage page already surfaces this status via its badge and overview panel.
+    if (pathname === actionHref) return null;
+
     const showAction = isHost;
 
     return (

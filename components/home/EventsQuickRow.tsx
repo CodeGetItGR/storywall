@@ -27,7 +27,7 @@ function EventQuickCard({ member, event }: EventGridItem) {
     return (
         <Link
             href={routes.post.feed(member.eventId)}
-            className="group relative h-52 w-40 shrink-0 overflow-hidden rounded-2xl bg-surface-muted transition-transform hover:-translate-y-0.5"
+            className="group relative h-52 w-40 shrink-0 overflow-hidden rounded-lg bg-surface-muted transition-transform hover:-translate-y-0.5"
         >
             {event?.coverMedia?.mediaUrl ? (
                 <Image

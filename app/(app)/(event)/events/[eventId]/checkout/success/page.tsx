@@ -54,7 +54,7 @@ export default function CheckoutSuccessPage() {
                 {orderId && <p className="mt-3 text-xs text-ink-faint">{t('orderId', { orderId })}</p>}
                 <Link
                     className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white sm:w-auto"
-                    href={paid ? routes.post.feed(eventId) : routes.manage}
+                    href={paid ? routes.post.feed(eventId) : routes.events.manage(eventId)}
                 >
                     {paid ? t('backToEvent') : t('backToSetup')}
                 </Link>

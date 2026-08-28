@@ -103,7 +103,7 @@ export function PlaylistDigestCard({ post }: PlaylistDigestCardProps) {
                 {/* Actions */}
                 <div className="relative z-10 mt-4 flex items-center justify-end">
                     <Link
-                        href={routes.tools.playlist}
+                        href={routes.events.tools.playlist(post.eventId)}
                         className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/15 px-3 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-white/25"
                         aria-label={t('openPlaylist')}
                     >

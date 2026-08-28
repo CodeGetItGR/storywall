@@ -26,7 +26,7 @@ export function DesktopNavRail() {
     const isDraft = activeEvent?.status === 'DRAFT';
     const showEventActions = Boolean(activeEvent) && isEventRoute(pathname);
     const accountName = authUser?.displayName ?? tAccount('fallbackName');
-    const homeHref = activeEvent ? (isDraft ? routes.manage : routes.post.feed(activeEvent.id)) : null;
+    const homeHref = activeEvent ? (isDraft ? routes.events.manage(activeEvent.id) : routes.post.feed(activeEvent.id)) : null;
     const homeActive = Boolean(homeHref) && (isPathActive(pathname, homeHref!) || isPathActive(pathname, routes.feed));
     const eventsActive = isPathActive(pathname, routes.home);
 

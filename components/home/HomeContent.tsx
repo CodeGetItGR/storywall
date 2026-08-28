@@ -53,9 +53,6 @@ export function HomeContent() {
                         <EventsQuickRow items={items} isLoading={isLoading} />
                     </>
                 )}
-
-                {/* Discover */}
-                <HomeModulesShowcase />
             </div>
         </div>
     );

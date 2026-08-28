@@ -14,12 +14,13 @@ export function DraftEventRouteGuard({ children }: { children: ReactNode }) {
     const isLoading = useEventContextLoading();
     const isHost = useIsHost();
     const isDraftHost = isHost && activeEvent?.status === 'DRAFT';
+    const manageRoot = activeEvent ? routes.events.manage(activeEvent.id) : null;
     const checkoutRoot = activeEvent ? `/events/${activeEvent.id}/checkout/` : null;
-    const isAllowedDraftRoute = pathname === routes.manage || (checkoutRoot !== null && pathname.startsWith(checkoutRoot));
+    const isAllowedDraftRoute = pathname === manageRoot || (checkoutRoot !== null && pathname.startsWith(checkoutRoot));
 
     useEffect(() => {
-        if (!isLoading && isDraftHost && !isAllowedDraftRoute) router.replace(routes.manage);
-    }, [isAllowedDraftRoute, isDraftHost, isLoading, router]);
+        if (!isLoading && isDraftHost && !isAllowedDraftRoute && manageRoot) router.replace(manageRoot);
+    }, [isAllowedDraftRoute, isDraftHost, isLoading, manageRoot, router]);
 
     if (isDraftHost && !isAllowedDraftRoute) return <EventRouteSpinner />;
     return children;

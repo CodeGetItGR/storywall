@@ -65,7 +65,7 @@ export function FeedPageContent() {
                         <>
                             {hasLocation && (
                                 <Link
-                                    href={routes.tools.schedule}
+                                    href={routes.events.tools.schedule(eventId)}
                                     aria-label={t('location')}
                                     className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-background/92 text-ink shadow-[0_8px_22px_rgba(36,31,26,0.18)] transition-transform hover:-translate-y-0.5"
                                 >
@@ -74,7 +74,7 @@ export function FeedPageContent() {
                             )}
                             {moduleFlags.wishlist && (
                                 <Link
-                                    href={routes.tools.gifts}
+                                    href={routes.events.tools.gifts(eventId)}
                                     aria-label={t('giftAccount')}
                                     className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-background/92 text-ink shadow-[0_8px_22px_rgba(36,31,26,0.18)] transition-transform hover:-translate-y-0.5"
                                 >
@@ -107,7 +107,7 @@ export function FeedPageContent() {
             {/* RSVP */}
             {shouldShowRSVP && (
                 <section className={'px-4 pb-5'}>
-                    <RsvpPrompt deadline={event.schedule.rsvpDeadline ?? null} />
+                    <RsvpPrompt eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} />
                 </section>
             )}
 

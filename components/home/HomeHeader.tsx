@@ -16,6 +16,7 @@ export function HomeHeader() {
     const tAccount = useTranslations('AccountDrawer');
     const tNotifications = useTranslations('NotificationsPage');
     const { user } = useAuth();
+    console.log('user', user);
     const { open, openAccount } = useAccountPanel();
     const { data: unreadCount = 0 } = useUnreadNotificationCount();
     const accountName = user?.displayName ?? tAccount('fallbackName');
@@ -40,7 +41,7 @@ export function HomeHeader() {
                     )}
                 </Link>
                 <button type="button" onClick={openAccount} aria-label={tAccount('drawerLabel')} aria-haspopup="dialog" aria-expanded={open}>
-                    <Avatar initials={getInitials(accountName)} size="md" alt={accountName} />
+                    <Avatar src={user?.profilePictureUrl} initials={getInitials(accountName)} size="md" alt={accountName} />
                 </button>
             </div>
         </div>

@@ -4,8 +4,8 @@ import { MapPin } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
-import { ScheduleMapPreview } from '@/app/(app)/(event)/tools/schedule/components/ScheduleMapPreview';
-import { ScheduleSessionActions } from '@/app/(app)/(event)/tools/schedule/components/ScheduleSessionActions';
+import { ScheduleMapPreview } from '@/app/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleMapPreview';
+import { ScheduleSessionActions } from '@/app/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleSessionActions';
 import type { EventSessionResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 

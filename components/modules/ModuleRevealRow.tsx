@@ -18,8 +18,8 @@ export function ModuleRevealRow({ module: showcaseModule, alignment }: { module:
             {/* Caption */}
             <div className={cn('flex px-10 pt-5', previewOnLeft ? 'justify-end' : 'justify-start')}>
                 <div className={cn('max-w-sm', previewOnLeft ? 'text-right' : 'text-left')}>
-                    <p className="text-[11px] font-semibold tracking-[0.18em] text-primary-dark uppercase">{showcaseModule.name}</p>
-                    <p className="pt-2 text-base leading-relaxed text-ink-muted sm:text-lg">{showcaseModule.detail}</p>
+                    <p className="text-xl font-semibold tracking-[0.18em] text-primary-dark uppercase">{showcaseModule.name}</p>
+                    <p className="pt-2 text-sm leading-relaxed text-ink-muted sm:text-lg">{showcaseModule.detail}</p>
                 </div>
             </div>
         </article>

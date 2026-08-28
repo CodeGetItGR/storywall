@@ -14,14 +14,6 @@ export interface ToolMenuItem {
     description: string;
 }
 
-const toolDefinitions: { key: string; href: string; icon: LucideIcon; moduleKey?: string }[] = [
-    { key: 'rsvp', href: routes.tools.rsvpSubmit, icon: CalendarCheck, moduleKey: 'rsvp' },
-    { key: 'schedule', href: routes.tools.schedule, icon: CalendarDays },
-    { key: 'gallery', href: routes.tools.gallery, icon: Images, moduleKey: 'gallery' },
-    { key: 'wishbook', href: routes.tools.wishbook, icon: BookHeart, moduleKey: 'wishbook' },
-    { key: 'gifts', href: routes.tools.gifts, icon: Gift, moduleKey: 'wishlist' },
-] as const;
-
 /** Only the tools whose backing module is actually available for the active event, plus the always-on schedule. */
 export function useToolsMenuItems(): ToolMenuItem[] {
     const t = useTranslations('ToolsMenu');
@@ -29,6 +21,14 @@ export function useToolsMenuItems(): ToolMenuItem[] {
     const availableModules = new Set(activeEvent?.modules.filter((module_) => module_.isAvailable).map((module_) => module_.moduleKey) ?? []);
 
     if (!activeEvent) return [];
+
+    const toolDefinitions: { key: string; href: string; icon: LucideIcon; moduleKey?: string }[] = [
+        { key: 'rsvp', href: routes.events.tools.rsvpSubmit(activeEvent.id), icon: CalendarCheck, moduleKey: 'rsvp' },
+        { key: 'schedule', href: routes.events.tools.schedule(activeEvent.id), icon: CalendarDays },
+        { key: 'gallery', href: routes.events.tools.gallery(activeEvent.id), icon: Images, moduleKey: 'gallery' },
+        { key: 'wishbook', href: routes.events.tools.wishbook(activeEvent.id), icon: BookHeart, moduleKey: 'wishbook' },
+        { key: 'gifts', href: routes.events.tools.gifts(activeEvent.id), icon: Gift, moduleKey: 'wishlist' },
+    ];
 
     return toolDefinitions
         .filter((tool) => !tool.moduleKey || availableModules.has(tool.moduleKey))
@@ -41,15 +41,18 @@ export function useToolsMenuItems(): ToolMenuItem[] {
         }));
 }
 
-/**
- * The dashboard is one destination: its own section list handles RSVP,
- * invitations, settings and billing, so the global menus link to it once.
- */
-const hostAdminDefinitions: { key: string; href: string; icon: LucideIcon }[] = [{ key: 'manage', href: routes.manage, icon: LayoutDashboard }];
-
-/** The host's own administrative destinations. */
+/** The host's own administrative destinations. The dashboard is one
+ * destination: its own section list handles RSVP, invitations, settings and
+ * billing, so the global menus link to it once. */
 export function useHostMenuItems(): ToolMenuItem[] {
     const t = useTranslations('MobileTabBar.hostMenu');
+    const activeEvent = useActiveEvent();
+
+    if (!activeEvent) return [];
+
+    const hostAdminDefinitions: { key: string; href: string; icon: LucideIcon }[] = [
+        { key: 'manage', href: routes.events.manage(activeEvent.id), icon: LayoutDashboard },
+    ];
 
     return hostAdminDefinitions.map((item) => ({
         key: item.key,
