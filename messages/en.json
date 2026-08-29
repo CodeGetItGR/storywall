@@ -249,7 +249,8 @@
         "capturePhoto": "Take photo",
         "startRecording": "Start recording",
         "stopRecording": "Stop recording",
-        "switchCamera": "Switch camera"
+        "switchCamera": "Switch camera",
+        "preparingPreview": "Preparing preview…"
     },
     "EventLifecycleBanner": {
         "DRAFT": {

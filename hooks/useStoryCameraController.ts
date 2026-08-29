@@ -61,9 +61,12 @@ export function useStoryCameraController(open: boolean, onCapture: (file: File) 
                 return;
             }
             try {
+                // Request camera and microphone together so both permission prompts appear
+                // at once, rather than surprising the user with a second mic prompt later
+                // when they switch to video mode.
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode, width: { ideal: 1080 }, height: { ideal: 1920 } },
-                    audio: mode === 'video',
+                    audio: true,
                 });
                 if (cancelled) {
                     stream.getTracks().forEach((track) => track.stop());
@@ -85,7 +88,7 @@ export function useStoryCameraController(open: boolean, onCapture: (file: File) 
             cancelled = true;
             stopStream();
         };
-    }, [facingMode, mode, open, stopStream]);
+    }, [facingMode, open, stopStream]);
 
     function capturePhoto() {
         const video = videoRef.current;
@@ -121,21 +124,10 @@ export function useStoryCameraController(open: boolean, onCapture: (file: File) 
         recorder.ondataavailable = (event) => {
             if (event.data.size > 0) chunksRef.current.push(event.data);
         };
-        recorder.onstop = async () => {
+        recorder.onstop = () => {
             const type = recorder.mimeType || mimeType || 'video/webm';
             const extension = type.includes('mp4') ? 'mp4' : 'webm';
-            // Android's native MediaExtractor (used by Chromium for some hardware-decoded
-            // playback paths) can fail to read a blob: URL built from many small chunk
-            // Blobs ("MediaExtractor failed to fetch"). Merging into one contiguous
-            // buffer first avoids handing it a composite blob.
-            const buffers = await Promise.all(chunksRef.current.map((chunk) => chunk.arrayBuffer()));
-            const merged = new Uint8Array(buffers.reduce((total, buf) => total + buf.byteLength, 0));
-            let offset = 0;
-            for (const buffer of buffers) {
-                merged.set(new Uint8Array(buffer), offset);
-                offset += buffer.byteLength;
-            }
-            const blob = new Blob([merged], { type });
+            const blob = new Blob(chunksRef.current, { type });
             if (blob.size > 0) onCaptureRef.current(new File([blob], `story-${Date.now()}.${extension}`, { type }));
             recorderRef.current = null;
             setIsRecording(false);

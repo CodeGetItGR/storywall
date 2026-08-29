@@ -249,7 +249,8 @@
         "capturePhoto": "Λήψη φωτογραφίας",
         "startRecording": "Έναρξη εγγραφής",
         "stopRecording": "Διακοπή εγγραφής",
-        "switchCamera": "Αλλαγή κάμερας"
+        "switchCamera": "Αλλαγή κάμερας",
+        "preparingPreview": "Προετοιμασία προεπισκόπησης…"
     },
     "EventLifecycleBanner": {
         "DRAFT": {

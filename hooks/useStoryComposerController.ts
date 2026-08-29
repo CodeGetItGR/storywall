@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
-import { useUploadMediaBatch } from '@/hooks/useMedia';
+import { useDeleteMedia, useUploadMedia, useUploadMediaBatch } from '@/hooks/useMedia';
 import { useCreateStoriesBatch } from '@/hooks/useStories';
 import type { MediaBatchUploadResponseDto } from '@/lib/api/types';
 import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
@@ -16,6 +16,9 @@ export interface PendingStory {
     key: string;
     file: File;
     previewUrl: string;
+    /** Set once a video finishes its eager background upload — lets the preview play the
+     * real hosted file instead of the local blob, which some Android browsers can't decode. */
+    remoteUrl?: string;
     caption: string;
     status: PendingStoryStatus;
     mediaId?: string;
@@ -74,6 +77,8 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
     const activeMember = useActiveMember();
     const { data: appConfig } = useAppConfig();
     const uploadBatch = useUploadMediaBatch();
+    const uploadSingle = useUploadMedia();
+    const deleteMedia = useDeleteMedia(activeEvent?.id ?? '');
     const createStories = useCreateStoriesBatch();
     const [isOpen, setIsOpen] = useState(false);
     const [items, setItems] = useState<PendingStory[]>([]);
@@ -97,7 +102,15 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
         itemsRef.current = items;
     }, [items]);
 
-    useEffect(() => () => itemsRef.current.forEach((item) => URL.revokeObjectURL(item.previewUrl)), []);
+    useEffect(
+        () => () =>
+            itemsRef.current.forEach((item) => {
+                URL.revokeObjectURL(item.previewUrl);
+                if (item.mediaId) deleteMedia.mutate(item.mediaId);
+            }),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        []
+    );
 
     const reset = useCallback(() => {
         itemsRef.current.forEach((item) => URL.revokeObjectURL(item.previewUrl));
@@ -114,8 +127,13 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
         setIsOpen(true);
     }, [canCompose]);
 
+    // Eagerly-uploaded videos (see addFiles) that never made it into a posted
+    // story would otherwise sit orphaned in storage — clean them up here.
     function close() {
         if (isBusy) return;
+        itemsRef.current.forEach((item) => {
+            if (item.mediaId) deleteMedia.mutate(item.mediaId);
+        });
         reset();
         setIsOpen(false);
     }
@@ -154,6 +172,28 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
         }));
         setItems((current) => [...current, ...next]);
         setActiveKey(next[0].key);
+
+        // Some Android browsers can't decode a locally-picked video's blob: URL
+        // (e.g. HEVC clips routed through the platform decoder). Upload videos
+        // in the background right away so the preview can switch to the real
+        // hosted URL, which plays fine, once it's ready.
+        if (activeEvent && activeMember) {
+            for (const item of next) {
+                if (!item.file.type.startsWith('video/')) continue;
+                uploadSingle.mutate(
+                    { eventId: activeEvent.id, file: item.file, uploaderMemberId: activeMember.id },
+                    {
+                        onSuccess: (media) => {
+                            setItems((current) =>
+                                current.map((existing) =>
+                                    existing.key === item.key ? { ...existing, mediaId: media.id, remoteUrl: media.mediaUrl } : existing
+                                )
+                            );
+                        },
+                    }
+                );
+            }
+        }
     }
 
     function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -167,6 +207,7 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
         const target = items[targetIndex];
         if (!target) return;
         URL.revokeObjectURL(target.previewUrl);
+        if (target.mediaId) deleteMedia.mutate(target.mediaId);
         const remaining = items.filter((item) => item.key !== key);
         setItems(remaining);
         if (activeKey === key) setActiveKey(remaining[Math.min(targetIndex, remaining.length - 1)]?.key ?? null);

@@ -14,6 +14,9 @@ import { cn } from '@/lib/utils';
 export function StoryComposerModal({ controller }: { controller: StoryComposerController }) {
     const t = useTranslations('StoryComposer');
     const [cameraActive, setCameraActive] = useState(true);
+    // Some Android browsers can't decode a locally-picked video's blob: URL preview.
+    // Track that per item and fall back to the eagerly-uploaded remote copy once ready.
+    const [failedPreviewKeys, setFailedPreviewKeys] = useState<Set<string>>(new Set());
     const {
         activeItem,
         activeKey,
@@ -72,6 +75,14 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
     function showCameraView() {
         setCameraActive(true);
     }
+    function handlePreviewError() {
+        if (!activeItem) return;
+        setFailedPreviewKeys((current) => new Set(current).add(activeItem.key));
+    }
+
+    const activePreviewFailed = Boolean(activeItem && failedPreviewKeys.has(activeItem.key));
+    const activeVideoSrc = activePreviewFailed ? activeItem?.remoteUrl : activeItem?.previewUrl;
+    const activeVideoPreparing = activePreviewFailed && !activeItem?.remoteUrl;
 
     return (
         <Modal open={isOpen} onClose={close} size="full" closeLabel={t('close')} ariaLabel={t('title')} className="bg-black">
@@ -82,7 +93,14 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                             {/* Full-screen story preview */}
                             <div className="absolute inset-0 flex items-center justify-center bg-black">
                                 {activeItem.file.type.startsWith('video/') ? (
-                                    <StoryVideo key={activeItem.previewUrl} src={activeItem.previewUrl} loop muteToggle={false} />
+                                    activeVideoPreparing ? (
+                                        <div className="flex flex-col items-center gap-2 text-white/70">
+                                            <Loader2 className="h-6 w-6 animate-spin" />
+                                            <p className="text-xs">{t('preparingPreview')}</p>
+                                        </div>
+                                    ) : (
+                                        <StoryVideo key={activeVideoSrc} src={activeVideoSrc!} loop muteToggle={false} onLoadError={handlePreviewError} />
+                                    )
                                 ) : (
                                     <Image
                                         src={activeItem.previewUrl}
@@ -138,7 +156,7 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                             >
                                                 {item.file.type.startsWith('video/') ? (
                                                     <video
-                                                        src={item.previewUrl}
+                                                        src={item.remoteUrl ?? item.previewUrl}
                                                         muted
                                                         playsInline
                                                         preload="metadata"
