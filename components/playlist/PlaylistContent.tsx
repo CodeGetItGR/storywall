@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { PlaylistItemRow } from '@/components/playlist';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
+import { LoadingState } from '@/components/ui/LoadingState';
 import type { PlaylistSuggestionResponseDto } from '@/lib/api/types';
 import { PLAYLIST_TOP_RANK_COUNT, shouldShowPlaylistTopRanks } from '@/lib/playlistRanking';
 import { routes } from '@/lib/routes';
@@ -60,7 +61,7 @@ export function PlaylistContent({
 
             {/* Content */}
             {suggestionsLoading ? (
-                <div className="py-8 text-sm text-ink-muted">{t('loadingSongs')}</div>
+                <LoadingState label={t('loadingSongs')} className="py-8" />
             ) : suggestions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center gap-5 py-8 text-center text-sm text-ink-muted">
                     <Music className="h-10 w-auto" />

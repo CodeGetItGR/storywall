@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ManageSectionNav, sectionIcons } from '@/components/manage/ManageSectionNav';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { Modal } from '@/components/ui/modal';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventInvitations } from '@/hooks/useEventInvitations';
@@ -39,13 +40,17 @@ export function ManageScreen() {
     const canWrite = isEventWritable(activeEvent?.status);
     const canEditDetails = canWrite;
     const activeHostEventId = isHost && !isDraft ? eventId : null;
-    const { data: members = [] } = useEventMembers(activeHostEventId);
-    const { data: rsvps = [] } = useEventRsvps(activeHostEventId);
-    const { data: invitations = [] } = useEventInvitations(activeHostEventId);
-    const { data: qrLinks = [] } = useEventQrLinks(activeHostEventId);
-    const { data: qrLinkStats = [] } = useEventQrLinkStats(activeHostEventId);
-    const { data: eventUsage = null } = useEventUsage(isHost ? eventId : null);
+    const { data: members = [], isLoading: membersLoading } = useEventMembers(activeHostEventId);
+    const { data: rsvps = [], isLoading: rsvpsLoading } = useEventRsvps(activeHostEventId);
+    const { data: invitations = [], isLoading: invitationsLoading } = useEventInvitations(activeHostEventId);
+    const { data: qrLinks = [], isLoading: qrLinksLoading } = useEventQrLinks(activeHostEventId);
+    const { data: qrLinkStats = [], isLoading: qrLinkStatsLoading } = useEventQrLinkStats(activeHostEventId);
+    const { data: eventUsage = null, isLoading: usageLoading } = useEventUsage(isHost ? eventId : null);
     const { data: appConfig } = useAppConfig();
+
+    const overviewLoading = membersLoading || invitationsLoading || rsvpsLoading || usageLoading;
+    const rsvpTabLoading = membersLoading || rsvpsLoading;
+    const invitationsTabLoading = invitationsLoading || qrLinksLoading || qrLinkStatsLoading;
 
     const [daysToGo, setDaysToGo] = useState(() =>
         Math.max(0, activeEvent ? Math.ceil((new Date(activeEvent.schedule.startAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0)
@@ -99,30 +104,38 @@ export function ManageScreen() {
 
     const renderedSection = (
         <>
-            {section === 'overview' && (
-                <OverviewTab
-                    memberCount={members.length}
-                    daysToGo={daysToGo}
-                    invitationCount={invitations.length}
-                    seatsClaimed={seatsClaimed}
-                    rsvpBreakdown={rsvpBreakdown}
-                    eventUsage={eventUsage}
-                    planTiers={appConfig?.planTiers ?? []}
-                    paidServices={appConfig?.paidServices ?? []}
-                    modules={appConfig?.modules ?? []}
-                    eventModules={activeEvent.modules}
-                    onSeeAllRsvp={handleSeeAllRsvp}
-                    eventId={activeEvent.id}
-                    eventStatus={activeEvent.status}
-                    startAt={activeEvent.schedule.startAt}
-                />
-            )}
+            {section === 'overview' &&
+                (overviewLoading ? (
+                    <LoadingState size="md" className="min-h-64" />
+                ) : (
+                    <OverviewTab
+                        memberCount={members.length}
+                        daysToGo={daysToGo}
+                        invitationCount={invitations.length}
+                        seatsClaimed={seatsClaimed}
+                        rsvpBreakdown={rsvpBreakdown}
+                        eventUsage={eventUsage}
+                        planTiers={appConfig?.planTiers ?? []}
+                        paidServices={appConfig?.paidServices ?? []}
+                        modules={appConfig?.modules ?? []}
+                        eventModules={activeEvent.modules}
+                        onSeeAllRsvp={handleSeeAllRsvp}
+                        eventId={activeEvent.id}
+                        eventStatus={activeEvent.status}
+                        startAt={activeEvent.schedule.startAt}
+                    />
+                ))}
 
-            {section === 'rsvp' && <RsvpTab members={members} rsvps={rsvps} />}
+            {section === 'rsvp' &&
+                (rsvpTabLoading ? <LoadingState size="md" className="min-h-64" /> : <RsvpTab members={members} rsvps={rsvps} />)}
 
-            {section === 'invitations' && eventId && (
-                <InvitationsTab eventId={eventId} invitations={invitations} qrLinks={qrLinks} qrLinkStats={qrLinkStats} canWrite={canWrite} />
-            )}
+            {section === 'invitations' &&
+                eventId &&
+                (invitationsTabLoading ? (
+                    <LoadingState size="md" className="min-h-64" />
+                ) : (
+                    <InvitationsTab eventId={eventId} invitations={invitations} qrLinks={qrLinks} qrLinkStats={qrLinkStats} canWrite={canWrite} />
+                ))}
 
             {section === 'settings' && <SettingsTab event={activeEvent} canWrite={canEditDetails} canUploadCover={canWrite} />}
 

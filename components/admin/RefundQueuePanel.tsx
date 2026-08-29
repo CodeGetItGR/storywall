@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 
 import { RefundRow } from '@/components/admin/RefundRow';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { useAdminRefundRequests } from '@/hooks/useAdmin';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import { cn } from '@/lib/utils';
@@ -75,7 +76,7 @@ export function RefundQueuePanel() {
                 </div>
             </div>
 
-            {query.isLoading && <p className="text-sm text-ink-muted">{t('refunds.loading')}</p>}
+            {query.isLoading && <LoadingState label={t('refunds.loading')} />}
             {query.error && <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(query.error)}`)}</p>}
             {!query.isLoading && !query.error && visibleRows.length === 0 && (
                 <p className="py-3 text-sm text-ink-muted">{filter === 'pending' ? t('refunds.emptyPending') : t('refunds.empty')}</p>

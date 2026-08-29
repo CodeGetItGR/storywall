@@ -1,9 +1,9 @@
 'use client';
 
-import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { createContext, type ReactNode, useContext, useEffect } from 'react';
 
+import { LoadingState } from '@/components/ui/LoadingState';
 import { useAuth } from '@/hooks/useAuth';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
@@ -63,9 +63,5 @@ export function useEventRouteContext(): EventRouteContextValue {
 }
 
 export function EventRouteSpinner() {
-    return (
-        <div className="flex min-h-[50vh] items-center justify-center">
-            <Loader2 className="h-6 w-6 animate-spin text-ink-muted" />
-        </div>
-    );
+    return <LoadingState size="md" className="min-h-[50vh]" />;
 }

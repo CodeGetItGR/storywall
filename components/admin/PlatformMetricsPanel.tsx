@@ -7,6 +7,7 @@ import { AdminSection } from '@/components/admin/AdminSection';
 import { PlatformMetricBreakdown } from '@/components/admin/PlatformMetricBreakdown';
 import { PlatformMetricTile } from '@/components/admin/PlatformMetricTile';
 import { PlatformNeedsAttention } from '@/components/admin/PlatformNeedsAttention';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { useAdminMetrics } from '@/hooks/useAdmin';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import { formatMoney } from '@/lib/billing';
@@ -42,7 +43,7 @@ export function PlatformMetricsPanel() {
 
             <PlatformNeedsAttention />
 
-            {metricsQuery.isLoading && <p className="text-sm text-ink-muted">{t('metrics.loading')}</p>}
+            {metricsQuery.isLoading && <LoadingState label={t('metrics.loading')} className="justify-start" />}
             {metricsQuery.error && <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(metricsQuery.error)}`)}</p>}
             {metrics && (
                 <>

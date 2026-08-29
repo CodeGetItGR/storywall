@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckCircle2, XCircle } from 'lucide-react';
+import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type React from 'react';
 
@@ -23,6 +23,7 @@ interface RsvpFormProps {
     maxMessageLength: number;
     onMessageChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
     onSubmit: (e: React.SubmitEvent<HTMLFormElement>) => void;
+    isSubmitting: boolean;
     submitDisabled: boolean;
     submitError: string | null;
     submitLabel: string;
@@ -41,6 +42,7 @@ export function RsvpForm({
     maxMessageLength,
     onMessageChange,
     onSubmit,
+    isSubmitting,
     submitDisabled,
     submitError,
     submitLabel,
@@ -167,9 +169,9 @@ export function RsvpForm({
                 <button
                     type="submit"
                     disabled={submitDisabled}
-                    className="w-full py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
+                    className="w-full py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity flex items-center justify-center"
                 >
-                    {submitLabel}
+                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : submitLabel}
                 </button>
             </form>
         </div>

@@ -11,6 +11,7 @@ import { AdminSection } from '@/components/admin/AdminSection';
 import { AdminStatTile } from '@/components/admin/AdminStatTile';
 import { PaidServiceDrawer, type Visibility, visibilityOf } from '@/components/admin/PaidServiceDrawer';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { useAdminPlanTiers, useRemoveEventAddon } from '@/hooks/useAdmin';
 import { adminErrorMessageKey, isUuid } from '@/lib/adminUtils';
 import type { PaidServiceKind, PaidServiceResponseDto } from '@/lib/api/types';
@@ -234,7 +235,7 @@ export function PaidServicesCatalogPanel() {
                     </p>
                 </div>
 
-                {servicesQuery.isLoading && <p className="px-4 py-6 text-sm text-ink-muted">{t('loading')}</p>}
+                {servicesQuery.isLoading && <LoadingState label={t('loading')} className="justify-start px-4 py-6" />}
                 {servicesQuery.error && (
                     <p className="px-4 py-6 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(servicesQuery.error)}`)}</p>
                 )}

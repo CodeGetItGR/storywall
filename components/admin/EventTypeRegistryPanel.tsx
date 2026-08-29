@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback, useMemo, useState } from 'react';
 
 import { EventTypeEditDrawer } from '@/components/admin/EventTypeEditDrawer';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { PlatformEventTypeResponseDto } from '@/lib/api/types';
@@ -42,7 +43,7 @@ export function EventTypeRegistryPanel() {
             </div>
 
             <section className="rounded-xl border border-border bg-card">
-                {eventTypesQuery.isLoading && <p className="px-4 py-6 text-sm text-ink-muted">{t('eventTypes.loading')}</p>}
+                {eventTypesQuery.isLoading && <LoadingState label={t('eventTypes.loading')} className="justify-start px-4 py-6" />}
                 {eventTypesQuery.error && (
                     <p className="px-4 py-6 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(eventTypesQuery.error)}`)}</p>
                 )}

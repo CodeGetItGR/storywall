@@ -26,6 +26,7 @@ export function RsvpSubmitFormContent({ data }: { data: RsvpSubmitPageData }) {
                 maxMessageLength={data.maxMessageLength}
                 onMessageChange={data.onMessageChange}
                 onSubmit={data.onSubmit}
+                isSubmitting={data.isSubmitting}
                 submitDisabled={data.hasExistingRsvp || !data.attending || !data.memberId || data.isSubmitting || !data.canSubmitRsvp}
                 submitError={data.hasExistingRsvp ? t('alreadySubmittedMessage') : !data.canSubmitRsvp ? t('eventReadOnly') : data.submitErrorMessage}
                 submitLabel={data.hasExistingRsvp ? t('alreadySubmittedButton') : t('submitRsvp')}

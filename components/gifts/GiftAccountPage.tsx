@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { useGiftAccount } from '@/hooks/useGiftAccount';
 import { giftAccountSetupHref } from '@/lib/manageSectionTargets';
 import { routes } from '@/lib/routes';
@@ -108,7 +109,7 @@ export function GiftAccountPage() {
                 </section>
             )}
 
-            {account.isLoading && <p className="py-16 text-center text-sm text-ink-muted">{t('loading')}</p>}
+            {account.isLoading && <LoadingState label={t('loading')} className="py-16" />}
             {account.error && <p className="py-16 text-center text-sm text-rose-600">{t('loadError')}</p>}
         </ModulePageShell>
     );

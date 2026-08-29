@@ -1,11 +1,11 @@
 'use client';
 
-import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { PlanCard } from '@/components/plan/PlanCard';
 import { PlanMoreInfoSheet } from '@/components/plan/PlanMoreInfoSheet';
+import { LoadingState } from '@/components/ui/LoadingState';
 import type { PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 
 type EventPlanSelectorProps = {
@@ -37,12 +37,7 @@ export function EventPlanSelector({ plans, modules, selectedCode, onSelectAction
         <div className="flex h-full flex-col">
             {/* Plan Content */}
             <div className="space-y-3">
-                {isLoading && (
-                    <div className="flex items-center justify-center gap-2 rounded-xl border border-border bg-white p-6 text-sm text-ink-muted">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        {t('loadingPlans')}
-                    </div>
-                )}
+                {isLoading && <LoadingState label={t('loadingPlans')} className="rounded-xl border border-border bg-white p-6" />}
                 {!isLoading && plans.length === 0 && <p className="rounded-xl bg-rose-50 p-4 text-sm text-rose-600">{t('noPlans')}</p>}
                 {!isLoading &&
                     plans.map((plan) => (

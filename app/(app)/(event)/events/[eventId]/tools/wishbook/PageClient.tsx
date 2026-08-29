@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useCreateWishbookEntry, useDeleteWishbookEntry, useWishbook } from '@/hooks/useWishbook';
@@ -108,7 +109,7 @@ export default function WishbookPage() {
 
             {/* Entries */}
             <section className="mt-8" hidden={!isHost}>
-                {wishbook.isLoading && <p className="py-10 text-center text-sm text-ink-muted">{t('loading')}</p>}
+                {wishbook.isLoading && <LoadingState label={t('loading')} className="py-10" />}
                 {wishbook.error && <p className="py-10 text-center text-sm text-rose-600">{toErrorMessage(wishbook.error)}</p>}
                 {!wishbook.isLoading && !wishbook.error && entries.length === 0 && (
                     <p className="py-10 text-center text-sm text-ink-muted">{canWrite ? t('empty') : t('emptyReadOnly')}</p>

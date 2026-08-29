@@ -8,6 +8,7 @@ import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { BillingOpsWebhookRow } from '@/components/admin/BillingOpsWebhookRow';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { useRunNotificationSweep, useSettleOrder, useUnprocessedWebhooks } from '@/hooks/useAdmin';
 import { adminErrorMessageKey, isUuid } from '@/lib/adminUtils';
 import { formatRecordCounts } from '@/lib/format';
@@ -124,7 +125,7 @@ export function BillingOpsPanel() {
                         {t('billingOps.refresh')}
                     </button>
                 </div>
-                {webhooksQuery.isLoading && <p className="text-sm text-ink-muted">{t('billingOps.webhooksLoading')}</p>}
+                {webhooksQuery.isLoading && <LoadingState label={t('billingOps.webhooksLoading')} className="justify-start" />}
                 {webhooksQuery.error && <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(webhooksQuery.error)}`)}</p>}
                 {!webhooksQuery.isLoading && !webhooksQuery.error && webhooks.length === 0 && (
                     <p className="py-3 text-sm text-ink-muted">{t('billingOps.webhooksEmpty')}</p>

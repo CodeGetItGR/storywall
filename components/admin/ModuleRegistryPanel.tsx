@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback, useMemo, useState } from 'react';
 
 import { ModuleEditDrawer } from '@/components/admin/ModuleEditDrawer';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { PlatformModuleResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
@@ -40,7 +41,7 @@ export function ModuleRegistryPanel() {
             </div>
 
             <section className="rounded-xl border border-border bg-card">
-                {modulesQuery.isLoading && <p className="px-4 py-6 text-sm text-ink-muted">{t('modules.loading')}</p>}
+                {modulesQuery.isLoading && <LoadingState label={t('modules.loading')} className="justify-start px-4 py-6" />}
                 {modulesQuery.error && (
                     <p className="px-4 py-6 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(modulesQuery.error)}`)}</p>
                 )}

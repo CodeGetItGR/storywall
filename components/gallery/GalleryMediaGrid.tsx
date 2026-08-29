@@ -1,11 +1,12 @@
 'use client';
 
-import { Check, ImagePlus, Loader2 } from 'lucide-react';
+import { Check, ImagePlus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { MouseEvent, PointerEvent, RefObject } from 'react';
 import { useCallback } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { LoadingState } from '@/components/ui/LoadingState';
 import type { MediaResponseDto } from '@/lib/api/types';
 import { formatShortDateTime } from '@/lib/datetime';
 import { cn } from '@/lib/utils';
@@ -56,9 +57,7 @@ export function GalleryMediaGrid({
         <section>
             {/* Empty and loading states */}
             {isLoading ? (
-                <div className="flex min-h-48 items-center justify-center rounded-2xl bg-card">
-                    <Loader2 className="h-6 w-6 animate-spin text-ink-muted" />
-                </div>
+                <LoadingState size="md" className="min-h-48 rounded-2xl bg-card" />
             ) : items.length === 0 ? (
                 <div className="px-4 py-12 text-center">
                     <ImagePlus className="mx-auto h-8 w-8 text-ink-faint" />

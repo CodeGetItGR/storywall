@@ -11,6 +11,7 @@ import { AdminStatTile } from '@/components/admin/AdminStatTile';
 import { PlanCreateForm } from '@/components/admin/PlanCreateForm';
 import { PlanEditorCard } from '@/components/admin/PlanEditorCard';
 import { PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { useAdminPaidServices, useAdminPlatformEventTypes, useAdminPlatformModules } from '@/hooks/useAdmin';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import { type Visibility, visibilityOf } from '@/lib/adminVisibility';
@@ -213,7 +214,7 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                     </p>
                 </div>
 
-                {plansQuery.isLoading && <p className="px-4 py-6 text-sm text-ink-muted">{t('loading')}</p>}
+                {plansQuery.isLoading && <LoadingState label={t('loading')} className="justify-start px-4 py-6" />}
                 {plansQuery.error && <p className="px-4 py-6 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(plansQuery.error)}`)}</p>}
                 {!plansQuery.isLoading && !plansQuery.error && visiblePlans.length === 0 && (
                     <p className="px-4 py-6 text-sm text-ink-muted">{t('empty')}</p>
