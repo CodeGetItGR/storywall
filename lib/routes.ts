@@ -36,7 +36,8 @@ export const routes = {
             playlist: (eventId: string) => `/events/${eventId}/tools/playlist`,
             quiz: (eventId: string) => `/events/${eventId}/tools/quiz`,
             gifts: (eventId: string) => `/events/${eventId}/tools/gifts`,
-            schedule: (eventId: string) => `/events/${eventId}/tools/schedule`,
+            schedule: (eventId: string, params: { section?: string | null } = {}) =>
+                withQuery(`/events/${eventId}/tools/schedule`, params),
             wishbook: (eventId: string) => `/events/${eventId}/tools/wishbook`,
         },
         story: (eventId: string, storyId: string) => `/events/${eventId}/story/${storyId}`,

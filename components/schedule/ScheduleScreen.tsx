@@ -1,6 +1,7 @@
 'use client';
 
-import { Calendar, Plus } from 'lucide-react';
+import { Calendar } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
@@ -8,6 +9,7 @@ import { ScheduleEditorSheet } from '@/app/(app)/(event)/events/[eventId]/tools/
 import { ScheduleEmptyState } from '@/app/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleEmptyState';
 import { ScheduleSessionsList } from '@/app/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleSessionsList';
 import { EventRouteSpinner, useEventRouteContext } from '@/components/routing/EventRouteGate';
+import { ScheduleEditSessionsTable } from '@/components/schedule/ScheduleEditSessionsTable';
 import { ModuleNotice } from '@/components/tools/ModuleNotice';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
@@ -18,6 +20,8 @@ import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import { toDatetimeLocalValue } from '@/lib/datetime';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
+import type { ManagedSessionDefinition } from '@/lib/sessionManagement';
+import { cn } from '@/lib/utils';
 
 export function ScheduleScreen() {
     const { activeEvent, eventId, isHost } = useEventRouteContext();
@@ -25,11 +29,13 @@ export function ScheduleScreen() {
     const tCreateEvent = useTranslations('CreateEventPage');
     const toErrorMessage = useApiErrorMessage();
     const locale = useLocale();
+    const searchParams = useSearchParams();
     const canWrite = isEventWritable(activeEvent?.status);
     const canManageSchedule = isHost && canWrite;
 
     const { data: sessions = [], isLoading: isLoadingSessions } = useEventSessions(eventId);
     const createSession = useCreateEventSession();
+    const [viewMode, setViewMode] = useState<'public' | 'edit'>(() => (isHost && searchParams.has('section') ? 'edit' : 'public'));
     const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
     const [editorOpen, setEditorOpen] = useState(false);
     const [creatingSecondary, setCreatingSecondary] = useState(false);
@@ -44,12 +50,6 @@ export function ScheduleScreen() {
         [editingSessionId, sessions]
     );
 
-    const secondarySessionTitleKey = activeEvent ? getCreateEventCatalogEntry(activeEvent.eventType)?.secondarySessionTitleKey : undefined;
-    const secondarySessionTitle =
-        secondarySessionTitleKey && tCreateEvent.has(secondarySessionTitleKey) ? tCreateEvent(secondarySessionTitleKey) : undefined;
-    const hasSecondarySession = sessions.some((session) => session.isSecondary);
-    const canAddSecondarySession = canManageSchedule && Boolean(secondarySessionTitle) && !hasSecondarySession;
-
     function openCreateEditor() {
         if (!canManageSchedule) return;
         setDeleteError(null);
@@ -58,11 +58,12 @@ export function ScheduleScreen() {
         setEditorOpen(true);
     }
 
-    function openCreateSecondaryEditor() {
-        if (!canAddSecondarySession) return;
+    function openCreateManagedEditor(definition: ManagedSessionDefinition) {
+        if (!canManageSchedule || !definition.canCreate) return;
+        const secondarySessionTitleKey = activeEvent ? getCreateEventCatalogEntry(activeEvent.eventType)?.secondarySessionTitleKey : undefined;
         setDeleteError(null);
         setEditingSessionId(null);
-        setCreatingSecondary(true);
+        setCreatingSecondary(Boolean(secondarySessionTitleKey && definition.role === 'secondary'));
         setEditorOpen(true);
     }
 
@@ -115,7 +116,19 @@ export function ScheduleScreen() {
         setDeleteTarget(null);
     }
 
+    function showPublicView() {
+        setViewMode('public');
+    }
+
+    function showEditView() {
+        setViewMode('edit');
+    }
+
     if (isLoadingSessions) return <EventRouteSpinner />;
+
+    const secondarySessionTitleKey = activeEvent ? getCreateEventCatalogEntry(activeEvent.eventType)?.secondarySessionTitleKey : undefined;
+    const secondarySessionTitle =
+        secondarySessionTitleKey && tCreateEvent.has(secondarySessionTitleKey) ? tCreateEvent(secondarySessionTitleKey) : undefined;
 
     return (
         <ModulePageShell
@@ -125,47 +138,50 @@ export function ScheduleScreen() {
             backLabel={t('back')}
             backHref={routes.events.feed(eventId)}
             subtitle={t('subtitle')}
-            action={
-                canManageSchedule && sessions.length > 0 ? (
-                    <div className="flex items-center gap-2">
-                        {canAddSecondarySession && (
-                            <button
-                                type="button"
-                                onClick={openCreateSecondaryEditor}
-                                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border/70 px-3.5 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted"
-                            >
-                                <Plus className="h-4 w-4" />
-                                <span className="hidden sm:inline">{t('host.addSecondarySession', { title: secondarySessionTitle ?? '' })}</span>
-                            </button>
-                        )}
-                        <button
-                            type="button"
-                            onClick={openCreateEditor}
-                            className="inline-flex h-9 items-center gap-1.5 rounded-full bg-gradient-brand px-3.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                        >
-                            <Plus className="h-4 w-4" />
-                            <span className="hidden sm:inline">{t('host.submit')}</span>
-                        </button>
-                    </div>
-                ) : undefined
-            }
             notice={isHost && !canWrite ? <ModuleNotice>{t('host.readOnly')}</ModuleNotice> : undefined}
         >
             {deleteError && <p className="mb-4 text-xs font-medium text-rose-500">{deleteError}</p>}
 
-            {sessions.length === 0 ? (
+            {isHost && (
+                <div className="mb-5 flex rounded-full bg-surface-muted p-1 mx-auto w-fit">
+                    <button
+                        type="button"
+                        onClick={showEditView}
+                        className={cn(
+                            'rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors',
+                            viewMode === 'edit' ? 'bg-background text-ink shadow-sm' : 'text-ink-muted'
+                        )}
+                    >
+                        {t('views.edit')}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={showPublicView}
+                        className={cn(
+                            'rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors',
+                            viewMode === 'public' ? 'bg-background text-ink shadow-sm' : 'text-ink-muted'
+                        )}
+                    >
+                        {t('views.public')}
+                    </button>
+                </div>
+            )}
+
+            {activeEvent && isHost && viewMode === 'edit' ? (
+                <ScheduleEditSessionsTable
+                    event={activeEvent}
+                    sessions={sessions}
+                    canWrite={canManageSchedule}
+                    deleteDisabled={deleteSession.isPending || !canManageSchedule}
+                    onAddSession={openCreateEditor}
+                    onCreateManagedSession={openCreateManagedEditor}
+                    onEditSession={beginEditSession}
+                    onDeleteSession={handleDeleteSession}
+                />
+            ) : sessions.length === 0 ? (
                 <ScheduleEmptyState isHost={isHost} canWrite={canWrite} canAddSession={canManageSchedule} onAddSession={openCreateEditor} />
             ) : (
-                <ScheduleSessionsList
-                    sessions={sessions}
-                    editingSessionId={editingSessionId}
-                    isHost={isHost}
-                    locale={locale}
-                    onEdit={beginEditSession}
-                    onDelete={handleDeleteSession}
-                    deleteDisabled={deleteSession.isPending || !canManageSchedule}
-                    canManage={canManageSchedule}
-                />
+                <ScheduleSessionsList sessions={sessions} locale={locale}/>
             )}
 
             {canManageSchedule && (

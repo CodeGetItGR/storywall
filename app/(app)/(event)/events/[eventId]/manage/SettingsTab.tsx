@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import React, { useEffect, useRef, useState } from 'react';
 
-import { EventSessionManagement } from '@/components/manage/EventSessionManagement';
 import { TargetedSection } from '@/components/manage/TargetedSection';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
@@ -374,8 +373,6 @@ export default function SettingsTab({
                     )}
                 </div>
             </form>
-
-            <EventSessionManagement event={event} canWrite={canWrite} />
         </div>
     );
 }

@@ -96,7 +96,7 @@ export function HostOnboardingWizard() {
 
                     {stepId === 'venue' && (
                         <OnboardingVenueStep
-                            href={routes.events.manage(event.id, { tab: 'settings', section: 'venue-session' })}
+                            href={routes.events.tools.schedule(event.id, { section: 'venue-session' })}
                             hasVenue={event.sessions.some((session) => session.isSecondary)}
                             onNavigate={dismiss}
                             onDone={handleContinue}

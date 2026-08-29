@@ -1381,6 +1381,10 @@
         "unscheduled": "Unscheduled",
         "endsAt": "Ends at {time}",
         "saved": "Added",
+        "views": {
+            "public": "Timeline",
+            "edit": "Edit sessions"
+        },
         "story": {
             "title": "Event schedule",
             "directions": "Directions"
@@ -1430,7 +1434,31 @@
             "openMap": "Open map for {title}",
             "emptyTitle": "No sessions yet",
             "emptyBody": "Add the first item so guests can see the timeline.",
-            "emptyReadOnlyBody": "The schedule is empty, and new sessions can't be added while the event is read-only."
+            "emptyReadOnlyBody": "The schedule is empty, and new sessions can't be added while the event is read-only.",
+            "sessionManagement": {
+                "title": "Event sessions",
+                "description": "Manage the ceremony and venue details shown to guests.",
+                "addItem": "Add item",
+                "collapse": "Hide event sessions",
+                "expand": "Show event sessions",
+                "ceremony": {
+                    "title": "Ceremony",
+                    "description": "Title, date, time, location, description, and maps link."
+                },
+                "venue": {
+                    "title": "Venue",
+                    "description": "Reception or celebration details, including its own date and location."
+                },
+                "date": "Date and time",
+                "location": "Location",
+                "notSet": "Not set",
+                "missing": "No venue session has been added yet.",
+                "mainMissing": "The ceremony session is unavailable for this event.",
+                "untitled": "Untitled",
+                "editNamed": "Edit {title}",
+                "addNamed": "Add {title}",
+                "deleteNamed": "Delete {title}"
+            }
         },
         "guest": {
             "emptyTitle": "Schedule coming soon",

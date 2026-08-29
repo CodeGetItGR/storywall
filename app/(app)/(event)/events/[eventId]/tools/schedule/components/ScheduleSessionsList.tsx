@@ -10,24 +10,12 @@ import { groupSessions, sortSessions } from '@/lib/eventSessions';
 
 interface ScheduleSessionsListProps {
     sessions: EventSessionResponseDto[];
-    editingSessionId: string | null;
-    isHost: boolean;
     locale: string;
-    onEdit: (session: EventSessionResponseDto) => void;
-    onDelete: (session: EventSessionResponseDto) => void;
-    deleteDisabled: boolean;
-    canManage: boolean;
 }
 
 export function ScheduleSessionsList({
     sessions,
-    editingSessionId,
-    isHost,
     locale,
-    onEdit,
-    onDelete,
-    deleteDisabled,
-    canManage,
 }: ScheduleSessionsListProps) {
     const t = useTranslations('SchedulePage');
     const sortedSessions = sortSessions(sessions);
@@ -66,22 +54,11 @@ export function ScheduleSessionsList({
                                 />
                                 <ScheduleSessionCard
                                     session={session}
-                                    isHost={isHost}
-                                    canManage={canManage}
-                                    isEditing={editingSessionId === session.id}
-                                    onEdit={onEdit}
-                                    onDelete={onDelete}
-                                    deleteDisabled={deleteDisabled}
                                     timeContent={
                                         <div className="text-right">
                                             <p className="text-sm font-semibold tabular-nums text-ink">
                                                 {formatTimeRange(locale, session.startAt, session.endAt, t('timeTba'))}
                                             </p>
-                                            {session.endAt && (
-                                                <p className="text-[11px] uppercase tracking-[0.16em] text-ink-faint">
-                                                    {t('endsAt', { time: formatTime(locale, session.endAt) })}
-                                                </p>
-                                            )}
                                         </div>
                                     }
                                 />
@@ -103,12 +80,6 @@ export function ScheduleSessionsList({
                             <ScheduleSessionCard
                                 key={session.id}
                                 session={session}
-                                isHost={isHost}
-                                canManage={canManage}
-                                isEditing={editingSessionId === session.id}
-                                onEdit={onEdit}
-                                onDelete={onDelete}
-                                deleteDisabled={deleteDisabled}
                             />
                         ))}
                     </div>
