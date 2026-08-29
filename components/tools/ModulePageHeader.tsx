@@ -18,7 +18,7 @@ interface ModulePageHeaderProps {
 
 export function ModulePageHeader({ title, icon: Icon, iconClassName, showIcon = true, backLabel, backHref, action }: ModulePageHeaderProps) {
     return (
-        <div className="flex items-center gap-3 py-4">
+        <div className="sticky top-0 z-10 flex items-center gap-3 bg-background py-4">
             <BackButton variant="icon" href={backHref} label={backLabel} />
             <div className="flex min-w-0 flex-1 items-center justify-center gap-2">
                 {showIcon && <Icon className={cn('h-5 w-5 shrink-0', iconClassName)} aria-hidden="true" />}
