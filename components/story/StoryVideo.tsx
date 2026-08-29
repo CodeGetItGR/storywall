@@ -25,13 +25,32 @@ export function StoryVideo({ src, className, loop = false, muteToggle = true, on
     // Mobile browsers block autoplay of unmuted video, so playback always
     // starts muted; the viewer can opt into sound via the toggle below.
     const [isMuted, setIsMuted] = useState(true);
+    // TEMP DEBUG — remove once mobile playback issue is diagnosed.
+    const [debugInfo, setDebugInfo] = useState<string | null>(null);
 
     function handleToggleMute() {
         setIsMuted((v) => !v);
     }
 
+    function handleVideoError(event: SyntheticEvent<HTMLVideoElement>) {
+        const el = event.currentTarget;
+        const err = el.error;
+        setDebugInfo(`video error: code=${err?.code} message=${err?.message || '(none)'} src=${el.currentSrc}`);
+    }
+
+    function handleLoadedMetadata(event: SyntheticEvent<HTMLVideoElement>) {
+        const el = event.currentTarget;
+        el.play().catch((err: unknown) => {
+            const e = err as { name?: string; message?: string };
+            setDebugInfo(`play() rejected: ${e?.name}: ${e?.message}`);
+        });
+    }
+
     return (
         <>
+            {debugInfo && (
+                <div className="absolute inset-x-0 top-0 z-50 break-words bg-red-600/90 p-2 text-xs text-white">{debugInfo}</div>
+            )}
             <video
                 src={src}
                 className={cn('absolute inset-0 h-full w-full object-contain', className)}
@@ -46,6 +65,8 @@ export function StoryVideo({ src, className, loop = false, muteToggle = true, on
                 onContextMenu={preventContextMenu}
                 onTimeUpdate={onTimeUpdate}
                 onEnded={onEnded}
+                onError={handleVideoError}
+                onLoadedMetadata={handleLoadedMetadata}
             />
             {muteToggle && (
                 <button

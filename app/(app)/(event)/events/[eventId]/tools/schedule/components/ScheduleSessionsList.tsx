@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { ScheduleSessionCard } from '@/app/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleSessionCard';
 import type { EventSessionResponseDto } from '@/lib/api/types';
-import { formatDate, formatTime, formatTimeRange } from '@/lib/datetime';
+import { formatDate, formatTimeRange } from '@/lib/datetime';
 import { groupSessions, sortSessions } from '@/lib/eventSessions';
 
 interface ScheduleSessionsListProps {

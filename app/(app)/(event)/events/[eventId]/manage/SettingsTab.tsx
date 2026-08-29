@@ -26,6 +26,7 @@ import { COVER_PHOTO_SECTION_ID } from '@/lib/manageSectionTargets';
 const inputClass =
     'bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition disabled:cursor-not-allowed disabled:opacity-60';
 const labelClass = 'text-xs font-semibold text-ink-muted uppercase tracking-wide';
+const settingsFormId = 'event-settings-form';
 
 export default function SettingsTab({
     event,
@@ -196,7 +197,26 @@ export default function SettingsTab({
                 <p className="mb-5 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('settings.readOnly')}</p>
             )}
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {/* Actions */}
+            <div className="sticky top-28 z-10 -mx-1 mb-5 flex items-center gap-3 rounded-2xl bg-background/95 px-1 py-2 backdrop-blur lg:top-4">
+                <button
+                    type="submit"
+                    form={settingsFormId}
+                    disabled={disabled || isSaving || isUploading || !title.trim() || !startAt || Boolean(scheduleError)}
+                    className="flex min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-brand px-5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                    {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : t('settings.save')}
+                </button>
+                {saved && !isSaving && (
+                    <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600">
+                        <Check className="h-3.5 w-3.5" />
+                        {t('settings.saved')}
+                    </span>
+                )}
+            </div>
+
+            <form id={settingsFormId} onSubmit={handleSubmit} className="flex flex-col gap-4">
+                {/* Cover photo */}
                 <div>
                     <span className={labelClass}>{t('settings.coverPhoto.label')}</span>
                     <TargetedSection id={COVER_PHOTO_SECTION_ID} className="mt-1.5">
@@ -254,6 +274,7 @@ export default function SettingsTab({
                     </TargetedSection>
                 </div>
 
+                {/* Basics */}
                 <FormFieldLabel label={t('settings.fields.title')} required labelClassName={labelClass}>
                     <input type="text" required value={title} onChange={handleTitleChange} disabled={disabled} className={inputClass} />
                     {fieldErrors?.title && <span className="text-xs text-rose-500">{fieldErrors.title}</span>}
@@ -274,6 +295,7 @@ export default function SettingsTab({
                     </span>
                 </FormFieldLabel>
 
+                {/* Location */}
                 <div className="grid gap-3 sm:grid-cols-2">
                     <FormFieldLabel label={t('settings.fields.locationName')} optional labelClassName={labelClass}>
                         <input type="text" value={locationName} onChange={handleLocationNameChange} disabled={disabled} className={inputClass} />
@@ -355,23 +377,6 @@ export default function SettingsTab({
                 </FormFieldLabel>
 
                 {updateEvent.isError && !fieldErrors && <p className="text-xs text-rose-500">{toErrorMessage(updateEvent.error)}</p>}
-
-                {/* Actions */}
-                <div className="flex items-center gap-3 mt-1">
-                    <button
-                        type="submit"
-                        disabled={disabled || isSaving || isUploading || !title.trim() || !startAt || Boolean(scheduleError)}
-                        className="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                        {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : t('settings.save')}
-                    </button>
-                    {saved && !isSaving && (
-                        <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600">
-                            <Check className="w-3.5 h-3.5" />
-                            {t('settings.saved')}
-                        </span>
-                    )}
-                </div>
             </form>
         </div>
     );
