@@ -56,7 +56,7 @@ export function ScheduleSessionsList({
                     </div>
 
                     <div className="relative flex flex-col gap-4 pl-5">
-                        <div className="absolute bottom-2 top-2 left-[8px] w-px bg-border" aria-hidden="true" />
+                        <div className="absolute bottom-2 top-2 left-2 w-px bg-border" aria-hidden="true" />
 
                         {groupedSessions[date].map((session) => (
                             <div key={session.id} className="relative">

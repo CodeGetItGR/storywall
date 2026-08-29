@@ -48,16 +48,6 @@ export function ScheduleSessionCard({
                 <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-1.5">
                         <h3 className="text-sm font-semibold leading-snug text-ink">{session.title}</h3>
-                        {session.isMain && (
-                            <span className="rounded-full bg-primary-light px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-dark">
-                                {t('host.mainBadge')}
-                            </span>
-                        )}
-                        {session.isSecondary && (
-                            <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ink-muted">
-                                {t('host.secondaryBadge')}
-                            </span>
-                        )}
                     </div>
                     {session.description && <p className="mt-1 text-sm leading-relaxed text-ink-muted">{session.description}</p>}
                 </div>
