@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { type ChangeEvent, type MouseEvent, useState } from 'react';
 
+import { StoryPreviewVideo } from '@/components/composer/StoryPreviewVideo';
 import { Modal } from '@/components/ui/modal';
 import { useStoryCameraController } from '@/hooks/useStoryCameraController';
 import type { StoryComposerController } from '@/hooks/useStoryComposerController';
@@ -81,15 +82,7 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                             {/* Full-screen story preview */}
                             <div className="absolute inset-0 flex items-center justify-center bg-black">
                                 {activeItem.file.type.startsWith('video/') ? (
-                                    <video
-                                        src={activeItem.previewUrl}
-                                        autoPlay
-                                        muted
-                                        loop
-                                        playsInline
-                                        preload="metadata"
-                                        className="h-full w-full object-contain"
-                                    />
+                                    <StoryPreviewVideo key={activeItem.previewUrl} src={activeItem.previewUrl} />
                                 ) : (
                                     <Image
                                         src={activeItem.previewUrl}

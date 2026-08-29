@@ -18,7 +18,9 @@ interface StoryCameraController {
 
 function supportedRecordingType(): string | undefined {
     if (typeof MediaRecorder === 'undefined') return undefined;
-    return ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4'].find((type) => MediaRecorder.isTypeSupported(type));
+    return ['video/webm;codecs=vp8,opus', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4', 'video/webm;codecs=vp9'].find((type) =>
+        MediaRecorder.isTypeSupported(type)
+    );
 }
 
 export function useStoryCameraController(open: boolean, onCapture: (file: File) => void): StoryCameraController {
