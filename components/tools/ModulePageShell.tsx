@@ -18,6 +18,7 @@ interface ModulePageShellProps {
     subtitle?: ReactNode;
     notice?: ReactNode;
     children: ReactNode;
+    className?: string;
 }
 
 const maxWidthClassName: Record<ModulePageMaxWidth, string> = {
@@ -39,9 +40,10 @@ export function ModulePageShell({
     subtitle,
     notice,
     children,
+    className,
 }: ModulePageShellProps) {
     return (
-        <div className={cn('mx-auto px-4 pb-24 lg:pb-8', maxWidthClassName[maxWidth])}>
+        <div className={cn('mx-auto px-4 pb-24 lg:pb-8', maxWidthClassName[maxWidth], className)}>
             <ModulePageHeader
                 title={title}
                 icon={icon}

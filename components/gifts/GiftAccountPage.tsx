@@ -51,35 +51,38 @@ export function GiftAccountPage() {
             showTitleIcon={false}
             backLabel={t('goBack')}
             backHref={routes.events.feed(event?.id ?? '')}
+            className="pb-0 lg:pb-0"
         >
             {!account.isLoading && !account.error && account.data && (
-                <div className="flex h-[calc(100dvh-7.5rem)] min-h-120 flex-col">
+                <div className="flex min-h-[calc(100dvh-9.25rem)] flex-col justify-between lg:min-h-[calc(100dvh-4.25rem)]">
                     {/* Hero */}
-                    <section className="flex shrink-0 flex-col items-center px-2 pt-12 text-center">
-                        <Image src="/icons/present.svg" alt="" width={100} height={100} priority className="h-24 w-24" unoptimized />
-                        <div className="mt-8 w-full max-h-[28vh] overflow-y-auto pr-1 text-center">
-                            <p className="text-[1.08rem] leading-8 whitespace-pre-line text-ink-muted">{note}</p>
+                    <section className="flex flex-col items-center px-2 pt-4 text-center">
+                        <Image src="/icons/present.svg" alt="" width={80} height={80} priority className="h-20 w-20" unoptimized />
+                        <div className="mt-3 w-full text-center">
+                            <p className="text-base leading-6 whitespace-pre-line text-ink-muted">{note}</p>
                         </div>
                     </section>
 
                     {/* Bank details */}
                     <section
-                        className={cn('shrink-0 border-t border-border/70 pt-6 text-center', {
-                            'mt-5': !!note,
+                        className={cn('border-t border-border/70 pt-4 pb-2 text-center', {
+                            'mt-3': !!note,
                         })}
                     >
-                        <div className="space-y-5">
+                        <div className="space-y-3">
                             <div>
-                                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ink-faint">{t('fields.bankName')}</p>
-                                <p className="mt-2 min-h-6 text-2xl font-semibold tracking-tight text-ink">{account.data.bankName}</p>
+                                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-faint">{t('fields.bankName')}</p>
+                                <p className="mt-1 text-xl leading-6 font-semibold text-ink">{account.data.bankName}</p>
                             </div>
                             <div>
-                                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ink-faint">{t('fields.accountHolder')}</p>
-                                <p className="mt-2 text-lg font-semibold text-ink">{account.data.accountHolder}</p>
+                                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-faint">{t('fields.accountHolder')}</p>
+                                <p className="mt-1 text-base leading-6 font-semibold text-ink">{account.data.accountHolder}</p>
                             </div>
                             <div>
-                                <p className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-faint">{t('fields.iban')}</p>
-                                <p className="mt-3 break-all font-mono text-2xl font-semibold tracking-[0.12em] text-ink">{formattedIban}</p>
+                                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-faint">{t('fields.iban')}</p>
+                                <p className="mt-1.5 break-all font-mono text-xl leading-7 font-semibold tracking-[0.1em] text-ink">
+                                    {formattedIban}
+                                </p>
                             </div>
                             <button
                                 type="button"

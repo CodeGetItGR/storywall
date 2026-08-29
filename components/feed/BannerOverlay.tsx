@@ -24,11 +24,11 @@ export function BannerOverlay({ title, actions, glowVisible }: { title: string; 
                 />
             )}
             {/* Actions */}
-            <div className="absolute inset-y-0 right-0 flex flex-col justify-between p-3">
-                <div className="flex flex-col items-end gap-2  justify-between h-full">{actions}</div>
+            <div className="absolute inset-y-0 right-0 z-20 flex flex-col justify-between p-3">
+                <div className="flex h-full flex-col items-end justify-between gap-2">{actions}</div>
             </div>
             {/* Title */}
-            <div className="absolute inset-x-0 bottom-0 px-4 pb-4 pt-16">
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-4 pb-4 pt-16">
                 <div className="inline-flex max-w-[calc(100%-4rem)] px-1">
                     <h1 className="text-2xl alegreya-light text-white drop-shadow-[0_1px_10px_rgba(0,0,0,0.32)]">{title}</h1>
                 </div>
