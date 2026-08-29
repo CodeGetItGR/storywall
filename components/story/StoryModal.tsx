@@ -7,6 +7,7 @@ import { type SyntheticEvent, useCallback, useEffect, useMemo, useState } from '
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { StoryCaptionBar, StoryHeader, StoryProgressBar, StoryViewersModal } from '@/components/story';
+import { StoryVideo } from '@/components/story/StoryVideo';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useDeleteStory, useEventMembers, useEventStories, useMarkStoryViewed, useMediaItem, useStory, useStoryViews } from '@/hooks';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
@@ -14,10 +15,6 @@ import { ApiError } from '@/lib/api/client';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { groupStoriesByAuthor } from '@/lib/stories';
 import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
-
-function preventVideoContextMenu(event: SyntheticEvent<HTMLVideoElement>) {
-    event.preventDefault();
-}
 
 type StoryModalProps = {
     open: boolean;
@@ -241,19 +238,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                         {/* Media */}
                         {media &&
                             (isVideoStory ? (
-                                <video
-                                    key={media.id}
-                                    src={media.mediaUrl}
-                                    className="absolute inset-0 h-full w-full object-contain"
-                                    autoPlay
-                                    playsInline
-                                    preload="auto"
-                                    controlsList="nodownload noplaybackrate noremoteplayback"
-                                    disablePictureInPicture
-                                    onContextMenu={preventVideoContextMenu}
-                                    onTimeUpdate={handleVideoTimeUpdate}
-                                    onEnded={handleVideoEnded}
-                                />
+                                <StoryVideo key={media.id} src={media.mediaUrl} onTimeUpdate={handleVideoTimeUpdate} onEnded={handleVideoEnded} />
                             ) : (
                                 <ProtectedImage
                                     src={media.mediaUrl}

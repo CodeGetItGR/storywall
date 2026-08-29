@@ -227,8 +227,6 @@
         "photo": "Take photo",
         "video": "Record video",
         "previewAlt": "Story preview",
-        "playPreview": "Play video",
-        "previewUnavailable": "This video can't be previewed on this device.",
         "remove": "Remove story",
         "storyList": "Selected stories",
         "selectStory": "Edit story {number}",

@@ -7,6 +7,7 @@ import { type SyntheticEvent, useEffect, useMemo, useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { StoryCaptionBar, StoryHeader, StoryProgressBar, StoryViewersModal } from '@/components/story';
+import { StoryVideo } from '@/components/story/StoryVideo';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useDeleteStory, useEventMembers, useEventStories, useMarkStoryViewed, useMediaItem, useStory, useStoryViews } from '@/hooks';
 import { ApiError } from '@/lib/api/client';
@@ -14,10 +15,6 @@ import { isEventWritable } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
 import { groupStoriesByAuthor } from '@/lib/stories';
 import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
-
-function preventVideoContextMenu(event: SyntheticEvent<HTMLVideoElement>) {
-    event.preventDefault();
-}
 
 export default function StoryBoundary({ id }: { id: string }) {
     const t = useTranslations('StoryPage');
@@ -194,19 +191,7 @@ export default function StoryBoundary({ id }: { id: string }) {
 
                 {media &&
                     (isVideoStory ? (
-                        <video
-                            key={media.id}
-                            src={media.mediaUrl}
-                            className="absolute inset-0 h-full w-full object-contain"
-                            autoPlay
-                            playsInline
-                            preload="auto"
-                            controlsList="nodownload noplaybackrate noremoteplayback"
-                            disablePictureInPicture
-                            onContextMenu={preventVideoContextMenu}
-                            onTimeUpdate={handleVideoTimeUpdate}
-                            onEnded={handleVideoEnded}
-                        />
+                        <StoryVideo key={media.id} src={media.mediaUrl} onTimeUpdate={handleVideoTimeUpdate} onEnded={handleVideoEnded} />
                     ) : (
                         <ProtectedImage
                             src={media.mediaUrl}
