@@ -20,7 +20,8 @@ function readState(eventId: string): OnboardingState {
         const raw = window.localStorage.getItem(storageKey(eventId));
         if (!raw) return { completed: false, stepIndex: 0 };
         const parsed = JSON.parse(raw) as Partial<OnboardingState>;
-        return { completed: Boolean(parsed.completed), stepIndex: typeof parsed.stepIndex === 'number' ? parsed.stepIndex : 0 };
+        const stepIndex = typeof parsed.stepIndex === 'number' && parsed.stepIndex >= 0 ? parsed.stepIndex : 0;
+        return { completed: Boolean(parsed.completed), stepIndex };
     } catch {
         return { completed: false, stepIndex: 0 };
     }
@@ -70,7 +71,11 @@ export function useOnboardingProgress(eventId: string | null) {
         setState({ completed: true, stepIndex: 0 });
     }, []);
 
+    // stepCount can transiently be 0 if the caller derived it from data that
+    // hadn't loaded yet on that render — ignore the advance rather than
+    // driving stepIndex negative and desyncing from the actual step list.
     const next = useCallback((stepCount: number) => {
+        if (stepCount <= 0) return;
         setState((current) => ({ ...current, stepIndex: Math.min(current.stepIndex + 1, stepCount - 1) }));
     }, []);
 

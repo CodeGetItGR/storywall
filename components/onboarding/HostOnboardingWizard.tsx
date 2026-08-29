@@ -23,9 +23,13 @@ export function HostOnboardingWizard() {
     const isHost = useIsHost();
     const pathname = usePathname();
     const isOnEventRoute = isEventRoute(pathname);
-    const { isOpen, isComplete, stepIndex, open, next, back, dismiss, complete } = useOnboardingProgress(event?.id ?? null);
+    const { isOpen, isComplete, stepIndex: rawStepIndex, open, next, back, dismiss, complete } = useOnboardingProgress(event?.id ?? null);
 
     const stepIds = useMemo(() => (event ? getOnboardingStepIds(event.eventType) : []), [event]);
+    // Clamped defensively: stored progress (or a stale `next()` call from a
+    // render where `stepIds` was momentarily empty) can otherwise point past
+    // the current step list and render a blank modal with no way out.
+    const stepIndex = Math.min(Math.max(rawStepIndex, 0), Math.max(stepIds.length - 1, 0));
     const stepId = stepIds[stepIndex];
     const isLastStep = stepIndex === stepIds.length - 1;
 
