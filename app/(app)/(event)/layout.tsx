@@ -35,7 +35,7 @@ export default async function EventLayout({ children }: { children: ReactNode })
 
     return (
         <HydrationBoundary state={dehydrate(queryClient)}>
-            <div className="min-h-dvh bg-background">
+            <div className="min-h-full bg-background">
                 <EventLifecycleBanner />
                 <DraftEventRouteGuard>
                     <div className="lg:max-w-none">{children}</div>

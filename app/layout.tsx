@@ -44,7 +44,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 
     return (
         <html lang={locale} className={`${geist.className} ${abhayaLibre.variable} ${alegreya.variable} h-dvh bg-background`}>
-            <body className="h-dvh overflow-hidden antialiased">
+            <body className="h-dvh overflow-hidden overscroll-none antialiased">
                 <NextIntlClientProvider>
                     <Providers>{children}</Providers>
                 </NextIntlClientProvider>

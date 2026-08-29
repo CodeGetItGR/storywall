@@ -37,7 +37,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     ) : (
         <div className="flex h-full min-h-0 overflow-hidden bg-background">
             <DesktopNavRail />
-            <main className="h-full min-w-0 flex-1 overflow-y-auto pb-20 lg:pb-0 lg:pl-55">
+            <main className="h-full min-w-0 flex-1 overflow-y-auto overscroll-contain pb-20 lg:pb-0 lg:pl-55">
                 <div className="min-h-full lg:max-w-none">{children}</div>
             </main>
             <MobileTabBar />
