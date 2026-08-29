@@ -2,9 +2,7 @@ import { Star } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import Avatar from '@/components/ui/avatar';
-import { avatarColorFromId, initialsFromName } from '@/lib/utils';
-
-const SHOW_NON_HOST_AVATARS = false;
+import { getInitials } from '@/lib/format';
 
 export function PostAuthorAvatar({
     avatarUrl,
@@ -23,7 +21,8 @@ export function PostAuthorAvatar({
 
     return (
         <section className="flex items-center gap-3 group">
-            {isHostPost ? (
+            {/* Author marker */}
+            {isHostPost && (
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-logo p-0.5" role="img" aria-label={name}>
                     <div className="flex h-full w-full items-center justify-center rounded-full bg-background p-0.5">
                         <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-logo">
@@ -31,9 +30,9 @@ export function PostAuthorAvatar({
                         </div>
                     </div>
                 </div>
-            ) : SHOW_NON_HOST_AVATARS ? (
-                <Avatar src={avatarUrl} initials={initialsFromName(name)} color={avatarColorFromId(name)} size="md" alt={name} />
-            ) : null}
+            )}
+            <Avatar src={avatarUrl} initials={getInitials(name)} size="md" alt={name} />
+            {/* Author details */}
             <div>
                 <p className="text-sm font-semibold text-ink leading-tight">{name}</p>
                 <div className="flex items-center gap-1.5">
