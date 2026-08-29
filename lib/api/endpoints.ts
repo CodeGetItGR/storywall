@@ -163,6 +163,7 @@ export const endpoints = {
 
     stories: {
         create: '/api/stories',
+        batch: '/api/stories/batch',
         byId: (id: string) => `/api/stories/${id}`,
         views: (id: string) => `/api/stories/${id}/views`,
     },

@@ -65,7 +65,8 @@ interface UploadMediaBatchInput {
 }
 
 // POST /api/events/{eventId}/media/batch (multipart/form-data, repeated
-// "files" field, 1..10 files, 20MB/file). Always resolves 200 — per-file
+// "files" field, with limits supplied by GET /api/config). Always resolves
+// 200 — per-file
 // outcomes are in the response body's `created`/`failed`, not the HTTP
 // status, so check those rather than treating a 200 as "all succeeded".
 export function useUploadMediaBatch() {

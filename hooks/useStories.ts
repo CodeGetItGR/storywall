@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
-import type { StoryRequestDto, StoryResponseDto, StoryViewResponseDto } from '@/lib/api/types';
+import type { StoryBatchCreateResponseDto, StoryRequestDto, StoryResponseDto, StoryViewResponseDto } from '@/lib/api/types';
 
 export const storyKeys = {
     list: (eventId: string) => ['events', eventId, 'stories'] as const,
@@ -43,6 +43,20 @@ export function useCreateStory() {
         mutationFn: (input: StoryRequestDto) => api.post<StoryResponseDto>(endpoints.stories.create, input),
         onSuccess: (story) => {
             queryClient.invalidateQueries({ queryKey: storyKeys.list(story.eventId) });
+        },
+    });
+}
+
+// POST /api/stories/batch — the body is a bare array. Batch-level validation
+// is atomic; unresolved media ids are returned as isolated item failures.
+export function useCreateStoriesBatch() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (input: StoryRequestDto[]) => api.post<StoryBatchCreateResponseDto>(endpoints.stories.batch, input),
+        onSuccess: (result, input) => {
+            const eventId = result.created[0]?.eventId ?? input[0]?.eventId;
+            if (eventId) queryClient.invalidateQueries({ queryKey: storyKeys.list(eventId) });
         },
     });
 }

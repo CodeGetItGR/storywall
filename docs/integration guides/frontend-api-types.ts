@@ -565,6 +565,26 @@ interface StoryViewResponseDto {
 // POST /api/stories/{id}/views marks viewed by caller (idempotent, returns existing on repeat)
 // GET  /api/stories/{id}/views lists viewers — story author or event HOST only
 
+/**
+ * POST /api/stories/batch — body is StoryRequestDto[] (NOT wrapped in an object), one story
+ * per item. Every item must share the same eventId (400/errorCode 3025
+ * MULTIPLE_EVENT_IDS_IN_REQUEST otherwise). 1..story.batch.max-items per request (default 5;
+ * see media.maxBatchStoryItems in GET /api/config; exceeding returns 400/errorCode 3024
+ * TOO_MANY_STORY_ITEMS). Any field-validation failure on ANY item (missing mediaId, caption
+ * too long, etc.) rejects the WHOLE batch with 400/errorCode 3001 VALIDATION_FAILED — nothing
+ * is created. Only a mediaId that fails to resolve to a live Media row is isolated per item
+ * into `failed`; everything else is all-or-nothing, unlike the media batch upload endpoint.
+ */
+interface StoryBatchCreateResponseDto {
+  created: StoryResponseDto[];
+  failed: StoryBatchFailureDto[];
+}
+interface StoryBatchFailureDto {
+  mediaId: string;
+  errorCode: string; // ErrorCode enum name — currently always "RESOURCE_NOT_FOUND" or "INTERNAL_ERROR"
+  message: string;   // clean, user-facing text — safe to show directly in the UI
+}
+
 type VoteType = 'UPVOTE' | 'DOWNVOTE'; // DOWNVOTE is display-only, never affects ranking
 
 // authorMemberId removed 2026-08-05 — author is always the caller now, anonymous
@@ -699,6 +719,7 @@ interface AppMediaConfigDto {
   maxFileSizeBytes: number;
   maxRequestSizeBytes: number;
   maxBatchUploadFiles: number;
+  maxBatchStoryItems: number; // added 2026-08-29 — item cap on POST /api/stories/batch (default 5)
   maxMediaPerPost: number;
   maxArchiveSelectedItems: number; // added 2026-08-25 — item cap on GET .../media/archive/selected
   maxArchivePartBytes: number;     // added 2026-08-25 — combined-size cap for that request AND one gallery-archive part

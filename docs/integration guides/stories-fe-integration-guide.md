@@ -6,6 +6,10 @@ things that were missing until now and have just been added — **story views** 
 error shape) and the common Java→TypeScript type table; this doc only covers what's specific
 to stories.
 
+**2026-08-29:** new **`POST /api/stories/batch`** endpoint — turn several already-uploaded
+`mediaId`s into that many stories in one request (e.g. "post these 5 photos as stories").
+See §Batch create below.
+
 Scope note: comments and reactions are **intentionally not supported** on stories (unlike
 posts) — don't build UI expecting `commentCount`/`reactionCount` on a story. Stories also
 don't carry any per-session grouping — a story belongs to an `Event`, full stop, regardless
@@ -37,6 +41,17 @@ interface StoryViewResponseDto {
   memberId: string;         // the viewer's EventMember id
   createdAt: string;        // when they viewed it
 }
+
+// NEW — POST /api/stories/batch, see §Batch create
+interface StoryBatchCreateResponseDto {
+  created: StoryResponseDto[];
+  failed: StoryBatchFailureDto[];
+}
+interface StoryBatchFailureDto {
+  mediaId: string;
+  errorCode: string; // ErrorCode enum name, e.g. "RESOURCE_NOT_FOUND"
+  message: string;   // clean, user-facing text — safe to show directly in the UI
+}
 ```
 
 ## Endpoints
@@ -46,6 +61,7 @@ interface StoryViewResponseDto {
 | GET | `/api/events/{eventId}/stories` | event member | all stories for the event |
 | GET | `/api/stories/{id}` | event member | single story |
 | POST | `/api/stories` | event member | create; `expiresAt` optional (see below) |
+| POST | `/api/stories/batch` | event member | **NEW** — create several stories in one request, see below |
 | DELETE | `/api/stories/{id}` | author or HOST | **hard delete** — see known quirk |
 | POST | `/api/stories/{id}/views` | event member | **NEW** — mark viewed by caller |
 | GET | `/api/stories/{id}/views` | story author or HOST | **NEW** — list viewers |
@@ -77,6 +93,89 @@ independent of the event's own schedule.
 As before, expiry is **not server-enforced removal** — an expired story still exists and is
 still returned by `GET /api/events/{eventId}/stories` / `GET /api/stories/{id}`. Filter
 `expiresAt < now` client-side to hide expired stories from the active story tray.
+
+## Batch create
+
+`POST /api/stories/batch` turns a batch of already-uploaded media into that many stories in
+one request — the "select 5 photos from the just-uploaded batch and post them all as
+stories" flow. Same two-step shape as multi-image posts (see
+[`multi-image-post-upload-fe-integration.md`](multi-image-post-upload-fe-integration.md)):
+upload the files first via `POST /api/events/{eventId}/media/batch` to get `mediaId`s, then
+call this endpoint with one `StoryRequestDto` per story you want created. There's no
+single endpoint that uploads files and creates stories in the same call.
+
+```
+POST /api/stories/batch
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+
+[
+  { "eventId": "a1c2...uuid", "mediaId": "d4e5...uuid", "caption": "🎉" },
+  { "eventId": "a1c2...uuid", "mediaId": "f6a7...uuid" }
+]
+```
+
+**The body is a bare JSON array (`StoryRequestDto[]`), not wrapped in an object** — unlike
+most POST bodies in this API. Each item is a full `StoryRequestDto`, same shape as the
+single-create endpoint.
+
+- **Every item must share the same `eventId`.** Mixed `eventId`s return `400`, `errorCode:
+  3025` (`MULTIPLE_EVENT_IDS_IN_REQUEST`), before anything is created — a batch always
+  targets one event, so build one request per event if the user is somehow posting to
+  multiple events at once (shouldn't happen from normal UI).
+- **Max `story.batch.max-items` per request — 5 by default.** Read the live cap from `GET
+  /api/config` (`media.maxBatchStoryItems`) rather than hardcoding 5; it's independently
+  configurable from `media.maxBatchUploadFiles` (the upload-side cap, default 10) since these
+  are cheap DB writes, not file uploads. Exceeding it returns `400`, `errorCode: 3024`
+  (`TOO_MANY_STORY_ITEMS`).
+- **Any field-validation failure on *any* item rejects the *entire* batch** with `400`,
+  `errorCode: 3001` (`VALIDATION_FAILED`) — a missing `mediaId`, a caption over the length
+  limit, anything `@Valid` would catch on the single-create endpoint. Nothing is created, not
+  even the valid items. This is different from the media batch-upload endpoint, which never
+  fails the whole request for a per-file problem — validate client-side before submitting
+  (required fields present, caption length) so this path is rare in practice.
+- **A `mediaId` that doesn't resolve to a live `Media` row is isolated per item**, not a
+  whole-batch failure — it lands in `failed[]` and the rest of the batch still succeeds. This
+  is the *only* per-item failure mode; everything else above is all-or-nothing.
+- Caller must be a member of the shared event — a non-member gets `403`. The `STORIES` module
+  must be enabled for the event, same as the single-create endpoint.
+- Shares the `story.write` rate-limit bucket with `POST /api/stories` (20/min per caller as
+  of this writing — read the live value from `GET /api/config` `rateLimits`, don't hardcode
+  it) — a 5-item batch costs one unit, not five.
+
+**200 response** (`StoryBatchCreateResponseDto`) — `200` whenever the batch-level checks
+pass, even if every item's `mediaId` turned out to be missing:
+
+```json
+{
+  "created": [
+    { "id": "e1a2...uuid", "eventId": "a1c2...uuid", "mediaId": "d4e5...uuid", "caption": "🎉", "...": "…rest of StoryResponseDto" }
+  ],
+  "failed": [
+    { "mediaId": "f6a7...uuid", "errorCode": "RESOURCE_NOT_FOUND", "message": "This media could not be found. It may have been deleted." }
+  ]
+}
+```
+
+- `created[]` — one `StoryResponseDto` per story that succeeded, `viewedByCurrentUser` always
+  `false` (nobody has viewed a story that was just created).
+- `failed[].errorCode` is the `ErrorCode` **name**, not the number — match on the string, same
+  convention as the media batch endpoint's `failed[]`.
+- `failed[].message` is clean, user-facing text — safe to show next to the failed thumbnail
+  without building your own copy.
+
+Suggested flow, reusing step 1 from the multi-image post upload:
+
+```
+1. POST /api/events/{eventId}/media/batch with the selected files
+   - created[] → keep these mediaIds, in order
+2. POST /api/stories/batch with one { eventId, mediaId, caption? } per kept mediaId
+   - created[] → stories are live, refresh the story tray
+   - failed[]  → show which items didn't become stories, offer retry per item
+```
+
+If step 2's batch-level checks fail (too many items, mixed events, a bad field), nothing is
+created — fix the request and resubmit the whole thing, no partial state to reconcile.
 
 ## Story views
 
@@ -200,3 +299,10 @@ to a real soft delete later, it'll be called out as a breaking change here.
       handle the 403 for non-author/non-host viewers by simply not showing the affordance.
 - [ ] Don't build comment/reaction UI for stories — not supported, and not planned as part of
       this change.
+- [ ] For "post multiple photos as stories" flows, use `POST /api/stories/batch` instead of
+      N sequential `POST /api/stories` calls — send a bare `StoryRequestDto[]`, all sharing one
+      `eventId`. Read the item cap from `GET /api/config` `media.maxBatchStoryItems` (default 5)
+      rather than hardcoding it.
+- [ ] Handle `failed[]` on the batch response for a missing `mediaId` (`RESOURCE_NOT_FOUND`) —
+      but note a validation problem (missing field, caption too long) rejects the *whole* batch
+      with `400`/`VALIDATION_FAILED` instead, so validate client-side before submitting.

@@ -47,6 +47,10 @@ documented (see `frontend-integration-guide.md` §0 for generic `429` handling, 
 applies unchanged). See §"New: content character limits" and §"New: per-endpoint rate limits"
 below.
 
+**2026-08-29:** `media` gained `maxBatchStoryItems`, the item cap on the new `POST
+/api/stories/batch` endpoint (default 5). See
+[`stories-fe-integration-guide.md`](stories-fe-integration-guide.md) §Batch create.
+
 ## GET /api/config
 
 Public — no `Authorization` header needed, safe to call before login (e.g. to gate the login
@@ -62,6 +66,7 @@ interface AppConfigResponseDto {
     maxImageBytes: number;         // per-kind cap, enforced after server-side format detection
     maxVideoBytes: number;         // per-kind cap, enforced after server-side format detection
     maxBatchUploadFiles: number;
+    maxBatchStoryItems: number;    // added 2026-08-29 — see below
     maxMediaPerPost: number;
     maxArchiveSelectedItems: number; // added 2026-08-25 — see below
     maxArchivePartBytes: number;     // added 2026-08-25 — see below
@@ -113,6 +118,11 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
   deliberately not surfaced here — it only fires on synthetic or extreme-panorama input and is
   reported as `MEDIA_IMAGE_TOO_MANY_PIXELS` (3016) at upload time.
 - **`media.maxMediaPerPost`** — same idea for the post composer's "max 10 images" guard.
+- **`media.maxBatchStoryItems`** (5 as of 2026-08-29) — the item-count cap on
+  `POST /api/stories/batch` (see
+  [`stories-fe-integration-guide.md`](stories-fe-integration-guide.md) §Batch create). Use it to
+  cap a "post these as stories" multi-select instead of hardcoding 5, since it's independently
+  configurable from `media.maxBatchUploadFiles`.
 - **`media.maxArchiveSelectedItems`** (100 as of 2026-08-25) — the item-count cap on
   `GET /api/events/{eventId}/media/archive/selected` (see
   [`gallery-archive-download-fe-integration.md`](gallery-archive-download-fe-integration.md) §7).

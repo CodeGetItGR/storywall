@@ -201,9 +201,11 @@ for the read side. Write side:
 
 Fully covered in [`stories-fe-integration-guide.md`](stories-fe-integration-guide.md). Create
 (`POST /api/stories`, `expiresAt` optional → defaults to +24h, **not** clamped to event end —
-see §3), list (`GET /api/events/{eventId}/stories`), delete (author/host), mark-viewed
-(`POST /api/stories/{id}/views`, idempotent), list viewers (`GET /api/stories/{id}/views`,
-author/host only). No comments/reactions on stories — not supported, don't build for it.
+see §3), batch-create (`POST /api/stories/batch`, one `StoryRequestDto[]` body, all sharing
+one `eventId`, default cap 5), list (`GET /api/events/{eventId}/stories`), delete
+(author/host), mark-viewed (`POST /api/stories/{id}/views`, idempotent), list viewers (`GET
+/api/stories/{id}/views`, author/host only). No comments/reactions on stories — not
+supported, don't build for it.
 
 ### Wishlist — new (2026-08-16)
 

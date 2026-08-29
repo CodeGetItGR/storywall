@@ -3,11 +3,12 @@
 import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { useCreatePost, useCreateStory, useUploadMedia, useUploadMediaBatch } from '@/hooks';
+import { useCreatePost, useUploadMediaBatch } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventModules } from '@/hooks/useEventModules';
 import { useCreatePlaylistSuggestion } from '@/hooks/usePlaylist';
+import { type StoryComposerController, useStoryComposerController } from '@/hooks/useStoryComposerController';
 import { ERROR_CODES, getErrorCode, getQuotaExceededDetails, isModuleNotAvailableError } from '@/lib/api/errors';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { findNextPlan } from '@/lib/planTiers';
@@ -36,9 +37,9 @@ export interface ComposerController {
     countError: string | null;
     submitError: string | null;
     storyError: string | null;
+    storyComposer: StoryComposerController;
     songComposerKey: number;
     fileRef: React.RefObject<HTMLInputElement | null>;
-    storyInputRef: React.RefObject<HTMLInputElement | null>;
     textareaRef: React.RefObject<HTMLTextAreaElement | null>;
     memberName: string;
     hasUnresolvedFailures: boolean;
@@ -71,7 +72,6 @@ export interface ComposerController {
         spotifyUrl?: string;
         comment?: string;
     }) => Promise<void>;
-    handleStoryFileChange: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
 }
 
 function formatBytes(bytes: number): string {
@@ -88,8 +88,6 @@ export function useComposerController(): ComposerController {
     const { data: appConfig } = useAppConfig();
     const createPost = useCreatePost();
     const uploadBatch = useUploadMediaBatch();
-    const uploadMedia = useUploadMedia();
-    const createStory = useCreateStory();
     const createPlaylistSuggestion = useCreatePlaylistSuggestion();
 
     const [isOpen, setIsOpen] = useState(false);
@@ -99,10 +97,8 @@ export function useComposerController(): ComposerController {
     const [sizeError, setSizeError] = useState<string | null>(null);
     const [countError, setCountError] = useState<string | null>(null);
     const [submitError, setSubmitError] = useState<string | null>(null);
-    const [storyError, setStoryError] = useState<string | null>(null);
     const [songComposerKey, setSongComposerKey] = useState(0);
     const fileRef = useRef<HTMLInputElement>(null);
-    const storyInputRef = useRef<HTMLInputElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
@@ -128,6 +124,7 @@ export function useComposerController(): ComposerController {
     const canCompose = Boolean(activeMember) && isEventWritable(activeEvent?.status);
     const canComposePost = canCompose && eventModules.some((module) => module.moduleKey === 'posts' && module.isAvailable);
     const canComposeStory = canCompose && eventModules.some((module) => module.moduleKey === 'stories' && module.isAvailable);
+    const storyComposer = useStoryComposerController(canComposeStory);
     const canComposeSong = canCompose && eventModules.some((module) => module.moduleKey === 'playlist' && module.isAvailable);
     const maxMediaPerPost = appConfig?.media.maxMediaPerPost ?? 10;
     const maxBatchUploadFiles = appConfig?.media.maxBatchUploadFiles ?? 10;
@@ -410,33 +407,6 @@ export function useComposerController(): ComposerController {
         closeComposer();
     }
 
-    const openStoryCapture = useCallback(() => {
-        if (!canComposeStory) return;
-        storyInputRef.current?.click();
-    }, [canComposeStory]);
-
-    async function handleStoryFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-        const file = event.target.files?.[0];
-        event.target.value = '';
-        if (!file || !activeMember || !activeEvent || !canComposeStory) return;
-
-        setStoryError(null);
-        try {
-            const media = await uploadMedia.mutateAsync({
-                eventId: activeEvent.id,
-                file,
-                uploaderMemberId: activeMember.id,
-            });
-            await createStory.mutateAsync({
-                eventId: activeEvent.id,
-                authorMemberId: activeMember.id,
-                mediaId: media.id,
-            });
-        } catch (error) {
-            setStoryError(getComposerErrorMessage(error));
-        }
-    }
-
     const initials = activeMember ? initialsFromName(activeMember.displayName) : '?';
 
     const contextValue: ComposerContextValue = useMemo(
@@ -444,9 +414,9 @@ export function useComposerController(): ComposerController {
             openPostComposer,
             openPostImagePicker,
             openSongComposer,
-            openStoryCapture,
-            isCreatingStory: uploadMedia.isPending || createStory.isPending,
-            storyError,
+            openStoryCapture: storyComposer.open,
+            isCreatingStory: storyComposer.isBusy,
+            storyError: storyComposer.error,
             canCompose,
             canComposePost,
             canComposeStory,
@@ -457,13 +427,12 @@ export function useComposerController(): ComposerController {
             canComposePost,
             canComposeSong,
             canComposeStory,
-            createStory.isPending,
             openPostComposer,
             openPostImagePicker,
             openSongComposer,
-            openStoryCapture,
-            storyError,
-            uploadMedia.isPending,
+            storyComposer.error,
+            storyComposer.isBusy,
+            storyComposer.open,
         ]
     );
 
@@ -476,10 +445,10 @@ export function useComposerController(): ComposerController {
         sizeError,
         countError,
         submitError,
-        storyError,
+        storyError: storyComposer.error,
+        storyComposer,
         songComposerKey,
         fileRef,
-        storyInputRef,
         textareaRef,
         memberName: activeMember?.displayName ?? '',
         hasUnresolvedFailures,
@@ -495,7 +464,7 @@ export function useComposerController(): ComposerController {
         openPostComposer,
         openPostImagePicker,
         openSongComposer,
-        openStoryCapture,
+        openStoryCapture: storyComposer.open,
         selectPostMode,
         selectSongMode,
         closeComposer,
@@ -506,6 +475,5 @@ export function useComposerController(): ComposerController {
         handleRetryUploadClick,
         submitPost,
         submitPlaylistSuggestion,
-        handleStoryFileChange,
     };
 }

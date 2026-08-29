@@ -41,6 +41,7 @@ export interface AppMediaConfigDto {
     maxImageBytes: number;
     maxVideoBytes: number;
     maxBatchUploadFiles: number;
+    maxBatchStoryItems: number;
     maxMediaPerPost: number;
     maxArchiveSelectedItems: number;
     maxArchivePartBytes: number;
@@ -1104,6 +1105,17 @@ export interface StoryResponseDto {
     deletedAt: string | null;
     // Whether the requesting member has already POSTed a view for this story.
     viewedByCurrentUser: boolean;
+}
+
+export interface StoryBatchFailureDto {
+    mediaId: string;
+    errorCode: string;
+    message: string;
+}
+
+export interface StoryBatchCreateResponseDto {
+    created: StoryResponseDto[];
+    failed: StoryBatchFailureDto[];
 }
 
 export interface StoryViewResponseDto {
