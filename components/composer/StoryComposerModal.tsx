@@ -1,6 +1,6 @@
 'use client';
 
-import { Camera, Images, Loader2, Play, RefreshCw, Send, Trash2 } from 'lucide-react';
+import { Camera, Images, Loader2, RefreshCw, Send, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { type ChangeEvent, type MouseEvent, useState } from 'react';
@@ -81,19 +81,15 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                             {/* Full-screen story preview */}
                             <div className="absolute inset-0 flex items-center justify-center bg-black">
                                 {activeItem.file.type.startsWith('video/') ? (
-                                    <>
-                                        <video
-                                            src={activeItem.previewUrl}
-                                            controls
-                                            playsInline
-                                            preload="metadata"
-                                            className="h-full w-full object-contain"
-                                        />
-                                        <Play
-                                            className="pointer-events-none absolute top-5 left-5 h-4 w-4 fill-white text-white"
-                                            aria-hidden="true"
-                                        />
-                                    </>
+                                    <video
+                                        src={activeItem.previewUrl}
+                                        autoPlay
+                                        muted
+                                        loop
+                                        playsInline
+                                        preload="metadata"
+                                        className="h-full w-full object-contain"
+                                    />
                                 ) : (
                                     <Image
                                         src={activeItem.previewUrl}
