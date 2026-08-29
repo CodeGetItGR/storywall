@@ -871,11 +871,11 @@ export interface EventSessionResponseDto {
 
 export interface EventSessionPatchDto {
     title?: string;
-    description?: string;
-    startAt?: string;
-    endAt?: string;
+    description?: string | null;
+    startAt?: string | null;
+    endAt?: string | null;
     locationName?: string;
-    mapsUrl?: string;
+    mapsUrl?: string | null;
     displayOrder?: number;
     isSecondary?: boolean;
 }

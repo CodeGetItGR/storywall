@@ -96,6 +96,18 @@ export function ScheduleEditorForm({
             : !datesDisabled && startAt && endAt && !isDatetimeLocalAfter(endAt, startAt)
               ? t('host.endBeforeStart')
               : null;
+    const trimmedTitle = title.trim();
+    const trimmedDescription = description.trim();
+    const trimmedLocationName = locationName.trim();
+    const trimmedMapsUrl = mapsUrl.trim();
+    const hasChanges = editingSession
+        ? trimmedTitle !== initialTitle.trim() ||
+          trimmedDescription !== initialDescription.trim() ||
+          (!datesDisabled && startAt !== initialStartAt) ||
+          (!isMainSession && endAt !== initialEndAt) ||
+          trimmedLocationName !== initialLocationName.trim() ||
+          trimmedMapsUrl !== initialMapsUrl.trim()
+        : Boolean(trimmedTitle || trimmedDescription || startAt || endAt || trimmedLocationName || trimmedMapsUrl);
 
     function handleTitleChange(event: ChangeEvent<HTMLInputElement>) {
         setTitle(event.target.value);
@@ -144,9 +156,8 @@ export function ScheduleEditorForm({
     async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
 
-        const trimmedTitle = title.trim();
-        const trimmedLocationName = locationName.trim();
-        if (!trimmedTitle || !trimmedLocationName) return;
+        if (!trimmedTitle) return;
+        if (editingSession && !hasChanges) return;
 
         if (scheduleError) {
             setSubmitError(scheduleError);
@@ -159,15 +170,14 @@ export function ScheduleEditorForm({
 
         try {
             if (editingSession) {
-                const payload: EventSessionPatchDto = {
-                    title: trimmedTitle,
-                    locationName: trimmedLocationName,
-                };
+                const payload: EventSessionPatchDto = {};
 
-                if (description.trim()) payload.description = description.trim();
-                if (!isMainSession && startAt) payload.startAt = new Date(startAt).toISOString();
-                if (!isMainSession && endAt) payload.endAt = new Date(endAt).toISOString();
-                if (mapsUrl.trim()) payload.mapsUrl = mapsUrl.trim();
+                if (trimmedTitle !== initialTitle.trim()) payload.title = trimmedTitle;
+                if (trimmedDescription !== initialDescription.trim()) payload.description = trimmedDescription || null;
+                if (!datesDisabled && startAt !== initialStartAt) payload.startAt = startAt ? new Date(startAt).toISOString() : null;
+                if (!isMainSession && endAt !== initialEndAt) payload.endAt = endAt ? new Date(endAt).toISOString() : null;
+                if (trimmedLocationName !== initialLocationName.trim()) payload.locationName = trimmedLocationName;
+                if (trimmedMapsUrl !== initialMapsUrl.trim()) payload.mapsUrl = trimmedMapsUrl || null;
 
                 await updateSession.mutateAsync(payload);
             } else {
@@ -175,13 +185,13 @@ export function ScheduleEditorForm({
                     eventId,
                     title: trimmedTitle,
                     displayOrder: nextDisplayOrder,
-                    locationName: trimmedLocationName,
                 };
 
-                if (description.trim()) payload.description = description.trim();
+                if (trimmedDescription) payload.description = trimmedDescription;
                 if (startAt) payload.startAt = new Date(startAt).toISOString();
                 if (endAt) payload.endAt = new Date(endAt).toISOString();
-                if (mapsUrl.trim()) payload.mapsUrl = mapsUrl.trim();
+                if (trimmedLocationName) payload.locationName = trimmedLocationName;
+                if (trimmedMapsUrl) payload.mapsUrl = trimmedMapsUrl;
                 if (createAsSecondary) payload.isSecondary = true;
 
                 await createSession.mutateAsync(payload);
@@ -195,7 +205,7 @@ export function ScheduleEditorForm({
     }
 
     const isSaving = createSession.isPending || updateSession.isPending;
-    const canSubmit = Boolean(title.trim() && locationName.trim() && !scheduleError);
+    const canSubmit = Boolean(trimmedTitle && !scheduleError && (!editingSession || hasChanges));
     const submitLabel = editingSession
         ? updateSession.isPending
             ? t('host.updating')
@@ -206,6 +216,7 @@ export function ScheduleEditorForm({
 
     return (
         <>
+            {/* Header */}
             <div className="border-b border-border/70 bg-background/95 px-4 py-4 backdrop-blur-sm sm:px-5">
                 <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-border/70" aria-hidden="true" />
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-faint">
@@ -217,6 +228,7 @@ export function ScheduleEditorForm({
                 </p>
             </div>
 
+            {/* Fields */}
             <Modal.Body className="px-4 py-4 sm:px-5">
                 <form id={formId} className="grid gap-4" onSubmit={handleSubmit}>
                     <FormFieldLabel
@@ -296,7 +308,7 @@ export function ScheduleEditorForm({
                     <div className="grid gap-3 sm:grid-cols-2">
                         <FormFieldLabel
                             label={t('host.fields.locationName')}
-                            required
+                            optional
                             className="grid gap-1.5"
                             labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted"
                         >
@@ -306,7 +318,6 @@ export function ScheduleEditorForm({
                                 onChange={handleLocationNameChange}
                                 className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                                 placeholder={t('host.placeholders.locationName')}
-                                required
                             />
                         </FormFieldLabel>
                         <FormFieldLabel
@@ -330,6 +341,7 @@ export function ScheduleEditorForm({
                 </form>
             </Modal.Body>
 
+            {/* Actions */}
             <div className="border-t border-border/70 bg-background/95 px-4 py-4 backdrop-blur-sm sm:px-5">
                 <div className="flex items-center gap-3">
                     <button
