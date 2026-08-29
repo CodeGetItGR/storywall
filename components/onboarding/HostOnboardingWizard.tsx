@@ -12,7 +12,6 @@ import { OnboardingToolsStep } from '@/components/onboarding/steps/OnboardingToo
 import { OnboardingVenueStep } from '@/components/onboarding/steps/OnboardingVenueStep';
 import { Modal } from '@/components/ui/modal';
 import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
-import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import { getOnboardingStepIds } from '@/lib/onboardingSteps';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -20,7 +19,6 @@ import { useActiveEvent, useIsHost } from '@/providers/EventProvider';
 
 export function HostOnboardingWizard() {
     const t = useTranslations('HostOnboarding');
-    const tCreateEvent = useTranslations('CreateEventPage');
     const event = useActiveEvent();
     const isHost = useIsHost();
     const pathname = usePathname();
@@ -30,9 +28,6 @@ export function HostOnboardingWizard() {
     const stepIds = useMemo(() => (event ? getOnboardingStepIds(event.eventType) : []), [event]);
     const stepId = stepIds[stepIndex];
     const isLastStep = stepIndex === stepIds.length - 1;
-
-    const secondarySessionTitleKey = event ? getCreateEventCatalogEntry(event.eventType)?.secondarySessionTitleKey : undefined;
-    const venueTitle = secondarySessionTitleKey && tCreateEvent.has(secondarySessionTitleKey) ? tCreateEvent(secondarySessionTitleKey) : '';
 
     function handleContinue() {
         if (isLastStep) {
@@ -96,7 +91,12 @@ export function HostOnboardingWizard() {
                     )}
 
                     {stepId === 'venue' && (
-                        <OnboardingVenueStep eventId={event.id} sessions={event.sessions} defaultTitle={venueTitle} onDone={handleContinue} />
+                        <OnboardingVenueStep
+                            href={routes.events.manage(event.id, { tab: 'settings', section: 'venue-session' })}
+                            hasVenue={event.sessions.some((session) => session.isSecondary)}
+                            onNavigate={dismiss}
+                            onDone={handleContinue}
+                        />
                     )}
 
                     {stepId === 'invite' && (

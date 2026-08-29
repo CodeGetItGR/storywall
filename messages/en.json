@@ -52,7 +52,9 @@
         "loading": "Loading feed",
         "aboutEvent": "About this event",
         "giftAccount": "Gift account",
-        "location": "Event location"
+        "location": "Event location",
+        "mainSession": "Main session",
+        "secondarySession": "Secondary session"
     },
     "FeedScheduleCard": {
         "eyebrow": "Schedule",
@@ -960,6 +962,25 @@
                 "TARGET_UNAVAILABLE": "Target unavailable"
             }
         },
+        "sessionManagement": {
+            "title": "Event sessions",
+            "description": "Manage the ceremony and venue details shown to guests.",
+            "ceremony": {
+                "title": "Ceremony",
+                "description": "Title, date, time, location, description, and maps link. Dates follow the event dates above."
+            },
+            "venue": {
+                "title": "Venue",
+                "description": "Reception or celebration details, including its own date and location."
+            },
+            "date": "Date and time",
+            "location": "Location",
+            "notSet": "Not set",
+            "missing": "No venue session has been added yet.",
+            "mainMissing": "The ceremony session is unavailable for this event.",
+            "editNamed": "Edit {title}",
+            "addNamed": "Add {title}"
+        },
         "settings": {
             "title": "Event details",
             "subtitle": "These details show up on your invite page and event feed.",
@@ -1412,19 +1433,11 @@
         },
         "venue": {
             "askTitle": "Have a second location?",
-            "askBody": "Many weddings and baptisms have a separate spot for the reception. Add it now?",
-            "yes": "Yes, add it",
-            "no": "No, skip this",
-            "formTitle": "Add your reception venue",
-            "fields": {
-                "title": "Name",
-                "locationName": "Location"
-            },
-            "placeholders": {
-                "locationName": "e.g. Grand Hotel Ballroom"
-            },
-            "add": "Add venue",
-            "adding": "Adding..."
+            "askBody": "Add the reception or celebration details in Host Management.",
+            "readyTitle": "Your venue is ready",
+            "readyBody": "You can update its details at any time in Host Management.",
+            "add": "Add venue details",
+            "edit": "Edit venue details"
         },
         "invite": {
             "title": "Invite your guests",

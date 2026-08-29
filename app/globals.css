@@ -537,6 +537,11 @@
     animation: onboarding-guide-glow 2.6s ease-in-out infinite;
 }
 
+.target-section-active {
+    background-color: rgb(255 122 89 / 0.08);
+    box-shadow: 0 0 0 3px rgb(255 122 89 / 0.28);
+}
+
 @media (prefers-reduced-motion: reduce) {
     *,
     ::before,

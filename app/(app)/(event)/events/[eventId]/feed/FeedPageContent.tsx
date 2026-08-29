@@ -1,6 +1,5 @@
 'use client';
 
-import { MapPin } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
@@ -10,6 +9,7 @@ import { Banner } from '@/components/feed/Banner';
 import { ComposerCard } from '@/components/feed/ComposerCard';
 import { EventDescription } from '@/components/feed/EventDescription';
 import { EventInfo } from '@/components/feed/EventInfo';
+import { EventSessionActionButtons } from '@/components/feed/EventSessionActionButtons';
 import { FeedPostRenderer } from '@/components/feed/FeedPostRenderer';
 import { Header } from '@/components/feed/Header';
 import { PostModal } from '@/components/feed/PostModal';
@@ -28,7 +28,6 @@ export function FeedPageContent() {
     const { currentMemberRsvpId, event, eventId, isFetchingNextPage, isHost, loadMoreRef, loadingMoreLabel, moduleFlags, posts } = useFeedPage();
     const [storyId, setStoryId] = useState<string | null>(null);
     const [pageLoaded, setPageLoaded] = useState(false);
-    const hasLocation = Boolean(event.location.name || event.location.address || event.location.mapsUrl);
     const shouldShowRSVP = moduleFlags.rsvp && !isHost && currentMemberRsvpId === null;
 
     useEffect(() => {
@@ -63,15 +62,7 @@ export function FeedPageContent() {
                     glowVisible={pageLoaded}
                     actions={
                         <>
-                            {hasLocation && (
-                                <Link
-                                    href={routes.events.tools.schedule(eventId)}
-                                    aria-label={t('location')}
-                                    className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-background/92 text-ink shadow-[0_8px_22px_rgba(36,31,26,0.18)] transition-transform hover:-translate-y-0.5"
-                                >
-                                    <MapPin className="h-5 w-5" />
-                                </Link>
-                            )}
+                            <EventSessionActionButtons event={event} />
                             {moduleFlags.wishlist && (
                                 <Link
                                     href={routes.events.tools.gifts(eventId)}

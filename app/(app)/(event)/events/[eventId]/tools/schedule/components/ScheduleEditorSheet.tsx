@@ -2,7 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 
-import { ScheduleEditorForm, type ScheduleSessionMutator } from '@/app/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleEditorForm';
+import {
+    type CreateScheduleSessionMutator,
+    ScheduleEditorForm,
+    type UpdateScheduleSessionMutator,
+} from '@/app/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleEditorForm';
 import { Modal } from '@/components/ui/modal';
 import type { EventSessionResponseDto, EventStatus } from '@/lib/api/types';
 
@@ -14,8 +18,8 @@ interface ScheduleEditorSheetProps {
     sessions: EventSessionResponseDto[];
     editingSession: EventSessionResponseDto | null;
     defaultStartAt: string;
-    createSession: ScheduleSessionMutator;
-    updateSession: ScheduleSessionMutator;
+    createSession: CreateScheduleSessionMutator;
+    updateSession: UpdateScheduleSessionMutator;
     secondaryPrefillTitle?: string;
 }
 

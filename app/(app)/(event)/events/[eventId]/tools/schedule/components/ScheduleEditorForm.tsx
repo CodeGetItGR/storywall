@@ -8,7 +8,7 @@ import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { Modal } from '@/components/ui/modal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
-import type { EventSessionRequestDto, EventSessionResponseDto, EventStatus } from '@/lib/api/types';
+import type { EventSessionPatchDto, EventSessionRequestDto, EventSessionResponseDto, EventStatus } from '@/lib/api/types';
 import {
     getCurrentDatetimeLocalValue,
     getScheduleDatetimeLocalBounds,
@@ -17,8 +17,13 @@ import {
     toDatetimeLocalValue,
 } from '@/lib/datetime';
 
-export type ScheduleSessionMutator = {
+export type CreateScheduleSessionMutator = {
     mutateAsync: (payload: EventSessionRequestDto) => Promise<unknown>;
+    isPending: boolean;
+};
+
+export type UpdateScheduleSessionMutator = {
+    mutateAsync: (payload: EventSessionPatchDto) => Promise<unknown>;
     isPending: boolean;
 };
 
@@ -28,8 +33,8 @@ interface ScheduleEditorFormProps {
     sessions: EventSessionResponseDto[];
     editingSession: EventSessionResponseDto | null;
     defaultStartAt: string;
-    createSession: ScheduleSessionMutator;
-    updateSession: ScheduleSessionMutator;
+    createSession: CreateScheduleSessionMutator;
+    updateSession: UpdateScheduleSessionMutator;
     onClose: () => void;
     // Prefills a brand-new session as the event's secondary one (e.g. a wedding's
     // venue) when opened via the dedicated "add secondary session" action. Ignored
@@ -140,7 +145,8 @@ export function ScheduleEditorForm({
         event.preventDefault();
 
         const trimmedTitle = title.trim();
-        if (!trimmedTitle) return;
+        const trimmedLocationName = locationName.trim();
+        if (!trimmedTitle || !trimmedLocationName) return;
 
         if (scheduleError) {
             setSubmitError(scheduleError);
@@ -151,23 +157,33 @@ export function ScheduleEditorForm({
         setSubmitError(null);
         setSaved(false);
 
-        const payload: EventSessionRequestDto = {
-            eventId,
-            title: trimmedTitle,
-            displayOrder: editingSession?.displayOrder ?? nextDisplayOrder,
-        };
-
-        if (description.trim()) payload.description = description.trim();
-        if (!isMainSession && startAt) payload.startAt = new Date(startAt).toISOString();
-        if (!isMainSession && endAt) payload.endAt = new Date(endAt).toISOString();
-        if (locationName.trim()) payload.locationName = locationName.trim();
-        if (mapsUrl.trim()) payload.mapsUrl = mapsUrl.trim();
-        if (createAsSecondary) payload.isSecondary = true;
-
         try {
             if (editingSession) {
+                const payload: EventSessionPatchDto = {
+                    title: trimmedTitle,
+                    locationName: trimmedLocationName,
+                };
+
+                if (description.trim()) payload.description = description.trim();
+                if (!isMainSession && startAt) payload.startAt = new Date(startAt).toISOString();
+                if (!isMainSession && endAt) payload.endAt = new Date(endAt).toISOString();
+                if (mapsUrl.trim()) payload.mapsUrl = mapsUrl.trim();
+
                 await updateSession.mutateAsync(payload);
             } else {
+                const payload: EventSessionRequestDto = {
+                    eventId,
+                    title: trimmedTitle,
+                    displayOrder: nextDisplayOrder,
+                    locationName: trimmedLocationName,
+                };
+
+                if (description.trim()) payload.description = description.trim();
+                if (startAt) payload.startAt = new Date(startAt).toISOString();
+                if (endAt) payload.endAt = new Date(endAt).toISOString();
+                if (mapsUrl.trim()) payload.mapsUrl = mapsUrl.trim();
+                if (createAsSecondary) payload.isSecondary = true;
+
                 await createSession.mutateAsync(payload);
             }
 
@@ -179,6 +195,7 @@ export function ScheduleEditorForm({
     }
 
     const isSaving = createSession.isPending || updateSession.isPending;
+    const canSubmit = Boolean(title.trim() && locationName.trim() && !scheduleError);
     const submitLabel = editingSession
         ? updateSession.isPending
             ? t('host.updating')
@@ -279,7 +296,7 @@ export function ScheduleEditorForm({
                     <div className="grid gap-3 sm:grid-cols-2">
                         <FormFieldLabel
                             label={t('host.fields.locationName')}
-                            optional
+                            required
                             className="grid gap-1.5"
                             labelClassName="text-xs font-semibold uppercase tracking-wide text-ink-muted"
                         >
@@ -289,6 +306,7 @@ export function ScheduleEditorForm({
                                 onChange={handleLocationNameChange}
                                 className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                                 placeholder={t('host.placeholders.locationName')}
+                                required
                             />
                         </FormFieldLabel>
                         <FormFieldLabel
@@ -325,7 +343,7 @@ export function ScheduleEditorForm({
                     <button
                         type="submit"
                         form={formId}
-                        disabled={isSaving}
+                        disabled={isSaving || !canSubmit}
                         className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-brand px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         {editingSession ? (

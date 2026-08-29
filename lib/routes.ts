@@ -27,7 +27,7 @@ export const routes = {
     profile: '/profile',
     events: {
         new: '/events/new',
-        manage: (eventId: string, params: { tab?: ManageTab | null } = {}) => withQuery(`/events/${eventId}/manage`, params),
+        manage: (eventId: string, params: { tab?: ManageTab | null; section?: string | null } = {}) => withQuery(`/events/${eventId}/manage`, params),
         tools: {
             rsvp: (eventId: string) => `/events/${eventId}/tools/rsvp`,
             rsvpSubmit: (eventId: string, attending?: 'attending' | 'not-attending' | null) =>
