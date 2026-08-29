@@ -1,15 +1,13 @@
 'use client';
 
 import { Menu } from '@base-ui/react/menu';
-import { Camera, Menu as MenuIcon, Plus, PlusCircle } from 'lucide-react';
-import Image from 'next/image';
+import { Camera, Menu as MenuIcon, Plus, PlusCircle, Settings, Wrench } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { type CSSProperties, type MouseEvent, useEffect, useState } from 'react';
 import { PiMusicNotesPlusDuotone } from 'react-icons/pi';
 
 import { type ContextNavItem, ContextNavSlot, isFeedRoute, isPathActive, TabLink } from '@/components/layout/mobile-tab-bar';
-import { useAuth } from '@/hooks/useAuth';
 import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -28,13 +26,11 @@ export function MobileTabBar() {
     const pathname = usePathname();
     const searchParams = useSearchParams().toString();
     const { openPostComposer, openSongComposer, openStoryCapture, canComposePost, canComposeStory, canComposeSong } = useComposer();
-    const { user } = useAuth();
     const { open: accountOpen, openAccount } = useAccountPanel();
     const { isMobileTabBarHidden } = useMobileChrome();
     const activeEvent = useActiveEvent();
     const isHost = useIsHost();
     const isLoading = useEventContextLoading();
-    const accountLabel = user?.displayName ?? t('items.account');
     const isFeedDetailPage = isFeedRoute(pathname);
     const showEventNavigation = !isLoading && Boolean(activeEvent);
     const isDraft = activeEvent?.status === 'DRAFT';
@@ -58,11 +54,16 @@ export function MobileTabBar() {
                 : toolItems
             : [];
     const contextActive = contextItems.some((item) => isPathActive(pathname, item.href, searchParams));
+    const ContextTriggerIcon = isHost ? Settings : Wrench;
+    const contextMenuLabel = isHost ? t('eventMenu') : t('toolsMenu');
 
     useEffect(() => {
-        const timeoutId = window.setTimeout(() => {
-            setComposerButtonLowered(isMobileTabBarHidden);
-        }, isMobileTabBarHidden ? 100 : 0);
+        const timeoutId = window.setTimeout(
+            () => {
+                setComposerButtonLowered(isMobileTabBarHidden);
+            },
+            isMobileTabBarHidden ? 100 : 0
+        );
 
         return () => window.clearTimeout(timeoutId);
     }, [isMobileTabBarHidden]);
@@ -120,14 +121,51 @@ export function MobileTabBar() {
                             aria-expanded={accountOpen}
                             className="flex h-full w-full items-center justify-center gap-2 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted"
                         >
-                            <MenuIcon
-                                className={cn('h-5 w-5 transition-opacity', accountActive ? 'opacity-100' : 'opacity-55')}
-                                aria-hidden="true"
-                            />
+                            <MenuIcon className={cn('h-5 w-5 transition-opacity', accountActive ? 'opacity-100' : 'opacity-55')} aria-hidden="true" />
                             <span>{t('menu')}</span>
                         </button>
                     ) : (
                         <>
+                            {/* Home */}
+                            <div className="flex h-full items-center justify-center">
+                                <TabLink
+                                    href={homeHref}
+                                    icon={homeTabItem.icon}
+                                    label={t(`items.${homeTabItem.key}`)}
+                                    active={homeActive}
+                                    onClick={handleHomeClick}
+                                />
+                            </div>
+
+                            {/* Music */}
+                            {playlistAvailable && activeEvent && (
+                                <div className="flex h-full items-center justify-center">
+                                    <TabLink
+                                        href={routes.events.tools.playlist(activeEvent.id)}
+                                        icon="/icons/music.svg"
+                                        label={t('items.playlist')}
+                                        active={playlistActive}
+                                    />
+                                </div>
+                            )}
+
+                            {/* Event menu */}
+                            {contextItems.length > 0 && (
+                                <div className="flex h-full items-center justify-center">
+                                    <ContextNavSlot
+                                        active={contextActive}
+                                        forceMenu
+                                        TriggerIcon={ContextTriggerIcon}
+                                        items={contextItems}
+                                        menuLabel={contextMenuLabel}
+                                        pathname={pathname}
+                                        searchParams={searchParams}
+                                        onItemClick={handleDashboardMenuClick}
+                                    />
+                                </div>
+                            )}
+
+                            {/* Account menu */}
                             <div className="flex h-full items-center justify-center">
                                 <button
                                     type="button"
@@ -143,51 +181,10 @@ export function MobileTabBar() {
                                             accountActive ? 'scale-105 opacity-100' : 'scale-100 opacity-50'
                                         )}
                                     >
-                                        <Image
-                                            src="/icons/profile.svg"
-                                            alt={accountLabel}
-                                            width={22}
-                                            height={22}
-                                            className="h-5.5 w-5.5 transition-all duration-200"
-                                            loading="eager"
-                                        />
+                                        <MenuIcon className="h-5.5 w-5.5 text-ink transition-all duration-200" aria-hidden="true" />
                                     </span>
                                 </button>
                             </div>
-
-                            <div className="flex h-full items-center justify-center">
-                                <TabLink
-                                    href={homeHref}
-                                    icon={homeTabItem.icon}
-                                    label={t(`items.${homeTabItem.key}`)}
-                                    active={homeActive}
-                                    onClick={handleHomeClick}
-                                />
-                            </div>
-
-                            {playlistAvailable && activeEvent && (
-                                <div className="flex h-full items-center justify-center">
-                                    <TabLink
-                                        href={routes.events.tools.playlist(activeEvent.id)}
-                                        icon="/icons/music.svg"
-                                        label={t('items.playlist')}
-                                        active={playlistActive}
-                                    />
-                                </div>
-                            )}
-
-                            {contextItems.length > 0 && (
-                                <div className="flex h-full items-center justify-center">
-                                    <ContextNavSlot
-                                        active={contextActive}
-                                        items={contextItems}
-                                        menuLabel={t('eventMenu')}
-                                        pathname={pathname}
-                                        searchParams={searchParams}
-                                        onItemClick={handleDashboardMenuClick}
-                                    />
-                                </div>
-                            )}
                         </>
                     )}
                 </nav>

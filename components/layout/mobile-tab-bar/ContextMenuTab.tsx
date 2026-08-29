@@ -1,5 +1,5 @@
 import { Menu } from '@base-ui/react/menu';
-import { Menu as MenuIcon, X } from 'lucide-react';
+import { type LucideIcon, Menu as MenuIcon, X } from 'lucide-react';
 import type { MouseEvent } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -9,6 +9,7 @@ import { isPathActive } from './utils';
 
 interface ContextMenuTabProps {
     active: boolean;
+    TriggerIcon?: LucideIcon;
     items: ContextNavItem[];
     label: string;
     pathname: string;
@@ -16,7 +17,7 @@ interface ContextMenuTabProps {
     onItemClick: (event: MouseEvent<HTMLElement>) => void;
 }
 
-export function ContextMenuTab({ active, items, label, pathname, searchParams, onItemClick }: ContextMenuTabProps) {
+export function ContextMenuTab({ active, TriggerIcon = MenuIcon, items, label, pathname, searchParams, onItemClick }: ContextMenuTabProps) {
     return (
         <Menu.Root>
             <Menu.Trigger
@@ -31,7 +32,7 @@ export function ContextMenuTab({ active, items, label, pathname, searchParams, o
                         'group-data-popup-open:scale-105 group-data-popup-open:opacity-100'
                     )}
                 >
-                    <MenuIcon
+                    <TriggerIcon
                         className={cn(
                             'absolute h-5.5 w-5.5 transition-all duration-200',
                             active ? 'text-ink opacity-100' : 'text-ink opacity-100',

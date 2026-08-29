@@ -129,6 +129,7 @@
     "MobileTabBar": {
         "eventNavigation": "Πλοήγηση εκδήλωσης",
         "eventMenu": "Μενού εκδήλωσης",
+        "toolsMenu": "Εργαλεία",
         "menu": "Μενού",
         "openAccount": "Άνοιγμα λογαριασμού",
         "compose": "Δημιουργία",

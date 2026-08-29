@@ -129,6 +129,7 @@
     "MobileTabBar": {
         "eventNavigation": "Event navigation",
         "eventMenu": "Event menu",
+        "toolsMenu": "Tools",
         "menu": "Menu",
         "openAccount": "Open your account",
         "compose": "Create",

@@ -1,3 +1,4 @@
+import type { LucideIcon } from 'lucide-react';
 import type { MouseEvent } from 'react';
 
 import { ContextMenuTab } from './ContextMenuTab';
@@ -7,6 +8,8 @@ import { isPathActive } from './utils';
 
 interface ContextNavSlotProps {
     active: boolean;
+    forceMenu?: boolean;
+    TriggerIcon?: LucideIcon;
     items: ContextNavItem[];
     menuLabel: string;
     pathname: string;
@@ -14,15 +17,32 @@ interface ContextNavSlotProps {
     onItemClick: (event: MouseEvent<HTMLElement>) => void;
 }
 
-export function ContextNavSlot({ active, items, menuLabel, pathname, searchParams, onItemClick }: ContextNavSlotProps) {
+export function ContextNavSlot({
+    active,
+    forceMenu = false,
+    TriggerIcon,
+    items,
+    menuLabel,
+    pathname,
+    searchParams,
+    onItemClick,
+}: ContextNavSlotProps) {
     if (items.length === 0) return null;
 
-    if (items.length === 1) {
+    if (!forceMenu && items.length === 1) {
         const [item] = items;
         return <ContextTabLink item={item} active={isPathActive(pathname, item.href, searchParams)} label={item.label} />;
     }
 
     return (
-        <ContextMenuTab active={active} items={items} label={menuLabel} pathname={pathname} searchParams={searchParams} onItemClick={onItemClick} />
+        <ContextMenuTab
+            active={active}
+            TriggerIcon={TriggerIcon}
+            items={items}
+            label={menuLabel}
+            pathname={pathname}
+            searchParams={searchParams}
+            onItemClick={onItemClick}
+        />
     );
 }
