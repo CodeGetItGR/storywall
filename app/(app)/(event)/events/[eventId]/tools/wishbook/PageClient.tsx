@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
+import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
@@ -35,6 +36,8 @@ export default function WishbookPage() {
     const title = wishbookModule?.name ?? t('title');
     const subtitle = wishbookModule?.description ?? undefined;
     const maxMessageLength = appConfig?.contentLimits.wishbookMessageMaxLength ?? 2000;
+    const showEmptyState = !wishbook.isLoading && !wishbook.error && entries.length === 0;
+    const showHeaderArt = canWrite || !showEmptyState;
 
     async function submit(event_: React.SubmitEvent<HTMLFormElement>) {
         event_.preventDefault();
@@ -75,9 +78,11 @@ export default function WishbookPage() {
             subtitle={subtitle}
         >
             {/* Header art */}
-            <section className="flex flex-col items-center px-2 pt-8 text-center">
-                <Image src="/icons/wishbook.svg" alt="" width={104} height={104} priority className="h-24 w-24" unoptimized />
-            </section>
+            {showHeaderArt ? (
+                <section className="flex flex-col items-center px-2 pt-8 text-center">
+                    <Image src="/icons/wishbook.svg" alt="" width={104} height={104} priority className="h-24 w-24" unoptimized />
+                </section>
+            ) : null}
 
             {/* Composer */}
             {canWrite ? (
@@ -111,8 +116,15 @@ export default function WishbookPage() {
             <section className="mt-8" hidden={!isHost}>
                 {wishbook.isLoading && <LoadingState label={t('loading')} className="py-10" />}
                 {wishbook.error && <p className="py-10 text-center text-sm text-rose-600">{toErrorMessage(wishbook.error)}</p>}
-                {!wishbook.isLoading && !wishbook.error && entries.length === 0 && (
-                    <p className="py-10 text-center text-sm text-ink-muted">{canWrite ? t('empty') : t('emptyReadOnly')}</p>
+                {showEmptyState && (
+                    <ToolEmptyState
+                        title={t('emptyTitle')}
+                        body={canWrite ? t('emptyBody') : undefined}
+                        iconSrc="/icons/wishbook.svg"
+                        iconFrame="plain"
+                        iconAreaClassName="h-28 w-28"
+                        previewIconClassName="h-6 w-6"
+                    />
                 )}
                 {!wishbook.isLoading && !wishbook.error && entries.length > 0 && (
                     <p className="mb-3 text-xs text-ink-faint">{t('messageCount', { count: total })}</p>

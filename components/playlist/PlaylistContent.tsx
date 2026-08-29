@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { PlaylistItemRow } from '@/components/playlist';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
+import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { LoadingState } from '@/components/ui/LoadingState';
 import type { PlaylistSuggestionResponseDto } from '@/lib/api/types';
 import { PLAYLIST_TOP_RANK_COUNT, shouldShowPlaylistTopRanks } from '@/lib/playlistRanking';
@@ -63,20 +64,23 @@ export function PlaylistContent({
             {suggestionsLoading ? (
                 <LoadingState label={t('loadingSongs')} className="py-8" />
             ) : suggestions.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-5 py-8 text-center text-sm text-ink-muted">
-                    <Music className="h-10 w-auto" />
-                    <p>{t('playlistEmpty')}</p>
-                    <button
-                        type="button"
-                        onClick={onSuggest}
-                        disabled={!canSuggest}
-                        aria-label={t('suggestASong')}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-gradient-brand px-3 py-1.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20 disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-40"
-                    >
-                        <Plus className="h-4 w-4" />
-                        {t('suggest')}
-                    </button>
-                </div>
+                <ToolEmptyState
+                    title={t('emptyTitle')}
+                    body={t('emptyBody')}
+                    icon={Music}
+                    action={
+                        <button
+                            type="button"
+                            onClick={onSuggest}
+                            disabled={!canSuggest}
+                            aria-label={t('suggestASong')}
+                            className="inline-flex items-center gap-1.5 rounded-full bg-gradient-brand px-3 py-1.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20 disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-40"
+                        >
+                            <Plus className="h-4 w-4" />
+                            {t('suggest')}
+                        </button>
+                    }
+                />
             ) : (
                 <div className="flex flex-col gap-2.5">
                     {suggestions.map((suggestion, index) => (

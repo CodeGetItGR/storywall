@@ -6,6 +6,7 @@ import type { MouseEvent, PointerEvent, RefObject } from 'react';
 import { useCallback } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { LoadingState } from '@/components/ui/LoadingState';
 import type { MediaResponseDto } from '@/lib/api/types';
 import { formatShortDateTime } from '@/lib/datetime';
@@ -59,10 +60,7 @@ export function GalleryMediaGrid({
             {isLoading ? (
                 <LoadingState size="md" className="min-h-48 rounded-2xl bg-card" />
             ) : items.length === 0 ? (
-                <div className="px-4 py-12 text-center">
-                    <ImagePlus className="mx-auto h-8 w-8 text-ink-faint" />
-                    <p className="mt-3 text-sm leading-relaxed text-ink-muted">{t('emptyTitle')}</p>
-                </div>
+                <ToolEmptyState title={t('emptyTitle')} icon={ImagePlus} className="py-12" />
             ) : (
                 <>
                     {/* Media grid */}

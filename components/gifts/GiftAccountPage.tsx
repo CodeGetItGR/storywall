@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
+import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useGiftAccount } from '@/hooks/useGiftAccount';
 import { giftAccountSetupHref } from '@/lib/manageSectionTargets';
@@ -94,19 +95,24 @@ export function GiftAccountPage() {
             )}
 
             {!account.isLoading && !account.error && !account.data && (
-                <section className="flex min-h-[calc(100dvh-7.5rem)] flex-col items-center justify-center px-4 pt-16 text-center">
-                    <Image src="/icons/present.svg" alt="" width={88} height={88} className="h-20 w-20 opacity-75" unoptimized />
-                    <p className="mt-6 text-lg font-semibold text-ink">{t('emptyTitle')}</p>
-                    <p className="mt-3 max-w-sm text-base leading-7 text-ink-muted">{t(isHost ? 'emptyHost' : 'emptyMember')}</p>
-                    {isHost && event?.id && (
-                        <Link
-                            href={giftAccountSetupHref(event.id)}
-                            className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-gradient-brand px-5 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(255,122,89,0.28)]"
-                        >
-                            {t('setupCta')}
-                        </Link>
-                    )}
-                </section>
+                <ToolEmptyState
+                    title={t('emptyTitle')}
+                    body={t(isHost ? 'emptyHost' : 'emptyMember')}
+                    iconSrc="/icons/present.svg"
+                    iconFrame="plain"
+                    iconAreaClassName="h-28 w-28"
+                    className="flex min-h-[calc(100dvh-7.5rem)] flex-col justify-center pt-16"
+                    action={
+                        isHost && event?.id ? (
+                            <Link
+                                href={giftAccountSetupHref(event.id)}
+                                className="inline-flex min-h-11 items-center justify-center rounded-full bg-gradient-brand px-5 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(255,122,89,0.28)]"
+                            >
+                                {t('setupCta')}
+                            </Link>
+                        ) : null
+                    }
+                />
             )}
 
             {account.isLoading && <LoadingState label={t('loading')} className="py-16" />}
