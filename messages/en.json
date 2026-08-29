@@ -461,6 +461,7 @@
         "modules": "Modules",
         "plans": "Plans",
         "profile": "Profile",
+        "editProfile": "Edit profile",
         "logout": "Log out",
         "logoutConfirmTitle": "Log out?",
         "logoutConfirmBody": "You'll need to sign in again.",

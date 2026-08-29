@@ -44,6 +44,12 @@ export function EventProvider({ children }: { children: ReactNode }) {
     const [lastEventId, setLastEventId] = useState<string | null>(null);
 
     useEffect(() => {
+        // The route is authoritative when it names an event — this fallback only
+        // matters for id-less chrome pages, so it must not fight the other effect
+        // over lastEventId while a route event id is present (that fight is what
+        // caused an infinite update loop while memberships were still loading).
+        if (routeEventId) return;
+
         if (memberships.length === 0) {
             // eslint-disable-next-line react-hooks/set-state-in-effect -- Sync derived fallback once async memberships settle.
             if (lastEventId !== null) setLastEventId(null);
@@ -54,7 +60,7 @@ export function EventProvider({ children }: { children: ReactNode }) {
 
         const stored = getActiveEventCookie();
         setLastEventId(memberships.find((m) => m.eventId === stored)?.eventId ?? memberships[0].eventId);
-    }, [lastEventId, memberships]);
+    }, [routeEventId, lastEventId, memberships]);
 
     // Whenever the URL names an event, persist it as the fallback too (and
     // to the cookie) — so id-less chrome pages and the bare-path redirect

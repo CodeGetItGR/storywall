@@ -1,6 +1,7 @@
 'use client';
 
-import { CalendarDays, Layers3, UserRound, WalletCards } from 'lucide-react';
+import { CalendarDays, Layers3, Pencil, WalletCards } from 'lucide-react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { AccountLogoutButton } from '@/components/account/AccountLogoutButton';
@@ -22,7 +23,12 @@ export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => 
                 <section className={'flex flex-col pb-3 border-b border-border'}>
                     {/* Identity */}
                     <div className="flex items-center gap-4">
-                        <Avatar src={user?.profilePictureUrl} initials={getInitials(accountName)} size="xl" alt={accountName} className="ring-2 ring-white/40" />
+                        <Link href={routes.profile} onClick={onCloseAction} aria-label={t('editProfile')} className="group relative shrink-0 rounded-full">
+                            <Avatar src={user?.profilePictureUrl} initials={getInitials(accountName)} size="xl" alt={accountName} className="ring-2 ring-white/40" />
+                            <span className="absolute right-0 bottom-0 flex h-6 w-6 items-center justify-center rounded-full bg-white text-primary shadow-soft ring-2 ring-primary transition-transform group-hover:scale-105 group-focus-visible:scale-105">
+                                <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                            </span>
+                        </Link>
                         <div className="min-w-0">
                             <p className="truncate text-lg font-bold">{accountName}</p>
                             {user?.email && <p className="truncate text-sm text-white/70">{user.email}</p>}
@@ -40,7 +46,6 @@ export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => 
                     <AccountSidebarNavLink href={routes.home} icon={CalendarDays} label={t('events')} onNavigateAction={onCloseAction} />
                     <AccountSidebarNavLink href={routes.plans()} icon={WalletCards} label={t('plans')} onNavigateAction={onCloseAction} />
                     <AccountSidebarNavLink href={routes.modules} icon={Layers3} label={t('modules')} onNavigateAction={onCloseAction} />
-                    <AccountSidebarNavLink href={routes.profile} icon={UserRound} label={t('profile')} onNavigateAction={onCloseAction} />
                 </nav>
 
                 {/* Footer */}
