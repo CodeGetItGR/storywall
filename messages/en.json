@@ -1336,7 +1336,8 @@
         "endsAt": "Ends at {time}",
         "saved": "Added",
         "story": {
-            "title": "Event schedule"
+            "title": "Event schedule",
+            "directions": "Directions"
         },
         "host": {
             "eyebrow": "Host tools",
