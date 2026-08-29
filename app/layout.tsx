@@ -43,8 +43,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     const locale = await getLocale();
 
     return (
-        <html lang={locale} className={`${geist.className} ${abhayaLibre.variable} ${alegreya.variable} h-full bg-background`}>
-            <body className="h-full overflow-hidden antialiased">
+        <html lang={locale} className={`${geist.className} ${abhayaLibre.variable} ${alegreya.variable} h-dvh bg-background`}>
+            <body className="h-dvh overflow-hidden antialiased">
                 <NextIntlClientProvider>
                     <Providers>{children}</Providers>
                 </NextIntlClientProvider>
