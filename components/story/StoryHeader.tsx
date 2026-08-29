@@ -20,6 +20,7 @@ interface StoryHeaderProps {
     onToggleMenu: () => void;
     onClose: () => void;
     onDeleteRequest: () => void;
+    showAvatar?: boolean;
 }
 
 export function StoryHeader({
@@ -34,6 +35,7 @@ export function StoryHeader({
     onToggleMenu,
     onClose,
     onDeleteRequest,
+    showAvatar
 }: StoryHeaderProps) {
     const t = useTranslations('StoryPage');
     const isLight = tone === 'light';
@@ -42,7 +44,7 @@ export function StoryHeader({
         <>
             <div className="absolute top-6 left-0 right-0 z-20 flex items-center justify-between px-4 pt-2">
                 <div className="flex items-center gap-2.5">
-                    {leadingVisual ?? (
+                    {showAvatar && (leadingVisual ?? (
                         <Avatar
                             initials={initialsFromName(authorName)}
                             color={avatarColorFromId(authorId)}
@@ -50,7 +52,7 @@ export function StoryHeader({
                             alt={authorName}
                             className={cn('border-2', isLight ? 'border-black/10' : 'border-white/60')}
                         />
-                    )}
+                    ))}
                     <div>
                         <p className={cn('text-sm font-semibold leading-tight', isLight ? 'text-ink' : 'text-white')}>{authorName}</p>
                         <p className={cn('text-xs leading-tight', isLight ? 'text-ink-muted' : 'text-white/60')}>{timeStr}</p>

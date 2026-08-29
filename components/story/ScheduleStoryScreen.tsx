@@ -60,6 +60,7 @@ export function ScheduleStoryScreen() {
                     onToggleMenu={noop}
                     onClose={handleCloseStory}
                     onDeleteRequest={noop}
+                    showAvatar={false}
                 />
 
                 <ScheduleStoryContent sessions={sessions} locale={locale} />
