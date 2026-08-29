@@ -675,7 +675,9 @@
         "noViewers": "No views yet",
         "unknownAuthor": "Someone",
         "close": "Close",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "muteStory": "Mute",
+        "unmuteStory": "Unmute"
     },
     "CreateEventPage": {
         "goBack": "Go back",

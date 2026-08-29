@@ -675,7 +675,9 @@
         "cancel": "Ακύρωση",
         "deleteStoryConfirmTitle": "Να διαγραφεί αυτή η ιστορία;",
         "deleteStoryConfirmBody": "Αυτή η ιστορία θα αφαιρεθεί για όλους και δεν μπορεί να αναιρεθεί.",
-        "deleteStoryConfirm": "Διαγραφή ιστορίας"
+        "deleteStoryConfirm": "Διαγραφή ιστορίας",
+        "muteStory": "Σίγαση",
+        "unmuteStory": "Κατάργηση σίγασης"
     },
     "CreateEventPage": {
         "goBack": "Πίσω",

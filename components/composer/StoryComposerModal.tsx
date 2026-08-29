@@ -82,7 +82,7 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                             {/* Full-screen story preview */}
                             <div className="absolute inset-0 flex items-center justify-center bg-black">
                                 {activeItem.file.type.startsWith('video/') ? (
-                                    <StoryVideo key={activeItem.previewUrl} src={activeItem.previewUrl} muted loop />
+                                    <StoryVideo key={activeItem.previewUrl} src={activeItem.previewUrl} loop muteToggle={false} />
                                 ) : (
                                     <Image
                                         src={activeItem.previewUrl}

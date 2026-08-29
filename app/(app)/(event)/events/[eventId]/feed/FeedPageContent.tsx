@@ -71,7 +71,7 @@ export function FeedPageContent() {
                                 <Link
                                     href={routes.events.tools.gifts(eventId)}
                                     aria-label={t('giftAccount')}
-                                    className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-background/92 text-ink shadow-[0_8px_22px_rgba(36,31,26,0.18)] transition-transform hover:-translate-y-0.5"
+                                    className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-background/92 text-ink shadow-[0_8px_22px_rgba(36,31,26,0.18)] transition-transform hover:-translate-y-0.5"
                                 >
                                     <Image src="/icons/present.svg" alt="" width={22} height={22} className="h-5 w-5" unoptimized />
                                 </Link>

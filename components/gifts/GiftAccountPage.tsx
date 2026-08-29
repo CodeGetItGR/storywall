@@ -78,7 +78,7 @@ export function GiftAccountPage() {
                                 <p className="mt-2 text-lg font-semibold text-ink">{account.data.accountHolder}</p>
                             </div>
                             <div>
-                                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ink-faint">{t('fields.iban')}</p>
+                                <p className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-faint">{t('fields.iban')}</p>
                                 <p className="mt-3 break-all font-mono text-2xl font-semibold tracking-[0.12em] text-ink">{formattedIban}</p>
                             </div>
                             <button

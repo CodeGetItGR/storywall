@@ -17,5 +17,5 @@ export function SessionLocationIcon({ icon, size = 'lg' }: SessionLocationIconPr
         return <MapPin className={dimensions} strokeWidth={1.8} aria-hidden="true" />;
     }
 
-    return <Image src={icon.src ?? ''} alt="" width={size === 'lg' ? 80 : 20} height={size === 'lg' ? 80 : 20} aria-hidden="true" unoptimized />;
+    return <Image src={icon.src ?? ''} alt="" width={size === 'lg' ? 80 : 18} height={size === 'lg' ? 80 : 18} aria-hidden="true" unoptimized />;
 }

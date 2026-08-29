@@ -4,7 +4,6 @@ import { EventsQuickRow } from '@/components/home/EventsQuickRow';
 import { HomeEmptyState } from '@/components/home/HomeEmptyState';
 import { HomeHeader } from '@/components/home/HomeHeader';
 import { HomeNextEventCard } from '@/components/home/HomeNextEventCard';
-import { HomeStats } from '@/components/home/HomeStats';
 import { useEventGridItems } from '@/hooks/useEventGridItems';
 import { useMyEventList } from '@/hooks/useMyEventList';
 
@@ -34,13 +33,6 @@ export function HomeContent() {
                     </section>
                 ) : (
                     <>
-                        {/* Stats */}
-                        {!isLoading && (
-                            <section className="px-4 sm:px-8 lg:px-14 2xl:px-20">
-                                <HomeStats items={items} />
-                            </section>
-                        )}
-
                         {/* Next event */}
                         {!isLoading && (
                             <section className="px-4 sm:px-8 lg:px-14 2xl:px-20">
