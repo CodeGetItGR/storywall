@@ -259,7 +259,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                                     src={media.mediaUrl}
                                     alt={t('userStory', { name: authorName })}
                                     fill
-                                    className="object-cover"
+                                    className="object-contain"
                                     sizes="100vw"
                                     priority
                                 />

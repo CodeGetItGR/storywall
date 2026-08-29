@@ -212,7 +212,7 @@ export default function StoryBoundary({ id }: { id: string }) {
                             src={media.mediaUrl}
                             alt={t('userStory', { name: authorName })}
                             fill
-                            className="object-cover"
+                            className="object-contain"
                             sizes="400px"
                             priority
                         />

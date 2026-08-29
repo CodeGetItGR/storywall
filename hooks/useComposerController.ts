@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -12,7 +11,6 @@ import { useCreatePlaylistSuggestion } from '@/hooks/usePlaylist';
 import { ERROR_CODES, getErrorCode, getQuotaExceededDetails, isModuleNotAvailableError } from '@/lib/api/errors';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { findNextPlan } from '@/lib/planTiers';
-import { routes } from '@/lib/routes';
 import { initialsFromName } from '@/lib/utils';
 import type { ComposerContextValue } from '@/providers/composer/ComposerContext';
 import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
@@ -84,7 +82,6 @@ function formatBytes(bytes: number): string {
 export function useComposerController(): ComposerController {
     const t = useTranslations('ComposerCard');
     const toErrorMessage = useApiErrorMessage();
-    const router = useRouter();
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
     const { data: eventModules = [] } = useEventModules(activeEvent?.id ?? null);
@@ -430,12 +427,11 @@ export function useComposerController(): ComposerController {
                 file,
                 uploaderMemberId: activeMember.id,
             });
-            const story = await createStory.mutateAsync({
+            await createStory.mutateAsync({
                 eventId: activeEvent.id,
                 authorMemberId: activeMember.id,
                 mediaId: media.id,
             });
-            router.push(routes.events.story(activeEvent.id, story.id));
         } catch (error) {
             setStoryError(getComposerErrorMessage(error));
         }
