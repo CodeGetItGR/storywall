@@ -26,6 +26,7 @@ interface ModalProps {
     children: ReactNode;
     closeButtonPosition?: 'left' | 'right';
     dismissOnBack?: boolean;
+    showCloseButton?: boolean;
 }
 
 export function Modal({
@@ -39,6 +40,7 @@ export function Modal({
     children,
     closeButtonPosition = 'right',
     dismissOnBack = true,
+    showCloseButton = true,
 }: ModalProps) {
     const isFull = size === 'full';
     const isSheet = variant === 'sheet';
@@ -95,15 +97,17 @@ export function Modal({
                     )}
                 >
                     {/* Close */}
-                    <Dialog.Close
-                        aria-label={closeLabel}
-                        className={cn(
-                            `absolute top-3 ${closeButtonPosition}-3 z-20 flex h-8 w-8 items-center justify-center rounded-full transition-colors`,
-                            isFull ? 'bg-black/40 hover:bg-black/60 text-white' : 'hover:bg-surface-muted text-ink-muted'
-                        )}
-                    >
-                        <X className="w-5 h-5" />
-                    </Dialog.Close>
+                    {showCloseButton && (
+                        <Dialog.Close
+                            aria-label={closeLabel}
+                            className={cn(
+                                `absolute top-3 ${closeButtonPosition}-3 z-20 flex h-8 w-8 items-center justify-center rounded-full transition-colors`,
+                                isFull ? 'bg-black/40 hover:bg-black/60 text-white' : 'hover:bg-surface-muted text-ink-muted'
+                            )}
+                        >
+                            <X className="w-5 h-5" />
+                        </Dialog.Close>
+                    )}
                     {children}
                 </Dialog.Popup>
             </Dialog.Portal>

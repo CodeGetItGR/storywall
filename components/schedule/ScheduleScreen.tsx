@@ -181,7 +181,7 @@ export function ScheduleScreen() {
             ) : sessions.length === 0 ? (
                 <ScheduleEmptyState isHost={isHost} canWrite={canWrite} canAddSession={canManageSchedule} onAddSession={openCreateEditor} />
             ) : (
-                <ScheduleSessionsList sessions={sessions} locale={locale}/>
+                <ScheduleSessionsList sessions={sessions} locale={locale} />
             )}
 
             {canManageSchedule && (
@@ -204,9 +204,10 @@ export function ScheduleScreen() {
                 onCloseAction={handleCloseDeleteSessionConfirm}
                 onConfirmAction={confirmDeleteSession}
                 title={deleteTarget ? t('host.deleteSession', { title: deleteTarget.title }) : ''}
-                body={deleteTarget ? t('host.deleteConfirm', { title: deleteTarget.title }) : ''}
+                body={deleteTarget ? t('host.deleteConfirm') : ''}
                 confirmLabel={t('host.deleteSession', { title: '' }).trim()}
-                cancelLabel={t('host.cancelEdit')}
+                cancelLabel={t('host.cancel')}
+                showCloseButton={false}
                 isConfirming={deleteSession.isPending}
             />
         </ModulePageShell>
