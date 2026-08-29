@@ -41,7 +41,7 @@ export function ScheduleStoryScreen() {
             <div className="relative h-full max-h-dvh w-full max-w-sm overflow-hidden bg-[#1c2333]">
                 {/* Header Curtain */}
                 <div
-                    className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-[#283248] via-[#283248]/68 to-transparent"
+                    className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-linear-to-b from-[#283248] via-[#283248]/68 to-transparent"
                     aria-hidden="true"
                 />
 
