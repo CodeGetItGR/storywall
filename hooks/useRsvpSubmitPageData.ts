@@ -97,9 +97,7 @@ export function useRsvpSubmitPageData() {
             : toErrorMessage(submitError, t('submitError'))
         : null;
 
-    const handleGoBack = useCallback(() => {
-        router.back();
-    }, [router]);
+    const backHref = eventId ? routes.events.tools.rsvp(eventId) : routes.feed;
 
     const handleBackToWall = useCallback(() => {
         router.push(eventId ? routes.events.feed(eventId) : routes.feed);
@@ -166,6 +164,7 @@ export function useRsvpSubmitPageData() {
 
     return {
         attending,
+        backHref,
         canSubmitRsvp,
         eventType: activeEvent?.eventType ?? null,
         hasExistingRsvp,
@@ -177,7 +176,6 @@ export function useRsvpSubmitPageData() {
         onBackToWall: handleBackToWall,
         onDecline: () => setAttending('not-attending' as const),
         onDecrementPlusOnes: handleDecrementPlusOnes,
-        onGoBack: handleGoBack,
         onIncrementPlusOnes: handleIncrementPlusOnes,
         onMessageChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => setMessage(event.target.value.slice(0, maxMessageLength)),
         onSubmit: handleSubmit,

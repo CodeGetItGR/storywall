@@ -17,6 +17,7 @@ import { RsvpPrompt } from '@/components/feed/RsvpPrompt';
 import { StoriesRow } from '@/components/feed/StoriesRow';
 import { StoryModal } from '@/components/story/StoryModal';
 import { useHideMobileTabBarOnScroll } from '@/hooks';
+import { coverPhotoSettingsHref } from '@/lib/manageSectionTargets';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
@@ -60,6 +61,8 @@ export function FeedPageContent() {
                     image={event.coverMedia?.mediaUrl ?? null}
                     title={event.title}
                     glowVisible={pageLoaded}
+                    fallbackActionHref={isHost ? coverPhotoSettingsHref(eventId) : undefined}
+                    fallbackActionLabel={isHost ? t('addCoverPhoto') : undefined}
                     actions={
                         <>
                             <EventSessionActionButtons event={event} />

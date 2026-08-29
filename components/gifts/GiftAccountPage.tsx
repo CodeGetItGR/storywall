@@ -3,12 +3,12 @@
 import { Check, Copy } from 'lucide-react';
 import { Gift } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { useGiftAccount } from '@/hooks/useGiftAccount';
+import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 import { useActiveEvent, useIsHost } from '@/providers/EventProvider';
 
@@ -21,7 +21,6 @@ function formatIban(value: string) {
 
 export function GiftAccountPage() {
     const t = useTranslations('GiftsPage');
-    const router = useRouter();
     const event = useActiveEvent();
     const isHost = useIsHost();
     const account = useGiftAccount(event?.id ?? null);
@@ -30,10 +29,6 @@ export function GiftAccountPage() {
     const title = t('accountTitle');
     const note = account.data?.note?.trim() || t('accountSubtitle');
     const formattedIban = account.data ? formatIban(account.data.iban) : '';
-
-    function goBack() {
-        router.back();
-    }
 
     async function copyIban() {
         if (!account.data) return;
@@ -51,7 +46,7 @@ export function GiftAccountPage() {
             iconClassName="text-rose-500"
             showTitleIcon={false}
             backLabel={t('goBack')}
-            onBack={goBack}
+            backHref={routes.events.feed(event?.id ?? '')}
         >
             {!account.isLoading && !account.error && account.data && (
                 <div className="flex h-[calc(100dvh-7.5rem)] min-h-120 flex-col">

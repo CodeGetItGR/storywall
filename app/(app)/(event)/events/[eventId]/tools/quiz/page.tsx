@@ -1,19 +1,21 @@
 'use client';
 
 import { ArrowRight, CheckCircle2, HelpCircle, RefreshCw, XCircle } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React, { useCallback, useState } from 'react';
 
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { quizQuestions } from '@/lib/mock-data';
+import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
 type Phase = 'quiz' | 'results';
 
 export default function QuizPage() {
     const t = useTranslations('QuizPage');
-    const router = useRouter();
+    const { eventId } = useParams<{ eventId: string }>();
+    const backHref = routes.events.feed(eventId);
     const [phase, setPhase] = useState<Phase>('quiz');
     const [current, setCurrent] = useState(0);
     const [answers, setAnswers] = useState<(number | null)[]>(new Array(quizQuestions.length).fill(null));
@@ -72,7 +74,7 @@ export default function QuizPage() {
                 icon={HelpCircle}
                 iconClassName="text-orange-500"
                 backLabel={t('backToTools')}
-                onBack={router.back}
+                backHref={backHref}
             >
                 <div className="flex flex-col items-center text-center py-10 px-4">
                     <div className="w-28 h-28 rounded-full bg-gradient-brand flex flex-col items-center justify-center text-white mb-6 shadow-lg">
@@ -127,7 +129,7 @@ export default function QuizPage() {
     }
 
     return (
-        <ModulePageShell title={t('title')} icon={HelpCircle} iconClassName="text-orange-500" backLabel={t('backToTools')} onBack={router.back}>
+        <ModulePageShell title={t('title')} icon={HelpCircle} iconClassName="text-orange-500" backLabel={t('backToTools')} backHref={backHref}>
             {/* Progress bar */}
             <div className="flex gap-1.5 mb-6">
                 {quizQuestions.map((_, i) => (

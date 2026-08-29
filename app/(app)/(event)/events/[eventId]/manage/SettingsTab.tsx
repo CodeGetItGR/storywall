@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { EventSessionManagement } from '@/components/manage/EventSessionManagement';
+import { TargetedSection } from '@/components/manage/TargetedSection';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
@@ -21,6 +22,7 @@ import {
     toDatetimeLocalValue,
 } from '@/lib/datetime';
 import { getEventEndPresets } from '@/lib/eventEndPresets';
+import { COVER_PHOTO_SECTION_ID } from '@/lib/manageSectionTargets';
 
 const inputClass =
     'bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition disabled:cursor-not-allowed disabled:opacity-60';
@@ -198,7 +200,7 @@ export default function SettingsTab({
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 <div>
                     <span className={labelClass}>{t('settings.coverPhoto.label')}</span>
-                    <div className="mt-1.5">
+                    <TargetedSection id={COVER_PHOTO_SECTION_ID} className="mt-1.5">
                         {coverPreview ? (
                             <div className="relative rounded-2xl overflow-hidden aspect-21/9 bg-surface-muted">
                                 <Image src={coverPreview} alt="" fill className="object-cover" sizes="700px" loading="lazy" />
@@ -250,7 +252,7 @@ export default function SettingsTab({
                             disabled={disabled || !canUploadCover}
                             aria-label={t('settings.coverPhoto.upload')}
                         />
-                    </div>
+                    </TargetedSection>
                 </div>
 
                 <FormFieldLabel label={t('settings.fields.title')} required labelClassName={labelClass}>

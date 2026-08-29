@@ -19,6 +19,7 @@ export default function PlansPage() {
     return (
         <PlansContent
             checkoutError={data.checkoutError}
+            eventId={data.eventId}
             isCheckoutPending={data.isCheckoutPending}
             modules={data.modules}
             paidServices={data.paidServices}

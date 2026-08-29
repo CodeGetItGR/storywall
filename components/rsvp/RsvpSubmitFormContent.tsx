@@ -11,7 +11,7 @@ export function RsvpSubmitFormContent({ data }: { data: RsvpSubmitPageData }) {
 
     return (
         <div className="mx-auto max-w-2xl px-4 pb-24 lg:pb-8">
-            <RsvpHeader onGoBackAction={data.onGoBack} />
+            <RsvpHeader backHref={data.backHref} />
 
             <RsvpForm
                 eventType={data.eventType}

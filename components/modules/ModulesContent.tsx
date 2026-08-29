@@ -5,7 +5,9 @@ import { useTranslations } from 'next-intl';
 import { ModuleQuickNav } from '@/components/modules/ModuleQuickNav';
 import { ModuleRevealRow } from '@/components/modules/ModuleRevealRow';
 import { ModuleScrollTopButton } from '@/components/modules/ModuleScrollTopButton';
+import { BackButton } from '@/components/ui/BackButton';
 import { useHomeModuleShowcase } from '@/hooks/useHomeModuleShowcase';
+import { routes } from '@/lib/routes';
 
 export function ModulesContent() {
     const t = useTranslations('ModulesPage');
@@ -21,7 +23,8 @@ export function ModulesContent() {
 
             <div className="relative flex flex-col gap-10 pt-8 pb-28 lg:pt-14">
                 {/* Header */}
-                <section className="mx-auto flex w-full max-w-3xl items-center justify-between gap-4 px-5 sm:px-8">
+                <section className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-5 sm:px-8">
+                    <BackButton href={routes.home} label={t('back')} />
                     <h1 className="text-3xl font-bold text-ink sm:text-4xl">{t('title')}</h1>
                 </section>
 

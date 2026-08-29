@@ -2,7 +2,6 @@
 
 import { BookHeart, Loader2, Send, Trash2 } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
 
@@ -12,11 +11,11 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useCreateWishbookEntry, useDeleteWishbookEntry, useWishbook } from '@/hooks/useWishbook';
 import type { WishbookEntryResponseDto } from '@/lib/api/types';
+import { routes } from '@/lib/routes';
 import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
 
 export default function WishbookPage() {
     const t = useTranslations('WishbookPage');
-    const router = useRouter();
     const event = useActiveEvent();
     const member = useActiveMember();
     const isHost = useIsHost();
@@ -49,9 +48,6 @@ export default function WishbookPage() {
         await deleteEntry.mutateAsync(deleteTarget.id);
         setDeleteTarget(null);
     }
-    function goBack() {
-        router.back();
-    }
     function changeMessage(event_: React.ChangeEvent<HTMLTextAreaElement>) {
         setMessage(event_.target.value.slice(0, maxMessageLength));
     }
@@ -74,7 +70,7 @@ export default function WishbookPage() {
             iconClassName="text-pink-500"
             showTitleIcon={false}
             backLabel={t('goBack')}
-            onBack={goBack}
+            backHref={routes.events.feed(eventId)}
             subtitle={subtitle}
         >
             {/* Header art */}

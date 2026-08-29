@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import type { ReactNode } from 'react';
+import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 
 import { ModulePageHeader } from '@/components/tools/ModulePageHeader';
 import { cn } from '@/lib/utils';
@@ -13,8 +13,7 @@ interface ModulePageShellProps {
     iconClassName?: string;
     showTitleIcon?: boolean;
     backLabel: string;
-    backHref?: string;
-    onBack?: () => void;
+    backHref: ComponentPropsWithoutRef<typeof ModulePageHeader>['backHref'];
     action?: ReactNode;
     subtitle?: ReactNode;
     notice?: ReactNode;
@@ -36,7 +35,6 @@ export function ModulePageShell({
     showTitleIcon = true,
     backLabel,
     backHref,
-    onBack,
     action,
     subtitle,
     notice,
@@ -51,7 +49,6 @@ export function ModulePageShell({
                 showIcon={showTitleIcon}
                 backLabel={backLabel}
                 backHref={backHref}
-                onBack={onBack}
                 action={action}
             />
             {subtitle && <p className="mb-5 text-sm leading-relaxed text-ink-muted text-center">{subtitle}</p>}

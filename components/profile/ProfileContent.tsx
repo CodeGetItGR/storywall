@@ -4,10 +4,12 @@ import { Camera, CheckCircle2, KeyRound, Loader2, Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import Avatar from '@/components/ui/avatar';
+import { BackButton } from '@/components/ui/BackButton';
 import { Button } from '@/components/ui/button';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useProfileForm } from '@/hooks/useProfileForm';
 import { getInitials } from '@/lib/format';
+import { routes } from '@/lib/routes';
 
 export function ProfileContent() {
     const t = useTranslations('ProfilePage');
@@ -24,7 +26,8 @@ export function ProfileContent() {
 
             <div className="relative mx-auto flex max-w-3xl flex-col gap-6 px-4 pt-8 pb-16 sm:px-8 lg:pt-14">
                 {/* Header */}
-                <section>
+                <section className="flex flex-col gap-3">
+                    <BackButton href={routes.home} label={t('back')} />
                     <h1 className="text-2xl font-bold text-ink">{t('title')}</h1>
                 </section>
 

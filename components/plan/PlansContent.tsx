@@ -1,15 +1,15 @@
 'use client';
 
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { EventPlanComparison } from '@/components/plan/EventPlanComparison';
+import { BackButton } from '@/components/ui/BackButton';
 import type { AppConfigResponseDto, PlanTierResponseDto } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 
 interface PlansContentProps {
     checkoutError: string | null;
+    eventId: string | null;
     isCheckoutPending: boolean;
     modules: AppConfigResponseDto['modules'];
     paidServices: AppConfigResponseDto['paidServices'];
@@ -25,6 +25,7 @@ interface PlansContentProps {
 
 export function PlansContent({
     checkoutError,
+    eventId,
     isCheckoutPending,
     modules,
     paidServices,
@@ -38,14 +39,12 @@ export function PlansContent({
     upgradeTargets,
 }: PlansContentProps) {
     const t = useTranslations('EventPlanSettingsPage');
+    const backHref = eventId ? routes.events.manage(eventId, { tab: 'billing' }) : routes.home;
 
     return (
         <main className="h-full overflow-y-auto">
             <div className="mx-auto max-w-6xl px-4 pb-24 pt-5 sm:pt-6 lg:pb-10">
-                <Link href={routes.login} className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-dark">
-                    <ArrowLeft className="h-3.5 w-3.5" />
-                    {t('back')}
-                </Link>
+                <BackButton href={backHref} label={t('back')} />
 
                 <section className="mt-4">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">

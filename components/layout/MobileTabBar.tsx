@@ -1,7 +1,7 @@
 'use client';
 
 import { Menu } from '@base-ui/react/menu';
-import { ArrowLeft, Camera, Menu as MenuIcon, Plus, PlusCircle } from 'lucide-react';
+import { Camera, Menu as MenuIcon, Plus, PlusCircle } from 'lucide-react';
 import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -79,10 +79,6 @@ export function MobileTabBar() {
         if (href) router.push(href);
     }
 
-    function handleBackClick() {
-        router.back();
-    }
-
     function handleComposerMenuClose() {
         setComposerMenuOpen(false);
     }
@@ -112,34 +108,24 @@ export function MobileTabBar() {
                     style={{
                         backgroundImage:
                             'linear-gradient(to top, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.92) 58%, rgba(255,255,255,0.72) 100%)',
-                        gridTemplateColumns: showEventNavigation ? `repeat(${railColumnCount}, minmax(0, 1fr))` : 'repeat(2, minmax(0, 1fr))',
+                        gridTemplateColumns: showEventNavigation ? `repeat(${railColumnCount}, minmax(0, 1fr))` : 'repeat(1, minmax(0, 1fr))',
                     }}
                 >
                     {!showEventNavigation ? (
-                        <>
-                            <button
-                                type="button"
-                                onClick={openAccount}
-                                aria-label={t('menu')}
-                                aria-haspopup="dialog"
-                                aria-expanded={accountOpen}
-                                className="flex h-full w-full items-center justify-center gap-2 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted"
-                            >
-                                <MenuIcon
-                                    className={cn('h-5 w-5 transition-opacity', accountActive ? 'opacity-100' : 'opacity-55')}
-                                    aria-hidden="true"
-                                />
-                                <span>{t('menu')}</span>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleBackClick}
-                                className="flex h-full w-full items-center justify-center gap-2 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted"
-                            >
-                                <ArrowLeft className="h-5 w-5 opacity-55" aria-hidden="true" />
-                                <span>{t('back')}</span>
-                            </button>
-                        </>
+                        <button
+                            type="button"
+                            onClick={openAccount}
+                            aria-label={t('menu')}
+                            aria-haspopup="dialog"
+                            aria-expanded={accountOpen}
+                            className="flex h-full w-full items-center justify-center gap-2 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted"
+                        >
+                            <MenuIcon
+                                className={cn('h-5 w-5 transition-opacity', accountActive ? 'opacity-100' : 'opacity-55')}
+                                aria-hidden="true"
+                            />
+                            <span>{t('menu')}</span>
+                        </button>
                     ) : (
                         <>
                             <div className="flex h-full items-center justify-center">

@@ -52,6 +52,7 @@
         "loading": "Φόρτωση ροής",
         "aboutEvent": "Σχετικά με την εκδήλωση",
         "giftAccount": "Λογαριασμός δώρου",
+        "addCoverPhoto": "Προσθήκη φωτογραφίας",
         "location": "Τοποθεσία εκδήλωσης",
         "mainSession": "Κύρια ενότητα",
         "secondarySession": "Δευτερεύουσα ενότητα"
@@ -127,7 +128,6 @@
         "eventNavigation": "Πλοήγηση εκδήλωσης",
         "eventMenu": "Μενού εκδήλωσης",
         "menu": "Μενού",
-        "back": "Πίσω",
         "openAccount": "Άνοιγμα λογαριασμού",
         "compose": "Δημιουργία",
         "composeMenu": {
@@ -479,6 +479,7 @@
         }
     },
     "ModulesPage": {
+        "back": "Πίσω",
         "title": "Τι προσφέρει το StoryWall",
         "plans": "Δες τα πλάνα",
         "listLabel": "Λειτουργίες StoryWall",
@@ -488,6 +489,7 @@
         "showPreview": "Προβολή προεπισκόπησης για {name}"
     },
     "ProfilePage": {
+        "back": "Πίσω",
         "title": "Προφίλ",
         "fallbackName": "Λογαριασμός",
         "save": "Αποθήκευση",
@@ -535,6 +537,7 @@
         "goingCount": "{count} παρευρίσκονται"
     },
     "NotificationsPage": {
+        "back": "Πίσω",
         "title": "Ειδοποιήσεις",
         "markAllRead": "Σήμανση όλων ως αναγνωσμένα",
         "justNow": "μόλις τώρα",

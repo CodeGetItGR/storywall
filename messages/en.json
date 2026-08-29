@@ -52,6 +52,7 @@
         "loading": "Loading feed",
         "aboutEvent": "About this event",
         "giftAccount": "Gift account",
+        "addCoverPhoto": "Add cover photo",
         "location": "Event location",
         "mainSession": "Main session",
         "secondarySession": "Secondary session"
@@ -127,7 +128,6 @@
         "eventNavigation": "Event navigation",
         "eventMenu": "Event menu",
         "menu": "Menu",
-        "back": "Back",
         "openAccount": "Open your account",
         "compose": "Create",
         "composeMenu": {
@@ -479,6 +479,7 @@
         }
     },
     "ModulesPage": {
+        "back": "Back",
         "title": "What StoryWall offers",
         "plans": "See plans",
         "listLabel": "StoryWall modules",
@@ -488,6 +489,7 @@
         "showPreview": "Show {name} preview"
     },
     "ProfilePage": {
+        "back": "Back",
         "title": "Profile",
         "fallbackName": "Account",
         "save": "Save",
@@ -535,6 +537,7 @@
         "goingCount": "{count} going"
     },
     "NotificationsPage": {
+        "back": "Back",
         "title": "Notifications",
         "markAllRead": "Mark all read",
         "justNow": "just now",

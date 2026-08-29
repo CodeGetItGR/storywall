@@ -5,10 +5,12 @@ import { useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback, useMemo, useState } from 'react';
 
 import { NotificationRow } from '@/components/notifications/NotificationRow';
+import { BackButton } from '@/components/ui/BackButton';
 import { PageErrorState } from '@/components/ui/PageErrorState';
 import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
 import { useMarkAllNotificationsRead, useNotifications, useUnreadNotificationCount } from '@/hooks/useNotifications';
 import { isBillingNotification } from '@/lib/notifications';
+import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
 type CategoryFilter = 'all' | 'billing' | 'activity';
@@ -51,6 +53,7 @@ export default function NotificationsPage() {
     return (
         <div className="mx-auto max-w-2xl pb-24 lg:pb-8">
             <div className="sticky top-0 z-10 border-b border-border bg-background/90 px-4 py-4 backdrop-blur-sm">
+                <BackButton href={routes.home} label={t('back')} className="mb-3" />
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <h1 className="text-xl font-bold text-ink">{t('title')}</h1>

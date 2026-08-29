@@ -1,9 +1,24 @@
 import Image from 'next/image';
 import type { ReactNode } from 'react';
 
+import { BannerFallback } from '@/components/feed/BannerFallback';
 import { BannerOverlay } from '@/components/feed/BannerOverlay';
 
-export function Banner({ image, title, actions, glowVisible }: { image: string | null; title: string; actions?: ReactNode; glowVisible: boolean }) {
+export function Banner({
+    image,
+    title,
+    actions,
+    glowVisible,
+    fallbackActionHref,
+    fallbackActionLabel,
+}: {
+    image: string | null;
+    title: string;
+    actions?: ReactNode;
+    glowVisible: boolean;
+    fallbackActionHref?: string;
+    fallbackActionLabel?: string;
+}) {
     return (
         <div className="relative w-full px-2">
             {/* Banner */}
@@ -12,7 +27,7 @@ export function Banner({ image, title, actions, glowVisible }: { image: string |
                     {image ? (
                         <Image src={image} alt={title} fill className="object-cover" priority sizes="(max-width: 1024px) 100vw, 800px" />
                     ) : (
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.56),rgba(255,255,255,0)_58%)]" />
+                        <BannerFallback actionHref={fallbackActionHref} actionLabel={fallbackActionLabel} />
                     )}
                     <div
                         className="pointer-events-none absolute inset-y-0 right-0 z-0 w-1/2 bg-white/10 [clip-path:polygon(24%_0,100%_0,100%_100%,0_100%)]"

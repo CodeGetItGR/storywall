@@ -5,7 +5,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 
-import { PageBackLink } from '@/components/ui/PageBackLink';
+import { BackButton } from '@/components/ui/BackButton';
 import { PageErrorState } from '@/components/ui/PageErrorState';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
@@ -155,7 +155,7 @@ export default function CheckoutReviewBoundary() {
 
     return (
         <main className="mx-auto max-w-3xl px-4 pb-28 pt-6 sm:pb-12 sm:pt-10">
-            <PageBackLink href={backHref}>{t('back')}</PageBackLink>
+            <BackButton href={backHref} label={t('back')} />
 
             <header className="mt-3">
                 <h1 className="text-2xl font-bold text-ink sm:text-3xl">{title}</h1>

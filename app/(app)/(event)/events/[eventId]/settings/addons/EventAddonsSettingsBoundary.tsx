@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useMemo } from 'react';
 
 import { StoragePackPurchase } from '@/components/plan/StoragePackPurchase';
-import { PageBackLink } from '@/components/ui/PageBackLink';
+import { BackButton } from '@/components/ui/BackButton';
 import { PageErrorState } from '@/components/ui/PageErrorState';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventBilling } from '@/hooks/useBilling';
@@ -63,7 +63,7 @@ export default function EventAddonsSettingsBoundary() {
 
     return (
         <main className="mx-auto max-w-3xl px-4 pb-24 pt-5 sm:pt-6 lg:pb-10">
-            <PageBackLink href={routes.events.manage(eventId, { tab: 'billing' })}>{t('backToBilling')}</PageBackLink>
+            <BackButton href={routes.events.manage(eventId, { tab: 'billing' })} label={t('backToBilling')} />
 
             <section className="mt-4">
                 <h1 className="text-2xl font-bold text-ink">{t('title')}</h1>

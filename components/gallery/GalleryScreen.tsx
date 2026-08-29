@@ -1,7 +1,6 @@
 'use client';
 
 import { Download, Images, MousePointer2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import { GalleryArchiveDownloadModal } from '@/components/gallery/GalleryArchiveDownloadModal';
@@ -13,10 +12,10 @@ import { ModuleNotice } from '@/components/tools/ModuleNotice';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { Button } from '@/components/ui/button';
 import { useGalleryScreen } from '@/hooks/useGalleryScreen';
+import { routes } from '@/lib/routes';
 
 export function GalleryScreen() {
     const t = useTranslations('GalleryPage');
-    const router = useRouter();
     const {
         eventId,
         isHost,
@@ -66,7 +65,7 @@ export function GalleryScreen() {
             icon={Images}
             iconClassName="text-cyan-600"
             backLabel={t('backToTools')}
-            onBack={router.back}
+            backHref={routes.events.feed(eventId)}
             subtitle={isHost ? t('hostSubtitle') : t('guestSubtitle')}
             notice={!galleryEnabled && <ModuleNotice>{t('moduleUnavailable')}</ModuleNotice>}
         >

@@ -3,7 +3,7 @@
 import { MapPin } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { PageBackLink } from '@/components/ui/PageBackLink';
+import { BackButton } from '@/components/ui/BackButton';
 import { routes } from '@/lib/routes';
 import type { SessionLocationViewModel } from '@/lib/sessionLocations';
 
@@ -22,7 +22,7 @@ export function SessionLocationPageShell({ eventId, location }: SessionLocationP
         <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col bg-background px-6 pb-14 pt-4">
             {/* Header */}
             <header>
-                <PageBackLink href={routes.events.feed(eventId)}>{t('back')}</PageBackLink>
+                <BackButton href={routes.events.feed(eventId)} label={t('back')} />
             </header>
 
             {/* Location */}

@@ -1,7 +1,6 @@
 'use client';
 
 import { Calendar, Plus } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
@@ -18,6 +17,7 @@ import type { EventSessionResponseDto } from '@/lib/api/types';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import { toDatetimeLocalValue } from '@/lib/datetime';
 import { isEventWritable } from '@/lib/eventLifecycle';
+import { routes } from '@/lib/routes';
 
 export function ScheduleScreen() {
     const { activeEvent, eventId, isHost } = useEventRouteContext();
@@ -25,7 +25,6 @@ export function ScheduleScreen() {
     const tCreateEvent = useTranslations('CreateEventPage');
     const toErrorMessage = useApiErrorMessage();
     const locale = useLocale();
-    const router = useRouter();
     const canWrite = isEventWritable(activeEvent?.status);
     const canManageSchedule = isHost && canWrite;
 
@@ -50,10 +49,6 @@ export function ScheduleScreen() {
         secondarySessionTitleKey && tCreateEvent.has(secondarySessionTitleKey) ? tCreateEvent(secondarySessionTitleKey) : undefined;
     const hasSecondarySession = sessions.some((session) => session.isSecondary);
     const canAddSecondarySession = canManageSchedule && Boolean(secondarySessionTitle) && !hasSecondarySession;
-
-    function handleBack() {
-        router.back();
-    }
 
     function openCreateEditor() {
         if (!canManageSchedule) return;
@@ -128,7 +123,7 @@ export function ScheduleScreen() {
             icon={Calendar}
             iconClassName="text-amber-500"
             backLabel={t('back')}
-            onBack={handleBack}
+            backHref={routes.events.feed(eventId)}
             subtitle={t('subtitle')}
             action={
                 canManageSchedule && sessions.length > 0 ? (

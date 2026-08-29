@@ -1,6 +1,5 @@
 'use client';
 
-import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -12,6 +11,7 @@ import { EventDetailsStep } from '@/components/event/create/EventDetailsStep';
 import { EventOverviewStep } from '@/components/event/create/EventOverviewStep';
 import { EventTypeStep } from '@/components/event/create/EventTypeStep';
 import { EventPlanSelector } from '@/components/plan/EventPlanSelector';
+import { BackButton } from '@/components/ui/BackButton';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
@@ -135,10 +135,6 @@ export default function CreateEventPage() {
         }
     }
 
-    const routeBack = useCallback(() => {
-        router.back();
-    }, [router]);
-
     const onTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setTitle(e.target.value);
     }, []);
@@ -185,13 +181,7 @@ export default function CreateEventPage() {
                     <div className="mx-auto flex min-h-0 w-full max-w-2xl flex-1 flex-col px-4">
                         {/* Header */}
                         <div className="flex shrink-0 items-center gap-3 py-4">
-                            <button
-                                onClick={routeBack}
-                                aria-label={t('goBack')}
-                                className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-muted text-ink-muted transition-colors"
-                            >
-                                <ArrowLeft className="w-5 h-5" />
-                            </button>
+                            <BackButton variant="icon" href={routes.home} label={t('goBack')} />
                             <h1 className="text-base font-bold text-ink">{t('title')}</h1>
                         </div>
 
