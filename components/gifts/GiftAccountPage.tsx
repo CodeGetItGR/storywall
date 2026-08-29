@@ -54,7 +54,7 @@ export function GiftAccountPage() {
             className="pb-0 lg:pb-0"
         >
             {!account.isLoading && !account.error && account.data && (
-                <div className="flex min-h-[calc(100dvh-9.25rem)] flex-col justify-between lg:min-h-[calc(100dvh-4.25rem)]">
+                <div className="flex min-h-[calc(100dvh-9.25rem)] flex-col lg:min-h-[calc(100dvh-4.25rem)]">
                     {/* Hero */}
                     <section className="flex flex-col items-center px-2 pt-4 text-center">
                         <Image src="/icons/present.svg" alt="" width={80} height={80} priority className="h-20 w-20" unoptimized />
@@ -80,7 +80,7 @@ export function GiftAccountPage() {
                             </div>
                             <div>
                                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-faint">{t('fields.iban')}</p>
-                                <p className="mt-1.5 break-all font-mono text-xl leading-7 font-semibold tracking-[0.1em] text-ink">
+                                <p className="mt-1.5 break-all font-mono text-md leading-7 font-semibold tracking-widest text-ink">
                                     {formattedIban}
                                 </p>
                             </div>
