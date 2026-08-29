@@ -1,12 +1,14 @@
 'use client';
 
-import { Gift, Loader2, Pencil, Trash2 } from 'lucide-react';
+import { EyeOff, Gift, Loader2, Pencil, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
+import { SetupChecklist, type SetupChecklistItem } from '@/components/manage/SetupChecklist';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { Modal } from '@/components/ui/modal';
 import { useDeleteGiftAccount, useGiftAccount, useSaveGiftAccount } from '@/hooks/useGiftAccount';
+import { useSetupChecklistVisibility } from '@/hooks/useSetupChecklistVisibility';
 import { ERROR_CODES, getErrorCode, getFieldErrors } from '@/lib/api/errors';
 
 export function GiftAccountSetup({ eventId, className = 'mt-3 border-t border-border/70 pt-3' }: { eventId: string; className?: string }) {
@@ -18,6 +20,8 @@ export function GiftAccountSetup({ eventId, className = 'mt-3 border-t border-bo
     const [deleteOpen, setDeleteOpen] = useState(false);
     const invalidIban = getErrorCode(save.error) === ERROR_CODES.INVALID_IBAN;
     const fieldErrors = getFieldErrors(save.error);
+    const isConfigured = Boolean(account.data);
+    const shouldShowChecklist = useSetupChecklistVisibility(eventId, 'gift-account', isConfigured, account.isLoading);
 
     function openEditor() {
         setOpen(true);
@@ -51,30 +55,26 @@ export function GiftAccountSetup({ eventId, className = 'mt-3 border-t border-bo
         setOpen(false);
     }
 
+    const checklistItems: SetupChecklistItem[] = [
+        {
+            id: 'gift-account',
+            title: isConfigured ? t('checklist.readyTitle') : t('checklist.missingTitle'),
+            body: isConfigured ? t('checklist.readyBody') : t('checklist.missingBody'),
+            hint: isConfigured ? undefined : t('checklist.hiddenUntilReady'),
+            icon: isConfigured ? Gift : EyeOff,
+            status: isConfigured ? 'complete' : 'missing',
+            action: {
+                label: isConfigured ? t('edit') : t('add'),
+                onClick: openEditor,
+                disabled: account.isLoading,
+                icon: Pencil,
+            },
+        },
+    ];
+
     return (
         <>
-            <div className={className}>
-                <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                        <p className="flex items-center gap-2 text-xs font-semibold text-ink">
-                            <Gift className="h-4 w-4 text-rose-500" />
-                            {t('title')}
-                        </p>
-                        <p className="mt-1 text-xs leading-relaxed text-ink-muted">
-                            {account.data ? t('configured', { holder: account.data.accountHolder }) : t('body')}
-                        </p>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={openEditor}
-                        disabled={account.isLoading}
-                        className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-ink disabled:opacity-50"
-                    >
-                        <Pencil className="h-3.5 w-3.5" />
-                        {account.data ? t('edit') : t('add')}
-                    </button>
-                </div>
-            </div>
+            {shouldShowChecklist && <SetupChecklist className={className} items={checklistItems} />}
 
             <Modal open={open} onClose={closeEditor} size="md" closeLabel={t('cancel')}>
                 <Modal.Body className="px-4 pb-5 pt-12 sm:px-5">

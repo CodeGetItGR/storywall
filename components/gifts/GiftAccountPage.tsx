@@ -3,11 +3,13 @@
 import { Check, Copy } from 'lucide-react';
 import { Gift } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { useGiftAccount } from '@/hooks/useGiftAccount';
+import { giftAccountSetupHref } from '@/lib/manageSectionTargets';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 import { useActiveEvent, useIsHost } from '@/providers/EventProvider';
@@ -95,6 +97,14 @@ export function GiftAccountPage() {
                     <Image src="/icons/present.svg" alt="" width={88} height={88} className="h-20 w-20 opacity-75" unoptimized />
                     <p className="mt-6 text-lg font-semibold text-ink">{t('emptyTitle')}</p>
                     <p className="mt-3 max-w-sm text-base leading-7 text-ink-muted">{t(isHost ? 'emptyHost' : 'emptyMember')}</p>
+                    {isHost && event?.id && (
+                        <Link
+                            href={giftAccountSetupHref(event.id)}
+                            className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-gradient-brand px-5 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(255,122,89,0.28)]"
+                        >
+                            {t('setupCta')}
+                        </Link>
+                    )}
                 </section>
             )}
 

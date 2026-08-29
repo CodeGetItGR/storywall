@@ -3,8 +3,9 @@
 import { BookHeart, CalendarCheck, CalendarDays, Gift, Images, LayoutDashboard, type LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { useGiftAccount } from '@/hooks/useGiftAccount';
 import { routes } from '@/lib/routes';
-import { useActiveEvent } from '@/providers/EventProvider';
+import { useActiveEvent, useIsHost } from '@/providers/EventProvider';
 
 export interface ToolMenuItem {
     key: string;
@@ -18,6 +19,8 @@ export interface ToolMenuItem {
 export function useToolsMenuItems(): ToolMenuItem[] {
     const t = useTranslations('ToolsMenu');
     const activeEvent = useActiveEvent();
+    const isHost = useIsHost();
+    const giftAccount = useGiftAccount(activeEvent?.id ?? null);
     const availableModules = new Set(activeEvent?.modules.filter((module_) => module_.isAvailable).map((module_) => module_.moduleKey) ?? []);
 
     if (!activeEvent) return [];
@@ -32,6 +35,7 @@ export function useToolsMenuItems(): ToolMenuItem[] {
 
     return toolDefinitions
         .filter((tool) => !tool.moduleKey || availableModules.has(tool.moduleKey))
+        .filter((tool) => tool.key !== 'gifts' || isHost || Boolean(giftAccount.data))
         .map((tool) => ({
             key: tool.key,
             href: tool.href,

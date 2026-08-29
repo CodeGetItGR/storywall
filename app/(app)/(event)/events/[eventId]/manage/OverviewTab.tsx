@@ -3,6 +3,7 @@ import { useTranslations } from 'next-intl';
 import { GiftAccountSetup } from '@/components/manage/GiftAccountSetup';
 import { OverviewDraftPanel } from '@/components/manage/OverviewDraftPanel';
 import Section from '@/components/manage/Section';
+import { TargetedSection } from '@/components/manage/TargetedSection';
 import { UsagePanel } from '@/components/plan/UsagePanel';
 import { MetricStrip } from '@/components/ui/MetricStrip';
 import { useEventOverviewPlan } from '@/hooks/useEventOverviewPlan';
@@ -15,6 +16,7 @@ import type {
     PlatformModuleResponseDto,
 } from '@/lib/api/types';
 import { formatBytes } from '@/lib/format';
+import { GIFT_ACCOUNT_SECTION_ID } from '@/lib/manageSectionTargets';
 import { routes } from '@/lib/routes';
 
 export default function OverviewTab({
@@ -81,7 +83,11 @@ export default function OverviewTab({
     return (
         <div className="flex flex-col gap-5">
             {/* Gift account */}
-            {wishlistAvailable && <GiftAccountSetup eventId={eventId} />}
+            {wishlistAvailable && (
+                <TargetedSection id={GIFT_ACCOUNT_SECTION_ID}>
+                    <GiftAccountSetup eventId={eventId} />
+                </TargetedSection>
+            )}
 
             {/* Headline numbers */}
             <MetricStrip

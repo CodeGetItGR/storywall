@@ -3,8 +3,10 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { GiftAccountSetup } from '@/components/manage/GiftAccountSetup';
+import { TargetedSection } from '@/components/manage/TargetedSection';
 import type { EventBillingResponseDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
+import { GIFT_ACCOUNT_SECTION_ID } from '@/lib/manageSectionTargets';
 import { routes } from '@/lib/routes';
 
 export function OverviewDraftPanel({
@@ -57,7 +59,11 @@ export function OverviewDraftPanel({
             )}
 
             {/* Gift account */}
-            {wishlistAvailable && <GiftAccountSetup eventId={eventId} className="mt-4 border-t border-border/70 pt-4" />}
+            {wishlistAvailable && (
+                <TargetedSection id={GIFT_ACCOUNT_SECTION_ID} className="mt-4">
+                    <GiftAccountSetup eventId={eventId} />
+                </TargetedSection>
+            )}
 
             {/* Activation */}
             <div className="mt-4 flex flex-col gap-3 border-t border-border/70 pt-4 sm:flex-row sm:items-center sm:justify-between">

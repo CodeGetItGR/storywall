@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
+import { useGiftAccount } from '@/hooks/useGiftAccount';
 import type { ModuleKeyConvention } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useIsHost } from '@/providers/EventProvider';
@@ -22,6 +23,7 @@ export function QuickAccessBar() {
     const t = useTranslations('FeedQuickAccessBar');
     const activeEvent = useActiveEvent();
     const isHost = useIsHost();
+    const giftAccount = useGiftAccount(activeEvent?.id ?? null);
 
     const enabledItems = useMemo(() => {
         if (!activeEvent) return [];
@@ -44,15 +46,17 @@ export function QuickAccessBar() {
         ];
 
         const availableModules = new Set(activeEvent.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey));
+        const giftsVisibleToCurrentMember = isHost || Boolean(giftAccount.data);
 
         return activeEvent.modules
             .filter((module) => module.isAvailable)
             .map((module) => {
                 const item = quickAccessItems.find((entry) => entry.moduleKey === module.moduleKey && entry.visible);
+                if (item?.key === 'gifts' && !giftsVisibleToCurrentMember) return null;
                 return item && availableModules.has(item.moduleKey) ? item : null;
             })
             .filter((item): item is QuickAccessItem => !!item);
-    }, [activeEvent, isHost]);
+    }, [activeEvent, giftAccount.data, isHost]);
 
     if (enabledItems.length === 0) {
         return null;

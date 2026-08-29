@@ -840,13 +840,27 @@
             "perMonth": "per month",
             "once": "once"
         },
+        "setupChecklist": {
+            "title": "Setup checklist",
+            "missing": "{count, plural, one {# item needs setup} other {# items need setup}}",
+            "complete": "All major setup is done.",
+            "collapse": "Hide",
+            "expand": "Show"
+        },
         "giftAccount": {
             "title": "Gift account",
-            "body": "Add one bank account members can copy when they want to send a monetary gift.",
-            "configured": "Ready for members · {holder}",
-            "add": "Set up",
-            "edit": "Edit",
-            "editorTitle": "Gift account details",
+        "body": "Add one bank account members can copy when they want to send a monetary gift.",
+        "configured": "Ready for members · {holder}",
+        "add": "Set up",
+        "edit": "Edit",
+        "checklist": {
+            "missingTitle": "Gift account details",
+            "missingBody": "Add the account once and members can copy it from Gifts.",
+            "readyTitle": "Gift account is ready",
+            "readyBody": "Members can now see Gifts and copy the account details.",
+            "hiddenUntilReady": "Members will not see this tool until the account is set up."
+        },
+        "editorTitle": "Gift account details",
             "editorBody": "These details are visible only to event members and are not stored in this browser.",
             "iban": "IBAN",
             "accountHolder": "Account holder",
@@ -1481,6 +1495,7 @@
         "emptyTitle": "No gift account yet",
         "emptyHost": "Add bank details so members can send a gift.",
         "emptyMember": "The hosts have not added gift details yet.",
+        "setupCta": "Add gift account",
         "fields": {
             "iban": "IBAN",
             "accountHolder": "Account holder",
