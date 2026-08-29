@@ -56,6 +56,11 @@
         "mainSession": "Main session",
         "secondarySession": "Secondary session"
     },
+    "SessionLocationPage": {
+        "back": "Back",
+        "map": "Map",
+        "locationMissing": "Location not set"
+    },
     "FeedScheduleCard": {
         "eyebrow": "Schedule",
         "title": "Guest program",

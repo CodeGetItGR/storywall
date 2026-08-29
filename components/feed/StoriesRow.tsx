@@ -49,7 +49,7 @@ export function StoriesRow({ eventId, onOpenStoryAction }: StoriesRowProps) {
                         aria-label={tAvatar('addYourStory')}
                         className="relative w-15.5 h-15.5 flex items-center justify-center disabled:opacity-60"
                     >
-                        <Image src="/assets/StoryAvatar.svg" alt="" className="w-full h-full object-cover rounded-xl" width={150} height={150} />
+                        <Image src="/assets/StoryAvatar.svg" alt="" className="w-full h-full object-cover rounded-xl" width={150} height={150} unoptimized />
                     </button>
                     <span className="text-[11px] text-ink-muted font-medium text-center leading-tight max-w-14 truncate">{tAvatar('yourStory')}</span>
                 </div>

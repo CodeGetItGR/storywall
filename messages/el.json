@@ -56,6 +56,11 @@
         "mainSession": "Κύρια ενότητα",
         "secondarySession": "Δευτερεύουσα ενότητα"
     },
+    "SessionLocationPage": {
+        "back": "Πίσω",
+        "map": "Χάρτης",
+        "locationMissing": "Δεν έχει οριστεί τοποθεσία"
+    },
     "FeedScheduleCard": {
         "eyebrow": "Πρόγραμμα",
         "title": "Πρόγραμμα για καλεσμένους",

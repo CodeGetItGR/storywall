@@ -15,7 +15,7 @@ export function WishlistPreview({ variant }: ModulePreviewProps) {
         <ModulePreviewFrame variant={variant}>
             {/* Hero */}
             <section className="flex shrink-0 flex-col items-center px-2 pt-4 text-center">
-                <Image src="/icons/present.svg" alt="" width={80} height={80} className="h-20 w-20" />
+                <Image src="/icons/present.svg" alt="" width={80} height={80} className="h-20 w-20" unoptimized />
                 <p className="mt-4 text-[1.08rem] leading-8 text-ink-muted">{tHome('modules.preview.giftNote')}</p>
             </section>
 

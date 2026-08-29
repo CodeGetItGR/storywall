@@ -79,7 +79,7 @@ export default function WishbookPage() {
         >
             {/* Header art */}
             <section className="flex flex-col items-center px-2 pt-8 text-center">
-                <Image src="/icons/wishbook.svg" alt="" width={104} height={104} priority className="h-24 w-24" />
+                <Image src="/icons/wishbook.svg" alt="" width={104} height={104} priority className="h-24 w-24" unoptimized />
             </section>
 
             {/* Composer */}

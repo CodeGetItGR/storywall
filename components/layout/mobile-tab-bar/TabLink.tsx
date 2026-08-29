@@ -27,7 +27,7 @@ export function TabLink({ href, icon, label, active, onClick }: TabLinkProps) {
                     active ? 'scale-105 opacity-100' : 'scale-100 opacity-50'
                 )}
             >
-                <Image src={icon} alt={label} width={22} height={22} className="h-5.5 w-5.5 transition-all duration-200" loading="eager" />
+                <Image src={icon} alt={label} width={22} height={22} className="h-5.5 w-5.5 transition-all duration-200" loading="eager" unoptimized />
             </span>
         </Link>
     );

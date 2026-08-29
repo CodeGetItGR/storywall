@@ -47,7 +47,7 @@ export function RsvpPrompt({ eventId, deadline, className }: { eventId: string; 
                     onClick={handleClick('attending')}
                     className="flex gap-2 px-4 py-2 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
                 >
-                    <Image src="/icons/yes.svg" alt={t('yes')} width={15} height={15} />
+                    <Image src="/icons/yes.svg" alt={t('yes')} width={15} height={15} unoptimized />
                     {t('yes')}
                 </button>
                 <button
@@ -55,7 +55,7 @@ export function RsvpPrompt({ eventId, deadline, className }: { eventId: string; 
                     onClick={handleClick('not-attending')}
                     className="flex gap-2 px-4 py-2 rounded-full border border-border text-ink-muted text-sm font-semibold hover:border-primary/40 hover:text-ink transition-colors"
                 >
-                    <Image src="/icons/no.svg" alt={t('no')} width={12} height={12} />
+                    <Image src="/icons/no.svg" alt={t('no')} width={12} height={12} unoptimized />
                     {t('no')}
                 </button>
             </div>

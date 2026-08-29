@@ -41,6 +41,7 @@ export const routes = {
         },
         story: (eventId: string, storyId: string) => `/events/${eventId}/story/${storyId}`,
         storySchedule: (eventId: string) => `/events/${eventId}/story/schedule`,
+        location: (eventId: string, role?: 'main' | 'secondary' | null) => `/events/${eventId}/location${role ? `/${role}` : ''}`,
         feed: (eventId: string, params: { post?: string | null } = {}) => withQuery(`/events/${eventId}/feed`, params),
         settingsAddons: (eventId: string) => `/events/${eventId}/settings/addons`,
         checkoutReview: (eventId: string, intent: CheckoutIntent, code?: string | null) =>

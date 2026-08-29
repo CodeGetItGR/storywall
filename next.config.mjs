@@ -15,9 +15,12 @@ const nextConfig = {
             },
             {
                 protocol: 'https',
-                hostname: '**.r2.cloudflarestorage.com',
+                hostname: '71ade89bbcb4e06fa046d831464581b0.r2.cloudflarestorage.com',
             },
         ],
+        formats: ['image/webp'],
+        minimumCacheTTL: 2678400,
+        qualities: [75],
     },
     reactCompiler: true,
 };

@@ -57,7 +57,7 @@ export function GiftAccountPage() {
                 <div className="flex h-[calc(100dvh-7.5rem)] min-h-120 flex-col">
                     {/* Hero */}
                     <section className="flex shrink-0 flex-col items-center px-2 pt-12 text-center">
-                        <Image src="/icons/present.svg" alt="" width={100} height={100} priority className="h-24 w-24" />
+                        <Image src="/icons/present.svg" alt="" width={100} height={100} priority className="h-24 w-24" unoptimized />
                         <div className="mt-8 w-full max-h-[28vh] overflow-y-auto pr-1 text-center">
                             <p className="text-[1.08rem] leading-8 whitespace-pre-line text-ink-muted">{note}</p>
                         </div>
@@ -97,7 +97,7 @@ export function GiftAccountPage() {
 
             {!account.isLoading && !account.error && !account.data && (
                 <section className="flex min-h-[calc(100dvh-7.5rem)] flex-col items-center justify-center px-4 pt-16 text-center">
-                    <Image src="/icons/present.svg" alt="" width={88} height={88} className="h-20 w-20 opacity-75" />
+                    <Image src="/icons/present.svg" alt="" width={88} height={88} className="h-20 w-20 opacity-75" unoptimized />
                     <p className="mt-6 text-lg font-semibold text-ink">{t('emptyTitle')}</p>
                     <p className="mt-3 max-w-sm text-base leading-7 text-ink-muted">{t(isHost ? 'emptyHost' : 'emptyMember')}</p>
                 </section>

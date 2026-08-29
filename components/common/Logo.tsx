@@ -11,14 +11,14 @@ interface LogoProps {
 
 export function Logo({
     direction = 'row',
-    iconClassName = 'h-8 w-auto sm:h-9 md:h-10',
+    iconClassName = 'h-16 w-auto sm:h-18 md:h-20',
     wordmarkClassName = 'h-6 w-auto sm:h-7 md:h-8',
     className,
 }: LogoProps) {
     return (
         <div className={cn('flex items-center gap-3', direction === 'col' ? 'flex-col' : 'flex-row', className)}>
-            <Image src="/assets/Logo.svg" loading="eager" alt="StoryWall" width={30} height={32} className={iconClassName} />
-            <Image src="/assets/LogoText.svg" loading="eager" alt="StoryWall" width={117} height={28} className={wordmarkClassName} />
+            <Image src="/assets/Logo.svg" loading="eager" alt="StoryWall" width={30} height={32} className={iconClassName} unoptimized />
+            <Image src="/assets/LogoText.svg" loading="eager" alt="StoryWall" width={117} height={28} className={wordmarkClassName} unoptimized />
         </div>
     );
 }

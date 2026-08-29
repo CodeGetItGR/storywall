@@ -15,7 +15,7 @@ export function WishbookPreview({ variant }: ModulePreviewProps) {
         <ModulePreviewFrame variant={variant}>
             {/* Header art */}
             <section className="flex flex-col items-center px-2 pt-6 text-center">
-                <Image src="/icons/wishbook.svg" alt="" width={80} height={80} className="h-20 w-20" />
+                <Image src="/icons/wishbook.svg" alt="" width={80} height={80} className="h-20 w-20" unoptimized />
             </section>
 
             {/* Composer */}
