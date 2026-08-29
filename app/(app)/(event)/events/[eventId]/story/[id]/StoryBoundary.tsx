@@ -15,6 +15,10 @@ import { routes } from '@/lib/routes';
 import { groupStoriesByAuthor } from '@/lib/stories';
 import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
 
+function preventVideoContextMenu(event: SyntheticEvent<HTMLVideoElement>) {
+    event.preventDefault();
+}
+
 export default function StoryBoundary({ id }: { id: string }) {
     const t = useTranslations('StoryPage');
     const locale = useLocale();
@@ -172,8 +176,8 @@ export default function StoryBoundary({ id }: { id: string }) {
     const authorName = author?.displayName ?? t('unknownAuthor');
 
     return (
-        <div className="motion-story-route fixed inset-0 z-50 flex flex-col items-center justify-center bg-ink">
-            <div className="relative h-full max-h-dvh w-full max-w-sm overflow-hidden bg-black">
+        <div className="motion-story-route fixed inset-0 z-50 flex h-dvh flex-col items-center justify-center overflow-hidden bg-ink">
+            <div className="relative h-dvh w-full max-w-sm overflow-hidden bg-black">
                 <StoryProgressBar stories={group.stories} activeIndex={storyIndex} progress={progress} />
 
                 <StoryHeader
@@ -193,10 +197,13 @@ export default function StoryBoundary({ id }: { id: string }) {
                         <video
                             key={media.id}
                             src={media.mediaUrl}
-                            className="absolute inset-0 h-full w-full object-cover"
+                            className="absolute inset-0 h-full w-full object-contain"
                             autoPlay
-                            controls
                             playsInline
+                            preload="auto"
+                            controlsList="nodownload noplaybackrate noremoteplayback"
+                            disablePictureInPicture
+                            onContextMenu={preventVideoContextMenu}
                             onTimeUpdate={handleVideoTimeUpdate}
                             onEnded={handleVideoEnded}
                         />

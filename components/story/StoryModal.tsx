@@ -15,6 +15,10 @@ import { isEventWritable } from '@/lib/eventLifecycle';
 import { groupStoriesByAuthor } from '@/lib/stories';
 import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
 
+function preventVideoContextMenu(event: SyntheticEvent<HTMLVideoElement>) {
+    event.preventDefault();
+}
+
 type StoryModalProps = {
     open: boolean;
     storyId: string | null;
@@ -217,7 +221,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                 <Dialog.Backdrop className="motion-story-overlay fixed inset-0 z-[60] bg-black opacity-100 data-closed:pointer-events-none" />
                 {/* Story */}
                 <Dialog.Popup aria-label={t('story')} className="motion-story-frame fixed inset-0 z-[60] bg-black outline-none">
-                    <div className="relative h-full w-full overflow-hidden bg-black">
+                    <div className="relative h-dvh w-full overflow-hidden bg-black">
                         {/* Progress */}
                         <StoryProgressBar stories={group.stories} activeIndex={storyIndex} progress={progress} />
 
@@ -240,10 +244,13 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                                 <video
                                     key={media.id}
                                     src={media.mediaUrl}
-                                    className="absolute inset-0 h-full w-full object-cover"
+                                    className="absolute inset-0 h-full w-full object-contain"
                                     autoPlay
-                                    controls
                                     playsInline
+                                    preload="auto"
+                                    controlsList="nodownload noplaybackrate noremoteplayback"
+                                    disablePictureInPicture
+                                    onContextMenu={preventVideoContextMenu}
                                     onTimeUpdate={handleVideoTimeUpdate}
                                     onEnded={handleVideoEnded}
                                 />

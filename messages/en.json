@@ -641,7 +641,8 @@
         "loadingViewers": "Loading…",
         "noViewers": "No views yet",
         "unknownAuthor": "Someone",
-        "close": "Close"
+        "close": "Close",
+        "cancel": "Cancel"
     },
     "CreateEventPage": {
         "goBack": "Go back",
@@ -849,18 +850,18 @@
         },
         "giftAccount": {
             "title": "Gift account",
-        "body": "Add one bank account members can copy when they want to send a monetary gift.",
-        "configured": "Ready for members · {holder}",
-        "add": "Set up",
-        "edit": "Edit",
-        "checklist": {
-            "missingTitle": "Gift account details",
-            "missingBody": "Add the account once and members can copy it from Gifts.",
-            "readyTitle": "Gift account is ready",
-            "readyBody": "Members can now see Gifts and copy the account details.",
-            "hiddenUntilReady": "Members will not see this tool until the account is set up."
-        },
-        "editorTitle": "Gift account details",
+            "body": "Add one bank account members can copy when they want to send a monetary gift.",
+            "configured": "Ready for members · {holder}",
+            "add": "Set up",
+            "edit": "Edit",
+            "checklist": {
+                "missingTitle": "Gift account details",
+                "missingBody": "Add the account once and members can copy it from Gifts.",
+                "readyTitle": "Gift account is ready",
+                "readyBody": "Members can now see Gifts and copy the account details.",
+                "hiddenUntilReady": "Members will not see this tool until the account is set up."
+            },
+            "editorTitle": "Gift account details",
             "editorBody": "These details are visible only to event members and are not stored in this browser.",
             "iban": "IBAN",
             "accountHolder": "Account holder",
