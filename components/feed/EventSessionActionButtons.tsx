@@ -1,6 +1,6 @@
 'use client';
 
-import { Church, Martini } from 'lucide-react';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
 import type { EventDetailResponseDto } from '@/lib/api/types';
@@ -27,12 +27,12 @@ export function EventSessionActionButtons({ event }: EventSessionActionButtonsPr
             <div className={'flex flex-col gap-4'}>
                 {mainSession && (
                     <button type="button" aria-label={t('mainSession')} title={t('mainSession')} className={sessionButtonClassName}>
-                        <Church className="h-5 w-5" aria-hidden="true" />
+                        <Image src="/icons/church.svg" alt="" width={20} height={20} aria-hidden="true" />
                     </button>
                 )}
                 {secondarySession && (
                     <button type="button" aria-label={t('secondarySession')} title={t('secondarySession')} className={sessionButtonClassName}>
-                        <Martini className="h-5 w-5" aria-hidden="true" />
+                        <Image src="/icons/cocktail.svg" alt="" width={20} height={20} aria-hidden="true" />
                     </button>
                 )}
             </div>
