@@ -55,7 +55,9 @@
         "addCoverPhoto": "Add cover photo",
         "location": "Event location",
         "mainSession": "Main session",
-        "secondarySession": "Secondary session"
+        "secondarySession": "Secondary session",
+        "emptyPostsTitle": "No posts yet",
+        "emptyPostsBody": "Be the first to share a memory, message, or photo."
     },
     "SessionLocationPage": {
         "back": "Back",

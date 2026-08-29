@@ -55,7 +55,9 @@
         "addCoverPhoto": "Προσθήκη φωτογραφίας",
         "location": "Τοποθεσία εκδήλωσης",
         "mainSession": "Κύρια ενότητα",
-        "secondarySession": "Δευτερεύουσα ενότητα"
+        "secondarySession": "Δευτερεύουσα ενότητα",
+        "emptyPostsTitle": "Δεν υπάρχουν δημοσιεύσεις ακόμη",
+        "emptyPostsBody": "Μοιραστείτε πρώτοι μια ανάμνηση, ένα μήνυμα ή μια φωτογραφία."
     },
     "SessionLocationPage": {
         "back": "Πίσω",

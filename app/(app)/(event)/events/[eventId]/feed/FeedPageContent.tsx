@@ -10,6 +10,7 @@ import { ComposerCard } from '@/components/feed/ComposerCard';
 import { EventDescription } from '@/components/feed/EventDescription';
 import { EventInfo } from '@/components/feed/EventInfo';
 import { EventSessionActionButtons } from '@/components/feed/EventSessionActionButtons';
+import { FeedEmptyState } from '@/components/feed/FeedEmptyState';
 import { FeedPostRenderer } from '@/components/feed/FeedPostRenderer';
 import { Header } from '@/components/feed/Header';
 import { PostModal } from '@/components/feed/PostModal';
@@ -111,9 +112,11 @@ export function FeedPageContent() {
                     <div className="flex flex-col px-0 pb-24 lg:pb-10">
                         <ComposerCard />
                         <div className="flex flex-col">
-                            {posts.map((post, index) => (
-                                <FeedPostRenderer key={post.id} post={post} isLcpCandidate={index === 0} />
-                            ))}
+                            {posts.length === 0 ? (
+                                <FeedEmptyState />
+                            ) : (
+                                posts.map((post, index) => <FeedPostRenderer key={post.id} post={post} isLcpCandidate={index === 0} />)
+                            )}
                             <div ref={loadMoreRef} className="h-1" />
                             {isFetchingNextPage && <p className="py-2 text-center text-sm text-ink-muted">{loadingMoreLabel}</p>}
                         </div>
