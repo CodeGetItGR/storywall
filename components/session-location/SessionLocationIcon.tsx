@@ -8,14 +8,15 @@ import type { SessionLocationIcon as SessionLocationIconModel } from '@/lib/sess
 type SessionLocationIconProps = {
     icon: SessionLocationIconModel;
     size?: 'sm' | 'lg';
+    className?:string
 };
 
-export function SessionLocationIcon({ icon, size = 'lg' }: SessionLocationIconProps) {
+export function SessionLocationIcon({ icon, size = 'lg', className }: SessionLocationIconProps) {
     const dimensions = size === 'lg' ? 'h-20 w-20' : 'h-5 w-5';
 
     if (icon.kind === 'map-pin') {
         return <MapPin className={dimensions} strokeWidth={1.8} aria-hidden="true" />;
     }
 
-    return <Image src={icon.src ?? ''} alt="" width={size === 'lg' ? 80 : 18} height={size === 'lg' ? 80 : 18} aria-hidden="true" unoptimized />;
+    return <Image src={icon.src ?? ''} alt="" width={size === 'lg' ? 80 : 18} height={size === 'lg' ? 80 : 18} aria-hidden="true" unoptimized  className={className}/>;
 }

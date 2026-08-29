@@ -32,7 +32,7 @@ export function EventSessionActionButtons({ event }: EventSessionActionButtonsPr
                         title={t('mainSession')}
                         className={sessionButtonClassName}
                     >
-                        <SessionLocationIcon icon={resolveSessionLocationIcon(event.eventType, 'main')} size="sm" />
+                        <SessionLocationIcon icon={resolveSessionLocationIcon(event.eventType, 'main')} size="sm" className={'mb-1'} />
                     </Link>
                 )}
                 {secondarySession && (
