@@ -3,7 +3,7 @@
 import { Dialog } from '@base-ui/react/dialog';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { type SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { StoryCaptionBar, StoryHeader, StoryProgressBar, StoryViewersModal } from '@/components/story';
@@ -79,6 +79,19 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
         goNext();
     }
 
+    const isVideoStory = media?.mediaType === 'VIDEO';
+
+    function handleVideoTimeUpdate(event: SyntheticEvent<HTMLVideoElement>) {
+        const video = event.currentTarget;
+        if (!video.duration) return;
+        setProgress(Math.min(100, (video.currentTime / video.duration) * 100));
+    }
+
+    function handleVideoEnded() {
+        setProgress(100);
+        handleTimerComplete();
+    }
+
     const onOpenChange = useCallback(
         (nextOpen: boolean) => {
             if (!nextOpen) requestClose();
@@ -93,7 +106,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
     }, [currentStoryId, open]);
 
     useEffect(() => {
-        if (!open || !currentStoryId || !canAdvanceStory) return;
+        if (!open || !currentStoryId || !canAdvanceStory || isVideoStory) return;
 
         const interval = setInterval(() => {
             setProgress((p) => {
@@ -108,7 +121,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
 
         return () => clearInterval(interval);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [canAdvanceStory, currentStoryId, open]);
+    }, [canAdvanceStory, currentStoryId, isVideoStory, open]);
 
     useEffect(() => {
         if (!open) return;
@@ -222,16 +235,28 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                         />
 
                         {/* Media */}
-                        {media && (
-                            <ProtectedImage
-                                src={media.mediaUrl}
-                                alt={t('userStory', { name: authorName })}
-                                fill
-                                className="object-cover"
-                                sizes="100vw"
-                                priority
-                            />
-                        )}
+                        {media &&
+                            (isVideoStory ? (
+                                <video
+                                    key={media.id}
+                                    src={media.mediaUrl}
+                                    className="absolute inset-0 h-full w-full object-cover"
+                                    autoPlay
+                                    controls
+                                    playsInline
+                                    onTimeUpdate={handleVideoTimeUpdate}
+                                    onEnded={handleVideoEnded}
+                                />
+                            ) : (
+                                <ProtectedImage
+                                    src={media.mediaUrl}
+                                    alt={t('userStory', { name: authorName })}
+                                    fill
+                                    className="object-cover"
+                                    sizes="100vw"
+                                    priority
+                                />
+                            ))}
 
                         {/* Tap zones */}
                         <button onClick={goPrev} className="absolute left-0 top-0 z-10 h-full w-1/3" aria-label={t('previousStory')} />

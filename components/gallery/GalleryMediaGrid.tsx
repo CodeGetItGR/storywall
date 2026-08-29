@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import type { MouseEvent, PointerEvent, RefObject } from 'react';
 import { useCallback } from 'react';
 
-import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { MediaThumbnail } from '@/components/common/MediaThumbnail';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { LoadingState } from '@/components/ui/LoadingState';
 import type { MediaResponseDto } from '@/lib/api/types';
@@ -75,7 +75,7 @@ export function GalleryMediaGrid({
                                     aria-pressed={selectionMode ? isSelected : undefined}
                                     aria-label={
                                         selectionMode
-                                            ? t(isSelected ? 'unselectPhoto' : 'selectPhoto', { filename: item.originalFilename })
+                                            ? t(isSelected ? 'unselectMedia' : 'selectMedia', { filename: item.originalFilename })
                                             : item.originalFilename
                                     }
                                     onPointerDown={handleMediaPointerDown}
@@ -92,8 +92,9 @@ export function GalleryMediaGrid({
                                     )}
                                 >
                                     <div className="relative aspect-square bg-surface-muted">
-                                        <ProtectedImage
+                                        <MediaThumbnail
                                             src={item.mediaUrl}
+                                            mediaType={item.mediaType}
                                             alt={item.originalFilename}
                                             fill
                                             sizes="(min-width: 1024px) 25vw, 50vw"

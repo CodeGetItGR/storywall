@@ -32,7 +32,7 @@ export function ComposerCard() {
                     >
                         <span className="truncate">{t('captionPlaceholder')}</span>
                     </button>
-                    <AddImageButton aria-label={t('addImage')} onClick={openPostImagePicker} />
+                    <AddImageButton aria-label={t('addMedia')} onClick={openPostImagePicker} />
                 </div>
             </div>
         </article>

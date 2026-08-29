@@ -41,7 +41,11 @@ export function GalleryViewer({ media, keepsOriginals, originalError, isDownload
             <div className="flex max-h-full max-w-5xl flex-col items-center gap-3">
                 {/* Viewer image */}
                 <div className="relative h-[70vh] w-[90vw] max-w-5xl">
-                    <ProtectedImage src={media.mediaUrl} alt={media.originalFilename} fill sizes="90vw" className="object-contain" />
+                    {media.mediaType === 'VIDEO' ? (
+                        <video src={media.mediaUrl} controls playsInline className="h-full w-full object-contain" />
+                    ) : (
+                        <ProtectedImage src={media.mediaUrl} alt={media.originalFilename} fill sizes="90vw" className="object-contain" />
+                    )}
                 </div>
                 {/* Viewer actions */}
                 {keepsOriginals && (

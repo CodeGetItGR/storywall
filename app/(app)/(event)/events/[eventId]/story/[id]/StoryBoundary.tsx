@@ -3,7 +3,7 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { useEffect, useMemo, useState } from 'react';
+import { type SyntheticEvent, useEffect, useMemo, useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { StoryCaptionBar, StoryHeader, StoryProgressBar, StoryViewersModal } from '@/components/story';
@@ -57,6 +57,19 @@ export default function StoryBoundary({ id }: { id: string }) {
 
     const { data: viewers = [], isFetching: viewersLoading } = useStoryViews(showViewers ? id : null);
 
+    const isVideoStory = media?.mediaType === 'VIDEO';
+
+    function handleVideoTimeUpdate(event: SyntheticEvent<HTMLVideoElement>) {
+        const video = event.currentTarget;
+        if (!video.duration) return;
+        setProgress(Math.min(100, (video.currentTime / video.duration) * 100));
+    }
+
+    function handleVideoEnded() {
+        setProgress(100);
+        goNext();
+    }
+
     // Mark viewed once per opened story. Idempotent server-side, so no
     // client-side "already sent" guard is needed.
     useEffect(() => {
@@ -68,6 +81,8 @@ export default function StoryBoundary({ id }: { id: string }) {
     // `group`/`groupIndex`, which are recomputed whenever useEventStories
     // background-refetches) so a refetch mid-story doesn't reset progress.
     useEffect(() => {
+        if (isVideoStory) return;
+
         const interval = setInterval(() => {
             setProgress((p) => {
                 if (p >= 100) {
@@ -80,7 +95,7 @@ export default function StoryBoundary({ id }: { id: string }) {
         }, 100);
         return () => clearInterval(interval);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [id]);
+    }, [id, isVideoStory]);
 
     if (storyError instanceof ApiError && storyError.status === 404) {
         router.replace(routes.feed);
@@ -173,16 +188,28 @@ export default function StoryBoundary({ id }: { id: string }) {
                     onDeleteRequest={handleDeleteRequest}
                 />
 
-                {media && (
-                    <ProtectedImage
-                        src={media.mediaUrl}
-                        alt={t('userStory', { name: authorName })}
-                        fill
-                        className="object-cover"
-                        sizes="400px"
-                        priority
-                    />
-                )}
+                {media &&
+                    (isVideoStory ? (
+                        <video
+                            key={media.id}
+                            src={media.mediaUrl}
+                            className="absolute inset-0 h-full w-full object-cover"
+                            autoPlay
+                            controls
+                            playsInline
+                            onTimeUpdate={handleVideoTimeUpdate}
+                            onEnded={handleVideoEnded}
+                        />
+                    ) : (
+                        <ProtectedImage
+                            src={media.mediaUrl}
+                            alt={t('userStory', { name: authorName })}
+                            fill
+                            className="object-cover"
+                            sizes="400px"
+                            priority
+                        />
+                    ))}
 
                 {/* Tap zones */}
                 <button onClick={goPrev} className="absolute left-0 top-0 w-1/3 h-full z-10" aria-label={t('previousStory')} />

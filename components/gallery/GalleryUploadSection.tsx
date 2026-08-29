@@ -47,8 +47,8 @@ export function GalleryUploadSection({
                     )}
                 >
                     <UploadCloud className="h-4 w-4" />
-                    {t('choosePhotos')}
-                    <input type="file" accept="image/*" multiple disabled={!canUpload} onChange={onFilesChange} className="sr-only" />
+                    {t('chooseFiles')}
+                    <input type="file" accept="image/*,video/*" multiple disabled={!canUpload} onChange={onFilesChange} className="sr-only" />
                 </label>
             </div>
 

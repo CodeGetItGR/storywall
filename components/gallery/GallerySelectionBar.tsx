@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 interface GallerySelectionBarProps {
     visible: boolean;
     selectedCount: number;
-    imageCount: number;
+    mediaCount: number;
     canDownloadSelected: boolean;
     isDownloadingSelection: boolean;
     onSelectAll: () => void;
@@ -18,7 +18,7 @@ interface GallerySelectionBarProps {
 export function GallerySelectionBar({
     visible,
     selectedCount,
-    imageCount,
+    mediaCount,
     canDownloadSelected,
     isDownloadingSelection,
     onSelectAll,
@@ -47,7 +47,7 @@ export function GallerySelectionBar({
                         <button
                             type="button"
                             onClick={onSelectAll}
-                            disabled={!imageCount || selectedCount === imageCount}
+                            disabled={!mediaCount || selectedCount === mediaCount}
                             className="min-h-9 rounded-full px-3 text-xs font-semibold text-ink-muted disabled:opacity-50"
                         >
                             {t('selectAll')}
@@ -79,7 +79,7 @@ export function GallerySelectionBar({
                         <button
                             type="button"
                             onClick={onSelectAll}
-                            disabled={!imageCount || selectedCount === imageCount}
+                            disabled={!mediaCount || selectedCount === mediaCount}
                             className="min-h-9 rounded-full px-3 text-xs font-semibold text-ink-muted disabled:opacity-50"
                         >
                             {t('selectAll')}

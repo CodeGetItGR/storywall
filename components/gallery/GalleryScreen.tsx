@@ -31,7 +31,7 @@ export function GalleryScreen() {
         selectionDownloadError,
         isDownloadingSelection,
         archiveDownloadOpen,
-        imageMedia,
+        media,
         isLoadingMedia,
         loadMoreRef,
         isFetchingNextPage,
@@ -112,7 +112,7 @@ export function GalleryScreen() {
                                     size="sm"
                                     variant="outline"
                                     onClick={gallerySelection.selectAll}
-                                    disabled={!imageMedia.length || gallerySelection.selectedCount === imageMedia.length}
+                                    disabled={!media.length || gallerySelection.selectedCount === media.length}
                                     className="rounded-full border-border bg-background px-3 text-xs font-semibold text-ink-muted hover:text-ink hidden sm:inline-flex"
                                 >
                                     {t('selectAll')}
@@ -125,7 +125,7 @@ export function GalleryScreen() {
                                     size="sm"
                                     variant="outline"
                                     onClick={enterSelectionMode}
-                                    disabled={!imageMedia.length}
+                                    disabled={!media.length}
                                     className="rounded-full border-border bg-background px-3 text-xs font-semibold text-ink-muted hover:text-ink"
                                 >
                                     <MousePointer2 className="h-3.5 w-3.5" />
@@ -137,7 +137,7 @@ export function GalleryScreen() {
                                         size="sm"
                                         variant="outline"
                                         onClick={openArchiveDownload}
-                                        disabled={!imageMedia.length}
+                                        disabled={!media.length}
                                         className="rounded-full border-border bg-background px-3 text-xs font-semibold text-ink-muted hover:text-ink inline-flex"
                                     >
                                         <Download className="h-3.5 w-3.5" />
@@ -154,7 +154,7 @@ export function GalleryScreen() {
             <GallerySelectionBar
                 visible={gallerySelection.selectionMode}
                 selectedCount={gallerySelection.selectedCount}
-                imageCount={imageMedia.length}
+                mediaCount={media.length}
                 canDownloadSelected={canDownloadSelected}
                 isDownloadingSelection={isDownloadingSelection}
                 onSelectAll={gallerySelection.selectAll}
@@ -168,7 +168,7 @@ export function GalleryScreen() {
             <GalleryMediaGrid
                 isLoading={isLoadingMedia}
                 isFetchingNextPage={isFetchingNextPage}
-                items={imageMedia}
+                items={media}
                 selectedIds={gallerySelection.selectedIds}
                 selectionMode={gallerySelection.selectionMode}
                 loadMoreRef={loadMoreRef}

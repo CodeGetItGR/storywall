@@ -1,6 +1,6 @@
 'use client';
 
-import { Send, X } from 'lucide-react';
+import { Play, Send, X } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
@@ -71,22 +71,35 @@ export function ComposerModal({
                             className="min-h-36 w-full resize-none rounded-[1.5rem] bg-surface-muted px-5 py-4 text-base leading-relaxed text-ink placeholder:text-ink-faint outline-none transition focus:ring-2 focus:ring-primary/30 sm:min-h-32 sm:text-sm"
                         />
                         <div className="-mt-2 flex items-center justify-between gap-3 text-xs text-ink-faint">
-                            <span>{t('photoLimitHint', { count: maxImages })}</span>
+                            <span>{t('mediaLimitHint', { count: maxImages })}</span>
                             <span>{t('captionCharacterCount', { count: caption.length, max: maxCaptionLength })}</span>
                         </div>
 
                         {/* Media previews */}
                         {images.length > 0 && (
                             <div className="grid grid-cols-10 gap-2 flex-nowrap">
-                                {images.map((img) => (
+                                {images.map((img) => {
+                                    const isVideo = img.file.type.startsWith('video/');
+                                    return (
                                     <div key={img.key} className="relative aspect-square overflow-hidden rounded-xl bg-surface-muted col-span-2">
-                                        <Image src={img.previewUrl} alt="" fill className="object-cover" sizes="200px" />
+                                        {isVideo ? (
+                                            <>
+                                                <video src={img.previewUrl} muted playsInline preload="metadata" className="h-full w-full object-cover" />
+                                                <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                                                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-black/45 text-white">
+                                                        <Play className="h-3.5 w-3.5 fill-white" strokeWidth={0} />
+                                                    </span>
+                                                </span>
+                                            </>
+                                        ) : (
+                                            <Image src={img.previewUrl} alt="" fill className="object-cover" sizes="200px" />
+                                        )}
                                         <button
                                             type="button"
                                             onClick={handleRemoveImageClick}
                                             data-key={img.key}
                                             disabled={img.status === 'uploading'}
-                                            aria-label={t('removeImage')}
+                                            aria-label={t('removeMedia')}
                                             className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-ink/60 text-white transition-colors hover:bg-ink/80 disabled:cursor-not-allowed disabled:opacity-40"
                                         >
                                             <X className="h-3.5 w-3.5" />
@@ -110,7 +123,8 @@ export function ComposerModal({
                                             </div>
                                         )}
                                     </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         )}
 
@@ -121,18 +135,18 @@ export function ComposerModal({
                         {/* Actions */}
                         <div className="flex items-center justify-between gap-2">
                             <AddImageButton
-                                aria-label={t('addImage')}
+                                aria-label={t('addMedia')}
                                 onClick={handlePickPhotos}
                                 disabled={!canComposePost || images.length >= maxImages}
                             />
                             <input
                                 ref={fileRef}
                                 type="file"
-                                accept="image/*"
+                                accept="image/*,video/*"
                                 multiple
                                 className="sr-only"
                                 onChange={handlePostFilesChange}
-                                aria-label={t('addImage')}
+                                aria-label={t('addMedia')}
                                 tabIndex={-1}
                             />
 

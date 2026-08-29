@@ -137,6 +137,7 @@ export function useComposerController(): ComposerController {
     const maxImages = Math.min(maxMediaPerPost, maxBatchUploadFiles);
     const maxCaptionLength = appConfig?.contentLimits.postContentMaxLength ?? 500;
     const maxImageBytes = appConfig?.media.maxImageBytes ?? 25 * 1024 * 1024;
+    const maxVideoBytes = appConfig?.media.maxVideoBytes ?? 200 * 1024 * 1024;
     const maxRequestSizeBytes = appConfig?.media.maxRequestSizeBytes ?? 260 * 1024 * 1024;
     const canSubmit =
         (caption.trim().length > 0 || images.length > 0) &&
@@ -195,7 +196,8 @@ export function useComposerController(): ComposerController {
 
         for (const file of incoming) {
             if (accepted.length >= room) break;
-            if (file.size > maxImageBytes) {
+            const byteLimit = file.type.startsWith('video/') ? maxVideoBytes : maxImageBytes;
+            if (file.size > byteLimit) {
                 oversizeNames.push(file.name);
                 continue;
             }
@@ -209,7 +211,7 @@ export function useComposerController(): ComposerController {
 
         if (incoming.length > room) setCountError(t('maxImagesReached', { count: maxImages }));
         if (oversizeNames.length > 0) {
-            setSizeError(t('fileTooLarge', { filename: oversizeNames.join(', '), size: formatBytes(maxImageBytes) }));
+            setSizeError(t('fileTooLarge', { filename: oversizeNames.join(', ') }));
         } else if (requestTooLarge) {
             setSizeError(t('requestTooLarge', { size: formatBytes(maxRequestSizeBytes) }));
         }

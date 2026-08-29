@@ -62,14 +62,24 @@ export function PostMediaCarousel({ media, initialIndex, onIndexChange, alt, cla
                 <div className="flex h-full">
                     {media.map((item, index) => (
                         <div key={item.id} className="relative shrink-0 grow-0 basis-full h-full">
-                            <ProtectedImage
-                                src={item.mediaUrl}
-                                alt={alt}
-                                fill
-                                className="object-contain"
-                                sizes="100vw"
-                                loading={index === currentIndex ? 'eager' : 'lazy'}
-                            />
+                            {item.mediaType === 'VIDEO' ? (
+                                <video
+                                    src={item.mediaUrl}
+                                    controls
+                                    playsInline
+                                    preload={index === currentIndex ? 'auto' : 'metadata'}
+                                    className="h-full w-full object-contain"
+                                />
+                            ) : (
+                                <ProtectedImage
+                                    src={item.mediaUrl}
+                                    alt={alt}
+                                    fill
+                                    className="object-contain"
+                                    sizes="100vw"
+                                    loading={index === currentIndex ? 'eager' : 'lazy'}
+                                />
+                            )}
                         </div>
                     ))}
                 </div>

@@ -16,7 +16,6 @@ import { endpoints } from '@/lib/api/endpoints';
 import type { MediaResponseDto } from '@/lib/api/types';
 import { downloadBlob } from '@/lib/download';
 import { isEventWritable } from '@/lib/eventLifecycle';
-import { formatBytes } from '@/lib/format';
 import { useActiveMember } from '@/providers/EventProvider';
 import { useMobileChrome } from '@/providers/MobileChromeProvider';
 
@@ -49,10 +48,9 @@ export function useGalleryScreen() {
     const galleryEnabled = galleryModule?.isAvailable ?? false;
     const canUpload = Boolean(eventId && activeMember && galleryEnabled && isEventWritable(activeEvent?.status));
     const selectedSize = useMemo(() => selectedFiles.reduce((sum, file) => sum + file.size, 0), [selectedFiles]);
-    const imageMedia = useMemo(() => media.filter((item) => item.mediaType === 'IMAGE'), [media]);
     const maxArchiveSelectedItems = appConfig?.media.maxArchiveSelectedItems ?? 100;
     const maxArchivePartBytes = appConfig?.media.maxArchivePartBytes ?? 2 * 1024 * 1024 * 1024;
-    const gallerySelection = useGallerySelection(imageMedia, 450, maxArchiveSelectedItems);
+    const gallerySelection = useGallerySelection(media, 450, maxArchiveSelectedItems);
     const selectedArchiveSize = useMemo(
         () => gallerySelection.selectedItems.reduce((sum, item) => sum + item.fileSize, 0),
         [gallerySelection.selectedItems]
@@ -60,6 +58,7 @@ export function useGalleryScreen() {
 
     const maxFiles = appConfig?.media.maxBatchUploadFiles ?? MAX_FILES_PER_BATCH;
     const maxImageBytes = appConfig?.media.maxImageBytes ?? 25 * 1024 * 1024;
+    const maxVideoBytes = appConfig?.media.maxVideoBytes ?? 200 * 1024 * 1024;
     const keepsOriginals = billing.data?.addons.some((addon) => addon.code === 'ORIGINALS') ?? false;
     const showArchiveDownload = isHost && galleryEnabled;
     const canDownloadSelected =
@@ -72,16 +71,19 @@ export function useGalleryScreen() {
         (event: ChangeEvent<HTMLInputElement>) => {
             setUploadNotice(null);
             const files = Array.from(event.target.files ?? [])
-                .filter((file) => file.type.startsWith('image/'))
-                .filter((file) => file.size <= maxImageBytes)
+                .filter((file) => {
+                    if (file.type.startsWith('image/')) return file.size <= maxImageBytes;
+                    if (file.type.startsWith('video/')) return file.size <= maxVideoBytes;
+                    return false;
+                })
                 .slice(0, maxFiles);
             setSelectedFiles(files);
             if (files.length < (event.target.files?.length ?? 0)) {
-                setUploadNotice(t('selectionLimited', { count: maxFiles, size: formatBytes(maxImageBytes) }));
+                setUploadNotice(t('selectionLimited', { count: maxFiles }));
             }
             event.target.value = '';
         },
-        [maxFiles, maxImageBytes, t]
+        [maxFiles, maxImageBytes, maxVideoBytes, t]
     );
 
     const handleClearSelection = useCallback(() => {
@@ -159,9 +161,9 @@ export function useGalleryScreen() {
                 gallerySelection.toggleSelection(id);
                 return;
             }
-            setSelectedMedia(imageMedia.find((item) => item.id === id) ?? null);
+            setSelectedMedia(media.find((item) => item.id === id) ?? null);
         },
-        [gallerySelection, imageMedia]
+        [gallerySelection, media]
     );
 
     const handleMediaPointerDown = useCallback(
@@ -240,7 +242,7 @@ export function useGalleryScreen() {
         selectionDownloadError,
         isDownloadingSelection,
         archiveDownloadOpen,
-        imageMedia,
+        media,
         isLoadingMedia,
         loadMoreRef,
         isFetchingNextPage,

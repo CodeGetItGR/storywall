@@ -4,7 +4,7 @@ import { MessageCircle, MoreHorizontal, Pin } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import React, { useMemo, useState } from 'react';
 
-import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { MediaThumbnail } from '@/components/common/MediaThumbnail';
 import { PostAuthorAvatar, PostMediaViewer, ReactionCount } from '@/components/feed/post';
 import { CommentsList } from '@/components/feed/post/CommentsList';
 import Badge from '@/components/ui/badge';
@@ -100,12 +100,13 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                     type="button"
                     onClick={handleOpenSingleMedia}
                     onContextMenu={preventMediaContextMenu}
-                    aria-label={t('viewPhoto', { name: authorName })}
+                    aria-label={t('viewMedia', { name: authorName })}
                     className="relative block aspect-4/3 w-full overflow-hidden bg-surface-muted"
                 >
-                    <ProtectedImage
+                    <MediaThumbnail
                         src={media[0].mediaUrl}
-                        alt={t('photoBy', { name: authorName })}
+                        mediaType={media[0].mediaType}
+                        alt={t('mediaBy', { name: authorName })}
                         fill
                         className="object-cover"
                         sizes="(max-width: 768px) 100vw, 680px"
@@ -122,12 +123,13 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                             onClick={handleMediaClick}
                             onContextMenu={preventMediaContextMenu}
                             data-index={i}
-                            aria-label={t('viewPhotoAt', { index: i + 1, count: media.length, name: authorName })}
+                            aria-label={t('viewMediaAt', { index: i + 1, count: media.length, name: authorName })}
                             className="relative block aspect-square overflow-hidden"
                         >
-                            <ProtectedImage
+                            <MediaThumbnail
                                 src={item.mediaUrl}
-                                alt={t('photoBy', { name: authorName })}
+                                mediaType={item.mediaType}
+                                alt={t('mediaBy', { name: authorName })}
                                 fill
                                 className="object-cover"
                                 sizes="(max-width: 768px) 50vw, 340px"
@@ -199,7 +201,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                 <PostMediaViewer
                     media={media}
                     initialIndex={selectedMediaIndex}
-                    alt={t('photoBy', { name: authorName })}
+                    alt={t('mediaBy', { name: authorName })}
                     onCloseAction={closeMediaViewer}
                 />
             )}
