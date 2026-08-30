@@ -57,7 +57,7 @@ export function PostCommentsPanel({
             <section className="border-b flex justify-between pb-2 px-3 shrink-0 pt-2">
                 <PostHeader post={post} timeAgo={timeAgo} />
                 <div className="flex gap-2">
-                    <ReactionSummary count={post.reactionCount} counts={post.reactionCounts} reactionTypes={reactionTypes} />
+                    <ReactionSummary counts={post.reactionCounts} reactionTypes={reactionTypes} />
                     <CommentCount count={post.commentCount} />
                 </div>
             </section>

@@ -5,10 +5,9 @@ import { useTranslations } from 'next-intl';
 import React, { useMemo, useState } from 'react';
 
 import { MediaThumbnail } from '@/components/common/MediaThumbnail';
-import { PostAuthorAvatar, PostMediaViewer, PostReactionPicker } from '@/components/feed/post';
-import { CommentsList } from '@/components/feed/post/CommentsList';
+import { PostAuthorAvatar, PostMediaViewer, PostReactionPicker, ReactionSummary } from '@/components/feed/post';
 import Badge from '@/components/ui/badge';
-import { useEventMembers, usePostComments, usePostModal } from '@/hooks';
+import { useAppConfig, usePostModal } from '@/hooks';
 import type { PostResponseDto } from '@/lib/api/types';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { cn, timeAgoParts } from '@/lib/utils';
@@ -29,18 +28,15 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const timeAgo = useMemo(() => timeAgoParts(post.createdAt), [post.createdAt]);
     const media = post.media;
     const isHostPost = post.author?.role === 'HOST';
-    const { data: commentPages } = usePostComments(post.id);
-    const comments = useMemo(() => commentPages?.pages.flatMap((page) => page.content) ?? [], [commentPages?.pages]);
-    const { data: members = [] } = useEventMembers(post.eventId);
 
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
+    const { data: appConfig } = useAppConfig();
     const isHost = useIsHost();
     const canWrite = isEventWritable(activeEvent?.status);
     const isMyPost = activeMember?.id !== undefined && post.authorMemberId === activeMember.id;
     const showHostPostBadge = isHostPost && !isHost;
-    const visibleComments = useMemo(() => comments.slice(0, 3), [comments]);
-    const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
+    const reactionTypes = appConfig?.reactionTypesByEventType[post.eventType ?? activeEvent?.eventType ?? ''] ?? [];
 
     function openPost() {
         openPostModal(post.id);
@@ -143,38 +139,29 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
 
             {/* Engagement actions */}
             <div className="flex items-center justify-between px-4 py-3">
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-3">
                     <PostReactionPicker post={post} disabled={!canWrite} />
-
-                    {showCommentLink ? (
-                        <button
-                            type="button"
-                            onClick={openPost}
-                            className="flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-muted"
-                            aria-label={t('comments', { count: post.commentCount })}
-                        >
-                            <MessageCircle className="h-5 w-5" strokeWidth={1.8} />
-                            <span className="tabular-nums">{post.commentCount}</span>
-                        </button>
-                    ) : (
-                        <button
-                            type="button"
-                            className="flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-muted"
-                            aria-label={t('comments', { count: post.commentCount })}
-                        >
-                            <MessageCircle className="h-5 w-5" strokeWidth={1.8} />
-                            <span className="tabular-nums">{post.commentCount}</span>
-                        </button>
-                    )}
+                    <button
+                        type="button"
+                        onClick={showCommentLink ? openPost : undefined}
+                        className="flex min-h-10 items-center gap-1.5 rounded-full px-1.5 py-2 text-sm font-medium text-ink-muted transition-colors hover:text-ink"
+                        aria-label={t('comments', { count: post.commentCount })}
+                    >
+                        <MessageCircle className="h-5 w-5" strokeWidth={1.8} />
+                        <span className="tabular-nums">{post.commentCount}</span>
+                    </button>
                 </div>
+                {post.reactionCount > 0 && (
+                    <button
+                        type="button"
+                        onClick={showCommentLink ? openPost : undefined}
+                        className="flex min-h-10 items-center rounded-full px-1.5 py-2 transition-[opacity,scale] hover:opacity-80 active:scale-[0.97]"
+                        aria-label={t('openReactions')}
+                    >
+                        <ReactionSummary counts={post.reactionCounts} reactionTypes={reactionTypes} />
+                    </button>
+                )}
             </div>
-
-            {/* Recent comments */}
-            {visibleComments.length > 0 && (
-                <div className="border-t border-border/50 px-4 pb-4 pt-2">
-                    <CommentsList comments={visibleComments} membersById={membersById} compact limit={3} />
-                </div>
-            )}
 
             {/* Fullscreen media viewer */}
             {selectedMediaIndex !== null && (

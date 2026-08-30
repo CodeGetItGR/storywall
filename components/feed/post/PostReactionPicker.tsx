@@ -1,9 +1,9 @@
 'use client';
 
+import { Heart } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { ReactionSummary } from '@/components/feed/post/ReactionSummary';
 import { usePostLike } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { isModuleNotAvailableError } from '@/lib/api/errors';
@@ -13,9 +13,10 @@ import { cn } from '@/lib/utils';
 interface PostReactionPickerProps {
     post: PostResponseDto;
     disabled?: boolean;
+    showEmptyIcon?: boolean;
 }
 
-export function PostReactionPicker({ post, disabled = false }: PostReactionPickerProps) {
+export function PostReactionPicker({ post, disabled = false, showEmptyIcon = true }: PostReactionPickerProps) {
     const t = useTranslations('PostCard');
     const toErrorMessage = useApiErrorMessage();
     const rootRef = useRef<HTMLDivElement>(null);
@@ -23,6 +24,7 @@ export function PostReactionPicker({ post, disabled = false }: PostReactionPicke
     const [menuVisible, setMenuVisible] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
     const reaction = usePostLike(post);
+    const selectedEmoji = reaction.selectedOption?.emoji;
 
     const clearCloseTimer = useCallback(() => {
         if (closeTimerRef.current === null) return;
@@ -102,7 +104,13 @@ export function PostReactionPicker({ post, disabled = false }: PostReactionPicke
                     disabled && 'cursor-not-allowed opacity-60 hover:text-ink-muted'
                 )}
             >
-                <ReactionSummary count={reaction.count} counts={reaction.counts} reactionTypes={reaction.options} />
+                {selectedEmoji ? (
+                    <span key={reaction.selectedType} className="motion-reaction-selected text-lg leading-none" aria-hidden>
+                        {selectedEmoji}
+                    </span>
+                ) : showEmptyIcon ? (
+                    <Heart className="h-5 w-5" strokeWidth={1.8} />
+                ) : null}
             </button>
 
             {/* Reaction menu */}

@@ -13,7 +13,7 @@ export function PostAuthorAvatar({
 }: {
     avatarUrl?: string | null;
     name: string;
-    subtitle?: string;
+    subtitle?: string | null;
     timeAgo: { unit: 'now' | 'minutes' | 'hours' | 'days'; value: number };
     isHostPost?: boolean;
 }) {

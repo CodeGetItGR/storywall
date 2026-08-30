@@ -90,6 +90,7 @@
         "reactToPost": "React to post",
         "changeReaction": "Change reaction",
         "removeReaction": "Remove reaction",
+        "openReactions": "Open comments",
         "comments": "{count} comments",
         "sharePost": "Share post",
         "savePost": "Save post",
