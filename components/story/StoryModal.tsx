@@ -3,18 +3,12 @@
 import { Dialog } from '@base-ui/react/dialog';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { type SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
-import { StoryCaptionBar, StoryHeader, StoryProgressBar, StoryViewersModal } from '@/components/story';
+import { StoryCaptionBar, StoryHeader, StoryProgressBar } from '@/components/story';
 import { StoryVideo } from '@/components/story/StoryVideo';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { useDeleteStory, useEventMembers, useEventStories, useMarkStoryViewed, useMediaItem, useStory, useStoryViews } from '@/hooks';
-import { useOverlayHistory } from '@/hooks/useOverlayHistory';
-import { ApiError } from '@/lib/api/client';
-import { isEventWritable } from '@/lib/eventLifecycle';
-import { groupStoriesByAuthor } from '@/lib/stories';
-import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
+import { useStoryModal } from '@/hooks/useStoryModal';
 
 type StoryModalProps = {
     open: boolean;
@@ -25,219 +19,46 @@ type StoryModalProps = {
 export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
     const t = useTranslations('StoryPage');
     const locale = useLocale();
-    const activeEvent = useActiveEvent();
-    const activeMember = useActiveMember();
-    const isHost = useIsHost();
+    const {
+        onOpenChange,
+        currentStoryId,
+        storyNotFound,
+        activeStory,
+        group,
+        storyIndex,
+        media,
+        author,
+        progress,
+        showMenu,
+        showDeleteConfirm,
+        canManage,
+        canDeleteStory,
+        isVideoStory,
+        isDeleting,
+        goNext,
+        goPrev,
+        handleCloseStory,
+        handleToggleMenu,
+        handleDeleteRequest,
+        handleCloseDeleteConfirm,
+        handleDelete,
+        handleMediaLoaded,
+        handleVideoTimeUpdate,
+        handleVideoEnded,
+    } = useStoryModal({ open, storyId, onCloseAction });
 
-    const [activeStoryId, setActiveStoryId] = useState<string | null>(storyId);
-    const [progress, setProgress] = useState(0);
-    const [mediaLoaded, setMediaLoaded] = useState(false);
-    const [showViewers, setShowViewers] = useState(false);
-    const [showMenu, setShowMenu] = useState(false);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const { requestClose } = useOverlayHistory(open, onCloseAction);
-
-    const currentStoryId = open ? (activeStoryId ?? storyId) : activeStoryId;
-
-    const { data: story, error: storyError } = useStory(currentStoryId);
-    const eventId = story?.eventId ?? activeEvent?.id ?? null;
-    const { data: allStories = [] } = useEventStories(eventId);
-    const activeStory = story ?? allStories.find((item) => item.id === currentStoryId) ?? null;
-    const { data: media } = useMediaItem(activeStory?.mediaId ?? null);
-    const { data: members = [] } = useEventMembers(eventId);
-    const markViewed = useMarkStoryViewed();
-    const deleteStory = useDeleteStory(eventId ?? '');
-
-    // Reset the viewer state whenever the popup opens or advances to a different story.
-    const [prevStoryState, setPrevStoryState] = useState({ open, storyId, currentStoryId });
-    if (open !== prevStoryState.open || storyId !== prevStoryState.storyId || currentStoryId !== prevStoryState.currentStoryId) {
-        setPrevStoryState({ open, storyId, currentStoryId });
-        if (!open) {
-            setActiveStoryId(null);
-            setProgress(0);
-            setMediaLoaded(false);
-            setShowMenu(false);
-            setShowDeleteConfirm(false);
-            setShowViewers(false);
-        } else if (storyId !== prevStoryState.storyId || open !== prevStoryState.open) {
-            setActiveStoryId(storyId);
-            setProgress(0);
-            setMediaLoaded(false);
-            setShowMenu(false);
-            setShowDeleteConfirm(false);
-            setShowViewers(false);
-        } else {
-            setProgress(0);
-            setMediaLoaded(false);
-            setShowMenu(false);
-            setShowDeleteConfirm(false);
-            setShowViewers(false);
-        }
-    }
-
-    const groups = useMemo(() => groupStoriesByAuthor(allStories, { filterExpired: false }), [allStories]);
-    const groupIndex = groups.findIndex((g) => g.stories.some((s) => s.id === currentStoryId));
-    const group = groupIndex >= 0 ? groups[groupIndex] : null;
-    const storyIndex = group ? group.stories.findIndex((s) => s.id === currentStoryId) : -1;
-
-    const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
-    const author = activeStory?.authorMemberId ? membersById.get(activeStory.authorMemberId) : undefined;
-    const canWrite = isEventWritable(activeEvent?.status);
-    const canManage = Boolean(activeStory && activeMember && (activeMember.id === activeStory.authorMemberId || isHost));
-    const canDeleteStory = canManage && canWrite;
-    const canAdvanceStory = Boolean(activeStory && group && storyIndex >= 0);
-
-    const { data: viewers = [], isFetching: viewersLoading } = useStoryViews(showViewers ? currentStoryId : null);
-
-    function handleTimerComplete() {
-        if (!group || storyIndex < 0) {
-            onCloseAction();
-            return;
-        }
-
-        goNext();
-    }
-
-    const isVideoStory = media?.mediaType === 'VIDEO';
-    const canRunStoryTimer = Boolean(media && mediaLoaded);
-
-    function handleMediaLoaded() {
-        setMediaLoaded(true);
-    }
-
-    function handleVideoTimeUpdate(event: SyntheticEvent<HTMLVideoElement>) {
-        if (!mediaLoaded) return;
-        const video = event.currentTarget;
-        if (!video.duration) return;
-        setProgress(Math.min(100, (video.currentTime / video.duration) * 100));
-    }
-
-    function handleVideoEnded() {
-        setProgress(100);
-        handleTimerComplete();
-    }
-
-    const onOpenChange = useCallback(
-        (nextOpen: boolean) => {
-            if (!nextOpen) requestClose();
-        },
-        [requestClose]
-    );
-
-    useEffect(() => {
-        if (!open || !currentStoryId) return;
-        markViewed.mutate(currentStoryId);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentStoryId, open]);
-
-    useEffect(() => {
-        if (!open || !currentStoryId || !canAdvanceStory || !canRunStoryTimer || isVideoStory) return;
-
-        const interval = setInterval(() => {
-            setProgress((p) => {
-                if (p >= 100) {
-                    clearInterval(interval);
-                    handleTimerComplete();
-                    return 100;
-                }
-                return p + 2;
-            });
-        }, 100);
-
-        return () => clearInterval(interval);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [canAdvanceStory, canRunStoryTimer, currentStoryId, isVideoStory, open]);
-
-    useEffect(() => {
-        if (!open) return;
-        if (storyError instanceof ApiError && storyError.status === 404) {
-            onCloseAction();
-        }
-    }, [onCloseAction, open, storyError]);
-
-    useEffect(() => {
-        if (!open || !currentStoryId || !activeStory) return;
-        if (!group || storyIndex < 0) {
-            onCloseAction();
-        }
-    }, [activeStory, currentStoryId, group, onCloseAction, open, storyIndex]);
-
-    if (!currentStoryId) return null;
-    if (storyError instanceof ApiError && storyError.status === 404) return null;
+    if (!currentStoryId || storyNotFound) return null;
     if (!activeStory || !group || storyIndex < 0) {
         return (
             <Dialog.Root open={open} onOpenChange={onOpenChange}>
                 <Dialog.Portal>
                     {/* Backdrop */}
-                    <Dialog.Backdrop className="motion-story-overlay fixed inset-0 z-[60] bg-black opacity-100 data-closed:pointer-events-none" />
+                    <Dialog.Backdrop className="motion-story-overlay fixed inset-0 z-60 bg-black opacity-100 data-closed:pointer-events-none" />
                     {/* Story loading */}
-                    <Dialog.Popup aria-label={t('story')} className="motion-story-frame fixed inset-0 z-[60] bg-black outline-none" />
+                    <Dialog.Popup aria-label={t('story')} className="motion-story-frame fixed inset-0 z-60 bg-black outline-none" />
                 </Dialog.Portal>
             </Dialog.Root>
         );
-    }
-
-    function goNext() {
-        if (!group || storyIndex < 0) {
-            onCloseAction();
-            return;
-        }
-        if (storyIndex < group.stories.length - 1) {
-            setActiveStoryId(group.stories[storyIndex + 1].id);
-            return;
-        }
-        const nextGroup = groups[groupIndex + 1];
-        if (nextGroup) {
-            setActiveStoryId(nextGroup.stories[0].id);
-            return;
-        }
-        onCloseAction();
-    }
-
-    function goPrev() {
-        if (!group) return;
-        if (storyIndex > 0) {
-            setActiveStoryId(group.stories[storyIndex - 1].id);
-            return;
-        }
-        const prevGroup = groups[groupIndex - 1];
-        if (prevGroup) {
-            setActiveStoryId(prevGroup.stories[prevGroup.stories.length - 1].id);
-        }
-    }
-
-    function handleCloseStory() {
-        requestClose();
-    }
-
-    function handleToggleMenu() {
-        setShowMenu((v) => !v);
-    }
-
-    function handleShowViewers() {
-        setShowViewers(true);
-    }
-
-    function handleHideViewers() {
-        setShowViewers(false);
-    }
-
-    function handleDeleteRequest() {
-        if (!canDeleteStory) return;
-        setShowMenu(false);
-        setShowDeleteConfirm(true);
-    }
-
-    function handleCloseDeleteConfirm() {
-        setShowDeleteConfirm(false);
-    }
-
-    async function handleDelete() {
-        if (!canDeleteStory) return;
-        handleCloseDeleteConfirm();
-        if (!currentStoryId) return;
-        await deleteStory.mutateAsync(currentStoryId);
-        goNext();
     }
 
     const timeStr = new Date(activeStory.createdAt).toLocaleTimeString(locale, {
@@ -250,9 +71,9 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
         <Dialog.Root open={open} onOpenChange={onOpenChange}>
             <Dialog.Portal>
                 {/* Backdrop */}
-                <Dialog.Backdrop className="motion-story-overlay fixed inset-0 z-[60] bg-black opacity-100 data-closed:pointer-events-none" />
+                <Dialog.Backdrop className="motion-story-overlay fixed inset-0 z-60 bg-black opacity-100 data-closed:pointer-events-none" />
                 {/* Story */}
-                <Dialog.Popup aria-label={t('story')} className="motion-story-frame fixed inset-0 z-[60] bg-black outline-none">
+                <Dialog.Popup aria-label={t('story')} className="motion-story-frame fixed inset-0 z-60 bg-black outline-none">
                     <div className="relative h-dvh w-full overflow-hidden bg-black">
                         {/* Progress */}
                         <StoryProgressBar stories={group.stories} activeIndex={storyIndex} progress={progress} />
@@ -317,19 +138,10 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                         </div>
 
                         {/* Caption */}
-                        {hasMedia && <StoryCaptionBar story={activeStory} canManage={canManage} onShowViewersAction={handleShowViewers} />}
+                        {hasMedia && <StoryCaptionBar story={activeStory} />}
                         {!hasMedia && <section className="absolute inset-0 flex w-full min-w-0 min-h-0 flex-1 flex-col" />}
                     </div>
                 </Dialog.Popup>
-
-                {/* Viewers */}
-                <StoryViewersModal
-                    open={showViewers}
-                    onClose={handleHideViewers}
-                    viewers={viewers}
-                    loading={viewersLoading}
-                    membersById={membersById}
-                />
 
                 {/* Confirm */}
                 <ConfirmActionModal
@@ -340,7 +152,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                     body={t('deleteStoryConfirmBody')}
                     confirmLabel={t('deleteStoryConfirm')}
                     cancelLabel={t('cancel')}
-                    isConfirming={deleteStory.isPending}
+                    isConfirming={isDeleting}
                 />
             </Dialog.Portal>
         </Dialog.Root>

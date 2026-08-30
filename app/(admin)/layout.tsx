@@ -1,9 +1,8 @@
 'use client';
 
 import { LogOut, Menu } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode } from 'react';
 
 import { AdminNavigationProvider } from '@/components/admin/AdminNavigationContext';
 import { AdminShellNav } from '@/components/admin/AdminShellNav';
@@ -11,22 +10,22 @@ import { AdminTopbar } from '@/components/admin/AdminTopbar';
 import { RefineAdminProvider } from '@/components/admin/RefineAdminProvider';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { Modal } from '@/components/ui/modal';
-import { useAuth } from '@/hooks/useAuth';
-import { routes } from '@/lib/routes';
+import { useAdminLayoutShell } from '@/hooks/useAdminLayoutShell';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
     const t = useTranslations('AdminPage');
-    const router = useRouter();
-    const { user, isBootstrapping, logout } = useAuth();
-    const [mobileNavOpen, setMobileNavOpen] = useState(false);
-    const [signOutOpen, setSignOutOpen] = useState(false);
-
-    useEffect(() => {
-        if (isBootstrapping) return;
-        if (!user) {
-            router.replace(routes.login);
-        }
-    }, [isBootstrapping, router, user]);
+    const {
+        user,
+        isBootstrapping,
+        mobileNavOpen,
+        signOutOpen,
+        handleLogout,
+        handleOpenMobileNav,
+        handleCloseMobileNav,
+        handleOpenSignOut,
+        handleCloseSignOut,
+        handleConfirmSignOut,
+    } = useAdminLayoutShell();
 
     if (isBootstrapping || !user) {
         return <div className="admin-shell h-full bg-canvas" />;
@@ -34,32 +33,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
     if (user.role !== 'ADMIN') {
         return <>{children}</>;
-    }
-
-    async function handleLogout() {
-        await logout();
-        router.push(routes.login);
-    }
-
-    function handleCloseMobileNav() {
-        setMobileNavOpen(false);
-    }
-
-    function handleOpenMobileNav() {
-        setMobileNavOpen(true);
-    }
-
-    function handleOpenSignOut() {
-        setSignOutOpen(true);
-    }
-
-    function handleCloseSignOut() {
-        setSignOutOpen(false);
-    }
-
-    async function handleConfirmSignOut() {
-        setSignOutOpen(false);
-        await handleLogout();
     }
 
     return (

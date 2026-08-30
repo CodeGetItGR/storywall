@@ -3,8 +3,8 @@
 import { Database } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { useState } from 'react';
 
+import { useStoragePackSelection } from '@/hooks/useStoragePackSelection';
 import { useEventUsage } from '@/hooks/useUsage';
 import type { PaidServiceResponseDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
@@ -16,17 +16,9 @@ export function StoragePackPurchase({ eventId, services }: { eventId: string; se
     const t = useTranslations('EventPlanSettingsPage.storagePacks');
     const locale = useLocale();
     const usage = useEventUsage(eventId);
-    const [selectedCode, setSelectedCode] = useState(() => services[0]?.code ?? '');
-    const selectedService = services.find((service) => service.code === selectedCode) ?? services[0];
+    const { selectedService, handleSelect } = useStoragePackSelection(services);
 
     if (services.length === 0) return null;
-
-    function handleSelect(event: React.MouseEvent<HTMLButtonElement>) {
-        const code = event.currentTarget.dataset.serviceCode;
-        if (code) {
-            setSelectedCode(code);
-        }
-    }
 
     return (
         <section>

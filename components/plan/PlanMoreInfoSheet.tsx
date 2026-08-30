@@ -3,10 +3,11 @@
 import { useLocale, useTranslations } from 'next-intl';
 
 import { Modal } from '@/components/ui/modal';
+import { useLocalizedModuleLabel } from '@/hooks/useLocalizedModuleLabel';
 import type { PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
 import { formatPlanDiscount } from '@/lib/planComparison';
-import { enabledModuleKeys, getModuleMeta } from '@/lib/planModules';
+import { enabledModuleKeys } from '@/lib/planModules';
 
 type PlanMoreInfoSheetProps = {
     open: boolean;
@@ -17,23 +18,14 @@ type PlanMoreInfoSheetProps = {
 
 export function PlanMoreInfoSheet({ open, onCloseAction, plan, modules }: PlanMoreInfoSheetProps) {
     const t = useTranslations('PlanCard');
-    const tModules = useTranslations('Modules');
     const locale = useLocale();
+    const moduleLabel = useLocalizedModuleLabel(modules);
 
     if (!plan) return null;
 
     const discount = formatPlanDiscount(plan);
     const includedModuleKeys = enabledModuleKeys(plan.moduleKeys, modules);
     const addOnServices = (plan.paidModules ?? []).filter((service) => service.grantsModuleKey);
-
-    function moduleLabel(moduleKey: string) {
-        const meta = getModuleMeta(moduleKey, modules);
-        return {
-            name: tModules.has(`${moduleKey}.name`) ? tModules(`${moduleKey}.name`) : meta.name,
-            description: tModules.has(`${moduleKey}.description`) ? tModules(`${moduleKey}.description`) : meta.description,
-            Icon: meta.Icon,
-        };
-    }
 
     return (
         <Modal open={open} onClose={onCloseAction} size="sm" variant="sheet" closeLabel={t('moreInfoClose')}>
