@@ -31,7 +31,7 @@ export default function RsvpTab({
     }, []);
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-7">
             {/* Sub-tabs */}
             <div className="flex gap-4 w-full items-center justify-center">
                 {(

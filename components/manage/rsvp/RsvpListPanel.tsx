@@ -1,7 +1,8 @@
 'use client';
 
+import { ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { type MouseEvent, useCallback } from 'react';
+import { type ChangeEvent, useCallback } from 'react';
 
 import { type RosterFilter, type RosterMember, type RosterRsvp, useRsvpRoster } from '@/hooks/useRsvpRoster';
 import { rsvpStatusTone } from '@/lib/statusTones';
@@ -18,10 +19,9 @@ export function RsvpListPanel({ members, rsvps }: { members: RosterMember[]; rsv
     const t = useTranslations('ManagePage');
     const { filter, setFilter, counts, guestCount, visibleGuests, rsvpByMember, statusOf } = useRsvpRoster(members, rsvps);
 
-    const handleFilterClick = useCallback(
-        (event: MouseEvent<HTMLButtonElement>) => {
-            const next = event.currentTarget.dataset.filter as RosterFilter | undefined;
-            if (next) setFilter(next);
+    const handleFilterChange = useCallback(
+        (event: ChangeEvent<HTMLSelectElement>) => {
+            setFilter(event.target.value as RosterFilter);
         },
         [setFilter]
     );
@@ -50,30 +50,22 @@ export function RsvpListPanel({ members, rsvps }: { members: RosterMember[]; rsv
     return (
         <div className="flex flex-col gap-4">
             {/* Filters */}
-            <div className="-mx-4 overflow-x-auto px-4 no-scrollbar lg:mx-0 lg:px-0">
-                <div className="inline-flex w-max gap-1 rounded-full bg-surface-muted p-1">
+            <div className="relative inline-block w-max ml-auto">
+                <select
+                    value={filter}
+                    onChange={handleFilterChange}
+                    className="min-h-7 appearance-none rounded-md border border-border bg-background py-2 pl-4 pr-9 text-sm font-semibold text-ink transition-colors hover:border-ink-faint focus:outline-none focus:ring-2 focus:ring-primary/30"
+                >
                     {filters.map(({ key, labelKey }) => {
                         const count = key === 'all' ? guestCount : counts[key];
-                        const isActive = filter === key;
-
                         return (
-                            <button
-                                key={key}
-                                type="button"
-                                data-filter={key}
-                                onClick={handleFilterClick}
-                                aria-pressed={isActive}
-                                className={cn(
-                                    'inline-flex min-h-10 items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 text-xs font-semibold transition-colors',
-                                    isActive ? 'bg-background text-ink shadow-sm' : 'text-ink-muted hover:text-ink'
-                                )}
-                            >
-                                {t(labelKey)}
-                                <span className="tabular-nums text-ink-faint">{count}</span>
-                            </button>
+                            <option key={key} value={key}>
+                                {t(labelKey)} ({count})
+                            </option>
                         );
                     })}
-                </div>
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
             </div>
 
             {/* Roster */}
@@ -84,7 +76,7 @@ export function RsvpListPanel({ members, rsvps }: { members: RosterMember[]; rsv
             ) : (
                 <>
                     {/* Roster rows (small screens) */}
-                    <ul className="divide-y divide-border border-t border-border md:hidden">
+                    <ul className="divide-y divide-border border-t md:hidden">
                         {rows.map((row) => (
                             <li key={row.id} className="flex items-start justify-between gap-3 py-3">
                                 <div className="min-w-0">
