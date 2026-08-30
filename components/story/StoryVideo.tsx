@@ -14,6 +14,7 @@ interface StoryVideoProps {
     muteToggle?: boolean;
     onTimeUpdate?: ReactEventHandler<HTMLVideoElement>;
     onEnded?: ReactEventHandler<HTMLVideoElement>;
+    onLoadedData?: ReactEventHandler<HTMLVideoElement>;
     /** Fires when the browser can't decode/load `src` at all (e.g. some Android
      * browsers can't play a locally-picked video's blob: URL). */
     onLoadError?: () => void;
@@ -23,7 +24,7 @@ function preventContextMenu(event: SyntheticEvent<HTMLVideoElement>) {
     event.preventDefault();
 }
 
-export function StoryVideo({ src, className, loop = false, muteToggle = true, onTimeUpdate, onEnded, onLoadError }: StoryVideoProps) {
+export function StoryVideo({ src, className, loop = false, muteToggle = true, onTimeUpdate, onEnded, onLoadedData, onLoadError }: StoryVideoProps) {
     const t = useTranslations('StoryPage');
     // Mobile browsers block autoplay of unmuted video, so playback always
     // starts muted; the viewer can opt into sound via the toggle below.
@@ -49,6 +50,7 @@ export function StoryVideo({ src, className, loop = false, muteToggle = true, on
                 onContextMenu={preventContextMenu}
                 onTimeUpdate={onTimeUpdate}
                 onEnded={onEnded}
+                onLoadedData={onLoadedData}
                 onError={onLoadError}
             />
             {muteToggle && (

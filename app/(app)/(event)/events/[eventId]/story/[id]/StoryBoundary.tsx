@@ -33,6 +33,7 @@ export default function StoryBoundary({ id }: { id: string }) {
     const deleteStory = useDeleteStory(eventId ?? '');
 
     const [progress, setProgress] = useState(0);
+    const [mediaLoaded, setMediaLoaded] = useState(false);
     const [showViewers, setShowViewers] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -43,6 +44,7 @@ export default function StoryBoundary({ id }: { id: string }) {
     if (id !== prevStoryId) {
         setPrevStoryId(id);
         setProgress(0);
+        setMediaLoaded(false);
     }
 
     const groups = useMemo(() => groupStoriesByAuthor(allStories, { filterExpired: false }), [allStories]);
@@ -59,8 +61,14 @@ export default function StoryBoundary({ id }: { id: string }) {
     const { data: viewers = [], isFetching: viewersLoading } = useStoryViews(showViewers ? id : null);
 
     const isVideoStory = media?.mediaType === 'VIDEO';
+    const canRunStoryTimer = Boolean(media && mediaLoaded);
+
+    function handleMediaLoaded() {
+        setMediaLoaded(true);
+    }
 
     function handleVideoTimeUpdate(event: SyntheticEvent<HTMLVideoElement>) {
+        if (!mediaLoaded) return;
         const video = event.currentTarget;
         if (!video.duration) return;
         setProgress(Math.min(100, (video.currentTime / video.duration) * 100));
@@ -82,7 +90,7 @@ export default function StoryBoundary({ id }: { id: string }) {
     // `group`/`groupIndex`, which are recomputed whenever useEventStories
     // background-refetches) so a refetch mid-story doesn't reset progress.
     useEffect(() => {
-        if (isVideoStory) return;
+        if (!canRunStoryTimer || isVideoStory) return;
 
         const interval = setInterval(() => {
             setProgress((p) => {
@@ -96,7 +104,7 @@ export default function StoryBoundary({ id }: { id: string }) {
         }, 100);
         return () => clearInterval(interval);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [id, isVideoStory]);
+    }, [canRunStoryTimer, id, isVideoStory]);
 
     if (storyError instanceof ApiError && storyError.status === 404) {
         router.replace(routes.feed);
@@ -175,8 +183,10 @@ export default function StoryBoundary({ id }: { id: string }) {
     return (
         <div className="motion-story-route fixed inset-0 z-50 flex h-dvh flex-col items-center justify-center overflow-hidden bg-ink">
             <div className="relative h-dvh w-full max-w-sm overflow-hidden bg-black">
+                {/* Progress */}
                 <StoryProgressBar stories={group.stories} activeIndex={storyIndex} progress={progress} />
 
+                {/* Header */}
                 <StoryHeader
                     authorName={authorName}
                     authorId={story.authorMemberId ?? story.id}
@@ -189,9 +199,16 @@ export default function StoryBoundary({ id }: { id: string }) {
                     onDeleteRequest={handleDeleteRequest}
                 />
 
+                {/* Media */}
                 {media &&
                     (isVideoStory ? (
-                        <StoryVideo key={media.id} src={media.mediaUrl} onTimeUpdate={handleVideoTimeUpdate} onEnded={handleVideoEnded} />
+                        <StoryVideo
+                            key={media.id}
+                            src={media.mediaUrl}
+                            onLoadedData={handleMediaLoaded}
+                            onTimeUpdate={handleVideoTimeUpdate}
+                            onEnded={handleVideoEnded}
+                        />
                     ) : (
                         <ProtectedImage
                             src={media.mediaUrl}
@@ -200,6 +217,7 @@ export default function StoryBoundary({ id }: { id: string }) {
                             className="object-contain"
                             sizes="400px"
                             priority
+                            onLoadingComplete={handleMediaLoaded}
                         />
                     ))}
 

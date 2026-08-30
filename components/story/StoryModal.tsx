@@ -31,6 +31,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
 
     const [activeStoryId, setActiveStoryId] = useState<string | null>(storyId);
     const [progress, setProgress] = useState(0);
+    const [mediaLoaded, setMediaLoaded] = useState(false);
     const [showViewers, setShowViewers] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -53,17 +54,20 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
         if (!open) {
             setActiveStoryId(null);
             setProgress(0);
+            setMediaLoaded(false);
             setShowMenu(false);
             setShowDeleteConfirm(false);
             setShowViewers(false);
         } else if (storyId !== prevStoryState.storyId || open !== prevStoryState.open) {
             setActiveStoryId(storyId);
             setProgress(0);
+            setMediaLoaded(false);
             setShowMenu(false);
             setShowDeleteConfirm(false);
             setShowViewers(false);
         } else {
             setProgress(0);
+            setMediaLoaded(false);
             setShowMenu(false);
             setShowDeleteConfirm(false);
             setShowViewers(false);
@@ -94,8 +98,14 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
     }
 
     const isVideoStory = media?.mediaType === 'VIDEO';
+    const canRunStoryTimer = Boolean(media && mediaLoaded);
+
+    function handleMediaLoaded() {
+        setMediaLoaded(true);
+    }
 
     function handleVideoTimeUpdate(event: SyntheticEvent<HTMLVideoElement>) {
+        if (!mediaLoaded) return;
         const video = event.currentTarget;
         if (!video.duration) return;
         setProgress(Math.min(100, (video.currentTime / video.duration) * 100));
@@ -120,7 +130,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
     }, [currentStoryId, open]);
 
     useEffect(() => {
-        if (!open || !currentStoryId || !canAdvanceStory || isVideoStory) return;
+        if (!open || !currentStoryId || !canAdvanceStory || !canRunStoryTimer || isVideoStory) return;
 
         const interval = setInterval(() => {
             setProgress((p) => {
@@ -135,7 +145,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
 
         return () => clearInterval(interval);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [canAdvanceStory, currentStoryId, isVideoStory, open]);
+    }, [canAdvanceStory, canRunStoryTimer, currentStoryId, isVideoStory, open]);
 
     useEffect(() => {
         if (!open) return;
@@ -251,7 +261,13 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                         {/* Media */}
                         {media &&
                             (isVideoStory ? (
-                                <StoryVideo key={media.id} src={media.mediaUrl} onTimeUpdate={handleVideoTimeUpdate} onEnded={handleVideoEnded} />
+                                <StoryVideo
+                                    key={media.id}
+                                    src={media.mediaUrl}
+                                    onLoadedData={handleMediaLoaded}
+                                    onTimeUpdate={handleVideoTimeUpdate}
+                                    onEnded={handleVideoEnded}
+                                />
                             ) : (
                                 <ProtectedImage
                                     src={media.mediaUrl}
@@ -260,6 +276,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                                     className="object-contain"
                                     sizes="100vw"
                                     priority
+                                    onLoadingComplete={handleMediaLoaded}
                                 />
                             ))}
 
