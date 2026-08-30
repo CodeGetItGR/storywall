@@ -1,18 +1,18 @@
 'use client';
 
-import { Plus } from 'lucide-react';
+import { Plus, QrCode, UserCog, UserPlus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import {
     CreateCoHostInvitationForm,
     CreateInvitationForm,
     CreateQrLinkForm,
     type InvitationPanel,
-    InvitationPanelButton,
     InvitationRow,
     QrLinkRow,
 } from '@/components/manage/invitations';
+import { type SubTabItem,SubTabs } from '@/components/ui/SubTabs';
 import type { EventInvitationResponseDto, QrLinkResponseDto, QrLinkStatsDto } from '@/lib/api/types';
 
 export default function InvitationsTab({
@@ -32,6 +32,14 @@ export default function InvitationsTab({
     const [showCreate, setShowCreate] = useState(false);
     const [panel, setPanel] = useState<InvitationPanel>('invites');
     const [limitNotice, setLimitNotice] = useState<string | null>(null);
+    const tabs = useMemo<SubTabItem<InvitationPanel>[]>(
+        () => [
+            { key: 'invites', icon: UserPlus, label: t('invitations.panels.invites') },
+            { key: 'coHosts', icon: UserCog, label: t('invitations.panels.coHosts') },
+            { key: 'qr', icon: QrCode, label: t('invitations.panels.qr') },
+        ],
+        [t]
+    );
 
     const handleShowCreate = useCallback(() => {
         if (!canWrite) return;
@@ -59,17 +67,7 @@ export default function InvitationsTab({
     return (
         <div className="flex flex-col">
             {/* Panels */}
-            <div className="mb-4 flex gap-1 rounded-full bg-surface-muted p-1">
-                {(['invites', 'coHosts', 'qr'] as const).map((item) => (
-                    <InvitationPanelButton
-                        key={item}
-                        item={item}
-                        active={panel === item}
-                        label={t(`invitations.panels.${item}`)}
-                        onSelectAction={handlePanelSelect}
-                    />
-                ))}
-            </div>
+            <SubTabs tabs={tabs} active={panel} onSelectAction={handlePanelSelect} className="mb-4" />
 
             {/* Summary */}
             <div className="mb-3 flex items-center justify-between">

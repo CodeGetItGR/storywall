@@ -198,7 +198,7 @@ export default function SettingsTab({
             )}
 
             {/* Actions */}
-            <div className="sticky top-28 z-10 -mx-1 mb-5 flex items-center gap-3 rounded-2xl bg-background/95 px-1 py-2 backdrop-blur lg:top-4">
+            <div className="sticky top-32 z-10 -mx-1 mb-5 flex items-center justify-center gap-3 px-1 py-2 lg:top-4">
                 <button
                     type="submit"
                     form={settingsFormId}
