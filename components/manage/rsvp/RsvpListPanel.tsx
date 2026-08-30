@@ -10,7 +10,6 @@ import { cn } from '@/lib/utils';
 const filters: { key: RosterFilter; labelKey: string }[] = [
     { key: 'all', labelKey: 'rsvpFilters.all' },
     { key: 'ATTENDING', labelKey: 'rsvpBreakdown.attending' },
-    { key: 'MAYBE', labelKey: 'rsvpBreakdown.maybe' },
     { key: 'DECLINED', labelKey: 'rsvpBreakdown.declined' },
     { key: 'NO_RESPONSE', labelKey: 'rsvpBreakdown.noResponse' },
 ];
@@ -30,13 +29,20 @@ export function RsvpListPanel({ members, rsvps }: { members: RosterMember[]; rsv
     const rows = visibleGuests.map((member) => {
         const rsvp = rsvpByMember.get(member.id);
         const status = statusOf(member.id);
+        const adultCount = rsvp?.adultCount ?? 0;
+        const childCount = rsvp?.childCount ?? 0;
+
+        const partyParts = [
+            adultCount > 0 ? t('rsvpPartyAdults', { count: adultCount }) : null,
+            childCount > 0 ? t('rsvpPartyChildren', { count: childCount }) : null,
+        ].filter(Boolean);
 
         return {
             id: member.id,
             name: member.displayName,
             status,
             statusLabel: t(`rsvpStatus.${status}`),
-            partySize: rsvp ? rsvp.adultCount + rsvp.childCount : 0,
+            partyLabel: partyParts.length > 0 ? partyParts.join(', ') : t('rsvpParty', { count: 0 }),
             notes: rsvp?.notes ?? null,
         };
     });
@@ -83,7 +89,7 @@ export function RsvpListPanel({ members, rsvps }: { members: RosterMember[]; rsv
                             <li key={row.id} className="flex items-start justify-between gap-3 py-3">
                                 <div className="min-w-0">
                                     <p className="truncate text-sm font-semibold leading-tight text-ink">{row.name}</p>
-                                    <p className="mt-0.5 text-xs text-ink-faint">{t('rsvpParty', { count: row.partySize })}</p>
+                                    <p className="mt-0.5 text-xs text-ink-faint">{row.partyLabel}</p>
                                     {row.notes && <p className="mt-1 text-xs leading-6 text-ink-muted">{row.notes}</p>}
                                 </div>
                                 <span
@@ -101,7 +107,7 @@ export function RsvpListPanel({ members, rsvps }: { members: RosterMember[]; rsv
                             <thead>
                                 <tr className="border-b border-border text-left text-[11px] font-bold uppercase tracking-wide text-ink-faint">
                                     <th className="py-2.5 pr-3 font-bold">{t('rsvpColumns.guest')}</th>
-                                    <th className="w-24 px-3 py-2.5 font-bold">{t('rsvpColumns.party')}</th>
+                                    <th className="w-40 px-3 py-2.5 font-bold">{t('rsvpColumns.party')}</th>
                                     <th className="w-36 px-3 py-2.5 font-bold">{t('rsvpColumns.status')}</th>
                                     <th className="px-3 py-2.5 font-bold">{t('rsvpColumns.note')}</th>
                                 </tr>
@@ -112,7 +118,7 @@ export function RsvpListPanel({ members, rsvps }: { members: RosterMember[]; rsv
                                         <td className="max-w-64 py-2.5 pr-3">
                                             <p className="truncate font-semibold text-ink">{row.name}</p>
                                         </td>
-                                        <td className="px-3 py-2.5 tabular-nums text-ink-muted">{row.partySize}</td>
+                                        <td className="px-3 py-2.5 whitespace-nowrap text-ink-muted">{row.partyLabel}</td>
                                         <td className="px-3 py-2.5">
                                             <span
                                                 className={cn(

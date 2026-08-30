@@ -3,7 +3,7 @@
 
 export type EventRole = 'HOST' | 'ATTENDEE';
 export type EventVisibility = 'PUBLIC' | 'PRIVATE';
-export type AttendanceStatus = 'ATTENDING' | 'DECLINED' | 'MAYBE';
+export type AttendanceStatus = 'ATTENDING' | 'DECLINED';
 export type AuthProvider = 'LOCAL' | 'OAUTH' | 'INVITE';
 export type AccountStatus = 'ACTIVE' | 'SUSPENDED' | 'DELETED';
 export type PlatformRole = 'USER' | 'ADMIN' | 'GUEST';
@@ -455,7 +455,6 @@ export interface EventRsvpSummaryDto {
     totalMembers: number;
     attending: number;
     declined: number;
-    maybe: number;
     noResponse: number;
 }
 

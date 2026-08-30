@@ -15,14 +15,12 @@ export function getEventBillingStatusTone(status: EventStatus): string {
 
 export const rsvpStatusOrder: Record<RsvpDisplayStatus, number> = {
     ATTENDING: 0,
-    MAYBE: 1,
-    DECLINED: 2,
-    NO_RESPONSE: 3,
+    DECLINED: 1,
+    NO_RESPONSE: 2,
 };
 
 export const rsvpStatusTone: Record<RsvpDisplayStatus, string> = {
     ATTENDING: 'bg-emerald-50 text-emerald-700 border-emerald-100',
-    MAYBE: 'bg-amber-50 text-amber-700 border-amber-100',
     DECLINED: 'bg-rose-50 text-rose-700 border-rose-100',
     NO_RESPONSE: 'bg-surface-muted text-ink-muted border-border',
 };

@@ -34,7 +34,7 @@ export function RsvpScreen() {
             backHref={routes.events.feed(eventId)}
             subtitle={activeEvent.title}
         >
-            <RsvpTab members={members} rsvps={rsvps} daysToGo={daysToGo} />
+            <RsvpTab eventId={eventId} members={members} rsvps={rsvps} daysToGo={daysToGo} />
         </ModulePageShell>
     );
 }

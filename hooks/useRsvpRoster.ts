@@ -7,7 +7,7 @@ import { type RsvpDisplayStatus, rsvpStatusOrder } from '@/lib/statusTones';
 export type RosterMember = { id: string; displayName: string; role: string };
 export type RosterRsvp = {
     eventMemberId: string;
-    attendanceStatus: 'ATTENDING' | 'DECLINED' | 'MAYBE';
+    attendanceStatus: 'ATTENDING' | 'DECLINED';
     notes: string | null;
     adultCount: number;
     childCount: number;
@@ -37,7 +37,7 @@ export function useRsvpRoster(members: RosterMember[], rsvps: RosterRsvp[]) {
                     totals[statusOf(member.id)] += 1;
                     return totals;
                 },
-                { ATTENDING: 0, MAYBE: 0, DECLINED: 0, NO_RESPONSE: 0 } as Record<RsvpDisplayStatus, number>
+                { ATTENDING: 0, DECLINED: 0, NO_RESPONSE: 0 } as Record<RsvpDisplayStatus, number>
             ),
         [guests, statusOf]
     );
@@ -65,7 +65,7 @@ export function useRsvpRoster(members: RosterMember[], rsvps: RosterRsvp[]) {
                     totals[rsvp.attendanceStatus] += rsvp.adultCount + rsvp.childCount;
                     return totals;
                 },
-                { ATTENDING: 0, MAYBE: 0, DECLINED: 0 } as Record<'ATTENDING' | 'MAYBE' | 'DECLINED', number>
+                { ATTENDING: 0, DECLINED: 0 } as Record<'ATTENDING' | 'DECLINED', number>
             ),
         [rsvps]
     );
@@ -75,7 +75,7 @@ export function useRsvpRoster(members: RosterMember[], rsvps: RosterRsvp[]) {
         setFilter,
         counts,
         guestCount: guests.length,
-        responseCount: counts.ATTENDING + counts.MAYBE + counts.DECLINED,
+        responseCount: counts.ATTENDING + counts.DECLINED,
         seatsClaimed: rsvps.reduce((sum, rsvp) => sum + rsvp.adultCount + rsvp.childCount, 0),
         adultsTotal,
         kidsTotal,

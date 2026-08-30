@@ -849,14 +849,12 @@
         },
         "rsvpBreakdown": {
             "attending": "Attending",
-            "maybe": "Maybe",
             "declined": "Declined",
             "noResponse": "No response"
         },
         "rsvpStatus": {
             "ATTENDING": "Attending",
             "DECLINED": "Declined",
-            "MAYBE": "Maybe",
             "NO_RESPONSE": "No response yet"
         },
         "noGuestsYet": "No guests have joined yet — share an invite to get started.",
@@ -1101,9 +1099,12 @@
             "note": "Note"
         },
         "rsvpParty": "{count} seats",
+        "rsvpPartyAdults": "{count, plural, one {# adult} other {# adults}}",
+        "rsvpPartyChildren": "{count, plural, one {# child} other {# children}}",
         "rsvpTabs": {
             "stats": "Stats",
-            "list": "List"
+            "list": "List",
+            "reports": "Reports"
         },
         "rsvpStats": {
             "daysToGo": "{count, plural, one {# day until the event} other {# days until the event}}",
@@ -1112,6 +1113,13 @@
             "adults": "Adults",
             "kids": "Kids",
             "byCategory": "Attendance by category"
+        },
+        "rsvpReports": {
+            "title": "RSVP report",
+            "description": "Download a PDF with the response summary and the full list of guests who replied.",
+            "download": "Download PDF",
+            "downloading": "Preparing PDF…",
+            "failed": "Couldn't generate the report. Please try again."
         }
     },
     "EventPlanSettingsPage": {

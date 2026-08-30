@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { MetricStrip } from '@/components/ui/MetricStrip';
 
-const categories = ['ATTENDING', 'MAYBE', 'DECLINED'] as const;
+const categories = ['ATTENDING', 'DECLINED'] as const;
 
 export function RsvpStatsPanel({
     daysToGo,
@@ -19,10 +19,10 @@ export function RsvpStatsPanel({
     seatsClaimed: number;
     adultsTotal: number;
     kidsTotal: number;
-    peopleByStatus: Record<'ATTENDING' | 'MAYBE' | 'DECLINED', number>;
+    peopleByStatus: Record<'ATTENDING' | 'DECLINED', number>;
 }) {
     const t = useTranslations('ManagePage');
-    const peopleTotal = peopleByStatus.ATTENDING + peopleByStatus.MAYBE + peopleByStatus.DECLINED;
+    const peopleTotal = peopleByStatus.ATTENDING + peopleByStatus.DECLINED;
 
     return (
         <div className="flex flex-col gap-5">

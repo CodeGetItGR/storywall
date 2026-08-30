@@ -847,14 +847,12 @@
         },
         "rsvpBreakdown": {
             "attending": "Θα παρευρεθούν",
-            "maybe": "Ίσως",
             "declined": "Απορριφθέντα",
             "noResponse": "Χωρίς απάντηση"
         },
         "rsvpStatus": {
             "ATTENDING": "Θα παρευρεθεί",
             "DECLINED": "Απέρριψε",
-            "MAYBE": "Ίσως",
             "NO_RESPONSE": "Χωρίς απάντηση ακόμα"
         },
         "noGuestsYet": "Δεν έχουν συμμετάσχει καλεσμένοι ακόμα — μοιραστείτε μια πρόσκληση για να ξεκινήσετε.",
@@ -1101,9 +1099,12 @@
             "note": "Σημείωση"
         },
         "rsvpParty": "{count} θέσεις",
+        "rsvpPartyAdults": "{count, plural, one {# ενήλικας} other {# ενήλικες}}",
+        "rsvpPartyChildren": "{count, plural, one {# παιδί} other {# παιδιά}}",
         "rsvpTabs": {
             "stats": "Στατιστικά",
-            "list": "Λίστα"
+            "list": "Λίστα",
+            "reports": "Αναφορές"
         },
         "rsvpStats": {
             "daysToGo": "{count, plural, one {# ημέρα μέχρι την εκδήλωση} other {# ημέρες μέχρι την εκδήλωση}}",
@@ -1112,6 +1113,13 @@
             "adults": "Ενήλικες",
             "kids": "Παιδιά",
             "byCategory": "Παρουσία ανά κατηγορία"
+        },
+        "rsvpReports": {
+            "title": "Αναφορά RSVP",
+            "description": "Κατεβάστε ένα PDF με τη σύνοψη των απαντήσεων και την πλήρη λίστα καλεσμένων που απάντησαν.",
+            "download": "Λήψη PDF",
+            "downloading": "Δημιουργία PDF…",
+            "failed": "Η αναφορά δεν δημιουργήθηκε. Δοκιμάστε ξανά."
         }
     },
     "EventPlanSettingsPage": {

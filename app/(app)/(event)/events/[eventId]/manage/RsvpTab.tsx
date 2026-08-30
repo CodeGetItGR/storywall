@@ -1,16 +1,26 @@
 'use client';
 
-import { BarChart3, List } from 'lucide-react';
+import { BarChart3, FileText, List } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback, useState } from 'react';
 
-import { RsvpListPanel, RsvpStatsPanel } from '@/components/manage/rsvp';
+import { RsvpListPanel, RsvpReportsPanel, RsvpStatsPanel } from '@/components/manage/rsvp';
 import { type RosterMember, type RosterRsvp, useRsvpRoster } from '@/hooks/useRsvpRoster';
 import { cn } from '@/lib/utils';
 
-type RsvpSubTab = 'stats' | 'list';
+type RsvpSubTab = 'stats' | 'list' | 'reports';
 
-export default function RsvpTab({ members, rsvps, daysToGo }: { members: RosterMember[]; rsvps: RosterRsvp[]; daysToGo: number }) {
+export default function RsvpTab({
+    eventId,
+    members,
+    rsvps,
+    daysToGo,
+}: {
+    eventId: string;
+    members: RosterMember[];
+    rsvps: RosterRsvp[];
+    daysToGo: number;
+}) {
     const t = useTranslations('ManagePage');
     const [subTab, setSubTab] = useState<RsvpSubTab>('stats');
     const { responseCount, seatsClaimed, adultsTotal, kidsTotal, peopleByStatus } = useRsvpRoster(members, rsvps);
@@ -23,11 +33,12 @@ export default function RsvpTab({ members, rsvps, daysToGo }: { members: RosterM
     return (
         <div className="flex flex-col gap-4">
             {/* Sub-tabs */}
-            <div className="flex gap-1 rounded-full bg-surface-muted p-1">
+            <div className="flex gap-4 w-full items-center justify-center">
                 {(
                     [
                         { key: 'stats', icon: BarChart3 },
                         { key: 'list', icon: List },
+                        { key: 'reports', icon: FileText },
                     ] as const
                 ).map(({ key, icon: Icon }) => (
                     <button
@@ -37,8 +48,8 @@ export default function RsvpTab({ members, rsvps, daysToGo }: { members: RosterM
                         onClick={handleSubTabClick}
                         aria-pressed={subTab === key}
                         className={cn(
-                            'flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-colors',
-                            subTab === key ? 'bg-card text-ink shadow-sm' : 'text-ink-muted hover:text-ink'
+                            'flex min-h-9 items-center gap-1.5 border-b-2 px-1 text-xs font-semibold transition-colors',
+                            subTab === key ? 'border-primary text-ink' : 'border-transparent text-ink-muted hover:text-ink'
                         )}
                     >
                         <Icon className="h-3.5 w-3.5" />
@@ -47,7 +58,7 @@ export default function RsvpTab({ members, rsvps, daysToGo }: { members: RosterM
                 ))}
             </div>
 
-            {subTab === 'stats' ? (
+            {subTab === 'stats' && (
                 <RsvpStatsPanel
                     daysToGo={daysToGo}
                     responseCount={responseCount}
@@ -56,9 +67,9 @@ export default function RsvpTab({ members, rsvps, daysToGo }: { members: RosterM
                     kidsTotal={kidsTotal}
                     peopleByStatus={peopleByStatus}
                 />
-            ) : (
-                <RsvpListPanel members={members} rsvps={rsvps} />
             )}
+            {subTab === 'list' && <RsvpListPanel members={members} rsvps={rsvps} />}
+            {subTab === 'reports' && <RsvpReportsPanel eventId={eventId} />}
         </div>
     );
 }

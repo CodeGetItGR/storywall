@@ -62,6 +62,7 @@ export const endpoints = {
         modules: (eventId: string) => `/api/events/${eventId}/modules`,
         sessions: (eventId: string) => `/api/events/${eventId}/sessions`,
         rsvps: (eventId: string) => `/api/events/${eventId}/rsvps`,
+        rsvpsExport: (eventId: string) => `/api/events/${eventId}/rsvps/export`,
         media: (eventId: string) => `/api/events/${eventId}/media`,
         mediaBatch: (eventId: string) => `/api/events/${eventId}/media/batch`,
         mediaArchiveManifest: (eventId: string, variant: string = 'DISPLAY') =>
