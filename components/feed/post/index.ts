@@ -6,5 +6,6 @@ export * from './PostCommentsPanel';
 export * from './PostHeader';
 export * from './PostMediaCarousel';
 export * from './PostMediaViewer';
+export * from './PostReactionPicker';
 export * from './postUtils';
 export * from './ReactionCount';

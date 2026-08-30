@@ -74,6 +74,9 @@ export type ApiErrorMessageKey =
     | 'refundAlreadyRequested'
     | 'refundNotEligible'
     | 'refundNotPending'
+    | 'reactionTypeInUse'
+    | 'reactionTypeLimitExceeded'
+    | 'reactionTypeNotUsable'
     | 'resourceNotFound'
     | 'storageLimit'
     | 'storageUploadFailed'
@@ -156,6 +159,9 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.REFUND_ALREADY_REQUESTED]: 'refundAlreadyRequested',
     [ERROR_CODES.REFUND_NOT_ELIGIBLE]: 'refundNotEligible',
     [ERROR_CODES.REFUND_REQUEST_NOT_PENDING]: 'refundNotPending',
+    [ERROR_CODES.REACTION_TYPE_IN_USE]: 'reactionTypeInUse',
+    [ERROR_CODES.REACTION_TYPE_LIMIT_EXCEEDED]: 'reactionTypeLimitExceeded',
+    [ERROR_CODES.REACTION_TYPE_NOT_USABLE]: 'reactionTypeNotUsable',
     [ERROR_CODES.RESOURCE_NOT_FOUND]: 'resourceNotFound',
     [ERROR_CODES.STORAGE_UPLOAD_FAILED]: 'storageUploadFailed',
     [ERROR_CODES.ORIGINALS_ADDON_NOT_ACTIVE]: 'originalsAddonNotActive',

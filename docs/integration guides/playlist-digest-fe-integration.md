@@ -46,7 +46,8 @@ this use), so no type union changes are needed on the FE side.
   "media": [],
   "commentCount": 0,
   "reactionCount": 0,
-  "likedByCurrentUser": false,
+  "reactionCounts": {},
+  "myReactionType": null,
   "createdAt": "2026-08-05T09:00:00Z",
   "updatedAt": "2026-08-05T09:00:00Z",
   "deletedAt": null

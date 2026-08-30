@@ -8,6 +8,7 @@ import { paidServicesDataProvider } from '@/lib/refine/paidServicesDataProvider'
 import { planTiersDataProvider } from '@/lib/refine/planTiersDataProvider';
 import { platformEventTypesDataProvider } from '@/lib/refine/platformEventTypesDataProvider';
 import { platformModulesDataProvider } from '@/lib/refine/platformModulesDataProvider';
+import { reactionTypesDataProvider } from '@/lib/refine/reactionTypesDataProvider';
 
 // The admin console has no nested Next.js routes to hand Refine (tabs are
 // hash state via AdminNavigationContext), so this runs headless: no
@@ -33,12 +34,14 @@ export function RefineAdminProvider({ children }: { children: ReactNode }) {
                 'plan-tiers': planTiersDataProvider,
                 'platform-modules': platformModulesDataProvider,
                 'platform-event-types': platformEventTypesDataProvider,
+                'reaction-types': reactionTypesDataProvider,
             }}
             resources={[
                 { name: 'paid-services', meta: { label: 'Paid services' } },
                 { name: 'plan-tiers', meta: { label: 'Plan tiers' } },
                 { name: 'platform-modules', meta: { label: 'Platform modules' } },
                 { name: 'platform-event-types', meta: { label: 'Platform event types' } },
+                { name: 'reaction-types', meta: { label: 'Reaction types' } },
             ]}
             options={{
                 disableTelemetry: true,

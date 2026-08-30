@@ -1,39 +1,43 @@
-# Integration Guide: `likedByCurrentUser` on Posts
+# Integration Guide: Post reactions — your own reaction and per-type counts
 
-Added 2026-08-01. Scope: this single change only — see `frontend-integration-guide.md` for
-everything else.
+Added 2026-08-01, superseded 2026-08-30. Scope: this single change only — see
+`frontend-integration-guide.md` for everything else.
 
 ## What changed
 
-`PostResponseDto` has a new field:
+⚠️ **BREAKING (2026-08-30):** `PostResponseDto.likedByCurrentUser` is removed. Two fields
+replace it:
 
 ```ts
 interface PostResponseDto {
   // ...existing fields unchanged...
   commentCount: number;
-  reactionCount: number;
-  likedByCurrentUser: boolean; // NEW
+  reactionCount: number;              // unchanged: total across all types
+  reactionCounts: Record<string, number>; // NEW — per-type breakdown, zero-count codes omitted
+  myReactionType: string | null;      // NEW — the caller's own reaction code, or null
   // ...
 }
 ```
 
-`true` if the requesting user has **any** reaction (any `reactionType`) on the post. Returned
-by both endpoints that already return `PostResponseDto`:
+Returned by both endpoints that already return `PostResponseDto`:
 
 | Method | Path | Response |
 |---|---|---|
 | GET | `/api/events/{eventId}/posts?page=&size=` | `Page<PostResponseDto>` — every post in `content[]` has it |
 | GET | `/api/posts/{id}` | `PostResponseDto` |
 
-No request changes needed on your side — it's derived from the JWT on the backend. Nothing
-else in the response shape changed, and no existing field's meaning changed.
+No request changes needed on your side — both fields are derived from the JWT on the backend.
+
+Also as of 2026-08-30, `POST /api/reactions` is an **upsert**: a member has at most one reaction
+per post. See "The upsert behavior" below.
 
 ## Why this exists
 
-Previously the only way to know whether the current viewer had liked a post was to call `GET
-/api/posts/{postId}/reactions` and scan the list for a `memberId` match — one full reaction
-list per post, which doesn't scale to a feed of N posts. `likedByCurrentUser` gives you the
-same answer inline, for free.
+Previously the only way to know *which* reaction type the current viewer had left, or to get a
+breakdown by type, was to call `GET /api/posts/{postId}/reactions` and scan the list — one full
+reaction list per post, which doesn't scale to a feed of N posts. `myReactionType` and
+`reactionCounts` give you both answers inline, for free, at the same query cost as the old
+`likedByCurrentUser` boolean.
 
 ## Using it
 
@@ -41,41 +45,62 @@ same answer inline, for free.
 const page: Page<PostResponseDto> = await fetch(`/api/events/${eventId}/posts`).then(r => r.json());
 
 page.content.forEach(post => {
-  renderLikeButton(post.id, { liked: post.likedByCurrentUser, count: post.reactionCount });
+  renderReactionPicker(post.id, {
+    myReaction: post.myReactionType,     // e.g. "LIKE", or null if the caller hasn't reacted
+    counts: post.reactionCounts,         // e.g. { LIKE: 3, LOVE: 5 }
+    total: post.reactionCount,           // 8
+  });
 });
 ```
 
-No polling, no follow-up request, no client-side matching against a member id you'd otherwise
-have to look up separately.
+**After the user reacts**, update your cached post object optimistically — set
+`myReactionType` to the new code, adjust `reactionCounts`/`reactionCount` accordingly — when you
+call `POST /api/reactions`. It only refreshes from the server on the next `GET`.
 
-**After the user reacts or un-reacts**, this field on your cached post object goes stale —
-update it optimistically (flip it alongside `reactionCount`) when you call
-`POST /api/reactions` or `DELETE /api/reactions/{id}`, the same way you'd already be updating
-`reactionCount`. It only refreshes from the server on the next `GET`.
+## The upsert behavior
+
+`POST /api/reactions` (`{ postId, memberId, reactionType }`) no longer rejects a second reaction
+from the same member on the same post. Instead:
+
+| Caller's existing reaction on this post | Result |
+|---|---|
+| None | Creates a new reaction. |
+| Same `reactionType` | No-op — returns the existing reaction unchanged. |
+| Different `reactionType` | Switches it in place (same `id`, `reactionType` updated, `createdAt` unchanged). |
+
+**Positive callout:** changing your reaction now takes one `POST` call instead of a
+`DELETE` + `POST` pair. `DUPLICATE_REACTION` (5005) is no longer returned by this endpoint —
+there's no longer a state where reacting is rejected for "already reacted here."
+
+`GET /api/posts/{postId}/reactions` and `DELETE /api/reactions/{id}` are unchanged — no need to
+re-audit either of them for this change.
 
 ## What it does *not* tell you
 
-Only whether the caller reacted, not *which* `reactionType` (e.g. `LIKE` vs. `LOVE`, if you
-support more than one). If your UI needs that distinction, you still need `GET
-/api/posts/{postId}/reactions` and match `memberId` yourself — `likedByCurrentUser` is a
-cheap boolean shortcut for the common "did I react at all" case, not a replacement for that
-endpoint.
+Who reacted with what — `reactionCounts` and `myReactionType` are aggregate/caller-scoped only,
+by design (no per-member reaction visibility in the feed response). If your UI needs to know
+which specific members left which reaction, use `GET /api/posts/{postId}/reactions`, which still
+returns `memberId` per reaction and is unaffected by this change.
 
 ## Edge cases
 
 - **Caller isn't a member of the post's event.** `GET /api/events/{eventId}/posts` and `GET
   /api/posts/{id}` are `isAuthenticated()`-only, not membership-scoped — any logged-in user can
-  read posts from an event they're not in. In that case `likedByCurrentUser` is simply `false`,
-  no error.
+  read posts from an event they're not in. In that case `myReactionType` is simply `null`, no
+  error.
 - **Guests.** Works the same as registered users — resolved from the same JWT principal used
   everywhere else (`authentication.getPrincipal()`), so guest accounts get a correct value too.
-- **Right after creating a post** (`POST /api/posts`). Always `false` — a post can't have
-  reactions before it exists, so the backend skips the lookup rather than doing pointless work.
+- **Right after creating a post** (`POST /api/posts`). `myReactionType` is always `null` and
+  `reactionCounts` is empty — a post can't have reactions before it exists, so the backend skips
+  the lookup rather than doing pointless work.
+- **No caller at all** (e.g. an anonymous/system context). `myReactionType` is `null`, same as
+  "haven't reacted" — the two aren't distinguished in the response.
 
 ## Performance note (if you're curious, not required reading)
 
-Resolving this for a whole page of posts costs exactly **2 extra queries total**, not one per
-post: one to resolve the caller's `EventMember` ids (they can be a member of more than one
-event), one batched lookup of which of the page's post ids they reacted to. Query count for a
-feed page is constant regardless of how many posts are on it — same pattern already used for
-`commentCount`/`reactionCount`.
+Resolving both fields for a whole page of posts costs exactly **2 extra queries total**, not one
+per post: one to resolve the caller's `EventMember` ids (they can be a member of more than one
+event), one batched lookup of the caller's own reaction type per post id on the page, plus the
+existing per-type count query. Query count for a feed page is constant regardless of how many
+posts are on it — same pattern already used for `commentCount`/`reactionCount`, unchanged by this
+reshaping.

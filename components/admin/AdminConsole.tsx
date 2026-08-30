@@ -12,6 +12,7 @@ import { PlanAvailabilityPanel } from '@/components/admin/PlanAvailabilityPanel'
 import { PlanCatalogPanel } from '@/components/admin/PlanCatalogPanel';
 import { PlanModulesPanel } from '@/components/admin/PlanModulesPanel';
 import { PlatformMetricsPanel } from '@/components/admin/PlatformMetricsPanel';
+import { ReactionTypesCatalogPanel } from '@/components/admin/ReactionTypesCatalogPanel';
 import { RefundQueuePanel } from '@/components/admin/RefundQueuePanel';
 
 export function AdminConsole() {
@@ -21,6 +22,7 @@ export function AdminConsole() {
     // The Paid Services panel supplies its own page head (title, stat tiles,
     // primary action) — the shared eyebrow/title block would just duplicate it.
     if (tab === 'paidServices') return <PaidServicesCatalogPanel />;
+    if (tab === 'reactionTypes') return <ReactionTypesCatalogPanel />;
 
     return (
         <div className="mx-auto px-4 pb-16 pt-5 text-[15px] sm:px-6 lg:px-8 lg:pb-10 lg:pt-6">

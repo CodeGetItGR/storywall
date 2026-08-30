@@ -5,12 +5,10 @@ import { useTranslations } from 'next-intl';
 import React, { useMemo, useState } from 'react';
 
 import { MediaThumbnail } from '@/components/common/MediaThumbnail';
-import { PostAuthorAvatar, PostMediaViewer, ReactionCount } from '@/components/feed/post';
+import { PostAuthorAvatar, PostMediaViewer, PostReactionPicker } from '@/components/feed/post';
 import { CommentsList } from '@/components/feed/post/CommentsList';
 import Badge from '@/components/ui/badge';
-import { useEventMembers, usePostComments, usePostLike, usePostModal } from '@/hooks';
-import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import { isModuleNotAvailableError } from '@/lib/api/errors';
+import { useEventMembers, usePostComments, usePostModal } from '@/hooks';
 import type { PostResponseDto } from '@/lib/api/types';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { cn, timeAgoParts } from '@/lib/utils';
@@ -24,10 +22,8 @@ interface PostCardProps {
 
 export function PostCard({ post, showCommentLink = true, isLcpCandidate = false }: PostCardProps) {
     const t = useTranslations('PostCard');
-    const toErrorMessage = useApiErrorMessage();
     const { open: openPostModal } = usePostModal();
     const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(null);
-    const { liked, count: likeCount, toggle: handleLike, isPending: isLikePending, error: likeError } = usePostLike(post);
 
     const authorName = post.author?.displayName ?? t('unknownAuthor');
     const timeAgo = useMemo(() => timeAgoParts(post.createdAt), [post.createdAt]);
@@ -145,21 +141,10 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                 </div>
             )}
 
+            {/* Engagement actions */}
             <div className="flex items-center justify-between px-4 py-3">
                 <div className="flex items-center gap-1">
-                    <button
-                        onClick={handleLike}
-                        disabled={isLikePending || !canWrite}
-                        aria-label={liked ? t('unlikePost') : t('likePost')}
-                        aria-pressed={liked}
-                        className={cn(
-                            'flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-colors',
-                            liked ? 'bg-primary-light text-primary' : 'text-ink-muted hover:bg-surface-muted',
-                            !canWrite && 'cursor-not-allowed opacity-60 hover:bg-transparent'
-                        )}
-                    >
-                        <ReactionCount count={likeCount} iconClassName={liked ? 'fill-primary text-primary' : ''} iconStrokeWidth={liked ? 0 : 1.8} />
-                    </button>
+                    <PostReactionPicker post={post} disabled={!canWrite} />
 
                     {showCommentLink ? (
                         <button
@@ -184,12 +169,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                 </div>
             </div>
 
-            {likeError !== null && likeError !== undefined && (
-                <p className="px-4 pb-3 text-xs text-destructive">
-                    {isModuleNotAvailableError(likeError) ? t('moduleUnavailable') : toErrorMessage(likeError, t('reactionFailed'))}
-                </p>
-            )}
-
+            {/* Recent comments */}
             {visibleComments.length > 0 && (
                 <div className="border-t border-border/50 px-4 pb-4 pt-2">
                     <CommentsList comments={visibleComments} membersById={membersById} compact limit={3} />

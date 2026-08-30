@@ -521,15 +521,18 @@ interface PostResponseDto {
   author: PostAuthorDto | null; // null if the post has no author, or the author left the event
   type: string; content: string | null; isPinned: boolean;
   media: MediaResponseDto[]; // ordered by displayOrder, presigned URLs already resolved
-  commentCount: number; reactionCount: number;
-  likedByCurrentUser: boolean; // true if the requesting user has any reaction on this post
+  commentCount: number;
+  reactionCount: number;          // total across all types
+  reactionCounts: Record<string, number>; // NEW 2026-08-30, replaces likedByCurrentUser — per-type breakdown, zero-count codes omitted
+  myReactionType: string | null;  // NEW 2026-08-30, replaces likedByCurrentUser — caller's own reaction code, or null
   createdAt: string; updatedAt: string; deletedAt: string | null;
 }
 // GET /api/events/{eventId}/posts now returns Page<PostResponseDto>, not PostResponseDto[].
 // Default 20/page, max 100 (?page=&size=), sorted isPinned desc then createdAt desc;
 // soft-deleted posts are excluded.
-// likedByCurrentUser is resolved from the JWT — both GET /api/events/{eventId}/posts and
-// GET /api/posts/{id} populate it in a single batched query, so it's free at feed scale.
+// reactionCounts/myReactionType are resolved from the JWT — both GET /api/events/{eventId}/posts
+// and GET /api/posts/{id} populate them in the same 2 batched queries used before this change, so
+// it's still free at feed scale.
 
 interface CommentRequestDto {
   postId: string; authorMemberId?: string; parentCommentId?: string; content: string; // content required
@@ -545,7 +548,30 @@ interface CommentResponseDto {
 
 interface ReactionRequestDto { postId: string; memberId: string; reactionType: string; } // all required, reactionType max 20
 interface ReactionResponseDto { id: string; postId: string; memberId: string; reactionType: string; createdAt: string; }
-// DB unique constraint on (postId, memberId, reactionType) — duplicate returns 409 DUPLICATE_REACTION
+// POST /api/reactions is an upsert as of 2026-08-30: DB unique constraint on (postId, memberId) —
+// a member has exactly one reaction per post. Reacting again with the same type is a no-op
+// (returns the existing reaction, same id); a different type switches it in place (same id,
+// reactionType updated, createdAt unchanged). DUPLICATE_REACTION (5005) is no longer returned.
+// reactionType is validated against the post's event's reaction-type catalog (added 2026-08-30) —
+// see ReactionTypeResponseDto below and reaction-types-catalog-fe-integration.md. Wire shape above
+// is unchanged: reactionType is still the catalog row's `code` string, not its `id`.
+
+// Reaction-type catalog — admin-managed, scoped per EventTypeKey, capped at 5 active rows each.
+// Every event type seeds 4 defaults: LIKE, LOVE, LAUGH, CELEBRATE. Added 2026-08-30.
+interface ReactionTypeRequestDto {
+  eventTypeKey: string; code: string; // code: max 20, ^[A-Z0-9_]+$, immutable after creation
+  name: string; emoji: string; sortOrder: number; isAssignable: boolean;
+}
+interface ReactionTypePatchDto {
+  name?: string; emoji?: string; sortOrder?: number; isAssignable?: boolean;
+  // eventTypeKey and code are immutable — not present here
+}
+interface ReactionTypeResponseDto {
+  id: string; eventTypeKey: string; code: string; name: string; emoji: string;
+  sortOrder: number; isAssignable: boolean;
+}
+// Admin CRUD: GET/POST/PATCH/DELETE /api/admin/reaction-types (hasRole('ADMIN') on every route).
+// GET requires ?eventTypeKey=, optional &includeArchived=. See reaction-types-catalog-fe-integration.md.
 
 interface StoryRequestDto {
   eventId: string; authorMemberId?: string; mediaId: string; // mediaId required, must already exist
@@ -866,6 +892,9 @@ interface AppConfigResponseDto {
   rsvp: AppRsvpConfigDto;
   /** Added 2026-08-23. */
   contentLimits: AppContentLimitsDto;
+  /** Active reaction types, keyed by eventTypeKey, each pre-sorted by sortOrder. Build the
+   *  reaction picker from `reactionTypesByEventType[post.eventType]`. Added 2026-08-30. */
+  reactionTypesByEventType: Record<string, ReactionTypeResponseDto[]>;
   /** Every distinct `@RateLimit` bucket currently in effect. Added 2026-08-23. */
   rateLimits: AppRateLimitConfigDto[];
   /** Budget for any endpoint not listed in `rateLimits`. Added 2026-08-23. */

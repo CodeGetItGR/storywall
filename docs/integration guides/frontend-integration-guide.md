@@ -34,7 +34,10 @@ and
 e.g. a wedding's venue/reception alongside its `isMain` ceremony), and
 [`account-profile-and-password-fe-integration.md`](account-profile-and-password-fe-integration.md)
 (self-service `GET /api/me`, profile editing via `PATCH /api/me`, changing your own password, and the
-previously-undocumented forgot/reset-password flow).
+previously-undocumented forgot/reset-password flow), and
+[`reaction-types-catalog-fe-integration.md`](reaction-types-catalog-fe-integration.md) (post
+reaction codes are no longer a hardcoded `LIKE`/`LAUGH` constant — they're an admin-managed catalog
+scoped per event type, capped at 5 active types each).
 
 This doc was originally written 2026-08-04 directly from the controller/DTO source. Refreshed
 2026-08-09 to correct a stale claim that no billing integration existed — it now does,
@@ -58,7 +61,13 @@ URL. `profilePicUrl` was renamed to `profilePictureUrl` (a short-lived presigned
 through a new `POST /api/me/profile-picture` multipart endpoint, which runs the upload through the
 same magic-byte validation and EXIF-stripping pipeline as event media. See
 [`account-profile-and-password-fe-integration.md`](account-profile-and-password-fe-integration.md)
-§3.
+§3. Refreshed again 2026-08-30: `reactionType` on `POST /api/reactions` is no longer a hardcoded
+`LIKE`/`LAUGH` constant — it's validated against an admin-managed catalog scoped per event type
+(every event type ships 4 defaults). See
+[`reaction-types-catalog-fe-integration.md`](reaction-types-catalog-fe-integration.md). Refreshed
+again 2026-08-30: `PostResponseDto.likedByCurrentUser` removed, replaced by `myReactionType` and
+`reactionCounts`; `POST /api/reactions` is now an upsert. See
+[`post-liked-by-current-user-integration-guide.md`](post-liked-by-current-user-integration-guide.md).
 
 ## 0. Base setup
 
@@ -156,7 +165,7 @@ the two conditions failed. Guest invitations are unchanged and stay forwardable.
 
 | Method | Path | Auth | Notes |
 |---|---|---|---|
-| GET | `/api/events/{eventId}/posts` | authenticated | **`Page<PostResponseDto>`**, default 20/page, max 100, sorted pinned-desc then newest-first; `likedByCurrentUser` pre-resolved per post in one batched query |
+| GET | `/api/events/{eventId}/posts` | authenticated | **`Page<PostResponseDto>`**, default 20/page, max 100, sorted pinned-desc then newest-first; `myReactionType`/`reactionCounts` pre-resolved per post in the same batched queries as before |
 | GET | `/api/posts/{id}` | authenticated | |
 | POST | `/api/posts` | `ROLE_USER`, or guest scoped to that event | `type` is server-validated against exactly `TEXT \| MEDIA \| ANNOUNCEMENT \| PLAYLIST`; `mediaIds` max 10, no duplicates, must belong to the same event |
 | DELETE | `/api/posts/{id}` | `ROLE_USER` | |
@@ -187,13 +196,26 @@ No PATCH — see §3.
 
 ### Likes / reactions
 
+⚠️ **BREAKING (2026-08-30):** `reactionType` is no longer a hardcoded two-value constant
+(`LIKE`/`LAUGH`) — it's now validated against an admin-managed catalog scoped per event type
+(every event type ships 4 defaults: `LIKE`, `LOVE`, `LAUGH`, `CELEBRATE`). See
+[`reaction-types-catalog-fe-integration.md`](reaction-types-catalog-fe-integration.md) for the new
+`GET /api/config` field to source the picker from, the two new error responses, and the admin CRUD
+surface.
+
+⚠️ **BREAKING (2026-08-30, second change this week):** `PostResponseDto.likedByCurrentUser` is
+removed; `myReactionType` (nullable string) and `reactionCounts` (per-type breakdown) replace it.
+`POST /api/reactions` is now an upsert (create/switch/no-op) instead of rejecting a second
+reaction — `DUPLICATE_REACTION` (5005) is no longer returned by it. See
+[`post-liked-by-current-user-integration-guide.md`](post-liked-by-current-user-integration-guide.md).
+
 Fully covered in
 [`post-liked-by-current-user-integration-guide.md`](post-liked-by-current-user-integration-guide.md)
 for the read side. Write side:
 
 | Method | Path | Auth | Notes |
 |---|---|---|---|
-| POST | `/api/reactions` | authenticated | `{ postId, memberId, reactionType }`; duplicate `(postId, memberId, reactionType)` → `409 DUPLICATE_REACTION` |
+| POST | `/api/reactions` | authenticated | `{ postId, memberId, reactionType }`; **upsert as of 2026-08-30** — none → create, same type → no-op, different type → switch in place; unknown/archived `reactionType` → `404`/`409 REACTION_TYPE_NOT_USABLE`, see above |
 | DELETE | `/api/reactions/{id}` | authenticated | **by the reaction's own id**, not by `postId`/`memberId` — see §3 |
 | GET | `/api/posts/{postId}/reactions` | authenticated | |
 

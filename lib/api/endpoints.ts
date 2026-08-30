@@ -237,6 +237,10 @@ export const endpoints = {
             list: '/api/admin/paid-services',
             byId: (id: string) => `/api/admin/paid-services/${id}`,
         },
+        reactionTypes: {
+            list: '/api/admin/reaction-types',
+            byId: (id: string) => `/api/admin/reaction-types/${id}`,
+        },
         platformModules: {
             list: '/api/admin/platform-modules',
             byKey: (moduleKey: string) => `/api/admin/platform-modules/${moduleKey}`,

@@ -122,6 +122,27 @@ export interface PlatformModuleResponseDto {
     sortOrder: number;
 }
 
+export interface ReactionTypeResponseDto {
+    id: string;
+    eventTypeKey: EventTypeConvention;
+    code: string;
+    name: string;
+    emoji: string;
+    sortOrder: number;
+    isAssignable: boolean;
+}
+
+export interface ReactionTypeRequestDto {
+    eventTypeKey: EventTypeConvention;
+    code: string;
+    name: string;
+    emoji: string;
+    sortOrder: number;
+    isAssignable: boolean;
+}
+
+export type ReactionTypePatchDto = Partial<Omit<ReactionTypeRequestDto, 'eventTypeKey' | 'code'>>;
+
 // Every localized field from the backend is a locale map, not a fixed
 // {en, el}-only shape — read whichever key matches the active locale rather
 // than destructuring exactly two keys. See event-type-voice-pack-fe-integration.md.
@@ -214,6 +235,7 @@ export interface AppConfigResponseDto {
     translations: AppTranslationsDto;
     rsvp: AppRsvpConfigDto;
     contentLimits: AppContentLimitsDto;
+    reactionTypesByEventType: Record<string, ReactionTypeResponseDto[]>;
     rateLimits: AppRateLimitConfigDto[];
 }
 
@@ -1044,11 +1066,12 @@ export interface PostResponseDto {
     media: MediaResponseDto[];
     commentCount: number;
     reactionCount: number;
-    // True if the requesting member has any reaction on the post. Always
-    // false immediately after POST /api/posts (a fresh post can't have
-    // reactions yet) and false for a caller who isn't a member of the
-    // post's event — both resolved server-side.
-    likedByCurrentUser: boolean;
+    reactionCounts: Record<string, number>;
+    myReactionType: string | null;
+    // Optional compatibility field for backends that include the lookup key
+    // directly on single-post responses. Event-scoped screens can derive it
+    // from the active event instead.
+    eventType?: EventTypeConvention;
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;

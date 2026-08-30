@@ -23,9 +23,8 @@ export function usePostReactions(postId: string | null) {
     });
 }
 
-// POST /api/reactions — event member. Repeating the same (postId, memberId,
-// reactionType) triple now 409s cleanly (errorCode 5005 DUPLICATE_REACTION)
-// instead of a raw constraint-violation 500 — surface that as "already reacted".
+// POST /api/reactions — event member. Upserts the caller's one reaction on
+// the post: create if missing, no-op for the same type, switch for a new type.
 export function useCreateReaction() {
     const queryClient = useQueryClient();
 

@@ -22,6 +22,7 @@ import type {
     PlatformMetricsResponseDto,
     PlatformModulePatchDto,
     PlatformModuleResponseDto,
+    ReactionTypeResponseDto,
     RefundDecisionRequestDto,
     RefundRequestAdminDto,
     RefundRequestResponseDto,
@@ -38,6 +39,8 @@ export const adminKeys = {
     refundRequests: ['admin', 'refund-requests'] as const,
     metrics: ['admin', 'metrics'] as const,
     paidServices: (kind?: PaidServiceKind, includeArchived?: boolean) => ['admin', 'paid-services', kind ?? 'ALL', Boolean(includeArchived)] as const,
+    reactionTypes: (eventTypeKey?: string, includeArchived?: boolean) =>
+        ['admin', 'reaction-types', eventTypeKey ?? 'ALL', Boolean(includeArchived)] as const,
 };
 
 // GET /api/admin/metrics - live platform dashboard counts.
@@ -261,6 +264,20 @@ export function useAdminPaidServices(kind?: PaidServiceKind, includeArchived = f
     return useQuery({
         queryKey: adminKeys.paidServices(kind, includeArchived),
         queryFn: () => api.get<PaidServiceResponseDto[]>(paidServicesPath(kind, includeArchived)),
+    });
+}
+
+function reactionTypesPath(eventTypeKey: string, includeArchived?: boolean): string {
+    const searchParams = new URLSearchParams({ eventTypeKey });
+    if (includeArchived) searchParams.set('includeArchived', 'true');
+    return `${endpoints.admin.reactionTypes.list}?${searchParams.toString()}`;
+}
+
+export function useAdminReactionTypes(eventTypeKey: string | undefined, includeArchived = false) {
+    return useQuery({
+        queryKey: adminKeys.reactionTypes(eventTypeKey, includeArchived),
+        queryFn: () => api.get<ReactionTypeResponseDto[]>(reactionTypesPath(eventTypeKey!, includeArchived)),
+        enabled: Boolean(eventTypeKey),
     });
 }
 

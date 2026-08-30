@@ -51,6 +51,11 @@ below.
 /api/stories/batch` endpoint (default 5). See
 [`stories-fe-integration-guide.md`](stories-fe-integration-guide.md) §Batch create.
 
+**2026-08-30:** new field `reactionTypesByEventType` — active post-reaction codes, keyed by
+`eventTypeKey`. `POST /api/reactions`'s `reactionType` is validated against this catalog now,
+replacing the old hardcoded `LIKE`/`LAUGH` constant. See
+[`reaction-types-catalog-fe-integration.md`](reaction-types-catalog-fe-integration.md).
+
 ## GET /api/config
 
 Public — no `Authorization` header needed, safe to call before login (e.g. to gate the login
@@ -79,6 +84,7 @@ interface AppConfigResponseDto {
   eventModuleKeys: ('posts' | 'rsvp' | 'playlist' | 'stories' | 'gallery' | 'wishlist' | 'wishbook')[];
   rsvp: { minAdults: number; maxAdults: number; minChildren: number; maxChildren: number };
   contentLimits: AppContentLimitsDto;   // added 2026-08-23 — see below
+  reactionTypesByEventType: Record<string, ReactionTypeResponseDto[]>; // added 2026-08-30 — see below
   rateLimits: AppRateLimitConfigDto[];  // added 2026-08-23 — see below
   defaultRateLimit: number;             // added 2026-08-23
   defaultRateLimitWindowSeconds: number; // added 2026-08-23
@@ -160,6 +166,10 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
   no-op'ing.
 - **`rsvp`** — see "RSVP guest-count bounds" below.
 - **`contentLimits`** / **`rateLimits`** — see the two new sections below.
+- **`reactionTypesByEventType`** — active post-reaction options, keyed by `eventTypeKey`, each list
+  pre-sorted by `sortOrder`. Build the reaction picker from
+  `reactionTypesByEventType[post.eventType]`, not a hardcoded list. See
+  [`reaction-types-catalog-fe-integration.md`](reaction-types-catalog-fe-integration.md).
 
 ## Module keys are now a closed, server-validated set
 
