@@ -408,6 +408,88 @@
     translate: 0 0.35rem;
 }
 
+.motion-reaction-picker {
+    transform-origin: bottom left;
+    animation: reaction-picker-enter 240ms var(--motion-ease-enter) both;
+    will-change: opacity, transform;
+}
+
+.motion-reaction-option {
+    opacity: 0;
+    transform: translate3d(0, 0.35rem, 0) scale(0.78);
+    animation: reaction-option-enter 300ms var(--motion-ease-enter) both;
+    will-change: opacity, transform;
+}
+
+.motion-reaction-option:nth-child(1) {
+    animation-delay: 22ms;
+}
+
+.motion-reaction-option:nth-child(2) {
+    animation-delay: 46ms;
+}
+
+.motion-reaction-option:nth-child(3) {
+    animation-delay: 70ms;
+}
+
+.motion-reaction-option:nth-child(4) {
+    animation-delay: 94ms;
+}
+
+.motion-reaction-option:nth-child(5) {
+    animation-delay: 118ms;
+}
+
+.motion-reaction-option:nth-child(6) {
+    animation-delay: 142ms;
+}
+
+.motion-reaction-selected {
+    display: inline-block;
+    transform-origin: center;
+    animation: reaction-selected-pop 360ms var(--motion-ease-enter) both;
+    will-change: transform;
+}
+
+@keyframes reaction-picker-enter {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 0.45rem, 0) scale(0.92);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+}
+
+@keyframes reaction-selected-pop {
+    0% {
+        transform: scale(0.72) rotate(-8deg);
+    }
+    58% {
+        transform: scale(1.22) rotate(5deg);
+    }
+    100% {
+        transform: scale(1) rotate(0);
+    }
+}
+
+@keyframes reaction-option-enter {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, 0.35rem, 0) scale(0.78);
+    }
+    72% {
+        opacity: 1;
+        transform: translate3d(0, -0.08rem, 0) scale(1.08);
+    }
+    100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+}
+
 .motion-surface {
     transition:
         opacity var(--motion-duration-slow) var(--motion-ease-enter),

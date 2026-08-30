@@ -9,7 +9,6 @@ import { MediaThumbnail } from '@/components/common/MediaThumbnail';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { LoadingState } from '@/components/ui/LoadingState';
 import type { MediaResponseDto } from '@/lib/api/types';
-import { formatShortDateTime } from '@/lib/datetime';
 import { cn } from '@/lib/utils';
 
 interface GalleryMediaGridProps {

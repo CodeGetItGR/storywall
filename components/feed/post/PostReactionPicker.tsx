@@ -58,13 +58,13 @@ export function PostReactionPicker({ post, disabled = false }: PostReactionPicke
                 aria-expanded={open}
                 aria-haspopup="menu"
                 className={cn(
-                    'flex min-h-10 items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-colors',
+                    'flex min-h-10 items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-[background-color,color,scale] active:scale-[0.97]',
                     reaction.selectedType ? 'bg-primary-light text-primary' : 'text-ink-muted hover:bg-surface-muted',
                     disabled && 'cursor-not-allowed opacity-60 hover:bg-transparent'
                 )}
             >
                 {activeEmoji ? (
-                    <span className="text-lg leading-none" aria-hidden>
+                    <span key={reaction.selectedType} className="motion-reaction-selected text-lg leading-none" aria-hidden>
                         {activeEmoji}
                     </span>
                 ) : (
@@ -86,7 +86,7 @@ export function PostReactionPicker({ post, disabled = false }: PostReactionPicke
             {open && (
                 <div
                     role="menu"
-                    className="absolute bottom-full left-0 z-20 mb-2 flex min-h-12 items-center gap-1 rounded-full border border-border bg-card px-2 py-1.5 shadow-lg"
+                    className="motion-reaction-picker absolute bottom-full left-0 z-20 mb-2 flex min-h-12 items-center gap-1 rounded-full border border-border bg-card px-2 py-1.5 shadow-lg"
                 >
                     {reaction.options.map((option) => {
                         const selected = reaction.selectedType === option.code;
@@ -100,8 +100,8 @@ export function PostReactionPicker({ post, disabled = false }: PostReactionPicke
                                 title={option.name}
                                 onClick={selectReaction}
                                 className={cn(
-                                    'flex h-9 w-9 items-center justify-center rounded-full text-lg transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
-                                    selected && 'bg-primary-light'
+                                    'motion-reaction-option flex h-9 w-9 items-center justify-center rounded-full text-lg transition-[background-color,scale] hover:scale-110 hover:bg-surface-muted active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+                                    selected && 'bg-primary-light scale-110'
                                 )}
                             >
                                 <span aria-hidden>{option.emoji}</span>
@@ -115,7 +115,7 @@ export function PostReactionPicker({ post, disabled = false }: PostReactionPicke
                             role="menuitem"
                             onClick={clearReaction}
                             title={t('removeReaction')}
-                            className="flex h-9 w-9 items-center justify-center rounded-full text-ink-faint transition-colors hover:bg-surface-muted hover:text-ink"
+                            className="motion-reaction-option flex h-9 w-9 items-center justify-center rounded-full text-ink-faint transition-[background-color,color,scale] hover:scale-105 hover:bg-surface-muted hover:text-ink active:scale-95"
                         >
                             <X className="h-4 w-4" />
                             <span className="sr-only">{t('removeReaction')}</span>
