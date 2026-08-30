@@ -25,7 +25,7 @@ export function Banner({
             <div className="relative isolate overflow-hidden rounded-[1.5rem]">
                 <div className="relative aspect-16/11 w-full">
                     {image ? (
-                        <Image src={image} alt={title} fill className="object-cover" priority sizes="(max-width: 1024px) 100vw, 800px" />
+                        <Image src={image} alt={title} fill className="object-cover" preload sizes="(max-width: 1024px) 100vw, 800px" />
                     ) : (
                         <BannerFallback actionHref={fallbackActionHref} actionLabel={fallbackActionLabel} />
                     )}

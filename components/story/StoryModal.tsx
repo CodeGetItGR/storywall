@@ -108,8 +108,8 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                                     fill
                                     className="object-contain"
                                     sizes="100vw"
-                                    priority
-                                    onLoadingComplete={handleMediaLoaded}
+                                    preload
+                                    onLoad={handleMediaLoaded}
                                 />
                             ))}
 

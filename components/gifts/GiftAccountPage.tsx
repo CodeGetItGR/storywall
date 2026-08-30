@@ -57,7 +57,7 @@ export function GiftAccountPage() {
                 <div className="flex min-h-[calc(100dvh-9.25rem)] flex-col lg:min-h-[calc(100dvh-4.25rem)]">
                     {/* Hero */}
                     <section className="flex flex-col items-center px-2 pt-4 text-center">
-                        <Image src="/icons/present.svg" alt="" width={80} height={80} priority className="h-20 w-20" unoptimized />
+                        <Image src="/icons/present.svg" alt="" width={80} height={80} preload className="h-20 w-20" unoptimized />
                         <div className="mt-3 w-full text-center">
                             <p className="text-base leading-6 whitespace-pre-line text-ink-muted">{note}</p>
                         </div>

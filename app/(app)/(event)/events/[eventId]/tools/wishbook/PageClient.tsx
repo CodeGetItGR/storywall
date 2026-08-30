@@ -80,7 +80,7 @@ export default function WishbookPage() {
             {/* Header art */}
             {showHeaderArt ? (
                 <section className="flex flex-col items-center px-2 pt-8 text-center">
-                    <Image src="/icons/wishbook.svg" alt="" width={104} height={104} priority className="h-24 w-24" unoptimized />
+                    <Image src="/icons/wishbook.svg" alt="" width={104} height={104} preload className="h-24 w-24" unoptimized />
                 </section>
             ) : null}
 
