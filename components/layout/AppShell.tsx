@@ -35,9 +35,9 @@ export function AppShell({ children }: { children: ReactNode }) {
     const shellContent = isChromeLessPage ? (
         <div className="h-full bg-background">{children}</div>
     ) : (
-        <div className="flex h-full min-h-0 overflow-hidden bg-background">
+        <div className="desktop-account-shell flex h-full min-h-0 overflow-hidden bg-background">
             <DesktopNavRail />
-            <main className="h-full min-w-0 flex-1 overflow-y-auto overscroll-contain pb-20 lg:pb-0 lg:pl-55">
+            <main className="desktop-account-page h-full min-w-0 flex-1 overflow-y-auto overscroll-contain bg-background pb-20 lg:pb-0 lg:pl-20">
                 <div className="min-h-full lg:max-w-none">{children}</div>
             </main>
             <MobileTabBar />

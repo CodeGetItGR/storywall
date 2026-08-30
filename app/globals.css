@@ -327,44 +327,79 @@
     transform-origin: var(--transform-origin, top right);
 }
 
-.account-panel-sidebar {
-    opacity: 0;
-    transform: translate3d(-12%, 0, 0);
-    transition:
-        opacity 420ms var(--motion-ease-exit),
-        transform 560ms var(--motion-ease-standard);
-    will-change: opacity, transform;
+@media (max-width: 63.999rem) {
+    .account-panel-sidebar {
+        opacity: 0;
+        transform: translate3d(-12%, 0, 0);
+        transition:
+            opacity 420ms var(--motion-ease-exit),
+            transform 560ms var(--motion-ease-standard);
+        will-change: opacity, transform;
+    }
+
+    .account-panel-sidebar[data-open='true'] {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+        transition:
+            opacity 520ms var(--motion-ease-enter),
+            transform 680ms var(--motion-ease-enter);
+    }
+
+    .account-panel-page {
+        border-radius: 0;
+        box-shadow: none;
+        transform: translate3d(0, 0, 0) scale(1);
+        transform-origin: left center;
+        transition:
+            transform 620ms var(--motion-ease-standard),
+            border-radius 620ms var(--motion-ease-standard) 60ms,
+            box-shadow 520ms var(--motion-ease-standard);
+        will-change: transform, border-radius, box-shadow;
+    }
+
+    .account-panel-page[data-open='true'] {
+        z-index: 20;
+        border-radius: 1.75rem;
+        box-shadow: 0 25px 60px rgb(20 15 10 / 0.35);
+        transform: translate3d(60%, 0, 0) scale(0.82);
+        transition:
+            transform 680ms var(--motion-ease-enter),
+            border-radius 560ms var(--motion-ease-enter),
+            box-shadow 560ms var(--motion-ease-enter);
+    }
 }
 
-.account-panel-sidebar[data-open='true'] {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-    transition:
-        opacity 520ms var(--motion-ease-enter),
-        transform 680ms var(--motion-ease-enter);
-}
+@media (min-width: 64rem) {
+    .account-panel-page {
+        background: transparent;
+    }
 
-.account-panel-page {
-    border-radius: 0;
-    box-shadow: none;
-    transform: translate3d(0, 0, 0) scale(1);
-    transform-origin: left center;
-    transition:
-        transform 620ms var(--motion-ease-standard),
-        border-radius 620ms var(--motion-ease-standard) 60ms,
-        box-shadow 520ms var(--motion-ease-standard);
-    will-change: transform, border-radius, box-shadow;
-}
+    .desktop-account-shell {
+        background: linear-gradient(135deg, #ff6fa0 0%, #ff7a59 50%, #ffb259 100%);
+    }
 
-.account-panel-page[data-open='true'] {
-    z-index: 20;
-    border-radius: 1.75rem;
-    box-shadow: 0 25px 60px rgb(20 15 10 / 0.35);
-    transform: translate3d(60%, 0, 0) scale(0.82);
-    transition:
-        transform 680ms var(--motion-ease-enter),
-        border-radius 560ms var(--motion-ease-enter),
-        box-shadow 560ms var(--motion-ease-enter);
+    .desktop-account-page {
+        border-radius: 0;
+        box-shadow: none;
+        transform: translate3d(0, 0, 0) scale(1);
+        transform-origin: left center;
+        transition:
+            transform 620ms var(--motion-ease-standard),
+            border-radius 620ms var(--motion-ease-standard) 60ms,
+            box-shadow 520ms var(--motion-ease-standard);
+        will-change: transform, border-radius, box-shadow;
+    }
+
+    .desktop-account-rail[data-expanded='true'] + .desktop-account-page {
+        z-index: 20;
+        border-radius: 1.75rem;
+        box-shadow: 0 25px 60px rgb(20 15 10 / 0.35);
+        transform: translate3d(20rem, 0, 0) scale(0.9);
+        transition:
+            transform 680ms var(--motion-ease-enter),
+            border-radius 560ms var(--motion-ease-enter),
+            box-shadow 560ms var(--motion-ease-enter);
+    }
 }
 
 @keyframes popover-enter {

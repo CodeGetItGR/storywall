@@ -113,6 +113,8 @@
     },
     "DesktopNavRail": {
         "mainNavigation": "Main navigation",
+        "expand": "Expand sidebar",
+        "collapse": "Collapse sidebar",
         "newPost": "New Post",
         "items": {
             "home": "Home",
