@@ -1,8 +1,8 @@
 'use client';
 
-import { Loader2, X } from 'lucide-react';
+import { ImagePlus, Loader2, UserPlus, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import React, { type ChangeEvent, useState } from 'react';
+import React, { type ChangeEvent, useCallback, useState } from 'react';
 
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
@@ -10,7 +10,10 @@ import { useCreateQrLink } from '@/hooks/useQrLinks';
 import type { QrLinkRequestDto, QrTargetType } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
+import { QrTargetTypeButton } from './QrTargetTypeButton';
 import { fieldControlClass, fieldLabelClass, fieldTextClass, formPanelClass } from './shared';
+
+const qrTargetTypes = ['EVENT_JOIN', 'MEDIA_UPLOAD'] as const;
 
 export function CreateQrLinkForm({
     eventId,
@@ -28,9 +31,9 @@ export function CreateQrLinkForm({
     const [maxGuests, setMaxGuests] = useState(50);
     const toErrorMessage = useApiErrorMessage();
 
-    function handleTargetTypeChange(event: ChangeEvent<HTMLSelectElement>) {
-        setTargetType(event.target.value as QrTargetType);
-    }
+    const handleTargetTypeChange = useCallback((value: QrTargetType) => {
+        setTargetType(value);
+    }, []);
 
     function handleLabelChange(event: ChangeEvent<HTMLInputElement>) {
         setLabel(event.target.value);
@@ -77,13 +80,27 @@ export function CreateQrLinkForm({
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
-                <FormFieldLabel label={t('qr.fields.targetType')} className={fieldLabelClass} labelClassName={fieldTextClass}>
-                    <select value={targetType} onChange={handleTargetTypeChange} className={fieldControlClass}>
-                        <option value="EVENT_JOIN">{t('qr.targetTypes.EVENT_JOIN')}</option>
-                        <option value="MEDIA_UPLOAD">{t('qr.targetTypes.MEDIA_UPLOAD')}</option>
-                    </select>
-                </FormFieldLabel>
+                {/* Destination */}
+                <div className={fieldLabelClass}>
+                    <p className={fieldTextClass}>{t('qr.fields.targetType')}</p>
+                    <div className="flex flex-wrap gap-2">
+                        {qrTargetTypes.map((item) => {
+                            const Icon = item === 'EVENT_JOIN' ? UserPlus : ImagePlus;
+                            return (
+                                <QrTargetTypeButton
+                                    key={item}
+                                    item={item}
+                                    label={t(`qr.targetTypes.${item}`)}
+                                    icon={Icon}
+                                    selected={targetType === item}
+                                    onSelectAction={handleTargetTypeChange}
+                                />
+                            );
+                        })}
+                    </div>
+                </div>
 
+                {/* Label */}
                 <FormFieldLabel label={t('qr.fields.label')} optional className={fieldLabelClass} labelClassName={fieldTextClass}>
                     <input
                         type="text"
@@ -113,7 +130,7 @@ export function CreateQrLinkForm({
             <button
                 type="submit"
                 disabled={createQrLink.isPending}
-                className="mt-4 flex items-center justify-center gap-2 rounded-full bg-gradient-brand py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                className="mt-4 ml-auto flex items-center justify-center gap-2 rounded-full bg-gradient-brand py-2 px-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             >
                 {createQrLink.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : t('qr.create.submit')}
             </button>
