@@ -39,7 +39,7 @@ export function RsvpStatsPanel({
             />
 
             {/* Attendance by category */}
-            <div className="rounded-2xl border border-border bg-background p-4">
+            <div className="p-4">
                 <p className="mb-3 text-xs font-bold uppercase tracking-wide text-ink-faint">{t('rsvpStats.byCategory')}</p>
                 <div className="flex flex-col gap-3">
                     {categories.map((status) => {

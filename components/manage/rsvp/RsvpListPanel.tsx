@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Filter } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type ChangeEvent, useCallback } from 'react';
 
@@ -51,10 +51,11 @@ export function RsvpListPanel({ members, rsvps }: { members: RosterMember[]; rsv
         <div className="flex flex-col gap-4">
             {/* Filters */}
             <div className="relative inline-block w-max ml-auto">
+                <Filter className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-faint" />
                 <select
                     value={filter}
                     onChange={handleFilterChange}
-                    className="min-h-7 appearance-none rounded-md border border-border bg-background py-2 pl-4 pr-9 text-sm font-semibold text-ink transition-colors hover:border-ink-faint focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className="min-h-5 appearance-none rounded-md border border-border bg-background py-2 pl-8 pr-9 text-sm font-semibold text-ink transition-colors hover:border-ink-faint focus:outline-none focus:ring-2 focus:ring-primary/30"
                 >
                     {filters.map(({ key, labelKey }) => {
                         const count = key === 'all' ? guestCount : counts[key];
