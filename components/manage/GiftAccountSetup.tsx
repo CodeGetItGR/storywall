@@ -8,7 +8,6 @@ import { SetupChecklist, type SetupChecklistItem } from '@/components/manage/Set
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { Modal } from '@/components/ui/modal';
 import { useDeleteGiftAccount, useGiftAccount, useSaveGiftAccount } from '@/hooks/useGiftAccount';
-import { useSetupChecklistVisibility } from '@/hooks/useSetupChecklistVisibility';
 import { ERROR_CODES, getErrorCode, getFieldErrors } from '@/lib/api/errors';
 
 export function GiftAccountSetup({ eventId, className = 'mt-3 border-t border-border/70 pt-3' }: { eventId: string; className?: string }) {
@@ -21,7 +20,7 @@ export function GiftAccountSetup({ eventId, className = 'mt-3 border-t border-bo
     const invalidIban = getErrorCode(save.error) === ERROR_CODES.INVALID_IBAN;
     const fieldErrors = getFieldErrors(save.error);
     const isConfigured = Boolean(account.data);
-    const shouldShowChecklist = useSetupChecklistVisibility(eventId, 'gift-account', isConfigured, account.isLoading);
+    const shouldShowChecklist = account.isLoading || !isConfigured;
 
     function openEditor() {
         setOpen(true);
