@@ -14,30 +14,28 @@ export function AppShell({ children }: { children: ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
     const { user, isBootstrapping } = useAuth();
-    const isChromeLessPage = pathname === routes.eventNotFound || pathname === routes.home;
+    const allowsGuestAccess = pathname === routes.eventNotFound || pathname === routes.home;
     const isAuthenticated = Boolean(user);
 
     useEffect(() => {
         if (isBootstrapping) return;
-        if (!isAuthenticated && !isChromeLessPage) {
+        if (!isAuthenticated && !allowsGuestAccess) {
             router.replace(routes.login);
             return;
         }
         if (user?.role === 'ADMIN') {
             router.replace(routes.admin);
         }
-    }, [isAuthenticated, isBootstrapping, isChromeLessPage, router, user?.role]);
+    }, [allowsGuestAccess, isAuthenticated, isBootstrapping, router, user?.role]);
 
-    if (isBootstrapping || (!isAuthenticated && !isChromeLessPage) || user?.role === 'ADMIN') {
+    if (isBootstrapping || (!isAuthenticated && !allowsGuestAccess) || user?.role === 'ADMIN') {
         return <div className="h-full bg-background" />;
     }
 
-    const shellContent = isChromeLessPage ? (
-        <div className="h-full bg-background">{children}</div>
-    ) : (
+    const shellContent = (
         <div className="desktop-account-shell flex h-full min-h-0 overflow-hidden bg-background">
             <DesktopNavRail />
-            <main className="desktop-account-page h-full min-w-0 flex-1 overflow-y-auto overscroll-contain bg-background pb-20 lg:pb-0 lg:pl-20">
+            <main className="desktop-account-page h-full min-w-0 flex-1 overflow-y-auto overscroll-contain bg-background pb-20 lg:ml-20 lg:pb-0">
                 <div className="min-h-full lg:max-w-none">{children}</div>
             </main>
             <MobileTabBar />

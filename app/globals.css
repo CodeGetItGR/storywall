@@ -394,7 +394,7 @@
         z-index: 20;
         border-radius: 1.75rem;
         box-shadow: 0 25px 60px rgb(20 15 10 / 0.35);
-        transform: translate3d(20rem, 0, 0) scale(0.9);
+        transform: translate3d(15rem, 0, 0) scale(0.9);
         transition:
             transform 680ms var(--motion-ease-enter),
             border-radius 560ms var(--motion-ease-enter),

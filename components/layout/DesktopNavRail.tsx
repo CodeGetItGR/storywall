@@ -9,7 +9,6 @@ import type { MouseEvent } from 'react';
 import { AccountLogoutButton } from '@/components/account/AccountLogoutButton';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { DesktopAccountNavLink } from '@/components/layout/DesktopAccountNavLink';
-import { DesktopAccountToolsMenu } from '@/components/layout/DesktopAccountToolsMenu';
 import { isEventRoute, isFeedRoute, isPathActive } from '@/components/layout/mobile-tab-bar';
 import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
@@ -89,8 +88,6 @@ export function DesktopNavRail() {
             {/* Navigation */}
             <div className={cn('no-scrollbar flex flex-1 flex-col gap-4 overflow-y-auto', expanded ? 'mt-7 max-w-[13rem]' : 'mt-8')}>
                 {showEventActions && homeHref && <DesktopAccountNavLink href={homeHref} icon={HomeIcon} label={t('items.home')} active={homeActive} expanded={expanded} />}
-
-                {showEventActions && !isDraft && <DesktopAccountToolsMenu expanded={expanded} />}
 
                 <DesktopAccountNavLink href={routes.home} icon={CalendarDays} label={tAccount('events')} active={eventsActive} expanded={expanded} />
                 <DesktopAccountNavLink href={routes.plans()} icon={WalletCards} label={tAccount('plans')} active={plansActive} expanded={expanded} />
