@@ -40,9 +40,10 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
     const currentStoryId = open ? (activeStoryId ?? storyId) : activeStoryId;
 
     const { data: story, error: storyError } = useStory(currentStoryId);
-    const eventId = story?.eventId ?? null;
-    const { data: media } = useMediaItem(story?.mediaId ?? null);
+    const eventId = story?.eventId ?? activeEvent?.id ?? null;
     const { data: allStories = [] } = useEventStories(eventId);
+    const activeStory = story ?? allStories.find((item) => item.id === currentStoryId) ?? null;
+    const { data: media } = useMediaItem(activeStory?.mediaId ?? null);
     const { data: members = [] } = useEventMembers(eventId);
     const markViewed = useMarkStoryViewed();
     const deleteStory = useDeleteStory(eventId ?? '');
@@ -80,11 +81,11 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
     const storyIndex = group ? group.stories.findIndex((s) => s.id === currentStoryId) : -1;
 
     const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
-    const author = story?.authorMemberId ? membersById.get(story.authorMemberId) : undefined;
+    const author = activeStory?.authorMemberId ? membersById.get(activeStory.authorMemberId) : undefined;
     const canWrite = isEventWritable(activeEvent?.status);
-    const canManage = Boolean(story && activeMember && (activeMember.id === story.authorMemberId || isHost));
+    const canManage = Boolean(activeStory && activeMember && (activeMember.id === activeStory.authorMemberId || isHost));
     const canDeleteStory = canManage && canWrite;
-    const canAdvanceStory = Boolean(story && group && storyIndex >= 0);
+    const canAdvanceStory = Boolean(activeStory && group && storyIndex >= 0);
 
     const { data: viewers = [], isFetching: viewersLoading } = useStoryViews(showViewers ? currentStoryId : null);
 
@@ -155,15 +156,26 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
     }, [onCloseAction, open, storyError]);
 
     useEffect(() => {
-        if (!open || !currentStoryId || !story) return;
+        if (!open || !currentStoryId || !activeStory) return;
         if (!group || storyIndex < 0) {
             onCloseAction();
         }
-    }, [currentStoryId, group, onCloseAction, open, story, storyIndex]);
+    }, [activeStory, currentStoryId, group, onCloseAction, open, storyIndex]);
 
     if (!currentStoryId) return null;
     if (storyError instanceof ApiError && storyError.status === 404) return null;
-    if (!story || !group || storyIndex < 0) return null;
+    if (!activeStory || !group || storyIndex < 0) {
+        return (
+            <Dialog.Root open={open} onOpenChange={onOpenChange}>
+                <Dialog.Portal>
+                    {/* Backdrop */}
+                    <Dialog.Backdrop className="motion-story-overlay fixed inset-0 z-[60] bg-black opacity-100 data-closed:pointer-events-none" />
+                    {/* Story loading */}
+                    <Dialog.Popup aria-label={t('story')} className="motion-story-frame fixed inset-0 z-[60] bg-black outline-none" />
+                </Dialog.Portal>
+            </Dialog.Root>
+        );
+    }
 
     function goNext() {
         if (!group || storyIndex < 0) {
@@ -228,7 +240,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
         goNext();
     }
 
-    const timeStr = new Date(story.createdAt).toLocaleTimeString(locale, {
+    const timeStr = new Date(activeStory.createdAt).toLocaleTimeString(locale, {
         hour: 'numeric',
         minute: '2-digit',
     });
@@ -248,7 +260,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                         {/* Header */}
                         <StoryHeader
                             authorName={authorName}
-                            authorId={story.authorMemberId ?? story.id}
+                            authorId={activeStory.authorMemberId ?? activeStory.id}
                             timeStr={timeStr}
                             canManage={canManage}
                             canDelete={canDeleteStory}
@@ -305,7 +317,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                         </div>
 
                         {/* Caption */}
-                        {hasMedia && <StoryCaptionBar story={story} canManage={canManage} onShowViewersAction={handleShowViewers} />}
+                        {hasMedia && <StoryCaptionBar story={activeStory} canManage={canManage} onShowViewersAction={handleShowViewers} />}
                         {!hasMedia && <section className="absolute inset-0 flex w-full min-w-0 min-h-0 flex-1 flex-col" />}
                     </div>
                 </Dialog.Popup>
