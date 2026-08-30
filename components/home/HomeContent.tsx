@@ -11,6 +11,7 @@ export function HomeContent() {
     const { eventQueries, isLoading, memberships } = useMyEventList();
     const items = useEventGridItems(memberships, eventQueries);
     const hasEvents = memberships.length > 0;
+    const feedSectionClassName = 'px-4 sm:px-8 lg:mx-auto lg:w-[clamp(32rem,40vw,42rem)] lg:px-0';
 
     return (
         <div className="relative h-full w-full overflow-y-auto overflow-x-hidden">
@@ -22,26 +23,26 @@ export function HomeContent() {
 
             <div className="relative flex w-full flex-col gap-6 pt-8 pb-12 lg:pt-14">
                 {/* Header */}
-                <section className="px-4 sm:px-8 lg:px-14 2xl:px-20">
+                <section className={feedSectionClassName}>
                     <HomeHeader />
                 </section>
 
                 {!isLoading && !hasEvents ? (
                     /* Empty state */
-                    <section className="px-4 sm:px-8 lg:px-14 2xl:px-20">
+                    <section className={feedSectionClassName}>
                         <HomeEmptyState />
                     </section>
                 ) : (
                     <>
                         {/* Next event */}
                         {!isLoading && (
-                            <section className="px-4 sm:px-8 lg:px-14 2xl:px-20">
+                            <section className={feedSectionClassName}>
                                 <HomeNextEventCard items={items} />
                             </section>
                         )}
 
                         {/* Your events */}
-                        <EventsQuickRow items={items} isLoading={isLoading} />
+                        <EventsQuickRow items={items} isLoading={isLoading} contentClassName={feedSectionClassName} />
                     </>
                 )}
             </div>

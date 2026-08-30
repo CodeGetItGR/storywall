@@ -86,7 +86,7 @@ export function DesktopNavRail() {
             </div>
 
             {/* Navigation */}
-            <div className={cn('no-scrollbar flex flex-1 flex-col gap-4 overflow-y-auto', expanded ? 'mt-7 max-w-[13rem]' : 'mt-8')}>
+            <div className={cn('no-scrollbar flex flex-1 flex-col gap-4 overflow-y-auto p-2', expanded ? 'mt-7 max-w-52' : 'mt-8')}>
                 {showEventActions && homeHref && <DesktopAccountNavLink href={homeHref} icon={HomeIcon} label={t('items.home')} active={homeActive} expanded={expanded} />}
 
                 <DesktopAccountNavLink href={routes.home} icon={CalendarDays} label={tAccount('events')} active={eventsActive} expanded={expanded} />

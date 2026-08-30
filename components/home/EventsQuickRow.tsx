@@ -9,9 +9,10 @@ import { HomeHorizontalScroller } from '@/components/home/HomeHorizontalScroller
 import type { EventGridItem } from '@/hooks/useEventGridItems';
 import { formatEventListDate } from '@/lib/datetime';
 import { routes } from '@/lib/routes';
+import { cn } from '@/lib/utils';
 
 function QuickRowSkeleton() {
-    return <div className="h-52 w-40 shrink-0 animate-pulse rounded-2xl bg-surface-muted" />;
+    return <div className="h-52 w-40 shrink-0 animate-pulse rounded-2xl bg-surface-muted lg:h-56 lg:w-40" />;
 }
 
 function EventQuickCard({ member, event }: EventGridItem) {
@@ -27,7 +28,7 @@ function EventQuickCard({ member, event }: EventGridItem) {
     return (
         <Link
             href={routes.events.feed(member.eventId)}
-            className="group relative h-62 w-44 shrink-0 overflow-hidden rounded-lg bg-surface-muted transition-transform hover:-translate-y-0.5"
+            className="group relative h-62 w-44 shrink-0 overflow-hidden rounded-lg bg-surface-muted transition-transform hover:-translate-y-0.5 lg:h-56 lg:w-40"
         >
             {event?.coverMedia?.mediaUrl ? (
                 <Image
@@ -50,14 +51,22 @@ function EventQuickCard({ member, event }: EventGridItem) {
     );
 }
 
-export function EventsQuickRow({ items, isLoading = false }: { items: EventGridItem[]; isLoading?: boolean }) {
+export function EventsQuickRow({
+    items,
+    isLoading = false,
+    contentClassName,
+}: {
+    items: EventGridItem[];
+    isLoading?: boolean;
+    contentClassName?: string;
+}) {
     const t = useTranslations('HomePage');
     const tEvents = useTranslations('EventsPage');
 
     return (
         <section aria-labelledby="home-events-heading" className="flex w-full flex-col gap-3">
             {/* Section heading */}
-            <div className="flex items-center justify-between gap-3 px-4 sm:px-8 lg:px-14 2xl:px-20">
+            <div className={cn('flex items-center justify-between gap-3 px-4 sm:px-8 lg:px-14 2xl:px-20', contentClassName)}>
                 <h2 id="home-events-heading" className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
                     {tEvents('yourEvents')}
                 </h2>
@@ -71,7 +80,11 @@ export function EventsQuickRow({ items, isLoading = false }: { items: EventGridI
             </div>
 
             {/* Event shortcuts */}
-            <HomeHorizontalScroller previousLabel={tEvents('previous')} nextLabel={tEvents('next')}>
+            <HomeHorizontalScroller
+                previousLabel={tEvents('previous')}
+                nextLabel={tEvents('next')}
+                className={contentClassName}
+            >
                 {isLoading
                     ? [0, 1, 2].map((key) => <QuickRowSkeleton key={key} />)
                     : items.map((item) =>

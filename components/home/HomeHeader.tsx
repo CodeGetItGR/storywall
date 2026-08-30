@@ -40,7 +40,7 @@ export function HomeHeader() {
                     aria-label={tAccount('drawerLabel')}
                     aria-haspopup="dialog"
                     aria-expanded={open}
-                    className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary lg:hidden"
                 >
                     <Menu className="h-5 w-5" strokeWidth={2.2} aria-hidden="true" />
                 </button>
