@@ -59,7 +59,7 @@ export function RsvpStatsPanel({
             />
 
             {/* Attendance by category */}
-            <div className="p-4">
+            <div className="p-4" hidden={peopleTotal === 0}>
                 <p className="mb-3 text-xs font-bold uppercase tracking-wide text-ink-faint">{t('rsvpStats.byCategory')}</p>
                 <div className="flex flex-col gap-3">
                     {categories.map((status) => {

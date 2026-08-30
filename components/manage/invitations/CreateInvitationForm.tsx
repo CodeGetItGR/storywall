@@ -7,7 +7,6 @@ import React, { type ChangeEvent, useState } from 'react';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCreateEventInvitation } from '@/hooks/useEventInvitations';
-import { useCreateQrLink } from '@/hooks/useQrLinks';
 import { getFieldErrors } from '@/lib/api/errors';
 import type { EventInvitationRequestDto } from '@/lib/api/types';
 import { generateInviteCode } from '@/lib/eventInvitations';
@@ -27,16 +26,14 @@ export function CreateInvitationForm({
     const t = useTranslations('ManagePage');
     const tCommon = useTranslations('Common');
     const createInvitation = useCreateEventInvitation();
-    const createQrLink = useCreateQrLink(eventId);
     const [maxGuests, setMaxGuests] = useState(1);
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
-    const [alsoCreateQr, setAlsoCreateQr] = useState(false);
+    const [allowPlusOnes, setAllowPlusOnes] = useState(false);
 
     const fieldErrors = getFieldErrors(createInvitation.error);
     const toErrorMessage = useApiErrorMessage();
-    const isSubmitting = createInvitation.isPending || createQrLink.isPending;
     const formError = fieldErrors?.inviteCode ?? (!fieldErrors ? toErrorMessage(createInvitation.error) : null);
 
     function handleMaxGuestsChange(event: ChangeEvent<HTMLInputElement>) {
@@ -55,32 +52,30 @@ export function CreateInvitationForm({
         setEmail(event.target.value);
     }
 
-    function handleAlsoCreateQrChange(event: ChangeEvent<HTMLInputElement>) {
-        setAlsoCreateQr(event.target.checked);
+    function handleAllowPlusOnesChange(event: ChangeEvent<HTMLInputElement>) {
+        const checked = event.target.checked;
+        setAllowPlusOnes(checked);
+        if (!checked) {
+            setMaxGuests(1);
+        }
     }
 
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
         const inviteCode = generateInviteCode();
+        const requestedMaxGuests = allowPlusOnes ? maxGuests : 1;
         const input: EventInvitationRequestDto = {
             eventId,
             inviteCode,
-            maxGuests,
+            maxGuests: requestedMaxGuests,
             firstName: firstName.trim() || undefined,
             lastName: lastName.trim() || undefined,
             email: email.trim() || undefined,
         };
         try {
             const invitation = await createInvitation.mutateAsync(input);
-            if (invitation.maxGuests !== maxGuests) {
+            if (invitation.maxGuests !== requestedMaxGuests) {
                 onClampNoticeAction?.(t('invitations.cappedToPlan', { count: invitation.maxGuests }));
-            }
-            if (alsoCreateQr) {
-                await createQrLink.mutateAsync({
-                    targetType: 'INVITATION',
-                    targetId: invitation.id,
-                    label: inviteCode,
-                });
             }
             onDoneAction();
         } catch {
@@ -106,23 +101,9 @@ export function CreateInvitationForm({
                 </button>
             </div>
 
-            {/* Limits */}
+            {/* Guest */}
             <div>
-                <FormFieldLabel label={t('invitations.fields.maxGuests')} required className={fieldLabelClass} labelClassName={fieldTextClass}>
-                    <input
-                        type="number"
-                        required
-                        min={1}
-                        value={maxGuests}
-                        onChange={handleMaxGuestsChange}
-                        className={cn(fieldControlClass, 'sm:max-w-48')}
-                    />
-                </FormFieldLabel>
-            </div>
-
-            {/* Guest prefill */}
-            <div className="mt-4">
-                <p className="mb-3 text-xs font-semibold text-ink">{t('invitations.create.prefillTitle')}</p>
+                <p className="mb-3 text-xs font-semibold text-ink">{t('invitations.create.guestTitle')}</p>
                 <div className="grid gap-3 sm:grid-cols-2">
                     <FormFieldLabel label={t('invitations.fields.firstName')} optional className={fieldLabelClass} labelClassName={fieldTextClass}>
                         <input type="text" value={firstName} onChange={handleFirstNameChange} className={fieldControlClass} />
@@ -140,35 +121,50 @@ export function CreateInvitationForm({
                 >
                     <input type="email" value={email} onChange={handleEmailChange} className={fieldControlClass} />
                     {fieldErrors?.email && <span className="text-xs text-rose-500">{fieldErrors.email}</span>}
+                    <span className="text-xs leading-relaxed text-ink-muted">{t('invitations.create.emailHint')}</span>
                 </FormFieldLabel>
             </div>
 
-            {/* QR option */}
+            {/* Plus ones */}
             <label className="mt-4 flex items-start gap-3 rounded-xl border border-border bg-background px-3 py-3">
                 <input
                     type="checkbox"
-                    checked={alsoCreateQr}
-                    onChange={handleAlsoCreateQrChange}
+                    checked={allowPlusOnes}
+                    onChange={handleAllowPlusOnesChange}
                     className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
                 />
                 <span className="min-w-0">
                     <span className="block text-sm font-semibold text-ink">
-                        {t('invitations.create.alsoCreateQr')} <span className="text-ink-faint">({tCommon('optional')})</span>
+                        {t('invitations.create.allowPlusOnes')} <span className="text-ink-faint">({tCommon('optional')})</span>
                     </span>
-                    <span className="mt-0.5 block text-xs leading-relaxed text-ink-muted">{t('invitations.create.alsoCreateQrHint')}</span>
+                    <span className="mt-0.5 block text-xs leading-relaxed text-ink-muted">{t('invitations.create.allowPlusOnesHint')}</span>
                 </span>
             </label>
 
+            {allowPlusOnes && (
+                <div className="mt-3">
+                    <FormFieldLabel label={t('invitations.fields.maxGuests')} required className={fieldLabelClass} labelClassName={fieldTextClass}>
+                        <input
+                            type="number"
+                            required
+                            min={1}
+                            value={maxGuests}
+                            onChange={handleMaxGuestsChange}
+                            className={cn(fieldControlClass, 'sm:max-w-48')}
+                        />
+                    </FormFieldLabel>
+                </div>
+            )}
+
             {/* Actions */}
             {createInvitation.isError && formError && <p className="mt-3 text-xs text-rose-500">{formError}</p>}
-            {createQrLink.isError && <p className="mt-3 text-xs text-rose-500">{toErrorMessage(createQrLink.error)}</p>}
 
             <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={createInvitation.isPending}
                 className="mt-4 flex items-center justify-center gap-2 rounded-full bg-gradient-brand py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 px-4"
             >
-                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : t('invitations.create.submit')}
+                {createInvitation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : t('invitations.create.submit')}
             </button>
         </form>
     );

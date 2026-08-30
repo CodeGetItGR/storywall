@@ -913,11 +913,17 @@
         },
         "invitations": {
             "panels": {
-                "invites": "Invites",
+                "invites": "Invite a guest",
                 "coHosts": "Co-hosts",
-                "qr": "QR Codes"
+                "qr": "Share link"
             },
-            "empty": "No invitations yet. Create one to generate a shareable link.",
+            "empty": "No personal invitations yet.",
+            "guide": {
+                "personalTitle": "Invite someone specific",
+                "personalBody": "Add their name, and add an email if you want us to send the invitation.",
+                "shareTitle": "Share with a group",
+                "shareBody": "Create a link or QR code for group chats, printed cards, posters, or gallery access."
+            },
             "claimed": "Claimed",
             "unclaimed": "Unclaimed",
             "maxGuests": "Up to {count} guests",
@@ -931,18 +937,19 @@
             "revokeConfirmTitle": "Revoke this invitation?",
             "revokeConfirmBody": "This invitation link will stop working and can't be restored.",
             "create": {
-                "cta": "New invitation",
-                "title": "New invitation",
-                "subtitle": "Create the join link and optional guest prefill in one place.",
-                "prefillTitle": "Guest prefill",
-                "alsoCreateQr": "Also create a QR code",
-                "alsoCreateQrHint": "Creates a matching QR code that opens this specific invitation.",
+                "cta": "Invite guest",
+                "title": "Invite a guest",
+                "subtitle": "Create a personal invite for one person.",
+                "guestTitle": "Guest details",
+                "emailHint": "Add an email to send the invitation automatically. You can still copy the link later.",
+                "allowPlusOnes": "Allow plus ones",
+                "allowPlusOnesHint": "Set this only when this invite should cover more than one person.",
                 "cancel": "Cancel",
-                "submit": "Create invitation"
+                "submit": "Create invite"
             },
             "fields": {
                 "inviteCode": "Invite code",
-                "maxGuests": "Max guests",
+                "maxGuests": "Guest limit",
                 "firstName": "First name",
                 "lastName": "Last name",
                 "email": "Email"
@@ -964,12 +971,14 @@
                 "expiresAt": "Expires",
                 "emailNotice": "We send the invitation automatically. Another account cannot accept this link.",
                 "submit": "Send invitation",
-                "cancel": "Cancel"
+                "cancel": "Cancel",
+                "guideTitle": "Invite someone to help",
+                "guideBody": "Co-host invitations are sent by email and are tied to that email address."
             }
         },
         "qr": {
             "summary": "{count} QR codes",
-            "empty": "No QR codes yet. Create one for posters, table cards, or printed invitations.",
+            "empty": "No share links yet.",
             "readOnly": "This event is read-only. QR code changes are paused, but existing codes can still be previewed and printed.",
             "untitled": "Untitled QR code",
             "preview": "Preview",
@@ -998,15 +1007,15 @@
             },
             "cappedToPlan": "Capped to {count, plural, one {# guest} other {# guests}} - that's all your current plan has room for.",
             "create": {
-                "cta": "New QR code",
-                "title": "New QR code",
-                "subtitle": "Make a printable scan link for posters, table cards, or invite cards.",
-                "submit": "Create QR code"
+                "cta": "Create link",
+                "title": "Create a share link",
+                "subtitle": "Use this for groups, printed cards, posters, or gallery access.",
+                "submit": "Create link"
             },
             "fields": {
                 "targetType": "Destination",
                 "label": "Label",
-                "maxGuests": "Max guests",
+                "maxGuests": "Guest limit",
                 "invitation": "Invitation"
             },
             "placeholders": {

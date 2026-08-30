@@ -58,6 +58,7 @@ export default function InvitationsTab({
 
     return (
         <div className="flex flex-col">
+            {/* Panels */}
             <div className="mb-4 flex gap-1 rounded-full bg-surface-muted p-1">
                 {(['invites', 'coHosts', 'qr'] as const).map((item) => (
                     <InvitationPanelButton
@@ -70,6 +71,7 @@ export default function InvitationsTab({
                 ))}
             </div>
 
+            {/* Summary */}
             <div className="mb-3 flex items-center justify-between">
                 <p className="text-xs text-ink-muted">
                     {showCoHosts
@@ -100,19 +102,36 @@ export default function InvitationsTab({
                 <p className="mb-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900">{limitNotice}</p>
             )}
 
+            {/* Guidance */}
+            {canWrite && !showCreate && (
+                <div className="mb-4 rounded-2xl bg-surface-muted px-4 py-3">
+                    <p className="text-sm font-semibold text-ink">
+                        {showCoHosts
+                            ? t('invitations.coHosts.guideTitle')
+                            : showInvites
+                              ? t('invitations.guide.personalTitle')
+                              : t('invitations.guide.shareTitle')}
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-ink-muted">
+                        {showCoHosts
+                            ? t('invitations.coHosts.guideBody')
+                            : showInvites
+                              ? t('invitations.guide.personalBody')
+                              : t('invitations.guide.shareBody')}
+                    </p>
+                </div>
+            )}
+
+            {/* Create */}
             {showCreate && canWrite && showInvites && (
                 <CreateInvitationForm eventId={eventId} onDoneAction={handleHideCreate} onClampNoticeAction={handleClampNotice} />
             )}
             {showCreate && canWrite && showCoHosts && <CreateCoHostInvitationForm eventId={eventId} onDoneAction={handleHideCreate} />}
             {showCreate && canWrite && !showInvites && !showCoHosts && (
-                <CreateQrLinkForm
-                    eventId={eventId}
-                    invitations={invitations}
-                    onDoneAction={handleHideCreate}
-                    onClampNoticeAction={handleClampNotice}
-                />
+                <CreateQrLinkForm eventId={eventId} onDoneAction={handleHideCreate} onClampNoticeAction={handleClampNotice} />
             )}
 
+            {/* List */}
             {showInvites || showCoHosts ? (
                 <div className="flex flex-col divide-y divide-border">
                     {visibleInvitations.map((invitation) => (

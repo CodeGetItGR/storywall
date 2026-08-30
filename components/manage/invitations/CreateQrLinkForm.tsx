@@ -7,19 +7,17 @@ import React, { type ChangeEvent, useState } from 'react';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCreateQrLink } from '@/hooks/useQrLinks';
-import type { EventInvitationResponseDto, QrLinkRequestDto, QrTargetType } from '@/lib/api/types';
+import type { QrLinkRequestDto, QrTargetType } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
 import { fieldControlClass, fieldLabelClass, fieldTextClass, formPanelClass } from './shared';
 
 export function CreateQrLinkForm({
     eventId,
-    invitations,
     onDoneAction,
     onClampNoticeAction,
 }: {
     eventId: string;
-    invitations: EventInvitationResponseDto[];
     onDoneAction: () => void;
     onClampNoticeAction?: (message: string) => void;
 }) {
@@ -28,10 +26,7 @@ export function CreateQrLinkForm({
     const [targetType, setTargetType] = useState<QrTargetType>('EVENT_JOIN');
     const [label, setLabel] = useState('');
     const [maxGuests, setMaxGuests] = useState(50);
-    const [targetId, setTargetId] = useState(invitations[0]?.id ?? '');
     const toErrorMessage = useApiErrorMessage();
-
-    const isInvitationTarget = targetType === 'INVITATION';
 
     function handleTargetTypeChange(event: ChangeEvent<HTMLSelectElement>) {
         setTargetType(event.target.value as QrTargetType);
@@ -39,10 +34,6 @@ export function CreateQrLinkForm({
 
     function handleLabelChange(event: ChangeEvent<HTMLInputElement>) {
         setLabel(event.target.value);
-    }
-
-    function handleTargetIdChange(event: ChangeEvent<HTMLSelectElement>) {
-        setTargetId(event.target.value);
     }
 
     function handleMaxGuestsChange(event: ChangeEvent<HTMLInputElement>) {
@@ -54,12 +45,12 @@ export function CreateQrLinkForm({
         const input: QrLinkRequestDto = {
             targetType,
             label: label.trim() || undefined,
-            ...(isInvitationTarget ? { targetId } : { maxGuests }),
+            maxGuests,
         };
 
         try {
             const qrLink = await createQrLink.mutateAsync(input);
-            if (!isInvitationTarget && qrLink.maxGuests !== maxGuests) {
+            if (qrLink.maxGuests !== maxGuests) {
                 onClampNoticeAction?.(t('qr.cappedToPlan', { count: qrLink.maxGuests ?? maxGuests }));
             }
             onDoneAction();
@@ -90,7 +81,6 @@ export function CreateQrLinkForm({
                     <select value={targetType} onChange={handleTargetTypeChange} className={fieldControlClass}>
                         <option value="EVENT_JOIN">{t('qr.targetTypes.EVENT_JOIN')}</option>
                         <option value="MEDIA_UPLOAD">{t('qr.targetTypes.MEDIA_UPLOAD')}</option>
-                        <option value="INVITATION">{t('qr.targetTypes.INVITATION')}</option>
                     </select>
                 </FormFieldLabel>
 
@@ -106,36 +96,23 @@ export function CreateQrLinkForm({
                 </FormFieldLabel>
             </div>
 
-            {isInvitationTarget ? (
-                <FormFieldLabel label={t('qr.fields.invitation')} required className={cn(fieldLabelClass, 'mt-4')} labelClassName={fieldTextClass}>
-                    <select required value={targetId} onChange={handleTargetIdChange} className={fieldControlClass}>
-                        {invitations.map((invitation) => (
-                            <option key={invitation.id} value={invitation.id}>
-                                {invitation.inviteCode}
-                            </option>
-                        ))}
-                    </select>
-                </FormFieldLabel>
-            ) : (
-                <FormFieldLabel label={t('qr.fields.maxGuests')} required className={cn(fieldLabelClass, 'mt-4')} labelClassName={fieldTextClass}>
-                    <input
-                        type="number"
-                        required
-                        min={1}
-                        max={1000}
-                        value={maxGuests}
-                        onChange={handleMaxGuestsChange}
-                        className={fieldControlClass}
-                    />
-                </FormFieldLabel>
-            )}
+            <FormFieldLabel label={t('qr.fields.maxGuests')} required className={cn(fieldLabelClass, 'mt-4')} labelClassName={fieldTextClass}>
+                <input
+                    type="number"
+                    required
+                    min={1}
+                    max={1000}
+                    value={maxGuests}
+                    onChange={handleMaxGuestsChange}
+                    className={fieldControlClass}
+                />
+            </FormFieldLabel>
 
-            {isInvitationTarget && invitations.length === 0 && <p className="mt-3 text-xs text-rose-500">{t('qr.noInvitations')}</p>}
             {createQrLink.isError && <p className="mt-3 text-xs text-rose-500">{toErrorMessage(createQrLink.error)}</p>}
 
             <button
                 type="submit"
-                disabled={createQrLink.isPending || (isInvitationTarget && !targetId)}
+                disabled={createQrLink.isPending}
                 className="mt-4 flex items-center justify-center gap-2 rounded-full bg-gradient-brand py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             >
                 {createQrLink.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : t('qr.create.submit')}
