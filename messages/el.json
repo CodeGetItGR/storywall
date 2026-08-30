@@ -846,13 +846,11 @@
             }
         },
         "rsvpBreakdown": {
-            "title": "Ανάλυση RSVP",
             "attending": "Θα παρευρεθούν",
             "maybe": "Ίσως",
             "declined": "Απορριφθέντα",
             "noResponse": "Χωρίς απάντηση"
         },
-        "seeAll": "Δείτε όλα",
         "rsvpStatus": {
             "ATTENDING": "Θα παρευρεθεί",
             "DECLINED": "Απέρριψε",
@@ -1102,7 +1100,19 @@
             "status": "Κατάσταση",
             "note": "Σημείωση"
         },
-        "rsvpParty": "{count} θέσεις"
+        "rsvpParty": "{count} θέσεις",
+        "rsvpTabs": {
+            "stats": "Στατιστικά",
+            "list": "Λίστα"
+        },
+        "rsvpStats": {
+            "daysToGo": "{count, plural, one {# ημέρα μέχρι την εκδήλωση} other {# ημέρες μέχρι την εκδήλωση}}",
+            "responses": "Απαντήσεις",
+            "totalPeople": "Σύνολο ατόμων",
+            "adults": "Ενήλικες",
+            "kids": "Παιδιά",
+            "byCategory": "Παρουσία ανά κατηγορία"
+        }
     },
     "EventPlanSettingsPage": {
         "back": "Πίσω",

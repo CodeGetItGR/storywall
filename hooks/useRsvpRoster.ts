@@ -53,12 +53,33 @@ export function useRsvpRoster(members: RosterMember[], rsvps: RosterRsvp[]) {
         [filter, guests, statusOf]
     );
 
+    const adultsTotal = useMemo(() => rsvps.reduce((sum, rsvp) => sum + rsvp.adultCount, 0), [rsvps]);
+    const kidsTotal = useMemo(() => rsvps.reduce((sum, rsvp) => sum + rsvp.childCount, 0), [rsvps]);
+
+    // Counted in people (adults + kids), not responses, so it answers "how many
+    // are actually coming" rather than "how many parties replied".
+    const peopleByStatus = useMemo(
+        () =>
+            rsvps.reduce(
+                (totals, rsvp) => {
+                    totals[rsvp.attendanceStatus] += rsvp.adultCount + rsvp.childCount;
+                    return totals;
+                },
+                { ATTENDING: 0, MAYBE: 0, DECLINED: 0 } as Record<'ATTENDING' | 'MAYBE' | 'DECLINED', number>
+            ),
+        [rsvps]
+    );
+
     return {
         filter,
         setFilter,
         counts,
         guestCount: guests.length,
+        responseCount: counts.ATTENDING + counts.MAYBE + counts.DECLINED,
         seatsClaimed: rsvps.reduce((sum, rsvp) => sum + rsvp.adultCount + rsvp.childCount, 0),
+        adultsTotal,
+        kidsTotal,
+        peopleByStatus,
         visibleGuests,
         rsvpByMember,
         statusOf,

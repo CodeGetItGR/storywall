@@ -2,7 +2,6 @@ import { useTranslations } from 'next-intl';
 
 import { GiftAccountSetup } from '@/components/manage/GiftAccountSetup';
 import { OverviewDraftPanel } from '@/components/manage/OverviewDraftPanel';
-import Section from '@/components/manage/Section';
 import { TargetedSection } from '@/components/manage/TargetedSection';
 import { UsagePanel } from '@/components/plan/UsagePanel';
 import { MetricStrip } from '@/components/ui/MetricStrip';
@@ -24,13 +23,11 @@ export default function OverviewTab({
     daysToGo,
     invitationCount,
     seatsClaimed,
-    rsvpBreakdown,
     eventUsage,
     planTiers,
     paidServices,
     modules,
     eventModules,
-    onSeeAllRsvp,
     eventId,
     eventStatus,
     startAt,
@@ -39,13 +36,11 @@ export default function OverviewTab({
     daysToGo: number;
     invitationCount: number;
     seatsClaimed: number;
-    rsvpBreakdown: readonly { key: string; count: number; color: string }[];
     eventUsage: EventUsageResponseDto | null;
     planTiers: PlanTierResponseDto[];
     paidServices: PaidServiceResponseDto[];
     modules: PlatformModuleResponseDto[];
     eventModules: EventModuleResponseDto[];
-    onSeeAllRsvp: () => void;
     eventId: string;
     eventStatus: EventStatus;
     startAt: string | null;
@@ -74,7 +69,6 @@ export default function OverviewTab({
         );
     }
 
-    const rsvpTotal = rsvpBreakdown.reduce((sum, entry) => sum + entry.count, 0);
     // The member count lives in this strip only: the usage panel below shows the
     // plan's headroom, so it reports storage and lets this cell carry members.
     const shownMemberCount = eventUsage?.memberCount ?? memberCount;
@@ -98,32 +92,6 @@ export default function OverviewTab({
                     { key: 'seats', label: t('stats.seats.label'), value: seatsClaimed },
                 ]}
             />
-
-            {/* RSVP */}
-            <Section
-                title={t('rsvpBreakdown.title')}
-                divider
-                action={
-                    <button onClick={onSeeAllRsvp} className="text-xs font-semibold text-primary hover:underline">
-                        {t('seeAll')}
-                    </button>
-                }
-            >
-                <div className="flex h-2 overflow-hidden rounded-full bg-surface-muted">
-                    {rsvpBreakdown.map(({ key, count, color }) =>
-                        count === 0 ? null : <div key={key} className={color} style={{ width: `${(count / Math.max(rsvpTotal, 1)) * 100}%` }} />
-                    )}
-                </div>
-                <dl className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
-                    {rsvpBreakdown.map(({ key, count, color }) => (
-                        <div key={key} className="flex items-center gap-1.5">
-                            <span className={`h-2 w-2 shrink-0 rounded-full ${color}`} aria-hidden="true" />
-                            <dt className="text-xs text-ink-muted">{t(`rsvpBreakdown.${key}`)}</dt>
-                            <dd className="text-xs font-bold tabular-nums text-ink">{count}</dd>
-                        </div>
-                    ))}
-                </dl>
-            </Section>
 
             {/* Plan usage */}
             {eventUsage && (

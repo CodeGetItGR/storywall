@@ -848,13 +848,11 @@
             }
         },
         "rsvpBreakdown": {
-            "title": "RSVP Breakdown",
             "attending": "Attending",
             "maybe": "Maybe",
             "declined": "Declined",
             "noResponse": "No response"
         },
-        "seeAll": "See all",
         "rsvpStatus": {
             "ATTENDING": "Attending",
             "DECLINED": "Declined",
@@ -1102,7 +1100,19 @@
             "status": "Status",
             "note": "Note"
         },
-        "rsvpParty": "{count} seats"
+        "rsvpParty": "{count} seats",
+        "rsvpTabs": {
+            "stats": "Stats",
+            "list": "List"
+        },
+        "rsvpStats": {
+            "daysToGo": "{count, plural, one {# day until the event} other {# days until the event}}",
+            "responses": "Responses",
+            "totalPeople": "Total people",
+            "adults": "Adults",
+            "kids": "Kids",
+            "byCategory": "Attendance by category"
+        }
     },
     "EventPlanSettingsPage": {
         "back": "Back",

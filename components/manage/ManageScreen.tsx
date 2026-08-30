@@ -69,10 +69,6 @@ export function ManageScreen() {
         [eventId, router, searchParams]
     );
 
-    const handleSeeAllRsvp = useCallback(() => {
-        navigateToSection('rsvp');
-    }, [navigateToSection]);
-
     const openSwitcher = useCallback(() => setSwitcherOpen(true), []);
     const closeSwitcher = useCallback(() => setSwitcherOpen(false), []);
 
@@ -86,14 +82,6 @@ export function ManageScreen() {
     useEffect(() => {
         if (isDraft && requestedSection !== section) router.replace(routes.events.manage(eventId));
     }, [eventId, isDraft, requestedSection, router, section]);
-
-    const summary = activeEvent.rsvpSummary;
-    const rsvpBreakdown = [
-        { key: 'attending', count: summary.attending, color: 'bg-emerald-500' },
-        { key: 'maybe', count: summary.maybe, color: 'bg-amber-400' },
-        { key: 'declined', count: summary.declined, color: 'bg-rose-400' },
-        { key: 'noResponse', count: summary.noResponse, color: 'bg-border' },
-    ] as const;
 
     // Party sizes belong to the overview's headline numbers, so the RSVP roster
     // never restates a total that is already visible one section away.
@@ -113,13 +101,11 @@ export function ManageScreen() {
                         daysToGo={daysToGo}
                         invitationCount={invitations.length}
                         seatsClaimed={seatsClaimed}
-                        rsvpBreakdown={rsvpBreakdown}
                         eventUsage={eventUsage}
                         planTiers={appConfig?.planTiers ?? []}
                         paidServices={appConfig?.paidServices ?? []}
                         modules={appConfig?.modules ?? []}
                         eventModules={activeEvent.modules}
-                        onSeeAllRsvp={handleSeeAllRsvp}
                         eventId={activeEvent.id}
                         eventStatus={activeEvent.status}
                         startAt={activeEvent.schedule.startAt}
@@ -127,7 +113,11 @@ export function ManageScreen() {
                 ))}
 
             {section === 'rsvp' &&
-                (rsvpTabLoading ? <LoadingState size="md" className="min-h-64" /> : <RsvpTab members={members} rsvps={rsvps} />)}
+                (rsvpTabLoading ? (
+                    <LoadingState size="md" className="min-h-64" />
+                ) : (
+                    <RsvpTab members={members} rsvps={rsvps} daysToGo={daysToGo} />
+                ))}
 
             {section === 'invitations' &&
                 eventId &&
