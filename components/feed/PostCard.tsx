@@ -98,6 +98,8 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                     <MediaThumbnail
                         src={media[0].mediaUrl}
                         mediaType={media[0].mediaType}
+                        status={media[0].status}
+                        thumbnailUrl={media[0].thumbnailUrl}
                         alt={t('mediaBy', { name: authorName })}
                         fill
                         className="object-cover"
@@ -121,6 +123,8 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                             <MediaThumbnail
                                 src={item.mediaUrl}
                                 mediaType={item.mediaType}
+                                status={item.status}
+                                thumbnailUrl={item.thumbnailUrl}
                                 alt={t('mediaBy', { name: authorName })}
                                 fill
                                 className="object-cover"

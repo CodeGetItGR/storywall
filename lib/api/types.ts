@@ -22,6 +22,8 @@ export type ModuleKeyConvention = (typeof EVENT_MODULE_KEYS)[number];
 // + matching DTO validation) — not a free-string convention like the others.
 export type PostType = 'TEXT' | 'MEDIA' | 'ANNOUNCEMENT' | 'PLAYLIST';
 export type MediaTypeConvention = 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT';
+export type MediaUploadContext = 'GALLERY' | 'STORY';
+export type MediaStatus = 'PROCESSING' | 'READY' | 'FAILED';
 export type MediaArchiveVariant = 'DISPLAY' | 'ORIGINAL';
 export type PlanScope = 'ACCOUNT' | 'EVENT';
 export type BillingPeriod = 'MONTHLY' | 'YEARLY' | 'ONE_TIME';
@@ -40,6 +42,8 @@ export interface AppMediaConfigDto {
     maxRequestSizeBytes: number;
     maxImageBytes: number;
     maxVideoBytes: number;
+    maxStoryVideoBytes: number;
+    maxStoryVideoDurationSeconds: number;
     maxBatchUploadFiles: number;
     maxBatchStoryItems: number;
     maxMediaPerPost: number;
@@ -961,6 +965,8 @@ export interface MediaResponseDto {
     uploaderMemberId: string | null;
     storageKey: string;
     mediaUrl: string;
+    status: MediaStatus;
+    thumbnailUrl: string | null;
     originalFilename: string;
     mimeType: string;
     mediaType: MediaTypeConvention;

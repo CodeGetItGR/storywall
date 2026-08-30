@@ -432,11 +432,21 @@ interface RsvpSessionResponsResponseDto {
 // Media domain
 // ---------------------------------------------------------------------------
 
-/** No request DTO — created only via the multipart upload endpoint (§ Media upload). */
+/**
+ * No request DTO — created only via the multipart upload endpoint (§ Media upload).
+ *
+ * `POST /api/events/{eventId}/media` and `.../media/batch` both take an additional
+ * `context` form field — `'GALLERY' | 'STORY'` (default `'GALLERY'` if omitted). A video
+ * uploaded with `context: 'STORY'` is checked against the tighter `maxStoryVideoBytes` /
+ * `maxStoryVideoDurationSeconds` caps (see `AppMediaConfigDto`) instead of `maxVideoBytes` —
+ * pass it whenever the upload is destined for a story, even from a generic "add media" picker.
+ */
 interface MediaResponseDto {
   id: string; eventId: string; uploaderMemberId: string | null;
   storageKey: string;
   mediaUrl: string; // presigned, time-limited R2 GET URL — re-fetch on expiry, don't cache long-term
+  status: 'PROCESSING' | 'READY' | 'FAILED'; // added 2026-08-30 — see § Async video processing
+  thumbnailUrl: string | null; // added 2026-08-30 — presigned poster-frame URL; null for images and non-READY videos
   originalFilename: string; mimeType: string; mediaType: string; // mediaType free text: IMAGE | VIDEO | AUDIO | DOCUMENT by convention
   fileSize: number; width: number | null; height: number | null; durationSeconds: number | null;
   metadata: Record<string, unknown>;
@@ -444,6 +454,14 @@ interface MediaResponseDto {
 }
 // GET /api/events/{eventId}/media now returns Page<MediaResponseDto>, not MediaResponseDto[].
 // Default 30/page, max 100 (?page=&size=), sorted createdAt desc then id desc (newest first).
+//
+// `status` (added 2026-08-30): images are always 'READY' immediately. A video is 'PROCESSING'
+// on the very first response after upload — thumbnail extraction and re-encoding happen
+// asynchronously — then flips to 'READY' (both mediaUrl and thumbnailUrl now playable/viewable)
+// or 'FAILED' (permanently, if terminal — e.g. a story video over the duration cap; transient
+// failures are retried automatically server-side, invisible to the FE). Poll
+// GET /api/medias/{id} (or re-fetch the gallery page) until status leaves 'PROCESSING'. See
+// [`video-processing-fe-integration.md`](fe-guides/video-processing-fe-integration.md).
 
 /** Response of POST /api/events/{eventId}/media/batch — always 200, even if every file failed. */
 interface MediaBatchUploadResponseDto {
@@ -578,6 +596,12 @@ interface StoryRequestDto {
   caption?: string; songUrl?: string;
   expiresAt?: string; // optional — defaults to createdAt + 24h server-side
 }
+// mediaId must resolve to Media with status: 'READY' — added 2026-08-30, see § Async video
+// processing. A video mediaId still 'PROCESSING' or permanently 'FAILED' is rejected with
+// 400/errorCode 3026 MEDIA_NOT_READY (single-create POST /api/stories: whole-request 400; batch
+// POST /api/stories/batch: isolated per item into failed[], same as an unresolvable mediaId).
+// Don't offer a just-uploaded video in the "post as story" picker until its MediaResponseDto
+// status flips to 'READY' — poll GET /api/medias/{id} rather than letting the user hit this.
 interface StoryResponseDto {
   id: string; eventId: string; authorMemberId: string | null; mediaId: string;
   caption: string | null; songUrl: string | null; expiresAt: string;
@@ -744,6 +768,10 @@ type ModuleKey = 'posts' | 'rsvp' | 'playlist' | 'stories' | 'gallery' | 'wishli
 interface AppMediaConfigDto {
   maxFileSizeBytes: number;
   maxRequestSizeBytes: number;
+  maxImageBytes: number;         // per-kind cap, enforced after server-side format detection
+  maxVideoBytes: number;         // per-kind cap, enforced after server-side format detection
+  maxStoryVideoBytes: number;    // added 2026-08-30 — tighter cap applied when upload context is 'STORY'
+  maxStoryVideoDurationSeconds: number; // added 2026-08-30 — a longer story video FAILS terminally instead of processing
   maxBatchUploadFiles: number;
   maxBatchStoryItems: number; // added 2026-08-29 — item cap on POST /api/stories/batch (default 5)
   maxMediaPerPost: number;

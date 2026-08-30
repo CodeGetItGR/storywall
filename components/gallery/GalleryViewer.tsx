@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, Download, Loader2, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, Loader2, VideoOff, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -195,7 +195,17 @@ export function GalleryViewer({
                     onPointerUp={handleSwipeEnd}
                     onPointerCancel={handleSwipeCancel}
                 >
-                    {media.mediaType === 'VIDEO' ? (
+                    {media.mediaType === 'VIDEO' && media.status === 'PROCESSING' ? (
+                        <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-sm font-semibold text-white/75">
+                            <Loader2 className="h-7 w-7 animate-spin" aria-hidden="true" />
+                            <p>{t('videoProcessing')}</p>
+                        </div>
+                    ) : media.mediaType === 'VIDEO' && media.status === 'FAILED' ? (
+                        <div className="flex h-full w-full flex-col items-center justify-center gap-3 px-8 text-center text-sm font-semibold text-white/75">
+                            <VideoOff className="h-7 w-7" aria-hidden="true" />
+                            <p>{t('videoFailed')}</p>
+                        </div>
+                    ) : media.mediaType === 'VIDEO' ? (
                         <video src={media.mediaUrl} controls playsInline className="h-full w-full object-contain" />
                     ) : (
                         <ProtectedImage src={media.mediaUrl} alt={media.originalFilename} fill sizes="100vw" className="object-contain" />

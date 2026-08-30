@@ -5,12 +5,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
-import { useDeleteMedia, useUploadMedia, useUploadMediaBatch } from '@/hooks/useMedia';
+import { pollMediaUntilProcessed, useDeleteMedia, useUploadMedia, useUploadMediaBatch } from '@/hooks/useMedia';
 import { useCreateStoriesBatch } from '@/hooks/useStories';
-import type { MediaBatchUploadResponseDto } from '@/lib/api/types';
+import type { MediaBatchUploadResponseDto, MediaResponseDto } from '@/lib/api/types';
 import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
 
-export type PendingStoryStatus = 'ready' | 'uploading' | 'uploaded' | 'posting' | 'failed';
+export type PendingStoryStatus = 'ready' | 'uploading' | 'processing' | 'uploaded' | 'posting' | 'failed';
 
 export interface PendingStory {
     key: string;
@@ -54,6 +54,25 @@ export interface StoryComposerController {
     submit: (event: React.SubmitEvent<HTMLFormElement>) => Promise<void>;
 }
 
+function getVideoDurationSeconds(file: File): Promise<number | null> {
+    return new Promise((resolve) => {
+        const url = URL.createObjectURL(file);
+        const video = document.createElement('video');
+
+        function cleanup(value: number | null) {
+            URL.revokeObjectURL(url);
+            video.removeAttribute('src');
+            video.load();
+            resolve(value);
+        }
+
+        video.preload = 'metadata';
+        video.onloadedmetadata = () => cleanup(Number.isFinite(video.duration) ? video.duration : null);
+        video.onerror = () => cleanup(null);
+        video.src = url;
+    });
+}
+
 function mapBatchUploads(items: PendingStory[], result: MediaBatchUploadResponseDto): PendingStory[] {
     const createdByName = new Map<string, typeof result.created>();
     result.created.forEach((media) => createdByName.set(media.originalFilename, [...(createdByName.get(media.originalFilename) ?? []), media]));
@@ -66,8 +85,21 @@ function mapBatchUploads(items: PendingStory[], result: MediaBatchUploadResponse
         const failure = failedByName.get(item.file.name)?.shift();
         if (failure) return { ...item, status: 'failed', error: failure.message };
         const media = createdByName.get(item.file.name)?.shift();
-        return media ? { ...item, mediaId: media.id, status: 'uploaded', error: undefined } : item;
+        if (!media) return item;
+        return { ...item, mediaId: media.id, remoteUrl: media.mediaUrl, status: media.status === 'PROCESSING' ? 'processing' : 'uploaded', error: undefined };
     });
+}
+
+async function waitForStoryVideos(items: PendingStory[]): Promise<PendingStory[]> {
+    const resolved = await Promise.all(
+        items.map(async (item) => {
+            if (!item.mediaId || !item.file.type.startsWith('video/') || item.status === 'failed') return item;
+            const media: MediaResponseDto = await pollMediaUntilProcessed(item.mediaId);
+            if (media.status === 'FAILED') return { ...item, status: 'failed' as const, error: undefined };
+            return { ...item, status: 'uploaded' as const, remoteUrl: media.mediaUrl, error: undefined };
+        })
+    );
+    return resolved;
 }
 
 export function useStoryComposerController(canCompose: boolean): StoryComposerController {
@@ -93,9 +125,10 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
     const maxItems = Math.min(appConfig?.media.maxBatchStoryItems ?? 5, appConfig?.media.maxBatchUploadFiles ?? 10);
     const maxCaptionLength = appConfig?.contentLimits.storyCaptionMaxLength ?? 300;
     const maxImageBytes = appConfig?.media.maxImageBytes ?? 25 * 1024 * 1024;
-    const maxVideoBytes = appConfig?.media.maxVideoBytes ?? 200 * 1024 * 1024;
+    const maxStoryVideoBytes = appConfig?.media.maxStoryVideoBytes ?? 50 * 1024 * 1024;
+    const maxStoryVideoDurationSeconds = appConfig?.media.maxStoryVideoDurationSeconds ?? 60;
     const maxRequestSizeBytes = appConfig?.media.maxRequestSizeBytes ?? 260 * 1024 * 1024;
-    const isBusy = uploadBatch.isPending || createStories.isPending;
+    const isBusy = uploadSingle.isPending || uploadBatch.isPending || createStories.isPending;
     const activeItem = items.find((item) => item.key === activeKey) ?? items[0] ?? null;
 
     useEffect(() => {
@@ -138,7 +171,7 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
         setIsOpen(false);
     }
 
-    function addFiles(fileList: FileList | File[] | null) {
+    async function addFiles(fileList: FileList | File[] | null) {
         if (!fileList?.length || !canCompose) return;
         setError(null);
         setNotice(null);
@@ -148,18 +181,28 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
         let acceptedBytes = 0;
         const accepted: File[] = [];
         let rejectedForSize = false;
+        let rejectedForDuration = false;
 
         for (const file of Array.from(fileList).slice(0, Math.max(room, 0))) {
-            const fileLimit = file.type.startsWith('video/') ? maxVideoBytes : maxImageBytes;
+            const isVideo = file.type.startsWith('video/');
+            const fileLimit = isVideo ? maxStoryVideoBytes : maxImageBytes;
             if (file.size > fileLimit || currentBytes + acceptedBytes + file.size > maxRequestSizeBytes) {
                 rejectedForSize = true;
                 continue;
+            }
+            if (isVideo) {
+                const durationSeconds = await getVideoDurationSeconds(file);
+                if (durationSeconds !== null && durationSeconds > maxStoryVideoDurationSeconds) {
+                    rejectedForDuration = true;
+                    continue;
+                }
             }
             accepted.push(file);
             acceptedBytes += file.size;
         }
 
         if (fileList.length > room) setError(t('maxItems', { count: maxItems }));
+        else if (rejectedForDuration) setError(t('videoTooLong', { seconds: maxStoryVideoDurationSeconds }));
         else if (rejectedForSize) setError(t('filesTooLarge'));
 
         if (accepted.length === 0) return;
@@ -181,14 +224,45 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
             for (const item of next) {
                 if (!item.file.type.startsWith('video/')) continue;
                 uploadSingle.mutate(
-                    { eventId: activeEvent.id, file: item.file, uploaderMemberId: activeMember.id },
+                    { eventId: activeEvent.id, file: item.file, uploaderMemberId: activeMember.id, context: 'STORY' },
                     {
                         onSuccess: (media) => {
                             setItems((current) =>
                                 current.map((existing) =>
-                                    existing.key === item.key ? { ...existing, mediaId: media.id, remoteUrl: media.mediaUrl } : existing
+                                    existing.key === item.key
+                                        ? {
+                                              ...existing,
+                                              mediaId: media.id,
+                                              remoteUrl: media.mediaUrl,
+                                              status: media.status === 'PROCESSING' ? 'processing' : 'uploaded',
+                                          }
+                                        : existing
                                 )
                             );
+                            if (media.status === 'PROCESSING') {
+                                pollMediaUntilProcessed(media.id)
+                                    .then((processed) => {
+                                        setItems((current) =>
+                                            current.map((existing) =>
+                                                existing.key === item.key
+                                                    ? {
+                                                          ...existing,
+                                                          remoteUrl: processed.mediaUrl,
+                                                          status: processed.status === 'FAILED' ? 'failed' : 'uploaded',
+                                                          error: processed.status === 'FAILED' ? t('processingFailed') : existing.error,
+                                                      }
+                                                    : existing
+                                            )
+                                        );
+                                    })
+                                    .catch(() => {
+                                        setItems((current) =>
+                                            current.map((existing) =>
+                                                existing.key === item.key ? { ...existing, status: 'failed', error: t('processingFailed') } : existing
+                                            )
+                                        );
+                                    });
+                            }
                         },
                     }
                 );
@@ -226,7 +300,7 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
 
         let working: PendingStory[] = items.map((item) => ({
             ...item,
-            status: item.mediaId ? 'uploaded' : 'uploading',
+            status: item.mediaId ? item.status : 'uploading',
             error: undefined,
         }));
         setItems(working);
@@ -238,6 +312,7 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
                     eventId: activeEvent.id,
                     files: toUpload.map((item) => item.file),
                     uploaderMemberId: activeMember.id,
+                    context: 'STORY',
                 });
                 working = mapBatchUploads(working, result);
                 setItems(working);
@@ -249,7 +324,15 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
             }
         }
 
-        const readyToPost = working.filter((item) => item.mediaId && item.status !== 'failed');
+        const processing = working.filter((item) => item.status === 'processing');
+        if (processing.length > 0) {
+            setItems((current) => current.map((item) => (processing.some((candidate) => candidate.key === item.key) ? { ...item, status: 'processing' } : item)));
+            working = await waitForStoryVideos(working);
+            working = working.map((item) => (item.status === 'failed' && item.error === undefined ? { ...item, error: t('processingFailed') } : item));
+            setItems(working);
+        }
+
+        const readyToPost = working.filter((item) => item.mediaId && item.status === 'uploaded');
         if (readyToPost.length === 0) return;
         setItems((current) =>
             current.map((item) => (readyToPost.some((candidate) => candidate.key === item.key) ? { ...item, status: 'posting' } : item))
@@ -311,7 +394,9 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
         handleLibraryChange: handleInputChange,
         handlePhotoChange: handleInputChange,
         handleVideoChange: handleInputChange,
-        addCapturedFile: (file) => addFiles([file]),
+        addCapturedFile: (file) => {
+            void addFiles([file]);
+        },
         selectItem: setActiveKey,
         removeItem,
         updateCaption: (value) => updateActive({ caption: value.slice(0, maxCaptionLength) }),

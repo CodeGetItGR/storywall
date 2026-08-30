@@ -1,7 +1,7 @@
 'use client';
 
 import useEmblaCarousel from 'embla-carousel-react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2, VideoOff } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -62,7 +62,17 @@ export function PostMediaCarousel({ media, initialIndex, onIndexChange, alt, cla
                 <div className="flex h-full">
                     {media.map((item, index) => (
                         <div key={item.id} className="relative shrink-0 grow-0 basis-full h-full">
-                            {item.mediaType === 'VIDEO' ? (
+                            {item.mediaType === 'VIDEO' && item.status === 'PROCESSING' ? (
+                                <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-sm font-semibold text-white/75">
+                                    <Loader2 className="h-7 w-7 animate-spin" aria-hidden="true" />
+                                    <p>{t('videoProcessing')}</p>
+                                </div>
+                            ) : item.mediaType === 'VIDEO' && item.status === 'FAILED' ? (
+                                <div className="flex h-full w-full flex-col items-center justify-center gap-3 px-8 text-center text-sm font-semibold text-white/75">
+                                    <VideoOff className="h-7 w-7" aria-hidden="true" />
+                                    <p>{t('videoFailed')}</p>
+                                </div>
+                            ) : item.mediaType === 'VIDEO' ? (
                                 <video
                                     src={item.mediaUrl}
                                     controls

@@ -56,6 +56,11 @@ below.
 replacing the old hardcoded `LIKE`/`LAUGH` constant. See
 [`reaction-types-catalog-fe-integration.md`](reaction-types-catalog-fe-integration.md).
 
+**2026-08-30:** `media` gained `maxStoryVideoBytes` / `maxStoryVideoDurationSeconds`, the two
+caps that apply only to a video uploaded with `context: "STORY"` — smaller than the general
+`maxVideoBytes` and, for duration, a limit that doesn't exist anywhere else. See
+[`video-processing-fe-integration.md`](video-processing-fe-integration.md).
+
 ## GET /api/config
 
 Public — no `Authorization` header needed, safe to call before login (e.g. to gate the login
@@ -70,6 +75,8 @@ interface AppConfigResponseDto {
     maxRequestSizeBytes: number;
     maxImageBytes: number;         // per-kind cap, enforced after server-side format detection
     maxVideoBytes: number;         // per-kind cap, enforced after server-side format detection
+    maxStoryVideoBytes: number;            // added 2026-08-30 — see below
+    maxStoryVideoDurationSeconds: number;  // added 2026-08-30 — see below
     maxBatchUploadFiles: number;
     maxBatchStoryItems: number;    // added 2026-08-29 — see below
     maxMediaPerPost: number;
@@ -123,6 +130,13 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
   real limit regardless. Note there is a second, *dimensional* image limit (50 megapixels) that is
   deliberately not surfaced here — it only fires on synthetic or extreme-panorama input and is
   reported as `MEDIA_IMAGE_TOO_MANY_PIXELS` (3016) at upload time.
+- **`media.maxStoryVideoBytes` / `maxStoryVideoDurationSeconds`** (50MB / 60s as of 2026-08-30) —
+  tighter caps that apply only when an upload's `context` form field is `"STORY"`. The byte cap is
+  enforced synchronously at upload time (`413`/`3013`, same as `maxVideoBytes`); the duration cap
+  is only known once the video is asynchronously probed, so it surfaces as the media row flipping
+  to a terminal `status: "FAILED"` rather than an upload-time error. See
+  [`video-processing-fe-integration.md`](video-processing-fe-integration.md) for the full async
+  processing flow these two caps are part of.
 - **`media.maxMediaPerPost`** — same idea for the post composer's "max 10 images" guard.
 - **`media.maxBatchStoryItems`** (5 as of 2026-08-29) — the item-count cap on
   `POST /api/stories/batch` (see

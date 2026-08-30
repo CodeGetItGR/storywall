@@ -94,6 +94,8 @@ export function GalleryMediaGrid({
                                         <MediaThumbnail
                                             src={item.mediaUrl}
                                             mediaType={item.mediaType}
+                                            status={item.status}
+                                            thumbnailUrl={item.thumbnailUrl}
                                             alt={item.originalFilename}
                                             fill
                                             sizes="(min-width: 1024px) 25vw, 50vw"

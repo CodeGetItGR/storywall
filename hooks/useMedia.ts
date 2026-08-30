@@ -3,7 +3,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tansta
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
-import type { MediaBatchUploadResponseDto, MediaResponseDto, OriginalMediaUrlDto } from '@/lib/api/types';
+import type { MediaBatchUploadResponseDto, MediaResponseDto, MediaUploadContext, OriginalMediaUrlDto } from '@/lib/api/types';
 
 export const mediaKeys = {
     list: (eventId: string) => ['events', eventId, 'media'] as const,
@@ -37,6 +37,7 @@ interface UploadMediaInput {
     eventId: string;
     file: File;
     uploaderMemberId?: string;
+    context?: MediaUploadContext;
 }
 
 // POST /api/events/{eventId}/media (multipart/form-data) — streams straight
@@ -46,9 +47,10 @@ export function useUploadMedia() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ eventId, file, uploaderMemberId }: UploadMediaInput) => {
+        mutationFn: ({ eventId, file, uploaderMemberId, context = 'GALLERY' }: UploadMediaInput) => {
             const formData = new FormData();
             formData.append('file', file);
+            formData.append('context', context);
             if (uploaderMemberId) formData.append('uploaderMemberId', uploaderMemberId);
             return api.postForm<MediaResponseDto>(endpoints.events.media(eventId), formData);
         },
@@ -62,6 +64,7 @@ interface UploadMediaBatchInput {
     eventId: string;
     files: File[];
     uploaderMemberId?: string;
+    context?: MediaUploadContext;
 }
 
 // POST /api/events/{eventId}/media/batch (multipart/form-data, repeated
@@ -73,9 +76,10 @@ export function useUploadMediaBatch() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ eventId, files, uploaderMemberId }: UploadMediaBatchInput) => {
+        mutationFn: ({ eventId, files, uploaderMemberId, context = 'GALLERY' }: UploadMediaBatchInput) => {
             const formData = new FormData();
             files.forEach((file) => formData.append('files', file));
+            formData.append('context', context);
             if (uploaderMemberId) formData.append('uploaderMemberId', uploaderMemberId);
             return api.postForm<MediaBatchUploadResponseDto>(endpoints.events.mediaBatch(eventId), formData);
         },
@@ -85,6 +89,32 @@ export function useUploadMediaBatch() {
             }
         },
     });
+}
+
+export async function pollMediaUntilProcessed(id: string): Promise<MediaResponseDto> {
+    const maxAttempts = 30;
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+        const media = await api.get<MediaResponseDto>(endpoints.medias.byId(id));
+        console.debug('[media-poll]', {
+            id,
+            attempt: attempt + 1,
+            status: media.status,
+            mediaUrl: media.mediaUrl,
+            thumbnailUrl: media.thumbnailUrl,
+        });
+        if (media.status !== 'PROCESSING') return media;
+        await new Promise((resolve) => window.setTimeout(resolve, 2000));
+    }
+    const media = await api.get<MediaResponseDto>(endpoints.medias.byId(id));
+    console.debug('[media-poll]', {
+        id,
+        attempt: maxAttempts + 1,
+        status: media.status,
+        mediaUrl: media.mediaUrl,
+        thumbnailUrl: media.thumbnailUrl,
+        timedOut: media.status === 'PROCESSING',
+    });
+    return media;
 }
 
 export function useOriginalMedia() {

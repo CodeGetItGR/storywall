@@ -257,7 +257,10 @@
         "startRecording": "Start recording",
         "stopRecording": "Stop recording",
         "switchCamera": "Switch camera",
-        "preparingPreview": "Preparing preview…"
+        "preparingPreview": "Preparing preview…",
+        "processingVideo": "Processing video…",
+        "processingFailed": "This video couldn't be processed.",
+        "videoTooLong": "Choose a video under {seconds}s."
     },
     "EventLifecycleBanner": {
         "DRAFT": {
@@ -658,6 +661,8 @@
         "loadingMore": "Loading more…",
         "previousMedia": "Previous",
         "nextMedia": "Next",
+        "videoProcessing": "Processing video…",
+        "videoFailed": "This video couldn't be processed.",
         "showComments": "Show comments",
         "hideComments": "Hide comments"
     },
@@ -2571,7 +2576,13 @@
         "photoCount": "{count} photos",
         "emptyTitle": "No photos or videos yet",
         "guestSavedForHost": "Uploaded photos are saved privately to the event gallery for the host to review later.",
-        "loadingMore": "Loading more…"
+        "loadingMore": "Loading more…",
+        "videoProcessing": "Processing video…",
+        "videoFailed": "This video couldn't be processed."
+    },
+    "MediaThumbnail": {
+        "processing": "Processing video",
+        "failed": "Video unavailable"
     },
     "ApiErrors": {
         "generic": "Something went wrong. Please try again.",

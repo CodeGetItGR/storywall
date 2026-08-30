@@ -112,9 +112,10 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                     />
                                 )}
                                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/80" />
-                                {(activeItem.status === 'uploading' || activeItem.status === 'posting') && (
-                                    <div className="absolute inset-0 flex items-center justify-center bg-black/45">
+                                {(activeItem.status === 'uploading' || activeItem.status === 'processing' || activeItem.status === 'posting') && (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/45">
                                         <Loader2 className="h-7 w-7 animate-spin" />
+                                        {activeItem.status === 'processing' && <p className="text-xs font-semibold text-white/75">{t('processingVideo')}</p>}
                                     </div>
                                 )}
                             </div>
