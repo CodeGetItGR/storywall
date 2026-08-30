@@ -46,15 +46,28 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
     const markViewed = useMarkStoryViewed();
     const deleteStory = useDeleteStory(eventId ?? '');
 
-    // Reset the viewer state whenever the popup opens on a different story.
-    const [prevStoryState, setPrevStoryState] = useState({ open, storyId });
-    if (open && (storyId !== prevStoryState.storyId || open !== prevStoryState.open)) {
-        setPrevStoryState({ open, storyId });
-        setActiveStoryId(storyId);
-        setProgress(0);
-        setShowMenu(false);
-        setShowDeleteConfirm(false);
-        setShowViewers(false);
+    // Reset the viewer state whenever the popup opens or advances to a different story.
+    const [prevStoryState, setPrevStoryState] = useState({ open, storyId, currentStoryId });
+    if (open !== prevStoryState.open || storyId !== prevStoryState.storyId || currentStoryId !== prevStoryState.currentStoryId) {
+        setPrevStoryState({ open, storyId, currentStoryId });
+        if (!open) {
+            setActiveStoryId(null);
+            setProgress(0);
+            setShowMenu(false);
+            setShowDeleteConfirm(false);
+            setShowViewers(false);
+        } else if (storyId !== prevStoryState.storyId || open !== prevStoryState.open) {
+            setActiveStoryId(storyId);
+            setProgress(0);
+            setShowMenu(false);
+            setShowDeleteConfirm(false);
+            setShowViewers(false);
+        } else {
+            setProgress(0);
+            setShowMenu(false);
+            setShowDeleteConfirm(false);
+            setShowViewers(false);
+        }
     }
 
     const groups = useMemo(() => groupStoriesByAuthor(allStories, { filterExpired: false }), [allStories]);

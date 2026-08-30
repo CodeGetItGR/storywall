@@ -22,12 +22,10 @@ export function StoryAvatar({ group, member, onOpenStoryAction, isCurrentUser }:
     const t = useTranslations('StoryAvatar');
     const { openStoryCapture, canComposeStory, isCreatingStory } = useComposer();
     const firstStoryId = group.stories[0].id;
-    const latestStoryId = group.stories[group.stories.length - 1].id;
-    const storyToOpenId = isCurrentUser ? latestStoryId : firstStoryId;
 
     const handleOpenStory = useCallback(() => {
-        onOpenStoryAction(storyToOpenId);
-    }, [onOpenStoryAction, storyToOpenId]);
+        onOpenStoryAction(firstStoryId);
+    }, [firstStoryId, onOpenStoryAction]);
 
     const handleOpenComposeStory = useCallback(
         (event: MouseEvent<HTMLButtonElement>) => {
