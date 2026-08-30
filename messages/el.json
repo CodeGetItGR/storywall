@@ -1107,7 +1107,9 @@
             "reports": "Αναφορές"
         },
         "rsvpStats": {
-            "daysToGo": "{count, plural, one {# ημέρα μέχρι την εκδήλωση} other {# ημέρες μέχρι την εκδήλωση}}",
+            "daysToGo": "{count, plural, one {# ημέρα απομένει} other {# ημέρες απομένουν}}",
+            "deadlineLabel": "Προθεσμία RSVP",
+            "eventDateLabel": "Ημερομηνία εκδήλωσης",
             "responses": "Απαντήσεις",
             "totalPeople": "Σύνολο ατόμων",
             "adults": "Ενήλικες",

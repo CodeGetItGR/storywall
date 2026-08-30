@@ -1,20 +1,24 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { CalendarClock } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { MetricStrip } from '@/components/ui/MetricStrip';
+import { formatDate, getDaysUntil } from '@/lib/datetime';
 
 const categories = ['ATTENDING', 'DECLINED'] as const;
 
 export function RsvpStatsPanel({
-    daysToGo,
+    countdownTarget,
+    isRsvpDeadline,
     responseCount,
     seatsClaimed,
     adultsTotal,
     kidsTotal,
     peopleByStatus,
 }: {
-    daysToGo: number;
+    countdownTarget: string;
+    isRsvpDeadline: boolean;
     responseCount: number;
     seatsClaimed: number;
     adultsTotal: number;
@@ -22,11 +26,27 @@ export function RsvpStatsPanel({
     peopleByStatus: Record<'ATTENDING' | 'DECLINED', number>;
 }) {
     const t = useTranslations('ManagePage');
+    const locale = useLocale();
     const peopleTotal = peopleByStatus.ATTENDING + peopleByStatus.DECLINED;
+    const daysToGo = getDaysUntil(countdownTarget) ?? 0;
+    const formattedTargetDate = formatDate(locale, countdownTarget, { day: 'numeric', month: 'long', year: 'numeric' });
 
     return (
-        <div className="flex flex-col gap-5">
-            <p className="text-sm text-ink-muted">{t('rsvpStats.daysToGo', { count: daysToGo })}</p>
+        <div className="flex flex-col gap-8">
+            {/* Countdown */}
+            <div className="flex items-center gap-3 bg-background">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <CalendarClock className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <div className="min-w-0">
+                    <p className="text-xs font-bold uppercase tracking-wide text-ink-faint">
+                        {t(isRsvpDeadline ? 'rsvpStats.deadlineLabel' : 'rsvpStats.eventDateLabel')}
+                    </p>
+                    <p className="truncate text-sm font-semibold text-ink">
+                        {t('rsvpStats.daysToGo', { count: daysToGo })} · {formattedTargetDate}
+                    </p>
+                </div>
+            </div>
 
             {/* Headline numbers */}
             <MetricStrip

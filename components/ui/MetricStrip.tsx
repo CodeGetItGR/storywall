@@ -27,7 +27,7 @@ export function MetricStrip({ items, className }: { items: Metric[]; className?:
     return (
         <dl
             className={cn(
-                'grid gap-px overflow-hidden rounded-2xl border border-border bg-border',
+                'grid gap-px overflow-hidden rounded-md border border-border bg-border',
                 columnClass[items.length] ?? 'grid-cols-2 sm:grid-cols-4',
                 className
             )}

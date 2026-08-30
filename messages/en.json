@@ -1107,7 +1107,9 @@
             "reports": "Reports"
         },
         "rsvpStats": {
-            "daysToGo": "{count, plural, one {# day until the event} other {# days until the event}}",
+            "daysToGo": "{count, plural, one {# day left} other {# days left}}",
+            "deadlineLabel": "RSVP deadline",
+            "eventDateLabel": "Event date",
             "responses": "Responses",
             "totalPeople": "Total people",
             "adults": "Adults",

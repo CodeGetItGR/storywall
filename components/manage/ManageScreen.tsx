@@ -116,7 +116,13 @@ export function ManageScreen() {
                 (rsvpTabLoading ? (
                     <LoadingState size="md" className="min-h-64" />
                 ) : (
-                    <RsvpTab eventId={eventId} members={members} rsvps={rsvps} daysToGo={daysToGo} />
+                    <RsvpTab
+                        eventId={eventId}
+                        members={members}
+                        rsvps={rsvps}
+                        startAt={activeEvent.schedule.startAt}
+                        rsvpDeadline={activeEvent.schedule.rsvpDeadline}
+                    />
                 ))}
 
             {section === 'invitations' &&

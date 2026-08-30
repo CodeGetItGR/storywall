@@ -101,6 +101,15 @@ export function isDatetimeLocalAfter(left: string | null | undefined, right: str
     return leftDate.getTime() > rightDate.getTime();
 }
 
+export function getDaysUntil(value: string | number | Date | null | undefined, referenceDate = new Date()): number | null {
+    if (value === null || value === undefined) return null;
+
+    const date = parseDate(value);
+    if (!date) return null;
+
+    return Math.max(0, Math.ceil((date.getTime() - referenceDate.getTime()) / (1000 * 60 * 60 * 24)));
+}
+
 export function formatDate(locale: string | undefined, value: string | number | Date, options: Intl.DateTimeFormatOptions): string {
     const date = parseDate(value);
     if (!date) return '';
