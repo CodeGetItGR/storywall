@@ -22,9 +22,10 @@ import {
 } from '@/lib/datetime';
 import { getEventEndPresets } from '@/lib/eventEndPresets';
 import { COVER_PHOTO_SECTION_ID } from '@/lib/manageSectionTargets';
+import { cn } from '@/lib/utils';
 
 const inputClass =
-    'bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition disabled:cursor-not-allowed disabled:opacity-60';
+    'w-full bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition disabled:cursor-not-allowed disabled:opacity-60';
 const labelClass = 'text-xs font-semibold text-ink-muted uppercase tracking-wide';
 const settingsFormId = 'event-settings-form';
 
@@ -64,6 +65,7 @@ export default function SettingsTab({
 
     const [coverPreview, setCoverPreview] = useState<string | null>(event.coverMedia?.mediaUrl ?? null);
     const [pendingCoverMediaId, setPendingCoverMediaId] = useState<string | null>(null);
+    const [savedValues, setSavedValues] = useState(initial);
     const [saved, setSaved] = useState(false);
     const fileRef = useRef<HTMLInputElement>(null);
     const coverObjectUrlRef = useRef<string | null>(null);
@@ -82,6 +84,16 @@ export default function SettingsTab({
               ? t('settings.validation.endBeforeStart')
               : null;
     const maxDescriptionLength = appConfig?.contentLimits.eventDescriptionMaxLength ?? 2000;
+    const hasChanges =
+        title.trim() !== savedValues.title ||
+        description.trim() !== savedValues.description ||
+        locationName.trim() !== savedValues.locationName ||
+        locationAddress.trim() !== savedValues.locationAddress ||
+        mapsUrl.trim() !== savedValues.mapsUrl ||
+        Boolean(rsvpDeadline && rsvpDeadline !== savedValues.rsvpDeadline) ||
+        Boolean(!eventHasStarted && startAt && startAt !== savedValues.startAt) ||
+        Boolean(endAt && endAt !== savedValues.endAt) ||
+        Boolean(pendingCoverMediaId);
 
     useEffect(() => {
         return () => {
@@ -164,14 +176,14 @@ export default function SettingsTab({
         setSaved(false);
 
         const patch: EventPatchDto = {};
-        if (title.trim() !== initial.title) patch.title = title.trim();
-        if (description.trim() !== initial.description) patch.description = description.trim();
-        if (locationName.trim() !== initial.locationName) patch.locationName = locationName.trim();
-        if (locationAddress.trim() !== initial.locationAddress) patch.locationAddress = locationAddress.trim();
-        if (mapsUrl.trim() !== initial.mapsUrl) patch.mapsUrl = mapsUrl.trim();
-        if (rsvpDeadline && rsvpDeadline !== initial.rsvpDeadline) patch.rsvpDeadline = new Date(rsvpDeadline).toISOString();
-        if (!eventHasStarted && startAt && startAt !== initial.startAt) patch.startAt = new Date(startAt).toISOString();
-        if (endAt && endAt !== initial.endAt) patch.endAt = new Date(endAt).toISOString();
+        if (title.trim() !== savedValues.title) patch.title = title.trim();
+        if (description.trim() !== savedValues.description) patch.description = description.trim();
+        if (locationName.trim() !== savedValues.locationName) patch.locationName = locationName.trim();
+        if (locationAddress.trim() !== savedValues.locationAddress) patch.locationAddress = locationAddress.trim();
+        if (mapsUrl.trim() !== savedValues.mapsUrl) patch.mapsUrl = mapsUrl.trim();
+        if (rsvpDeadline && rsvpDeadline !== savedValues.rsvpDeadline) patch.rsvpDeadline = new Date(rsvpDeadline).toISOString();
+        if (!eventHasStarted && startAt && startAt !== savedValues.startAt) patch.startAt = new Date(startAt).toISOString();
+        if (endAt && endAt !== savedValues.endAt) patch.endAt = new Date(endAt).toISOString();
         if (pendingCoverMediaId) patch.coverMediaId = pendingCoverMediaId;
 
         if (Object.keys(patch).length === 0) return;
@@ -179,6 +191,16 @@ export default function SettingsTab({
         try {
             await updateEvent.mutateAsync(patch);
             setPendingCoverMediaId(null);
+            setSavedValues({
+                title: title.trim(),
+                description: description.trim(),
+                locationName: locationName.trim(),
+                locationAddress: locationAddress.trim(),
+                mapsUrl: mapsUrl.trim(),
+                rsvpDeadline,
+                startAt,
+                endAt,
+            });
             setSaved(true);
         } catch {
             // error surfaced inline below
@@ -197,25 +219,7 @@ export default function SettingsTab({
                 <p className="mb-5 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('settings.readOnly')}</p>
             )}
 
-            {/* Actions */}
-            <div className="sticky top-32 z-10 -mx-1 mb-5 flex items-center justify-center gap-3 px-1 py-2 lg:top-4">
-                <button
-                    type="submit"
-                    form={settingsFormId}
-                    disabled={disabled || isSaving || isUploading || !title.trim() || !startAt || Boolean(scheduleError)}
-                    className="flex min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-brand px-5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                    {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : t('settings.save')}
-                </button>
-                {saved && !isSaving && (
-                    <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600">
-                        <Check className="h-3.5 w-3.5" />
-                        {t('settings.saved')}
-                    </span>
-                )}
-            </div>
-
-            <form id={settingsFormId} onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <form id={settingsFormId} onSubmit={handleSubmit} className="flex flex-col gap-4 pb-20 lg:pb-0">
                 {/* Cover photo */}
                 <div>
                     <span className={labelClass}>{t('settings.coverPhoto.label')}</span>
@@ -377,6 +381,31 @@ export default function SettingsTab({
                 </FormFieldLabel>
 
                 {updateEvent.isError && !fieldErrors && <p className="text-xs text-rose-500">{toErrorMessage(updateEvent.error)}</p>}
+
+                {/* Actions */}
+                <div
+                    className={cn(
+                        'fixed right-4 bottom-20 z-30 flex items-center justify-end gap-3 lg:static lg:z-auto lg:mt-2 lg:flex',
+                        !hasChanges && !saved && 'hidden'
+                    )}
+                >
+                    {saved && !isSaving && (
+                        <span className="flex items-center gap-1 rounded-full bg-background/90 px-2.5 py-1.5 text-xs font-semibold text-emerald-600 shadow-sm lg:bg-transparent lg:px-0 lg:py-0 lg:shadow-none">
+                            <Check className="h-3.5 w-3.5" />
+                            {t('settings.saved')}
+                        </span>
+                    )}
+                    <button
+                        type="submit"
+                        disabled={disabled || isSaving || isUploading || !hasChanges || !title.trim() || !startAt || Boolean(scheduleError)}
+                        className={cn(
+                            'min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-brand px-5 text-sm font-semibold text-white shadow-lg transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 lg:flex lg:shadow-none',
+                            hasChanges ? 'flex' : 'hidden'
+                        )}
+                    >
+                        {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : t('settings.save')}
+                    </button>
+                </div>
             </form>
         </div>
     );
