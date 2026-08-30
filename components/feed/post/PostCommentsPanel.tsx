@@ -6,10 +6,10 @@ import type React from 'react';
 import { CommentCount } from '@/components/feed/post/CommentCount';
 import { PostCommentForm } from '@/components/feed/post/PostCommentForm';
 import { PostHeader } from '@/components/feed/post/PostHeader';
-import { ReactionCount } from '@/components/feed/post/ReactionCount';
+import { ReactionSummary } from '@/components/feed/post/ReactionSummary';
 import { Modal } from '@/components/ui/modal';
 import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
-import type { CommentResponseDto, EventMemberResponseDto, PostResponseDto } from '@/lib/api/types';
+import type { CommentResponseDto, EventMemberResponseDto, PostResponseDto, ReactionTypeResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
 import { CommentsList } from './CommentsList';
@@ -29,6 +29,7 @@ interface PostCommentsPanelProps {
     submitDisabled: boolean;
     inputDisabled?: boolean;
     maxCommentLength: number;
+    reactionTypes: ReactionTypeResponseDto[];
 }
 
 export function PostCommentsPanel({
@@ -46,6 +47,7 @@ export function PostCommentsPanel({
     submitDisabled,
     inputDisabled,
     maxCommentLength,
+    reactionTypes,
 }: PostCommentsPanelProps) {
     const t = useTranslations('PostModal');
     const loadMoreRef = useInfiniteScrollSentinel(hasMoreComments, onLoadMoreComments, comments.length);
@@ -55,7 +57,7 @@ export function PostCommentsPanel({
             <section className="border-b flex justify-between pb-2 px-3 shrink-0 pt-2">
                 <PostHeader post={post} timeAgo={timeAgo} />
                 <div className="flex gap-2">
-                    <ReactionCount count={post.reactionCount} />
+                    <ReactionSummary count={post.reactionCount} counts={post.reactionCounts} reactionTypes={reactionTypes} />
                     <CommentCount count={post.commentCount} />
                 </div>
             </section>

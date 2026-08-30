@@ -414,11 +414,20 @@
     will-change: opacity, transform;
 }
 
+.motion-reaction-picker[data-closing='true'] {
+    animation: reaction-picker-exit 190ms var(--motion-ease-exit) both;
+    pointer-events: none;
+}
+
 .motion-reaction-option {
     opacity: 0;
     transform: translate3d(0, 0.35rem, 0) scale(0.78);
     animation: reaction-option-enter 300ms var(--motion-ease-enter) both;
     will-change: opacity, transform;
+}
+
+.motion-reaction-picker[data-closing='true'] .motion-reaction-option {
+    animation: reaction-option-exit 160ms var(--motion-ease-exit) both;
 }
 
 .motion-reaction-option:nth-child(1) {
@@ -463,6 +472,21 @@
     }
 }
 
+@keyframes reaction-picker-exit {
+    0% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+    52% {
+        opacity: 1;
+        transform: translate3d(0, 0.12rem, 0) scale(1.05, 0.72);
+    }
+    100% {
+        opacity: 0;
+        transform: translate3d(0, 0.42rem, 0) scale(0.72, 0.42);
+    }
+}
+
 @keyframes reaction-selected-pop {
     0% {
         transform: scale(0.72) rotate(-8deg);
@@ -472,6 +496,17 @@
     }
     100% {
         transform: scale(1) rotate(0);
+    }
+}
+
+@keyframes reaction-option-exit {
+    from {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translate3d(0, 0.3rem, 0) scale(0.72);
     }
 }
 

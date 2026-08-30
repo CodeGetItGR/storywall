@@ -9,3 +9,4 @@ export * from './PostMediaViewer';
 export * from './PostReactionPicker';
 export * from './postUtils';
 export * from './ReactionCount';
+export * from './ReactionSummary';

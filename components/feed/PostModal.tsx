@@ -48,6 +48,7 @@ export function PostModal() {
     const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
     const canComment = Boolean(activeMember) && isEventWritable(activeEvent?.status);
     const maxCommentLength = appConfig?.contentLimits.commentContentMaxLength ?? 300;
+    const reactionTypes = post ? (appConfig?.reactionTypesByEventType[post.eventType ?? activeEvent?.eventType ?? ''] ?? []) : [];
 
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -85,6 +86,7 @@ export function PostModal() {
             submitDisabled={!commentText.trim() || createComment.isPending || !canComment}
             inputDisabled={!canComment}
             maxCommentLength={maxCommentLength}
+            reactionTypes={reactionTypes}
         />
     );
 
@@ -95,7 +97,7 @@ export function PostModal() {
             dismissOnBack={false}
             size="lg"
             closeLabel={t('close')}
-            closeButtonPosition={'left'}
+            closeButtonPosition="right"
             className="min-h-[70vh]"
         >
             {/* Comments header */}

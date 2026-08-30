@@ -1,9 +1,9 @@
 'use client';
 
-import { Heart, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
+import { ReactionSummary } from '@/components/feed/post/ReactionSummary';
 import { usePostLike } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { isModuleNotAvailableError } from '@/lib/api/errors';
@@ -18,75 +18,99 @@ interface PostReactionPickerProps {
 export function PostReactionPicker({ post, disabled = false }: PostReactionPickerProps) {
     const t = useTranslations('PostCard');
     const toErrorMessage = useApiErrorMessage();
-    const [open, setOpen] = useState(false);
+    const rootRef = useRef<HTMLDivElement>(null);
+    const closeTimerRef = useRef<number | null>(null);
+    const [menuVisible, setMenuVisible] = useState(false);
+    const [isClosing, setIsClosing] = useState(false);
     const reaction = usePostLike(post);
-    const activeEmoji = reaction.selectedOption?.emoji;
 
-    const topReactions = useMemo(
-        () =>
-            reaction.options
-                .map((option) => ({ ...option, count: reaction.counts[option.code] ?? 0 }))
-                .filter((option) => option.count > 0)
-                .slice(0, 3),
-        [reaction.counts, reaction.options]
-    );
+    const clearCloseTimer = useCallback(() => {
+        if (closeTimerRef.current === null) return;
+        window.clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = null;
+    }, []);
+
+    const openMenu = useCallback(() => {
+        clearCloseTimer();
+        setMenuVisible(true);
+        setIsClosing(false);
+    }, [clearCloseTimer]);
+
+    const closeMenu = useCallback(() => {
+        if (!menuVisible || isClosing) return;
+        clearCloseTimer();
+        setIsClosing(true);
+        closeTimerRef.current = window.setTimeout(() => {
+            setMenuVisible(false);
+            setIsClosing(false);
+            closeTimerRef.current = null;
+        }, 190);
+    }, [clearCloseTimer, isClosing, menuVisible]);
 
     function toggleOpen() {
         if (disabled || reaction.isPending || reaction.options.length === 0) return;
-        setOpen((value) => !value);
+        if (menuVisible) closeMenu();
+        else openMenu();
     }
 
     async function selectReaction(event: React.MouseEvent<HTMLButtonElement>) {
         const reactionType = event.currentTarget.dataset.reactionType;
         if (!reactionType) return;
-        setOpen(false);
+        closeMenu();
+        if (reactionType === reaction.selectedType) {
+            await reaction.clearReaction();
+            return;
+        }
         await reaction.selectReaction(reactionType);
     }
 
-    async function clearReaction() {
-        setOpen(false);
-        await reaction.clearReaction();
-    }
+    useEffect(() => {
+        if (!menuVisible) return;
+
+        function handlePointerDown(event: PointerEvent) {
+            if (rootRef.current?.contains(event.target as Node)) return;
+            closeMenu();
+        }
+
+        function handleKeyDown(event: KeyboardEvent) {
+            if (event.key === 'Escape') closeMenu();
+        }
+
+        document.addEventListener('pointerdown', handlePointerDown, true);
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('pointerdown', handlePointerDown, true);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [closeMenu, menuVisible]);
+
+    useEffect(() => clearCloseTimer, [clearCloseTimer]);
 
     return (
-        <div className="relative">
+        <div ref={rootRef} className="relative">
             <button
                 type="button"
                 onClick={toggleOpen}
                 disabled={disabled || reaction.isPending || reaction.options.length === 0}
                 aria-label={reaction.selectedType ? t('changeReaction') : t('reactToPost')}
-                aria-expanded={open}
+                aria-expanded={menuVisible && !isClosing}
                 aria-haspopup="menu"
                 className={cn(
-                    'flex min-h-10 items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition-[background-color,color,scale] active:scale-[0.97]',
-                    reaction.selectedType ? 'bg-primary-light text-primary' : 'text-ink-muted hover:bg-surface-muted',
-                    disabled && 'cursor-not-allowed opacity-60 hover:bg-transparent'
+                    'flex min-h-10 items-center rounded-full px-1.5 py-2 text-sm font-medium text-ink-muted transition-[color,scale] hover:text-ink active:scale-[0.97]',
+                    reaction.selectedType && 'text-ink',
+                    disabled && 'cursor-not-allowed opacity-60 hover:text-ink-muted'
                 )}
             >
-                {activeEmoji ? (
-                    <span key={reaction.selectedType} className="motion-reaction-selected text-lg leading-none" aria-hidden>
-                        {activeEmoji}
-                    </span>
-                ) : (
-                    <Heart className="h-5 w-5" strokeWidth={1.8} />
-                )}
-                <span className="tabular-nums">{reaction.count}</span>
-                {topReactions.length > 1 && (
-                    <span className="ml-0.5 hidden items-center -space-x-1 sm:inline-flex" aria-hidden>
-                        {topReactions.map((option) => (
-                            <span key={option.code} className="text-sm leading-none">
-                                {option.emoji}
-                            </span>
-                        ))}
-                    </span>
-                )}
+                <ReactionSummary count={reaction.count} counts={reaction.counts} reactionTypes={reaction.options} />
             </button>
 
             {/* Reaction menu */}
-            {open && (
+            {menuVisible && (
                 <div
                     role="menu"
-                    className="motion-reaction-picker absolute bottom-full left-0 z-20 mb-2 flex min-h-12 items-center gap-1 rounded-full border border-border bg-card px-2 py-1.5 shadow-lg"
+                    data-closing={isClosing}
+                    className="motion-reaction-picker absolute bottom-full left-0 z-20 mb-2 flex min-h-12 items-center gap-1 rounded-full bg-card px-2 py-1.5 shadow-lg"
                 >
                     {reaction.options.map((option) => {
                         const selected = reaction.selectedType === option.code;
@@ -100,8 +124,8 @@ export function PostReactionPicker({ post, disabled = false }: PostReactionPicke
                                 title={option.name}
                                 onClick={selectReaction}
                                 className={cn(
-                                    'motion-reaction-option flex h-9 w-9 items-center justify-center rounded-full text-lg transition-[background-color,scale] hover:scale-110 hover:bg-surface-muted active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
-                                    selected && 'bg-primary-light scale-110'
+                                    'motion-reaction-option flex h-9 w-9 items-center justify-center rounded-full text-lg transition-[scale] hover:scale-125 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
+                                    selected && 'scale-125'
                                 )}
                             >
                                 <span aria-hidden>{option.emoji}</span>
@@ -109,18 +133,6 @@ export function PostReactionPicker({ post, disabled = false }: PostReactionPicke
                             </button>
                         );
                     })}
-                    {reaction.selectedType && (
-                        <button
-                            type="button"
-                            role="menuitem"
-                            onClick={clearReaction}
-                            title={t('removeReaction')}
-                            className="motion-reaction-option flex h-9 w-9 items-center justify-center rounded-full text-ink-faint transition-[background-color,color,scale] hover:scale-105 hover:bg-surface-muted hover:text-ink active:scale-95"
-                        >
-                            <X className="h-4 w-4" />
-                            <span className="sr-only">{t('removeReaction')}</span>
-                        </button>
-                    )}
                 </div>
             )}
 
