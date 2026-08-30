@@ -918,6 +918,8 @@
                 "qr": "Share link"
             },
             "empty": "No personal invitations yet.",
+            "emptyTitle": "No personal invitations yet",
+            "emptyBody": "Invite one guest by name, or add an email to send it automatically.",
             "guide": {
                 "personalTitle": "Invite someone specific",
                 "personalBody": "Add their name, and add an email if you want us to send the invitation.",
@@ -964,6 +966,8 @@
                 "subtitle": "They become a host only after signing in with this verified email and accepting.",
                 "summary": "{count, plural, one {# co-host invitation} other {# co-host invitations}}",
                 "empty": "No pending co-host invitations.",
+                "emptyTitle": "No co-host invites yet",
+                "emptyBody": "Invite someone by email when they should help manage the event.",
                 "singleRecipient": "One verified recipient",
                 "email": "Email",
                 "firstName": "First name",
@@ -979,6 +983,8 @@
         "qr": {
             "summary": "{count} QR codes",
             "empty": "No share links yet.",
+            "emptyTitle": "No share links yet",
+            "emptyBody": "Create one for group chats, printed cards, posters, or gallery access.",
             "readOnly": "This event is read-only. QR code changes are paused, but existing codes can still be previewed and printed.",
             "untitled": "Untitled QR code",
             "preview": "Preview",

@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 
 import { RsvpListPanel, RsvpReportsPanel, RsvpStatsPanel } from '@/components/manage/rsvp';
-import { type SubTabItem,SubTabs } from '@/components/ui/SubTabs';
+import { type SubTabItem, SubTabs } from '@/components/ui/SubTabs';
 import { type RosterMember, type RosterRsvp, useRsvpRoster } from '@/hooks/useRsvpRoster';
 
 type RsvpSubTab = 'stats' | 'list' | 'reports';

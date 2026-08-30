@@ -12,7 +12,8 @@ import {
     InvitationRow,
     QrLinkRow,
 } from '@/components/manage/invitations';
-import { type SubTabItem,SubTabs } from '@/components/ui/SubTabs';
+import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
+import { type SubTabItem, SubTabs } from '@/components/ui/SubTabs';
 import type { EventInvitationResponseDto, QrLinkResponseDto, QrLinkStatsDto } from '@/lib/api/types';
 
 export default function InvitationsTab({
@@ -63,6 +64,7 @@ export default function InvitationsTab({
     const showInvites = panel === 'invites';
     const showCoHosts = panel === 'coHosts';
     const visibleInvitations = invitations.filter((invitation) => invitation.role === (showCoHosts ? 'HOST' : 'ATTENDEE'));
+    const emptyIcon = showCoHosts ? UserCog : showInvites ? UserPlus : QrCode;
 
     return (
         <div className="flex flex-col">
@@ -102,7 +104,7 @@ export default function InvitationsTab({
 
             {/* Guidance */}
             {canWrite && !showCreate && (
-                <div className="mb-4 rounded-2xl bg-surface-muted px-4 py-3">
+                <div className="mb-4 rounded-md bg-surface-muted/50 px-4 py-3">
                     <p className="text-sm font-semibold text-ink">
                         {showCoHosts
                             ? t('invitations.coHosts.guideTitle')
@@ -160,11 +162,17 @@ export default function InvitationsTab({
                 </div>
             )}
 
+            {/* Empty state */}
             {(showInvites || showCoHosts) && visibleInvitations.length === 0 && !showCreate && (
-                <p className="py-10 text-center text-sm text-ink-muted">{t(showCoHosts ? 'invitations.coHosts.empty' : 'invitations.empty')}</p>
+                <ToolEmptyState
+                    title={t(showCoHosts ? 'invitations.coHosts.emptyTitle' : 'invitations.emptyTitle')}
+                    body={t(showCoHosts ? 'invitations.coHosts.emptyBody' : 'invitations.emptyBody')}
+                    icon={emptyIcon}
+                    className="py-8"
+                />
             )}
             {!showInvites && !showCoHosts && qrLinks.length === 0 && !showCreate && (
-                <p className="py-10 text-center text-sm text-ink-muted">{t('qr.empty')}</p>
+                <ToolEmptyState title={t('qr.emptyTitle')} body={t('qr.emptyBody')} icon={emptyIcon} className="py-8" />
             )}
         </div>
     );
