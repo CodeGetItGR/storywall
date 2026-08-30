@@ -2549,6 +2549,8 @@
         "selectionLimited": "Γίνονται δεκτές μόνο υποστηριζόμενες φωτογραφίες και βίντεο, μέχρι {count} ανά μεταφόρτωση.",
         "viewerLabel": "Προβολή πολυμέσου",
         "closeViewer": "Κλείσιμο προβολής",
+        "previousMedia": "Προηγούμενο",
+        "nextMedia": "Επόμενο",
         "downloadOriginal": "Λήψη",
         "originalUnavailable": "Το πρωτότυπο αρχείο δεν είναι διαθέσιμο.",
         "archiveSummaryTitle": "Σύνοψη συλλογής",

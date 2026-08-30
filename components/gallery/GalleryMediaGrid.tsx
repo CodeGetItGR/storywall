@@ -88,7 +88,7 @@ export function GalleryMediaGrid({
                                         'group overflow-hidden rounded-md border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md',
                                         'touch-pan-y select-none [-webkit-touch-callout:none]',
                                         isSelected ? 'border-primary ring-4 ring-primary/15' : 'border-border',
-                                        selectionMode && 'cursor-grab active:cursor-grabbing'
+                                        selectionMode && 'cursor-grab'
                                     )}
                                 >
                                     <div className="relative aspect-square bg-surface-muted">
@@ -113,10 +113,6 @@ export function GalleryMediaGrid({
                                                 {isSelected && <Check className="h-4 w-4" />}
                                             </span>
                                         )}
-                                    </div>
-                                    <div className="px-3 py-2 text-left">
-                                        <p className="truncate text-xs font-semibold text-ink">{item.originalFilename}</p>
-                                        <p className="mt-0.5 text-[11px] text-ink-muted">{formatShortDateTime(item.createdAt)}</p>
                                     </div>
                                 </button>
                             );

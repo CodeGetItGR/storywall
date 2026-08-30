@@ -2451,6 +2451,8 @@
         "selectionLimited": "Only supported photos and videos are accepted, with at most {count} per upload.",
         "viewerLabel": "Media viewer",
         "closeViewer": "Close media viewer",
+        "previousMedia": "Previous",
+        "nextMedia": "Next",
         "downloadOriginal": "Download",
         "originalUnavailable": "The original file is not available.",
         "archiveSummaryTitle": "Gallery summary",

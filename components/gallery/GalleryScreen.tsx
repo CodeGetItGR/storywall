@@ -35,6 +35,10 @@ export function GalleryScreen() {
         isLoadingMedia,
         loadMoreRef,
         isFetchingNextPage,
+        hasPreviousMedia,
+        hasNextMedia,
+        showPreviousMedia,
+        showNextMedia,
         gallerySelection,
         uploadMediaBatch,
         originalMedia,
@@ -150,8 +154,9 @@ export function GalleryScreen() {
                 ) : undefined}
             </section>
 
+
             {/* Selection bar */}
-            <GallerySelectionBar
+            {isHost && <GallerySelectionBar
                 visible={gallerySelection.selectionMode}
                 selectedCount={gallerySelection.selectedCount}
                 mediaCount={media.length}
@@ -161,7 +166,7 @@ export function GalleryScreen() {
                 onDownloadSelected={downloadSelectedMedia}
                 onExitSelection={exitSelectionMode}
                 onScrollToTop={handleScrollToTop}
-            />
+            />}
 
             {/* Gallery */}
             {selectionDownloadError && <p className="mb-3 text-xs text-rose-600">{selectionDownloadError}</p>}
@@ -184,8 +189,12 @@ export function GalleryScreen() {
                 keepsOriginals={keepsOriginals}
                 originalError={originalError}
                 isDownloadingOriginal={originalMedia.isPending}
+                hasPrevious={hasPreviousMedia}
+                hasNext={hasNextMedia}
                 onClose={closeMedia}
                 onDownloadOriginal={downloadOriginal}
+                onPrevious={showPreviousMedia}
+                onNext={showNextMedia}
             />
 
             {/* Archive download */}

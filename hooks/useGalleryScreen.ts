@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, type MouseEvent, type PointerEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { type ChangeEvent, type MouseEvent, type PointerEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
@@ -35,6 +35,7 @@ export function useGalleryScreen() {
     const [selectionDownloadError, setSelectionDownloadError] = useState<string | null>(null);
     const [isDownloadingSelection, setIsDownloadingSelection] = useState(false);
     const [archiveDownloadOpen, setArchiveDownloadOpen] = useState(false);
+    const pendingAdvanceIndexRef = useRef<number | null>(null);
 
     const { data: mediaPages, isLoading: isLoadingMedia, fetchNextPage, hasNextPage, isFetchingNextPage } = useEventMedia(eventId);
     const media = useMemo(() => mediaPages?.pages.flatMap((page) => page.content) ?? [], [mediaPages?.pages]);
@@ -59,7 +60,7 @@ export function useGalleryScreen() {
     const maxFiles = appConfig?.media.maxBatchUploadFiles ?? MAX_FILES_PER_BATCH;
     const maxImageBytes = appConfig?.media.maxImageBytes ?? 25 * 1024 * 1024;
     const maxVideoBytes = appConfig?.media.maxVideoBytes ?? 200 * 1024 * 1024;
-    const keepsOriginals = billing.data?.addons.some((addon) => addon.code === 'ORIGINALS') ?? false;
+    const keepsOriginals = isHost && (billing.data?.addons.some((addon) => addon.code === 'ORIGINALS') ?? false);
     const showArchiveDownload = isHost && galleryEnabled;
     const canDownloadSelected =
         gallerySelection.selectedCount > 0 &&
@@ -154,23 +155,59 @@ export function useGalleryScreen() {
         }
     }, [canDownloadSelected, eventId, gallerySelection, t, toErrorMessage]);
 
+    const selectedMediaIndex = useMemo(
+        () => (selectedMedia ? media.findIndex((item) => item.id === selectedMedia.id) : -1),
+        [media, selectedMedia]
+    );
+    const hasPreviousMedia = selectedMediaIndex > 0;
+    const hasNextMedia = selectedMediaIndex !== -1 && (selectedMediaIndex < media.length - 1 || hasNextPage);
+
+    const showPreviousMedia = useCallback(() => {
+        if (selectedMediaIndex <= 0) return;
+        setOriginalError(null);
+        setSelectedMedia(media[selectedMediaIndex - 1]);
+    }, [media, selectedMediaIndex]);
+
+    const showNextMedia = useCallback(() => {
+        if (selectedMediaIndex === -1) return;
+        if (selectedMediaIndex < media.length - 1) {
+            setOriginalError(null);
+            setSelectedMedia(media[selectedMediaIndex + 1]);
+            return;
+        }
+        if (hasNextPage) {
+            pendingAdvanceIndexRef.current = selectedMediaIndex + 1;
+            fetchNextPage();
+        }
+    }, [fetchNextPage, hasNextPage, media, selectedMediaIndex]);
+
+    useEffect(() => {
+        const pendingIndex = pendingAdvanceIndexRef.current;
+        if (pendingIndex === null) return;
+        if (pendingIndex >= media.length) return;
+        pendingAdvanceIndexRef.current = null;
+        setOriginalError(null);
+        setSelectedMedia(media[pendingIndex]);
+    }, [media]);
+
     const handleMediaClick = useCallback(
         (id: string) => {
             if (gallerySelection.consumeLongPressClick()) return;
-            if (gallerySelection.selectionMode) {
+            if (isHost && gallerySelection.selectionMode) {
                 gallerySelection.toggleSelection(id);
                 return;
             }
             setSelectedMedia(media.find((item) => item.id === id) ?? null);
         },
-        [gallerySelection, media]
+        [gallerySelection, isHost, media]
     );
 
     const handleMediaPointerDown = useCallback(
         (event: PointerEvent<HTMLButtonElement>, id: string) => {
+            if (!isHost) return;
             gallerySelection.startLongPressSelection(event, id);
         },
-        [gallerySelection]
+        [gallerySelection, isHost]
     );
 
     const handleMediaContextMenu = useCallback((event: MouseEvent<HTMLButtonElement>) => {
@@ -233,7 +270,7 @@ export function useGalleryScreen() {
         galleryEnabled,
         canUpload,
         showArchiveDownload,
-        showGalleryActions: galleryEnabled,
+        showGalleryActions: isHost && galleryEnabled,
         selectedFiles,
         selectedSize,
         uploadNotice,
@@ -246,6 +283,10 @@ export function useGalleryScreen() {
         isLoadingMedia,
         loadMoreRef,
         isFetchingNextPage,
+        hasPreviousMedia,
+        hasNextMedia,
+        showPreviousMedia,
+        showNextMedia,
         gallerySelection,
         uploadMediaBatch,
         originalMedia,
