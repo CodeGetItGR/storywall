@@ -9,7 +9,6 @@ import { AdminSection } from '@/components/admin/AdminSection';
 import { AdminStatTile } from '@/components/admin/AdminStatTile';
 import { CollaborationCodeDrawer } from '@/components/admin/CollaborationCodeDrawer';
 import { CollaborationEarningsPanel } from '@/components/admin/CollaborationEarningsPanel';
-import { CollaborationVoidRedemptionForm } from '@/components/admin/CollaborationVoidRedemptionForm';
 import { CollaboratorDrawer } from '@/components/admin/CollaboratorDrawer';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { LoadingState } from '@/components/ui/LoadingState';
@@ -298,8 +297,6 @@ export function CollaborationsPanel() {
                     )}
                 </section>
             </div>
-
-            <CollaborationVoidRedemptionForm />
 
             <CollaboratorDrawer
                 key={editingCollaborator?.id ?? 'new-collaborator'}

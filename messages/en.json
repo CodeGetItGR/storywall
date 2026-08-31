@@ -1872,6 +1872,7 @@
             "planModules": "Plan modules",
             "paidServices": "Paid services",
             "collaborations": "Collaborations",
+            "reactionTypes": "Reactions",
             "modules": "Modules",
             "eventTypes": "Event types",
             "assignments": "Assignments",
@@ -2406,6 +2407,12 @@
                 "ledger": "Ledger",
                 "loading": "Loading ledger...",
                 "empty": "No earnings yet.",
+                "details": "View details",
+                "detailTitle": "Earning details",
+                "amount": "Amount",
+                "entryType": "Entry type",
+                "paidAt": "Paid at",
+                "noReference": "Not paid",
                 "selectAccrued": "Select accrued",
                 "clear": "Clear selection",
                 "on": "on",
@@ -2418,20 +2425,26 @@
                     "amount": "Amount",
                     "basis": "Basis",
                     "status": "Status",
-                    "refs": "Refs"
+                    "reference": "Payout reference"
+                },
+                "filters": {
+                    "open": "Open",
+                    "all": "All"
                 },
                 "status": {
                     "ACCRUED": "Accrued",
                     "PAID": "Paid",
                     "REVERSED": "Reversed"
+                },
+                "entryTypes": {
+                    "ACCRUAL": "Commission",
+                    "CLAWBACK": "Reversal"
                 }
             },
             "void": {
                 "title": "Void attribution",
-                "eventId": "Event UUID",
                 "reason": "Reason",
                 "action": "Void attribution",
-                "invalidEventId": "That is not a valid event ID.",
                 "success": "Attribution voided.",
                 "confirmTitle": "Void this attribution?",
                 "confirmBody": "This unwinds commission only. The host keeps the price already charged."

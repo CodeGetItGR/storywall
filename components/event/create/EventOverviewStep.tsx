@@ -88,7 +88,7 @@ export function EventOverviewStep({
             </section>
 
             {/* Checkout code */}
-            <section aria-labelledby="checkout-code-heading" className="border-b border-border/70 py-5">
+            <section aria-labelledby="checkout-code-heading" className="py-5">
                 <h3 id="checkout-code-heading" className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
                     {t('collaboration.title')}
                 </h3>
