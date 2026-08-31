@@ -1406,6 +1406,14 @@
         "whatHappens": "What happens after payment",
         "continueToCheckout": "Continue to checkout",
         "openingCheckout": "Opening secure checkout...",
+        "collaboration": {
+            "title": "Partner code",
+            "field": "Partner code",
+            "placeholder": "Enter code",
+            "apply": "Apply",
+            "checking": "Checking...",
+            "applied": "{label}: {discount}% off. Plan charge is now {amount}."
+        },
         "items": {
             "planActivation": "{plan} plan activation",
             "planPreservation": "{plan} renewal",
@@ -2621,6 +2629,9 @@
         "planCurrencyMismatch": "This plan is not available for your event.",
         "checkoutSessionUnresolved": "Your last payment is still finishing. Try again in a moment.",
         "checkoutAmountBelowMinimum": "This plan can't be checked out at its current price. Please contact support.",
+        "collaborationCodeNotValid": "That code isn't valid for this event.",
+        "collaborationAlreadyRedeemed": "This event already has another partner code.",
+        "collaborationEarningNotPayable": "That earning cannot be marked paid.",
         "subscriptionAlreadyActive": "A subscription is already running for this event.",
         "refundNotEligible": "This event no longer meets the refund conditions.",
         "refundAlreadyRequested": "A refund request is already pending for this event.",

@@ -7,7 +7,10 @@ import { usageKeys } from '@/hooks/useUsage';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type {
+    CheckoutRequestDto,
     CheckoutResponseDto,
+    CollaborationCodePreviewRequestDto,
+    CollaborationCodePreviewResponseDto,
     EventAddonDto,
     EventAddonRequestDto,
     EventBillingResponseDto,
@@ -48,11 +51,18 @@ export function useEventBilling(eventId: string | null, enabled = true) {
 export function useCheckout(eventId: string) {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: () => api.post<CheckoutResponseDto>(endpoints.events.checkout(eventId)),
+        mutationFn: (input?: CheckoutRequestDto) => api.post<CheckoutResponseDto>(endpoints.events.checkout(eventId), input),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
             queryClient.invalidateQueries({ queryKey: ['events', eventId] });
         },
+    });
+}
+
+export function usePreviewCollaborationCode(eventId: string) {
+    return useMutation({
+        mutationFn: (input: CollaborationCodePreviewRequestDto) =>
+            api.post<CollaborationCodePreviewResponseDto>(endpoints.events.checkoutCodePreview(eventId), input),
     });
 }
 

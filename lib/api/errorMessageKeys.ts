@@ -16,6 +16,9 @@ export type ApiErrorMessageKey =
     | 'checkoutAmountBelowMinimum'
     | 'checkoutSessionUnresolved'
     | 'coHostInviteNotYours'
+    | 'collaborationAlreadyRedeemed'
+    | 'collaborationCodeNotValid'
+    | 'collaborationEarningNotPayable'
     | 'conflict'
     | 'duplicateMediaIdInRequest'
     | 'duplicateMembership'
@@ -101,6 +104,9 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.CHECKOUT_AMOUNT_BELOW_MINIMUM]: 'checkoutAmountBelowMinimum',
     [ERROR_CODES.CHECKOUT_SESSION_UNRESOLVED]: 'checkoutSessionUnresolved',
     [ERROR_CODES.CO_HOST_INVITE_NOT_YOURS]: 'coHostInviteNotYours',
+    [ERROR_CODES.COLLABORATION_ALREADY_REDEEMED]: 'collaborationAlreadyRedeemed',
+    [ERROR_CODES.COLLABORATION_CODE_NOT_VALID]: 'collaborationCodeNotValid',
+    [ERROR_CODES.COLLABORATION_EARNING_NOT_PAYABLE]: 'collaborationEarningNotPayable',
     [ERROR_CODES.CONFLICT]: 'conflict',
     [ERROR_CODES.DUPLICATE_MEDIA_ID_IN_REQUEST]: 'duplicateMediaIdInRequest',
     [ERROR_CODES.DUPLICATE_MEMBERSHIP]: 'duplicateMembership',

@@ -492,6 +492,19 @@ export interface CheckoutResponseDto {
     orderId: string;
     redirectUrl: string;
 }
+export interface CheckoutRequestDto {
+    collaborationCode?: string;
+}
+export interface CollaborationCodePreviewRequestDto {
+    collaborationCode: string;
+}
+export interface CollaborationCodePreviewResponseDto {
+    label: string;
+    discountPercent: number;
+    combinedDiscountPercent: number;
+    payableAmountMinor: number;
+    currency: string;
+}
 export interface UpgradeCheckoutRequestDto {
     planTierCode: PlanTierCode;
 }

@@ -1406,6 +1406,14 @@
         "whatHappens": "Τι συμβαίνει μετά την πληρωμή",
         "continueToCheckout": "Συνέχεια στην πληρωμή",
         "openingCheckout": "Άνοιγμα ασφαλούς πληρωμής...",
+        "collaboration": {
+            "title": "Κωδικός συνεργάτη",
+            "field": "Κωδικός συνεργάτη",
+            "placeholder": "Πληκτρολογήστε κωδικό",
+            "apply": "Εφαρμογή",
+            "checking": "Έλεγχος...",
+            "applied": "{label}: έκπτωση {discount}%. Η χρέωση πλάνου είναι τώρα {amount}."
+        },
         "items": {
             "planActivation": "Ενεργοποίηση πλάνου {plan}",
             "planPreservation": "Ανανέωση {plan}",
@@ -2556,6 +2564,9 @@
         "planNotAnUpgrade": "Οι επιλογές αναβάθμισης δεν είναι πλέον ενημερωμένες. Ανανεώσαμε τον κατάλογο πλάνων.",
         "planCurrencyMismatch": "Αυτό το πλάνο δεν είναι διαθέσιμο για την εκδήλωσή σας.",
         "checkoutSessionUnresolved": "Η τελευταία πληρωμή σας ολοκληρώνεται ακόμη. Δοκιμάστε ξανά σε λίγο.",
+        "collaborationCodeNotValid": "Αυτός ο κωδικός δεν ισχύει για αυτήν την εκδήλωση.",
+        "collaborationAlreadyRedeemed": "Αυτή η εκδήλωση έχει ήδη άλλον κωδικό συνεργάτη.",
+        "collaborationEarningNotPayable": "Αυτή η αμοιβή δεν μπορεί να σημειωθεί ως πληρωμένη.",
         "invalidCredentials": "Το email ή ο κωδικός πρόσβασης δεν είναι σωστός.",
         "invalidRefreshToken": "Η σύνδεσή σας έληξε. Συνδεθείτε ξανά.",
         "accountNotActive": "Αυτός ο λογαριασμός δεν είναι ενεργός.",

@@ -7,6 +7,7 @@ import { getApiErrorMessageKey } from '@/lib/api/errorMessageKeys';
 import {
     ERROR_CODES,
     getErrorCode,
+    getErrorMessage,
     getQuotaExceededDetails,
     getRetryAfterSeconds,
     isModuleNotAvailableError,
@@ -23,6 +24,7 @@ export function useApiErrorMessage() {
     return useCallback(
         (error: unknown, fallback?: string): string => {
             if (getErrorCode(error) === ERROR_CODES.EVENT_NOT_ACTIVE) return t('eventNotActive');
+            if (getErrorCode(error) === ERROR_CODES.COLLABORATION_CODE_NOT_VALID) return getErrorMessage(error, t('collaborationCodeNotValid'));
 
             if (isRateLimitedError(error)) {
                 const seconds = getRetryAfterSeconds(error);

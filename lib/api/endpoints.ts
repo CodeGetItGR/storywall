@@ -80,6 +80,7 @@ export const endpoints = {
         wishbook: (eventId: string) => `/api/events/${eventId}/wishbook`,
         wishbookCount: (eventId: string) => `/api/events/${eventId}/wishbook/count`,
         checkout: (eventId: string) => `/api/events/${eventId}/checkout`,
+        checkoutCodePreview: (eventId: string) => `/api/events/${eventId}/checkout/preview-code`,
         upgradeCheckout: (eventId: string) => `/api/events/${eventId}/upgrade-checkout`,
         storageCheckout: (eventId: string) => `/api/events/${eventId}/storage-checkout`,
         refundEligibility: (eventId: string) => `/api/events/${eventId}/refund-eligibility`,

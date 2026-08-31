@@ -5,13 +5,14 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 
+import { CollaborationCodeSection } from '@/components/checkout/CollaborationCodeSection';
 import { BackButton } from '@/components/ui/BackButton';
 import { PageErrorState } from '@/components/ui/PageErrorState';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useCheckout, useEventBilling, useStorageCheckout, useUpgradeCheckout } from '@/hooks/useBilling';
 import { useEvent } from '@/hooks/useEvent';
-import type { EventAddonDto } from '@/lib/api/types';
+import type { CollaborationCodePreviewResponseDto, EventAddonDto } from '@/lib/api/types';
 import { discountedAmountMinor, formatMoney, navigateToCheckout } from '@/lib/billing';
 import { scopedPlans } from '@/lib/planTiers';
 import { type CheckoutIntent, routes } from '@/lib/routes';
@@ -41,6 +42,15 @@ export default function CheckoutReviewBoundary() {
     const storageCheckout = useStorageCheckout(eventId);
     const toErrorMessage = useApiErrorMessage();
     const [error, setError] = useState<string | null>(null);
+    const [collaborationCode, setCollaborationCode] = useState<string | null>(null);
+    const [collaborationPreview, setCollaborationPreview] = useState<CollaborationCodePreviewResponseDto | null>(null);
+    const handleCollaborationPreviewChange = useCallback(
+        (nextCode: string | null, nextPreview: CollaborationCodePreviewResponseDto | null) => {
+            setCollaborationCode(nextCode);
+            setCollaborationPreview(nextPreview);
+        },
+        []
+    );
     const retry = useCallback(() => {
         void appConfig.refetch();
         void billing.refetch();
@@ -98,7 +108,7 @@ export default function CheckoutReviewBoundary() {
             lines = [
                 {
                     label: t('items.planActivation', { plan: currentPlan.name }),
-                    amountMinor: discountedAmountMinor(currentPlan.priceAmountMinor, currentPlan),
+                    amountMinor: collaborationPreview?.payableAmountMinor ?? discountedAmountMinor(currentPlan.priceAmountMinor, currentPlan),
                 },
                 ...addonLines(addons),
             ];
@@ -142,7 +152,10 @@ export default function CheckoutReviewBoundary() {
         setError(null);
         try {
             if (intent === 'activation') {
-                navigateToCheckout(eventId, await activationCheckout.mutateAsync());
+                navigateToCheckout(
+                    eventId,
+                    await activationCheckout.mutateAsync(collaborationCode ? { collaborationCode } : undefined)
+                );
             } else if (intent === 'upgrade' && targetPlan) {
                 navigateToCheckout(eventId, await upgradeCheckout.mutateAsync({ planTierCode: targetPlan.code }), targetPlan.code);
             } else if (intent === 'storage' && service) {
@@ -157,11 +170,13 @@ export default function CheckoutReviewBoundary() {
         <main className="mx-auto max-w-3xl px-4 pb-28 pt-6 sm:pb-12 sm:pt-10">
             <BackButton href={backHref} label={t('back')} />
 
+            {/* Header */}
             <header className="mt-3">
                 <h1 className="text-2xl font-bold text-ink sm:text-3xl">{title}</h1>
                 <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-muted">{description}</p>
             </header>
 
+            {/* Purchase summary */}
             <section className="mt-6" aria-label={t('summaryTitle')}>
                 <dl className="grid grid-cols-2 gap-4 text-sm">
                     <div>
@@ -175,6 +190,14 @@ export default function CheckoutReviewBoundary() {
                 </dl>
             </section>
 
+            {intent === 'activation' && (
+                <CollaborationCodeSection
+                    eventId={eventId}
+                    onPreviewChangeAction={handleCollaborationPreviewChange}
+                />
+            )}
+
+            {/* Payment breakdown */}
             <section className="mt-6" aria-labelledby="payment-breakdown-title">
                 <h2 id="payment-breakdown-title" className="text-base font-bold text-ink">
                     {t('paymentBreakdown')}
@@ -197,6 +220,7 @@ export default function CheckoutReviewBoundary() {
                 </div>
             </section>
 
+            {/* Payment consequence */}
             <section className="mt-6" aria-label={t('whatHappens')}>
                 <div className="flex gap-3 text-sm leading-relaxed text-ink-muted">
                     <Check className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden="true" />
@@ -207,6 +231,7 @@ export default function CheckoutReviewBoundary() {
             {!valid && <p className="mt-6 text-sm text-rose-600">{t('unavailable')}</p>}
             {error && <p className="mt-6 text-sm text-rose-600">{error}</p>}
 
+            {/* Checkout action */}
             <div className="mt-8">
                 <button
                     type="button"
