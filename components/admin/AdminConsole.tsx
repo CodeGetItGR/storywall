@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { BillingOpsPanel } from '@/components/admin/BillingOpsPanel';
+import { CollaborationsPanel } from '@/components/admin/CollaborationsPanel';
 import { EventTypeRegistryPanel } from '@/components/admin/EventTypeRegistryPanel';
 import { ModuleRegistryPanel } from '@/components/admin/ModuleRegistryPanel';
 import { PaidServicesCatalogPanel } from '@/components/admin/PaidServicesCatalogPanel';
@@ -22,6 +23,7 @@ export function AdminConsole() {
     // The Paid Services panel supplies its own page head (title, stat tiles,
     // primary action) — the shared eyebrow/title block would just duplicate it.
     if (tab === 'paidServices') return <PaidServicesCatalogPanel />;
+    if (tab === 'collaborations') return <CollaborationsPanel />;
     if (tab === 'reactionTypes') return <ReactionTypesCatalogPanel />;
 
     return (

@@ -247,6 +247,20 @@ export const endpoints = {
             list: '/api/admin/reaction-types',
             byId: (id: string) => `/api/admin/reaction-types/${id}`,
         },
+        collaborators: {
+            list: '/api/admin/collaborators',
+            byId: (id: string) => `/api/admin/collaborators/${id}`,
+            portalToken: (id: string) => `/api/admin/collaborators/${id}/portal-token`,
+            codes: (id: string) => `/api/admin/collaborators/${id}/codes`,
+            earnings: (id: string) => `/api/admin/collaborators/${id}/earnings`,
+            earningsTotals: (id: string) => `/api/admin/collaborators/${id}/earnings/totals`,
+        },
+        collaborationCodes: {
+            byId: (id: string) => `/api/admin/collaboration-codes/${id}`,
+        },
+        collaborationEarnings: {
+            markPaid: '/api/admin/collaboration-earnings/mark-paid',
+        },
         platformModules: {
             list: '/api/admin/platform-modules',
             byKey: (moduleKey: string) => `/api/admin/platform-modules/${moduleKey}`,
@@ -261,6 +275,7 @@ export const endpoints = {
         events: {
             planTier: (eventId: string) => `/api/admin/events/${eventId}/plan-tier`,
             addon: (eventId: string, code: string) => `/api/admin/events/${eventId}/addons/${encodeURIComponent(code)}`,
+            collaborationRedemptionVoid: (eventId: string) => `/api/admin/events/${eventId}/collaboration-redemption/void`,
         },
     },
 } as const;

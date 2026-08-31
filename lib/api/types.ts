@@ -515,6 +515,74 @@ export interface PartnerPortalResponseDto {
     eventsReferred: number;
     totals: PartnerPortalTotalDto[];
 }
+export type CollaboratorStatus = 'ACTIVE' | 'SUSPENDED';
+export type CollaborationCodeStatus = 'ACTIVE' | 'DISABLED';
+export type CollaborationEarningEntryType = 'ACCRUAL' | 'CLAWBACK';
+export type CollaborationEarningStatus = 'ACCRUED' | 'PAID' | 'REVERSED';
+export interface CollaboratorRequestDto {
+    name: string;
+    contactEmail: string;
+    notes: string | null;
+    status: CollaboratorStatus | null;
+}
+export interface CollaboratorResponseDto {
+    id: string;
+    name: string;
+    contactEmail: string;
+    status: CollaboratorStatus;
+    portalTokenIssued: boolean;
+    portalTokenIssuedAt: string | null;
+    notes: string | null;
+}
+export interface CollaboratorPortalTokenResponseDto {
+    token: string;
+    portalUrl: string;
+}
+export interface CollaborationCodeRequestDto {
+    code: string;
+    label: string;
+    discountPercent: number;
+    commissionPercent: number;
+    startsAt: string | null;
+    endsAt: string | null;
+    maxRedemptions: number | null;
+}
+export interface CollaborationCodePatchDto extends Omit<CollaborationCodeRequestDto, 'code'> {
+    status: CollaborationCodeStatus;
+}
+export interface CollaborationCodeResponseDto extends CollaborationCodeRequestDto {
+    id: string;
+    collaboratorId: string;
+    status: CollaborationCodeStatus;
+    liveRedemptions: number;
+}
+export interface CollaborationEarningResponseDto {
+    id: string;
+    eventId: string;
+    orderId: string;
+    codeId: string;
+    entryType: CollaborationEarningEntryType;
+    amountMinor: number;
+    currency: string;
+    commissionPercent: number;
+    basisAmountMinor: number;
+    status: CollaborationEarningStatus;
+    accruedAt: string;
+    paidAt: string | null;
+    payoutReference: string | null;
+}
+export interface CollaborationEarningsTotalDto {
+    currency: string;
+    accruedMinor: number;
+    paidMinor: number;
+}
+export interface MarkCollaborationEarningsPaidRequestDto {
+    earningIds: string[];
+    payoutReference: string;
+}
+export interface VoidCollaborationRedemptionRequestDto {
+    reason: string;
+}
 export interface UpgradeCheckoutRequestDto {
     planTierCode: PlanTierCode;
 }

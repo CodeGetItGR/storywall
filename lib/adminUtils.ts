@@ -19,6 +19,7 @@ export type AdminErrorMessageKey =
     | 'reactionTypeInUse'
     | 'reactionTypeLimitExceeded'
     | 'reactionTypeNotUsable'
+    | 'collaborationEarningNotPayable'
     | 'methodNotAllowed'
     | 'generic';
 
@@ -68,6 +69,7 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.REACTION_TYPE_IN_USE) return 'reactionTypeInUse';
     if (code === ERROR_CODES.REACTION_TYPE_LIMIT_EXCEEDED) return 'reactionTypeLimitExceeded';
     if (code === ERROR_CODES.REACTION_TYPE_NOT_USABLE) return 'reactionTypeNotUsable';
+    if (code === ERROR_CODES.COLLABORATION_EARNING_NOT_PAYABLE) return 'collaborationEarningNotPayable';
     if (code === ERROR_CODES.METHOD_NOT_ALLOWED) return 'methodNotAllowed';
     return 'generic';
 }

@@ -13,6 +13,7 @@ const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'operations'> = {
     planAvailability: 'catalog',
     planModules: 'catalog',
     paidServices: 'catalog',
+    collaborations: 'operations',
     modules: 'catalog',
     eventTypes: 'catalog',
     reactionTypes: 'catalog',

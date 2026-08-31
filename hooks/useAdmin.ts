@@ -6,8 +6,17 @@ import { usageKeys } from '@/hooks/useUsage';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type {
+    CollaborationCodePatchDto,
+    CollaborationCodeRequestDto,
+    CollaborationCodeResponseDto,
+    CollaborationEarningResponseDto,
+    CollaborationEarningsTotalDto,
+    CollaboratorPortalTokenResponseDto,
+    CollaboratorRequestDto,
+    CollaboratorResponseDto,
     EventTypeConvention,
     EventUsageResponseDto,
+    MarkCollaborationEarningsPaidRequestDto,
     ModuleKey,
     NotificationSweepResponseDto,
     PaidServiceKind,
@@ -27,6 +36,7 @@ import type {
     RefundRequestAdminDto,
     RefundRequestResponseDto,
     UnprocessedWebhookDto,
+    VoidCollaborationRedemptionRequestDto,
 } from '@/lib/api/types';
 
 export const adminKeys = {
@@ -39,9 +49,111 @@ export const adminKeys = {
     refundRequests: ['admin', 'refund-requests'] as const,
     metrics: ['admin', 'metrics'] as const,
     paidServices: (kind?: PaidServiceKind, includeArchived?: boolean) => ['admin', 'paid-services', kind ?? 'ALL', Boolean(includeArchived)] as const,
+    collaborators: ['admin', 'collaborators'] as const,
+    collaboratorCodes: (id: string) => ['admin', 'collaborators', id, 'codes'] as const,
+    collaboratorEarnings: (id: string) => ['admin', 'collaborators', id, 'earnings'] as const,
+    collaboratorEarningsTotals: (id: string) => ['admin', 'collaborators', id, 'earnings', 'totals'] as const,
     reactionTypes: (eventTypeKey?: string, includeArchived?: boolean) =>
         ['admin', 'reaction-types', eventTypeKey ?? 'ALL', Boolean(includeArchived)] as const,
 };
+
+export function useAdminCollaborators() {
+    return useQuery({
+        queryKey: adminKeys.collaborators,
+        queryFn: () => api.get<CollaboratorResponseDto[]>(endpoints.admin.collaborators.list),
+    });
+}
+
+export function useSaveCollaborator() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, input }: { id?: string; input: CollaboratorRequestDto }) =>
+            id
+                ? api.patch<CollaboratorResponseDto>(endpoints.admin.collaborators.byId(id), input)
+                : api.post<CollaboratorResponseDto>(endpoints.admin.collaborators.list, input),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: adminKeys.collaborators });
+        },
+    });
+}
+
+export function useIssueCollaboratorPortalToken() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (id: string) => api.post<CollaboratorPortalTokenResponseDto>(endpoints.admin.collaborators.portalToken(id)),
+        onSuccess: (_token, id) => {
+            queryClient.invalidateQueries({ queryKey: adminKeys.collaborators });
+            queryClient.invalidateQueries({ queryKey: ['admin', 'collaborators', id] });
+        },
+    });
+}
+
+export function useCollaboratorCodes(collaboratorId: string | null) {
+    return useQuery({
+        queryKey: adminKeys.collaboratorCodes(collaboratorId ?? ''),
+        queryFn: () => api.get<CollaborationCodeResponseDto[]>(endpoints.admin.collaborators.codes(collaboratorId!)),
+        enabled: Boolean(collaboratorId),
+    });
+}
+
+export function useSaveCollaborationCode(collaboratorId: string | null) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, input }: { id?: string; input: CollaborationCodeRequestDto | CollaborationCodePatchDto }) =>
+            id
+                ? api.patch<CollaborationCodeResponseDto>(endpoints.admin.collaborationCodes.byId(id), input)
+                : api.post<CollaborationCodeResponseDto>(endpoints.admin.collaborators.codes(collaboratorId!), input),
+        onSuccess: () => {
+            if (collaboratorId) queryClient.invalidateQueries({ queryKey: adminKeys.collaboratorCodes(collaboratorId) });
+        },
+    });
+}
+
+export function useCollaboratorEarnings(collaboratorId: string | null) {
+    return useQuery({
+        queryKey: adminKeys.collaboratorEarnings(collaboratorId ?? ''),
+        queryFn: () => api.get<CollaborationEarningResponseDto[]>(endpoints.admin.collaborators.earnings(collaboratorId!)),
+        enabled: Boolean(collaboratorId),
+    });
+}
+
+export function useCollaboratorEarningsTotals(collaboratorId: string | null) {
+    return useQuery({
+        queryKey: adminKeys.collaboratorEarningsTotals(collaboratorId ?? ''),
+        queryFn: () => api.get<CollaborationEarningsTotalDto[]>(endpoints.admin.collaborators.earningsTotals(collaboratorId!)),
+        enabled: Boolean(collaboratorId),
+    });
+}
+
+export function useMarkCollaborationEarningsPaid(collaboratorId: string | null) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (input: MarkCollaborationEarningsPaidRequestDto) => api.post<void>(endpoints.admin.collaborationEarnings.markPaid, input),
+        onSuccess: () => {
+            if (!collaboratorId) return;
+            queryClient.invalidateQueries({ queryKey: adminKeys.collaboratorEarnings(collaboratorId) });
+            queryClient.invalidateQueries({ queryKey: adminKeys.collaboratorEarningsTotals(collaboratorId) });
+        },
+    });
+}
+
+export function useVoidCollaborationRedemption() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ eventId, input }: { eventId: string; input: VoidCollaborationRedemptionRequestDto }) =>
+            api.post<void>(endpoints.admin.events.collaborationRedemptionVoid(eventId), input),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: adminKeys.collaborators });
+            queryClient.invalidateQueries({ queryKey: ['admin', 'collaborators'] });
+            queryClient.invalidateQueries({ queryKey: ['billing'] });
+        },
+    });
+}
 
 // GET /api/admin/metrics - live platform dashboard counts.
 export function useAdminMetrics() {

@@ -1851,6 +1851,7 @@
             "planAvailability": "Plan availability",
             "planModules": "Plan modules",
             "paidServices": "Paid services",
+            "collaborations": "Collaborations",
             "reactionTypes": "Reactions",
             "metrics": "Metrics",
             "modules": "Modules",
@@ -1868,6 +1869,7 @@
             "planAvailability": "Plan availability",
             "planModules": "Plan modules",
             "paidServices": "Paid services",
+            "collaborations": "Collaborations",
             "modules": "Modules",
             "eventTypes": "Event types",
             "assignments": "Assignments",
@@ -2170,6 +2172,7 @@
             "reactionTypeInUse": "This reaction is already used on posts. Archive it instead.",
             "reactionTypeLimitExceeded": "This event type already has five available reactions.",
             "reactionTypeNotUsable": "That reaction is no longer available. Refresh and choose another.",
+            "collaborationEarningNotPayable": "One or more selected earnings are not payable. Refresh the ledger and choose accrued rows.",
             "methodNotAllowed": "That action is not available here. Refresh and try again."
         },
         "reactionTypes": {
@@ -2320,6 +2323,116 @@
                 "addonNotActive": "That add-on is not active on this event.",
                 "notFound": "The service or event was not found.",
                 "generic": "The change could not be saved. Check the fields and try again."
+            }
+        },
+        "collaborations": {
+            "title": "Collaborations",
+            "loading": "Loading collaborators...",
+            "empty": "No collaborators to show.",
+            "search": "Search partners",
+            "create": "New partner",
+            "edit": "Edit",
+            "selectPrompt": "Select a partner.",
+            "stats": {
+                "total": "Partners",
+                "active": "Active",
+                "suspended": "Suspended",
+                "portalLinks": "Portal links"
+            },
+            "status": {
+                "ACTIVE": "Active",
+                "SUSPENDED": "Suspended"
+            },
+            "fields": {
+                "name": "Name",
+                "contactEmail": "Contact email",
+                "status": "Status",
+                "notes": "Notes"
+            },
+            "drawer": {
+                "createTitle": "Create partner",
+                "createSubtitle": "Add a partner record.",
+                "editTitle": "Edit {name}",
+                "editSubtitle": "Update partner details."
+            },
+            "portal": {
+                "issue": "Issue portal link",
+                "confirmTitle": "Issue a portal link?",
+                "confirmBody": "A new link replaces the previous one immediately. The full link is shown once.",
+                "once": "Copy this now. It will not be shown again.",
+                "copy": "Copy portal link",
+                "issuedAt": "Portal issued {date}"
+            },
+            "codes": {
+                "title": "Codes",
+                "subtitle": "Codes are printed by partners and cannot be renamed later.",
+                "create": "New code",
+                "createTitle": "Create code",
+                "edit": "Edit code",
+                "editTitle": "Edit {code}",
+                "loading": "Loading codes...",
+                "empty": "No codes yet.",
+                "ratePair": "{discount}% discount, {commission}% commission",
+                "columns": {
+                    "code": "Code",
+                    "rates": "Rates",
+                    "redemptions": "Live redemptions",
+                    "status": "Status"
+                },
+                "status": {
+                    "ACTIVE": "Active",
+                    "DISABLED": "Disabled"
+                },
+                "fields": {
+                    "code": "Code",
+                    "label": "Host label",
+                    "discountPercent": "Discount %",
+                    "commissionPercent": "Commission %",
+                    "startsAt": "Starts",
+                    "endsAt": "Ends",
+                    "maxRedemptions": "Max redemptions"
+                }
+            },
+            "earnings": {
+                "title": "Earnings",
+                "loadingTotals": "Loading totals...",
+                "emptyTotals": "No totals yet.",
+                "paidBalance": "{paid} paid, {balance} balance",
+                "markPaidTitle": "Mark paid",
+                "payoutReference": "Payout reference",
+                "markPaid": "Mark paid",
+                "ledger": "Ledger",
+                "loading": "Loading ledger...",
+                "empty": "No earnings yet.",
+                "selectAccrued": "Select accrued",
+                "clear": "Clear selection",
+                "on": "on",
+                "confirmTitle": "Mark earnings paid?",
+                "confirmBody": "This marks {count} rows paid for {amount} with reference {reference}.",
+                "confirmBodyMixed": "This marks {count} rows paid. Check each currency before confirming.",
+                "columns": {
+                    "select": "Pay",
+                    "date": "Date",
+                    "amount": "Amount",
+                    "basis": "Basis",
+                    "status": "Status",
+                    "refs": "Refs"
+                },
+                "status": {
+                    "ACCRUED": "Accrued",
+                    "PAID": "Paid",
+                    "REVERSED": "Reversed"
+                }
+            },
+            "void": {
+                "title": "Void attribution",
+                "eventId": "Event UUID",
+                "reason": "Reason",
+                "action": "Void attribution",
+                "invalidEventId": "That is not a valid event ID.",
+                "success": "Attribution voided.",
+                "confirmTitle": "Void this attribution?",
+                "confirmBody": "This unwinds commission only. The host keeps the price already charged."
             }
         },
         "billingOps": {
