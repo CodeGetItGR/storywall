@@ -556,6 +556,26 @@ export interface CollaborationCodeResponseDto extends CollaborationCodeRequestDt
     status: CollaborationCodeStatus;
     liveRedemptions: number;
 }
+export interface DiscountCodeRequestDto {
+    code: string;
+    label: string;
+    discountPercent: number;
+    startsAt: string | null;
+    endsAt: string | null;
+    maxRedemptions: number | null;
+}
+export interface DiscountCodePatchDto extends Omit<DiscountCodeRequestDto, 'code'> {
+    status: CollaborationCodeStatus;
+}
+export interface DiscountCodeResponseDto extends DiscountCodeRequestDto {
+    id: string;
+    status: CollaborationCodeStatus;
+    liveRedemptions: number;
+}
+export interface LinkDiscountCodeRequestDto {
+    discountCodeId: string;
+    commissionPercent: number;
+}
 export interface CollaborationEarningResponseDto {
     id: string;
     eventId: string;

@@ -66,7 +66,7 @@ export function EventsQuickRow({
     return (
         <section aria-labelledby="home-events-heading" className="flex w-full flex-col gap-3">
             {/* Section heading */}
-            <div className={cn('flex items-center justify-between gap-3 px-4 sm:px-8 lg:px-14 2xl:px-20', contentClassName)}>
+            <div className={cn('flex items-center justify-between gap-3 px-4', contentClassName)}>
                 <h2 id="home-events-heading" className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
                     {tEvents('yourEvents')}
                 </h2>

@@ -14,8 +14,12 @@ import type {
     CollaboratorPortalTokenResponseDto,
     CollaboratorRequestDto,
     CollaboratorResponseDto,
+    DiscountCodePatchDto,
+    DiscountCodeRequestDto,
+    DiscountCodeResponseDto,
     EventTypeConvention,
     EventUsageResponseDto,
+    LinkDiscountCodeRequestDto,
     MarkCollaborationEarningsPaidRequestDto,
     ModuleKey,
     NotificationSweepResponseDto,
@@ -51,6 +55,7 @@ export const adminKeys = {
     paidServices: (kind?: PaidServiceKind, includeArchived?: boolean) => ['admin', 'paid-services', kind ?? 'ALL', Boolean(includeArchived)] as const,
     collaborators: ['admin', 'collaborators'] as const,
     collaboratorCodes: (id: string) => ['admin', 'collaborators', id, 'codes'] as const,
+    discountCodes: ['admin', 'discount-codes'] as const,
     collaboratorEarnings: (id: string) => ['admin', 'collaborators', id, 'earnings'] as const,
     collaboratorEarningsTotals: (id: string) => ['admin', 'collaborators', id, 'earnings', 'totals'] as const,
     reactionTypes: (eventTypeKey?: string, includeArchived?: boolean) =>
@@ -108,6 +113,40 @@ export function useSaveCollaborationCode(collaboratorId: string | null) {
                 : api.post<CollaborationCodeResponseDto>(endpoints.admin.collaborators.codes(collaboratorId!), input),
         onSuccess: () => {
             if (collaboratorId) queryClient.invalidateQueries({ queryKey: adminKeys.collaboratorCodes(collaboratorId) });
+        },
+    });
+}
+
+export function useAdminDiscountCodes() {
+    return useQuery({
+        queryKey: adminKeys.discountCodes,
+        queryFn: () => api.get<DiscountCodeResponseDto[]>(endpoints.admin.discountCodes.list),
+    });
+}
+
+export function useSaveDiscountCode() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, input }: { id?: string; input: DiscountCodeRequestDto | DiscountCodePatchDto }) =>
+            id
+                ? api.patch<DiscountCodeResponseDto>(endpoints.admin.discountCodes.byId(id), input)
+                : api.post<DiscountCodeResponseDto>(endpoints.admin.discountCodes.list, input),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: adminKeys.discountCodes });
+        },
+    });
+}
+
+export function useLinkDiscountCodeToCollaborator(collaboratorId: string | null) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (input: LinkDiscountCodeRequestDto) =>
+            api.post<CollaborationCodeResponseDto>(endpoints.admin.collaborators.linkCode(collaboratorId!), input),
+        onSuccess: () => {
+            if (collaboratorId) queryClient.invalidateQueries({ queryKey: adminKeys.collaboratorCodes(collaboratorId) });
+            queryClient.invalidateQueries({ queryKey: adminKeys.discountCodes });
         },
     });
 }

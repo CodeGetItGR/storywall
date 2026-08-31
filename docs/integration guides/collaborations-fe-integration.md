@@ -1,9 +1,10 @@
 # FE integration guide: B2B collaborations and checkout codes
 
 Covers a change shipped 2026-08-31: a host can type a partner's code at activation checkout, and
-platform admins get a surface for running those partnerships. See
-`frontend-integration-guide.md` §0 for base setup (auth header, the RFC 7807 error envelope) and
-`billing-fe-guide.md` for the checkout flow this plugs into.
+platform admins get a surface for running those partnerships. Also covers a same-day follow-up:
+**house discount codes**, the platform's own codes with no partner attached, which reuse every
+endpoint on this page. See `frontend-integration-guide.md` §0 for base setup (auth header, the
+RFC 7807 error envelope) and `billing-fe-guide.md` for the checkout flow this plugs into.
 
 Nothing here is breaking. A client that sends no code keeps working exactly as before.
 
@@ -11,14 +12,28 @@ Nothing here is breaking. A client that sends no code keeps working exactly as b
 
 Wedding venues and event organisers send us hosts. A code at checkout is how we both give that
 host a better price and pay the partner for the referral, without inventing accounts, logins or
-recurring billing for a party who only ever reads a handful of numbers.
+recurring billing for a party who only ever reads a handful of numbers. A house code reuses the
+same mechanism for a discount the platform runs itself — a promo code, a support goodwill
+discount — with no partner or commission involved.
+
+### House codes vs. partner codes — what's the same, what's not
+
+At checkout and preview, a house code and a partner code are **indistinguishable to the caller**:
+same request body, same response shape, same `5060` refusal on failure. A code starts as a house
+code and can be promoted to a partner code later by linking it (§3 "Linking an already-issued house
+code"), but never the other way — once linked, always a partner code. The only place the
+distinction is visible to the frontend is the admin surface: a house code is managed under
+`/api/admin/discount-codes` (§3b below), a partner code under `/api/admin/collaborators…` (§3).
+Voiding a redemption must go through the matching one of those two — sending a partner-code void
+request for an event carrying a house code (or vice versa) is refused with `5060`.
 
 ## The three surfaces
 
 | Audience | Route prefix | Auth |
 |---|---|---|
 | Host | `/api/events/{eventId}/checkout…` | JWT, must be a host of that event |
-| Platform admin | `/api/admin/collaborators…` | JWT with `ROLE_ADMIN` |
+| Platform admin — partner codes | `/api/admin/collaborators…` | JWT with `ROLE_ADMIN` |
+| Platform admin — house codes | `/api/admin/discount-codes…` | JWT with `ROLE_ADMIN` |
 | Partner | `/api/partners/{token}` | The token in the URL, nothing else |
 
 ---
@@ -66,10 +81,11 @@ by a partner code.
   "detail": "That code isn't valid for this event." }
 ```
 
-`5060` is returned identically for every reason a code can fail: it does not exist, it is disabled,
-its partner is suspended, its window has not opened, its window has closed, or it has hit its
-redemption cap. This is deliberate — a message that distinguished them would let anyone with an
-account discover which code strings are real and which deals are live.
+`5060` is returned identically for every reason a code can fail, for a house code exactly as much
+as a partner one: it does not exist, it is disabled, its partner is suspended (n/a for a house
+code), its window has not opened, its window has closed, or it has hit its redemption cap. This is
+deliberate — a message that distinguished them would let anyone with an account discover which
+code strings are real and which deals are live.
 
 **Do not try to explain further.** Showing "this code has expired" when the backend said only "not
 valid" invents information and reintroduces exactly the leak the backend closed. Render the
@@ -107,8 +123,10 @@ the UI has to reflect:
   { "errorCode": 5061, "errorKey": "COLLABORATION_ALREADY_REDEEMED" }
   ```
 
-  Re-sending the *same* code is a no-op and succeeds. If a host applied the wrong code, that is a
-  support request — an admin voids the attribution.
+  Re-sending the *same* code is a no-op and succeeds. This applies across code types too — a house
+  code and a partner code can never both be live on the same event. If a host applied the wrong
+  code, that is a support request — an admin voids it through whichever admin surface (§3 or §3b)
+  matches the code's type.
 - **A refund does not detach it.** An event that is refunded and later re-activated still belongs
   to the same partner.
 
@@ -130,6 +148,7 @@ All under `/api/admin`, all `ROLE_ADMIN`.
 | `GET`/`PATCH` | `/collaborators/{id}` | `PATCH` is a full replace |
 | `POST` | `/collaborators/{id}/portal-token` | Issues a partner page link |
 | `GET`/`POST` | `/collaborators/{id}/codes` | |
+| `POST` | `/collaborators/{id}/codes/link` | Attaches an existing house code instead of issuing a new one |
 | `PATCH` | `/collaboration-codes/{id}` | |
 | `GET` | `/collaborators/{id}/earnings` | The ledger, signed rows |
 | `GET` | `/collaborators/{id}/earnings/totals` | Per-currency owed and paid |
@@ -229,6 +248,32 @@ the number to show next to it in the UI, not a lifetime total.
 
 The two percentages are independent levers, not two views of one deal. A duplicate code string is a
 `409`; a window that ends before it starts is a `400`.
+
+### Linking an already-issued house code to a partner
+
+The other way to get a partner code: issue a house code first via `POST /api/admin/discount-codes`
+(§3b) with no partner in mind, then pair it with a collaborator later.
+
+```jsonc
+POST /api/admin/collaborators/{id}/codes/link
+{
+  "discountCodeId": "1a2b…",    // the id of an existing house code
+  "commissionPercent": 15
+}
+
+→ 200   // same CollaborationCodeResponseDto shape as "Creating a code" above
+```
+
+**No UUID typing required in the UI.** `GET /api/admin/discount-codes` (§3b) already returns every
+unlinked house code with its `code` and `label` — build the picker from that list and send the
+`id` of whichever one the admin selects.
+
+Linking is **one-directional** and **permanent**: there is no unlink endpoint, and once linked the
+code drops out of `/api/admin/discount-codes` and is only reachable at the collaborator endpoints
+from then on. It is also refused with a `409` if the code has ever been redeemed even once, house
+or not — a redemption made before the link has no partner to attribute commission to, so linking a
+code with any history would leave the ledger quietly missing that one. A brand-new house code
+sidesteps this; there is no way to retroactively attribute an old redemption.
 
 ### Editing or disabling a code — no `code` field
 
@@ -336,6 +381,84 @@ see which rows are actually in which state before retrying.
 
 ---
 
+## 3b. Admin: house discount codes
+
+All under `/api/admin/discount-codes`, all `ROLE_ADMIN`. No collaborator is involved anywhere on
+this surface — these are the platform's own codes.
+
+| Method | Path | Notes |
+|---|---|---|
+| `GET`/`POST` | `/api/admin/discount-codes` | |
+| `PATCH` | `/api/admin/discount-codes/{codeId}` | |
+| `POST` | `/api/admin/discount-codes/events/{eventId}/redemption/void` | |
+
+### Creating and listing
+
+```jsonc
+POST /api/admin/discount-codes
+{
+  "code": "SUMMER10",             // A–Z, 0–9 and dashes only; stored uppercase
+  "label": "Summer promo",        // What the host sees at checkout
+  "discountPercent": 10,          // 0–99
+  "startsAt": null,               // null means open-ended, both ends
+  "endsAt": null,
+  "maxRedemptions": null          // null means unlimited
+}
+
+→ 200
+{
+  "id": "1a2b…",
+  "code": "SUMMER10",
+  "label": "Summer promo",
+  "discountPercent": 10,
+  "status": "ACTIVE",
+  "startsAt": null,
+  "endsAt": null,
+  "maxRedemptions": null,
+  "liveRedemptions": 0
+}
+```
+
+Same shape as a partner code (§3) minus `collaboratorId` and `commissionPercent` — there is no
+partner to attribute anything to. `GET /api/admin/discount-codes` returns a bare array of every
+house code. `liveRedemptions` means the same thing it does for a partner code: `PENDING + ACTIVE`
+right now, checked against `maxRedemptions`. A duplicate code string is a `409`; a backwards
+window is a `400`.
+
+### Editing or disabling — no `code` field
+
+```jsonc
+PATCH /api/admin/discount-codes/{codeId}
+{
+  "label": "Summer promo — ended",
+  "discountPercent": 10,
+  "status": "DISABLED",           // ACTIVE | DISABLED — required, no default
+  "startsAt": null,
+  "endsAt": null,
+  "maxRedemptions": null
+}
+
+→ 200   // same shape as create, liveRedemptions reflects current state
+```
+
+Same full-replace semantics as the partner-code `PATCH`: send every field back, not just the one
+you're changing. Rate changes affect future redemptions only.
+
+### Voiding a house redemption
+
+```jsonc
+POST /api/admin/discount-codes/events/{eventId}/redemption/void
+{ "reason": "issued in error" }
+```
+
+Same shape and same mandatory `reason` as the partner-code void (§3). There is no commission to
+unwind here, so this only detaches the code from the event — the host's order is untouched, same
+as the partner case. Calling this on an event whose live code turns out to be a partner code (or
+calling the partner void on a house code) is refused with `5060`; use the endpoint matching the
+code's type.
+
+---
+
 ## 4. Partner: the page
 
 ```jsonc
@@ -363,5 +486,5 @@ A stale link cannot confirm it was ever real.
 | Code | Key | Meaning |
 |---|---|---|
 | `5060` | `COLLABORATION_CODE_NOT_VALID` | The code cannot be used here. No further detail, by design. |
-| `5061` | `COLLABORATION_ALREADY_REDEEMED` | This event already has a different partner code. |
+| `5061` | `COLLABORATION_ALREADY_REDEEMED` | This event already has a different discount code (house or partner). |
 | `5062` | `COLLABORATION_EARNING_NOT_PAYABLE` | That ledger row is not in `ACCRUED` state. |

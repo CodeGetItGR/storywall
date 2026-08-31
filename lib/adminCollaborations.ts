@@ -6,6 +6,10 @@ import type {
     CollaborationEarningsTotalDto,
     CollaboratorRequestDto,
     CollaboratorResponseDto,
+    DiscountCodePatchDto,
+    DiscountCodeRequestDto,
+    DiscountCodeResponseDto,
+    LinkDiscountCodeRequestDto,
 } from '@/lib/api/types';
 
 export function collaboratorRequestFromFormData(formData: FormData, existing?: CollaboratorResponseDto): CollaboratorRequestDto {
@@ -40,6 +44,35 @@ export function collaborationCodePatchFromFormData(formData: FormData, code: Col
         startsAt: localDateTimeOrNull(formData.get('startsAt')),
         endsAt: localDateTimeOrNull(formData.get('endsAt')),
         maxRedemptions: numberOrNull(formData.get('maxRedemptions')),
+    };
+}
+
+export function discountCodeCreateFromFormData(formData: FormData): DiscountCodeRequestDto {
+    return {
+        code: String(formData.get('code') ?? '').trim(),
+        label: String(formData.get('label') ?? '').trim(),
+        discountPercent: Number(formData.get('discountPercent') ?? 0),
+        startsAt: localDateTimeOrNull(formData.get('startsAt')),
+        endsAt: localDateTimeOrNull(formData.get('endsAt')),
+        maxRedemptions: numberOrNull(formData.get('maxRedemptions')),
+    };
+}
+
+export function discountCodePatchFromFormData(formData: FormData, code: DiscountCodeResponseDto): DiscountCodePatchDto {
+    return {
+        label: String(formData.get('label') ?? '').trim(),
+        discountPercent: Number(formData.get('discountPercent') ?? 0),
+        status: (formData.get('status') as DiscountCodePatchDto['status']) ?? code.status,
+        startsAt: localDateTimeOrNull(formData.get('startsAt')),
+        endsAt: localDateTimeOrNull(formData.get('endsAt')),
+        maxRedemptions: numberOrNull(formData.get('maxRedemptions')),
+    };
+}
+
+export function linkDiscountCodeFromFormData(formData: FormData): LinkDiscountCodeRequestDto {
+    return {
+        discountCodeId: String(formData.get('discountCodeId') ?? ''),
+        commissionPercent: Number(formData.get('commissionPercent') ?? 0),
     };
 }
 

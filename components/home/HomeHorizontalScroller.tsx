@@ -63,7 +63,7 @@ export function HomeHorizontalScroller({ children, previousLabel, nextLabel, cla
             <div
                 ref={scrollRef}
                 className={cn(
-                    'flex items-stretch gap-3 overflow-x-auto scroll-smooth touch-no-scrollbar px-4 pb-3 sm:px-8 lg:px-14 2xl:px-20',
+                    'flex items-stretch gap-3 overflow-x-auto scroll-smooth touch-no-scrollbar px-4 pb-3',
                     className
                 )}
             >

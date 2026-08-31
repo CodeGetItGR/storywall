@@ -7,12 +7,13 @@ import { type MouseEvent } from 'react';
 import { type AdminTab, useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { cn } from '@/lib/utils';
 
-const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'operations'> = {
+const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operations'> = {
     metrics: 'overview',
     eventPlans: 'catalog',
     planAvailability: 'catalog',
     planModules: 'catalog',
     paidServices: 'catalog',
+    discountCodes: 'marketing',
     collaborations: 'operations',
     modules: 'catalog',
     eventTypes: 'catalog',
@@ -21,7 +22,7 @@ const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'operations'> = {
     billingOps: 'operations',
     refunds: 'operations',
 };
-const GROUP_ORDER = ['overview', 'catalog', 'operations'] as const;
+const GROUP_ORDER = ['overview', 'catalog', 'marketing', 'operations'] as const;
 
 export function AdminShellNav({
     email,

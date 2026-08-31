@@ -252,11 +252,17 @@ export const endpoints = {
             byId: (id: string) => `/api/admin/collaborators/${id}`,
             portalToken: (id: string) => `/api/admin/collaborators/${id}/portal-token`,
             codes: (id: string) => `/api/admin/collaborators/${id}/codes`,
+            linkCode: (id: string) => `/api/admin/collaborators/${id}/codes/link`,
             earnings: (id: string) => `/api/admin/collaborators/${id}/earnings`,
             earningsTotals: (id: string) => `/api/admin/collaborators/${id}/earnings/totals`,
         },
         collaborationCodes: {
             byId: (id: string) => `/api/admin/collaboration-codes/${id}`,
+        },
+        discountCodes: {
+            list: '/api/admin/discount-codes',
+            byId: (id: string) => `/api/admin/discount-codes/${id}`,
+            redemptionVoid: (eventId: string) => `/api/admin/discount-codes/events/${eventId}/redemption/void`,
         },
         collaborationEarnings: {
             markPaid: '/api/admin/collaboration-earnings/mark-paid',

@@ -1,6 +1,6 @@
 'use client';
 
-import { BarChart3, Boxes, CalendarDays, Grid3X3, Handshake, Layers3, type LucideIcon, PackagePlus, Receipt, Shield, Smile, Tag, Undo2 } from 'lucide-react';
+import { BarChart3, Boxes, CalendarDays, Grid3X3, Handshake, Layers3, type LucideIcon, PackagePlus, Receipt, Shield, Smile, Tag, TicketPercent, Undo2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
@@ -10,6 +10,7 @@ export type AdminTab =
     | 'planAvailability'
     | 'planModules'
     | 'paidServices'
+    | 'discountCodes'
     | 'collaborations'
     | 'modules'
     | 'eventTypes'
@@ -40,6 +41,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#plan-availability': 'planAvailability',
     '#plan-modules': 'planModules',
     '#paid-services': 'paidServices',
+    '#discount-codes': 'discountCodes',
     '#collaborations': 'collaborations',
     '#modules': 'modules',
     '#event-types': 'eventTypes',
@@ -55,6 +57,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     planAvailability: '#plan-availability',
     planModules: '#plan-modules',
     paidServices: '#paid-services',
+    discountCodes: '#discount-codes',
     collaborations: '#collaborations',
     modules: '#modules',
     eventTypes: '#event-types',
@@ -122,6 +125,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'planAvailability', label: t('planAvailability'), icon: Grid3X3 },
             { key: 'planModules', label: t('planModules'), icon: Boxes },
             { key: 'paidServices', label: t('paidServices'), icon: PackagePlus },
+            { key: 'discountCodes', label: t('discountCodes'), icon: TicketPercent },
             { key: 'collaborations', label: t('collaborations'), icon: Handshake },
             { key: 'modules', label: t('modules'), icon: Shield },
             { key: 'eventTypes', label: t('eventTypes'), icon: Tag },

@@ -1848,11 +1848,13 @@
             "closeMenu": "Close menu",
             "groupOverview": "Overview",
             "groupCatalog": "Catalog",
+            "groupMarketing": "Marketing",
             "groupOperations": "Operations",
             "eventPlans": "Event plans",
             "planAvailability": "Plan availability",
             "planModules": "Plan modules",
             "paidServices": "Paid services",
+            "discountCodes": "Discount codes",
             "collaborations": "Collaborations",
             "reactionTypes": "Reactions",
             "metrics": "Metrics",
@@ -1871,6 +1873,7 @@
             "planAvailability": "Plan availability",
             "planModules": "Plan modules",
             "paidServices": "Paid services",
+            "discountCodes": "Discount codes",
             "collaborations": "Collaborations",
             "reactionTypes": "Reactions",
             "modules": "Modules",
@@ -2330,12 +2333,21 @@
         },
         "collaborations": {
             "title": "Collaborations",
+            "subtitle": "Manage partners and referral codes.",
             "loading": "Loading collaborators...",
             "empty": "No collaborators to show.",
             "search": "Search partners",
             "create": "New partner",
             "edit": "Edit",
+            "manage": "Manage partner",
+            "rowCount": "{shown} of {total} partners",
             "selectPrompt": "Select a partner.",
+            "columns": {
+                "partner": "Partner",
+                "contact": "Contact",
+                "portal": "Portal",
+                "status": "Status"
+            },
             "stats": {
                 "total": "Partners",
                 "active": "Active",
@@ -2343,6 +2355,7 @@
                 "portalLinks": "Portal links"
             },
             "status": {
+                "ALL": "All",
                 "ACTIVE": "Active",
                 "SUSPENDED": "Suspended"
             },
@@ -2359,7 +2372,11 @@
                 "editSubtitle": "Update partner details."
             },
             "portal": {
+                "title": "Portal",
+                "description": "Issue the partner page link and copy it while it is visible.",
                 "issue": "Issue portal link",
+                "issued": "Issued",
+                "notIssued": "Not issued",
                 "confirmTitle": "Issue a portal link?",
                 "confirmBody": "A new link replaces the previous one immediately. The full link is shown once.",
                 "once": "Copy this now. It will not be shown again.",
@@ -2383,6 +2400,7 @@
                     "status": "Status"
                 },
                 "status": {
+                    "ALL": "All",
                     "ACTIVE": "Active",
                     "DISABLED": "Disabled"
                 },
@@ -2395,6 +2413,15 @@
                     "endsAt": "Ends",
                     "maxRedemptions": "Max redemptions"
                 }
+            },
+            "linkCode": {
+                "open": "Link discount code",
+                "title": "Link discount code",
+                "action": "Link code",
+                "loading": "Loading discount codes...",
+                "code": "Discount code",
+                "choose": "Choose a code",
+                "empty": "Create a discount code first."
             },
             "earnings": {
                 "title": "Earnings",
@@ -2448,6 +2475,25 @@
                 "success": "Attribution voided.",
                 "confirmTitle": "Void this attribution?",
                 "confirmBody": "This unwinds commission only. The host keeps the price already charged."
+            }
+        },
+        "discountCodes": {
+            "title": "Discount codes",
+            "description": "Manage platform discount codes.",
+            "subtitle": "Platform discount code",
+            "search": "Search discount codes",
+            "create": "New discount code",
+            "createTitle": "Create discount code",
+            "edit": "Edit discount code",
+            "editTitle": "Edit {code}",
+            "loading": "Loading discount codes...",
+            "empty": "No discount codes to show.",
+            "rowCount": "{shown} of {total} discount codes",
+            "stats": {
+                "total": "Discount codes",
+                "active": "Active",
+                "disabled": "Disabled",
+                "capped": "Capped"
             }
         },
         "billingOps": {
