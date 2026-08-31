@@ -1,9 +1,14 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 
-import { api } from '@/lib/api/client';
-import { endpoints } from '@/lib/api/endpoints';
-import type { Page } from '@/lib/api/pagination';
-import type { MediaBatchUploadResponseDto, MediaResponseDto, MediaUploadContext, OriginalMediaUrlDto } from '@/lib/api/types';
+import {api} from '@/lib/api/client';
+import {endpoints} from '@/lib/api/endpoints';
+import type {Page} from '@/lib/api/pagination';
+import type {
+    MediaBatchUploadResponseDto,
+    MediaResponseDto,
+    MediaUploadContext,
+    OriginalMediaUrlDto
+} from '@/lib/api/types';
 
 export const mediaKeys = {
     list: (eventId: string) => ['events', eventId, 'media'] as const,
@@ -95,26 +100,11 @@ export async function pollMediaUntilProcessed(id: string): Promise<MediaResponse
     const maxAttempts = 30;
     for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
         const media = await api.get<MediaResponseDto>(endpoints.medias.byId(id));
-        console.debug('[media-poll]', {
-            id,
-            attempt: attempt + 1,
-            status: media.status,
-            mediaUrl: media.mediaUrl,
-            thumbnailUrl: media.thumbnailUrl,
-        });
+
         if (media.status !== 'PROCESSING') return media;
         await new Promise((resolve) => window.setTimeout(resolve, 2000));
     }
-    const media = await api.get<MediaResponseDto>(endpoints.medias.byId(id));
-    console.debug('[media-poll]', {
-        id,
-        attempt: maxAttempts + 1,
-        status: media.status,
-        mediaUrl: media.mediaUrl,
-        thumbnailUrl: media.thumbnailUrl,
-        timedOut: media.status === 'PROCESSING',
-    });
-    return media;
+    return await api.get<MediaResponseDto>(endpoints.medias.byId(id));
 }
 
 export function useOriginalMedia() {
