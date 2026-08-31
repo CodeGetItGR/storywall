@@ -767,7 +767,7 @@
             "PRIVATE": "Private",
             "PUBLIC": "Public"
         },
-        "submitAndPay": "Pay {amount}",
+        "submitAndPay": "Pay now",
         "usageTitle": "Event usage",
         "noPlans": "No public event plans are available yet.",
         "loadingPlans": "Loading plans for this event type…",
@@ -795,7 +795,12 @@
             "noCharge": "No charge"
         },
         "paidModules": {
-            "openDraft": "Open draft dashboard"
+            "openSetup": "Open setup"
+        },
+        "collaboration": {
+            "title": "Discount code",
+            "field": "Discount code",
+            "placeholder": "Enter code"
         },
         "overview": {
             "event": "Event details",
@@ -868,7 +873,7 @@
             "title": "Not published yet",
             "body": "Set a start date before publishing.",
             "payAndPublish": "Pay and publish",
-            "reviewAndPublish": "Review payment and publish",
+            "openingCheckout": "Opening secure checkout...",
             "addStartDate": "Add a start date to publish",
             "retryIn": "Try again in {seconds}s",
             "activationTotal": "Activation total: {total}",
@@ -1407,8 +1412,8 @@
         "continueToCheckout": "Continue to checkout",
         "openingCheckout": "Opening secure checkout...",
         "collaboration": {
-            "title": "Partner code",
-            "field": "Partner code",
+            "title": "Discount code",
+            "field": "Discount code",
             "placeholder": "Enter code",
             "apply": "Apply",
             "checking": "Checking...",
@@ -1424,6 +1429,11 @@
                 "title": "Order preview",
                 "description": "Check the plan and included add-ons before publishing this event.",
                 "consequence": "The event is published after payment is confirmed."
+            },
+            "activationCancelled": {
+                "title": "Payment cancelled",
+                "description": "Nothing was charged. Review the charge and continue when you are ready.",
+                "consequence": "The event stays unpublished until payment is confirmed. Guests cannot post yet."
             },
             "renewal": {
                 "title": "Subscription preview",
@@ -1453,14 +1463,6 @@
         "orderId": "Order {orderId}",
         "backToEvent": "Back to event",
         "backToSetup": "Back to event setup"
-    },
-    "CheckoutCancelledPage": {
-        "title": "Checkout cancelled",
-        "body": "Nothing was charged. You can try again whenever you are ready.",
-        "retryPayment": "Try payment again",
-        "reviewPayment": "Review payment and try again",
-        "retrying": "Opening checkout...",
-        "returnToBilling": "Return to billing"
     },
     "PartnerPortalPage": {
         "loading": "Loading partner report",
@@ -2762,7 +2764,7 @@
         "checkoutSessionUnresolved": "Your last payment is still finishing. Try again in a moment.",
         "checkoutAmountBelowMinimum": "This plan can't be checked out at its current price. Please contact support.",
         "collaborationCodeNotValid": "That code isn't valid for this event.",
-        "collaborationAlreadyRedeemed": "This event already has another partner code.",
+        "collaborationAlreadyRedeemed": "This event already has another discount code.",
         "collaborationEarningNotPayable": "That earning cannot be marked paid.",
         "subscriptionAlreadyActive": "A subscription is already running for this event.",
         "refundNotEligible": "This event no longer meets the refund conditions.",

@@ -2,6 +2,7 @@
 
 import { Calendar, Receipt } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import type { ChangeEvent } from 'react';
 
 import { EventOverviewPriceRow } from '@/components/event/create/EventOverviewPriceRow';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
@@ -17,9 +18,21 @@ type EventOverviewStepProps = {
     plan: PlanTierResponseDto;
     error: string | null;
     hasDraft: boolean;
+    checkoutCode: string;
+    onCheckoutCodeChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
 };
 
-export function EventOverviewStep({ title, eventType, eventTypes, startAt, plan, error, hasDraft }: EventOverviewStepProps) {
+export function EventOverviewStep({
+    title,
+    eventType,
+    eventTypes,
+    startAt,
+    plan,
+    error,
+    hasDraft,
+    checkoutCode,
+    onCheckoutCodeChangeAction,
+}: EventOverviewStepProps) {
     const t = useTranslations('CreateEventPage');
     const locale = useLocale();
     const eventTypeCopy = useLocalizedAppEventTypeCopy();
@@ -74,11 +87,31 @@ export function EventOverviewStep({ title, eventType, eventTypes, startAt, plan,
                 </div>
             </section>
 
+            {/* Checkout code */}
+            <section aria-labelledby="checkout-code-heading" className="border-b border-border/70 py-5">
+                <h3 id="checkout-code-heading" className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+                    {t('collaboration.title')}
+                </h3>
+
+                <label className="sr-only" htmlFor="event-checkout-code">
+                    {t('collaboration.field')}
+                </label>
+                <input
+                    id="event-checkout-code"
+                    value={checkoutCode}
+                    onChange={onCheckoutCodeChangeAction}
+                    maxLength={40}
+                    autoComplete="off"
+                    placeholder={t('collaboration.placeholder')}
+                    className="mt-3 min-h-11 w-full rounded-full border border-border bg-card px-4 text-sm font-semibold text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+                />
+            </section>
+
             {/* Error State */}
             {error && (
                 <div className="mt-auto rounded-lg bg-rose-50 px-3 py-2 text-center text-xs text-rose-600">
                     <p>{error}</p>
-                    {hasDraft && <p className="mt-1 font-semibold">{t('paidModules.openDraft')}</p>}
+                    {hasDraft && <p className="mt-1 font-semibold">{t('paidModules.openSetup')}</p>}
                 </div>
             )}
         </div>

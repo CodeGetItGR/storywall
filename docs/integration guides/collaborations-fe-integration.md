@@ -127,7 +127,7 @@ All under `/api/admin`, all `ROLE_ADMIN`.
 | Method | Path | Notes |
 |---|---|---|
 | `GET`/`POST` | `/collaborators` | |
-| `GET`/`PATCH` | `/collaborators/{id}` | `PATCH` is a full replace; `status` may be `ACTIVE` or `SUSPENDED` |
+| `GET`/`PATCH` | `/collaborators/{id}` | `PATCH` is a full replace |
 | `POST` | `/collaborators/{id}/portal-token` | Issues a partner page link |
 | `GET`/`POST` | `/collaborators/{id}/codes` | |
 | `PATCH` | `/collaboration-codes/{id}` | |
@@ -136,23 +136,47 @@ All under `/api/admin`, all `ROLE_ADMIN`.
 | `POST` | `/collaboration-earnings/mark-paid` | Records a payout reference |
 | `POST` | `/events/{eventId}/collaboration-redemption/void` | Detaches a partner from an event |
 
-### Creating a code
+### Create / read a collaborator
 
 ```jsonc
-POST /api/admin/collaborators/{id}/codes
+POST /api/admin/collaborators
 {
-  "code": "barn-2026",          // A–Z, 0–9 and dashes only; stored uppercase
-  "label": "Barn Venue partner rate",   // What the host sees at checkout
-  "discountPercent": 10,        // 0–99. 100 is rejected: a zero-amount charge cannot be collected
-  "commissionPercent": 15,      // 0–100. 0 is a perk-only partnership
-  "startsAt": null,             // null means open-ended, both ends
-  "endsAt": null,
-  "maxRedemptions": null        // null means unlimited
+  "name": "Barn Venue",
+  "contactEmail": "hello@barn.test",     // lowercased and trimmed server-side
+  "notes": null,                          // optional, max 2000 chars, admin-only — never shown to the partner
+  "status": null                          // optional; null on create means ACTIVE
+}
+
+→ 200
+{
+  "id": "3fa4…",
+  "name": "Barn Venue",
+  "contactEmail": "hello@barn.test",
+  "status": "ACTIVE",
+  "portalTokenIssued": false,
+  "portalTokenIssuedAt": null,
+  "notes": null
 }
 ```
 
-The two percentages are independent levers, not two views of one deal. A duplicate code string is a
-`409`; a window that ends before it starts is a `400`.
+`GET /api/admin/collaborators` returns a bare JSON array of the same shape (no pagination
+envelope). `GET /api/admin/collaborators/{id}` returns one. The response never contains a portal
+token — see below.
+
+### Updating a collaborator, or suspending one
+
+`PATCH /api/admin/collaborators/{id}` takes the **same body as create** — it is a full replace, not
+a partial patch, despite the HTTP verb. Send `name` and `contactEmail` even if unchanged. `status`
+is the field that matters here: set it to `"SUSPENDED"` to take a partner offline (their portal
+page and any live codes stop working) or back to `"ACTIVE"` to restore them; leave it `null` on an
+update that isn't about status to leave the current value alone.
+
+```jsonc
+PATCH /api/admin/collaborators/{id}
+{ "name": "Barn Venue", "contactEmail": "hello@barn.test", "notes": "Renewed 2026", "status": "SUSPENDED" }
+
+→ 200  // same CollaboratorResponseDto shape as above, status now "SUSPENDED"
+```
 
 ### The portal token is readable exactly once
 
@@ -168,10 +192,68 @@ previous URL immediately. There is no recovery — an admin who loses it rotates
 The admin UI must show this value on the response screen and warn that it will not be shown again.
 Do not persist it client-side.
 
-### Code strings are not editable
+### Creating a code
 
-`PATCH /collaboration-codes/{id}` has no `code` field. A partner has already printed the string on
-their brochures; retiring one means setting `status: "DISABLED"` and issuing a new code.
+```jsonc
+POST /api/admin/collaborators/{id}/codes
+{
+  "code": "barn-2026",          // A–Z, 0–9 and dashes only; stored uppercase
+  "label": "Barn Venue partner rate",   // What the host sees at checkout
+  "discountPercent": 10,        // 0–99. 100 is rejected: a zero-amount charge cannot be collected
+  "commissionPercent": 15,      // 0–100. 0 is a perk-only partnership
+  "startsAt": null,             // null means open-ended, both ends
+  "endsAt": null,
+  "maxRedemptions": null        // null means unlimited
+}
+
+→ 200
+{
+  "id": "9c1e…",
+  "collaboratorId": "3fa4…",
+  "code": "BARN-2026",
+  "label": "Barn Venue partner rate",
+  "discountPercent": 10,
+  "commissionPercent": 15,
+  "status": "ACTIVE",
+  "startsAt": null,
+  "endsAt": null,
+  "maxRedemptions": null,
+  "liveRedemptions": 0
+}
+```
+
+`GET /api/admin/collaborators/{id}/codes` returns a bare array of the same shape, one entry per
+code belonging to that collaborator. `liveRedemptions` counts `PENDING + ACTIVE` redemptions
+against that code right now — this is what a cap (`maxRedemptions`) is checked against, so it is
+the number to show next to it in the UI, not a lifetime total.
+
+The two percentages are independent levers, not two views of one deal. A duplicate code string is a
+`409`; a window that ends before it starts is a `400`.
+
+### Editing or disabling a code — no `code` field
+
+`PATCH /api/admin/collaboration-codes/{id}` takes every field a code has **except the code string
+itself**:
+
+```jsonc
+PATCH /api/admin/collaboration-codes/{id}
+{
+  "label": "Barn Venue — retired",
+  "discountPercent": 10,
+  "commissionPercent": 15,
+  "status": "DISABLED",         // ACTIVE | DISABLED — required, no default
+  "startsAt": null,
+  "endsAt": null,
+  "maxRedemptions": null
+}
+
+→ 200   // same CollaborationCodeResponseDto shape as create, liveRedemptions reflects current state
+```
+
+A partner has already printed the string on their brochures; retiring one means setting
+`status: "DISABLED"` and issuing a new code, not renaming this one. All other fields are a full
+replace, same as the collaborator `PATCH` — send the current values back for anything you don't
+mean to change.
 
 Editing the rates affects **future** redemptions only. Every existing redemption snapshotted its
 percentages when it was made, so nothing already discounted or already earned moves.
@@ -193,12 +275,64 @@ being edited.
 
 ### The ledger
 
-Amounts are **signed minor units**. An `ACCRUAL` is positive, a `CLAWBACK` negative, so a payout is
-a plain sum. Totals are per currency and must never be added across currencies.
+```jsonc
+GET /api/admin/collaborators/{id}/earnings
 
-`POST /collaboration-earnings/mark-paid` records that a bank transfer happened; it moves no money.
-A row that is not `ACCRUED` is refused with `errorCode 5062 COLLABORATION_EARNING_NOT_PAYABLE`, so
-double-paying is not possible.
+→ 200
+[
+  {
+    "id": "6b2a…",
+    "eventId": "…",
+    "orderId": "…",
+    "codeId": "9c1e…",
+    "entryType": "ACCRUAL",        // ACCRUAL | CLAWBACK
+    "amountMinor": 1800,           // signed: an ACCRUAL is positive, a CLAWBACK negative
+    "currency": "EUR",
+    "commissionPercent": 15,       // snapshotted from the redemption, not the code's current rate
+    "basisAmountMinor": 12000,     // what the percentage was applied to
+    "status": "ACCRUED",           // ACCRUED | PAID | REVERSED
+    "accruedAt": "2026-08-31T10:15:00Z",
+    "paidAt": null,
+    "payoutReference": null
+  }
+]
+```
+
+A payout is a plain sum over `amountMinor`; do not compute it any other way. Sort/filter
+client-side — the endpoint returns the full ledger for that collaborator, newest and oldest mixed
+in insertion order.
+
+```jsonc
+GET /api/admin/collaborators/{id}/earnings/totals
+
+→ 200
+[ { "currency": "EUR", "accruedMinor": 21600, "paidMinor": 18000 } ]
+```
+
+One row per currency that collaborator has ever earned in; `accruedMinor` is what's currently owed
+(status `ACCRUED`), `paidMinor` is what has already gone out (status `PAID`). Never sum these
+across the array — a total across currencies is meaningless.
+
+### Marking earnings paid
+
+`POST /api/admin/collaboration-earnings/mark-paid` takes a **batch** — one or many ledger row ids
+in a single call, all stamped with the same payout reference:
+
+```jsonc
+POST /api/admin/collaboration-earnings/mark-paid
+{
+  "earningIds": ["6b2a…", "7c3f…"],   // one or more ACCRUED row ids; empty array is rejected (400)
+  "payoutReference": "SEPA-2026-08-31"   // required, max 200 chars — whatever the admin can reconcile against
+}
+
+→ 200   // no body
+```
+
+It records that a transfer happened; it moves no money itself. Every id in the batch must
+currently be `ACCRUED` — if any row is `PAID` or `REVERSED` already, the whole call is refused with
+`errorCode 5062 COLLABORATION_EARNING_NOT_PAYABLE` and **nothing** in the batch is marked (it is
+one transaction), so double-paying is not possible. Re-fetch the ledger after a batch failure to
+see which rows are actually in which state before retrying.
 
 ---
 

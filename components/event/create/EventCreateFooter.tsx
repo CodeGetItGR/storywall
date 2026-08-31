@@ -12,7 +12,6 @@ export function EventCreateFooter({
     canContinue,
     isPending,
     hasDraft,
-    payAmountLabel,
     canSubmitDetails,
     onGoToTypeAction,
     onGoToDetailsAction,
@@ -24,7 +23,6 @@ export function EventCreateFooter({
     canContinue: boolean;
     isPending: boolean;
     hasDraft: boolean;
-    payAmountLabel: string;
     canSubmitDetails: boolean;
     onGoToTypeAction: () => void;
     onGoToDetailsAction: () => void;
@@ -107,9 +105,9 @@ export function EventCreateFooter({
                             {isPending ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
                             ) : hasDraft ? (
-                                t('paidModules.openDraft')
+                                t('paidModules.openSetup')
                             ) : (
-                                t('submitAndPay', { amount: payAmountLabel })
+                                t('submitAndPay')
                             )}
                         </button>
                     </div>

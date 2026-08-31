@@ -43,8 +43,8 @@ export const routes = {
         location: (eventId: string, role?: 'main' | 'secondary' | null) => `/events/${eventId}/location${role ? `/${role}` : ''}`,
         feed: (eventId: string, params: { post?: string | null } = {}) => withQuery(`/events/${eventId}/feed`, params),
         settingsAddons: (eventId: string) => `/events/${eventId}/settings/addons`,
-        checkoutReview: (eventId: string, intent: CheckoutIntent, code?: string | null) =>
-            withQuery(`/events/${eventId}/checkout/review`, { intent, code }),
+        checkoutReview: (eventId: string, intent: CheckoutIntent, code?: string | null, cancelled?: boolean | null) =>
+            withQuery(`/events/${eventId}/checkout/review`, { intent, code, cancelled }),
         checkoutSuccess: (eventId: string, orderId?: string | null) => withQuery(`/events/${eventId}/checkout/success`, { orderId }),
         checkoutCancelled: (eventId: string) => `/events/${eventId}/checkout/cancelled`,
     },

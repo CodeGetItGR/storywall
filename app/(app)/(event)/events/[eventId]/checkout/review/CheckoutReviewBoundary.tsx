@@ -60,6 +60,7 @@ export default function CheckoutReviewBoundary() {
     const rawIntent = searchParams.get('intent');
     const intent = CHECKOUT_INTENTS.find((value) => value === rawIntent) ?? null;
     const code = searchParams.get('code');
+    const isCancelledActivation = intent === 'activation' && searchParams.get('cancelled') === 'true';
     const plans = useMemo(() => scopedPlans(appConfig.data?.planTiers ?? [], 'EVENT'), [appConfig.data?.planTiers]);
     const currentPlan = plans.find((plan) => plan.code === billing.data?.planTierCode) ?? null;
     const targetPlan = code ? (plans.find((plan) => plan.code === code) ?? null) : null;
@@ -74,7 +75,7 @@ export default function CheckoutReviewBoundary() {
         );
     }
 
-    if (appConfig.error || billing.error || event.error || !billing.data || !currentPlan || !intent) {
+    if (appConfig.error || billing.error || event.error || !billing.data || !currentPlan || !intent || (intent === 'activation' && !isCancelledActivation)) {
         return (
             <PageErrorState
                 title={tPageError('title')}
@@ -92,17 +93,17 @@ export default function CheckoutReviewBoundary() {
             ? (service?.priceCurrency ?? currentPlan.priceCurrency ?? 'EUR')
             : (targetPlan?.priceCurrency ?? currentPlan.priceCurrency ?? billing.data.orders[0]?.currency ?? 'EUR');
 
-    let title = t('intent.activation.title');
-    let description = t('intent.activation.description');
+    let title = t('intent.activationCancelled.title');
+    let description = t('intent.activationCancelled.description');
     let planLabel = currentPlan.name;
     let lines: ReviewLine[] = [];
-    let consequence = t('intent.activation.consequence');
+    let consequence = t('intent.activationCancelled.consequence');
     let valid = true;
 
     if (intent === 'activation') {
-        title = t('intent.activation.title');
-        description = t('intent.activation.description');
-        consequence = t('intent.activation.consequence');
+        title = t('intent.activationCancelled.title');
+        description = t('intent.activationCancelled.description');
+        consequence = t('intent.activationCancelled.consequence');
         valid = billing.data.eventStatus === 'DRAFT' && currentPlan.priceAmountMinor !== null;
         if (currentPlan.priceAmountMinor !== null) {
             lines = [
@@ -144,7 +145,7 @@ export default function CheckoutReviewBoundary() {
         intent === 'storage'
             ? routes.events.settingsAddons(eventId)
             : intent === 'activation'
-              ? routes.events.manage(eventId)
+              ? routes.events.manage(eventId, { tab: 'overview' })
               : routes.events.manage(eventId, { tab: 'billing' });
 
     async function continueToCheckout() {

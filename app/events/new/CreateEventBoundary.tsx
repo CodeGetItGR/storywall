@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { CreateEventRouteState } from '@/components/event/create/CreateEventRouteState';
@@ -21,10 +21,9 @@ import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { getFieldErrors } from '@/lib/api/errors';
 import type { CheckoutResponseDto, EventRequestDto, EventResponseDto, EventTypeConvention } from '@/lib/api/types';
-import { formatMoney, navigateToCheckout } from '@/lib/billing';
+import { navigateToCheckout } from '@/lib/billing';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import { getScheduleDatetimeLocalBounds, isDatetimeLocalBefore } from '@/lib/datetime';
-import { getPlanPriceDetails } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 import { getCurrentTimezone, getSupportedTimezones } from '@/lib/timezones';
 
@@ -34,7 +33,6 @@ const CREATE_EVENT_FORM_ID = 'create-event-form';
 
 export default function CreateEventPage() {
     const t = useTranslations('CreateEventPage');
-    const locale = useLocale();
     const router = useRouter();
     const { user, isAuthenticated, isBootstrapping } = useAuth();
     const createEvent = useCreateEvent();
@@ -50,6 +48,8 @@ export default function CreateEventPage() {
     const eventTypes = appConfig?.eventTypes ?? [];
     const [selectedPlanCode, setSelectedPlanCode] = useState<string>('');
     const [createdDraftEventId, setCreatedDraftEventId] = useState<string | null>(null);
+    const [checkoutCode, setCheckoutCode] = useState('');
+    const [isCheckoutPending, setIsCheckoutPending] = useState(false);
 
     const fieldErrors = getFieldErrors(createEvent.error);
     const selectedEventType = eventTypes.find((type) => type.eventTypeKey === eventType)?.eventTypeKey ?? eventTypes[0]?.eventTypeKey ?? eventType;
@@ -64,14 +64,6 @@ export default function CreateEventPage() {
     const { startAtMin } = getScheduleDatetimeLocalBounds({ startAt, endAt: null });
     const scheduleError = startAt && isDatetimeLocalBefore(startAt, startAtMin) ? t('validation.startInPast') : null;
     const timezoneError = timezone && !isTimezoneValid ? t('validation.invalidTimezone') : null;
-    const overviewPayAmountLabel = useMemo(() => {
-        if (!selectedPlan) return t('payment.noCharge');
-
-        const activation = getPlanPriceDetails(selectedPlan);
-
-        return activation ? formatMoney(locale, activation.amountMinor, activation.currency) : t('payment.noCharge');
-    }, [locale, selectedPlan, t]);
-
     useEffect(() => {
         if (isBootstrapping) return;
         if (!isAuthenticated) {
@@ -115,8 +107,10 @@ export default function CreateEventPage() {
         let event: EventResponseDto | null = null;
 
         try {
+            setIsCheckoutPending(true);
             event = await createEvent.mutateAsync(input);
         } catch (err) {
+            setIsCheckoutPending(false);
             if (Object.keys(getFieldErrors(err) ?? {}).length > 0) {
                 setStep('details');
                 return;
@@ -127,11 +121,16 @@ export default function CreateEventPage() {
         }
 
         try {
-            const checkout = await api.post<CheckoutResponseDto>(endpoints.events.checkout(event.id));
+            const trimmedCheckoutCode = checkoutCode.trim();
+            const checkout = await api.post<CheckoutResponseDto>(
+                endpoints.events.checkout(event.id),
+                trimmedCheckoutCode ? { collaborationCode: trimmedCheckoutCode } : undefined
+            );
             navigateToCheckout(event.id, checkout);
         } catch (checkoutError) {
             setCreatedDraftEventId(event.id);
             setError(toErrorMessage(checkoutError));
+            setIsCheckoutPending(false);
         }
     }
 
@@ -149,6 +148,8 @@ export default function CreateEventPage() {
             setTimezone(getCurrentTimezone());
             setError(null);
             setCreatedDraftEventId(null);
+            setCheckoutCode('');
+            setIsCheckoutPending(false);
         },
         [eventType]
     );
@@ -159,6 +160,11 @@ export default function CreateEventPage() {
 
     const onTimezoneChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setTimezone(e.target.value);
+    }, []);
+
+    const onCheckoutCodeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setCheckoutCode(e.target.value);
+        setError(null);
     }, []);
 
     const goToType = useCallback(() => {
@@ -244,6 +250,8 @@ export default function CreateEventPage() {
                                         plan={selectedPlan}
                                         error={error}
                                         hasDraft={Boolean(createdDraftEventId)}
+                                        checkoutCode={checkoutCode}
+                                        onCheckoutCodeChangeAction={onCheckoutCodeChange}
                                     />
                                 )}
                             </form>
@@ -254,9 +262,8 @@ export default function CreateEventPage() {
                         formId={CREATE_EVENT_FORM_ID}
                         canContinueType={eventTypes.length > 0}
                         canContinue={Boolean(selectedCode)}
-                        isPending={createEvent.isPending}
+                        isPending={createEvent.isPending || isCheckoutPending}
                         hasDraft={Boolean(createdDraftEventId)}
-                        payAmountLabel={overviewPayAmountLabel}
                         canSubmitDetails={Boolean(title.trim() && startAt && isTimezoneValid && !scheduleError)}
                         onGoToTypeAction={goToType}
                         onGoToDetailsAction={goToDetails}

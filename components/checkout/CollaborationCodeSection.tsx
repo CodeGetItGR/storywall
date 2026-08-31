@@ -15,11 +15,13 @@ const MAX_COLLABORATION_CODE_LENGTH = 40;
 export function CollaborationCodeSection({
     eventId,
     onPreviewChangeAction,
+    copyNamespace = 'CheckoutReviewPage.collaboration',
 }: {
     eventId: string;
+    copyNamespace?: 'CheckoutReviewPage.collaboration' | 'CreateEventPage.collaboration';
     onPreviewChangeAction: (code: string | null, preview: CollaborationCodePreviewResponseDto | null) => void;
 }) {
-    const t = useTranslations('CheckoutReviewPage.collaboration');
+    const t = useTranslations(copyNamespace);
     const locale = useLocale();
     const previewCode = usePreviewCollaborationCode(eventId);
     const toErrorMessage = useApiErrorMessage();
@@ -55,23 +57,23 @@ export function CollaborationCodeSection({
     }
 
     return (
-        <section className="mt-6" aria-labelledby="partner-code-title">
-            {/* Partner code */}
+        <section className="mt-6" aria-labelledby="checkout-code-title">
+            {/* Checkout code */}
             <div className="rounded-lg bg-surface-muted/55 p-4">
                 <div className="flex items-start gap-3">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                         <BadgePercent className="h-4 w-4" aria-hidden="true" />
                     </span>
                     <div className="min-w-0 flex-1">
-                        <h2 id="partner-code-title" className="text-base font-bold text-ink">
+                        <h2 id="checkout-code-title" className="text-base font-bold text-ink">
                             {t('title')}
                         </h2>
                         <form onSubmit={handleSubmit} className="mt-3 flex flex-col gap-2 sm:flex-row">
-                            <label className="sr-only" htmlFor="collaboration-code">
+                            <label className="sr-only" htmlFor="checkout-code">
                                 {t('field')}
                             </label>
                             <input
-                                id="collaboration-code"
+                                id="checkout-code"
                                 value={code}
                                 onChange={handleCodeChange}
                                 maxLength={MAX_COLLABORATION_CODE_LENGTH}

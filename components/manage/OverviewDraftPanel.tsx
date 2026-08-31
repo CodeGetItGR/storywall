@@ -1,13 +1,16 @@
-import { Clock3 } from 'lucide-react';
-import Link from 'next/link';
+'use client';
+
+import { Clock3, Loader2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import { useState } from 'react';
 
 import { GiftAccountSetup } from '@/components/manage/GiftAccountSetup';
 import { TargetedSection } from '@/components/manage/TargetedSection';
+import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useCheckout } from '@/hooks/useBilling';
 import type { EventBillingResponseDto } from '@/lib/api/types';
-import { formatMoney } from '@/lib/billing';
+import { formatMoney, navigateToCheckout } from '@/lib/billing';
 import { GIFT_ACCOUNT_SECTION_ID } from '@/lib/manageSectionTargets';
-import { routes } from '@/lib/routes';
 
 export function OverviewDraftPanel({
     eventId,
@@ -26,6 +29,20 @@ export function OverviewDraftPanel({
 }) {
     const t = useTranslations('ManagePage');
     const locale = useLocale();
+    const checkout = useCheckout(eventId);
+    const toErrorMessage = useApiErrorMessage();
+    const [error, setError] = useState<string | null>(null);
+
+    async function handlePay() {
+        if (!canPay) return;
+        setError(null);
+
+        try {
+            navigateToCheckout(eventId, await checkout.mutateAsync());
+        } catch (checkoutError) {
+            setError(toErrorMessage(checkoutError));
+        }
+    }
 
     return (
         <div className="rounded-2xl border border-border bg-surface-muted/40 p-4 sm:p-5">
@@ -73,12 +90,15 @@ export function OverviewDraftPanel({
                     </p>
                 )}
                 {canPay ? (
-                    <Link
-                        href={routes.events.checkoutReview(eventId, 'activation')}
+                    <button
+                        type="button"
+                        onClick={handlePay}
+                        disabled={checkout.isPending}
                         className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-4 text-sm font-semibold text-white sm:w-auto"
                     >
-                        {t('draft.reviewAndPublish')}
-                    </Link>
+                        {checkout.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
+                        {checkout.isPending ? t('draft.openingCheckout') : t('draft.payAndPublish')}
+                    </button>
                 ) : (
                     <button
                         type="button"
@@ -89,6 +109,7 @@ export function OverviewDraftPanel({
                     </button>
                 )}
             </div>
+            {error && <p className="mt-3 text-sm text-rose-600">{error}</p>}
         </div>
     );
 }
