@@ -113,6 +113,10 @@ export const endpoints = {
         resolve: (token: string) => `/api/qr/${token}`,
     },
 
+    partners: {
+        portal: (token: string) => `/api/partners/${encodeURIComponent(token)}`,
+    },
+
     eventMembers: {
         create: '/api/event-members',
         byId: (id: string) => `/api/event-members/${id}`,

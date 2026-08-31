@@ -1462,6 +1462,25 @@
         "retrying": "Opening checkout...",
         "returnToBilling": "Return to billing"
     },
+    "PartnerPortalPage": {
+        "loading": "Loading partner report",
+        "title": "Partner report",
+        "summary": "Partner summary",
+        "eventsReferred": "Events referred",
+        "currencies": "Currencies",
+        "unavailable": {
+            "title": "This partner link is not available",
+            "description": "Ask StoryWall for a new link."
+        },
+        "totals": {
+            "title": "Earnings",
+            "empty": "No earnings yet.",
+            "currency": "Currency",
+            "accrued": "Accrued",
+            "paid": "Paid",
+            "balance": "Balance"
+        }
+    },
     "SchedulePage": {
         "back": "Go back",
         "title": "Schedule",

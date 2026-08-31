@@ -505,6 +505,16 @@ export interface CollaborationCodePreviewResponseDto {
     payableAmountMinor: number;
     currency: string;
 }
+export interface PartnerPortalTotalDto {
+    currency: string;
+    accruedMinor: number;
+    paidMinor: number;
+}
+export interface PartnerPortalResponseDto {
+    name: string;
+    eventsReferred: number;
+    totals: PartnerPortalTotalDto[];
+}
 export interface UpgradeCheckoutRequestDto {
     planTierCode: PlanTierCode;
 }
