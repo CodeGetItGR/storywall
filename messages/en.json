@@ -872,11 +872,11 @@
         "draft": {
             "title": "Not published yet",
             "body": "Set a start date before publishing.",
+            "bodyReadyToPay": "Complete payment to publish.",
             "payAndPublish": "Pay and publish",
             "openingCheckout": "Opening secure checkout...",
             "addStartDate": "Add a start date to publish",
             "retryIn": "Try again in {seconds}s",
-            "activationTotal": "Activation total: {total}",
             "selectedAddons": {
                 "title": "Selected add-ons",
                 "body": "Chosen during event creation. Add-ons can't be changed until after publishing."
@@ -1462,7 +1462,8 @@
         "draftProcessingNote": "The event remains unpublished until the payment is confirmed. Guests will not be able to post yet, and you can return to setup while we keep checking.",
         "orderId": "Order {orderId}",
         "backToEvent": "Back to event",
-        "backToSetup": "Back to event setup"
+        "backToSetup": "Back to event setup",
+        "redirectCountdown": "Opening the feed in {seconds, plural, one {# second} other {# seconds}}."
     },
     "PartnerPortalPage": {
         "loading": "Loading partner report",
@@ -1582,6 +1583,7 @@
         "back": "Back",
         "skip": "Skip",
         "continue": "Continue",
+        "checkoutGuide": "Set up your event",
         "welcome": {
             "title": "Welcome! Let's set up {eventTitle}",
             "body": "A few quick steps to get things ready for your guests."

@@ -107,6 +107,8 @@ export function ManageScreen() {
                         modules={appConfig?.modules ?? []}
                         eventModules={activeEvent.modules}
                         eventId={activeEvent.id}
+                        eventTitle={activeEvent.title}
+                        eventType={activeEvent.eventType}
                         eventStatus={activeEvent.status}
                         startAt={activeEvent.schedule.startAt}
                     />
@@ -191,7 +193,12 @@ export function ManageScreen() {
                     <ManageSectionNav active={section} onSelectAction={navigateToSection} className="sticky top-6 hidden self-start lg:flex" />
                 )}
 
-                <div className={cn('min-w-0', isDraft && 'lg:col-span-2 lg:max-w-3xl')}>
+                <div
+                    className={cn(
+                        'min-w-0',
+                        isDraft && 'flex min-h-[60svh] flex-col justify-center lg:col-span-2 lg:min-h-0 lg:max-w-4xl lg:justify-start'
+                    )}
+                >
                     {/* Section heading (desktop) */}
                     {!isDraft && (
                         <h2 className="mb-4 hidden text-sm font-bold uppercase tracking-wide text-ink-muted lg:block">{t(`sections.${section}`)}</h2>

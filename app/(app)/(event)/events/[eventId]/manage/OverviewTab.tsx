@@ -9,6 +9,7 @@ import { useEventOverviewPlan } from '@/hooks/useEventOverviewPlan';
 import type {
     EventModuleResponseDto,
     EventStatus,
+    EventTypeConvention,
     EventUsageResponseDto,
     PaidServiceResponseDto,
     PlanTierResponseDto,
@@ -29,6 +30,8 @@ export default function OverviewTab({
     modules,
     eventModules,
     eventId,
+    eventTitle,
+    eventType,
     eventStatus,
     startAt,
 }: {
@@ -42,6 +45,8 @@ export default function OverviewTab({
     modules: PlatformModuleResponseDto[];
     eventModules: EventModuleResponseDto[];
     eventId: string;
+    eventTitle: string;
+    eventType: EventTypeConvention;
     eventStatus: EventStatus;
     startAt: string | null;
 }) {
@@ -60,7 +65,10 @@ export default function OverviewTab({
         return (
             <OverviewDraftPanel
                 eventId={eventId}
-                canPay={Boolean(startAt)}
+                eventTitle={eventTitle}
+                eventType={eventType}
+                startAt={startAt}
+                currentPlan={currentPlan}
                 currency={currentPlan?.priceCurrency ?? 'EUR'}
                 selectedAddons={selectedAddons}
                 activationTotal={currentPlan?.priceCurrency ? activationTotal : null}

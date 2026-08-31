@@ -126,6 +126,7 @@ export default function CreateEventPage() {
                 endpoints.events.checkout(event.id),
                 trimmedCheckoutCode ? { collaborationCode: trimmedCheckoutCode } : undefined
             );
+            window.history.replaceState(null, '', routes.events.manage(event.id));
             navigateToCheckout(event.id, checkout);
         } catch (checkoutError) {
             setCreatedDraftEventId(event.id);

@@ -45,7 +45,7 @@ export function useOnboardingProgress(eventId: string | null) {
         const stored = readState(eventId);
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setState(stored);
-        setIsOpen(!stored.completed && stored.stepIndex === 0);
+        setIsOpen(false);
         setHydrated(true);
     }, [eventId]);
 
@@ -58,6 +58,11 @@ export function useOnboardingProgress(eventId: string | null) {
     }, [eventId, state, hydrated]);
 
     const open = useCallback(() => setIsOpen(true), []);
+
+    const openAt = useCallback((stepIndex: number) => {
+        setState((current) => ({ ...current, completed: false, stepIndex: Math.max(stepIndex, 0) }));
+        setIsOpen(true);
+    }, []);
 
     // Closes the wizard without marking it done, so it can be reopened later
     // at the same step (e.g. a mistaken skip, or "back later").
@@ -88,6 +93,7 @@ export function useOnboardingProgress(eventId: string | null) {
         isComplete: state.completed,
         stepIndex: state.stepIndex,
         open,
+        openAt,
         next,
         back,
         dismiss,
