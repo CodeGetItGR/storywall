@@ -12,7 +12,7 @@ import { PlanModuleGuideModal } from '@/components/plan/PlanModuleGuideModal';
 import { PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
 import { PlanPriceLabel } from '@/components/plan/PlanPriceLabel';
 import { PlanUpgradeButton } from '@/components/plan/PlanUpgradeButton';
-import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto, UpgradeOptionResponseDto } from '@/lib/api/types';
 import { mediaEstimate, PLAN_COMPARISON_EMPTY } from '@/lib/planComparison';
 import { formatLimitValue } from '@/lib/planTiers';
 
@@ -26,7 +26,7 @@ export function EventPlanComparison({
     onUpgradeAction,
     pendingPlanCode = null,
     retryIn = 0,
-    upgradeTargets = [],
+    upgradeOptions = [],
 }: {
     plans: PlanTierResponseDto[];
     modules: PlatformModuleResponseDto[];
@@ -37,7 +37,7 @@ export function EventPlanComparison({
     onUpgradeAction?: (planTierCode: string) => void;
     pendingPlanCode?: string | null;
     retryIn?: number;
-    upgradeTargets?: PlanTierResponseDto[];
+    upgradeOptions?: UpgradeOptionResponseDto[];
 }) {
     const t = useTranslations('EventPlanSettingsPage');
     const locale = useLocale();
@@ -46,7 +46,7 @@ export function EventPlanComparison({
     const displayPlans = useMemo(() => [...plans].sort((left, right) => left.sortOrder - right.sortOrder), [plans]);
     const currentIndex = currentPlanCode ? displayPlans.findIndex((plan) => plan.code === currentPlanCode) : -1;
     const nextPlanId = currentIndex >= 0 ? (displayPlans[currentIndex + 1]?.id ?? null) : null;
-    const upgradeTargetCodes = new Set(upgradeTargets.map((plan) => plan.code));
+    const optionsByCode = useMemo(() => new Map(upgradeOptions.map((option) => [option.planTierCode, option])), [upgradeOptions]);
     function openModuleLegend() {
         setModuleLegendOpen(true);
     }
@@ -96,23 +96,24 @@ export function EventPlanComparison({
         },
     ];
 
-    if (currentPlan && onUpgradeAction && upgradeTargets.length > 0) {
+    if (currentPlan && onUpgradeAction && upgradeOptions.length > 0) {
         rows.push({
             key: 'upgrade',
             label: t('compare.upgradeOptions'),
-            render: (plan) =>
-                upgradeTargetCodes.has(plan.code) ? (
+            render: (plan) => {
+                const option = optionsByCode.get(plan.code);
+                return option ? (
                     <PlanUpgradeButton
-                        currentPlan={currentPlan}
+                        option={option}
                         isCheckoutPending={isCheckoutPending}
                         isPending={isCheckoutPending && pendingPlanCode === plan.code}
                         onUpgrade={onUpgradeAction}
                         retryIn={retryIn}
-                        target={plan}
                     />
                 ) : (
                     PLAN_COMPARISON_EMPTY
-                ),
+                );
+            },
         });
     }
 
@@ -128,7 +129,8 @@ export function EventPlanComparison({
                     {displayPlans.map((plan) => {
                         const isCurrent = Boolean(currentPlanCode) && plan.code === currentPlanCode;
                         const isNext = nextPlanId === plan.id;
-                        const canUpgrade = Boolean(currentPlan && onUpgradeAction && upgradeTargetCodes.has(plan.code));
+                        const option = optionsByCode.get(plan.code);
+                        const canUpgrade = Boolean(currentPlan && onUpgradeAction && option);
 
                         return (
                             <PlanCard
@@ -138,14 +140,13 @@ export function EventPlanComparison({
                                 emphasis={isCurrent ? 'primary' : isNext ? 'secondary' : undefined}
                                 badge={isCurrent ? <PlanComparisonBadges isCurrent /> : undefined}
                                 footer={
-                                    canUpgrade && currentPlan && onUpgradeAction ? (
+                                    canUpgrade && currentPlan && onUpgradeAction && option ? (
                                         <PlanUpgradeButton
-                                            currentPlan={currentPlan}
+                                            option={option}
                                             isCheckoutPending={isCheckoutPending}
                                             isPending={isCheckoutPending && pendingPlanCode === plan.code}
                                             onUpgrade={onUpgradeAction}
                                             retryIn={retryIn}
-                                            target={plan}
                                         />
                                     ) : undefined
                                 }

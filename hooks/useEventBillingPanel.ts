@@ -6,8 +6,8 @@ import React, { useCallback, useMemo, useState } from 'react';
 
 import { useApiErrorMessage, useRetryAfterCountdown } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
-import { useEventBilling, useEventRefundRequests, useRefundEligibility, useRequestRefund } from '@/hooks/useBilling';
-import { billingCurrency, discountedAmountMinor, formatBillingDate, newestBillingOrder, paidBillingTotal } from '@/lib/billing';
+import { useEventBilling, useEventRefundRequests, useRefundEligibility, useRequestRefund, useUpgradeOptions } from '@/hooks/useBilling';
+import { billingCurrency, formatBillingDate, newestBillingOrder, paidBillingTotal } from '@/lib/billing';
 import { publicAssignablePlans, scopedPlans } from '@/lib/planTiers';
 
 const ORDER_PREVIEW_COUNT = 6;
@@ -37,20 +37,12 @@ export function useEventBillingPanel(eventId: string) {
         () => scopedPlans(planTiers, 'EVENT').find((plan) => plan.code === data?.planTierCode) ?? null,
         [data?.planTierCode, planTiers]
     );
-    const upgradeTargets = useMemo(() => {
-        if (!currentPlan || currentPlan.priceAmountMinor === null || !currentPlan.priceCurrency) return [];
-        const currentPrice = currentPlan.priceAmountMinor;
-        const currentCurrency = currentPlan.priceCurrency;
-        return eventPlans.filter(
-            (plan) =>
-                plan.code !== currentPlan.code &&
-                plan.priceAmountMinor !== null &&
-                Boolean(plan.priceCurrency) &&
-                plan.priceCurrency === currentCurrency &&
-                plan.priceAmountMinor > currentPrice
-        );
-    }, [currentPlan, eventPlans]);
-    const nextPlan = upgradeTargets[0] ?? null;
+    const upgradeOptions = useUpgradeOptions(eventId);
+    const firstUpgradeOption = upgradeOptions.data?.[0] ?? null;
+    const nextPlan = useMemo(
+        () => (firstUpgradeOption ? (eventPlans.find((plan) => plan.code === firstUpgradeOption.planTierCode) ?? null) : null),
+        [eventPlans, firstUpgradeOption]
+    );
     const paidAddonOffers = useMemo(
         () =>
             (appConfigQuery.data?.paidServices ?? []).filter(
@@ -77,7 +69,8 @@ export function useEventBillingPanel(eventId: string) {
     const handleShowAllOrders = useCallback(() => setShowAllOrders(true), []);
     const handleRetry = useCallback(() => {
         void billing.refetch();
-    }, [billing]);
+        void upgradeOptions.refetch();
+    }, [billing, upgradeOptions]);
 
     const handleRefundReasonChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>) => {
         setRefundReason(event.target.value);
@@ -105,10 +98,6 @@ export function useEventBillingPanel(eventId: string) {
         if (!data || !insights) return null;
 
         const addonTotal = data.addons.reduce((sum, addon) => sum + addon.priceAmountMinor, 0);
-        const upgradeListAmount =
-            nextPlan && currentPlan && nextPlan.priceAmountMinor !== null && currentPlan.priceAmountMinor !== null
-                ? nextPlan.priceAmountMinor - currentPlan.priceAmountMinor
-                : null;
 
         // A renewal writes an order every month, so a long-running event's history
         // grows without bound. Show a recent window until the host asks for the rest.
@@ -117,13 +106,14 @@ export function useEventBillingPanel(eventId: string) {
         return {
             addonTotal,
             isRiskState: data.eventStatus === 'DRAFT',
-            upgradeListAmount,
-            upgradeAmount: nextPlan && upgradeListAmount !== null ? discountedAmountMinor(upgradeListAmount, nextPlan) : null,
-            upgradeCurrency: nextPlan?.priceCurrency ?? currentPlan?.priceCurrency ?? insights.orderCurrency,
+            upgradeListAmount: firstUpgradeOption?.gapAmountMinor ?? null,
+            upgradeAmount: firstUpgradeOption?.payableAmountMinor ?? null,
+            upgradeCurrency: firstUpgradeOption?.currency ?? currentPlan?.priceCurrency ?? insights.orderCurrency,
+            upgradeDiscountLabel: firstUpgradeOption?.discountLabel ?? null,
             visibleOrders,
             hiddenOrderCount: data.orders.length - visibleOrders.length,
         };
-    }, [currentPlan, data, insights, nextPlan, showAllOrders]);
+    }, [currentPlan, data, firstUpgradeOption, insights, showAllOrders]);
 
     return {
         data,

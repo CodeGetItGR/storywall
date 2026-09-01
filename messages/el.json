@@ -1417,6 +1417,7 @@
         "whatHappens": "Τι συμβαίνει μετά την πληρωμή",
         "continueToCheckout": "Συνέχεια στην πληρωμή",
         "openingCheckout": "Άνοιγμα ασφαλούς πληρωμής...",
+        "autoDiscountApplied": "{label} · έκπτωση {discount}%, εφαρμόζεται αυτόματα",
         "collaboration": {
             "title": "Κωδικός έκπτωσης",
             "field": "Κωδικός έκπτωσης",

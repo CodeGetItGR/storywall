@@ -2,7 +2,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 
 import { useAppConfig } from '@/hooks/useAppConfig';
-import { useEventBilling } from '@/hooks/useBilling';
+import { useEventBilling, useUpgradeOptions } from '@/hooks/useBilling';
 import { publicAssignablePlans } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 
@@ -13,27 +13,13 @@ export function usePlansPageData() {
     const selectedPlanCode = searchParams.get('plan');
     const appConfig = useAppConfig();
     const billing = useEventBilling(eventId);
+    const upgradeOptions = useUpgradeOptions(eventId);
     const plans = useMemo(() => publicAssignablePlans(appConfig.data?.planTiers ?? [], 'EVENT'), [appConfig.data?.planTiers]);
     const eventPlanCode = billing.data?.planTierCode ?? null;
     const currentPlanCode = eventPlanCode ?? selectedPlanCode;
     const selectedPlan = currentPlanCode ? (plans.find((plan) => plan.code === currentPlanCode) ?? null) : null;
     const selectedIndex = selectedPlan ? plans.findIndex((plan) => plan.id === selectedPlan.id) : -1;
     const nextPlan = selectedIndex >= 0 ? (plans[selectedIndex + 1] ?? null) : null;
-    const upgradeTargets = useMemo(() => {
-        if (!eventId || !selectedPlan || selectedPlan.priceAmountMinor === null || !selectedPlan.priceCurrency) return [];
-
-        const currentPrice = selectedPlan.priceAmountMinor;
-        const currentCurrency = selectedPlan.priceCurrency;
-
-        return plans.filter(
-            (plan) =>
-                plan.code !== selectedPlan.code &&
-                plan.priceAmountMinor !== null &&
-                Boolean(plan.priceCurrency) &&
-                plan.priceCurrency === currentCurrency &&
-                plan.priceAmountMinor > currentPrice
-        );
-    }, [eventId, plans, selectedPlan]);
 
     const startUpgrade = useCallback(
         (targetPlan: string) => {
@@ -49,7 +35,7 @@ export function usePlansPageData() {
         eventId,
         hasError: Boolean(appConfig.error || (eventId && billing.error)),
         isCheckoutPending: false,
-        isLoading: appConfig.isLoading || Boolean(eventId && billing.isLoading),
+        isLoading: appConfig.isLoading || Boolean(eventId && billing.isLoading) || Boolean(eventId && upgradeOptions.isLoading),
         modules: appConfig.data?.modules ?? [],
         paidServices: appConfig.data?.paidServices ?? [],
         nextPlan,
@@ -57,12 +43,15 @@ export function usePlansPageData() {
         plans,
         retry: () => {
             void appConfig.refetch();
-            if (eventId) void billing.refetch();
+            if (eventId) {
+                void billing.refetch();
+                void upgradeOptions.refetch();
+            }
         },
         retryIn: 0,
         selectedPlan,
         selectedPlanCode: currentPlanCode,
         startUpgrade,
-        upgradeTargets,
+        upgradeOptions: upgradeOptions.data ?? [],
     };
 }

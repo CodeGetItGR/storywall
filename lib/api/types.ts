@@ -612,6 +612,18 @@ export interface VoidCollaborationRedemptionRequestDto {
 export interface UpgradeCheckoutRequestDto {
     planTierCode: PlanTierCode;
 }
+export interface UpgradeOptionResponseDto {
+    planTierCode: PlanTierCode;
+    planTierName: string;
+    currency: string;
+    // Undiscounted difference between the two plans. Strike-through display only.
+    gapAmountMinor: number;
+    // What upgrade-checkout will actually charge for this planTierCode.
+    payableAmountMinor: number;
+    // Combined plan-promo + bound-code percent. Absent (not 0) when nothing discounts this target.
+    discountPercent?: number;
+    discountLabel?: string;
+}
 export interface OrderSummaryDto {
     id: string;
     kind: 'ACTIVATION' | 'UPGRADE' | 'STORAGE_PACK';

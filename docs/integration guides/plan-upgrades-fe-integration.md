@@ -4,6 +4,9 @@ Covers the upgrade work shipped 2026-08-08. See `billing-fe-guide.md` for the co
 reference — this doc only covers what upgrades add on top, and **its §12 error table and §14 types
 do not yet include the changes below**.
 
+**2026-09-01 update:** §3's picker-building guidance is superseded — a new endpoint now returns
+every upgrade target already fully priced, discount codes included. See §3.
+
 **The headline change: there is now a third purchase.** Until now an event's plan was fixed at
 creation and could only be changed by an admin, bypassing billing entirely. A host on `BASIC` who
 hit a storage wall had no self-serve route to `PLUS` — which was awkward, because the
@@ -89,11 +92,38 @@ paying the `PLUS` order would have moved the event to `PRO`.
 
 ## 3. Building the picker
 
+**2026-09-01 update: don't compute the picker's prices yourself any more.** Everything below this
+line describes the *old* approach and is kept only so you recognise it if you find it in existing
+code — a client-side `target - current` subtraction predates discount codes and was already wrong
+about plan promotions; now that a partner/house code bound at activation also carries over to an
+upgrade unretyped (see `collaborations-fe-integration.md` for that feature), it can be wrong by more
+than a rounding cent.
+
+Use `GET /api/events/{eventId}/upgrade-options` instead — one call, host-only, no code involved:
+
+```jsonc
+→ 200
+[
+  {
+    "planTierCode": "PRO", "planTierName": "Pro", "currency": "EUR",
+    "gapAmountMinor": 10000,      // undiscounted difference — fine for a "was €100" strike-through
+    "payableAmountMinor": 8000,   // what upgrade-checkout will actually charge — render this as the price
+    "discountPercent": 20,        // combined plan-promo + bound-code percent; absent when nothing discounts this target
+    "discountLabel": "Barn Venue partner rate"  // absent when discountPercent is absent
+  }
+]
+```
+
+Already filtered to valid targets (public, assignable, offered for this event type, priced above the
+current plan, same currency) and already sorted by catalog order — render the array as-is. See
+`collaborations-fe-integration.md` §1c for the full contract, including why `payableAmountMinor` can
+never disagree with what `POST /upgrade-checkout` then charges.
+
+<details>
+<summary>Old approach (pre-2026-09-01) — do not use for new code</summary>
+
 Read the catalog from `GET /api/config` → `planTiers` (already filtered to `isAssignable &&
 isPublic`), and the event's current plan from `GET /api/events/{eventId}/billing` → `planTierCode`.
-
-A plan is a valid upgrade target when **all** of these hold — mirror the server exactly or you will
-render options that 409:
 
 ```ts
 function upgradeTargets(catalog: PlanTierResponse[], current: PlanTierResponse) {
@@ -106,14 +136,11 @@ function upgradeTargets(catalog: PlanTierResponse[], current: PlanTierResponse) 
   ).sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
-// What the host will actually be charged. Same arithmetic the server does.
+// Wrong as of 2026-09-01: ignores the target plan's own promotion and any bound discount code.
 const differenceMinor = target.priceAmountMinor! - current.priceAmountMinor!;
 ```
 
-**Compute the difference for display only.** It is not sent and not trusted; the server reprices
-from the catalog at checkout time. If an admin repriced a plan between page load and click, the
-charge follows the catalog, not your screen — so re-read `/api/config` when opening the picker
-rather than using a cached copy.
+</details>
 
 Suggested copy: *"Upgrade to Plus — €100 now. Your coverage still runs to 14 March 2027."* Naming the
 unchanged date in the same sentence as the price is the clearest way to stop the host expecting more

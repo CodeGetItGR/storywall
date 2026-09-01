@@ -30,7 +30,7 @@ export default function PlansPage() {
             retryIn={data.retryIn}
             selectedPlan={data.selectedPlan}
             selectedPlanCode={data.selectedPlanCode}
-            upgradeTargets={data.upgradeTargets}
+            upgradeOptions={data.upgradeOptions}
         />
     );
 }

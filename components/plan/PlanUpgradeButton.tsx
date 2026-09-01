@@ -4,27 +4,23 @@ import { CreditCard, Loader2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 
-import type { PlanTierResponseDto } from '@/lib/api/types';
-import { discountedAmountMinor, formatMoney } from '@/lib/billing';
+import type { UpgradeOptionResponseDto } from '@/lib/api/types';
+import { formatMoney } from '@/lib/billing';
 
 interface PlanUpgradeButtonProps {
-    currentPlan: PlanTierResponseDto;
+    option: UpgradeOptionResponseDto;
     isCheckoutPending: boolean;
     isPending: boolean;
     onUpgrade: (planTierCode: string) => void;
     retryIn: number;
-    target: PlanTierResponseDto;
 }
 
-export function PlanUpgradeButton({ currentPlan, isCheckoutPending, isPending, onUpgrade, retryIn, target }: PlanUpgradeButtonProps) {
+export function PlanUpgradeButton({ option, isCheckoutPending, isPending, onUpgrade, retryIn }: PlanUpgradeButtonProps) {
     const locale = useLocale();
     const t = useTranslations('EventPlanSettingsPage');
-    const listAmount = target.priceAmountMinor! - currentPlan.priceAmountMinor!;
-    const amount = discountedAmountMinor(listAmount, target);
-    const currency = target.priceCurrency ?? currentPlan.priceCurrency ?? 'EUR';
-    const dueLabel = formatMoney(locale, amount, currency);
-    const listDueLabel = amount !== listAmount ? formatMoney(locale, listAmount, currency) : null;
-    const handleUpgrade = useCallback(() => onUpgrade(target.code), [onUpgrade, target.code]);
+    const dueLabel = formatMoney(locale, option.payableAmountMinor, option.currency);
+    const listDueLabel = option.payableAmountMinor !== option.gapAmountMinor ? formatMoney(locale, option.gapAmountMinor, option.currency) : null;
+    const handleUpgrade = useCallback(() => onUpgrade(option.planTierCode), [onUpgrade, option.planTierCode]);
 
     return (
         <button
@@ -35,7 +31,7 @@ export function PlanUpgradeButton({ currentPlan, isCheckoutPending, isPending, o
         >
             {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5" />}
             <span className="min-w-0 truncate">
-                {retryIn > 0 ? t('actions.retryIn', { seconds: retryIn }) : t('compare.upgradeButton', { plan: target.name, amount: dueLabel })}
+                {retryIn > 0 ? t('actions.retryIn', { seconds: retryIn }) : t('compare.upgradeButton', { plan: option.planTierName, amount: dueLabel })}
             </span>
             {listDueLabel && <span className="shrink-0 text-white/65 line-through">{listDueLabel}</span>}
         </button>

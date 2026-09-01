@@ -19,6 +19,7 @@ import type {
     RefundRequestResponseDto,
     StorageCheckoutRequestDto,
     UpgradeCheckoutRequestDto,
+    UpgradeOptionResponseDto,
 } from '@/lib/api/types';
 
 // The server can now legitimately refuse to settle an order (amount collected
@@ -46,6 +47,18 @@ export function useEventBilling(eventId: string | null, enabled = true) {
             const newest = Math.max(...pending.map((order) => Date.parse(order.createdAt) || 0));
             return Date.now() - newest > PENDING_ORDER_POLL_TIMEOUT_MS ? false : 5000;
         },
+    });
+}
+
+export const upgradeOptionsKeys = { event: (id: string) => ['events', id, 'upgrade-options'] as const };
+
+// Fully priced upgrade targets — gap and payable amounts, discount already
+// combined server-side. No rate limit of its own; safe to call per page view.
+export function useUpgradeOptions(eventId: string | null, enabled = true) {
+    return useQuery({
+        queryKey: upgradeOptionsKeys.event(eventId ?? ''),
+        queryFn: () => api.get<UpgradeOptionResponseDto[]>(endpoints.events.upgradeOptions(eventId!)),
+        enabled: Boolean(eventId) && enabled,
     });
 }
 
@@ -81,6 +94,7 @@ export function useUpgradeCheckout(eventId: string) {
             queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
             queryClient.invalidateQueries({ queryKey: usageKeys.event(eventId) });
             queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+            queryClient.invalidateQueries({ queryKey: upgradeOptionsKeys.event(eventId) });
         },
     });
 }

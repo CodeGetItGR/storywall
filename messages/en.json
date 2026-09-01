@@ -1417,6 +1417,7 @@
         "whatHappens": "What happens after payment",
         "continueToCheckout": "Continue to checkout",
         "openingCheckout": "Opening secure checkout...",
+        "autoDiscountApplied": "{label} · {discount}% off, applied automatically",
         "collaboration": {
             "title": "Discount code",
             "field": "Discount code",

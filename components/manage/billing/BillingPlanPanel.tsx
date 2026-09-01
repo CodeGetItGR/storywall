@@ -94,7 +94,7 @@ export function BillingPlanPanel({
                             {upgradeListDueLabel && (
                                 <span className="ml-2 text-xs font-semibold text-ink-faint">
                                     <span className="line-through">{upgradeListDueLabel}</span>
-                                    {nextPlan.discountLabel && <span className="ml-1">{nextPlan.discountLabel}</span>}
+                                    {derived.upgradeDiscountLabel && <span className="ml-1">{derived.upgradeDiscountLabel}</span>}
                                 </span>
                             )}
                         </span>

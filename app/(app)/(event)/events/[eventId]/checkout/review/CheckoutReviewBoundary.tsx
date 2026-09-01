@@ -10,7 +10,7 @@ import { BackButton } from '@/components/ui/BackButton';
 import { PageErrorState } from '@/components/ui/PageErrorState';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
-import { useCheckout, useEventBilling, useStorageCheckout, useUpgradeCheckout } from '@/hooks/useBilling';
+import { useCheckout, useEventBilling, useStorageCheckout, useUpgradeCheckout, useUpgradeOptions } from '@/hooks/useBilling';
 import { useEvent } from '@/hooks/useEvent';
 import type { CollaborationCodePreviewResponseDto, EventAddonDto } from '@/lib/api/types';
 import { discountedAmountMinor, formatMoney, navigateToCheckout } from '@/lib/billing';
@@ -40,6 +40,7 @@ export default function CheckoutReviewBoundary() {
     const activationCheckout = useCheckout(eventId);
     const upgradeCheckout = useUpgradeCheckout(eventId);
     const storageCheckout = useStorageCheckout(eventId);
+    const upgradeOptions = useUpgradeOptions(eventId);
     const toErrorMessage = useApiErrorMessage();
     const [error, setError] = useState<string | null>(null);
     const [collaborationCode, setCollaborationCode] = useState<string | null>(null);
@@ -55,7 +56,8 @@ export default function CheckoutReviewBoundary() {
         void appConfig.refetch();
         void billing.refetch();
         void event.refetch();
-    }, [appConfig, billing, event]);
+        void upgradeOptions.refetch();
+    }, [appConfig, billing, event, upgradeOptions]);
 
     const rawIntent = searchParams.get('intent');
     const intent = CHECKOUT_INTENTS.find((value) => value === rawIntent) ?? null;
@@ -65,8 +67,10 @@ export default function CheckoutReviewBoundary() {
     const currentPlan = plans.find((plan) => plan.code === billing.data?.planTierCode) ?? null;
     const targetPlan = code ? (plans.find((plan) => plan.code === code) ?? null) : null;
     const service = code ? (appConfig.data?.paidServices.find((item) => item.code === code) ?? null) : null;
+    const upgradeOption =
+        intent === 'upgrade' && targetPlan ? (upgradeOptions.data?.find((option) => option.planTierCode === targetPlan.code) ?? null) : null;
 
-    if (appConfig.isLoading || billing.isLoading || event.isLoading) {
+    if (appConfig.isLoading || billing.isLoading || event.isLoading || (intent === 'upgrade' && upgradeOptions.isLoading)) {
         return (
             <main className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
                 <div className="h-8 w-44 animate-pulse rounded bg-surface-muted" />
@@ -75,7 +79,16 @@ export default function CheckoutReviewBoundary() {
         );
     }
 
-    if (appConfig.error || billing.error || event.error || !billing.data || !currentPlan || !intent || (intent === 'activation' && !isCancelledActivation)) {
+    if (
+        appConfig.error ||
+        billing.error ||
+        event.error ||
+        !billing.data ||
+        !currentPlan ||
+        !intent ||
+        (intent === 'activation' && !isCancelledActivation) ||
+        (intent === 'upgrade' && upgradeOptions.error)
+    ) {
         return (
             <PageErrorState
                 title={tPageError('title')}
@@ -91,7 +104,9 @@ export default function CheckoutReviewBoundary() {
     const currency =
         intent === 'storage'
             ? (service?.priceCurrency ?? currentPlan.priceCurrency ?? 'EUR')
-            : (targetPlan?.priceCurrency ?? currentPlan.priceCurrency ?? billing.data.orders[0]?.currency ?? 'EUR');
+            : intent === 'upgrade'
+              ? (upgradeOption?.currency ?? currentPlan.priceCurrency ?? 'EUR')
+              : (targetPlan?.priceCurrency ?? currentPlan.priceCurrency ?? billing.data.orders[0]?.currency ?? 'EUR');
 
     let title = t('intent.activationCancelled.title');
     let description = t('intent.activationCancelled.description');
@@ -118,13 +133,13 @@ export default function CheckoutReviewBoundary() {
         title = t('intent.upgrade.title');
         description = t('intent.upgrade.description');
         consequence = t('intent.upgrade.consequence');
-        valid = Boolean(targetPlan && targetPlan.priceAmountMinor !== null && currentPlan.priceAmountMinor !== null);
-        if (targetPlan && targetPlan.priceAmountMinor !== null && currentPlan.priceAmountMinor !== null) {
-            planLabel = t('planChange', { from: currentPlan.name, to: targetPlan.name });
+        valid = Boolean(targetPlan && upgradeOption);
+        if (targetPlan && upgradeOption) {
+            planLabel = t('planChange', { from: currentPlan.name, to: upgradeOption.planTierName });
             lines = [
                 {
-                    label: t('items.planUpgrade', { plan: targetPlan.name }),
-                    amountMinor: discountedAmountMinor(targetPlan.priceAmountMinor - currentPlan.priceAmountMinor, targetPlan),
+                    label: t('items.planUpgrade', { plan: upgradeOption.planTierName }),
+                    amountMinor: upgradeOption.payableAmountMinor,
                 },
             ];
         }
@@ -218,6 +233,11 @@ export default function CheckoutReviewBoundary() {
                         <p className="text-sm font-semibold text-ink">{lines.length === 1 ? lines[0]?.label : t('dueNow')}</p>
                         <p className="shrink-0 text-xl font-bold text-ink">{formatMoney(locale, totalMinor, currency)}</p>
                     </div>
+                    {intent === 'upgrade' && upgradeOption?.discountLabel && upgradeOption.discountPercent !== undefined && (
+                        <p className="mt-3 text-sm font-semibold text-emerald-700">
+                            {t('autoDiscountApplied', { label: upgradeOption.discountLabel, discount: upgradeOption.discountPercent })}
+                        </p>
+                    )}
                 </div>
             </section>
 

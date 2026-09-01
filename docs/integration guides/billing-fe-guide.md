@@ -855,10 +855,13 @@ upgrade" endpoint on its own — but approving a refund on the event's `ACTIVATI
 finds and reverses any settled `UPGRADE` order on that event before reverting the event to `DRAFT`.
 Outside of that path, an upgrade is as permanent as activation itself.
 
-Render the plan picker on `/events/{id}/settings/plan` as a list of plans priced above the current
-one, each showing the *difference* it will charge, not its own sticker price — computing that number
-client-side from two `priceAmountMinor` values is fine for display, but let the server have the final
-say at checkout time since discounts can change between page load and click.
+**A partner or house code bound to the event at activation carries over to an upgrade unretyped** —
+the host never sees a code field on this screen at all. That means the difference the host actually
+pays can be lower than a naive `target.priceAmountMinor - current.priceAmountMinor`, and computing
+it client-side is no longer safe even for display: it silently ignores both the target plan's own
+promotion and any bound code. **Don't compute this number yourself; render `GET
+/api/events/{eventId}/upgrade-options` as-is** — see `collaborations-fe-integration.md` §1c, which
+returns every valid target already fully priced.
 
 ## 8. The billing read endpoint
 
@@ -882,15 +885,27 @@ One read, everything about the event's money. This is what the plan-settings pag
   "addons": [                              // entitlements the event owns — see §7a
     { "code": "ORIGINALS", "name": "Keep Originals", "priceAmountMinor": 500,
       "billingPeriod": "ONE_TIME", "activatedAt": "…" }
-  ]
+  ],
+  "discount": {                            // null when the event carries no active code — see
+                                            // collaborations-fe-integration.md §1c
+    "label": "Barn Venue partner rate",
+    "discountPercent": 15,
+    "appliedAt": "…"
+  }
 }
 ```
 
-**That's the whole shape.** There is no `coverage` block and no `subscription` block — nothing to
-compute a paid-through date or a freeze date from, because nothing lapses. If your code still reads
-`billing.coverage` or `billing.subscription`, delete it; those fields do not exist on the response
-any more. No provider session or payment ids are returned either. If support needs them, that is an
-admin question.
+**That's the whole shape**, `discount` included. There is no `coverage` block and no `subscription`
+block — nothing to compute a paid-through date or a freeze date from, because nothing lapses. If your
+code still reads `billing.coverage` or `billing.subscription`, delete it; those fields do not exist
+on the response any more. No provider session or payment ids are returned either, and `discount`
+carries no raw code string and no partner identity — `label` is display text only. If support needs
+more, that is an admin question.
+
+`discount` is what makes the code the host typed at activation visible anywhere after the fact —
+show it on this settings page so a host who redeemed a code once doesn't have to remember it applied.
+It also silently carries over to any future upgrade (§7d) — the `discount` block does not change when
+an upgrade settles, because the code is bound to the event, not to one order.
 
 ---
 

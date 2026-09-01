@@ -82,6 +82,7 @@ export const endpoints = {
         checkout: (eventId: string) => `/api/events/${eventId}/checkout`,
         checkoutCodePreview: (eventId: string) => `/api/events/${eventId}/checkout/preview-code`,
         upgradeCheckout: (eventId: string) => `/api/events/${eventId}/upgrade-checkout`,
+        upgradeOptions: (eventId: string) => `/api/events/${eventId}/upgrade-options`,
         storageCheckout: (eventId: string) => `/api/events/${eventId}/storage-checkout`,
         refundEligibility: (eventId: string) => `/api/events/${eventId}/refund-eligibility`,
         refundRequests: (eventId: string) => `/api/events/${eventId}/refund-requests`,

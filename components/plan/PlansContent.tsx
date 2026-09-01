@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { EventPlanComparison } from '@/components/plan/EventPlanComparison';
 import { BackButton } from '@/components/ui/BackButton';
-import type { AppConfigResponseDto, PlanTierResponseDto } from '@/lib/api/types';
+import type { AppConfigResponseDto, PlanTierResponseDto, UpgradeOptionResponseDto } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 
 interface PlansContentProps {
@@ -20,7 +20,7 @@ interface PlansContentProps {
     retryIn: number;
     selectedPlan: PlanTierResponseDto | null;
     selectedPlanCode: string | null;
-    upgradeTargets: PlanTierResponseDto[];
+    upgradeOptions: UpgradeOptionResponseDto[];
 }
 
 export function PlansContent({
@@ -36,7 +36,7 @@ export function PlansContent({
     retryIn,
     selectedPlan,
     selectedPlanCode,
-    upgradeTargets,
+    upgradeOptions,
 }: PlansContentProps) {
     const t = useTranslations('EventPlanSettingsPage');
     const backHref = eventId ? routes.events.manage(eventId, { tab: 'billing' }) : routes.home;
@@ -78,7 +78,7 @@ export function PlansContent({
                         onUpgradeAction={onUpgrade}
                         pendingPlanCode={pendingPlanCode}
                         retryIn={retryIn}
-                        upgradeTargets={upgradeTargets}
+                        upgradeOptions={upgradeOptions}
                     />
                 </div>
                 {checkoutError && <p className="mt-3 text-xs text-rose-600">{checkoutError}</p>}

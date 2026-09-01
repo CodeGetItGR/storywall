@@ -12,6 +12,16 @@ Nothing here is breaking. A client that sends no code keeps working exactly as b
 `eventId` yet), upgrade pricing on the existing preview (§1, `targetPlanTierCode`), and per-code
 event-type/plan restriction on the admin surfaces (§3, §3b).
 
+**2026-09-01 second follow-up**, prompted by a host-visible gap: a discount applied at activation
+inherits into a plan upgrade automatically (this already worked), but nothing told the frontend it
+had — so an upgrade screen quoting a naive undiscounted price looked broken next to what Stripe
+actually charged. Three additions, all non-breaking: `GET /api/events/{eventId}/billing` gains a
+`discount` field (§ "Discount visibility" in `billing-fe-guide.md` §8); `collaborationCode` on §1's
+preview is now optional, so the event's own already-applied code can be previewed without retyping
+it (§1, "Blank code"); and a new §1c, `GET /upgrade-options`, returns every valid upgrade target
+already fully priced — **use it instead of computing an upgrade's price client-side**, which
+`plan-upgrades-fe-integration.md` §3 also now says.
+
 ## Why
 
 Wedding venues and event organisers send us hosts. A code at checkout is how we both give that
@@ -120,7 +130,34 @@ code strings are real and which deals are live.
 valid" invents information and reintroduces exactly the leak the backend closed. Render the
 `detail` string as-is.
 
-A blank or over-long (>40 char) code fails validation with a `400` before reaching any of that.
+An over-long (>40 char) code fails validation with a `400` before reaching any of that. A **blank**
+`collaborationCode` no longer fails validation — see below.
+
+### Blank code: preview what's already applied
+
+**2026-09-01:** `collaborationCode` may now be omitted or sent blank/whitespace. That previews the
+event's **own already-applied code** instead of one being typed — the same code an upgrade already
+inherits without a retype (§2). Use this on a screen that has no code field at all, such as the
+upgrade picker in §1c.
+
+```jsonc
+POST /api/events/{eventId}/checkout/preview-code
+{ "targetPlanTierCode": "PREMIUM" }   // collaborationCode omitted entirely
+
+→ 200   // the event's own code, priced against PREMIUM's gap — same shape as a typed preview
+```
+
+If the event carries no code at all, this is refused — distinctly from a bad-code guess, since there
+is no code being guessed:
+
+```jsonc
+→ 409
+{ "status": 409, "errorCode": 5063, "errorKey": "NO_DISCOUNT_TO_PREVIEW",
+  "detail": "This event has no discount code to preview; type one instead." }
+```
+
+Show a plain code-entry field in that case, not the `5060` "invalid code" copy — `5063` means
+"nothing to fall back to," not "what you typed was wrong."
 
 ## 1b. Host: preview a code before the event exists
 
@@ -148,6 +185,59 @@ Once the host presses "Pay", create the event as normal and open checkout on the
 preview does not skip or replace either call, it only lets the UI show the discount before both
 happen.
 
+## 1c. Host: list upgrade options, fully priced
+
+**New 2026-09-01.** Builds the upgrade picker (§2's `upgrade-checkout`) from one call, with nothing
+for the client to compute — no code, no per-plan preview request, no client-side subtraction:
+
+```jsonc
+GET /api/events/{eventId}/upgrade-options
+
+→ 200
+[
+  {
+    "planTierCode": "PRO", "planTierName": "Pro", "currency": "EUR",
+    "gapAmountMinor": 10000,
+    "payableAmountMinor": 8000,
+    "discountPercent": 20,
+    "discountLabel": "Barn Venue partner rate"
+  },
+  {
+    "planTierCode": "PREMIUM", "planTierName": "Premium", "currency": "EUR",
+    "gapAmountMinor": 25000,
+    "payableAmountMinor": 20000,
+    "discountPercent": 20,
+    "discountLabel": "Barn Venue partner rate"
+  }
+]
+```
+
+Host-only, `isAuthenticated()` + host check like every other endpoint on this page — but **no rate
+limit of its own** and no code involved, unlike §1: there is nothing here for a caller to guess, so
+it isn't sharing the 10/hour `collaboration.preview` bucket. Call it as often as the picker needs to,
+including once per page view.
+
+Already filtered and sorted — every entry is a real, purchasable, currently-valid upgrade target for
+this event (public, assignable, offered for the event's type, priced above the current plan, same
+currency), in catalog order. An event with no valid target returns `[]`, not a `404`.
+
+**Field guide:**
+
+| Field | Meaning |
+|---|---|
+| `gapAmountMinor` | The undiscounted difference between the two plans. Fine for a "was €100" strike-through, never for the price you charge. |
+| `payableAmountMinor` | **The number to render as the price**, and what `POST /upgrade-checkout` will actually charge for this `planTierCode`. Already includes the target plan's own promotion and any code bound to the event, combined and clamped at the platform ceiling — same arithmetic `preview-code` (§1) and checkout itself both use. |
+| `discountPercent` | The combined percent behind `payableAmountMinor`. **Absent** (not zero) when nothing discounts this particular target — check for its presence, don't compare to `0`. |
+| `discountLabel` | Display text for whichever discount applied — the bound code's label if there is one, else the plan's own promotion label. Absent whenever `discountPercent` is absent. Carries no raw code and no partner identity, same rule as §1's `label`. |
+
+A plan's own promotion and a bound code can both contribute to the same entry — `discountPercent` is
+already their sum-then-clamp, and `discountLabel` shows only the more specific of the two (the code's,
+when there is one) rather than trying to render both as if they stack into separate line items.
+
+Nothing here binds or previews a specific code — this endpoint never touches redemption state, and
+calling it does not count against §1's rate limit or affect anything a subsequent `preview-code` or
+`upgrade-checkout` call does.
+
 ## 2. Host: apply a code at checkout
 
 `POST /api/events/{eventId}/checkout` now accepts an optional body:
@@ -168,7 +258,10 @@ the UI has to reflect:
 
 - **Upgrades inherit it.** `POST /api/events/{eventId}/upgrade-checkout` applies the same discount
   automatically and accrues the partner further commission. Do not ask for the code again — there
-  is no field for it on that request.
+  is no field for it on that request. Build the picker from §1c rather than guessing at the price,
+  and show the applied code anywhere the event's billing is displayed via `GET
+  /api/events/{eventId}/billing`'s `discount` field (`billing-fe-guide.md` §8) — a host has no other
+  way to be reminded a code is still active on their event.
 - **Storage packs do not.** Add-on pricing is unaffected.
 - **It cannot be changed or removed from the host side.** There is no host-facing "remove code"
   endpoint, by design. Attaching a *different* code to an event that already has a live one fails:
@@ -572,3 +665,4 @@ A stale link cannot confirm it was ever real.
 | `5060` | `COLLABORATION_CODE_NOT_VALID` | The code cannot be used here. No further detail, by design. |
 | `5061` | `COLLABORATION_ALREADY_REDEEMED` | This event already has a different discount code (house or partner). |
 | `5062` | `COLLABORATION_EARNING_NOT_PAYABLE` | That ledger row is not in `ACCRUED` state. |
+| `5063` | `NO_DISCOUNT_TO_PREVIEW` | A blank `collaborationCode` was previewed (§1) and the event carries no code to fall back to. |
