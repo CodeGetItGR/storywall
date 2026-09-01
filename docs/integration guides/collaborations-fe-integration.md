@@ -8,6 +8,10 @@ RFC 7807 error envelope) and `billing-fe-guide.md` for the checkout flow this pl
 
 Nothing here is breaking. A client that sends no code keeps working exactly as before.
 
+**2026-09-01 follow-up**, also non-breaking: a preview for the event-creation flow (§1b, no
+`eventId` yet), upgrade pricing on the existing preview (§1, `targetPlanTierCode`), and per-code
+event-type/plan restriction on the admin surfaces (§3, §3b).
+
 ## Why
 
 Wedding venues and event organisers send us hosts. A code at checkout is how we both give that
@@ -60,6 +64,31 @@ host can type it however it was printed.
 Previewing binds nothing. A host may preview as many times as the limit allows and walk away; the
 code's redemption count is untouched until they actually start a checkout.
 
+### Upgrade preview: pass `targetPlanTierCode`
+
+The upgrade screen (§2's `upgrade-checkout`) prices the **difference** between the event's current
+plan and a more expensive target, not the target's full price. Previewing that gap now takes one
+more, optional field:
+
+```jsonc
+POST /api/events/{eventId}/checkout/preview-code
+{ "collaborationCode": "barn-2026", "targetPlanTierCode": "PREMIUM" }
+
+→ 200
+{
+  "label": "Barn Venue partner rate",
+  "discountPercent": 10,
+  "combinedDiscountPercent": 10,
+  "payableAmountMinor": 4500,   // the discounted GAP to PREMIUM, not PREMIUM's own price
+  "currency": "EUR"
+}
+```
+
+Omit `targetPlanTierCode` (or send it blank) for the activation-style preview from the section
+above — that behaviour is unchanged. A `targetPlanTierCode` that isn't purchasable, or isn't
+actually more expensive than the event's current plan, fails the same way `upgrade-checkout` itself
+would (`404`/`409`, not the code-oracle `5060` — this is about the plan, not the code).
+
 ### `combinedDiscountPercent` is the number to show
 
 `discountPercent` is the code's headline figure. `combinedDiscountPercent` is what will actually
@@ -92,6 +121,32 @@ valid" invents information and reintroduces exactly the leak the backend closed.
 `detail` string as-is.
 
 A blank or over-long (>40 char) code fails validation with a `400` before reaching any of that.
+
+## 1b. Host: preview a code before the event exists
+
+The event-creation form never saves a draft before "Pay" — pressing it creates the event **and**
+opens checkout in the same action, with no save step in between. So a code typed on that form has
+to be previewed against the form's own values, not an `eventId`:
+
+```jsonc
+POST /api/checkout/preview-code
+{ "eventType": "WEDDING", "planTierCode": "PLUS", "collaborationCode": "barn-2026" }
+
+→ 200   // same CodePreviewResponseDto shape as §1
+```
+
+Same rate limit (10/hour), same `5060` masking, same "preview binds nothing" rule as §1. The only
+differences: no `eventId` in the path (`isAuthenticated()` is the whole auth check — there is
+nothing to own yet, so no host check either), and `eventType`/`planTierCode` name what the host
+picked on the form instead of being read off an event row. Both are validated exactly as event
+creation itself validates them — an unknown `eventType`, one that's currently disabled platform-wide,
+or a `planTierCode` not on sale (or not offered for that `eventType`) fails with the same error a
+subsequent `POST /api/events` would give, **not** the masked `5060` — that masking is specific to
+the code, not to the plan/type choice.
+
+Once the host presses "Pay", create the event as normal and open checkout on the returned id — this
+preview does not skip or replace either call, it only lets the UI show the discount before both
+happen.
 
 ## 2. Host: apply a code at checkout
 
@@ -222,7 +277,9 @@ POST /api/admin/collaborators/{id}/codes
   "commissionPercent": 15,      // 0–100. 0 is a perk-only partnership
   "startsAt": null,             // null means open-ended, both ends
   "endsAt": null,
-  "maxRedemptions": null        // null means unlimited
+  "maxRedemptions": null,       // null means unlimited
+  "eventTypeKeys": null,        // null/empty means every event type; e.g. ["WEDDING"] to restrict
+  "planTierCodes": null         // null/empty means every plan; e.g. ["PLUS"] to restrict
 }
 
 → 200
@@ -237,7 +294,9 @@ POST /api/admin/collaborators/{id}/codes
   "startsAt": null,
   "endsAt": null,
   "maxRedemptions": null,
-  "liveRedemptions": 0
+  "liveRedemptions": 0,
+  "eventTypeKeys": [],
+  "planTierCodes": []
 }
 ```
 
@@ -248,6 +307,19 @@ the number to show next to it in the UI, not a lifetime total.
 
 The two percentages are independent levers, not two views of one deal. A duplicate code string is a
 `409`; a window that ends before it starts is a `400`.
+
+### Restricting a code to event types and plans
+
+`eventTypeKeys`/`planTierCodes` are always **codes and keys the admin picks from a list — never a
+UUID**. An empty array (or omitting the field) means unrestricted, not "restricted to nothing"; a
+code narrows only once an admin deliberately sets one. An unknown key (something not in the
+platform's event-type registry) or an unknown plan code fails the whole write with a `400` — nothing
+is partially saved.
+
+These restrictions are enforced on the **host-facing** side too: a host typing a code that doesn't
+apply to their event's type or plan gets the same masked `5060` §1 describes for every other
+refusal reason — the frontend never needs to check this itself, and should not try to explain
+*which* restriction failed.
 
 ### Linking an already-issued house code to a partner
 
@@ -289,11 +361,16 @@ PATCH /api/admin/collaboration-codes/{id}
   "status": "DISABLED",         // ACTIVE | DISABLED — required, no default
   "startsAt": null,
   "endsAt": null,
-  "maxRedemptions": null
+  "maxRedemptions": null,
+  "eventTypeKeys": null,        // full replace, same as everything else on this PATCH
+  "planTierCodes": null
 }
 
 → 200   // same CollaborationCodeResponseDto shape as create, liveRedemptions reflects current state
 ```
+
+`eventTypeKeys`/`planTierCodes` are a full replace here too — send the current values back for
+anything you don't mean to change, same as every other field on this `PATCH`.
 
 A partner has already printed the string on their brochures; retiring one means setting
 `status: "DISABLED"` and issuing a new code, not renaming this one. All other fields are a full
@@ -402,7 +479,9 @@ POST /api/admin/discount-codes
   "discountPercent": 10,          // 0–99
   "startsAt": null,               // null means open-ended, both ends
   "endsAt": null,
-  "maxRedemptions": null          // null means unlimited
+  "maxRedemptions": null,         // null means unlimited
+  "eventTypeKeys": null,          // null/empty means every event type
+  "planTierCodes": null           // null/empty means every plan
 }
 
 → 200
@@ -415,15 +494,18 @@ POST /api/admin/discount-codes
   "startsAt": null,
   "endsAt": null,
   "maxRedemptions": null,
-  "liveRedemptions": 0
+  "liveRedemptions": 0,
+  "eventTypeKeys": [],
+  "planTierCodes": []
 }
 ```
 
 Same shape as a partner code (§3) minus `collaboratorId` and `commissionPercent` — there is no
-partner to attribute anything to. `GET /api/admin/discount-codes` returns a bare array of every
-house code. `liveRedemptions` means the same thing it does for a partner code: `PENDING + ACTIVE`
-right now, checked against `maxRedemptions`. A duplicate code string is a `409`; a backwards
-window is a `400`.
+partner to attribute anything to, and the same restriction rules from §3 ("Restricting a code to
+event types and plans") apply here unchanged. `GET /api/admin/discount-codes` returns a bare array
+of every house code. `liveRedemptions` means the same thing it does for a partner code:
+`PENDING + ACTIVE` right now, checked against `maxRedemptions`. A duplicate code string is a `409`;
+a backwards window is a `400`.
 
 ### Editing or disabling — no `code` field
 
@@ -435,7 +517,9 @@ PATCH /api/admin/discount-codes/{codeId}
   "status": "DISABLED",           // ACTIVE | DISABLED — required, no default
   "startsAt": null,
   "endsAt": null,
-  "maxRedemptions": null
+  "maxRedemptions": null,
+  "eventTypeKeys": null,          // full replace, same as everything else
+  "planTierCodes": null
 }
 
 → 200   // same shape as create, liveRedemptions reflects current state

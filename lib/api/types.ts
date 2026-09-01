@@ -497,6 +497,12 @@ export interface CheckoutRequestDto {
 }
 export interface CollaborationCodePreviewRequestDto {
     collaborationCode: string;
+    targetPlanTierCode?: string;
+}
+export interface CreateEventCodePreviewRequestDto {
+    eventType: EventTypeConvention;
+    planTierCode: PlanTierCode;
+    collaborationCode: string;
 }
 export interface CollaborationCodePreviewResponseDto {
     label: string;

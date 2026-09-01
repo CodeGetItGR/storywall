@@ -800,7 +800,11 @@
         "collaboration": {
             "title": "Discount code",
             "field": "Discount code",
-            "placeholder": "Enter code"
+            "placeholder": "Enter code",
+            "apply": "Apply",
+            "checking": "Checking",
+            "applied": "{discount}% discount applied",
+            "invalid": "That code cannot be applied."
         },
         "overview": {
             "event": "Event details",

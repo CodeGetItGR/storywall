@@ -284,4 +284,8 @@ export const endpoints = {
             collaborationRedemptionVoid: (eventId: string) => `/api/admin/events/${eventId}/collaboration-redemption/void`,
         },
     },
+
+    checkout: {
+        previewCode: '/api/checkout/preview-code',
+    },
 } as const;

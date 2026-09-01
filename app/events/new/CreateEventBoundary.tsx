@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -15,12 +15,13 @@ import { BackButton } from '@/components/ui/BackButton';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
+import { usePreviewCreateEventCode } from '@/hooks/useBilling';
 import { useCreateEvent } from '@/hooks/useEvent';
 import { usePlanTiersForEventType } from '@/hooks/usePlanTiersForEventType';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { getFieldErrors } from '@/lib/api/errors';
-import type { CheckoutResponseDto, EventRequestDto, EventResponseDto, EventTypeConvention } from '@/lib/api/types';
+import type { CheckoutResponseDto, CollaborationCodePreviewResponseDto, EventRequestDto, EventResponseDto, EventTypeConvention } from '@/lib/api/types';
 import { navigateToCheckout } from '@/lib/billing';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import { getScheduleDatetimeLocalBounds, isDatetimeLocalBefore } from '@/lib/datetime';
@@ -30,12 +31,19 @@ import { getCurrentTimezone, getSupportedTimezones } from '@/lib/timezones';
 type CreateEventStep = 'type' | 'plan' | 'details' | 'overview';
 
 const CREATE_EVENT_FORM_ID = 'create-event-form';
+const CREATE_EVENT_STEPS: CreateEventStep[] = ['type', 'plan', 'details', 'overview'];
+
+function parseCreateEventStep(value: string | null): CreateEventStep {
+    return CREATE_EVENT_STEPS.find((step) => step === value) ?? 'type';
+}
 
 export default function CreateEventPage() {
     const t = useTranslations('CreateEventPage');
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { user, isAuthenticated, isBootstrapping } = useAuth();
     const createEvent = useCreateEvent();
+    const previewCreateEventCode = usePreviewCreateEventCode();
     const { data: appConfig, refetch: refetchAppConfig } = useAppConfig();
     const toErrorMessage = useApiErrorMessage();
 
@@ -44,11 +52,14 @@ export default function CreateEventPage() {
     const [startAt, setStartAt] = useState('');
     const [timezone, setTimezone] = useState(getCurrentTimezone);
     const [error, setError] = useState<string | null>(null);
-    const [step, setStep] = useState<CreateEventStep>('type');
+    const step = parseCreateEventStep(searchParams.get('step'));
     const eventTypes = appConfig?.eventTypes ?? [];
     const [selectedPlanCode, setSelectedPlanCode] = useState<string>('');
     const [createdDraftEventId, setCreatedDraftEventId] = useState<string | null>(null);
     const [checkoutCode, setCheckoutCode] = useState('');
+    const [appliedCheckoutCode, setAppliedCheckoutCode] = useState<string | null>(null);
+    const [checkoutCodePreview, setCheckoutCodePreview] = useState<CollaborationCodePreviewResponseDto | null>(null);
+    const [checkoutCodeError, setCheckoutCodeError] = useState<string | null>(null);
     const [isCheckoutPending, setIsCheckoutPending] = useState(false);
 
     const fieldErrors = getFieldErrors(createEvent.error);
@@ -64,6 +75,10 @@ export default function CreateEventPage() {
     const { startAtMin } = getScheduleDatetimeLocalBounds({ startAt, endAt: null });
     const scheduleError = startAt && isDatetimeLocalBefore(startAt, startAtMin) ? t('validation.startInPast') : null;
     const timezoneError = timezone && !isTimezoneValid ? t('validation.invalidTimezone') : null;
+    const canReachPlan = eventTypes.length > 0;
+    const canReachDetails = canReachPlan && Boolean(selectedCode);
+    const canReachOverview = canReachDetails && Boolean(title.trim() && startAt && isTimezoneValid && !scheduleError);
+    const reachableStep: CreateEventStep = canReachOverview ? 'overview' : canReachDetails ? 'details' : canReachPlan ? 'plan' : 'type';
     useEffect(() => {
         if (isBootstrapping) return;
         if (!isAuthenticated) {
@@ -79,11 +94,16 @@ export default function CreateEventPage() {
         }
     }, [refetchAppConfig, step]);
 
+    useEffect(() => {
+        if (CREATE_EVENT_STEPS.indexOf(step) <= CREATE_EVENT_STEPS.indexOf(reachableStep)) return;
+        router.replace(routes.events.new({ step: reachableStep }));
+    }, [reachableStep, router, step]);
+
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
         setError(null);
         if (step === 'details') {
-            if (title.trim() && startAt && isTimezoneValid && !scheduleError) setStep('overview');
+            if (title.trim() && startAt && isTimezoneValid && !scheduleError) goToStep('overview');
             return;
         }
         if (step !== 'overview') return;
@@ -124,9 +144,9 @@ export default function CreateEventPage() {
             const trimmedCheckoutCode = checkoutCode.trim();
             const checkout = await api.post<CheckoutResponseDto>(
                 endpoints.events.checkout(event.id),
-                trimmedCheckoutCode ? { collaborationCode: trimmedCheckoutCode } : undefined
+                appliedCheckoutCode ? { collaborationCode: appliedCheckoutCode } : undefined
             );
-            window.history.replaceState(null, '', routes.events.manage(event.id));
+            window.history.replaceState(null, '', routes.events.new({ step: 'overview' }));
             navigateToCheckout(event.id, checkout);
         } catch (checkoutError) {
             setCreatedDraftEventId(event.id);
@@ -165,20 +185,51 @@ export default function CreateEventPage() {
 
     const onCheckoutCodeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setCheckoutCode(e.target.value);
+        setAppliedCheckoutCode(null);
+        setCheckoutCodePreview(null);
+        setCheckoutCodeError(null);
+        previewCreateEventCode.reset();
         setError(null);
-    }, []);
+    }, [previewCreateEventCode]);
+
+    const applyCheckoutCode = useCallback(async () => {
+        const trimmedCode = checkoutCode.trim();
+        if (!trimmedCode || !selectedCode) return;
+        setCheckoutCodeError(null);
+        setAppliedCheckoutCode(null);
+        setCheckoutCodePreview(null);
+
+        try {
+            const preview = await previewCreateEventCode.mutateAsync({
+                eventType: selectedEventType,
+                planTierCode: selectedCode,
+                collaborationCode: trimmedCode,
+            });
+            setAppliedCheckoutCode(trimmedCode);
+            setCheckoutCodePreview(preview);
+        } catch {
+            setCheckoutCodeError(t('collaboration.invalid'));
+        }
+    }, [checkoutCode, previewCreateEventCode, selectedCode, selectedEventType, t]);
+
+    const goToStep = useCallback(
+        (nextStep: CreateEventStep) => {
+            router.push(routes.events.new({ step: nextStep }), { scroll: false });
+        },
+        [router]
+    );
 
     const goToType = useCallback(() => {
-        setStep('type');
-    }, []);
+        goToStep('type');
+    }, [goToStep]);
 
     const goToPlan = useCallback(() => {
-        setStep('plan');
-    }, []);
+        goToStep('plan');
+    }, [goToStep]);
 
     const goToDetails = useCallback(() => {
-        setStep('details');
-    }, []);
+        goToStep('details');
+    }, [goToStep]);
 
     return (
         <CreateEventRouteState
@@ -252,7 +303,12 @@ export default function CreateEventPage() {
                                         error={error}
                                         hasDraft={Boolean(createdDraftEventId)}
                                         checkoutCode={checkoutCode}
+                                        appliedCheckoutCode={appliedCheckoutCode}
+                                        checkoutCodePreview={checkoutCodePreview}
+                                        checkoutCodeError={checkoutCodeError}
+                                        isCheckingCheckoutCode={previewCreateEventCode.isPending}
                                         onCheckoutCodeChangeAction={onCheckoutCodeChange}
+                                        onApplyCheckoutCodeAction={applyCheckoutCode}
                                     />
                                 )}
                             </form>

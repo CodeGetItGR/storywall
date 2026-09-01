@@ -11,6 +11,7 @@ import type {
     CheckoutResponseDto,
     CollaborationCodePreviewRequestDto,
     CollaborationCodePreviewResponseDto,
+    CreateEventCodePreviewRequestDto,
     EventAddonDto,
     EventAddonRequestDto,
     EventBillingResponseDto,
@@ -63,6 +64,12 @@ export function usePreviewCollaborationCode(eventId: string) {
     return useMutation({
         mutationFn: (input: CollaborationCodePreviewRequestDto) =>
             api.post<CollaborationCodePreviewResponseDto>(endpoints.events.checkoutCodePreview(eventId), input),
+    });
+}
+
+export function usePreviewCreateEventCode() {
+    return useMutation({
+        mutationFn: (input: CreateEventCodePreviewRequestDto) => api.post<CollaborationCodePreviewResponseDto>(endpoints.checkout.previewCode, input),
     });
 }
 

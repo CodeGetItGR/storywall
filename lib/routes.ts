@@ -26,7 +26,7 @@ export const routes = {
     modules: '/modules',
     profile: '/profile',
     events: {
-        new: '/events/new',
+        new: (params: { step?: string | null } = {}) => withQuery('/events/new', params),
         manage: (eventId: string, params: { tab?: ManageTab | null; section?: string | null } = {}) => withQuery(`/events/${eventId}/manage`, params),
         tools: {
             rsvp: (eventId: string) => `/events/${eventId}/tools/rsvp`,

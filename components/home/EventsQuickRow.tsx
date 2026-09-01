@@ -71,7 +71,7 @@ export function EventsQuickRow({
                     {tEvents('yourEvents')}
                 </h2>
                 <Link
-                    href={routes.events.new}
+                    href={routes.events.new()}
                     className="inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-full bg-primary-light px-3 py-1 text-xs font-semibold text-primary-dark ring-1 ring-primary/12 transition-colors hover:bg-accent"
                 >
                     <Plus className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
