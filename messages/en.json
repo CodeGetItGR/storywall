@@ -811,6 +811,8 @@
             "pricing": "Pricing details",
             "pricingHint": "Activation is a one-time payment.",
             "planActivation": "Plan activation",
+            "discount": "Discount",
+            "discountDetail": "{label} · {percent}% off",
             "monthlyForMonths": "Charged at activation",
             "dueNow": "Due at activation",
             "futureMonthly": "Future renewal",

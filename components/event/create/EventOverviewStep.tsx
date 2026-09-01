@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, CheckCircle2, Loader2, Receipt } from 'lucide-react';
+import { Calendar, Loader2, Receipt } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { ChangeEvent } from 'react';
 
@@ -56,6 +56,10 @@ export function EventOverviewStep({
     const codeApplied = Boolean(appliedCheckoutCode && checkoutCodePreview);
     const previewAmount = checkoutCodePreview ? formatMoney(locale, checkoutCodePreview.payableAmountMinor, checkoutCodePreview.currency) : null;
     const finalTotalLabel = previewAmount ?? activationTotalLabel;
+    const discountAmountLabel =
+        codeApplied && checkoutCodePreview && planActivation
+            ? `-${formatMoney(locale, planActivation.amountMinor - checkoutCodePreview.payableAmountMinor, checkoutCodePreview.currency)}`
+            : null;
 
     return (
         <div className="flex h-full flex-col">
@@ -95,6 +99,19 @@ export function EventOverviewStep({
                         fallback={t('payment.noCharge')}
                     />
 
+                    {discountAmountLabel && checkoutCodePreview && (
+                        <EventOverviewPriceRow
+                            label={t('overview.discount')}
+                            detail={t('overview.discountDetail', {
+                                label: checkoutCodePreview.label,
+                                percent: checkoutCodePreview.combinedDiscountPercent,
+                            })}
+                            amount={discountAmountLabel}
+                            fallback={discountAmountLabel}
+                            amountClassName="text-emerald-700"
+                        />
+                    )}
+
                     <div className="flex items-center justify-between gap-3 pt-4">
                         <span className="text-sm font-semibold text-ink">{t('overview.dueNow')}</span>
                         <span className="text-lg font-bold text-primary-dark">{finalTotalLabel}</span>
@@ -120,7 +137,7 @@ export function EventOverviewStep({
                         autoComplete="off"
                         disabled={codeApplied}
                         aria-invalid={Boolean(checkoutCodeError)}
-                        aria-describedby={checkoutCodeError ? 'event-checkout-code-error' : codeApplied ? 'event-checkout-code-success' : undefined}
+                        aria-describedby={checkoutCodeError ? 'event-checkout-code-error' : undefined}
                         placeholder={t('collaboration.placeholder')}
                         className={cn(
                             'min-h-11 flex-1 rounded-full border bg-card px-4 text-sm font-semibold text-ink outline-none transition focus:ring-2 disabled:bg-surface-muted disabled:text-ink-muted',
@@ -139,12 +156,6 @@ export function EventOverviewStep({
                         {isCheckingCheckoutCode ? t('collaboration.checking') : t('collaboration.apply')}
                     </button>
                 </div>
-                {codeApplied && checkoutCodePreview && (
-                    <p id="event-checkout-code-success" className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700">
-                        <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-                        {t('collaboration.applied', { discount: checkoutCodePreview.combinedDiscountPercent })}
-                    </p>
-                )}
                 {checkoutCodeError && (
                     <p id="event-checkout-code-error" className="mt-2 text-sm font-semibold text-rose-600">
                         {checkoutCodeError}

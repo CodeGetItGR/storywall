@@ -811,6 +811,8 @@
             "pricing": "Ανάλυση τιμών",
             "pricingHint": "Η ενεργοποίηση πληρώνεται μία φορά.",
             "planActivation": "Ενεργοποίηση πλάνου",
+            "discount": "Έκπτωση",
+            "discountDetail": "{label} · Έκπτωση {percent}%",
             "monthlyForMonths": "Χρεώνεται στην ενεργοποίηση",
             "dueNow": "Πληρωτέο κατά την ενεργοποίηση",
             "futureMonthly": "Μελλοντική ανανέωση",
