@@ -86,6 +86,7 @@ export const endpoints = {
         storageCheckout: (eventId: string) => `/api/events/${eventId}/storage-checkout`,
         refundEligibility: (eventId: string) => `/api/events/${eventId}/refund-eligibility`,
         refundRequests: (eventId: string) => `/api/events/${eventId}/refund-requests`,
+        deletionRequests: (eventId: string) => `/api/events/${eventId}/deletion-requests`,
         posts: (eventId: string) => `/api/events/${eventId}/posts`,
         stories: (eventId: string) => `/api/events/${eventId}/stories`,
         playlistSuggestions: (eventId: string) => `/api/events/${eventId}/playlist-suggestions`,
