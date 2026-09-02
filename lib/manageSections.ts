@@ -3,11 +3,11 @@
  * desktop sidebar, the mobile section sheet and the `?tab=` query all read this
  * table. Billing's parts are entries here rather than a second tab level.
  */
-export type ManageSection = 'overview' | 'settings' | 'rsvp' | 'invitations' | 'plan' | 'coverage' | 'orders' | 'refund';
+export type ManageSection = 'overview' | 'settings' | 'danger' | 'rsvp' | 'invitations' | 'plan' | 'coverage' | 'orders' | 'refund';
 export type ManageSectionGroup = 'event' | 'guests' | 'billing';
 
 export const manageSectionGroups: { group: ManageSectionGroup; sections: ManageSection[] }[] = [
-    { group: 'event', sections: ['overview', 'settings'] },
+    { group: 'event', sections: ['overview', 'settings', 'danger'] },
     { group: 'guests', sections: ['rsvp', 'invitations'] },
     { group: 'billing', sections: ['plan', 'coverage', 'orders', 'refund'] },
 ];

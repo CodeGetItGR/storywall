@@ -15,17 +15,21 @@ import { useEventMembers } from '@/hooks/useEventMembers';
 import { useEventQrLinks, useEventQrLinkStats } from '@/hooks/useQrLinks';
 import { useEventRsvps } from '@/hooks/useRsvps';
 import { useEventUsage } from '@/hooks/useUsage';
-import { isEventWritable } from '@/lib/eventLifecycle';
+import { isEventWritable, isPrimaryHost } from '@/lib/eventLifecycle';
 import { isBillingSection, type ManageSection, manageSectionGroups, parseManageSection } from '@/lib/manageSections';
 import { routes } from '@/lib/routes';
 import { eventStatusBadgeTone } from '@/lib/statusTones';
 import { cn } from '@/lib/utils';
+import { useActiveMember } from '@/providers/EventProvider';
 
 import BillingTab from '../../app/(app)/(event)/events/[eventId]/manage/BillingTab';
+import DangerZoneTab from '../../app/(app)/(event)/events/[eventId]/manage/DangerZoneTab';
 import InvitationsTab from '../../app/(app)/(event)/events/[eventId]/manage/InvitationsTab';
 import OverviewTab from '../../app/(app)/(event)/events/[eventId]/manage/OverviewTab';
 import RsvpTab from '../../app/(app)/(event)/events/[eventId]/manage/RsvpTab';
 import SettingsTab from '../../app/(app)/(event)/events/[eventId]/manage/SettingsTab';
+
+const allManageSections = manageSectionGroups.flatMap((entry) => entry.sections);
 
 export function ManageScreen() {
     const { activeEvent, eventId, isHost } = useEventRouteContext();
@@ -34,7 +38,10 @@ export function ManageScreen() {
     const searchParams = useSearchParams();
     const requestedSection = parseManageSection(searchParams.get('tab'));
     const isDraft = activeEvent.status === 'DRAFT';
-    const section = isDraft ? 'overview' : requestedSection;
+    const activeMember = useActiveMember();
+    const canDelete = isPrimaryHost(activeEvent.hosts, activeMember?.id);
+    const visibleSections = canDelete ? allManageSections : allManageSections.filter((entry) => entry !== 'danger');
+    const section = isDraft ? 'overview' : visibleSections.includes(requestedSection) ? requestedSection : 'overview';
     const [switcherOpen, setSwitcherOpen] = useState(false);
 
     const canWrite = isEventWritable(activeEvent?.status);
@@ -80,8 +87,8 @@ export function ManageScreen() {
     }, [activeEvent]);
 
     useEffect(() => {
-        if (isDraft && requestedSection !== section) router.replace(routes.events.manage(eventId));
-    }, [eventId, isDraft, requestedSection, router, section]);
+        if (requestedSection !== section) router.replace(routes.events.manage(eventId));
+    }, [eventId, requestedSection, router, section]);
 
     // Party sizes belong to the overview's headline numbers, so the RSVP roster
     // never restates a total that is already visible one section away.
@@ -137,6 +144,8 @@ export function ManageScreen() {
 
             {section === 'settings' && <SettingsTab event={activeEvent} canWrite={canEditDetails} canUploadCover={canWrite} />}
 
+            {section === 'danger' && <DangerZoneTab event={activeEvent} />}
+
             {isBillingSection(section) && <BillingTab eventId={eventId} section={section} />}
         </>
     );
@@ -190,7 +199,12 @@ export function ManageScreen() {
             <div className="px-4 pt-4 lg:grid lg:grid-cols-[13.5rem_minmax(0,1fr)] lg:gap-8 lg:px-6 lg:pt-5">
                 {/* Sections (desktop) */}
                 {!isDraft && (
-                    <ManageSectionNav active={section} onSelectAction={navigateToSection} className="sticky top-6 hidden self-start lg:flex" />
+                    <ManageSectionNav
+                        active={section}
+                        onSelectAction={navigateToSection}
+                        visibleSections={visibleSections}
+                        className="sticky top-6 hidden self-start lg:flex"
+                    />
                 )}
 
                 <div
@@ -210,7 +224,7 @@ export function ManageScreen() {
             {/* Section sheet (small screens) */}
             <Modal open={switcherOpen} onClose={closeSwitcher} variant="sheet" ariaLabel={t('sectionSwitcher')} closeLabel={t('sectionSwitcher')}>
                 <Modal.Body className="px-3 pb-6 pt-5">
-                    <ManageSectionNav active={section} onSelectAction={navigateToSection} />
+                    <ManageSectionNav active={section} onSelectAction={navigateToSection} visibleSections={visibleSections} />
                 </Modal.Body>
             </Modal>
         </div>

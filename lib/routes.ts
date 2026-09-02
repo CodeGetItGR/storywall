@@ -2,7 +2,7 @@ type RouteQueryValue = string | number | boolean | null | undefined;
 
 export type CheckoutIntent = 'activation' | 'upgrade' | 'storage';
 // 'billing' is kept as an alias for the plan section so existing links keep working.
-export type ManageTab = 'billing' | 'coverage' | 'invitations' | 'orders' | 'overview' | 'plan' | 'refund' | 'rsvp' | 'settings';
+export type ManageTab = 'billing' | 'coverage' | 'danger' | 'invitations' | 'orders' | 'overview' | 'plan' | 'refund' | 'rsvp' | 'settings';
 
 function withQuery(pathname: string, params: Record<string, RouteQueryValue>): string {
     const searchParams = new URLSearchParams();

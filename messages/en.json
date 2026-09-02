@@ -835,6 +835,7 @@
         "sections": {
             "overview": "Overview",
             "settings": "Settings",
+            "danger": "Danger zone",
             "rsvp": "RSVP",
             "invitations": "Invitations",
             "plan": "Plan",
@@ -1110,7 +1111,6 @@
             "saved": "Saved",
             "readOnly": "This event is read-only. Event details and cover photo changes are paused until the event is active again.",
             "dangerZone": {
-                "title": "Danger zone",
                 "body": "Deleting this event hides it immediately. You'll have a grace period to undo this before it's permanently deleted.",
                 "delete": "Delete event",
                 "confirmTitle": "Delete this event?",
