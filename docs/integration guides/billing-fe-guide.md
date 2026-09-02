@@ -1,7 +1,11 @@
 # FE integration guide: plans, payments, refunds
 
 **The complete, current reference for the commercial side of the platform.** Everything a frontend
-needs to sell an event and give money back. Current as of 2026-08-26.
+needs to sell an event and give money back. Current as of 2026-09-02.
+
+**2026-09-02:** Hosts can delete an event — `POST`/`DELETE /api/events/{eventId}/deletion-requests`,
+primary-host-only, password-confirmed, undoable for 30 days (§5). The old any-host, no-confirmation
+`DELETE /api/events/{id}` is gone. **`event-deletion-fe-integration.md` has the full reference.**
 
 **2026-08-26:** The monthly "preservation" subscription is gone — **every purchase on this platform
 is now one-time.** An event, once activated, stays `ACTIVE` indefinitely; there is no coverage window,
@@ -364,6 +368,12 @@ under-pay any more). See §9.
 If your code still branches on `'FROZEN'` or `'PURGED'` — a read-only banner, a purge-warning screen,
 an `EVENT_FROZEN` error handler — delete it. `EventStatus` is a two-value union now (§14) and a `409`
 from a write is never about the event's own lapsed payment status any more.
+
+**Orthogonal to `status`: an event can now also be pending deletion.** `deletionScheduledFor`
+(non-null = a deletion request is pending, purged permanently on that date) is set by the primary
+host via `POST /api/events/{eventId}/deletion-requests` and cleared by any host via `DELETE` on the
+same path — undoable up until the purge date. A pending-deletion event 404s from every normal read,
+same as any other soft-deleted event. See `event-deletion-fe-integration.md` for the full contract.
 
 ---
 

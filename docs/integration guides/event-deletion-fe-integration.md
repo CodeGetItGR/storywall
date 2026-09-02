@@ -1,9 +1,15 @@
 # FE integration guide: deleting an event
 
-Covers a change shipped 2026-09-02: hosts can now delete an event, gated behind the primary host's
-password. See `frontend-integration-guide.md` §0 for base setup (auth header, the RFC 7807 error
-envelope) and `billing-fe-guide.md` §5 for the rest of the event lifecycle — this doc is the focused
-"what's new" record for deletion specifically.
+Covers a change shipped 2026-09-02, revised the same day: hosts can now delete an event, gated
+behind the primary host's password. See `frontend-integration-guide.md` §0 for base setup (auth
+header, the RFC 7807 error envelope) and `billing-fe-guide.md` §5 for the rest of the event
+lifecycle — this doc is the focused "what's new" record for deletion specifically.
+
+**Revision note:** the first version of this doc said there was no way to look up a pending
+deletion after the initial `POST`/`DELETE .../deletion-requests` response — that the undo banner
+only worked from an in-session toast, and reloading or navigating away lost it. That's fixed: §4
+below now describes the real, current contract (`GET /api/events/{id}` and `GET /api/events` both
+surface a pending-deletion event to its hosts). There is no outstanding backend follow-up for this.
 
 ## Why
 
@@ -57,9 +63,11 @@ Calling it a second time while a request is already pending → `409 EVENT_DELET
 (5064). Refetch the event instead of retrying — it's already in the state you wanted.
 
 **On success, redirect the host out of the event** (e.g. to their event list) — it is immediately
-inaccessible to everyone, including the host's own further reads through the normal event endpoints
-(`GET /api/events/{id}` now 404s it, same as any other soft-deleted event). Only the entry point
-described in §4 below can still reach it, to offer the undo.
+inaccessible to guests and plain attendees (`GET /api/events/{id}` 404s it for them, same as any
+other soft-deleted event). It is **not** inaccessible to the host who just deleted it, or to any
+co-host: `GET /api/events/{id}` keeps working for them, now returning `deletionScheduledFor` instead
+of the normal null — see §4. That's what makes the undo banner survive a reload rather than only
+existing as an in-session toast.
 
 ### 3. `DELETE /api/events/{eventId}/deletion-requests` — any host, no password ("Undo")
 
@@ -78,9 +86,9 @@ pending — safe to call from a stale "Undo" button without checking first.
 { "id": "…", "deletedAt": null, "deletionScheduledFor": null, … }
 ```
 
-### 4. `deletionScheduledFor` on the event
+### 4. `deletionScheduledFor` on the event, and where you can still read it from
 
-Both `EventResponse` and `EventDetailResponse` (`GET /api/events/{id}`) gain:
+Both `EventResponse` and `EventDetailResponse` gain:
 
 ```ts
 deletionScheduledFor: string | null;   // ISO-8601, or null if not pending deletion
@@ -88,13 +96,40 @@ deletionScheduledFor: string | null;   // ISO-8601, or null if not pending delet
 
 Non-null means a deletion request is pending and this is the exact permanent-purge timestamp
 (currently 30 days after the request — configurable server-side, so don't hard-code "30 days" in
-copy; render the actual date). Because `GET /api/events/{id}` itself 404s a deleted event for
-everyone (§2), the only place you'll actually observe a non-null `deletionScheduledFor` is the
-response body returned directly from the `POST`/`DELETE` deletion-requests calls above — there is
-currently no "my pending deletions" list endpoint. If your product needs a host to come back later
-(e.g. next session) and still see the pending-deletion banner from `SettingsTab.tsx`, that list
-endpoint doesn't exist yet — flag it as a follow-up rather than assuming `GET /api/events/{id}` will
-answer it, since today it won't.
+copy; render the actual date).
+
+**§2 said `GET /api/events/{id}` 404s a deleted event "for everyone" — that's true for guests and
+plain attendees, but not for hosts.** A pending-deletion event stays visible to any of its hosts
+(primary or co-) on both:
+
+- `GET /api/events/{id}` — returns the full detail view exactly as before, with
+  `deletionScheduledFor` set. This is what `SettingsTab.tsx` should call on mount/reload to decide
+  whether to render the normal settings form or the pending-deletion banner — no special-casing
+  needed, the same call you already make answers both questions.
+- `GET /api/events` — the pending-deletion event is included in a host's list (with
+  `deletionScheduledFor` set on its entry), instead of silently disappearing. It's still excluded
+  from `GET /api/events` for anyone who isn't one of its hosts, same as a guest hitting the detail
+  endpoint.
+
+So the undo affordance is **not** limited to an in-session toast: reload the page, come back next
+session, get to it from the event list — `GET /api/events/{id}` on that event's own settings page
+answers correctly every time. There is no separate "my pending deletions" endpoint, and none is
+needed — the existing list/detail endpoints already carry this state for a host.
+
+```jsonc
+// GET /api/events/{eventId} — as a host, after the retention window has not yet passed
+{
+  "id": "…",
+  "status": "ACTIVE",           // unchanged — deletion doesn't touch status
+  "deletedAt": "2026-09-02T14:03:11Z",
+  "deletionScheduledFor": "2026-10-02T14:03:11Z",
+  "hosts": [ /* … */ ],
+  …
+}
+
+// Same call from a guest or plain attendee, or any caller who isn't a host
+// → 404 RESOURCE_NOT_FOUND (2001), identical to any other soft-deleted event
+```
 
 ## Refund interaction (unchanged, frontend-only)
 
