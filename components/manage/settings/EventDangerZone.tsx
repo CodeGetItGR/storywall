@@ -7,7 +7,7 @@ export function EventDangerZone({ onDeleteOpenAction, disabled }: { onDeleteOpen
     const t = useTranslations('ManagePage');
 
     return (
-        <div className="mt-8 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-4">
+        <div className="mb-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-4">
             <p className="text-sm font-semibold text-rose-700">{t('settings.dangerZone.title')}</p>
             <p className="mt-1 text-xs leading-relaxed text-rose-700/80">{t('settings.dangerZone.body')}</p>
             <button

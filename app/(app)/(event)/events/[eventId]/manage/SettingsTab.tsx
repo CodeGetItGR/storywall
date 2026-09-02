@@ -239,6 +239,26 @@ export default function SettingsTab({
                 <p className="mb-5 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('settings.readOnly')}</p>
             )}
 
+            {canDelete && (
+                <>
+                    {/* Danger zone */}
+                    <EventDangerZone onDeleteOpenAction={deletionFlow.openConfirm} disabled={deletionFlow.isDeleting} />
+
+                    <EventDeleteConfirmModal
+                        eventId={event.id}
+                        open={deletionFlow.confirmOpen}
+                        password={deletionFlow.password}
+                        onPasswordChangeAction={deletionFlow.handlePasswordChange}
+                        passwordInvalid={deletionFlow.passwordInvalid}
+                        deleteError={deletionFlow.deleteError}
+                        isConfirming={deletionFlow.isDeleting}
+                        isRefundEligible={deletionFlow.isRefundEligible}
+                        onCloseAction={deletionFlow.closeConfirm}
+                        onConfirmAction={deletionFlow.confirmDelete}
+                    />
+                </>
+            )}
+
             <form id={settingsFormId} onSubmit={handleSubmit} className="flex flex-col gap-4 pb-20 lg:pb-0">
                 {/* Cover photo */}
                 <div>
@@ -427,26 +447,6 @@ export default function SettingsTab({
                     </button>
                 </div>
             </form>
-
-            {canDelete && (
-                <>
-                    {/* Danger zone */}
-                    <EventDangerZone onDeleteOpenAction={deletionFlow.openConfirm} disabled={deletionFlow.isDeleting} />
-
-                    <EventDeleteConfirmModal
-                        eventId={event.id}
-                        open={deletionFlow.confirmOpen}
-                        password={deletionFlow.password}
-                        onPasswordChangeAction={deletionFlow.handlePasswordChange}
-                        passwordInvalid={deletionFlow.passwordInvalid}
-                        deleteError={deletionFlow.deleteError}
-                        isConfirming={deletionFlow.isDeleting}
-                        isRefundEligible={deletionFlow.isRefundEligible}
-                        onCloseAction={deletionFlow.closeConfirm}
-                        onConfirmAction={deletionFlow.confirmDelete}
-                    />
-                </>
-            )}
         </div>
     );
 }
