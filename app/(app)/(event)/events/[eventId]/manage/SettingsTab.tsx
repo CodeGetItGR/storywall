@@ -5,11 +5,15 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import React, { useEffect, useRef, useState } from 'react';
 
+import { EventDangerZone } from '@/components/manage/settings/EventDangerZone';
+import { EventDeleteConfirmModal } from '@/components/manage/settings/EventDeleteConfirmModal';
+import { EventPendingDeletionBanner } from '@/components/manage/settings/EventPendingDeletionBanner';
 import { TargetedSection } from '@/components/manage/TargetedSection';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useUpdateEvent } from '@/hooks/useEvent';
+import { useEventDeletionFlow } from '@/hooks/useEventDeletionFlow';
 import { useUploadMedia } from '@/hooks/useMedia';
 import { getFieldErrors } from '@/lib/api/errors';
 import type { EventDetailResponseDto, EventPatchDto } from '@/lib/api/types';
@@ -21,8 +25,10 @@ import {
     toDatetimeLocalValue,
 } from '@/lib/datetime';
 import { getEventEndPresets } from '@/lib/eventEndPresets';
+import { isPrimaryHost } from '@/lib/eventLifecycle';
 import { COVER_PHOTO_SECTION_ID } from '@/lib/manageSectionTargets';
 import { cn } from '@/lib/utils';
+import { useActiveMember } from '@/providers/EventProvider';
 
 const inputClass =
     'w-full bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition disabled:cursor-not-allowed disabled:opacity-60';
@@ -210,6 +216,20 @@ export default function SettingsTab({
     const isUploading = uploadMedia.isPending;
     const isSaving = updateEvent.isPending;
     const disabled = !canWrite;
+
+    const activeMember = useActiveMember();
+    const canDelete = isPrimaryHost(event.hosts, activeMember?.id);
+    const deletionFlow = useEventDeletionFlow(event.id);
+
+    if (event.deletionScheduledFor) {
+        return (
+            <EventPendingDeletionBanner
+                deletionScheduledFor={event.deletionScheduledFor}
+                onUndoAction={deletionFlow.undoDeletion}
+                isUndoing={deletionFlow.isUndoing}
+            />
+        );
+    }
 
     return (
         <div>
@@ -407,6 +427,26 @@ export default function SettingsTab({
                     </button>
                 </div>
             </form>
+
+            {canDelete && (
+                <>
+                    {/* Danger zone */}
+                    <EventDangerZone onDeleteOpenAction={deletionFlow.openConfirm} disabled={deletionFlow.isDeleting} />
+
+                    <EventDeleteConfirmModal
+                        eventId={event.id}
+                        open={deletionFlow.confirmOpen}
+                        password={deletionFlow.password}
+                        onPasswordChangeAction={deletionFlow.handlePasswordChange}
+                        passwordInvalid={deletionFlow.passwordInvalid}
+                        deleteError={deletionFlow.deleteError}
+                        isConfirming={deletionFlow.isDeleting}
+                        isRefundEligible={deletionFlow.isRefundEligible}
+                        onCloseAction={deletionFlow.closeConfirm}
+                        onConfirmAction={deletionFlow.confirmDelete}
+                    />
+                </>
+            )}
         </div>
     );
 }
