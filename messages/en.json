@@ -2886,6 +2886,8 @@
         "eventSessionMainDatesReadOnly": "This is the event's main session, so its date always matches the event's own.",
         "eventSessionSecondaryAlreadyAssigned": "Another session is already marked as the secondary one. Unmark it first.",
         "invalidEventType": "Choose a valid event type.",
-        "invalidPlanTierScope": "That restriction only applies to event plans."
+        "invalidPlanTierScope": "That restriction only applies to event plans.",
+        "eventDeleteNotPrimaryHost": "Only the event's original host can delete it.",
+        "eventDeleteAlreadyPending": "This event already has a deletion scheduled."
     }
 }
