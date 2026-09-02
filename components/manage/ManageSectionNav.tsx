@@ -1,6 +1,6 @@
 'use client';
 
-import { CreditCard, LayoutDashboard, type LucideIcon, Receipt, RotateCcw, Settings, ShieldCheck, Ticket, Trash2, Users } from 'lucide-react';
+import { CreditCard, LayoutDashboard, type LucideIcon, Receipt, Settings, ShieldCheck, Ticket, Trash2, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
@@ -16,7 +16,6 @@ export const sectionIcons: Record<ManageSection, LucideIcon> = {
     plan: CreditCard,
     coverage: ShieldCheck,
     orders: Receipt,
-    refund: RotateCcw,
 };
 
 /**

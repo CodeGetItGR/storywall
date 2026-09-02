@@ -1117,8 +1117,6 @@
                 "confirmBody": "This event will be hidden from everyone right away. You'll be able to undo this from this page until it's permanently deleted.",
                 "confirmAction": "Delete event",
                 "cancelAction": "Cancel",
-                "refundCallout": "You may be eligible for a refund on this event's activation payment.",
-                "refundLink": "Request a refund instead",
                 "password": {
                     "label": "Current password",
                     "errors": {

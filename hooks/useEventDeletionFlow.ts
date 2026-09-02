@@ -4,7 +4,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { type ChangeEvent, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import { useRefundEligibility } from '@/hooks/useBilling';
 import { eventKeys } from '@/hooks/useEvent';
 import { useCancelEventDeletion, useRequestEventDeletion } from '@/hooks/useEventDeletion';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
@@ -21,7 +20,6 @@ export function useEventDeletionFlow(eventId: string) {
     const [passwordInvalid, setPasswordInvalid] = useState(false);
     const [deleteError, setDeleteError] = useState<string | null>(null);
 
-    const refundEligibility = useRefundEligibility(eventId);
     const requestDeletion = useRequestEventDeletion(eventId);
     const cancelDeletion = useCancelEventDeletion(eventId);
 
@@ -83,6 +81,5 @@ export function useEventDeletionFlow(eventId: string) {
         isDeleting: requestDeletion.isPending,
         undoDeletion,
         isUndoing: cancelDeletion.isPending,
-        isRefundEligible: Boolean(refundEligibility.data?.eligible),
     };
 }

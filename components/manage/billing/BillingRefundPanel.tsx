@@ -2,10 +2,10 @@ import { Loader2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import type { EventBillingPanel } from '@/hooks/useEventBillingPanel';
+import type { EventRefundFlow } from '@/hooks/useEventRefundFlow';
 import { formatMoney } from '@/lib/billing';
 
-export function BillingRefundPanel({ panel }: { panel: EventBillingPanel }) {
+export function BillingRefundPanel({ panel }: { panel: EventRefundFlow }) {
     const t = useTranslations('EventPlanSettingsPage');
     const tCommon = useTranslations('Common');
     const locale = useLocale();
