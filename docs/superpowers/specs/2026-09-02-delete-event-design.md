@@ -1,10 +1,13 @@
 # Delete Event — Design
 
-**Status: backend shipped 2026-09-02.** See
+**Status: backend shipped 2026-09-02, revised same day.** See
 [`event-deletion-fe-integration.md`](../../integration%20guides/event-deletion-fe-integration.md)
-and §5/§9 of [`billing-fe-guide.md`](../../integration%20guides/billing-fe-guide.md) for the
-authoritative contract. This spec is now implementation-ready except for the one gap noted in
-§4.
+for the authoritative contract — its revision note documents that the original "no lookup
+endpoint" gap is fixed. `billing-fe-guide.md` §9 still describes the pre-revision behavior
+("404s from every normal read... same as any other soft-deleted event") and has not been
+updated to match; treat the deletion guide as authoritative for this discrepancy and flag the
+stale line in `billing-fe-guide.md` for correction at the source. This spec is
+implementation-ready.
 
 ## Context
 
@@ -27,8 +30,9 @@ never removes it. This spec covers actually deleting an event.
   copy, always render the actual returned date**) populated. **Deletion is orthogonal to
   `status`** — there is no new `PENDING_DELETION` status value; `status` is unchanged, and
   `deletedAt`/`deletionScheduledFor` are the only signal. The event becomes immediately
-  inaccessible to everyone — including the host's own further reads — via every normal read
-  endpoint (`GET /api/events/{id}` 404s it like any other soft-deleted event).
+  inaccessible to guests and any non-host caller (`GET /api/events/{id}` 404s
+  `RESOURCE_NOT_FOUND`/2001 for them, like any other soft-deleted event) — but **not** to its
+  own hosts (primary or co-): see §3 below.
 - `DELETE /api/events/{eventId}/deletion-requests` — **any host, not just the primary host**,
   no password. Cancels a pending deletion ("Undo"). A no-op (still `200`) if nothing was
   pending, so it's safe to call from a stale button without a pre-check. Response has
@@ -36,6 +40,10 @@ never removes it. This spec covers actually deleting an event.
 - Calling `POST` again while a request is already pending → `409
   EVENT_DELETE_ALREADY_PENDING` (5064) — refetch rather than retry.
 - The old unauthenticated, no-confirmation `DELETE /api/events/{id}` is gone; it now 404s.
+- **`GET /api/events/{id}` and `GET /api/events` stay fully readable by any host of a
+  pending-deletion event**, with `deletionScheduledFor` populated on the response — this is
+  what makes the pending-deletion state durable across a reload or a later session (§3), with
+  no separate "my pending deletions" endpoint needed.
 
 ## 2. Refund interaction
 
@@ -73,46 +81,46 @@ only rendered when the viewer is the primary host.
 - Errors (wrong password, 403 not-primary-host, 409 already-pending) surface inline the same
   way `handlePasswordSubmit` surfaces `changePassword` errors today.
 
-**On success — in-session toast, not a persistent banner:** there is no "list my pending
-deletions" endpoint, and `GET /api/events/{id}` 404s the event for everyone the instant it's
-deleted, including the host. So the pending-deletion state can only be shown using the
-response held in memory from the `POST` call itself:
-- Show a toast/snackbar in place — "Event deleted. Scheduled for permanent removal on {date}."
-  — with an "Undo" button that calls `DELETE .../deletion-requests`, using the eventId/response
-  already in hand. No password needed for undo, per the contract.
-- Then redirect the host to their event list (or dismiss the toast on redirect, whichever is
-  simpler — the toast should survive the redirect long enough to be usable, e.g. via a
-  toast/notification system that persists across a route change).
-- **If the host navigates away or reloads before acting on the toast, undo is no longer
-  reachable from the UI** — there is nothing to fetch that would resurface it. This is a known
-  limitation, not a bug: file the "list pending deletions" endpoint as a backend follow-up (see
-  §4) rather than attempting to fake persistence client-side (e.g. localStorage), which would
-  drift from the backend's actual truth (the purge date is server-configurable and the request
-  could already be gone if, hypothetically, another host undid it from a different device).
+**On success:** redirect the host to their event list, since the event's normal pages
+(overview, gallery, etc. — everything except the host's own Settings/manage views) are no
+longer the right place to be for a deleted event. Show a brief success toast confirming the
+request went through and stating the permanent-removal date.
 
-## 4. Out of scope / open questions for backend
+**Pending-deletion banner — durable, not session-bound:** `SettingsTab.tsx` already calls
+`GET /api/events/{id}` on mount/reload for the event it's managing; no new call is needed. If
+`deletionScheduledFor` is non-null on that response, render a banner in place of the normal
+settings form instead — "This event is scheduled for permanent deletion on {date}" — with an
+"Undo" button calling `DELETE .../deletion-requests` (any host, no password). This works
+identically on first render, after a reload, or in a later session, because the backend keeps
+serving the full detail response (with `deletionScheduledFor` set) to any of the event's hosts
+— see §1. The event list a host lands on after redirect can optionally surface the same
+`deletionScheduledFor` field per entry (present on `GET /api/events` per §1) so a pending
+deletion is visible without opening the event, though the Settings banner is the minimum
+required surface for this spec.
 
-- **No "pending deletions" list/lookup endpoint.** Once a host leaves the in-session toast
-  (§3), there is currently no way to re-surface a pending deletion's Undo control — not from
-  Settings, not from the event list, nowhere. File this as a backend follow-up if a durable,
-  revisitable "Undo" experience is wanted; until then, the toast is the entire undo window in
-  practice.
+## 4. Out of scope / open questions
+
 - **Co-host notification.** Whether co-hosts are notified when the primary host deletes the
   event is undecided — not covered by the shipped contract.
 - **Interaction with an in-flight refund request.** What happens if a refund request is
   `PENDING` when deletion is requested is not addressed by either the deletion or refund docs.
   Not blocking (deletion and refund requests aren't mutually exclusive per the shipped API),
   but worth confirming with backend/product before launch.
+- **Stale line in `billing-fe-guide.md` §9** ("a pending-deletion event 404s from every normal
+  read... same as any other soft-deleted event") contradicts the revised
+  `event-deletion-fe-integration.md` §4. Not a frontend blocker — the deletion guide's revision
+  note makes it the authoritative source — but worth flagging back to whoever maintains the
+  guides so `billing-fe-guide.md` gets corrected too.
 
 ## Decisions locked for this spec
 
 - Primary host only can request deletion (`displayOrder: 0` in the hosts list); any host can
-  undo it.
+  undo it, no password required either to view the pending state or to undo it.
 - Deletion is a soft-delete with a 30-day (server-configurable) grace period, not immediate
   hard erasure.
-- The event is immediately hidden from everyone the moment deletion is requested.
-- Undo is only reachable via the in-session toast shown right after the delete action — there
-  is no durable, revisitable pending-deletion UI today (see §4).
+- The event is immediately hidden from guests/non-hosts the moment deletion is requested; hosts
+  keep full read access so the pending-deletion state is durable across reloads and sessions.
 - Password re-entry is required to *request* deletion (typed name/word confirmation not used);
   no password is required to *undo* it.
-- Entry point lives in the existing event Settings tab as a "Danger zone", not a separate page.
+- Entry point and the pending-deletion banner both live in the existing event Settings tab, not
+  a separate page.
