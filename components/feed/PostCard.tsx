@@ -1,13 +1,15 @@
 'use client';
 
-import { MessageCircle, MoreHorizontal, Pin } from 'lucide-react';
+import { MessageCircle, Pin } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import React, { useMemo, useState } from 'react';
 
 import { MediaThumbnail } from '@/components/common/MediaThumbnail';
-import { PostAuthorAvatar, PostMediaViewer, PostReactionPicker, ReactionSummary } from '@/components/feed/post';
+import { PostActionsMenu, PostAuthorAvatar, PostMediaViewer, PostReactionPicker, ReactionSummary } from '@/components/feed/post';
 import Badge from '@/components/ui/badge';
-import { useAppConfig, usePostModal } from '@/hooks';
+import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
+import { useAppConfig, useDeletePost, usePostModal } from '@/hooks';
+import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import type { PostResponseDto } from '@/lib/api/types';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { cn, timeAgoParts } from '@/lib/utils';
@@ -23,6 +25,8 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const t = useTranslations('PostCard');
     const { open: openPostModal } = usePostModal();
     const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(null);
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
 
     const authorName = post.author?.displayName ?? t('unknownAuthor');
     const timeAgo = useMemo(() => timeAgoParts(post.createdAt), [post.createdAt]);
@@ -33,13 +37,35 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const activeMember = useActiveMember();
     const { data: appConfig } = useAppConfig();
     const isHost = useIsHost();
+    const toErrorMessage = useApiErrorMessage();
+    const deletePost = useDeletePost(post.eventId);
     const canWrite = isEventWritable(activeEvent?.status);
     const isMyPost = activeMember?.id !== undefined && post.authorMemberId === activeMember.id;
+    const canDeletePost = isMyPost && canWrite;
     const showHostPostBadge = isHostPost && !isHost;
     const reactionTypes = appConfig?.reactionTypesByEventType[post.eventType ?? activeEvent?.eventType ?? ''] ?? [];
 
     function openPost() {
         openPostModal(post.id);
+    }
+
+    function handleDeleteRequest() {
+        if (!canDeletePost) return;
+        setDeleteError(null);
+        setConfirmDeleteOpen(true);
+    }
+
+    function handleCloseDeleteConfirm() {
+        setConfirmDeleteOpen(false);
+    }
+
+    async function handleConfirmDelete() {
+        try {
+            await deletePost.mutateAsync(post.id);
+            setConfirmDeleteOpen(false);
+        } catch (error) {
+            setDeleteError(toErrorMessage(error, t('deletePostFailed')));
+        }
     }
 
     function handleOpenSingleMedia() {
@@ -70,13 +96,14 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                             <Pin className="w-4 h-4" strokeWidth={1.8} />
                         </span>
                     )}
-                    {isMyPost && (
-                        <button
-                            aria-label={t('moreOptions')}
-                            className="flex h-8 w-8 items-center justify-center rounded-full text-ink-faint transition-colors hover:bg-surface-muted"
-                        >
-                            <MoreHorizontal className="w-4 h-4" />
-                        </button>
+                    {canDeletePost && (
+                        <PostActionsMenu
+                            deleteLabel={t('deletePost')}
+                            disabled={deletePost.isPending}
+                            isDeleting={deletePost.isPending}
+                            moreLabel={t('moreOptions')}
+                            onDeleteAction={handleDeleteRequest}
+                        />
                     )}
                 </div>
             </div>
@@ -176,6 +203,23 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                     onCloseAction={closeMediaViewer}
                 />
             )}
+
+            {/* Confirm delete */}
+            <ConfirmActionModal
+                open={confirmDeleteOpen}
+                onCloseAction={handleCloseDeleteConfirm}
+                onConfirmAction={handleConfirmDelete}
+                title={t('deletePostConfirmTitle')}
+                body={
+                    <>
+                        {t('deletePostConfirmBody')}
+                        {deleteError && <span className="mt-1 block text-destructive">{deleteError}</span>}
+                    </>
+                }
+                confirmLabel={t('deletePost')}
+                cancelLabel={t('cancel')}
+                isConfirming={deletePost.isPending}
+            />
         </article>
     );
 }

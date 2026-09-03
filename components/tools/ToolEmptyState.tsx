@@ -4,11 +4,12 @@ import Image from 'next/image';
 import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
+import {IconType} from "react-icons";
 
 interface ToolEmptyStateProps {
     title: string;
     body?: string;
-    icon?: LucideIcon;
+    icon?: LucideIcon | IconType;
     iconSrc?: string;
     iconFrame?: 'gradient' | 'plain';
     iconAreaClassName?: string;
@@ -73,7 +74,7 @@ export function ToolEmptyState({
                 {action ? <div className="relative mt-6">{action}</div> : null}
 
                 {/* Preview marks */}
-                <div className="relative mx-auto mt-7 flex max-w-[15rem] items-center justify-center gap-2 text-ink-faint">
+                <div className="relative mx-auto mt-7 flex max-w-60 items-center justify-center gap-2 text-ink-faint">
                     <span className="h-px flex-1 bg-border" />
                     <span className="flex h-9 w-9 items-center justify-center rounded-full bg-background shadow-[0_8px_20px_rgba(36,31,26,0.07)]">
                         {Icon ? <Icon className={cn('h-4 w-4', previewIconClassName)} strokeWidth={1.8} aria-hidden="true" /> : null}

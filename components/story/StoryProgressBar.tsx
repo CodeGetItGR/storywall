@@ -1,17 +1,19 @@
 import type { StoryResponseDto } from '@/lib/api/types';
+import { cn } from '@/lib/utils';
 
 interface StoryProgressBarProps {
     stories?: StoryResponseDto[];
     activeIndex?: number;
     progress?: number;
     staticLabel?: string;
+    tone?: 'dark' | 'light';
 }
 
-export function StoryProgressBar({ stories, activeIndex = 0, progress = 0, staticLabel }: StoryProgressBarProps) {
+export function StoryProgressBar({ stories, activeIndex = 0, progress = 0, staticLabel, tone = 'dark' }: StoryProgressBarProps) {
     if (staticLabel) {
         return (
             <div className="absolute top-3 left-3 right-3 z-30">
-                <div className="h-0.5 rounded-full bg-white" aria-label={staticLabel} />
+                <div className={cn('h-0.5 rounded-full', tone === 'light' ? 'bg-ink/25' : 'bg-white')} aria-label={staticLabel} />
             </div>
         );
     }

@@ -18,7 +18,7 @@ export function ComposerCard() {
     if (!canComposePost) return null;
 
     return (
-        <article className="relative isolate mx-2 mb-2 rounded-xl bg-background/50 p-px shadow-[0_14px_32px_rgba(36,31,26,0.12)] after:pointer-events-none after:absolute after:-inset-0.75 after:-z-10 after:rounded-[inherit] after:bg-linear-to-r after:from-[#c777b1]/20 after:via-primary/18 after:to-accent-orange/20 after:blur-xl sm:mx-5">
+        <article className="relative isolate mx-2 mb-2 rounded-xl bg-background/50 p-px shadow-[0_14px_32px_rgba(36,31,26,0.12)] after:pointer-events-none after:absolute after:-inset-0.75 after:-z-10 after:rounded-[inherit] sm:mx-5">
             {/* Composer shell */}
             <div className="rounded-[calc(1.75rem-1px)] bg-card/95 px-4 py-4 sm:px-5">
                 {/* Compose row */}

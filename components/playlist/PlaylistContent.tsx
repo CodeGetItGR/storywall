@@ -1,6 +1,7 @@
 'use client';
 
 import { Music, Plus } from 'lucide-react';
+import { PiMusicNotesPlusDuotone } from 'react-icons/pi';
 import { useTranslations } from 'next-intl';
 
 import { PlaylistItemRow } from '@/components/playlist';
@@ -67,7 +68,7 @@ export function PlaylistContent({
                 <ToolEmptyState
                     title={t('emptyTitle')}
                     body={t('emptyBody')}
-                    icon={Music}
+                    icon={PiMusicNotesPlusDuotone}
                     action={
                         <button
                             type="button"

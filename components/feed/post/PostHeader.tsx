@@ -36,9 +36,8 @@ export function PostHeader({ post, timeAgo }: PostHeaderProps) {
 
     const authorName = post.author?.displayName ?? t('unknownAuthor');
     const authorSubtitle = post.author?.nickname;
-    const isHostPost = post.author?.role === 'HOST';
 
-    return (
-        <PostAuthorAvatar avatarUrl={post.author?.avatarUrl} name={authorName} subtitle={authorSubtitle} timeAgo={timeAgo} isHostPost={isHostPost} />
-    );
+    // The star marker is a feed-only affordance (see PostCard) — the comments
+    // view always shows the author's real avatar/initials, regardless of role.
+    return <PostAuthorAvatar avatarUrl={post.author?.avatarUrl} name={authorName} subtitle={authorSubtitle} timeAgo={timeAgo} />;
 }

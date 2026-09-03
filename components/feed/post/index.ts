@@ -1,5 +1,6 @@
 export * from './CommentCount';
 export * from './CommentsList';
+export * from './PostActionsMenu';
 export * from './PostAuthorAvatar';
 export * from './PostCommentForm';
 export * from './PostCommentsPanel';

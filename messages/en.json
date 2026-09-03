@@ -85,6 +85,11 @@
             "days": "{count}d ago"
         },
         "moreOptions": "More options",
+        "cancel": "Cancel",
+        "deletePost": "Delete post",
+        "deletePostConfirmTitle": "Delete this post?",
+        "deletePostConfirmBody": "This post will be removed for everyone and can't be undone.",
+        "deletePostFailed": "Couldn't delete this post. Please try again.",
         "likePost": "Like post",
         "unlikePost": "Unlike post",
         "reactToPost": "React to post",

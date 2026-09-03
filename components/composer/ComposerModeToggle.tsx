@@ -1,6 +1,6 @@
 'use client';
 
-import { Music3 } from 'lucide-react';
+import { PiMusicNotesPlusDuotone } from 'react-icons/pi';
 import { useTranslations } from 'next-intl';
 
 export function ComposerModeToggle({
@@ -33,7 +33,7 @@ export function ComposerModeToggle({
                     : 'bg-surface-muted text-ink-muted hover:bg-surface-muted/80')
             }
         >
-            {mode === 'song' && <Music3 className="h-3.5 w-3.5" />}
+            {mode === 'song' && <PiMusicNotesPlusDuotone className="h-3.5 w-3.5" />}
             {label}
         </button>
     );

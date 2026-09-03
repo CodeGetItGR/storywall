@@ -23,15 +23,15 @@ export function ScheduleStoryContent({ sessions, locale }: ScheduleStoryContentP
     const unscheduledSessions = groupedSessions.unscheduled ?? [];
 
     return (
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,#212a3d_0%,#1a2131_100%)]">
+        <div className="absolute inset-0 bg-surface-muted">
             {/* Schedule Content */}
-            <div className="h-full overflow-y-auto px-5 pb-10 pt-24 text-white">
+            <div className="h-full overflow-y-auto px-5 pb-10 pt-24 text-ink">
                 <div className="flex flex-col gap-6">
                     {datedKeys.map((date) => (
                         <section key={date}>
                             {/* Date Header */}
                             <div className="mb-3 flex items-center gap-3">
-                                <div className="flex h-11 w-11 flex-col items-center justify-center rounded-full bg-white text-center shadow-[0_10px_24px_rgba(0,0,0,0.16)]">
+                                <div className="flex h-11 w-11 flex-col items-center justify-center rounded-full bg-background text-center shadow-[0_10px_24px_rgba(36,31,26,0.1)]">
                                     <span className="text-[10px] font-semibold uppercase leading-none text-amber-700">
                                         {formatDate(locale, `${date}T00:00:00`, { month: 'short' })}
                                     </span>
@@ -39,7 +39,7 @@ export function ScheduleStoryContent({ sessions, locale }: ScheduleStoryContentP
                                         {formatDate(locale, `${date}T00:00:00`, { day: 'numeric' })}
                                     </span>
                                 </div>
-                                <p className="text-sm font-bold text-white/92">{formatDate(locale, `${date}T00:00:00`, { weekday: 'long' })}</p>
+                                <p className="text-sm font-bold text-ink">{formatDate(locale, `${date}T00:00:00`, { weekday: 'long' })}</p>
                             </div>
 
                             {/* Session List */}
@@ -55,11 +55,11 @@ export function ScheduleStoryContent({ sessions, locale }: ScheduleStoryContentP
                         <section>
                             {/* Unscheduled Header */}
                             <div className="mb-3 flex items-center gap-2">
-                                <Clock className="h-4 w-4 text-white/55" aria-hidden="true" />
-                                <p className="text-sm font-bold text-white/92">{t('unscheduled')}</p>
+                                <Clock className="h-4 w-4 text-ink-muted" aria-hidden="true" />
+                                <p className="text-sm font-bold text-ink">{t('unscheduled')}</p>
                             </div>
                             {/* Unscheduled Sessions */}
-                            <div className="flex flex-col border-t border-white/10">
+                            <div className="flex flex-col border-t border-border">
                                 {unscheduledSessions.map((session) => (
                                     <ScheduleStorySession key={session.id} session={session} locale={locale} />
                                 ))}
