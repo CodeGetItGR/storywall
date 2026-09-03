@@ -31,25 +31,29 @@ Instagram-Stories-style swipeable preset filters on the story composer's preview
   source image to an offscreen canvas with `ctx.filter` set to the preset's CSS filter string,
   composites the procedural overlay (radial-gradient vignette / canvas-generated noise grain /
   flat white wash, per preset), and exports a new `File` with the original name and MIME type.
-- **`hooks/useStoryFilterCarousel.ts`** — wraps `useEmblaCarousel` (already a dependency, used
-  the same way in [`components/feed/post/PostMediaCarousel.tsx`](../../../components/feed/post/PostMediaCarousel.tsx)
-  for swipeable, indexed media) configured for a single axis, no loop, one "slide" per preset.
-  Embla owns drag physics, snapping, and clamping at the ends (no wraparound, via its own
-  `canScrollPrev`/`canScrollNext`). The hook exposes `emblaRef`, `currentIndex`, `visibleName`
-  (the current preset's label, cleared ~1s after the index last changed via a timer) — no
-  custom pointer-event code needed.
+- **`hooks/useStoryFilterSwipe.ts`** — a plain pointer-event hook: `onPointerDown`/`onPointerUp`
+  track horizontal drag distance, and crossing a distance threshold snaps `currentIndex` to
+  the next/previous preset (clamped at the ends — no wraparound). Also owns the transient
+  `visibleName` state (current preset's label, cleared ~1s after the index last changed via a
+  timer), and exposes `setIndex` for external resets. `embla-carousel-react` (already a
+  dependency, used the same way in
+  [`components/feed/post/PostMediaCarousel.tsx`](../../../components/feed/post/PostMediaCarousel.tsx))
+  was tried first, but rendering each preset as a sliding Embla "slide" made swiping read as
+  switching to a different photo rather than changing this photo's look, since every slide
+  showed the same image. The photo needs to stay visually fixed in place while only its
+  `filter`/overlay changes, which conflicts with Embla's translate-based slide model — so this
+  interaction uses a small custom hook instead, and only ever renders one `<Image>`.
 - **`useStoryComposerController`** — `PendingStory` gains `filterId: string` (default
   `"original"`). New `setFilter(key: string, filterId: string)` action mirrors the existing
   `updateCaption` per-active-item pattern. Inside `submit`, before handing files to
   `uploadBatch`/`uploadSingle`, every non-video item with `filterId !== "original"` is run
   through `bakeStoryFilter` and its `file` is replaced with the result. Video items are
   untouched (the composer doesn't expose filter UI for them).
-- **`StoryComposerModal`** — replaces the plain full-screen `<Image>` for the active photo with
-  an Embla viewport (via `useStoryFilterCarousel`) containing one slide per preset; each slide
-  renders the same image with that preset's `style={{ filter: preset.cssFilter }}` plus a
-  sibling `pointer-events-none` overlay `<div>` for grain/vignette/wash; renders the transient
-  name pill while `visibleName` is set. Video items keep the current plain preview (no
-  carousel, no filter UI).
+- **`StoryComposerModal`** — the active photo's `<Image>` gets the swipe hook's pointer
+  handlers plus `style={{ filter: activePreset.cssFilter }}` and a sibling
+  `pointer-events-none` overlay `<div>` for grain/vignette/wash; renders the transient name
+  pill while `visibleName` is set. Video items keep the current plain preview (no swipe, no
+  filter UI).
 
 ## Data flow
 
@@ -57,8 +61,9 @@ Instagram-Stories-style swipeable preset filters on the story composer's preview
 2. Swiping over the active image calls `setFilter(activeKey, nextPresetId)` — only the active
    item's filter changes, so each queued photo keeps its own independently-selected filter
    when switching between them via the thumbnail rail.
-3. Live look is pure CSS (`filter` + overlay div) — switching presets while swiping is
-   instant, no canvas work happens yet.
+3. Live look is pure CSS (`filter` + overlay div) on a single, visually fixed `<Image>` —
+   switching presets while swiping is instant, no canvas work happens yet, and the photo
+   itself never moves.
 4. On submit, each item's chosen filter (if not Original) is baked into its `file` via
    `bakeStoryFilter` before the existing upload flow runs. Everything downstream (batch
    upload, story creation, error handling) is unchanged — it only ever sees a plain image file.
@@ -85,9 +90,10 @@ hook) are well suited to it and TDD is the project's preferred workflow.
 - Unit test `storyFilters.ts`: preset table shape, and `bakeStoryFilter` (mocked canvas)
   asserts it sets `ctx.filter` correctly per preset and returns a `File` with the original
   name/type.
-- Unit test `useStoryFilterCarousel` in isolation (via `@testing-library/react`'s
-  `renderHook`): asserts `currentIndex` and `visibleName` update correctly when the
-  underlying Embla API's `select` event fires, and that `visibleName` clears after the timer.
+- Unit test `useStoryFilterSwipe` in isolation (via `@testing-library/react`'s `renderHook`):
+  asserts `currentIndex`/`visibleName` update correctly on drags past the threshold in both
+  directions, that drags under the threshold are ignored, that both ends clamp without
+  wraparound, and that `visibleName` clears after the timer.
 - Manual/browser check of the composer: swipe through all 9 presets on a real photo
   (specifically verify the "Cool" preset's skin-tone tint, called out as a risk in the FE
   guide), confirm the name pill fades correctly, and confirm a posted filtered story
