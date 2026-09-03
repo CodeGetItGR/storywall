@@ -10,8 +10,33 @@ import { Modal } from '@/components/ui/modal';
 import { useStoryCameraController } from '@/hooks/useStoryCameraController';
 import type { StoryComposerController } from '@/hooks/useStoryComposerController';
 import { useStoryFilterSwipe } from '@/hooks/useStoryFilterSwipe';
-import { STORY_FILTER_PRESETS } from '@/lib/story/storyFilters';
+import { STORY_FILTER_PRESETS, type StoryFilterPreset } from '@/lib/story/storyFilters';
 import { cn } from '@/lib/utils';
+
+function FilterLayer({ src, alt, preset }: { src: string; alt: string; preset: StoryFilterPreset }) {
+    return (
+        <>
+            <Image src={src} alt={alt} fill className="object-contain" style={{ filter: preset.cssFilter }} sizes="100vw" unoptimized />
+            {(preset.overlays ?? []).map((overlay, overlayIndex) => (
+                <div
+                    key={overlayIndex}
+                    className="pointer-events-none absolute inset-0"
+                    style={
+                        overlay.type === 'wash'
+                            ? { backgroundColor: 'white', opacity: overlay.opacity }
+                            : overlay.type === 'vignette'
+                              ? { boxShadow: `inset 0 0 12vh rgba(0,0,0,${overlay.opacity + 0.5})` }
+                              : {
+                                    backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px)',
+                                    backgroundSize: '3px 3px',
+                                    opacity: overlay.opacity,
+                                }
+                    }
+                />
+            ))}
+        </>
+    );
+}
 
 export function StoryComposerModal({ controller }: { controller: StoryComposerController }) {
     const t = useTranslations('StoryComposer');
@@ -44,8 +69,16 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
     } = controller;
     const showCamera = !activeItem || cameraActive;
     const isActiveImage = Boolean(activeItem) && !activeItem!.file.type.startsWith('video/');
-    const { currentIndex, visibleName, handlers: filterSwipeHandlers, setIndex: setFilterIndex } = useStoryFilterSwipe(filterPresetIds);
+    const {
+        currentIndex,
+        targetIndex,
+        dragProgress,
+        visibleName,
+        handlers: filterSwipeHandlers,
+        setIndex: setFilterIndex,
+    } = useStoryFilterSwipe(filterPresetIds);
     const activeFilterPreset = STORY_FILTER_PRESETS[currentIndex] ?? STORY_FILTER_PRESETS[0];
+    const targetFilterPreset = targetIndex !== null ? STORY_FILTER_PRESETS[targetIndex] : null;
 
     useEffect(() => {
         if (!activeItem) return;
@@ -131,33 +164,12 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                     )
                                 ) : (
                                     <div className="relative h-full w-full touch-none" {...filterSwipeHandlers}>
-                                        <Image
-                                            src={activeItem.previewUrl}
-                                            alt={t('previewAlt')}
-                                            fill
-                                            className="object-contain"
-                                            style={{ filter: activeFilterPreset.cssFilter }}
-                                            sizes="100vw"
-                                            unoptimized
-                                        />
-                                        {(activeFilterPreset.overlays ?? []).map((overlay, overlayIndex) => (
-                                            <div
-                                                key={overlayIndex}
-                                                className="pointer-events-none absolute inset-0"
-                                                style={
-                                                    overlay.type === 'wash'
-                                                        ? { backgroundColor: 'white', opacity: overlay.opacity }
-                                                        : overlay.type === 'vignette'
-                                                          ? { boxShadow: `inset 0 0 12vh rgba(0,0,0,${overlay.opacity + 0.5})` }
-                                                          : {
-                                                                backgroundImage:
-                                                                    'radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px)',
-                                                                backgroundSize: '3px 3px',
-                                                                opacity: overlay.opacity,
-                                                            }
-                                                }
-                                            />
-                                        ))}
+                                        <FilterLayer src={activeItem.previewUrl} alt={t('previewAlt')} preset={activeFilterPreset} />
+                                        {targetFilterPreset && (
+                                            <div className="absolute inset-0" style={{ opacity: dragProgress }}>
+                                                <FilterLayer src={activeItem.previewUrl} alt="" preset={targetFilterPreset} />
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                                 {/* Filter name pill */}

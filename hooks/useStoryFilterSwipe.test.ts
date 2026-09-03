@@ -18,72 +18,89 @@ describe('useStoryFilterSwipe', () => {
         vi.useRealTimers();
     });
 
-    it('starts at index 0 with no visible name', () => {
+    it('starts at index 0 with no target and no visible name', () => {
         const { result } = renderHook(() => useStoryFilterSwipe(['original', 'warm', 'noir']));
         expect(result.current.currentIndex).toBe(0);
+        expect(result.current.targetIndex).toBeNull();
+        expect(result.current.dragProgress).toBe(0);
         expect(result.current.visibleName).toBeNull();
     });
 
-    it('advances to the next preset on a leftward drag past the threshold', () => {
+    it('previews the next preset with live progress while dragging left', () => {
         const { result } = renderHook(() => useStoryFilterSwipe(['original', 'warm', 'noir']));
 
         act(() => {
             result.current.handlers.onPointerDown(fakePointerEvent(200));
-            result.current.handlers.onPointerUp(fakePointerEvent(100));
+            result.current.handlers.onPointerMove(fakePointerEvent(170));
         });
 
+        expect(result.current.targetIndex).toBe(1);
+        expect(result.current.dragProgress).toBeCloseTo(30 / 120);
+        expect(result.current.visibleName).toBe('warm');
+        expect(result.current.currentIndex).toBe(0);
+    });
+
+    it('previews the previous preset while dragging right', () => {
+        const { result } = renderHook(() => useStoryFilterSwipe(['original', 'warm', 'noir']));
+        act(() => result.current.setIndex(2));
+
+        act(() => {
+            result.current.handlers.onPointerDown(fakePointerEvent(100));
+            result.current.handlers.onPointerMove(fakePointerEvent(130));
+        });
+
+        expect(result.current.targetIndex).toBe(1);
+    });
+
+    it('commits to the target once dragged past the halfway point and released', () => {
+        const { result } = renderHook(() => useStoryFilterSwipe(['original', 'warm', 'noir']));
+
+        act(() => result.current.handlers.onPointerDown(fakePointerEvent(200)));
+        act(() => result.current.handlers.onPointerMove(fakePointerEvent(130))); // 70px, > 60px (half of 120px)
+        act(() => result.current.handlers.onPointerUp(fakePointerEvent(130)));
+
         expect(result.current.currentIndex).toBe(1);
+        expect(result.current.targetIndex).toBeNull();
         expect(result.current.visibleName).toBe('warm');
     });
 
-    it('goes back to the previous preset on a rightward drag past the threshold', () => {
+    it('snaps back without changing index if released before the halfway point', () => {
         const { result } = renderHook(() => useStoryFilterSwipe(['original', 'warm', 'noir']));
 
-        act(() => result.current.setIndex(2));
-        act(() => {
-            result.current.handlers.onPointerDown(fakePointerEvent(100));
-            result.current.handlers.onPointerUp(fakePointerEvent(200));
-        });
-
-        expect(result.current.currentIndex).toBe(1);
-    });
-
-    it('ignores drags that do not cross the swipe threshold', () => {
-        const { result } = renderHook(() => useStoryFilterSwipe(['original', 'warm', 'noir']));
-
-        act(() => {
-            result.current.handlers.onPointerDown(fakePointerEvent(200));
-            result.current.handlers.onPointerUp(fakePointerEvent(190));
-        });
+        act(() => result.current.handlers.onPointerDown(fakePointerEvent(200)));
+        act(() => result.current.handlers.onPointerMove(fakePointerEvent(180))); // 20px, < 60px
+        act(() => result.current.handlers.onPointerUp(fakePointerEvent(180)));
 
         expect(result.current.currentIndex).toBe(0);
+        expect(result.current.targetIndex).toBeNull();
         expect(result.current.visibleName).toBeNull();
     });
 
-    it('clamps at the last preset — no wraparound', () => {
+    it('clamps at the last preset — no target beyond the end', () => {
         const { result } = renderHook(() => useStoryFilterSwipe(['original', 'warm', 'noir']));
-
         act(() => result.current.setIndex(2));
+
         act(() => {
             result.current.handlers.onPointerDown(fakePointerEvent(200));
-            result.current.handlers.onPointerUp(fakePointerEvent(100));
+            result.current.handlers.onPointerMove(fakePointerEvent(50));
         });
 
-        expect(result.current.currentIndex).toBe(2);
+        expect(result.current.targetIndex).toBeNull();
+        expect(result.current.dragProgress).toBe(0);
     });
 
-    it('clamps at the first preset — no wraparound', () => {
+    it('clamps at the first preset — no target before the start', () => {
         const { result } = renderHook(() => useStoryFilterSwipe(['original', 'warm', 'noir']));
 
         act(() => {
             result.current.handlers.onPointerDown(fakePointerEvent(100));
-            result.current.handlers.onPointerUp(fakePointerEvent(200));
+            result.current.handlers.onPointerMove(fakePointerEvent(250));
         });
 
-        expect(result.current.currentIndex).toBe(0);
+        expect(result.current.targetIndex).toBeNull();
     });
 
-    it('clears visibleName about 1s after the last change', () => {
+    it('clears the committed name pill about 1s after a commit', () => {
         const { result } = renderHook(() => useStoryFilterSwipe(['original', 'warm', 'noir']));
 
         act(() => result.current.setIndex(1));
