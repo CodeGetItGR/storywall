@@ -250,10 +250,10 @@
 }
 
 /* ── Brand gradient utilities ── */
-.bg-gradient-brand {
+@utility bg-gradient-brand {
     background: linear-gradient(135deg, #ff6fa0 0%, #ff7a59 50%, #ffb259 100%);
 }
-.bg-gradient-logo {
+@utility bg-gradient-logo {
     background: var(--logo);
 }
 .text-gradient-brand {
