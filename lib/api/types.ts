@@ -440,6 +440,7 @@ export interface EventResponseDto {
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
+    deletionScheduledFor: string | null; // ISO-8601; non-null while a deletion request is pending
 }
 
 export interface EventScheduleDto {
@@ -485,6 +486,7 @@ export interface EventDetailResponseDto {
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
+    deletionScheduledFor: string | null; // ISO-8601; non-null while a deletion request is pending
     status: EventStatus;
 }
 
@@ -817,6 +819,10 @@ export interface EventPatchDto {
     brandingSettings?: Record<string, unknown>;
     rsvpDeadline?: string;
     keepOriginals?: true;
+}
+
+export interface EventDeletionRequestDto {
+    currentPassword: string;
 }
 
 export interface CoHostInviteRequestDto {

@@ -1,12 +1,11 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
-import type { ChangeEvent } from 'react';
-import React, { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
-import { useApiErrorMessage, useRetryAfterCountdown } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
-import { useEventBilling, useEventRefundRequests, useRefundEligibility, useRequestRefund, useUpgradeOptions } from '@/hooks/useBilling';
+import { useEventBilling, useUpgradeOptions } from '@/hooks/useBilling';
+import { useEventRefundFlow } from '@/hooks/useEventRefundFlow';
 import { billingCurrency, formatBillingDate, newestBillingOrder, paidBillingTotal } from '@/lib/billing';
 import { publicAssignablePlans, scopedPlans } from '@/lib/planTiers';
 
@@ -19,15 +18,8 @@ const ORDER_PREVIEW_COUNT = 6;
 export function useEventBillingPanel(eventId: string) {
     const appConfigQuery = useAppConfig();
     const billing = useEventBilling(eventId, true);
-    const refundEligibility = useRefundEligibility(eventId);
-    const requestRefund = useRequestRefund(eventId);
-    const refundHistory = useEventRefundRequests(eventId);
-    const toErrorMessage = useApiErrorMessage();
-    const refundRetryIn = useRetryAfterCountdown(requestRefund.error);
+    const refundFlow = useEventRefundFlow(eventId);
 
-    const [refundReason, setRefundReason] = useState('');
-    const [refundError, setRefundError] = useState<string | null>(null);
-    const [confirmingRefund, setConfirmingRefund] = useState(false);
     const [showAllOrders, setShowAllOrders] = useState(false);
 
     const data = billing.data;
@@ -50,10 +42,6 @@ export function useEventBillingPanel(eventId: string) {
             ),
         [appConfigQuery.data?.paidServices, currentPlan]
     );
-    // Server-side history, so a decision (and its note) survives a reload - the
-    // page used to only know about a request the same tab had just submitted.
-    const refundRequest = refundHistory.data?.[0] ?? null;
-
     const insights = useMemo(() => {
         if (!data) return null;
 
@@ -65,34 +53,11 @@ export function useEventBillingPanel(eventId: string) {
         };
     }, [data]);
 
-    const cancelRefundConfirmation = useCallback(() => setConfirmingRefund(false), []);
     const handleShowAllOrders = useCallback(() => setShowAllOrders(true), []);
     const handleRetry = useCallback(() => {
         void billing.refetch();
         void upgradeOptions.refetch();
     }, [billing, upgradeOptions]);
-
-    const handleRefundReasonChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>) => {
-        setRefundReason(event.target.value);
-    }, []);
-
-    const askRefundConfirmation = useCallback((event: React.SubmitEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        setRefundError(null);
-        setConfirmingRefund(true);
-    }, []);
-
-    const submitRefundRequest = useCallback(async () => {
-        setRefundError(null);
-        try {
-            await requestRefund.mutateAsync(refundReason.trim());
-            setRefundReason('');
-            setConfirmingRefund(false);
-        } catch (e) {
-            setRefundError(toErrorMessage(e));
-            setConfirmingRefund(false);
-        }
-    }, [refundReason, requestRefund, toErrorMessage]);
 
     const derived = useMemo(() => {
         if (!data || !insights) return null;
@@ -128,18 +93,7 @@ export function useEventBillingPanel(eventId: string) {
         // Orders
         handleShowAllOrders,
         // Refunds
-        refundEligibility,
-        refundHistory,
-        refundRequest,
-        refundReason,
-        refundError,
-        refundRetryIn,
-        confirmingRefund,
-        isRequestingRefund: requestRefund.isPending,
-        handleRefundReasonChange,
-        askRefundConfirmation,
-        submitRefundRequest,
-        cancelRefundConfirmation,
+        ...refundFlow,
     };
 }
 

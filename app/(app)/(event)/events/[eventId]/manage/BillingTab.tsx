@@ -5,14 +5,13 @@ import { useTranslations } from 'next-intl';
 import { BillingCoveragePanel } from '@/components/manage/billing/BillingCoveragePanel';
 import { BillingOrdersPanel } from '@/components/manage/billing/BillingOrdersPanel';
 import { BillingPlanPanel } from '@/components/manage/billing/BillingPlanPanel';
-import { BillingRefundPanel } from '@/components/manage/billing/BillingRefundPanel';
 import { BillingStatusHeader } from '@/components/manage/billing/BillingStatusHeader';
 import { useEventBillingPanel } from '@/hooks/useEventBillingPanel';
 import type { BillingSection } from '@/lib/manageSections';
 
 /**
- * Plan, coverage, orders and refund are top-level sections of the dashboard, so
- * this container renders the shared status header plus the one requested panel
+ * Plan, coverage and orders are top-level sections of the dashboard, so this
+ * container renders the shared status header plus the one requested panel
  * instead of a second level of tabs.
  */
 export default function BillingTab({ eventId, section }: { eventId: string; section: BillingSection }) {
@@ -69,8 +68,6 @@ export default function BillingTab({ eventId, section }: { eventId: string; sect
             {section === 'orders' && (
                 <BillingOrdersPanel data={data} derived={derived} insights={insights} onShowAllOrders={panel.handleShowAllOrders} />
             )}
-
-            {section === 'refund' && <BillingRefundPanel panel={panel} />}
         </div>
     );
 }

@@ -14,6 +14,7 @@ type ConfirmActionModalProps = {
     onCloseAction: () => void;
     onConfirmAction: () => void | Promise<void>;
     isConfirming?: boolean;
+    confirmDisabled?: boolean;
     tone?: 'danger' | 'default';
     icon?: ReactNode;
     size?: 'sm' | 'md';
@@ -30,6 +31,7 @@ export function ConfirmActionModal({
     onCloseAction,
     onConfirmAction,
     isConfirming = false,
+    confirmDisabled = false,
     tone = 'danger',
     icon,
     size = 'sm',
@@ -71,7 +73,7 @@ export function ConfirmActionModal({
                         <button
                             type="button"
                             onClick={onConfirmAction}
-                            disabled={isConfirming}
+                            disabled={isConfirming || confirmDisabled}
                             className={
                                 tone === 'danger'
                                     ? 'rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60'

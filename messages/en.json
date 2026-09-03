@@ -846,6 +846,7 @@
         "sections": {
             "overview": "Overview",
             "settings": "Settings",
+            "danger": "Danger zone",
             "rsvp": "RSVP",
             "invitations": "Invitations",
             "plan": "Plan",
@@ -1119,7 +1120,27 @@
             },
             "save": "Save changes",
             "saved": "Saved",
-            "readOnly": "This event is read-only. Event details and cover photo changes are paused until the event is active again."
+            "readOnly": "This event is read-only. Event details and cover photo changes are paused until the event is active again.",
+            "dangerZone": {
+                "body": "Deleting this event hides it immediately. You'll have a grace period to undo this before it's permanently deleted.",
+                "delete": "Delete event",
+                "confirmTitle": "Delete this event?",
+                "confirmBody": "This event will be hidden from everyone right away. You'll be able to undo this from this page until it's permanently deleted.",
+                "confirmAction": "Delete event",
+                "cancelAction": "Cancel",
+                "password": {
+                    "label": "Current password",
+                    "errors": {
+                        "currentPasswordInvalid": "Your current password is incorrect."
+                    }
+                }
+            },
+            "pendingDeletion": {
+                "title": "This event is scheduled for deletion",
+                "body": "It will be permanently deleted on {date}. Guests can no longer see it.",
+                "undo": "Undo deletion",
+                "undoing": "Restoring…"
+            }
         },
         "usage": {
             "eventTitle": "Plan usage"
@@ -2897,6 +2918,8 @@
         "eventSessionMainDatesReadOnly": "This is the event's main session, so its date always matches the event's own.",
         "eventSessionSecondaryAlreadyAssigned": "Another session is already marked as the secondary one. Unmark it first.",
         "invalidEventType": "Choose a valid event type.",
-        "invalidPlanTierScope": "That restriction only applies to event plans."
+        "invalidPlanTierScope": "That restriction only applies to event plans.",
+        "eventDeleteNotPrimaryHost": "Only the event's original host can delete it.",
+        "eventDeleteAlreadyPending": "This event already has a deletion scheduled."
     }
 }
