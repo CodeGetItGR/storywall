@@ -17,7 +17,7 @@ export const endpoints = {
         login: '/api/auth/login',
         refresh: '/api/auth/refresh',
         logout: '/api/auth/logout',
-        guestLogin: '/api/auth/guest-login',
+        oauth: (provider: 'GOOGLE' | 'APPLE') => `/api/auth/oauth/${provider}`,
         // Not a Spring route — same path served locally by this Next.js app's
         // own route handler, which reads httpOnly cookies to (re)derive a
         // session. See lib/auth/authCookies.ts.
@@ -113,6 +113,8 @@ export const endpoints = {
         byId: (id: string) => `/api/qr-links/${id}`,
         revoke: (id: string) => `/api/qr-links/${id}/revoke`,
         resolve: (token: string) => `/api/qr/${token}`,
+        media: (token: string) => `/api/qr/${token}/media`,
+        mediaBatch: (token: string) => `/api/qr/${token}/media/batch`,
     },
 
     partners: {
