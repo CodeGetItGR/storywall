@@ -12,10 +12,6 @@ export const AUTH_COOKIES = {
     // Registered-user refresh token. No maxAge (session cookie) to match the
     // previous sessionStorage scoping — cleared when the browser closes.
     refreshToken: 'storywall_rt',
-    // Guests never get a refresh token — they re-derive a session from the
-    // invite token (+ a stable guestKey once Spring has issued one). Bundled
-    // as one JSON cookie since they're always read/written together.
-    guest: 'storywall_guest',
 } as const;
 
 // Server Components can't read/refresh cookies themselves (that's restricted
@@ -25,26 +21,6 @@ export const AUTH_COOKIES = {
 export const ACCESS_TOKEN_HEADER = 'x-storywall-access-token';
 
 export const ACCESS_TOKEN_MAX_AGE_SECONDS = 15 * 60;
-export const GUEST_ACCESS_TOKEN_MAX_AGE_SECONDS = 24 * 60 * 60;
-
-export interface GuestCookiePayload {
-    inviteToken: string;
-    guestKey?: string;
-}
-
-export function encodeGuestCookie(payload: GuestCookiePayload): string {
-    return JSON.stringify(payload);
-}
-
-export function decodeGuestCookie(raw: string | undefined): GuestCookiePayload | null {
-    if (!raw) return null;
-    try {
-        const parsed = JSON.parse(raw);
-        return typeof parsed?.inviteToken === 'string' ? parsed : null;
-    } catch {
-        return null;
-    }
-}
 
 export function baseCookieOptions() {
     return {
