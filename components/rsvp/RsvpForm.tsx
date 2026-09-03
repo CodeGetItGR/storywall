@@ -13,7 +13,6 @@ type AttendingStatus = 'attending' | 'not-attending';
 interface RsvpFormProps {
     eventType: EventTypeConvention | null;
     attending: AttendingStatus | null;
-    formDisabled: boolean;
     onAttend: () => void;
     onDecline: () => void;
     plusOnes: RsvpPlusOnes;
@@ -32,7 +31,6 @@ interface RsvpFormProps {
 export function RsvpForm({
     eventType,
     attending,
-    formDisabled,
     onAttend,
     onDecline,
     plusOnes,
@@ -63,10 +61,8 @@ export function RsvpForm({
                         <button
                             type="button"
                             onClick={onAttend}
-                            disabled={formDisabled}
                             className={cn(
                                 'flex items-center justify-center gap-2 py-3 rounded-xl border-2 text-sm font-semibold transition-all px-1',
-                                formDisabled && 'cursor-not-allowed opacity-60',
                                 attending === 'attending'
                                     ? 'border-emerald-400 bg-emerald-50 text-emerald-600'
                                     : 'border-border text-ink-muted hover:border-emerald-200'
@@ -78,10 +74,8 @@ export function RsvpForm({
                         <button
                             type="button"
                             onClick={onDecline}
-                            disabled={formDisabled}
                             className={cn(
                                 'flex items-center justify-center gap-2 py-3 rounded-xl border-2 text-sm font-semibold transition-all px-1',
-                                formDisabled && 'cursor-not-allowed opacity-60',
                                 attending === 'not-attending'
                                     ? 'border-rose-300 bg-rose-50 text-rose-500'
                                     : 'border-border text-ink-muted hover:border-rose-200'
@@ -102,7 +96,6 @@ export function RsvpForm({
                                     <button
                                         type="button"
                                         onClick={onDecrementPlusOnes('adult')}
-                                        disabled={formDisabled}
                                         className="w-7 h-7 rounded-full bg-card border border-border flex items-center justify-center text-ink-muted hover:text-ink transition-colors font-bold"
                                     >
                                         −
@@ -113,7 +106,6 @@ export function RsvpForm({
                                     <button
                                         type="button"
                                         onClick={onIncrementPlusOnes('adult')}
-                                        disabled={formDisabled}
                                         className="w-7 h-7 rounded-full bg-card border border-border flex items-center justify-center text-ink-muted hover:text-ink transition-colors font-bold"
                                     >
                                         +
@@ -123,7 +115,6 @@ export function RsvpForm({
                                     <button
                                         type="button"
                                         onClick={onDecrementPlusOnes('child')}
-                                        disabled={formDisabled}
                                         className="w-7 h-7 rounded-full bg-card border border-border flex items-center justify-center text-ink-muted hover:text-ink transition-colors font-bold"
                                     >
                                         −
@@ -134,7 +125,6 @@ export function RsvpForm({
                                     <button
                                         type="button"
                                         onClick={onIncrementPlusOnes('child')}
-                                        disabled={formDisabled}
                                         className="w-7 h-7 rounded-full bg-card border border-border flex items-center justify-center text-ink-muted hover:text-ink transition-colors font-bold"
                                     >
                                         +
@@ -152,7 +142,6 @@ export function RsvpForm({
                     <textarea
                         value={message}
                         onChange={onMessageChange}
-                        disabled={formDisabled}
                         rows={3}
                         placeholder={t('messagePlaceholder')}
                         maxLength={maxMessageLength}

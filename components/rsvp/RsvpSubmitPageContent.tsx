@@ -5,7 +5,7 @@ import type { useRsvpSubmitPageData } from '@/hooks/useRsvpSubmitPageData';
 export type RsvpSubmitPageData = ReturnType<typeof useRsvpSubmitPageData>;
 
 export function RsvpSubmitPageContent({ data }: { data: RsvpSubmitPageData }) {
-    if (data.submitted) {
+    if (data.submitted || data.hasExistingRsvp) {
         return <RsvpSubmittedContent data={data} />;
     }
 
