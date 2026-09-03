@@ -20,28 +20,36 @@ Instagram-Stories-style swipeable preset filters on the story composer's preview
 
 ## Architecture
 
-- **`lib/story/storyFilters.ts`** — static preset table (`StoryFilterPreset[]`, matching the
-  shape in the FE guide) plus a pure async helper `bakeStoryFilter(file: File, preset:
-  StoryFilterPreset): Promise<File>` that draws the source image to an offscreen canvas with
-  `ctx.filter` set to the preset's CSS filter string, composites the procedural overlay
-  (radial-gradient vignette / canvas-generated noise grain / flat white wash, per preset), and
-  exports a new `File` with the original name and MIME type.
-- **`hooks/useStoryFilterSwipe.ts`** — owns pointer-drag detection on a ref'd element,
-  translating a horizontal drag past a distance threshold into `next()`/`previous()` index
-  changes (clamped at the ends — no wraparound), plus a transient `visibleName` state (the
-  swiped-to preset's label) that clears itself after ~1s via a timer, re-triggered on each
-  swipe. Takes `presetCount`, `currentIndex`, `onChange` as inputs; has no story-specific
-  knowledge and is not published as a general-purpose component — this is the only consumer.
+- **`lib/story/storyFilters.ts`** — static preset table (`StoryFilterPreset[]`: `id`,
+  `cssFilter`, optional `overlays` list — Vintage needs both grain and vignette, so it's an array, not a
+  single overlay). No `label` field, unlike the FE guide's suggested shape —
+  per this project's localization rule, the display name comes from a translation key
+  (`t('filters.' + id + '.label')` in `StoryComposer`, mirroring the existing
+  `t(\`${key}.label\`)` pattern in [`hooks/useToolsMenuItems.ts`](../../../hooks/useToolsMenuItems.ts))
+  rather than being hardcoded in the data file. Also exports a pure async helper
+  `bakeStoryFilter(file: File, preset: StoryFilterPreset): Promise<File>` that draws the
+  source image to an offscreen canvas with `ctx.filter` set to the preset's CSS filter string,
+  composites the procedural overlay (radial-gradient vignette / canvas-generated noise grain /
+  flat white wash, per preset), and exports a new `File` with the original name and MIME type.
+- **`hooks/useStoryFilterCarousel.ts`** — wraps `useEmblaCarousel` (already a dependency, used
+  the same way in [`components/feed/post/PostMediaCarousel.tsx`](../../../components/feed/post/PostMediaCarousel.tsx)
+  for swipeable, indexed media) configured for a single axis, no loop, one "slide" per preset.
+  Embla owns drag physics, snapping, and clamping at the ends (no wraparound, via its own
+  `canScrollPrev`/`canScrollNext`). The hook exposes `emblaRef`, `currentIndex`, `visibleName`
+  (the current preset's label, cleared ~1s after the index last changed via a timer) — no
+  custom pointer-event code needed.
 - **`useStoryComposerController`** — `PendingStory` gains `filterId: string` (default
   `"original"`). New `setFilter(key: string, filterId: string)` action mirrors the existing
   `updateCaption` per-active-item pattern. Inside `submit`, before handing files to
   `uploadBatch`/`uploadSingle`, every non-video item with `filterId !== "original"` is run
   through `bakeStoryFilter` and its `file` is replaced with the result. Video items are
   untouched (the composer doesn't expose filter UI for them).
-- **`StoryComposerModal`** — wraps the existing full-screen image preview with the swipe hook;
-  live preview applies `style={{ filter: preset.cssFilter }}` directly to the `<Image>` plus a
+- **`StoryComposerModal`** — replaces the plain full-screen `<Image>` for the active photo with
+  an Embla viewport (via `useStoryFilterCarousel`) containing one slide per preset; each slide
+  renders the same image with that preset's `style={{ filter: preset.cssFilter }}` plus a
   sibling `pointer-events-none` overlay `<div>` for grain/vignette/wash; renders the transient
-  name pill while `visibleName` is set.
+  name pill while `visibleName` is set. Video items keep the current plain preview (no
+  carousel, no filter UI).
 
 ## Data flow
 
@@ -67,11 +75,19 @@ Instagram-Stories-style swipeable preset filters on the story composer's preview
 
 ## Testing
 
+The repo has no test runner today (no jest/vitest config, no `test` script, no existing
+`*.test.ts`/`*.spec.ts` files). This feature introduces Vitest + React Testing Library as the
+repo's first test infrastructure, since the units below (a pure canvas helper and a small
+hook) are well suited to it and TDD is the project's preferred workflow.
+
+- Set up Vitest (`vitest`, `@vitejs/plugin-react` or `vite-tsconfig-paths` as needed,
+  `jsdom` environment) and a `test` script in `package.json`.
 - Unit test `storyFilters.ts`: preset table shape, and `bakeStoryFilter` (mocked canvas)
   asserts it sets `ctx.filter` correctly per preset and returns a `File` with the original
   name/type.
-- Unit test `useStoryFilterSwipe` in isolation: simulated pointer sequences produce correct
-  `next`/`previous` calls, clamped at bounds, and correct pill-visibility timing.
+- Unit test `useStoryFilterCarousel` in isolation (via `@testing-library/react`'s
+  `renderHook`): asserts `currentIndex` and `visibleName` update correctly when the
+  underlying Embla API's `select` event fires, and that `visibleName` clears after the timer.
 - Manual/browser check of the composer: swipe through all 9 presets on a real photo
   (specifically verify the "Cool" preset's skin-tone tint, called out as a risk in the FE
   guide), confirm the name pill fades correctly, and confirm a posted filtered story
