@@ -9,7 +9,7 @@ import { StoryVideo } from '@/components/story/StoryVideo';
 import { Modal } from '@/components/ui/modal';
 import { useStoryCameraController } from '@/hooks/useStoryCameraController';
 import type { StoryComposerController } from '@/hooks/useStoryComposerController';
-import { useStoryFilterCarousel } from '@/hooks/useStoryFilterCarousel';
+import { useStoryFilterSwipe } from '@/hooks/useStoryFilterSwipe';
 import { STORY_FILTER_PRESETS } from '@/lib/story/storyFilters';
 import { cn } from '@/lib/utils';
 
@@ -44,23 +44,20 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
     } = controller;
     const showCamera = !activeItem || cameraActive;
     const isActiveImage = Boolean(activeItem) && !activeItem!.file.type.startsWith('video/');
-    const { emblaRef, currentIndex, visibleName, scrollTo } = useStoryFilterCarousel(filterPresetIds);
-
-    function handleFilterSelect(index: number) {
-        if (!activeItem) return;
-        const preset = STORY_FILTER_PRESETS[index];
-        if (preset) setFilter(activeItem.key, preset.id);
-    }
+    const { currentIndex, visibleName, handlers: filterSwipeHandlers, setIndex: setFilterIndex } = useStoryFilterSwipe(filterPresetIds);
+    const activeFilterPreset = STORY_FILTER_PRESETS[currentIndex] ?? STORY_FILTER_PRESETS[0];
 
     useEffect(() => {
-        handleFilterSelect(currentIndex);
+        if (!activeItem) return;
+        const preset = STORY_FILTER_PRESETS[currentIndex];
+        if (preset) setFilter(activeItem.key, preset.id);
         // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to swipes (currentIndex), not to activeItem identity changing for other reasons.
     }, [currentIndex]);
 
     useEffect(() => {
         if (!activeItem) return;
         const index = STORY_FILTER_PRESETS.findIndex((preset) => preset.id === activeItem.filterId);
-        if (index >= 0) scrollTo(index);
+        if (index >= 0) setFilterIndex(index);
         // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-sync when the active item itself changes (switching photos), not on every filterId write this same effect's sibling causes.
     }, [activeItem?.key]);
 
@@ -133,40 +130,34 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                         />
                                     )
                                 ) : (
-                                    <div className="h-full w-full overflow-hidden" ref={emblaRef}>
-                                        <div className="flex h-full">
-                                            {STORY_FILTER_PRESETS.map((preset) => (
-                                                <div key={preset.id} className="relative h-full w-full shrink-0 grow-0 basis-full">
-                                                    <Image
-                                                        src={activeItem.previewUrl}
-                                                        alt={t('previewAlt')}
-                                                        fill
-                                                        className="object-contain"
-                                                        style={{ filter: preset.cssFilter }}
-                                                        sizes="100vw"
-                                                        unoptimized
-                                                    />
-                                                    {(preset.overlays ?? []).map((overlay, overlayIndex) => (
-                                                        <div
-                                                            key={overlayIndex}
-                                                            className="pointer-events-none absolute inset-0"
-                                                            style={
-                                                                overlay.type === 'wash'
-                                                                    ? { backgroundColor: 'white', opacity: overlay.opacity }
-                                                                    : overlay.type === 'vignette'
-                                                                      ? { boxShadow: `inset 0 0 12vh rgba(0,0,0,${overlay.opacity + 0.5})` }
-                                                                      : {
-                                                                            backgroundImage:
-                                                                                'radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px)',
-                                                                            backgroundSize: '3px 3px',
-                                                                            opacity: overlay.opacity,
-                                                                        }
+                                    <div className="relative h-full w-full touch-none" {...filterSwipeHandlers}>
+                                        <Image
+                                            src={activeItem.previewUrl}
+                                            alt={t('previewAlt')}
+                                            fill
+                                            className="object-contain"
+                                            style={{ filter: activeFilterPreset.cssFilter }}
+                                            sizes="100vw"
+                                            unoptimized
+                                        />
+                                        {(activeFilterPreset.overlays ?? []).map((overlay, overlayIndex) => (
+                                            <div
+                                                key={overlayIndex}
+                                                className="pointer-events-none absolute inset-0"
+                                                style={
+                                                    overlay.type === 'wash'
+                                                        ? { backgroundColor: 'white', opacity: overlay.opacity }
+                                                        : overlay.type === 'vignette'
+                                                          ? { boxShadow: `inset 0 0 12vh rgba(0,0,0,${overlay.opacity + 0.5})` }
+                                                          : {
+                                                                backgroundImage:
+                                                                    'radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px)',
+                                                                backgroundSize: '3px 3px',
+                                                                opacity: overlay.opacity,
                                                             }
-                                                        />
-                                                    ))}
-                                                </div>
-                                            ))}
-                                        </div>
+                                                }
+                                            />
+                                        ))}
                                     </div>
                                 )}
                                 {/* Filter name pill */}

@@ -90,7 +90,13 @@ function mapBatchUploads(items: PendingStory[], result: MediaBatchUploadResponse
         if (failure) return { ...item, status: 'failed', error: failure.message };
         const media = createdByName.get(item.file.name)?.shift();
         if (!media) return item;
-        return { ...item, mediaId: media.id, remoteUrl: media.mediaUrl, status: media.status === 'PROCESSING' ? 'processing' : 'uploaded', error: undefined };
+        return {
+            ...item,
+            mediaId: media.id,
+            remoteUrl: media.mediaUrl,
+            status: media.status === 'PROCESSING' ? 'processing' : 'uploaded',
+            error: undefined,
+        };
     });
 }
 
@@ -341,9 +347,13 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
 
         const processing = working.filter((item) => item.status === 'processing');
         if (processing.length > 0) {
-            setItems((current) => current.map((item) => (processing.some((candidate) => candidate.key === item.key) ? { ...item, status: 'processing' } : item)));
+            setItems((current) =>
+                current.map((item) => (processing.some((candidate) => candidate.key === item.key) ? { ...item, status: 'processing' } : item))
+            );
             working = await waitForStoryVideos(working);
-            working = working.map((item) => (item.status === 'failed' && item.error === undefined ? { ...item, error: t('processingFailed') } : item));
+            working = working.map((item) =>
+                item.status === 'failed' && item.error === undefined ? { ...item, error: t('processingFailed') } : item
+            );
             setItems(working);
         }
 
