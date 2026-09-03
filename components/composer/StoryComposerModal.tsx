@@ -3,12 +3,14 @@
 import { Camera, Images, Loader2, RefreshCw, Send, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, type MouseEvent, useState } from 'react';
+import { type ChangeEvent, type MouseEvent, useEffect, useState } from 'react';
 
 import { StoryVideo } from '@/components/story/StoryVideo';
 import { Modal } from '@/components/ui/modal';
 import { useStoryCameraController } from '@/hooks/useStoryCameraController';
 import type { StoryComposerController } from '@/hooks/useStoryComposerController';
+import { useStoryFilterCarousel } from '@/hooks/useStoryFilterCarousel';
+import { STORY_FILTER_PRESETS } from '@/lib/story/storyFilters';
 import { cn } from '@/lib/utils';
 
 export function StoryComposerModal({ controller }: { controller: StoryComposerController }) {
@@ -35,10 +37,33 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
         pickFromLibrary,
         removeItem,
         selectItem,
+        setFilter,
+        filterPresetIds,
         submit,
         updateCaption,
     } = controller;
     const showCamera = !activeItem || cameraActive;
+    const isActiveImage = Boolean(activeItem) && !activeItem!.file.type.startsWith('video/');
+    const { emblaRef, currentIndex, visibleName, scrollTo } = useStoryFilterCarousel(filterPresetIds);
+
+    function handleFilterSelect(index: number) {
+        if (!activeItem) return;
+        const preset = STORY_FILTER_PRESETS[index];
+        if (preset) setFilter(activeItem.key, preset.id);
+    }
+
+    useEffect(() => {
+        handleFilterSelect(currentIndex);
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to swipes (currentIndex), not to activeItem identity changing for other reasons.
+    }, [currentIndex]);
+
+    useEffect(() => {
+        if (!activeItem) return;
+        const index = STORY_FILTER_PRESETS.findIndex((preset) => preset.id === activeItem.filterId);
+        if (index >= 0) scrollTo(index);
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- only re-sync when the active item itself changes (switching photos), not on every filterId write this same effect's sibling causes.
+    }, [activeItem?.key]);
+
     const {
         videoRef,
         mode: cameraMode,
@@ -99,23 +124,64 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                             <p className="text-xs">{t('preparingPreview')}</p>
                                         </div>
                                     ) : (
-                                        <StoryVideo key={activeVideoSrc} src={activeVideoSrc!} loop muteToggle={false} onLoadError={handlePreviewError} />
+                                        <StoryVideo
+                                            key={activeVideoSrc}
+                                            src={activeVideoSrc!}
+                                            loop
+                                            muteToggle={false}
+                                            onLoadError={handlePreviewError}
+                                        />
                                     )
                                 ) : (
-                                    <Image
-                                        src={activeItem.previewUrl}
-                                        alt={t('previewAlt')}
-                                        fill
-                                        className="object-contain"
-                                        sizes="100vw"
-                                        unoptimized
-                                    />
+                                    <div className="h-full w-full overflow-hidden" ref={emblaRef}>
+                                        <div className="flex h-full">
+                                            {STORY_FILTER_PRESETS.map((preset) => (
+                                                <div key={preset.id} className="relative h-full w-full shrink-0 grow-0 basis-full">
+                                                    <Image
+                                                        src={activeItem.previewUrl}
+                                                        alt={t('previewAlt')}
+                                                        fill
+                                                        className="object-contain"
+                                                        style={{ filter: preset.cssFilter }}
+                                                        sizes="100vw"
+                                                        unoptimized
+                                                    />
+                                                    {(preset.overlays ?? []).map((overlay, overlayIndex) => (
+                                                        <div
+                                                            key={overlayIndex}
+                                                            className="pointer-events-none absolute inset-0"
+                                                            style={
+                                                                overlay.type === 'wash'
+                                                                    ? { backgroundColor: 'white', opacity: overlay.opacity }
+                                                                    : overlay.type === 'vignette'
+                                                                      ? { boxShadow: `inset 0 0 12vh rgba(0,0,0,${overlay.opacity + 0.5})` }
+                                                                      : {
+                                                                            backgroundImage:
+                                                                                'radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px)',
+                                                                            backgroundSize: '3px 3px',
+                                                                            opacity: overlay.opacity,
+                                                                        }
+                                                            }
+                                                        />
+                                                    ))}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                {/* Filter name pill */}
+                                {isActiveImage && visibleName && (
+                                    <div className="pointer-events-none absolute top-1/2 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white backdrop-blur-md">
+                                        {t(`filters.${visibleName}`)}
+                                    </div>
                                 )}
                                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/80" />
                                 {(activeItem.status === 'uploading' || activeItem.status === 'processing' || activeItem.status === 'posting') && (
                                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/45">
                                         <Loader2 className="h-7 w-7 animate-spin" />
-                                        {activeItem.status === 'processing' && <p className="text-xs font-semibold text-white/75">{t('processingVideo')}</p>}
+                                        {activeItem.status === 'processing' && (
+                                            <p className="text-xs font-semibold text-white/75">{t('processingVideo')}</p>
+                                        )}
                                     </div>
                                 )}
                             </div>

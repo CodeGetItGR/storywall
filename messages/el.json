@@ -260,7 +260,18 @@
         "preparingPreview": "Προετοιμασία προεπισκόπησης…",
         "processingVideo": "Επεξεργασία βίντεο…",
         "processingFailed": "Δεν ήταν δυνατή η επεξεργασία του βίντεο.",
-        "videoTooLong": "Επιλέξτε βίντεο κάτω από {seconds} δευτ."
+        "videoTooLong": "Επιλέξτε βίντεο κάτω από {seconds} δευτ.",
+        "filters": {
+            "original": "Αρχικό",
+            "warm": "Ζεστό",
+            "goldenHour": "Χρυσή Ώρα",
+            "cool": "Δροσερό",
+            "vivid": "Έντονο",
+            "fade": "Ξεθωριασμένο",
+            "mono": "Μονόχρωμο",
+            "noir": "Νουάρ",
+            "vintage": "Vintage"
+        }
     },
     "EventLifecycleBanner": {
         "DRAFT": {

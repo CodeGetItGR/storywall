@@ -260,7 +260,18 @@
         "preparingPreview": "Preparing preview…",
         "processingVideo": "Processing video…",
         "processingFailed": "This video couldn't be processed.",
-        "videoTooLong": "Choose a video under {seconds}s."
+        "videoTooLong": "Choose a video under {seconds}s.",
+        "filters": {
+            "original": "Original",
+            "warm": "Warm",
+            "goldenHour": "Golden Hour",
+            "cool": "Cool",
+            "vivid": "Vivid",
+            "fade": "Fade",
+            "mono": "Mono",
+            "noir": "Noir",
+            "vintage": "Vintage"
+        }
     },
     "EventLifecycleBanner": {
         "DRAFT": {
