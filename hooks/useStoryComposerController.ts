@@ -8,6 +8,7 @@ import { useAppConfig } from '@/hooks/useAppConfig';
 import { pollMediaUntilProcessed, useDeleteMedia, useUploadMedia, useUploadMediaBatch } from '@/hooks/useMedia';
 import { useCreateStoriesBatch } from '@/hooks/useStories';
 import type { MediaBatchUploadResponseDto, MediaResponseDto } from '@/lib/api/types';
+import { bakeStoryFilter, STORY_FILTER_PRESETS } from '@/lib/story/storyFilters';
 import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
 
 export type PendingStoryStatus = 'ready' | 'uploading' | 'processing' | 'uploaded' | 'posting' | 'failed';
@@ -20,6 +21,7 @@ export interface PendingStory {
      * real hosted file instead of the local blob, which some Android browsers can't decode. */
     remoteUrl?: string;
     caption: string;
+    filterId: string;
     status: PendingStoryStatus;
     mediaId?: string;
     error?: string;
@@ -51,6 +53,8 @@ export interface StoryComposerController {
     selectItem: (key: string) => void;
     removeItem: (key: string) => void;
     updateCaption: (value: string) => void;
+    setFilter: (key: string, filterId: string) => void;
+    filterPresetIds: string[];
     submit: (event: React.SubmitEvent<HTMLFormElement>) => Promise<void>;
 }
 
@@ -211,6 +215,7 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
             file,
             previewUrl: URL.createObjectURL(file),
             caption: '',
+            filterId: 'original',
             status: 'ready' as const,
         }));
         setItems((current) => [...current, ...next]);
@@ -292,17 +297,27 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
         setItems((current) => current.map((item) => (item.key === activeItem.key ? { ...item, ...patch, error: undefined } : item)));
     }
 
+    function setFilter(key: string, filterId: string) {
+        if (isBusy) return;
+        setItems((current) => current.map((item) => (item.key === key ? { ...item, filterId } : item)));
+    }
+
     async function submit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
         if (!activeEvent || !activeMember || items.length === 0 || isBusy) return;
         setError(null);
         setNotice(null);
 
-        let working: PendingStory[] = items.map((item) => ({
-            ...item,
-            status: item.mediaId ? item.status : 'uploading',
-            error: undefined,
-        }));
+        let working: PendingStory[] = await Promise.all(
+            items.map(async (item) => {
+                if (item.mediaId || item.filterId === 'original' || item.file.type.startsWith('video/')) {
+                    return { ...item, status: item.mediaId ? item.status : ('uploading' as const), error: undefined };
+                }
+                const preset = STORY_FILTER_PRESETS.find((candidate) => candidate.id === item.filterId);
+                const bakedFile = preset ? await bakeStoryFilter(item.file, preset) : item.file;
+                return { ...item, file: bakedFile, status: 'uploading' as const, error: undefined };
+            })
+        );
         setItems(working);
 
         const toUpload = working.filter((item) => !item.mediaId);
@@ -400,6 +415,8 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
         selectItem: setActiveKey,
         removeItem,
         updateCaption: (value) => updateActive({ caption: value.slice(0, maxCaptionLength) }),
+        setFilter,
+        filterPresetIds: STORY_FILTER_PRESETS.map((preset) => preset.id),
         submit,
     };
 }
