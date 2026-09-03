@@ -13,7 +13,8 @@
         "format": "prettier . --write",
         "format:check": "prettier . --check",
         "check": "npm run lint && npm run format",
-        "type:check": "npx tsc --noEmit"
+        "type:check": "npx tsc --noEmit",
+        "test": "vitest run"
     },
     "dependencies": {
         "@base-ui/react": "^1.5.0",
@@ -37,9 +38,12 @@
     },
     "devDependencies": {
         "@tailwindcss/postcss": "^4.2.0",
+        "@testing-library/jest-dom": "^7.0.1",
+        "@testing-library/react": "^16.3.3",
         "@types/node": "^24",
         "@types/react": "^19",
         "@types/react-dom": "^19",
+        "@vitejs/plugin-react": "^4.7.0",
         "babel-plugin-react-compiler": "^1.0.0",
         "eslint": "^9.39.5",
         "eslint-config-next": "^16.2.12",
@@ -48,11 +52,14 @@
         "eslint-plugin-react": "^7.37.5",
         "eslint-plugin-simple-import-sort": "^14.0.0",
         "eslint-plugin-unused-imports": "^4.4.1",
+        "jsdom": "^29.1.1",
         "postcss": "8.5.10",
         "prettier": "^3.9.6",
         "prettier-plugin-tailwindcss": "^0.8.1",
         "tailwindcss": "^4.2.0",
-        "typescript": "5.7.3"
+        "typescript": "5.7.3",
+        "vite-tsconfig-paths": "^6.1.1",
+        "vitest": "^5.0.0"
     },
     "allowScripts": {
         "@parcel/watcher@2.6.0": true,
