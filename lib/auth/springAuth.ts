@@ -38,9 +38,11 @@ async function springAuthFetch(path: string, body: unknown): Promise<AuthRespons
 }
 
 export const springAuth = {
-    register: (input: { email: string; password: string; displayName: string }) => springAuthFetch(endpoints.auth.register, input),
-    login: (input: { email: string; password: string }) => springAuthFetch(endpoints.auth.login, input),
-    guestLogin: (input: { inviteToken: string; displayName: string; guestKey?: string }) => springAuthFetch(endpoints.auth.guestLogin, input),
+    register: (input: { email: string; password: string; displayName: string; inviteToken?: string }) =>
+        springAuthFetch(endpoints.auth.register, input),
+    login: (input: { email: string; password: string; inviteToken?: string }) => springAuthFetch(endpoints.auth.login, input),
+    oauth: (provider: 'GOOGLE' | 'APPLE', input: { idToken: string; inviteToken?: string }) =>
+        springAuthFetch(endpoints.auth.oauth(provider), input),
     refresh: (refreshToken: string) => springAuthFetch(endpoints.auth.refresh, { refreshToken }),
     logout: (refreshToken: string) => springAuthFetch(endpoints.auth.logout, { refreshToken }),
 };
