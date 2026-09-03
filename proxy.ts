@@ -1,14 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import {
-    ACCESS_TOKEN_HEADER,
-    ACCESS_TOKEN_MAX_AGE_SECONDS,
-    AUTH_COOKIES,
-    baseCookieOptions,
-    decodeGuestCookie,
-    encodeGuestCookie,
-    GUEST_ACCESS_TOKEN_MAX_AGE_SECONDS,
-} from '@/lib/auth/authCookies';
+import { ACCESS_TOKEN_HEADER, ACCESS_TOKEN_MAX_AGE_SECONDS, AUTH_COOKIES, baseCookieOptions } from '@/lib/auth/authCookies';
 import { springAuth } from '@/lib/auth/springAuth';
 import { routes } from '@/lib/routes';
 
@@ -34,47 +26,24 @@ interface CookieWrite {
 
 async function refreshSession(request: NextRequest): Promise<{ accessToken: string; cookies: CookieWrite[] } | null> {
     const refreshToken = request.cookies.get(AUTH_COOKIES.refreshToken)?.value;
-    const guest = decodeGuestCookie(request.cookies.get(AUTH_COOKIES.guest)?.value);
+    if (!refreshToken) return null;
 
     try {
-        if (refreshToken) {
-            const auth = await springAuth.refresh(refreshToken);
-            const cookies: CookieWrite[] = [
-                {
-                    name: AUTH_COOKIES.accessToken,
-                    value: auth.accessToken,
-                    options: { ...baseCookieOptions(), maxAge: ACCESS_TOKEN_MAX_AGE_SECONDS },
-                },
-            ];
-            if (auth.refreshToken) {
-                cookies.push({ name: AUTH_COOKIES.refreshToken, value: auth.refreshToken, options: baseCookieOptions() });
-            }
-            return { accessToken: auth.accessToken, cookies };
+        const auth = await springAuth.refresh(refreshToken);
+        const cookies: CookieWrite[] = [
+            {
+                name: AUTH_COOKIES.accessToken,
+                value: auth.accessToken,
+                options: { ...baseCookieOptions(), maxAge: ACCESS_TOKEN_MAX_AGE_SECONDS },
+            },
+        ];
+        if (auth.refreshToken) {
+            cookies.push({ name: AUTH_COOKIES.refreshToken, value: auth.refreshToken, options: baseCookieOptions() });
         }
-
-        if (guest) {
-            const auth = await springAuth.guestLogin({ inviteToken: guest.inviteToken, displayName: 'Guest', guestKey: guest.guestKey });
-            return {
-                accessToken: auth.accessToken,
-                cookies: [
-                    {
-                        name: AUTH_COOKIES.accessToken,
-                        value: auth.accessToken,
-                        options: { ...baseCookieOptions(), maxAge: GUEST_ACCESS_TOKEN_MAX_AGE_SECONDS },
-                    },
-                    {
-                        name: AUTH_COOKIES.guest,
-                        value: encodeGuestCookie({ inviteToken: guest.inviteToken, guestKey: auth.guestKey ?? guest.guestKey }),
-                        options: { ...baseCookieOptions(), maxAge: GUEST_ACCESS_TOKEN_MAX_AGE_SECONDS },
-                    },
-                ],
-            };
-        }
+        return { accessToken: auth.accessToken, cookies };
     } catch {
         return null;
     }
-
-    return null;
 }
 
 export async function proxy(request: NextRequest) {
@@ -89,7 +58,6 @@ export async function proxy(request: NextRequest) {
         const redirect = NextResponse.redirect(new URL(routes.login, request.url));
         redirect.cookies.delete(AUTH_COOKIES.accessToken);
         redirect.cookies.delete(AUTH_COOKIES.refreshToken);
-        redirect.cookies.delete(AUTH_COOKIES.guest);
         return redirect;
     }
 

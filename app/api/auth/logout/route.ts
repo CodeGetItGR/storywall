@@ -18,7 +18,6 @@ export async function POST() {
 
     cookieStore.delete(AUTH_COOKIES.accessToken);
     cookieStore.delete(AUTH_COOKIES.refreshToken);
-    cookieStore.delete(AUTH_COOKIES.guest);
 
     return new NextResponse(null, { status: 204 });
 }
