@@ -86,6 +86,12 @@
         },
         "moreOptions": "More options",
         "cancel": "Cancel",
+        "save": "Save",
+        "saving": "Saving…",
+        "editPost": "Edit post",
+        "editPostAriaLabel": "Edit post text",
+        "editPostFailed": "Couldn't save your changes. Please try again.",
+        "captionCharacterCount": "{count}/{max}",
         "deletePost": "Delete post",
         "deletePostConfirmTitle": "Delete this post?",
         "deletePostConfirmBody": "This post will be removed for everyone and can't be undone.",
@@ -114,6 +120,10 @@
         "month": "Month",
         "time": "Time",
         "pinned": "Pinned",
+        "pinPost": "Pin post",
+        "unpinPost": "Unpin post",
+        "pinPostFailed": "Couldn't pin this post. Please try again.",
+        "unpinPostFailed": "Couldn't unpin this post. Please try again.",
         "hostPost": "Host post"
     },
     "DesktopNavRail": {

@@ -1179,6 +1179,13 @@ export interface PostRequestDto {
     mediaIds?: string[];
 }
 
+// PATCH /api/posts/{id} — only content and isPinned are editable post-creation.
+// PATCH semantics: an omitted (or null) field is left unchanged, not cleared.
+export interface PostPatchRequestDto {
+    content?: string | null;
+    isPinned?: boolean | null;
+}
+
 // Embedded on PostResponseDto — null when the post has no author (rare,
 // media-only import) or the authoring member has since left the event
 // (Post.authorMember uses ON DELETE SET NULL, so the post survives but

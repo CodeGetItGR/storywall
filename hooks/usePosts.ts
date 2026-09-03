@@ -3,7 +3,7 @@ import { type InfiniteData, type QueryClient, useInfiniteQuery, useMutation, use
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList, type Page } from '@/lib/api/pagination';
-import type { MediaResponseDto, PostRequestDto, PostResponseDto } from '@/lib/api/types';
+import type { MediaResponseDto, PostPatchRequestDto, PostRequestDto, PostResponseDto } from '@/lib/api/types';
 
 export const postKeys = {
     list: (eventId: string) => ['events', eventId, 'posts'] as const,
@@ -76,6 +76,19 @@ export function useCreatePost() {
         mutationFn: (input: PostRequestDto) => api.post<PostResponseDto>(endpoints.posts.create, input),
         onSuccess: (post) => {
             queryClient.invalidateQueries({ queryKey: postKeys.list(post.eventId) });
+        },
+    });
+}
+
+// PATCH /api/posts/{id} — the post's author, or any host of the event. Only
+// content and isPinned are editable; media and type are not touched here.
+export function useUpdatePost(eventId: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, patch }: { id: string; patch: PostPatchRequestDto }) => api.patch<PostResponseDto>(endpoints.posts.byId(id), patch),
+        onSuccess: (post) => {
+            patchPostInCaches(queryClient, eventId, post.id, post);
         },
     });
 }

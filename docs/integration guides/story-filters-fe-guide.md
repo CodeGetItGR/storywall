@@ -10,21 +10,18 @@ create/upload contract, which is unchanged.
 Instagram-Stories-style preset filters — swipe left/right on the story preview (post-capture,
 pre-post) to cycle through a fixed set of named looks (their "Paris", "New York", etc.
 equivalent). Not AR/face filters — no face tracking, no live camera effects. Each preset is a
-static color/tone transform applied to the still image.
-
-**v1 is images only.** Video stories skip the filter step entirely (no preset UI shown) —
-per-frame canvas filtering plus re-encoding cost/perf hasn't been scoped, and the swipe UI
-should not appear to promise a capability that isn't there. Video filter support is a separate,
-later discussion, not assumed here.
+static color/tone transform applied to the still image or video frame.
 
 ## Where it lives: 100% client-side
 
-1. User captures or picks a photo for their story.
-2. In the preview screen, the chosen preset is rendered live as a CSS `filter` on the image
-   element.
-3. On post, the filter is **baked into the asset** — canvas is flattened to a single image —
-   before it's uploaded through the existing media upload flow. The backend receives a normal
-   image and has no idea a filter was ever involved.
+1. User captures or picks a photo/video for their story.
+2. In the preview screen, the chosen preset is rendered live as a CSS `filter` (image/video
+   element) or, if you need it to also apply during video export, as a canvas filter per
+   frame.
+3. On post, the filter is **baked into the asset** — canvas is flattened to a single image
+   (or the video is re-encoded with the filter burned in) — before it's uploaded through the
+   existing media upload flow. The backend receives a normal image/video and has no idea a
+   filter was ever involved.
 4. The unfiltered original is **not** kept anywhere once posted. If "edit filter after
    posting" or "download original" ever becomes a requirement, that's a new scope — it needs
    a place to store the pre-filter asset and a new endpoint, and should come back as its own

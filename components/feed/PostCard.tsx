@@ -5,10 +5,10 @@ import { useTranslations } from 'next-intl';
 import React, { useMemo, useState } from 'react';
 
 import { MediaThumbnail } from '@/components/common/MediaThumbnail';
-import { PostActionsMenu, PostAuthorAvatar, PostMediaViewer, PostReactionPicker, ReactionSummary } from '@/components/feed/post';
+import { EditPostModal, PostActionsMenu, PostAuthorAvatar, PostMediaViewer, PostReactionPicker, ReactionSummary } from '@/components/feed/post';
 import Badge from '@/components/ui/badge';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { useAppConfig, useDeletePost, usePostModal } from '@/hooks';
+import { useAppConfig, useDeletePost, usePostModal, useUpdatePost } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import type { PostResponseDto } from '@/lib/api/types';
 import { isEventWritable } from '@/lib/eventLifecycle';
@@ -27,6 +27,8 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(null);
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
     const [deleteError, setDeleteError] = useState<string | null>(null);
+    const [editOpen, setEditOpen] = useState(false);
+    const [pinError, setPinError] = useState<string | null>(null);
 
     const authorName = post.author?.displayName ?? t('unknownAuthor');
     const timeAgo = useMemo(() => timeAgoParts(post.createdAt), [post.createdAt]);
@@ -39,9 +41,11 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const isHost = useIsHost();
     const toErrorMessage = useApiErrorMessage();
     const deletePost = useDeletePost(post.eventId);
+    const updatePost = useUpdatePost(post.eventId);
     const canWrite = isEventWritable(activeEvent?.status);
     const isMyPost = activeMember?.id !== undefined && post.authorMemberId === activeMember.id;
-    const canDeletePost = isMyPost && canWrite;
+    const canManagePost = isMyPost && canWrite;
+    const canTogglePin = isHost && canWrite;
     const showHostPostBadge = isHostPost && !isHost;
     const reactionTypes = appConfig?.reactionTypesByEventType[post.eventType ?? activeEvent?.eventType ?? ''] ?? [];
 
@@ -50,7 +54,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     }
 
     function handleDeleteRequest() {
-        if (!canDeletePost) return;
+        if (!canManagePost) return;
         setDeleteError(null);
         setConfirmDeleteOpen(true);
     }
@@ -65,6 +69,27 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
             setConfirmDeleteOpen(false);
         } catch (error) {
             setDeleteError(toErrorMessage(error, t('deletePostFailed')));
+        }
+    }
+
+    function handleEditRequest() {
+        if (!canManagePost) return;
+        setEditOpen(true);
+    }
+
+    function handleCloseEdit() {
+        setEditOpen(false);
+    }
+
+    async function handleTogglePin() {
+        if (!canTogglePin || updatePost.isPending) return;
+
+        setPinError(null);
+        const nextPinned = !post.isPinned;
+        try {
+            await updatePost.mutateAsync({ id: post.id, patch: { isPinned: nextPinned } });
+        } catch (error) {
+            setPinError(toErrorMessage(error, nextPinned ? t('pinPostFailed') : t('unpinPostFailed')));
         }
     }
 
@@ -89,20 +114,41 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
         <article className={cn('relative border-b border-border/60 bg-card/60', showHostPostBadge && 'pt-3 sm:pt-0 sm:pr-3')}>
             <div className="flex items-center justify-between px-2 pt-4 pb-3">
                 <PostAuthorAvatar avatarUrl={post.author?.avatarUrl} name={authorName} timeAgo={timeAgo} isHostPost={showHostPostBadge} />
-                <div className="flex items-center gap-1">
+                <div className="relative flex items-center gap-1">
                     {showHostPostBadge && <Badge variant="primary">{t('hostPost')}</Badge>}
-                    {post.isPinned && (
-                        <span className="flex h-8 w-8 items-center justify-center text-primary" aria-label={t('pinned')} title={t('pinned')}>
+                    {canTogglePin ? (
+                        <button
+                            type="button"
+                            onClick={handleTogglePin}
+                            disabled={updatePost.isPending}
+                            aria-pressed={post.isPinned}
+                            aria-label={post.isPinned ? t('unpinPost') : t('pinPost')}
+                            title={post.isPinned ? t('unpinPost') : t('pinPost')}
+                            className={cn(
+                                'flex h-8 w-8 items-center justify-center rounded-full transition-colors',
+                                post.isPinned ? 'text-primary hover:bg-primary/10' : 'text-ink-faint hover:bg-surface-muted hover:text-ink-muted',
+                                updatePost.isPending && 'cursor-not-allowed opacity-60'
+                            )}
+                        >
                             <Pin className="w-4 h-4" strokeWidth={1.8} />
-                        </span>
+                        </button>
+                    ) : (
+                        post.isPinned && (
+                            <span className="flex h-8 w-8 items-center justify-center text-primary" aria-label={t('pinned')} title={t('pinned')}>
+                                <Pin className="w-4 h-4" strokeWidth={1.8} />
+                            </span>
+                        )
                     )}
-                    {canDeletePost && (
+                    {pinError && <p className="absolute right-0 top-full mt-1 w-48 text-right text-xs text-destructive">{pinError}</p>}
+                    {canManagePost && (
                         <PostActionsMenu
                             deleteLabel={t('deletePost')}
                             disabled={deletePost.isPending}
                             isDeleting={deletePost.isPending}
                             moreLabel={t('moreOptions')}
                             onDeleteAction={handleDeleteRequest}
+                            editLabel={t('editPost')}
+                            onEditAction={handleEditRequest}
                         />
                     )}
                 </div>
@@ -220,6 +266,9 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                 cancelLabel={t('cancel')}
                 isConfirming={deletePost.isPending}
             />
+
+            {/* Edit post */}
+            {editOpen && <EditPostModal post={post} open={editOpen} onCloseAction={handleCloseEdit} />}
         </article>
     );
 }
