@@ -40,6 +40,9 @@ export function MobileTabBar() {
     const availableModules = new Set(activeEvent?.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey) ?? []);
     const playlistAvailable = showEventNavigation && availableModules.has('playlist');
     const playlistActive = playlistAvailable && Boolean(activeEvent) && isPathActive(pathname, routes.events.tools.playlist(activeEvent?.id ?? ''));
+    const rsvpTabAvailable = showEventNavigation && isHost && !isDraft;
+    const rsvpHref = activeEvent ? routes.events.manage(activeEvent.id, { tab: 'rsvp' }) : '';
+    const rsvpActive = rsvpTabAvailable && isPathActive(pathname, rsvpHref, searchParams);
     const hostItems = useHostMenuItems();
     const toolItems = useToolsMenuItems();
     const showComposerMenu = showEventNavigation && isFeedRoute(pathname) && (canComposePost || canComposeStory || canComposeSong);
@@ -89,6 +92,7 @@ export function MobileTabBar() {
         1 +
         (showEventNavigation ? 1 : 0) +
         (showEventNavigation && playlistAvailable ? 1 : 0) +
+        (rsvpTabAvailable ? 1 : 0) +
         (showEventNavigation && contextItems.length > 0 ? 1 : 0);
     const composerButtonStyle = {
         transform: composerButtonLowered ? 'translate3d(0, 4rem, 0)' : 'translate3d(0, 0, 0)',
@@ -146,6 +150,13 @@ export function MobileTabBar() {
                                         label={t('items.playlist')}
                                         active={playlistActive}
                                     />
+                                </div>
+                            )}
+
+                            {/* RSVP */}
+                            {rsvpTabAvailable && (
+                                <div className="flex h-full items-center justify-center">
+                                    <TabLink href={rsvpHref} icon="/icons/rsvp.png" label={t('items.rsvp')} active={rsvpActive} />
                                 </div>
                             )}
 
