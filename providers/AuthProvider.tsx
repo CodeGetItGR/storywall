@@ -25,9 +25,9 @@ interface AuthContextValue {
     user: AuthUser | null;
     isAuthenticated: boolean;
     isBootstrapping: boolean;
-    register: (input: { email: string; password: string; displayName: string }) => Promise<AuthSessionDto>;
-    login: (input: { email: string; password: string }) => Promise<AuthSessionDto>;
-    guestLogin: (input: { inviteToken: string; displayName: string }) => Promise<AuthSessionDto>;
+    register: (input: { email: string; password: string; displayName: string; inviteToken?: string }) => Promise<AuthSessionDto>;
+    login: (input: { email: string; password: string; inviteToken?: string }) => Promise<AuthSessionDto>;
+    oauth: (provider: 'GOOGLE' | 'APPLE', input: { idToken: string; inviteToken?: string }) => Promise<AuthSessionDto>;
     logout: () => Promise<void>;
     updateProfile: (profile: Pick<UserResponseDto, 'displayName' | 'lastName' | 'profilePictureUrl'>) => void;
 }
@@ -88,20 +88,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
     }, []);
 
-    const register = useCallback(async (input: { email: string; password: string; displayName: string }) => {
+    const register = useCallback(async (input: { email: string; password: string; displayName: string; inviteToken?: string }) => {
         const session = await authClient.register(input);
         setSession(session);
         return session;
     }, []);
 
-    const login = useCallback(async (input: { email: string; password: string }) => {
+    const login = useCallback(async (input: { email: string; password: string; inviteToken?: string }) => {
         const session = await authClient.login(input);
         setSession(session);
         return session;
     }, []);
 
-    const guestLogin = useCallback(async (input: { inviteToken: string; displayName: string }) => {
-        const session = await authClient.guestLogin(input);
+    const oauth = useCallback(async (provider: 'GOOGLE' | 'APPLE', input: { idToken: string; inviteToken?: string }) => {
+        const session = await authClient.oauth(provider, input);
         setSession(session);
         return session;
     }, []);
@@ -152,8 +152,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const isAuthenticated = Boolean(accessToken);
 
     const value: AuthContextValue = useMemo(
-        () => ({ user, isAuthenticated, isBootstrapping, register, login, guestLogin, logout, updateProfile }),
-        [user, isAuthenticated, isBootstrapping, register, login, guestLogin, logout, updateProfile]
+        () => ({ user, isAuthenticated, isBootstrapping, register, login, oauth, logout, updateProfile }),
+        [user, isAuthenticated, isBootstrapping, register, login, oauth, logout, updateProfile]
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
