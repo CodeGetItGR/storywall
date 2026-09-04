@@ -315,6 +315,9 @@
         "yes": "Ναι",
         "no": "Όχι"
     },
+    "OAuthButtons": {
+        "continueWithApple": "Συνέχεια με Apple"
+    },
     "LoginPage": {
         "title": "Καλώς ήρθατε ξανά",
         "subtitle": "Συνδεθείτε για να συμμετάσχετε στον εορτασμό.",

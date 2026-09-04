@@ -315,6 +315,9 @@
         "yes": "Yes",
         "no": "No"
     },
+    "OAuthButtons": {
+        "continueWithApple": "Continue with Apple"
+    },
     "LoginPage": {
         "title": "Welcome back",
         "subtitle": "Sign in to join the celebration.",
