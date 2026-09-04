@@ -2,6 +2,7 @@
 // to Spring's auth endpoints. Never imported from client code — these calls
 // carry the refresh token, which client JS must never see.
 
+import type { Locale } from '@/i18n/config';
 import { endpoints } from '@/lib/api/endpoints';
 import type { AuthResponseDto } from '@/lib/api/types';
 
@@ -19,10 +20,16 @@ export class SpringAuthError extends Error {
     }
 }
 
-async function springAuthFetch(path: string, body: unknown): Promise<AuthResponseDto> {
+// This module bypasses lib/api/client.ts entirely (it carries the refresh
+// token server-side), so Accept-Language must be threaded through explicitly
+// rather than picked up from client.ts's own locale header — every caller
+// resolves it from the incoming request (see i18n/resolveLocale.ts) and
+// passes it in, since this file must stay runnable from both the Node
+// runtime (route handlers) and the Edge runtime (proxy.ts).
+async function springAuthFetch(path: string, body: unknown, locale: Locale): Promise<AuthResponseDto> {
     const res = await fetch(`${API_BASE_URL}${path}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Accept-Language': locale },
         body: JSON.stringify(body),
         cache: 'no-store',
     });
@@ -38,11 +45,11 @@ async function springAuthFetch(path: string, body: unknown): Promise<AuthRespons
 }
 
 export const springAuth = {
-    register: (input: { email: string; password: string; displayName: string; inviteToken?: string }) =>
-        springAuthFetch(endpoints.auth.register, input),
-    login: (input: { email: string; password: string; inviteToken?: string }) => springAuthFetch(endpoints.auth.login, input),
-    oauth: (provider: 'GOOGLE' | 'APPLE', input: { idToken: string; inviteToken?: string }) =>
-        springAuthFetch(endpoints.auth.oauth(provider), input),
-    refresh: (refreshToken: string) => springAuthFetch(endpoints.auth.refresh, { refreshToken }),
-    logout: (refreshToken: string) => springAuthFetch(endpoints.auth.logout, { refreshToken }),
+    register: (input: { email: string; password: string; displayName: string; inviteToken?: string }, locale: Locale) =>
+        springAuthFetch(endpoints.auth.register, input, locale),
+    login: (input: { email: string; password: string; inviteToken?: string }, locale: Locale) => springAuthFetch(endpoints.auth.login, input, locale),
+    oauth: (provider: 'GOOGLE' | 'APPLE', input: { idToken: string; inviteToken?: string }, locale: Locale) =>
+        springAuthFetch(endpoints.auth.oauth(provider), input, locale),
+    refresh: (refreshToken: string, locale: Locale) => springAuthFetch(endpoints.auth.refresh, { refreshToken }, locale),
+    logout: (refreshToken: string, locale: Locale) => springAuthFetch(endpoints.auth.logout, { refreshToken }, locale),
 };

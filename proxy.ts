@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { localeCookieName } from '@/i18n/config';
+import { resolveLocale } from '@/i18n/resolveLocale';
 import { ACCESS_TOKEN_HEADER, ACCESS_TOKEN_MAX_AGE_SECONDS, AUTH_COOKIES, baseCookieOptions } from '@/lib/auth/authCookies';
 import { springAuth } from '@/lib/auth/springAuth';
 import { routes } from '@/lib/routes';
@@ -29,7 +31,8 @@ async function refreshSession(request: NextRequest): Promise<{ accessToken: stri
     if (!refreshToken) return null;
 
     try {
-        const auth = await springAuth.refresh(refreshToken);
+        const locale = resolveLocale(request.cookies.get(localeCookieName)?.value, request.headers.get('accept-language'));
+        const auth = await springAuth.refresh(refreshToken, locale);
         const cookies: CookieWrite[] = [
             {
                 name: AUTH_COOKIES.accessToken,

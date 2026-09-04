@@ -1,6 +1,8 @@
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 
+import { localeCookieName } from '@/i18n/config';
+import { resolveLocale } from '@/i18n/resolveLocale';
 import { AUTH_COOKIES } from '@/lib/auth/authCookies';
 import { springAuth } from '@/lib/auth/springAuth';
 
@@ -10,7 +12,9 @@ export async function POST() {
 
     if (refreshToken) {
         try {
-            await springAuth.logout(refreshToken);
+            const headerStore = await headers();
+            const locale = resolveLocale(cookieStore.get(localeCookieName)?.value, headerStore.get('accept-language'));
+            await springAuth.logout(refreshToken, locale);
         } catch {
             // Best-effort, mirrors the previous client-side logout semantics.
         }

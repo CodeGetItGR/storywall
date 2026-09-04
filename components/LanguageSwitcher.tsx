@@ -3,13 +3,18 @@
 import { useLocale, useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback, useTransition } from 'react';
 
+import { useAuth } from '@/hooks/useAuth';
 import { setLocale } from '@/i18n/actions';
 import { type Locale, locales } from '@/i18n/config';
+import { api } from '@/lib/api/client';
+import { endpoints } from '@/lib/api/endpoints';
+import type { MeUpdateRequestDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
 export function LanguageSwitcher({ className, variant = 'default' }: { className?: string; variant?: 'default' | 'sidebar' }) {
     const locale = useLocale();
     const t = useTranslations('LanguageSwitcher');
+    const { isAuthenticated } = useAuth();
     const [isPending, startTransition] = useTransition();
 
     const handleChange = useCallback(
@@ -18,8 +23,15 @@ export function LanguageSwitcher({ className, variant = 'default' }: { className
             startTransition(() => {
                 void setLocale(next);
             });
+            // Best-effort: keeps the stored account locale (used for async
+            // notification/invitation emails, see backend-localization-fe-integration.md
+            // §5) in sync with the language the user is actually browsing in.
+            // The UI switch above doesn't wait on this either way.
+            if (isAuthenticated) {
+                void api.patch<unknown>(endpoints.me.profile, { locale: next } satisfies MeUpdateRequestDto).catch(() => {});
+            }
         },
-        [locale, startTransition]
+        [locale, startTransition, isAuthenticated]
     );
 
     const handleLocaleClick = useCallback(

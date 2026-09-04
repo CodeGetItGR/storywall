@@ -19,7 +19,7 @@ export function PostsPreview({ variant }: ModulePreviewProps) {
             <article className="relative border-b border-border/60 bg-card/60">
                 {/* Author */}
                 <div className="flex items-center justify-between px-2 pt-4 pb-3">
-                    <PostAuthorAvatar name={hostName} timeAgo={{ unit: 'hours', value: 2 }} isHostPost />
+                    <PostAuthorAvatar name={hostName} timeAgo={{ unit: 'hours', value: 2 }} />
                 </div>
 
                 {/* Text */}

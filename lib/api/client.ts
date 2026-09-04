@@ -1,8 +1,19 @@
+import { defaultLocale, localeCookieName, locales } from '@/i18n/config';
 import { endpoints } from '@/lib/api/endpoints';
 import type { AuthSessionDto, ProblemDetail } from '@/lib/api/types';
 import { clearSession, getAccessToken, setSession, subscribeAuthState } from '@/lib/auth/tokenStore';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
+
+// Mirrors the NEXT_LOCALE cookie next-intl already renders the UI in, so
+// Spring localizes errors/notifications/PDFs in whatever language the user
+// is actually looking at, not their browser's default Accept-Language.
+function getClientLocale(): string {
+    if (typeof document === 'undefined') return defaultLocale;
+    const match = document.cookie.match(new RegExp(`(?:^|; )${localeCookieName}=([^;]*)`));
+    const cookieLocale = match ? decodeURIComponent(match[1]) : undefined;
+    return cookieLocale && (locales as readonly string[]).includes(cookieLocale) ? cookieLocale : defaultLocale;
+}
 
 export class ApiError extends Error {
     status: number;
@@ -114,6 +125,7 @@ async function rawFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
         ...options,
         headers: {
             'Content-Type': 'application/json',
+            'Accept-Language': getClientLocale(),
             ...options.headers,
         },
     });
@@ -135,6 +147,10 @@ async function rawPostForm<T>(path: string, formData: FormData, options: Request
         ...options,
         method: 'POST',
         body: formData,
+        headers: {
+            'Accept-Language': getClientLocale(),
+            ...options.headers,
+        },
     });
 
     const body = await parseResponseBody(res);
@@ -155,6 +171,7 @@ async function apiFetchResponse(path: string, options: ApiFetchOptions = {}): Pr
         ...init,
         headers: {
             ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+            'Accept-Language': getClientLocale(),
             ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
             ...init.headers,
         },

@@ -1,6 +1,8 @@
 // Domain DTOs transcribed from event_social_media/docs/frontend-integration-guide.md.
 // Route casing/paths live in lib/api/endpoints.ts, not here.
 
+import type { Locale } from '@/i18n/config';
+
 export type EventRole = 'HOST' | 'ATTENDEE';
 export type EventVisibility = 'PUBLIC' | 'PRIVATE';
 export type AttendanceStatus = 'ATTENDING' | 'DECLINED';
@@ -390,11 +392,16 @@ export interface UserResponseDto {
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
+    // Stored preference for anything localized outside a request (notification
+    // emails, invitation emails) — independent of Accept-Language. See
+    // docs/integration guides/backend-localization-fe-integration.md §5.
+    locale: Locale;
 }
 
 export interface MeUpdateRequestDto {
     displayName?: string;
     lastName?: string;
+    locale?: Locale;
 }
 
 export interface ChangePasswordRequestDto {

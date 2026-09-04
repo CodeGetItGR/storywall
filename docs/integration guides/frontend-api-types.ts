@@ -110,6 +110,7 @@ interface UserResponseDto {
   id: string; email: string; authProvider: AuthProvider; isGuestAccount: boolean;
   status: AccountStatus; platformRole: PlatformRole;
   createdAt: string; updatedAt: string; deletedAt: string | null;
+  locale: "en" | "el"; // NEW 2026-09-04, writable via PATCH /api/me — see backend-localization-fe-integration.md
 }
 // GET /api/users now returns Page<UserResponseDto>, not UserResponseDto[].
 // Default 50/page, max 100 (?page=&size=), sorted createdAt desc then id desc (newest first).
@@ -540,6 +541,7 @@ interface PostResponseDto {
   type: string; content: string | null; isPinned: boolean;
   media: MediaResponseDto[]; // ordered by displayOrder, presigned URLs already resolved
   commentCount: number;
+  recentComments: CommentResponseDto[]; // NEW 2026-09-04 — the post's 2 most recent comments, oldest-first
   reactionCount: number;          // total across all types
   reactionCounts: Record<string, number>; // NEW 2026-08-30, replaces likedByCurrentUser — per-type breakdown, zero-count codes omitted
   myReactionType: string | null;  // NEW 2026-08-30, replaces likedByCurrentUser — caller's own reaction code, or null
@@ -551,6 +553,8 @@ interface PostResponseDto {
 // reactionCounts/myReactionType are resolved from the JWT — both GET /api/events/{eventId}/posts
 // and GET /api/posts/{id} populate them in the same 2 batched queries used before this change, so
 // it's still free at feed scale.
+// recentComments is resolved in one extra batched query for the whole page (not per post) — see
+// post-recent-comments-preview-fe-integration.md.
 
 interface CommentRequestDto {
   postId: string; authorMemberId?: string; parentCommentId?: string; content: string; // content required

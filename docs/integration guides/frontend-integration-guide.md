@@ -43,7 +43,10 @@ scoped per event type, capped at 5 active types each), and
 no extra request), and
 [`rsvp-report-types-fe-integration.md`](rsvp-report-types-fe-integration.md) (the RSVP PDF export
 now requires a `reportType` query parameter — one of four report shapes — instead of returning a
-single combined report).
+single combined report), and
+[`backend-localization-fe-integration.md`](backend-localization-fe-integration.md) (errors,
+notifications, transactional emails, and the RSVP PDF export now localize to `en`/`el` via
+`Accept-Language` or the user's stored `locale`).
 
 This doc was originally written 2026-08-04 directly from the controller/DTO source. Refreshed
 2026-08-09 to correct a stale claim that no billing integration existed — it now does,
@@ -84,6 +87,12 @@ no-parameter call that returned a combined stats+table PDF now gets `400`. Super
 endpoint: PDF export" section of
 [`rsvp-boolean-status-and-export-fe-integration.md`](rsvp-boolean-status-and-export-fe-integration.md).
 See [`rsvp-report-types-fe-integration.md`](rsvp-report-types-fe-integration.md).
+Refreshed again 2026-09-04: the backend now localizes errors, notifications, transactional emails,
+and the RSVP PDF export to `en`/`el`. Errors/notifications/PDF export follow the `Accept-Language`
+header per request; notification emails and invitation emails follow the recipient's (or inviting
+host's) stored `UserResponseDto.locale` instead, since there's no request in flight when they're
+sent. `UserResponseDto` gained a writable `locale` field (`GET/PATCH /api/me`). See
+[`backend-localization-fe-integration.md`](backend-localization-fe-integration.md).
 
 ## 0. Base setup
 

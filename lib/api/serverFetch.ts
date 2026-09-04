@@ -5,11 +5,14 @@
 // client-side hook fetches normally after hydration (see the try/catch
 // around every call site).
 
+import { getServerLocale } from '@/i18n/serverLocale';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 
 export async function serverGet<T>(path: string, accessToken: string): Promise<T> {
+    const locale = await getServerLocale();
     const res = await fetch(`${API_BASE_URL}${path}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: { Authorization: `Bearer ${accessToken}`, 'Accept-Language': locale },
         cache: 'no-store',
     });
 
