@@ -8,6 +8,12 @@ Covers two flows:
 Build Part A first — it's how you'll generate real `inviteToken`s to test Part B with,
 instead of inserting rows manually.
 
+> **Updated 2026-09-04 — breaking.** `POST /api/auth/guest-login` is **removed** (404 now).
+> Part B step 2 below ("Join as guest") no longer exists — read
+> [invite-redemption-and-anonymous-upload-fe-changelog.md](invite-redemption-and-anonymous-upload-fe-changelog.md)
+> §1 first. The replacement: attach `inviteToken` directly to `register`/`login`/`oauth` instead
+> of a separate guest step.
+
 > **Updated 2026-08-22.** `guestKey` is now **server-generated**, not client-generated.
 > Stop minting one with `crypto.randomUUID()` and stop sending it on a guest's first
 > visit — omit it, and read the one the server returns in the guest-login response
@@ -229,80 +235,44 @@ GET /api/event-invitations/{inviteToken}/preview
 Use this response to render the branded onboarding page (title, subtitle, description,
 cover image) before showing any join options.
 
-### 2. Join as guest (no account)
+### 2. Join by creating or signing into a real account
 
-```
-POST /api/auth/guest-login
-{
-  "inviteToken": "b3f1...uuid",
-  "displayName": "Taylor Smith",
-  "guestKey": "9f2e-...",     // omit on first visit — see below
-}
-```
+**"Join as guest" is gone.** There is no account-free way to join an event anymore — every
+visitor who wants to be a member goes through register, login, or OAuth, same as anywhere else
+in the app. See
+[invite-redemption-and-anonymous-upload-fe-changelog.md](invite-redemption-and-anonymous-upload-fe-changelog.md)
+§1 for the full rationale. The mechanics: `RegisterRequestDto`, `LoginRequestDto`, and
+`OAuthLoginRequestDto` each carry an optional `inviteToken`:
 
-**201 response** (`AuthResponseDto`):
 ```json
-{
-  "accessToken": "...",
-  "refreshToken": null,
-  "userId": "...",
-  "email": null,
-  "displayName": "Taylor Smith",
-  "role": "GUEST",
-  "guestKey": "K7f3n2...44-char-string"   // present only for shared invitations — persist it
-}
+POST /api/auth/register
+{ "email": "...", "password": "...", "displayName": "Taylor Smith", "inviteToken": "b3f1...uuid" }
+```
+```json
+POST /api/auth/login
+{ "email": "...", "password": "...", "inviteToken": "b3f1...uuid" }
+```
+```json
+POST /api/auth/oauth/{provider}
+{ "idToken": "...", "inviteToken": "b3f1...uuid" }
 ```
 
-- Unauthenticated. On success, creates (or re-authenticates) a guest account and an
-  `EventMember` for the event, returns a scoped JWT (`accessToken`, `refreshToken: null`).
-- Idempotent per `(inviteToken, guestKey)` pair — calling it again with the same values
-  re-issues a token for the same guest identity rather than creating a duplicate.
-- Store `accessToken` and use it for subsequent event-scoped requests. There is no refresh
-  flow for guests — if the token expires (24h), re-run guest-login with the same invite link.
+Each returns the normal `AuthResponseDto` for that flow — nothing new in the response shape.
+**Redemption is best-effort and silent**: an invalid, expired, or exhausted `inviteToken` never
+fails the auth call itself, and the response gives no signal either way about whether the
+visitor actually got joined. Don't render "you're in" off the auth response — either redirect to
+the event and let its own membership check handle a non-member, or explicitly re-check
+membership after auth if you need a confirmation before redirecting. Full detail in the
+changelog doc linked above.
 
-#### Shared invite links and `guestKey`
+There is no `guestKey` anywhere in this flow. Delete any `storedGuestKey()` / `localStorage`
+guest-key handling this page had — it has nothing left to talk to.
 
-`guestKey` is now **server-generated**, not something the frontend mints. The flow is:
-
-```ts
-function storedGuestKey(): string | undefined {
-  return localStorage.getItem('guestKey') ?? undefined;
-}
-
-// after a successful guest-login response:
-if (response.guestKey) {
-  localStorage.setItem('guestKey', response.guestKey);
-}
-```
-
-Send `storedGuestKey()` as the request's `guestKey` (omit the field if there is none stored
-yet). On the very first guest-login from a device there is nothing to send — that's expected,
-not an error. The response then carries a freshly minted `guestKey` for a shared invitation;
-persist it and echo it back on every later guest-login from that same device. A personal
-(non-shared) invitation never returns one — nothing to store.
-
-**Do not generate this value yourself** (no more `crypto.randomUUID()`) and do not send a
-stale or made-up key hoping to "claim" a membership — an unrecognised key is treated the same
-as sending none, and just gets you (or the caller) a new membership and a new key rather than
-an error. (In the QR flow, the resolve response still tells you whether one will come back via
-`requiresGuestKey`; see `qr-links-fe-integration.md`.)
-
-**Why it exists.** The backend used to resolve a returning guest as "the member created from
-this invitation" — a single row. For a personal emailed invite that was right. For a link
-shared with a whole table it meant the *second* person to open it was logged in **as the
-first**: their account, their name, their membership. `guestKey` is what tells two users of
-the same link apart.
-
-It is **not a credential** and grants nothing by itself — the `inviteToken` is still the
-gate. It only picks which membership under that invitation belongs to this device. Don't
-treat it as a secret, but do keep it stable: a guest who clears it and returns becomes a new
-guest and consumes another slot.
-
-#### `maxGuests` is now enforced
+#### `maxGuests` is still enforced
 
 It has been a column since day one and was checked nowhere. It is now checked at the moment
-a membership is created — by `guest-login` **and** by `accept` below, so an account holder
-can't walk past a full link:
+a membership is created — by the `inviteToken` redemption in step 2 above **and** by `accept`
+below, so an account holder can't walk past a full link:
 
 ```json
 { "status": 409, "errorCode": 5035, "errorKey": "INVITATION_EXHAUSTED",
@@ -316,6 +286,10 @@ means the host needs a bigger plan. Raise the limit with `PATCH /api/event-invit
 for an invitation the host created, or `PATCH /api/qr-links/{id}` for one behind a QR code.
 
 ### 3. Log in with an existing account, then join
+
+Either attach `inviteToken` directly to `login` (step 2 above) and let redemption happen
+silently, or — if you want an explicit success/failure signal instead of a silent best-effort
+join — log in without it and call `accept` separately:
 
 ```
 POST /api/auth/login
@@ -370,22 +344,21 @@ quota. So an expired or exhausted co-host link returns the ordinary `410`/`5035`
 
 ### 4. Register a new account, then join
 
-Same shape as login: `POST /api/auth/register` → then `POST /api/event-invitations/{inviteToken}/accept`
-with the returned `accessToken`.
+Same as login: either attach `inviteToken` to `register` (step 2), or register without it and
+call `accept` separately with the returned `accessToken` for an explicit result.
 
 ### Suggested page flow
 
 ```
 1. GET preview(token) on page load
    - expired/alreadyUsed/404 → render terminal state, stop
-   - else → render branded page with 3 options
+   - else → render branded page with 2 options (no "join as guest" anymore)
 2. User picks:
-   a. "Join as guest"   → POST /auth/guest-login  { guestKey: storedGuestKey() }  → save response.guestKey → done
-   b. "I have an account" → POST /auth/login  → POST /event-invitations/{token}/accept → done
-   c. "Create an account" → POST /auth/register → POST /event-invitations/{token}/accept → done
-3. Any of the three can come back 409 / 5035 → "this invite link is full"
-4. 2b/2c can come back 403 / 5044 → co-host link opened by the wrong or unverified account
+   a. "I have an account" → POST /auth/login  { inviteToken }  → redirect, let event page confirm membership
+   b. "Create an account" → POST /auth/register  { inviteToken }  → redirect, let event page confirm membership
+3. If you want an explicit in-page confirmation instead of a silent redirect, omit inviteToken
+   from 2a/2b and call POST /event-invitations/{token}/accept afterward instead — it can return
+   409/5035 ("this invite link is full") or 403/5044 (co-host link, wrong/unverified account).
 ```
 
-No other endpoints are needed for this flow; steps 2b/2c reuse the existing auth endpoints
-unchanged.
+No other endpoints are needed for this flow; both options reuse the existing auth endpoints.

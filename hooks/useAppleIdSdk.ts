@@ -15,10 +15,11 @@ declare global {
 
 // Same loading contract as useGoogleIdentitySdk — Apple serves this
 // unversioned too, no SRI hash. See the OAuth guide's Apple section.
-export function useAppleIdSdk(): boolean {
+export function useAppleIdSdk(enabled: boolean): boolean {
     const [ready, setReady] = useState(() => typeof window !== 'undefined' && Boolean(window.AppleID?.auth));
 
     useEffect(() => {
+        if (!enabled) return;
         if (ready) return;
         if (typeof document === 'undefined') return;
 
@@ -32,7 +33,7 @@ export function useAppleIdSdk(): boolean {
         script.src = SCRIPT_SRC;
         script.addEventListener('load', () => setReady(true), { once: true });
         document.head.appendChild(script);
-    }, [ready]);
+    }, [enabled, ready]);
 
     return ready;
 }
