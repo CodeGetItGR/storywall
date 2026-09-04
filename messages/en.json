@@ -456,10 +456,8 @@
     "QrCodePage": {
         "fallbackTitle": "You're invited",
         "defaultHeroImageAlt": "Event cover photo",
-        "eventJoinEyebrow": "Join the event",
         "mediaUploadEyebrow": "Share your photos",
         "frozenNotice": "This event is currently read-only. You can still join and view the wall, but new uploads are paused.",
-        "invitationExhausted": "This invite link is full. Ask the host to raise its guest limit or send you a new link.",
         "anonymousUpload": {
             "nameLabel": "Your name",
             "namePlaceholder": "How should we credit your photos?",
