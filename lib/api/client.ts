@@ -127,6 +127,25 @@ async function rawFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
     return body as T;
 }
 
+// Public multipart POST — no auth header, no 401 retry. Used by the two
+// anonymous QR media-upload endpoints, which take the scanned QR token
+// itself as the credential instead of a bearer token.
+async function rawPostForm<T>(path: string, formData: FormData, options: RequestInit = {}): Promise<T> {
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+        ...options,
+        method: 'POST',
+        body: formData,
+    });
+
+    const body = await parseResponseBody(res);
+
+    if (!res.ok) {
+        throw new ApiError(res.status, body, undefined, res.headers.get('retry-after'));
+    }
+
+    return body as T;
+}
+
 async function apiFetchResponse(path: string, options: ApiFetchOptions = {}): Promise<Response> {
     const { skipAuthRetry, ...init } = options;
     const accessToken = getAccessToken();
@@ -179,6 +198,7 @@ export const api = {
     get: <T>(path: string, options?: RequestInit) => apiFetch<T>(path, { ...options, method: 'GET' }),
     download: (path: string, options?: RequestInit) => apiFetchResponse(path, { ...options, method: 'GET' }),
     publicGet: <T>(path: string, options?: RequestInit) => rawFetch<T>(path, { ...options, method: 'GET' }),
+    publicPostForm: <T>(path: string, formData: FormData, options?: RequestInit) => rawPostForm<T>(path, formData, options),
     post: <T>(path: string, data?: unknown, options?: RequestInit) =>
         apiFetch<T>(path, {
             ...options,
