@@ -460,11 +460,14 @@
         "mediaUploadEyebrow": "Share your photos",
         "frozenNotice": "This event is currently read-only. You can still join and view the wall, but new uploads are paused.",
         "invitationExhausted": "This invite link is full. Ask the host to raise its guest limit or send you a new link.",
-        "guestForm": {
-            "displayNameLabel": "Your name",
-            "displayNamePlaceholder": "How should we show your name?",
-            "submit": "Join",
-            "submitMedia": "Continue"
+        "anonymousUpload": {
+            "nameLabel": "Your name",
+            "namePlaceholder": "How should we credit your photos?",
+            "filesLabel": "Photos or videos",
+            "chooseFiles": "Choose files",
+            "filesSelected": "{count, plural, one {# file selected} other {# files selected}}",
+            "submit": "Upload",
+            "success": "Thanks! Your photos are on their way to the gallery."
         },
         "unknown": {
             "title": "Code not found",
