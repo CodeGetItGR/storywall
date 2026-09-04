@@ -450,15 +450,8 @@
             "description": "Αν ήσασταν εσείς, συνδεθείτε παρακάτω για να επιστρέψετε στον τοίχο."
         },
         "defaultHeroImageAlt": "Φωτογραφία εξωφύλλου εκδήλωσης",
-        "joinAsGuest": "Συμμετοχή ως καλεσμένος/η",
-        "guestForm": {
-            "displayNameLabel": "Το όνομά σας",
-            "displayNamePlaceholder": "Πώς θέλετε να εμφανίζεται το όνομά σας;",
-            "submit": "Συμμετοχή"
-        },
         "haveAccount": "Έχω ήδη λογαριασμό",
-        "createAccount": "Δημιουργία λογαριασμού",
-        "back": "Πίσω"
+        "createAccount": "Δημιουργία λογαριασμού"
     },
     "QrCodePage": {
         "fallbackTitle": "Έχετε πρόσκληση",

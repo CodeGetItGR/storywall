@@ -450,15 +450,8 @@
             "description": "If that was you, sign in below to get back to the wall."
         },
         "defaultHeroImageAlt": "Event cover photo",
-        "joinAsGuest": "Join as guest",
-        "guestForm": {
-            "displayNameLabel": "Your name",
-            "displayNamePlaceholder": "How should we show your name?",
-            "submit": "Join"
-        },
         "haveAccount": "I have an account",
-        "createAccount": "Create an account",
-        "back": "Back"
+        "createAccount": "Create an account"
     },
     "QrCodePage": {
         "fallbackTitle": "You're invited",
