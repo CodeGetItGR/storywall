@@ -335,10 +335,7 @@
         "tabTitle": "Login",
         "noAccount": "Don't have an account?",
         "createAccountLink": "Create one",
-        "expiredInvite": "This invitation has expired. Please ask your host for a new invite link.",
-        "memberLimitExceeded": "This event has reached the member limit for its current plan. Ask the host to upgrade before joining.",
-        "memberLimitExceededWithPlan": "This event is full on its current plan. Ask the host to upgrade to {plan} before joining.",
-        "invitationExhausted": "This invite link is full. Ask the host to raise its guest limit or send you a new link."
+        "orContinueWith": "Or continue with"
     },
     "RegisterPage": {
         "title": "Create account",
@@ -358,10 +355,7 @@
         "tabTitle": "Register",
         "haveAccount": "Already have an account?",
         "signInLink": "Sign in",
-        "expiredInvite": "This invitation has expired. Please ask your host for a new invite link.",
-        "memberLimitExceeded": "This event has reached the member limit for its current plan. Ask the host to upgrade before joining.",
-        "memberLimitExceededWithPlan": "This event is full on its current plan. Ask the host to upgrade to {plan} before joining.",
-        "invitationExhausted": "This invite link is full. Ask the host to raise its guest limit or send you a new link."
+        "orContinueWith": "Or continue with"
     },
     "WelcomePage": {
         "title": "Let's get started",

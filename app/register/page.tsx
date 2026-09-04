@@ -7,14 +7,11 @@ import { useTranslations } from 'next-intl';
 import React, { ChangeEvent, useCallback, useState } from 'react';
 
 import { AuthLayout } from '@/components/auth/AuthLayout';
+import { OAuthButtons } from '@/components/auth/OAuthButtons';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import { useAppConfig } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthPageRedirect } from '@/hooks/useAuthPageRedirect';
-import { useAcceptEventInvitation } from '@/hooks/useEventInvitations';
-import { joinEventAfterAuth } from '@/lib/invite/joinAfterAuth';
-import { findNextPlan } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 
 export default function RegisterPage() {
@@ -23,10 +20,8 @@ export default function RegisterPage() {
     const searchParams = useSearchParams();
     const inviteToken = searchParams.get('invite');
 
-    const { register } = useAuth();
+    const { register, oauth } = useAuth();
     const { shouldRenderAuthPage } = useAuthPageRedirect();
-    const acceptInvitation = useAcceptEventInvitation();
-    const { data: appConfig } = useAppConfig();
     const toErrorMessage = useApiErrorMessage();
 
     const [showPw, setShowPw] = useState(false);
@@ -42,25 +37,7 @@ export default function RegisterPage() {
         setIsSubmitting(true);
 
         try {
-            const auth = await register({ email, password, displayName });
-
-            if (inviteToken) {
-                const result = await joinEventAfterAuth((token) => acceptInvitation.mutateAsync(token), inviteToken);
-                if (result.status === 'expired') {
-                    setError(t('expiredInvite'));
-                    return;
-                }
-                if (result.status === 'memberLimitExceeded') {
-                    const nextPlan = result.planCode ? findNextPlan(appConfig?.planTiers ?? [], 'EVENT', result.planCode) : undefined;
-                    setError(nextPlan ? t('memberLimitExceededWithPlan', { plan: nextPlan.name }) : t('memberLimitExceeded'));
-                    return;
-                }
-                if (result.status === 'invitationExhausted') {
-                    setError(t('invitationExhausted'));
-                    return;
-                }
-            }
-
+            const auth = await register({ email, password, displayName, inviteToken: inviteToken ?? undefined });
             router.replace(auth.role === 'ADMIN' ? routes.admin : routes.feed);
         } catch (err) {
             setError(toErrorMessage(err));
@@ -68,6 +45,22 @@ export default function RegisterPage() {
             setIsSubmitting(false);
         }
     }
+
+    const handleOAuthSignIn = useCallback(
+        async (provider: 'GOOGLE' | 'APPLE', idToken: string) => {
+            setError(null);
+            const auth = await oauth(provider, { idToken, inviteToken: inviteToken ?? undefined });
+            router.replace(auth.role === 'ADMIN' ? routes.admin : routes.feed);
+        },
+        [oauth, inviteToken, router]
+    );
+
+    const handleOAuthError = useCallback(
+        (err: unknown) => {
+            setError(toErrorMessage(err));
+        },
+        [toErrorMessage]
+    );
 
     const onEmailChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         setEmail(e.target.value);
@@ -166,6 +159,13 @@ export default function RegisterPage() {
                     )}
                 </button>
             </form>
+
+            <div className="my-5 flex items-center gap-3 text-xs text-ink-faint">
+                <span className="h-px flex-1 bg-surface-muted" />
+                {t('orContinueWith')}
+                <span className="h-px flex-1 bg-surface-muted" />
+            </div>
+            <OAuthButtons onSignIn={handleOAuthSignIn} onError={handleOAuthError} />
 
             <p className="text-xs text-center text-ink-muted mt-6">
                 {t('haveAccount')}{' '}
