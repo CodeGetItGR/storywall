@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from 'react';
 interface OnboardingState {
     completed: boolean;
     stepIndex: number;
+    dismissed: boolean;
 }
 
 function storageKey(eventId: string) {
@@ -18,12 +19,12 @@ function storageKey(eventId: string) {
 function readState(eventId: string): OnboardingState {
     try {
         const raw = window.localStorage.getItem(storageKey(eventId));
-        if (!raw) return { completed: false, stepIndex: 0 };
+        if (!raw) return { completed: false, stepIndex: 0, dismissed: false };
         const parsed = JSON.parse(raw) as Partial<OnboardingState>;
         const stepIndex = typeof parsed.stepIndex === 'number' && parsed.stepIndex >= 0 ? parsed.stepIndex : 0;
-        return { completed: Boolean(parsed.completed), stepIndex };
+        return { completed: Boolean(parsed.completed), stepIndex, dismissed: Boolean(parsed.dismissed) };
     } catch {
-        return { completed: false, stepIndex: 0 };
+        return { completed: false, stepIndex: 0, dismissed: false };
     }
 }
 
@@ -36,7 +37,7 @@ function writeState(eventId: string, state: OnboardingState) {
 }
 
 export function useOnboardingProgress(eventId: string | null) {
-    const [state, setState] = useState<OnboardingState>({ completed: true, stepIndex: 0 });
+    const [state, setState] = useState<OnboardingState>({ completed: true, stepIndex: 0, dismissed: false });
     const [isOpen, setIsOpen] = useState(false);
     const [hydrated, setHydrated] = useState(false);
 
@@ -65,15 +66,20 @@ export function useOnboardingProgress(eventId: string | null) {
     }, []);
 
     // Closes the wizard without marking it done, so it can be reopened later
-    // at the same step (e.g. a mistaken skip, or "back later").
-    const dismiss = useCallback(() => {
+    // at the same step (e.g. a mistaken skip, or "back later"). Dismissing
+    // from the final step is treated as a deliberate "I'm done with this"
+    // and permanently suppresses the wizard (including its launcher) for
+    // this event, even if other setup conditions are still unmet.
+    const dismiss = useCallback((permanent = false) => {
         setIsOpen(false);
-        setState((current) => ({ ...current, completed: false }));
+        setState((current) => ({ ...current, completed: false, dismissed: permanent || current.dismissed }));
     }, []);
 
+    // Finishing the last step ("Let's go") is itself a final-step dismissal —
+    // it must suppress the launcher too, not just close the modal.
     const complete = useCallback(() => {
         setIsOpen(false);
-        setState({ completed: true, stepIndex: 0 });
+        setState({ completed: true, stepIndex: 0, dismissed: true });
     }, []);
 
     // stepCount can transiently be 0 if the caller derived it from data that
@@ -91,6 +97,7 @@ export function useOnboardingProgress(eventId: string | null) {
     return {
         isOpen: Boolean(eventId) && isOpen,
         isComplete: state.completed,
+        isDismissed: state.dismissed,
         stepIndex: state.stepIndex,
         open,
         openAt,

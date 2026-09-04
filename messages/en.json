@@ -1652,8 +1652,8 @@
         },
         "invite": {
             "title": "Invite your guests",
-            "body": "Share an invite link so people can join and see the details.",
-            "link": "Go to invites"
+            "body": "We've already created some share links for you. Use or download them on the QR page.",
+            "link": "Go to QR links"
         },
         "tools": {
             "title": "Your tools",

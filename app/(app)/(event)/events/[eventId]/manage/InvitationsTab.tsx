@@ -1,6 +1,7 @@
 'use client';
 
 import { Plus, QrCode, UserCog, UserPlus } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 
@@ -30,8 +31,10 @@ export default function InvitationsTab({
     canWrite: boolean;
 }) {
     const t = useTranslations('ManagePage');
+    const searchParams = useSearchParams();
+    const requestedPanel = searchParams.get('section');
     const [showCreate, setShowCreate] = useState(false);
-    const [panel, setPanel] = useState<InvitationPanel>('invites');
+    const [panel, setPanel] = useState<InvitationPanel>(requestedPanel === 'qr' ? 'qr' : 'invites');
     const [limitNotice, setLimitNotice] = useState<string | null>(null);
     const tabs = useMemo<SubTabItem<InvitationPanel>[]>(
         () => [

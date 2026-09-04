@@ -3,7 +3,7 @@
 import { Calendar, HelpCircle, PartyPopper, Settings, Sparkles, UserPlus } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { isEventRoute } from '@/components/layout/mobile-tab-bar';
 import { OnboardingInfoStep } from '@/components/onboarding/steps/OnboardingInfoStep';
@@ -26,7 +26,18 @@ export function HostOnboardingWizard() {
     const pathname = usePathname();
     const isOnEventRoute = isEventRoute(pathname);
     const isFeedRoute = Boolean(event?.id && pathname === routes.events.feed(event.id));
-    const { isOpen, isComplete, stepIndex: rawStepIndex, open, openAt, next, back, dismiss, complete } = useOnboardingProgress(event?.id ?? null);
+    const {
+        isOpen,
+        isComplete,
+        isDismissed,
+        stepIndex: rawStepIndex,
+        open,
+        openAt,
+        next,
+        back,
+        dismiss,
+        complete,
+    } = useOnboardingProgress(event?.id ?? null);
     const [checkoutGuideEventId, setCheckoutGuideEventId] = useState<string | null>(null);
     const { data: invitations, isLoading: invitationsLoading } = useEventInvitations(isHost && event ? event.id : null);
 
@@ -45,18 +56,24 @@ export function HostOnboardingWizard() {
     const shouldOfferSetup = firstMissingStepIndex !== null;
 
     useEffect(() => {
-        if (!event || !isHost || event.status === 'DRAFT' || !isFeedRoute || !shouldOfferSetup) return;
+        if (!event || !isHost || event.status === 'DRAFT' || !isFeedRoute || !shouldOfferSetup || isDismissed) return;
         if (!consumeCheckoutSetupPrompt(event.id)) return;
 
         const timer = window.setTimeout(() => setCheckoutGuideEventId(event.id), 900);
         return () => window.clearTimeout(timer);
-    }, [event, isFeedRoute, isHost, shouldOfferSetup]);
+    }, [event, isDismissed, isFeedRoute, isHost, shouldOfferSetup]);
     // Clamped defensively: stored progress (or a stale `next()` call from a
     // render where `stepIds` was momentarily empty) can otherwise point past
     // the current step list and render a blank modal with no way out.
     const stepIndex = Math.min(Math.max(rawStepIndex, 0), Math.max(stepIds.length - 1, 0));
     const stepId = stepIds[stepIndex];
     const isLastStep = stepIndex === stepIds.length - 1;
+
+    // Skipping mid-flow can still resurface the wizard later; closing the
+    // modal on the final step is a deliberate "I'm done" and dismisses it
+    // for good.
+    const handleDismiss = useCallback(() => dismiss(), [dismiss]);
+    const handleClose = useCallback(() => dismiss(isLastStep), [dismiss, isLastStep]);
 
     function handleContinue() {
         if (isLastStep) {
@@ -76,7 +93,7 @@ export function HostOnboardingWizard() {
         open();
     }
 
-    if (!event || !isHost || event.status === 'DRAFT' || !isOnEventRoute) return null;
+    if (!event || !isHost || event.status === 'DRAFT' || !isOnEventRoute || isDismissed) return null;
 
     const showCheckoutGuide = checkoutGuideEventId === event.id;
 
@@ -127,7 +144,14 @@ export function HostOnboardingWizard() {
                 </div>
             )}
 
-            <Modal open={isOpen} onClose={dismiss} size="md" variant="sheet" closeLabel={t('close')} className="sm:max-w-md">
+            <Modal
+                open={isOpen}
+                onClose={handleClose}
+                size="md"
+                variant="sheet"
+                closeLabel={t('close')}
+                className="sm:max-w-md"
+            >
                 {/* Progress */}
                 <div className="flex items-center justify-center gap-1.5 border-b border-border/70 bg-background/95 px-4 pt-5 pb-4 backdrop-blur-sm">
                     {stepIds.map((id, index) => (
@@ -145,14 +169,19 @@ export function HostOnboardingWizard() {
                     )}
 
                     {stepId === 'dashboard' && (
-                        <OnboardingLinksStep title={t('dashboard.title')} body={t('dashboard.body')} items={dashboardItems} onNavigate={dismiss} />
+                        <OnboardingLinksStep
+                            title={t('dashboard.title')}
+                            body={t('dashboard.body')}
+                            items={dashboardItems}
+                            onNavigate={handleDismiss}
+                        />
                     )}
 
                     {stepId === 'venue' && (
                         <OnboardingVenueStep
                             href={routes.events.tools.schedule(event.id, { section: 'venue-session' })}
                             hasVenue={event.sessions.some((session) => session.isSecondary)}
-                            onNavigate={dismiss}
+                            onNavigate={handleDismiss}
                             onDone={handleContinue}
                         />
                     )}
@@ -162,13 +191,15 @@ export function HostOnboardingWizard() {
                             icon={UserPlus}
                             title={t('invite.title')}
                             body={t('invite.body')}
-                            linkHref={routes.events.manage(event.id, { tab: 'invitations' })}
+                            linkHref={routes.events.manage(event.id, { tab: 'invitations', section: 'qr' })}
                             linkLabel={t('invite.link')}
-                            onLinkClick={dismiss}
+                            onLinkClick={handleDismiss}
                         />
                     )}
 
-                    {stepId === 'tools' && <OnboardingToolsStep eventId={event.id} eventModules={event.modules} onNavigate={dismiss} />}
+                    {stepId === 'tools' && (
+                        <OnboardingToolsStep eventId={event.id} eventModules={event.modules} onNavigate={handleDismiss} />
+                    )}
 
                     {stepId === 'done' && <OnboardingInfoStep icon={Sparkles} title={t('done.title')} body={t('done.body')} />}
                 </Modal.Body>
@@ -187,7 +218,7 @@ export function HostOnboardingWizard() {
                         ) : (
                             <button
                                 type="button"
-                                onClick={dismiss}
+                                onClick={handleDismiss}
                                 className="inline-flex items-center gap-2 rounded-full bg-surface-muted px-5 py-3 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted/70"
                             >
                                 {t('skip')}
