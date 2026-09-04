@@ -158,7 +158,10 @@ Use `commentCount`/`reactionCount` from the feed row to decide *whether* to show
 "3 comments" affordance; only call `GET /api/posts/{postId}/comments` when the user
 actually expands it — see
 [`comments-pagination-fe-integration.md`](comments-pagination-fe-integration.md) for the
-paginated shape and why it sorts oldest-first.
+paginated shape and why it sorts oldest-first. As of 2026-09-04, `PostResponseDto` also
+carries `recentComments` — the post's 2 latest comments, inline — for a preview under the
+feed row with no extra request; see
+[`post-recent-comments-preview-fe-integration.md`](post-recent-comments-preview-fe-integration.md).
 
 `GET /api/posts/{id}` (single post) and `POST /api/posts` (create) return the same
 enriched `PostResponseDto` shape shown above — no pagination envelope, since they're

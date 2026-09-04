@@ -1186,10 +1186,26 @@
             "byCategory": "Attendance by category"
         },
         "rsvpReports": {
-            "title": "RSVP report",
-            "description": "Download a PDF with the response summary and the full list of guests who replied.",
-            "download": "Download PDF",
-            "downloading": "Preparing PDF…",
+            "title": "RSVP reports",
+            "description": "Download a PDF report of your guests' responses.",
+            "types": {
+                "STATISTICS": {
+                    "label": "Statistics report",
+                    "description": "Response counts and a chart. No guest names."
+                },
+                "FULL_LIST": {
+                    "label": "Full list",
+                    "description": "Every guest who responded, with their status."
+                },
+                "ATTENDING_ONLY": {
+                    "label": "Only those attending",
+                    "description": "Just the guests who said yes."
+                },
+                "WITH_CHILDREN": {
+                    "label": "Guests with children",
+                    "description": "Guests bringing at least one child."
+                }
+            },
             "failed": "Couldn't generate the report. Please try again."
         }
     },

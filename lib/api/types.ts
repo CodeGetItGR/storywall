@@ -4,6 +4,7 @@
 export type EventRole = 'HOST' | 'ATTENDEE';
 export type EventVisibility = 'PUBLIC' | 'PRIVATE';
 export type AttendanceStatus = 'ATTENDING' | 'DECLINED';
+export type RsvpReportType = 'STATISTICS' | 'FULL_LIST' | 'ATTENDING_ONLY' | 'WITH_CHILDREN';
 export type AuthProvider = 'LOCAL' | 'OAUTH' | 'INVITE';
 export type AccountStatus = 'ACTIVE' | 'SUSPENDED' | 'DELETED';
 export type PlatformRole = 'USER' | 'ADMIN' | 'GUEST';

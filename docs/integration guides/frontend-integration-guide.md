@@ -37,7 +37,13 @@ e.g. a wedding's venue/reception alongside its `isMain` ceremony), and
 previously-undocumented forgot/reset-password flow), and
 [`reaction-types-catalog-fe-integration.md`](reaction-types-catalog-fe-integration.md) (post
 reaction codes are no longer a hardcoded `LIKE`/`LAUGH` constant — they're an admin-managed catalog
-scoped per event type, capped at 5 active types each).
+scoped per event type, capped at 5 active types each), and
+[`post-recent-comments-preview-fe-integration.md`](post-recent-comments-preview-fe-integration.md)
+(`PostResponseDto` now carries the post's 2 latest comments inline, for a feed-row preview with
+no extra request), and
+[`rsvp-report-types-fe-integration.md`](rsvp-report-types-fe-integration.md) (the RSVP PDF export
+now requires a `reportType` query parameter — one of four report shapes — instead of returning a
+single combined report).
 
 This doc was originally written 2026-08-04 directly from the controller/DTO source. Refreshed
 2026-08-09 to correct a stale claim that no billing integration existed — it now does,
@@ -68,6 +74,16 @@ same magic-byte validation and EXIF-stripping pipeline as event media. See
 again 2026-08-30: `PostResponseDto.likedByCurrentUser` removed, replaced by `myReactionType` and
 `reactionCounts`; `POST /api/reactions` is now an upsert. See
 [`post-liked-by-current-user-integration-guide.md`](post-liked-by-current-user-integration-guide.md).
+Refreshed again 2026-09-04: `PostResponseDto` gained `recentComments` — the post's 2 most recent
+comments, oldest-first, resolved in one extra batched query per feed page (not per post) — for a
+comment preview under a feed row without calling `GET /api/posts/{postId}/comments`. See
+[`post-recent-comments-preview-fe-integration.md`](post-recent-comments-preview-fe-integration.md).
+Refreshed again 2026-09-04: `GET /api/events/{eventId}/rsvps/export` now **requires** a
+`reportType` query parameter (`STATISTICS`/`FULL_LIST`/`ATTENDING_ONLY`/`WITH_CHILDREN`) — the old
+no-parameter call that returned a combined stats+table PDF now gets `400`. Supersedes the "New
+endpoint: PDF export" section of
+[`rsvp-boolean-status-and-export-fe-integration.md`](rsvp-boolean-status-and-export-fe-integration.md).
+See [`rsvp-report-types-fe-integration.md`](rsvp-report-types-fe-integration.md).
 
 ## 0. Base setup
 

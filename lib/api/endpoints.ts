@@ -3,6 +3,8 @@
 // since flipped every route; reconcile against Swagger (/v3/api-docs) if a
 // path here 404s.
 
+import type { RsvpReportType } from '@/lib/api/types';
+
 export const endpoints = {
     config: {
         get: '/api/config',
@@ -62,7 +64,8 @@ export const endpoints = {
         modules: (eventId: string) => `/api/events/${eventId}/modules`,
         sessions: (eventId: string) => `/api/events/${eventId}/sessions`,
         rsvps: (eventId: string) => `/api/events/${eventId}/rsvps`,
-        rsvpsExport: (eventId: string) => `/api/events/${eventId}/rsvps/export`,
+        rsvpsExport: (eventId: string, reportType: RsvpReportType) =>
+            `/api/events/${eventId}/rsvps/export?reportType=${encodeURIComponent(reportType)}`,
         media: (eventId: string) => `/api/events/${eventId}/media`,
         mediaBatch: (eventId: string) => `/api/events/${eventId}/media/batch`,
         mediaArchiveManifest: (eventId: string, variant: string = 'DISPLAY') =>
