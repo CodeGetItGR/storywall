@@ -298,11 +298,20 @@ export interface AuthSessionDto {
 export interface RegisterRequestDto {
     email: string;
     password: string;
+    inviteToken?: string;
 }
 
 export interface LoginRequestDto {
     email: string;
     password: string;
+    inviteToken?: string;
+}
+
+export type OAuthProviderName = 'GOOGLE' | 'APPLE';
+
+export interface OAuthLoginRequestDto {
+    idToken: string;
+    inviteToken?: string;
 }
 
 export interface RefreshRequestDto {
@@ -311,12 +320,6 @@ export interface RefreshRequestDto {
 
 export interface LogoutRequestDto {
     refreshToken: string;
-}
-
-export interface GuestLoginRequestDto {
-    inviteToken: string;
-    displayName: string;
-    guestKey?: string;
 }
 
 // --- §4 Users, Me, Sessions, Notifications ---
@@ -1098,6 +1101,7 @@ export interface MediaResponseDto {
     id: string;
     eventId: string;
     uploaderMemberId: string | null;
+    anonymousUploaderName: string | null;
     storageKey: string;
     mediaUrl: string;
     status: MediaStatus;

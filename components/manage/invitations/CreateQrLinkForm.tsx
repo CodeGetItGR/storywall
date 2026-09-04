@@ -48,12 +48,12 @@ export function CreateQrLinkForm({
         const input: QrLinkRequestDto = {
             targetType,
             label: label.trim() || undefined,
-            maxGuests,
+            maxGuests: targetType === 'EVENT_JOIN' ? maxGuests : undefined,
         };
 
         try {
             const qrLink = await createQrLink.mutateAsync(input);
-            if (qrLink.maxGuests !== maxGuests) {
+            if (targetType === 'EVENT_JOIN' && qrLink.maxGuests !== maxGuests) {
                 onClampNoticeAction?.(t('qr.cappedToPlan', { count: qrLink.maxGuests ?? maxGuests }));
             }
             onDoneAction();
@@ -113,17 +113,19 @@ export function CreateQrLinkForm({
                 </FormFieldLabel>
             </div>
 
-            <FormFieldLabel label={t('qr.fields.maxGuests')} required className={cn(fieldLabelClass, 'mt-4')} labelClassName={fieldTextClass}>
-                <input
-                    type="number"
-                    required
-                    min={1}
-                    max={1000}
-                    value={maxGuests}
-                    onChange={handleMaxGuestsChange}
-                    className={fieldControlClass}
-                />
-            </FormFieldLabel>
+            {targetType === 'EVENT_JOIN' && (
+                <FormFieldLabel label={t('qr.fields.maxGuests')} required className={cn(fieldLabelClass, 'mt-4')} labelClassName={fieldTextClass}>
+                    <input
+                        type="number"
+                        required
+                        min={1}
+                        max={1000}
+                        value={maxGuests}
+                        onChange={handleMaxGuestsChange}
+                        className={fieldControlClass}
+                    />
+                </FormFieldLabel>
+            )}
 
             {createQrLink.isError && <p className="mt-3 text-xs text-rose-500">{toErrorMessage(createQrLink.error)}</p>}
 

@@ -57,6 +57,9 @@ export type ApiErrorMessageKey =
     | 'methodNotAllowed'
     | 'memberLimit'
     | 'moduleUnavailable'
+    | 'oauthTokenInvalid'
+    | 'oauthEmailRequired'
+    | 'qrLinkNotAvailable'
     | 'orderNotPending'
     | 'orderNotRefundable'
     | 'planCurrencyMismatch'
@@ -98,6 +101,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [AUTH_ERROR_CODES.ACCESS_DENIED]: 'accessDenied',
     [AUTH_ERROR_CODES.AUTHENTICATION_REQUIRED]: 'authenticationRequired',
     [ERROR_CODES.ACCOUNT_NOT_ACTIVE]: 'accountNotActive',
+    [ERROR_CODES.OAUTH_TOKEN_INVALID]: 'oauthTokenInvalid',
+    [ERROR_CODES.OAUTH_EMAIL_REQUIRED]: 'oauthEmailRequired',
     [ERROR_CODES.ACCOUNT_PLANS_DISABLED]: 'accountPlansDisabled',
     [ERROR_CODES.ADDON_ALREADY_ACTIVE]: 'addonAlreadyActive',
     [ERROR_CODES.ADDON_LOCKED_WHILE_ACTIVE]: 'addonLockedWhileActive',
@@ -164,6 +169,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.PAID_SERVICE_NOT_ON_PLAN]: 'paidServiceNotOnPlan',
     [ERROR_CODES.PAID_SERVICE_NOT_PURCHASABLE]: 'paidServiceNotPurchasable',
     [ERROR_CODES.QR_LINK_NOT_FOUND]: 'qrLinkNotFound',
+    [ERROR_CODES.QR_LINK_NOT_AVAILABLE]: 'qrLinkNotAvailable',
     [ERROR_CODES.RATE_LIMITED]: 'rateLimited',
     [ERROR_CODES.EVENT_SCHEDULE_LOCKED]: 'eventScheduleLocked',
     [ERROR_CODES.REFUND_ALREADY_REQUESTED]: 'refundAlreadyRequested',

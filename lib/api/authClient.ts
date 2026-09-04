@@ -30,14 +30,14 @@ async function authRequest<T>(path: string, options: RequestInit = {}): Promise<
 }
 
 export const authClient = {
-    register: (input: { email: string; password: string; displayName: string }) =>
+    register: (input: { email: string; password: string; displayName: string; inviteToken?: string }) =>
         authRequest<AuthSessionDto>(endpoints.auth.register, { method: 'POST', body: JSON.stringify(input) }),
 
-    login: (input: { email: string; password: string }) =>
+    login: (input: { email: string; password: string; inviteToken?: string }) =>
         authRequest<AuthSessionDto>(endpoints.auth.login, { method: 'POST', body: JSON.stringify(input) }),
 
-    guestLogin: (input: { inviteToken: string; displayName: string }) =>
-        authRequest<AuthSessionDto>(endpoints.auth.guestLogin, { method: 'POST', body: JSON.stringify(input) }),
+    oauth: (provider: 'GOOGLE' | 'APPLE', input: { idToken: string; inviteToken?: string }) =>
+        authRequest<AuthSessionDto>(endpoints.auth.oauth(provider), { method: 'POST', body: JSON.stringify(input) }),
 
     // Bootstrap/reactive-refresh: 401 means there's no re-derivable session
     // (no refresh cookie, no guest cookie, or both rejected) — not an error.

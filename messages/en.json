@@ -315,6 +315,9 @@
         "yes": "Yes",
         "no": "No"
     },
+    "OAuthButtons": {
+        "continueWithApple": "Continue with Apple"
+    },
     "LoginPage": {
         "title": "Welcome back",
         "subtitle": "Sign in to join the celebration.",
@@ -332,10 +335,7 @@
         "tabTitle": "Login",
         "noAccount": "Don't have an account?",
         "createAccountLink": "Create one",
-        "expiredInvite": "This invitation has expired. Please ask your host for a new invite link.",
-        "memberLimitExceeded": "This event has reached the member limit for its current plan. Ask the host to upgrade before joining.",
-        "memberLimitExceededWithPlan": "This event is full on its current plan. Ask the host to upgrade to {plan} before joining.",
-        "invitationExhausted": "This invite link is full. Ask the host to raise its guest limit or send you a new link."
+        "orContinueWith": "Or continue with"
     },
     "RegisterPage": {
         "title": "Create account",
@@ -355,10 +355,7 @@
         "tabTitle": "Register",
         "haveAccount": "Already have an account?",
         "signInLink": "Sign in",
-        "expiredInvite": "This invitation has expired. Please ask your host for a new invite link.",
-        "memberLimitExceeded": "This event has reached the member limit for its current plan. Ask the host to upgrade before joining.",
-        "memberLimitExceededWithPlan": "This event is full on its current plan. Ask the host to upgrade to {plan} before joining.",
-        "invitationExhausted": "This invite link is full. Ask the host to raise its guest limit or send you a new link."
+        "orContinueWith": "Or continue with"
     },
     "WelcomePage": {
         "title": "Let's get started",
@@ -453,28 +450,22 @@
             "description": "If that was you, sign in below to get back to the wall."
         },
         "defaultHeroImageAlt": "Event cover photo",
-        "joinAsGuest": "Join as guest",
-        "guestForm": {
-            "displayNameLabel": "Your name",
-            "displayNamePlaceholder": "How should we show your name?",
-            "submit": "Join"
-        },
         "haveAccount": "I have an account",
-        "createAccount": "Create an account",
-        "back": "Back"
+        "createAccount": "Create an account"
     },
     "QrCodePage": {
         "fallbackTitle": "You're invited",
         "defaultHeroImageAlt": "Event cover photo",
-        "eventJoinEyebrow": "Join the event",
         "mediaUploadEyebrow": "Share your photos",
         "frozenNotice": "This event is currently read-only. You can still join and view the wall, but new uploads are paused.",
-        "invitationExhausted": "This invite link is full. Ask the host to raise its guest limit or send you a new link.",
-        "guestForm": {
-            "displayNameLabel": "Your name",
-            "displayNamePlaceholder": "How should we show your name?",
-            "submit": "Join",
-            "submitMedia": "Continue"
+        "anonymousUpload": {
+            "nameLabel": "Your name",
+            "namePlaceholder": "How should we credit your photos?",
+            "filesLabel": "Photos or videos",
+            "chooseFiles": "Choose files",
+            "filesSelected": "{count, plural, one {# file selected} other {# files selected}}",
+            "submit": "Upload",
+            "success": "Thanks! Your photos are on their way to the gallery."
         },
         "unknown": {
             "title": "Code not found",
@@ -2890,6 +2881,8 @@
         "invalidCredentials": "The email or password is incorrect.",
         "invalidRefreshToken": "Your session expired. Please sign in again.",
         "accountNotActive": "This account is not active.",
+        "oauthTokenInvalid": "Something went wrong signing you in — please try again.",
+        "oauthEmailRequired": "Please try signing in again.",
         "resourceNotFound": "We couldn't find that item.",
         "reactionTypeInUse": "That reaction is already used on posts.",
         "reactionTypeLimitExceeded": "That event type already has five available reactions.",
@@ -2897,6 +2890,7 @@
         "invitationNotFound": "We couldn't find that invitation.",
         "invitationExpired": "This invitation has expired.",
         "qrLinkNotFound": "This QR link is no longer available.",
+        "qrLinkNotAvailable": "This code can't be used right now. Ask your host for a new one.",
         "validationFailed": "Check the highlighted fields and try again.",
         "malformedRequestBody": "We couldn't read that request. Please try again.",
         "tooManyFiles": "Choose fewer files and try again.",
