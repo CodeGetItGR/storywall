@@ -48,11 +48,11 @@ function isJsonContentType(contentType: string | null): boolean {
 
 type ApiFetchOptions = RequestInit & { skipAuthRetry?: boolean };
 
-// The refresh/guest-relogin flow is only ever run once at a time, no matter
-// how many requests 401 concurrently — every caller awaits the same promise.
-// The actual refresh/guest-login logic now lives server-side, behind
-// /api/auth/session (see app/api/auth/session/route.ts) — it reads the
-// httpOnly refresh/guest cookies this module never has access to.
+// The refresh flow is only ever run once at a time, no matter how many
+// requests 401 concurrently — every caller awaits the same promise. The
+// actual refresh logic now lives server-side, behind /api/auth/session (see
+// app/api/auth/session/route.ts) — it reads the httpOnly refresh cookie this
+// module never has access to.
 let refreshPromise: Promise<string | null> | null = null;
 
 async function reauthenticate(): Promise<string | null> {

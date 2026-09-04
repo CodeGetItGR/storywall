@@ -98,7 +98,8 @@ export function useDeleteEventInvitation(eventId: string) {
 }
 
 // POST /api/event-invitations/{inviteToken}/accept — any registered USER.
-// The path for a logged-in invitee; guests use useAuth().guestLogin instead.
+// For an already-authenticated visitor; a not-yet-authenticated one attaches
+// inviteToken directly to register/login/oauth instead (see useAuth()).
 export function useAcceptEventInvitation() {
     const queryClient = useQueryClient();
 
