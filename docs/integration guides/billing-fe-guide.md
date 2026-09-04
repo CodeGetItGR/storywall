@@ -1,7 +1,12 @@
 # FE integration guide: plans, payments, refunds
 
 **The complete, current reference for the commercial side of the platform.** Everything a frontend
-needs to sell an event and give money back. Current as of 2026-09-02.
+needs to sell an event and give money back. Current as of 2026-09-04.
+
+**2026-09-04:** Notification `ctaRoute` (a literal path the backend guessed at) is gone, replaced by
+`ctaTarget` + `ctaParams` — you resolve the route yourself (§10). This affects every notification
+with a CTA, not just billing ones. **`notification-cta-target-fe-integration.md` has the full
+reference.**
 
 **2026-09-02:** Hosts can delete an event — `POST`/`DELETE /api/events/{eventId}/deletion-requests`,
 primary-host-only, password-confirmed, undoable for 30 days (§5). The old any-host, no-confirmation
@@ -1090,8 +1095,9 @@ All billing notifications arrive through the existing feed — `GET /api/notific
 `PATCH /api/notifications/read-all`, `DELETE /api/notifications/{id}` — with no new plumbing.
 
 Every one below is `category: "BILLING"`, which means it is **emailed as well as shown in the feed**,
-and every one carries `ctaRoute: "/events/{eventId}/settings/plan"`. **That route must exist** — it is
-the destination of every billing email and in-app CTA.
+and every one carries `ctaTarget: "EVENT_PLAN_SETTINGS"` with `ctaParams: { eventId }`. As of
+2026-09-04 this is a resolved key, not a literal path — see the `NotificationCtaTarget` note near
+`NotificationResponseDto` above. Resolve it through your own route map; do not string-concatenate it.
 
 **There is no dunning any more.** `BILLING_EXPIRING`, `BILLING_PAST_DUE` and `BILLING_PURGE_WARNING`
 are deleted from `NotificationType` — there is nothing left for a scheduled sweep to warn a host

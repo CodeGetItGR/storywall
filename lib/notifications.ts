@@ -1,12 +1,17 @@
-import type { BillingNotificationType, NotificationResponseDto, NotificationSeverity } from '@/lib/api/types';
+import type { BillingNotificationType, NotificationCtaTarget, NotificationResponseDto, NotificationSeverity } from '@/lib/api/types';
 
-// Billing notifications carry their own CTA target (billing-fe-guide §10) —
-// always `/events/{eventId}/settings/plan` today, but read it off the payload
-// rather than rebuilding it so a server-side change does not strand the link.
+// ctaTarget is a closed, growable set (notification-cta-target-fe-integration.md) — an
+// unrecognized target hides the CTA rather than crashing or navigating nowhere.
+const CTA_ROUTES: Record<NotificationCtaTarget, (params: Record<string, string>) => string> = {
+    EVENT_PLAN_SETTINGS: (p) => `/events/${p.eventId}/settings/plan`,
+    EVENT_GALLERY: (p) => `/events/${p.eventId}/gallery`,
+    EVENT_GUESTS: (p) => `/events/${p.eventId}/guests`,
+};
+
 export function notificationCtaRoute(notification: NotificationResponseDto): string | null {
-    if (notification.ctaRoute?.startsWith('/')) return notification.ctaRoute;
-    const route = notification.payload?.ctaRoute;
-    return typeof route === 'string' && route.startsWith('/') ? route : null;
+    if (!notification.ctaTarget) return null;
+    const build = CTA_ROUTES[notification.ctaTarget];
+    return build ? build(notification.ctaParams ?? {}) : null;
 }
 
 const BILLING_TYPES: readonly string[] = ['REFUND_APPROVED', 'REFUND_REJECTED'] satisfies readonly BillingNotificationType[];

@@ -110,7 +110,6 @@ interface UserResponseDto {
   id: string; email: string; authProvider: AuthProvider; isGuestAccount: boolean;
   status: AccountStatus; platformRole: PlatformRole;
   createdAt: string; updatedAt: string; deletedAt: string | null;
-  locale: "en" | "el"; // NEW 2026-09-04, writable via PATCH /api/me — see backend-localization-fe-integration.md
 }
 // GET /api/users now returns Page<UserResponseDto>, not UserResponseDto[].
 // Default 50/page, max 100 (?page=&size=), sorted createdAt desc then id desc (newest first).
@@ -139,6 +138,19 @@ type NotificationCategory = 'LIMIT' | 'OFFER' | 'TIP' | 'SYSTEM';
 
 type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 
+// 2026-09-04: ctaRoute (a literal, backend-built path) is gone, replaced by ctaTarget + ctaParams.
+// The backend no longer guesses this app's route structure — YOU resolve ctaTarget into a URL using
+// your own router. Keep this map in sync with NotificationCtaTarget on the backend:
+//
+//   EVENT_PLAN_SETTINGS -> your event plan/upgrade settings screen, needs params.eventId
+//   EVENT_GALLERY        -> your event gallery screen, needs params.eventId
+//   EVENT_GUESTS          -> your event guest list screen, needs params.eventId
+//
+// ctaTarget is a closed, growable set — treat an unrecognized value defensively (hide the CTA
+// rather than crash) so a future backend addition degrades gracefully instead of breaking the feed.
+// See notification-cta-target-fe-integration.md for the full migration guide.
+type NotificationCtaTarget = 'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS';
+
 interface NotificationResponseDto {
   id: string;
   /**
@@ -156,8 +168,10 @@ interface NotificationResponseDto {
   title: string;
   body: string;
   ctaLabel: string | null;
-  /** App-relative route, e.g. "/events/{id}/settings/plan". Never absolute. */
-  ctaRoute: string | null;
+  /** Null together with ctaLabel when the notification offers no action. */
+  ctaTarget: NotificationCtaTarget | null;
+  /** Substitution values for ctaTarget's route, e.g. `{ eventId: "…" }`. Empty when ctaTarget is null. */
+  ctaParams: Record<string, string>;
   /** Offers and tips lapse. Expired ones are already filtered out of the feed. */
   expiresAt: string | null;
   referenceType: string | null;

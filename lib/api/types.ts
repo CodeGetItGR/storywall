@@ -334,6 +334,11 @@ export type BillingNotificationType = 'REFUND_APPROVED' | 'REFUND_REJECTED';
 export type NotificationCategory = 'LIMIT' | 'OFFER' | 'TIP' | 'SYSTEM' | 'BILLING' | (string & {});
 export type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 
+// 2026-09-04: ctaRoute (a literal path) is gone, replaced by ctaTarget + ctaParams — the app
+// resolves the route itself. Closed but growable set; treat an unrecognized value defensively.
+// See docs/integration guides/notification-cta-target-fe-integration.md.
+export type NotificationCtaTarget = 'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS';
+
 export interface NotificationResponseDto {
     id: string;
     recipientMemberId: string | null;
@@ -345,7 +350,8 @@ export interface NotificationResponseDto {
     title?: string | null;
     body?: string | null;
     ctaLabel?: string | null;
-    ctaRoute?: string | null;
+    ctaTarget?: NotificationCtaTarget | null;
+    ctaParams?: Record<string, string>;
     expiresAt?: string | null;
     referenceType: string | null;
     referenceId: string | null;

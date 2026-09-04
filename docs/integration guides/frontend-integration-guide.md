@@ -40,13 +40,7 @@ reaction codes are no longer a hardcoded `LIKE`/`LAUGH` constant — they're an 
 scoped per event type, capped at 5 active types each), and
 [`post-recent-comments-preview-fe-integration.md`](post-recent-comments-preview-fe-integration.md)
 (`PostResponseDto` now carries the post's 2 latest comments inline, for a feed-row preview with
-no extra request), and
-[`rsvp-report-types-fe-integration.md`](rsvp-report-types-fe-integration.md) (the RSVP PDF export
-now requires a `reportType` query parameter — one of four report shapes — instead of returning a
-single combined report), and
-[`backend-localization-fe-integration.md`](backend-localization-fe-integration.md) (errors,
-notifications, transactional emails, and the RSVP PDF export now localize to `en`/`el` via
-`Accept-Language` or the user's stored `locale`).
+no extra request).
 
 This doc was originally written 2026-08-04 directly from the controller/DTO source. Refreshed
 2026-08-09 to correct a stale claim that no billing integration existed — it now does,
@@ -81,18 +75,6 @@ Refreshed again 2026-09-04: `PostResponseDto` gained `recentComments` — the po
 comments, oldest-first, resolved in one extra batched query per feed page (not per post) — for a
 comment preview under a feed row without calling `GET /api/posts/{postId}/comments`. See
 [`post-recent-comments-preview-fe-integration.md`](post-recent-comments-preview-fe-integration.md).
-Refreshed again 2026-09-04: `GET /api/events/{eventId}/rsvps/export` now **requires** a
-`reportType` query parameter (`STATISTICS`/`FULL_LIST`/`ATTENDING_ONLY`/`WITH_CHILDREN`) — the old
-no-parameter call that returned a combined stats+table PDF now gets `400`. Supersedes the "New
-endpoint: PDF export" section of
-[`rsvp-boolean-status-and-export-fe-integration.md`](rsvp-boolean-status-and-export-fe-integration.md).
-See [`rsvp-report-types-fe-integration.md`](rsvp-report-types-fe-integration.md).
-Refreshed again 2026-09-04: the backend now localizes errors, notifications, transactional emails,
-and the RSVP PDF export to `en`/`el`. Errors/notifications/PDF export follow the `Accept-Language`
-header per request; notification emails and invitation emails follow the recipient's (or inviting
-host's) stored `UserResponseDto.locale` instead, since there's no request in flight when they're
-sent. `UserResponseDto` gained a writable `locale` field (`GET/PATCH /api/me`). See
-[`backend-localization-fe-integration.md`](backend-localization-fe-integration.md).
 
 ## 0. Base setup
 
