@@ -11,10 +11,12 @@ import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { getInitials } from '@/lib/format';
 import { routes } from '@/lib/routes';
+import { useActiveEvent } from '@/providers/EventProvider';
 
 export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => void }) {
     const t = useTranslations('AccountDrawer');
     const { user } = useAuth();
+    const activeEvent = useActiveEvent();
     const accountName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.firstName || t('fallbackName');
 
     return (
@@ -44,7 +46,12 @@ export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => 
                 {/* Navigation */}
                 <nav className="mt-7 flex max-w-[52vw] flex-col gap-4">
                     <AccountSidebarNavLink href={routes.home} icon={CalendarDays} label={t('events')} onNavigateAction={onCloseAction} />
-                    <AccountSidebarNavLink href={routes.plans()} icon={WalletCards} label={t('plans')} onNavigateAction={onCloseAction} />
+                    <AccountSidebarNavLink
+                        href={routes.plans({ eventId: activeEvent?.id })}
+                        icon={WalletCards}
+                        label={t('plans')}
+                        onNavigateAction={onCloseAction}
+                    />
                     <AccountSidebarNavLink href={routes.modules} icon={Layers3} label={t('modules')} onNavigateAction={onCloseAction} />
                 </nav>
 

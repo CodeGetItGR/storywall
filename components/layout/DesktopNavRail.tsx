@@ -90,7 +90,13 @@ export function DesktopNavRail() {
                 {showEventActions && homeHref && <DesktopAccountNavLink href={homeHref} icon={HomeIcon} label={t('items.home')} active={homeActive} expanded={expanded} />}
 
                 <DesktopAccountNavLink href={routes.home} icon={CalendarDays} label={tAccount('events')} active={eventsActive} expanded={expanded} />
-                <DesktopAccountNavLink href={routes.plans()} icon={WalletCards} label={tAccount('plans')} active={plansActive} expanded={expanded} />
+                <DesktopAccountNavLink
+                    href={routes.plans({ eventId: activeEvent?.id })}
+                    icon={WalletCards}
+                    label={tAccount('plans')}
+                    active={plansActive}
+                    expanded={expanded}
+                />
                 <DesktopAccountNavLink href={routes.modules} icon={Layers3} label={tAccount('modules')} active={modulesActive} expanded={expanded} />
             </div>
 
