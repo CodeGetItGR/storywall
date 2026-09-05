@@ -1,8 +1,16 @@
+import { DEMO_EVENT_ID } from '@/lib/demo/demoConstants';
+
 type RouteQueryValue = string | number | boolean | null | undefined;
 
 export type CheckoutIntent = 'activation' | 'upgrade' | 'storage';
 // 'billing' is kept as an alias for the plan section so existing links keep working.
 export type ManageTab = 'billing' | 'coverage' | 'danger' | 'invitations' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings';
+
+// The demo event lives outside the real /events/{eventId} tree (which proxy.ts protects
+// behind a real session) — see docs/superpowers/plans/2026-09-05-demo-event.md, design note 1.
+function eventBasePath(eventId: string): string {
+    return eventId === DEMO_EVENT_ID ? '/demo' : `/events/${eventId}`;
+}
 
 function withQuery(pathname: string, params: Record<string, RouteQueryValue>): string {
     const searchParams = new URLSearchParams();
@@ -27,26 +35,27 @@ export const routes = {
     profile: '/profile',
     events: {
         new: (params: { step?: string | null } = {}) => withQuery('/events/new', params),
-        manage: (eventId: string, params: { tab?: ManageTab | null; section?: string | null } = {}) => withQuery(`/events/${eventId}/manage`, params),
+        manage: (eventId: string, params: { tab?: ManageTab | null; section?: string | null } = {}) =>
+            withQuery(`${eventBasePath(eventId)}/manage`, params),
         tools: {
-            rsvp: (eventId: string) => `/events/${eventId}/tools/rsvp`,
+            rsvp: (eventId: string) => `${eventBasePath(eventId)}/tools/rsvp`,
             rsvpSubmit: (eventId: string, attending?: 'attending' | 'not-attending' | null) =>
-                withQuery(`/events/${eventId}/tools/rsvp/submit`, { attending }),
-            gallery: (eventId: string) => `/events/${eventId}/tools/gallery`,
-            playlist: (eventId: string) => `/events/${eventId}/tools/playlist`,
-            quiz: (eventId: string) => `/events/${eventId}/tools/quiz`,
-            gifts: (eventId: string) => `/events/${eventId}/tools/gifts`,
-            schedule: (eventId: string, params: { section?: string | null } = {}) => withQuery(`/events/${eventId}/tools/schedule`, params),
-            wishbook: (eventId: string) => `/events/${eventId}/tools/wishbook`,
+                withQuery(`${eventBasePath(eventId)}/tools/rsvp/submit`, { attending }),
+            gallery: (eventId: string) => `${eventBasePath(eventId)}/tools/gallery`,
+            playlist: (eventId: string) => `${eventBasePath(eventId)}/tools/playlist`,
+            quiz: (eventId: string) => `${eventBasePath(eventId)}/tools/quiz`,
+            gifts: (eventId: string) => `${eventBasePath(eventId)}/tools/gifts`,
+            schedule: (eventId: string, params: { section?: string | null } = {}) => withQuery(`${eventBasePath(eventId)}/tools/schedule`, params),
+            wishbook: (eventId: string) => `${eventBasePath(eventId)}/tools/wishbook`,
         },
-        storySchedule: (eventId: string) => `/events/${eventId}/story/schedule`,
-        location: (eventId: string, role?: 'main' | 'secondary' | null) => `/events/${eventId}/location${role ? `/${role}` : ''}`,
-        feed: (eventId: string, params: { post?: string | null } = {}) => withQuery(`/events/${eventId}/feed`, params),
-        settingsAddons: (eventId: string) => `/events/${eventId}/settings/addons`,
+        storySchedule: (eventId: string) => `${eventBasePath(eventId)}/story/schedule`,
+        location: (eventId: string, role?: 'main' | 'secondary' | null) => `${eventBasePath(eventId)}/location${role ? `/${role}` : ''}`,
+        feed: (eventId: string, params: { post?: string | null } = {}) => withQuery(`${eventBasePath(eventId)}/feed`, params),
+        settingsAddons: (eventId: string) => `${eventBasePath(eventId)}/settings/addons`,
         checkoutReview: (eventId: string, intent: CheckoutIntent, code?: string | null, cancelled?: boolean | null) =>
-            withQuery(`/events/${eventId}/checkout/review`, { intent, code, cancelled }),
-        checkoutSuccess: (eventId: string, orderId?: string | null) => withQuery(`/events/${eventId}/checkout/success`, { orderId }),
-        checkoutCancelled: (eventId: string) => `/events/${eventId}/checkout/cancelled`,
+            withQuery(`${eventBasePath(eventId)}/checkout/review`, { intent, code, cancelled }),
+        checkoutSuccess: (eventId: string, orderId?: string | null) => withQuery(`${eventBasePath(eventId)}/checkout/success`, { orderId }),
+        checkoutCancelled: (eventId: string) => `${eventBasePath(eventId)}/checkout/cancelled`,
     },
     plans: (params: { eventId?: string | null; plan?: string | null } = {}) => withQuery('/plans', params),
     admin: '/admin',
