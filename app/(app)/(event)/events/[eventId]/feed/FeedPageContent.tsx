@@ -23,7 +23,6 @@ import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
 import { useFeedPage } from './FeedPageContext';
-import {useActiveEvent} from "@/providers/EventProvider";
 
 export function FeedPageContent() {
     const t = useTranslations('FeedPage');

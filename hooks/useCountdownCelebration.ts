@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 const GRACE_WINDOW_MS = 30 * 60 * 1000;
 
@@ -32,6 +32,18 @@ function prefersReducedMotion(): boolean {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
+function decideShouldCelebrate({ eventId, hasFinished, targetTime }: { eventId: string; hasFinished: boolean; targetTime: number }): boolean {
+    if (!hasFinished) return false;
+    if (hasAlreadyCelebrated(eventId)) return false;
+
+    const elapsedSinceStart = Date.now() - targetTime;
+    if (elapsedSinceStart > GRACE_WINDOW_MS) return false;
+
+    markCelebrated(eventId);
+
+    return !prefersReducedMotion();
+}
+
 export function useCountdownCelebration({
     eventId,
     hasFinished,
@@ -41,23 +53,19 @@ export function useCountdownCelebration({
     hasFinished: boolean;
     targetTime: number;
 }) {
-    const [shouldCelebrate, setShouldCelebrate] = useState(false);
+    const [state, setState] = useState(() => ({
+        trackedHasFinished: !hasFinished,
+        shouldCelebrate: false,
+    }));
 
-    useEffect(() => {
-        if (!hasFinished) return;
-        if (hasAlreadyCelebrated(eventId)) return;
+    if (hasFinished !== state.trackedHasFinished) {
+        setState({
+            trackedHasFinished: hasFinished,
+            shouldCelebrate: decideShouldCelebrate({ eventId, hasFinished, targetTime }),
+        });
+    }
 
-        const elapsedSinceStart = Date.now() - targetTime;
-        if (elapsedSinceStart > GRACE_WINDOW_MS) return;
+    const onCelebrationComplete = useCallback(() => setState((current) => ({ ...current, shouldCelebrate: false })), []);
 
-        markCelebrated(eventId);
-
-        if (prefersReducedMotion()) return;
-
-        setShouldCelebrate(true);
-    }, [eventId, hasFinished, targetTime]);
-
-    const onCelebrationComplete = useCallback(() => setShouldCelebrate(false), []);
-
-    return { shouldCelebrate, onCelebrationComplete };
+    return { shouldCelebrate: state.shouldCelebrate, onCelebrationComplete };
 }
