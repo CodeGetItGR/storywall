@@ -24,6 +24,7 @@ import { useActiveMember } from '@/providers/EventProvider';
 
 import BillingTab from '../../app/(app)/(event)/events/[eventId]/manage/BillingTab';
 import DangerZoneTab from '../../app/(app)/(event)/events/[eventId]/manage/DangerZoneTab';
+import HelpTab from '../../app/(app)/(event)/events/[eventId]/manage/HelpTab';
 import InvitationsTab from '../../app/(app)/(event)/events/[eventId]/manage/InvitationsTab';
 import OverviewTab from '../../app/(app)/(event)/events/[eventId]/manage/OverviewTab';
 import RsvpTab from '../../app/(app)/(event)/events/[eventId]/manage/RsvpTab';
@@ -143,6 +144,16 @@ export function ManageScreen() {
                 ))}
 
             {section === 'settings' && <SettingsTab event={activeEvent} canWrite={canEditDetails} canUploadCover={canWrite} />}
+
+            {section === 'help' && (
+                <HelpTab
+                    eventId={eventId}
+                    eventTitle={activeEvent.title}
+                    eventType={activeEvent.eventType}
+                    sessions={activeEvent.sessions}
+                    eventModules={activeEvent.modules}
+                />
+            )}
 
             {section === 'danger' && <DangerZoneTab event={activeEvent} />}
 
