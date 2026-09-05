@@ -6,7 +6,7 @@ import { FIREWORKS_DURATION_MS, runFireworks } from '@/lib/fireworks';
 vi.mock('canvas-confetti', () => {
     const createInstance = vi.fn(() => Object.assign(vi.fn(), { reset: vi.fn() }));
     return {
-        default: Object.assign(vi.fn(), { create: createInstance }),
+        default: Object.assign(vi.fn(), { create: createInstance, shapeFromText: vi.fn(() => 'circle') }),
     };
 });
 
@@ -26,17 +26,21 @@ describe('runFireworks', () => {
 
     it('creates a confetti instance scoped to the given canvas', () => {
         runFireworks(canvas);
-        expect(confetti.create).toHaveBeenCalledWith(canvas, { resize: true, useWorker: true });
+        expect(confetti.create).toHaveBeenCalledWith(canvas, { resize: true, useWorker: false });
     });
 
-    it('fires more than one burst over the animation duration', () => {
+    it('runs for at least 5 seconds', () => {
+        expect(FIREWORKS_DURATION_MS).toBeGreaterThanOrEqual(5000);
+    });
+
+    it('fires many bursts covering the full duration, not just one or two', () => {
         const instance = vi.fn();
         vi.mocked(confetti.create).mockReturnValue(Object.assign(instance, { reset: vi.fn() }));
 
         runFireworks(canvas);
         vi.advanceTimersByTime(FIREWORKS_DURATION_MS);
 
-        expect(instance.mock.calls.length).toBeGreaterThan(1);
+        expect(instance.mock.calls.length).toBeGreaterThan(15);
     });
 
     it('stops firing once the returned cleanup function is called', () => {

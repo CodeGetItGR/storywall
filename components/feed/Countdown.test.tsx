@@ -7,7 +7,7 @@ import { Countdown } from '@/components/feed/Countdown';
 vi.mock('canvas-confetti', () => {
     const createInstance = vi.fn(() => Object.assign(vi.fn(), { reset: vi.fn() }));
     return {
-        default: Object.assign(vi.fn(), { create: createInstance }),
+        default: Object.assign(vi.fn(), { create: createInstance, shapeFromText: vi.fn(() => 'circle') }),
     };
 });
 

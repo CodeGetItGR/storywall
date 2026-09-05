@@ -67,6 +67,16 @@ describe('useCountdownCelebration', () => {
         expect(window.localStorage.getItem(STORAGE_KEY)).toBe('1');
     });
 
+    it('celebrates when hasFinished transitions from false to true mid-session (live rollover while mounted)', () => {
+        const targetTime = Date.now() + 3000;
+        const { result, rerender } = renderCelebration({ hasFinished: false, targetTime });
+        expect(result.current.shouldCelebrate).toBe(false);
+
+        rerender({ hasFinished: true, targetTime });
+
+        expect(result.current.shouldCelebrate).toBe(true);
+    });
+
     it('resets shouldCelebrate when onCelebrationComplete is called', () => {
         const { result } = renderCelebration({ hasFinished: true, targetTime: Date.now() });
         expect(result.current.shouldCelebrate).toBe(true);
