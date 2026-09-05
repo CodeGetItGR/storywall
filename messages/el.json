@@ -1195,7 +1195,8 @@
             "totalPeople": "Σύνολο ατόμων",
             "adults": "Ενήλικες",
             "kids": "Παιδιά",
-            "byCategory": "Παρουσία ανά κατηγορία"
+            "byCategory": "Παρουσία ανά κατηγορία",
+            "notGoing": "Δεν θα παρευρεθούν"
         },
         "rsvpReports": {
             "title": "Αναφορές RSVP",

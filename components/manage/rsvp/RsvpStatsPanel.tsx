@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { MetricStrip } from '@/components/ui/MetricStrip';
 import { formatDate, getDaysUntil } from '@/lib/datetime';
 
-const categories = ['ATTENDING', 'DECLINED'] as const;
+const categories = ['GOING', 'NOT_GOING'] as const;
 
 export function RsvpStatsPanel({
     countdownTarget,
@@ -15,7 +15,8 @@ export function RsvpStatsPanel({
     seatsClaimed,
     adultsTotal,
     kidsTotal,
-    peopleByStatus,
+    peopleGoing,
+    peopleNotGoing,
 }: {
     countdownTarget: string;
     isRsvpDeadline: boolean;
@@ -23,11 +24,16 @@ export function RsvpStatsPanel({
     seatsClaimed: number;
     adultsTotal: number;
     kidsTotal: number;
-    peopleByStatus: Record<'ATTENDING' | 'DECLINED', number>;
+    peopleGoing: number;
+    peopleNotGoing: number;
 }) {
     const t = useTranslations('ManagePage');
     const locale = useLocale();
-    const peopleTotal = peopleByStatus.ATTENDING + peopleByStatus.DECLINED;
+    const peopleByCategory = { GOING: peopleGoing, NOT_GOING: peopleNotGoing };
+    // "Not going" counts one head per guest who declined or hasn't responded,
+    // since their actual party size is unknown — this total is people known
+    // either way, not the event's full guest list.
+    const peopleTotal = peopleGoing + peopleNotGoing;
     const daysToGo = getDaysUntil(countdownTarget) ?? 0;
     const formattedTargetDate = formatDate(locale, countdownTarget, { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -63,14 +69,16 @@ export function RsvpStatsPanel({
                 <p className="mb-3 text-xs font-bold uppercase tracking-wide text-ink-faint">{t('rsvpStats.byCategory')}</p>
                 <div className="flex flex-col gap-3">
                     {categories.map((status) => {
-                        const count = peopleByStatus[status];
+                        const count = peopleByCategory[status];
                         if (count === 0) return null;
                         const percent = peopleTotal === 0 ? 0 : Math.round((count / peopleTotal) * 100);
 
                         return (
                             <div key={status}>
                                 <div className="mb-1 flex items-baseline justify-between gap-2 text-xs">
-                                    <span className="text-ink-muted">{t(`rsvpBreakdown.${status.toLowerCase()}`)}</span>
+                                    <span className="text-ink-muted">
+                                        {t(status === 'GOING' ? 'rsvpBreakdown.attending' : 'rsvpStats.notGoing')}
+                                    </span>
                                     <span className="font-bold tabular-nums text-ink">
                                         {count} <span className="font-normal text-ink-faint">{percent}%</span>
                                     </span>

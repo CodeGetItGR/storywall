@@ -1195,7 +1195,8 @@
             "totalPeople": "Total people",
             "adults": "Adults",
             "kids": "Kids",
-            "byCategory": "Attendance by category"
+            "byCategory": "Attendance by category",
+            "notGoing": "Not going"
         },
         "rsvpReports": {
             "title": "RSVP reports",

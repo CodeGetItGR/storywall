@@ -53,22 +53,17 @@ export function useRsvpRoster(members: RosterMember[], rsvps: RosterRsvp[]) {
         [filter, guests, statusOf]
     );
 
-    const adultsTotal = useMemo(() => rsvps.reduce((sum, rsvp) => sum + rsvp.adultCount, 0), [rsvps]);
-    const kidsTotal = useMemo(() => rsvps.reduce((sum, rsvp) => sum + rsvp.childCount, 0), [rsvps]);
+    // Adult/child counts only mean anything for guests who are actually attending —
+    // a declined or unanswered RSVP carries no reliable headcount, so it's excluded
+    // rather than summed in as if it were people confirmed to attend.
+    const attendingRsvps = useMemo(() => rsvps.filter((rsvp) => rsvp.attendanceStatus === 'ATTENDING'), [rsvps]);
+    const adultsTotal = useMemo(() => attendingRsvps.reduce((sum, rsvp) => sum + rsvp.adultCount, 0), [attendingRsvps]);
+    const kidsTotal = useMemo(() => attendingRsvps.reduce((sum, rsvp) => sum + rsvp.childCount, 0), [attendingRsvps]);
+    const peopleGoing = adultsTotal + kidsTotal;
 
-    // Counted in people (adults + kids), not responses, so it answers "how many
-    // are actually coming" rather than "how many parties replied".
-    const peopleByStatus = useMemo(
-        () =>
-            rsvps.reduce(
-                (totals, rsvp) => {
-                    totals[rsvp.attendanceStatus] += rsvp.adultCount + rsvp.childCount;
-                    return totals;
-                },
-                { ATTENDING: 0, DECLINED: 0 } as Record<'ATTENDING' | 'DECLINED', number>
-            ),
-        [rsvps]
-    );
+    // Guests who declined or never responded don't have a known headcount, so each
+    // one only counts as one person, not their (unknown) family size.
+    const peopleNotGoing = counts.DECLINED + counts.NO_RESPONSE;
 
     return {
         filter,
@@ -76,10 +71,11 @@ export function useRsvpRoster(members: RosterMember[], rsvps: RosterRsvp[]) {
         counts,
         guestCount: guests.length,
         responseCount: counts.ATTENDING + counts.DECLINED,
-        seatsClaimed: rsvps.reduce((sum, rsvp) => sum + rsvp.adultCount + rsvp.childCount, 0),
+        seatsClaimed: peopleGoing,
         adultsTotal,
         kidsTotal,
-        peopleByStatus,
+        peopleGoing,
+        peopleNotGoing,
         visibleGuests,
         rsvpByMember,
         statusOf,

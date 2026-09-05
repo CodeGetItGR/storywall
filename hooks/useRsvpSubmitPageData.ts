@@ -132,8 +132,10 @@ export function useRsvpSubmitPageData() {
             }
 
             const attendanceStatus: AttendanceStatus = attending === 'attending' ? 'ATTENDING' : 'DECLINED';
-            const adultCount = 1 + plusOnes.adultCount;
-            const childCount = plusOnes.childCount;
+            // A decline has no party size of its own — plusOnes may still hold values left
+            // over from switching away from "attending", so they must not leak into the count.
+            const adultCount = attendanceStatus === 'ATTENDING' ? 1 + plusOnes.adultCount : 1;
+            const childCount = attendanceStatus === 'ATTENDING' ? plusOnes.childCount : 0;
 
             try {
                 if (effectiveRsvpId) {

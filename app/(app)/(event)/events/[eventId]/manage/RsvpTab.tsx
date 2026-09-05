@@ -25,7 +25,10 @@ export default function RsvpTab({
 }) {
     const t = useTranslations('ManagePage');
     const [subTab, setSubTab] = useState<RsvpSubTab>('stats');
-    const { responseCount, seatsClaimed, adultsTotal, kidsTotal, peopleByStatus } = useRsvpRoster(members, rsvps);
+    const { responseCount, seatsClaimed, adultsTotal, kidsTotal, peopleGoing, peopleNotGoing } = useRsvpRoster(
+        members,
+        rsvps
+    );
     const tabs = useMemo<SubTabItem<RsvpSubTab>[]>(
         () => [
             { key: 'stats', icon: BarChart3, label: t('rsvpTabs.stats') },
@@ -48,7 +51,8 @@ export default function RsvpTab({
                     seatsClaimed={seatsClaimed}
                     adultsTotal={adultsTotal}
                     kidsTotal={kidsTotal}
-                    peopleByStatus={peopleByStatus}
+                    peopleGoing={peopleGoing}
+                    peopleNotGoing={peopleNotGoing}
                 />
             )}
             {subTab === 'list' && <RsvpListPanel members={members} rsvps={rsvps} />}
