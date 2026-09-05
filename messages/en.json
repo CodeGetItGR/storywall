@@ -167,6 +167,10 @@
             "manage": {
                 "label": "Dashboard",
                 "description": "Overview of your event"
+            },
+            "help": {
+                "label": "Help",
+                "description": "Setup guide and tips"
             }
         },
         "items": {
@@ -865,6 +869,7 @@
         "sections": {
             "overview": "Overview",
             "settings": "Settings",
+            "help": "Help",
             "danger": "Danger zone",
             "rsvp": "RSVP",
             "invitations": "Invitations",
@@ -1653,12 +1658,6 @@
         }
     },
     "HostOnboarding": {
-        "close": "Close",
-        "reopen": "Open guide",
-        "back": "Back",
-        "skip": "Skip",
-        "continue": "Continue",
-        "checkoutGuide": "Set up your event",
         "welcome": {
             "title": "Welcome! Let's set up {eventTitle}",
             "body": "A few quick steps to get things ready for your guests."
@@ -1698,8 +1697,7 @@
         },
         "done": {
             "title": "You're all set",
-            "body": "You can always come back and change things later.",
-            "close": "Let's go"
+            "body": "You can always come back and change things later."
         }
     },
     "GiftsPage": {
