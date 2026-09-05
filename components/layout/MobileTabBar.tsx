@@ -38,24 +38,23 @@ export function MobileTabBar() {
 
     const homeActive = isPathActive(pathname, homeHref) || isPathActive(pathname, homeTabItem.href);
     const availableModules = new Set(activeEvent?.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey) ?? []);
-    const playlistAvailable = showEventNavigation && availableModules.has('playlist');
+    const playlistAvailable = availableModules.has('playlist');
     const playlistActive = playlistAvailable && Boolean(activeEvent) && isPathActive(pathname, routes.events.tools.playlist(activeEvent?.id ?? ''));
-    const rsvpTabAvailable = showEventNavigation && isHost && !isDraft;
+    const rsvpTabAvailable = isHost && !isDraft;
     const rsvpHref = activeEvent ? routes.events.manage(activeEvent.id, { tab: 'rsvp' }) : '';
     const rsvpActive = rsvpTabAvailable && isPathActive(pathname, rsvpHref, searchParams);
     const hostItems = useHostMenuItems();
     const toolItems = useToolsMenuItems();
-    const showComposerMenu = showEventNavigation && isFeedRoute(pathname) && (canComposePost || canComposeStory || canComposeSong);
-    const contextItems: ContextNavItem[] =
-        showEventNavigation && activeEvent
-            ? isHost
-                ? [
-                      ...hostItems,
-                      // Hosts answer RSVPs from the dashboard's RSVP section, not the guest self-RSVP tool.
-                      ...(isDraft ? [] : toolItems.filter((item) => item.key !== 'rsvp')),
-                  ]
-                : toolItems
-            : [];
+    const showComposerMenu = isFeedRoute(pathname) && (canComposePost || canComposeStory || canComposeSong);
+    const contextItems: ContextNavItem[] = activeEvent
+        ? isHost
+            ? [
+                  ...hostItems,
+                  // Hosts answer RSVPs from the dashboard's RSVP section, not the guest self-RSVP tool.
+                  ...(isDraft ? [] : toolItems.filter((item) => item.key !== 'rsvp')),
+              ]
+            : toolItems
+        : [];
     const contextActive = contextItems.some((item) => isPathActive(pathname, item.href, searchParams));
     const ContextTriggerIcon = isHost ? Settings : Wrench;
     const contextMenuLabel = isHost ? t('eventMenu') : t('toolsMenu');
@@ -87,13 +86,10 @@ export function MobileTabBar() {
         setComposerMenuOpen(false);
     }
 
+    if (!showEventNavigation) return null;
+
     const accountActive = accountOpen;
-    const railColumnCount =
-        1 +
-        (showEventNavigation ? 1 : 0) +
-        (showEventNavigation && playlistAvailable ? 1 : 0) +
-        (rsvpTabAvailable ? 1 : 0) +
-        (showEventNavigation && contextItems.length > 0 ? 1 : 0);
+    const railColumnCount = 1 + 1 + (playlistAvailable ? 1 : 0) + (rsvpTabAvailable ? 1 : 0) + (contextItems.length > 0 ? 1 : 0);
     const composerButtonStyle = {
         transform: composerButtonLowered ? 'translate3d(0, 4rem, 0)' : 'translate3d(0, 0, 0)',
         transition: 'transform 300ms cubic-bezier(0.77, 0, 0.175, 1)',
@@ -113,91 +109,75 @@ export function MobileTabBar() {
                     style={{
                         backgroundImage:
                             'linear-gradient(to top, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.92) 58%, rgba(255,255,255,0.72) 100%)',
-                        gridTemplateColumns: showEventNavigation ? `repeat(${railColumnCount}, minmax(0, 1fr))` : 'repeat(1, minmax(0, 1fr))',
+                        gridTemplateColumns: `repeat(${railColumnCount}, minmax(0, 1fr))`,
                     }}
                 >
-                    {!showEventNavigation ? (
+                    {/* Home */}
+                    <div className="flex h-full items-center justify-center">
+                        <TabLink
+                            href={homeHref}
+                            icon={homeTabItem.icon}
+                            label={t(`items.${homeTabItem.key}`)}
+                            active={homeActive}
+                            onClick={handleHomeClick}
+                        />
+                    </div>
+
+                    {/* Music */}
+                    {playlistAvailable && activeEvent && (
+                        <div className="flex h-full items-center justify-center">
+                            <TabLink
+                                href={routes.events.tools.playlist(activeEvent.id)}
+                                icon="/icons/music.svg"
+                                label={t('items.playlist')}
+                                active={playlistActive}
+                            />
+                        </div>
+                    )}
+
+                    {/* RSVP */}
+                    {rsvpTabAvailable && (
+                        <div className="flex h-full items-center justify-center">
+                            <TabLink href={rsvpHref} icon="/icons/rsvp.png" label={t('items.rsvp')} active={rsvpActive} />
+                        </div>
+                    )}
+
+                    {/* Event menu */}
+                    {contextItems.length > 0 && (
+                        <div className="flex h-full items-center justify-center">
+                            <ContextNavSlot
+                                active={contextActive}
+                                forceMenu
+                                TriggerIcon={ContextTriggerIcon}
+                                items={contextItems}
+                                menuLabel={contextMenuLabel}
+                                pathname={pathname}
+                                searchParams={searchParams}
+                                onItemClick={handleDashboardMenuClick}
+                            />
+                        </div>
+                    )}
+
+                    {/* Account menu */}
+                    <div className="flex h-full items-center justify-center">
                         <button
                             type="button"
                             onClick={openAccount}
-                            aria-label={t('menu')}
+                            aria-label={t('openAccount')}
                             aria-haspopup="dialog"
                             aria-expanded={accountOpen}
-                            className="flex h-full w-full items-center justify-center gap-2 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted"
+                            className="flex h-full w-full items-center justify-center transition-colors hover:bg-surface-muted"
                         >
-                            <MenuIcon className={cn('h-5 w-5 transition-opacity', accountActive ? 'opacity-100' : 'opacity-55')} aria-hidden="true" />
-                            <span>{t('menu')}</span>
+                            <span
+                                className={cn(
+                                    'flex h-10 w-10 items-center justify-center transition-all duration-200',
+                                    accountActive ? 'scale-105 opacity-100' : 'scale-100 opacity-50'
+                                )}
+                            >
+                                <MenuIcon className="h-5.5 w-5.5 text-ink transition-all duration-200" aria-hidden="true" />
+                            </span>
                         </button>
-                    ) : (
-                        <>
-                            {/* Home */}
-                            <div className="flex h-full items-center justify-center">
-                                <TabLink
-                                    href={homeHref}
-                                    icon={homeTabItem.icon}
-                                    label={t(`items.${homeTabItem.key}`)}
-                                    active={homeActive}
-                                    onClick={handleHomeClick}
-                                />
-                            </div>
-
-                            {/* Music */}
-                            {playlistAvailable && activeEvent && (
-                                <div className="flex h-full items-center justify-center">
-                                    <TabLink
-                                        href={routes.events.tools.playlist(activeEvent.id)}
-                                        icon="/icons/music.svg"
-                                        label={t('items.playlist')}
-                                        active={playlistActive}
-                                    />
-                                </div>
-                            )}
-
-                            {/* RSVP */}
-                            {rsvpTabAvailable && (
-                                <div className="flex h-full items-center justify-center">
-                                    <TabLink href={rsvpHref} icon="/icons/rsvp.png" label={t('items.rsvp')} active={rsvpActive} />
-                                </div>
-                            )}
-
-                            {/* Event menu */}
-                            {contextItems.length > 0 && (
-                                <div className="flex h-full items-center justify-center">
-                                    <ContextNavSlot
-                                        active={contextActive}
-                                        forceMenu
-                                        TriggerIcon={ContextTriggerIcon}
-                                        items={contextItems}
-                                        menuLabel={contextMenuLabel}
-                                        pathname={pathname}
-                                        searchParams={searchParams}
-                                        onItemClick={handleDashboardMenuClick}
-                                    />
-                                </div>
-                            )}
-
-                            {/* Account menu */}
-                            <div className="flex h-full items-center justify-center">
-                                <button
-                                    type="button"
-                                    onClick={openAccount}
-                                    aria-label={t('openAccount')}
-                                    aria-haspopup="dialog"
-                                    aria-expanded={accountOpen}
-                                    className="flex h-full w-full items-center justify-center transition-colors hover:bg-surface-muted"
-                                >
-                                    <span
-                                        className={cn(
-                                            'flex h-10 w-10 items-center justify-center transition-all duration-200',
-                                            accountActive ? 'scale-105 opacity-100' : 'scale-100 opacity-50'
-                                        )}
-                                    >
-                                        <MenuIcon className="h-5.5 w-5.5 text-ink transition-all duration-200" aria-hidden="true" />
-                                    </span>
-                                </button>
-                            </div>
-                        </>
-                    )}
+                    </div>
                 </nav>
             </div>
 
