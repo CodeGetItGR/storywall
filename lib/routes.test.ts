@@ -27,4 +27,8 @@ describe('routes.events for the demo event id', () => {
     it('a real event id is unaffected', () => {
         expect(routes.events.feed('real-event-id')).toBe('/events/real-event-id/feed');
     });
+
+    it('manage() with a tab param includes it in the query string', () => {
+        expect(routes.events.manage('real-event-id', { tab: 'help' })).toBe('/events/real-event-id/manage?tab=help');
+    });
 });
