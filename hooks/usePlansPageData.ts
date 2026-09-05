@@ -32,7 +32,6 @@ export function usePlansPageData() {
     return {
         checkoutError: null,
         currentBilling: billing.data ?? null,
-        eventId,
         hasError: Boolean(appConfig.error || (eventId && billing.error)),
         isCheckoutPending: false,
         isLoading: appConfig.isLoading || Boolean(eventId && billing.isLoading) || Boolean(eventId && upgradeOptions.isLoading),

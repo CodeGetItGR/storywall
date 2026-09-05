@@ -11,13 +11,15 @@ type BackButtonProps = {
     label: string;
     variant?: 'link' | 'icon';
     className?: string;
+    onClick?: ComponentPropsWithoutRef<typeof Link>['onClick'];
 };
 
-export function BackButton({ href, label, variant = 'link', className }: BackButtonProps) {
+export function BackButton({ href, label, variant = 'link', className, onClick }: BackButtonProps) {
     if (variant === 'icon') {
         return (
             <Link
                 href={href}
+                onClick={onClick}
                 aria-label={label}
                 className={cn(
                     'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-muted',
@@ -30,7 +32,11 @@ export function BackButton({ href, label, variant = 'link', className }: BackBut
     }
 
     return (
-        <Link href={href} className={cn('inline-flex min-h-10 items-center gap-1.5 text-xs font-semibold text-primary-dark', className)}>
+        <Link
+            href={href}
+            onClick={onClick}
+            className={cn('inline-flex min-h-10 items-center gap-1.5 text-xs font-semibold text-primary-dark', className)}
+        >
             <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
             {label}
         </Link>

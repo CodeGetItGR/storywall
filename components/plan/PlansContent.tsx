@@ -1,6 +1,8 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import type { MouseEvent } from 'react';
 
 import { EventPlanComparison } from '@/components/plan/EventPlanComparison';
 import { BackButton } from '@/components/ui/BackButton';
@@ -9,7 +11,6 @@ import { routes } from '@/lib/routes';
 
 interface PlansContentProps {
     checkoutError: string | null;
-    eventId: string | null;
     isCheckoutPending: boolean;
     modules: AppConfigResponseDto['modules'];
     paidServices: AppConfigResponseDto['paidServices'];
@@ -25,7 +26,6 @@ interface PlansContentProps {
 
 export function PlansContent({
     checkoutError,
-    eventId,
     isCheckoutPending,
     modules,
     paidServices,
@@ -39,12 +39,24 @@ export function PlansContent({
     upgradeOptions,
 }: PlansContentProps) {
     const t = useTranslations('EventPlanSettingsPage');
-    const backHref = eventId ? routes.events.manage(eventId, { tab: 'billing' }) : routes.home;
+    const router = useRouter();
+
+    function handleBack(event: MouseEvent<HTMLAnchorElement>) {
+        event.preventDefault();
+        // Plans is reached from several places (feed, sidebar, nav rail) with no single
+        // canonical parent, so this returns to wherever the user actually came from rather
+        // than a fixed destination — falling back to Home only when there's no history to return to.
+        if (typeof window !== 'undefined' && window.history.length > 1) {
+            router.back();
+        } else {
+            router.push(routes.home);
+        }
+    }
 
     return (
         <main className="h-full overflow-y-auto">
             <div className="mx-auto max-w-6xl px-4 pb-24 pt-5 sm:pt-6 lg:pb-10">
-                <BackButton href={backHref} label={t('back')} />
+                <BackButton href={routes.home} onClick={handleBack} label={t('back')} />
 
                 <section className="mt-4">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
