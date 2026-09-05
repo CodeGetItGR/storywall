@@ -21,6 +21,8 @@ export function ReactionSummary({ counts = {}, reactionTypes = [], className, ma
         [counts, maxReactions, reactionTypes]
     );
 
+    const totalCount = Object.values(counts).reduce((sum, count) => sum + count, 0);
+
     if (topReactions.length === 0) return null;
 
     return (
@@ -35,6 +37,7 @@ export function ReactionSummary({ counts = {}, reactionTypes = [], className, ma
                     </span>
                 ))}
             </span>
+            <p className={'tabular-nums pb-1'}>{totalCount}</p>
         </div>
     );
 }

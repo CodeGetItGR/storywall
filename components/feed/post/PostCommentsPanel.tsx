@@ -24,7 +24,6 @@ interface PostCommentsPanelProps {
     isFetchingComments: boolean;
     onLoadMoreComments: () => void;
     membersById: Map<string, EventMemberResponseDto>;
-    timeAgo: { unit: 'now' | 'minutes' | 'hours' | 'days'; value: number };
     commentText: string;
     onCommentTextChange: (value: string) => void;
     commentError: string | null;
@@ -50,7 +49,6 @@ export function PostCommentsPanel({
     isFetchingComments,
     onLoadMoreComments,
     membersById,
-    timeAgo,
     commentText,
     onCommentTextChange,
     commentError,
@@ -81,11 +79,11 @@ export function PostCommentsPanel({
 
     return (
         <>
-            <section className="border-b flex justify-between pb-2 px-3 shrink-0 pt-2">
-                <PostHeader post={post} timeAgo={timeAgo} />
+            <section className="flex justify-between pb-2 px-3 shrink-0 pt-2">
+                {/*<PostHeader post={post} timeAgo={timeAgo} />*/}
                 <div className="flex gap-2">
                     <ReactionSummary counts={post.reactionCounts} reactionTypes={reactionTypes} />
-                    <CommentCount count={commentCount} />
+                    {/*<CommentCount count={commentCount} />*/}
                 </div>
             </section>
             <Modal.Body
