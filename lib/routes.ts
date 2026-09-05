@@ -4,7 +4,7 @@ type RouteQueryValue = string | number | boolean | null | undefined;
 
 export type CheckoutIntent = 'activation' | 'upgrade' | 'storage';
 // 'billing' is kept as an alias for the plan section so existing links keep working.
-export type ManageTab = 'billing' | 'coverage' | 'danger' | 'invitations' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings';
+export type ManageTab = 'billing' | 'coverage' | 'danger' | 'help' | 'invitations' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings';
 
 // The demo event lives outside the real /events/{eventId} tree (which proxy.ts protects
 // behind a real session) — see docs/superpowers/plans/2026-09-05-demo-event.md, design note 1.

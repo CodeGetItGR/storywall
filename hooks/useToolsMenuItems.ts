@@ -1,6 +1,6 @@
 'use client';
 
-import { BookHeart, CalendarCheck, CalendarDays, Gift, Images, LayoutDashboard, type LucideIcon } from 'lucide-react';
+import { BookHeart, CalendarCheck, CalendarDays, Gift, HelpCircle, Images, LayoutDashboard, type LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { useGiftAccount } from '@/hooks/useGiftAccount';
@@ -56,6 +56,7 @@ export function useHostMenuItems(): ToolMenuItem[] {
 
     const hostAdminDefinitions: { key: string; href: string; icon: LucideIcon }[] = [
         { key: 'manage', href: routes.events.manage(activeEvent.id), icon: LayoutDashboard },
+        { key: 'help', href: routes.events.manage(activeEvent.id, { tab: 'help' }), icon: HelpCircle },
     ];
 
     return hostAdminDefinitions.map((item) => ({

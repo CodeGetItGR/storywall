@@ -1,11 +1,9 @@
-'use client';
-
 import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 
 import { cn } from '@/lib/utils';
 
-export interface OnboardingLinkItem {
+export interface HelpLinkItem {
     key: string;
     icon: LucideIcon;
     iconClassName: string;
@@ -13,16 +11,15 @@ export interface OnboardingLinkItem {
     label: string;
 }
 
-interface OnboardingLinksStepProps {
+interface HelpLinksBlockProps {
     title: string;
     body: string;
-    items: OnboardingLinkItem[];
-    onNavigate: () => void;
+    items: HelpLinkItem[];
 }
 
-export function OnboardingLinksStep({ title, body, items, onNavigate }: OnboardingLinksStepProps) {
+export function HelpLinksBlock({ title, body, items }: HelpLinksBlockProps) {
     return (
-        <div className="flex flex-col gap-4 py-2">
+        <div className="flex flex-col gap-4">
             <div className="text-center">
                 <h3 className="text-base font-semibold text-ink">{title}</h3>
                 <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">{body}</p>
@@ -34,7 +31,6 @@ export function OnboardingLinksStep({ title, body, items, onNavigate }: Onboardi
                         <Link
                             key={item.key}
                             href={item.href}
-                            onClick={onNavigate}
                             className="flex items-center gap-2.5 rounded-2xl border border-border/70 bg-card px-3.5 py-3 text-sm font-semibold text-ink transition-colors hover:border-primary/30 hover:bg-primary-light/20"
                         >
                             <Icon className={cn('h-5 w-5 shrink-0', item.iconClassName)} aria-hidden="true" />
