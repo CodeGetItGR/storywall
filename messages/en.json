@@ -5,6 +5,10 @@
         "yes": "Yes",
         "no": "No"
     },
+    "Demo": {
+        "resetDemo": "Reset demo",
+        "exitDemo": "Sign up for real"
+    },
     "EventNotFound": {
         "title": "This celebration seems to have wandered off",
         "description": "We couldn't find an event at this link. Double-check the invite you were sent, or head back and pick an event from your list.",
