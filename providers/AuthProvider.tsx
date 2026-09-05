@@ -8,7 +8,7 @@ import { clearSession, getAuthState, getSessionGeneration, setSession, subscribe
 
 const BOOTSTRAP_TIMEOUT_MS = 8000;
 
-interface AuthUser {
+export interface AuthUser {
     userId: string;
     email: string | null;
     displayName: string | null;
@@ -21,7 +21,7 @@ interface AuthUser {
     role: PlatformRole;
 }
 
-interface AuthContextValue {
+export interface AuthContextValue {
     user: AuthUser | null;
     isAuthenticated: boolean;
     isBootstrapping: boolean;
@@ -32,7 +32,7 @@ interface AuthContextValue {
     updateProfile: (profile: Pick<UserResponseDto, 'displayName' | 'lastName' | 'profilePictureUrl'>) => void;
 }
 
-const AuthContext = createContext<AuthContextValue | null>(null);
+export const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [authState, setAuthState] = useState(getAuthState());

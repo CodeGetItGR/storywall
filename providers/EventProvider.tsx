@@ -22,7 +22,7 @@ function urlEventId(pathname: string): string | null {
     return pathname.match(/^\/events\/(?!new(?:\/|$))([^/]+)/)?.[1] ?? null;
 }
 
-interface EventContextValue {
+export interface EventContextValue {
     memberships: EventMemberResponseDto[];
     activeEvent: EventDetailResponseDto | null;
     activeMember: EventMemberResponseDto | null;
@@ -30,7 +30,7 @@ interface EventContextValue {
     isLoading: boolean;
 }
 
-const EventContext = createContext<EventContextValue | null>(null);
+export const EventContext = createContext<EventContextValue | null>(null);
 
 export function EventProvider({ children }: { children: ReactNode }) {
     const pathname = usePathname();
