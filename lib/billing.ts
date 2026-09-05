@@ -9,10 +9,6 @@ function pendingCheckoutKey(eventId: string): string {
     return `storywall.pendingCheckout.${eventId}`;
 }
 
-function checkoutSetupPromptKey(eventId: string): string {
-    return `storywall.checkoutSetupPrompt.${eventId}`;
-}
-
 export function formatMoney(locale: string, minor: number, currency: string): string {
     return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(minor / 100);
 }
@@ -66,21 +62,6 @@ export function readPendingCheckout(eventId: string): PendingCheckout | null {
 
 export function clearPendingCheckout(eventId: string): void {
     if (typeof window !== 'undefined') window.sessionStorage.removeItem(pendingCheckoutKey(eventId));
-}
-
-export function rememberCheckoutSetupPrompt(eventId: string): void {
-    if (typeof window === 'undefined') return;
-
-    window.sessionStorage.setItem(checkoutSetupPromptKey(eventId), '1');
-}
-
-export function consumeCheckoutSetupPrompt(eventId: string): boolean {
-    if (typeof window === 'undefined') return false;
-
-    const key = checkoutSetupPromptKey(eventId);
-    const shouldShow = window.sessionStorage.getItem(key) === '1';
-    window.sessionStorage.removeItem(key);
-    return shouldShow;
 }
 
 export function navigateToCheckout(eventId: string, checkout: CheckoutResponseDto, planTierCode?: string | null): void {

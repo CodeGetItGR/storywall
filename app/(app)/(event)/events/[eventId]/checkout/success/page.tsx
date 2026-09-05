@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { billingKeys, useEventBilling } from '@/hooks/useBilling';
 import { eventKeys } from '@/hooks/useEvent';
 import { myEventsKeys } from '@/hooks/useMyEvents';
-import { clearPendingCheckout, readPendingCheckout, rememberCheckoutSetupPrompt } from '@/lib/billing';
+import { clearPendingCheckout, readPendingCheckout } from '@/lib/billing';
 import { routes } from '@/lib/routes';
 import { useActiveEvent } from '@/providers/EventProvider';
 
@@ -53,7 +53,6 @@ export default function CheckoutSuccessPage() {
     useEffect(() => {
         if (!paid) return;
 
-        rememberCheckoutSetupPrompt(eventId);
         const redirectTimer = window.setTimeout(() => router.replace(feedHref), REDIRECT_SECONDS * 1000);
         const countdownTimer = window.setInterval(() => {
             setSecondsRemaining((current) => Math.max(current - 1, 0));
@@ -63,7 +62,7 @@ export default function CheckoutSuccessPage() {
             window.clearTimeout(redirectTimer);
             window.clearInterval(countdownTimer);
         };
-    }, [eventId, feedHref, paid, router]);
+    }, [feedHref, paid, router]);
 
     return (
         <main className="mx-auto max-w-xl px-4 py-10 text-center sm:py-16">

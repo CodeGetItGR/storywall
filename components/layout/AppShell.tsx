@@ -5,7 +5,6 @@ import { type ReactNode, useEffect } from 'react';
 
 import { AccountPanelShell } from '@/components/account/AccountPanelShell';
 import { DesktopNavRail, MobileTabBar } from '@/components/layout';
-import { HostOnboardingWizard } from '@/components/onboarding/HostOnboardingWizard';
 import { useAuth } from '@/hooks/useAuth';
 import { routes } from '@/lib/routes';
 import { AccountPanelProvider } from '@/providers/AccountPanelProvider';
@@ -39,7 +38,6 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <div className="min-h-full lg:max-w-none">{children}</div>
             </main>
             <MobileTabBar />
-            <HostOnboardingWizard />
         </div>
     );
 
