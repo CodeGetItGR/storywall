@@ -11,7 +11,7 @@ import { avatarColorFromId, initialsFromName, timeAgoParts } from '@/lib/utils';
 interface CommentThreadItemProps {
     thread: CommentThread;
     membersById: Map<string, EventMemberResponseDto>;
-    onReply?: (parentCommentId: string, authorName: string) => void;
+    onReply?: (parentCommentId: string, authorName: string, mention?: boolean) => void;
     isExpanded: boolean;
     onToggleReplies: (threadId: string) => void;
 }
@@ -31,7 +31,7 @@ export function CommentThreadItem({ thread, membersById, onReply, isExpanded, on
     }
 
     return (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2" data-comment-id={comment.id}>
             <div className="flex gap-3">
                 <Avatar
                     initials={initialsFromName(name)}
@@ -52,10 +52,17 @@ export function CommentThreadItem({ thread, membersById, onReply, isExpanded, on
                     </div>
                     {onReply && (
                         <div className="mt-1 flex items-center gap-3 px-4">
-                            <button type="button" onClick={handleReply} className="text-xs font-semibold text-ink-faint hover:text-ink transition-colors">
+                            <button
+                                type="button"
+                                onClick={handleReply}
+                                className="text-xs font-semibold text-ink-faint hover:text-ink transition-colors"
+                            >
                                 {t('reply')}
                             </button>
-                            {replies.length > 0 && (
+                            {/* Keep the toggle visible while expanded even if replies.length
+                                is momentarily 0 (e.g. the only reply was just deleted) — an
+                                expanded section must always offer a way to collapse it. */}
+                            {(replies.length > 0 || isExpanded) && (
                                 <button
                                     type="button"
                                     onClick={handleToggleReplies}

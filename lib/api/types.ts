@@ -1233,6 +1233,12 @@ export interface PostResponseDto {
     // Already ordered by displayOrder and URL-resolved — render as-is.
     media: MediaResponseDto[];
     commentCount: number;
+    // The post's 2 most recent comments (across the whole thread, not just
+    // top-level), oldest-first, for a lightweight feed-row preview — see
+    // docs/integration guides/post-recent-comments-preview-fe-integration.md.
+    // Never null; stale until the feed page is refetched; not meant for
+    // thread reconstruction (use GET /api/posts/{postId}/comments for that).
+    recentComments: CommentResponseDto[];
     reactionCount: number;
     reactionCounts: Record<string, number>;
     myReactionType: string | null;

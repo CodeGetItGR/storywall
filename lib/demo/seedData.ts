@@ -22,8 +22,7 @@ const DAYS = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString();
 
 // A tiny 1x1 transparent PNG — used as the seed photos' placeholder data URL so the
 // demo never needs to ship real binary sample assets.
-const PLACEHOLDER_IMAGE =
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+const PLACEHOLDER_IMAGE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
 
 export const DEMO_SESSION_ID = 'demo-session-main';
 
@@ -150,6 +149,7 @@ export function buildSeedPosts(): PostResponseDto[] {
             isPinned: true,
             media: [buildSeedMedia()[0]],
             commentCount: 1,
+            recentComments: [],
             reactionCount: 2,
             reactionCounts: { LOVE: 2 },
             myReactionType: null,
@@ -174,6 +174,7 @@ export function buildSeedPosts(): PostResponseDto[] {
             isPinned: false,
             media: [],
             commentCount: 0,
+            recentComments: [],
             reactionCount: 1,
             reactionCounts: { LIKE: 1 },
             myReactionType: null,

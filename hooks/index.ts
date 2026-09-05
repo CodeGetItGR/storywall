@@ -18,6 +18,7 @@ export * from './useMyEvents';
 export * from './useNotifications';
 export * from './usePlatformFeatureFlags';
 export * from './usePlaylist';
+export * from './usePostCommentThread';
 export * from './usePostLike';
 export * from './usePostModal';
 export * from './usePosts';

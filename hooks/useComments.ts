@@ -1,12 +1,18 @@
-import { type InfiniteData, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '@/hooks/useAuth';
-import { postKeys } from '@/hooks/usePosts';
+import { patchPostInCaches, postKeys } from '@/hooks/usePosts';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
-import type { CommentRequestDto, CommentResponseDto } from '@/lib/api/types';
+import type { CommentRequestDto, CommentResponseDto, PostResponseDto } from '@/lib/api/types';
 
+// NOTE: this key is nested under postKeys.detail's ['posts', id] — React
+// Query's invalidateQueries matches by prefix, so invalidating
+// postKeys.detail(id) also matches this query unless called with
+// { exact: true }. See useCreateComment.onSuccess below; this bit us once
+// already (a post-detail invalidation was silently wiping the comment list
+// it had just been appended to).
 export const commentKeys = {
     list: (postId: string) => ['posts', postId, 'comments'] as const,
 };
@@ -33,35 +39,32 @@ export function usePostComments(postId: string | null) {
 // Takes eventId (not carried on CommentRequestDto/CommentResponseDto) so the
 // post's cached commentCount can be refreshed precisely — same pattern as
 // useDeletePost(eventId).
+//
+// This deliberately does NOT write the new comment into the paginated
+// comments cache. Comments sort oldest-first, so a brand-new comment belongs
+// on whatever the LAST page turns out to be, which is almost never the page(s)
+// currently loaded — there's no correct page to append it to client-side, and
+// any later refetch of the loaded range would just erase it again. Instead,
+// the caller (usePostCommentThread) holds newly-created comments as
+// session-local "pending" state and merges them into the rendered list; see
+// that hook for the merge/dedupe logic that replaces this.
 export function useCreateComment(eventId: string) {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: (input: CommentRequestDto) => api.post<CommentResponseDto>(endpoints.comments.create, input),
-        // Comments sort oldest-first, so a new comment belongs on the last
-        // page, not the first — invalidating whatever pages are already
-        // loaded would refetch those unchanged ranges and never surface it.
-        // Append it to the cache directly instead.
-        onSuccess: async (comment) => {
-            // A new comment changes the list length, which can retrigger the
-            // infinite-scroll sentinel (it re-observes whenever item count
-            // changes, and IntersectionObserver fires immediately if already
-            // in view) and start a concurrent fetchNextPage. If that fetch
-            // resolves after the append below, it overwrites the cache with
-            // pre-append data and the new comment disappears. Cancel it first
-            // so it can't race the manual append.
-            await queryClient.cancelQueries({ queryKey: commentKeys.list(comment.postId) });
-            queryClient.setQueryData<InfiniteData<Page<CommentResponseDto>>>(commentKeys.list(comment.postId), (data) => {
-                if (!data || data.pages.length === 0) return data;
-                const lastPageIndex = data.pages.length - 1;
-                return {
-                    ...data,
-                    pages: data.pages.map((page, index) =>
-                        index === lastPageIndex ? { ...page, content: [...page.content, comment], totalElements: page.totalElements + 1 } : page
-                    ),
-                };
-            });
-            queryClient.invalidateQueries({ queryKey: postKeys.detail(comment.postId) });
+        onSuccess: (comment) => {
+            // Bump the post's cached commentCount immediately instead of
+            // invalidating postKeys.detail — an invalidation there would
+            // prefix-match commentKeys.list (see the comment on that key
+            // above) and refetch the comment list right out from under the
+            // pending-comment merge.
+            const previousPost = queryClient.getQueryData<PostResponseDto>(postKeys.detail(comment.postId));
+            if (previousPost) {
+                patchPostInCaches(queryClient, eventId, comment.postId, { commentCount: previousPost.commentCount + 1 });
+            } else {
+                queryClient.invalidateQueries({ queryKey: postKeys.detail(comment.postId), exact: true });
+            }
             queryClient.invalidateQueries({ queryKey: postKeys.list(eventId) });
         },
     });

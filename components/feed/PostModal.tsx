@@ -1,40 +1,46 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 
 import { PostCommentsPanel } from '@/components/feed/post';
 import { Modal } from '@/components/ui/modal';
-import { useCreateComment, useEventMembers, usePost, usePostComments, usePostModal } from '@/hooks';
-import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useEventMembers, usePost, usePostCommentThread, usePostModal } from '@/hooks';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { ApiError } from '@/lib/api/client';
-import { isModuleNotAvailableError } from '@/lib/api/errors';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { timeAgoParts } from '@/lib/utils';
 import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
 
 export function PostModal() {
     const t = useTranslations('PostModal');
-    const toErrorMessage = useApiErrorMessage();
     const { postId, isOpen, close } = usePostModal();
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
     const { data: post, error, isPending } = usePost(postId);
-    const {
-        data: commentPages,
-        fetchNextPage: fetchMoreComments,
-        hasNextPage: hasMoreComments,
-        isFetchingNextPage: isLoadingMoreComments,
-    } = usePostComments(postId);
-    const comments = useMemo(() => commentPages?.pages.flatMap((page) => page.content) ?? [], [commentPages?.pages]);
     const { data: members = [] } = useEventMembers(post?.eventId ?? null);
     const { data: appConfig } = useAppConfig();
-    const createComment = useCreateComment(post?.eventId ?? '');
-    const [commentText, setCommentText] = useState('');
-    const [commentError, setCommentError] = useState<string | null>(null);
-    const [replyTarget, setReplyTarget] = useState<{ parentCommentId: string; authorName: string } | null>(null);
-    const [autoExpandThread, setAutoExpandThread] = useState<{ threadId: string; nonce: number } | null>(null);
+
+    const canComment = Boolean(activeMember) && isEventWritable(activeEvent?.status);
+    const {
+        comments,
+        hasMoreComments,
+        isLoadingMoreComments,
+        isFetchingComments,
+        onLoadMoreComments,
+        commentCountDelta,
+        commentText,
+        onCommentTextChange,
+        commentError,
+        setCommentError,
+        onSubmit,
+        submitDisabled,
+        replyTarget,
+        onReply,
+        onCancelReply,
+        autoExpandThread,
+        lastPostedCommentId,
+    } = usePostCommentThread(postId, post?.eventId ?? '', canComment);
 
     const timeAgo = useMemo(
         () =>
@@ -48,70 +54,49 @@ export function PostModal() {
     );
 
     const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
-    const canComment = Boolean(activeMember) && isEventWritable(activeEvent?.status);
     const maxCommentLength = appConfig?.contentLimits.commentContentMaxLength ?? 300;
     const reactionTypes = post ? (appConfig?.reactionTypesByEventType[post.eventType ?? activeEvent?.eventType ?? ''] ?? []) : [];
 
-    async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
-        e.preventDefault();
-        if (!commentText.trim() || !post || !activeMember || !canComment) return;
-
-        setCommentError(null);
-
-        try {
-            await createComment.mutateAsync({
-                postId: post.id,
-                authorMemberId: activeMember.id,
-                content: commentText.trim(),
-                parentCommentId: replyTarget?.parentCommentId,
-            });
-        } catch (error) {
-            setCommentError(isModuleNotAvailableError(error) ? t('moduleUnavailable') : toErrorMessage(error, t('commentFailed')));
-            return;
-        }
-
-        if (replyTarget) setAutoExpandThread({ threadId: replyTarget.parentCommentId, nonce: Date.now() });
-        setCommentText('');
-        setReplyTarget(null);
+    function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
+        void onSubmit(e, activeMember?.id);
     }
 
-    function handleReply(parentCommentId: string, authorName: string) {
+    function handleClose() {
         setCommentError(null);
-        setReplyTarget({ parentCommentId, authorName });
-    }
-
-    function handleCancelReply() {
-        setReplyTarget(null);
+        close();
     }
 
     const commentsPanel = post && (
         <PostCommentsPanel
             post={post}
+            commentCount={post.commentCount + commentCountDelta}
             comments={comments}
-            hasMoreComments={hasMoreComments}
+            hasMoreComments={Boolean(hasMoreComments)}
             isLoadingMoreComments={isLoadingMoreComments}
-            onLoadMoreComments={fetchMoreComments}
+            isFetchingComments={isFetchingComments}
+            onLoadMoreComments={onLoadMoreComments}
             membersById={membersById}
             timeAgo={timeAgo}
             commentText={commentText}
-            onCommentTextChange={setCommentText}
+            onCommentTextChange={onCommentTextChange}
             commentError={!isEventWritable(activeEvent?.status) ? t('eventReadOnly') : commentError}
             onSubmit={handleSubmit}
-            submitDisabled={!commentText.trim() || createComment.isPending || !canComment}
+            submitDisabled={submitDisabled}
             inputDisabled={!canComment}
             maxCommentLength={maxCommentLength}
             reactionTypes={reactionTypes}
             replyTarget={replyTarget}
-            onReply={handleReply}
-            onCancelReply={handleCancelReply}
+            onReply={onReply}
+            onCancelReply={onCancelReply}
             autoExpandThread={autoExpandThread}
+            lastPostedCommentId={lastPostedCommentId}
         />
     );
 
     return (
         <Modal
             open={isOpen}
-            onClose={close}
+            onClose={handleClose}
             dismissOnBack={false}
             size="lg"
             closeLabel={t('close')}

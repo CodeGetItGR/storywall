@@ -11,7 +11,7 @@ interface ReplyItemProps {
     reply: CommentResponseDto;
     membersById: Map<string, EventMemberResponseDto>;
     parentCommentId: string;
-    onReply?: (parentCommentId: string, authorName: string) => void;
+    onReply?: (parentCommentId: string, authorName: string, mention?: boolean) => void;
 }
 
 export function ReplyItem({ reply, membersById, parentCommentId, onReply }: ReplyItemProps) {
@@ -20,11 +20,14 @@ export function ReplyItem({ reply, membersById, parentCommentId, onReply }: Repl
     const timeAgo = timeAgoParts(reply.createdAt);
 
     function handleReply() {
-        onReply?.(parentCommentId, name);
+        // Replies are flattened to one level (see lib/comments.ts), so this
+        // still targets the thread's top-level comment — but it's answering
+        // THIS reply specifically, so ask the composer to mention its author.
+        onReply?.(parentCommentId, name, true);
     }
 
     return (
-        <div className="flex gap-2">
+        <div className="flex gap-2" data-comment-id={reply.id}>
             <Avatar
                 initials={initialsFromName(name)}
                 color={avatarColorFromId(reply.authorMemberId ?? reply.id)}
@@ -43,7 +46,11 @@ export function ReplyItem({ reply, membersById, parentCommentId, onReply }: Repl
                     <p className="text-xs leading-relaxed text-ink">{reply.content}</p>
                 </div>
                 {onReply && (
-                    <button type="button" onClick={handleReply} className="mt-1 px-3 text-xs font-semibold text-ink-faint hover:text-ink transition-colors">
+                    <button
+                        type="button"
+                        onClick={handleReply}
+                        className="mt-1 px-3 text-xs font-semibold text-ink-faint hover:text-ink transition-colors"
+                    >
                         {t('reply')}
                     </button>
                 )}
