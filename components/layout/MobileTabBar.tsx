@@ -49,10 +49,10 @@ export function MobileTabBar() {
     const contextItems: ContextNavItem[] = activeEvent
         ? isHost
             ? [
-                  // Help links into the manage page's Help section, which is hidden for draft events.
-                  ...(isDraft ? hostItems.filter((item) => item.key !== 'help') : hostItems),
                   // Hosts answer RSVPs from the dashboard's RSVP section, not the guest self-RSVP tool.
                   ...(isDraft ? [] : toolItems.filter((item) => item.key !== 'rsvp')),
+                  // Help links into the manage page's Help section, which is hidden for draft events.
+                  ...(isDraft ? hostItems.filter((item) => item.key !== 'help') : hostItems),
               ]
             : toolItems
         : [];
