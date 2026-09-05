@@ -8,10 +8,26 @@ import { ModuleScrollTopButton } from '@/components/modules/ModuleScrollTopButto
 import { BackButton } from '@/components/ui/BackButton';
 import { useHomeModuleShowcase } from '@/hooks/useHomeModuleShowcase';
 import { routes } from '@/lib/routes';
+import type {MouseEvent} from "react";
+import {useRouter} from "next/navigation";
 
 export function ModulesContent() {
     const t = useTranslations('ModulesPage');
     const { modules } = useHomeModuleShowcase();
+    const router = useRouter();
+
+    function handleBack(event: MouseEvent<HTMLAnchorElement>) {
+        event.preventDefault();
+        // Plans is reached from several places (feed, sidebar, nav rail) with no single
+        // canonical parent, so this returns to wherever the user actually came from rather
+        // than a fixed destination — falling back to Home only when there's no history to return to.
+        if (typeof window !== 'undefined' && window.history.length > 1) {
+            router.back();
+        } else {
+            router.push(routes.home);
+        }
+    }
+
 
     return (
         <main className="relative min-h-full overflow-x-hidden bg-[#fff8f0]">
@@ -24,7 +40,7 @@ export function ModulesContent() {
             <div className="relative flex flex-col gap-10 pt-8 pb-28 lg:pt-14">
                 {/* Header */}
                 <section className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-5 sm:px-8">
-                    <BackButton href={routes.home} label={t('back')} />
+                    <BackButton href={routes.home} onClick={handleBack} label={t('back')} />
                     <h1 className="text-3xl font-bold text-ink sm:text-4xl">{t('title')}</h1>
                 </section>
 
