@@ -9,12 +9,13 @@ export const appConfigKeys = {
 };
 
 // GET /api/config — public, read-only, and safe to cache aggressively.
-export function useAppConfig() {
+export function useAppConfig(options: { enabled?: boolean } = {}) {
     return useQuery({
         queryKey: appConfigKeys.all,
         queryFn: () => api.publicGet<AppConfigResponseDto>(endpoints.config.get),
         staleTime: 5 * 60 * 1000,
         gcTime: 30 * 60 * 1000,
+        enabled: options.enabled ?? true,
     });
 }
 

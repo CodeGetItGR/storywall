@@ -1,4 +1,3 @@
-import { DEMO_EVENT_ID, DEMO_HOST_MEMBER_ID, DEMO_USER_ID } from '@/lib/demo/demoConstants';
 import type {
     AppConfigResponseDto,
     EventBillingResponseDto,
@@ -16,6 +15,7 @@ import type {
     StoryResponseDto,
     WishbookEntryResponseDto,
 } from '@/lib/api/types';
+import { DEMO_EVENT_ID, DEMO_HOST_MEMBER_ID, DEMO_USER_ID } from '@/lib/demo/demoConstants';
 
 const NOW = () => new Date().toISOString();
 const DAYS = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString();
