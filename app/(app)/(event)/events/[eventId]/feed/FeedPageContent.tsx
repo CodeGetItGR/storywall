@@ -17,17 +17,20 @@ import { PostModal } from '@/components/feed/PostModal';
 import { RsvpPrompt } from '@/components/feed/RsvpPrompt';
 import { StoriesRow } from '@/components/feed/StoriesRow';
 import { StoryModal } from '@/components/story/StoryModal';
-import { useHideMobileTabBarOnScroll } from '@/hooks';
+import {useGiftAccount, useHideMobileTabBarOnScroll} from '@/hooks';
 import { coverPhotoSettingsHref } from '@/lib/manageSectionTargets';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
 import { useFeedPage } from './FeedPageContext';
+import {useActiveEvent} from "@/providers/EventProvider";
 
 export function FeedPageContent() {
     const t = useTranslations('FeedPage');
     useHideMobileTabBarOnScroll();
     const { currentMemberRsvpId, event, eventId, isFetchingNextPage, isHost, loadMoreRef, loadingMoreLabel, moduleFlags, posts } = useFeedPage();
+    const gifts = useGiftAccount(eventId);
+    console.log('gifts', gifts.data);
     const [storyId, setStoryId] = useState<string | null>(null);
     const [pageLoaded, setPageLoaded] = useState(false);
     const shouldShowRSVP = moduleFlags.rsvp && !isHost && currentMemberRsvpId === null;
@@ -67,7 +70,7 @@ export function FeedPageContent() {
                     actions={
                         <>
                             <EventSessionActionButtons event={event} />
-                            {moduleFlags.wishlist && (
+                            {moduleFlags.wishlist && !gifts.isLoading && gifts.data && (
                                 <Link
                                     href={routes.events.tools.gifts(eventId)}
                                     aria-label={t('giftAccount')}
