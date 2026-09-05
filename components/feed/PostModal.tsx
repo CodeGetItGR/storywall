@@ -33,6 +33,8 @@ export function PostModal() {
     const createComment = useCreateComment(post?.eventId ?? '');
     const [commentText, setCommentText] = useState('');
     const [commentError, setCommentError] = useState<string | null>(null);
+    const [replyTarget, setReplyTarget] = useState<{ parentCommentId: string; authorName: string } | null>(null);
+    const [autoExpandThread, setAutoExpandThread] = useState<{ threadId: string; nonce: number } | null>(null);
 
     const timeAgo = useMemo(
         () =>
@@ -61,13 +63,25 @@ export function PostModal() {
                 postId: post.id,
                 authorMemberId: activeMember.id,
                 content: commentText.trim(),
+                parentCommentId: replyTarget?.parentCommentId,
             });
         } catch (error) {
             setCommentError(isModuleNotAvailableError(error) ? t('moduleUnavailable') : toErrorMessage(error, t('commentFailed')));
             return;
         }
 
+        if (replyTarget) setAutoExpandThread({ threadId: replyTarget.parentCommentId, nonce: Date.now() });
         setCommentText('');
+        setReplyTarget(null);
+    }
+
+    function handleReply(parentCommentId: string, authorName: string) {
+        setCommentError(null);
+        setReplyTarget({ parentCommentId, authorName });
+    }
+
+    function handleCancelReply() {
+        setReplyTarget(null);
     }
 
     const commentsPanel = post && (
@@ -87,6 +101,10 @@ export function PostModal() {
             inputDisabled={!canComment}
             maxCommentLength={maxCommentLength}
             reactionTypes={reactionTypes}
+            replyTarget={replyTarget}
+            onReply={handleReply}
+            onCancelReply={handleCancelReply}
+            autoExpandThread={autoExpandThread}
         />
     );
 

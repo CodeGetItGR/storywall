@@ -39,7 +39,15 @@ export function useCreateComment(eventId: string) {
         // page, not the first — invalidating whatever pages are already
         // loaded would refetch those unchanged ranges and never surface it.
         // Append it to the cache directly instead.
-        onSuccess: (comment) => {
+        onSuccess: async (comment) => {
+            // A new comment changes the list length, which can retrigger the
+            // infinite-scroll sentinel (it re-observes whenever item count
+            // changes, and IntersectionObserver fires immediately if already
+            // in view) and start a concurrent fetchNextPage. If that fetch
+            // resolves after the append below, it overwrites the cache with
+            // pre-append data and the new comment disappears. Cancel it first
+            // so it can't race the manual append.
+            await queryClient.cancelQueries({ queryKey: commentKeys.list(comment.postId) });
             queryClient.setQueryData<InfiniteData<Page<CommentResponseDto>>>(commentKeys.list(comment.postId), (data) => {
                 if (!data || data.pages.length === 0) return data;
                 const lastPageIndex = data.pages.length - 1;

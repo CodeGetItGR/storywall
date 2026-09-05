@@ -682,7 +682,13 @@
         "videoProcessing": "Processing video…",
         "videoFailed": "This video couldn't be processed.",
         "showComments": "Show comments",
-        "hideComments": "Hide comments"
+        "hideComments": "Hide comments",
+        "reply": "Reply",
+        "viewReplies": "{count, plural, one {View # reply} other {View # replies}}",
+        "hideReplies": "Hide replies",
+        "replyingTo": "Replying to {name}",
+        "replyPlaceholder": "Add a reply...",
+        "cancelReply": "Cancel reply"
     },
     "StoryPage": {
         "closeStory": "Close story",

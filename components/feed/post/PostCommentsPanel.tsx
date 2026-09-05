@@ -30,6 +30,10 @@ interface PostCommentsPanelProps {
     inputDisabled?: boolean;
     maxCommentLength: number;
     reactionTypes: ReactionTypeResponseDto[];
+    replyTarget: { authorName: string } | null;
+    onReply: (parentCommentId: string, authorName: string) => void;
+    onCancelReply: () => void;
+    autoExpandThread: { threadId: string; nonce: number } | null;
 }
 
 export function PostCommentsPanel({
@@ -48,6 +52,10 @@ export function PostCommentsPanel({
     inputDisabled,
     maxCommentLength,
     reactionTypes,
+    replyTarget,
+    onReply,
+    onCancelReply,
+    autoExpandThread,
 }: PostCommentsPanelProps) {
     const t = useTranslations('PostModal');
     const loadMoreRef = useInfiniteScrollSentinel(hasMoreComments, onLoadMoreComments, comments.length);
@@ -69,7 +77,7 @@ export function PostCommentsPanel({
                 <h3 className="text-sm font-bold text-ink mb-4">
                     {post.commentCount === 0 ? t('noCommentsYet') : t('commentCount', { count: post.commentCount })}
                 </h3>
-                <CommentsList comments={comments} membersById={membersById} />
+                <CommentsList comments={comments} membersById={membersById} onReply={onReply} autoExpandThread={autoExpandThread} />
                 <div ref={loadMoreRef} className="h-1" />
                 {isLoadingMoreComments && <p className="pt-2 text-center text-xs text-ink-muted">{t('loadingMore')}</p>}
             </Modal.Body>
@@ -81,10 +89,13 @@ export function PostCommentsPanel({
                 error={commentError}
                 submitDisabled={submitDisabled}
                 inputDisabled={inputDisabled}
-                placeholder={t('commentPlaceholder')}
+                placeholder={replyTarget ? t('replyPlaceholder') : t('commentPlaceholder')}
                 inputAriaLabel={t('commentTextAriaLabel')}
                 submitAriaLabel={t('postComment')}
                 maxLength={maxCommentLength}
+                replyingToLabel={replyTarget ? t('replyingTo', { name: replyTarget.authorName }) : null}
+                onCancelReply={onCancelReply}
+                cancelReplyAriaLabel={t('cancelReply')}
             />
         </>
     );

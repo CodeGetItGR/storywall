@@ -1,5 +1,6 @@
 export * from './CommentCount';
 export * from './CommentsList';
+export * from './CommentThreadItem';
 export * from './EditPostModal';
 export * from './PostActionsMenu';
 export * from './PostAuthorAvatar';
@@ -12,3 +13,4 @@ export * from './PostReactionPicker';
 export * from './postUtils';
 export * from './ReactionCount';
 export * from './ReactionSummary';
+export * from './ReplyItem';
