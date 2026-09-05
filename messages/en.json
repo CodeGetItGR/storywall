@@ -716,7 +716,8 @@
         "close": "Close",
         "cancel": "Cancel",
         "muteStory": "Mute",
-        "unmuteStory": "Unmute"
+        "unmuteStory": "Unmute",
+        "storyLoadError": "Couldn't load this story"
     },
     "CreateEventPage": {
         "goBack": "Go back",

@@ -35,6 +35,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
         canDeleteStory,
         isVideoStory,
         isDeleting,
+        mediaError,
         goNext,
         goPrev,
         handleCloseStory,
@@ -43,6 +44,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
         handleCloseDeleteConfirm,
         handleDelete,
         handleMediaLoaded,
+        handleMediaError,
         handleVideoTimeUpdate,
         handleVideoEnded,
     } = useStoryModal({ open, storyId, onCloseAction });
@@ -66,7 +68,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
         minute: '2-digit',
     });
     const authorName = author?.displayName ?? t('unknownAuthor');
-    const hasMedia = Boolean(media);
+    const hasMedia = Boolean(media) && !mediaError;
     return (
         <Dialog.Root open={open} onOpenChange={onOpenChange}>
             <Dialog.Portal>
@@ -93,6 +95,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
 
                         {/* Media */}
                         {media &&
+                            !mediaError &&
                             (isVideoStory ? (
                                 <StoryVideo
                                     key={media.id}
@@ -100,6 +103,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                                     onLoadedData={handleMediaLoaded}
                                     onTimeUpdate={handleVideoTimeUpdate}
                                     onEnded={handleVideoEnded}
+                                    onLoadError={handleMediaError}
                                 />
                             ) : (
                                 <ProtectedImage
@@ -110,8 +114,16 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                                     sizes="100vw"
                                     preload
                                     onLoad={handleMediaLoaded}
+                                    onError={handleMediaError}
                                 />
                             ))}
+
+                        {/* Media error */}
+                        {mediaError && (
+                            <div className="absolute inset-0 flex items-center justify-center px-8">
+                                <p className="text-center text-sm text-white/80">{t('storyLoadError')}</p>
+                            </div>
+                        )}
 
                         {/* Tap zones */}
                         <button onClick={goPrev} className="absolute left-0 top-0 z-10 h-full w-1/3" aria-label={t('previousStory')} />

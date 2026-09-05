@@ -716,7 +716,8 @@
         "deleteStoryConfirmBody": "Αυτή η ιστορία θα αφαιρεθεί για όλους και δεν μπορεί να αναιρεθεί.",
         "deleteStoryConfirm": "Διαγραφή ιστορίας",
         "muteStory": "Σίγαση",
-        "unmuteStory": "Κατάργηση σίγασης"
+        "unmuteStory": "Κατάργηση σίγασης",
+        "storyLoadError": "Δεν ήταν δυνατή η φόρτωση αυτής της ιστορίας"
     },
     "CreateEventPage": {
         "goBack": "Πίσω",

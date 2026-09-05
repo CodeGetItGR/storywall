@@ -51,3 +51,19 @@ export function groupStoriesByAuthor(
 
     return groups;
 }
+
+// `groups` re-sorts live as stories get marked viewed (unseen authors float to
+// the front), so looking up "the next author" by array index breaks mid-session
+// once the current author's own group re-sorts out from under that index. The
+// viewer instead freezes the author order once when it opens and walks that
+// fixed order here, resolving each id against the live `groups` for content.
+export function findAdjacentGroup(order: string[], currentAuthorId: string, groups: StoryGroup[], direction: 1 | -1): StoryGroup | null {
+    const startIndex = order.indexOf(currentAuthorId);
+    if (startIndex < 0) return null;
+
+    for (let i = startIndex + direction; i >= 0 && i < order.length; i += direction) {
+        const match = groups.find((g) => g.authorMemberId === order[i]);
+        if (match) return match;
+    }
+    return null;
+}
