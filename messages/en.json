@@ -38,7 +38,8 @@
         "minutes": "Minutes",
         "minutesShort": "M",
         "seconds": "Seconds",
-        "secondsShort": "S"
+        "secondsShort": "S",
+        "started": "It's happening!"
     },
     "StoriesRow": {
         "ariaLabel": "Stories"
