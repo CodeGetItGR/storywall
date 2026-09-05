@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
@@ -22,24 +23,28 @@ export function useQrLinkResolution(token: string | null) {
 }
 
 export function useEventQrLinks(eventId: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: qrLinkKeys.list(eventId ?? ''),
         queryFn: async () => {
             const res = await api.get<QrLinkResponseDto[]>(endpoints.events.qrLinks(eventId!));
             return normalizeList(res).items;
         },
-        enabled: Boolean(eventId),
+        enabled: Boolean(eventId) && isAuthenticated,
     });
 }
 
 export function useEventQrLinkStats(eventId: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: qrLinkKeys.stats(eventId ?? ''),
         queryFn: async () => {
             const res = await api.get<QrLinkStatsDto[]>(endpoints.events.qrLinkStats(eventId!));
             return normalizeList(res).items;
         },
-        enabled: Boolean(eventId),
+        enabled: Boolean(eventId) && isAuthenticated,
         refetchInterval: 30_000,
     });
 }

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
@@ -19,13 +20,15 @@ export const playlistKeys = {
 
 // GET /api/events/{eventId}/playlist-suggestions — any member of the event.
 export function usePlaylistSuggestions(eventId: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: playlistKeys.suggestions(eventId ?? ''),
         queryFn: async () => {
             const res = await api.get<PlaylistSuggestionResponseDto[]>(endpoints.events.playlistSuggestions(eventId!));
             return normalizeList(res).items;
         },
-        enabled: Boolean(eventId),
+        enabled: Boolean(eventId) && isAuthenticated,
     });
 }
 
@@ -61,23 +64,27 @@ export function useDeletePlaylistSuggestion(eventId: string) {
 // GET /api/playlist-suggestions/{suggestionId}/votes — only needed when the UI
 // genuinely needs raw vote rows, not for rendering counts or myVote.
 export function usePlaylistVotes(suggestionId: string | null, enabled = true) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: playlistKeys.votes(suggestionId ?? ''),
         queryFn: async () => {
             const res = await api.get<PlaylistVoteResponseDto[]>(endpoints.playlistSuggestions.votes(suggestionId!));
             return normalizeList(res).items;
         },
-        enabled: Boolean(suggestionId) && enabled,
+        enabled: Boolean(suggestionId) && enabled && isAuthenticated,
     });
 }
 
 export function usePlaylistLeaderboard(eventId: string | null, enabled = true) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: playlistKeys.leaderboard(eventId ?? ''),
         queryFn: async () => {
             return api.get<PlaylistSuggestionLeaderboardDto[]>(endpoints.events.playlistSuggestionsLeaderboard(eventId!));
         },
-        enabled: Boolean(eventId) && enabled,
+        enabled: Boolean(eventId) && enabled && isAuthenticated,
     });
 }
 

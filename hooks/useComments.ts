@@ -1,5 +1,6 @@
 import { type InfiniteData, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { useAuth } from '@/hooks/useAuth';
 import { postKeys } from '@/hooks/usePosts';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -16,13 +17,15 @@ const COMMENTS_PAGE_SIZE = 30;
 // Paginated oldest-first (unlike every other list endpoint), so that a
 // reply's parent is always on the same page or an earlier one.
 export function usePostComments(postId: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useInfiniteQuery({
         queryKey: commentKeys.list(postId ?? ''),
         queryFn: ({ pageParam }) =>
             api.get<Page<CommentResponseDto>>(`${endpoints.posts.comments(postId!)}?page=${pageParam}&size=${COMMENTS_PAGE_SIZE}`),
         initialPageParam: 0,
         getNextPageParam: (lastPage) => (lastPage.number + 1 < lastPage.totalPages ? lastPage.number + 1 : undefined),
-        enabled: Boolean(postId),
+        enabled: Boolean(postId) && isAuthenticated,
     });
 }
 

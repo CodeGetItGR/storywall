@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { EventTypeConvention, PlanTierResponseDto } from '@/lib/api/types';
@@ -14,10 +15,12 @@ export const planTiersByEventTypeKeys = {
 // source its plan list from, so a plan restricted away from the chosen type
 // is never offered in the first place (plan-tiers-by-event-type-fe-integration.md).
 export function usePlanTiersForEventType(eventType: EventTypeConvention | undefined, enabled = true) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: planTiersByEventTypeKeys.all(eventType ?? ''),
         queryFn: () => api.get<PlanTierResponseDto[]>(endpoints.planTiers.byEventType(eventType!)),
-        enabled: Boolean(eventType) && enabled,
+        enabled: Boolean(eventType) && enabled && isAuthenticated,
         select: (plans) => [...plans].sort((left, right) => left.sortOrder - right.sortOrder),
         staleTime: 60 * 1000,
     });

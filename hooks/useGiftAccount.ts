@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useAuth } from '@/hooks/useAuth';
 import { api, ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { EventGiftAccountRequestDto, EventGiftAccountResponseDto } from '@/lib/api/types';
@@ -9,6 +10,8 @@ import type { EventGiftAccountRequestDto, EventGiftAccountResponseDto } from '@/
 export const giftAccountKeys = { event: (eventId: string) => ['events', eventId, 'gift-account'] as const };
 
 export function useGiftAccount(eventId: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: giftAccountKeys.event(eventId ?? ''),
         queryFn: async () => {
@@ -19,7 +22,7 @@ export function useGiftAccount(eventId: string | null) {
                 throw error;
             }
         },
-        enabled: Boolean(eventId),
+        enabled: Boolean(eventId) && isAuthenticated,
         staleTime: 0,
         gcTime: 0,
     });

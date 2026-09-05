@@ -1,5 +1,6 @@
 import { type InfiniteData, type QueryClient, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList, type Page } from '@/lib/api/pagination';
@@ -38,32 +39,38 @@ export const POSTS_PAGE_SIZE = 20;
 // author/media/comment+reaction counts are embedded per post, so rendering
 // a feed needs no follow-up requests.
 export function useEventPosts(eventId: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useInfiniteQuery({
         queryKey: postKeys.list(eventId ?? ''),
         queryFn: ({ pageParam }) => api.get<Page<PostResponseDto>>(`${endpoints.events.posts(eventId!)}?page=${pageParam}&size=${POSTS_PAGE_SIZE}`),
         initialPageParam: 0,
         getNextPageParam: (lastPage) => (lastPage.number + 1 < lastPage.totalPages ? lastPage.number + 1 : undefined),
-        enabled: Boolean(eventId),
+        enabled: Boolean(eventId) && isAuthenticated,
     });
 }
 
 export function usePost(id: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: postKeys.detail(id ?? ''),
         queryFn: () => api.get<PostResponseDto>(endpoints.posts.byId(id!)),
-        enabled: Boolean(id),
+        enabled: Boolean(id) && isAuthenticated,
     });
 }
 
 // GET /api/posts/{postId}/media — via PostMedia, ordered by displayOrder.
 export function usePostMedia(postId: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: postKeys.media(postId ?? ''),
         queryFn: async () => {
             const res = await api.get<MediaResponseDto[]>(endpoints.posts.media(postId!));
             return normalizeList(res).items;
         },
-        enabled: Boolean(postId),
+        enabled: Boolean(postId) && isAuthenticated,
     });
 }
 

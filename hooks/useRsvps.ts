@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useAuth } from '@/hooks/useAuth';
 import { eventMemberKeys } from '@/hooks/useEventMembers';
 import { myEventsKeys } from '@/hooks/useMyEvents';
 import { api } from '@/lib/api/client';
@@ -45,22 +46,26 @@ export function setMemberRsvpIdInCaches(
 
 // GET /api/events/{eventId}/rsvps — HOST only, lists everyone's phone notes.
 export function useEventRsvps(eventId: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: rsvpKeys.list(eventId ?? ''),
         queryFn: async () => {
             const res = await api.get<RsvpResponseDto[]>(endpoints.events.rsvps(eventId!));
             return normalizeList(res).items;
         },
-        enabled: Boolean(eventId),
+        enabled: Boolean(eventId) && isAuthenticated,
     });
 }
 
 // GET /api/rsvps/{id} — the RSVP's own member, or a HOST.
 export function useRsvp(id: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: rsvpKeys.detail(id ?? ''),
         queryFn: () => api.get<RsvpResponseDto>(endpoints.rsvps.byId(id!)),
-        enabled: Boolean(id),
+        enabled: Boolean(id) && isAuthenticated,
     });
 }
 
@@ -111,13 +116,15 @@ export function useDeleteRsvp(eventId?: string) {
 // GET /api/rsvps/{rsvpId}/session-responses — per-session attendance for
 // multi-session events. Auth inherits from the parent Rsvp.
 export function useRsvpSessionResponses(rsvpId: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: rsvpKeys.sessionResponses(rsvpId ?? ''),
         queryFn: async () => {
             const res = await api.get<RsvpSessionResponsResponseDto[]>(endpoints.rsvps.sessionResponses(rsvpId!));
             return normalizeList(res).items;
         },
-        enabled: Boolean(rsvpId),
+        enabled: Boolean(rsvpId) && isAuthenticated,
     });
 }
 

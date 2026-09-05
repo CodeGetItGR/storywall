@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useAuth } from '@/hooks/useAuth';
 import { myEventsKeys } from '@/hooks/useMyEvents';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -13,21 +14,25 @@ export const eventMemberKeys = {
 
 // GET /api/events/{eventId}/members — any member of the event.
 export function useEventMembers(eventId: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: eventMemberKeys.list(eventId ?? ''),
         queryFn: async () => {
             const res = await api.get<EventMemberResponseDto[]>(endpoints.events.members(eventId!));
             return normalizeList(res).items;
         },
-        enabled: Boolean(eventId),
+        enabled: Boolean(eventId) && isAuthenticated,
     });
 }
 
 export function useEventMember(id: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: eventMemberKeys.detail(id ?? ''),
         queryFn: () => api.get<EventMemberResponseDto>(endpoints.eventMembers.byId(id!)),
-        enabled: Boolean(id),
+        enabled: Boolean(id) && isAuthenticated,
     });
 }
 

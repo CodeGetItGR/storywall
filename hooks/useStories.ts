@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
@@ -14,22 +15,26 @@ export const storyKeys = {
 // but there's no confirmed server-side auto-purge — filter `expiresAt < now`
 // client-side until confirmed otherwise.
 export function useEventStories(eventId: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: storyKeys.list(eventId ?? ''),
         queryFn: async () => {
             const res = await api.get<StoryResponseDto[]>(endpoints.events.stories(eventId!));
             return normalizeList(res).items;
         },
-        enabled: Boolean(eventId),
+        enabled: Boolean(eventId) && isAuthenticated,
     });
 }
 
 // GET /api/stories/{id} — event member.
 export function useStory(id: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: storyKeys.detail(id ?? ''),
         queryFn: () => api.get<StoryResponseDto>(endpoints.stories.byId(id!)),
-        enabled: Boolean(id),
+        enabled: Boolean(id) && isAuthenticated,
     });
 }
 

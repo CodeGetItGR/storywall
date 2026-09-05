@@ -1,5 +1,6 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
@@ -12,21 +13,25 @@ export const wishbookKeys = {
 };
 
 export function useWishbook(eventId: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useInfiniteQuery({
         queryKey: wishbookKeys.list(eventId ?? ''),
         queryFn: ({ pageParam }) =>
             api.get<Page<WishbookEntryResponseDto>>(`${endpoints.events.wishbook(eventId!)}?page=${pageParam}&size=${WISHBOOK_PAGE_SIZE}`),
         initialPageParam: 0,
         getNextPageParam: (page) => (page.number + 1 < page.totalPages ? page.number + 1 : undefined),
-        enabled: Boolean(eventId),
+        enabled: Boolean(eventId) && isAuthenticated,
     });
 }
 
 export function useWishbookCount(eventId: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: wishbookKeys.count(eventId ?? ''),
         queryFn: () => api.get<number>(endpoints.events.wishbookCount(eventId!)),
-        enabled: Boolean(eventId),
+        enabled: Boolean(eventId) && isAuthenticated,
     });
 }
 

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
@@ -16,10 +17,12 @@ export async function fetchPostReactions(postId: string): Promise<ReactionRespon
 
 // GET /api/posts/{postId}/reactions — event member (checked in the service).
 export function usePostReactions(postId: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: reactionKeys.list(postId ?? ''),
         queryFn: () => fetchPostReactions(postId!),
-        enabled: Boolean(postId),
+        enabled: Boolean(postId) && isAuthenticated,
     });
 }
 

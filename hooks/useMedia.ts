@@ -1,5 +1,6 @@
 import {useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 
+import {useAuth} from '@/hooks/useAuth';
 import {api} from '@/lib/api/client';
 import {endpoints} from '@/lib/api/endpoints';
 import type {Page} from '@/lib/api/pagination';
@@ -19,22 +20,26 @@ export const MEDIA_PAGE_SIZE = 30;
 
 // GET /api/events/{eventId}/media — any event member. Paginated, newest first.
 export function useEventMedia(eventId: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useInfiniteQuery({
         queryKey: mediaKeys.list(eventId ?? ''),
         queryFn: ({ pageParam }) => api.get<Page<MediaResponseDto>>(`${endpoints.events.media(eventId!)}?page=${pageParam}&size=${MEDIA_PAGE_SIZE}`),
         initialPageParam: 0,
         getNextPageParam: (lastPage) => (lastPage.number + 1 < lastPage.totalPages ? lastPage.number + 1 : undefined),
-        enabled: Boolean(eventId),
+        enabled: Boolean(eventId) && isAuthenticated,
     });
 }
 
 // GET /api/medias/{id}. `mediaUrl` is a presigned R2 URL that expires
 // (~15min default) — re-fetch rather than caching it long-term.
 export function useMediaItem(id: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: mediaKeys.detail(id ?? ''),
         queryFn: () => api.get<MediaResponseDto>(endpoints.medias.byId(id!)),
-        enabled: Boolean(id),
+        enabled: Boolean(id) && isAuthenticated,
     });
 }
 

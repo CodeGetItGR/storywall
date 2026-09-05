@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useAuth } from '@/hooks/useAuth';
 import { eventKeys } from '@/hooks/useEvent';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -14,13 +15,15 @@ export const eventSessionKeys = {
 
 // GET /api/events/{eventId}/sessions — any member of the event, non-deleted only.
 export function useEventSessions(eventId: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: eventSessionKeys.list(eventId ?? ''),
         queryFn: async () => {
             const res = await api.get<EventSessionResponseDto[]>(endpoints.events.sessions(eventId!));
             return normalizeList(res).items;
         },
-        enabled: Boolean(eventId),
+        enabled: Boolean(eventId) && isAuthenticated,
     });
 }
 

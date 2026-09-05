@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { appConfigKeys } from '@/hooks/useAppConfig';
+import { useAuth } from '@/hooks/useAuth';
 import { usageKeys } from '@/hooks/useUsage';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -31,10 +32,12 @@ const PENDING_ORDER_POLL_TIMEOUT_MS = 3 * 60 * 1000;
 export const billingKeys = { all: ['billing'] as const, event: (id: string) => ['events', id, 'billing'] as const };
 
 export function useEventBilling(eventId: string | null, enabled = true) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: billingKeys.event(eventId ?? ''),
         queryFn: () => api.get<EventBillingResponseDto>(endpoints.events.billing(eventId!)),
-        enabled: Boolean(eventId) && enabled,
+        enabled: Boolean(eventId) && enabled && isAuthenticated,
         refetchInterval: (query) => {
             const data = query.state.data;
             if (!enabled) return false;
@@ -55,10 +58,12 @@ export const upgradeOptionsKeys = { event: (id: string) => ['events', id, 'upgra
 // Fully priced upgrade targets — gap and payable amounts, discount already
 // combined server-side. No rate limit of its own; safe to call per page view.
 export function useUpgradeOptions(eventId: string | null, enabled = true) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: upgradeOptionsKeys.event(eventId ?? ''),
         queryFn: () => api.get<UpgradeOptionResponseDto[]>(endpoints.events.upgradeOptions(eventId!)),
-        enabled: Boolean(eventId) && enabled,
+        enabled: Boolean(eventId) && enabled && isAuthenticated,
     });
 }
 
@@ -122,10 +127,12 @@ export function useAddEventAddon(eventId: string) {
 }
 
 export function useRefundEligibility(eventId: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: ['events', eventId, 'refund-eligibility'],
         queryFn: () => api.get<RefundEligibilityResponseDto>(endpoints.events.refundEligibility(eventId!)),
-        enabled: Boolean(eventId),
+        enabled: Boolean(eventId) && isAuthenticated,
     });
 }
 
@@ -133,10 +140,12 @@ export function useRefundEligibility(eventId: string | null) {
 // first so the current request is [0]; without this the decision, its note and
 // `providerRefunded` would only ever be visible in the tab that submitted it.
 export function useEventRefundRequests(eventId: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: ['events', eventId, 'refund-requests'],
         queryFn: () => api.get<RefundRequestResponseDto[]>(endpoints.events.refundRequests(eventId!)),
-        enabled: Boolean(eventId),
+        enabled: Boolean(eventId) && isAuthenticated,
         select: (requests) => [...requests].sort((left, right) => right.requestedAt.localeCompare(left.requestedAt)),
     });
 }

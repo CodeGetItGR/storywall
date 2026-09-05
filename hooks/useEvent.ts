@@ -1,5 +1,6 @@
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useAuth } from '@/hooks/useAuth';
 import { myEventsKeys } from '@/hooks/useMyEvents';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -14,10 +15,12 @@ export const eventKeys = {
 // location, hosts, modules, sessions, rsvpSummary) — not the flat
 // EventResponseDto used by the list and create endpoints.
 export function useEvent(eventId: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: eventKeys.detail(eventId ?? ''),
         queryFn: () => api.get<EventDetailResponseDto>(endpoints.events.byId(eventId!)),
-        enabled: Boolean(eventId),
+        enabled: Boolean(eventId) && isAuthenticated,
     });
 }
 
@@ -27,10 +30,13 @@ export function useEvent(eventId: string | null) {
 // feed the user already visited is served from cache. Order-preserving:
 // result[i] corresponds to eventIds[i].
 export function useEventDetails(eventIds: string[]) {
+    const { isAuthenticated } = useAuth();
+
     return useQueries({
         queries: eventIds.map((id) => ({
             queryKey: eventKeys.detail(id),
             queryFn: () => api.get<EventDetailResponseDto>(endpoints.events.byId(id)),
+            enabled: isAuthenticated,
         })),
     });
 }

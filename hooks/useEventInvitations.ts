@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { useAuth } from '@/hooks/useAuth';
 import { eventMemberKeys } from '@/hooks/useEventMembers';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -32,21 +33,25 @@ export function useEventInvitationPreview(inviteToken: string | null) {
 // GET /api/events/{eventId}/invitations — HOST of the event only. Carries
 // PII (name/email) and the raw inviteToken.
 export function useEventInvitations(eventId: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: eventInvitationKeys.list(eventId ?? ''),
         queryFn: async () => {
             const res = await api.get<EventInvitationResponseDto[]>(endpoints.events.invitations(eventId!));
             return normalizeList(res).items;
         },
-        enabled: Boolean(eventId),
+        enabled: Boolean(eventId) && isAuthenticated,
     });
 }
 
 export function useEventInvitation(id: string | null) {
+    const { isAuthenticated } = useAuth();
+
     return useQuery({
         queryKey: eventInvitationKeys.detail(id ?? ''),
         queryFn: () => api.get<EventInvitationResponseDto>(endpoints.eventInvitations.byId(id!)),
-        enabled: Boolean(id),
+        enabled: Boolean(id) && isAuthenticated,
     });
 }
 
