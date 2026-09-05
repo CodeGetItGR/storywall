@@ -2,7 +2,7 @@
 
 import { Dialog } from '@base-ui/react/dialog';
 import { X } from 'lucide-react';
-import { type ReactNode, useCallback } from 'react';
+import { forwardRef, type ReactNode, useCallback } from 'react';
 
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import { cn } from '@/lib/utils';
@@ -115,8 +115,14 @@ export function Modal({
     );
 }
 
-function ModalBody({ className, children }: { className?: string; children: ReactNode }) {
-    return <div className={cn('flex-1 min-h-0 overflow-y-auto', className)}>{children}</div>;
-}
+// forwardRef so a newly-posted comment can be scrolled into view within this
+// scroll container (see usePostCommentThread's lastPostedCommentId).
+const ModalBody = forwardRef<HTMLDivElement, { className?: string; children: ReactNode }>(function ModalBody({ className, children }, ref) {
+    return (
+        <div ref={ref} className={cn('flex-1 min-h-0 overflow-y-auto', className)}>
+            {children}
+        </div>
+    );
+});
 
 Modal.Body = ModalBody;

@@ -7,7 +7,7 @@ import React, { useMemo } from 'react';
 import { PiMusicNotesPlusFill } from 'react-icons/pi';
 
 import { CommentsList } from '@/components/feed/post/CommentsList';
-import { useEventMembers, usePostComments } from '@/hooks';
+import { useEventMembers } from '@/hooks';
 import type { PostResponseDto } from '@/lib/api/types';
 import { formatPlaylistDigestContent } from '@/lib/feed/playlistDigest';
 import { routes } from '@/lib/routes';
@@ -31,10 +31,12 @@ export function PlaylistDigestCard({ post }: PlaylistDigestCardProps) {
         }),
         [createdAt, locale]
     );
-    const { data: commentPages } = usePostComments(post.id);
-    const comments = useMemo(() => commentPages?.pages.flatMap((page) => page.content) ?? [], [commentPages?.pages]);
     const { data: members = [] } = useEventMembers(post.eventId);
-    const visibleComments = useMemo(() => comments.slice(0, 3), [comments]);
+    // post.recentComments is already the 2 most recent, oldest-first, batch-
+    // resolved server-side with the feed page itself — fetching the full
+    // paginated thread per card here would be an N+1 call per post, and
+    // slicing that oldest-first list would surface the OLDEST comments
+    // instead of the newest. See post-recent-comments-preview-fe-integration.md.
     const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
 
     return (
@@ -114,10 +116,10 @@ export function PlaylistDigestCard({ post }: PlaylistDigestCardProps) {
                 </div>
             </div>
 
-            {visibleComments.length > 0 && (
+            {post.recentComments.length > 0 && (
                 /* Comments */
                 <div className="border-t border-border/50 px-4 pb-4 pt-3">
-                    <CommentsList comments={visibleComments} membersById={membersById} compact limit={3} />
+                    <CommentsList comments={post.recentComments} membersById={membersById} compact />
                 </div>
             )}
         </article>

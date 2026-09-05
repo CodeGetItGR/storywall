@@ -14,7 +14,7 @@ interface CommentsListProps {
     membersById: Map<string, EventMemberResponseDto>;
     compact?: boolean;
     limit?: number;
-    onReply?: (parentCommentId: string, authorName: string) => void;
+    onReply?: (parentCommentId: string, authorName: string, mention?: boolean) => void;
     // A new value (even for the same threadId) forces that thread's replies
     // open — used to reveal a reply the member just posted, which would
     // otherwise land behind a collapsed "View replies" toggle.

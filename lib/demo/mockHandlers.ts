@@ -195,9 +195,7 @@ export const demoHandlers = [
     http.get(`${API_BASE_URL}/api/config`, () => HttpResponse.json(buildSeedAppConfig())),
 
     // --- Auth / me ---
-    http.get(`${API_BASE_URL}/api/me/events`, () =>
-        HttpResponse.json([demoDb.list('members').find((m) => m.id === DEMO_HOST_MEMBER_ID)!])
-    ),
+    http.get(`${API_BASE_URL}/api/me/events`, () => HttpResponse.json([demoDb.list('members').find((m) => m.id === DEMO_HOST_MEMBER_ID)!])),
 
     // --- Event detail ---
     http.get(`${API_BASE_URL}/api/events/:eventId`, ({ params }) =>
@@ -343,13 +341,21 @@ export const demoHandlers = [
             eventId: DEMO_EVENT_ID,
             authorMemberId: (body.authorMemberId as string) ?? null,
             author: author
-                ? { memberId: author.id, displayName: author.displayName, nickname: author.nickname, role: author.role, avatarMediaId: null, avatarUrl: null }
+                ? {
+                      memberId: author.id,
+                      displayName: author.displayName,
+                      nickname: author.nickname,
+                      role: author.role,
+                      avatarMediaId: null,
+                      avatarUrl: null,
+                  }
                 : null,
             type: (body.type as PostResponseDto['type']) ?? 'TEXT',
             content: (body.content as string) ?? null,
             isPinned: Boolean(body.isPinned),
             media: demoDb.list('media').filter((m) => mediaIds.includes(m.id)),
             commentCount: 0,
+            recentComments: [],
             reactionCount: 0,
             reactionCounts: {},
             myReactionType: null,
@@ -406,7 +412,12 @@ export const demoHandlers = [
     })),
     http.post(`${API_BASE_URL}/api/stories/:id/views`, ({ params }) => {
         demoDb.update('stories', params.id as string, (story) => ({ ...story, viewedByCurrentUser: true }));
-        return HttpResponse.json({ id: newId('demo-story-view'), storyId: params.id, memberId: DEMO_HOST_MEMBER_ID, createdAt: new Date().toISOString() });
+        return HttpResponse.json({
+            id: newId('demo-story-view'),
+            storyId: params.id,
+            memberId: DEMO_HOST_MEMBER_ID,
+            createdAt: new Date().toISOString(),
+        });
     }),
 
     // --- Playlist suggestions ---
