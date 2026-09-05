@@ -54,13 +54,13 @@ export function useCountdownCelebration({
     targetTime: number;
 }) {
     const [state, setState] = useState(() => ({
-        trackedHasFinished: !hasFinished,
+        hasEvaluated: false,
         shouldCelebrate: false,
     }));
 
-    if (hasFinished !== state.trackedHasFinished) {
+    if (hasFinished && !state.hasEvaluated) {
         setState({
-            trackedHasFinished: hasFinished,
+            hasEvaluated: true,
             shouldCelebrate: decideShouldCelebrate({ eventId, hasFinished, targetTime }),
         });
     }
