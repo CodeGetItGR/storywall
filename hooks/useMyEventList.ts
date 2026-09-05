@@ -9,7 +9,7 @@ export function useMyEventList() {
     const eventQueries = useEventDetails(memberships.map((member) => member.eventId));
 
     return {
-        displayName: user?.displayName ?? null,
+        firstName: user?.firstName ?? null,
         email: user?.email ?? null,
         eventQueries,
         isLoading,

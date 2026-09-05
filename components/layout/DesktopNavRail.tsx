@@ -30,7 +30,7 @@ export function DesktopNavRail() {
     const isDraft = activeEvent?.status === 'DRAFT';
     const showEventActions = Boolean(activeEvent) && isEventRoute(pathname);
     const showComposerAction = Boolean(activeEvent) && isFeedRoute(pathname);
-    const accountName = [authUser?.displayName, authUser?.lastName].filter(Boolean).join(' ') || authUser?.displayName || tAccount('fallbackName');
+    const accountName = [authUser?.firstName, authUser?.lastName].filter(Boolean).join(' ') || authUser?.firstName || tAccount('fallbackName');
     const homeHref = activeEvent ? (isDraft ? routes.events.manage(activeEvent.id) : routes.events.feed(activeEvent.id)) : null;
     const homeActive = Boolean(homeHref) && (isPathActive(pathname, homeHref!) || isPathActive(pathname, routes.feed));
     const eventsActive = isPathActive(pathname, routes.home);

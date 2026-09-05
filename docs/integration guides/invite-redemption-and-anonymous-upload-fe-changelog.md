@@ -37,7 +37,7 @@ inviteToken?: string;  // UUID, straight from the QR resolve response or the inv
 Attach it to whichever of the three the visitor picks:
 
 ```
-POST /api/auth/register   { email, password, displayName, inviteToken }
+POST /api/auth/register   { email, password, firstName, lastName, inviteToken }
 POST /api/auth/login      { email, password, inviteToken }
 POST /api/auth/oauth/{provider}   { idToken, inviteToken }
 ```

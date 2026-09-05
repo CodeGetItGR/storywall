@@ -26,7 +26,8 @@ export default function RegisterPage() {
 
     const [showPw, setShowPw] = useState(false);
     const [email, setEmail] = useState(searchParams.get('email') ?? '');
-    const [displayName, setDisplayName] = useState(searchParams.get('displayName') ?? '');
+    const [firstName, setFirstName] = useState(searchParams.get('firstName') ?? '');
+    const [lastName, setLastName] = useState(searchParams.get('lastName') ?? '');
     const [password, setPassword] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -37,7 +38,7 @@ export default function RegisterPage() {
         setIsSubmitting(true);
 
         try {
-            const auth = await register({ email, password, displayName, inviteToken: inviteToken ?? undefined });
+            const auth = await register({ email, password, firstName, lastName, inviteToken: inviteToken ?? undefined });
             router.replace(auth.role === 'ADMIN' ? routes.admin : routes.feed);
         } catch (err) {
             setError(toErrorMessage(err));
@@ -70,8 +71,12 @@ export default function RegisterPage() {
         setPassword(e.target.value);
     }, []);
 
-    const onDisplayNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        setDisplayName(e.target.value);
+    const onFirstNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+        setFirstName(e.target.value);
+    }, []);
+
+    const onLastNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+        setLastName(e.target.value);
     }, []);
 
     const onTogglePasswordVisibility = useCallback(() => {
@@ -88,18 +93,34 @@ export default function RegisterPage() {
             <p className="text-sm text-ink-muted mb-7">{t('subtitle')}</p>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <FormFieldLabel label={t('fields.fullName')} required>
-                    <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
-                        <User className="w-4 h-4 text-ink-muted shrink-0" />
-                        <input
-                            type="text"
-                            placeholder={t('placeholders.fullName')}
-                            required
-                            className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink-faint outline-none"
-                            onChange={onDisplayNameChange}
-                        />
-                    </div>
-                </FormFieldLabel>
+                <div className="grid grid-cols-2 gap-3">
+                    <FormFieldLabel label={t('fields.firstName')} required>
+                        <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
+                            <User className="w-4 h-4 text-ink-muted shrink-0" />
+                            <input
+                                type="text"
+                                placeholder={t('placeholders.firstName')}
+                                required
+                                value={firstName}
+                                onChange={onFirstNameChange}
+                                className="flex-1 min-w-0 bg-transparent text-sm text-ink placeholder:text-ink-faint outline-none"
+                            />
+                        </div>
+                    </FormFieldLabel>
+
+                    <FormFieldLabel label={t('fields.lastName')} required>
+                        <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
+                            <input
+                                type="text"
+                                placeholder={t('placeholders.lastName')}
+                                required
+                                value={lastName}
+                                onChange={onLastNameChange}
+                                className="flex-1 min-w-0 bg-transparent text-sm text-ink placeholder:text-ink-faint outline-none"
+                            />
+                        </div>
+                    </FormFieldLabel>
+                </div>
 
                 <FormFieldLabel label={t('fields.email')} required>
                     <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">

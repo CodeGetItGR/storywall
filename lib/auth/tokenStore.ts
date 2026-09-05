@@ -12,7 +12,7 @@ interface AuthState {
     userId: string | null;
     email: string | null;
     role: AuthSessionDto['role'] | null;
-    displayName: string | null;
+    firstName: string | null;
     lastName: string | null;
     profilePictureUrl: string | null;
     authProvider: AuthSessionDto['authProvider'] | null;
@@ -26,7 +26,7 @@ let state: AuthState = {
     userId: null,
     email: null,
     role: null,
-    displayName: null,
+    firstName: null,
     lastName: null,
     profilePictureUrl: null,
     authProvider: null,
@@ -68,7 +68,7 @@ export function setSession(session: AuthSessionDto) {
         userId: session.userId,
         email: session.email,
         role: session.role,
-        displayName: session.displayName,
+        firstName: session.firstName,
         lastName: session.lastName,
         profilePictureUrl: session.profilePictureUrl,
         authProvider: session.authProvider,
@@ -79,10 +79,10 @@ export function setSession(session: AuthSessionDto) {
     emit();
 }
 
-export function updateSessionProfile(profile: Pick<AuthSessionDto, 'displayName' | 'lastName' | 'profilePictureUrl'>) {
+export function updateSessionProfile(profile: Pick<AuthSessionDto, 'firstName' | 'lastName' | 'profilePictureUrl'>) {
     state = {
         ...state,
-        displayName: profile.displayName,
+        firstName: profile.firstName,
         lastName: profile.lastName ?? null,
         profilePictureUrl: profile.profilePictureUrl ?? null,
     };
@@ -95,7 +95,7 @@ export function clearSession() {
         userId: null,
         email: null,
         role: null,
-        displayName: null,
+        firstName: null,
         lastName: null,
         profilePictureUrl: null,
         authProvider: null,

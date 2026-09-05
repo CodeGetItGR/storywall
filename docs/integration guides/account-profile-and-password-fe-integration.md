@@ -13,7 +13,7 @@ already existed but were never written up for the frontend.
 | Method | Path | Auth | Purpose |
 |---|---|---|---|
 | GET | `/api/me` | `USER`, `GUEST`, `ADMIN` | fetch the caller's own account details |
-| PATCH | `/api/me` | `USER`, `GUEST`, `ADMIN` | edit your own name / last name |
+| PATCH | `/api/me` | `USER`, `GUEST`, `ADMIN` | edit your own first name / last name |
 | POST | `/api/me/profile-picture` | `USER`, `GUEST`, `ADMIN` | upload and set your profile picture |
 | POST | `/api/me/change-password` | `USER`, `ADMIN` | change your password while logged in (requires current password) |
 | POST | `/api/auth/forgot-password` | public | mail a reset link for a forgotten password |
@@ -45,8 +45,8 @@ async function getMyself() {
 ```
 
 This is the endpoint to call on app load / after a token refresh to populate a profile screen
-or account menu — `AuthResponseDto` from login/register carries only `displayName`, not the
-full record, and there was previously no way to re-fetch it without going through the admin
+or account menu — `AuthResponseDto` from login/register carries only `firstName`/`lastName`, not
+the full record, and there was previously no way to re-fetch it without going through the admin
 `GET /api/users/{id}` endpoint (which the caller usually can't call on themselves — that's
 `ROLE_ADMIN`-only).
 
@@ -54,8 +54,8 @@ full record, and there was previously no way to re-fetch it without going throug
 
 ```ts
 interface MeUpdateRequestDto {
-  displayName?: string; // max 100 chars
-  lastName?: string;    // max 100 chars
+  firstName?: string; // max 100 chars
+  lastName?: string;  // max 100 chars
 }
 ```
 
@@ -65,7 +65,7 @@ Returns the updated `UserResponseDto`:
 interface UserResponseDto {
   id: string;
   email: string | null;
-  displayName: string | null;        // NEW on this DTO — was missing before
+  firstName: string | null;          // NEW on this DTO — was missing before
   lastName: string | null;           // NEW
   profilePictureUrl: string | null;  // NEW — short-lived presigned URL, see §3
   authProvider: 'LOCAL' | 'OAUTH' | 'INVITE';
@@ -84,7 +84,7 @@ Omit a field (or send it as `null`) to leave it unchanged — the same pattern a
 send an empty string if you need to blank it out.
 
 ```ts
-async function updateProfile(patch: Partial<{ displayName: string; lastName: string }>) {
+async function updateProfile(patch: Partial<{ firstName: string; lastName: string }>) {
   const res = await fetch('/api/me', {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
@@ -98,9 +98,9 @@ async function updateProfile(patch: Partial<{ displayName: string; lastName: str
 No path variable — the target is always the caller, resolved from the JWT subject. There is no
 way to edit another user's profile through this endpoint, by design.
 
-**Guests can call this too** (they hold a `User` row with a `displayName`, same as registered
-users), but note `lastName` will just sit unused unless your guest-facing UI surfaces it —
-nothing on the backend distinguishes guest vs. registered here.
+**Guests can call this too** (they hold a `User` row with `firstName`/`lastName`, same as
+registered users), but note `lastName` will just sit unused unless your guest-facing UI surfaces
+it — nothing on the backend distinguishes guest vs. registered here.
 
 ## 3. Uploading a profile picture — `POST /api/me/profile-picture`
 

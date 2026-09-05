@@ -13,13 +13,13 @@ import { ERROR_CODES,getErrorCode, getErrorMessage, getFieldErrors } from '@/lib
 import type { ChangePasswordRequestDto, MeUpdateRequestDto, UserResponseDto } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 
-type ProfileFieldErrors = Partial<Record<'displayName' | 'lastName', string>>;
+type ProfileFieldErrors = Partial<Record<'firstName' | 'lastName', string>>;
 type PasswordFieldErrors = Partial<Record<'currentPassword' | 'newPassword' | 'confirmPassword', string>>;
 
 function toProfileFieldErrors(error: unknown): ProfileFieldErrors {
     const fields = getFieldErrors(error);
     return {
-        displayName: fields?.displayName,
+        firstName: fields?.firstName,
         lastName: fields?.lastName,
     };
 }
@@ -43,12 +43,12 @@ export function useProfileForm() {
     });
 
     const profile = profileQuery.data;
-    const sourceDisplayName = profile?.displayName ?? user?.displayName ?? '';
+    const sourceFirstName = profile?.firstName ?? user?.firstName ?? '';
     const sourceLastName = profile?.lastName ?? user?.lastName ?? '';
     const sourceProfilePictureUrl = profile?.profilePictureUrl ?? user?.profilePictureUrl ?? '';
 
-    const [profileDraft, setProfileDraft] = useState({ displayName: '', lastName: '' });
-    const [profileDirty, setProfileDirty] = useState({ displayName: false, lastName: false });
+    const [profileDraft, setProfileDraft] = useState({ firstName: '', lastName: '' });
+    const [profileDirty, setProfileDirty] = useState({ firstName: false, lastName: false });
     const [selectedProfilePicture, setSelectedProfilePicture] = useState<File | null>(null);
     const [selectedProfilePictureUrl, setSelectedProfilePictureUrl] = useState<string | null>(null);
     const [currentPassword, setCurrentPassword] = useState('');
@@ -73,19 +73,19 @@ export function useProfileForm() {
         };
     }, [selectedProfilePictureUrl]);
 
-    const displayName = profileDirty.displayName ? profileDraft.displayName : sourceDisplayName;
+    const firstName = profileDirty.firstName ? profileDraft.firstName : sourceFirstName;
     const lastName = profileDirty.lastName ? profileDraft.lastName : sourceLastName;
     const profilePictureUrl = selectedProfilePictureUrl ?? sourceProfilePictureUrl;
 
-    const accountName = useMemo(() => [displayName.trim(), lastName.trim()].filter(Boolean).join(' ') || user?.displayName || '', [displayName, lastName, user?.displayName]);
+    const accountName = useMemo(() => [firstName.trim(), lastName.trim()].filter(Boolean).join(' ') || user?.firstName || '', [firstName, lastName, user?.firstName]);
     const canChangePassword = user?.role === 'USER' || user?.role === 'ADMIN';
-    const hasProfileChanges = displayName !== sourceDisplayName || lastName !== sourceLastName;
+    const hasProfileChanges = firstName !== sourceFirstName || lastName !== sourceLastName;
     const hasProfilePictureChange = Boolean(selectedProfilePicture);
     const passwordMismatch = confirmPassword.length > 0 && newPassword !== confirmPassword;
 
-    function handleDisplayNameChange(event: ChangeEvent<HTMLInputElement>) {
-        setProfileDirty((current) => ({ ...current, displayName: true }));
-        setProfileDraft((current) => ({ ...current, displayName: event.target.value }));
+    function handleFirstNameChange(event: ChangeEvent<HTMLInputElement>) {
+        setProfileDirty((current) => ({ ...current, firstName: true }));
+        setProfileDraft((current) => ({ ...current, firstName: event.target.value }));
     }
 
     function handleLastNameChange(event: ChangeEvent<HTMLInputElement>) {
@@ -124,14 +124,14 @@ export function useProfileForm() {
         setProfileFieldErrors({});
 
         const patch: MeUpdateRequestDto = {};
-        if (displayName !== sourceDisplayName) patch.displayName = displayName;
+        if (firstName !== sourceFirstName) patch.firstName = firstName;
         if (lastName !== sourceLastName) patch.lastName = lastName;
 
         try {
             const updated = await api.patch<UserResponseDto>(endpoints.me.profile, patch);
             updateProfile(updated);
-            setProfileDraft({ displayName: '', lastName: '' });
-            setProfileDirty({ displayName: false, lastName: false });
+            setProfileDraft({ firstName: '', lastName: '' });
+            setProfileDirty({ firstName: false, lastName: false });
             setProfileSuccess('updated');
         } catch (error) {
             setProfileFieldErrors(toProfileFieldErrors(error));
@@ -220,11 +220,11 @@ export function useProfileForm() {
         canChangePassword,
         confirmPassword,
         currentPassword,
-        displayName,
+        firstName,
         email: user?.email ?? '',
         handleConfirmPasswordChange,
         handleCurrentPasswordChange,
-        handleDisplayNameChange,
+        handleFirstNameChange,
         handleLastNameChange,
         handleNewPasswordChange,
         handlePasswordSubmit,

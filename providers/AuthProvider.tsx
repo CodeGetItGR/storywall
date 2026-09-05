@@ -11,7 +11,7 @@ const BOOTSTRAP_TIMEOUT_MS = 8000;
 export interface AuthUser {
     userId: string;
     email: string | null;
-    displayName: string | null;
+    firstName: string | null;
     lastName: string | null;
     profilePictureUrl: string | null;
     authProvider: AuthProviderName;
@@ -25,11 +25,11 @@ export interface AuthContextValue {
     user: AuthUser | null;
     isAuthenticated: boolean;
     isBootstrapping: boolean;
-    register: (input: { email: string; password: string; displayName: string; inviteToken?: string }) => Promise<AuthSessionDto>;
+    register: (input: { email: string; password: string; firstName: string; lastName: string; inviteToken?: string }) => Promise<AuthSessionDto>;
     login: (input: { email: string; password: string; inviteToken?: string }) => Promise<AuthSessionDto>;
     oauth: (provider: 'GOOGLE' | 'APPLE', input: { idToken: string; inviteToken?: string }) => Promise<AuthSessionDto>;
     logout: () => Promise<void>;
-    updateProfile: (profile: Pick<UserResponseDto, 'displayName' | 'lastName' | 'profilePictureUrl'>) => void;
+    updateProfile: (profile: Pick<UserResponseDto, 'firstName' | 'lastName' | 'profilePictureUrl'>) => void;
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
     }, []);
 
-    const register = useCallback(async (input: { email: string; password: string; displayName: string; inviteToken?: string }) => {
+    const register = useCallback(async (input: { email: string; password: string; firstName: string; lastName: string; inviteToken?: string }) => {
         const session = await authClient.register(input);
         setSession(session);
         return session;
@@ -116,9 +116,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         clearSession();
     }, []);
 
-    const updateProfile = useCallback((profile: Pick<UserResponseDto, 'displayName' | 'lastName' | 'profilePictureUrl'>) => {
+    const updateProfile = useCallback((profile: Pick<UserResponseDto, 'firstName' | 'lastName' | 'profilePictureUrl'>) => {
         updateSessionProfile({
-            displayName: profile.displayName ?? '',
+            firstName: profile.firstName ?? '',
             lastName: profile.lastName,
             profilePictureUrl: profile.profilePictureUrl,
         });
@@ -130,14 +130,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // does change them propagates, which keying the memo on `isAuthenticated`
     // alone did not: a role or display name arriving later left consumers
     // holding the previous user.
-    const { accessToken, userId, email, displayName, lastName, profilePictureUrl, authProvider, isGuestAccount, status, createdAt, role } = authState;
+    const { accessToken, userId, email, firstName, lastName, profilePictureUrl, authProvider, isGuestAccount, status, createdAt, role } = authState;
     const user = useMemo(
         () =>
             accessToken
                 ? {
                       userId: userId!,
                       email,
-                      displayName,
+                      firstName,
                       lastName,
                       profilePictureUrl,
                       authProvider: authProvider!,
@@ -147,7 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                       role: role!,
                   }
                 : null,
-        [accessToken, userId, email, displayName, lastName, profilePictureUrl, authProvider, isGuestAccount, status, createdAt, role]
+        [accessToken, userId, email, firstName, lastName, profilePictureUrl, authProvider, isGuestAccount, status, createdAt, role]
     );
     const isAuthenticated = Boolean(accessToken);
 

@@ -16,8 +16,8 @@ export function DemoAuthProvider({ children }: { children: ReactNode }) {
                 user: {
                     userId: DEMO_USER_ID,
                     email: null,
-                    displayName: 'Alex Rivera',
-                    lastName: null,
+                    firstName: 'Alex',
+                    lastName: 'Rivera',
                     profilePictureUrl: null,
                     authProvider: 'LOCAL',
                     isGuestAccount: false,

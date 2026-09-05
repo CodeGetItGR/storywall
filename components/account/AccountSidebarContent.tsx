@@ -15,7 +15,7 @@ import { routes } from '@/lib/routes';
 export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => void }) {
     const t = useTranslations('AccountDrawer');
     const { user } = useAuth();
-    const accountName = [user?.displayName, user?.lastName].filter(Boolean).join(' ') || user?.displayName || t('fallbackName');
+    const accountName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.firstName || t('fallbackName');
 
     return (
         <div className="bg-gradient-brand flex h-full flex-col overflow-y-auto px-6 pt-16 pb-8 text-white">

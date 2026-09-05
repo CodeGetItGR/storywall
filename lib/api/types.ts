@@ -271,7 +271,7 @@ export interface AuthResponseDto {
     userId: string;
     email: string | null;
     role: PlatformRole;
-    displayName: string | null;
+    firstName: string | null;
     lastName: string | null;
     profilePictureUrl: string | null;
     authProvider: AuthProvider;
@@ -289,7 +289,7 @@ export interface AuthSessionDto {
     userId: string;
     email: string | null;
     role: PlatformRole;
-    displayName: string | null;
+    firstName: string | null;
     lastName: string | null;
     profilePictureUrl: string | null;
     authProvider: AuthProvider;
@@ -301,6 +301,8 @@ export interface AuthSessionDto {
 export interface RegisterRequestDto {
     email: string;
     password: string;
+    firstName: string;
+    lastName: string;
     inviteToken?: string;
 }
 
@@ -388,7 +390,7 @@ export interface UserRequestDto {
 export interface UserResponseDto {
     id: string;
     email: string | null;
-    displayName: string | null;
+    firstName: string | null;
     lastName: string | null;
     profilePictureUrl: string | null;
     authProvider: AuthProvider;
@@ -405,7 +407,7 @@ export interface UserResponseDto {
 }
 
 export interface MeUpdateRequestDto {
-    displayName?: string;
+    firstName?: string;
     lastName?: string;
     locale?: Locale;
 }

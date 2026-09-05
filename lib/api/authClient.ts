@@ -30,7 +30,7 @@ async function authRequest<T>(path: string, options: RequestInit = {}): Promise<
 }
 
 export const authClient = {
-    register: (input: { email: string; password: string; displayName: string; inviteToken?: string }) =>
+    register: (input: { email: string; password: string; firstName: string; lastName: string; inviteToken?: string }) =>
         authRequest<AuthSessionDto>(endpoints.auth.register, { method: 'POST', body: JSON.stringify(input) }),
 
     login: (input: { email: string; password: string; inviteToken?: string }) =>

@@ -69,13 +69,13 @@ export function ProfileContent() {
 
                     {/* Name fields */}
                     <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                        <FormFieldLabel label={t('fields.displayName')} required>
+                        <FormFieldLabel label={t('fields.firstName')} required>
                             <input
-                                value={form.displayName}
-                                onChange={form.handleDisplayNameChange}
+                                value={form.firstName}
+                                onChange={form.handleFirstNameChange}
                                 maxLength={100}
                                 required
-                                aria-invalid={Boolean(form.profileFieldErrors.displayName)}
+                                aria-invalid={Boolean(form.profileFieldErrors.firstName)}
                                 className="min-h-11 rounded-2xl border border-border/70 bg-background px-4 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                             />
                         </FormFieldLabel>
@@ -91,11 +91,11 @@ export function ProfileContent() {
                     </div>
 
                     {/* Profile feedback */}
-                    {(form.profileFieldErrors.displayName || form.profileFieldErrors.lastName || form.profileError || form.profileQueryError || form.profileSuccess) && (
+                    {(form.profileFieldErrors.firstName || form.profileFieldErrors.lastName || form.profileError || form.profileQueryError || form.profileSuccess) && (
                         <div className="mt-4 space-y-2">
-                            {form.profileFieldErrors.displayName && (
+                            {form.profileFieldErrors.firstName && (
                                 <p role="alert" className="text-sm text-red-600">
-                                    {form.profileFieldErrors.displayName}
+                                    {form.profileFieldErrors.firstName}
                                 </p>
                             )}
                             {form.profileFieldErrors.lastName && (

@@ -11,7 +11,7 @@ export function toSessionDto(auth: AuthResponseDto): AuthSessionDto {
         userId: auth.userId,
         email: auth.email,
         role: auth.role,
-        displayName: auth.displayName,
+        firstName: auth.firstName,
         lastName: auth.lastName,
         profilePictureUrl: auth.profilePictureUrl,
         authProvider: auth.authProvider,

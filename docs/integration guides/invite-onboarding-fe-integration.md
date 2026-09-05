@@ -246,7 +246,7 @@ in the app. See
 
 ```json
 POST /api/auth/register
-{ "email": "...", "password": "...", "displayName": "Taylor Smith", "inviteToken": "b3f1...uuid" }
+{ "email": "...", "password": "...", "firstName": "Taylor", "lastName": "Smith", "inviteToken": "b3f1...uuid" }
 ```
 ```json
 POST /api/auth/login

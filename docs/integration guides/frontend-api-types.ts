@@ -70,7 +70,10 @@ type PostType = "TEXT" | "MEDIA" | "ANNOUNCEMENT" | "PLAYLIST"; // server-enforc
 // Auth (/api/auth/*) — all public, no token required
 // ---------------------------------------------------------------------------
 
-interface RegisterRequestDto { email: string; password: string; } // password 8-100 chars
+interface RegisterRequestDto {
+  email: string; password: string; // password 8-100 chars
+  firstName: string; lastName: string; // both required, max 100
+}
 interface LoginRequestDto { email: string; password: string; }
 interface RefreshRequestDto { refreshToken: string; } // also the body for /logout
 interface GuestLoginRequestDto {
@@ -90,6 +93,8 @@ interface AuthResponseDto {
   refreshToken: string | null; // null for guest-login
   userId: string;
   email: string | null;        // null for anonymous guests
+  firstName: string | null;    // null for anonymous guests
+  lastName: string | null;     // null for anonymous guests
   role: PlatformRole;
 }
 
@@ -107,7 +112,8 @@ interface UserRequestDto {
 } // no password field — passwords only ever set via /api/auth/register
 
 interface UserResponseDto {
-  id: string; email: string; authProvider: AuthProvider; isGuestAccount: boolean;
+  id: string; email: string; firstName: string; lastName: string;
+  authProvider: AuthProvider; isGuestAccount: boolean;
   status: AccountStatus; platformRole: PlatformRole;
   createdAt: string; updatedAt: string; deletedAt: string | null;
 }

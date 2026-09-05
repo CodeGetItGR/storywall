@@ -75,6 +75,10 @@ Refreshed again 2026-09-04: `PostResponseDto` gained `recentComments` — the po
 comments, oldest-first, resolved in one extra batched query per feed page (not per post) — for a
 comment preview under a feed row without calling `GET /api/posts/{postId}/comments`. See
 [`post-recent-comments-preview-fe-integration.md`](post-recent-comments-preview-fe-integration.md).
+Refreshed again 2026-09-05: `User.displayName` is gone. `RegisterRequestDto`, `MeUpdateRequestDto`,
+`UserResponseDto`, and `AuthResponseDto` all carry `firstName`/`lastName` instead — both required on
+register, both optional on `PATCH /api/me`. Any FE code building a display name should concatenate
+`firstName + " " + lastName` itself; the backend no longer returns a combined field.
 
 ## 0. Base setup
 
@@ -121,7 +125,7 @@ match the feature list from the FE inventory.
 | POST | `/api/auth/forgot-password` | public | always `204`, same response whether or not the address has an account — see [`account-profile-and-password-fe-integration.md`](account-profile-and-password-fe-integration.md) |
 | POST | `/api/auth/reset-password` | public | consumes the mailed token, sets a new password, revokes every session |
 | GET | `/api/me` | `USER`/`GUEST`/`ADMIN` | (2026-08-28) fetch your own account details |
-| PATCH | `/api/me` | `USER`/`GUEST`/`ADMIN` | (2026-08-28) edit your own `displayName`/`lastName` |
+| PATCH | `/api/me` | `USER`/`GUEST`/`ADMIN` | (2026-08-28) edit your own `firstName`/`lastName` |
 | POST | `/api/me/profile-picture` | `USER`/`GUEST`/`ADMIN` | (2026-08-28) multipart upload; sets `profilePictureUrl`, replacing any existing picture |
 | POST | `/api/me/change-password` | `USER`/`ADMIN` | (2026-08-28) requires `currentPassword`; revokes every session on success |
 

@@ -345,12 +345,14 @@
         "title": "Δημιουργία λογαριασμού",
         "subtitle": "Γίνετε μέλος του τοίχου του γάμου και μοιραστείτε την αγάπη.",
         "fields": {
-            "fullName": "Ονοματεπώνυμο",
+            "firstName": "Όνομα",
+            "lastName": "Επώνυμο",
             "email": "Email",
             "password": "Κωδικός πρόσβασης"
         },
         "placeholders": {
-            "fullName": "Το ονοματεπώνυμό σας",
+            "firstName": "Το όνομά σας",
+            "lastName": "Το επώνυμό σας",
             "email": "you@example.com"
         },
         "showPassword": "Εμφάνιση κωδικού",
@@ -564,7 +566,7 @@
         "saving": "Αποθήκευση…",
         "profileUpdated": "Το προφίλ ενημερώθηκε.",
         "fields": {
-            "displayName": "Όνομα",
+            "firstName": "Όνομα",
             "lastName": "Επώνυμο"
         },
         "picture": {

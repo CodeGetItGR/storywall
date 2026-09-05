@@ -12,7 +12,7 @@ Request body:
 ```
 
 Response body is **identical** to `/api/auth/login` and `/api/auth/register` — same
-`AuthResponseDto` shape (`accessToken`, `refreshToken`, `userId`, `email`, `displayName`,
+`AuthResponseDto` shape (`accessToken`, `refreshToken`, `userId`, `email`, `firstName`, `lastName`,
 `profilePictureUrl`, `authProvider`, `status`, `role`, etc.). Store and use the tokens exactly
 the way you already do after a password login — no branching needed based on how the user signed in.
 
