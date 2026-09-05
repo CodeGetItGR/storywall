@@ -58,7 +58,7 @@ export function FeedPageContent() {
     return (
         <div className="mx-auto flex w-full flex-col lg:max-w-2xl">
             {/* Header */}
-            <Header countdownTime={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0} />
+            <Header countdownTime={event.schedule.startAt ? new Date(event.schedule.startAt).getTime() : 0} eventId={eventId} />
             {/* Hero */}
             <section className={'mt-3'}>
                 <Banner
