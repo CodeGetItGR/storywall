@@ -1,6 +1,6 @@
 'use client';
 
-import { BookHeart, Loader2, Send, Trash2 } from 'lucide-react';
+import { BookHeart, Download, Loader2, Send, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import React, { useState } from 'react';
@@ -11,7 +11,7 @@ import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
-import { useCreateWishbookEntry, useDeleteWishbookEntry, useWishbook } from '@/hooks/useWishbook';
+import { useCreateWishbookEntry, useDeleteWishbookEntry, useWishbook, useWishbookExportDownload } from '@/hooks/useWishbook';
 import type { WishbookEntryResponseDto } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
@@ -26,6 +26,7 @@ export default function WishbookPage() {
     const wishbook = useWishbook(event?.id ?? null);
     const createEntry = useCreateWishbookEntry(eventId);
     const deleteEntry = useDeleteWishbookEntry(eventId);
+    const exportPdf = useWishbookExportDownload(eventId, t('exportFailed'));
     const toErrorMessage = useApiErrorMessage();
     const [message, setMessage] = useState('');
     const [deleteTarget, setDeleteTarget] = useState<WishbookEntryResponseDto | null>(null);
@@ -64,6 +65,9 @@ export default function WishbookPage() {
     }
     function loadMore() {
         void wishbook.fetchNextPage();
+    }
+    function handleExportPdf() {
+        void exportPdf.download();
     }
 
     return (
@@ -114,6 +118,25 @@ export default function WishbookPage() {
 
             {/* Entries */}
             <section className="mt-8" hidden={!isHost}>
+                {!wishbook.isLoading && !wishbook.error && (
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                        <p className="text-xs text-ink-faint">{entries.length > 0 ? t('messageCount', { count: total }) : null}</p>
+                        <button
+                            type="button"
+                            onClick={handleExportPdf}
+                            disabled={exportPdf.isDownloading}
+                            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-ink-muted transition-colors hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            {exportPdf.isDownloading ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                            ) : (
+                                <Download className="h-3.5 w-3.5" aria-hidden="true" />
+                            )}
+                            {t('exportPdf')}
+                        </button>
+                    </div>
+                )}
+                {exportPdf.error && <p className="mb-3 text-xs text-rose-600">{exportPdf.error}</p>}
                 {wishbook.isLoading && <LoadingState label={t('loading')} className="py-10" />}
                 {wishbook.error && <p className="py-10 text-center text-sm text-rose-600">{toErrorMessage(wishbook.error)}</p>}
                 {showEmptyState && (
@@ -125,9 +148,6 @@ export default function WishbookPage() {
                         iconAreaClassName="h-28 w-28"
                         previewIconClassName="h-6 w-6"
                     />
-                )}
-                {!wishbook.isLoading && !wishbook.error && entries.length > 0 && (
-                    <p className="mb-3 text-xs text-ink-faint">{t('messageCount', { count: total })}</p>
                 )}
                 <div className="space-y-3">
                     {entries.map((entry) => (

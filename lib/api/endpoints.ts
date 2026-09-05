@@ -82,6 +82,7 @@ export const endpoints = {
         giftAccount: (eventId: string) => `/api/events/${eventId}/gift-account`,
         wishbook: (eventId: string) => `/api/events/${eventId}/wishbook`,
         wishbookCount: (eventId: string) => `/api/events/${eventId}/wishbook/count`,
+        wishbookExport: (eventId: string) => `/api/events/${eventId}/wishbook/export`,
         checkout: (eventId: string) => `/api/events/${eventId}/checkout`,
         checkoutCodePreview: (eventId: string) => `/api/events/${eventId}/checkout/preview-code`,
         upgradeCheckout: (eventId: string) => `/api/events/${eventId}/upgrade-checkout`,
