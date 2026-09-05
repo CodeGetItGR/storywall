@@ -121,19 +121,19 @@ export default function WishbookPage() {
                 {!wishbook.isLoading && !wishbook.error && (
                     <div className="mb-3 flex items-center justify-between gap-3">
                         <p className="text-xs text-ink-faint">{entries.length > 0 ? t('messageCount', { count: total }) : null}</p>
-                        <button
+                        {entries.length > 0 && <button
                             type="button"
                             onClick={handleExportPdf}
                             disabled={exportPdf.isDownloading}
                             className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-ink-muted transition-colors hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             {exportPdf.isDownloading ? (
-                                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true"/>
                             ) : (
-                                <Download className="h-3.5 w-3.5" aria-hidden="true" />
+                                <Download className="h-3.5 w-3.5" aria-hidden="true"/>
                             )}
                             {t('exportPdf')}
-                        </button>
+                        </button>}
                     </div>
                 )}
                 {exportPdf.error && <p className="mb-3 text-xs text-rose-600">{exportPdf.error}</p>}
