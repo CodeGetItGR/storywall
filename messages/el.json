@@ -38,7 +38,8 @@
         "minutes": "Λεπτά",
         "minutesShort": "λ",
         "seconds": "Δευτερόλεπτα",
-        "secondsShort": "δ"
+        "secondsShort": "δ",
+        "started": "Ξεκίνησε!"
     },
     "StoriesRow": {
         "ariaLabel": "Ιστορίες"
