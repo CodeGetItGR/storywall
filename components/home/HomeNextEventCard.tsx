@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { HomeNextEventCountdown } from '@/components/home/HomeNextEventCountdown';
 import type { EventGridItem } from '@/hooks/useEventGridItems';
 import { useRecentEventItems } from '@/hooks/useEventGridItems';
 import { formatEventListDate } from '@/lib/datetime';
@@ -43,6 +44,7 @@ export function HomeNextEventCard({ items }: { items: EventGridItem[] }) {
                             className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                             sizes="(max-width: 640px) 100vw, 640px"
                         />
+                        <HomeNextEventCountdown time={new Date(event.schedule.startAt).getTime()} />
                     </div>
                 )}
                 <div className="flex items-center gap-3 p-4">
