@@ -1,5 +1,6 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { authClient } from '@/lib/api/authClient';
@@ -35,6 +36,7 @@ export interface AuthContextValue {
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+    const queryClient = useQueryClient();
     const [authState, setAuthState] = useState(getAuthState());
     const [isBootstrapping, setIsBootstrapping] = useState(true);
 
@@ -114,7 +116,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // client state regardless of whether the request succeeded.
         }
         clearSession();
-    }, []);
+        // Every cached query is scoped to whoever was signed in when it was
+        // fetched. Without this, the next login (a different account, in the
+        // same SPA session) would render straight from this cache until each
+        // query's staleTime happened to elapse.
+        queryClient.clear();
+    }, [queryClient]);
 
     const updateProfile = useCallback((profile: Pick<UserResponseDto, 'firstName' | 'lastName' | 'profilePictureUrl'>) => {
         updateSessionProfile({

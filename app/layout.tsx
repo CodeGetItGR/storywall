@@ -29,6 +29,14 @@ export async function generateMetadata(): Promise<Metadata> {
     return {
         title: t('title'),
         description: t('description'),
+        icons: {
+            icon: [
+                { url: '/assets/Logo.svg', media: '(prefers-color-scheme: light)' },
+                { url: '/assets/Logo.svg', media: '(prefers-color-scheme: dark)' },
+                { url: '/assets/Logo.svg', type: 'image/svg+xml' },
+            ],
+            apple: '/assets/Logo.svg',
+        },
     };
 }
 
