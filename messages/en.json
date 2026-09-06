@@ -969,6 +969,14 @@
                 "coHosts": "Co-hosts",
                 "qr": "Share link"
             },
+            "capacity": {
+                "title": "Guest capacity"
+            },
+            "full": {
+                "notice": "This event has reached its guest limit, so new invitations can't be created.",
+                "noticeWithUpgrade": "This event has reached its guest limit. Upgrade to {plan} for {seats, plural, one {# guest seat} other {# guest seats}}.",
+                "noticeWithUnlimitedUpgrade": "This event has reached its guest limit. Upgrade to {plan} for unlimited guest seats."
+            },
             "empty": "No personal invitations yet.",
             "emptyTitle": "No personal invitations yet",
             "emptyBody": "Invite one guest by name, or add an email to send it automatically.",

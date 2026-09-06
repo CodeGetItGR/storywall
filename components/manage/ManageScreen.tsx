@@ -58,7 +58,7 @@ export function ManageScreen() {
 
     const overviewLoading = membersLoading || invitationsLoading || rsvpsLoading || usageLoading;
     const rsvpTabLoading = membersLoading || rsvpsLoading;
-    const invitationsTabLoading = invitationsLoading || qrLinksLoading || qrLinkStatsLoading;
+    const invitationsTabLoading = invitationsLoading || qrLinksLoading || qrLinkStatsLoading || usageLoading;
 
     const [daysToGo, setDaysToGo] = useState(() =>
         Math.max(0, activeEvent ? Math.ceil((new Date(activeEvent.schedule.startAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0)
@@ -140,7 +140,15 @@ export function ManageScreen() {
                 (invitationsTabLoading ? (
                     <LoadingState size="md" className="min-h-64" />
                 ) : (
-                    <InvitationsTab eventId={eventId} invitations={invitations} qrLinks={qrLinks} qrLinkStats={qrLinkStats} canWrite={canWrite} />
+                    <InvitationsTab
+                        eventId={eventId}
+                        invitations={invitations}
+                        qrLinks={qrLinks}
+                        qrLinkStats={qrLinkStats}
+                        canWrite={canWrite}
+                        eventUsage={eventUsage}
+                        planTiers={appConfig?.planTiers ?? []}
+                    />
                 ))}
 
             {section === 'settings' && <SettingsTab event={activeEvent} canWrite={canEditDetails} canUploadCover={canWrite} />}

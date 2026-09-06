@@ -13,9 +13,12 @@ import {
     InvitationRow,
     QrLinkRow,
 } from '@/components/manage/invitations';
+import { UsagePanel } from '@/components/plan/UsagePanel';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { type SubTabItem, SubTabs } from '@/components/ui/SubTabs';
-import type { EventInvitationResponseDto, QrLinkResponseDto, QrLinkStatsDto } from '@/lib/api/types';
+import type { EventInvitationResponseDto, EventUsageResponseDto, PlanTierResponseDto, QrLinkResponseDto, QrLinkStatsDto } from '@/lib/api/types';
+import { findNextPlan, findPlanByCode } from '@/lib/planTiers';
+import { routes } from '@/lib/routes';
 
 export default function InvitationsTab({
     eventId,
@@ -23,12 +26,16 @@ export default function InvitationsTab({
     qrLinks,
     qrLinkStats,
     canWrite,
+    eventUsage,
+    planTiers,
 }: {
     eventId: string;
     invitations: EventInvitationResponseDto[];
     qrLinks: QrLinkResponseDto[];
     qrLinkStats: QrLinkStatsDto[];
     canWrite: boolean;
+    eventUsage: EventUsageResponseDto | null;
+    planTiers: PlanTierResponseDto[];
 }) {
     const t = useTranslations('ManagePage');
     const searchParams = useSearchParams();
@@ -45,10 +52,19 @@ export default function InvitationsTab({
         [t]
     );
 
+    const memberLimit = eventUsage?.memberLimit ?? null;
+    const memberCount = eventUsage?.memberCount ?? 0;
+    const isFull = memberLimit !== null && memberCount >= memberLimit;
+    const currentPlan = eventUsage ? findPlanByCode(planTiers, 'EVENT', eventUsage.planTier) : undefined;
+    const nextPlan = eventUsage ? findNextPlan(planTiers, 'EVENT', eventUsage.planTier) : undefined;
+    const upgradeHref = routes.events.manage(eventId, { tab: 'billing' });
+
+    const canCreate = canWrite && !isFull;
+
     const handleShowCreate = useCallback(() => {
-        if (!canWrite) return;
+        if (!canCreate) return;
         setShowCreate(true);
-    }, [canWrite]);
+    }, [canCreate]);
 
     const handleHideCreate = useCallback(() => {
         setShowCreate(false);
@@ -74,6 +90,36 @@ export default function InvitationsTab({
             {/* Panels */}
             <SubTabs tabs={tabs} active={panel} onSelectAction={handlePanelSelect} className="mb-4" />
 
+            {/* Capacity */}
+            {eventUsage && (
+                <div className="mb-4">
+                    <UsagePanel
+                        title={t('invitations.capacity.title')}
+                        planName={currentPlan?.name ?? eventUsage.planTier}
+                        nextPlanName={isFull ? nextPlan?.name : undefined}
+                        upgradeHref={upgradeHref}
+                        items={[
+                            {
+                                key: 'members',
+                                used: memberCount,
+                                limit: memberLimit,
+                                percent: eventUsage.memberPercent,
+                                valueLabel: memberLimit === null ? `${memberCount}` : `${memberCount} / ${memberLimit}`,
+                            },
+                        ]}
+                    />
+                    {canWrite && isFull && (
+                        <p className="mt-2 text-xs leading-relaxed text-amber-700">
+                            {nextPlan
+                                ? nextPlan.maxMembers === null
+                                    ? t('invitations.full.noticeWithUnlimitedUpgrade', { plan: nextPlan.name })
+                                    : t('invitations.full.noticeWithUpgrade', { plan: nextPlan.name, seats: nextPlan.maxMembers })
+                                : t('invitations.full.notice')}
+                        </p>
+                    )}
+                </div>
+            )}
+
             {/* Summary */}
             <div className="mb-3 flex items-center justify-between">
                 <p className="text-xs text-ink-muted">
@@ -83,7 +129,7 @@ export default function InvitationsTab({
                           ? t('invitationsCard.summary', { count: visibleInvitations.length })
                           : t('qr.summary', { count: qrLinks.length })}
                 </p>
-                {!showCreate && canWrite && (
+                {!showCreate && canCreate && (
                     <button
                         type="button"
                         onClick={handleShowCreate}
@@ -106,7 +152,7 @@ export default function InvitationsTab({
             )}
 
             {/* Guidance */}
-            {canWrite && !showCreate && (
+            {canCreate && !showCreate && (
                 <div className="mb-4 rounded-md bg-surface-muted/50 px-4 py-3">
                     <p className="text-sm font-semibold text-ink">
                         {showCoHosts
@@ -126,11 +172,11 @@ export default function InvitationsTab({
             )}
 
             {/* Create */}
-            {showCreate && canWrite && showInvites && (
+            {showCreate && canCreate && showInvites && (
                 <CreateInvitationForm eventId={eventId} onDoneAction={handleHideCreate} onClampNoticeAction={handleClampNotice} />
             )}
-            {showCreate && canWrite && showCoHosts && <CreateCoHostInvitationForm eventId={eventId} onDoneAction={handleHideCreate} />}
-            {showCreate && canWrite && !showInvites && !showCoHosts && (
+            {showCreate && canCreate && showCoHosts && <CreateCoHostInvitationForm eventId={eventId} onDoneAction={handleHideCreate} />}
+            {showCreate && canCreate && !showInvites && !showCoHosts && (
                 <CreateQrLinkForm eventId={eventId} onDoneAction={handleHideCreate} onClampNoticeAction={handleClampNotice} />
             )}
 
