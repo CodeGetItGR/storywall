@@ -108,6 +108,7 @@
         "removeReaction": "Αφαίρεση αντίδρασης",
         "openReactions": "Άνοιγμα σχολίων",
         "comments": "{count} σχόλια",
+        "viewAllComments": "Προβολή όλων ({count} σχόλια)",
         "sharePost": "Κοινοποίηση Δημοσίευσης",
         "savePost": "Αποθήκευση Δημοσίευσης",
         "unsavePost": "Κατάργηση αποθήκευσης",

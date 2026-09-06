@@ -5,10 +5,10 @@ import { useTranslations } from 'next-intl';
 import React, { useMemo, useState } from 'react';
 
 import { MediaThumbnail } from '@/components/common/MediaThumbnail';
-import { EditPostModal, PostActionsMenu, PostAuthorAvatar, PostMediaViewer, PostReactionPicker, ReactionSummary } from '@/components/feed/post';
+import { CommentsList, EditPostModal, PostActionsMenu, PostAuthorAvatar, PostMediaViewer, PostReactionPicker, ReactionSummary } from '@/components/feed/post';
 import Badge from '@/components/ui/badge';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { useAppConfig, useDeletePost, usePostModal, useUpdatePost } from '@/hooks';
+import { useAppConfig, useDeletePost, useEventMembers, usePostModal, useUpdatePost } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import type { PostResponseDto } from '@/lib/api/types';
 import { isEventWritable } from '@/lib/eventLifecycle';
@@ -38,6 +38,8 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
     const { data: appConfig } = useAppConfig();
+    const { data: members = [] } = useEventMembers(post.eventId);
+    const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
     const isHost = useIsHost();
     const toErrorMessage = useApiErrorMessage();
     const deletePost = useDeletePost(post.eventId);
@@ -239,6 +241,22 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                     </button>
                 )}
             </div>
+
+            {/* Comment preview */}
+            {post.commentCount > 0 && (
+                <div className="border-t border-border/50 px-4 pb-4 pt-3">
+                    <CommentsList comments={post.recentComments} membersById={membersById} compact />
+                    {post.commentCount > post.recentComments.length && (
+                        <button
+                            type="button"
+                            onClick={showCommentLink ? openPost : undefined}
+                            className="mt-2 text-[12px] font-medium text-ink-muted transition-colors hover:text-ink"
+                        >
+                            {t('viewAllComments', { count: post.commentCount })}
+                        </button>
+                    )}
+                </div>
+            )}
 
             {/* Fullscreen media viewer */}
             {selectedMediaIndex !== null && (

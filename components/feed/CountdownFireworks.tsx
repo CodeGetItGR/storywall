@@ -18,5 +18,5 @@ export function CountdownFireworks({ onCompleteAction }: { onCompleteAction: () 
         };
     }, [onCompleteAction]);
 
-    return <canvas ref={canvasRef} aria-hidden="true" className="pointer-events-none fixed inset-0 z-[300] h-screen w-screen" />;
+    return <canvas ref={canvasRef} aria-hidden="true" className="pointer-events-none fixed inset-0 z-300 h-screen w-screen" />;
 }

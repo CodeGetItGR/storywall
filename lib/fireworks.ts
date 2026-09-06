@@ -21,10 +21,10 @@ function randomShapeSet(): confetti.Shape[] {
 
 function fireCenterBurst(fire: confetti.CreateTypes): void {
     fire({
-        particleCount: Math.round(randomBetween(120, 200)),
-        startVelocity: randomBetween(45, 75),
+        particleCount: Math.round(randomBetween(40, 70)),
+        startVelocity: randomBetween(35, 50),
         spread: 360,
-        gravity: 0.7,
+        gravity: 0.5,
         ticks: Math.round(randomBetween(200, 280)),
         scalar: randomBetween(0.9, 1.7),
         shapes: randomShapeSet(),
@@ -35,11 +35,11 @@ function fireCenterBurst(fire: confetti.CreateTypes): void {
 
 function fireSideCannon(fire: confetti.CreateTypes, side: 'left' | 'right'): void {
     fire({
-        particleCount: Math.round(randomBetween(70, 110)),
-        startVelocity: randomBetween(55, 75),
+        particleCount: Math.round(randomBetween(15, 30)),
+        startVelocity: randomBetween(30, 35),
         spread: 70,
         angle: side === 'left' ? 60 : 120,
-        gravity: 0.75,
+        gravity: 0.6,
         ticks: 240,
         scalar: randomBetween(1, 1.5),
         origin: { x: side === 'left' ? 0 : 1, y: 0.95 },
@@ -50,9 +50,9 @@ function fireSideCannon(fire: confetti.CreateTypes, side: 'left' | 'right'): voi
 function fireSparkleBurst(fire: confetti.CreateTypes): void {
     fire({
         particleCount: 18,
-        startVelocity: randomBetween(35, 55),
+        startVelocity: randomBetween(25, 30),
         spread: 360,
-        gravity: 0.5,
+        gravity: 0.3,
         ticks: 200,
         scalar: randomBetween(1.4, 2),
         shapes: [confetti.shapeFromText(SPARKLE_EMOJIS[Math.floor(Math.random() * SPARKLE_EMOJIS.length)])],

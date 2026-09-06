@@ -108,6 +108,7 @@
         "removeReaction": "Remove reaction",
         "openReactions": "Open comments",
         "comments": "{count} comments",
+        "viewAllComments": "View all {count} comments",
         "sharePost": "Share post",
         "savePost": "Save post",
         "unsavePost": "Unsave post",
