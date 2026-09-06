@@ -86,6 +86,7 @@ export function RsvpStatsPanel({
                                 <div className="h-2 overflow-hidden rounded-full bg-surface-muted">
                                     <div className="h-full rounded-full bg-primary" style={{ width: `${percent}%` }} />
                                 </div>
+                                {status === 'GOING' && <p className="mt-1 text-[11px] text-ink-faint">{t('rsvpStats.attendingNote')}</p>}
                             </div>
                         );
                     })}
