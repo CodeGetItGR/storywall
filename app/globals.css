@@ -212,6 +212,22 @@
     --scrollbar-thumb-hover: rgb(91 97 114 / 0.48);
 }
 
+/* ── Fullscreen media viewer overlay: light ink on a dark backdrop ──
+   Reuses PostAuthorAvatar / PostReactionPicker / ReactionSummary as-is
+   over the black lightbox. Their ink-token utilities are compiled by
+   Tailwind's `@theme inline` into fixed light-mode colors, so a scoped
+   CSS-variable override (the .admin-shell technique) has no effect here;
+   overriding the utility classes directly does. */
+.media-viewer-overlay :where(.text-ink, .hover\:text-ink:hover) {
+    color: #ffffff;
+}
+.media-viewer-overlay :where(.text-ink-muted, .hover\:text-ink-muted:hover) {
+    color: rgb(255 255 255 / 0.72);
+}
+.media-viewer-overlay .text-ink-faint {
+    color: rgb(255 255 255 / 0.45);
+}
+
 /* ── Base layer ── */
 @layer base {
     * {

@@ -115,9 +115,6 @@ export function PostMediaCarousel({ media, initialIndex, onIndexChange, alt, cla
                     >
                         <ChevronRight className="w-5 h-5" />
                     </button>
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full bg-black/50 text-white text-xs tabular-nums">
-                        {currentIndex + 1} / {media.length}
-                    </div>
                 </>
             )}
         </div>

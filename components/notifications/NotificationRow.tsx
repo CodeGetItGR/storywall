@@ -1,6 +1,6 @@
 'use client';
 
-import { Trash2 } from 'lucide-react';
+import { ChevronRight, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback } from 'react';
@@ -64,6 +64,12 @@ export function NotificationRow({ notification }: { notification: NotificationRe
                 <p className="mt-1 text-xs text-ink-faint">
                     {timeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${timeAgo.unit}`, { count: timeAgo.value })}
                 </p>
+                {ctaRoute && notification.ctaLabel && (
+                    <p className="mt-1.5 inline-flex items-center gap-0.5 text-xs font-semibold text-primary">
+                        {notification.ctaLabel}
+                        <ChevronRight className="h-3 w-3" strokeWidth={2.5} />
+                    </p>
+                )}
             </div>
 
             {!isRead && <div className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />}

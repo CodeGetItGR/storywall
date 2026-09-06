@@ -261,6 +261,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
             {/* Fullscreen media viewer */}
             {selectedMediaIndex !== null && (
                 <PostMediaViewer
+                    post={post}
                     media={media}
                     initialIndex={selectedMediaIndex}
                     alt={t('mediaBy', { name: authorName })}
