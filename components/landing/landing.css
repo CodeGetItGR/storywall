@@ -2352,150 +2352,6 @@
     }
 }
 
-/* FAQ */
-.landing-page .swfaq {
-    position: relative;
-    overflow: hidden;
-    color: var(--ink);
-    padding: 104px 5vw 112px;
-    background:
-        radial-gradient(circle at 12% 8%, rgba(244, 144, 95, 0.11), transparent 30%),
-        radial-gradient(circle at 88% 92%, rgba(210, 123, 155, 0.1), transparent 34%), #f7f1eb;
-    border-top: 1px solid rgba(21, 19, 19, 0.08);
-}
-.landing-page .swfaq-head {
-    display: grid;
-    grid-template-columns: 1fr 2.1fr;
-    gap: 5vw;
-    align-items: start;
-    margin-bottom: 64px;
-}
-.landing-page .swfaq-kicker {
-    padding-top: 12px;
-    font-size: 10px;
-    font-weight: 900;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-}
-.landing-page .swfaq-titlewrap h2 {
-    margin: 0;
-    font-family: var(--editorial);
-    font-size: clamp(54px, 5.6vw, 94px);
-    font-weight: 400;
-    line-height: 0.9;
-    letter-spacing: -0.055em;
-}
-.landing-page .swfaq-titlewrap p {
-    max-width: 650px;
-    margin: 24px 0 0;
-    color: #151313;
-    font-size: 16px;
-    line-height: 1.55;
-}
-.landing-page .swfaq-list {
-    margin-left: calc(33.333% + 1.67vw);
-    border-top: 1px solid rgba(21, 19, 19, 0.22);
-}
-.landing-page .swfaq-item {
-    border-bottom: 1px solid rgba(21, 19, 19, 0.18);
-}
-.landing-page .swfaq-item summary {
-    list-style: none;
-    cursor: pointer;
-    min-height: 82px;
-    padding: 22px 2px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 28px;
-    font-family: var(--editorial);
-    font-size: clamp(23px, 2vw, 32px);
-    font-weight: 400;
-    line-height: 1.08;
-    letter-spacing: -0.025em;
-}
-.landing-page .swfaq-item summary::-webkit-details-marker {
-    display: none;
-}
-.landing-page .swfaq-icon {
-    flex: 0 0 34px;
-    width: 34px;
-    height: 34px;
-    border: 1px solid rgba(21, 19, 19, 0.28);
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 19px;
-    font-weight: 400;
-    line-height: 1;
-    transition:
-        transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1),
-        background 0.3s ease,
-        color 0.3s ease;
-}
-.landing-page .swfaq-item[open] .swfaq-icon {
-    transform: rotate(45deg);
-    background: #151313;
-    color: #fff;
-}
-.landing-page .swfaq-answer {
-    max-width: 820px;
-    padding: 0 70px 28px 2px;
-    color: #151313;
-    font-size: 16px;
-    line-height: 1.65;
-}
-@media (hover: hover) and (pointer: fine) {
-    .landing-page .swfaq-item summary:hover .swfaq-icon {
-        transform: scale(1.06);
-    }
-    .landing-page .swfaq-item[open] summary:hover .swfaq-icon {
-        transform: rotate(45deg) scale(1.06);
-    }
-}
-@media (max-width: 760px) {
-    .landing-page .swfaq {
-        padding: 68px 20px 76px;
-        background:
-            radial-gradient(circle at 15% 0%, rgba(244, 144, 95, 0.12), transparent 32%),
-            radial-gradient(circle at 90% 100%, rgba(210, 123, 155, 0.1), transparent 36%), #f7f1eb;
-    }
-    .landing-page .swfaq-head {
-        display: block;
-        margin-bottom: 40px;
-    }
-    .landing-page .swfaq-titlewrap h2 {
-        margin-top: 24px;
-        font-size: clamp(44px, 12vw, 62px);
-    }
-    .landing-page .swfaq-titlewrap p {
-        margin-top: 18px;
-        font-size: 14px;
-    }
-    .landing-page .swfaq-list {
-        margin-left: 0;
-    }
-    .landing-page .swfaq-item summary {
-        min-height: 70px;
-        padding: 18px 0;
-        gap: 18px;
-        font-size: clamp(22px, 6.6vw, 30px);
-    }
-    .landing-page .swfaq-icon {
-        flex-basis: 30px;
-        width: 30px;
-        height: 30px;
-        font-size: 17px;
-    }
-    .landing-page .swfaq-answer {
-        padding: 0 42px 24px 0;
-        font-size: 14px;
-        line-height: 1.6;
-    }
-}
-
 /* HEADER CTA — emphasized white pill */
 .landing-page .header-cta {
     justify-self: end;
@@ -2620,193 +2476,6 @@
         font-size: 10px;
         font-weight: 900;
         letter-spacing: 0.11em;
-    }
-}
-
-/* FAQ — EDITORIAL VERSION */
-.landing-page .swfaq-editorial {
-    display: grid;
-    grid-template-columns: 0.82fr 2.18fr;
-    gap: 5vw;
-    align-items: start;
-    padding: 108px 5vw 116px;
-    background:
-        radial-gradient(circle at 8% 6%, rgba(244, 144, 95, 0.24), transparent 34%),
-        radial-gradient(circle at 92% 94%, rgba(210, 123, 155, 0.22), transparent 38%), linear-gradient(135deg, #f6e4da 0%, #f4e4e9 50%, #f7e3d5 100%);
-    color: var(--ink);
-    border-top: 1px solid rgba(21, 19, 19, 0.08);
-}
-
-.landing-page .swfaq-editorial-left {
-    position: sticky;
-    top: 42px;
-}
-
-.landing-page .swfaq-editorial-left .swfaq-kicker {
-    margin-bottom: 34px;
-}
-
-.landing-page .swfaq-editorial-left h2 {
-    margin: 0;
-    font-family: var(--editorial);
-    font-size: clamp(100px, 11vw, 180px);
-    font-weight: 400;
-    line-height: 0.76;
-    letter-spacing: -0.075em;
-}
-
-.landing-page .swfaq-editorial-left p {
-    max-width: 300px;
-    margin: 34px 0 0;
-    color: #151313;
-    font-size: 16px;
-    line-height: 1.55;
-}
-
-.landing-page .swfaq-editorial-list {
-    border-top: 1px solid rgba(21, 19, 19, 0.26);
-}
-
-.landing-page .swfaq-editorial-item {
-    border-bottom: 1px solid rgba(21, 19, 19, 0.2);
-}
-
-.landing-page .swfaq-editorial-item summary {
-    list-style: none;
-    cursor: pointer;
-    min-height: 96px;
-    padding: 22px 0;
-    display: grid;
-    grid-template-columns: 72px minmax(0, 1fr) 38px;
-    gap: 24px;
-    align-items: center;
-}
-
-.landing-page .swfaq-editorial-item summary::-webkit-details-marker {
-    display: none;
-}
-
-.landing-page .swfaq-editorial-index {
-    font-family: var(--editorial);
-    font-size: 34px;
-    line-height: 1;
-    letter-spacing: -0.04em;
-    color: #151313;
-    transition: color 0.3s ease;
-}
-
-.landing-page .swfaq-editorial-question {
-    font-family: var(--editorial);
-    font-size: clamp(25px, 2.15vw, 34px);
-    font-weight: 400;
-    line-height: 1.08;
-    letter-spacing: -0.03em;
-}
-
-.landing-page .swfaq-editorial-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 1px solid rgba(21, 19, 19, 0.34);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 19px;
-    line-height: 1;
-    transition:
-        transform 0.32s cubic-bezier(0.22, 0.61, 0.36, 1),
-        background 0.28s ease,
-        color 0.28s ease;
-}
-
-.landing-page .swfaq-editorial-answer {
-    max-width: 850px;
-    margin-left: 96px;
-    padding: 0 68px 30px 0;
-    color: #151313;
-    font-size: 16px;
-    line-height: 1.67;
-}
-
-.landing-page .swfaq-editorial-item[open] .swfaq-editorial-index {
-    color: #d87d8f;
-}
-
-.landing-page .swfaq-editorial-item[open] .swfaq-editorial-icon {
-    transform: rotate(45deg);
-    background: #151313;
-    color: #fff;
-}
-
-@media (hover: hover) and (pointer: fine) {
-    .landing-page .swfaq-editorial-item summary:hover .swfaq-editorial-index {
-        color: #d87d8f;
-    }
-    .landing-page .swfaq-editorial-item summary:hover .swfaq-editorial-icon {
-        transform: scale(1.06);
-    }
-    .landing-page .swfaq-editorial-item[open] summary:hover .swfaq-editorial-icon {
-        transform: rotate(45deg) scale(1.06);
-    }
-}
-
-@media (max-width: 760px) {
-    .landing-page .swfaq-editorial {
-        display: block;
-        padding: 68px 20px 78px;
-        background:
-            radial-gradient(circle at 8% 0%, rgba(244, 144, 95, 0.27), transparent 36%),
-            radial-gradient(circle at 95% 100%, rgba(210, 123, 155, 0.24), transparent 42%),
-            linear-gradient(145deg, #f5dfd4 0%, #f3e1e8 54%, #f5dfd0 100%);
-    }
-
-    .landing-page .swfaq-editorial-left {
-        position: static;
-        margin-bottom: 44px;
-    }
-
-    .landing-page .swfaq-editorial-left .swfaq-kicker {
-        margin-bottom: 24px;
-    }
-
-    .landing-page .swfaq-editorial-left h2 {
-        font-size: clamp(88px, 28vw, 126px);
-        line-height: 0.78;
-    }
-
-    .landing-page .swfaq-editorial-left p {
-        max-width: 90%;
-        margin-top: 26px;
-        font-size: 14px;
-    }
-
-    .landing-page .swfaq-editorial-item summary {
-        min-height: 82px;
-        padding: 18px 0;
-        grid-template-columns: 42px minmax(0, 1fr) 32px;
-        gap: 14px;
-    }
-
-    .landing-page .swfaq-editorial-index {
-        font-size: 24px;
-    }
-
-    .landing-page .swfaq-editorial-question {
-        font-size: clamp(21px, 6.6vw, 29px);
-    }
-
-    .landing-page .swfaq-editorial-icon {
-        width: 31px;
-        height: 31px;
-        font-size: 17px;
-    }
-
-    .landing-page .swfaq-editorial-answer {
-        margin-left: 56px;
-        padding: 0 28px 24px 0;
-        font-size: 14px;
-        line-height: 1.62;
     }
 }
 
@@ -3646,41 +3315,6 @@
     font-size: 12px;
 }
 
-/* FAQ — readable sans-serif, smaller questions */
-.landing-page .swfaq-editorial-question {
-    font-family: Arial, Helvetica, sans-serif !important;
-    font-size: clamp(18px, 1.35vw, 22px) !important;
-    font-weight: 600 !important;
-    line-height: 1.28 !important;
-    letter-spacing: -0.01em !important;
-}
-.landing-page .swfaq-editorial-answer {
-    font-family: Arial, Helvetica, sans-serif !important;
-    font-size: 15px !important;
-    line-height: 1.7 !important;
-}
-.landing-page .swfaq-editorial-item summary {
-    min-height: 78px !important;
-}
-.landing-page .swfaq-editorial-index {
-    font-size: 29px !important;
-}
-@media (max-width: 760px) {
-    .landing-page .swfaq-editorial-question {
-        font-size: 17px !important;
-        line-height: 1.35 !important;
-    }
-    .landing-page .swfaq-editorial-answer {
-        font-size: 14px !important;
-    }
-    .landing-page .swfaq-editorial-item summary {
-        min-height: 68px !important;
-    }
-    .landing-page .swfaq-editorial-index {
-        font-size: 22px !important;
-    }
-}
-
 /* FINAL CTA — roughly half the previous desktop height */
 .landing-page .sw-final-cta {
     min-height: 400px !important;
@@ -4393,15 +4027,6 @@
 
 /* v64 — requested refinements */
 
-/* FAQ: lighter editorial serif, not bold */
-.landing-page .swfaq-editorial-question {
-    font-family: var(--editorial) !important;
-    font-weight: 400 !important;
-    font-size: clamp(23px, 1.8vw, 30px) !important;
-    line-height: 1.14 !important;
-    letter-spacing: -0.028em !important;
-}
-
 /* Mobile-only fixes */
 @media (max-width: 760px) {
     /* Journey: remove the oversized blank area between photo and content */
@@ -4440,14 +4065,6 @@
     .landing-page .journey-panel-foot {
         margin-top: 20px !important;
         padding-top: 14px !important;
-    }
-
-    /* FAQ mobile sizing — still editorial, easier to read */
-    .landing-page .swfaq-editorial-question {
-        font-size: clamp(21px, 6vw, 26px) !important;
-        font-weight: 400 !important;
-        line-height: 1.18 !important;
-        letter-spacing: -0.025em !important;
     }
 
     /* Final CTA: make the image clearly larger on mobile */
@@ -6242,64 +5859,6 @@
     }
 }
 
-/* Compact gradient transition strip after Hero */
-.landing-page .sw-hero-transition-strip {
-    position: relative;
-    z-index: 20;
-    width: 100%;
-    min-height: 64px;
-    background: linear-gradient(90deg, #ff6f91 0%, #ff8a6f 34%, #f5a85f 68%, #f7c85d 100%);
-    color: #151313;
-}
-.landing-page .sw-hero-transition-inner {
-    width: min(1480px, calc(100% - 64px));
-    min-height: 64px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 28px;
-}
-.landing-page .sw-hero-transition-slogan {
-    font-family: var(--editorial);
-    font-size: clamp(16px, 1.55vw, 24px);
-    font-weight: 400;
-    line-height: 1;
-    letter-spacing: -0.025em;
-}
-.landing-page .sw-hero-transition-cta {
-    flex: 0 0 auto;
-    min-height: 38px;
-    padding: 0 15px 0 18px;
-    display: inline-flex;
-    align-items: center;
-    gap: 18px;
-    border-radius: 999px;
-    background: #151313;
-    color: #fff;
-    font-size: 9px;
-    font-weight: 900;
-    letter-spacing: 0.12em;
-    white-space: nowrap;
-    transition:
-        transform 0.28s ease,
-        background 0.28s ease;
-}
-.landing-page .sw-hero-transition-cta span:last-child {
-    font-size: 17px;
-    line-height: 1;
-    transition: transform 0.28s ease;
-}
-@media (hover: hover) and (pointer: fine) {
-    .landing-page .sw-hero-transition-cta:hover {
-        transform: translateY(-1px);
-        background: #000;
-    }
-    .landing-page .sw-hero-transition-cta:hover span:last-child {
-        transform: translate(2px, -2px);
-    }
-}
-
 /* 03 — Experience: one continuous dark environment */
 .landing-page .swx-intro {
     position: relative;
@@ -6335,39 +5894,10 @@
 }
 
 @media (max-width: 760px) {
-    .landing-page .sw-hero-transition-strip {
-        min-height: 70px;
-    }
-    .landing-page .sw-hero-transition-inner {
-        width: calc(100% - 32px);
-        min-height: 70px;
-        gap: 14px;
-    }
-    .landing-page .sw-hero-transition-slogan {
-        max-width: 62%;
-        font-size: 16px;
-        line-height: 1.05;
-    }
-    .landing-page .sw-hero-transition-cta {
-        min-height: 36px;
-        padding: 0 12px 0 14px;
-        gap: 10px;
-        font-size: 8px;
-    }
-    .landing-page .sw-hero-transition-cta span:last-child {
-        font-size: 15px;
-    }
     .landing-page .swx-intro {
         background:
             radial-gradient(circle at 15% 8%, rgba(150, 48, 118, 0.18), transparent 38%),
             linear-gradient(180deg, #171419 0%, #101014 56%, #0b0b0f 100%) !important;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .landing-page .sw-hero-transition-cta,
-    .landing-page .sw-hero-transition-cta span:last-child {
-        transition: none !important;
     }
 }
 
@@ -6429,119 +5959,15 @@
         border-radius: 999px !important;
     }
 }
-
-/* FAQ — use the same StoryWall gradient as the first section */
-.landing-page .swfaq-editorial {
-    background: var(--brand-gradient) !important;
-    border-top: 0 !important;
-}
-@media (max-width: 760px) {
-    .landing-page .swfaq-editorial {
-        background: var(--brand-gradient) !important;
-    }
-}
-
-/* FAQ — exact supplied background image */
-.landing-page .swfaq-editorial {
-    background-image: url('/landing/decor-02.jpg') !important;
-    background-size: cover !important;
-    background-position: center center !important;
-    background-repeat: no-repeat !important;
-    border-top: 0 !important;
-}
-@media (max-width: 760px) {
-    .landing-page .swfaq-editorial {
-        background-image: url('/landing/decor-03.jpg') !important;
-        background-size: cover !important;
-        background-position: center top !important;
-        background-repeat: no-repeat !important;
-    }
-}
-
-.landing-page .sw-hero-transition-strip {
-    min-height: 82px !important;
-}
-.landing-page .sw-hero-transition-inner {
-    width: min(1480px, calc(100% - 64px)) !important;
-    min-height: 82px !important;
-    justify-content: center !important;
-    gap: 24px !important;
-}
-.landing-page .sw-hero-transition-slogan {
-    max-width: none !important;
-    font-family: var(--editorial) !important;
-    font-size: clamp(20px, 1.8vw, 28px) !important;
-    line-height: 1 !important;
-    letter-spacing: -0.03em !important;
-    text-align: center !important;
-}
-.landing-page .sw-hero-transition-cta {
-    min-height: 42px !important;
-    padding: 0 18px 0 20px !important;
-    gap: 14px !important;
-    border-radius: 999px !important;
-    background: #fff !important;
-    color: #151313 !important;
-    box-shadow: none !important;
-}
-@media (hover: hover) and (pointer: fine) {
-    .landing-page .sw-hero-transition-cta:hover {
-        background: #fff !important;
-        color: #151313 !important;
-        transform: translateY(-1px) !important;
-    }
-}
-@media (max-width: 760px) {
-    .landing-page .sw-hero-transition-strip {
-        min-height: 78px !important;
-    }
-    .landing-page .sw-hero-transition-inner {
-        width: calc(100% - 28px) !important;
-        min-height: 78px !important;
-        justify-content: center !important;
-        gap: 12px !important;
-    }
-    .landing-page .sw-hero-transition-slogan {
-        max-width: 58% !important;
-        font-size: 16px !important;
-        line-height: 1.05 !important;
-        text-align: left !important;
-    }
-    .landing-page .sw-hero-transition-cta {
-        min-height: 38px !important;
-        padding: 0 13px 0 15px !important;
-        gap: 9px !important;
-        font-size: 8px !important;
-    }
-}
-
-/* 05 — Packages + FAQ: clean white background */
-.landing-page .swpricing-editorial,
-.landing-page .swfaq-editorial {
+.landing-page .swpricing-editorial {
     background: #fff !important;
     background-image: none !important;
 }
 @media (max-width: 760px) {
-    .landing-page .swpricing-editorial,
-    .landing-page .swfaq-editorial {
+    .landing-page .swpricing-editorial {
         background: #fff !important;
         background-image: none !important;
     }
-}
-
-.landing-page .sw-hero-transition-cta {
-    font-size: 12px !important;
-    letter-spacing: 0.1em !important;
-}
-@media (max-width: 760px) {
-    .landing-page .sw-hero-transition-cta {
-        font-size: 10px !important;
-    }
-}
-
-/* Top transition strip — predominantly orange/yellow, almost no fuchsia */
-.landing-page .sw-hero-transition-strip {
-    background: linear-gradient(90deg, #f58b68 0%, #f69a5e 22%, #f8aa58 48%, #f9b852 72%, #f7c75c 100%) !important;
 }
 
 /* Final CTA sparkle — code-only SVG */
@@ -6615,16 +6041,6 @@
         font-size: 11px !important;
         letter-spacing: 0.08em !important;
     }
-}
-
-.landing-page .sw-hero-transition-strip {
-    background: linear-gradient(
-        90deg,
-        rgba(255, 111, 145, 0.6) 0%,
-        rgba(255, 143, 111, 0.6) 28%,
-        rgba(247, 183, 91, 0.6) 58%,
-        rgba(248, 210, 92, 0.6) 100%
-    ) !important;
 }
 
 .landing-page .sw-footer {
@@ -7670,46 +7086,11 @@
 
 /* Temporary invitation icon stays as it already is until its PNG arrives. */
 
-/* =========================================================
-   DEMO TRANSITION BAR — 30% thinner
-   ========================================================= */
-.landing-page .sw-hero-transition-strip {
-    min-height: 57px !important;
-}
-.landing-page .sw-hero-transition-inner {
-    min-height: 57px !important;
-    padding-top: 6px !important;
-    padding-bottom: 6px !important;
-}
-.landing-page .sw-hero-transition-slogan {
-    font-size: clamp(18px, 1.55vw, 23px) !important;
-}
-.landing-page .sw-hero-transition-cta {
-    min-height: 36px !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-}
-
 @media (max-width: 760px) {
     .landing-page .swx-intro .sw-feature-icon:has(.sw-uploaded-gradient-icon) {
         width: 76px !important;
         height: 76px !important;
         margin-bottom: 14px !important;
-    }
-
-    .landing-page .sw-hero-transition-strip {
-        min-height: 55px !important;
-    }
-    .landing-page .sw-hero-transition-inner {
-        min-height: 55px !important;
-        padding-top: 6px !important;
-        padding-bottom: 6px !important;
-    }
-    .landing-page .sw-hero-transition-slogan {
-        font-size: 17px !important;
-    }
-    .landing-page .sw-hero-transition-cta {
-        min-height: 34px !important;
     }
 }
 
@@ -7850,41 +7231,6 @@
     .landing-page .swx-intro .sw-feature-item {
         flex: 0 0 118px !important;
         scroll-snap-align: start !important;
-    }
-}
-
-/* =========================================================
-   DEMO STRIP — 30% TALLER THAN CURRENT v118
-   v118 ~57px desktop / 55px mobile
-   => ~74px desktop / ~72px mobile
-   ========================================================= */
-.landing-page .sw-hero-transition-strip {
-    min-height: 74px !important;
-}
-
-.landing-page .sw-hero-transition-inner {
-    min-height: 74px !important;
-    padding-top: 10px !important;
-    padding-bottom: 10px !important;
-}
-
-.landing-page .sw-hero-transition-cta {
-    min-height: 42px !important;
-}
-
-@media (max-width: 760px) {
-    .landing-page .sw-hero-transition-strip {
-        min-height: 72px !important;
-    }
-
-    .landing-page .sw-hero-transition-inner {
-        min-height: 72px !important;
-        padding-top: 9px !important;
-        padding-bottom: 9px !important;
-    }
-
-    .landing-page .sw-hero-transition-cta {
-        min-height: 40px !important;
     }
 }
 
@@ -10441,140 +9787,6 @@
     }
 }
 
-/* FAQ — single-column compact editorial accordion */
-.landing-page .swfaq-editorial {
-    display: block !important;
-    padding: 64px clamp(24px, 7vw, 120px) 72px !important;
-}
-
-.landing-page .swfaq-editorial-left {
-    position: static !important;
-    width: 100%;
-    max-width: 1180px;
-    margin: 0 auto 30px !important;
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas:
-        'kicker kicker'
-        'title desc';
-    column-gap: 42px;
-    row-gap: 8px;
-    align-items: end;
-}
-
-.landing-page .swfaq-editorial-left .swfaq-kicker {
-    grid-area: kicker;
-    margin: 0 0 6px !important;
-}
-
-.landing-page .swfaq-editorial-left h2 {
-    grid-area: title;
-    margin: 0 !important;
-    font-size: clamp(64px, 6.5vw, 104px) !important;
-    line-height: 0.82 !important;
-    letter-spacing: -0.065em !important;
-}
-
-.landing-page .swfaq-editorial-left p {
-    grid-area: desc;
-    max-width: 430px !important;
-    margin: 0 0 8px !important;
-    font-size: 14px !important;
-    line-height: 1.45 !important;
-}
-
-.landing-page .swfaq-editorial-list {
-    width: 100%;
-    max-width: 1180px;
-    margin: 0 auto;
-}
-
-.landing-page .swfaq-editorial-item summary {
-    min-height: 58px !important;
-    padding: 12px 0 !important;
-    grid-template-columns: 44px minmax(0, 1fr) 30px !important;
-    gap: 14px !important;
-}
-
-.landing-page .swfaq-editorial-index {
-    font-size: 22px !important;
-}
-
-.landing-page .swfaq-editorial-question {
-    font-size: clamp(18px, 1.35vw, 22px) !important;
-    line-height: 1.22 !important;
-    letter-spacing: -0.018em !important;
-}
-
-.landing-page .swfaq-editorial-icon {
-    width: 29px !important;
-    height: 29px !important;
-    font-size: 16px !important;
-}
-
-.landing-page .swfaq-editorial-answer {
-    max-width: 960px !important;
-    margin-left: 58px !important;
-    padding: 0 42px 18px 0 !important;
-    font-size: 14px !important;
-    line-height: 1.55 !important;
-}
-
-@media (max-width: 760px) {
-    .landing-page .swfaq-editorial {
-        padding: 48px 20px 58px !important;
-    }
-
-    .landing-page .swfaq-editorial-left {
-        display: block;
-        margin-bottom: 26px !important;
-    }
-
-    .landing-page .swfaq-editorial-left .swfaq-kicker {
-        margin-bottom: 12px !important;
-    }
-
-    .landing-page .swfaq-editorial-left h2 {
-        font-size: 68px !important;
-        line-height: 0.82 !important;
-    }
-
-    .landing-page .swfaq-editorial-left p {
-        max-width: 92% !important;
-        margin-top: 10px !important;
-        font-size: 13px !important;
-    }
-
-    .landing-page .swfaq-editorial-item summary {
-        min-height: 56px !important;
-        padding: 11px 0 !important;
-        grid-template-columns: 32px minmax(0, 1fr) 28px !important;
-        gap: 10px !important;
-    }
-
-    .landing-page .swfaq-editorial-index {
-        font-size: 18px !important;
-    }
-
-    .landing-page .swfaq-editorial-question {
-        font-size: 18px !important;
-        line-height: 1.25 !important;
-    }
-
-    .landing-page .swfaq-editorial-icon {
-        width: 27px !important;
-        height: 27px !important;
-        font-size: 15px !important;
-    }
-
-    .landing-page .swfaq-editorial-answer {
-        margin-left: 42px !important;
-        padding: 0 20px 16px 0 !important;
-        font-size: 13px !important;
-        line-height: 1.5 !important;
-    }
-}
-
 /* HERO / SECTION 01 — faster one-way feed loop.
    ~40% faster than the original 28s cycle, pauses at the bottom,
    then restarts from the top instead of reversing. */
@@ -11126,9 +10338,6 @@
     .landing-page .swpricing-titlewrap h2 {
         font-size: clamp(40.5px, 4.275vw, 70.5px) !important;
     }
-    .landing-page .swfaq-editorial-left h2 {
-        font-size: clamp(48px, 4.875vw, 78px) !important;
-    }
     .landing-page .journey-head h2 {
         font-size: clamp(36px, 4.875vw, 81px) !important;
     }
@@ -11143,7 +10352,6 @@
 /* User-requested contrast: muted dark text is now solid black; existing white text remains white. */
 .landing-page .story-copy strong,
 .landing-page .story-extra-text strong,
-.landing-page .sw-hero-transition-slogan strong,
 .landing-page .swdemo-main h2 strong,
 .landing-page .sw-final-cta h2 strong,
 .landing-page .sw-final-cta p strong {
@@ -11209,7 +10417,6 @@
 .landing-page .swdemo-kicker,
 .landing-page .swx-eyebrow,
 .landing-page .swpricing-kicker,
-.landing-page .swfaq-kicker,
 .landing-page .sw-final-cta-kicker,
 .landing-page .sw-filmstrip-eyebrow {
     font-size: 13px !important;
@@ -11220,7 +10427,6 @@
     .landing-page .swdemo-kicker,
     .landing-page .swx-eyebrow,
     .landing-page .swpricing-kicker,
-    .landing-page .swfaq-kicker,
     .landing-page .sw-final-cta-kicker,
     .landing-page .sw-filmstrip-eyebrow {
         font-size: 13px !important;
@@ -11255,33 +10461,6 @@
 }
 
 /* Hero transition strip — smaller copy + smaller CTA */
-.landing-page .sw-hero-transition-slogan {
-    font-size: clamp(14px, 1.2vw, 19px) !important;
-}
-.landing-page .sw-hero-transition-cta {
-    min-height: 32px !important;
-    padding: 0 12px 0 14px !important;
-    gap: 13px !important;
-    font-size: 8px !important;
-}
-.landing-page .sw-hero-transition-cta span:last-child {
-    font-size: 14px !important;
-}
-@media (max-width: 760px) {
-    .landing-page .sw-hero-transition-slogan {
-        max-width: 64% !important;
-        font-size: 13px !important;
-    }
-    .landing-page .sw-hero-transition-cta {
-        min-height: 32px !important;
-        padding: 0 10px 0 12px !important;
-        gap: 8px !important;
-        font-size: 7.5px !important;
-    }
-    .landing-page .sw-hero-transition-cta span:last-child {
-        font-size: 13px !important;
-    }
-}
 
 .landing-page .sw-footer-logo {
     width: clamp(255px, 28vw, 430px);
@@ -11739,13 +10918,6 @@
 }
 
 /* v64 FINAL OVERRIDES — keep these last */
-.landing-page .swfaq-editorial-question {
-    font-family: var(--editorial) !important;
-    font-weight: 400 !important;
-    font-size: clamp(23px, 1.8vw, 30px) !important;
-    line-height: 1.14 !important;
-    letter-spacing: -0.028em !important;
-}
 @media (max-width: 760px) {
     .landing-page .journey-panel {
         grid-template-rows: 42svh auto !important;
@@ -11782,13 +10954,6 @@
     .landing-page .journey-panel-foot {
         margin-top: 20px !important;
         padding-top: 14px !important;
-    }
-
-    .landing-page .swfaq-editorial-question {
-        font-size: clamp(21px, 6vw, 26px) !important;
-        font-weight: 400 !important;
-        line-height: 1.18 !important;
-        letter-spacing: -0.025em !important;
     }
 
     .landing-page .sw-final-cta-media {
@@ -12129,24 +11294,6 @@
     }
 }
 
-/* FAQ — slightly more breathing room without returning to the oversized layout */
-.landing-page .swfaq-editorial-item summary {
-    min-height: 68px !important;
-    padding: 17px 0 !important;
-}
-.landing-page .swfaq-editorial-answer {
-    padding: 2px 42px 24px 0 !important;
-}
-@media (max-width: 760px) {
-    .landing-page .swfaq-editorial-item summary {
-        min-height: 62px !important;
-        padding: 14px 0 !important;
-    }
-    .landing-page .swfaq-editorial-answer {
-        padding: 2px 20px 20px 0 !important;
-    }
-}
-
 /* Mobile-only: make both baked phone/photo layers visibly softer
    from the start, while keeping their existing scroll fade. */
 @media (max-width: 760px) {
@@ -12392,134 +11539,6 @@
 }
 
 /* =========================================================
-   DEMO STRIP — taller + longer, softer fade to white
-   ========================================================= */
-.landing-page .sw-hero-transition-strip {
-    position: relative !important;
-    isolation: isolate !important;
-    min-height: 156px !important;
-    overflow: visible !important;
-}
-
-.landing-page .sw-hero-transition-inner {
-    min-height: 156px !important;
-    padding-top: 30px !important;
-    padding-bottom: 30px !important;
-}
-
-.landing-page .sw-hero-transition-cta {
-    min-height: 56px !important;
-}
-
-.landing-page .sw-hero-transition-strip::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -1px;
-    height: 96px;
-    pointer-events: none;
-    z-index: 2;
-    background: linear-gradient(
-        to bottom,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.1) 26%,
-        rgba(255, 255, 255, 0.34) 52%,
-        rgba(255, 255, 255, 0.7) 76%,
-        #ffffff 100%
-    ) !important;
-}
-
-@media (max-width: 760px) {
-    .landing-page .sw-hero-transition-strip {
-        min-height: 138px !important;
-    }
-
-    .landing-page .sw-hero-transition-inner {
-        min-height: 138px !important;
-        padding-top: 24px !important;
-        padding-bottom: 24px !important;
-    }
-
-    .landing-page .sw-hero-transition-cta {
-        min-height: 52px !important;
-    }
-
-    .landing-page .sw-hero-transition-strip::after {
-        height: 82px !important;
-    }
-}
-
-/* =========================================================
-   DEMO STRIP — taller, smoother fade to white, content lifted higher
-   ========================================================= */
-.landing-page .sw-hero-transition-strip {
-    position: relative !important;
-    isolation: isolate !important;
-    min-height: 148px !important;
-    overflow: visible !important;
-}
-
-.landing-page .sw-hero-transition-inner {
-    min-height: 148px !important;
-    padding-top: 18px !important;
-    padding-bottom: 56px !important;
-    align-items: flex-start !important;
-    justify-content: center !important;
-    gap: 26px !important;
-}
-
-.landing-page .sw-hero-transition-slogan {
-    margin-top: 0 !important;
-}
-
-.landing-page .sw-hero-transition-cta {
-    min-height: 58px !important;
-    margin-top: -4px !important;
-}
-
-.landing-page .sw-hero-transition-strip::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -1px;
-    height: 96px;
-    pointer-events: none;
-    z-index: 2;
-    background: linear-gradient(
-        to bottom,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.18) 30%,
-        rgba(255, 255, 255, 0.56) 68%,
-        #ffffff 100%
-    ) !important;
-}
-
-@media (max-width: 760px) {
-    .landing-page .sw-hero-transition-strip {
-        min-height: 132px !important;
-    }
-
-    .landing-page .sw-hero-transition-inner {
-        min-height: 132px !important;
-        padding-top: 16px !important;
-        padding-bottom: 44px !important;
-        align-items: flex-start !important;
-        gap: 12px !important;
-    }
-
-    .landing-page .sw-hero-transition-cta {
-        min-height: 52px !important;
-        margin-top: -2px !important;
-    }
-
-    .landing-page .sw-hero-transition-strip::after {
-        height: 84px !important;
-    }
-}
-
-/* =========================================================
    DEMO SECTION — supplied dual-phone artwork
    ========================================================= */
 @media (min-width: 761px) {
@@ -12617,178 +11636,6 @@
     }
 }
 
-/* Transition strip matched to the supplied reference */
-@media (min-width: 761px) {
-    .landing-page .sw-hero-transition-strip {
-        min-height: 330px !important;
-        position: relative !important;
-        overflow: hidden !important;
-        isolation: isolate !important;
-    }
-
-    .landing-page .sw-hero-transition-inner {
-        width: min(1500px, calc(100% - 120px)) !important;
-        min-height: 330px !important;
-        padding: 48px 0 170px !important;
-        display: flex !important;
-        align-items: flex-start !important;
-        justify-content: center !important;
-        gap: 72px !important;
-    }
-
-    .landing-page .sw-hero-transition-slogan {
-        margin: 0 !important;
-        font-size: clamp(34px, 2.55vw, 54px) !important;
-        line-height: 1.04 !important;
-        letter-spacing: -0.035em !important;
-        white-space: nowrap !important;
-    }
-
-    .landing-page .sw-hero-transition-cta {
-        min-height: 92px !important;
-        padding: 0 42px 0 50px !important;
-        margin: -10px 0 0 !important;
-        gap: 34px !important;
-        border-radius: 999px !important;
-        font-size: 18px !important;
-        letter-spacing: 0.13em !important;
-    }
-
-    .landing-page .sw-hero-transition-cta span:last-child {
-        font-size: 34px !important;
-    }
-
-    .landing-page .sw-hero-transition-strip::after {
-        content: '' !important;
-        position: absolute !important;
-        inset: auto 0 -1px 0 !important;
-        height: 255px !important;
-        z-index: 2 !important;
-        pointer-events: none !important;
-        background: linear-gradient(
-            to bottom,
-            rgba(255, 255, 255, 0) 0%,
-            rgba(255, 255, 255, 0.08) 20%,
-            rgba(255, 255, 255, 0.28) 45%,
-            rgba(255, 255, 255, 0.62) 72%,
-            #fff 100%
-        ) !important;
-    }
-}
-
-@media (max-width: 760px) {
-    .landing-page .sw-hero-transition-strip {
-        min-height: 250px !important;
-        overflow: hidden !important;
-    }
-
-    .landing-page .sw-hero-transition-inner {
-        width: calc(100% - 34px) !important;
-        min-height: 250px !important;
-        padding: 28px 0 132px !important;
-        align-items: flex-start !important;
-        justify-content: center !important;
-        gap: 12px !important;
-    }
-
-    .landing-page .sw-hero-transition-slogan {
-        max-width: 58% !important;
-        margin: 0 !important;
-        font-size: 20px !important;
-        line-height: 1.06 !important;
-        white-space: normal !important;
-    }
-
-    .landing-page .sw-hero-transition-cta {
-        min-height: 54px !important;
-        margin: -4px 0 0 !important;
-        padding: 0 16px 0 18px !important;
-        gap: 12px !important;
-        font-size: 8px !important;
-    }
-
-    .landing-page .sw-hero-transition-cta span:last-child {
-        font-size: 20px !important;
-    }
-
-    .landing-page .sw-hero-transition-strip::after {
-        height: 185px !important;
-        background: linear-gradient(
-            to bottom,
-            rgba(255, 255, 255, 0) 0%,
-            rgba(255, 255, 255, 0.1) 22%,
-            rgba(255, 255, 255, 0.34) 50%,
-            rgba(255, 255, 255, 0.7) 76%,
-            #fff 100%
-        ) !important;
-    }
-}
-
-/* Transition strip: reduce only vertical height by 25% */
-@media (min-width: 761px) {
-    .landing-page .sw-hero-transition-strip {
-        min-height: 248px !important;
-    }
-    .landing-page .sw-hero-transition-inner {
-        min-height: 248px !important;
-        padding-top: 48px !important;
-        padding-bottom: 88px !important;
-    }
-    .landing-page .sw-hero-transition-strip::after {
-        height: 191px !important;
-    }
-}
-@media (max-width: 760px) {
-    .landing-page .sw-hero-transition-strip {
-        min-height: 188px !important;
-    }
-    .landing-page .sw-hero-transition-inner {
-        min-height: 188px !important;
-        padding-top: 28px !important;
-        padding-bottom: 70px !important;
-    }
-    .landing-page .sw-hero-transition-strip::after {
-        height: 139px !important;
-    }
-}
-
-/* User correction: smaller transition-strip copy/button and tighter horizontal spacing. */
-@media (min-width: 761px) {
-    .landing-page .sw-hero-transition-inner {
-        gap: 28px !important;
-    }
-    .landing-page .sw-hero-transition-slogan {
-        font-size: clamp(27px, 2vw, 42px) !important;
-    }
-    .landing-page .sw-hero-transition-cta {
-        min-height: 68px !important;
-        padding: 0 28px 0 32px !important;
-        margin: -6px 0 0 !important;
-        gap: 22px !important;
-        font-size: 13px !important;
-    }
-    .landing-page .sw-hero-transition-cta span:last-child {
-        font-size: 25px !important;
-    }
-}
-@media (max-width: 760px) {
-    .landing-page .sw-hero-transition-inner {
-        gap: 8px !important;
-    }
-    .landing-page .sw-hero-transition-slogan {
-        font-size: 17px !important;
-    }
-    .landing-page .sw-hero-transition-cta {
-        min-height: 46px !important;
-        padding: 0 13px 0 15px !important;
-        gap: 8px !important;
-        font-size: 7.2px !important;
-    }
-    .landing-page .sw-hero-transition-cta span:last-child {
-        font-size: 17px !important;
-    }
-}
-
 /* User correction: reduce the large white gap after the DEMO strip. */
 @media (min-width: 761px) {
     .landing-page .platform {
@@ -12826,33 +11673,6 @@
     .landing-page .sw-new-hero-subtitle {
         margin-top: 20px !important;
     }
-
-    .landing-page .sw-hero-transition-inner {
-        align-items: center !important;
-        gap: 18px !important;
-        padding-top: 22px !important;
-        padding-bottom: 68px !important;
-    }
-
-    .landing-page .sw-hero-transition-slogan {
-        max-width: none !important;
-        font-size: 21px !important;
-        line-height: 1.05 !important;
-        white-space: nowrap !important;
-    }
-
-    .landing-page .sw-hero-transition-cta {
-        min-height: 54px !important;
-        margin: 0 !important;
-        padding: 0 18px 0 21px !important;
-        gap: 13px !important;
-        font-size: 11px !important;
-        letter-spacing: 0.1em !important;
-    }
-
-    .landing-page .sw-hero-transition-cta span:last-child {
-        font-size: 21px !important;
-    }
 }
 
 @media (max-width: 420px) {
@@ -12869,21 +11689,6 @@
         flex-basis: 46px !important;
         font-size: 28px !important;
     }
-
-    .landing-page .sw-hero-transition-inner {
-        gap: 14px !important;
-    }
-
-    .landing-page .sw-hero-transition-slogan {
-        font-size: 19px !important;
-    }
-
-    .landing-page .sw-hero-transition-cta {
-        min-height: 50px !important;
-        padding: 0 15px 0 17px !important;
-        gap: 10px !important;
-        font-size: 10px !important;
-    }
 }
 
 /* Blend the hero artwork into the transition strip without changing its layout. */
@@ -12894,14 +11699,7 @@
     z-index: 20;
     height: clamp(48px, 5vw, 78px);
     pointer-events: none;
-    background:
-        linear-gradient(
-            90deg,
-            rgb(251 163 180) 0%,
-            rgb(251 182 159) 28%,
-            rgb(246 206 147) 58%,
-            rgb(246 222 148) 100%
-        );
+    background: linear-gradient(90deg, rgb(251 163 180) 0%, rgb(251 182 159) 28%, rgb(246 206 147) 58%, rgb(246 222 148) 100%);
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgb(0 0 0 / 18%) 24%, rgb(0 0 0) 100%);
     mask-image: linear-gradient(to bottom, transparent 0%, rgb(0 0 0 / 18%) 24%, rgb(0 0 0) 100%);
 }
@@ -12909,5 +11707,37 @@
 @media (max-width: 760px) {
     .landing-page .sw-new-hero::after {
         height: 52px;
+    }
+}
+
+/* The strip fades into the following white section. */
+.landing-page [data-landing-hero-transition]::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 -1px;
+    z-index: 2;
+    height: 139px;
+    pointer-events: none;
+    background: linear-gradient(
+        to bottom,
+        rgb(255 255 255 / 0%) 0%,
+        rgb(255 255 255 / 10%) 22%,
+        rgb(255 255 255 / 34%) 50%,
+        rgb(255 255 255 / 70%) 76%,
+        rgb(255 255 255) 100%
+    );
+}
+
+@media (min-width: 761px) {
+    .landing-page [data-landing-hero-transition]::after {
+        height: 191px;
+        background: linear-gradient(
+            to bottom,
+            rgb(255 255 255 / 0%) 0%,
+            rgb(255 255 255 / 8%) 20%,
+            rgb(255 255 255 / 28%) 45%,
+            rgb(255 255 255 / 62%) 72%,
+            rgb(255 255 255) 100%
+        );
     }
 }
