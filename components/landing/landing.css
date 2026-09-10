@@ -3821,6 +3821,19 @@
     font-weight: 800;
 }
 
+.landing-page .sw-landing-profile-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: #171313;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.landing-page .sw-landing-profile-badge > div {
+    box-shadow: 0 0 0 2px rgba(23, 19, 19, 0.12);
+}
+
 .landing-page .sw-new-hero-language-switcher {
     flex: 0 0 auto;
 }
@@ -5868,6 +5881,20 @@
 
     .landing-page .sw-mobile-menu-panel a:last-child {
         border-bottom: 0;
+    }
+
+    .landing-page .sw-mobile-menu-panel .sw-landing-profile-badge {
+        min-height: 52px;
+        border-bottom: 0;
+        font-size: 13px;
+        letter-spacing: 0.045em;
+        text-transform: uppercase;
+    }
+
+    .landing-page .sw-mobile-menu-panel .sw-landing-profile-badge::after {
+        content: '↗';
+        font-size: 15px;
+        font-weight: 400;
     }
 
     .landing-page .sw-mobile-menu-language-switcher {

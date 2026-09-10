@@ -48,7 +48,7 @@ export default function DemoLayout({ children }: { children: ReactNode }) {
             <DemoEventProvider>
                 <ComposerProvider>
                     <ModalProvider>
-                        <div className="min-h-dvh bg-background">
+                        <div className="h-dvh overflow-y-auto overscroll-contain bg-background">
                             <div className="flex items-center justify-end gap-2 px-4 py-2">
                                 <ResetDemoButton />
                             </div>

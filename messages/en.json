@@ -2983,6 +2983,7 @@
             "kickerStrong": "PRIVATE EVENTS",
             "title": ["Every moment", "becomes part of", "the story."],
             "cta": ["Create your own", "StoryWall"],
+            "signedInCta": ["Your", "events"],
             "subtitleStart": "A",
             "subtitleStrong": "private social space",
             "subtitleEnd": "for your event",
