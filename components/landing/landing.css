@@ -12885,3 +12885,29 @@
         font-size: 10px !important;
     }
 }
+
+/* Blend the hero artwork into the transition strip without changing its layout. */
+.landing-page .sw-new-hero::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    z-index: 20;
+    height: clamp(48px, 5vw, 78px);
+    pointer-events: none;
+    background:
+        linear-gradient(
+            90deg,
+            rgb(251 163 180) 0%,
+            rgb(251 182 159) 28%,
+            rgb(246 206 147) 58%,
+            rgb(246 222 148) 100%
+        );
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgb(0 0 0 / 18%) 24%, rgb(0 0 0) 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, rgb(0 0 0 / 18%) 24%, rgb(0 0 0) 100%);
+}
+
+@media (max-width: 760px) {
+    .landing-page .sw-new-hero::after {
+        height: 52px;
+    }
+}
