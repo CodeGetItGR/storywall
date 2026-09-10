@@ -728,6 +728,21 @@
     animation: target-section-cue-point 700ms ease-in-out 3;
 }
 
+@keyframes sw-feature-icon-float {
+    0% {
+        transform: translateY(0) rotate(0deg);
+    }
+    100% {
+        transform: translateY(-3px) rotate(0.45deg);
+    }
+}
+
+.motion-feature-icon {
+    animation: sw-feature-icon-float 5.8s ease-in-out infinite alternate;
+    transform-origin: 50% 60%;
+    will-change: transform;
+}
+
 @keyframes final-cta-btn-float {
     0%,
     100% {
