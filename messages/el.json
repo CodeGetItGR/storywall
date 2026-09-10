@@ -2975,5 +2975,499 @@
     "MediaThumbnail": {
         "processing": "Επεξεργασία βίντεο",
         "failed": "Το βίντεο δεν είναι διαθέσιμο"
+    },
+    "LandingPage": {
+        "hero": {
+            "homeLabel": "StoryWall — Αρχική",
+            "navLabel": "Κύρια πλοήγηση",
+            "mobileNavLabel": "Μενού κινητού",
+            "openMenu": "Άνοιγμα μενού",
+            "closeMenu": "Κλείσιμο μενού",
+            "nav": ["Η ΠΛΑΤΦΟΡΜΑ", "ΠΩΣ ΛΕΙΤΟΥΡΓΕΙ", "ΔΥΝΑΤΟΤΗΤΕΣ", "ΠΑΚΕΤΑ", "ΣΥΝΔΕΣΗ"],
+            "mobileNav": ["Η Πλατφόρμα", "Demo", "Δυνατότητες", "Πακέτα", "Σύνδεση"],
+            "kicker": "ΤΟ ΝΟ1 SOCIAL ΓΙΑ",
+            "kickerStrong": "PRIVATE EVENTS",
+            "title": ["Κάθε στιγμή", "γίνεται μέρος της", "ιστορίας."],
+            "cta": ["Ζήσε το δικό σου", "StoryWall"],
+            "subtitleStart": "Ένα",
+            "subtitleStrong": "ιδιωτικό social space",
+            "subtitleEnd": "για το event σου",
+            "subtitleSecondLine": "πριν, κατά τη διάρκεια και μετά."
+        },
+        "transition": {
+            "label": "StoryWall demo",
+            "slogan": "Μπες στην εμπειρία του",
+            "brand": "StoryWall.",
+            "cta": "ΔΕΣ ΤΟ DEMO"
+        },
+        "stories": {
+            "eyebrow": "ONE PLATFORM. MANY STORIES.",
+            "heading": ["Κάθε σημαντική στιγμή", "έχει τη δική της ιστορία."],
+            "intro": "Το StoryWall φέρνει ανθρώπους, στιγμές και εμπειρίες σε έναν κοινό social χώρο — πριν, κατά τη διάρκεια και μετά το event.",
+            "rows": [
+                {
+                    "tag": "WEDDING",
+                    "title": ["Ο γάμος σας δεν είναι μία μέρα.", "Είναι μία ιστορία."],
+                    "paragraphs": [
+                        "Από τις πρώτες προετοιμασίες μέχρι το honeymoon — κάθε στιγμή γίνεται μέρος της.",
+                        "Posts, φωτογραφίες, ευχές και αντιδράσεις από όλους όσους τη ζουν μαζί σας."
+                    ],
+                    "galleryLabel": "Wedding story moments mobile",
+                    "imageLabels": ["Wedding moment 1", "Wedding moment 2", "Wedding moment 3", "Wedding moment 4", "Wedding moment 5"],
+                    "imageAlts": [
+                        "Bachelor celebration with friends in Santorini",
+                        "Bride preparation with bridesmaids in Santorini",
+                        "Wedding ceremony in Santorini",
+                        "Wedding reception in Santorini",
+                        "Honeymoon in Paris"
+                    ],
+                    "titleSegments": [
+                        {
+                            "text": "Ο γάμος σας δεν είναι μία μέρα.",
+                            "strong": true
+                        },
+                        {
+                            "text": " Είναι μία ιστορία.",
+                            "strong": false
+                        }
+                    ],
+                    "paragraphSegments": [
+                        [
+                            {
+                                "text": "Από τις πρώτες προετοιμασίες μέχρι το honeymoon — κάθε στιγμή γίνεται μέρος της.",
+                                "strong": false
+                            }
+                        ],
+                        [
+                            {
+                                "text": "Posts, φωτογραφίες, ευχές",
+                                "strong": true
+                            },
+                            {
+                                "text": " και ",
+                                "strong": false
+                            },
+                            {
+                                "text": "αντιδράσεις",
+                                "strong": true
+                            },
+                            {
+                                "text": " από όλους όσους τη ζουν μαζί σας.",
+                                "strong": false
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "tag": "BAPTISM",
+                    "title": ["Μία βάπτιση γεμάτη", "στιγμές που αξίζει να μείνουν."],
+                    "paragraphs": [
+                        "Από την πρόσκληση και τις πρώτες ευχές μέχρι τις φωτογραφίες, τα posts και τις στιγμές της ημέρας.",
+                        "Όλα όσα μοιράστηκαν οι άνθρωποί σας, συγκεντρωμένα σε ένα StoryWall."
+                    ],
+                    "galleryLabel": "Story moments for section 2",
+                    "imageLabels": ["Baptism outside the church", "Baptism ceremony inside the church", "Baptism celebration at the table"],
+                    "imageAlts": ["Baptism outside the church", "Baptism ceremony inside the church", "Baptism celebration at the table"],
+                    "titleSegments": [
+                        {
+                            "text": "Μία βάπτιση γεμάτη ",
+                            "strong": false
+                        },
+                        {
+                            "text": "στιγμές που αξίζει να μείνουν.",
+                            "strong": true
+                        }
+                    ],
+                    "paragraphSegments": [
+                        [
+                            {
+                                "text": "Από την πρόσκληση και τις πρώτες ευχές μέχρι τις φωτογραφίες, τα posts και τις στιγμές της ημέρας.",
+                                "strong": false
+                            }
+                        ],
+                        [
+                            {
+                                "text": "Όλα όσα μοιράστηκαν οι άνθρωποί σας, συγκεντρωμένα σε ένα StoryWall.",
+                                "strong": true
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "tag": "GENDER REVEAL",
+                    "title": ["Η στιγμή που όλοι περιμένουν.", "Ροζ ή σιέλ;"],
+                    "paragraphs": [
+                        "Από την προσμονή πριν το reveal μέχρι τη μεγάλη αποκάλυψη.",
+                        "Φωτογραφίες, videos, αντιδράσεις και ευχές από όλους όσους μοιράζονται τη στιγμή μαζί σας."
+                    ],
+                    "galleryLabel": "Story moments for section 3",
+                    "imageLabels": ["Gender reveal moment", "Pregnant couple before the reveal", "Family and friends celebrating together"],
+                    "imageAlts": [
+                        "Gender reveal box opening with blue balloons and confetti",
+                        "Pregnant couple at a baby boy celebration",
+                        "Friends and family celebrating at sunset"
+                    ],
+                    "titleSegments": [
+                        {
+                            "text": "Η στιγμή που όλοι περιμένουν. ",
+                            "strong": false
+                        },
+                        {
+                            "text": "Ροζ ή σιέλ;",
+                            "strong": true
+                        }
+                    ],
+                    "paragraphSegments": [
+                        [
+                            {
+                                "text": "Από την προσμονή πριν το reveal μέχρι τη μεγάλη αποκάλυψη.",
+                                "strong": false
+                            }
+                        ],
+                        [
+                            {
+                                "text": "Φωτογραφίες, videos, αντιδράσεις",
+                                "strong": true
+                            },
+                            {
+                                "text": " και ",
+                                "strong": false
+                            },
+                            {
+                                "text": "ευχές",
+                                "strong": true
+                            },
+                            {
+                                "text": " από όλους όσους μοιράζονται τη στιγμή μαζί σας.",
+                                "strong": false
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "tag": "VIP & SOCIAL PARTIES",
+                    "title": ["Για", "private events", "που γίνονται κάτι περισσότερο από ένα party."],
+                    "paragraphs": ["Το party αποκτά τον δικό του ιδιωτικό social χώρο, γεμάτο στιγμές, reactions και backstage περιεχόμενο."],
+                    "galleryLabel": "Story moments for section 4",
+                    "imageLabels": ["VIP influencer selfie moment", "VIP social party dance floor", "VIP elegant cocktail reception"],
+                    "imageAlts": [
+                        "Close-up selfie of stylish guests and influencers celebrating at an elegant VIP party",
+                        "Stylish guests dancing at an elegant VIP social party at night",
+                        "Guests mingling with champagne at an elegant formal VIP social event"
+                    ],
+                    "titleSegments": [
+                        {
+                            "text": "Για ",
+                            "strong": false
+                        },
+                        {
+                            "text": "private events",
+                            "strong": true
+                        },
+                        {
+                            "text": " που γίνονται κάτι περισσότερο από ένα party.",
+                            "strong": false
+                        }
+                    ],
+                    "paragraphSegments": [
+                        [
+                            {
+                                "text": "Το party αποκτά τον δικό του ",
+                                "strong": false
+                            },
+                            {
+                                "text": "ιδιωτικό social χώρο",
+                                "strong": true
+                            },
+                            {
+                                "text": ", ",
+                                "strong": false
+                            },
+                            {
+                                "text": "γεμάτο στιγμές, reactions και backstage περιεχόμενο.",
+                                "strong": true
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "tag": "ΣΥΝΕΔΡΙΑ & ΗΜΕΡΙΔΕΣ",
+                    "title": ["Η εμπειρία συνεχίζεται", "πέρα από τη σκηνή."],
+                    "paragraphs": [
+                        "Πρόγραμμα, ομιλίες, υλικό, reactions και στιγμές του event συγκεντρώνονται σε έναν κοινό social χώρο.",
+                        "Οι συμμετέχοντες δεν παρακολουθούν απλώς. Γίνονται μέρος της εμπειρίας."
+                    ],
+                    "galleryLabel": "Story moments for section 5",
+                    "imageLabels": [
+                        "Conference speaker presenting on stage to a professional audience",
+                        "Wide view of a large professional conference auditorium and stage",
+                        "Conference attendees networking in a bright event venue"
+                    ],
+                    "imageAlts": [
+                        "Conference speaker presenting on stage to a professional audience",
+                        "Wide view of a large professional conference auditorium and stage",
+                        "Conference attendees networking in a bright event venue"
+                    ],
+                    "titleSegments": [
+                        {
+                            "text": "Η εμπειρία συνεχίζεται ",
+                            "strong": false
+                        },
+                        {
+                            "text": "πέρα από τη σκηνή.",
+                            "strong": true
+                        }
+                    ],
+                    "paragraphSegments": [
+                        [
+                            {
+                                "text": "Πρόγραμμα, ομιλίες, υλικό, reactions και στιγμές του event συγκεντρώνονται σε έναν κοινό social χώρο.",
+                                "strong": false
+                            }
+                        ],
+                        [
+                            {
+                                "text": "Οι συμμετέχοντες δεν παρακολουθούν απλώς. ",
+                                "strong": false
+                            },
+                            {
+                                "text": "Γίνονται μέρος της εμπειρίας.",
+                                "strong": true
+                            }
+                        ]
+                    ]
+                }
+            ],
+            "moreEyebrow": "MORE STORIES",
+            "moreHeading": "Και πολλά περισσότερα....",
+            "moreLabel": "Περισσότερες περιστάσεις για StoryWall",
+            "mobileHint": "ΣΥΡΕ ΟΡΙΖΟΝΤΙΑ",
+            "moreStories": [
+                {
+                    "label": "ΓΕΝΕΘΛΙΑ",
+                    "alt": "Elegant glamorous birthday celebration",
+                    "text": "Η δική σου βραδιά, οι φίλοι σου και όλες οι στιγμές συγκεντρωμένες σε ένα StoryWall."
+                },
+                {
+                    "label": "BABY SHOWER",
+                    "alt": "Baby shower with friends and balloons",
+                    "text": "Μία γλυκιά ιστορία πριν από τη μεγάλη άφιξη — ευχές, φωτογραφίες και στιγμές με τους ανθρώπους σου."
+                },
+                {
+                    "label": "ENGAGEMENT PARTY",
+                    "alt": "Couple celebrating their engagement with friends",
+                    "text": "Η αρχή του “μαζί” αξίζει τον δικό της χώρο — από το πρώτο cheers μέχρι την τελευταία φωτογραφία."
+                },
+                {
+                    "label": "PRIVATE GROUP TRIPS",
+                    "alt": "Group of friends enjoying a private yacht trip",
+                    "text": "Ένα ιδιωτικό social για την παρέα — στιγμές, φωτογραφίες και ιστορίες από κάθε στάση του ταξιδιού."
+                },
+                {
+                    "label": "BRAND PARTIES",
+                    "alt": "Stylish guests enjoying a glamorous brand party",
+                    "text": "Περιεχόμενο, guests και social energy από το event, συγκεντρωμένα σε μία branded εμπειρία."
+                }
+            ]
+        },
+        "demo": {
+            "eyebrow": "ΔΕΣ ΤΟ ΣΤΗΝ ΠΡΑΞΗ",
+            "heading": ["Μην το φαντάζεσαι.", "Δες το."],
+            "copyStart": "Μπες στο",
+            "copyDemo": "DEMO",
+            "copyMiddle": "και δες το",
+            "copyBrand": "StoryWall",
+            "copyEnd": "όπως θα το ζήσουν οι καλεσμένοι σου.",
+            "cta": "Άνοιξε το demo του StoryWall",
+            "button": "ΑΝΟΙΞΕ ΤΟ DEMO",
+            "imageAlt": "StoryWall demo preview with two angled smartphones showing the app interface",
+            "previewLabel": "StoryWall mobile preview"
+        },
+        "stack": {
+            "socialTopbar": "CHAPTER 01 — SOCIAL SIDE",
+            "socialChapter": "CHAPTER 01",
+            "socialTitle": ["Όλα όσα", "χρειάζεσαι."],
+            "socialCopy": "Posts, stories, reactions και σχόλια από όλους όσους ζουν το event μαζί σας.",
+            "scroll": "ΣΥΝΕΧΙΣΕ ΜΕ SCROLL",
+            "hostTopbar": "CHAPTER 02 — HOST SIDE",
+            "hostChapter": "CHAPTER 02",
+            "hostTitle": "Όλα στο χέρι σου.",
+            "hostCopy": "RSVP, φωτογραφίες, ευχές, περιεχόμενο και διαχείριση του event — όλα από ένα σημείο.",
+            "socialAlts": [
+                "Reaction emoji",
+                "Baptism story",
+                "Wedding social post",
+                "Champagne reaction",
+                "Guest comment",
+                "Heart reaction",
+                "Guest avatar",
+                "Heart eyes reaction",
+                "Wedding post",
+                "Conference post",
+                "Guest comment",
+                "Party social post",
+                "Laugh reaction",
+                "Heart reaction",
+                "Party avatar",
+                "Wedding social post",
+                "Party story",
+                "Music request",
+                "Wink reaction",
+                "Blurred social post",
+                "Blurred comment",
+                "Music note reaction"
+            ],
+            "hostAlts": [
+                "RSVP material report",
+                "Venue map card",
+                "Thank you bank details",
+                "Ceremony map card",
+                "Host photo gallery",
+                "Guest avatar",
+                "Music requests card",
+                "Baptism story",
+                "Guest comment Emily Johnson",
+                "Guest comment Maria Papadopoulou",
+                "Create content menu",
+                "Host statistics dashboard",
+                "Cropped post card"
+            ]
+        },
+        "features": {
+            "eyebrow": "ΕΝΑ STORYWALL. ΠΟΛΛΑ ΠΕΡΙΣΣΟΤΕΡΑ.",
+            "heading": "Κάθε λειτουργία γίνεται μέρος της εμπειρίας.",
+            "label": "StoryWall δυνατότητες",
+            "previous": "Προηγούμενα",
+            "next": "Επόμενα",
+            "items": [
+                "Δημοσιεύσεις",
+                "Stories",
+                "Βίντεο",
+                "Reactions",
+                "Σχόλια",
+                "Πρόσκληση",
+                "Πρόγραμμα",
+                "Μουσικές προτάσεις",
+                "RSVP",
+                "QR Photo Upload",
+                "Ευχολόγιο",
+                "Google Maps",
+                "Λίστα δώρων"
+            ]
+        },
+        "pricing": {
+            "eyebrow": "ΠΑΚΕΤΑ",
+            "heading": "Κάθε event αξίζει το δικό του StoryWall.",
+            "intro": "Τρία επίπεδα εμπειρίας. Ένα StoryWall για κάθε event.",
+            "choose": "ΕΠΙΛΕΞΕ ΠΑΚΕΤΟ",
+            "popular": "most popular",
+            "note": "Οι τιμές είναι ενδεικτικές για την παρουσίαση και μπορούν να αλλάξουν.",
+            "plans": [
+                {
+                    "name": "START",
+                    "price": "79€",
+                    "description": "Για ένα απλό και ολοκληρωμένο StoryWall.",
+                    "features": ["Ψηφιακή πρόσκληση", "Πρόγραμμα event", "Countdown", "RSVP", "Posts & reactions", "Gallery", "Μοναδικό link"]
+                },
+                {
+                    "name": "STORY",
+                    "price": "129€",
+                    "description": "Για όσους θέλουν την πλήρη social εμπειρία.",
+                    "features": [
+                        "Όλα του START",
+                        "Stories",
+                        "QR Photo Upload",
+                        "Σχόλια & reactions",
+                        "Ψηφιακό ευχολόγιο",
+                        "Μουσικές προτάσεις",
+                        "Πριν / κατά / μετά το event"
+                    ]
+                },
+                {
+                    "name": "SIGNATURE",
+                    "price": "199€",
+                    "description": "Για events που θέλουν κάτι περισσότερο.",
+                    "features": [
+                        "Όλα του STORY",
+                        "Περισσότερο customization",
+                        "Extra διάρκεια",
+                        "Premium στοιχεία εμφάνισης",
+                        "Advanced διαχείριση",
+                        "Προτεραιότητα υποστήριξης",
+                        "Premium δυνατότητες"
+                    ]
+                }
+            ]
+        },
+        "faq": {
+            "eyebrow": "FAQ",
+            "heading": "FAQ",
+            "intro": "Όσα χρειάζεται να ξέρεις πριν δημιουργήσεις το δικό σου StoryWall.",
+            "items": [
+                [
+                    "Τι ακριβώς είναι το StoryWall;",
+                    "Το StoryWall είναι ο ψηφιακός χώρος του event σου. Εκεί συγκεντρώνονται πληροφορίες, φωτογραφίες, videos, posts, reactions, ευχές και στιγμές πριν, κατά τη διάρκεια και μετά την εκδήλωση."
+                ],
+                [
+                    "Χρειάζεται να κατεβάσουν οι καλεσμένοι κάποια εφαρμογή;",
+                    "Όχι. Το StoryWall ανοίγει απευθείας από browser μέσω του προσωπικού link ή του QR code του event, χωρίς εγκατάσταση εφαρμογής."
+                ],
+                [
+                    "Μπορούν οι καλεσμένοι να ανεβάζουν φωτογραφίες και videos;",
+                    "Ναι. Οι καλεσμένοι μπορούν να συμμετέχουν στην ιστορία του event ανεβάζοντας το δικό τους περιεχόμενο, ώστε οι στιγμές να συγκεντρώνονται σε ένα κοινό σημείο."
+                ],
+                [
+                    "Το StoryWall αντικαθιστά τον φωτογράφο;",
+                    "Όχι — και αυτό είναι το ωραίο. Ο φωτογράφος καταγράφει τις επίσημες στιγμές. Το StoryWall συγκεντρώνει και όλα όσα συμβαίνουν γύρω τους: backstage, αυθόρμητα videos, reactions, σχόλια και στιγμές μέσα από τα μάτια των καλεσμένων."
+                ],
+                [
+                    "Μπορώ να χρησιμοποιήσω το StoryWall και πριν από το event;",
+                    "Φυσικά. Η ιστορία μπορεί να ξεκινήσει πολύ νωρίτερα με ανακοινώσεις, πρόγραμμα, RSVP, countdown, posts, φωτογραφίες προετοιμασίας και περιεχόμενο που χτίζει την εμπειρία πριν από τη μεγάλη ημέρα."
+                ],
+                [
+                    "Και μετά το event τι γίνεται;",
+                    "Το StoryWall δεν τελειώνει όταν τελειώσει η εκδήλωση. Μπορεί να συνεχίσει με φωτογραφίες, videos, ευχές, next-day στιγμές, honeymoon, thank-you posts και ό,τι θέλεις να μείνει ως μέρος της ιστορίας."
+                ],
+                [
+                    "Μπορώ να προσαρμόσω την εμφάνισή του στο δικό μου event;",
+                    "Ναι. Το StoryWall μπορεί να προσαρμοστεί στο ύφος και την αισθητική της περίστασης, ώστε να αποτελεί μέρος της συνολικής εμπειρίας και όχι απλώς μία ακόμη ψηφιακή σελίδα."
+                ],
+                [
+                    "Για ποιες εκδηλώσεις μπορώ να χρησιμοποιήσω το StoryWall;",
+                    "Για γάμους, βαπτίσεις, gender reveals, baby showers, γενέθλια, επετείους, VIP parties, συνέδρια, εταιρικά events, launches και γενικά για κάθε περίσταση που έχει ανθρώπους, στιγμές και μία ιστορία να κρατήσει."
+                ],
+                [
+                    "Μπορώ να διαχειρίζομαι το περιεχόμενο και τη συμμετοχή των καλεσμένων;",
+                    "Ναι. Ως host έχεις τον έλεγχο του StoryWall και μπορείς να παρακολουθείς τη συμμετοχή, το περιεχόμενο και τις βασικές λειτουργίες του event από ένα σημείο."
+                ],
+                [
+                    "Πώς μπορώ να δω αν το StoryWall μου ταιριάζει πριν το επιλέξω;",
+                    "Μπορείς να μπεις στο demo και να δεις την εμπειρία στην πράξη. Να εξερευνήσεις το περιβάλλον, τις βασικές λειτουργίες και τον τρόπο που αλληλεπιδρούν οι καλεσμένοι με το StoryWall."
+                ]
+            ]
+        },
+        "finalCta": {
+            "imageAlt": "Joyful newlywed couple walking through a Greek island wedding celebration",
+            "eyebrow": "READY TO MAKE IT YOURS?",
+            "heading": ["Η ιστορία σου", "ξεκινάει εδώ."],
+            "copy": "Δημιούργησε το δικό σου StoryWall και δώσε στο event σου έναν χώρο που συνεχίζει να ζει πριν, κατά τη διάρκεια και μετά.",
+            "copyStart": "Δημιούργησε το δικό σου StoryWall και δώσε στο event σου έναν χώρο",
+            "copyStrong": "που συνεχίζει να ζει πριν, κατά τη διάρκεια και μετά.",
+            "cta": "ΔΗΜΙΟΥΡΓΗΣΕ ΤΟ STORYWALL ΣΟΥ"
+        },
+        "footer": {
+            "imageAlt": "StoryWall",
+            "lineOne": "Οι στιγμές περνούν.",
+            "lineTwo": "Η ιστορία μένει.",
+            "explore": "EXPLORE",
+            "exploreLinks": ["Η πλατφόρμα", "Πώς λειτουργεί", "Δυνατότητες", "Πακέτα", "FAQ"],
+            "events": "EVENTS",
+            "eventLinks": ["Γάμος", "Βάπτιση", "Gender Reveal", "VIP Parties", "Συνέδρια"],
+            "social": "SOCIAL",
+            "socialLinks": ["Instagram", "TikTok", "Facebook"],
+            "copyright": "© 2026 STORYWALL",
+            "legal": ["Privacy", "Terms", "Cookies"],
+            "backToTop": "BACK TO TOP"
+        }
     }
 }
