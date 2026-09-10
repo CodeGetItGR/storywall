@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback, useTransition } from 'react';
 
@@ -14,6 +15,7 @@ import { cn } from '@/lib/utils';
 export function LanguageSwitcher({ className, variant = 'default' }: { className?: string; variant?: 'default' | 'sidebar' }) {
     const locale = useLocale();
     const t = useTranslations('LanguageSwitcher');
+    const router = useRouter();
     const { isAuthenticated } = useAuth();
     const [isPending, startTransition] = useTransition();
 
@@ -21,7 +23,7 @@ export function LanguageSwitcher({ className, variant = 'default' }: { className
         (next: Locale) => {
             if (next === locale) return;
             startTransition(() => {
-                void setLocale(next);
+                void setLocale(next).then(() => router.refresh());
             });
             // Best-effort: keeps the stored account locale (used for async
             // notification/invitation emails, see backend-localization-fe-integration.md
@@ -31,7 +33,7 @@ export function LanguageSwitcher({ className, variant = 'default' }: { className
                 void api.patch<unknown>(endpoints.me.profile, { locale: next } satisfies MeUpdateRequestDto).catch(() => {});
             }
         },
-        [locale, startTransition, isAuthenticated]
+        [locale, router, startTransition, isAuthenticated]
     );
 
     const handleLocaleClick = useCallback(
