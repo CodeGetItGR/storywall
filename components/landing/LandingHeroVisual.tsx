@@ -1,42 +1,232 @@
 import Image from 'next/image';
 
-const HERO_ASSETS = [
-    ['sw-scene-item sw-post-1', '/landing/sw-scene-item-sw-post-1.png', 696, 612],
-    ['sw-scene-item sw-post-2', '/landing/sw-scene-item-sw-post-2.png', 624, 677],
-    ['sw-scene-item sw-comment-1', '/landing/sw-scene-item-sw-comment-1.png', 705, 360],
-    ['sw-scene-item sw-comment-2', '/landing/sw-scene-item-sw-comment-2.png', 557, 300],
-    ['sw-scene-item sw-love', '/landing/sw-scene-item-sw-love.png', 441, 440],
-    ['sw-scene-item sw-happy', '/landing/sw-scene-item-sw-happy.png', 240, 281],
-    ['sw-scene-item sw-fire', '/landing/sw-scene-item-sw-fire.png', 165, 231],
-    ['sw-scene-item sw-flash', '/landing/sw-scene-item-sw-flash.png', 124, 181],
-    ['sw-scene-item sw-glasses', '/landing/sw-scene-item-sw-glasses.png', 253, 331],
-    ['sw-scene-item sw-note', '/landing/sw-scene-item-sw-note.png', 241, 324],
-    ['sw-scene-item sw-celebrate', '/landing/sw-scene-item-sw-celebrate.png', 171, 269],
-    ['sw-scene-item sw-heart-1', '/landing/sw-scene-item-sw-heart-1.png', 111, 155],
-    ['sw-scene-item sw-heart-2', '/landing/sw-scene-item-sw-heart-2.png', 167, 219],
-    ['sw-scene-item sw-heart-3', '/landing/sw-scene-item-sw-heart-3.png', 200, 243],
-    ['sw-scene-item sw-heart-4', '/landing/sw-scene-item-sw-heart-4.png', 108, 153],
-    ['sw-scene-item sw-heart-5', '/landing/sw-scene-item-sw-heart-5.png', 127, 176],
+const HERO_SPRITES = [
+    {
+        src: '/landing/sw-scene-item-sw-post-1.png',
+        width: 696,
+        height: 612,
+        posClass:
+            'absolute h-auto max-w-none left-[-0.72%] top-[56.88%] w-[40.43%] z-[4] min-[761px]:left-[-4.66%] min-[761px]:top-[41.73%] min-[761px]:w-[43.3%] min-[761px]:z-[3]',
+        motionClass: 'motion-hero-drift-left',
+        duration: '6.8s',
+        delay: '0s',
+    },
+    {
+        src: '/landing/sw-scene-item-sw-post-2.png',
+        width: 624,
+        height: 677,
+        posClass:
+            'absolute h-auto max-w-none left-[53.62%] top-[67.51%] w-[38.24%] z-[12] min-[761px]:left-[59.2%] min-[761px]:top-[53.67%] min-[761px]:w-[32.3%] min-[761px]:z-[8]',
+        motionClass: 'motion-hero-drift-right',
+        duration: '7.4s',
+        delay: '0s',
+    },
+    {
+        src: '/landing/sw-scene-item-sw-comment-1.png',
+        width: 705,
+        height: 360,
+        posClass:
+            'absolute h-auto max-w-none left-[42.75%] top-[37.68%] w-[44.99%] z-[12] min-[761px]:left-[51.2%] min-[761px]:top-[37.4%] min-[761px]:w-[35%] min-[761px]:z-[9]',
+        motionClass: 'motion-hero-drift-right',
+        duration: '6.2s',
+        delay: '-1.4s',
+    },
+    {
+        src: '/landing/sw-scene-item-sw-comment-2.png',
+        width: 557,
+        height: 300,
+        posClass:
+            'absolute h-auto max-w-none left-[49.39%] top-[99.25%] w-[36.65%] z-[12] min-[761px]:left-[58.07%] min-[761px]:top-[81.38%] min-[761px]:w-[39.1%] min-[761px]:z-[9]',
+        motionClass: 'motion-hero-drift-left',
+        duration: '7.1s',
+        delay: '-0.8s',
+    },
+    {
+        src: '/landing/sw-scene-item-sw-love.png',
+        width: 441,
+        height: 440,
+        posClass:
+            'absolute h-auto max-w-none left-[8.73%] top-[12.27%] w-[23.39%] z-[12] min-[761px]:left-[6.14%] min-[761px]:top-[13.72%] min-[761px]:w-[18.2%] min-[761px]:z-[10]',
+        motionClass: 'motion-hero-float-strong',
+        duration: '5.8s',
+        delay: '0s',
+    },
+    {
+        src: '/landing/sw-scene-item-sw-happy.png',
+        width: 240,
+        height: 281,
+        posClass:
+            'absolute h-auto max-w-none left-[68.93%] top-[27.59%] w-[13.62%] z-[12] min-[761px]:left-[64.97%] min-[761px]:top-[22.78%] min-[761px]:w-[10.4%] min-[761px]:z-[10]',
+        motionClass: 'motion-hero-float-soft',
+        duration: '6.4s',
+        delay: '-0.9s',
+    },
+    {
+        src: '/landing/sw-scene-item-sw-fire.png',
+        width: 165,
+        height: 231,
+        posClass:
+            'absolute h-auto max-w-none left-[6.3%] top-[67.92%] w-[5.4%] z-[12] min-[761px]:left-[-2.33%] min-[761px]:top-[66.52%] min-[761px]:w-[10.3%] min-[761px]:z-[10]',
+        motionClass: 'motion-hero-float-soft',
+        duration: '5.4s',
+        delay: '-1.6s',
+    },
+    {
+        src: '/landing/sw-scene-item-sw-flash.png',
+        width: 124,
+        height: 181,
+        posClass:
+            'absolute h-auto max-w-none left-[62.45%] top-[93.06%] w-[4.2%] z-[12] min-[761px]:left-[76.24%] min-[761px]:top-[74.09%] min-[761px]:w-[4.2%] min-[761px]:z-[11]',
+        motionClass: 'motion-hero-pulse-flash',
+        duration: '3.8s',
+        delay: '0s',
+    },
+    {
+        src: '/landing/sw-scene-item-sw-glasses.png',
+        width: 253,
+        height: 331,
+        posClass:
+            'absolute h-auto max-w-none left-[62.64%] top-[85.86%] w-[17.42%] z-[12] min-[761px]:left-[76.82%] min-[761px]:top-[72.86%] min-[761px]:w-[12.9%] min-[761px]:z-[11]',
+        motionClass: 'motion-hero-float-soft',
+        duration: '6.7s',
+        delay: '-2.1s',
+    },
+    {
+        src: '/landing/sw-scene-item-sw-note.png',
+        width: 241,
+        height: 324,
+        posClass:
+            'absolute h-auto max-w-none left-[13.2%] top-[85.25%] w-[17.46%] z-[12] min-[761px]:left-[12.7%] min-[761px]:top-[71.44%] min-[761px]:w-[15.7%] min-[761px]:z-[10]',
+        motionClass: 'motion-hero-note-float',
+        duration: '6s',
+        delay: '-0.5s',
+    },
+    {
+        src: '/landing/sw-scene-item-sw-celebrate.png',
+        width: 171,
+        height: 269,
+        posClass:
+            'absolute h-auto max-w-none left-[53.54%] top-[34.68%] w-[10.85%] z-[12] min-[761px]:left-[67.4%] min-[761px]:top-[34.2%] min-[761px]:w-[7%] min-[761px]:z-[11]',
+        motionClass: 'motion-hero-float-soft',
+        duration: '5.5s',
+        delay: '-1.2s',
+    },
+    {
+        src: '/landing/sw-scene-item-sw-heart-1.png',
+        width: 111,
+        height: 155,
+        posClass:
+            'absolute h-auto max-w-none left-[18.41%] top-[40.31%] w-[5.6%] z-[12] min-[761px]:left-[18.4%] min-[761px]:top-[40.3%] min-[761px]:w-[5.6%] min-[761px]:z-[10]',
+        motionClass: 'motion-hero-heart-float',
+        duration: '5.1s',
+        delay: '-0.8s',
+    },
+    {
+        src: '/landing/sw-scene-item-sw-heart-2.png',
+        width: 167,
+        height: 219,
+        posClass:
+            'absolute h-auto max-w-none left-[75.58%] top-[21.78%] w-[4.5%] z-[12] min-[761px]:left-[72.04%] min-[761px]:top-[15.84%] min-[761px]:w-[3.9%] min-[761px]:z-[10]',
+        motionClass: 'motion-hero-heart-float',
+        duration: '4.7s',
+        delay: '-1.8s',
+    },
+    {
+        src: '/landing/sw-scene-item-sw-heart-3.png',
+        width: 200,
+        height: 243,
+        posClass:
+            'absolute h-auto max-w-none left-[88.07%] top-[48.02%] w-[9.21%] z-[12] min-[761px]:left-[80.53%] min-[761px]:top-[49.4%] min-[761px]:w-[9.2%] min-[761px]:z-[10]',
+        motionClass: 'motion-hero-heart-float',
+        duration: '5.6s',
+        delay: '-0.2s',
+    },
+    {
+        src: '/landing/sw-scene-item-sw-heart-4.png',
+        width: 108,
+        height: 153,
+        posClass:
+            'absolute h-auto max-w-none left-[12.97%] top-[103.22%] w-[7.61%] z-[12] min-[761px]:left-[17.83%] min-[761px]:top-[87.98%] min-[761px]:w-[5%] min-[761px]:z-[10]',
+        motionClass: 'motion-hero-heart-float',
+        duration: '4.9s',
+        delay: '-2.4s',
+    },
+    {
+        src: '/landing/sw-scene-item-sw-heart-5.png',
+        width: 127,
+        height: 176,
+        posClass:
+            'absolute h-auto max-w-none left-[73.08%] top-[66.76%] w-[4.5%] z-[12] min-[761px]:left-[67.36%] min-[761px]:top-[82.01%] min-[761px]:w-[4.5%] min-[761px]:z-[10]',
+        motionClass: 'motion-hero-heart-float',
+        duration: '5.3s',
+        delay: '-1.1s',
+    },
 ] as const;
 
+const HERO_VISUAL_CLASS =
+    'relative z-[2] aspect-[1136/1204] pointer-events-none order-2 self-center w-[137vw] max-w-none left-[3.7vw] mt-[54px] max-[420px]:mt-[42px] min-[761px]:order-none min-[761px]:self-auto min-[761px]:justify-self-start min-[761px]:left-auto min-[761px]:m-0 min-[761px]:w-[min(780px,43vw)] min-[761px]:max-[1080px]:w-[52vw] min-[761px]:max-[1080px]:-ml-2';
+
+const PHONE_WRAP_CLASS =
+    'absolute aspect-[748/1541] left-[19.28%] top-[3.78%] w-[56.47%] z-[5] min-[761px]:left-[23.5%] min-[761px]:top-[5.21%] min-[761px]:w-[43.7%]';
+
+const PHONE_FEED_TRACK_CLASS = 'absolute top-0 left-[-2.85%] w-[105.65%] will-change-transform min-[761px]:w-[105.7%]';
+
 export function LandingHeroVisual() {
-    const [firstClassName, firstSrc, firstWidth, firstHeight] = HERO_ASSETS[0];
+    const [firstSprite, ...restSprites] = HERO_SPRITES;
 
     return (
-        <div aria-hidden="true" className="sw-new-hero-visual">
-            <Image alt="" className={firstClassName} height={firstHeight} src={firstSrc} unoptimized width={firstWidth} />
-            <div className="sw-phone-wrap">
-                <div className="sw-phone-screen">
-                    <div className="sw-phone-feed-track">
-                        <Image alt="" className="sw-phone-feed" height={2048} src="/landing/sw-phone-feed.jpg" unoptimized width={451} />
-                        <Image alt="" className="sw-phone-feed" height={2048} src="/landing/sw-phone-feed-2.jpg" unoptimized width={820} />
-                        <Image alt="" className="sw-phone-feed" height={2048} src="/landing/sw-phone-feed-3.jpg" unoptimized width={774} />
+        <div aria-hidden="true" className={HERO_VISUAL_CLASS}>
+            <Image
+                alt=""
+                className={`${firstSprite.posClass} ${firstSprite.motionClass}`}
+                height={firstSprite.height}
+                src={firstSprite.src}
+                style={{ animationDuration: firstSprite.duration, animationDelay: firstSprite.delay }}
+                unoptimized
+                width={firstSprite.width}
+            />
+            <div className={`${PHONE_WRAP_CLASS} motion-hero-phone-breathe`}>
+                <div className="absolute top-[2.1%] right-[4.55%] bottom-[2.1%] left-[4.68%] z-[1] overflow-hidden rounded-[10.5%/4.8%] bg-white">
+                    <div className={`${PHONE_FEED_TRACK_CLASS} motion-hero-feed-scroll`}>
+                        <Image
+                            alt=""
+                            className="relative block h-auto w-full max-w-none [&+&]:-mt-px"
+                            height={2048}
+                            src="/landing/sw-phone-feed.jpg"
+                            unoptimized
+                            width={451}
+                        />
+                        <Image
+                            alt=""
+                            className="relative block h-auto w-full max-w-none [&+&]:-mt-px"
+                            height={2048}
+                            src="/landing/sw-phone-feed-2.jpg"
+                            unoptimized
+                            width={820}
+                        />
+                        <Image
+                            alt=""
+                            className="relative block h-auto w-full max-w-none [&+&]:-mt-px"
+                            height={2048}
+                            src="/landing/sw-phone-feed-3.jpg"
+                            unoptimized
+                            width={774}
+                        />
                     </div>
                 </div>
-                <Image alt="" className="sw-phone-frame" height={1541} src="/landing/sw-phone-frame.png" unoptimized width={748} />
+                <Image alt="" className="absolute inset-0 z-[2] h-auto w-full" height={1541} src="/landing/sw-phone-frame.png" unoptimized width={748} />
             </div>
-            {HERO_ASSETS.slice(1).map(([className, src, width, height]) => (
-                <Image alt="" className={className} height={height} key={src} src={src} unoptimized width={width} />
+            {restSprites.map((sprite) => (
+                <Image
+                    alt=""
+                    className={`${sprite.posClass} ${sprite.motionClass}`}
+                    height={sprite.height}
+                    key={sprite.src}
+                    src={sprite.src}
+                    style={{ animationDuration: sprite.duration, animationDelay: sprite.delay }}
+                    unoptimized
+                    width={sprite.width}
+                />
             ))}
         </div>
     );
