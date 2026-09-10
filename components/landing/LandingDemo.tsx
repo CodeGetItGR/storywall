@@ -3,6 +3,8 @@
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
+import { routes } from '@/lib/routes';
+
 export function LandingDemo() {
     const t = useTranslations('LandingPage.demo');
     const heading = t.raw('heading') as string[];
@@ -22,7 +24,7 @@ export function LandingDemo() {
                         <br />
                         {t('copyEnd')}
                     </p>
-                    <a aria-label={t('cta')} className="swdemo-button" href="#">
+                    <a aria-label={t('cta')} className="swdemo-button" href={routes.demo}>
                         <span>{t('button')}</span>
                         <span className="swdemo-arrow">↗</span>
                     </a>
@@ -39,7 +41,7 @@ export function LandingDemo() {
                     unoptimized
                 />
             </div>
-            <a aria-label={t('cta')} className="swdemo-button swdemo-mobile-button" href="#">
+            <a aria-label={t('cta')} className="swdemo-button swdemo-mobile-button" href={routes.demo}>
                 <span>{t('button')}</span>
                 <span className="swdemo-arrow">↗</span>
             </a>

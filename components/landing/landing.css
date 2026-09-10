@@ -4941,6 +4941,10 @@
     font-weight: 800;
 }
 
+.landing-page .sw-new-hero-language-switcher {
+    flex: 0 0 auto;
+}
+
 .landing-page .sw-new-hero-stage {
     position: relative;
     min-height: calc(100svh - 112px);
@@ -5362,6 +5366,10 @@
         width: min(196px, 49.6vw);
     }
     .landing-page .sw-new-hero-nav {
+        display: none;
+    }
+
+    .landing-page .sw-new-hero-language-switcher {
         display: none;
     }
 
@@ -8337,6 +8345,11 @@
 
     .landing-page .sw-mobile-menu-panel a:last-child {
         border-bottom: 0;
+    }
+
+    .landing-page .sw-mobile-menu-language-switcher {
+        align-self: flex-start;
+        margin-top: 16px;
     }
 
     .landing-page .sw-mobile-menu-panel a::after {

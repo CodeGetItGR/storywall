@@ -5,8 +5,10 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
 import { LandingHeroVisual } from '@/components/landing/LandingHeroVisual';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { routes } from '@/lib/routes';
 
-const NAV_HREFS = ['#platformStories', '#demo', '#experience', '#pricing', '#'] as const;
+const NAV_HREFS = ['#platformStories', '#demo', '#experience', '#pricing', routes.login] as const;
 
 export function LandingHero() {
     const t = useTranslations('LandingPage.hero');
@@ -17,6 +19,7 @@ export function LandingHero() {
 
     return (
         <motion.section aria-labelledby="sw-new-hero-title" className="sw-new-hero" id="top-preview">
+            {/* Header */}
             <header className="sw-new-hero-header">
                 <div className="sw-new-hero-header-inner">
                     <a aria-label={t('homeLabel')} className="sw-new-hero-logo" href="#top-preview">
@@ -29,7 +32,9 @@ export function LandingHero() {
                             </a>
                         ))}
                     </nav>
+                    <LanguageSwitcher className="sw-new-hero-language-switcher" />
                     <button
+                        aria-controls="sw-mobile-menu-panel"
                         aria-expanded="false"
                         aria-label={t('openMenu')}
                         className="sw-mobile-menu-toggle"
@@ -41,14 +46,17 @@ export function LandingHero() {
                         <span />
                     </button>
                 </div>
-                <nav aria-label={t('mobileNavLabel')} className="sw-mobile-menu-panel">
+                {/* Mobile menu */}
+                <nav aria-hidden="true" aria-label={t('mobileNavLabel')} className="sw-mobile-menu-panel" id="sw-mobile-menu-panel">
                     {mobileNavLabels.map((label, index) => (
                         <a href={NAV_HREFS[index]} key={label}>
                             {label}
                         </a>
                     ))}
+                    <LanguageSwitcher className="sw-mobile-menu-language-switcher" />
                 </nav>
             </header>
+            {/* Hero content */}
             <div className="sw-new-hero-stage">
                 <div className="sw-new-hero-inner">
                     <div className="sw-new-hero-copy">
@@ -60,7 +68,7 @@ export function LandingHero() {
                                 <span key={line}>{line}</span>
                             ))}
                         </h1>
-                        <a className="sw-new-hero-cta" href="#">
+                        <a className="sw-new-hero-cta" href={routes.register}>
                             <span className="sw-new-hero-cta-label">
                                 <span>{cta[0]}</span>
                                 <span>{cta[1]}</span>

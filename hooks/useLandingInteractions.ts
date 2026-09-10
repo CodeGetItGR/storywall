@@ -32,9 +32,12 @@ export function useLandingInteractions(landingRef: RefObject<HTMLElement | null>
             menuToggle?.classList.toggle('is-open', open);
             menu?.classList.toggle('is-open', open);
             menuToggle?.setAttribute('aria-expanded', String(open));
+            menu?.setAttribute('aria-hidden', String(!open));
             const label = open ? menuToggle?.dataset.closeLabel : menuToggle?.dataset.openLabel;
             if (label) menuToggle?.setAttribute('aria-label', label);
         };
+
+        setMenuOpen(false);
 
         const placeHeroCta = () => {
             if (!hero || !heroCopy || !heroVisual || !heroCta || !heroTitle) return;

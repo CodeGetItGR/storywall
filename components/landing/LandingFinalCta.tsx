@@ -3,6 +3,8 @@
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
+import { routes } from '@/lib/routes';
+
 export function LandingFinalCta() {
     const t = useTranslations('LandingPage.finalCta');
     const heading = t.raw('heading') as string[];
@@ -38,7 +40,7 @@ export function LandingFinalCta() {
                 <p>
                     {t('copyStart')} <strong>{t('copyStrong')}</strong>
                 </p>
-                <a className="sw-final-cta-btn" href="#">
+                <a className="sw-final-cta-btn" href={routes.register}>
                     <span>{t('cta')}</span>
                     <span>↗</span>
                 </a>
