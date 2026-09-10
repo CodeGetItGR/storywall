@@ -20,11 +20,6 @@ export function useLandingInteractions(landingRef: RefObject<HTMLElement | null>
         const mediaQuery = window.matchMedia('(max-width: 760px)');
         const menuToggle = root.querySelector<HTMLButtonElement>('.sw-mobile-menu-toggle');
         const menu = root.querySelector<HTMLElement>('.sw-mobile-menu-panel');
-        const hero = root.querySelector<HTMLElement>('.sw-new-hero-inner');
-        const heroCopy = root.querySelector<HTMLElement>('.sw-new-hero-copy');
-        const heroVisual = root.querySelector<HTMLElement>('.sw-new-hero-visual');
-        const heroCta = root.querySelector<HTMLElement>('.sw-new-hero-cta');
-        const heroTitle = root.querySelector<HTMLElement>('.sw-new-hero-title');
         const phoneScreen = root.querySelector<HTMLElement>('.sw-phone-screen');
         const phoneTrack = root.querySelector<HTMLElement>('.sw-phone-feed-track');
 
@@ -38,19 +33,6 @@ export function useLandingInteractions(landingRef: RefObject<HTMLElement | null>
         };
 
         setMenuOpen(false);
-
-        const placeHeroCta = () => {
-            if (!hero || !heroCopy || !heroVisual || !heroCta || !heroTitle) return;
-            if (mediaQuery.matches) {
-                if (heroCta.parentElement !== hero || heroCta.previousElementSibling !== heroVisual) {
-                    heroVisual.insertAdjacentElement('afterend', heroCta);
-                }
-                return;
-            }
-            if (heroCta.parentElement !== heroCopy || heroCta.previousElementSibling !== heroTitle) {
-                heroTitle.insertAdjacentElement('afterend', heroCta);
-            }
-        };
 
         const syncFeedTravel = () => {
             if (!phoneScreen || !phoneTrack) return;
@@ -80,12 +62,10 @@ export function useLandingInteractions(landingRef: RefObject<HTMLElement | null>
 
         const handleResize = () => {
             if (!mediaQuery.matches) setMenuOpen(false);
-            placeHeroCta();
             syncFeedTravel();
         };
 
         window.addEventListener('resize', handleResize, { passive: true, signal });
-        placeHeroCta();
         syncFeedTravel();
 
         return () => {

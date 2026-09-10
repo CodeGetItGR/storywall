@@ -21,7 +21,10 @@ export function LandingContent() {
     useLandingInteractions(landingRef);
 
     return (
-        <main ref={landingRef} className="landing-page fixed inset-0 overflow-y-auto overflow-x-hidden">
+        <main
+            ref={landingRef}
+            className="landing-page fixed inset-0 overflow-x-hidden overflow-y-auto scroll-smooth bg-[#f4f0e8] font-sans text-[#151313]"
+        >
             {/* Hero */}
             <LandingHero />
 
