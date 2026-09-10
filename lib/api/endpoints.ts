@@ -224,7 +224,15 @@ export const endpoints = {
     },
 
     admin: {
-        metrics: '/api/admin/metrics',
+        metrics: {
+            snapshot: '/api/admin/metrics',
+            calendar: (since: string, until: string) =>
+                `/api/admin/metrics/calendar?since=${encodeURIComponent(since)}&until=${encodeURIComponent(until)}`,
+            calendarDayEvents: (date: string, page: number, size: number) =>
+                `/api/admin/metrics/calendar/${encodeURIComponent(date)}/events?page=${encodeURIComponent(String(page))}&size=${encodeURIComponent(String(size))}`,
+            timeline: (weeks: number) => `/api/admin/metrics/timeline?weeks=${encodeURIComponent(String(weeks))}`,
+            costSummary: '/api/admin/metrics/cost-summary',
+        },
         orders: {
             settle: (orderId: string) => `/api/admin/orders/${orderId}/settle`,
         },

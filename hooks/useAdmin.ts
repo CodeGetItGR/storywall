@@ -5,7 +5,9 @@ import { notificationKeys } from '@/hooks/useNotifications';
 import { usageKeys } from '@/hooks/useUsage';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
+import type { Page } from '@/lib/api/pagination';
 import type {
+    CalendarSummaryResponseDto,
     CollaborationCodePatchDto,
     CollaborationCodeRequestDto,
     CollaborationCodeResponseDto,
@@ -14,9 +16,11 @@ import type {
     CollaboratorPortalTokenResponseDto,
     CollaboratorRequestDto,
     CollaboratorResponseDto,
+    CostSummaryResponseDto,
     DiscountCodePatchDto,
     DiscountCodeRequestDto,
     DiscountCodeResponseDto,
+    EventDashboardRowDto,
     EventTypeConvention,
     EventUsageResponseDto,
     LinkDiscountCodeRequestDto,
@@ -30,6 +34,7 @@ import type {
     PlanTierPatchDto,
     PlanTierRequestDto,
     PlanTierResponseDto,
+    PlanTimelineRowDto,
     PlatformEventTypePatchDto,
     PlatformEventTypeResponseDto,
     PlatformMetricsResponseDto,
@@ -52,6 +57,10 @@ export const adminKeys = {
     notificationSweep: ['admin', 'notifications', 'sweep'] as const,
     refundRequests: ['admin', 'refund-requests'] as const,
     metrics: ['admin', 'metrics'] as const,
+    costSummary: ['admin', 'metrics', 'cost-summary'] as const,
+    costTimeline: (weeks: number) => ['admin', 'metrics', 'timeline', weeks] as const,
+    costCalendar: (since: string, until: string) => ['admin', 'metrics', 'calendar', since, until] as const,
+    costCalendarDayEvents: (date: string, page: number, size: number) => ['admin', 'metrics', 'calendar', date, 'events', page, size] as const,
     paidServices: (kind?: PaidServiceKind, includeArchived?: boolean) => ['admin', 'paid-services', kind ?? 'ALL', Boolean(includeArchived)] as const,
     collaborators: ['admin', 'collaborators'] as const,
     collaboratorCodes: (id: string) => ['admin', 'collaborators', id, 'codes'] as const,
@@ -198,7 +207,36 @@ export function useVoidCollaborationRedemption() {
 export function useAdminMetrics() {
     return useQuery({
         queryKey: adminKeys.metrics,
-        queryFn: () => api.get<PlatformMetricsResponseDto>(endpoints.admin.metrics),
+        queryFn: () => api.get<PlatformMetricsResponseDto>(endpoints.admin.metrics.snapshot),
+    });
+}
+
+export function useAdminCostSummary() {
+    return useQuery({
+        queryKey: adminKeys.costSummary,
+        queryFn: () => api.get<CostSummaryResponseDto>(endpoints.admin.metrics.costSummary),
+    });
+}
+
+export function useAdminCostTimeline(weeks: number) {
+    return useQuery({
+        queryKey: adminKeys.costTimeline(weeks),
+        queryFn: () => api.get<PlanTimelineRowDto[]>(endpoints.admin.metrics.timeline(weeks)),
+    });
+}
+
+export function useAdminCostCalendar({ since, until }: { since: string; until: string }) {
+    return useQuery({
+        queryKey: adminKeys.costCalendar(since, until),
+        queryFn: () => api.get<CalendarSummaryResponseDto>(endpoints.admin.metrics.calendar(since, until)),
+    });
+}
+
+export function useAdminCostCalendarDayEvents({ date, page, size }: { date: string | null; page: number; size: number }) {
+    return useQuery({
+        queryKey: adminKeys.costCalendarDayEvents(date ?? '', page, size),
+        queryFn: () => api.get<Page<EventDashboardRowDto>>(endpoints.admin.metrics.calendarDayEvents(date!, page, size)),
+        enabled: Boolean(date),
     });
 }
 

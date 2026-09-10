@@ -6,6 +6,7 @@ import { AdminDiscountCodesPanel } from '@/components/admin/AdminDiscountCodesPa
 import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { BillingOpsPanel } from '@/components/admin/BillingOpsPanel';
 import { CollaborationsPanel } from '@/components/admin/CollaborationsPanel';
+import { CostTrackingPanel } from '@/components/admin/CostTrackingPanel';
 import { EventTypeRegistryPanel } from '@/components/admin/EventTypeRegistryPanel';
 import { ModuleRegistryPanel } from '@/components/admin/ModuleRegistryPanel';
 import { PaidServicesCatalogPanel } from '@/components/admin/PaidServicesCatalogPanel';
@@ -38,6 +39,7 @@ export function AdminConsole() {
 
             <main className="min-w-0">
                 {tab === 'metrics' && <PlatformMetricsPanel />}
+                {tab === 'costTracking' && <CostTrackingPanel />}
                 {tab === 'eventPlans' && <PlanCatalogPanel scope="EVENT" />}
                 {tab === 'planAvailability' && <PlanAvailabilityPanel />}
                 {tab === 'planModules' && <PlanModulesPanel />}

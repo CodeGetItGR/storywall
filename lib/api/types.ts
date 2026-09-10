@@ -744,6 +744,61 @@ export interface PlatformStorageMetricsDto {
     costCurrency: string;
 }
 
+export interface EventDashboardRowDto {
+    eventId: string;
+    planTierCode: string;
+    eventType: string;
+    startAt: string;
+    storageQuotaBytes: number | null;
+    guestQuotaMax: number | null;
+}
+
+export interface CalendarDaySummaryDto {
+    date: string;
+    eventCount: number;
+    planMix: Record<string, number>;
+    storageBytesTotal: number;
+    guestCapTotal: number;
+    hasUnlimitedStorageQuota: boolean;
+    hasUnlimitedGuestCap: boolean;
+}
+
+export interface CalendarLoadThresholdsDto {
+    lowMax: number;
+    mediumMax: number;
+    highMax: number;
+}
+
+export interface CalendarSummaryResponseDto {
+    days: CalendarDaySummaryDto[];
+    thresholds: CalendarLoadThresholdsDto;
+}
+
+export interface PlanTimelineRowDto {
+    planTierCode: string;
+    weekStart: string;
+    eventCount: number;
+    estimatedCostMinor: number;
+    currency: string;
+}
+
+export interface ProviderActualDto {
+    provider: string;
+    periodStart: string;
+    periodEnd: string;
+    amountMinor: number | null;
+    currency: string | null;
+    detail: Record<string, unknown>;
+    fetchedAt: string;
+}
+
+export interface CostSummaryResponseDto {
+    weekEstimatedCostMinor: number;
+    monthEstimatedCostMinor: number;
+    currency: string;
+    providerActuals: ProviderActualDto[];
+}
+
 export type QrTargetType = 'EVENT_JOIN' | 'MEDIA_UPLOAD' | 'INVITATION';
 export type QrLinkStatus = 'ACTIVE' | 'REVOKED' | 'EXPIRED' | 'TARGET_UNAVAILABLE';
 
