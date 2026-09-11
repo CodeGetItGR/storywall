@@ -117,7 +117,6 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
             <div className="flex items-center justify-between px-2 pt-4 pb-3">
                 <PostAuthorAvatar avatarUrl={post.author?.avatarUrl} name={authorName} timeAgo={timeAgo} isHostPost={showHostPostBadge} />
                 <div className="relative flex items-center gap-1">
-                    {showHostPostBadge && <Badge variant="primary">{t('hostPost')}</Badge>}
                     {canTogglePin ? (
                         <button
                             type="button"

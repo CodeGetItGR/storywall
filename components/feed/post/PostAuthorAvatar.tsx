@@ -33,16 +33,16 @@ export function PostAuthorAvatar({
             )}
             <Avatar src={avatarUrl} initials={getInitials(name)} size="md" alt={name} />
             {/* Author details */}
-            <div>
+            {!isHostPost && <div>
                 <p className="text-sm font-semibold text-ink leading-tight">{name}</p>
                 <div className="flex items-center gap-1.5">
                     {subtitle && <span className="text-xs text-ink-muted capitalize">{subtitle}</span>}
                     {subtitle && <span className="text-ink-faint text-xs">·</span>}
                     <span className="text-xs text-ink-muted">
-                        {timeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${timeAgo.unit}`, { count: timeAgo.value })}
+                        {timeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${timeAgo.unit}`, {count: timeAgo.value})}
                     </span>
                 </div>
-            </div>
+            </div>}
         </section>
     );
 }

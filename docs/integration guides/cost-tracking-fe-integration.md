@@ -13,9 +13,19 @@ sets a provider's token, and `/calendar`'s `thresholds` is read-only, sourced fr
 
 ## Why
 
-Follow-up to the "Per-Event Cost Model" work: instead of a one-off spreadsheet estimate, the admin
-dashboard can now show live event volume by plan tier, its estimated cost, and — once provider
-tokens are configured — the actual bill from Stripe/Railway/Vercel/Cloudflare/Brevo alongside it.
+Follow-up to the "Per-Event Cost Model" work: the admin dashboard shows live event volume by plan
+tier, and — once provider tokens are configured — the actual bill from
+Stripe/Railway/Vercel/Cloudflare/Brevo. **The self-computed cost estimate has been removed.** It
+never reflected a real bill, and having it sit next to genuine provider figures invited reading it
+as one. `/timeline` no longer returns a cost figure at all, and `/cost-summary` no longer returns
+week/month estimated totals — only `providerActuals` remains on that endpoint. **If your admin
+panel build already has a version of these screens, remove:**
+- any "estimated cost" column/series on the volume-over-time chart fed by `/timeline`
+- the week/month "estimated cost" tile(s) on the cost-summary screen fed by `/cost-summary`
+- any client-side formula that reproduced `CostEstimationService`'s math (Stripe fee %, emails per
+  guest, flat platform fee, storage retention) — none of that exists server-side anymore either.
+
+What's left to show is real: event counts by tier/week, and whatever a provider's own API reports.
 
 ## 1. `GET /api/admin/metrics/events` — per-event list with quota
 
@@ -198,7 +208,7 @@ convention. `date` is a path segment in `YYYY-MM-DD` form and is always interpre
 the same UTC boundary `/calendar`'s `date` field uses, so a day cell's `date` value can be truncated
 to `YYYY-MM-DD` and passed straight into this endpoint's path without a timezone conversion.
 
-## 4. `GET /api/admin/metrics/timeline` — weekly volume + estimated cost by plan
+## 4. `GET /api/admin/metrics/timeline` — weekly volume by plan
 
 ```
 GET /api/admin/metrics/timeline?weeks=12
@@ -212,49 +222,46 @@ week — don't assume every tier appears in every week's bucket.
 **`weekStart` is the week the event was *created* (sold), not the week it happens.** An event's
 `startAt` (the wedding/party date) is routinely weeks or months in the future relative to when it
 was bought, so bucketing by `startAt` would scatter one week's sales across every future week those
-events are scheduled for — the volume/cost trend would then include events from months out under
-"this week," and a week's total would barely differ from a month's. Bucketing by `createdAt`
-instead makes each event land in exactly one bucket — the week it actually became a sale — and
-since `createdAt` can never be in the future, there's nothing to bound on the far end. If a
-"what's coming up" view is needed instead, that's what `/events` is for (§1) — it's the
-`startAt`-keyed one.
+events are scheduled for — the volume trend would then include events from months out under "this
+week," and a week's total would barely differ from a month's. Bucketing by `createdAt` instead
+makes each event land in exactly one bucket — the week it actually became a sale — and since
+`createdAt` can never be in the future, there's nothing to bound on the far end. If a "what's
+coming up" view is needed instead, that's what `/events` is for (§1) — it's the `startAt`-keyed one.
 
 ```jsonc
 [
-  { "planTierCode": "BASIC", "weekStart": "2026-08-24T00:00:00Z", "eventCount": 14, "estimatedCostMinor": 3542, "currency": "EUR" },
-  { "planTierCode": "PLUS",  "weekStart": "2026-08-24T00:00:00Z", "eventCount": 6,  "estimatedCostMinor": 3390, "currency": "EUR" },
-  { "planTierCode": "PRO",   "weekStart": "2026-08-31T00:00:00Z", "eventCount": 2,  "estimatedCostMinor": 4482, "currency": "EUR" }
+  { "planTierCode": "BASIC", "weekStart": "2026-08-24T00:00:00Z", "eventCount": 14 },
+  { "planTierCode": "PLUS",  "weekStart": "2026-08-24T00:00:00Z", "eventCount": 6 },
+  { "planTierCode": "PRO",   "weekStart": "2026-08-31T00:00:00Z", "eventCount": 2 }
 ]
 ```
 
-This is the shape for a stacked bar / line chart of volume over time, and `estimatedCostMinor`
-summed per week is the shape for a cost-over-time chart. **`estimatedCostMinor` is a self-computed
-estimate, not an invoice figure** — see `costEstimationService`'s constants in
-`docs/cost-tracking.md` if a "why does this number look off" question comes up; it will move when
-those admin-configured constants change, independent of any code deploy.
+This is the shape for a stacked bar / line chart of volume over time. **There is no cost figure on
+this endpoint** — `estimatedCostMinor` and `currency` were removed from `PlanTimelineRowDto`; if
+your chart previously plotted a cost line/series alongside volume, drop it, since nothing here
+backs it anymore.
 
 ```ts
 export interface PlanTimelineRowDto {
   planTierCode: string;
   weekStart: string;        // ISO 8601, always a Monday — week the event was created, not startAt
   eventCount: number;
-  estimatedCostMinor: number;
-  currency: string;
 }
 ```
 
-## 5. `GET /api/admin/metrics/cost-summary` — estimated vs. actual
+## 5. `GET /api/admin/metrics/cost-summary` — actual cost per provider
 
 ```
 GET /api/admin/metrics/cost-summary
 → 200 CostSummaryResponseDto
 ```
 
+**No estimated totals on this endpoint anymore** — `weekEstimatedCostMinor`, `monthEstimatedCostMinor`,
+and the top-level `currency` were removed from `CostSummaryResponseDto`. The response is now just
+`providerActuals`; drop any "estimated" tile that used to sit next to it.
+
 ```jsonc
 {
-  "weekEstimatedCostMinor": 6932,
-  "monthEstimatedCostMinor": 28450,
-  "currency": "EUR",
   "providerActuals": [
     {
       "provider": "STRIPE",
@@ -301,9 +308,6 @@ export interface ProviderActualDto {
 }
 
 export interface CostSummaryResponseDto {
-  weekEstimatedCostMinor: number;
-  monthEstimatedCostMinor: number;
-  currency: string;
   providerActuals: ProviderActualDto[];
 }
 ```
@@ -338,10 +342,14 @@ export interface CostSummaryResponseDto {
       config and read-only from the UI.
 - [ ] Wire the day-cell click-through to `/calendar/{date}/events` for the drawer, reusing the same
       row rendering as `/events` (§1) since the DTO shape is identical.
-- [ ] Build the volume/cost-over-time chart from `/timeline`, grouping by `weekStart` on the x-axis
-      and `planTierCode` as the series key; handle tiers with gaps in their weekly coverage.
+- [ ] Build the volume-over-time chart from `/timeline`, grouping by `weekStart` on the x-axis and
+      `planTierCode` as the series key; handle tiers with gaps in their weekly coverage. No cost
+      series — the endpoint no longer returns one.
 - [ ] Build the cost-summary tile(s) from `/cost-summary`, rendering `providerActuals` as a
       variable-length list (not a fixed provider grid) and handling `amountMinor: null` as a
-      usage-only card rather than "$0".
+      usage-only card rather than "$0". No "estimated" tile — the endpoint no longer returns one.
+- [ ] **If migrating an existing build:** remove any "estimated cost" chart series/column, the
+      week/month estimated-cost tile(s), and any client-side reimplementation of the old per-event
+      cost formula. They have no backing data anymore.
 - [ ] No recipient/token settings UI needed — both are backend env-var config, not admin-editable
       through the API.
