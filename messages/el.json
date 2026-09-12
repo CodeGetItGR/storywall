@@ -306,6 +306,7 @@
         "processingVideo": "Επεξεργασία βίντεο…",
         "processingFailed": "Δεν ήταν δυνατή η επεξεργασία του βίντεο.",
         "videoTooLong": "Επιλέξτε βίντεο κάτω από {seconds} δευτ.",
+        "swipeRightForFilters": "Σύρετε προς τα δεξιά για φίλτρα",
         "filters": {
             "original": "Αρχικό",
             "warm": "Ζεστό",

@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import Avatar from '@/components/ui/avatar';
+import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import type { CommentResponseDto, EventMemberResponseDto } from '@/lib/api/types';
 import { authorNameFor } from '@/lib/comments';
 import { avatarColorFromId, initialsFromName, timeAgoParts } from '@/lib/utils';
@@ -16,6 +17,7 @@ interface ReplyItemProps {
 
 export function ReplyItem({ reply, membersById, parentCommentId, onReply }: ReplyItemProps) {
     const t = useTranslations('PostModal');
+    const memberAvatarUrl = useMemberAvatarUrl();
     const name = authorNameFor(reply, membersById, t('unknownAuthor'));
     const timeAgo = timeAgoParts(reply.createdAt);
 
@@ -29,7 +31,7 @@ export function ReplyItem({ reply, membersById, parentCommentId, onReply }: Repl
     return (
         <div className="flex gap-2" data-comment-id={reply.id}>
             <Avatar
-                src={reply.authorAvatarUrl}
+                src={memberAvatarUrl(reply.authorMemberId, reply.authorAvatarUrl)}
                 initials={initialsFromName(name)}
                 color={avatarColorFromId(reply.authorMemberId ?? reply.id)}
                 size="xs"

@@ -4,6 +4,7 @@ import { Music4 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { PostAuthorAvatar } from '@/components/feed/post/PostAuthorAvatar';
+import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import type { PostResponseDto } from '@/lib/api/types';
 
 import { isPlaylistDigestPost } from './postUtils';
@@ -15,6 +16,7 @@ interface PostHeaderProps {
 
 export function PostHeader({ post, timeAgo }: PostHeaderProps) {
     const t = useTranslations('PostCard');
+    const memberAvatarUrl = useMemberAvatarUrl();
 
     if (isPlaylistDigestPost(post)) {
         return (
@@ -39,5 +41,5 @@ export function PostHeader({ post, timeAgo }: PostHeaderProps) {
 
     // The star marker is a feed-only affordance (see PostCard) — the comments
     // view always shows the author's real avatar/initials, regardless of role.
-    return <PostAuthorAvatar avatarUrl={post.author?.avatarUrl} name={authorName} subtitle={authorSubtitle} timeAgo={timeAgo} />;
+    return <PostAuthorAvatar avatarUrl={memberAvatarUrl(post.authorMemberId, post.author?.avatarUrl)} name={authorName} subtitle={authorSubtitle} timeAgo={timeAgo} />;
 }

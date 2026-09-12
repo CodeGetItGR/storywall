@@ -6,6 +6,7 @@ import type { MouseEvent } from 'react';
 import { useCallback } from 'react';
 
 import Avatar from '@/components/ui/avatar';
+import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import type { EventMemberResponseDto } from '@/lib/api/types';
 import type { StoryGroup } from '@/lib/stories';
 import { avatarColorFromId, cn, initialsFromName } from '@/lib/utils';
@@ -21,6 +22,7 @@ interface StoryAvatarProps {
 export function StoryAvatar({ group, member, onOpenStoryAction, isCurrentUser }: StoryAvatarProps) {
     const t = useTranslations('StoryAvatar');
     const { openStoryCapture, canComposeStory, isCreatingStory } = useComposer();
+    const memberAvatarUrl = useMemberAvatarUrl();
     const firstStoryId = group.stories[0].id;
 
     const handleOpenStory = useCallback(() => {
@@ -42,7 +44,7 @@ export function StoryAvatar({ group, member, onOpenStoryAction, isCurrentUser }:
         >
             <div className="w-full h-full rounded-full p-0.5 bg-background flex items-center justify-center">
                 <Avatar
-                    src={member.avatarUrl}
+                    src={memberAvatarUrl(member.id, member.avatarUrl)}
                     initials={initialsFromName(member.displayName)}
                     color={avatarColorFromId(member.id)}
                     size="xl"

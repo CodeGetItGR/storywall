@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 import { CommentThreadItem } from '@/components/feed/post/CommentThreadItem';
 import Avatar from '@/components/ui/avatar';
+import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import type { CommentResponseDto, EventMemberResponseDto } from '@/lib/api/types';
 import { authorNameFor, groupCommentsIntoThreads } from '@/lib/comments';
 import { avatarColorFromId, initialsFromName, timeAgoParts } from '@/lib/utils';
@@ -23,6 +24,7 @@ interface CommentsListProps {
 
 export function CommentsList({ comments, membersById, compact = false, limit, onReply, autoExpandThread }: CommentsListProps) {
     const t = useTranslations('PostModal');
+    const memberAvatarUrl = useMemberAvatarUrl();
     const [expandedThreadIds, setExpandedThreadIds] = useState<Set<string>>(new Set());
     const visibleComments = typeof limit === 'number' ? comments.slice(0, limit) : comments;
 
@@ -58,7 +60,7 @@ export function CommentsList({ comments, membersById, compact = false, limit, on
                     return (
                         <div key={comment.id} className="flex gap-2">
                             <Avatar
-                                src={comment.authorAvatarUrl}
+                                src={memberAvatarUrl(comment.authorMemberId, comment.authorAvatarUrl)}
                                 initials={initialsFromName(name)}
                                 color={avatarColorFromId(comment.authorMemberId ?? comment.id)}
                                 size="xs"

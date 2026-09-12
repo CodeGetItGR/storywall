@@ -1,9 +1,9 @@
 'use client';
 
-import { Camera, Images, Loader2, RefreshCw, Send, Trash2 } from 'lucide-react';
+import { Camera, ChevronsRight, Images, Loader2, RefreshCw, Send, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, type MouseEvent, useEffect, useState } from 'react';
+import { type ChangeEvent, type MouseEvent, type PointerEvent as ReactPointerEvent, useEffect, useState } from 'react';
 
 import { StoryVideo } from '@/components/story/StoryVideo';
 import { Modal } from '@/components/ui/modal';
@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 function FilterLayer({ src, alt, preset }: { src: string; alt: string; preset: StoryFilterPreset }) {
     return (
         <>
-            <Image src={src} alt={alt} fill className="object-contain" style={{ filter: preset.cssFilter }} sizes="100vw" unoptimized />
+            <Image src={src} alt={alt} fill className="object-cover" style={{ filter: preset.cssFilter }} sizes="100vw" unoptimized />
             {(preset.overlays ?? []).map((overlay, overlayIndex) => (
                 <div
                     key={overlayIndex}
@@ -41,6 +41,7 @@ function FilterLayer({ src, alt, preset }: { src: string; alt: string; preset: S
 export function StoryComposerModal({ controller }: { controller: StoryComposerController }) {
     const t = useTranslations('StoryComposer');
     const [cameraActive, setCameraActive] = useState(true);
+    const [showFilterSwipeCue, setShowFilterSwipeCue] = useState(true);
     // Some Android browsers can't decode a locally-picked video's blob: URL preview.
     // Track that per item and fall back to the eagerly-uploaded remote copy once ready.
     const [failedPreviewKeys, setFailedPreviewKeys] = useState<Set<string>>(new Set());
@@ -125,6 +126,7 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
     }
     function handleCapturedFile(file: File) {
         addCapturedFile(file);
+        setShowFilterSwipeCue(true);
         setCameraActive(false);
     }
     function showCameraView() {
@@ -133,6 +135,10 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
     function handlePreviewError() {
         if (!activeItem) return;
         setFailedPreviewKeys((current) => new Set(current).add(activeItem.key));
+    }
+    function handleFilterPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+        setShowFilterSwipeCue(false);
+        filterSwipeHandlers.onPointerDown(event);
     }
 
     const activePreviewFailed = Boolean(activeItem && failedPreviewKeys.has(activeItem.key));
@@ -163,7 +169,7 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                         />
                                     )
                                 ) : (
-                                    <div className="relative h-full w-full touch-none" {...filterSwipeHandlers}>
+                                    <div className="relative h-full w-full touch-none" {...filterSwipeHandlers} onPointerDown={handleFilterPointerDown}>
                                         <FilterLayer src={activeItem.previewUrl} alt={t('previewAlt')} preset={activeFilterPreset} />
                                         {targetFilterPreset && (
                                             <div className="absolute inset-0" style={{ opacity: dragProgress }}>
@@ -176,6 +182,13 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                 {isActiveImage && visibleName && (
                                     <div className="pointer-events-none absolute top-1/2 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white backdrop-blur-md">
                                         {t(`filters.${visibleName}`)}
+                                    </div>
+                                )}
+                                {/* Filter swipe cue */}
+                                {isActiveImage && showFilterSwipeCue && (
+                                    <div className="pointer-events-none absolute top-1/2 right-5 z-10 -translate-y-1/2 text-white/75 motion-safe:animate-pulse">
+                                        <ChevronsRight aria-hidden="true" className="h-6 w-6" strokeWidth={1.5} />
+                                        <span className="sr-only">{t('swipeRightForFilters')}</span>
                                     </div>
                                 )}
                                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/80" />

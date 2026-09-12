@@ -306,6 +306,7 @@
         "processingVideo": "Processing video…",
         "processingFailed": "This video couldn't be processed.",
         "videoTooLong": "Choose a video under {seconds}s.",
+        "swipeRightForFilters": "Swipe right for filters",
         "filters": {
             "original": "Original",
             "warm": "Warm",

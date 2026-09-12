@@ -2,6 +2,7 @@ import { Flag, Trash2 } from 'lucide-react';
 import { useCallback } from 'react';
 
 import Avatar from '@/components/ui/avatar';
+import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import type { EventMemberResponseDto } from '@/lib/api/types';
 import { avatarColorFromId, initialsFromName } from '@/lib/utils';
 
@@ -17,12 +18,13 @@ type MemberRowProps = {
 };
 
 export function MemberRow({ canModerate, canReport, joinedLabel, member, onRemoveAction, onReportAction, removeLabel, reportLabel }: MemberRowProps) {
+    const memberAvatarUrl = useMemberAvatarUrl();
     const handleReport = useCallback(() => onReportAction(member), [member, onReportAction]);
     const handleRemove = useCallback(() => onRemoveAction(member), [member, onRemoveAction]);
 
     return (
         <li className="flex items-center gap-3 border-b border-border/70 py-3 last:border-b-0">
-            <Avatar src={member.avatarUrl} initials={initialsFromName(member.displayName)} color={avatarColorFromId(member.id)} alt={member.displayName} size="sm" />
+            <Avatar src={memberAvatarUrl(member.id, member.avatarUrl)} initials={initialsFromName(member.displayName)} color={avatarColorFromId(member.id)} alt={member.displayName} size="sm" />
             <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-ink">{member.displayName}</p>
                 <p className="mt-0.5 text-xs text-ink-faint">{joinedLabel}</p>

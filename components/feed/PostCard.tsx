@@ -18,6 +18,7 @@ import { ReportTargetModal } from '@/components/reports';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useAppConfig, useDeletePost, useEventMembers, usePostModal, useUpdatePost } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import type { PostResponseDto } from '@/lib/api/types';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { cn, timeAgoParts } from '@/lib/utils';
@@ -46,6 +47,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
 
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
+    const memberAvatarUrl = useMemberAvatarUrl();
     const { data: appConfig } = useAppConfig();
     const { data: members = [] } = useEventMembers(post.eventId);
     const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
@@ -135,7 +137,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     return (
         <article className={cn('relative border-b border-border/60 bg-card/60', showHostPostBadge && 'pt-3 sm:pt-0 sm:pr-3')}>
             <div className="flex items-center justify-between px-2 pt-4 pb-3">
-                <PostAuthorAvatar avatarUrl={post.author?.avatarUrl} name={authorName} timeAgo={timeAgo} isHostPost={showHostPostBadge} />
+                <PostAuthorAvatar avatarUrl={memberAvatarUrl(post.authorMemberId, post.author?.avatarUrl)} name={authorName} timeAgo={timeAgo} isHostPost={showHostPostBadge} />
                 <div className="relative flex items-center gap-1">
                     {canTogglePin ? (
                         <button

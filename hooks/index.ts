@@ -14,6 +14,7 @@ export * from './useGiftAccount';
 export * from './useHideMobileTabBarOnScroll';
 export * from './useInfiniteScrollSentinel';
 export * from './useMedia';
+export * from './useMemberAvatarUrl';
 export * from './useMyEvents';
 export * from './useNotifications';
 export * from './usePlatformFeatureFlags';
