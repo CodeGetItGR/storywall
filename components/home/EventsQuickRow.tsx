@@ -10,6 +10,7 @@ import type { EventGridItem } from '@/hooks/useEventGridItems';
 import { formatEventListDate } from '@/lib/datetime';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
+import {ProtectedImage} from "@/components/common/ProtectedImage";
 
 function QuickRowSkeleton() {
     return <div className="h-52 w-40 shrink-0 animate-pulse rounded-2xl bg-surface-muted lg:h-56 lg:w-40" />;
@@ -31,7 +32,7 @@ function EventQuickCard({ member, event }: EventGridItem) {
             className="group relative h-62 w-44 shrink-0 overflow-hidden rounded-lg bg-surface-muted transition-transform hover:-translate-y-0.5 lg:h-56 lg:w-40"
         >
             {event?.coverMedia?.mediaUrl ? (
-                <Image
+                <ProtectedImage
                     src={event.coverMedia.mediaUrl}
                     alt=""
                     fill

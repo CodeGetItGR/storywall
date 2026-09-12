@@ -10,6 +10,7 @@ import type { EventGridItem } from '@/hooks/useEventGridItems';
 import { useRecentEventItems } from '@/hooks/useEventGridItems';
 import { formatEventListDate } from '@/lib/datetime';
 import { routes } from '@/lib/routes';
+import {ProtectedImage} from "@/components/common/ProtectedImage";
 
 export function HomeNextEventCard({ items }: { items: EventGridItem[] }) {
     const t = useTranslations('HomePage');
@@ -37,7 +38,7 @@ export function HomeNextEventCard({ items }: { items: EventGridItem[] }) {
             >
                 {event.coverMedia?.mediaUrl && (
                     <div className="relative aspect-video w-full overflow-hidden bg-surface-muted">
-                        <Image
+                        <ProtectedImage
                             src={event.coverMedia.mediaUrl}
                             alt=""
                             fill
