@@ -1,4 +1,4 @@
-import { ArrowRight, type LucideIcon } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 import { cn } from '@/lib/utils';
@@ -10,34 +10,33 @@ export interface HelpLinkItem {
 }
 
 interface HelpLinksBlockProps {
+    step: number;
     title: string;
     body: string;
     items: HelpLinkItem[];
 }
 
-export function HelpLinksBlock({ title, body, items }: HelpLinksBlockProps) {
+export function HelpLinksBlock({ step, title, body, items }: HelpLinksBlockProps) {
     const hasCompactActions = items.length <= 2;
 
     return (
         <>
             {/* Help destinations */}
-            <section className="border-t border-border/70 pt-7 first:border-t-0 first:pt-0 mx-auto">
+            <section className="mx-auto border-t border-border/70 pt-7 first:border-t-0 first:pt-0">
                 {/* Section heading */}
                 <div className={cn('sm:max-w-xl')}>
                     {/* Title */}
-                    <div className={cn('flex items-center gap-3 justify-center')}>
-                        <h3 className="text-base font-semibold text-ink ">{title}</h3>
+                    <div className="relative">
+                        <span className="absolute left-0 top-0 text-sm font-semibold tabular-nums text-primary" aria-hidden="true">
+                            {String(step).padStart(2, '0')}
+                        </span>
+                        <h3 className="px-8 text-center text-base font-semibold text-ink">{title}</h3>
                     </div>
                     <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-muted">{body}</p>
                 </div>
 
                 {/* Destination actions */}
-                <div
-                    className={cn(
-                        'mt-4',
-                        hasCompactActions ? 'flex flex-wrap gap-x-6 gap-y-1 justify-center' : 'flex flex-col',
-                    )}
-                >
+                <div className={cn('mt-4', hasCompactActions ? 'flex flex-wrap gap-x-6 gap-y-1 justify-center' : 'flex flex-col')}>
                     {items.map((item) => {
                         return (
                             <Link
