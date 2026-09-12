@@ -734,8 +734,14 @@
             "startAt": "Έναρξη",
             "endAt": "Λήξη",
             "timezone": "Ζώνη ώρας",
-            "locationName": "Τοποθεσία (προαιρετικό)",
+            "locationName": "Τοποθεσία",
+            "locationAddress": "Διεύθυνση",
+            "mapsUrl": "Σύνδεσμος χάρτη",
             "visibility": "Ορατότητα"
+        },
+        "placeholders": {
+            "locationAddress": "π.χ. Λεωφ. Κηφισίας 123, Αθήνα",
+            "mapsUrl": "https://maps.google.com/..."
         },
         "validation": {
             "startInPast": "Η ώρα έναρξης πρέπει να είναι από τώρα και μετά.",

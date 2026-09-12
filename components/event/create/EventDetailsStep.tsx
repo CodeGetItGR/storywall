@@ -19,9 +19,15 @@ type EventDetailsStepProps = {
     timezone: string;
     timezoneError?: string | null;
     timezoneOptions: string[];
+    locationName: string;
+    locationAddress: string;
+    mapsUrl: string;
     onTitleChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
     onStartAtChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
     onTimezoneChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
+    onLocationNameChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
+    onLocationAddressChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
+    onMapsUrlChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
 };
 
 export function EventDetailsStep({
@@ -34,9 +40,15 @@ export function EventDetailsStep({
     timezone,
     timezoneError,
     timezoneOptions,
+    locationName,
+    locationAddress,
+    mapsUrl,
     onTitleChangeAction,
     onStartAtChangeAction,
     onTimezoneChangeAction,
+    onLocationNameChangeAction,
+    onLocationAddressChangeAction,
+    onMapsUrlChangeAction,
 }: EventDetailsStepProps) {
     const t = useTranslations('CreateEventPage');
     const voice = useEventTypeVoice(eventType);
@@ -79,6 +91,37 @@ export function EventDetailsStep({
                     error={timezoneError}
                     onChangeAction={onTimezoneChangeAction}
                 />
+
+                {/* Location */}
+                <div className="grid gap-3 sm:grid-cols-2">
+                    <FormFieldLabel label={t('fields.locationName')} optional>
+                        <input
+                            type="text"
+                            value={locationName}
+                            onChange={onLocationNameChangeAction}
+                            className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
+                        />
+                    </FormFieldLabel>
+                    <FormFieldLabel label={t('fields.locationAddress')} optional>
+                        <input
+                            type="text"
+                            value={locationAddress}
+                            onChange={onLocationAddressChangeAction}
+                            placeholder={t('placeholders.locationAddress')}
+                            className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
+                        />
+                    </FormFieldLabel>
+                </div>
+                <FormFieldLabel label={t('fields.mapsUrl')} optional>
+                    <input
+                        type="url"
+                        value={mapsUrl}
+                        onChange={onMapsUrlChangeAction}
+                        placeholder={t('placeholders.mapsUrl')}
+                        className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
+                    />
+                </FormFieldLabel>
+
                 {/* Creation Hint */}
                 <p className="pt-1 text-xs leading-relaxed text-ink-muted">{t('detailsHint')}</p>
             </div>

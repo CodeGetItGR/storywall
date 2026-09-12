@@ -51,6 +51,9 @@ export default function CreateEventPage() {
     const [eventType, setEventType] = useState<EventTypeConvention>('WEDDING');
     const [startAt, setStartAt] = useState('');
     const [timezone, setTimezone] = useState(getCurrentTimezone);
+    const [locationName, setLocationName] = useState('');
+    const [locationAddress, setLocationAddress] = useState('');
+    const [mapsUrl, setMapsUrl] = useState('');
     const [error, setError] = useState<string | null>(null);
     const step = parseCreateEventStep(searchParams.get('step'));
     const eventTypes = appConfig?.eventTypes ?? [];
@@ -120,6 +123,9 @@ export default function CreateEventPage() {
             visibility: 'PRIVATE',
             startAt: new Date(startAt).toISOString(),
             timezone,
+            locationName: locationName.trim() || undefined,
+            locationAddress: locationAddress.trim() || undefined,
+            mapsUrl: mapsUrl.trim() || undefined,
             brandingSettings: {},
             initialSessionTitle,
         };
@@ -132,7 +138,7 @@ export default function CreateEventPage() {
         } catch (err) {
             setIsCheckoutPending(false);
             if (Object.keys(getFieldErrors(err) ?? {}).length > 0) {
-                setStep('details');
+                goToStep('details');
                 return;
             }
 
@@ -167,6 +173,9 @@ export default function CreateEventPage() {
             setTitle('');
             setStartAt('');
             setTimezone(getCurrentTimezone());
+            setLocationName('');
+            setLocationAddress('');
+            setMapsUrl('');
             setError(null);
             setCreatedDraftEventId(null);
             setCheckoutCode('');
@@ -181,6 +190,18 @@ export default function CreateEventPage() {
 
     const onTimezoneChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setTimezone(e.target.value);
+    }, []);
+
+    const onLocationNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setLocationName(e.target.value);
+    }, []);
+
+    const onLocationAddressChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setLocationAddress(e.target.value);
+    }, []);
+
+    const onMapsUrlChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setMapsUrl(e.target.value);
     }, []);
 
     const onCheckoutCodeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -287,9 +308,15 @@ export default function CreateEventPage() {
                                         timezone={timezone}
                                         timezoneError={timezoneError}
                                         timezoneOptions={timezoneOptions}
+                                        locationName={locationName}
+                                        locationAddress={locationAddress}
+                                        mapsUrl={mapsUrl}
                                         onTitleChangeAction={onTitleChange}
                                         onStartAtChangeAction={onStartAtChange}
                                         onTimezoneChangeAction={onTimezoneChange}
+                                        onLocationNameChangeAction={onLocationNameChange}
+                                        onLocationAddressChangeAction={onLocationAddressChange}
+                                        onMapsUrlChangeAction={onMapsUrlChange}
                                     />
                                 )}
 

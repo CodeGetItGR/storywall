@@ -734,8 +734,14 @@
             "startAt": "Starts",
             "endAt": "Ends",
             "timezone": "Timezone",
-            "locationName": "Location (optional)",
+            "locationName": "Location",
+            "locationAddress": "Address",
+            "mapsUrl": "Maps link",
             "visibility": "Visibility"
+        },
+        "placeholders": {
+            "locationAddress": "e.g. 1842 Silverado Trail, Napa, CA 94558",
+            "mapsUrl": "https://maps.google.com/..."
         },
         "validation": {
             "startInPast": "The start time must be now or later.",
