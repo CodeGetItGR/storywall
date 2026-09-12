@@ -1,10 +1,10 @@
 'use client';
 
 import { Check, ImagePlus, Loader2, X } from 'lucide-react';
-import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import React, { useEffect, useRef, useState } from 'react';
 
+import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { TargetedSection } from '@/components/manage/TargetedSection';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
@@ -226,7 +226,7 @@ export default function SettingsTab({
                     <TargetedSection id={COVER_PHOTO_SECTION_ID} className="mt-1.5">
                         {coverPreview ? (
                             <div className="relative rounded-2xl overflow-hidden aspect-21/9 bg-surface-muted">
-                                <Image src={coverPreview} alt="" fill className="object-cover" sizes="700px" loading="lazy" />
+                                <ProtectedImage src={coverPreview} alt="" fill className="object-cover" sizes="700px" loading="lazy" />
                                 {isUploading && (
                                     <div className="absolute inset-0 bg-ink/40 flex items-center justify-center">
                                         <Loader2 className="w-6 h-6 text-white animate-spin" />
