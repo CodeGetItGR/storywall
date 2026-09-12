@@ -8,14 +8,13 @@ interface AuthLayoutProps {
 
 export function AuthLayout({ children }: AuthLayoutProps) {
     return (
-        <div className="min-h-dvh bg-background flex flex-col justify-center lg:h-screen lg:flex-row lg:justify-start max-lg:bg-gradient-brand">
+        <div className="min-h-dvh flex flex-col justify-center lg:h-screen lg:flex-row lg:justify-start bg-surface-muted">
             {/* Brand panel */}
-            <div className="relative flex shrink-0 items-center justify-center overflow-hidden py-10 lg:py-0 lg:w-1/2 lg:h-screen lg:bg-gradient-brand">
-
+            <div className="relative flex shrink-0 items-center justify-center overflow-hidden py-10 lg:py-0 lg:w-1/2 lg:h-screen">
                 <Logo
                     direction="col"
                     iconClassName="h-12 w-auto sm:h-14 lg:h-20"
-                    wordmarkClassName="h-8 w-auto sm:h-9 lg:h-11 brightness-0 invert"
+                    wordmarkClassName="h-8 w-auto sm:h-9 lg:h-11 invert"
                     className="relative"
                 />
             </div>
