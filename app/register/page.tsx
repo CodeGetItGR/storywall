@@ -95,7 +95,7 @@ export default function RegisterPage() {
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 <div className="grid grid-cols-2 gap-3">
                     <FormFieldLabel label={t('fields.firstName')} required>
-                        <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
+                        <div className="flex items-center gap-3 bg-surface-muted/70 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
                             <User className="w-4 h-4 text-ink-muted shrink-0" />
                             <input
                                 type="text"
@@ -109,7 +109,7 @@ export default function RegisterPage() {
                     </FormFieldLabel>
 
                     <FormFieldLabel label={t('fields.lastName')} required>
-                        <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
+                        <div className="flex items-center gap-3 bg-surface-muted/70 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
                             <input
                                 type="text"
                                 placeholder={t('placeholders.lastName')}
@@ -123,7 +123,7 @@ export default function RegisterPage() {
                 </div>
 
                 <FormFieldLabel label={t('fields.email')} required>
-                    <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
+                    <div className="flex items-center gap-3 bg-surface-muted/70 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
                         <Mail className="w-4 h-4 text-ink-muted shrink-0" />
                         <input
                             type="email"
@@ -137,7 +137,7 @@ export default function RegisterPage() {
                 </FormFieldLabel>
 
                 <FormFieldLabel label={t('fields.password')} required>
-                    <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
+                    <div className="flex items-center gap-3 bg-surface-muted/70 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
                         <Lock className="w-4 h-4 text-ink-muted shrink-0" />
                         <input
                             type={showPw ? 'text' : 'password'}
