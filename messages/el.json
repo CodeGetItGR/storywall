@@ -356,8 +356,8 @@
             "password": "Κωδικός πρόσβασης"
         },
         "placeholders": {
-            "firstName": "Το όνομά σας",
-            "lastName": "Το επώνυμό σας",
+            "firstName": "Όνομά",
+            "lastName": "Επώνυμό",
             "email": "you@example.com"
         },
         "showPassword": "Εμφάνιση κωδικού",
