@@ -268,7 +268,20 @@
         "post": "Post",
         "posting": "Posting…",
         "storageLimitExceededWithPlan": "This event has no room left for new media on its current plan. Upgrade to {plan} to add more.",
-        "uploading": "Uploading…"
+        "uploading": "Uploading…",
+        "filtersLabel": "Image filters",
+        "imageSelected": "Edit image filters",
+        "filters": {
+            "original": "Original",
+            "warm": "Warm",
+            "goldenHour": "Golden Hour",
+            "cool": "Cool",
+            "vivid": "Vivid",
+            "fade": "Fade",
+            "mono": "Mono",
+            "noir": "Noir",
+            "vintage": "Vintage"
+        }
     },
     "StoryComposer": {
         "title": "Add stories",
@@ -2315,14 +2328,14 @@
                 "cost": "Estimated cost",
                 "estimated": "Estimated cost"
             },
-  "traffic": {
+            "traffic": {
                 "title": "Event traffic",
                 "description": "Events in the selected range and the plan quota attached to each one.",
                 "loading": "Loading event traffic...",
                 "error": "We couldn't load event traffic. Try refreshing.",
                 "empty": "No events are available for this range.",
-    "unlimited": "Unlimited",
-    "guestsValue": "Guests: {value}",
+                "unlimited": "Unlimited",
+                "guestsValue": "Guests: {value}",
                 "copyEventId": "Copy event ID",
                 "copiedEventId": "Event ID copied",
                 "previous": "Previous",
@@ -2334,34 +2347,34 @@
                     "starts": "Starts",
                     "storage": "Storage quota",
                     "guests": "Guest quota",
-      "eventId": "Event ID"
-    }
-  },
-  "calendar": {
-    "title": "Event calendar",
-    "description": "Scheduled event load by day. Select a day to inspect every event.",
-    "loading": "Loading calendar...",
-    "error": "We couldn't load the calendar. Try refreshing.",
-    "previousMonth": "Previous month",
-    "nextMonth": "Next month",
-    "dayEmpty": "{date}, no events",
-    "openDay": "{date}, {count} events. Open event details.",
-    "eventCount": "{count} events",
-    "quotaSummary": "{storage} storage · {guests} guests",
-    "legend": {
-      "label": "Daily load",
-      "low": "Low, 1–{max}",
-      "medium": "Medium, {min}–{max}",
-      "high": "High, {min}–{max}",
-      "peak": "Peak, {min}+"
-    },
-    "dayDetails": "Day details",
-    "drawerSubtitle": "{count} events",
-    "closeDrawer": "Close day details",
-    "drawerLoading": "Loading events...",
-    "drawerError": "We couldn't load this day's events. Try again.",
-    "drawerEmpty": "No events are available for this day."
-  }
+                    "eventId": "Event ID"
+                }
+            },
+            "calendar": {
+                "title": "Event calendar",
+                "description": "Scheduled event load by day. Select a day to inspect every event.",
+                "loading": "Loading calendar...",
+                "error": "We couldn't load the calendar. Try refreshing.",
+                "previousMonth": "Previous month",
+                "nextMonth": "Next month",
+                "dayEmpty": "{date}, no events",
+                "openDay": "{date}, {count} events. Open event details.",
+                "eventCount": "{count} events",
+                "quotaSummary": "{storage} storage · {guests} guests",
+                "legend": {
+                    "label": "Daily load",
+                    "low": "Low, 1–{max}",
+                    "medium": "Medium, {min}–{max}",
+                    "high": "High, {min}–{max}",
+                    "peak": "Peak, {min}+"
+                },
+                "dayDetails": "Day details",
+                "drawerSubtitle": "{count} events",
+                "closeDrawer": "Close day details",
+                "drawerLoading": "Loading events...",
+                "drawerError": "We couldn't load this day's events. Try again.",
+                "drawerEmpty": "No events are available for this day."
+            }
         },
         "errors": {
             "planInUse": "This plan is in use. Archive it instead of deleting it.",

@@ -1,4 +1,0 @@
-- Add filter indicator in stories (that the user can swipe right to see the filter options)
-- Add filters to posts
-- Ensure that when the user takes a photo during the story creation process, the photo is then displayed in full screen without stretching or distortion
-- Story image composer is broken, cannot zoom, cannot adjust brightness, the image that is taken doesn't match what's displayed in the preview, it looks like it's zoomed out. 
