@@ -20,7 +20,9 @@ type EventDetailsStepProps = {
     timezoneError?: string | null;
     timezoneOptions: string[];
     locationName: string;
+    locationNameError?: string | null;
     locationAddress: string;
+    locationAddressError?: string | null;
     mapsUrl: string;
     onTitleChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
     onStartAtChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -41,7 +43,9 @@ export function EventDetailsStep({
     timezoneError,
     timezoneOptions,
     locationName,
+    locationNameError,
     locationAddress,
+    locationAddressError,
     mapsUrl,
     onTitleChangeAction,
     onStartAtChangeAction,
@@ -94,22 +98,26 @@ export function EventDetailsStep({
 
                 {/* Location */}
                 <div className="grid gap-3 sm:grid-cols-2">
-                    <FormFieldLabel label={t('fields.locationName')} optional>
+                    <FormFieldLabel label={t('fields.locationName')} required>
                         <input
                             type="text"
+                            required
                             value={locationName}
                             onChange={onLocationNameChangeAction}
                             className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
                         />
+                        {locationNameError && <span className="text-xs text-rose-500">{locationNameError}</span>}
                     </FormFieldLabel>
-                    <FormFieldLabel label={t('fields.locationAddress')} optional>
+                    <FormFieldLabel label={t('fields.locationAddress')} required>
                         <input
                             type="text"
+                            required
                             value={locationAddress}
                             onChange={onLocationAddressChangeAction}
                             placeholder={t('placeholders.locationAddress')}
                             className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
                         />
+                        {locationAddressError && <span className="text-xs text-rose-500">{locationAddressError}</span>}
                     </FormFieldLabel>
                 </div>
                 <FormFieldLabel label={t('fields.mapsUrl')} optional>

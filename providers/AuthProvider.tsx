@@ -90,23 +90,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
     }, []);
 
-    const register = useCallback(async (input: { email: string; password: string; firstName: string; lastName: string; inviteToken?: string }) => {
-        const session = await authClient.register(input);
-        setSession(session);
-        return session;
-    }, []);
+    const register = useCallback(
+        async (input: { email: string; password: string; firstName: string; lastName: string; inviteToken?: string }) => {
+            const session = await authClient.register(input);
+            // A prior session's queries (e.g. the un-scoped myEventsKeys.all) can
+            // still be sitting in cache if the previous account never went through
+            // an explicit logout (silent refresh-token expiry, account switch) —
+            // clear before setSession so nothing ever renders their data.
+            queryClient.clear();
+            setSession(session);
+            return session;
+        },
+        [queryClient]
+    );
 
-    const login = useCallback(async (input: { email: string; password: string; inviteToken?: string }) => {
-        const session = await authClient.login(input);
-        setSession(session);
-        return session;
-    }, []);
+    const login = useCallback(
+        async (input: { email: string; password: string; inviteToken?: string }) => {
+            const session = await authClient.login(input);
+            queryClient.clear();
+            setSession(session);
+            return session;
+        },
+        [queryClient]
+    );
 
-    const oauth = useCallback(async (provider: 'GOOGLE' | 'APPLE', input: { idToken: string; inviteToken?: string }) => {
-        const session = await authClient.oauth(provider, input);
-        setSession(session);
-        return session;
-    }, []);
+    const oauth = useCallback(
+        async (provider: 'GOOGLE' | 'APPLE', input: { idToken: string; inviteToken?: string }) => {
+            const session = await authClient.oauth(provider, input);
+            queryClient.clear();
+            setSession(session);
+            return session;
+        },
+        [queryClient]
+    );
 
     const logout = useCallback(async () => {
         try {

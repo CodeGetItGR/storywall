@@ -80,7 +80,7 @@ export default function CreateEventPage() {
     const timezoneError = timezone && !isTimezoneValid ? t('validation.invalidTimezone') : null;
     const canReachPlan = eventTypes.length > 0;
     const canReachDetails = canReachPlan && Boolean(selectedCode);
-    const canReachOverview = canReachDetails && Boolean(title.trim() && startAt && isTimezoneValid && !scheduleError);
+    const canReachOverview = canReachDetails && Boolean(title.trim() && startAt && isTimezoneValid && !scheduleError && locationName.trim() && locationAddress.trim());
     const reachableStep: CreateEventStep = canReachOverview ? 'overview' : canReachDetails ? 'details' : canReachPlan ? 'plan' : 'type';
     useEffect(() => {
         if (isBootstrapping) return;
@@ -106,7 +106,7 @@ export default function CreateEventPage() {
         e.preventDefault();
         setError(null);
         if (step === 'details') {
-            if (title.trim() && startAt && isTimezoneValid && !scheduleError) goToStep('overview');
+            if (title.trim() && startAt && isTimezoneValid && !scheduleError && locationName.trim() && locationAddress.trim()) goToStep('overview');
             return;
         }
         if (step !== 'overview') return;
@@ -114,7 +114,7 @@ export default function CreateEventPage() {
             router.push(routes.events.manage(createdDraftEventId));
             return;
         }
-        if (!title.trim() || !startAt || !isTimezoneValid || scheduleError) return;
+        if (!title.trim() || !startAt || !isTimezoneValid || scheduleError || !locationName.trim() || !locationAddress.trim()) return;
 
         const input: EventRequestDto = {
             title: title.trim(),
@@ -123,8 +123,8 @@ export default function CreateEventPage() {
             visibility: 'PRIVATE',
             startAt: new Date(startAt).toISOString(),
             timezone,
-            locationName: locationName.trim() || undefined,
-            locationAddress: locationAddress.trim() || undefined,
+            locationName: locationName.trim(),
+            locationAddress: locationAddress.trim(),
             mapsUrl: mapsUrl.trim() || undefined,
             brandingSettings: {},
             initialSessionTitle,
@@ -309,7 +309,9 @@ export default function CreateEventPage() {
                                         timezoneError={timezoneError}
                                         timezoneOptions={timezoneOptions}
                                         locationName={locationName}
+                                        locationNameError={fieldErrors?.locationName}
                                         locationAddress={locationAddress}
+                                        locationAddressError={fieldErrors?.locationAddress}
                                         mapsUrl={mapsUrl}
                                         onTitleChangeAction={onTitleChange}
                                         onStartAtChangeAction={onStartAtChange}
@@ -348,7 +350,7 @@ export default function CreateEventPage() {
                         canContinue={Boolean(selectedCode)}
                         isPending={createEvent.isPending || isCheckoutPending}
                         hasDraft={Boolean(createdDraftEventId)}
-                        canSubmitDetails={Boolean(title.trim() && startAt && isTimezoneValid && !scheduleError)}
+                        canSubmitDetails={Boolean(title.trim() && startAt && isTimezoneValid && !scheduleError && locationName.trim() && locationAddress.trim())}
                         onGoToTypeAction={goToType}
                         onGoToDetailsAction={goToDetails}
                         onGoToPlanAction={goToPlan}
