@@ -79,6 +79,9 @@ Refreshed again 2026-09-05: `User.displayName` is gone. `RegisterRequestDto`, `M
 `UserResponseDto`, and `AuthResponseDto` all carry `firstName`/`lastName` instead — both required on
 register, both optional on `PATCH /api/me`. Any FE code building a display name should concatenate
 `firstName + " " + lastName` itself; the backend no longer returns a combined field.
+Refreshed again 2026-09-10: documented `DELETE /api/event-members/{id}` — it was already
+implemented and tested but had never been written up here. It's the single endpoint for both
+"leave this event" (self) and "remove this member" (host); there is no separate `/leave` route.
 
 ## 0. Base setup
 
@@ -149,6 +152,7 @@ the two conditions failed. Guest invitations are unchanged and stay forwardable.
 | GET | `/api/me/events` | any authenticated (incl. guest) | every `EventMemberResponseDto` for the caller — this is what backs "restore active event"; each entry's `rsvpId` (2026-08-26) tells you whether that membership has an RSVP yet, see [`rsvp-status-fe-integration.md`](rsvp-status-fe-integration.md) |
 | GET | `/api/events` | authenticated | flat list, `EventResponseDto[]` |
 | GET | `/api/events/{id}` | authenticated | `EventDetailResponseDto` — grouped/enriched: `schedule`, `location`, resolved `coverMedia`, `hosts[]`, `modules[]`, `sessions[]`, `rsvpSummary` (aggregate only). Posts/comments/reactions/stories/individual RSVPs are deliberately excluded — fetch from their own endpoints. |
+| DELETE | `/api/event-members/{id}` | isAuthenticated, host-or-self only | removes an `EventMember`. **Same endpoint for both "leave this event" and "remove this member"** — there is no separate `/leave` route. A host may delete any member row for their event; any other member may only delete their **own** row (`member.userId == caller`); anyone else gets `403`. See [`rsvp-status-fe-integration.md`](rsvp-status-fe-integration.md) for the sibling GET/PATCH/`claim` endpoints on the same resource. |
 
 ### Event creation & host management
 
