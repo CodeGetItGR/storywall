@@ -10,15 +10,14 @@ interface StoryCameraController {
     isReady: boolean;
     isRecording: boolean;
     error: 'permission' | 'unavailable' | null;
-    zoom: { min: number; max: number; step: number; value: number } | null;
     setPhotoMode: () => void;
     setVideoMode: () => void;
     capture: () => void;
     switchCamera: () => void;
-    setZoom: (value: number) => void;
 }
 
-type ZoomCapability = { min?: number; max?: number; step?: number };
+type ZoomCapability = { min?: number; max?: number };
+type CameraConstraints = MediaTrackConstraints & { resizeMode?: ConstrainDOMString };
 
 function getZoomCapability(track: MediaStreamTrack): ZoomCapability | null {
     const capabilities = track.getCapabilities?.() as MediaTrackCapabilities & { zoom?: ZoomCapability };
@@ -43,7 +42,6 @@ export function useStoryCameraController(open: boolean, onCapture: (file: File) 
     const [isReady, setIsReady] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
     const [error, setError] = useState<'permission' | 'unavailable' | null>(null);
-    const [zoom, setZoomState] = useState<{ min: number; max: number; step: number; value: number } | null>(null);
 
     useEffect(() => {
         onCaptureRef.current = onCapture;
@@ -68,7 +66,6 @@ export function useStoryCameraController(open: boolean, onCapture: (file: File) 
             setIsReady(false);
             setIsRecording(false);
             setError(null);
-            setZoomState(null);
             if (!navigator.mediaDevices?.getUserMedia) {
                 setError('unavailable');
                 return;
@@ -77,8 +74,15 @@ export function useStoryCameraController(open: boolean, onCapture: (file: File) 
                 // Request camera and microphone together so both permission prompts appear
                 // at once, rather than surprising the user with a second mic prompt later
                 // when they switch to video mode.
+                const videoConstraints: CameraConstraints = {
+                    facingMode,
+                    width: { ideal: 1080 },
+                    height: { ideal: 1920 },
+                    aspectRatio: { ideal: 9 / 16 },
+                    resizeMode: 'none',
+                };
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode, width: { ideal: 1080 }, height: { ideal: 1920 } },
+                    video: videoConstraints,
                     audio: true,
                 });
                 if (cancelled) {
@@ -90,11 +94,8 @@ export function useStoryCameraController(open: boolean, onCapture: (file: File) 
                 const zoomCapability = videoTrack && getZoomCapability(videoTrack);
                 if (videoTrack && zoomCapability) {
                     const min = zoomCapability.min!;
-                    const max = zoomCapability.max!;
-                    const step = zoomCapability.step && zoomCapability.step > 0 ? zoomCapability.step : 0.1;
                     try {
                         await videoTrack.applyConstraints({ advanced: [{ zoom: min } as MediaTrackConstraintSet] });
-                        setZoomState({ min, max, step, value: min });
                     } catch {
                         // Zoom support is optional even when a browser reports the capability.
                     }
@@ -162,27 +163,15 @@ export function useStoryCameraController(open: boolean, onCapture: (file: File) 
         setIsRecording(true);
     }
 
-    function setZoom(value: number) {
-        const track = streamRef.current?.getVideoTracks()[0];
-        if (!track || !zoom) return;
-        const nextValue = Math.min(zoom.max, Math.max(zoom.min, value));
-        void track
-            .applyConstraints({ advanced: [{ zoom: nextValue } as MediaTrackConstraintSet] })
-            .then(() => setZoomState((current) => (current ? { ...current, value: nextValue } : current)))
-            .catch(() => undefined);
-    }
-
     return {
         videoRef,
         mode,
         isReady,
         isRecording,
         error,
-        zoom,
         setPhotoMode: () => setMode('photo'),
         setVideoMode: () => setMode('video'),
         capture: mode === 'photo' ? capturePhoto : toggleRecording,
         switchCamera: () => setFacingMode((current) => (current === 'environment' ? 'user' : 'environment')),
-        setZoom,
     };
 }

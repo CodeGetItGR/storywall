@@ -104,8 +104,6 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
         setVideoMode,
         capture,
         switchCamera,
-        zoom,
-        setZoom,
     } = useStoryCameraController(isOpen && showCamera, handleCapturedFile);
     const canAdd = items.length < maxItems && !isBusy;
 
@@ -119,9 +117,6 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
     }
     function handleCaptionChange(event: ChangeEvent<HTMLTextAreaElement>) {
         updateCaption(event.target.value);
-    }
-    function handleZoomChange(event: ChangeEvent<HTMLInputElement>) {
-        setZoom(Number(event.currentTarget.value));
     }
     function handleStoryLibraryChange(event: ChangeEvent<HTMLInputElement>) {
         const hasFiles = Boolean(event.target.files?.length);
@@ -304,7 +299,7 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                 muted
                                 playsInline
                                 autoPlay
-                                className="absolute inset-0 h-full w-full touch-none object-contain"
+                                className="absolute inset-0 h-full w-full touch-none object-cover"
                                 aria-label={t('cameraPreview')}
                             />
                             <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/65" />
@@ -346,19 +341,6 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                             {t('videoMode')}
                                         </button>
                                     </div>
-                                    {/* Camera zoom */}
-                                    {zoom && (
-                                        <input
-                                            type="range"
-                                            min={zoom.min}
-                                            max={zoom.max}
-                                            step={zoom.step}
-                                            value={zoom.value}
-                                            onChange={handleZoomChange}
-                                            aria-label={t('zoom')}
-                                            className="mx-auto mb-5 block h-11 w-36 accent-white"
-                                        />
-                                    )}
                                     <div className="grid grid-cols-3 items-center px-8">
                                         <button
                                             type="button"

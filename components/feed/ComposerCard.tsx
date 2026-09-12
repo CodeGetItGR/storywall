@@ -7,10 +7,12 @@ import Avatar from '@/components/ui/avatar';
 import { initialsFromName } from '@/lib/utils';
 import { useComposer } from '@/providers/ComposerProvider';
 import { useActiveMember } from '@/providers/EventProvider';
+import {useAuth} from "@/hooks";
 
 export function ComposerCard() {
     const t = useTranslations('ComposerCard');
     const activeMember = useActiveMember();
+    const profile = useAuth()
     const { openPostComposer, openPostImagePicker, canComposePost } = useComposer();
 
     const initials = activeMember ? initialsFromName(activeMember.displayName) : '?';
@@ -23,7 +25,7 @@ export function ComposerCard() {
             <div className="rounded-[calc(1.75rem-1px)] bg-card/95 px-4 py-4 sm:px-5">
                 {/* Compose row */}
                 <div className="flex items-center gap-3">
-                    <Avatar initials={initials} size="md" alt={activeMember?.displayName} />
+                    <Avatar src={profile.user?.profilePictureUrl} initials={initials} size="md" alt={activeMember?.displayName} />
                     <button
                         type="button"
                         onClick={openPostComposer}
