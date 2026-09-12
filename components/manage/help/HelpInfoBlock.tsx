@@ -2,14 +2,13 @@ import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 interface HelpInfoBlockProps {
-    step: number;
     title: string;
     body: string;
     linkHref?: string;
     linkLabel?: string;
 }
 
-export function HelpInfoBlock({ step, title, body, linkHref, linkLabel }: HelpInfoBlockProps) {
+export function HelpInfoBlock({ title, body, linkHref, linkLabel }: HelpInfoBlockProps) {
     return (
         <>
             {/* Help action */}
@@ -17,9 +16,6 @@ export function HelpInfoBlock({ step, title, body, linkHref, linkLabel }: HelpIn
                 <div className="mx-auto text-center sm:max-w-xl">
                     {/* Title */}
                     <div className="relative">
-                        <span className="absolute left-0 top-0 text-sm font-semibold tabular-nums text-primary" aria-hidden="true">
-                            {String(step).padStart(2, '0')}
-                        </span>
                         <h3 className="px-8 text-center text-base font-semibold text-ink">{title}</h3>
                     </div>
                     <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-muted">{body}</p>

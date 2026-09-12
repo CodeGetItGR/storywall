@@ -40,19 +40,14 @@ export default function HelpTab({
             href: entry.href,
             label: t(`tools.items.${entry.labelKey}`),
         }));
-    const venueStep = 3;
-    const inviteStep = hasVenueConvention ? 4 : 3;
-    const toolsStep = inviteStep + 1;
-    const doneStep = toolsStep + 1;
 
     return (
         <div className="flex flex-col gap-8 pb-6">
             {/* Welcome */}
-            <HelpInfoBlock step={1} title={t('welcome.title', { eventTitle })} body={t('welcome.body')} />
+            <HelpInfoBlock title={t('welcome.title', { eventTitle })} body={t('welcome.body')} />
 
             {/* Dashboard */}
             <HelpLinksBlock
-                step={2}
                 title={t('dashboard.title')}
                 body={t('dashboard.body')}
                 items={[
@@ -72,7 +67,6 @@ export default function HelpTab({
             {/* Venue */}
             {hasVenueConvention && (
                 <HelpInfoBlock
-                    step={venueStep}
                     title={t(hasVenue ? 'venue.readyTitle' : 'venue.askTitle')}
                     body={t(hasVenue ? 'venue.readyBody' : 'venue.askBody')}
                     linkHref={routes.events.tools.schedule(eventId, { section: 'venue-session' })}
@@ -82,7 +76,6 @@ export default function HelpTab({
 
             {/* Invite */}
             <HelpInfoBlock
-                step={inviteStep}
                 title={t('invite.title')}
                 body={t('invite.body')}
                 linkHref={routes.events.manage(eventId, { tab: 'invitations', section: 'qr' })}
@@ -90,10 +83,10 @@ export default function HelpTab({
             />
 
             {/* Tools */}
-            <HelpLinksBlock step={toolsStep} title={t('tools.title')} body={t('tools.body')} items={toolItems} />
+            <HelpLinksBlock title={t('tools.title')} body={t('tools.body')} items={toolItems} />
 
             {/* Done */}
-            <HelpInfoBlock step={doneStep} title={t('done.title')} body={t('done.body')} />
+            <HelpInfoBlock title={t('done.title')} body={t('done.body')} />
         </div>
     );
 }
