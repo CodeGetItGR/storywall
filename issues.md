@@ -1,0 +1,3 @@
+- Add filter indicator in stories (that the user can swipe right to see the filter options)
+- Add filters to posts
+- 

@@ -183,6 +183,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                 </div>
             )}
 
+            {/* Post media */}
             {media.length === 1 && (
                 <button
                     type="button"
@@ -214,7 +215,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                             onContextMenu={preventMediaContextMenu}
                             data-index={i}
                             aria-label={t('viewMediaAt', { index: i + 1, count: media.length, name: authorName })}
-                            className="relative block aspect-square overflow-hidden"
+                            className={cn('relative block aspect-square overflow-hidden', media.length === 3 && i === 2 && 'col-span-2 aspect-[2/1]')}
                         >
                             <MediaThumbnail
                                 src={item.mediaUrl}
@@ -224,7 +225,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                                 alt={t('mediaBy', { name: authorName })}
                                 fill
                                 className="object-cover"
-                                sizes="(max-width: 768px) 50vw, 340px"
+                                sizes={media.length === 3 && i === 2 ? '(max-width: 768px) 100vw, 680px' : '(max-width: 768px) 50vw, 340px'}
                                 loading={isLcpCandidate && i === 0 ? 'eager' : 'lazy'}
                             />
                             {i === 3 && media.length > 4 && (
