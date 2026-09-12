@@ -1,7 +1,6 @@
 'use client';
 
-import { Check, Copy } from 'lucide-react';
-import { Gift } from 'lucide-react';
+import { Check, Copy, Gift, Pencil } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
@@ -80,9 +79,7 @@ export function GiftAccountPage() {
                             </div>
                             <div>
                                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-faint">{t('fields.iban')}</p>
-                                <p className="mt-1.5 break-all font-mono text-md leading-7 font-semibold tracking-widest text-ink">
-                                    {formattedIban}
-                                </p>
+                                <p className="mt-1.5 break-all font-mono text-md leading-7 font-semibold tracking-widest text-ink">{formattedIban}</p>
                             </div>
                             <button
                                 type="button"
@@ -92,6 +89,15 @@ export function GiftAccountPage() {
                                 {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
                                 {copied ? t('copied') : t('copyIban')}
                             </button>
+                            {isHost && event?.id && (
+                                <Link
+                                    href={giftAccountSetupHref(event.id)}
+                                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
+                                >
+                                    <Pencil className="h-4 w-4" aria-hidden="true" />
+                                    {t('edit')}
+                                </Link>
+                            )}
                         </div>
                     </section>
                 </div>
