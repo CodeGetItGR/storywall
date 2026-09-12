@@ -733,12 +733,19 @@ interface ModerationActionResponseDto {
 // GET /api/moderation-actions now returns Page<ModerationActionResponseDto>, not ModerationActionResponseDto[].
 // Default 50/page, max 100 (?page=&size=), sorted createdAt desc then id desc (newest first).
 
+// targetType and reason are now enum-backed server-side (previously unrestricted strings) —
+// an unrecognized value 400s. The valid sets are also published at GET /api/config as
+// reportTargetTypes / reportReasons (see app-config-fe-integration.md) so the FE doesn't
+// have to hardcode them.
+type ReportTargetType = "POST" | "COMMENT" | "MEMBER";
+type ReportReason = "SPAM" | "HARASSMENT" | "INAPPROPRIATE_CONTENT" | "IMPERSONATION" | "OTHER";
+
 interface ReportRequestDto {
   reporterMemberId?: string; // sent but IGNORED server-side — bound to the caller automatically
   eventId: string;    // required
-  targetType: string; // required
+  targetType: ReportTargetType; // required
   targetId: string;   // required
-  reason: string;     // required
+  reason: ReportReason;     // required
   description?: string;
   status?: string;             // set by moderators only, defaults to "OPEN" server-side
   reviewedByMemberId?: string;
@@ -746,8 +753,8 @@ interface ReportRequestDto {
   resolutionNotes?: string;
 }
 interface ReportResponseDto {
-  id: string; reporterMemberId: string | null; eventId: string; targetType: string; targetId: string;
-  reason: string; description: string | null; status: string | null; reviewedByMemberId: string | null;
+  id: string; reporterMemberId: string | null; eventId: string; targetType: ReportTargetType; targetId: string;
+  reason: ReportReason; description: string | null; status: string | null; reviewedByMemberId: string | null;
   reviewedAt: string | null; resolutionNotes: string | null; createdAt: string; updatedAt: string;
 }
 // GET /api/reports now returns Page<ReportResponseDto>, not ReportResponseDto[].

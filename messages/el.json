@@ -130,7 +130,27 @@
         "month": "Μήνας",
         "time": "Ώρα",
         "moduleUnavailable": "Οι δημοσιεύσεις δεν είναι διαθέσιμες στο τρέχον πλάνο αυτής της εκδήλωσης.",
-        "reactionFailed": "Δεν μπορέσαμε να ενημερώσουμε την αντίδρασή σας. Δοκιμάστε ξανά."
+        "reactionFailed": "Δεν μπορέσαμε να ενημερώσουμε την αντίδρασή σας. Δοκιμάστε ξανά.",
+        "reportPost": "Αναφορά δημοσίευσης"
+    },
+    "Report": {
+        "title": "Αναφορά",
+        "body": "Αναφέρετε τον/την {name} στην ομάδα της πλατφόρμας.",
+        "reason": "Λόγος",
+        "chooseReason": "Επιλέξτε λόγο",
+        "details": "Λεπτομέρειες",
+        "detailsPlaceholder": "Προσθέστε λεπτομέρειες",
+        "submit": "Αποστολή αναφοράς",
+        "submitting": "Αποστολή…",
+        "cancel": "Ακύρωση",
+        "failed": "Δεν ήταν δυνατή η αποστολή της αναφοράς. Δοκιμάστε ξανά.",
+        "reasons": {
+            "SPAM": "Ανεπιθύμητο περιεχόμενο",
+            "HARASSMENT": "Παραβίαση",
+            "INAPPROPRIATE_CONTENT": "Ακατάλληλο περιεχόμενο",
+            "IMPERSONATION": "Πλαστοπροσωπία",
+            "OTHER": "Άλλο"
+        }
     },
     "DesktopNavRail": {
         "mainNavigation": "Κύρια πλοήγηση",
@@ -877,6 +897,7 @@
             "settings": "Ρυθμίσεις",
             "help": "Βοήθεια",
             "danger": "Ζώνη κινδύνου",
+            "members": "Μέλη",
             "rsvp": "RSVP",
             "invitations": "Προσκλήσεις",
             "plan": "Πλάνο",
@@ -1203,6 +1224,17 @@
         "rsvpParty": "{count} θέσεις",
         "rsvpPartyAdults": "{count, plural, one {# ενήλικας} other {# ενήλικες}}",
         "rsvpPartyChildren": "{count, plural, one {# παιδί} other {# παιδιά}}",
+        "members": {
+            "emptyTitle": "Δεν υπάρχουν μέλη ακόμη",
+            "emptyBody": "Τα μέλη εμφανίζονται εδώ μόλις συμμετάσχουν.",
+            "joined": "Συμμετείχε {date}",
+            "report": "Αναφορά",
+            "remove": "Αφαίρεση",
+            "cancel": "Ακύρωση",
+            "removeConfirmTitle": "Αφαίρεση αυτού του μέλους;",
+            "removeConfirmBody": "Ο/Η {name} θα χάσει την πρόσβαση σε αυτή την εκδήλωση.",
+            "removeFailed": "Δεν ήταν δυνατή η αφαίρεση του μέλους. Δοκιμάστε ξανά."
+        },
         "rsvpTabs": {
             "stats": "Στατιστικά",
             "list": "Λίστα",

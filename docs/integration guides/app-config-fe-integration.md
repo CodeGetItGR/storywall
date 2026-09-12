@@ -61,6 +61,12 @@ caps that apply only to a video uploaded with `context: "STORY"` — smaller tha
 `maxVideoBytes` and, for duration, a limit that doesn't exist anywhere else. See
 [`video-processing-fe-integration.md`](video-processing-fe-integration.md).
 
+**2026-09-12:** two new fields, `reportTargetTypes` and `reportReasons` — `POST
+/api/reports`'s `targetType` and `reason` were previously unrestricted strings; both are now
+enum-backed server-side (an unrecognized value 400s), and their valid sets are published here so
+the FE doesn't have to hardcode them. `targetType` also gained a new value, `MEMBER`, for
+reporting an event member. See `ReportRequestDto` in `frontend-api-types.ts`.
+
 ## GET /api/config
 
 Public — no `Authorization` header needed, safe to call before login (e.g. to gate the login
@@ -93,6 +99,8 @@ interface AppConfigResponseDto {
   contentLimits: AppContentLimitsDto;   // added 2026-08-23 — see below
   reactionTypesByEventType: Record<string, ReactionTypeResponseDto[]>; // added 2026-08-30 — see below
   rateLimits: AppRateLimitConfigDto[];  // added 2026-08-23 — see below
+  reportTargetTypes: ('POST' | 'COMMENT' | 'MEMBER')[];                          // added 2026-09-12
+  reportReasons: ('SPAM' | 'HARASSMENT' | 'INAPPROPRIATE_CONTENT' | 'IMPERSONATION' | 'OTHER')[]; // added 2026-09-12
   defaultRateLimit: number;             // added 2026-08-23
   defaultRateLimitWindowSeconds: number; // added 2026-08-23
 }
@@ -178,6 +186,10 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
   hardcoded list (e.g. `ModuleKeyConvention`) the FE currently maintains. See below — this is
   now also enforced server-side, so drift here means requests start failing, not silently
   no-op'ing.
+- **`reportTargetTypes`** / **`reportReasons`** — the full set of valid `ReportRequestDto.targetType`
+  / `.reason` values for `POST /api/reports`, enforced server-side as of 2026-09-12 (previously
+  unrestricted strings). Source your report-target and report-reason pickers from these instead
+  of hardcoding them, the same way `eventModuleKeys` is the source of truth for module keys.
 - **`rsvp`** — see "RSVP guest-count bounds" below.
 - **`contentLimits`** / **`rateLimits`** — see the two new sections below.
 - **`reactionTypesByEventType`** — active post-reaction options, keyed by `eventTypeKey`, each list

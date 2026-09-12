@@ -24,6 +24,7 @@ export * from './usePostModal';
 export * from './usePosts';
 export * from './useReactions';
 export * from './useReports';
+export * from './useReportSubmission';
 export * from './useRsvps';
 export * from './useSessions';
 export * from './useStories';

@@ -5,8 +5,16 @@ import { useTranslations } from 'next-intl';
 import React, { useMemo, useState } from 'react';
 
 import { MediaThumbnail } from '@/components/common/MediaThumbnail';
-import { CommentsList, EditPostModal, PostActionsMenu, PostAuthorAvatar, PostMediaViewer, PostReactionPicker, ReactionSummary } from '@/components/feed/post';
-import Badge from '@/components/ui/badge';
+import {
+    CommentsList,
+    EditPostModal,
+    PostActionsMenu,
+    PostAuthorAvatar,
+    PostMediaViewer,
+    PostReactionPicker,
+    ReactionSummary,
+} from '@/components/feed/post';
+import { ReportTargetModal } from '@/components/reports';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useAppConfig, useDeletePost, useEventMembers, usePostModal, useUpdatePost } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
@@ -29,6 +37,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const [deleteError, setDeleteError] = useState<string | null>(null);
     const [editOpen, setEditOpen] = useState(false);
     const [pinError, setPinError] = useState<string | null>(null);
+    const [reportOpen, setReportOpen] = useState(false);
 
     const authorName = post.author?.displayName ?? t('unknownAuthor');
     const timeAgo = useMemo(() => timeAgoParts(post.createdAt), [post.createdAt]);
@@ -47,6 +56,9 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const canWrite = isEventWritable(activeEvent?.status);
     const isMyPost = activeMember?.id !== undefined && post.authorMemberId === activeMember.id;
     const canManagePost = isMyPost && canWrite;
+    const canReportPost = Boolean(
+        activeMember && post.authorMemberId && !isMyPost && !isHostPost && canWrite && appConfig?.reportTargetTypes?.includes('POST')
+    );
     const canTogglePin = isHost && canWrite;
     const showHostPostBadge = isHostPost && !isHost;
     const reactionTypes = appConfig?.reactionTypesByEventType[post.eventType ?? activeEvent?.eventType ?? ''] ?? [];
@@ -81,6 +93,14 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
 
     function handleCloseEdit() {
         setEditOpen(false);
+    }
+
+    function handleOpenReport() {
+        if (canReportPost) setReportOpen(true);
+    }
+
+    function handleCloseReport() {
+        setReportOpen(false);
     }
 
     async function handleTogglePin() {
@@ -141,15 +161,17 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                         )
                     )}
                     {pinError && <p className="absolute right-0 top-full mt-1 w-48 text-right text-xs text-destructive">{pinError}</p>}
-                    {canManagePost && (
+                    {(canManagePost || canReportPost) && (
                         <PostActionsMenu
-                            deleteLabel={t('deletePost')}
+                            deleteLabel={canManagePost ? t('deletePost') : undefined}
                             disabled={deletePost.isPending}
                             isDeleting={deletePost.isPending}
                             moreLabel={t('moreOptions')}
-                            onDeleteAction={handleDeleteRequest}
-                            editLabel={t('editPost')}
-                            onEditAction={handleEditRequest}
+                            onDeleteAction={canManagePost ? handleDeleteRequest : undefined}
+                            editLabel={canManagePost ? t('editPost') : undefined}
+                            onEditAction={canManagePost ? handleEditRequest : undefined}
+                            reportLabel={t('reportPost')}
+                            onReportAction={canReportPost ? handleOpenReport : undefined}
                         />
                     )}
                 </div>
@@ -287,6 +309,18 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
 
             {/* Edit post */}
             {editOpen && <EditPostModal post={post} open={editOpen} onCloseAction={handleCloseEdit} />}
+
+            {/* Report post */}
+            {reportOpen && (
+                <ReportTargetModal
+                    open
+                    eventId={post.eventId}
+                    targetType="POST"
+                    targetId={post.id}
+                    targetName={authorName}
+                    onCloseAction={handleCloseReport}
+                />
+            )}
         </article>
     );
 }

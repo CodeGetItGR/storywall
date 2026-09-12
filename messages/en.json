@@ -130,7 +130,27 @@
         "unpinPost": "Unpin post",
         "pinPostFailed": "Couldn't pin this post. Please try again.",
         "unpinPostFailed": "Couldn't unpin this post. Please try again.",
-        "hostPost": "Host post"
+        "hostPost": "Host post",
+        "reportPost": "Report post"
+    },
+    "Report": {
+        "title": "Report",
+        "body": "Report {name} to the platform team.",
+        "reason": "Reason",
+        "chooseReason": "Choose a reason",
+        "details": "Details",
+        "detailsPlaceholder": "Add details",
+        "submit": "Send report",
+        "submitting": "Sending…",
+        "cancel": "Cancel",
+        "failed": "Couldn't send the report. Please try again.",
+        "reasons": {
+            "SPAM": "Spam",
+            "HARASSMENT": "Harassment",
+            "INAPPROPRIATE_CONTENT": "Inappropriate content",
+            "IMPERSONATION": "Impersonation",
+            "OTHER": "Other"
+        }
     },
     "DesktopNavRail": {
         "mainNavigation": "Main navigation",
@@ -879,6 +899,7 @@
             "settings": "Settings",
             "help": "Help",
             "danger": "Danger zone",
+            "members": "Members",
             "rsvp": "RSVP",
             "invitations": "Invitations",
             "plan": "Plan",
@@ -1203,6 +1224,17 @@
         "rsvpParty": "{count} seats",
         "rsvpPartyAdults": "{count, plural, one {# adult} other {# adults}}",
         "rsvpPartyChildren": "{count, plural, one {# child} other {# children}}",
+        "members": {
+            "emptyTitle": "No members yet",
+            "emptyBody": "Members appear here after they join.",
+            "joined": "Joined {date}",
+            "report": "Report",
+            "remove": "Remove",
+            "cancel": "Cancel",
+            "removeConfirmTitle": "Remove this member?",
+            "removeConfirmBody": "{name} will lose access to this event.",
+            "removeFailed": "Couldn't remove this member. Please try again."
+        },
         "rsvpTabs": {
             "stats": "Stats",
             "list": "List",

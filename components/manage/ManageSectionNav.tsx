@@ -12,6 +12,7 @@ export const sectionIcons: Record<ManageSection, LucideIcon> = {
     settings: Settings,
     help: HelpCircle,
     danger: Trash2,
+    members: Users,
     rsvp: Users,
     invitations: Ticket,
     plan: CreditCard,

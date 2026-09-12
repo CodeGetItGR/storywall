@@ -229,6 +229,9 @@ export interface AppRateLimitConfigDto {
     windowSeconds: number;
 }
 
+export type ReportTargetType = 'POST' | 'COMMENT' | 'MEMBER';
+export type ReportReason = 'SPAM' | 'HARASSMENT' | 'INAPPROPRIATE_CONTENT' | 'IMPERSONATION' | 'OTHER';
+
 export interface AppConfigResponseDto {
     featureFlags: PlatformFeatureFlagResponseDto[];
     media: AppMediaConfigDto;
@@ -244,6 +247,8 @@ export interface AppConfigResponseDto {
     contentLimits: AppContentLimitsDto;
     reactionTypesByEventType: Record<string, ReactionTypeResponseDto[]>;
     rateLimits: AppRateLimitConfigDto[];
+    reportTargetTypes: ReportTargetType[];
+    reportReasons: ReportReason[];
 }
 
 // --- Β§2 Errors ---
@@ -1477,9 +1482,9 @@ export interface ModerationActionResponseDto {
 export interface ReportRequestDto {
     reporterMemberId?: string;
     eventId: string;
-    targetType: string;
+    targetType: ReportTargetType;
     targetId: string;
-    reason: string;
+    reason: ReportReason;
     description?: string;
     status?: string;
     reviewedByMemberId?: string;

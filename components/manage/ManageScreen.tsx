@@ -26,6 +26,7 @@ import BillingTab from '../../app/(app)/(event)/events/[eventId]/manage/BillingT
 import DangerZoneTab from '../../app/(app)/(event)/events/[eventId]/manage/DangerZoneTab';
 import HelpTab from '../../app/(app)/(event)/events/[eventId]/manage/HelpTab';
 import InvitationsTab from '../../app/(app)/(event)/events/[eventId]/manage/InvitationsTab';
+import MembersTab from '../../app/(app)/(event)/events/[eventId]/manage/MembersTab';
 import OverviewTab from '../../app/(app)/(event)/events/[eventId]/manage/OverviewTab';
 import RsvpTab from '../../app/(app)/(event)/events/[eventId]/manage/RsvpTab';
 import SettingsTab from '../../app/(app)/(event)/events/[eventId]/manage/SettingsTab';
@@ -133,6 +134,13 @@ export function ManageScreen() {
                         startAt={activeEvent.schedule.startAt}
                         rsvpDeadline={activeEvent.schedule.rsvpDeadline}
                     />
+                ))}
+
+            {section === 'members' &&
+                (membersLoading ? (
+                    <LoadingState size="md" className="min-h-64" />
+                ) : (
+                    <MembersTab canModerate={canWrite} eventId={eventId} members={members} />
                 ))}
 
             {section === 'invitations' &&

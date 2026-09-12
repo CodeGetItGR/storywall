@@ -1,29 +1,38 @@
-import type { LucideIcon } from 'lucide-react';
+import { ArrowRight, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 
+import { cn } from '@/lib/utils';
+
 interface HelpInfoBlockProps {
-    icon: LucideIcon;
     title: string;
     body: string;
     linkHref?: string;
     linkLabel?: string;
 }
 
-export function HelpInfoBlock({ icon: Icon, title, body, linkHref, linkLabel }: HelpInfoBlockProps) {
+export function HelpInfoBlock({ title, body, linkHref, linkLabel }: HelpInfoBlockProps) {
+
     return (
-        <div className="flex flex-col items-center gap-4 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-light">
-                <Icon className="h-8 w-8 text-primary-dark" strokeWidth={1.75} aria-hidden="true" />
-            </div>
-            <div>
-                <h3 className="text-base font-semibold text-ink">{title}</h3>
-                <p className="mt-1.5 max-w-sm text-sm leading-relaxed text-ink-muted">{body}</p>
-            </div>
-            {linkHref && linkLabel && (
-                <Link href={linkHref} className="text-sm font-semibold text-primary hover:underline">
-                    {linkLabel}
-                </Link>
-            )}
-        </div>
+        <>
+            {/* Help action */}
+            <section className="border-t border-border/70 pt-7 first:border-t-0 first:pt-0">
+                <div className={cn('sm:max-w-xl mx-auto text-center')}>
+                    {/* Title */}
+                    <div className={cn('flex items-center gap-3 justify-center')}>
+                        <h3 className="text-base font-semibold text-ink">{title}</h3>
+                    </div>
+                    <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-muted">{body}</p>
+                    {linkHref && linkLabel && (
+                        <Link
+                            href={linkHref}
+                            className="group mt-4 inline-flex min-h-10 items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:text-primary-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                        >
+                            {linkLabel}
+                            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true" />
+                        </Link>
+                    )}
+                </div>
+            </section>
+        </>
     );
 }

@@ -1,12 +1,10 @@
-import type { LucideIcon } from 'lucide-react';
+import { ArrowRight, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 
 import { cn } from '@/lib/utils';
 
 export interface HelpLinkItem {
     key: string;
-    icon: LucideIcon;
-    iconClassName: string;
     href: string;
     label: string;
 }
@@ -18,27 +16,51 @@ interface HelpLinksBlockProps {
 }
 
 export function HelpLinksBlock({ title, body, items }: HelpLinksBlockProps) {
+    const hasCompactActions = items.length <= 2;
+
     return (
-        <div className="flex flex-col gap-4">
-            <div className="text-center">
-                <h3 className="text-base font-semibold text-ink">{title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">{body}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-2.5">
-                {items.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                        <Link
-                            key={item.key}
-                            href={item.href}
-                            className="flex items-center gap-2.5 rounded-2xl border border-border/70 bg-card px-3.5 py-3 text-sm font-semibold text-ink transition-colors hover:border-primary/30 hover:bg-primary-light/20"
-                        >
-                            <Icon className={cn('h-5 w-5 shrink-0', item.iconClassName)} aria-hidden="true" />
-                            <span className="truncate">{item.label}</span>
-                        </Link>
-                    );
-                })}
-            </div>
-        </div>
+        <>
+            {/* Help destinations */}
+            <section className="border-t border-border/70 pt-7 first:border-t-0 first:pt-0 mx-auto">
+                {/* Section heading */}
+                <div className={cn('sm:max-w-xl')}>
+                    {/* Title */}
+                    <div className={cn('flex items-center gap-3 justify-center')}>
+                        <h3 className="text-base font-semibold text-ink ">{title}</h3>
+                    </div>
+                    <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-muted">{body}</p>
+                </div>
+
+                {/* Destination actions */}
+                <div
+                    className={cn(
+                        'mt-4',
+                        hasCompactActions ? 'flex flex-wrap gap-x-6 gap-y-1 justify-center' : 'flex flex-col',
+                    )}
+                >
+                    {items.map((item) => {
+                        return (
+                            <Link
+                                key={item.key}
+                                href={item.href}
+                                className={cn(
+                                    'group inline-flex min-h-10 items-center gap-2.5 py-2 text-sm font-semibold text-ink transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
+                                    !hasCompactActions && 'w-full'
+                                )}
+                            >
+                                <span className="truncate">{item.label}</span>
+                                <ArrowRight
+                                    className={cn(
+                                        'h-4 w-4 shrink-0 text-ink-faint transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-primary',
+                                        !hasCompactActions && 'ml-auto'
+                                    )}
+                                    aria-hidden="true"
+                                />
+                            </Link>
+                        );
+                    })}
+                </div>
+            </section>
+        </>
     );
 }
