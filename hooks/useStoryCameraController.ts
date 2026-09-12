@@ -10,10 +10,21 @@ interface StoryCameraController {
     isReady: boolean;
     isRecording: boolean;
     error: 'permission' | 'unavailable' | null;
+    zoom: { min: number; max: number; step: number; value: number } | null;
     setPhotoMode: () => void;
     setVideoMode: () => void;
     capture: () => void;
     switchCamera: () => void;
+    setZoom: (value: number) => void;
+}
+
+type ZoomCapability = { min?: number; max?: number; step?: number };
+
+function getZoomCapability(track: MediaStreamTrack): ZoomCapability | null {
+    const capabilities = track.getCapabilities?.() as MediaTrackCapabilities & { zoom?: ZoomCapability };
+    const zoom = capabilities.zoom;
+    if (!zoom || typeof zoom.min !== 'number' || typeof zoom.max !== 'number' || zoom.max <= zoom.min) return null;
+    return zoom;
 }
 
 function supportedRecordingType(): string | undefined {
@@ -32,6 +43,7 @@ export function useStoryCameraController(open: boolean, onCapture: (file: File) 
     const [isReady, setIsReady] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
     const [error, setError] = useState<'permission' | 'unavailable' | null>(null);
+    const [zoom, setZoomState] = useState<{ min: number; max: number; step: number; value: number } | null>(null);
 
     useEffect(() => {
         onCaptureRef.current = onCapture;
@@ -56,6 +68,7 @@ export function useStoryCameraController(open: boolean, onCapture: (file: File) 
             setIsReady(false);
             setIsRecording(false);
             setError(null);
+            setZoomState(null);
             if (!navigator.mediaDevices?.getUserMedia) {
                 setError('unavailable');
                 return;
@@ -73,6 +86,19 @@ export function useStoryCameraController(open: boolean, onCapture: (file: File) 
                     return;
                 }
                 streamRef.current = stream;
+                const videoTrack = stream.getVideoTracks()[0];
+                const zoomCapability = videoTrack && getZoomCapability(videoTrack);
+                if (videoTrack && zoomCapability) {
+                    const min = zoomCapability.min!;
+                    const max = zoomCapability.max!;
+                    const step = zoomCapability.step && zoomCapability.step > 0 ? zoomCapability.step : 0.1;
+                    try {
+                        await videoTrack.applyConstraints({ advanced: [{ zoom: min } as MediaTrackConstraintSet] });
+                        setZoomState({ min, max, step, value: min });
+                    } catch {
+                        // Zoom support is optional even when a browser reports the capability.
+                    }
+                }
                 if (videoRef.current) {
                     videoRef.current.srcObject = stream;
                     await videoRef.current.play();
@@ -136,15 +162,27 @@ export function useStoryCameraController(open: boolean, onCapture: (file: File) 
         setIsRecording(true);
     }
 
+    function setZoom(value: number) {
+        const track = streamRef.current?.getVideoTracks()[0];
+        if (!track || !zoom) return;
+        const nextValue = Math.min(zoom.max, Math.max(zoom.min, value));
+        void track
+            .applyConstraints({ advanced: [{ zoom: nextValue } as MediaTrackConstraintSet] })
+            .then(() => setZoomState((current) => (current ? { ...current, value: nextValue } : current)))
+            .catch(() => undefined);
+    }
+
     return {
         videoRef,
         mode,
         isReady,
         isRecording,
         error,
+        zoom,
         setPhotoMode: () => setMode('photo'),
         setVideoMode: () => setMode('video'),
         capture: mode === 'photo' ? capturePhoto : toggleRecording,
         switchCamera: () => setFacingMode((current) => (current === 'environment' ? 'user' : 'environment')),
+        setZoom,
     };
 }

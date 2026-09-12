@@ -302,6 +302,7 @@
         "startRecording": "Start recording",
         "stopRecording": "Stop recording",
         "switchCamera": "Switch camera",
+        "zoom": "Camera zoom",
         "preparingPreview": "Preparing preview…",
         "processingVideo": "Processing video…",
         "processingFailed": "This video couldn't be processed.",
