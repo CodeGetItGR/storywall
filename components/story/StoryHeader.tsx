@@ -11,6 +11,7 @@ import { avatarColorFromId, initialsFromName } from '@/lib/utils';
 interface StoryHeaderProps {
     authorName: string;
     authorId: string;
+    authorAvatarUrl?: string | null;
     timeStr: string;
     tone?: 'dark' | 'light';
     canManage: boolean;
@@ -26,6 +27,7 @@ interface StoryHeaderProps {
 export function StoryHeader({
     authorName,
     authorId,
+    authorAvatarUrl,
     timeStr,
     tone = 'dark',
     canManage,
@@ -46,6 +48,7 @@ export function StoryHeader({
                 <div className="flex items-center gap-2.5">
                     {showAvatar && (leadingVisual ?? (
                         <Avatar
+                            src={authorAvatarUrl}
                             initials={initialsFromName(authorName)}
                             color={avatarColorFromId(authorId)}
                             size="sm"

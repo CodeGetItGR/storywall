@@ -1,3 +1,3 @@
 - Add filter indicator in stories (that the user can swipe right to see the filter options)
 - Add filters to posts
-- 
+- Ensure that when the user takes a photo during the story creation process, the photo is then displayed in full screen without stretching or distortion

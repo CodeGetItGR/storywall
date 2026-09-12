@@ -34,6 +34,7 @@ export function CommentThreadItem({ thread, membersById, onReply, isExpanded, on
         <div className="flex flex-col gap-2" data-comment-id={comment.id}>
             <div className="flex gap-3">
                 <Avatar
+                    src={comment.authorAvatarUrl}
                     initials={initialsFromName(name)}
                     color={avatarColorFromId(comment.authorMemberId ?? comment.id)}
                     size="sm"

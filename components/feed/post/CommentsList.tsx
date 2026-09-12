@@ -58,6 +58,7 @@ export function CommentsList({ comments, membersById, compact = false, limit, on
                     return (
                         <div key={comment.id} className="flex gap-2">
                             <Avatar
+                                src={comment.authorAvatarUrl}
                                 initials={initialsFromName(name)}
                                 color={avatarColorFromId(comment.authorMemberId ?? comment.id)}
                                 size="xs"

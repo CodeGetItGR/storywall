@@ -169,6 +169,7 @@ account plans are disabled (§13, Assignment). Filter a pricing page by `scope =
 
   "storageBytes": 1073741824,
   "maxMembers": 20,
+  "autoDeleteMonths": 3,               // null = never auto-deleted
 
   "priceAmountMinor": 10000,          // one-time activation charge — 100.00 EUR
   "priceCurrency": "EUR",             // uppercase ISO 4217
@@ -214,6 +215,19 @@ plan.storageBytes === null ? 'Unlimited storage' : `${formatBytes(plan.storageBy
 ```
 
 An uncapped enterprise plan is a real, intended shape — not missing data.
+
+### `autoDeleteMonths` — how long an event's content survives after it ends
+
+`EVENT`-scope only (always `null` on `ACCOUNT` plans). When set, an event on this plan is
+soft-deleted `autoDeleteMonths` months after its `endAt` — the exact same lifecycle as a
+host-requested deletion (§ the delete-event flow): undoable while soft-deleted, hard-purged after
+`app.billing.event-retention-days`. `null` means the plan never auto-deletes its events.
+
+The host gets two warning notifications before it happens — 7 days out and 1 day out — carrying
+`NotificationType: 'EVENT_AUTO_DELETE_WARNING'`, so this is not a silent deletion. Render it on a
+pricing page as e.g. *"Photos kept for 3 months after your event"*; a `null` value should read as
+"kept indefinitely" or be omitted from the row entirely, matching the `storageBytes`/`maxMembers`
+null-handling above.
 
 ### `code` is not a fixed union
 
@@ -407,18 +421,17 @@ Drafts are the host's private workspace: excluded from `GET /api/events` for eve
 cannot be invited, every module reports unavailable. Show them in a clearly separate "not published
 yet" section rather than mixed into the event list.
 
-### Step 2 — `startAt` is required at checkout; `endAt` stays optional
+### Step 2 — `startAt` and `endAt` are both required at checkout
 
-`startAt` is required from creation onward. `endAt` is optional throughout — this is a one-time
-payment with no billing period tied to it, so there's nothing that needs an end date to be priced.
-If an `endAt` is given, though, it still has to make sense. Rejected with `400
+Both are required from creation onward, and `endAt` must be after `startAt`. Rejected with `400
 EVENT_DATES_INCOMPLETE`:
 
 - `startAt` missing
+- `endAt` missing
 - `endAt <= startAt` (also enforced on `PATCH /api/events/{id}`)
 
-Gate the "Pay and publish" button on `startAt` being set (and, if `endAt` is set, on it being after
-`startAt`), and explain why — otherwise the 400 arrives at the worst possible moment.
+Gate the "Pay and publish" button on both dates being set and `endAt` being after `startAt`, and
+explain why — otherwise the 400 arrives at the worst possible moment.
 
 ### Step 3 — opening checkout
 
@@ -1211,7 +1224,7 @@ name, for logs). Branch on `errorCode`.
 |---|---|---|---|
 | `3001` `VALIDATION_FAILED` | 400 | any bean-validation failure, incl. all plan-tier field rules | field-level errors from `details` |
 | `3007` `INVALID_PLAN_TIER_SCOPE` | 400 | admin sets `eventTypeKeys` on an `ACCOUNT`-scope plan (§13), or `planTierIds` names one for a paid service | admin panel only |
-| `3008` `EVENT_DATES_INCOMPLETE` | 400 | checkout with no `startAt`, or `endAt <= startAt` | "Set a start date before publishing" — link to the schedule form |
+| `3008` `EVENT_DATES_INCOMPLETE` | 400 | checkout with no `startAt`/`endAt`, or `endAt <= startAt` | "Set your event's dates before publishing" — link to the schedule form |
 | `3010` `RATE_LIMITED` | 429 | the caller's budget for the window is spent | §11 |
 | `3018` `INVALID_EVENT_TYPE` | 400 | unknown `eventType` at `GET /api/plan-tiers?eventType=X` or admin's `.../event-types` (§2, §13) | refetch `GET /api/config`'s `eventTypeKeys`, the value was stale or mistyped |
 
@@ -1298,6 +1311,8 @@ Create/patch validation (server-enforced, `400` / `3001`):
 - `scope`, `name`, `sortOrder`, `isDefault`, `isAssignable`, `isPublic` — required on create.
 - `name` ≤100 chars; `sortOrder >= 0`.
 - `storageBytes`, `maxMembers`, `priceAmountMinor` — if present, `>= 0`.
+- `autoDeleteMonths` — if present, `>= 1`. `EVENT`-scope only; rejected with `400
+  INVALID_PLAN_TIER_SCOPE` (3007) on an `ACCOUNT`-scope plan, same as `storageBytes`/`maxMembers`.
 - `priceCurrency` — if present, exactly 3 chars (ISO 4217).
 - `discountPercent` — if present, 0–100. `discountLabel` ≤100 chars.
 - `billingPeriod` — `'MONTHLY' | 'YEARLY' | 'ONE_TIME'` or null. In practice always `'ONE_TIME'` on an
@@ -1410,6 +1425,7 @@ export interface PlanTierResponse {
 
   storageBytes: number | null;  // null = unlimited
   maxMembers: number | null;    // null = unlimited
+  autoDeleteMonths: number | null;  // EVENT scope only; null = never auto-deleted
 
   priceAmountMinor: number | null;   // the one-time activation charge on EVENT scope
   priceCurrency: string | null;

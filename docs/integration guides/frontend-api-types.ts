@@ -2,9 +2,10 @@
  * TypeScript type schema for the event_social_media API.
  *
  * Generated directly from the current backend DTOs/entities (not from prose docs) as of
- * 2026-07-30, last extended 2026-08-26 (EventMemberResponseDto gained rsvpId — see
- * docs/fe-guides/rsvp-status-fe-integration.md). Companion reference to
- * docs/fe-guides/frontend-integration-guide.md, which covers
+ * 2026-07-30, last extended 2026-09-12 (CommentResponseDto, StoryResponseDto gained
+ * authorAvatarUrl, and EventMemberResponseDto gained avatarUrl — presigned member/author
+ * avatar image URLs, resolved the same way PostResponseDto.author.avatarUrl already was).
+ * Companion reference to docs/fe-guides/frontend-integration-guide.md, which covers
  * endpoints, auth rules, and error codes — this file is just the shapes.
  *
  * Conventions:
@@ -130,9 +131,10 @@ interface SessionResponseDto {
  * Notifications are host-facing and produced solely by the backend quota sweep.
  * There is no request DTO — POST /api/notifications was removed entirely.
  */
-// NOTE: also missing EVENT_REMINDER, EVENT_SUMMARY, BILLING_EXPIRING, BILLING_PAST_DUE,
-// BILLING_PURGE_WARNING, REFUND_APPROVED, REFUND_REJECTED — see billing-fe-guide.md §10, which
-// already asked for these to be added. Pre-existing gap, not part of the 2026-08-24 change below.
+// NOTE: also missing EVENT_REMINDER, EVENT_SUMMARY, EVENT_AUTO_DELETE_WARNING, BILLING_EXPIRING,
+// BILLING_PAST_DUE, BILLING_PURGE_WARNING, REFUND_APPROVED, REFUND_REJECTED — see
+// billing-fe-guide.md §10, which already asked for these to be added. Pre-existing gap, not part
+// of the 2026-08-24 change below.
 type NotificationType =
   | 'STORAGE_LIMIT_WARNING'
   | 'MEMBER_LIMIT_WARNING'
@@ -231,7 +233,7 @@ interface EventRequestDto {
   eventType: string;              // required, max 50 — free text (WEDDING | BAPTISM | BIRTHDAY | CONFERENCE | <custom>)
   visibility: EventVisibility;    // required on this DTO despite the entity's DB default
   startAt: string;                // required
-  endAt?: string;
+  endAt: string;                  // required, must be after startAt
   timezone: string;               // required, max 100
   locationName?: string;          // max 255
   locationAddress?: string;
@@ -248,7 +250,7 @@ interface EventRequestDto {
 interface EventResponseDto {
   id: string; title: string; subtitle: string | null; description: string | null;
   eventType: string; visibility: EventVisibility;
-  startAt: string; endAt: string | null; timezone: string;
+  startAt: string; endAt: string; timezone: string;
   locationName: string | null; locationAddress: string | null; mapsUrl: string | null;
   coverMediaId: string | null;
   brandingSettings: Record<string, unknown>;
@@ -271,7 +273,7 @@ interface EventPatchDto {
 // --- GET /api/events/{id} detail response (grouped/enriched — added 2026-07-30) ---
 
 interface EventScheduleDto {
-  startAt: string; endAt: string | null; timezone: string; rsvpDeadline: string | null;
+  startAt: string; endAt: string; timezone: string; rsvpDeadline: string | null;
 }
 interface EventLocationDto {
   name: string | null; address: string | null; mapsUrl: string | null;
@@ -366,6 +368,7 @@ interface EventMemberResponseDto {
   role: EventRole; displayName: string; nickname: string | null;
   relationshipRole: string | null; customRelationshipRole: string | null;
   isFeatured: boolean; avatarMediaId: string | null; joinedAt: string;
+  avatarUrl: string | null; // NEW 2026-09-12 — short-lived presigned URL resolved from avatarMediaId; null if no avatar set. Do not cache.
   rsvpId: string | null; // NEW 2026-08-26 — this member's own RSVP id, null if not submitted yet; see rsvp-status-fe-integration.md
   createdAt: string; updatedAt: string; deletedAt: string | null;
 }
@@ -580,7 +583,9 @@ interface CommentRequestDto {
   postId: string; authorMemberId?: string; parentCommentId?: string; content: string; // content required
 }
 interface CommentResponseDto {
-  id: string; postId: string; authorMemberId: string | null; parentCommentId: string | null;
+  id: string; postId: string; authorMemberId: string | null;
+  authorAvatarUrl: string | null; // NEW 2026-09-12 — short-lived presigned URL resolved from the author's avatarMediaId; null if no author or no avatar set. Do not cache.
+  parentCommentId: string | null;
   content: string; createdAt: string; updatedAt: string; deletedAt: string | null;
 }
 // GET /api/posts/{postId}/comments now returns Page<CommentResponseDto>, not CommentResponseDto[].
@@ -627,7 +632,9 @@ interface StoryRequestDto {
 // Don't offer a just-uploaded video in the "post as story" picker until its MediaResponseDto
 // status flips to 'READY' — poll GET /api/medias/{id} rather than letting the user hit this.
 interface StoryResponseDto {
-  id: string; eventId: string; authorMemberId: string | null; mediaId: string;
+  id: string; eventId: string; authorMemberId: string | null;
+  authorAvatarUrl: string | null; // NEW 2026-09-12 — short-lived presigned URL resolved from the author's avatarMediaId; null if no author or no avatar set. Do not cache.
+  mediaId: string;
   caption: string | null; songUrl: string | null; expiresAt: string;
   createdAt: string; deletedAt: string | null;
   viewedByCurrentUser: boolean; // has the caller viewed this story (any of their memberships)
@@ -856,6 +863,10 @@ export interface PlanTierResponseDto {
   isPublic: boolean;
   storageBytes: number | null;      // null = no limit enforced
   maxMembers: number | null;        // null = no limit enforced
+  autoDeleteMonths: number | null;  // EVENT-scope only; null = never auto-deleted. Months after
+                                     // the event's endAt before it is soft-deleted (same lifecycle
+                                     // as a host-requested deletion — undoable, then hard-purged
+                                     // after the platform's retention window).
   priceAmountMinor: number | null;  // minor units (cents)
   priceCurrency: string | null;     // ISO 4217
   billingPeriod: BillingPeriod | null;

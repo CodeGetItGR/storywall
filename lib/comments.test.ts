@@ -8,6 +8,7 @@ function comment(id: string, parentCommentId: string | null = null): CommentResp
         id,
         postId: 'post-1',
         authorMemberId: 'm1',
+        authorAvatarUrl: null,
         parentCommentId,
         content: id,
         createdAt: new Date(2026, 0, 1).toISOString(),

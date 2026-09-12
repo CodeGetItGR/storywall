@@ -22,7 +22,7 @@ export function MemberRow({ canModerate, canReport, joinedLabel, member, onRemov
 
     return (
         <li className="flex items-center gap-3 border-b border-border/70 py-3 last:border-b-0">
-            <Avatar initials={initialsFromName(member.displayName)} color={avatarColorFromId(member.id)} alt={member.displayName} size="sm" />
+            <Avatar src={member.avatarUrl} initials={initialsFromName(member.displayName)} color={avatarColorFromId(member.id)} alt={member.displayName} size="sm" />
             <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-ink">{member.displayName}</p>
                 <p className="mt-0.5 text-xs text-ink-faint">{joinedLabel}</p>

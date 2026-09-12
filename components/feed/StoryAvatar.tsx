@@ -42,6 +42,7 @@ export function StoryAvatar({ group, member, onOpenStoryAction, isCurrentUser }:
         >
             <div className="w-full h-full rounded-full p-0.5 bg-background flex items-center justify-center">
                 <Avatar
+                    src={member.avatarUrl}
                     initials={initialsFromName(member.displayName)}
                     color={avatarColorFromId(member.id)}
                     size="xl"

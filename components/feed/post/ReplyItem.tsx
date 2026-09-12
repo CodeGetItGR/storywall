@@ -29,6 +29,7 @@ export function ReplyItem({ reply, membersById, parentCommentId, onReply }: Repl
     return (
         <div className="flex gap-2" data-comment-id={reply.id}>
             <Avatar
+                src={reply.authorAvatarUrl}
                 initials={initialsFromName(name)}
                 color={avatarColorFromId(reply.authorMemberId ?? reply.id)}
                 size="xs"

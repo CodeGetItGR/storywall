@@ -125,17 +125,16 @@ Drafts are the host's private workspace: they are excluded from `GET /api/events
 else, guests cannot be invited, and every module reports unavailable. Show them in a clearly
 separate "unpaid / not published yet" section rather than mixed into the event list.
 
-### Step 2 — `startAt` is required before checkout; `endAt` stays optional
+### Step 2 — `startAt` and `endAt` are both required before checkout
 
-`startAt` is required from creation onward. `endAt` stays optional even at checkout — this is a
-one-time payment with no billing period tied to it, so there's nothing that needs an end date to be
-priced. If an `endAt` is given, it still has to make sense:
+Both are required from creation onward, and `endAt` must be after `startAt`:
 
 - `startAt` missing → `400 EVENT_DATES_INCOMPLETE`
+- `endAt` missing → `400 EVENT_DATES_INCOMPLETE`
 - `endAt <= startAt` → `400 EVENT_DATES_INCOMPLETE` (also enforced on `PATCH /api/events/{id}`)
 
-Gate the "Pay and publish" button on `startAt` being set (and, if `endAt` is set, on it being after
-`startAt`), and explain why — otherwise the 400 arrives at the worst possible moment.
+Gate the "Pay and publish" button on both dates being set and `endAt` being after `startAt`, and
+explain why — otherwise the 400 arrives at the worst possible moment.
 
 ### Step 3 — opening checkout
 
@@ -215,7 +214,7 @@ The envelope is the usual RFC 7807 `ProblemDetail` with a numeric `errorCode` (s
 
 | code | HTTP | when | what to show |
 |---|---|---|---|
-| `3008` `EVENT_DATES_INCOMPLETE` | 400 | checkout with no `startAt`, or `endAt <= startAt` | "Set a start date before publishing" — send them to the schedule form |
+| `3008` `EVENT_DATES_INCOMPLETE` | 400 | checkout with no `startAt`/`endAt`, or `endAt <= startAt` | "Set your event's dates before publishing" — send them to the schedule form |
 | `5017` `EVENT_NOT_DRAFT` | 409 | checkout on an event that is already live/frozen/purged | usually a stale tab; refetch the event |
 | `5015` `PLAN_TIER_NOT_PURCHASABLE` | 409 | the plan was archived or hidden since the page loaded | refetch `/api/config` and ask them to pick again |
 | `5019` `PLAN_TIER_NOT_PRICED` | 409 | catalog misconfiguration — the plan has no price (activation or monthly) | generic error + support contact; the host cannot fix this |

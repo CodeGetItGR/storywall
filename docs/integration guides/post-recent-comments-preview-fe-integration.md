@@ -69,9 +69,10 @@ a concern of the full paginated endpoint only.
 
 ### `recentComments` uses the plain `CommentResponseDto` shape
 
-Same shape as `GET /api/posts/{postId}/comments` — `authorMemberId` only, no embedded display
-name or avatar. Resolve author info for these the same way you already do for the full thread
-(e.g. from a cached event-members list).
+Same shape as `GET /api/posts/{postId}/comments` — `authorMemberId` plus a resolved
+`authorAvatarUrl` (NEW 2026-09-12), but still no embedded display name. Resolve the author's
+name for these the same way you already do for the full thread (e.g. from a cached
+event-members list); the avatar image can be rendered directly from `authorAvatarUrl`.
 
 ## What it does *not* give you
 

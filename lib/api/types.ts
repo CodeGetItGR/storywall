@@ -1044,6 +1044,7 @@ export interface EventMemberResponseDto {
     customRelationshipRole: string | null;
     isFeatured: boolean;
     avatarMediaId: string | null;
+    avatarUrl: string | null;
     joinedAt: string;
     rsvpId: string | null;
     createdAt: string;
@@ -1322,6 +1323,7 @@ export interface CommentResponseDto {
     id: string;
     postId: string;
     authorMemberId: string | null;
+    authorAvatarUrl: string | null;
     parentCommentId: string | null;
     content: string;
     createdAt: string;
@@ -1354,6 +1356,7 @@ export interface StoryResponseDto {
     id: string;
     eventId: string;
     authorMemberId: string | null;
+    authorAvatarUrl: string | null;
     mediaId: string;
     caption: string | null;
     songUrl: string | null;
