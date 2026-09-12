@@ -1,62 +1,39 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import type { ChangeEvent } from 'react';
 
 import { EventTimezoneField } from '@/components/event/create/EventTimezoneField';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useCreateEventFieldLabels } from '@/hooks/useCreateEventFieldLabels';
 import { useEventTypeVoice } from '@/hooks/useEventTypeVoice';
-import type { EventTypeConvention } from '@/lib/api/types';
+import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
-type EventDetailsStepProps = {
-    eventType: EventTypeConvention;
-    title: string;
-    titleError?: string | null;
-    startAt: string;
-    scheduleError?: string | null;
-    startAtMin: string;
-    timezone: string;
-    timezoneError?: string | null;
-    timezoneOptions: string[];
-    locationName: string;
-    locationNameError?: string | null;
-    locationAddress: string;
-    locationAddressError?: string | null;
-    mapsUrl: string;
-    onTitleChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
-    onStartAtChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
-    onTimezoneChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
-    onLocationNameChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
-    onLocationAddressChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
-    onMapsUrlChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
-};
-
-export function EventDetailsStep({
-    eventType,
-    title,
-    titleError,
-    startAt,
-    scheduleError,
-    startAtMin,
-    timezone,
-    timezoneError,
-    timezoneOptions,
-    locationName,
-    locationNameError,
-    locationAddress,
-    locationAddressError,
-    mapsUrl,
-    onTitleChangeAction,
-    onStartAtChangeAction,
-    onTimezoneChangeAction,
-    onLocationNameChangeAction,
-    onLocationAddressChangeAction,
-    onMapsUrlChangeAction,
-}: EventDetailsStepProps) {
+export function EventDetailsStep() {
     const t = useTranslations('CreateEventPage');
-    const voice = useEventTypeVoice(eventType);
-    const labels = useCreateEventFieldLabels(eventType);
+    const {
+        selectedEventType,
+        title,
+        titleError,
+        onTitleChange,
+        startAt,
+        scheduleError,
+        startAtMin,
+        onStartAtChange,
+        timezone,
+        timezoneError,
+        timezoneOptions,
+        onTimezoneChange,
+        locationName,
+        locationNameError,
+        onLocationNameChange,
+        locationAddress,
+        locationAddressError,
+        onLocationAddressChange,
+        mapsUrl,
+        onMapsUrlChange,
+    } = useCreateEventForm();
+    const voice = useEventTypeVoice(selectedEventType);
+    const labels = useCreateEventFieldLabels(selectedEventType);
 
     return (
         <div className="flex h-full flex-col gap-4">
@@ -67,7 +44,7 @@ export function EventDetailsStep({
                         type="text"
                         required
                         value={title}
-                        onChange={onTitleChangeAction}
+                        onChange={onTitleChange}
                         placeholder={voice.titlePlaceholder}
                         className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
                     />
@@ -80,7 +57,7 @@ export function EventDetailsStep({
                         type="datetime-local"
                         required
                         value={startAt}
-                        onChange={onStartAtChangeAction}
+                        onChange={onStartAtChange}
                         min={startAtMin}
                         className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
                     />
@@ -93,7 +70,7 @@ export function EventDetailsStep({
                     value={timezone}
                     options={timezoneOptions}
                     error={timezoneError}
-                    onChangeAction={onTimezoneChangeAction}
+                    onChangeAction={onTimezoneChange}
                 />
 
                 {/* Location */}
@@ -103,7 +80,7 @@ export function EventDetailsStep({
                             type="text"
                             required
                             value={locationName}
-                            onChange={onLocationNameChangeAction}
+                            onChange={onLocationNameChange}
                             className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
                         />
                         {locationNameError && <span className="text-xs text-rose-500">{locationNameError}</span>}
@@ -113,7 +90,7 @@ export function EventDetailsStep({
                             type="text"
                             required
                             value={locationAddress}
-                            onChange={onLocationAddressChangeAction}
+                            onChange={onLocationAddressChange}
                             placeholder={t('placeholders.locationAddress')}
                             className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
                         />
@@ -124,7 +101,7 @@ export function EventDetailsStep({
                     <input
                         type="url"
                         value={mapsUrl}
-                        onChange={onMapsUrlChangeAction}
+                        onChange={onMapsUrlChange}
                         placeholder={t('placeholders.mapsUrl')}
                         className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
                     />

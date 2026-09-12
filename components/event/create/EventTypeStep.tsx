@@ -6,9 +6,10 @@ import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
-import type { AppEventTypeResponseDto, EventTypeAccentToken, EventTypeConvention } from '@/lib/api/types';
+import type { EventTypeAccentToken, EventTypeConvention } from '@/lib/api/types';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import { cn } from '@/lib/utils';
+import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
 // accentToken is a BE-owned design token (see event-type-voice-pack-fe-integration.md);
 // this is the only place that maps it to actual Tailwind classes.
@@ -38,19 +39,14 @@ const FALLBACK_STYLE = {
     surface: 'hover:border-primary/30 hover:bg-primary-light/25',
 };
 
-type EventTypeStepProps = {
-    eventTypes: AppEventTypeResponseDto[];
-    selectedEventType: EventTypeConvention;
-    onSelectAction: (eventType: EventTypeConvention) => void;
-};
-
-export function EventTypeStep({ eventTypes, selectedEventType, onSelectAction }: EventTypeStepProps) {
+export function EventTypeStep() {
     const t = useTranslations('CreateEventPage');
     const eventTypeCopy = useLocalizedAppEventTypeCopy();
+    const { eventTypes, selectedEventType, onSelectEventType } = useCreateEventForm();
 
     function handleClick(event: MouseEvent<HTMLButtonElement>) {
         const eventTypeKey = event.currentTarget.dataset.eventTypeKey as EventTypeConvention | undefined;
-        if (eventTypeKey) onSelectAction(eventTypeKey);
+        if (eventTypeKey) onSelectEventType(eventTypeKey);
     }
 
     if (eventTypes.length === 0) {

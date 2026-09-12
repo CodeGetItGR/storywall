@@ -2,51 +2,37 @@
 
 import { Calendar, Loader2, Receipt } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import type { ChangeEvent } from 'react';
 
 import { EventOverviewPriceRow } from '@/components/event/create/EventOverviewPriceRow';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
-import type { AppEventTypeResponseDto, CollaborationCodePreviewResponseDto, EventTypeConvention, PlanTierResponseDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
 import { getPlanPriceDetails } from '@/lib/planTiers';
 import { cn } from '@/lib/utils';
+import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
-type EventOverviewStepProps = {
-    title: string;
-    eventType: EventTypeConvention;
-    eventTypes: AppEventTypeResponseDto[];
-    startAt: string;
-    plan: PlanTierResponseDto;
-    error: string | null;
-    hasDraft: boolean;
-    checkoutCode: string;
-    appliedCheckoutCode: string | null;
-    checkoutCodePreview: CollaborationCodePreviewResponseDto | null;
-    checkoutCodeError: string | null;
-    isCheckingCheckoutCode: boolean;
-    onCheckoutCodeChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
-    onApplyCheckoutCodeAction: () => void;
-};
-
-export function EventOverviewStep({
-    title,
-    eventType,
-    eventTypes,
-    startAt,
-    plan,
-    error,
-    hasDraft,
-    checkoutCode,
-    appliedCheckoutCode,
-    checkoutCodePreview,
-    checkoutCodeError,
-    isCheckingCheckoutCode,
-    onCheckoutCodeChangeAction,
-    onApplyCheckoutCodeAction,
-}: EventOverviewStepProps) {
+export function EventOverviewStep() {
     const t = useTranslations('CreateEventPage');
     const locale = useLocale();
     const eventTypeCopy = useLocalizedAppEventTypeCopy();
+    const {
+        trimmedTitle: title,
+        selectedEventType: eventType,
+        eventTypes,
+        startAt,
+        selectedPlan: plan,
+        error,
+        hasDraft,
+        checkoutCode,
+        appliedCheckoutCode,
+        checkoutCodePreview,
+        checkoutCodeError,
+        isCheckingCheckoutCode,
+        onCheckoutCodeChange: onCheckoutCodeChangeAction,
+        applyCheckoutCode: onApplyCheckoutCodeAction,
+    } = useCreateEventForm();
+
+    if (!plan) return null;
+
     const planActivation = getPlanPriceDetails(plan);
     const activationTotalLabel = planActivation ? formatMoney(locale, planActivation.amountMinor, planActivation.currency) : t('payment.noCharge');
     const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
