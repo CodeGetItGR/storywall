@@ -1,6 +1,6 @@
 'use client';
 
-import { Camera, ChevronsRight, Images, Loader2, RefreshCw, Send, Trash2 } from 'lucide-react';
+import { Camera, ChevronsRight, Images, Loader2, RefreshCw, Send, Sun, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { type ChangeEvent, type MouseEvent, type PointerEvent as ReactPointerEvent, useEffect, useState } from 'react';
@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 function FilterLayer({ src, alt, preset }: { src: string; alt: string; preset: StoryFilterPreset }) {
     return (
         <>
-            <Image src={src} alt={alt} fill className="object-cover" style={{ filter: preset.cssFilter }} sizes="100vw" unoptimized />
+            <Image src={src} alt={alt} fill className="object-contain" style={{ filter: preset.cssFilter }} sizes="100vw" unoptimized />
             {(preset.overlays ?? []).map((overlay, overlayIndex) => (
                 <div
                     key={overlayIndex}
@@ -89,6 +89,12 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
     }, [currentIndex]);
 
     useEffect(() => {
+        if (!showFilterSwipeCue) return;
+        const timeout = setTimeout(() => setShowFilterSwipeCue(false), 3500);
+        return () => clearTimeout(timeout);
+    }, [showFilterSwipeCue]);
+
+    useEffect(() => {
         if (!activeItem) return;
         const index = STORY_FILTER_PRESETS.findIndex((preset) => preset.id === activeItem.filterId);
         if (index >= 0) setFilterIndex(index);
@@ -101,6 +107,9 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
         isReady: isCameraReady,
         isRecording,
         error: cameraError,
+        exposure,
+        setExposure,
+        zoomHandlers,
         setPhotoMode,
         setVideoMode,
         capture,
@@ -118,6 +127,9 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
     }
     function handleCaptionChange(event: ChangeEvent<HTMLTextAreaElement>) {
         updateCaption(event.target.value);
+    }
+    function handleExposureChange(event: ChangeEvent<HTMLInputElement>) {
+        setExposure(Number(event.target.value));
     }
     function handleStoryLibraryChange(event: ChangeEvent<HTMLInputElement>) {
         const hasFiles = Boolean(event.target.files?.length);
@@ -186,9 +198,9 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                 )}
                                 {/* Filter swipe cue */}
                                 {isActiveImage && showFilterSwipeCue && (
-                                    <div className="pointer-events-none absolute top-1/2 right-5 z-10 -translate-y-1/2 text-white/75 motion-safe:animate-pulse">
-                                        <ChevronsRight aria-hidden="true" className="h-6 w-6" strokeWidth={1.5} />
-                                        <span className="sr-only">{t('swipeRightForFilters')}</span>
+                                    <div className="pointer-events-none absolute top-1/2 right-5 z-10 flex -translate-y-1/2 flex-col items-center gap-1 rounded-full bg-black/55 px-3 py-2 text-white/90 backdrop-blur-md motion-safe:animate-pulse">
+                                        <ChevronsRight aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+                                        <span className="text-[10px] leading-tight font-medium whitespace-nowrap">{t('swipeRightForFilters')}</span>
                                     </div>
                                 )}
                                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/80" />
@@ -312,10 +324,29 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                 muted
                                 playsInline
                                 autoPlay
-                                className="absolute inset-0 h-full w-full touch-none object-cover"
+                                className="absolute inset-0 h-full w-full touch-none object-contain"
                                 aria-label={t('cameraPreview')}
+                                {...zoomHandlers}
                             />
                             <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/65" />
+
+                            {/* Brightness control */}
+                            {exposure && (
+                                <div className="absolute top-1/2 right-4 z-10 flex -translate-y-1/2 flex-col items-center gap-2 rounded-full bg-black/45 px-2 py-3 backdrop-blur-md">
+                                    <Sun className="h-4 w-4 text-white/80" aria-hidden="true" />
+                                    <input
+                                        type="range"
+                                        min={exposure.min}
+                                        max={exposure.max}
+                                        step={exposure.step}
+                                        value={exposure.value}
+                                        onChange={handleExposureChange}
+                                        aria-label={t('brightness')}
+                                        className="h-28 w-1.5 accent-white"
+                                        style={{ writingMode: 'vertical-lr', direction: 'rtl' }}
+                                    />
+                                </div>
+                            )}
 
                             {/* Camera fallback */}
                             {cameraError && (

@@ -302,6 +302,7 @@
         "startRecording": "Start recording",
         "stopRecording": "Stop recording",
         "switchCamera": "Switch camera",
+        "brightness": "Brightness",
         "preparingPreview": "Preparing preview…",
         "processingVideo": "Processing video…",
         "processingFailed": "This video couldn't be processed.",

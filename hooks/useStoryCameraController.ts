@@ -1,8 +1,15 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { type TouchEvent as ReactTouchEvent, useCallback, useEffect, useRef, useState } from 'react';
 
 type CaptureMode = 'photo' | 'video';
+
+export interface ExposureState {
+    min: number;
+    max: number;
+    step: number;
+    value: number;
+}
 
 interface StoryCameraController {
     videoRef: React.RefObject<HTMLVideoElement | null>;
@@ -10,20 +17,32 @@ interface StoryCameraController {
     isReady: boolean;
     isRecording: boolean;
     error: 'permission' | 'unavailable' | null;
+    exposure: ExposureState | null;
+    setExposure: (value: number) => void;
+    zoomHandlers: {
+        onTouchStart: (event: ReactTouchEvent<HTMLElement>) => void;
+        onTouchMove: (event: ReactTouchEvent<HTMLElement>) => void;
+        onTouchEnd: (event: ReactTouchEvent<HTMLElement>) => void;
+    };
     setPhotoMode: () => void;
     setVideoMode: () => void;
     capture: () => void;
     switchCamera: () => void;
 }
 
-type ZoomCapability = { min?: number; max?: number };
+type RangeCapability = { min?: number; max?: number; step?: number };
 type CameraConstraints = MediaTrackConstraints & { resizeMode?: ConstrainDOMString };
 
-function getZoomCapability(track: MediaStreamTrack): ZoomCapability | null {
-    const capabilities = track.getCapabilities?.() as MediaTrackCapabilities & { zoom?: ZoomCapability };
-    const zoom = capabilities.zoom;
-    if (!zoom || typeof zoom.min !== 'number' || typeof zoom.max !== 'number' || zoom.max <= zoom.min) return null;
-    return zoom;
+function getRangeCapability(track: MediaStreamTrack, key: 'zoom' | 'exposureCompensation'): Required<RangeCapability> | null {
+    const capabilities = track.getCapabilities?.() as MediaTrackCapabilities & Record<string, RangeCapability | undefined>;
+    const range = capabilities[key];
+    if (!range || typeof range.min !== 'number' || typeof range.max !== 'number' || range.max <= range.min) return null;
+    return { min: range.min, max: range.max, step: range.step && range.step > 0 ? range.step : (range.max - range.min) / 100 };
+}
+
+function touchDistance(touches: React.TouchList): number {
+    const [a, b] = [touches[0], touches[1]];
+    return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
 }
 
 function supportedRecordingType(): string | undefined {
@@ -42,6 +61,10 @@ export function useStoryCameraController(open: boolean, onCapture: (file: File) 
     const [isReady, setIsReady] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
     const [error, setError] = useState<'permission' | 'unavailable' | null>(null);
+    const [exposure, setExposureState] = useState<ExposureState | null>(null);
+    const zoomRef = useRef<{ min: number; max: number; step: number; value: number } | null>(null);
+    const pinchStartDistanceRef = useRef<number | null>(null);
+    const pinchStartZoomRef = useRef<number>(1);
 
     useEffect(() => {
         onCaptureRef.current = onCapture;
@@ -66,6 +89,8 @@ export function useStoryCameraController(open: boolean, onCapture: (file: File) 
             setIsReady(false);
             setIsRecording(false);
             setError(null);
+            zoomRef.current = null;
+            setExposureState(null);
             if (!navigator.mediaDevices?.getUserMedia) {
                 setError('unavailable');
                 return;
@@ -91,14 +116,21 @@ export function useStoryCameraController(open: boolean, onCapture: (file: File) 
                 }
                 streamRef.current = stream;
                 const videoTrack = stream.getVideoTracks()[0];
-                const zoomCapability = videoTrack && getZoomCapability(videoTrack);
+                const zoomCapability = videoTrack && getRangeCapability(videoTrack, 'zoom');
                 if (videoTrack && zoomCapability) {
-                    const min = zoomCapability.min!;
+                    zoomRef.current = { ...zoomCapability, value: zoomCapability.min };
                     try {
-                        await videoTrack.applyConstraints({ advanced: [{ zoom: min } as MediaTrackConstraintSet] });
+                        await videoTrack.applyConstraints({ advanced: [{ zoom: zoomCapability.min } as MediaTrackConstraintSet] });
                     } catch {
                         // Zoom support is optional even when a browser reports the capability.
                     }
+                }
+                const exposureCapability = videoTrack && getRangeCapability(videoTrack, 'exposureCompensation');
+                if (videoTrack && exposureCapability) {
+                    const currentValue = (videoTrack.getSettings() as MediaTrackSettings & { exposureCompensation?: number })
+                        .exposureCompensation;
+                    const midpoint = (exposureCapability.min + exposureCapability.max) / 2;
+                    setExposureState({ ...exposureCapability, value: currentValue ?? midpoint });
                 }
                 if (videoRef.current) {
                     videoRef.current.srcObject = stream;
@@ -163,12 +195,51 @@ export function useStoryCameraController(open: boolean, onCapture: (file: File) 
         setIsRecording(true);
     }
 
+    function setExposure(value: number) {
+        const videoTrack = streamRef.current?.getVideoTracks()[0];
+        if (!videoTrack || !exposure) return;
+        const clamped = Math.min(exposure.max, Math.max(exposure.min, value));
+        setExposureState({ ...exposure, value: clamped });
+        videoTrack.applyConstraints({ advanced: [{ exposureCompensation: clamped } as MediaTrackConstraintSet] }).catch(() => {
+            // Some browsers report the capability but refuse the constraint at runtime.
+        });
+    }
+
+    function onTouchStart(event: ReactTouchEvent<HTMLElement>) {
+        if (event.touches.length === 2 && zoomRef.current) {
+            pinchStartDistanceRef.current = touchDistance(event.touches);
+            pinchStartZoomRef.current = zoomRef.current.value;
+        }
+    }
+
+    function onTouchMove(event: ReactTouchEvent<HTMLElement>) {
+        const zoomState = zoomRef.current;
+        const videoTrack = streamRef.current?.getVideoTracks()[0];
+        if (event.touches.length !== 2 || !zoomState || !videoTrack || pinchStartDistanceRef.current === null) return;
+        const scale = touchDistance(event.touches) / pinchStartDistanceRef.current;
+        const { min, max, step } = zoomState;
+        const rawZoom = Math.min(max, Math.max(min, pinchStartZoomRef.current * scale));
+        const nextZoom = Math.round(rawZoom / step) * step;
+        if (nextZoom === zoomState.value) return;
+        zoomRef.current = { ...zoomState, value: nextZoom };
+        videoTrack.applyConstraints({ advanced: [{ zoom: nextZoom } as MediaTrackConstraintSet] }).catch(() => {
+            // Zoom support is optional even when a browser reports the capability.
+        });
+    }
+
+    function onTouchEnd(event: ReactTouchEvent<HTMLElement>) {
+        if (event.touches.length < 2) pinchStartDistanceRef.current = null;
+    }
+
     return {
         videoRef,
         mode,
         isReady,
         isRecording,
         error,
+        exposure,
+        setExposure,
+        zoomHandlers: { onTouchStart, onTouchMove, onTouchEnd },
         setPhotoMode: () => setMode('photo'),
         setVideoMode: () => setMode('video'),
         capture: mode === 'photo' ? capturePhoto : toggleRecording,
