@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 
 import { BannerFallback } from '@/components/feed/BannerFallback';
 import { BannerOverlay } from '@/components/feed/BannerOverlay';
+import {ProtectedImage} from "@/components/common/ProtectedImage";
 
 export function Banner({
     image,
@@ -25,7 +26,7 @@ export function Banner({
             <div className="relative isolate overflow-hidden rounded-[1.5rem]">
                 <div className="relative aspect-16/11 w-full">
                     {image ? (
-                        <Image src={image} alt={title} fill className="object-cover" preload sizes="(max-width: 1024px) 100vw, 800px" />
+                        <ProtectedImage src={image} alt={title} fill className="object-cover" preload sizes="(max-width: 1024px) 100vw, 800px" />
                     ) : (
                         <BannerFallback actionHref={fallbackActionHref} actionLabel={fallbackActionLabel} />
                     )}
