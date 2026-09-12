@@ -2,10 +2,11 @@
 
 import { ChevronLeft, ChevronRight, Download, Loader2, VideoOff, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
+import type { CSSProperties, TouchEvent as ReactTouchEvent } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { useImageZoomPan } from '@/hooks/useImageZoomPan';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import type { MediaResponseDto } from '@/lib/api/types';
 
@@ -50,6 +51,14 @@ export function GalleryViewer({
     const isNavigatingRef = useRef(false);
     const navigationTimerRef = useRef<number | null>(null);
 
+    const isImage = media?.mediaType !== 'VIDEO';
+    const zoom = useImageZoomPan(containerRef);
+
+    useEffect(() => {
+        zoom.reset();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [media?.id]);
+
     useEffect(
         () => () => {
             if (navigationTimerRef.current !== null) window.clearTimeout(navigationTimerRef.current);
@@ -81,19 +90,21 @@ export function GalleryViewer({
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [media, triggerNext, triggerPrevious]);
 
-    const handleSwipeStart = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
-        if (event.pointerType === 'mouse' || isNavigatingRef.current) return;
-        swipeStartRef.current = { x: event.clientX, y: event.clientY };
+    const handleSwipeStart = useCallback((event: ReactTouchEvent<HTMLDivElement>) => {
+        if (isNavigatingRef.current) return;
+        const touch = event.touches[0];
+        swipeStartRef.current = { x: touch.clientX, y: touch.clientY };
         setDragTransitionEnabled(false);
     }, []);
 
     const handleSwipeMove = useCallback(
-        (event: ReactPointerEvent<HTMLDivElement>) => {
+        (event: ReactTouchEvent<HTMLDivElement>) => {
             const start = swipeStartRef.current;
             if (!start) return;
 
-            const deltaX = event.clientX - start.x;
-            const deltaY = event.clientY - start.y;
+            const touch = event.touches[0];
+            const deltaX = touch.clientX - start.x;
+            const deltaY = touch.clientY - start.y;
             if (Math.abs(deltaY) > Math.abs(deltaX)) return;
 
             const goingPrevious = deltaX > 0;
@@ -137,6 +148,54 @@ export function GalleryViewer({
         setDragTransitionEnabled(true);
         setDragX(0);
     }, []);
+
+    const handleTouchStart = useCallback(
+        (event: ReactTouchEvent<HTMLDivElement>) => {
+            if (!isImage) {
+                handleSwipeStart(event);
+                return;
+            }
+
+            zoom.handleTouchStart(event);
+            if (event.touches.length === 1 && !zoom.isZoomed) handleSwipeStart(event);
+        },
+        [handleSwipeStart, isImage, zoom]
+    );
+
+    const handleTouchMove = useCallback(
+        (event: ReactTouchEvent<HTMLDivElement>) => {
+            if (!isImage) {
+                handleSwipeMove(event);
+                return;
+            }
+
+            if (event.touches.length >= 2 || zoom.isZoomed) {
+                zoom.handleTouchMove(event);
+                return;
+            }
+            handleSwipeMove(event);
+        },
+        [handleSwipeMove, isImage, zoom]
+    );
+
+    const handleTouchEnd = useCallback(
+        (event: ReactTouchEvent<HTMLDivElement>) => {
+            if (!isImage) {
+                handleSwipeEnd();
+                return;
+            }
+
+            const wasZoomed = zoom.isZoomed;
+            zoom.handleTouchEnd(event);
+            if (!wasZoomed) handleSwipeEnd();
+        },
+        [handleSwipeEnd, isImage, zoom]
+    );
+
+    const handleTouchCancel = useCallback(() => {
+        zoom.reset();
+        handleSwipeCancel();
+    }, [handleSwipeCancel, zoom]);
 
     if (!media) return null;
 
@@ -182,7 +241,7 @@ export function GalleryViewer({
                 <div
                     key={media.id}
                     ref={containerRef}
-                    className="motion-gallery-media relative h-[70vh] w-full touch-pan-y overflow-hidden"
+                    className="motion-gallery-media relative h-[70vh] w-full touch-none overflow-hidden"
                     style={
                         {
                             transform: `translateX(${dragX}px)`,
@@ -190,10 +249,10 @@ export function GalleryViewer({
                             '--gallery-media-enter-offset': enterOffset,
                         } as CSSProperties
                     }
-                    onPointerDown={handleSwipeStart}
-                    onPointerMove={handleSwipeMove}
-                    onPointerUp={handleSwipeEnd}
-                    onPointerCancel={handleSwipeCancel}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                    onTouchCancel={handleTouchCancel}
                 >
                     {media.mediaType === 'VIDEO' && media.status === 'PROCESSING' ? (
                         <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-sm font-semibold text-white/75">
@@ -208,7 +267,15 @@ export function GalleryViewer({
                     ) : media.mediaType === 'VIDEO' ? (
                         <video src={media.mediaUrl} controls playsInline className="h-full w-full object-contain" />
                     ) : (
-                        <ProtectedImage src={media.mediaUrl} alt={media.originalFilename} fill sizes="100vw" className="object-contain" />
+                        <div
+                            className="h-full w-full"
+                            style={{
+                                transform: `translate(${zoom.translate.x}px, ${zoom.translate.y}px) scale(${zoom.scale})`,
+                                transition: zoom.isTransitionEnabled ? 'transform 200ms var(--motion-ease-standard)' : 'none',
+                            }}
+                        >
+                            <ProtectedImage src={media.mediaUrl} alt={media.originalFilename} fill sizes="100vw" className="object-contain" />
+                        </div>
                     )}
                 </div>
                 {/* Viewer actions */}
