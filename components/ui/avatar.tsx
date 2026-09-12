@@ -1,5 +1,4 @@
-import Image from 'next/image';
-
+import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { cn } from '@/lib/utils';
 
 type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
@@ -39,7 +38,7 @@ export default function Avatar({ src, initials = '?', color = '#ff7a59', size = 
                 aria-label={alt ?? initials}
                 className={cn('relative rounded-full overflow-hidden select-none shrink-0', sizeMap[size], className)}
             >
-                <Image src={src} alt="" fill className="object-cover" sizes={`${sizePx[size]}px`} loading="lazy" unoptimized />
+                <ProtectedImage src={src} alt="" fill className="object-cover" sizes={`${sizePx[size]}px`} loading="lazy" />
             </div>
         );
     }
