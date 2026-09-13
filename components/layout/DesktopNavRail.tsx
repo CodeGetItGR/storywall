@@ -62,7 +62,7 @@ export function DesktopNavRail() {
                             color="rgba(255, 255, 255, 0.14)"
                             size={expanded ? 'xl' : 'sm'}
                             alt={accountName}
-                            className={cn('ring-2 transition-[box-shadow] duration-700 ease-out', expanded ? 'ring-white/40' : 'ring-[#594833]/45')}
+                            className={cn('ring-2 transition-shadow duration-700 ease-out ring-white/40')}
                         />
                         {expanded && (
                             <span className="absolute right-0 bottom-0 flex h-6 w-6 items-center justify-center rounded-full bg-white text-primary shadow-soft ring-2 ring-primary transition-transform group-hover:scale-105 group-focus-visible:scale-105">
