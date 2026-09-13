@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, BarChart3, Copy, Pencil, QrCode, Trash2 } from 'lucide-react';
+import { AlertTriangle, BarChart3, Copy, Lock, Pencil, QrCode, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { type ChangeEvent, useCallback, useState } from 'react';
 
@@ -8,6 +8,7 @@ import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useRevokeQrLink, useUpdateQrLink } from '@/hooks/useQrLinks';
 import type { QrLinkResponseDto, QrLinkStatsDto } from '@/lib/api/types';
+import { isLockedGalleryQrLink } from '@/lib/qrLinks';
 import { getQrStatusTone, type QrDisplayStatus } from '@/lib/statusTones';
 import { cn } from '@/lib/utils';
 
@@ -39,6 +40,7 @@ export function QrLinkRow({
     const toErrorMessage = useApiErrorMessage();
 
     const status: QrDisplayStatus = qrLink.status;
+    const isLocked = isLockedGalleryQrLink(qrLink);
     const canEditLimit = canWrite && qrLink.targetType !== 'INVITATION' && qrLink.maxGuests !== null;
     const remainingSlots = stats?.remainingSlots ?? null;
     const isLowOnSlots = remainingSlots !== null && remainingSlots <= 5;
@@ -208,7 +210,7 @@ export function QrLinkRow({
                             {t('qr.editLimit')}
                         </button>
                     )}
-                    {canWrite && status === 'ACTIVE' && (
+                    {canWrite && status === 'ACTIVE' && !isLocked && (
                         <button
                             type="button"
                             onClick={handleRevokeConfirmOpen}
@@ -217,6 +219,12 @@ export function QrLinkRow({
                             <Trash2 className="h-3.5 w-3.5" />
                             {t('qr.revoke')}
                         </button>
+                    )}
+                    {canWrite && status === 'ACTIVE' && isLocked && (
+                        <span className="flex items-center gap-1.5 rounded-full bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-ink-faint">
+                            <Lock className="h-3.5 w-3.5" />
+                            {t('qr.locked')}
+                        </span>
                     )}
                 </div>
             </div>

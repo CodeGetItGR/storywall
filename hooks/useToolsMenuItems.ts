@@ -1,6 +1,6 @@
 'use client';
 
-import { BookHeart, CalendarCheck, CalendarDays, Gift, HelpCircle, Images, LayoutDashboard, type LucideIcon } from 'lucide-react';
+import { BookHeart, CalendarCheck, CalendarDays, Gift, HelpCircle, Images, LayoutDashboard, type LucideIcon, QrCode } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { useGiftAccount } from '@/hooks/useGiftAccount';
@@ -54,16 +54,21 @@ export function useHostMenuItems(): ToolMenuItem[] {
 
     if (!activeEvent) return [];
 
-    const hostAdminDefinitions: { key: string; href: string; icon: LucideIcon }[] = [
+    const availableModules = new Set(activeEvent.modules.filter((module_) => module_.isAvailable).map((module_) => module_.moduleKey));
+
+    const hostAdminDefinitions: { key: string; href: string; icon: LucideIcon; moduleKey?: string }[] = [
         { key: 'manage', href: routes.events.manage(activeEvent.id), icon: LayoutDashboard },
+        { key: 'galleryQr', href: routes.events.tools.galleryQr(activeEvent.id), icon: QrCode, moduleKey: 'gallery' },
         { key: 'help', href: routes.events.manage(activeEvent.id, { tab: 'help' }), icon: HelpCircle },
     ];
 
-    return hostAdminDefinitions.map((item) => ({
-        key: item.key,
-        href: item.href,
-        icon: item.icon,
-        label: t(`${item.key}.label`),
-        description: t(`${item.key}.description`),
-    }));
+    return hostAdminDefinitions
+        .filter((item) => !item.moduleKey || availableModules.has(item.moduleKey))
+        .map((item) => ({
+            key: item.key,
+            href: item.href,
+            icon: item.icon,
+            label: t(`${item.key}.label`),
+            description: t(`${item.key}.description`),
+        }));
 }

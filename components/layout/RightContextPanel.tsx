@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import { GalleryQrSection } from '@/components/layout/right-context-panel/GalleryQrSection';
 import { MediaSummarySection } from '@/components/layout/right-context-panel/MediaSummarySection';
 import { RsvpSummarySection } from '@/components/layout/right-context-panel/RsvpSummarySection';
 import { WishbookSummarySection } from '@/components/layout/right-context-panel/WishbookSummarySection';
@@ -25,6 +26,8 @@ export function RightContextPanel() {
         rsvpSummary,
         showMediaSummary,
         mediaSummary,
+        showGalleryQr,
+        galleryQrLink,
         showWishbookSummary,
         wishbookEntries,
         wishbookTotal,
@@ -87,6 +90,9 @@ export function RightContextPanel() {
                         ]}
                     />
                 )}
+
+                {/* Gallery QR */}
+                {showGalleryQr && <GalleryQrSection eventId={activeEvent.id} qrLink={galleryQrLink} />}
 
                 {/* RSVP summary */}
                 {showRsvpSummary && rsvpSummary && <RsvpSummarySection eventId={activeEvent.id} summary={rsvpSummary} />}

@@ -2,3 +2,6 @@
 - RSVP reports don't look good.
 - Post pictures cannot be zoomed.
 - When scanning a gallery QR code, the user should be prompted to directly upload media to the gallery (without requiring login).
+- Danger Zone / Help should be towards the end of the navigation in the host management page.
+- Plan / Coverage / Orders should be a single tab with no duplicated info. Just enough for the user to know what they have and what they can do with it.
+- The Overview tab in mobile should be the exact same as the desktop version (right side panel context), with the same info and layout.

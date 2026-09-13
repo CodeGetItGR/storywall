@@ -177,7 +177,7 @@ export default function InvitationsTab({
             )}
             {showCreate && canCreate && showCoHosts && <CreateCoHostInvitationForm eventId={eventId} onDoneAction={handleHideCreate} />}
             {showCreate && canCreate && !showInvites && !showCoHosts && (
-                <CreateQrLinkForm eventId={eventId} onDoneAction={handleHideCreate} onClampNoticeAction={handleClampNotice} />
+                <CreateQrLinkForm eventId={eventId} qrLinks={qrLinks} onDoneAction={handleHideCreate} onClampNoticeAction={handleClampNotice} />
             )}
 
             {/* List */}

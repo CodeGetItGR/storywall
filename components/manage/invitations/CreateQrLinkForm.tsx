@@ -7,20 +7,23 @@ import React, { type ChangeEvent, useCallback, useState } from 'react';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCreateQrLink } from '@/hooks/useQrLinks';
-import type { QrLinkRequestDto, QrTargetType } from '@/lib/api/types';
+import type { QrLinkRequestDto, QrLinkResponseDto, QrTargetType } from '@/lib/api/types';
+import { hasGalleryQrLink } from '@/lib/qrLinks';
 import { cn } from '@/lib/utils';
 
 import { QrTargetTypeButton } from './QrTargetTypeButton';
 import { fieldControlClass, fieldLabelClass, fieldTextClass, formPanelClass } from './shared';
 
-const qrTargetTypes = ['EVENT_JOIN', 'MEDIA_UPLOAD'] as const;
+const allQrTargetTypes = ['EVENT_JOIN', 'MEDIA_UPLOAD'] as const;
 
 export function CreateQrLinkForm({
     eventId,
+    qrLinks,
     onDoneAction,
     onClampNoticeAction,
 }: {
     eventId: string;
+    qrLinks: QrLinkResponseDto[];
     onDoneAction: () => void;
     onClampNoticeAction?: (message: string) => void;
 }) {
@@ -30,6 +33,11 @@ export function CreateQrLinkForm({
     const [label, setLabel] = useState('');
     const [maxGuests, setMaxGuests] = useState(50);
     const toErrorMessage = useApiErrorMessage();
+
+    // Only one gallery upload code per event — the event already has one (auto-generated or
+    // host-created), so don't offer to create a duplicate. See lib/qrLinks.ts.
+    const galleryLinkExists = hasGalleryQrLink(qrLinks);
+    const qrTargetTypes = allQrTargetTypes.filter((item) => item !== 'MEDIA_UPLOAD' || !galleryLinkExists);
 
     const handleTargetTypeChange = useCallback((value: QrTargetType) => {
         setTargetType(value);
@@ -98,6 +106,7 @@ export function CreateQrLinkForm({
                             );
                         })}
                     </div>
+                    {galleryLinkExists && <p className="text-xs leading-relaxed text-ink-faint">{t('qr.galleryLinkExists')}</p>}
                 </div>
 
                 {/* Label */}
