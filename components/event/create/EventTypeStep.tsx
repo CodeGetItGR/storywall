@@ -10,6 +10,7 @@ import type { EventTypeAccentToken, EventTypeConvention } from '@/lib/api/types'
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import { cn } from '@/lib/utils';
 import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
+import {ProtectedImage} from "@/components/common/ProtectedImage";
 
 // accentToken is a BE-owned design token (see event-type-voice-pack-fe-integration.md);
 // this is the only place that maps it to actual Tailwind classes.
@@ -78,7 +79,7 @@ export function EventTypeStep() {
                         >
                             {backgroundImageSrc && (
                                 <>
-                                    <Image
+                                    <ProtectedImage
                                         src={backgroundImageSrc}
                                         alt=""
                                         fill

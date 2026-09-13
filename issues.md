@@ -11,3 +11,9 @@
   - When it expands, it needs to be the current color. But we need a nice transition between the two colors so its not an ugly instant swap.
 - Post pictures cannot be zoomed.
 - Banner image lightbox overlay crosses too fast. It should be slower, maybe with a smoother animation.
+- Host Management page : 
+  - Navigation : 
+    1. Overview
+    2. Event
+    3. RSVP
+    4. Invitations
