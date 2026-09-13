@@ -59,6 +59,7 @@ export function DesktopNavRail() {
                         <Avatar
                             src={authUser?.profilePictureUrl}
                             initials={getInitials(accountName)}
+                            color="rgba(255, 255, 255, 0.14)"
                             size={expanded ? 'xl' : 'sm'}
                             alt={accountName}
                             className={cn('ring-2 transition-[box-shadow] duration-700 ease-out', expanded ? 'ring-white/40' : 'ring-[#594833]/45')}
