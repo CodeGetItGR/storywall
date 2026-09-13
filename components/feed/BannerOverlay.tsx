@@ -19,8 +19,7 @@ export function BannerOverlay({ title, actions, glowVisible }: { title: string; 
             {glowVisible && (
                 <div
                     aria-hidden="true"
-                    className="playlist-light-ray pointer-events-none absolute -top-20 z-20 h-[200%] w-48 rotate-24 bg-linear-to-r from-transparent via-[#fff2a8]/55 to-transparent blur-md mix-blend-screen"
-                    style={{ animationDuration: '10s' }}
+                    className="banner-light-ray pointer-events-none absolute -top-20 z-20 h-[200%] w-48 rotate-24 bg-linear-to-r from-transparent via-[#fff2a8]/55 to-transparent blur-md mix-blend-screen"
                 />
             )}
             {/* Actions */}

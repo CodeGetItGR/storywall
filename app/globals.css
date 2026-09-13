@@ -673,6 +673,11 @@
     filter: drop-shadow(0 0 1.25rem rgb(255 226 115 / 0.35));
 }
 
+.banner-light-ray {
+    animation: playlist-light-ray 14s var(--motion-ease-standard) infinite;
+    filter: drop-shadow(0 0 1.25rem rgb(255 226 115 / 0.35));
+}
+
 @keyframes playlist-note-drift {
     0%,
     100% {
