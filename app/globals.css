@@ -387,6 +387,25 @@
 }
 
 @media (min-width: 64rem) {
+    .desktop-account-rail {
+        isolation: isolate;
+    }
+
+    .desktop-account-rail::before {
+        position: absolute;
+        z-index: -1;
+        inset: 0;
+        background: linear-gradient(180deg, #f5ad93 0%, #f8c195 50%, #fdd497 100%);
+        content: '';
+        opacity: 1;
+        transition: opacity 420ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .desktop-account-rail[data-expanded='true']::before {
+        opacity: 0;
+        transition-delay: 380ms;
+    }
+
     .account-panel-page {
         background: transparent;
     }

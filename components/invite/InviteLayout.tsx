@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { ReactNode } from 'react';
 
 import { Logo } from '@/components/common/Logo';
+import {ProtectedImage} from "@/components/common/ProtectedImage";
 
 interface InviteLayoutProps {
     coverImageSrc: string;
@@ -15,7 +16,7 @@ export function InviteLayout({ coverImageSrc, coverImageAlt, eventTitle, eventSu
     return (
         <div className="min-h-screen flex flex-col lg:flex-row lg:h-screen bg-background">
             <div className="relative w-full h-64 sm:h-80 lg:h-screen lg:w-1/2 shrink-0">
-                <Image
+                <ProtectedImage
                     src={coverImageSrc}
                     alt={coverImageAlt}
                     fill
@@ -24,7 +25,7 @@ export function InviteLayout({ coverImageSrc, coverImageAlt, eventTitle, eventSu
                     preload
                     loading="eager"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-12 xl:p-16">
                     <h1 className="text-2xl lg:text-4xl xl:text-5xl font-bold text-white text-balance">{eventTitle}</h1>
                     {eventSubtitle && <p className="text-sm lg:text-base text-white/80 mt-2 max-w-md">{eventSubtitle}</p>}

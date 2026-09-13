@@ -7,4 +7,7 @@
   - If available, Wishbook summary (showing the last 2 wishbook entries) and overall count.
 - Add desktop "+" composer button, similar to the mobile version, to create a new post / story / music suggestion.
 - RSVP reports don't look good.
-- The desktop left side bar, needs to be
+- The desktop left side bar, needs to be a different color when it's not expanded. Something towards orange-yellow, a pretty light one. Might need to adjust the icon colors to make them more visible on the new background color.
+  - When it expands, it needs to be the current color. But we need a nice transition between the two colors so its not an ugly instant swap.
+- Post pictures cannot be zoomed.
+- Banner image lightbox overlay crosses too fast. It should be slower, maybe with a smoother animation.

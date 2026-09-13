@@ -22,14 +22,25 @@ export function DesktopAccountNavLink({
             aria-current={active ? 'page' : undefined}
             title={expanded ? undefined : label}
             className={cn(
-                'flex min-h-11 items-center rounded-full text-sm font-semibold ring-1 transition-[background-color,transform,color] active:scale-[0.99]',
+                'flex min-h-11 items-center rounded-full text-sm font-semibold ring-1 transition-[background-color,transform,color] duration-700 ease-out active:scale-[0.99]',
                 expanded ? 'gap-3 px-4 py-2.5' : 'justify-center px-0 py-2.5',
-                active
-                    ? 'bg-white/18 text-white ring-white/70'
-                    : 'bg-white/10 text-white/88 ring-white/14 hover:bg-white/16 hover:text-white'
+                expanded
+                    ? active
+                        ? 'bg-white/18 text-white ring-white/70'
+                        : 'bg-white/10 text-white/88 ring-white/14 hover:bg-white/16 hover:text-white'
+                    : active
+                      ? 'bg-[#fffaf0] text-[#3d332b] ring-[#765d39]/25'
+                      : 'bg-[#fff4d7]/45 text-[#4b3d30] ring-[#765d39]/16 hover:bg-[#fffaf0]/75 hover:text-[#2f2823]'
             )}
         >
-            <Icon className={cn('h-5 w-5 shrink-0', active ? 'text-white' : 'text-white/80')} aria-hidden="true" strokeWidth={active ? 2.3 : 1.8} />
+            <Icon
+                className={cn(
+                    'h-5 w-5 shrink-0 transition-colors duration-700 ease-out',
+                    expanded ? (active ? 'text-white' : 'text-white/80') : active ? 'text-[#3d332b]' : 'text-[#4b3d30]'
+                )}
+                aria-hidden="true"
+                strokeWidth={active ? 2.3 : 1.8}
+            />
             <span className={cn('truncate transition-opacity', expanded ? 'opacity-100' : 'sr-only opacity-0')}>{label}</span>
         </Link>
     );

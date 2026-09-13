@@ -9,7 +9,7 @@ import type { MouseEvent } from 'react';
 import { AccountLogoutButton } from '@/components/account/AccountLogoutButton';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { DesktopAccountNavLink } from '@/components/layout/DesktopAccountNavLink';
-import { isEventRoute, isFeedRoute, isPathActive } from '@/components/layout/mobile-tab-bar';
+import { isEventRoute, isPathActive } from '@/components/layout/mobile-tab-bar';
 import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useDesktopAccountSidebar } from '@/hooks/useDesktopAccountSidebar';
@@ -48,8 +48,8 @@ export function DesktopNavRail() {
             onClick={handleRailClick}
             data-expanded={expanded}
             className={cn(
-                'desktop-account-rail fixed top-0 left-0 z-40 hidden h-screen flex-col overflow-hidden bg-transparent text-white transition-[width,padding] duration-500 ease-out lg:flex',
-                expanded ? 'w-80 px-5 pt-14 pb-7' : 'w-20 px-3 pt-6 pb-5'
+                'desktop-account-rail fixed top-0 left-0 z-40 hidden h-screen flex-col overflow-hidden text-[#3d332b] transition-[width,padding,color] duration-700 ease-out lg:flex',
+                expanded ? 'w-80 px-5 pt-14 pb-7 text-white' : 'w-20 px-3 pt-6 pb-5'
             )}
         >
             {/* Identity */}
@@ -61,7 +61,7 @@ export function DesktopNavRail() {
                             initials={getInitials(accountName)}
                             size={expanded ? 'xl' : 'sm'}
                             alt={accountName}
-                            className="ring-2 ring-white/40"
+                            className={cn('ring-2 transition-[box-shadow] duration-700 ease-out', expanded ? 'ring-white/40' : 'ring-[#594833]/45')}
                         />
                         {expanded && (
                             <span className="absolute right-0 bottom-0 flex h-6 w-6 items-center justify-center rounded-full bg-white text-primary shadow-soft ring-2 ring-primary transition-transform group-hover:scale-105 group-focus-visible:scale-105">
@@ -84,7 +84,9 @@ export function DesktopNavRail() {
 
             {/* Navigation */}
             <div className={cn('no-scrollbar flex flex-1 flex-col gap-4 overflow-y-auto p-2', expanded ? 'mt-7 max-w-52' : 'mt-8')}>
-                {showEventActions && homeHref && <DesktopAccountNavLink href={homeHref} icon={HomeIcon} label={t('items.home')} active={homeActive} expanded={expanded} />}
+                {showEventActions && homeHref && (
+                    <DesktopAccountNavLink href={homeHref} icon={HomeIcon} label={t('items.home')} active={homeActive} expanded={expanded} />
+                )}
 
                 <DesktopAccountNavLink href={routes.home} icon={CalendarDays} label={tAccount('events')} active={eventsActive} expanded={expanded} />
                 <DesktopAccountNavLink
