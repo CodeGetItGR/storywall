@@ -13,8 +13,8 @@ interface LogoProps {
 
 export function Logo({
     direction = 'row',
-    iconClassName = 'h-8 w-auto sm:h-18 md:h-20',
-    wordmarkClassName = 'h-6 w-auto sm:h-7 md:h-8',
+    iconClassName = 'h-8 w-auto sm:h-9 lg:h-10',
+    wordmarkClassName = 'h-6 w-auto sm:h-5 md:h-6 lg:h-9',
     wordmarkVariant = 'default',
     className,
 }: LogoProps) {

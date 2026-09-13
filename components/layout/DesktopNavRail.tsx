@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarDays, Home as HomeIcon, Layers3, Pencil, Plus, WalletCards } from 'lucide-react';
+import { CalendarDays, Home as HomeIcon, Layers3, Pencil, WalletCards } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -16,7 +16,6 @@ import { useDesktopAccountSidebar } from '@/hooks/useDesktopAccountSidebar';
 import { getInitials } from '@/lib/format';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
-import { useComposer } from '@/providers/ComposerProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
 
 export function DesktopNavRail() {
@@ -24,12 +23,10 @@ export function DesktopNavRail() {
     const tAccount = useTranslations('AccountDrawer');
     const pathname = usePathname();
     const { user: authUser } = useAuth();
-    const { openPostComposer, canComposePost } = useComposer();
     const { expanded, handleMouseEnter, handleMouseLeave, togglePinned } = useDesktopAccountSidebar();
     const activeEvent = useActiveEvent();
     const isDraft = activeEvent?.status === 'DRAFT';
     const showEventActions = Boolean(activeEvent) && isEventRoute(pathname);
-    const showComposerAction = Boolean(activeEvent) && isFeedRoute(pathname);
     const accountName = [authUser?.firstName, authUser?.lastName].filter(Boolean).join(' ') || authUser?.firstName || tAccount('fallbackName');
     const homeHref = activeEvent ? (isDraft ? routes.events.manage(activeEvent.id) : routes.events.feed(activeEvent.id)) : null;
     const homeActive = Boolean(homeHref) && (isPathActive(pathname, homeHref!) || isPathActive(pathname, routes.feed));
@@ -99,24 +96,6 @@ export function DesktopNavRail() {
                 />
                 <DesktopAccountNavLink href={routes.modules} icon={Layers3} label={tAccount('modules')} active={modulesActive} expanded={expanded} />
             </div>
-
-            {/* New Post CTA */}
-            {showComposerAction && canComposePost && (
-                <div className="pt-4">
-                    <button
-                        type="button"
-                        onClick={openPostComposer}
-                        title={expanded ? undefined : t('newPost')}
-                        className={cn(
-                            'flex min-h-11 w-full items-center justify-center rounded-full bg-white px-4 py-2.5 text-sm font-bold text-primary transition-[opacity,transform] hover:opacity-90 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40',
-                            expanded ? 'gap-2' : 'px-0'
-                        )}
-                    >
-                        <Plus className="h-4 w-4 shrink-0" strokeWidth={2.5} aria-hidden="true" />
-                        <span className={cn('truncate transition-opacity', expanded ? 'opacity-100' : 'sr-only opacity-0')}>{t('newPost')}</span>
-                    </button>
-                </div>
-            )}
 
             {/* Footer */}
             <div className={cn('mt-auto flex items-center pt-6', expanded ? 'justify-between gap-4' : 'justify-center')}>

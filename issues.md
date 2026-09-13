@@ -1,0 +1,10 @@
+- The "Settings" tab shouldn't be called settings. Find a more appropriate name that reflects its purpose (basically editing event details).
+- RightContextPanel : Shouldn't scroll with the whole feed page. It should be fixed to the right side of the screen and only scroll if the content inside it is too long.
+  - Actions
+  - Plan Usage
+  - RSVP summary
+  - Media Summary (Image / Video Count)
+  - If available, Wishbook summary (showing the last 2 wishbook entries) and overall count.
+- Add desktop "+" composer button, similar to the mobile version, to create a new post / story / music suggestion.
+- RSVP reports don't look good.
+- The desktop left side bar, needs to be

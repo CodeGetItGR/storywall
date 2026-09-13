@@ -62,7 +62,7 @@
         "mainSession": "Κύρια ενότητα",
         "secondarySession": "Δευτερεύουσα ενότητα",
         "emptyPostsTitle": "Δεν υπάρχουν δημοσιεύσεις ακόμη",
-        "emptyPostsBody": "Μοιραστείτε πρώτοι μια ανάμνηση, ένα μήνυμα ή μια φωτογραφία."
+        "emptyPostsBody": "Μοιραστείτε πρώτοι ένα μήνυμα ή μια φωτογραφία."
     },
     "SessionLocationPage": {
         "back": "Πίσω",
@@ -235,7 +235,7 @@
     "ComposerCard": {
         "placeholder": "Γιορτάστε τη στιγμή",
         "eventReadOnly": "Η εκδήλωση είναι μόνο για ανάγνωση",
-        "captionPlaceholder": "Μοιραστείτε μια ανάμνηση, μήνυμα ή στιγμή...",
+        "captionPlaceholder": "Μοιραστείτε ένα μήνυμα ή μια στιγμή...",
         "captionAriaLabel": "Λεζάντα Δημοσίευσης",
         "music": "Μουσική",
         "addMedia": "Προσθήκη πολυμέσου",
