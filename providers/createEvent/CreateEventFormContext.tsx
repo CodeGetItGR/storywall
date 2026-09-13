@@ -43,8 +43,12 @@ export interface CreateEventFormValue {
     onTitleChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     startAt: string;
     startAtMin: string;
+    startAtMax?: string;
+    endAt: string;
+    endAtMin: string;
     scheduleError: string | null;
     onStartAtChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onEndAtChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     timezone: string;
     timezoneOptions: string[];
     timezoneError: string | null;

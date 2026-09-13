@@ -432,7 +432,7 @@ export interface EventRequestDto {
     eventType: EventTypeConvention;
     visibility: EventVisibility; // required on this DTO despite the entity's DB default of PRIVATE
     startAt: string;
-    endAt?: string;
+    endAt: string;
     timezone: string;
     locationName?: string;
     locationAddress?: string;

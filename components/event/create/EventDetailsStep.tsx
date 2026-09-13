@@ -18,7 +18,11 @@ export function EventDetailsStep() {
         startAt,
         scheduleError,
         startAtMin,
+        startAtMax,
         onStartAtChange,
+        endAt,
+        endAtMin,
+        onEndAtChange,
         timezone,
         timezoneError,
         timezoneOptions,
@@ -59,6 +63,18 @@ export function EventDetailsStep() {
                         value={startAt}
                         onChange={onStartAtChange}
                         min={startAtMin}
+                        max={startAtMax}
+                        className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
+                    />
+                </FormFieldLabel>
+
+                <FormFieldLabel label={t('fields.endAt')} required>
+                    <input
+                        type="datetime-local"
+                        required
+                        value={endAt}
+                        onChange={onEndAtChange}
+                        min={endAtMin}
                         className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
                     />
                 </FormFieldLabel>

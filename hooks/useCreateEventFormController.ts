@@ -13,10 +13,16 @@ import { usePlanTiersForEventType } from '@/hooks/usePlanTiersForEventType';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { getFieldErrors } from '@/lib/api/errors';
-import type { CheckoutResponseDto, CollaborationCodePreviewResponseDto, EventRequestDto, EventResponseDto, EventTypeConvention } from '@/lib/api/types';
+import type {
+    CheckoutResponseDto,
+    CollaborationCodePreviewResponseDto,
+    EventRequestDto,
+    EventResponseDto,
+    EventTypeConvention,
+} from '@/lib/api/types';
 import { navigateToCheckout } from '@/lib/billing';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
-import { getScheduleDatetimeLocalBounds, isDatetimeLocalBefore } from '@/lib/datetime';
+import { getScheduleDatetimeLocalBounds, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
 import { routes } from '@/lib/routes';
 import { getCurrentTimezone, getSupportedTimezones } from '@/lib/timezones';
 import type { CreateEventFormValue, CreateEventStep } from '@/providers/createEvent/CreateEventFormContext';
@@ -41,6 +47,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
     const [title, setTitle] = useState('');
     const [eventType, setEventType] = useState<EventTypeConvention>('WEDDING');
     const [startAt, setStartAt] = useState('');
+    const [endAt, setEndAt] = useState('');
     const [timezone, setTimezone] = useState(getCurrentTimezone);
     const [locationName, setLocationName] = useState('');
     const [locationAddress, setLocationAddress] = useState('');
@@ -68,8 +75,13 @@ export function useCreateEventFormController(): CreateEventFormValue {
     const initialSessionTitle = initialSessionTitleKey && t.has(initialSessionTitleKey) ? t(initialSessionTitleKey) : undefined;
     const timezoneOptions = useMemo(() => getSupportedTimezones(), []);
     const isTimezoneValid = timezoneOptions.includes(timezone);
-    const { startAtMin } = getScheduleDatetimeLocalBounds({ startAt, endAt: null });
-    const scheduleError = startAt && isDatetimeLocalBefore(startAt, startAtMin) ? t('validation.startInPast') : null;
+    const { startAtMin, startAtMax, endAtMin } = getScheduleDatetimeLocalBounds({ startAt, endAt });
+    const scheduleError =
+        startAt && isDatetimeLocalBefore(startAt, startAtMin)
+            ? t('validation.startInPast')
+            : startAt && endAt && !isDatetimeLocalAfter(endAt, startAt)
+              ? t('validation.endBeforeStart')
+              : null;
     const timezoneError = timezone && !isTimezoneValid ? t('validation.invalidTimezone') : null;
     const trimmedTitle = title.trim();
     const trimmedLocationName = locationName.trim();
@@ -77,7 +89,9 @@ export function useCreateEventFormController(): CreateEventFormValue {
 
     const canReachPlan = eventTypes.length > 0;
     const canReachDetails = canReachPlan && Boolean(selectedCode);
-    const canSubmitDetails = Boolean(trimmedTitle && startAt && isTimezoneValid && !scheduleError && trimmedLocationName && trimmedLocationAddress);
+    const canSubmitDetails = Boolean(
+        trimmedTitle && startAt && endAt && isTimezoneValid && !scheduleError && trimmedLocationName && trimmedLocationAddress
+    );
     const canReachOverview = canReachDetails && canSubmitDetails;
     const reachableStep: CreateEventStep = canReachOverview ? 'overview' : canReachDetails ? 'details' : canReachPlan ? 'plan' : 'type';
 
@@ -110,6 +124,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
             setSelectedPlanCode('');
             setTitle('');
             setStartAt('');
+            setEndAt('');
             setTimezone(getCurrentTimezone());
             setLocationName('');
             setLocationAddress('');
@@ -124,6 +139,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
 
     const onTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value), []);
     const onStartAtChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setStartAt(e.target.value), []);
+    const onEndAtChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setEndAt(e.target.value), []);
     const onTimezoneChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setTimezone(e.target.value), []);
     const onLocationNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setLocationName(e.target.value), []);
     const onLocationAddressChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setLocationAddress(e.target.value), []);
@@ -182,6 +198,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
                 eventType: selectedEventType,
                 visibility: 'PRIVATE',
                 startAt: new Date(startAt).toISOString(),
+                endAt: new Date(endAt).toISOString(),
                 timezone,
                 locationName: trimmedLocationName,
                 locationAddress: trimmedLocationAddress,
@@ -237,6 +254,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
             trimmedLocationName,
             trimmedTitle,
             startAt,
+            endAt,
         ]
     );
 
@@ -267,8 +285,12 @@ export function useCreateEventFormController(): CreateEventFormValue {
         onTitleChange,
         startAt,
         startAtMin,
+        startAtMax,
+        endAt,
+        endAtMin,
         scheduleError,
         onStartAtChange,
+        onEndAtChange,
         timezone,
         timezoneOptions,
         timezoneError,
