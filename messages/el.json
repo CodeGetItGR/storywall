@@ -215,7 +215,7 @@
                 "description": "Το πλήρες πρόγραμμα της ημέρας"
             },
             "gallery": {
-                "label": "Φωτογραφίες",
+                "label": "Συλλογή",
                 "description": "Ανεβάστε και δείτε φωτογραφίες από την εκδήλωση"
             },
             "playlist": {
@@ -1755,7 +1755,7 @@
                 "rsvp": "Συμμετοχή",
                 "gallery": "Gallery",
                 "playlist": "Playlist",
-                "wishbook": "Wishbook",
+                "wishbook": "Βιβλίο ευχών",
                 "gifts": "Δώρα"
             }
         },
@@ -1959,12 +1959,12 @@
             "noResponse": "Χωρίς απάντηση"
         },
         "mediaSummary": {
-            "title": "Πολυμέσα",
+            "title": "Φωτογραφίες & Βίντεο",
             "images": "Φωτογραφίες",
             "videos": "Βίντεο"
         },
         "wishbookSummary": {
-            "title": "Wishbook",
+            "title": "Βιβλίο Ευχών",
             "count": "{count, plural, one {# μήνυμα} other {# μηνύματα}}",
             "empty": "Δεν υπάρχουν μηνύματα ακόμα"
         }
