@@ -1955,7 +1955,23 @@
             "gallery": "Review guest uploads",
             "rsvps": "See attendance and replies"
         },
-        "usageTitle": "Plan usage"
+        "usageTitle": "Plan usage",
+        "rsvpSummary": {
+            "title": "RSVP summary",
+            "attending": "Attending",
+            "declined": "Declined",
+            "noResponse": "No response"
+        },
+        "mediaSummary": {
+            "title": "Media",
+            "images": "Images",
+            "videos": "Videos"
+        },
+        "wishbookSummary": {
+            "title": "Wishbook",
+            "count": "{count, plural, one {# message} other {# messages}}",
+            "empty": "No messages yet"
+        }
     },
     "AdminPage": {
         "checkingAccess": "Checking admin access...",

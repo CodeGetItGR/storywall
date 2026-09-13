@@ -82,19 +82,6 @@ export function UsagePanel({ title, planName, items, includedModuleKeys = [], ne
                     );
                 })}
             </div>
-
-            {includedModuleKeys.length > 0 && (
-                <div className="border-t border-border pt-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('includedModules')}</p>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                        {includedModuleKeys.map((moduleKey) => (
-                            <span key={moduleKey} className="rounded-full bg-surface-muted px-2 py-1 text-[11px] font-medium text-ink-muted">
-                                {tModules.has(`${moduleKey}.name`) ? tModules(`${moduleKey}.name`) : moduleKey}
-                            </span>
-                        ))}
-                    </div>
-                </div>
-            )}
         </section>
     );
 }

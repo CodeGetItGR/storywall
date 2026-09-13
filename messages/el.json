@@ -1961,7 +1961,23 @@
             "rsvps": "Δείτε συμμετοχές και απαντήσεις",
             "gallery": "Έλεγχος φωτογραφιών καλεσμένων"
         },
-        "usageTitle": "Χρήση πλάνου"
+        "usageTitle": "Χρήση πλάνου",
+        "rsvpSummary": {
+            "title": "Σύνοψη RSVP",
+            "attending": "Θα παρευρεθούν",
+            "declined": "Δεν θα παρευρεθούν",
+            "noResponse": "Χωρίς απάντηση"
+        },
+        "mediaSummary": {
+            "title": "Πολυμέσα",
+            "images": "Φωτογραφίες",
+            "videos": "Βίντεο"
+        },
+        "wishbookSummary": {
+            "title": "Wishbook",
+            "count": "{count, plural, one {# μήνυμα} other {# μηνύματα}}",
+            "empty": "Δεν υπάρχουν μηνύματα ακόμα"
+        }
     },
     "AdminPage": {
         "checkingAccess": "Έλεγχος πρόσβασης διαχειριστή...",
