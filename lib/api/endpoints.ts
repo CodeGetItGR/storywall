@@ -14,6 +14,10 @@ export const endpoints = {
         byEventType: (eventType: string) => `/api/plan-tiers?eventType=${encodeURIComponent(eventType)}`,
     },
 
+    eventTypes: {
+        modules: (eventTypeKey: string) => `/api/event-types/${eventTypeKey}/modules`,
+    },
+
     auth: {
         register: '/api/auth/register',
         login: '/api/auth/login',

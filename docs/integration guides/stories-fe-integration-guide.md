@@ -29,7 +29,7 @@ interface StoryRequestDto {
 
 interface StoryResponseDto extends StoryRequestDto {
   id: string;
-  authorAvatarUrl: string | null; // NEW 2026-09-12 — short-lived presigned URL resolved from the author's avatarMediaId; null if no author or no avatar set. Do not cache.
+  authorAvatarUrl: string | null; // short-lived presigned URL resolved from the author's account profilePictureKey; null if no author or no profile picture. Do not cache.
   expiresAt: string;        // always present in the response, even if omitted on create
   createdAt: string;
   deletedAt: string | null; // see "Known quirk" below — in practice always null

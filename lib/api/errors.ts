@@ -84,6 +84,7 @@ export const ERROR_CODES = {
     INVALID_EVENT_TYPE: 3018,
     PLAN_TIER_NOT_AVAILABLE_FOR_EVENT_TYPE: 5053,
     EVENT_SESSION_MAIN_DATES_READ_ONLY: 5055,
+    EVENT_SESSION_MAIN_LOCATION_READ_ONLY: 5065,
     EVENT_SESSION_SECONDARY_ALREADY_ASSIGNED: 5056,
     REACTION_TYPE_NOT_USABLE: 5057,
     REACTION_TYPE_IN_USE: 5058,
@@ -93,6 +94,8 @@ export const ERROR_CODES = {
     COLLABORATION_EARNING_NOT_PAYABLE: 5062,
     EVENT_DELETE_NOT_PRIMARY_HOST: 4003,
     EVENT_DELETE_ALREADY_PENDING: 5064,
+    QR_MEDIA_UPLOAD_DISABLED: 5066,
+    EVENT_SESSION_LIMIT_REACHED: 5067,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the
@@ -138,6 +141,20 @@ export function getQuotaExceededDetails(error: unknown): QuotaExceededDetails | 
 
 export function isModuleNotAvailableError(error: unknown): boolean {
     return getErrorCode(error) === ERROR_CODES.MODULE_NOT_AVAILABLE;
+}
+
+// Gallery's QR upload-link toggle is a `configuration` flag, not a module, so
+// it 409s with its own code instead of MODULE_NOT_AVAILABLE — see
+// event-type-feature-toggles-quotas-fe-integration.md §4.
+export function isQrUploadDisabledError(error: unknown): boolean {
+    return getErrorCode(error) === ERROR_CODES.QR_MEDIA_UPLOAD_DISABLED;
+}
+
+// The event type's schedule-section cap was reached (`defaultConfig.maxSections`
+// on GET /api/event-types/{eventTypeKey}/modules) — distinct from the module
+// being unavailable at all. See event-type-feature-toggles-quotas-fe-integration.md §3.
+export function isScheduleLimitReachedError(error: unknown): boolean {
+    return getErrorCode(error) === ERROR_CODES.EVENT_SESSION_LIMIT_REACHED;
 }
 
 // Seconds the caller must wait after a 429, or undefined when this isn't one.

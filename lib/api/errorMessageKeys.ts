@@ -34,7 +34,9 @@ export type ApiErrorMessageKey =
     | 'eventTypeNotAvailable'
     | 'eventSessionScheduleLocked'
     | 'eventSessionMainDatesReadOnly'
+    | 'eventSessionMainLocationReadOnly'
     | 'eventSessionSecondaryAlreadyAssigned'
+    | 'eventSessionLimitReached'
     | 'invalidEventType'
     | 'invalidPlanTierScope'
     | 'forbidden'
@@ -57,6 +59,7 @@ export type ApiErrorMessageKey =
     | 'methodNotAllowed'
     | 'memberLimit'
     | 'moduleUnavailable'
+    | 'qrMediaUploadDisabled'
     | 'oauthTokenInvalid'
     | 'oauthEmailRequired'
     | 'qrLinkNotAvailable'
@@ -130,7 +133,9 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.EVENT_TYPE_NOT_AVAILABLE]: 'eventTypeNotAvailable',
     [ERROR_CODES.EVENT_SESSION_SCHEDULE_LOCKED]: 'eventSessionScheduleLocked',
     [ERROR_CODES.EVENT_SESSION_MAIN_DATES_READ_ONLY]: 'eventSessionMainDatesReadOnly',
+    [ERROR_CODES.EVENT_SESSION_MAIN_LOCATION_READ_ONLY]: 'eventSessionMainLocationReadOnly',
     [ERROR_CODES.EVENT_SESSION_SECONDARY_ALREADY_ASSIGNED]: 'eventSessionSecondaryAlreadyAssigned',
+    [ERROR_CODES.EVENT_SESSION_LIMIT_REACHED]: 'eventSessionLimitReached',
     [ERROR_CODES.INVALID_EVENT_TYPE]: 'invalidEventType',
     [ERROR_CODES.EVENT_STORAGE_LIMIT_EXCEEDED]: 'storageLimit',
     [ERROR_CODES.FORBIDDEN]: 'forbidden',
@@ -153,6 +158,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.METHOD_NOT_ALLOWED]: 'methodNotAllowed',
     [ERROR_CODES.INVALID_PAID_SERVICE_KIND]: 'invalidPaidServiceKind',
     [ERROR_CODES.MODULE_NOT_AVAILABLE]: 'moduleUnavailable',
+    [ERROR_CODES.QR_MEDIA_UPLOAD_DISABLED]: 'qrMediaUploadDisabled',
     [ERROR_CODES.ORDER_NOT_PENDING]: 'orderNotPending',
     [ERROR_CODES.ORDER_NOT_REFUNDABLE]: 'orderNotRefundable',
     [ERROR_CODES.PLAN_TIER_CURRENCY_MISMATCH]: 'planCurrencyMismatch',

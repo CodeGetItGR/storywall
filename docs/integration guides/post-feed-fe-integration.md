@@ -49,7 +49,6 @@ Authorization: Bearer {accessToken}
         "displayName": "Jamie Rivera",
         "nickname": "Maid of Honour",
         "role": "ATTENDEE",
-        "avatarMediaId": "c4e5...uuid",
         "avatarUrl": "https://...presigned..."
       },
       "type": "MEDIA",
@@ -101,10 +100,11 @@ post survives but authorship is dropped. Always null-check before rendering:
 const authorName = post.author?.displayName ?? "Unknown";
 ```
 
-### `author.avatarUrl` can be `null` even when `avatarMediaId` is set
+### `author.avatarUrl` can be `null`
 
-The avatar reference has no DB foreign-key constraint, so a dangling `avatarMediaId` (its
-`Media` row was deleted) resolves to `avatarUrl: null` rather than erroring. Fall back to a
+It's resolved from the author's account `profilePictureKey`, not a per-event setting. It's
+`null` for an account-less author (e.g. an honoree or invite-link guest who hasn't
+registered) or one whose account has never uploaded a profile picture. Fall back to a
 placeholder avatar, same as you already do elsewhere for missing avatars.
 
 ### `media[]` is already ordered and URL-resolved

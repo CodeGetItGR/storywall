@@ -19,7 +19,23 @@ export type PlatformRole = 'USER' | 'ADMIN' | 'GUEST';
 export type EventTypeConvention = 'WEDDING' | 'BAPTISM' | 'SOCIAL_EVENT' | 'BIRTHDAY' | 'CORPORATE' | 'FESTIVAL' | 'PRIVATE_PARTY' | 'CONFERENCE';
 // Post.type / Reaction.reactionType are free strings server-side.
 // moduleKey is now a closed set on the backend and should match the config payload.
-export const EVENT_MODULE_KEYS = ['posts', 'rsvp', 'playlist', 'stories', 'gallery', 'wishlist', 'wishbook'] as const;
+export const EVENT_MODULE_KEYS = [
+    'posts',
+    'rsvp',
+    'playlist',
+    'stories',
+    'gallery',
+    'wishlist',
+    'wishbook',
+    'co_hosts',
+    'named_invites',
+    'schedule',
+] as const;
+// Use this (not the raw `ModuleKey` wire type below) whenever code branches on
+// a specific module — it's a closed set and catches typos at compile time.
+// `ModuleKey` stays a plain string because the admin module/plan-tier registry
+// endpoints (PlatformModuleResponseDto, PlanTierResponseDto.moduleKeys, etc.)
+// deal in an open, admin-defined registry rather than this known guest-facing set.
 export type ModuleKeyConvention = (typeof EVENT_MODULE_KEYS)[number];
 // Post.type is enforced server-side against this exact set (DB CHECK constraint
 // + matching DTO validation) — not a free-string convention like the others.
@@ -1081,6 +1097,31 @@ export interface EventModuleResponseDto {
 export interface EventModulePatchDto {
     isEnabled?: boolean;
     configuration?: Record<string, unknown>;
+}
+
+// `EventModuleResponseDto.configuration` is untyped on the wire (it's a free-form
+// JSON blob per module). Known per-moduleKey shapes go here so callers can cast
+// to something typed instead of reaching into `Record<string, unknown>` by hand.
+// See event-type-feature-toggles-quotas-fe-integration.md §2.
+export interface GalleryModuleConfiguration {
+    qrUploadEnabled: boolean;
+}
+
+// GET /api/event-types/{eventTypeKey}/modules — the event type's own module
+// defaults, fetched live (not copied onto the event, not cached across it).
+// See event-type-feature-toggles-quotas-fe-integration.md §3: `defaultConfig`
+// is where a module's quota/cap for that event type lives (e.g. `maxSections`
+// for `schedule`) when the cap isn't a per-event `EventModule.configuration`
+// value. `applicability` mirrors the admin event-type/module registry
+// (event-lifecycle-locks-and-event-types-fe-integration.md).
+export type EventTypeModuleApplicability = 'UNSUPPORTED' | 'DEFAULT_OFF' | 'DEFAULT_ON';
+
+export interface EventTypeModuleResponseDto {
+    eventTypeKey: EventTypeConvention;
+    moduleKey: ModuleKey;
+    applicability: EventTypeModuleApplicability;
+    defaultConfig: Record<string, unknown>;
+    sortOrder: number;
 }
 
 export interface EventSessionRequestDto {

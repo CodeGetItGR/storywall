@@ -3097,10 +3097,13 @@
         "eventTypeNotAvailable": "This event type isn't available yet.",
         "eventSessionScheduleLocked": "This session has already started, so its schedule can no longer be changed.",
         "eventSessionMainDatesReadOnly": "This is the event's main session, so its date always matches the event's own.",
+        "eventSessionMainLocationReadOnly": "This is the event's main session, so its location always matches the event's own.",
         "eventSessionSecondaryAlreadyAssigned": "Another session is already marked as the secondary one. Unmark it first.",
+        "eventSessionLimitReached": "This event type has reached its limit of schedule sections.",
         "invalidEventType": "Choose a valid event type.",
         "invalidPlanTierScope": "That restriction only applies to event plans.",
         "eventDeleteNotPrimaryHost": "Only the event's original host can delete it.",
-        "eventDeleteAlreadyPending": "This event already has a deletion scheduled."
+        "eventDeleteAlreadyPending": "This event already has a deletion scheduled.",
+        "qrMediaUploadDisabled": "The QR upload link is turned off for this event's gallery."
     }
 }

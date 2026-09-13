@@ -360,22 +360,21 @@ interface EventMemberRequestDto {
   relationshipRole?: string;       // max 50
   customRelationshipRole?: string; // max 100
   isFeatured?: boolean;   // optional on the wire — defaults to false server-side
-  avatarMediaId?: string;
   joinedAt: string;       // required
 }
 interface EventMemberResponseDto {
   id: string; eventId: string; userId: string | null; invitationId: string | null;
   role: EventRole; displayName: string; nickname: string | null;
   relationshipRole: string | null; customRelationshipRole: string | null;
-  isFeatured: boolean; avatarMediaId: string | null; joinedAt: string;
-  avatarUrl: string | null; // NEW 2026-09-12 — short-lived presigned URL resolved from avatarMediaId; null if no avatar set. Do not cache.
+  isFeatured: boolean; joinedAt: string;
+  avatarUrl: string | null; // short-lived presigned URL resolved from the account's profilePictureKey; null for an account-less member or one who never uploaded a profile picture. Do not cache.
   rsvpId: string | null; // NEW 2026-08-26 — this member's own RSVP id, null if not submitted yet; see rsvp-status-fe-integration.md
   createdAt: string; updatedAt: string; deletedAt: string | null;
 }
 interface EventMemberPatchDto { // every field optional — isFeatured is HOST-only even on your own membership
   displayName?: string; nickname?: string;
   relationshipRole?: string; customRelationshipRole?: string;
-  isFeatured?: boolean; avatarMediaId?: string;
+  isFeatured?: boolean;
 } // no userId — see POST /api/event-members/{id}/claim for the narrow self-link path instead
 
 // --- Event Modules ---
@@ -555,8 +554,8 @@ interface PostRequestDto {
 }
 interface PostAuthorDto {
   memberId: string; displayName: string; nickname: string | null;
-  role: EventRole; avatarMediaId: string | null;
-  avatarUrl: string | null; // presigned, resolved from avatarMediaId — null if no avatar set
+  role: EventRole;
+  avatarUrl: string | null; // presigned, resolved from the account's profilePictureKey — null for an account-less author or one with no profile picture
 }
 interface PostResponseDto {
   id: string; eventId: string; authorMemberId: string | null;
@@ -584,7 +583,7 @@ interface CommentRequestDto {
 }
 interface CommentResponseDto {
   id: string; postId: string; authorMemberId: string | null;
-  authorAvatarUrl: string | null; // NEW 2026-09-12 — short-lived presigned URL resolved from the author's avatarMediaId; null if no author or no avatar set. Do not cache.
+  authorAvatarUrl: string | null; // short-lived presigned URL resolved from the author's account profilePictureKey; null if no author or no profile picture. Do not cache.
   parentCommentId: string | null;
   content: string; createdAt: string; updatedAt: string; deletedAt: string | null;
 }
@@ -633,7 +632,7 @@ interface StoryRequestDto {
 // status flips to 'READY' — poll GET /api/medias/{id} rather than letting the user hit this.
 interface StoryResponseDto {
   id: string; eventId: string; authorMemberId: string | null;
-  authorAvatarUrl: string | null; // NEW 2026-09-12 — short-lived presigned URL resolved from the author's avatarMediaId; null if no author or no avatar set. Do not cache.
+  authorAvatarUrl: string | null; // short-lived presigned URL resolved from the author's account profilePictureKey; null if no author or no profile picture. Do not cache.
   mediaId: string;
   caption: string | null; songUrl: string | null; expiresAt: string;
   createdAt: string; deletedAt: string | null;
