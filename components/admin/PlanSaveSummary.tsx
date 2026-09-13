@@ -6,7 +6,7 @@ export function PlanSaveSummary({ pendingSave }: { pendingSave: PendingPlanSave 
     const t = useTranslations('AdminPage.plans.saveSummary');
 
     if (!pendingSave) return null;
-    const hasChanges = pendingSave.changes.length > 0;
+    const hasChanges = pendingSave.changes.length > 0 || pendingSave.memberships.length > 0;
 
     if (!hasChanges) {
         return <p>{t('noChanges')}</p>;
@@ -32,6 +32,23 @@ export function PlanSaveSummary({ pendingSave }: { pendingSave: PendingPlanSave 
                     </dl>
                 </div>
             )}
+
+            {/* Coverage */}
+            {pendingSave.memberships.map((membership) => (
+                <div key={membership.label} className="space-y-2">
+                    <p className="text-[11px] font-bold uppercase tracking-wide text-ink">{membership.label}</p>
+                    {membership.added.length > 0 && (
+                        <p className="text-ink-muted">
+                            <span className="font-semibold text-ink">{t('added')}</span> {membership.added.join(', ')}
+                        </p>
+                    )}
+                    {membership.removed.length > 0 && (
+                        <p className="text-ink-muted">
+                            <span className="font-semibold text-ink">{t('removed')}</span> {membership.removed.join(', ')}
+                        </p>
+                    )}
+                </div>
+            ))}
         </div>
     );
 }

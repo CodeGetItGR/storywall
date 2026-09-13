@@ -1990,8 +1990,6 @@
             "groupMarketing": "Marketing",
             "groupOperations": "Operations",
             "eventPlans": "Event plans",
-            "planAvailability": "Plan availability",
-            "planModules": "Plan modules",
             "paidServices": "Paid services",
             "discountCodes": "Discount codes",
             "collaborations": "Collaborations",
@@ -2010,8 +2008,6 @@
         "tabs": {
             "metrics": "Metrics",
             "eventPlans": "Event plans",
-            "planAvailability": "Plan availability",
-            "planModules": "Plan modules",
             "paidServices": "Paid services",
             "discountCodes": "Discount codes",
             "collaborations": "Collaborations",
@@ -2060,45 +2056,15 @@
             "visibilityArchivedHint": "Not assignable to anyone. Accounts or events already on this plan are unaffected.",
             "plan": "Plan"
         },
-        "planMatrices": {
-            "discard": "Discard",
-            "review": "Review changes ({count})",
-            "apply": "Apply changes"
-        },
         "planAvailability": {
-            "title": "Plan availability",
-            "subtitle": "Choose which event types can use each plan.",
-            "search": "Search plans",
-            "matrixLabel": "Plan availability by event type",
-            "loading": "Loading availability...",
-            "empty": "No plans found.",
             "allTypes": "All event types",
             "selectedTypes": "Selected event types",
-            "all": "All",
-            "useAll": "Use all",
-            "allTypesFor": "Make {plan} available for all event types",
-            "assignmentLabel": "Make {plan} available for {eventType}",
-            "lastType": "A plan must be available for at least one event type.",
             "createTitle": "Event types",
-            "createHint": "Choose where this plan is available.",
-            "confirmTitle": "Apply plan availability changes?",
-            "confirmBody": "{count, plural, one {This changes which event types can use one plan.} other {This changes which event types can use # plans.}}"
+            "createHint": "Choose where this plan is available."
         },
         "planModules": {
-            "title": "Plan modules",
-            "subtitle": "Choose the modules included in each plan.",
-            "search": "Search plans",
-            "matrixLabel": "Modules included by plan",
-            "loading": "Loading modules...",
-            "empty": "No plans found.",
-            "clear": "Clear",
-            "clearFor": "Remove all modules from {plan}",
-            "assignmentLabel": "Include {module} in {plan}",
-            "disabled": "Disabled",
             "createTitle": "Included modules",
-            "createHint": "Choose the modules included in this plan.",
-            "confirmTitle": "Apply plan module changes?",
-            "confirmBody": "{count, plural, one {This changes the core features included in one plan.} other {This changes the core features included in # plans.}}"
+            "createHint": "Choose the modules included in this plan."
         },
         "plans": {
             "loading": "Loading plans...",
@@ -2143,7 +2109,6 @@
                 "allBadge": "All types"
             },
             "accountDisabledNotice": "Account plans no longer grant quotas. Existing rows remain here for historical review and limited maintenance.",
-            "saveModules": "Save modules",
             "destructiveHint": "Archive plans instead of deleting them once they may be in use.",
             "deleteConfirmTitle": "Delete {plan}?",
             "deleteConfirmBody": "Only delete plans created by mistake and never assigned. In-use plans should be archived.",
@@ -2151,8 +2116,17 @@
                 "details": "Details",
                 "limits": "Limits",
                 "pricing": "Pricing",
+                "coverage": "Coverage",
+                "eventTypes": "Event types",
                 "addons": "Add-ons",
                 "danger": "Danger zone"
+            },
+            "coverage": {
+                "changed": "Changed",
+                "modulesCount": "{count} of {total} included",
+                "modulePlatformOff": "Turned off platform-wide",
+                "lastEventType": "Keep at least one event type.",
+                "allEventTypesHint": "This plan works with every event type."
             },
             "pendingChanges": "{count, plural, one {# unsaved change} other {# unsaved changes}}",
             "noPendingChanges": "No changes yet.",
@@ -2165,7 +2139,9 @@
                 "limitsHint": "Blank means no limit. These caps apply to every event on this plan.",
                 "promotion": "Promotion",
                 "promotionHint": "A discount inside its window is charged, not just advertised. Leave the percentage blank to run no promotion.",
-                "availability": "Availability"
+                "availability": "Availability",
+                "modulesHint": "Choose the modules included in this plan.",
+                "eventTypesHint": "Choose which event types can use this plan."
             },
             "filters": {
                 "all": "All",
@@ -2215,7 +2191,9 @@
                 "noChanges": "No changes detected. You can cancel and keep editing.",
                 "review": "Review the exact updates before they are applied.",
                 "fields": "Plan fields",
-                "to": "to"
+                "to": "to",
+                "added": "Added:",
+                "removed": "Removed:"
             },
             "create": {
                 "title": "Create plan",
@@ -2231,8 +2209,6 @@
             "archiveConfirmBody": "This plan will stop being assignable and will be hidden from normal plan lists. You can restore it later from the archived plans view.",
             "makeDefaultConfirmTitle": "Make {plan} the default?",
             "makeDefaultConfirmBody": "New accounts or events in this scope will use this plan when no plan has been chosen. Existing assignments are not changed.",
-            "modulesConfirmTitle": "Save modules for {code}?",
-            "modulesConfirmBody": "This changes which event tools the plan unlocks. Events on this plan may gain or lose access after config refresh.",
             "restoreConfirmTitle": "Restore {plan}?",
             "restoreConfirmBody": "This plan will become assignable again and can appear anywhere archived plans are included.",
             "saveConfirmTitle": "Save changes to {plan}?",

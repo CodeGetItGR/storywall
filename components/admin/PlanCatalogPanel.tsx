@@ -361,6 +361,7 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                         key={`${selectedPlan.id}:${selectedPlan.moduleKeys.join(',')}:${selectedPlan.eventTypeKeys.join(',')}`}
                         plan={selectedPlan}
                         modules={modulesQuery.data ?? []}
+                        eventTypes={eventTypesQuery.data ?? []}
                         paidServices={paidServicesQuery.data ?? []}
                         eventPlans={allPlans}
                         scope={scope}

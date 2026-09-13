@@ -11,8 +11,6 @@ const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operat
     metrics: 'overview',
     costTracking: 'overview',
     eventPlans: 'catalog',
-    planAvailability: 'catalog',
-    planModules: 'catalog',
     paidServices: 'catalog',
     discountCodes: 'marketing',
     collaborations: 'operations',

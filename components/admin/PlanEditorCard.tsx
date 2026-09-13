@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { AdminTabs } from '@/components/admin/AdminTabs';
 import { PlanEditorAddonsTab } from '@/components/admin/PlanEditorAddonsTab';
+import { PlanEditorCoverageTab } from '@/components/admin/PlanEditorCoverageTab';
 import { PlanEditorDangerTab } from '@/components/admin/PlanEditorDangerTab';
 import { PlanEditorDetailsTab } from '@/components/admin/PlanEditorDetailsTab';
 import { PlanEditorFooter } from '@/components/admin/PlanEditorFooter';
@@ -14,12 +15,13 @@ import { PlanSaveSummary } from '@/components/admin/PlanSaveSummary';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { usePlanEditorCard } from '@/hooks/usePlanEditorCard';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
-import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformEventTypeResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
 export function PlanEditorCard({
     plan,
     modules,
+    eventTypes,
     paidServices,
     eventPlans,
     scope,
@@ -27,6 +29,7 @@ export function PlanEditorCard({
 }: {
     plan: PlanTierResponseDto;
     modules: PlatformModuleResponseDto[];
+    eventTypes: PlatformEventTypeResponseDto[];
     paidServices: PaidServiceResponseDto[];
     eventPlans: PlanTierResponseDto[];
     scope: 'ACCOUNT' | 'EVENT';
@@ -72,9 +75,16 @@ export function PlanEditorCard({
         handleCreateUnlockClick,
         canCreateUnlock,
         orderedModules,
+        orderedEventTypes,
         moduleUnlocks,
+        moduleKeysDraft,
+        toggleModule,
+        eventTypeKeysDraft,
+        toggleEventType,
+        selectAllEventTypes,
+        selectSpecificEventTypes,
         handleUnlockAction,
-    } = usePlanEditorCard({ plan, modules, paidServices, eventPlans, scope, onSavedAction: onSavedAction });
+    } = usePlanEditorCard({ plan, modules, eventTypes, paidServices, eventPlans, scope, onSavedAction: onSavedAction });
 
     return (
         <article className={cn('min-w-0', plan.isAssignable ? '' : 'opacity-90')}>
@@ -105,6 +115,24 @@ export function PlanEditorCard({
 
                 {/* Pricing tab */}
                 <PlanEditorPricingTab editorId={editorId} activeTab={tab} plan={editorPlan} />
+
+                {/* Coverage tab */}
+                {isEvent && (
+                    <PlanEditorCoverageTab
+                        editorId={editorId}
+                        activeTab={tab}
+                        orderedModules={orderedModules}
+                        moduleKeysDraft={moduleKeysDraft}
+                        baselineModuleKeys={editorPlan.moduleKeys}
+                        onToggleModuleAction={toggleModule}
+                        orderedEventTypes={orderedEventTypes}
+                        eventTypeKeysDraft={eventTypeKeysDraft}
+                        baselineEventTypeKeys={editorPlan.eventTypeKeys}
+                        onToggleEventTypeAction={toggleEventType}
+                        onAllEventTypesAction={selectAllEventTypes}
+                        onSelectedEventTypesAction={selectSpecificEventTypes}
+                    />
+                )}
 
                 {/* Add-ons tab */}
                 {isEvent && (
@@ -177,6 +205,7 @@ export function PlanEditorCard({
                 isConfirming={deletePlan.mutation.isPending}
                 onConfirmAction={handleDeleteConfirm}
             />
+
         </article>
     );
 }
