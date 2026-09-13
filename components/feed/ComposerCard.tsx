@@ -20,7 +20,7 @@ export function ComposerCard() {
     if (!canComposePost) return null;
 
     return (
-        <article className="relative isolate mx-2 mb-2 rounded-xl story-ring p-px!">
+        <article className="relative isolate mx-2 mb-2 rounded-xl story-ring-50 p-px!">
             {/* Composer shell */}
             <div className="rounded-2xl bg-card/95 p-1 w-full">
                 {/* Compose row */}

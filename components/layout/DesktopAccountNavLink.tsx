@@ -20,9 +20,10 @@ export function DesktopAccountNavLink({
         <Link
             href={href}
             aria-current={active ? 'page' : undefined}
+            aria-label={expanded ? undefined : label}
             title={expanded ? undefined : label}
             className={cn(
-                'flex min-h-11 items-center rounded-full text-sm font-semibold ring-1 transition-[background-color,transform,color] duration-700 ease-out active:scale-[0.99]',
+                'flex min-h-11 items-center rounded-full text-sm font-semibold ring-1 transition-[background-color,transform,color] duration-500 ease-out active:scale-[0.99]',
                 expanded ? 'gap-3 px-4 py-2.5' : 'justify-center px-0 py-2.5',
                 expanded
                     ? active
@@ -41,7 +42,14 @@ export function DesktopAccountNavLink({
                 aria-hidden="true"
                 strokeWidth={active ? 2.3 : 1.8}
             />
-            <span className={cn('truncate transition-opacity', expanded ? 'opacity-100' : 'sr-only opacity-0')}>{label}</span>
+            <span
+                className={cn(
+                    'min-w-0 max-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-[max-width,opacity,transform] duration-500 ease-out',
+                    expanded ? 'max-w-36 translate-x-0 opacity-100' : '-translate-x-1'
+                )}
+            >
+                {label}
+            </span>
         </Link>
     );
 }
