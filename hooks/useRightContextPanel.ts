@@ -2,6 +2,7 @@
 
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useGalleryArchiveManifest } from '@/hooks/useGalleryArchive';
+import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
 import { useEventUsage } from '@/hooks/useUsage';
 import { useWishbook } from '@/hooks/useWishbook';
 import { findNextPlan, findPlanByCode } from '@/lib/planTiers';
@@ -27,6 +28,15 @@ export function useRightContextPanel() {
     const galleryManifest = useGalleryArchiveManifest(activeEvent?.id ?? null, 'DISPLAY', showMediaSummary);
     const wishbook = useWishbook(showWishbookSummary ? (activeEvent?.id ?? null) : null);
 
+    // Same set the MobileTabBar's host context menu shows: dashboard + help,
+    // plus every available tool except the guest self-RSVP flow (hosts answer
+    // RSVPs from the dashboard's RSVP section, already linked in that menu).
+    const hostItems = useHostMenuItems();
+    const toolItems = useToolsMenuItems();
+    const actionItems = isDraft
+        ? hostItems.filter((item) => item.key !== 'help')
+        : [...hostItems, ...toolItems.filter((item) => item.key !== 'rsvp')];
+
     const currentPlan = eventUsage ? findPlanByCode(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
     const nextPlan = eventUsage ? findNextPlan(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
     const globallyEnabledModules = (appConfig?.modules ?? []).filter((module_) => module_.isEnabled);
@@ -42,6 +52,7 @@ export function useRightContextPanel() {
         currentPlan,
         nextPlan,
         includedModuleKeys,
+        actionItems,
         showRsvpSummary,
         rsvpSummary: activeEvent?.rsvpSummary ?? null,
         showMediaSummary,

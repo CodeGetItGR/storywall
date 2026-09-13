@@ -1945,16 +1945,6 @@
         "dashboard": "Dashboard",
         "hostActions": "Host actions",
         "eventDate": "Event date",
-        "links": {
-            "manage": "Dashboard",
-            "gallery": "Gallery",
-            "rsvps": "RSVPs"
-        },
-        "helper": {
-            "manage": "Overview and event controls",
-            "gallery": "Review guest uploads",
-            "rsvps": "See attendance and replies"
-        },
         "usageTitle": "Plan usage",
         "rsvpSummary": {
             "title": "RSVP summary",
