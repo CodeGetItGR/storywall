@@ -11,9 +11,7 @@ import { EventTypeRegistryPanel } from '@/components/admin/EventTypeRegistryPane
 import { ModuleRegistryPanel } from '@/components/admin/ModuleRegistryPanel';
 import { PaidServicesCatalogPanel } from '@/components/admin/PaidServicesCatalogPanel';
 import { PlanAssignmentPanel } from '@/components/admin/PlanAssignmentPanel';
-import { PlanAvailabilityPanel } from '@/components/admin/PlanAvailabilityPanel';
 import { PlanCatalogPanel } from '@/components/admin/PlanCatalogPanel';
-import { PlanModulesPanel } from '@/components/admin/PlanModulesPanel';
 import { PlatformMetricsPanel } from '@/components/admin/PlatformMetricsPanel';
 import { ReactionTypesCatalogPanel } from '@/components/admin/ReactionTypesCatalogPanel';
 import { RefundQueuePanel } from '@/components/admin/RefundQueuePanel';
@@ -41,8 +39,6 @@ export function AdminConsole() {
                 {tab === 'metrics' && <PlatformMetricsPanel />}
                 {tab === 'costTracking' && <CostTrackingPanel />}
                 {tab === 'eventPlans' && <PlanCatalogPanel scope="EVENT" />}
-                {tab === 'planAvailability' && <PlanAvailabilityPanel />}
-                {tab === 'planModules' && <PlanModulesPanel />}
                 {tab === 'modules' && <ModuleRegistryPanel />}
                 {tab === 'eventTypes' && <EventTypeRegistryPanel />}
                 {tab === 'assignments' && <PlanAssignmentPanel />}

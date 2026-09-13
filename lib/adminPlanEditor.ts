@@ -7,10 +7,29 @@ import { formatLimitValue } from '@/lib/planTiers';
 
 export type PlanEditorTranslate = (key: string) => string;
 
+export type PlanMembershipChange = {
+    label: string;
+    added: string[];
+    removed: string[];
+};
+
 export type PendingPlanSave = {
     patch: PlanTierPatchDto;
     changes: Array<{ label: string; before: string; after: string }>;
+    memberships: PlanMembershipChange[];
+    // Non-null only when that list actually changed, so the save skips the call otherwise.
+    moduleKeys: string[] | null;
+    eventTypeKeys: string[] | null;
 };
+
+export function membershipDelta(before: string[], after: string[]) {
+    const beforeSet = new Set(before);
+    const afterSet = new Set(after);
+    return {
+        added: after.filter((key) => !beforeSet.has(key)),
+        removed: before.filter((key) => !afterSet.has(key)),
+    };
+}
 
 export type UnlockDraft = {
     moduleKey: string;
