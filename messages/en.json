@@ -1770,30 +1770,30 @@
     },
     "HostOnboarding": {
         "welcome": {
-            "title": "Welcome! Let's set up {eventTitle}",
-            "body": "A few quick steps to get things ready for your guests."
+            "greeting": "Welcome!",
+            "subtitle": "Let's get your event ready"
         },
         "steps": {
+            "section": {
+                "title": "Manage your event",
+                "body": "A few steps and everything's ready for your guests"
+            },
             "details": {
                 "title": "Event details",
-                "body": "Add your title, dates, and location.",
                 "edit": "Edit event details",
                 "venueAdd": "Add venue details",
                 "venueEdit": "Edit venue details"
             },
             "rsvp": {
                 "title": "RSVP",
-                "body": "Set a deadline so guests know when to respond.",
                 "edit": "Set RSVP deadline"
             },
             "giftAccount": {
                 "title": "Gift account",
-                "body": "Add your bank details if you'd like a money gift.",
                 "edit": "Add gift account"
             },
             "schedule": {
                 "title": "Schedule",
-                "body": "Publish the order of the day for your guests.",
                 "edit": "Edit schedule"
             },
             "invitations": {
