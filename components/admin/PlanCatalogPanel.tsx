@@ -15,7 +15,7 @@ import { LoadingState } from '@/components/ui/LoadingState';
 import { useAdminPaidServices, useAdminPlatformEventTypes, useAdminPlatformModules } from '@/hooks/useAdmin';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import { type Visibility, visibilityOf } from '@/lib/adminVisibility';
-import type { PlanScope, PlanTierResponseDto, PlatformEventTypeResponseDto } from '@/lib/api/types';
+import type { PlanScope, PlanTierResponseDto } from '@/lib/api/types';
 import { resolveLocalizedText } from '@/lib/localizedText';
 import { formatLimitValue, formatPlanMoney } from '@/lib/planTiers';
 import { cn } from '@/lib/utils';
@@ -244,9 +244,9 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                                                   formatLimitValue(plan.storageBytes, 'bytes') ?? tAdmin('unlimited'),
                                               ].join(' · ')
                                             : t('noQuotas');
-                                    const eventTypeNames = plan.eventTypeKeys
-                                        .map((key) => eventTypesQuery.data?.find((eventType) => eventType.eventTypeKey === key))
-                                        .filter((eventType): eventType is PlatformEventTypeResponseDto => Boolean(eventType));
+                                    const planEventType = plan.eventTypeKey
+                                        ? eventTypesQuery.data?.find((eventType) => eventType.eventTypeKey === plan.eventTypeKey)
+                                        : undefined;
                                     return (
                                         <tr key={plan.id} className="border-b border-border last:border-b-0 hover:bg-canvas/60">
                                             <td className="max-w-64 px-3 py-2">
@@ -262,24 +262,10 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
                                             </td>
                                             {scope === 'EVENT' && (
                                                 <td className="max-w-48 px-2.5 py-2">
-                                                    {eventTypeNames.length === 0 ? (
-                                                        <span className="text-xs font-semibold text-ink-faint">{t('eventTypes.allBadge')}</span>
-                                                    ) : (
-                                                        <div className="flex flex-wrap gap-1">
-                                                            {eventTypeNames.slice(0, 2).map((eventType) => (
-                                                                <span
-                                                                    key={eventType.id}
-                                                                    className="rounded-full bg-status-neutral-wash px-1.5 py-0.5 text-[9.5px] font-bold text-status-neutral"
-                                                                >
-                                                                    {resolveLocalizedText(eventType.name, locale, eventType.eventTypeKey)}
-                                                                </span>
-                                                            ))}
-                                                            {eventTypeNames.length > 2 && (
-                                                                <span className="rounded-full bg-status-neutral-wash px-1.5 py-0.5 text-[9.5px] font-bold text-status-neutral">
-                                                                    +{eventTypeNames.length - 2}
-                                                                </span>
-                                                            )}
-                                                        </div>
+                                                    {planEventType && (
+                                                        <span className="rounded-full bg-status-neutral-wash px-1.5 py-0.5 text-[9.5px] font-bold text-status-neutral">
+                                                            {resolveLocalizedText(planEventType.name, locale, planEventType.eventTypeKey)}
+                                                        </span>
                                                     )}
                                                 </td>
                                             )}
@@ -358,7 +344,7 @@ export function PlanCatalogPanel({ scope }: { scope: PlanScope }) {
             >
                 {selectedPlan && (
                     <PlanEditorCard
-                        key={`${selectedPlan.id}:${selectedPlan.moduleKeys.join(',')}:${selectedPlan.eventTypeKeys.join(',')}`}
+                        key={`${selectedPlan.id}:${selectedPlan.moduleKeys.join(',')}:${selectedPlan.eventTypeKey ?? ''}`}
                         plan={selectedPlan}
                         modules={modulesQuery.data ?? []}
                         eventTypes={eventTypesQuery.data ?? []}

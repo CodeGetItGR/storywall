@@ -1628,6 +1628,7 @@
         "back": "Go back",
         "title": "Schedule",
         "subtitle": "See the full run of show. Hosts can add new sessions here.",
+        "moduleUnavailable": "Schedule is not available on this event's current plan.",
         "timeTba": "Time TBA",
         "unscheduled": "Unscheduled",
         "endsAt": "Ends at {time}",
@@ -1691,6 +1692,7 @@
                 "title": "Event sessions",
                 "description": "Manage the ceremony and venue details shown to guests.",
                 "addItem": "Add item",
+                "sessionLimitReached": "This event type allows up to {max} schedule sessions.",
                 "collapse": "Hide event sessions",
                 "expand": "Show event sessions",
                 "ceremony": {
@@ -2070,10 +2072,9 @@
             "plan": "Plan"
         },
         "planAvailability": {
-            "allTypes": "All event types",
-            "selectedTypes": "Selected event types",
-            "createTitle": "Event types",
-            "createHint": "Choose where this plan is available."
+            "createTitle": "Event type",
+            "createHint": "Choose which event type this plan is for.",
+            "selectType": "Select an event type"
         },
         "planModules": {
             "createTitle": "Included modules",
@@ -2093,9 +2094,13 @@
                 "label": "Duplicate",
                 "action": "Duplicate {plan}",
                 "title": "Duplicate plan",
-                "subtitle": "Review the copied details from {plan} before creating it.",
-                "submit": "Create copy",
-                "copyName": "{plan} copy"
+                "subtitle": "Copy {plan}'s price, storage, and modules into new plans for other event types.",
+                "submit": "Create copies",
+                "copyName": "{plan} copy",
+                "cloneTargetsTitle": "Event types",
+                "cloneTargetsHint": "Add one row per event type you want this plan copied to.",
+                "addTarget": "Add event type",
+                "removeTarget": "Remove"
             },
             "storage": "storage",
             "members": "members",
@@ -2118,9 +2123,6 @@
                 "billingOnce": "once",
                 "billingMonthly": "/mo"
             },
-            "eventTypes": {
-                "allBadge": "All types"
-            },
             "accountDisabledNotice": "Account plans no longer grant quotas. Existing rows remain here for historical review and limited maintenance.",
             "destructiveHint": "Archive plans instead of deleting them once they may be in use.",
             "deleteConfirmTitle": "Delete {plan}?",
@@ -2138,8 +2140,8 @@
                 "changed": "Changed",
                 "modulesCount": "{count} of {total} included",
                 "modulePlatformOff": "Turned off platform-wide",
-                "lastEventType": "Keep at least one event type.",
-                "allEventTypesHint": "This plan works with every event type."
+                "eventTypeLabel": "Event type",
+                "sharedGroupLabel": "Shared with duplicates ({group})"
             },
             "pendingChanges": "{count, plural, one {# unsaved change} other {# unsaved changes}}",
             "noPendingChanges": "No changes yet.",
@@ -2154,7 +2156,7 @@
                 "promotionHint": "A discount inside its window is charged, not just advertised. Leave the percentage blank to run no promotion.",
                 "availability": "Availability",
                 "modulesHint": "Choose the modules included in this plan.",
-                "eventTypesHint": "Choose which event types can use this plan."
+                "eventTypesHint": "Set when the plan was created. Duplicate this plan to offer it for another event type."
             },
             "filters": {
                 "all": "All",

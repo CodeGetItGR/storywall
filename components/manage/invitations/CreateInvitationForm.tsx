@@ -18,10 +18,14 @@ export function CreateInvitationForm({
     eventId,
     onDoneAction,
     onClampNoticeAction,
+    namedInvitesAvailable = true,
 }: {
     eventId: string;
     onDoneAction: () => void;
     onClampNoticeAction?: (message: string) => void;
+    // Anonymous shared-link invitations stay creatable regardless; only the
+    // email field itself is gated. See event-type-feature-toggles-quotas-fe-integration.md §1/§4.
+    namedInvitesAvailable?: boolean;
 }) {
     const t = useTranslations('ManagePage');
     const tCommon = useTranslations('Common');
@@ -113,16 +117,18 @@ export function CreateInvitationForm({
                     </FormFieldLabel>
                 </div>
 
-                <FormFieldLabel
-                    label={t('invitations.fields.email')}
-                    optional
-                    className={cn(fieldLabelClass, 'mt-3')}
-                    labelClassName={fieldTextClass}
-                >
-                    <input type="email" value={email} onChange={handleEmailChange} className={fieldControlClass} />
-                    {fieldErrors?.email && <span className="text-xs text-rose-500">{fieldErrors.email}</span>}
-                    <span className="text-xs leading-relaxed text-ink-muted">{t('invitations.create.emailHint')}</span>
-                </FormFieldLabel>
+                {namedInvitesAvailable && (
+                    <FormFieldLabel
+                        label={t('invitations.fields.email')}
+                        optional
+                        className={cn(fieldLabelClass, 'mt-3')}
+                        labelClassName={fieldTextClass}
+                    >
+                        <input type="email" value={email} onChange={handleEmailChange} className={fieldControlClass} />
+                        {fieldErrors?.email && <span className="text-xs text-rose-500">{fieldErrors.email}</span>}
+                        <span className="text-xs leading-relaxed text-ink-muted">{t('invitations.create.emailHint')}</span>
+                    </FormFieldLabel>
+                )}
             </div>
 
             {/* Plus ones */}

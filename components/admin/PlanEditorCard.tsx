@@ -79,10 +79,6 @@ export function PlanEditorCard({
         moduleUnlocks,
         moduleKeysDraft,
         toggleModule,
-        eventTypeKeysDraft,
-        toggleEventType,
-        selectAllEventTypes,
-        selectSpecificEventTypes,
         handleUnlockAction,
     } = usePlanEditorCard({ plan, modules, eventTypes, paidServices, eventPlans, scope, onSavedAction: onSavedAction });
 
@@ -126,11 +122,8 @@ export function PlanEditorCard({
                         baselineModuleKeys={editorPlan.moduleKeys}
                         onToggleModuleAction={toggleModule}
                         orderedEventTypes={orderedEventTypes}
-                        eventTypeKeysDraft={eventTypeKeysDraft}
-                        baselineEventTypeKeys={editorPlan.eventTypeKeys}
-                        onToggleEventTypeAction={toggleEventType}
-                        onAllEventTypesAction={selectAllEventTypes}
-                        onSelectedEventTypesAction={selectSpecificEventTypes}
+                        eventTypeKey={editorPlan.eventTypeKey}
+                        sharedGroupKey={editorPlan.sharedGroupKey}
                     />
                 )}
 

@@ -6,9 +6,8 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { useAdminDrawerFooterSlot } from '@/components/admin/AdminDrawer';
-import { useSetPlanEventTypes, useSetPlanModules } from '@/hooks/useAdmin';
+import { useSetPlanModules } from '@/hooks/useAdmin';
 import { appConfigKeys } from '@/hooks/useAppConfig';
-import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { usePlanEditorState } from '@/hooks/usePlanEditorState';
 import { usePlanEditorUnlocks } from '@/hooks/usePlanEditorUnlocks';
 import {
@@ -19,13 +18,7 @@ import {
     planPatchFromFormData,
 } from '@/lib/adminPlanEditor';
 import { type Visibility } from '@/lib/adminVisibility';
-import type {
-    EventTypeConvention,
-    PaidServiceResponseDto,
-    PlanTierResponseDto,
-    PlatformEventTypeResponseDto,
-    PlatformModuleResponseDto,
-} from '@/lib/api/types';
+import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformEventTypeResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 
 export type UsePlanEditorCardArgs = {
     plan: PlanTierResponseDto;
@@ -45,7 +38,6 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
     const [makeDefaultOpen, setMakeDefaultOpen] = useState(false);
     const [pendingSave, setPendingSave] = useState<PendingPlanSave | null>(null);
     const [deleteOpen, setDeleteOpen] = useState(false);
-    const localizedText = useLocalizedText();
 
     const invalidateAppConfig = () => {
         queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
@@ -63,7 +55,6 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
     // useDelete's mutationOptions doesn't expose onSuccess, unlike useCreate/useUpdate — invalidate manually after it resolves.
     const deletePlan = useDelete<PlanTierResponseDto>();
     const setPlanModules = useSetPlanModules();
-    const setPlanEventTypes = useSetPlanEventTypes();
 
     const editor = usePlanEditorState({ plan, modules, eventTypes, scope });
     const unlocks = usePlanEditorUnlocks({
@@ -80,9 +71,8 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
         deletePlan.mutation.error ??
         unlocks.createPaidService.mutation.error ??
         unlocks.updatePaidService.mutation.error ??
-        setPlanModules.error ??
-        setPlanEventTypes.error;
-    const isSaving = updatePlan.mutation.isPending || setPlanModules.isPending || setPlanEventTypes.isPending;
+        setPlanModules.error;
+    const isSaving = updatePlan.mutation.isPending || setPlanModules.isPending;
 
     function handleMakeDefaultClick() {
         setMakeDefaultOpen(true);
@@ -119,12 +109,6 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
         if (pendingSave.moduleKeys) {
             await setPlanModules.mutateAsync({ planId: plan.id, moduleKeys: pendingSave.moduleKeys });
         }
-        if (pendingSave.eventTypeKeys) {
-            await setPlanEventTypes.mutateAsync({
-                planId: plan.id,
-                eventTypeKeys: pendingSave.eventTypeKeys as EventTypeConvention[],
-            });
-        }
         editor.setPlanChangeCount(0);
         setPendingSave(null);
         onSavedAction(plan.name);
@@ -142,10 +126,6 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
         const patch = planPatchFromFormData(plan, new FormData(event.currentTarget), editor.visibility);
 
         const moduleName = (key: string) => editor.orderedModules.find((module) => module.moduleKey === key)?.name ?? key;
-        const eventTypeName = (key: string) => {
-            const eventType = editor.orderedEventTypes.find((item) => item.eventTypeKey === key);
-            return eventType ? localizedText(eventType.name) : key;
-        };
 
         const memberships: PlanMembershipChange[] = [];
         if (editor.modulesDirty) {
@@ -156,21 +136,12 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
                 removed: delta.removed.map(moduleName),
             });
         }
-        if (editor.eventTypesDirty) {
-            const delta = membershipDelta(plan.eventTypeKeys, editor.eventTypeKeysDraft);
-            memberships.push({
-                label: t('plans.tabs.eventTypes'),
-                added: delta.added.map(eventTypeName),
-                removed: delta.removed.map(eventTypeName),
-            });
-        }
 
         setPendingSave({
             patch,
             changes: planChangeSummary(plan, patch, t),
             memberships,
             moduleKeys: editor.modulesDirty ? editor.moduleKeysDraft : null,
-            eventTypeKeys: editor.eventTypesDirty ? editor.eventTypeKeysDraft : null,
         });
     }
 
@@ -213,11 +184,6 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
         moduleKeysDraft: editor.moduleKeysDraft,
         modulesDirty: editor.modulesDirty,
         toggleModule: editor.toggleModule,
-        eventTypeKeysDraft: editor.eventTypeKeysDraft,
-        eventTypesDirty: editor.eventTypesDirty,
-        toggleEventType: editor.toggleEventType,
-        selectAllEventTypes: editor.selectAllEventTypes,
-        selectSpecificEventTypes: editor.selectSpecificEventTypes,
         handleMakeDefaultClick,
         handleMakeDefaultClose,
         handleMakeDefaultConfirm,

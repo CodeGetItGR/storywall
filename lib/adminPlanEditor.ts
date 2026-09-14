@@ -19,7 +19,6 @@ export type PendingPlanSave = {
     memberships: PlanMembershipChange[];
     // Non-null only when that list actually changed, so the save skips the call otherwise.
     moduleKeys: string[] | null;
-    eventTypeKeys: string[] | null;
 };
 
 export function membershipDelta(before: string[], after: string[]) {

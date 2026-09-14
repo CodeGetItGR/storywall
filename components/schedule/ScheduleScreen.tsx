@@ -15,6 +15,7 @@ import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCreateEventSession, useDeleteEventSession, useEventSessions, useUpdateEventSession } from '@/hooks/useEventSessions';
+import { useEventTypeModules } from '@/hooks/useEventTypeModules';
 import type { EventSessionResponseDto } from '@/lib/api/types';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import { toDatetimeLocalValue } from '@/lib/datetime';
@@ -31,9 +32,16 @@ export function ScheduleScreen() {
     const locale = useLocale();
     const searchParams = useSearchParams();
     const canWrite = isEventWritable(activeEvent?.status);
-    const canManageSchedule = isHost && canWrite;
+    const scheduleModule = activeEvent?.modules.find((module_) => module_.moduleKey === 'schedule');
+    const scheduleEnabled = scheduleModule?.isAvailable ?? false;
+    const canManageSchedule = isHost && canWrite && scheduleEnabled;
 
     const { data: sessions = [], isLoading: isLoadingSessions } = useEventSessions(eventId);
+    const { data: eventTypeModules = [] } = useEventTypeModules(activeEvent?.eventType);
+    const maxSections = eventTypeModules.find((module_) => module_.moduleKey === 'schedule')?.defaultConfig.maxSections as number | undefined;
+    const atSessionLimit = typeof maxSections === 'number' && sessions.length >= maxSections;
+    const canAddSession = canManageSchedule && !atSessionLimit;
+    const sessionLimitMessage = atSessionLimit ? t('host.sessionManagement.sessionLimitReached', { max: maxSections }) : undefined;
     const createSession = useCreateEventSession();
     const [viewMode, setViewMode] = useState<'public' | 'edit'>(() => (isHost && searchParams.has('section') ? 'edit' : 'public'));
     const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
@@ -51,7 +59,7 @@ export function ScheduleScreen() {
     );
 
     function openCreateEditor() {
-        if (!canManageSchedule) return;
+        if (!canAddSession) return;
         setDeleteError(null);
         setEditingSessionId(null);
         setCreatingSecondary(false);
@@ -59,7 +67,7 @@ export function ScheduleScreen() {
     }
 
     function openCreateManagedEditor(definition: ManagedSessionDefinition) {
-        if (!canManageSchedule || !definition.canCreate) return;
+        if (!canAddSession || !definition.canCreate) return;
         const secondarySessionTitleKey = activeEvent ? getCreateEventCatalogEntry(activeEvent.eventType)?.secondarySessionTitleKey : undefined;
         setDeleteError(null);
         setEditingSessionId(null);
@@ -138,7 +146,13 @@ export function ScheduleScreen() {
             backLabel={t('back')}
             backHref={routes.events.feed(eventId)}
             subtitle={t('subtitle')}
-            notice={isHost && !canWrite ? <ModuleNotice>{t('host.readOnly')}</ModuleNotice> : undefined}
+            notice={
+                isHost && !canWrite ? (
+                    <ModuleNotice>{t('host.readOnly')}</ModuleNotice>
+                ) : isHost && !scheduleEnabled ? (
+                    <ModuleNotice>{t('moduleUnavailable')}</ModuleNotice>
+                ) : undefined
+            }
         >
             {deleteError && <p className="mb-4 text-xs font-medium text-rose-500">{deleteError}</p>}
 
@@ -172,6 +186,8 @@ export function ScheduleScreen() {
                     event={activeEvent}
                     sessions={sessions}
                     canWrite={canManageSchedule}
+                    canAddSession={canAddSession}
+                    sessionLimitMessage={sessionLimitMessage}
                     deleteDisabled={deleteSession.isPending || !canManageSchedule}
                     onAddSession={openCreateEditor}
                     onCreateManagedSession={openCreateManagedEditor}
@@ -179,7 +195,7 @@ export function ScheduleScreen() {
                     onDeleteSession={handleDeleteSession}
                 />
             ) : sessions.length === 0 ? (
-                <ScheduleEmptyState isHost={isHost} canWrite={canWrite} canAddSession={canManageSchedule} onAddSession={openCreateEditor} />
+                <ScheduleEmptyState isHost={isHost} canWrite={canWrite} canAddSession={canAddSession} onAddSession={openCreateEditor} />
             ) : (
                 <ScheduleSessionsList sessions={sessions} locale={locale} />
             )}

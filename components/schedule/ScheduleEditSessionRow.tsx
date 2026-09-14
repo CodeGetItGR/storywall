@@ -13,6 +13,10 @@ interface ScheduleEditSessionRowProps {
     definition: ManagedSessionDefinition | null;
     session: EventSessionResponseDto | null;
     canWrite: boolean;
+    // Separate from canWrite: editing/deleting an existing session is always
+    // allowed while canWrite is true, but creating a new one is additionally
+    // gated by the event type's session cap (EVENT_SESSION_LIMIT_REACHED).
+    canAddSession: boolean;
     deleteDisabled: boolean;
     locale: string;
     onCreateManagedSession: (definition: ManagedSessionDefinition) => void;
@@ -24,6 +28,7 @@ export function ScheduleEditSessionRow({
     definition,
     session,
     canWrite,
+    canAddSession,
     deleteDisabled,
     locale,
     onCreateManagedSession,
@@ -36,7 +41,7 @@ export function ScheduleEditSessionRow({
     const title = session?.title ?? (definition ? t(`${definition.titleKey}.title`) : t('untitled'));
     const time = session?.startAt ? formatTimeRange(locale, session.startAt, session.endAt, t('notSet')) : t('notSet');
     const location = session?.locationName || t('notSet');
-    const canCreate = canWrite && Boolean(definition?.canCreate && !session);
+    const canCreate = canWrite && canAddSession && Boolean(definition?.canCreate && !session);
     const canEdit = canWrite && Boolean(session);
 
     function handleCreate() {

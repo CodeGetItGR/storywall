@@ -3,30 +3,25 @@
 import { useTranslations } from 'next-intl';
 import type { ChangeEventHandler } from 'react';
 
+import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminSection } from '@/components/admin/AdminSection';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import type { EventTypeConvention, ModuleKey, PlatformEventTypeResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
 export function PlanCreateAssignments({
-    availabilityMode,
-    eventTypeKeys,
+    eventTypeKey,
     moduleKeys,
     eventTypes,
     modules,
-    onSelectAllEventTypesAction,
-    onSelectSpecificEventTypesAction,
-    onEventTypeChangeAction,
+    onEventTypeSelectAction,
     onModuleChangeAction,
 }: {
-    availabilityMode: 'ALL' | 'SELECTED';
-    eventTypeKeys: EventTypeConvention[];
+    eventTypeKey: EventTypeConvention | null;
     moduleKeys: ModuleKey[];
     eventTypes: PlatformEventTypeResponseDto[];
     modules: PlatformModuleResponseDto[];
-    onSelectAllEventTypesAction: () => void;
-    onSelectSpecificEventTypesAction: () => void;
-    onEventTypeChangeAction: ChangeEventHandler<HTMLInputElement>;
+    onEventTypeSelectAction: ChangeEventHandler<HTMLSelectElement>;
     onModuleChangeAction: ChangeEventHandler<HTMLInputElement>;
 }) {
     const t = useTranslations('AdminPage');
@@ -34,55 +29,20 @@ export function PlanCreateAssignments({
 
     return (
         <>
-            {/* Event type availability */}
+            {/* Event type */}
             <AdminSection title={t('planAvailability.createTitle')} description={t('planAvailability.createHint')}>
-                <div className="grid grid-cols-2 gap-1 rounded-lg bg-canvas p-1" role="group" aria-label={t('planAvailability.createTitle')}>
-                    <button
-                        type="button"
-                        aria-pressed={availabilityMode === 'ALL'}
-                        onClick={onSelectAllEventTypesAction}
-                        className={cn(
-                            'min-h-9 rounded-md px-3 text-sm font-semibold transition-colors',
-                            availabilityMode === 'ALL' ? 'bg-card text-ink shadow-sm' : 'text-ink-muted hover:text-ink'
-                        )}
-                    >
-                        {t('planAvailability.allTypes')}
-                    </button>
-                    <button
-                        type="button"
-                        aria-pressed={availabilityMode === 'SELECTED'}
-                        onClick={onSelectSpecificEventTypesAction}
-                        className={cn(
-                            'min-h-9 rounded-md px-3 text-sm font-semibold transition-colors',
-                            availabilityMode === 'SELECTED' ? 'bg-card text-ink shadow-sm' : 'text-ink-muted hover:text-ink'
-                        )}
-                    >
-                        {t('planAvailability.selectedTypes')}
-                    </button>
-                </div>
-                {availabilityMode === 'SELECTED' && (
-                    <div className="mt-3 grid gap-x-4 sm:grid-cols-2">
+                <AdminField label={t('plans.tabs.eventTypes')} required>
+                    <select required value={eventTypeKey ?? ''} onChange={onEventTypeSelectAction} className={adminInputClass('max-w-xs')}>
+                        <option value="" disabled>
+                            {t('planAvailability.selectType')}
+                        </option>
                         {eventTypes.map((eventType) => (
-                            <label
-                                key={eventType.eventTypeKey}
-                                className={cn(
-                                    'flex min-h-10 items-center gap-2 border-b border-border/70 py-2 text-sm font-semibold',
-                                    eventType.isEnabled ? 'cursor-pointer text-ink-muted' : 'cursor-not-allowed text-ink-faint'
-                                )}
-                            >
-                                <input
-                                    type="checkbox"
-                                    value={eventType.eventTypeKey}
-                                    checked={eventTypeKeys.includes(eventType.eventTypeKey)}
-                                    onChange={onEventTypeChangeAction}
-                                    disabled={!eventType.isEnabled}
-                                    className="h-4 w-4 accent-primary"
-                                />
-                                <span>{localizedText(eventType.name)}</span>
-                            </label>
+                            <option key={eventType.eventTypeKey} value={eventType.eventTypeKey} disabled={!eventType.isEnabled}>
+                                {localizedText(eventType.name)}
+                            </option>
                         ))}
-                    </div>
-                )}
+                    </select>
+                </AdminField>
             </AdminSection>
 
             {/* Included modules */}

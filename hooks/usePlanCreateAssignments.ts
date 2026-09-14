@@ -7,28 +7,16 @@ import type { EventTypeConvention, ModuleKey, PlatformEventTypeResponseDto, Plat
 export function usePlanCreateAssignments(
     eventTypes: PlatformEventTypeResponseDto[],
     modules: PlatformModuleResponseDto[],
-    initialEventTypeKeys: EventTypeConvention[] = [],
+    initialEventTypeKey: EventTypeConvention | null = null,
     initialModuleKeys: ModuleKey[] = []
 ) {
-    const initialAvailabilityMode = initialEventTypeKeys.length === 0 ? 'ALL' : 'SELECTED';
-    const [availabilityMode, setAvailabilityMode] = useState<'ALL' | 'SELECTED'>(initialAvailabilityMode);
-    const [eventTypeKeys, setEventTypeKeys] = useState<EventTypeConvention[]>(initialEventTypeKeys);
+    const [eventTypeKey, setEventTypeKey] = useState<EventTypeConvention | null>(initialEventTypeKey);
     const [moduleKeys, setModuleKeys] = useState<ModuleKey[]>(initialModuleKeys);
     const orderedEventTypes = useMemo(() => [...eventTypes].sort((left, right) => left.sortOrder - right.sortOrder), [eventTypes]);
     const orderedModules = useMemo(() => [...modules].sort((left, right) => left.sortOrder - right.sortOrder), [modules]);
 
-    function selectAllEventTypes() {
-        setAvailabilityMode('ALL');
-        setEventTypeKeys([]);
-    }
-
-    function selectSpecificEventTypes() {
-        setAvailabilityMode('SELECTED');
-    }
-
-    function handleEventTypeChange(event: ChangeEvent<HTMLInputElement>) {
-        const key = event.currentTarget.value as EventTypeConvention;
-        setEventTypeKeys((current) => (current.includes(key) ? current.filter((item) => item !== key) : [...current, key]));
+    function handleEventTypeSelect(event: ChangeEvent<HTMLSelectElement>) {
+        setEventTypeKey((event.currentTarget.value || null) as EventTypeConvention | null);
     }
 
     function handleModuleChange(event: ChangeEvent<HTMLInputElement>) {
@@ -37,20 +25,16 @@ export function usePlanCreateAssignments(
     }
 
     function resetAssignments() {
-        setAvailabilityMode(initialAvailabilityMode);
-        setEventTypeKeys(initialEventTypeKeys);
+        setEventTypeKey(initialEventTypeKey);
         setModuleKeys(initialModuleKeys);
     }
 
     return {
-        availabilityMode,
-        eventTypeKeys,
+        eventTypeKey,
         moduleKeys,
         orderedEventTypes,
         orderedModules,
-        selectAllEventTypes,
-        selectSpecificEventTypes,
-        handleEventTypeChange,
+        handleEventTypeSelect,
         handleModuleChange,
         resetAssignments,
     };

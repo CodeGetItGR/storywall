@@ -133,7 +133,16 @@ export interface PlanTierResponseDto {
     // from the admin catalog endpoints (GET /api/admin/plan-tiers, .../{id}),
     // which don't compute it — never null from /api/config or /api/plan-tiers.
     paidModules: PaidServiceResponseDto[] | null;
-    eventTypeKeys: EventTypeConvention[];
+    // The one event type this EVENT-scope plan may be bought for; always null
+    // for ACCOUNT-scope plans. Immutable after creation — replaces the old
+    // many-to-many `eventTypeKeys` restriction set. See
+    // plan-tiers-by-event-type-fe-integration.md §2.
+    eventTypeKey: EventTypeConvention | null;
+    // Set only by the admin "duplicate" action — plans sharing a key were
+    // created together from the same source plan ("the same offer" across
+    // event types). Null for a plan never duplicated or duplicated from. See
+    // plan-tiers-by-event-type-fe-integration.md §3.
+    sharedGroupKey: string | null;
 }
 
 export interface PlatformModuleResponseDto {
@@ -1122,6 +1131,11 @@ export interface EventTypeModuleResponseDto {
     applicability: EventTypeModuleApplicability;
     defaultConfig: Record<string, unknown>;
     sortOrder: number;
+    // Only non-null when the call passed `planTierCode`: true if that plan
+    // covers the module, false if it would need a MODULE_UNLOCK/upgrade, null
+    // ("unknown yet") when no planTierCode was given. See
+    // event-lifecycle-locks-and-event-types-fe-integration.md §3.
+    includedInPlan: boolean | null;
 }
 
 export interface EventSessionRequestDto {
@@ -1613,16 +1627,28 @@ export interface PlanTierRequestDto {
     discountLabel?: string | null;
     discountStartsAt?: string | null;
     discountEndsAt?: string | null;
+    // Required (must match a registered, enabled event type) when scope is
+    // EVENT; must be omitted entirely when scope is ACCOUNT. Confirmed against
+    // PlanTierService#requireEventTypeCoherentWithScope.
+    eventTypeKey?: EventTypeConvention;
 }
 
-export type PlanTierPatchDto = Partial<Omit<PlanTierRequestDto, 'code' | 'scope'>>;
+export type PlanTierPatchDto = Partial<Omit<PlanTierRequestDto, 'code' | 'scope' | 'eventTypeKey'>>;
+
+// POST /api/admin/plan-tiers/{id}/duplicate — clones price/storage/quotas/
+// moduleKeys from the source plan into one or more new plans for other event
+// types in a single call. See plan-tiers-by-event-type-fe-integration.md §5.
+export interface PlanTierDuplicateRequestDto {
+    clones: Array<{
+        eventTypeKey: EventTypeConvention;
+        code: PlanTierCode;
+        name?: string;
+        description?: string | null;
+    }>;
+}
 
 export interface PlanModulesRequestDto {
     moduleKeys: ModuleKey[];
-}
-
-export interface PlanEventTypesRequestDto {
-    eventTypeKeys: EventTypeConvention[];
 }
 
 export interface PlanAssignmentRequestDto {

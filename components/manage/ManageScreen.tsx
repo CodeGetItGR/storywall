@@ -142,6 +142,7 @@ export function ManageScreen() {
                         invitations={invitations}
                         eventUsage={eventUsage}
                         planTiers={appConfig?.planTiers ?? []}
+                        eventModules={activeEvent.modules}
                     />
                 ))}
 

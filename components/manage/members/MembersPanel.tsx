@@ -13,7 +13,7 @@ import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { type SubTabItem, SubTabs } from '@/components/ui/SubTabs';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useMemberModeration } from '@/hooks/useMemberModeration';
-import type { EventInvitationResponseDto, EventMemberResponseDto, EventUsageResponseDto, PlanTierResponseDto } from '@/lib/api/types';
+import type { EventInvitationResponseDto, EventMemberResponseDto, EventModuleResponseDto, EventUsageResponseDto, PlanTierResponseDto } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
 import { findNextPlan, findPlanByCode } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
@@ -30,16 +30,21 @@ type MembersPanelProps = {
     invitations: EventInvitationResponseDto[];
     eventUsage: EventUsageResponseDto | null;
     planTiers: PlanTierResponseDto[];
+    eventModules: EventModuleResponseDto[];
 };
 
-export function MembersPanel({ canModerate, canWrite, eventId, members, invitations, eventUsage, planTiers }: MembersPanelProps) {
+export function MembersPanel({ canModerate, canWrite, eventId, members, invitations, eventUsage, planTiers, eventModules }: MembersPanelProps) {
     const t = useTranslations('ManagePage');
     const tMembers = useTranslations('ManagePage.members');
     const locale = useLocale();
     const { data: appConfig } = useAppConfig();
     const searchParams = useSearchParams();
     const requestedTab = searchParams.get('section');
-    const [tab, setTab] = useState<MembersSubTab>(requestedTab === 'invites' || requestedTab === 'coHosts' ? requestedTab : 'members');
+    const coHostsAvailable = eventModules.find((module_) => module_.moduleKey === 'co_hosts')?.isAvailable ?? false;
+    const namedInvitesAvailable = eventModules.find((module_) => module_.moduleKey === 'named_invites')?.isAvailable ?? false;
+    const [tab, setTab] = useState<MembersSubTab>(
+        requestedTab === 'invites' || (requestedTab === 'coHosts' && coHostsAvailable) ? requestedTab : 'members'
+    );
     const [showCreate, setShowCreate] = useState(false);
     const [limitNotice, setLimitNotice] = useState<string | null>(null);
 
@@ -51,9 +56,9 @@ export function MembersPanel({ canModerate, canWrite, eventId, members, invitati
         () => [
             { key: 'members', icon: Users, label: tMembers('title') },
             { key: 'invites', icon: UserPlus, label: t('invitations.panels.invites') },
-            { key: 'coHosts', icon: UserCog, label: t('invitations.panels.coHosts') },
+            ...(coHostsAvailable ? [{ key: 'coHosts' as const, icon: UserCog, label: t('invitations.panels.coHosts') }] : []),
         ],
-        [t, tMembers]
+        [t, tMembers, coHostsAvailable]
     );
 
     const memberLimit = eventUsage?.memberLimit ?? null;
@@ -193,7 +198,12 @@ export function MembersPanel({ canModerate, canWrite, eventId, members, invitati
                     )}
 
                     {showCreate && canCreate && showInvites && (
-                        <CreateInvitationForm eventId={eventId} onDoneAction={handleHideCreate} onClampNoticeAction={handleClampNotice} />
+                        <CreateInvitationForm
+                            eventId={eventId}
+                            onDoneAction={handleHideCreate}
+                            onClampNoticeAction={handleClampNotice}
+                            namedInvitesAvailable={namedInvitesAvailable}
+                        />
                     )}
                     {showCreate && canCreate && showCoHosts && <CreateCoHostInvitationForm eventId={eventId} onDoneAction={handleHideCreate} />}
 

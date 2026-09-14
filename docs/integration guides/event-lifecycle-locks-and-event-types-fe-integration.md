@@ -228,6 +228,14 @@ GET /api/event-types/WEDDING/modules?planTierCode=EVENT_STANDARD
   "unknown yet", not "not included".
 - Unknown `eventTypeKey` → `400` / `3018` `INVALID_EVENT_TYPE`, same code as event creation.
   Unknown `planTierCode` → `404` / `2001` `RESOURCE_NOT_FOUND`.
+- **`defaultConfig` (2026-09-13):** when `planTierCode` is given, `defaultConfig` is resolved from
+  that plan's own module config (`plan_tier_module_configs`, see
+  `docs/fe-guides/plan-tiers-by-event-type-fe-integration.md` §6) — two plans of the same event
+  type can now return different values here (e.g. different `schedule.maxSections`). Without
+  `planTierCode`, it falls back to the type-level seed template on `PlatformEventTypeModule`. The
+  admin `PATCH` below edits only that seed template, used when a new per-plan row is created — it
+  no longer affects an existing plan's already-resolved config; use
+  `PATCH /api/admin/plan-tiers/{planTierId}/modules/{moduleKey}` to change a specific plan's value.
 
 **Action:** this is the source of truth for the module-selection step of the creation wizard —
 build it from this call rather than from a hardcoded per-type module list, for the same

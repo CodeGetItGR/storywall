@@ -1,5 +1,5 @@
 import { MembersPanel } from '@/components/manage/members';
-import type { EventInvitationResponseDto, EventMemberResponseDto, EventUsageResponseDto, PlanTierResponseDto } from '@/lib/api/types';
+import type { EventInvitationResponseDto, EventMemberResponseDto, EventModuleResponseDto, EventUsageResponseDto, PlanTierResponseDto } from '@/lib/api/types';
 
 export default function MembersTab({
     canModerate,
@@ -9,6 +9,7 @@ export default function MembersTab({
     invitations,
     eventUsage,
     planTiers,
+    eventModules,
 }: {
     canModerate: boolean;
     canWrite: boolean;
@@ -17,6 +18,7 @@ export default function MembersTab({
     invitations: EventInvitationResponseDto[];
     eventUsage: EventUsageResponseDto | null;
     planTiers: PlanTierResponseDto[];
+    eventModules: EventModuleResponseDto[];
 }) {
     return (
         <MembersPanel
@@ -27,6 +29,7 @@ export default function MembersTab({
             invitations={invitations}
             eventUsage={eventUsage}
             planTiers={planTiers}
+            eventModules={eventModules}
         />
     );
 }

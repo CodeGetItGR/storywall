@@ -11,6 +11,8 @@ interface ScheduleEditSessionsTableProps {
     event: EventDetailResponseDto;
     sessions: EventSessionResponseDto[];
     canWrite: boolean;
+    canAddSession: boolean;
+    sessionLimitMessage?: string;
     deleteDisabled: boolean;
     onAddSession: () => void;
     onCreateManagedSession: (definition: ManagedSessionDefinition) => void;
@@ -22,6 +24,8 @@ export function ScheduleEditSessionsTable({
     event,
     sessions,
     canWrite,
+    canAddSession,
+    sessionLimitMessage,
     deleteDisabled,
     onAddSession,
     onCreateManagedSession,
@@ -50,13 +54,16 @@ export function ScheduleEditSessionsTable({
                     <button
                         type="button"
                         onClick={onAddSession}
-                        className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-gradient-brand px-3.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                        disabled={!canAddSession}
+                        title={!canAddSession ? sessionLimitMessage : undefined}
+                        className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-gradient-brand px-3.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         <Plus className="h-4 w-4" aria-hidden="true" />
                         <span className="hidden sm:inline">{t('addItem')}</span>
                     </button>
                 )}
             </div>
+            {canWrite && !canAddSession && sessionLimitMessage && <p className="text-xs text-ink-muted">{sessionLimitMessage}</p>}
 
             {/* Managed session rows */}
             <div className="overflow-hidden rounded-lg border border-border/70 bg-background">
@@ -66,6 +73,7 @@ export function ScheduleEditSessionsTable({
                         definition={row.definition}
                         session={row.session}
                         canWrite={canWrite}
+                        canAddSession={canAddSession}
                         deleteDisabled={deleteDisabled}
                         locale={locale}
                         onCreateManagedSession={onCreateManagedSession}

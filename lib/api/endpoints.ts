@@ -15,7 +15,10 @@ export const endpoints = {
     },
 
     eventTypes: {
-        modules: (eventTypeKey: string) => `/api/event-types/${eventTypeKey}/modules`,
+        modules: (eventTypeKey: string, planTierCode?: string) =>
+            planTierCode
+                ? `/api/event-types/${eventTypeKey}/modules?planTierCode=${encodeURIComponent(planTierCode)}`
+                : `/api/event-types/${eventTypeKey}/modules`,
     },
 
     auth: {
@@ -257,7 +260,7 @@ export const endpoints = {
             list: '/api/admin/plan-tiers',
             byId: (id: string) => `/api/admin/plan-tiers/${id}`,
             modules: (id: string) => `/api/admin/plan-tiers/${id}/modules`,
-            eventTypes: (id: string) => `/api/admin/plan-tiers/${id}/event-types`,
+            duplicate: (id: string) => `/api/admin/plan-tiers/${id}/duplicate`,
         },
         paidServices: {
             list: '/api/admin/paid-services',

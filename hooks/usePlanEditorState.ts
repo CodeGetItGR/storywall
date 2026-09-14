@@ -29,16 +29,14 @@ export function usePlanEditorState({ plan, modules, eventTypes, scope }: UsePlan
     const [planChangeCount, setPlanChangeCount] = useState(0);
     const [unlockDraft, setUnlockDraft] = useState<UnlockDraft | null>(null);
     const [moduleKeysDraft, setModuleKeysDraft] = useState<string[]>(plan.moduleKeys);
-    const [eventTypeKeysDraft, setEventTypeKeysDraft] = useState<string[]>(plan.eventTypeKeys);
 
     const isEvent = scope === 'EVENT';
     const orderedModules = useMemo(() => [...modules].sort((left, right) => left.sortOrder - right.sortOrder), [modules]);
     const orderedEventTypes = useMemo(() => [...eventTypes].sort((left, right) => left.sortOrder - right.sortOrder), [eventTypes]);
     const modulesDirty = !sameMembers(moduleKeysDraft, plan.moduleKeys);
-    const eventTypesDirty = !sameMembers(eventTypeKeysDraft, plan.eventTypeKeys);
     // The footer speaks for the whole editor, so coverage edits have to count
     // toward it — otherwise it reports "no changes" over a pending edit.
-    const changeCount = planChangeCount + (modulesDirty ? 1 : 0) + (eventTypesDirty ? 1 : 0);
+    const changeCount = planChangeCount + (modulesDirty ? 1 : 0);
     const canSave = changeCount > 0;
     const tabs = useMemo<AdminTabDefinition[]>(() => {
         const items: AdminTabDefinition[] = [
@@ -56,22 +54,6 @@ export function usePlanEditorState({ plan, modules, eventTypes, scope }: UsePlan
 
     function toggleModule(key: string, next: boolean) {
         setModuleKeysDraft((current) => (next ? [...current, key] : current.filter((item) => item !== key)));
-    }
-
-    function toggleEventType(key: string, next: boolean) {
-        setEventTypeKeysDraft((current) => (next ? [...current, key] : current.filter((item) => item !== key)));
-    }
-
-    function selectAllEventTypes() {
-        setEventTypeKeysDraft([]);
-    }
-
-    // Restricting starts from every type switched on, so the admin turns off what
-    // doesn't apply. Starting empty would read as "all types" on the wire and make
-    // the segmented control look stuck.
-    function selectSpecificEventTypes() {
-        if (eventTypeKeysDraft.length > 0) return;
-        setEventTypeKeysDraft(orderedEventTypes.map((eventType) => eventType.eventTypeKey));
     }
 
     function recomputePlanChanges(currentVisibility: Visibility) {
@@ -109,12 +91,6 @@ export function usePlanEditorState({ plan, modules, eventTypes, scope }: UsePlan
         setModuleKeysDraft,
         modulesDirty,
         toggleModule,
-        eventTypeKeysDraft,
-        setEventTypeKeysDraft,
-        eventTypesDirty,
-        toggleEventType,
-        selectAllEventTypes,
-        selectSpecificEventTypes,
         handleFormChange,
         handleVisibilityChange,
     };

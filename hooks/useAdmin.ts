@@ -21,7 +21,6 @@ import type {
     DiscountCodeRequestDto,
     DiscountCodeResponseDto,
     EventDashboardRowDto,
-    EventTypeConvention,
     EventUsageResponseDto,
     LinkDiscountCodeRequestDto,
     MarkCollaborationEarningsPaidRequestDto,
@@ -31,6 +30,7 @@ import type {
     PaidServiceResponseDto,
     PlanAssignmentRequestDto,
     PlanScope,
+    PlanTierDuplicateRequestDto,
     PlanTierPatchDto,
     PlanTierRequestDto,
     PlanTierResponseDto,
@@ -356,32 +356,19 @@ export function useCreatePlanTier() {
     });
 }
 
-export function useSetPlanEventTypes() {
+// POST /api/admin/plan-tiers/{id}/duplicate — clones a source plan into one or
+// more new plans for other event types in a single call. Replaces the old
+// PUT .../event-types "create + restrict" flow entirely. See
+// plan-tiers-by-event-type-fe-integration.md §5.
+export function useDuplicatePlanTier() {
     const queryClient = useQueryClient();
-    const plansKey = adminKeys.planTiers('EVENT', true);
 
     return useMutation({
-        mutationFn: ({ planId, eventTypeKeys }: { planId: string; eventTypeKeys: EventTypeConvention[] }) =>
-            api.put<PlanTierResponseDto>(endpoints.admin.planTiers.eventTypes(planId), { eventTypeKeys }),
-        onMutate: async ({ planId, eventTypeKeys }) => {
-            await queryClient.cancelQueries({ queryKey: plansKey });
-            const previousPlans = queryClient.getQueryData<PlanTierResponseDto[]>(plansKey);
-            queryClient.setQueryData<PlanTierResponseDto[]>(plansKey, (plans = []) =>
-                plans.map((plan) => (plan.id === planId ? { ...plan, eventTypeKeys } : plan))
-            );
-            return { previousPlans };
-        },
-        onError: (_error, _variables, context) => {
-            if (context?.previousPlans) queryClient.setQueryData(plansKey, context.previousPlans);
-        },
-        onSuccess: (updatedPlan) => {
-            queryClient.setQueryData<PlanTierResponseDto[]>(plansKey, (plans = []) =>
-                plans.map((plan) => (plan.id === updatedPlan.id ? updatedPlan : plan))
-            );
+        mutationFn: ({ planId, clones }: { planId: string; clones: PlanTierDuplicateRequestDto['clones'] }) =>
+            api.post<PlanTierResponseDto[]>(endpoints.admin.planTiers.duplicate(planId), { clones }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: adminKeys.planTiers('EVENT', true) });
             queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
-        },
-        onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: plansKey });
         },
     });
 }

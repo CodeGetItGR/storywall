@@ -3,10 +3,9 @@
 import { useTranslations } from 'next-intl';
 
 import { AdminTabPanel } from '@/components/admin/AdminTabs';
-import { type AdminToggleItem,AdminToggleList } from '@/components/admin/AdminToggleList';
+import { type AdminToggleItem, AdminToggleList } from '@/components/admin/AdminToggleList';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import type { PlatformEventTypeResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
-import { cn } from '@/lib/utils';
 
 export function PlanEditorCoverageTab({
     editorId,
@@ -16,11 +15,8 @@ export function PlanEditorCoverageTab({
     baselineModuleKeys,
     onToggleModuleAction,
     orderedEventTypes,
-    eventTypeKeysDraft,
-    baselineEventTypeKeys,
-    onToggleEventTypeAction,
-    onAllEventTypesAction,
-    onSelectedEventTypesAction,
+    eventTypeKey,
+    sharedGroupKey,
 }: {
     editorId: string;
     activeTab: string;
@@ -29,19 +25,11 @@ export function PlanEditorCoverageTab({
     baselineModuleKeys: string[];
     onToggleModuleAction: (key: string, next: boolean) => void;
     orderedEventTypes: PlatformEventTypeResponseDto[];
-    eventTypeKeysDraft: string[];
-    baselineEventTypeKeys: string[];
-    onToggleEventTypeAction: (key: string, next: boolean) => void;
-    onAllEventTypesAction: () => void;
-    onSelectedEventTypesAction: () => void;
+    eventTypeKey: string | null;
+    sharedGroupKey: string | null;
 }) {
     const t = useTranslations('AdminPage');
     const localizedText = useLocalizedText();
-
-    // An empty restriction list means "every event type" on the wire, so the
-    // segmented control reads the draft rather than tracking its own flag.
-    const allEventTypes = eventTypeKeysDraft.length === 0;
-    const isLastEventType = eventTypeKeysDraft.length === 1;
 
     const moduleItems: AdminToggleItem[] = orderedModules.map((module) => ({
         key: module.moduleKey,
@@ -51,16 +39,9 @@ export function PlanEditorCoverageTab({
         locked: !module.isEnabled && !moduleKeysDraft.includes(module.moduleKey),
     }));
 
-    const eventTypeItems: AdminToggleItem[] = orderedEventTypes.map((eventType) => {
-        const selected = eventTypeKeysDraft.includes(eventType.eventTypeKey);
-        const isLocked = selected && isLastEventType;
-        return {
-            key: eventType.eventTypeKey,
-            label: localizedText(eventType.name),
-            hint: isLocked ? t('plans.coverage.lastEventType') : undefined,
-            locked: isLocked,
-        };
-    });
+    const eventTypeName = eventTypeKey
+        ? localizedText(orderedEventTypes.find((item) => item.eventTypeKey === eventTypeKey)?.name, eventTypeKey)
+        : null;
 
     return (
         <AdminTabPanel id={editorId} tabKey="coverage" active={activeTab} className="pt-5">
@@ -82,48 +63,22 @@ export function PlanEditorCoverageTab({
                 />
             </section>
 
-            {/* Event types */}
+            {/* Event type */}
             <section className="mt-7">
                 <h3 className="mb-2 text-sm font-bold text-ink">{t('plans.tabs.eventTypes')}</h3>
                 <p className="mb-3 max-w-2xl text-sm leading-6 text-ink-muted">{t('plans.sections.eventTypesHint')}</p>
-                <div className="flex gap-1 rounded-lg bg-canvas p-1">
-                    <button
-                        type="button"
-                        onClick={onAllEventTypesAction}
-                        aria-pressed={allEventTypes}
-                        className={cn(
-                            'flex-1 rounded-md px-2 py-1.5 text-[12.5px] font-bold transition-colors',
-                            allEventTypes ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted'
-                        )}
-                    >
-                        {t('planAvailability.allTypes')}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onSelectedEventTypesAction}
-                        aria-pressed={!allEventTypes}
-                        className={cn(
-                            'flex-1 rounded-md px-2 py-1.5 text-[12.5px] font-bold transition-colors',
-                            allEventTypes ? 'text-ink-faint hover:text-ink-muted' : 'bg-card text-ink shadow-sm'
-                        )}
-                    >
-                        {t('planAvailability.selectedTypes')}
-                    </button>
+                <div className="flex flex-wrap items-center gap-2">
+                    {eventTypeName && (
+                        <span className="rounded-md bg-canvas px-2.5 py-1 text-sm font-semibold text-ink">
+                            {t('plans.coverage.eventTypeLabel')}: {eventTypeName}
+                        </span>
+                    )}
+                    {sharedGroupKey && (
+                        <span className="rounded-md bg-canvas px-2.5 py-1 text-xs font-semibold text-ink-faint">
+                            {t('plans.coverage.sharedGroupLabel', { group: sharedGroupKey })}
+                        </span>
+                    )}
                 </div>
-
-                {allEventTypes ? (
-                    <p className="mt-3 text-sm text-ink-muted">{t('plans.coverage.allEventTypesHint')}</p>
-                ) : (
-                    <div className="mt-3">
-                        <AdminToggleList
-                            items={eventTypeItems}
-                            selected={eventTypeKeysDraft}
-                            baseline={baselineEventTypeKeys}
-                            changedLabel={t('plans.coverage.changed')}
-                            onToggleAction={onToggleEventTypeAction}
-                        />
-                    </div>
-                )}
             </section>
         </AdminTabPanel>
     );
