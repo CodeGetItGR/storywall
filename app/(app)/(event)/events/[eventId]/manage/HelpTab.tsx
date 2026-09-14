@@ -78,7 +78,7 @@ export default function HelpTab({
             <HelpInfoBlock
                 title={t('invite.title')}
                 body={t('invite.body')}
-                linkHref={routes.events.manage(eventId, { tab: 'invitations', section: 'qr' })}
+                linkHref={routes.events.invitationsQr(eventId)}
                 linkLabel={t('invite.link')}
             />
 

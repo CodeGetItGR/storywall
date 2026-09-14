@@ -1,6 +1,6 @@
 'use client';
 
-import { BookHeart, CalendarCheck, CalendarDays, Gift, HelpCircle, Images, LayoutDashboard, type LucideIcon, QrCode } from 'lucide-react';
+import { BookHeart, CalendarCheck, CalendarDays, Gift, HelpCircle, Images, LayoutDashboard, type LucideIcon, QrCode, Ticket } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { useGiftAccount } from '@/hooks/useGiftAccount';
@@ -56,10 +56,12 @@ export function useHostMenuItems(): ToolMenuItem[] {
     if (!activeEvent) return [];
 
     const galleryQrEnabled = isGalleryQrFeatureEnabled(activeEvent.modules);
+    const isDraft = activeEvent.status === 'DRAFT';
 
     const hostAdminDefinitions: { key: string; href: string; icon: LucideIcon; hidden?: boolean }[] = [
         { key: 'manage', href: routes.events.manage(activeEvent.id), icon: LayoutDashboard },
         { key: 'galleryQr', href: routes.events.tools.galleryQr(activeEvent.id), icon: QrCode, hidden: !galleryQrEnabled },
+        { key: 'invitationsQr', href: routes.events.invitationsQr(activeEvent.id), icon: Ticket, hidden: isDraft },
         { key: 'help', href: routes.events.manage(activeEvent.id, { tab: 'help' }), icon: HelpCircle },
     ];
 

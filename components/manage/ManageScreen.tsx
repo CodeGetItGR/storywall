@@ -12,11 +12,10 @@ import { Modal } from '@/components/ui/modal';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventInvitations } from '@/hooks/useEventInvitations';
 import { useEventMembers } from '@/hooks/useEventMembers';
-import { useEventQrLinks, useEventQrLinkStats } from '@/hooks/useQrLinks';
 import { useEventRsvps } from '@/hooks/useRsvps';
 import { useEventUsage } from '@/hooks/useUsage';
 import { isEventWritable, isPrimaryHost } from '@/lib/eventLifecycle';
-import { type ManageSection, manageSectionGroups, parseManageSection } from '@/lib/manageSections';
+import { type ManageSection, manageSections, parseManageSection } from '@/lib/manageSections';
 import { routes } from '@/lib/routes';
 import { eventStatusBadgeTone } from '@/lib/statusTones';
 import { cn } from '@/lib/utils';
@@ -25,13 +24,10 @@ import { useActiveMember } from '@/providers/EventProvider';
 import BillingTab from '../../app/(app)/(event)/events/[eventId]/manage/BillingTab';
 import DangerZoneTab from '../../app/(app)/(event)/events/[eventId]/manage/DangerZoneTab';
 import HelpTab from '../../app/(app)/(event)/events/[eventId]/manage/HelpTab';
-import InvitationsTab from '../../app/(app)/(event)/events/[eventId]/manage/InvitationsTab';
 import MembersTab from '../../app/(app)/(event)/events/[eventId]/manage/MembersTab';
 import OverviewTab from '../../app/(app)/(event)/events/[eventId]/manage/OverviewTab';
 import RsvpTab from '../../app/(app)/(event)/events/[eventId]/manage/RsvpTab';
 import SettingsTab from '../../app/(app)/(event)/events/[eventId]/manage/SettingsTab';
-
-const allManageSections = manageSectionGroups.flatMap((entry) => entry.sections);
 
 export function ManageScreen() {
     const { activeEvent, eventId, isHost } = useEventRouteContext();
@@ -42,7 +38,7 @@ export function ManageScreen() {
     const isDraft = activeEvent.status === 'DRAFT';
     const activeMember = useActiveMember();
     const canDelete = isPrimaryHost(activeEvent.hosts, activeMember?.id);
-    const visibleSections = canDelete ? allManageSections : allManageSections.filter((entry) => entry !== 'danger');
+    const visibleSections = canDelete ? manageSections : manageSections.filter((entry) => entry !== 'danger');
     const section = isDraft ? 'overview' : visibleSections.includes(requestedSection) ? requestedSection : 'overview';
     const [switcherOpen, setSwitcherOpen] = useState(false);
 
@@ -52,14 +48,12 @@ export function ManageScreen() {
     const { data: members = [], isLoading: membersLoading } = useEventMembers(activeHostEventId);
     const { data: rsvps = [], isLoading: rsvpsLoading } = useEventRsvps(activeHostEventId);
     const { data: invitations = [], isLoading: invitationsLoading } = useEventInvitations(activeHostEventId);
-    const { data: qrLinks = [], isLoading: qrLinksLoading } = useEventQrLinks(activeHostEventId);
-    const { data: qrLinkStats = [], isLoading: qrLinkStatsLoading } = useEventQrLinkStats(activeHostEventId);
     const { data: eventUsage = null, isLoading: usageLoading } = useEventUsage(isHost ? eventId : null);
     const { data: appConfig } = useAppConfig();
 
     const overviewLoading = membersLoading || invitationsLoading || rsvpsLoading || usageLoading;
     const rsvpTabLoading = membersLoading || rsvpsLoading;
-    const invitationsTabLoading = invitationsLoading || qrLinksLoading || qrLinkStatsLoading || usageLoading;
+    const membersTabLoading = membersLoading || invitationsLoading || usageLoading;
 
     const [daysToGo, setDaysToGo] = useState(() =>
         Math.max(0, activeEvent ? Math.ceil((new Date(activeEvent.schedule.startAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0)
@@ -96,7 +90,6 @@ export function ManageScreen() {
     // never restates a total that is already visible one section away.
     const seatsClaimed = useMemo(() => rsvps.reduce((sum, rsvp) => sum + rsvp.adultCount + rsvp.childCount, 0), [rsvps]);
 
-    const activeGroup = manageSectionGroups.find((entry) => entry.sections.includes(section))?.group ?? 'event';
     const ActiveIcon = sectionIcons[section];
 
     const renderedSection = (
@@ -137,23 +130,15 @@ export function ManageScreen() {
                 ))}
 
             {section === 'members' &&
-                (membersLoading ? (
+                (membersTabLoading ? (
                     <LoadingState size="md" className="min-h-64" />
                 ) : (
-                    <MembersTab canModerate={canWrite} eventId={eventId} members={members} />
-                ))}
-
-            {section === 'invitations' &&
-                eventId &&
-                (invitationsTabLoading ? (
-                    <LoadingState size="md" className="min-h-64" />
-                ) : (
-                    <InvitationsTab
-                        eventId={eventId}
-                        invitations={invitations}
-                        qrLinks={qrLinks}
-                        qrLinkStats={qrLinkStats}
+                    <MembersTab
+                        canModerate={canWrite}
                         canWrite={canWrite}
+                        eventId={eventId}
+                        members={members}
+                        invitations={invitations}
                         eventUsage={eventUsage}
                         planTiers={appConfig?.planTiers ?? []}
                     />
@@ -210,12 +195,7 @@ export function ManageScreen() {
                             className="flex min-h-12 w-full items-center gap-2.5 rounded-2xl border border-border bg-surface-muted px-3.5 text-left"
                         >
                             <ActiveIcon className="h-4 w-4 shrink-0 text-primary" strokeWidth={2.2} aria-hidden="true" />
-                            <span className="min-w-0 flex-1">
-                                <span className="block text-[10.5px] font-bold uppercase tracking-[0.08em] text-ink-faint">
-                                    {t(`groups.${activeGroup}`)}
-                                </span>
-                                <span className="block truncate text-sm font-bold text-ink">{t(`sections.${section}`)}</span>
-                            </span>
+                            <span className="min-w-0 flex-1 truncate text-sm font-bold text-ink">{t(`sections.${section}`)}</span>
                             <ChevronDown className="h-4 w-4 shrink-0 text-ink-muted" aria-hidden="true" />
                         </button>
                     </div>

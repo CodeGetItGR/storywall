@@ -4,7 +4,7 @@ type RouteQueryValue = string | number | boolean | null | undefined;
 
 export type CheckoutIntent = 'activation' | 'upgrade' | 'storage';
 // 'billing' is kept as an alias for the plan section so existing links keep working.
-export type ManageTab = 'billing' | 'coverage' | 'danger' | 'help' | 'invitations' | 'members' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings';
+export type ManageTab = 'billing' | 'coverage' | 'danger' | 'help' | 'members' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings';
 
 // The demo event lives outside the real /events/{eventId} tree (which proxy.ts protects
 // behind a real session) — see docs/superpowers/plans/2026-09-05-demo-event.md, design note 1.
@@ -37,6 +37,10 @@ export const routes = {
         new: (params: { step?: string | null } = {}) => withQuery('/events/new', params),
         manage: (eventId: string, params: { tab?: ManageTab | null; section?: string | null } = {}) =>
             withQuery(`${eventBasePath(eventId)}/manage`, params),
+        // Share/join QR link management — pulled out of the Members section the
+        // same way the gallery upload code lives on its own page, linked from a
+        // compact pointer instead of an embedded panel.
+        invitationsQr: (eventId: string) => `${eventBasePath(eventId)}/manage/qr`,
         tools: {
             rsvp: (eventId: string) => `${eventBasePath(eventId)}/tools/rsvp`,
             rsvpSubmit: (eventId: string, attending?: 'attending' | 'not-attending' | null) =>

@@ -1,19 +1,13 @@
 /**
  * The host dashboard is one flat list of sections at every screen size: the
  * desktop sidebar, the mobile section sheet and the `?tab=` query all read this
- * table. Billing's parts are entries here rather than a second tab level.
+ * table, in this exact order. Invitations (invites, co-hosts) live inside the
+ * Members section; QR/share links have their own dedicated page linked from there.
  */
-export type ManageSection = 'overview' | 'settings' | 'help' | 'danger' | 'members' | 'rsvp' | 'invitations' | 'billing';
-export type ManageSectionGroup = 'event' | 'guests' | 'billing';
+export type ManageSection = 'overview' | 'settings' | 'rsvp' | 'members' | 'billing' | 'help' | 'danger';
 
-export const manageSectionGroups: { group: ManageSectionGroup; sections: ManageSection[] }[] = [
-    { group: 'event', sections: ['overview', 'settings', 'help', 'danger'] },
-    { group: 'guests', sections: ['members', 'rsvp', 'invitations'] },
-    { group: 'billing', sections: ['billing'] },
-];
-
-const allSections = manageSectionGroups.flatMap((entry) => entry.sections);
+export const manageSections: ManageSection[] = ['overview', 'settings', 'rsvp', 'members', 'billing', 'help', 'danger'];
 
 export function parseManageSection(value: string | null): ManageSection {
-    return allSections.find((section) => section === value) ?? 'overview';
+    return manageSections.find((section) => section === value) ?? 'overview';
 }

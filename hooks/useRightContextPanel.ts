@@ -27,20 +27,22 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
     const showMediaSummary = !isDraft && availableModuleKeys.has('gallery');
     const showWishbookSummary = !isDraft && availableModuleKeys.has('wishbook');
     const showGalleryQr = !isDraft && isGalleryQrFeatureEnabled(activeEvent?.modules);
+    const showInvitationsQr = !isDraft;
 
     const galleryManifest = useGalleryArchiveManifest(activeEvent?.id ?? null, 'DISPLAY', showMediaSummary);
     const wishbook = useWishbook(showWishbookSummary ? (activeEvent?.id ?? null) : null);
-    const galleryQrLinks = useEventQrLinks(showGalleryQr ? (activeEvent?.id ?? null) : null);
+    const qrLinks = useEventQrLinks(showGalleryQr || showInvitationsQr ? (activeEvent?.id ?? null) : null);
 
     // Same set the MobileTabBar's host context menu shows: dashboard + help,
     // plus every available tool except the guest self-RSVP flow (hosts answer
     // RSVPs from the dashboard's RSVP section, already linked in that menu).
-    // The gallery QR link is excluded here — it gets its own section below,
-    // between plan usage and the RSVP summary, instead of sitting in this flat list.
+    // The gallery QR and invitations QR links are excluded here — they get
+    // their own combined section below, between plan usage and the RSVP
+    // summary, instead of sitting in this flat list.
     // `includeManageLinks: false` (used when this content is reused inside the
     // manage page itself, e.g. its Overview tab) drops "Manage" (would self-link
     // to the dashboard) and "Help" (already one click away in the manage nav).
-    let hostItemsForActions = useHostMenuItems().filter((item) => item.key !== 'galleryQr');
+    let hostItemsForActions = useHostMenuItems().filter((item) => item.key !== 'galleryQr' && item.key !== 'invitationsQr');
     if (!includeManageLinks) hostItemsForActions = hostItemsForActions.filter((item) => item.key !== 'manage' && item.key !== 'help');
     const toolItems = useToolsMenuItems();
     const actionItems = isDraft
@@ -68,7 +70,9 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
         showMediaSummary,
         mediaSummary: galleryManifest.data ?? null,
         showGalleryQr,
-        galleryQrLink: findGalleryQrLink(galleryQrLinks.data ?? []),
+        galleryQrLink: findGalleryQrLink(qrLinks.data ?? []),
+        showInvitationsQr,
+        invitationsQrCount: (qrLinks.data ?? []).filter((link) => link.targetType !== 'MEDIA_UPLOAD' && link.status !== 'REVOKED').length,
         showWishbookSummary,
         wishbookEntries: wishbook.data?.pages[0]?.content.slice(0, 2) ?? [],
         wishbookTotal: wishbook.data?.pages[0]?.totalElements ?? 0,

@@ -193,6 +193,10 @@
                 "label": "Gallery QR",
                 "description": "Download or share your gallery's upload code"
             },
+            "invitationsQr": {
+                "label": "Share links",
+                "description": "QR codes and links for guests to join"
+            },
             "help": {
                 "label": "Help",
                 "description": "Setup guide and tips"
@@ -917,12 +921,11 @@
         "newEvent": "New event",
         "sections": {
             "overview": "Overview",
-            "settings": "Settings",
+            "settings": "Event",
             "help": "Help",
             "danger": "Danger zone",
             "members": "Members",
             "rsvp": "RSVP",
-            "invitations": "Invitations",
             "billing": "Billing",
             "refund": "Refund"
         },
@@ -1012,8 +1015,7 @@
         "invitations": {
             "panels": {
                 "invites": "Invite a guest",
-                "coHosts": "Co-hosts",
-                "qr": "Share link"
+                "coHosts": "Co-hosts"
             },
             "capacity": {
                 "title": "Guest capacity"
@@ -1228,11 +1230,6 @@
         "usage": {
             "eventTitle": "Plan usage"
         },
-        "groups": {
-            "event": "Event",
-            "guests": "Guests",
-            "billing": "Billing"
-        },
         "rsvpFilters": {
             "all": "All",
             "empty": "No guests match this filter."
@@ -1247,6 +1244,7 @@
         "rsvpPartyAdults": "{count, plural, one {# adult} other {# adults}}",
         "rsvpPartyChildren": "{count, plural, one {# child} other {# children}}",
         "members": {
+            "title": "Members",
             "emptyTitle": "No members yet",
             "emptyBody": "Members appear here after they join.",
             "joined": "Joined {date}",
@@ -1955,10 +1953,16 @@
             "images": "Images",
             "videos": "Videos"
         },
-        "galleryQr": {
-            "title": "Gallery QR",
-            "body": "Scan to upload photos and videos",
-            "missing": "Set up a code for guest uploads"
+        "qrLinks": {
+            "title": "Links",
+            "gallery": {
+                "body": "Scan to upload photos and videos",
+                "missing": "Set up a code for guest uploads"
+            },
+            "invitations": {
+                "body": "{count, plural, one {# share link} other {# share links}}",
+                "missing": "Set up a link for guests to join"
+            }
         },
         "wishbookSummary": {
             "title": "Wishbook",
@@ -2993,6 +2997,11 @@
             "cta": "Create gallery QR",
             "creating": "Creating..."
         }
+    },
+    "InvitationsQrPage": {
+        "title": "Share links",
+        "back": "Back to members",
+        "subtitle": "Create QR codes or links guests can use to join instantly — for group chats, printed cards, posters, or gallery access."
     },
     "MediaThumbnail": {
         "processing": "Processing video",

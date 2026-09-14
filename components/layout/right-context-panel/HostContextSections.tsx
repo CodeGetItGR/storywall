@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
-import { GalleryQrSection } from '@/components/layout/right-context-panel/GalleryQrSection';
 import { MediaSummarySection } from '@/components/layout/right-context-panel/MediaSummarySection';
+import { QrLinksSection } from '@/components/layout/right-context-panel/QrLinksSection';
 import { RsvpSummarySection } from '@/components/layout/right-context-panel/RsvpSummarySection';
 import { WishbookSummarySection } from '@/components/layout/right-context-panel/WishbookSummarySection';
 import { UsagePanel } from '@/components/plan/UsagePanel';
@@ -11,7 +11,7 @@ import { formatBytes } from '@/lib/format';
 import { routes } from '@/lib/routes';
 
 /**
- * The host action links, plan usage, and RSVP/media/wishbook/gallery-QR
+ * The host action links, plan usage, and RSVP/media/wishbook/QR-links
  * summaries shared between the feed's RightContextPanel (inside an aside)
  * and the manage page's Overview tab (inline in normal page flow).
  */
@@ -36,6 +36,8 @@ export function HostContextSections({
         mediaSummary,
         showGalleryQr,
         galleryQrLink,
+        showInvitationsQr,
+        invitationsQrCount,
         showWishbookSummary,
         wishbookEntries,
         wishbookTotal,
@@ -101,8 +103,14 @@ export function HostContextSections({
                 />
             )}
 
-            {/* Gallery QR */}
-            {showGalleryQr && <GalleryQrSection eventId={activeEvent.id} qrLink={galleryQrLink} />}
+            {/* QR links (gallery upload + share/join) */}
+            <QrLinksSection
+                eventId={activeEvent.id}
+                showGallery={showGalleryQr}
+                galleryQrLink={galleryQrLink}
+                showInvitations={showInvitationsQr}
+                invitationsQrCount={invitationsQrCount}
+            />
 
             {/* RSVP summary */}
             {showRsvpSummary && rsvpSummary && <RsvpSummarySection eventId={activeEvent.id} summary={rsvpSummary} />}
