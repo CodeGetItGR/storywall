@@ -1773,42 +1773,35 @@
             "title": "Welcome! Let's set up {eventTitle}",
             "body": "A few quick steps to get things ready for your guests."
         },
-        "dashboard": {
-            "title": "Manage your event",
-            "body": "Edit your event's details and build the schedule here.",
-            "items": {
-                "settings": "Event details",
-                "schedule": "Schedule"
+        "steps": {
+            "details": {
+                "title": "Event details",
+                "body": "Add your title, dates, and location.",
+                "edit": "Edit event details",
+                "venueAdd": "Add venue details",
+                "venueEdit": "Edit venue details"
+            },
+            "rsvp": {
+                "title": "RSVP",
+                "body": "Set a deadline so guests know when to respond.",
+                "edit": "Set RSVP deadline"
+            },
+            "giftAccount": {
+                "title": "Gift account",
+                "body": "Add your bank details if you'd like a money gift.",
+                "edit": "Add gift account"
+            },
+            "schedule": {
+                "title": "Schedule",
+                "body": "Publish the order of the day for your guests.",
+                "edit": "Edit schedule"
+            },
+            "invitations": {
+                "title": "Invitations & QR codes",
+                "body": "Share your QR links, or create named invitations for specific guests.",
+                "qr": "Go to QR links",
+                "named": "Create named invitations"
             }
-        },
-        "venue": {
-            "askTitle": "Have a second location?",
-            "askBody": "Add the reception or celebration details in Host Management.",
-            "readyTitle": "Your venue is ready",
-            "readyBody": "You can update its details at any time in Host Management.",
-            "add": "Add venue details",
-            "edit": "Edit venue details"
-        },
-        "invite": {
-            "title": "Invite your guests",
-            "body": "We've already created some share links for you. Use or download them on the QR page.",
-            "link": "Go to QR links"
-        },
-        "tools": {
-            "title": "Your tools",
-            "body": "Everything you need to run the event, all in one place.",
-            "items": {
-                "schedule": "Schedule",
-                "rsvp": "RSVP",
-                "gallery": "Gallery",
-                "playlist": "Playlist",
-                "wishbook": "Wishbook",
-                "gifts": "Gifts"
-            }
-        },
-        "done": {
-            "title": "You're all set",
-            "body": "You can always come back and change things later."
         }
     },
     "GiftsPage": {
