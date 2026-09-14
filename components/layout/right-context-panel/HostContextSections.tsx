@@ -46,7 +46,7 @@ export function HostContextSections({
     if (!activeEvent) return null;
 
     return (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-8">
             {/* Actions */}
             {actionItems.length > 0 && (
                 <div>
@@ -65,6 +65,24 @@ export function HostContextSections({
                     </div>
                 </div>
             )}
+
+            {/* RSVP summary */}
+            {showRsvpSummary && rsvpSummary && <RsvpSummarySection eventId={activeEvent.id} summary={rsvpSummary} />}
+
+            {/* Media summary */}
+            {showMediaSummary && mediaSummary && <MediaSummarySection eventId={activeEvent.id} summary={mediaSummary} />}
+
+            {/* QR links (gallery upload + share/join) */}
+            <QrLinksSection
+                eventId={activeEvent.id}
+                showGallery={showGalleryQr}
+                galleryQrLink={galleryQrLink}
+                showInvitations={showInvitationsQr}
+                invitationsQrCount={invitationsQrCount}
+            />
+
+            {/* Wishbook summary */}
+            {showWishbookSummary && <WishbookSummarySection eventId={activeEvent.id} entries={wishbookEntries} total={wishbookTotal} />}
 
             {/* Plan usage */}
             {eventUsage && (
@@ -87,39 +105,21 @@ export function HostContextSections({
                         },
                         ...(showMembersUsage
                             ? [
-                                  {
-                                      key: 'members' as const,
-                                      used: eventUsage.memberCount,
-                                      limit: eventUsage.memberLimit,
-                                      percent: eventUsage.memberPercent,
-                                      valueLabel:
-                                          eventUsage.memberLimit === null
-                                              ? `${eventUsage.memberCount}`
-                                              : `${eventUsage.memberCount} / ${eventUsage.memberLimit}`,
-                                  },
-                              ]
+                                {
+                                    key: 'members' as const,
+                                    used: eventUsage.memberCount,
+                                    limit: eventUsage.memberLimit,
+                                    percent: eventUsage.memberPercent,
+                                    valueLabel:
+                                        eventUsage.memberLimit === null
+                                            ? `${eventUsage.memberCount}`
+                                            : `${eventUsage.memberCount} / ${eventUsage.memberLimit}`,
+                                },
+                            ]
                             : []),
                     ]}
                 />
             )}
-
-            {/* QR links (gallery upload + share/join) */}
-            <QrLinksSection
-                eventId={activeEvent.id}
-                showGallery={showGalleryQr}
-                galleryQrLink={galleryQrLink}
-                showInvitations={showInvitationsQr}
-                invitationsQrCount={invitationsQrCount}
-            />
-
-            {/* RSVP summary */}
-            {showRsvpSummary && rsvpSummary && <RsvpSummarySection eventId={activeEvent.id} summary={rsvpSummary} />}
-
-            {/* Media summary */}
-            {showMediaSummary && mediaSummary && <MediaSummarySection eventId={activeEvent.id} summary={mediaSummary} />}
-
-            {/* Wishbook summary */}
-            {showWishbookSummary && <WishbookSummarySection eventId={activeEvent.id} entries={wishbookEntries} total={wishbookTotal} />}
         </div>
     );
 }
