@@ -1,8 +1,7 @@
-import Image from 'next/image';
 import { ReactNode } from 'react';
 
 import { Logo } from '@/components/common/Logo';
-import {ProtectedImage} from "@/components/common/ProtectedImage";
+import { ProtectedImage } from '@/components/common/ProtectedImage';
 
 interface InviteLayoutProps {
     coverImageSrc: string;
@@ -14,8 +13,8 @@ interface InviteLayoutProps {
 
 export function InviteLayout({ coverImageSrc, coverImageAlt, eventTitle, eventSubtitle, children }: InviteLayoutProps) {
     return (
-        <div className="min-h-screen flex flex-col lg:flex-row lg:h-screen bg-background">
-            <div className="relative w-full h-64 sm:h-80 lg:h-screen lg:w-1/2 shrink-0">
+        <div className="flex h-dvh flex-col overflow-hidden bg-background lg:flex-row">
+            <div className="relative h-64 w-full shrink-0 bg-gradient-brand md:h-130 lg:h-full lg:w-1/2">
                 <ProtectedImage
                     src={coverImageSrc}
                     alt={coverImageAlt}
@@ -32,7 +31,7 @@ export function InviteLayout({ coverImageSrc, coverImageAlt, eventTitle, eventSu
                 </div>
             </div>
 
-            <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 lg:w-1/2 lg:p-12">
+            <div className="flex flex-1 flex-col items-center overflow-y-auto px-6 py-8 lg:w-1/2 lg:p-12">
                 <div className="w-full max-w-sm lg:max-w-md flex flex-col items-center">
                     <Logo direction="col" iconClassName="h-7 w-auto" wordmarkClassName="h-5 w-auto" className="mb-6" />
                     <div className="w-full">{children}</div>

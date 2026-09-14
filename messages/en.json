@@ -513,7 +513,9 @@
             "namePlaceholder": "How should we credit your photos?",
             "filesLabel": "Photos or videos",
             "chooseFiles": "Choose files",
-            "filesSelected": "{count, plural, one {# file selected} other {# files selected}}",
+            "addMore": "Add more",
+            "dropHint": "or drag and drop",
+            "removeFile": "Remove",
             "submit": "Upload",
             "success": "Thanks! Your photos are on their way to the gallery."
         },
@@ -2994,13 +2996,11 @@
         "title": "Gallery QR",
         "back": "Back to gallery",
         "subtitle": "Anyone who scans this code can upload photos and videos straight to your gallery — no login needed.",
-        "moduleUnavailable": "Gallery is not available on this event's current plan.",
         "permanentNote": "This code is set up for you and can't be deleted or replaced.",
         "temporarilyOff": "Uploads through this code are turned off right now. Existing photos and videos are unaffected.",
         "linkUnavailable": "This code isn't currently accepting uploads.",
         "missing": {
             "body": "Set up a QR code guests can scan to upload photos and videos.",
-            "disabledBody": "Gallery uploads are turned off for this event.",
             "cta": "Create gallery QR",
             "creating": "Creating..."
         }

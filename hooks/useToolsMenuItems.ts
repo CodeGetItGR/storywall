@@ -4,6 +4,7 @@ import { BookHeart, CalendarCheck, CalendarDays, Gift, HelpCircle, Images, Layou
 import { useTranslations } from 'next-intl';
 
 import { useGiftAccount } from '@/hooks/useGiftAccount';
+import { isGalleryQrFeatureEnabled } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useIsHost } from '@/providers/EventProvider';
 
@@ -54,16 +55,16 @@ export function useHostMenuItems(): ToolMenuItem[] {
 
     if (!activeEvent) return [];
 
-    const availableModules = new Set(activeEvent.modules.filter((module_) => module_.isAvailable).map((module_) => module_.moduleKey));
+    const galleryQrEnabled = isGalleryQrFeatureEnabled(activeEvent.modules);
 
-    const hostAdminDefinitions: { key: string; href: string; icon: LucideIcon; moduleKey?: string }[] = [
+    const hostAdminDefinitions: { key: string; href: string; icon: LucideIcon; hidden?: boolean }[] = [
         { key: 'manage', href: routes.events.manage(activeEvent.id), icon: LayoutDashboard },
-        { key: 'galleryQr', href: routes.events.tools.galleryQr(activeEvent.id), icon: QrCode, moduleKey: 'gallery' },
+        { key: 'galleryQr', href: routes.events.tools.galleryQr(activeEvent.id), icon: QrCode, hidden: !galleryQrEnabled },
         { key: 'help', href: routes.events.manage(activeEvent.id, { tab: 'help' }), icon: HelpCircle },
     ];
 
     return hostAdminDefinitions
-        .filter((item) => !item.moduleKey || availableModules.has(item.moduleKey))
+        .filter((item) => !item.hidden)
         .map((item) => ({
             key: item.key,
             href: item.href,

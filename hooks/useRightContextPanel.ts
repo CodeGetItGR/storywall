@@ -7,7 +7,7 @@ import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
 import { useEventUsage } from '@/hooks/useUsage';
 import { useWishbook } from '@/hooks/useWishbook';
 import { findNextPlan, findPlanByCode } from '@/lib/planTiers';
-import { findGalleryQrLink } from '@/lib/qrLinks';
+import { findGalleryQrLink, isGalleryQrFeatureEnabled } from '@/lib/qrLinks';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
 // Gathers everything RightContextPanel renders. Draft events hide every
@@ -26,7 +26,7 @@ export function useRightContextPanel() {
     const showRsvpSummary = !isDraft && availableModuleKeys.has('rsvp');
     const showMediaSummary = !isDraft && availableModuleKeys.has('gallery');
     const showWishbookSummary = !isDraft && availableModuleKeys.has('wishbook');
-    const showGalleryQr = !isDraft && availableModuleKeys.has('gallery');
+    const showGalleryQr = !isDraft && isGalleryQrFeatureEnabled(activeEvent?.modules);
 
     const galleryManifest = useGalleryArchiveManifest(activeEvent?.id ?? null, 'DISPLAY', showMediaSummary);
     const wishbook = useWishbook(showWishbookSummary ? (activeEvent?.id ?? null) : null);

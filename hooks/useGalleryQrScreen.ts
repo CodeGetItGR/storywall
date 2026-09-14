@@ -5,8 +5,7 @@ import { useCallback } from 'react';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCreateQrLink, useEventQrLinks } from '@/hooks/useQrLinks';
-import type { GalleryModuleConfiguration } from '@/lib/api/types';
-import { findGalleryQrLink } from '@/lib/qrLinks';
+import { findGalleryQrLink, isGalleryQrFeatureEnabled } from '@/lib/qrLinks';
 
 export function useGalleryQrScreen() {
     const { activeEvent, eventId } = useEventRouteContext();
@@ -14,9 +13,10 @@ export function useGalleryQrScreen() {
     const { data: qrLinks, isLoading } = useEventQrLinks(eventId);
     const createQrLink = useCreateQrLink(eventId);
 
-    const galleryModule = activeEvent?.modules.find((module) => module.moduleKey === 'gallery');
-    const galleryEnabled = galleryModule?.isAvailable ?? false;
-    const qrUploadEnabled = (galleryModule?.configuration as GalleryModuleConfiguration | null)?.qrUploadEnabled ?? true;
+    // Gated the same way as the nav entries that link here (see
+    // useToolsMenuItems/useRightContextPanel) — this page shouldn't be
+    // reachable at all when the gallery QR feature is off for this event.
+    const featureEnabled = isGalleryQrFeatureEnabled(activeEvent?.modules);
 
     const qrLink = findGalleryQrLink(qrLinks ?? []);
 
@@ -26,8 +26,7 @@ export function useGalleryQrScreen() {
 
     return {
         eventId,
-        galleryEnabled,
-        qrUploadEnabled,
+        featureEnabled,
         isLoading,
         qrLink,
         handleCreate,
