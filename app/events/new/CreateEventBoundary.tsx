@@ -20,6 +20,11 @@ import { CreateEventFormProvider } from '@/providers/CreateEventFormProvider';
 export default function CreateEventPage() {
     const router = useRouter();
     const { user, isAuthenticated, isBootstrapping } = useAuth();
+    // Confirmed unverified (not just "not yet known") — the home screen is
+    // where this is explained and where the flow should have been blocked
+    // from starting in the first place; a direct visit to this URL must not
+    // be a way around that.
+    const isConfirmedUnverified = user?.emailVerified === false;
 
     useEffect(() => {
         if (isBootstrapping) return;
@@ -27,12 +32,16 @@ export default function CreateEventPage() {
             router.replace(routes.login);
             return;
         }
-        if (user?.role === 'ADMIN') router.replace(routes.admin);
-    }, [isAuthenticated, isBootstrapping, router, user?.role]);
+        if (user?.role === 'ADMIN') {
+            router.replace(routes.admin);
+            return;
+        }
+        if (isConfirmedUnverified) router.replace(routes.home);
+    }, [isAuthenticated, isBootstrapping, isConfirmedUnverified, router, user?.role]);
 
     return (
         <CreateEventRouteState
-            isBlocked={isBootstrapping || !isAuthenticated || user?.role === 'ADMIN'}
+            isBlocked={isBootstrapping || !isAuthenticated || user?.role === 'ADMIN' || isConfirmedUnverified}
             content={
                 <CreateEventFormProvider>
                     <CreateEventFormBody />

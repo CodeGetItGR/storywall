@@ -19,6 +19,10 @@ interface AuthState {
     isGuestAccount: boolean | null;
     status: AuthSessionDto['status'] | null;
     createdAt: string | null;
+    // Not part of AuthSessionDto (login/register/session don't carry it yet) —
+    // only ever set via updateSessionProfile once /api/me has been fetched.
+    // null means "not fetched yet", not "unverified".
+    emailVerified: boolean | null;
 }
 
 let state: AuthState = {
@@ -33,6 +37,7 @@ let state: AuthState = {
     isGuestAccount: null,
     status: null,
     createdAt: null,
+    emailVerified: null,
 };
 
 type Listener = (state: AuthState) => void;
@@ -75,16 +80,23 @@ export function setSession(session: AuthSessionDto) {
         isGuestAccount: session.isGuestAccount,
         status: session.status,
         createdAt: session.createdAt,
+        // Reset on every new session — the previous account's verification
+        // state must never leak onto whoever this session now belongs to.
+        // Re-populated once /api/me resolves for the new session.
+        emailVerified: null,
     };
     emit();
 }
 
-export function updateSessionProfile(profile: Pick<AuthSessionDto, 'firstName' | 'lastName' | 'profilePictureUrl'>) {
+export function updateSessionProfile(
+    profile: Pick<AuthSessionDto, 'firstName' | 'lastName' | 'profilePictureUrl'> & { emailVerified?: boolean }
+) {
     state = {
         ...state,
         firstName: profile.firstName,
         lastName: profile.lastName ?? null,
         profilePictureUrl: profile.profilePictureUrl ?? null,
+        emailVerified: profile.emailVerified ?? state.emailVerified,
     };
     emit();
 }
@@ -102,6 +114,7 @@ export function clearSession() {
         isGuestAccount: null,
         status: null,
         createdAt: null,
+        emailVerified: null,
     };
     emit();
 }

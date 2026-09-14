@@ -20,6 +20,9 @@ export interface AuthUser {
     status: AccountStatus;
     createdAt: string;
     role: PlatformRole;
+    // null until /api/me has been fetched at least once this session — see
+    // updateProfile below, the only thing that ever sets it.
+    emailVerified: boolean | null;
 }
 
 export interface AuthContextValue {
@@ -30,7 +33,7 @@ export interface AuthContextValue {
     login: (input: { email: string; password: string; inviteToken?: string }) => Promise<AuthSessionDto>;
     oauth: (provider: 'GOOGLE' | 'APPLE', input: { idToken: string; inviteToken?: string }) => Promise<AuthSessionDto>;
     logout: () => Promise<void>;
-    updateProfile: (profile: Pick<UserResponseDto, 'firstName' | 'lastName' | 'profilePictureUrl'>) => void;
+    updateProfile: (profile: Pick<UserResponseDto, 'firstName' | 'lastName' | 'profilePictureUrl' | 'emailVerified'>) => void;
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
@@ -139,11 +142,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         queryClient.clear();
     }, [queryClient]);
 
-    const updateProfile = useCallback((profile: Pick<UserResponseDto, 'firstName' | 'lastName' | 'profilePictureUrl'>) => {
+    const updateProfile = useCallback((profile: Pick<UserResponseDto, 'firstName' | 'lastName' | 'profilePictureUrl' | 'emailVerified'>) => {
         updateSessionProfile({
             firstName: profile.firstName ?? '',
             lastName: profile.lastName,
             profilePictureUrl: profile.profilePictureUrl,
+            emailVerified: profile.emailVerified,
         });
     }, []);
 
@@ -153,7 +157,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // does change them propagates, which keying the memo on `isAuthenticated`
     // alone did not: a role or display name arriving later left consumers
     // holding the previous user.
-    const { accessToken, userId, email, firstName, lastName, profilePictureUrl, authProvider, isGuestAccount, status, createdAt, role } = authState;
+    const { accessToken, userId, email, firstName, lastName, profilePictureUrl, authProvider, isGuestAccount, status, createdAt, role, emailVerified } =
+        authState;
     const user = useMemo(
         () =>
             accessToken
@@ -168,9 +173,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                       status: status!,
                       createdAt: createdAt!,
                       role: role!,
+                      emailVerified,
                   }
                 : null,
-        [accessToken, userId, email, firstName, lastName, profilePictureUrl, authProvider, isGuestAccount, status, createdAt, role]
+        [accessToken, userId, email, firstName, lastName, profilePictureUrl, authProvider, isGuestAccount, status, createdAt, role, emailVerified]
     );
     const isAuthenticated = Boolean(accessToken);
 

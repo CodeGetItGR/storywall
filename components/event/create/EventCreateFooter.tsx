@@ -7,8 +7,19 @@ import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormConte
 
 export function EventCreateFooter() {
     const t = useTranslations('CreateEventPage');
-    const { step, formId, canContinueType, canContinuePlan, isSubmitPending, hasDraft, canSubmitDetails, goToType, goToDetails, goToPlan } =
-        useCreateEventForm();
+    const {
+        step,
+        formId,
+        canContinueType,
+        canContinuePlan,
+        isSubmitPending,
+        hasDraft,
+        canSubmitDetails,
+        isEmailVerified,
+        goToType,
+        goToDetails,
+        goToPlan,
+    } = useCreateEventForm();
 
     return (
         <footer className="shrink-0 border-t border-border/60 bg-background">
@@ -79,7 +90,7 @@ export function EventCreateFooter() {
                         <button
                             form={formId}
                             type="submit"
-                            disabled={isSubmitPending}
+                            disabled={isSubmitPending || !isEmailVerified}
                             className="flex min-h-11 flex-2 items-center justify-center gap-2 rounded-full bg-gradient-brand text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
                         >
                             {isSubmitPending ? (

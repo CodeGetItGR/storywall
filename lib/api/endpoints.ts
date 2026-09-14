@@ -31,6 +31,7 @@ export const endpoints = {
         // own route handler, which reads httpOnly cookies to (re)derive a
         // session. See lib/auth/authCookies.ts.
         session: '/api/auth/session',
+        resendVerification: '/api/auth/resend-verification',
     },
 
     me: {

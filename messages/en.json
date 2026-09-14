@@ -343,6 +343,13 @@
             "vintage": "Vintage"
         }
     },
+    "EmailVerificationBanner": {
+        "message": "Confirm your email address to create an event.",
+        "resend": "Resend email",
+        "resendPending": "Sending...",
+        "resendSent": "Email sent",
+        "resendError": "Couldn't send the email. Try again."
+    },
     "EventLifecycleBanner": {
         "DRAFT": {
             "title": "This event is not published yet",

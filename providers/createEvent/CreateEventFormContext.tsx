@@ -76,6 +76,7 @@ export interface CreateEventFormValue {
     applyCheckoutCode: () => void;
 
     isSubmitPending: boolean;
+    isEmailVerified: boolean;
 }
 
 export const CreateEventFormContext = createContext<CreateEventFormValue | null>(null);

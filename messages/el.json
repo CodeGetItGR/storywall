@@ -343,6 +343,13 @@
             "vintage": "Vintage"
         }
     },
+    "EmailVerificationBanner": {
+        "message": "Επιβεβαιώστε τη διεύθυνση email σας για να δημιουργήσετε μια εκδήλωση.",
+        "resend": "Επαναποστολή email",
+        "resendPending": "Αποστολή...",
+        "resendSent": "Το email εστάλη",
+        "resendError": "Δεν ήταν δυνατή η αποστολή του email. Δοκιμάστε ξανά."
+    },
     "EventLifecycleBanner": {
         "DRAFT": {
             "title": "Η εκδήλωση δεν έχει δημοσιευτεί ακόμη",

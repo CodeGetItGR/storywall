@@ -9,6 +9,7 @@ import { useAppConfig } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { usePreviewCreateEventCode } from '@/hooks/useBilling';
 import { useCreateEvent } from '@/hooks/useEvent';
+import { useMe } from '@/hooks/useMe';
 import { usePlanTiersForEventType } from '@/hooks/usePlanTiersForEventType';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -38,7 +39,15 @@ export function useCreateEventFormController(): CreateEventFormValue {
     const t = useTranslations('CreateEventPage');
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
+    useMe();
+    // Fail closed: submission stays blocked until we positively know the
+    // account is verified. `user.emailVerified` is `null` until /api/me
+    // resolves, so an in-flight or failed fetch must not read as "verified".
+    // (The entry point itself — the home screen's Create Event action — is
+    // where an unverified account is stopped and told why; this is a
+    // defense-in-depth backstop for anyone who still reaches this route.)
+    const isEmailVerified = user?.emailVerified === true;
     const createEvent = useCreateEvent();
     const previewCreateEventCode = usePreviewCreateEventCode();
     const { data: appConfig, refetch: refetchAppConfig } = useAppConfig();
@@ -172,10 +181,10 @@ export function useCreateEventFormController(): CreateEventFormValue {
             });
             setAppliedCheckoutCode(trimmedCode);
             setCheckoutCodePreview(preview);
-        } catch {
-            setCheckoutCodeError(t('collaboration.invalid'));
+        } catch (err) {
+            setCheckoutCodeError(toErrorMessage(err, t('collaboration.invalid')));
         }
-    }, [checkoutCode, previewCreateEventCode, selectedCode, selectedEventType, t]);
+    }, [checkoutCode, previewCreateEventCode, selectedCode, selectedEventType, t, toErrorMessage]);
 
     const handleSubmit = useCallback(
         async (e: React.SubmitEvent<HTMLFormElement>) => {
@@ -186,6 +195,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
                 return;
             }
             if (step !== 'overview') return;
+            if (!isEmailVerified) return;
             if (createdDraftEventId) {
                 router.push(routes.events.manage(createdDraftEventId));
                 return;
@@ -243,6 +253,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
             createdDraftEventId,
             goToStep,
             initialSessionTitle,
+            isEmailVerified,
             mapsUrl,
             router,
             selectedCode,
@@ -317,5 +328,6 @@ export function useCreateEventFormController(): CreateEventFormValue {
         applyCheckoutCode,
 
         isSubmitPending: createEvent.isPending || isCheckoutPending,
+        isEmailVerified,
     };
 }
