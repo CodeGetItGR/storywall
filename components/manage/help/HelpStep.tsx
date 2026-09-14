@@ -25,17 +25,19 @@ export function HelpStep({ index, title, body, complete, actions, isLast }: Help
             {!isLast && <span className="absolute top-8 bottom-0 left-10 w-px bg-border" aria-hidden="true" />}
 
             {/* Step marker */}
-            <span className="relative z-10 flex h-8 w-14 shrink-0 items-center justify-end gap-1.5">
-                {complete && <Check className="h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true" />}
+            <div className="relative z-10 h-8 w-14 shrink-0">
+                {complete && (
+                    <Check className="absolute top-1/2 right-9 h-4 w-4 -translate-y-1/2 text-emerald-600" aria-hidden="true" />
+                )}
                 <span
                     className={cn(
-                        'flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-sm font-bold',
+                        'absolute top-0 right-0 flex h-8 w-8 items-center justify-center rounded-full border text-sm font-bold',
                         complete ? 'border-emerald-600 text-emerald-600' : 'border-border text-ink-muted'
                     )}
                 >
                     {index}
                 </span>
-            </span>
+            </div>
 
             {/* Step content */}
             <div className="min-w-0 flex-1 pt-1">
