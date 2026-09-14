@@ -1,12 +1,12 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { headers } from 'next/headers';
 
-import { postKeys, POSTS_PAGE_SIZE } from '@/hooks/usePosts';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
 import { serverGet } from '@/lib/api/serverFetch';
 import type { PostResponseDto } from '@/lib/api/types';
 import { ACCESS_TOKEN_HEADER } from '@/lib/auth/authCookies';
+import { postKeys, POSTS_PAGE_SIZE } from '@/lib/postQueries';
 import { makeQueryClient } from '@/lib/queryClient';
 
 import FeedPage from './PageClient';

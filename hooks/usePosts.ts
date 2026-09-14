@@ -1,16 +1,16 @@
+'use client';
+
 import { type InfiniteData, type QueryClient, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRef } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList, type Page } from '@/lib/api/pagination';
 import type { MediaResponseDto, PostPatchRequestDto, PostRequestDto, PostResponseDto } from '@/lib/api/types';
+import { postKeys, POSTS_PAGE_SIZE } from '@/lib/postQueries';
 
-export const postKeys = {
-    list: (eventId: string) => ['events', eventId, 'posts'] as const,
-    detail: (id: string) => ['posts', id] as const,
-    media: (postId: string) => ['posts', postId, 'media'] as const,
-};
+export { postKeys, POSTS_PAGE_SIZE } from '@/lib/postQueries';
 
 // Applies a partial update to a post wherever it's currently cached — the
 // single-post query and, if a page of it is loaded, the event's feed list.
@@ -31,7 +31,6 @@ export function patchPostInCaches(queryClient: QueryClient, eventId: string, pos
     });
 }
 
-export const POSTS_PAGE_SIZE = 20;
 
 // GET /api/events/{eventId}/posts — any authenticated principal (not
 // scoped to event membership, matching EventController's read convention).
@@ -40,13 +39,27 @@ export const POSTS_PAGE_SIZE = 20;
 // a feed needs no follow-up requests.
 export function useEventPosts(eventId: string | null) {
     const { isAuthenticated } = useAuth();
+    const queryClient = useQueryClient();
+    const etags = useRef(new Map<string, string>());
 
     return useInfiniteQuery({
         queryKey: postKeys.list(eventId ?? ''),
-        queryFn: ({ pageParam }) => api.get<Page<PostResponseDto>>(`${endpoints.events.posts(eventId!)}?page=${pageParam}&size=${POSTS_PAGE_SIZE}`),
+        queryFn: async ({ pageParam }) => {
+            const page = pageParam as number;
+            const path = `${endpoints.events.posts(eventId!)}?page=${page}&size=${POSTS_PAGE_SIZE}`;
+            const etag = etags.current.get(path);
+            const result = await api.conditionalGet<Page<PostResponseDto>>(path, etag ? { headers: { 'If-None-Match': etag } } : undefined);
+            if (result.notModified) {
+                const cached = queryClient.getQueryData<InfiniteData<Page<PostResponseDto>>>(postKeys.list(eventId!))?.pages.find((item) => item.number === page);
+                if (cached) return cached;
+            }
+            if (result.etag) etags.current.set(path, result.etag);
+            return result.data!;
+        },
         initialPageParam: 0,
         getNextPageParam: (lastPage) => (lastPage.number + 1 < lastPage.totalPages ? lastPage.number + 1 : undefined),
         enabled: Boolean(eventId) && isAuthenticated,
+        refetchInterval: 60_000,
     });
 }
 

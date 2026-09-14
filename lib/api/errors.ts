@@ -96,6 +96,7 @@ export const ERROR_CODES = {
     EVENT_DELETE_ALREADY_PENDING: 5064,
     QR_MEDIA_UPLOAD_DISABLED: 5066,
     EVENT_SESSION_LIMIT_REACHED: 5067,
+    QR_SHARED_LINK_HOST_MANAGED: 5068,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the

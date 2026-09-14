@@ -1,69 +1,50 @@
 'use client';
 
-import { ImagePlus, Loader2, UserPlus, X } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import React, { type ChangeEvent, useCallback, useState } from 'react';
+import React, { type ChangeEvent, useState } from 'react';
 
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useEventInvitations } from '@/hooks/useEventInvitations';
 import { useCreateQrLink } from '@/hooks/useQrLinks';
-import type { QrLinkRequestDto, QrLinkResponseDto, QrTargetType } from '@/lib/api/types';
-import { hasGalleryQrLink } from '@/lib/qrLinks';
+import type { QrLinkRequestDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
-import { QrTargetTypeButton } from './QrTargetTypeButton';
 import { fieldControlClass, fieldLabelClass, fieldTextClass, formPanelClass } from './shared';
-
-const allQrTargetTypes = ['EVENT_JOIN', 'MEDIA_UPLOAD'] as const;
 
 export function CreateQrLinkForm({
     eventId,
-    qrLinks,
     onDoneAction,
-    onClampNoticeAction,
 }: {
     eventId: string;
-    qrLinks: QrLinkResponseDto[];
     onDoneAction: () => void;
-    onClampNoticeAction?: (message: string) => void;
 }) {
     const t = useTranslations('ManagePage');
     const createQrLink = useCreateQrLink(eventId);
-    const [targetType, setTargetType] = useState<QrTargetType>('EVENT_JOIN');
+    const { data: invitations = [] } = useEventInvitations(eventId);
     const [label, setLabel] = useState('');
-    const [maxGuests, setMaxGuests] = useState(50);
+    const [invitationId, setInvitationId] = useState('');
     const toErrorMessage = useApiErrorMessage();
-
-    // Only one gallery upload code per event — the event already has one (auto-generated or
-    // host-created), so don't offer to create a duplicate. See lib/qrLinks.ts.
-    const galleryLinkExists = hasGalleryQrLink(qrLinks);
-    const qrTargetTypes = allQrTargetTypes.filter((item) => item !== 'MEDIA_UPLOAD' || !galleryLinkExists);
-
-    const handleTargetTypeChange = useCallback((value: QrTargetType) => {
-        setTargetType(value);
-    }, []);
 
     function handleLabelChange(event: ChangeEvent<HTMLInputElement>) {
         setLabel(event.target.value);
     }
 
-    function handleMaxGuestsChange(event: ChangeEvent<HTMLInputElement>) {
-        setMaxGuests(Math.max(1, Number(event.target.value)));
+    function handleInvitationChange(event: ChangeEvent<HTMLSelectElement>) {
+        setInvitationId(event.target.value);
     }
 
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
         const input: QrLinkRequestDto = {
-            targetType,
+            targetType: 'INVITATION',
             label: label.trim() || undefined,
-            maxGuests: targetType === 'EVENT_JOIN' ? maxGuests : undefined,
+            targetId: invitationId,
         };
 
         try {
-            const qrLink = await createQrLink.mutateAsync(input);
-            if (targetType === 'EVENT_JOIN' && qrLink.maxGuests !== maxGuests) {
-                onClampNoticeAction?.(t('qr.cappedToPlan', { count: qrLink.maxGuests ?? maxGuests }));
-            }
+            await createQrLink.mutateAsync(input);
             onDoneAction();
         } catch {
             // error surfaced inline below
@@ -87,29 +68,8 @@ export function CreateQrLinkForm({
                 </button>
             </div>
 
+            {/* Invitation details */}
             <div className="grid gap-3 sm:grid-cols-2">
-                {/* Destination */}
-                <div className={fieldLabelClass}>
-                    <p className={fieldTextClass}>{t('qr.fields.targetType')}</p>
-                    <div className="flex flex-wrap gap-2">
-                        {qrTargetTypes.map((item) => {
-                            const Icon = item === 'EVENT_JOIN' ? UserPlus : ImagePlus;
-                            return (
-                                <QrTargetTypeButton
-                                    key={item}
-                                    item={item}
-                                    label={t(`qr.targetTypes.${item}`)}
-                                    icon={Icon}
-                                    selected={targetType === item}
-                                    onSelectAction={handleTargetTypeChange}
-                                />
-                            );
-                        })}
-                    </div>
-                    {galleryLinkExists && <p className="text-xs leading-relaxed text-ink-faint">{t('qr.galleryLinkExists')}</p>}
-                </div>
-
-                {/* Label */}
                 <FormFieldLabel label={t('qr.fields.label')} optional className={fieldLabelClass} labelClassName={fieldTextClass}>
                     <input
                         type="text"
@@ -120,21 +80,19 @@ export function CreateQrLinkForm({
                         className={cn(fieldControlClass, 'placeholder:text-ink-faint')}
                     />
                 </FormFieldLabel>
-            </div>
-
-            {targetType === 'EVENT_JOIN' && (
-                <FormFieldLabel label={t('qr.fields.maxGuests')} required className={cn(fieldLabelClass, 'mt-4')} labelClassName={fieldTextClass}>
-                    <input
-                        type="number"
-                        required
-                        min={1}
-                        max={1000}
-                        value={maxGuests}
-                        onChange={handleMaxGuestsChange}
-                        className={fieldControlClass}
-                    />
+                <FormFieldLabel label={t('qr.fields.invitation')} required className={fieldLabelClass} labelClassName={fieldTextClass}>
+                    <select required value={invitationId} onChange={handleInvitationChange} className={fieldControlClass}>
+                        <option value="">{t('qr.placeholders.invitation')}</option>
+                        {invitations.map((invitation) => (
+                            <option key={invitation.id} value={invitation.id}>
+                                {invitation.firstName || invitation.lastName
+                                    ? [invitation.firstName, invitation.lastName].filter(Boolean).join(' ')
+                                    : invitation.email || invitation.inviteCode}
+                            </option>
+                        ))}
+                    </select>
                 </FormFieldLabel>
-            )}
+            </div>
 
             {createQrLink.isError && <p className="mt-3 text-xs text-rose-500">{toErrorMessage(createQrLink.error)}</p>}
 

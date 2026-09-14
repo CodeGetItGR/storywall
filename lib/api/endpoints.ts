@@ -103,6 +103,8 @@ export const endpoints = {
         refundRequests: (eventId: string) => `/api/events/${eventId}/refund-requests`,
         deletionRequests: (eventId: string) => `/api/events/${eventId}/deletion-requests`,
         posts: (eventId: string) => `/api/events/${eventId}/posts`,
+        stream: (eventId: string, token: string) => `/api/events/${eventId}/stream?token=${encodeURIComponent(token)}`,
+        streamToken: (eventId: string) => `/api/events/${eventId}/stream-token`,
         stories: (eventId: string) => `/api/events/${eventId}/stories`,
         playlistSuggestions: (eventId: string) => `/api/events/${eventId}/playlist-suggestions`,
         playlistSuggestionsLeaderboard: (eventId: string) => `/api/events/${eventId}/playlist-suggestions/leaderboard`,

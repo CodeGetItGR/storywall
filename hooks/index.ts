@@ -3,6 +3,7 @@ export * from './useAppConfig';
 export * from './useAuth';
 export * from './useComments';
 export * from './useEvent';
+export * from './useEventFeedStream';
 export * from './useEventHosts';
 export * from './useEventInvitations';
 export * from './useEventMembers';

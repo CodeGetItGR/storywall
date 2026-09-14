@@ -98,7 +98,7 @@ export function InvitationsQrScreen() {
                     )}
 
                     {showCreate && canCreate && (
-                        <CreateQrLinkForm eventId={eventId} qrLinks={qrLinks} onDoneAction={handleHideCreate} onClampNoticeAction={handleClampNotice} />
+                        <CreateQrLinkForm eventId={eventId} onDoneAction={handleHideCreate} />
                     )}
 
                     <div className="flex flex-col divide-y divide-border">

@@ -15,7 +15,7 @@ import { routes } from '@/lib/routes';
 export function GalleryQrScreen() {
     const t = useTranslations('GalleryQrPage');
     const router = useRouter();
-    const { eventId, featureEnabled, isLoading, qrLink, handleCreate, isCreating, createError } = useGalleryQrScreen();
+    const { eventId, featureEnabled, isLoading, qrLink } = useGalleryQrScreen();
 
     // The gallery QR feature is a plan/event-type setting, not something a host
     // can turn back on — treat a disabled feature the same as a page that
@@ -56,15 +56,6 @@ export function GalleryQrScreen() {
                 <div className="flex flex-col items-center gap-4 rounded-2xl bg-surface-muted/60 px-6 py-10 text-center">
                     <Images className="h-8 w-8 text-ink-faint" aria-hidden="true" />
                     <p className="text-sm leading-relaxed text-ink-muted">{t('missing.body')}</p>
-                    <button
-                        type="button"
-                        onClick={handleCreate}
-                        disabled={isCreating}
-                        className="rounded-full bg-gradient-brand px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                    >
-                        {isCreating ? t('missing.creating') : t('missing.cta')}
-                    </button>
-                    {createError && <p className="text-xs text-rose-500">{createError}</p>}
                 </div>
             )}
         </ModulePageShell>

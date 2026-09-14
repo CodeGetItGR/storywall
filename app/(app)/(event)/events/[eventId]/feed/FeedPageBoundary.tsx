@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useMemo } from 'react';
 
 import { FeedPageSkeleton } from '@/components/feed/FeedPageSkeleton';
-import { useEventPosts } from '@/hooks';
+import { useEventFeedStream, useEventPosts } from '@/hooks';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEvent } from '@/hooks/useEvent';
 import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
@@ -29,6 +29,7 @@ export function FeedPageBoundary({ eventId }: { eventId: string }) {
     const { data: appConfig } = useAppConfig();
 
     const { data: event, error, isLoading } = useEvent(eventId);
+    useEventFeedStream(eventId);
     const { data: postPages, fetchNextPage, hasNextPage, isFetchingNextPage } = useEventPosts(eventId);
     const posts = useMemo(() => postPages?.pages.flatMap((page) => page.content) ?? [], [postPages?.pages]);
     const loadMoreRef = useInfiniteScrollSentinel(hasNextPage, fetchNextPage, posts.length);

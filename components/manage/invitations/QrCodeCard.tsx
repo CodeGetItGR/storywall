@@ -11,6 +11,7 @@ import type { QrLinkResponseDto } from '@/lib/api/types';
 // manage-page preview modal and the dedicated gallery QR page.
 export function QrCodeCard({ qrLink, size = 240 }: { qrLink: QrLinkResponseDto; size?: number }) {
     const t = useTranslations('ManagePage');
+    const tGlobal = useTranslations();
     const svgRef = useRef<SVGSVGElement | null>(null);
     const [canShare, setCanShare] = useState(false);
 
@@ -28,7 +29,7 @@ export function QrCodeCard({ qrLink, size = 240 }: { qrLink: QrLinkResponseDto; 
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `${qrLink.label || qrLink.token}.svg`;
+        link.download = `${qrLink.labelKey ? tGlobal(qrLink.labelKey) : qrLink.label || qrLink.token}.svg`;
         link.click();
         URL.revokeObjectURL(url);
     }
@@ -44,7 +45,7 @@ export function QrCodeCard({ qrLink, size = 240 }: { qrLink: QrLinkResponseDto; 
         popup.document.write(`
             <html>
               <head>
-                <title>${qrLink.label || 'Storywall QR'}</title>
+                <title>${qrLink.labelKey ? tGlobal(qrLink.labelKey) : qrLink.label || 'Storywall QR'}</title>
                 <style>
                   body { font-family: Arial, sans-serif; margin: 0; padding: 32px; text-align: center; color: #241f1a; }
                   .label { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
@@ -54,7 +55,7 @@ export function QrCodeCard({ qrLink, size = 240 }: { qrLink: QrLinkResponseDto; 
                 </style>
               </head>
               <body>
-                <div class="label">${qrLink.label || 'Storywall'}</div>
+                <div class="label">${qrLink.labelKey ? tGlobal(qrLink.labelKey) : qrLink.label || 'Storywall'}</div>
                 <div class="hint">Scan to open Storywall</div>
                 ${serialized}
                 <div class="url">${qrLink.publicUrl}</div>
@@ -68,7 +69,7 @@ export function QrCodeCard({ qrLink, size = 240 }: { qrLink: QrLinkResponseDto; 
 
     async function handleShare() {
         try {
-            await navigator.share({ title: qrLink.label || undefined, url: qrLink.publicUrl });
+            await navigator.share({ title: qrLink.labelKey ? tGlobal(qrLink.labelKey) : qrLink.label || undefined, url: qrLink.publicUrl });
         } catch {
             // User cancelled the share sheet — nothing to do.
         }
@@ -85,7 +86,7 @@ export function QrCodeCard({ qrLink, size = 240 }: { qrLink: QrLinkResponseDto; 
                     marginSize={4}
                     fgColor="#241f1a"
                     bgColor="#ffffff"
-                    title={qrLink.label || t('qr.untitled')}
+                    title={qrLink.labelKey ? tGlobal(qrLink.labelKey) : qrLink.label || t('qr.untitled')}
                     imageSettings={{ src: '/assets/Logo.svg', height: size / 6, width: size / 6, excavate: true }}
                 />
             </div>

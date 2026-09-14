@@ -1,11 +1,15 @@
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+'use client';
+
+import { type InfiniteData, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRef } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
-import { patchPostInCaches, postKeys } from '@/hooks/usePosts';
+import { patchPostInCaches } from '@/hooks/usePosts';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
 import type { CommentRequestDto, CommentResponseDto, PostResponseDto } from '@/lib/api/types';
+import { postKeys } from '@/lib/postQueries';
 
 // NOTE: this key is nested under postKeys.detail's ['posts', id] — React
 // Query's invalidateQueries matches by prefix, so invalidating
@@ -24,14 +28,27 @@ const COMMENTS_PAGE_SIZE = 30;
 // reply's parent is always on the same page or an earlier one.
 export function usePostComments(postId: string | null) {
     const { isAuthenticated } = useAuth();
+    const queryClient = useQueryClient();
+    const etags = useRef(new Map<string, string>());
 
     return useInfiniteQuery({
         queryKey: commentKeys.list(postId ?? ''),
-        queryFn: ({ pageParam }) =>
-            api.get<Page<CommentResponseDto>>(`${endpoints.posts.comments(postId!)}?page=${pageParam}&size=${COMMENTS_PAGE_SIZE}`),
+        queryFn: async ({ pageParam }) => {
+            const page = pageParam as number;
+            const path = `${endpoints.posts.comments(postId!)}?page=${page}&size=${COMMENTS_PAGE_SIZE}`;
+            const etag = etags.current.get(path);
+            const result = await api.conditionalGet<Page<CommentResponseDto>>(path, etag ? { headers: { 'If-None-Match': etag } } : undefined);
+            if (result.notModified) {
+                const cached = queryClient.getQueryData<InfiniteData<Page<CommentResponseDto>>>(commentKeys.list(postId!))?.pages.find((item) => item.number === page);
+                if (cached) return cached;
+            }
+            if (result.etag) etags.current.set(path, result.etag);
+            return result.data!;
+        },
         initialPageParam: 0,
         getNextPageParam: (lastPage) => (lastPage.number + 1 < lastPage.totalPages ? lastPage.number + 1 : undefined),
         enabled: Boolean(postId) && isAuthenticated,
+        refetchInterval: 60_000,
     });
 }
 
