@@ -2,19 +2,12 @@
 
 import { useTranslations } from 'next-intl';
 
-import { BillingCoveragePanel } from '@/components/manage/billing/BillingCoveragePanel';
 import { BillingOrdersPanel } from '@/components/manage/billing/BillingOrdersPanel';
 import { BillingPlanPanel } from '@/components/manage/billing/BillingPlanPanel';
 import { BillingStatusHeader } from '@/components/manage/billing/BillingStatusHeader';
 import { useEventBillingPanel } from '@/hooks/useEventBillingPanel';
-import type { BillingSection } from '@/lib/manageSections';
 
-/**
- * Plan, coverage and orders are top-level sections of the dashboard, so this
- * container renders the shared status header plus the one requested panel
- * instead of a second level of tabs.
- */
-export default function BillingTab({ eventId, section }: { eventId: string; section: BillingSection }) {
+export default function BillingTab({ eventId }: { eventId: string }) {
     const tPageError = useTranslations('PageErrorState.billing');
     const tPageErrorCommon = useTranslations('PageErrorState');
     const panel = useEventBillingPanel(eventId);
@@ -50,24 +43,19 @@ export default function BillingTab({ eventId, section }: { eventId: string; sect
             {/* Status */}
             <BillingStatusHeader data={data} derived={derived} insights={insights} />
 
-            {/* Section */}
-            {section === 'plan' && (
-                <BillingPlanPanel
-                    eventId={eventId}
-                    data={data}
-                    derived={derived}
-                    insights={insights}
-                    currentPlan={panel.currentPlan}
-                    nextPlan={panel.nextPlan}
-                    paidAddonOffers={panel.paidAddonOffers}
-                />
-            )}
+            {/* Plan */}
+            <BillingPlanPanel
+                eventId={eventId}
+                data={data}
+                derived={derived}
+                insights={insights}
+                currentPlan={panel.currentPlan}
+                nextPlan={panel.nextPlan}
+                paidAddonOffers={panel.paidAddonOffers}
+            />
 
-            {section === 'coverage' && <BillingCoveragePanel derived={derived} insights={insights} />}
-
-            {section === 'orders' && (
-                <BillingOrdersPanel data={data} derived={derived} insights={insights} onShowAllOrders={panel.handleShowAllOrders} />
-            )}
+            {/* Orders */}
+            <BillingOrdersPanel data={data} derived={derived} insights={insights} onShowAllOrders={panel.handleShowAllOrders} />
         </div>
     );
 }

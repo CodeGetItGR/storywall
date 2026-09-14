@@ -1,6 +1,6 @@
 'use client';
 
-import { CreditCard, HelpCircle, LayoutDashboard, type LucideIcon, Receipt, Settings, ShieldCheck, Ticket, Trash2, Users } from 'lucide-react';
+import { CreditCard, HelpCircle, LayoutDashboard, type LucideIcon, Settings, Ticket, Trash2, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
@@ -15,9 +15,7 @@ export const sectionIcons: Record<ManageSection, LucideIcon> = {
     members: Users,
     rsvp: Users,
     invitations: Ticket,
-    plan: CreditCard,
-    coverage: ShieldCheck,
-    orders: Receipt,
+    billing: CreditCard,
 };
 
 /**
@@ -50,9 +48,15 @@ export function ManageSectionNav({
                 const sections = visibleSections ? groupSections.filter((section) => visibleSections.includes(section)) : groupSections;
                 if (sections.length === 0) return null;
 
+                // A group with a single section (e.g. billing) would otherwise show its
+                // caption directly above a button with the same label.
+                const showGroupLabel = sections.length > 1;
+
                 return (
                     <div key={group}>
-                        <p className="mb-1.5 px-3 text-[10.5px] font-bold uppercase tracking-[0.08em] text-ink-faint">{t(`groups.${group}`)}</p>
+                        {showGroupLabel && (
+                            <p className="mb-1.5 px-3 text-[10.5px] font-bold uppercase tracking-[0.08em] text-ink-faint">{t(`groups.${group}`)}</p>
+                        )}
                         <div className="space-y-px">
                             {sections.map((section) => {
                                 const Icon = sectionIcons[section];

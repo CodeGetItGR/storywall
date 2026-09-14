@@ -16,7 +16,7 @@ import { useEventQrLinks, useEventQrLinkStats } from '@/hooks/useQrLinks';
 import { useEventRsvps } from '@/hooks/useRsvps';
 import { useEventUsage } from '@/hooks/useUsage';
 import { isEventWritable, isPrimaryHost } from '@/lib/eventLifecycle';
-import { isBillingSection, type ManageSection, manageSectionGroups, parseManageSection } from '@/lib/manageSections';
+import { type ManageSection, manageSectionGroups, parseManageSection } from '@/lib/manageSections';
 import { routes } from '@/lib/routes';
 import { eventStatusBadgeTone } from '@/lib/statusTones';
 import { cn } from '@/lib/utils';
@@ -173,7 +173,7 @@ export function ManageScreen() {
 
             {section === 'danger' && <DangerZoneTab event={activeEvent} />}
 
-            {isBillingSection(section) && <BillingTab eventId={eventId} section={section} />}
+            {section === 'billing' && <BillingTab eventId={eventId} />}
         </>
     );
 

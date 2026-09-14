@@ -1,6 +1,5 @@
 - Add desktop "+" composer button, similar to the mobile version, to create a new post / story / music suggestion.
 - RSVP reports don't look good.
-- Post pictures cannot be zoomed.
 - When scanning a gallery QR code, the user should be prompted to directly upload media to the gallery (without requiring login).
 - Danger Zone / Help should be towards the end of the navigation in the host management page.
 - Plan / Coverage / Orders should be a single tab with no duplicated info. Just enough for the user to know what they have and what they can do with it.

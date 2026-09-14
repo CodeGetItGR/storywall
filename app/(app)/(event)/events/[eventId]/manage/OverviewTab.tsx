@@ -1,11 +1,10 @@
 import { useTranslations } from 'next-intl';
 
-import { GiftAccountSetup } from '@/components/manage/GiftAccountSetup';
+import { HostContextSections } from '@/components/layout/right-context-panel/HostContextSections';
 import { OverviewDraftPanel } from '@/components/manage/OverviewDraftPanel';
-import { TargetedSection } from '@/components/manage/TargetedSection';
-import { UsagePanel } from '@/components/plan/UsagePanel';
 import { MetricStrip } from '@/components/ui/MetricStrip';
 import { useEventOverviewPlan } from '@/hooks/useEventOverviewPlan';
+import { useRightContextPanel } from '@/hooks/useRightContextPanel';
 import type {
     EventModuleResponseDto,
     EventStatus,
@@ -15,9 +14,6 @@ import type {
     PlanTierResponseDto,
     PlatformModuleResponseDto,
 } from '@/lib/api/types';
-import { formatBytes } from '@/lib/format';
-import { GIFT_ACCOUNT_SECTION_ID } from '@/lib/manageSectionTargets';
-import { routes } from '@/lib/routes';
 
 export default function OverviewTab({
     memberCount,
@@ -51,7 +47,7 @@ export default function OverviewTab({
     startAt: string | null;
 }) {
     const t = useTranslations('ManagePage');
-    const { currentPlan, nextPlan, selectedAddons, activationTotal, wishlistAvailable, includedModuleKeys } = useEventOverviewPlan({
+    const { currentPlan, selectedAddons, activationTotal, wishlistAvailable } = useEventOverviewPlan({
         eventId,
         eventStatus,
         eventUsage,
@@ -60,6 +56,7 @@ export default function OverviewTab({
         modules,
         eventModules,
     });
+    const hostContextPanel = useRightContextPanel({ includeManageLinks: false });
 
     if (eventStatus === 'DRAFT') {
         return (
@@ -84,13 +81,6 @@ export default function OverviewTab({
 
     return (
         <div className="flex flex-col gap-5">
-            {/* Gift account */}
-            {wishlistAvailable && (
-                <TargetedSection id={GIFT_ACCOUNT_SECTION_ID}>
-                    <GiftAccountSetup eventId={eventId} />
-                </TargetedSection>
-            )}
-
             {/* Headline numbers */}
             <MetricStrip
                 items={[
@@ -101,29 +91,10 @@ export default function OverviewTab({
                 ]}
             />
 
-            {/* Plan usage */}
-            {eventUsage && (
-                <UsagePanel
-                    className="rounded-none border-0 border-t border-border bg-transparent p-0 pt-4 shadow-none"
-                    title={t('usage.eventTitle')}
-                    planName={currentPlan?.name ?? eventUsage.planTier}
-                    nextPlanName={nextPlan?.name}
-                    upgradeHref={routes.events.manage(eventId, { tab: 'billing' })}
-                    includedModuleKeys={includedModuleKeys}
-                    items={[
-                        {
-                            key: 'storage',
-                            used: eventUsage.storageBytes,
-                            limit: eventUsage.storageLimitBytes,
-                            percent: eventUsage.storagePercent,
-                            valueLabel:
-                                eventUsage.storageLimitBytes === null
-                                    ? formatBytes(eventUsage.storageBytes)
-                                    : `${formatBytes(eventUsage.storageBytes)} / ${formatBytes(eventUsage.storageLimitBytes)}`,
-                        },
-                    ]}
-                />
-            )}
+            {/* Host context: same actions, usage and summaries the feed page's right panel shows */}
+            <div className="border-t border-border pt-4">
+                <HostContextSections panel={hostContextPanel} showMembersUsage={false} />
+            </div>
         </div>
     );
 }

@@ -923,9 +923,7 @@
             "members": "Members",
             "rsvp": "RSVP",
             "invitations": "Invitations",
-            "plan": "Plan",
-            "coverage": "Coverage",
-            "orders": "Orders",
+            "billing": "Billing",
             "refund": "Refund"
         },
         "sectionSwitcher": "Change section",
@@ -1314,8 +1312,6 @@
             "monthlyTotal": "{amount} paid once.",
             "renewalTotal": "{amount} paid once.",
             "ownedTotal": "{amount} paid once.",
-            "total": "Add-ons",
-            "ownedHint": "Add-ons are owned by this event and do not renew.",
             "manageTitle": "Paid add-ons",
             "manageBody": "Add or remove services.",
             "manageAction": "Manage add-ons"
@@ -1483,13 +1479,6 @@
             "cancelConfirmYes": "Cancel",
             "cancelConfirmNo": "Keep",
             "noResume": "To continue after that, start a new subscription."
-        },
-        "activation": {
-            "title": "Activation",
-            "order": "Order",
-            "paidAt": "Paid",
-            "amount": "Amount",
-            "permanent": "Once paid, this event stays active."
         },
         "refund": {
             "title": "Refund",

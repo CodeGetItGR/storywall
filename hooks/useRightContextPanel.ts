@@ -13,7 +13,7 @@ import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/E
 // Gathers everything RightContextPanel renders. Draft events hide every
 // summary except plan usage — there's nothing to report yet (no RSVPs,
 // media, or wishbook entries can exist before the event goes live).
-export function useRightContextPanel() {
+export function useRightContextPanel({ includeManageLinks = true }: { includeManageLinks?: boolean } = {}) {
     const activeEvent = useActiveEvent();
     const isHost = useIsHost();
     const isLoading = useEventContextLoading();
@@ -37,7 +37,11 @@ export function useRightContextPanel() {
     // RSVPs from the dashboard's RSVP section, already linked in that menu).
     // The gallery QR link is excluded here — it gets its own section below,
     // between plan usage and the RSVP summary, instead of sitting in this flat list.
-    const hostItemsForActions = useHostMenuItems().filter((item) => item.key !== 'galleryQr');
+    // `includeManageLinks: false` (used when this content is reused inside the
+    // manage page itself, e.g. its Overview tab) drops "Manage" (would self-link
+    // to the dashboard) and "Help" (already one click away in the manage nav).
+    let hostItemsForActions = useHostMenuItems().filter((item) => item.key !== 'galleryQr');
+    if (!includeManageLinks) hostItemsForActions = hostItemsForActions.filter((item) => item.key !== 'manage' && item.key !== 'help');
     const toolItems = useToolsMenuItems();
     const actionItems = isDraft
         ? hostItemsForActions.filter((item) => item.key !== 'help')
@@ -70,3 +74,5 @@ export function useRightContextPanel() {
         wishbookTotal: wishbook.data?.pages[0]?.totalElements ?? 0,
     };
 }
+
+export type UseRightContextPanelResult = ReturnType<typeof useRightContextPanel>;

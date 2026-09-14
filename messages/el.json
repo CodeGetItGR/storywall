@@ -921,9 +921,7 @@
             "members": "Μέλη",
             "rsvp": "RSVP",
             "invitations": "Προσκλήσεις",
-            "plan": "Πλάνο",
-            "coverage": "Κάλυψη",
-            "orders": "Παραγγελίες",
+            "billing": "Χρέωση",
             "refund": "Επιστροφή χρημάτων"
         },
         "sectionSwitcher": "Αλλαγή ενότητας",
@@ -1314,8 +1312,6 @@
             "monthlyTotal": "{amount} εφάπαξ.",
             "renewalTotal": "{amount} εφάπαξ.",
             "ownedTotal": "{amount} εφάπαξ.",
-            "total": "Πρόσθετα",
-            "ownedHint": "Τα πρόσθετα ανήκουν σε αυτή την εκδήλωση και δεν ανανεώνονται.",
             "manageTitle": "Πρόσθετες υπηρεσίες",
             "manageBody": "Προσθέστε ή αφαιρέστε υπηρεσίες.",
             "manageAction": "Διαχείριση"
@@ -1483,13 +1479,6 @@
             "cancelConfirmYes": "Διακοπή",
             "cancelConfirmNo": "Διατήρηση",
             "noResume": "Για να συνεχίσει μετά, ξεκινήστε νέα συνδρομή."
-        },
-        "activation": {
-            "title": "Ενεργοποίηση",
-            "order": "Παραγγελία",
-            "paidAt": "Πληρώθηκε",
-            "amount": "Ποσό",
-            "permanent": "Μετά την πληρωμή, η εκδήλωση παραμένει ενεργή."
         },
         "refund": {
             "title": "Επιστροφή χρημάτων",
