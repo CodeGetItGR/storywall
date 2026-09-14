@@ -45,34 +45,30 @@ export default function HelpTab({
         });
     }
 
-    type HelpStepEntry = { key: string; title: string; body: string; complete: boolean; actions: HelpStepAction[] };
+    type HelpStepEntry = { key: string; title: string; body?: string; complete: boolean; actions: HelpStepAction[] };
 
     const steps: HelpStepEntry[] = [
         {
             key: 'details',
             title: t('steps.details.title'),
-            body: t('steps.details.body'),
             complete: progress.details,
             actions: detailsActions,
         },
         {
             key: 'rsvp',
             title: t('steps.rsvp.title'),
-            body: t('steps.rsvp.body'),
             complete: progress.rsvp,
             actions: [{ key: 'rsvp', href: routes.events.tools.rsvp(eventId), label: t('steps.rsvp.edit') }],
         },
         hasGiftAccountModule && {
             key: 'giftAccount',
             title: t('steps.giftAccount.title'),
-            body: t('steps.giftAccount.body'),
             complete: progress.giftAccount,
             actions: [{ key: 'gifts', href: routes.events.tools.gifts(eventId), label: t('steps.giftAccount.edit') }],
         },
         {
             key: 'schedule',
             title: t('steps.schedule.title'),
-            body: t('steps.schedule.body'),
             complete: progress.schedule,
             actions: [{ key: 'schedule', href: routes.events.tools.schedule(eventId), label: t('steps.schedule.edit') }],
         },
@@ -92,8 +88,15 @@ export default function HelpTab({
         <div className="pb-6">
             {/* Welcome */}
             <div className="mb-8 text-center sm:text-left">
-                <h2 className="text-lg font-bold text-ink">{t('welcome.title', { eventTitle })}</h2>
-                <p className="mt-1.5 text-sm text-ink-muted">{t('welcome.body')}</p>
+                <p className="text-sm font-semibold text-ink">{t('welcome.greeting')}</p>
+                <p className="mt-1 text-sm text-ink-muted">{t('welcome.subtitle')}</p>
+                <p className="mt-1 text-lg font-bold text-ink">{eventTitle}</p>
+            </div>
+
+            {/* Section heading */}
+            <div className="mb-5 border-t border-border/70 pt-6 text-center sm:text-left">
+                <h2 className="text-base font-semibold text-ink">{t('steps.section.title')}</h2>
+                <p className="mt-1 text-sm text-ink-muted">{t('steps.section.body')}</p>
             </div>
 
             {/* Setup steps */}
