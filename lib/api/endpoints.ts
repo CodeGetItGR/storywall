@@ -32,6 +32,8 @@ export const endpoints = {
         // session. See lib/auth/authCookies.ts.
         session: '/api/auth/session',
         resendVerification: '/api/auth/resend-verification',
+        verifyEmail: '/api/auth/verify-email',
+        resetPassword: '/api/auth/reset-password',
     },
 
     me: {

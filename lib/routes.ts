@@ -29,6 +29,8 @@ export const routes = {
     eventNotFound: '/event-not-found',
     login: '/login',
     register: '/register',
+    verifyEmail: '/verify-email',
+    resetPassword: '/reset-password',
     invite: '/invite',
     home: '/home',
     modules: '/modules',

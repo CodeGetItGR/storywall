@@ -420,6 +420,31 @@
         "signInLink": "Sign in",
         "orContinueWith": "Or continue with"
     },
+    "VerifyEmailPage": {
+        "pendingTitle": "Confirming your email",
+        "pendingDescription": "Please wait.",
+        "verifiedTitle": "Email confirmed",
+        "verifiedDescription": "You can now sign in.",
+        "invalidTitle": "This confirmation link is no longer valid.",
+        "invalidDescription": "Request a new confirmation email and try again.",
+        "signIn": "Sign in"
+    },
+    "ResetPasswordPage": {
+        "title": "Reset your password",
+        "subtitle": "Choose a new password.",
+        "invalidTitle": "This reset link is no longer valid.",
+        "invalidDescription": "Request a new reset link and try again.",
+        "invalidLink": "This reset link is no longer valid. Request a new one.",
+        "passwordMismatch": "Passwords do not match.",
+        "fields": {
+            "password": "New password",
+            "confirmation": "Confirm password"
+        },
+        "showPassword": "Show password",
+        "hidePassword": "Hide password",
+        "submit": "Reset password",
+        "signIn": "Back to sign in"
+    },
     "WelcomePage": {
         "title": "Let's get started",
         "subtitle": "Create your own event, or join one you've been invited to.",
