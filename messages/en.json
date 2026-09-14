@@ -277,6 +277,8 @@
         "posting": "Posting…",
         "storageLimitExceededWithPlan": "This event has no room left for new media on its current plan. Upgrade to {plan} to add more.",
         "uploading": "Uploading…",
+        "mediaPreview": "Media preview",
+        "closeMediaPreview": "Close media preview",
         "filtersLabel": "Image filters",
         "imageSelected": "Edit image filters",
         "filters": {

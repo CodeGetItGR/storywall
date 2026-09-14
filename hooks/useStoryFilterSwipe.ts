@@ -17,7 +17,7 @@ export interface StoryFilterSwipe {
     setIndex: (index: number) => void;
 }
 
-const NAME_PILL_DURATION_MS = 1000;
+const NAME_PILL_DURATION_MS = 1500;
 const DRAG_FULL_PX = 120;
 const COMMIT_PROGRESS = 0.5;
 

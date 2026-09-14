@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { type ChangeEvent, type MouseEvent, type PointerEvent as ReactPointerEvent, useEffect, useState } from 'react';
 
+import { FilterNameOverlay } from '@/components/composer/FilterNameOverlay';
+import { PostImageFilterPicker } from '@/components/composer/PostImageFilterPicker';
 import { StoryVideo } from '@/components/story/StoryVideo';
 import { Modal } from '@/components/ui/modal';
 import { useStoryCameraController } from '@/hooks/useStoryCameraController';
@@ -152,6 +154,10 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
         setShowFilterSwipeCue(false);
         filterSwipeHandlers.onPointerDown(event);
     }
+    function handleStoryFilterChange(filterId: string) {
+        const index = STORY_FILTER_PRESETS.findIndex((preset) => preset.id === filterId);
+        if (index >= 0) setFilterIndex(index);
+    }
 
     const activePreviewFailed = Boolean(activeItem && failedPreviewKeys.has(activeItem.key));
     const activeVideoSrc = activePreviewFailed ? activeItem?.remoteUrl : activeItem?.previewUrl;
@@ -181,7 +187,11 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                         />
                                     )
                                 ) : (
-                                    <div className="relative h-full w-full touch-none" {...filterSwipeHandlers} onPointerDown={handleFilterPointerDown}>
+                                    <div
+                                        className="relative h-full w-full touch-none"
+                                        {...filterSwipeHandlers}
+                                        onPointerDown={handleFilterPointerDown}
+                                    >
                                         <FilterLayer src={activeItem.previewUrl} alt={t('previewAlt')} preset={activeFilterPreset} />
                                         {targetFilterPreset && (
                                             <div className="absolute inset-0" style={{ opacity: dragProgress }}>
@@ -190,12 +200,7 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                         )}
                                     </div>
                                 )}
-                                {/* Filter name pill */}
-                                {isActiveImage && visibleName && (
-                                    <div className="pointer-events-none absolute top-1/2 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white backdrop-blur-md">
-                                        {t(`filters.${visibleName}`)}
-                                    </div>
-                                )}
+                                <FilterNameOverlay name={isActiveImage && visibleName ? t(`filters.${visibleName}`) : null} />
                                 {/* Filter swipe cue */}
                                 {isActiveImage && showFilterSwipeCue && (
                                     <div className="pointer-events-none absolute top-1/2 right-5 z-10 flex -translate-y-1/2 flex-col items-center gap-1 rounded-full bg-black/55 px-3 py-2 text-white/90 backdrop-blur-md motion-safe:animate-pulse">
@@ -295,6 +300,10 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                             {activeItem.caption.length}/{maxCaptionLength}
                                         </span>
                                     </div>
+                                    {/* Filter tray */}
+                                    {isActiveImage && (
+                                        <PostImageFilterPicker image={activeItem} onFilterChange={handleStoryFilterChange} variant="overlay" />
+                                    )}
                                     {(activeItem.error || error || notice) && (
                                         <p
                                             className={cn(

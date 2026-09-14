@@ -277,6 +277,8 @@
         "genericSubmitFailed": "Κάτι πήγε στραβά. Δοκιμάστε ξανά.",
         "storageLimitExceededWithPlan": "Δεν υπάρχει άλλος χώρος για νέα αρχεία. Αναβαθμίστε σε {plan} για περισσότερο χώρο.",
         "uploading": "Μεταφόρτωση…",
+        "mediaPreview": "Προεπισκόπηση πολυμέσου",
+        "closeMediaPreview": "Κλείσιμο προεπισκόπησης πολυμέσου",
         "filtersLabel": "Φίλτρα εικόνας",
         "imageSelected": "Επεξεργασία φίλτρων εικόνας",
         "filters": {

@@ -36,6 +36,7 @@ export interface ComposerController {
     caption: string;
     images: PendingImage[];
     selectedImageForFilter: PendingImage | null;
+    activeMediaPreview: PendingImage | null;
     sizeError: string | null;
     countError: string | null;
     submitError: string | null;
@@ -62,6 +63,7 @@ export interface ComposerController {
     selectPostMode: () => void;
     selectSongMode: () => void;
     closeComposer: () => void;
+    closeMediaPreview: () => void;
     handleCaptionChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
     handlePickPhotos: () => void;
     handlePostFilesChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -100,6 +102,7 @@ export function useComposerController(): ComposerController {
     const [caption, setCaption] = useState('');
     const [images, setImages] = useState<PendingImage[]>([]);
     const [selectedImageKey, setSelectedImageKey] = useState<string | null>(null);
+    const [mediaPreviewKey, setMediaPreviewKey] = useState<string | null>(null);
     const [sizeError, setSizeError] = useState<string | null>(null);
     const [countError, setCountError] = useState<string | null>(null);
     const [submitError, setSubmitError] = useState<string | null>(null);
@@ -126,6 +129,7 @@ export function useComposerController(): ComposerController {
 
     const hasUnresolvedFailures = images.some((img) => img.status === 'failed');
     const selectedImageForFilter = images.find((image) => image.key === selectedImageKey && !image.file.type.startsWith('video/')) ?? null;
+    const activeMediaPreview = images.find((image) => image.key === mediaPreviewKey) ?? null;
     const isPostBusy = createPost.isPending || uploadBatch.isPending;
     const isSongBusy = createPlaylistSuggestion.isPending;
     const canCompose = Boolean(activeMember) && isEventWritable(activeEvent?.status);
@@ -174,6 +178,7 @@ export function useComposerController(): ComposerController {
         setCaption('');
         setImages([]);
         setSelectedImageKey(null);
+        setMediaPreviewKey(null);
         setSizeError(null);
         setCountError(null);
         setSubmitError(null);
@@ -227,7 +232,8 @@ export function useComposerController(): ComposerController {
                 status: 'pending' as const,
             }));
             setImages((prev) => [...prev, ...pending]);
-            setSelectedImageKey((current) => current ?? pending.find((image) => !image.file.type.startsWith('video/'))?.key ?? null);
+            setSelectedImageKey(pending[0].file.type.startsWith('video/') ? null : pending[0].key);
+            setMediaPreviewKey(pending[0].key);
         }
     }
 
@@ -240,6 +246,7 @@ export function useComposerController(): ComposerController {
             if (target) URL.revokeObjectURL(target.previewUrl);
             return prev.filter((img) => img.key !== key);
         });
+        if (mediaPreviewKey === key) setMediaPreviewKey(null);
     }
 
     function handleCaptionChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
@@ -276,7 +283,9 @@ export function useComposerController(): ComposerController {
         const key = event.currentTarget.dataset.key;
         if (!key) return;
         const image = images.find((candidate) => candidate.key === key);
-        if (image && !image.file.type.startsWith('video/')) setSelectedImageKey(key);
+        if (!image) return;
+        if (!image.file.type.startsWith('video/')) setSelectedImageKey(key);
+        setMediaPreviewKey(key);
     }
 
     function setImageFilter(filterId: string) {
@@ -472,6 +481,7 @@ export function useComposerController(): ComposerController {
         caption,
         images,
         selectedImageForFilter,
+        activeMediaPreview,
         sizeError,
         countError,
         submitError,
@@ -498,6 +508,7 @@ export function useComposerController(): ComposerController {
         selectPostMode,
         selectSongMode,
         closeComposer,
+        closeMediaPreview: () => setMediaPreviewKey(null),
         handleCaptionChange,
         handlePickPhotos,
         handlePostFilesChange,

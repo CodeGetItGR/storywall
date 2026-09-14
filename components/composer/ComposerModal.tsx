@@ -6,7 +6,6 @@ import { useTranslations } from 'next-intl';
 
 import { AddImageButton } from '@/components/composer/AddImageButton';
 import { ComposerModeToggle } from '@/components/composer/ComposerModeToggle';
-import { PostImageFilterPicker } from '@/components/composer/PostImageFilterPicker';
 import { AddSongForm } from '@/components/playlist';
 import { Modal } from '@/components/ui/modal';
 import type { ComposerController } from '@/hooks/useComposerController';
@@ -37,7 +36,6 @@ export function ComposerModal({
     selectPostMode,
     selectSongMode,
     selectedImageForFilter,
-    setImageFilter,
     sizeError,
     songComposerKey,
     submitError,
@@ -108,6 +106,13 @@ export function ComposerModal({
                                                             <Play className="h-3.5 w-3.5 fill-white" strokeWidth={0} />
                                                         </span>
                                                     </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleImageFilterSelection}
+                                                        data-key={img.key}
+                                                        aria-label={t('mediaPreview')}
+                                                        className="absolute inset-0 z-10 outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                                                    />
                                                 </>
                                             ) : (
                                                 <>
@@ -164,9 +169,6 @@ export function ComposerModal({
                                 })}
                             </div>
                         )}
-
-                        {/* Image filters */}
-                        {selectedImageForFilter && <PostImageFilterPicker image={selectedImageForFilter} onFilterChange={setImageFilter} />}
 
                         {(sizeError || countError || submitError) && (
                             <p className="text-xs text-destructive">{sizeError ?? countError ?? submitError}</p>
