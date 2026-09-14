@@ -392,6 +392,7 @@
         },
         "showPassword": "Show password",
         "hidePassword": "Hide password",
+        "forgotPassword": "Forgot password?",
         "submit": "Sign In",
         "tabTitle": "Login",
         "noAccount": "Don't have an account?",
@@ -443,6 +444,20 @@
         "showPassword": "Show password",
         "hidePassword": "Hide password",
         "submit": "Reset password",
+        "signIn": "Back to sign in"
+    },
+    "ForgotPasswordPage": {
+        "title": "Reset your password",
+        "subtitle": "Enter your email address.",
+        "submitted": "If that email has an account, we sent a reset link.",
+        "requestFailed": "Couldn't send the reset link. Try again.",
+        "fields": {
+            "email": "Email"
+        },
+        "placeholders": {
+            "email": "you@example.com"
+        },
+        "submit": "Send reset link",
         "signIn": "Back to sign in"
     },
     "WelcomePage": {

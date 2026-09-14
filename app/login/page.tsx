@@ -123,6 +123,14 @@ export default function LoginPage() {
                     </div>
                 </FormFieldLabel>
 
+                {/* Password recovery */}
+                <Link
+                    href={routes.forgotPassword}
+                    className="-mt-2 self-end text-xs font-semibold text-ink-muted transition-colors hover:text-ink hover:underline"
+                >
+                    {t('forgotPassword')}
+                </Link>
+
                 {/* Feedback */}
                 {error && (
                     <p role="alert" className="text-xs text-center text-red-500 -mt-1">

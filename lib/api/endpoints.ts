@@ -33,6 +33,7 @@ export const endpoints = {
         session: '/api/auth/session',
         resendVerification: '/api/auth/resend-verification',
         verifyEmail: '/api/auth/verify-email',
+        forgotPassword: '/api/auth/forgot-password',
         resetPassword: '/api/auth/reset-password',
     },
 
