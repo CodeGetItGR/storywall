@@ -1115,7 +1115,6 @@
                 "locationName": "Τοποθεσία",
                 "locationAddress": "Διεύθυνση",
                 "mapsUrl": "Σύνδεσμος χάρτη",
-                "rsvpDeadline": "Προθεσμία RSVP",
                 "startAt": "Έναρξη",
                 "endAt": "Λήξη"
             },
@@ -1270,7 +1269,8 @@
             "kids": "Παιδιά",
             "byCategory": "Παρουσία ανά κατηγορία",
             "attendingNote": "Περιλαμβάνει συνοδούς",
-            "notGoing": "Δεν θα παρευρεθούν"
+            "notGoing": "Δεν θα παρευρεθούν",
+            "deadlineField": "Προθεσμία RSVP"
         },
         "rsvpReports": {
             "title": "Αναφορές RSVP",

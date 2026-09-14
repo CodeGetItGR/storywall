@@ -16,12 +16,14 @@ export default function RsvpTab({
     rsvps,
     startAt,
     rsvpDeadline,
+    canWrite,
 }: {
     eventId: string;
     members: RosterMember[];
     rsvps: RosterRsvp[];
     startAt: string;
     rsvpDeadline: string | null;
+    canWrite: boolean;
 }) {
     const t = useTranslations('ManagePage');
     const [subTab, setSubTab] = useState<RsvpSubTab>('stats');
@@ -45,6 +47,9 @@ export default function RsvpTab({
 
             {subTab === 'stats' && (
                 <RsvpStatsPanel
+                    eventId={eventId}
+                    canWrite={canWrite}
+                    rsvpDeadline={rsvpDeadline}
                     countdownTarget={rsvpDeadline ?? startAt}
                     isRsvpDeadline={Boolean(rsvpDeadline)}
                     responseCount={responseCount}

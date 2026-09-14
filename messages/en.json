@@ -1180,7 +1180,6 @@
                 "locationName": "Location",
                 "locationAddress": "Address",
                 "mapsUrl": "Maps link",
-                "rsvpDeadline": "RSVP deadline",
                 "startAt": "Starts",
                 "endAt": "Ends"
             },
@@ -1270,7 +1269,8 @@
             "kids": "Kids",
             "byCategory": "Attendance by category",
             "attendingNote": "Includes plus-ones",
-            "notGoing": "Not going"
+            "notGoing": "Not going",
+            "deadlineField": "RSVP deadline"
         },
         "rsvpReports": {
             "title": "RSVP reports",
