@@ -50,6 +50,13 @@ function supportedRecordingType(): string | undefined {
     return ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4'].find((type) => MediaRecorder.isTypeSupported(type));
 }
 
+function getViewportAspectRatio(): number {
+    const viewport = window.visualViewport;
+    const width = viewport?.width ?? window.innerWidth;
+    const height = viewport?.height ?? window.innerHeight;
+    return height > 0 ? width / height : 9 / 16;
+}
+
 export function useStoryCameraController(open: boolean, onCapture: (file: File) => void): StoryCameraController {
     const videoRef = useRef<HTMLVideoElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
@@ -62,6 +69,7 @@ export function useStoryCameraController(open: boolean, onCapture: (file: File) 
     const [isRecording, setIsRecording] = useState(false);
     const [error, setError] = useState<'permission' | 'unavailable' | null>(null);
     const [exposure, setExposureState] = useState<ExposureState | null>(null);
+    const [viewportAspectRatio, setViewportAspectRatio] = useState(9 / 16);
     const zoomRef = useRef<{ min: number; max: number; step: number; value: number } | null>(null);
     const pinchStartDistanceRef = useRef<number | null>(null);
     const pinchStartZoomRef = useRef<number>(1);
@@ -69,6 +77,22 @@ export function useStoryCameraController(open: boolean, onCapture: (file: File) 
     useEffect(() => {
         onCaptureRef.current = onCapture;
     }, [onCapture]);
+
+    useEffect(() => {
+        if (!open) return;
+
+        function updateViewportAspectRatio() {
+            setViewportAspectRatio(getViewportAspectRatio());
+        }
+
+        updateViewportAspectRatio();
+        window.addEventListener('resize', updateViewportAspectRatio);
+        window.visualViewport?.addEventListener('resize', updateViewportAspectRatio);
+        return () => {
+            window.removeEventListener('resize', updateViewportAspectRatio);
+            window.visualViewport?.removeEventListener('resize', updateViewportAspectRatio);
+        };
+    }, [open]);
 
     const stopStream = useCallback(() => {
         recorderRef.current?.stop();
@@ -101,9 +125,9 @@ export function useStoryCameraController(open: boolean, onCapture: (file: File) 
                 // when they switch to video mode.
                 const videoConstraints: CameraConstraints = {
                     facingMode,
-                    width: { ideal: 1080 },
-                    height: { ideal: 1920 },
-                    aspectRatio: { ideal: 9 / 16 },
+                    width: { ideal: viewportAspectRatio > 1 ? 1920 : 1080 },
+                    height: { ideal: viewportAspectRatio > 1 ? 1080 : 1920 },
+                    aspectRatio: { ideal: viewportAspectRatio },
                     resizeMode: 'none',
                 };
                 const stream = await navigator.mediaDevices.getUserMedia({
@@ -127,8 +151,7 @@ export function useStoryCameraController(open: boolean, onCapture: (file: File) 
                 }
                 const exposureCapability = videoTrack && getRangeCapability(videoTrack, 'exposureCompensation');
                 if (videoTrack && exposureCapability) {
-                    const currentValue = (videoTrack.getSettings() as MediaTrackSettings & { exposureCompensation?: number })
-                        .exposureCompensation;
+                    const currentValue = (videoTrack.getSettings() as MediaTrackSettings & { exposureCompensation?: number }).exposureCompensation;
                     const midpoint = (exposureCapability.min + exposureCapability.max) / 2;
                     setExposureState({ ...exposureCapability, value: currentValue ?? midpoint });
                 }
@@ -147,7 +170,7 @@ export function useStoryCameraController(open: boolean, onCapture: (file: File) 
             cancelled = true;
             stopStream();
         };
-    }, [facingMode, open, stopStream]);
+    }, [facingMode, open, stopStream, viewportAspectRatio]);
 
     function capturePhoto() {
         const video = videoRef.current;
