@@ -35,7 +35,6 @@ export interface ComposerController {
     activeMediaPreview: PendingImage | null;
     sizeError: string | null;
     countError: string | null;
-    storyError: string | null;
     storyComposer: StoryComposerController;
     songComposerKey: number;
     fileRef: React.RefObject<HTMLInputElement | null>;
@@ -336,25 +335,12 @@ export function useComposerController(): ComposerController {
             openPostImagePicker,
             openSongComposer,
             openStoryCapture: storyComposer.open,
-            isCreatingStory: storyComposer.isBusy,
-            storyError: storyComposer.error,
             canCompose,
             canComposePost,
             canComposeStory,
             canComposeSong,
         }),
-        [
-            canCompose,
-            canComposePost,
-            canComposeSong,
-            canComposeStory,
-            openPostComposer,
-            openPostImagePicker,
-            openSongComposer,
-            storyComposer.error,
-            storyComposer.isBusy,
-            storyComposer.open,
-        ]
+        [canCompose, canComposePost, canComposeSong, canComposeStory, openPostComposer, openPostImagePicker, openSongComposer, storyComposer.open]
     );
 
     return {
@@ -367,7 +353,6 @@ export function useComposerController(): ComposerController {
         activeMediaPreview,
         sizeError,
         countError,
-        storyError: storyComposer.error,
         storyComposer,
         songComposerKey,
         fileRef,

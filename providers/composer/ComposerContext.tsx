@@ -7,8 +7,6 @@ export interface ComposerContextValue {
     openPostImagePicker: () => void;
     openSongComposer: () => void;
     openStoryCapture: () => void;
-    isCreatingStory: boolean;
-    storyError: string | null;
     canCompose: boolean;
     canComposePost: boolean;
     canComposeStory: boolean;
