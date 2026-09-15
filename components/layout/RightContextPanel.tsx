@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { HostContextSections } from '@/components/layout/right-context-panel/HostContextSections';
+import { MemberActionsSection } from '@/components/layout/right-context-panel/MemberActionsSection';
 import { useRightContextPanel } from '@/hooks/useRightContextPanel';
 
 export function RightContextPanel() {
@@ -13,11 +14,11 @@ export function RightContextPanel() {
 
     return (
         <aside
-            aria-label={t('hostConsole')}
-            className="sticky top-0 hidden h-screen w-75 shrink-0 flex-col overflow-y-auto border-l border-border bg-background no-scrollbar xl:flex"
+            aria-label={panel.isHost ? t('hostConsole') : t('eventTools')}
+            className="sticky top-0 hidden h-screen w-75 shrink-0 flex-col overflow-y-auto border-l border-border bg-background no-scrollbar lg:flex"
         >
             <div className="p-5">
-                <HostContextSections panel={panel} />
+                {panel.isHost ? <HostContextSections panel={panel} /> : <MemberActionsSection items={panel.actionItems} />}
             </div>
         </aside>
     );

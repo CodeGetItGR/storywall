@@ -2003,10 +2003,12 @@
     },
     "RightContextPanel": {
         "hostConsole": "Κονσόλα διοργανωτή",
+        "eventTools": "Εργαλεία εκδήλωσης",
         "hostQuickLinks": "Γρήγορη πρόσβαση",
         "activeModules": "Ενεργές λειτουργίες",
         "dashboard": "Πίνακας",
         "hostActions": "Ενέργειες",
+        "toolsTitle": "Εργαλεία",
         "eventDate": "Ημερομηνία εκδήλωσης",
         "usageTitle": "Χρήση πλάνου",
         "rsvpSummary": {

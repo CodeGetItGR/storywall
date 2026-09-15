@@ -3,14 +3,16 @@
 import { type ReactNode } from 'react';
 
 import { RightContextPanel } from '@/components/layout';
-import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
+import { useActiveEvent, useEventContextLoading } from '@/providers/EventProvider';
 
 export default function FeedLayout({ children }: { children: ReactNode }) {
     const activeEvent = useActiveEvent();
-    const isHost = useIsHost();
     const isLoading = useEventContextLoading();
 
-    const showRightPanel = !isLoading && Boolean(activeEvent) && isHost;
+    // Hosts and members alike need this panel: on desktop widths there's no
+    // MobileTabBar to hold the module/tool links, so RightContextPanel itself
+    // decides what a given viewer sees (host console vs. plain tool links).
+    const showRightPanel = !isLoading && Boolean(activeEvent);
 
     // RightContextPanel is `sticky`, not `fixed`: it lives in this flex row so
     // it stays pinned to the viewport as the feed scrolls without needing to

@@ -12,22 +12,25 @@ import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/E
 
 // Gathers everything RightContextPanel renders. Draft events hide every
 // summary except plan usage — there's nothing to report yet (no RSVPs,
-// media, or wishbook entries can exist before the event goes live).
+// media, or wishbook entries can exist before the event goes live). For
+// non-host members the panel only ever shows their plain tool links (same
+// set MobileTabBar's member context menu shows), so every host-only
+// summary/fetch below is also gated on `isHost`.
 export function useRightContextPanel({ includeManageLinks = true }: { includeManageLinks?: boolean } = {}) {
     const activeEvent = useActiveEvent();
     const isHost = useIsHost();
     const isLoading = useEventContextLoading();
-    const { data: eventUsage = null } = useEventUsage(activeEvent?.id ?? null);
+    const { data: eventUsage = null } = useEventUsage(isHost ? (activeEvent?.id ?? null) : null);
     const { data: appConfig } = useAppConfig();
 
     const isDraft = activeEvent?.status === 'DRAFT';
     const availableModuleKeys = new Set((activeEvent?.modules ?? []).filter((module) => module.isAvailable).map((module) => module.moduleKey));
 
-    const showRsvpSummary = !isDraft && availableModuleKeys.has('rsvp');
-    const showMediaSummary = !isDraft && availableModuleKeys.has('gallery');
-    const showWishbookSummary = !isDraft && availableModuleKeys.has('wishbook');
-    const showGalleryQr = !isDraft && isGalleryQrFeatureEnabled(activeEvent?.modules);
-    const showInvitationsQr = !isDraft;
+    const showRsvpSummary = isHost && !isDraft && availableModuleKeys.has('rsvp');
+    const showMediaSummary = isHost && !isDraft && availableModuleKeys.has('gallery');
+    const showWishbookSummary = isHost && !isDraft && availableModuleKeys.has('wishbook');
+    const showGalleryQr = isHost && !isDraft && isGalleryQrFeatureEnabled(activeEvent?.modules);
+    const showInvitationsQr = isHost && !isDraft;
 
     const galleryManifest = useGalleryArchiveManifest(activeEvent?.id ?? null, 'DISPLAY', showMediaSummary);
     const wishbook = useWishbook(showWishbookSummary ? (activeEvent?.id ?? null) : null);
@@ -45,9 +48,11 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
     let hostItemsForActions = useHostMenuItems().filter((item) => item.key !== 'galleryQr' && item.key !== 'invitationsQr');
     if (!includeManageLinks) hostItemsForActions = hostItemsForActions.filter((item) => item.key !== 'manage' && item.key !== 'help');
     const toolItems = useToolsMenuItems();
-    const actionItems = isDraft
-        ? hostItemsForActions.filter((item) => item.key !== 'help')
-        : [...hostItemsForActions, ...toolItems.filter((item) => item.key !== 'rsvp')];
+    const actionItems = !isHost
+        ? toolItems
+        : isDraft
+          ? hostItemsForActions.filter((item) => item.key !== 'help')
+          : [...hostItemsForActions, ...toolItems.filter((item) => item.key !== 'rsvp')];
 
     const currentPlan = eventUsage ? findPlanByCode(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
     const nextPlan = eventUsage ? findNextPlan(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
@@ -57,7 +62,8 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
         currentPlan?.moduleKeys.filter((moduleKey) => enabledModuleKeys.has(moduleKey) && availableModuleKeys.has(moduleKey)) ?? [];
 
     return {
-        visible: !isLoading && Boolean(activeEvent) && isHost,
+        visible: !isLoading && Boolean(activeEvent) && (isHost || actionItems.length > 0),
+        isHost,
         activeEvent,
         isDraft,
         eventUsage,

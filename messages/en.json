@@ -1997,10 +1997,12 @@
     },
     "RightContextPanel": {
         "hostConsole": "Host console",
+        "eventTools": "Event tools",
         "hostQuickLinks": "Quick access",
         "activeModules": "Live modules",
         "dashboard": "Dashboard",
         "hostActions": "Host actions",
+        "toolsTitle": "Tools",
         "eventDate": "Event date",
         "usageTitle": "Plan usage",
         "rsvpSummary": {
