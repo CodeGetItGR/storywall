@@ -279,6 +279,11 @@
         "uploading": "Μεταφόρτωση…",
         "mediaPreview": "Προεπισκόπηση πολυμέσου",
         "closeMediaPreview": "Κλείσιμο προεπισκόπησης πολυμέσου",
+        "done": "Τέλος",
+        "previous": "Προηγούμενο",
+        "next": "Επόμενο",
+        "playVideo": "Αναπαραγωγή βίντεο",
+        "pauseVideo": "Παύση βίντεο",
         "filtersLabel": "Φίλτρα εικόνας",
         "imageSelected": "Επεξεργασία φίλτρων εικόνας",
         "filters": {

@@ -64,6 +64,8 @@ export interface ComposerController {
     selectSongMode: () => void;
     closeComposer: () => void;
     closeMediaPreview: () => void;
+    advanceMediaPreview: () => void;
+    retreatMediaPreview: () => void;
     handleCaptionChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
     handlePickPhotos: () => void;
     handlePostFilesChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -246,7 +248,9 @@ export function useComposerController(): ComposerController {
             if (target) URL.revokeObjectURL(target.previewUrl);
             return prev.filter((img) => img.key !== key);
         });
-        if (mediaPreviewKey === key) setMediaPreviewKey(null);
+        if (mediaPreviewKey === key) {
+            setMediaPreviewKey(null);
+        }
     }
 
     function handleCaptionChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
@@ -286,6 +290,31 @@ export function useComposerController(): ComposerController {
         if (!image) return;
         if (!image.file.type.startsWith('video/')) setSelectedImageKey(key);
         setMediaPreviewKey(key);
+    }
+
+    function closeMediaPreview() {
+        setMediaPreviewKey(null);
+    }
+
+    function advanceMediaPreview() {
+        const currentIndex = images.findIndex((image) => image.key === mediaPreviewKey);
+        const nextImage = currentIndex === -1 ? undefined : images[currentIndex + 1];
+        if (!nextImage) {
+            closeMediaPreview();
+            return;
+        }
+
+        setMediaPreviewKey(nextImage.key);
+        setSelectedImageKey(nextImage.file.type.startsWith('video/') ? null : nextImage.key);
+    }
+
+    function retreatMediaPreview() {
+        const currentIndex = images.findIndex((image) => image.key === mediaPreviewKey);
+        const previousImage = currentIndex > 0 ? images[currentIndex - 1] : undefined;
+        if (!previousImage) return;
+
+        setMediaPreviewKey(previousImage.key);
+        setSelectedImageKey(previousImage.file.type.startsWith('video/') ? null : previousImage.key);
     }
 
     function setImageFilter(filterId: string) {
@@ -508,7 +537,9 @@ export function useComposerController(): ComposerController {
         selectPostMode,
         selectSongMode,
         closeComposer,
-        closeMediaPreview: () => setMediaPreviewKey(null),
+        closeMediaPreview,
+        advanceMediaPreview,
+        retreatMediaPreview,
         handleCaptionChange,
         handlePickPhotos,
         handlePostFilesChange,

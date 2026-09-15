@@ -279,6 +279,11 @@
         "uploading": "Uploading…",
         "mediaPreview": "Media preview",
         "closeMediaPreview": "Close media preview",
+        "done": "Done",
+        "previous": "Previous",
+        "next": "Next",
+        "playVideo": "Play video",
+        "pauseVideo": "Pause video",
         "filtersLabel": "Image filters",
         "imageSelected": "Edit image filters",
         "filters": {
