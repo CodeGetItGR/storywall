@@ -348,6 +348,16 @@
             "vintage": "Vintage"
         }
     },
+    "PublishQueue": {
+        "postingPost": "Posting…",
+        "postingStory": "Posting {count, plural, one {your story} other {your stories}}…",
+        "posted": "Posted",
+        "storyPosted": "{count, plural, one {Story posted} other {Stories posted}}",
+        "postFailed": "Couldn't post. Try again.",
+        "storyPostFailed": "{failed} of {total} {total, plural, one {story} other {stories}} couldn't post.",
+        "retry": "Retry",
+        "dismiss": "Dismiss"
+    },
     "EmailVerificationBanner": {
         "message": "Confirm your email address to create an event.",
         "resend": "Resend email",
