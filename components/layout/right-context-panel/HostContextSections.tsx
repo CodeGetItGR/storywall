@@ -46,12 +46,12 @@ export function HostContextSections({
     if (!activeEvent) return null;
 
     return (
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-3 xxl:gap-8">
             {/* Actions */}
             {actionItems.length > 0 && (
                 <div>
                     <p className="mb-2 text-sm font-semibold text-ink">{t('hostActions')}</p>
-                    <div className="space-y-1">
+                    <div>
                         {actionItems.map(({ key, href, icon: Icon, label }) => (
                             <Link
                                 key={key}
