@@ -61,7 +61,6 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
         libraryInputRef,
         maxCaptionLength,
         maxItems,
-        notice,
         pickFromLibrary,
         removeItem,
         selectItem,
@@ -304,14 +303,9 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                     {isActiveImage && (
                                         <PostImageFilterPicker image={activeItem} onFilterChange={handleStoryFilterChange} variant="overlay" />
                                     )}
-                                    {(activeItem.error || error || notice) && (
-                                        <p
-                                            className={cn(
-                                                'rounded-md bg-black/55 px-3 py-2 text-xs backdrop-blur-md',
-                                                activeItem.error || error ? 'text-red-200' : 'text-white/75'
-                                            )}
-                                        >
-                                            {activeItem.error ?? error ?? notice}
+                                    {(activeItem.error || error) && (
+                                        <p className="rounded-md bg-black/55 px-3 py-2 text-xs text-red-200 backdrop-blur-md">
+                                            {activeItem.error ?? error}
                                         </p>
                                     )}
                                     <button
