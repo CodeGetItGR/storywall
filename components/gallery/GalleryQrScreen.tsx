@@ -32,7 +32,7 @@ export function GalleryQrScreen() {
             title={t('title')}
             icon={QrCode}
             backLabel={t('back')}
-            backHref={routes.events.tools.gallery(eventId)}
+            backHref={routes.events.feed(eventId)}
             subtitle={t('subtitle')}
         >
             {isLoading ? (

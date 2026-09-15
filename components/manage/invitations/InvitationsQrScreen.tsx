@@ -34,6 +34,10 @@ export function InvitationsQrScreen() {
     const currentPlan = eventUsage ? findPlanByCode(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
     const nextPlan = eventUsage ? findNextPlan(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
     const isLoading = qrLinksLoading || statsLoading || usageLoading;
+    // The gallery upload code has its own dedicated page and its own summary
+    // row in the right context panel (see QrLinksSection) — exclude it here
+    // so this "Share links" list and its count only cover join-type links.
+    const shareQrLinks = qrLinks.filter((qrLink) => qrLink.targetType !== 'MEDIA_UPLOAD');
 
     const handleClampNotice = useCallback((message: string) => setLimitNotice(message), []);
 
@@ -43,7 +47,7 @@ export function InvitationsQrScreen() {
             title={tPage('title')}
             icon={QrCode}
             backLabel={tPage('back')}
-            backHref={routes.events.manage(eventId, { tab: 'members' })}
+            backHref={routes.events.feed(eventId)}
             subtitle={tPage('subtitle')}
         >
             {isLoading ? (
@@ -70,7 +74,7 @@ export function InvitationsQrScreen() {
                         </div>
                     )}
 
-                    <p className="mb-3 text-xs text-ink-muted">{t('qr.summary', { count: qrLinks.length })}</p>
+                    <p className="mb-3 text-xs text-ink-muted">{t('qr.summary', { count: shareQrLinks.length })}</p>
 
                     {!canWrite && <p className="mb-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('qr.readOnly')}</p>}
 
@@ -79,7 +83,7 @@ export function InvitationsQrScreen() {
                     )}
 
                     <div className="flex flex-col divide-y divide-border">
-                        {qrLinks.map((qrLink) => {
+                        {shareQrLinks.map((qrLink) => {
                             const stats = qrLinkStats.find((row) => row.qrLinkId === qrLink.id);
                             return (
                                 <QrLinkRow
@@ -94,7 +98,7 @@ export function InvitationsQrScreen() {
                         })}
                     </div>
 
-                    {qrLinks.length === 0 && (
+                    {shareQrLinks.length === 0 && (
                         <ToolEmptyState title={t('qr.emptyTitle')} body={t('qr.emptyBody')} icon={QrCode} className="py-8" />
                     )}
                 </>
