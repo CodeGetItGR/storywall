@@ -162,6 +162,9 @@ export function GalleryScreen() {
                 onMediaContextMenu={handleMediaContextMenu}
             />
 
+            {/* Floating actions spacer — keeps the last row clear of the lg+ floating selection bar */}
+            {gallerySelection.selectionMode && <div aria-hidden className="hidden h-28 lg:block" />}
+
             {/* Viewer */}
             <GalleryViewer
                 media={selectedMedia}

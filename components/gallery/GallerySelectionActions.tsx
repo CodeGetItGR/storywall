@@ -69,8 +69,9 @@ export function GallerySelectionActions({
         </div>
     );
 
+    // Below lg, GallerySelectionBar already owns these actions as a fixed bottom bar.
     return (
-        <div className="w-full">
+        <div className="hidden w-full lg:block">
             {/* Scroll sentinel — marks where the bar sits in normal flow */}
             <div ref={sentinelRef} />
 
@@ -81,7 +82,8 @@ export function GallerySelectionActions({
 
             {/* Floating actions — portaled to body: the app shell's <main> is transformed at
                 lg+, which would otherwise capture position:fixed and scroll the bar with it. */}
-            {scrolledPast && createPortal(<div className="fixed inset-x-0 bottom-0 z-60 px-4 pb-4">{renderActions(true)}</div>, document.body)}
+            {scrolledPast &&
+                createPortal(<div className="fixed inset-x-0 bottom-0 z-60 hidden px-4 pb-4 lg:block">{renderActions(true)}</div>, document.body)}
         </div>
     );
 }
