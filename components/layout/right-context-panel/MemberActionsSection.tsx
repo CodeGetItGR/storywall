@@ -15,7 +15,7 @@ export function MemberActionsSection({ items }: { items: ToolMenuItem[] }) {
     if (items.length === 0) return null;
 
     return (
-        <div>
+        <div className={''}>
             <p className="mb-2 text-sm font-semibold text-ink">{t('toolsTitle')}</p>
             <div className="space-y-1">
                 {items.map(({ key, href, icon: Icon, label }) => (
