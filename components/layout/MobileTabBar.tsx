@@ -93,9 +93,14 @@ export function MobileTabBar() {
     const accountActive = accountOpen;
     const railColumnCount = 1 + 1 + (playlistAvailable ? 1 : 0) + (rsvpTabAvailable ? 1 : 0) + (contextItems.length > 0 ? 1 : 0);
     const composerButtonStyle = {
-        transform: composerButtonLowered ? 'translate3d(0, 4rem, 0)' : 'translate3d(0, 0, 0)',
+        '--composer-lower-y': composerButtonLowered ? '4rem' : '0rem',
         transition: 'transform 300ms cubic-bezier(0.77, 0, 0.175, 1)',
-    } satisfies CSSProperties;
+    } as CSSProperties;
+    // On lg+ there's no tab bar to tuck behind, and the button is anchored to the
+    // feed column's right edge (viewport width minus the 80px nav rail and 300px
+    // right context panel, halved) instead of the raw viewport corner.
+    const composerFabClassName =
+        'group fixed right-4 bottom-20 z-60 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md will-change-transform max-lg:translate-y-[var(--composer-lower-y)] lg:right-[calc(50vw-210px)] lg:bottom-6';
 
     return (
         <>
@@ -189,10 +194,7 @@ export function MobileTabBar() {
                     <Menu.Root open={composerMenuOpen} onOpenChange={setComposerMenuOpen}>
                         <Menu.Trigger
                             aria-label={t('compose')}
-                            className={cn(
-                                'group fixed right-4 bottom-20 z-60 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md will-change-transform lg:hidden',
-                                composerMenuOpen && 'invisible'
-                            )}
+                            className={cn(composerFabClassName, composerMenuOpen && 'invisible')}
                             style={composerButtonStyle}
                         >
                             <span className="flex h-full w-full items-center justify-center transition-transform duration-150 ease-out group-hover:scale-105 group-active:scale-95">
@@ -209,7 +211,7 @@ export function MobileTabBar() {
                                 type="button"
                                 aria-label={t('compose')}
                                 onClick={handleComposerMenuClose}
-                                className="group fixed right-4 bottom-20 z-60 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-brand shadow-md will-change-transform lg:hidden"
+                                className={composerFabClassName}
                                 style={composerButtonStyle}
                             >
                                 <span className="flex h-full w-full items-center justify-center transition-transform duration-150 ease-out group-hover:scale-105 group-active:scale-95">
