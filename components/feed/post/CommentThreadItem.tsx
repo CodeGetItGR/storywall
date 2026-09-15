@@ -45,9 +45,10 @@ export function CommentThreadItem({ thread, membersById, onReply, isExpanded, on
                 />
                 <div className="min-w-0 flex-1">
                     <div className="rounded-2xl rounded-tl-sm bg-surface-muted px-4 py-3">
+                        {/* Comment header */}
                         <div className="mb-1 flex items-baseline gap-2">
-                            <span className="text-sm font-semibold leading-tight text-ink">{name}</span>
-                            <span className="text-xs text-ink-faint">
+                            <span className="min-w-0 flex-1 break-words text-sm font-semibold leading-tight text-ink">{name}</span>
+                            <span className="shrink-0 whitespace-nowrap text-xs text-ink-faint">
                                 {commentTimeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${commentTimeAgo.unit}`, { count: commentTimeAgo.value })}
                             </span>
                         </div>

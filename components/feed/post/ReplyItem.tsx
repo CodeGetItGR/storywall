@@ -40,13 +40,14 @@ export function ReplyItem({ reply, membersById, parentCommentId, onReply }: Repl
             />
             <div className="min-w-0 flex-1">
                 <div className="rounded-2xl rounded-tl-sm bg-surface-muted px-3 py-2">
+                    {/* Reply header */}
                     <div className="mb-0.5 flex items-baseline gap-2">
-                        <span className="text-xs font-semibold leading-tight text-ink">{name}</span>
-                        <span className="text-[10px] text-ink-faint">
+                        <span className="min-w-0 flex-1 break-words text-xs font-semibold leading-tight text-ink">{name}</span>
+                        <span className="shrink-0 whitespace-nowrap text-[10px] text-ink-faint">
                             {timeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${timeAgo.unit}`, { count: timeAgo.value })}
                         </span>
                     </div>
-                    <p className="text-xs leading-relaxed text-ink">{reply.content}</p>
+                    <p className="break-words text-xs leading-relaxed text-ink">{reply.content}</p>
                 </div>
                 {onReply && (
                     <button
