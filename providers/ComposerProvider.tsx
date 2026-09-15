@@ -7,8 +7,9 @@ import { PostMediaPreviewModal } from '@/components/composer/PostMediaPreviewMod
 import { StoryComposerModal } from '@/components/composer/StoryComposerModal';
 import { useComposerController } from '@/hooks/useComposerController';
 import { ComposerContext, useComposer } from '@/providers/composer/ComposerContext';
+import { PublishQueueProvider } from '@/providers/PublishQueueProvider';
 
-export function ComposerProvider({ children }: { children: ReactNode }) {
+function ComposerProviderInner({ children }: { children: ReactNode }) {
     const controller = useComposerController();
     const { contextValue, storyComposer } = controller;
 
@@ -19,6 +20,14 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
             <PostMediaPreviewModal controller={controller} />
             <StoryComposerModal controller={storyComposer} />
         </ComposerContext.Provider>
+    );
+}
+
+export function ComposerProvider({ children }: { children: ReactNode }) {
+    return (
+        <PublishQueueProvider>
+            <ComposerProviderInner>{children}</ComposerProviderInner>
+        </PublishQueueProvider>
     );
 }
 
