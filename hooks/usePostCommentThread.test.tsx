@@ -30,7 +30,7 @@ function comment(i: number, parentCommentId: string | null = null): CommentRespo
         id: `c${i}`,
         postId: POST_ID,
         authorMemberId: 'm1',
-        authorAvatarUrl: null,
+        author: null,
         parentCommentId,
         content: `comment ${i}`,
         createdAt: new Date(2026, 0, 1, 0, i).toISOString(),

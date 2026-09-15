@@ -1,8 +1,7 @@
-import type { CommentResponseDto, EventMemberResponseDto } from '@/lib/api/types';
+import type { CommentResponseDto } from '@/lib/api/types';
 
-export function authorNameFor(comment: CommentResponseDto, membersById: Map<string, EventMemberResponseDto>, unknownAuthorLabel: string) {
-    const author = comment.authorMemberId ? membersById.get(comment.authorMemberId) : undefined;
-    return author?.displayName ?? unknownAuthorLabel;
+export function authorNameFor(comment: CommentResponseDto, unknownAuthorLabel: string) {
+    return comment.author?.displayName ?? unknownAuthorLabel;
 }
 
 export interface CommentThread {

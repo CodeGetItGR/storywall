@@ -10,6 +10,10 @@ to stories.
 `mediaId`s into that many stories in one request (e.g. "post these 5 photos as stories").
 See §Batch create below.
 
+**2026-09-15:** `authorAvatarUrl` is replaced by a nested `author` object (name, nickname,
+role, avatar) on every endpoint below — see
+[`comment-story-author-fe-integration.md`](comment-story-author-fe-integration.md).
+
 Scope note: comments and reactions are **intentionally not supported** on stories (unlike
 posts) — don't build UI expecting `commentCount`/`reactionCount` on a story. Stories also
 don't carry any per-session grouping — a story belongs to an `Event`, full stop, regardless
@@ -29,7 +33,7 @@ interface StoryRequestDto {
 
 interface StoryResponseDto extends StoryRequestDto {
   id: string;
-  authorAvatarUrl: string | null; // short-lived presigned URL resolved from the author's account profilePictureKey; null if no author or no profile picture. Do not cache.
+  author: AuthorDto | null; // NEW 2026-09-15, replaces authorAvatarUrl — see comment-story-author-fe-integration.md
   expiresAt: string;        // always present in the response, even if omitted on create
   createdAt: string;
   deletedAt: string | null; // see "Known quirk" below — in practice always null

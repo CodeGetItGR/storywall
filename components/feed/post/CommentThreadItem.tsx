@@ -5,23 +5,21 @@ import { useTranslations } from 'next-intl';
 import { ReplyItem } from '@/components/feed/post/ReplyItem';
 import Avatar from '@/components/ui/avatar';
 import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
-import type { EventMemberResponseDto } from '@/lib/api/types';
 import { authorNameFor, type CommentThread } from '@/lib/comments';
 import { avatarColorFromId, initialsFromName, timeAgoParts } from '@/lib/utils';
 
 interface CommentThreadItemProps {
     thread: CommentThread;
-    membersById: Map<string, EventMemberResponseDto>;
     onReply?: (parentCommentId: string, authorName: string, mention?: boolean) => void;
     isExpanded: boolean;
     onToggleReplies: (threadId: string) => void;
 }
 
-export function CommentThreadItem({ thread, membersById, onReply, isExpanded, onToggleReplies }: CommentThreadItemProps) {
+export function CommentThreadItem({ thread, onReply, isExpanded, onToggleReplies }: CommentThreadItemProps) {
     const t = useTranslations('PostModal');
     const { comment, replies } = thread;
     const memberAvatarUrl = useMemberAvatarUrl();
-    const name = authorNameFor(comment, membersById, t('unknownAuthor'));
+    const name = authorNameFor(comment, t('unknownAuthor'));
     const commentTimeAgo = timeAgoParts(comment.createdAt);
 
     function handleReply() {
@@ -36,7 +34,7 @@ export function CommentThreadItem({ thread, membersById, onReply, isExpanded, on
         <div className="flex flex-col gap-2" data-comment-id={comment.id}>
             <div className="flex gap-3">
                 <Avatar
-                    src={memberAvatarUrl(comment.authorMemberId, comment.authorAvatarUrl)}
+                    src={memberAvatarUrl(comment.authorMemberId, comment.author?.avatarUrl)}
                     initials={initialsFromName(name)}
                     color={avatarColorFromId(comment.authorMemberId ?? comment.id)}
                     size="sm"
@@ -83,7 +81,7 @@ export function CommentThreadItem({ thread, membersById, onReply, isExpanded, on
             {isExpanded && (
                 <div className="ml-9 flex flex-col gap-2 border-l border-border pl-3">
                     {replies.map((reply) => (
-                        <ReplyItem key={reply.id} reply={reply} membersById={membersById} parentCommentId={comment.id} onReply={onReply} />
+                        <ReplyItem key={reply.id} reply={reply} parentCommentId={comment.id} onReply={onReply} />
                     ))}
                 </div>
             )}

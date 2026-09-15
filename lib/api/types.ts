@@ -1060,7 +1060,6 @@ export interface EventMemberRequestDto {
     relationshipRole?: string;
     customRelationshipRole?: string;
     isFeatured?: boolean; // optional on the wire — defaults to false server-side
-    avatarMediaId?: string;
     joinedAt: string;
 }
 
@@ -1075,7 +1074,6 @@ export interface EventMemberResponseDto {
     relationshipRole: string | null;
     customRelationshipRole: string | null;
     isFeatured: boolean;
-    avatarMediaId: string | null;
     avatarUrl: string | null;
     joinedAt: string;
     rsvpId: string | null;
@@ -1090,7 +1088,6 @@ export interface EventMemberPatchDto {
     relationshipRole?: string;
     customRelationshipRole?: string;
     isFeatured?: boolean;
-    avatarMediaId?: string;
 }
 
 export interface EventModuleRequestDto {
@@ -1333,15 +1330,11 @@ export interface PostPatchRequestDto {
 // media-only import) or the authoring member has since left the event
 // (Post.authorMember uses ON DELETE SET NULL, so the post survives but
 // authorship is dropped).
-export interface PostAuthorDto {
+export interface AuthorDto {
     memberId: string;
     displayName: string;
     nickname: string | null;
     role: EventRole;
-    avatarMediaId: string | null;
-    // Can be null even when avatarMediaId is set — the avatar reference has
-    // no DB foreign-key constraint, so a dangling id resolves to null rather
-    // than erroring. Fall back to a placeholder avatar.
     avatarUrl: string | null;
 }
 
@@ -1349,7 +1342,7 @@ export interface PostResponseDto {
     id: string;
     eventId: string;
     authorMemberId: string | null;
-    author: PostAuthorDto | null;
+    author: AuthorDto | null;
     type: PostType;
     content: string | null;
     isPinned: boolean;
@@ -1385,7 +1378,7 @@ export interface CommentResponseDto {
     id: string;
     postId: string;
     authorMemberId: string | null;
-    authorAvatarUrl: string | null;
+    author: AuthorDto | null;
     parentCommentId: string | null;
     content: string;
     createdAt: string;
@@ -1418,7 +1411,7 @@ export interface StoryResponseDto {
     id: string;
     eventId: string;
     authorMemberId: string | null;
-    authorAvatarUrl: string | null;
+    author: AuthorDto | null;
     mediaId: string;
     caption: string | null;
     songUrl: string | null;

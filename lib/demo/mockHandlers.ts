@@ -2,6 +2,7 @@ import { http, HttpResponse } from 'msw';
 
 import type { Page } from '@/lib/api/pagination';
 import type {
+    AuthorDto,
     CommentResponseDto,
     EventInvitationResponseDto,
     EventMemberResponseDto,
@@ -184,6 +185,19 @@ function newId(prefix: string): string {
     return `${prefix}-${Date.now()}-${nextId}`;
 }
 
+function authorForMember(memberId: string | null): AuthorDto | null {
+    const member = memberId ? demoDb.get('members', memberId) : undefined;
+    if (!member) return null;
+
+    return {
+        memberId: member.id,
+        displayName: member.displayName,
+        nickname: member.nickname,
+        role: member.role,
+        avatarUrl: member.avatarUrl,
+    };
+}
+
 async function fileToDataUrl(file: File): Promise<string> {
     const buffer = await file.arrayBuffer();
     const base64 = Buffer.from(buffer).toString('base64');
@@ -219,7 +233,6 @@ export const demoHandlers = [
         relationshipRole: (body.relationshipRole as string) ?? null,
         customRelationshipRole: (body.customRelationshipRole as string) ?? null,
         isFeatured: Boolean(body.isFeatured),
-        avatarMediaId: (body.avatarMediaId as string) ?? null,
         avatarUrl: null,
         joinedAt: new Date().toISOString(),
         rsvpId: null,
@@ -347,7 +360,6 @@ export const demoHandlers = [
                       displayName: author.displayName,
                       nickname: author.nickname,
                       role: author.role,
-                      avatarMediaId: null,
                       avatarUrl: null,
                   }
                 : null,
@@ -373,17 +385,20 @@ export const demoHandlers = [
         const items = demoDb.list('comments').filter((c) => c.postId === params.postId);
         return HttpResponse.json(toPage(items, page, 30));
     }),
-    buildCreateHandler(demoDb, 'comments', '/api/comments', (body) => ({
-        id: newId('demo-comment'),
-        postId: String(body.postId),
-        authorMemberId: (body.authorMemberId as string) ?? null,
-        authorAvatarUrl: null,
-        parentCommentId: (body.parentCommentId as string) ?? null,
-        content: String(body.content ?? ''),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        deletedAt: null,
-    })),
+    buildCreateHandler(demoDb, 'comments', '/api/comments', (body) => {
+        const authorMemberId = typeof body.authorMemberId === 'string' ? body.authorMemberId : null;
+        return {
+            id: newId('demo-comment'),
+            postId: String(body.postId),
+            authorMemberId,
+            author: authorForMember(authorMemberId),
+            parentCommentId: (body.parentCommentId as string) ?? null,
+            content: String(body.content ?? ''),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            deletedAt: null,
+        };
+    }),
     ...buildDetailHandlers(demoDb, 'comments', '/api/comments/:id', { del: true }),
     http.get(`${API_BASE_URL}/api/posts/:postId/reactions`, ({ params }) =>
         HttpResponse.json(demoDb.list('reactions').filter((r) => r.postId === params.postId))
@@ -400,19 +415,22 @@ export const demoHandlers = [
     // --- Stories ---
     ...buildArrayHandlers(demoDb, 'stories', '/api/events/:eventId/stories'),
     ...buildDetailHandlers(demoDb, 'stories', '/api/stories/:id', { del: true }),
-    buildCreateHandler(demoDb, 'stories', '/api/stories', (body) => ({
-        id: newId('demo-story'),
-        eventId: DEMO_EVENT_ID,
-        authorMemberId: (body.authorMemberId as string) ?? null,
-        authorAvatarUrl: null,
-        mediaId: String(body.mediaId),
-        caption: (body.caption as string) ?? null,
-        songUrl: (body.songUrl as string) ?? null,
-        expiresAt: (body.expiresAt as string) ?? new Date(Date.now() + 86_400_000).toISOString(),
-        createdAt: new Date().toISOString(),
-        deletedAt: null,
-        viewedByCurrentUser: false,
-    })),
+    buildCreateHandler(demoDb, 'stories', '/api/stories', (body) => {
+        const authorMemberId = typeof body.authorMemberId === 'string' ? body.authorMemberId : null;
+        return {
+            id: newId('demo-story'),
+            eventId: DEMO_EVENT_ID,
+            authorMemberId,
+            author: authorForMember(authorMemberId),
+            mediaId: String(body.mediaId),
+            caption: (body.caption as string) ?? null,
+            songUrl: (body.songUrl as string) ?? null,
+            expiresAt: (body.expiresAt as string) ?? new Date(Date.now() + 86_400_000).toISOString(),
+            createdAt: new Date().toISOString(),
+            deletedAt: null,
+            viewedByCurrentUser: false,
+        };
+    }),
     http.post(`${API_BASE_URL}/api/stories/:id/views`, ({ params }) => {
         demoDb.update('stories', params.id as string, (story) => ({ ...story, viewedByCurrentUser: true }));
         return HttpResponse.json({

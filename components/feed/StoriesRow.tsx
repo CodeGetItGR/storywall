@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
 import Avatar from '@/components/ui/avatar';
-import { useEventMembers, useEventStories } from '@/hooks';
+import { useEventStories } from '@/hooks';
 import { useEventSessions } from '@/hooks/useEventSessions';
 import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import { groupStoriesByAuthor } from '@/lib/stories';
@@ -27,23 +27,21 @@ export function StoriesRow({ eventId, onOpenStoryAction }: StoriesRowProps) {
     const activeMember = useActiveMember();
     const memberAvatarUrl = useMemberAvatarUrl();
     const { data: stories = [] } = useEventStories(eventId);
-    const { data: members = [] } = useEventMembers(eventId);
     const { data: sessions = [], isLoading: isLoadingSessions } = useEventSessions(eventId);
     const { openStoryCapture, isCreatingStory, storyError, canComposeStory } = useComposer();
 
     const groups = useMemo(() => groupStoriesByAuthor(stories), [stories]);
-    const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
-
     const ownGroup = activeMember ? groups.find((g) => g.authorMemberId === activeMember.id) : undefined;
+    const ownAuthor = ownGroup?.stories[0].author;
     const otherGroups = groups.filter((g) => g.authorMemberId !== activeMember?.id);
     const hasScheduleStory = !isLoadingSessions && sessions.length > 0;
-    const hasStartItems = Boolean(ownGroup || canComposeStory || hasScheduleStory);
+    const hasStartItems = Boolean(ownAuthor || canComposeStory || hasScheduleStory);
 
     return (
         <section aria-label={t('ariaLabel')} className="flex items-start gap-4 overflow-x-auto no-scrollbar px-4 py-4">
             {/* Current user slot */}
-            {ownGroup && activeMember ? (
-                <StoryAvatar group={ownGroup} member={activeMember} isCurrentUser onOpenStoryAction={onOpenStoryAction} />
+            {ownGroup && activeMember && ownAuthor ? (
+                <StoryAvatar group={ownGroup} author={ownAuthor} isCurrentUser onOpenStoryAction={onOpenStoryAction} />
             ) : canComposeStory ? (
                 <div className="flex flex-col items-center gap-2 shrink-0">
                     <button
@@ -90,9 +88,9 @@ export function StoriesRow({ eventId, onOpenStoryAction }: StoriesRowProps) {
 
             {/* Other stories */}
             {otherGroups.map((group) => {
-                const member = membersById.get(group.authorMemberId);
-                if (!member) return null;
-                return <StoryAvatar key={group.authorMemberId} group={group} member={member} onOpenStoryAction={onOpenStoryAction} />;
+                const author = group.stories[0].author;
+                if (!author) return null;
+                return <StoryAvatar key={group.authorMemberId} group={group} author={author} onOpenStoryAction={onOpenStoryAction} />;
             })}
         </section>
     );

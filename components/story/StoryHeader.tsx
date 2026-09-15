@@ -12,7 +12,7 @@ import { avatarColorFromId, initialsFromName } from '@/lib/utils';
 interface StoryHeaderProps {
     authorName: string;
     authorId: string;
-    authorAvatarUrl?: string | null;
+    avatarUrl?: string | null;
     timeStr: string;
     tone?: 'dark' | 'light';
     canManage: boolean;
@@ -28,7 +28,7 @@ interface StoryHeaderProps {
 export function StoryHeader({
     authorName,
     authorId,
-    authorAvatarUrl,
+    avatarUrl,
     timeStr,
     tone = 'dark',
     canManage,
@@ -50,7 +50,7 @@ export function StoryHeader({
                 <div className="flex items-center gap-2.5">
                     {showAvatar && (leadingVisual ?? (
                         <Avatar
-                            src={memberAvatarUrl(authorId, authorAvatarUrl)}
+                            src={memberAvatarUrl(authorId, avatarUrl)}
                             initials={initialsFromName(authorName)}
                             color={avatarColorFromId(authorId)}
                             size="sm"

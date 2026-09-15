@@ -7,19 +7,19 @@ import { useCallback } from 'react';
 
 import Avatar from '@/components/ui/avatar';
 import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
-import type { EventMemberResponseDto } from '@/lib/api/types';
+import type { AuthorDto } from '@/lib/api/types';
 import type { StoryGroup } from '@/lib/stories';
 import { avatarColorFromId, cn, initialsFromName } from '@/lib/utils';
 import { useComposer } from '@/providers/ComposerProvider';
 
 interface StoryAvatarProps {
     group: StoryGroup;
-    member: EventMemberResponseDto;
+    author: AuthorDto;
     onOpenStoryAction: (storyId: string) => void;
     isCurrentUser?: boolean;
 }
 
-export function StoryAvatar({ group, member, onOpenStoryAction, isCurrentUser }: StoryAvatarProps) {
+export function StoryAvatar({ group, author, onOpenStoryAction, isCurrentUser }: StoryAvatarProps) {
     const t = useTranslations('StoryAvatar');
     const { openStoryCapture, canComposeStory, isCreatingStory } = useComposer();
     const memberAvatarUrl = useMemberAvatarUrl();
@@ -44,11 +44,11 @@ export function StoryAvatar({ group, member, onOpenStoryAction, isCurrentUser }:
         >
             <div className="w-full h-full rounded-full p-0.5 bg-background flex items-center justify-center">
                 <Avatar
-                    src={memberAvatarUrl(member.id, member.avatarUrl)}
-                    initials={initialsFromName(member.displayName)}
-                    color={avatarColorFromId(member.id)}
+                    src={memberAvatarUrl(author.memberId, author.avatarUrl)}
+                    initials={initialsFromName(author.displayName)}
+                    color={avatarColorFromId(author.memberId)}
                     size="xl"
-                    alt={member.displayName}
+                    alt={author.displayName}
                     className="w-full h-full"
                 />
             </div>
@@ -57,7 +57,7 @@ export function StoryAvatar({ group, member, onOpenStoryAction, isCurrentUser }:
 
     const label = (
         <span className="text-[11px] text-ink-muted font-medium text-center leading-tight max-w-14 truncate">
-            {isCurrentUser ? t('yourStory') : member.displayName.split(' ')[0]}
+            {isCurrentUser ? t('yourStory') : author.displayName.split(' ')[0]}
         </span>
     );
 
@@ -104,7 +104,7 @@ export function StoryAvatar({ group, member, onOpenStoryAction, isCurrentUser }:
     return (
         <div className="flex shrink-0 flex-col items-center gap-2">
             {/* Member story */}
-            <button type="button" onClick={handleOpenStory} className="relative" aria-label={t('userStory', { name: member.displayName })}>
+            <button type="button" onClick={handleOpenStory} className="relative" aria-label={t('userStory', { name: author.displayName })}>
                 {ring}
             </button>
             {label}

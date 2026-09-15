@@ -8,7 +8,7 @@ import { PostCommentForm } from '@/components/feed/post/PostCommentForm';
 import { ReactionSummary } from '@/components/feed/post/ReactionSummary';
 import { Modal } from '@/components/ui/modal';
 import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
-import type { CommentResponseDto, EventMemberResponseDto, PostResponseDto, ReactionTypeResponseDto } from '@/lib/api/types';
+import type { CommentResponseDto, PostResponseDto, ReactionTypeResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
 import { CommentsList } from './CommentsList';
@@ -21,7 +21,6 @@ interface PostCommentsPanelProps {
     isLoadingMoreComments: boolean;
     isFetchingComments: boolean;
     onLoadMoreComments: () => void;
-    membersById: Map<string, EventMemberResponseDto>;
     commentText: string;
     onCommentTextChange: (value: string) => void;
     commentError: string | null;
@@ -46,7 +45,6 @@ export function PostCommentsPanel({
     isLoadingMoreComments,
     isFetchingComments,
     onLoadMoreComments,
-    membersById,
     commentText,
     onCommentTextChange,
     commentError,
@@ -93,7 +91,7 @@ export function PostCommentsPanel({
                 {/* The count already lives in the header above — this heading
                     only carries the empty state, never restates the number. */}
                 {commentCount === 0 && <h3 className="text-sm font-bold text-ink mb-4">{t('noCommentsYet')}</h3>}
-                <CommentsList comments={comments} membersById={membersById} onReply={onReply} autoExpandThread={autoExpandThread} />
+                <CommentsList comments={comments} onReply={onReply} autoExpandThread={autoExpandThread} />
                 <div ref={loadMoreRef} className="h-1" />
                 {isLoadingMoreComments && <p className="pt-2 text-center text-xs text-ink-muted">{t('loadingMore')}</p>}
             </Modal.Body>

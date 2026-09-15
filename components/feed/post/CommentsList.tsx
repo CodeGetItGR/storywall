@@ -6,13 +6,12 @@ import { useState } from 'react';
 import { CommentThreadItem } from '@/components/feed/post/CommentThreadItem';
 import Avatar from '@/components/ui/avatar';
 import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
-import type { CommentResponseDto, EventMemberResponseDto } from '@/lib/api/types';
+import type { CommentResponseDto } from '@/lib/api/types';
 import { authorNameFor, groupCommentsIntoThreads } from '@/lib/comments';
 import { avatarColorFromId, initialsFromName, timeAgoParts } from '@/lib/utils';
 
 interface CommentsListProps {
     comments: CommentResponseDto[];
-    membersById: Map<string, EventMemberResponseDto>;
     compact?: boolean;
     limit?: number;
     onReply?: (parentCommentId: string, authorName: string, mention?: boolean) => void;
@@ -22,7 +21,7 @@ interface CommentsListProps {
     autoExpandThread?: { threadId: string; nonce: number } | null;
 }
 
-export function CommentsList({ comments, membersById, compact = false, limit, onReply, autoExpandThread }: CommentsListProps) {
+export function CommentsList({ comments, compact = false, limit, onReply, autoExpandThread }: CommentsListProps) {
     const t = useTranslations('PostModal');
     const memberAvatarUrl = useMemberAvatarUrl();
     const [expandedThreadIds, setExpandedThreadIds] = useState<Set<string>>(new Set());
@@ -54,13 +53,13 @@ export function CommentsList({ comments, membersById, compact = false, limit, on
         return (
             <div className="flex flex-col gap-2">
                 {visibleComments.map((comment) => {
-                    const name = authorNameFor(comment, membersById, t('unknownAuthor'));
+                    const name = authorNameFor(comment, t('unknownAuthor'));
                     const commentTimeAgo = timeAgoParts(comment.createdAt);
 
                     return (
                         <div key={comment.id} className="flex gap-2">
                             <Avatar
-                                src={memberAvatarUrl(comment.authorMemberId, comment.authorAvatarUrl)}
+                                src={memberAvatarUrl(comment.authorMemberId, comment.author?.avatarUrl)}
                                 initials={initialsFromName(name)}
                                 color={avatarColorFromId(comment.authorMemberId ?? comment.id)}
                                 size="xs"
@@ -94,7 +93,6 @@ export function CommentsList({ comments, membersById, compact = false, limit, on
                 <CommentThreadItem
                     key={thread.comment.id}
                     thread={thread}
-                    membersById={membersById}
                     onReply={onReply}
                     isExpanded={expandedThreadIds.has(thread.comment.id)}
                     onToggleReplies={toggleThread}

@@ -16,7 +16,7 @@ import {
 } from '@/components/feed/post';
 import { ReportTargetModal } from '@/components/reports';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { useAppConfig, useDeletePost, useEventMembers, usePostModal, useUpdatePost } from '@/hooks';
+import { useAppConfig, useDeletePost, usePostModal, useUpdatePost } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import type { PostResponseDto } from '@/lib/api/types';
@@ -49,8 +49,6 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const activeMember = useActiveMember();
     const memberAvatarUrl = useMemberAvatarUrl();
     const { data: appConfig } = useAppConfig();
-    const { data: members = [] } = useEventMembers(post.eventId);
-    const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
     const isHost = useIsHost();
     const toErrorMessage = useApiErrorMessage();
     const deletePost = useDeletePost(post.eventId);
@@ -269,7 +267,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
             {/* Comment preview */}
             {post.commentCount > 0 && (
                 <div className="border-t border-border/50 px-4 pb-4 pt-3">
-                    <CommentsList comments={post.recentComments} membersById={membersById} compact />
+                    <CommentsList comments={post.recentComments} compact />
                     {post.commentCount > post.recentComments.length && (
                         <button
                             type="button"
