@@ -58,7 +58,7 @@ export function HomeHorizontalScroller({ children, previousLabel, nextLabel, cla
     }
 
     return (
-        <div className="group/scroller relative">
+        <div className="group/scroller w-full relative md:w-5/6 xl:w-1/3 mx-auto rounded-xl">
             {/* Scrollable row */}
             <div
                 ref={scrollRef}
