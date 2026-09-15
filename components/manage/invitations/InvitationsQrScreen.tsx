@@ -1,10 +1,10 @@
 'use client';
 
-import { Plus, QrCode } from 'lucide-react';
+import { QrCode } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
-import { CreateQrLinkForm, QrLinkRow } from '@/components/manage/invitations';
+import { QrLinkRow } from '@/components/manage/invitations';
 import { UsagePanel } from '@/components/plan/UsagePanel';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
@@ -25,7 +25,6 @@ export function InvitationsQrScreen() {
     const { data: qrLinkStats = [], isLoading: statsLoading } = useEventQrLinkStats(eventId);
     const { data: eventUsage = null, isLoading: usageLoading } = useEventUsage(eventId);
     const { data: appConfig } = useAppConfig();
-    const [showCreate, setShowCreate] = useState(false);
     const [limitNotice, setLimitNotice] = useState<string | null>(null);
 
     const canWrite = isEventWritable(activeEvent?.status);
@@ -34,14 +33,8 @@ export function InvitationsQrScreen() {
     const isFull = memberLimit !== null && memberCount >= memberLimit;
     const currentPlan = eventUsage ? findPlanByCode(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
     const nextPlan = eventUsage ? findNextPlan(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
-    const canCreate = canWrite && !isFull;
     const isLoading = qrLinksLoading || statsLoading || usageLoading;
 
-    const handleShowCreate = useCallback(() => {
-        if (canCreate) setShowCreate(true);
-    }, [canCreate]);
-
-    const handleHideCreate = useCallback(() => setShowCreate(false), []);
     const handleClampNotice = useCallback((message: string) => setLimitNotice(message), []);
 
     return (
@@ -77,28 +70,12 @@ export function InvitationsQrScreen() {
                         </div>
                     )}
 
-                    <div className="mb-3 flex items-center justify-between">
-                        <p className="text-xs text-ink-muted">{t('qr.summary', { count: qrLinks.length })}</p>
-                        {!showCreate && canCreate && (
-                            <button
-                                type="button"
-                                onClick={handleShowCreate}
-                                className="flex items-center gap-1.5 rounded-full bg-gradient-brand px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
-                            >
-                                <Plus className="h-3.5 w-3.5" />
-                                {t('qr.create.cta')}
-                            </button>
-                        )}
-                    </div>
+                    <p className="mb-3 text-xs text-ink-muted">{t('qr.summary', { count: qrLinks.length })}</p>
 
                     {!canWrite && <p className="mb-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('qr.readOnly')}</p>}
 
                     {limitNotice && (
                         <p className="mb-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900">{limitNotice}</p>
-                    )}
-
-                    {showCreate && canCreate && (
-                        <CreateQrLinkForm eventId={eventId} onDoneAction={handleHideCreate} />
                     )}
 
                     <div className="flex flex-col divide-y divide-border">
@@ -117,7 +94,7 @@ export function InvitationsQrScreen() {
                         })}
                     </div>
 
-                    {qrLinks.length === 0 && !showCreate && (
+                    {qrLinks.length === 0 && (
                         <ToolEmptyState title={t('qr.emptyTitle')} body={t('qr.emptyBody')} icon={QrCode} className="py-8" />
                     )}
                 </>

@@ -1156,7 +1156,7 @@
             "summary": "{count} QR codes",
             "empty": "No share links yet.",
             "emptyTitle": "No share links yet",
-            "emptyBody": "Create one for group chats, printed cards, posters, or gallery access.",
+            "emptyBody": "Share links will appear here once your event is live.",
             "readOnly": "This event is read-only. QR code changes are paused, but existing codes can still be previewed and printed.",
             "untitled": "Untitled QR code",
             "preview": "Preview",
@@ -1171,7 +1171,6 @@
             "managedAutomatically": "Managed automatically",
             "locked": "Locked",
             "galleryLinkExists": "This event already has a gallery upload code — see it in the QR panel below.",
-            "noInvitations": "Create an invitation first, then link this QR code to it.",
             "editLimit": "Edit limit",
             "saving": "Saving...",
             "stats": {
@@ -1189,21 +1188,8 @@
                 "raiseLimit": "Raise the limit"
             },
             "cappedToPlan": "Capped to {count, plural, one {# guest} other {# guests}} - that's all your current plan has room for.",
-            "create": {
-                "cta": "Create link",
-                "title": "Create an invitation QR",
-                "subtitle": "Link this code to one invitation.",
-                "submit": "Create link"
-            },
             "fields": {
-                "targetType": "Destination",
-                "label": "Label",
-                "maxGuests": "Guest limit",
-                "invitation": "Invitation"
-            },
-            "placeholders": {
-                "label": "e.g. Entrance poster",
-                "invitation": "Choose an invitation"
+                "maxGuests": "Guest limit"
             },
             "targetTypes": {
                 "EVENT_JOIN": "Join event",
@@ -2020,11 +2006,11 @@
             "title": "Links",
             "gallery": {
                 "body": "Scan to upload photos and videos",
-                "missing": "Set up a code for guest uploads"
+                "missing": "No upload code yet"
             },
             "invitations": {
                 "body": "{count, plural, one {# share link} other {# share links}}",
-                "missing": "Set up a link for guests to join"
+                "missing": "No active share link"
             }
         },
         "wishbookSummary": {
@@ -3064,7 +3050,7 @@
     "InvitationsQrPage": {
         "title": "Share links",
         "back": "Back to members",
-        "subtitle": "Create QR codes or links guests can use to join instantly — for group chats, printed cards, posters, or gallery access."
+        "subtitle": "QR codes and links guests can use to join instantly."
     },
     "MediaThumbnail": {
         "processing": "Processing video",
