@@ -39,14 +39,16 @@ export function usePostComments(postId: string | null) {
             const etag = etags.current.get(path);
             const result = await api.conditionalGet<Page<CommentResponseDto>>(path, etag ? { headers: { 'If-None-Match': etag } } : undefined);
             if (result.notModified) {
-                const cached = queryClient.getQueryData<InfiniteData<Page<CommentResponseDto>>>(commentKeys.list(postId!))?.pages.find((item) => item.number === page);
+                const cached = queryClient
+                    .getQueryData<InfiniteData<Page<CommentResponseDto>>>(commentKeys.list(postId!))
+                    ?.pages.find((item) => item.page.number === page);
                 if (cached) return cached;
             }
             if (result.etag) etags.current.set(path, result.etag);
             return result.data!;
         },
         initialPageParam: 0,
-        getNextPageParam: (lastPage) => (lastPage.number + 1 < lastPage.totalPages ? lastPage.number + 1 : undefined),
+        getNextPageParam: (lastPage) => (lastPage.page.number + 1 < lastPage.page.totalPages ? lastPage.page.number + 1 : undefined),
         enabled: Boolean(postId) && isAuthenticated,
         refetchInterval: 60_000,
     });

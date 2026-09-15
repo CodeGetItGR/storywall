@@ -1,18 +1,16 @@
-// Spring's Page<T> envelope — the real shape returned by paginated list
-// endpoints (currently just GET /api/events/{eventId}/posts).
+// Spring's PagedModel<T> envelope returned by every paginated list endpoint.
 export interface Page<T> {
     content: T[];
-    totalElements: number;
-    totalPages: number;
-    number: number; // current page, 0-indexed
-    size: number;
+    page: {
+        size: number;
+        number: number; // current page, 0-indexed
+        totalElements: number;
+        totalPages: number;
+    };
 }
 
-// The backend currently returns a bare T[] from every OTHER list endpoint,
-// but pagination is being built out server-side one endpoint at a time.
-// Route every such list response through normalizeList() so that swapping
-// in a real Page<T>/cursor envelope later is a one-file change instead of
-// touching every hook and component.
+// Some non-paginated list endpoints still return bare arrays. Route those
+// responses through normalizeList() so a later envelope change remains local.
 
 export interface NormalizedList<T> {
     items: T[];

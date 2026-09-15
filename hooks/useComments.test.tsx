@@ -68,7 +68,7 @@ describe('useCreateComment', () => {
         const cachedPost = post({ commentCount: 30 });
         client.setQueryData(postKeys.detail(POST_ID), cachedPost);
 
-        const commentsPage: Page<CommentResponseDto> = { content: [comment(0)], totalElements: 1, totalPages: 1, number: 0, size: 30 };
+        const commentsPage: Page<CommentResponseDto> = { content: [comment(0)], page: { size: 30, number: 0, totalElements: 1, totalPages: 1 } };
         client.setQueryData(commentKeys.list(POST_ID), { pages: [commentsPage], pageParams: [0] });
 
         const invalidateSpy = vi.spyOn(client, 'invalidateQueries');

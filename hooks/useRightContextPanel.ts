@@ -75,7 +75,7 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
         invitationsQrCount: (qrLinks.data ?? []).filter((link) => link.targetType !== 'MEDIA_UPLOAD' && link.status !== 'REVOKED').length,
         showWishbookSummary,
         wishbookEntries: wishbook.data?.pages[0]?.content.slice(0, 2) ?? [],
-        wishbookTotal: wishbook.data?.pages[0]?.totalElements ?? 0,
+        wishbookTotal: wishbook.data?.pages[0]?.page.totalElements ?? 0,
     };
 }
 

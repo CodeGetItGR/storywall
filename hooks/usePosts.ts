@@ -31,7 +31,6 @@ export function patchPostInCaches(queryClient: QueryClient, eventId: string, pos
     });
 }
 
-
 // GET /api/events/{eventId}/posts — any authenticated principal (not
 // scoped to event membership, matching EventController's read convention).
 // Paginated (pinned first, then newest, soft-deleted excluded server-side);
@@ -50,14 +49,16 @@ export function useEventPosts(eventId: string | null) {
             const etag = etags.current.get(path);
             const result = await api.conditionalGet<Page<PostResponseDto>>(path, etag ? { headers: { 'If-None-Match': etag } } : undefined);
             if (result.notModified) {
-                const cached = queryClient.getQueryData<InfiniteData<Page<PostResponseDto>>>(postKeys.list(eventId!))?.pages.find((item) => item.number === page);
+                const cached = queryClient
+                    .getQueryData<InfiniteData<Page<PostResponseDto>>>(postKeys.list(eventId!))
+                    ?.pages.find((item) => item.page.number === page);
                 if (cached) return cached;
             }
             if (result.etag) etags.current.set(path, result.etag);
             return result.data!;
         },
         initialPageParam: 0,
-        getNextPageParam: (lastPage) => (lastPage.number + 1 < lastPage.totalPages ? lastPage.number + 1 : undefined),
+        getNextPageParam: (lastPage) => (lastPage.page.number + 1 < lastPage.page.totalPages ? lastPage.page.number + 1 : undefined),
         enabled: Boolean(eventId) && isAuthenticated,
         refetchInterval: 60_000,
     });

@@ -23,7 +23,7 @@ export function useNotifications() {
         queryFn: ({ pageParam }) =>
             api.get<Page<NotificationResponseDto>>(`${endpoints.notifications.list}?page=${pageParam}&size=${NOTIFICATIONS_PAGE_SIZE}`),
         initialPageParam: 0,
-        getNextPageParam: (lastPage) => (lastPage.number + 1 < lastPage.totalPages ? lastPage.number + 1 : undefined),
+        getNextPageParam: (lastPage) => (lastPage.page.number + 1 < lastPage.page.totalPages ? lastPage.page.number + 1 : undefined),
         enabled: isAuthenticated,
     });
 }

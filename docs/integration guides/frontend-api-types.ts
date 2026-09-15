@@ -44,13 +44,17 @@ interface ApiError {
 //     the same email) -> 409, errorCode 5001 CONFLICT, generic "conflicts with existing data" detail
 //     that does not leak the constraint name.
 
-// Spring Data's Page<T> JSON shape — trimmed to the fields worth relying on.
+// Spring Data's Page<T> JSON shape, as of the PagedModel/VIA_DTO migration (see
+// docs/fe-pagination-migration.md). Every endpoint documented below as returning
+// `Page<T>` now returns this shape instead of the old flat PageImpl JSON.
 interface Page<T> {
   content: T[];
-  totalElements: number;
-  totalPages: number;
-  number: number; // current page, 0-indexed
-  size: number;
+  page: {
+    size: number;
+    number: number; // current page, 0-indexed
+    totalElements: number;
+    totalPages: number;
+  };
 }
 
 // ---------------------------------------------------------------------------

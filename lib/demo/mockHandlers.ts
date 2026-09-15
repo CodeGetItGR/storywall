@@ -41,7 +41,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 function toPage<T>(items: T[], page: number, size: number): Page<T> {
     const start = page * size;
     const content = items.slice(start, start + size);
-    return { content, totalElements: items.length, totalPages: Math.max(1, Math.ceil(items.length / size)), number: page, size };
+    return { content, page: { size, number: page, totalElements: items.length, totalPages: Math.max(1, Math.ceil(items.length / size)) } };
 }
 
 // Bare-array list endpoints (members, modules, sessions, rsvps, stories, invitations,

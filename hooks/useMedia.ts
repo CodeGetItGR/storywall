@@ -1,15 +1,10 @@
-import {useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import {useAuth} from '@/hooks/useAuth';
-import {api} from '@/lib/api/client';
-import {endpoints} from '@/lib/api/endpoints';
-import type {Page} from '@/lib/api/pagination';
-import type {
-    MediaBatchUploadResponseDto,
-    MediaResponseDto,
-    MediaUploadContext,
-    OriginalMediaUrlDto
-} from '@/lib/api/types';
+import { useAuth } from '@/hooks/useAuth';
+import { api } from '@/lib/api/client';
+import { endpoints } from '@/lib/api/endpoints';
+import type { Page } from '@/lib/api/pagination';
+import type { MediaBatchUploadResponseDto, MediaResponseDto, MediaUploadContext, OriginalMediaUrlDto } from '@/lib/api/types';
 
 export const mediaKeys = {
     list: (eventId: string) => ['events', eventId, 'media'] as const,
@@ -26,7 +21,7 @@ export function useEventMedia(eventId: string | null) {
         queryKey: mediaKeys.list(eventId ?? ''),
         queryFn: ({ pageParam }) => api.get<Page<MediaResponseDto>>(`${endpoints.events.media(eventId!)}?page=${pageParam}&size=${MEDIA_PAGE_SIZE}`),
         initialPageParam: 0,
-        getNextPageParam: (lastPage) => (lastPage.number + 1 < lastPage.totalPages ? lastPage.number + 1 : undefined),
+        getNextPageParam: (lastPage) => (lastPage.page.number + 1 < lastPage.page.totalPages ? lastPage.page.number + 1 : undefined),
         enabled: Boolean(eventId) && isAuthenticated,
     });
 }

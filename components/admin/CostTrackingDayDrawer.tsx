@@ -7,6 +7,7 @@ import { type MouseEvent } from 'react';
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { CostTrafficCopyAction } from '@/components/admin/CostTrafficCopyAction';
 import { LoadingState } from '@/components/ui/LoadingState';
+import type { Page } from '@/lib/api/pagination';
 import type { CalendarDaySummaryDto, EventDashboardRowDto } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
 import { formatBytes, formatCount } from '@/lib/format';
@@ -23,7 +24,7 @@ export function CostTrackingDayDrawer({
 }: {
     day: CalendarDaySummaryDto | undefined;
     error: unknown;
-    events: { content: EventDashboardRowDto[]; number: number; totalElements: number; totalPages: number } | undefined;
+    events: Page<EventDashboardRowDto> | undefined;
     isLoading: boolean;
     onCloseAction: () => void;
     onPageChangeAction: (page: number) => void;
@@ -33,7 +34,9 @@ export function CostTrackingDayDrawer({
     const locale = useLocale();
     const t = useTranslations('AdminPage.costTracking.calendar');
     const trafficT = useTranslations('AdminPage.costTracking.traffic');
-    const title = day ? formatDate(locale, day.date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }) : t('dayDetails');
+    const title = day
+        ? formatDate(locale, day.date, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+        : t('dayDetails');
 
     function handlePageClick(event: MouseEvent<HTMLButtonElement>) {
         const nextPage = Number(event.currentTarget.dataset.page);
@@ -63,7 +66,9 @@ export function CostTrackingDayDrawer({
                                 <th className="px-3 py-2.5 font-bold">{trafficT('columns.eventType')}</th>
                                 <th className="px-3 py-2.5 font-bold">{trafficT('columns.plan')}</th>
                                 <th className="px-3 py-2.5 font-bold">{trafficT('columns.storage')}</th>
-                                <th className="w-10 px-2 py-2.5"><span className="sr-only">{trafficT('columns.eventId')}</span></th>
+                                <th className="w-10 px-2 py-2.5">
+                                    <span className="sr-only">{trafficT('columns.eventId')}</span>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -74,19 +79,29 @@ export function CostTrackingDayDrawer({
                                     <td className="px-3 py-3 font-mono text-xs tabular-nums text-ink-muted">
                                         {event.storageQuotaBytes === null ? trafficT('unlimited') : formatBytes(event.storageQuotaBytes)}
                                         <span className="block pt-0.5 text-[10px] text-ink-faint">
-                                            {trafficT('guestsValue', { value: event.guestQuotaMax === null ? trafficT('unlimited') : formatCount(event.guestQuotaMax) })}
+                                            {trafficT('guestsValue', {
+                                                value: event.guestQuotaMax === null ? trafficT('unlimited') : formatCount(event.guestQuotaMax),
+                                            })}
                                         </span>
                                     </td>
-                                    <td className="px-2 py-2 text-right"><CostTrafficCopyAction eventId={event.eventId} /></td>
+                                    <td className="px-2 py-2 text-right">
+                                        <CostTrafficCopyAction eventId={event.eventId} />
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
 
                     {/* Day pagination */}
-                    {events.totalPages > 1 && (
+                    {events.page.totalPages > 1 && (
                         <div className="flex items-center justify-between gap-2 border-t border-border px-3 py-2.5">
-                            <p className="text-xs text-ink-muted">{trafficT('pageStatus', { page: events.number + 1, total: events.totalPages, count: events.totalElements })}</p>
+                            <p className="text-xs text-ink-muted">
+                                {trafficT('pageStatus', {
+                                    page: events.page.number + 1,
+                                    total: events.page.totalPages,
+                                    count: events.page.totalElements,
+                                })}
+                            </p>
                             <div className="flex items-center gap-1">
                                 <button
                                     type="button"
@@ -101,7 +116,7 @@ export function CostTrackingDayDrawer({
                                 <button
                                     type="button"
                                     data-page={page + 1}
-                                    disabled={page + 1 >= events.totalPages}
+                                    disabled={page + 1 >= events.page.totalPages}
                                     onClick={handlePageClick}
                                     aria-label={trafficT('next')}
                                     className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-muted transition hover:bg-surface-muted hover:text-ink disabled:opacity-50"

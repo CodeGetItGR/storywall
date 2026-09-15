@@ -15,6 +15,7 @@ const apiPost = vi.fn();
 vi.mock('@/lib/api/client', () => ({
     api: {
         get: (...a: unknown[]) => apiGet(...a),
+        conditionalGet: async (...a: unknown[]) => ({ data: await apiGet(...a) }),
         post: (...a: unknown[]) => apiPost(...a),
         del: vi.fn(),
     },
@@ -43,10 +44,12 @@ let serverComments: CommentResponseDto[] = [];
 function pageOf(pageNumber: number): Page<CommentResponseDto> {
     return {
         content: serverComments.slice(pageNumber * SIZE, pageNumber * SIZE + SIZE),
-        totalElements: serverComments.length,
-        totalPages: Math.max(1, Math.ceil(serverComments.length / SIZE)),
-        number: pageNumber,
-        size: SIZE,
+        page: {
+            size: SIZE,
+            number: pageNumber,
+            totalElements: serverComments.length,
+            totalPages: Math.max(1, Math.ceil(serverComments.length / SIZE)),
+        },
     };
 }
 
