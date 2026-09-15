@@ -1,10 +1,10 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useRef } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
+import { useCallback } from 'react';
 
 import { useAppleIdSdk } from '@/hooks/useAppleIdSdk';
-import { useGoogleIdentitySdk } from '@/hooks/useGoogleIdentitySdk';
+import { useGoogleSignInButton } from '@/hooks/useGoogleSignInButton';
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_OAUTH_GOOGLE_CLIENT_ID ?? '';
 const APPLE_CLIENT_ID = process.env.NEXT_PUBLIC_OAUTH_APPLE_CLIENT_ID ?? '';
@@ -24,22 +24,16 @@ function AppleLogo({ className }: { className?: string }) {
 
 export function OAuthButtons({ onSignIn, onError }: OAuthButtonsProps) {
     const t = useTranslations('OAuthButtons');
-    const googleReady = useGoogleIdentitySdk();
+    const locale = useLocale();
     const appleReady = useAppleIdSdk(Boolean(APPLE_CLIENT_ID));
-    const googleButtonRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        if (!googleReady || !GOOGLE_CLIENT_ID || !googleButtonRef.current) return;
-
-        window.google!.accounts.id.initialize({
-            client_id: GOOGLE_CLIENT_ID,
-            callback: (response) => {
-                void onSignIn('GOOGLE', response.credential).catch(onError);
-            },
-        });
-        window.google!.accounts.id.renderButton(googleButtonRef.current, { theme: 'outline', size: 'large', width: 320 });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [googleReady]);
+    const handleGoogleCredential = useCallback(
+        (credential: string) => {
+            void onSignIn('GOOGLE', credential).catch(onError);
+        },
+        [onError, onSignIn]
+    );
+    const googleButtonRef = useGoogleSignInButton({ clientId: GOOGLE_CLIENT_ID, locale, onCredential: handleGoogleCredential });
 
     const handleAppleClick = useCallback(async () => {
         if (!appleReady) return;
@@ -61,7 +55,10 @@ export function OAuthButtons({ onSignIn, onError }: OAuthButtonsProps) {
 
     return (
         <div className="flex flex-col gap-3">
-            <div ref={googleButtonRef} className="flex justify-center" />
+            {/* Google sign-in */}
+            <div ref={googleButtonRef} className="flex min-h-10 w-full min-w-0 justify-center overflow-hidden" />
+
+            {/* Apple sign-in */}
             {APPLE_CLIENT_ID && (
                 <button
                     type="button"

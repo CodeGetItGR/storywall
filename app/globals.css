@@ -106,6 +106,13 @@
 :root {
     color-scheme: light;
 
+    /* Updated from VisualViewport so keyboard-reduced layouts keep their
+       existing inner scrollers instead of making the document scroll. */
+    --visual-viewport-height: 100dvh;
+    --visual-viewport-offset-top: 0px;
+    --visual-viewport-bottom-inset: 0px;
+    --visual-viewport-center-y: 50dvh;
+
     /* Canvas / surfaces */
     --background: #ffffff;
     --canvas: #fffaf3;

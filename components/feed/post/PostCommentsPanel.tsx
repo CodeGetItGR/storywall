@@ -4,9 +4,7 @@ import { useTranslations } from 'next-intl';
 import type React from 'react';
 import { useEffect, useRef } from 'react';
 
-import { CommentCount } from '@/components/feed/post/CommentCount';
 import { PostCommentForm } from '@/components/feed/post/PostCommentForm';
-import { PostHeader } from '@/components/feed/post/PostHeader';
 import { ReactionSummary } from '@/components/feed/post/ReactionSummary';
 import { Modal } from '@/components/ui/modal';
 import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';

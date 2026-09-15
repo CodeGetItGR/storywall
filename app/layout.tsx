@@ -47,6 +47,7 @@ export const viewport: Viewport = {
     initialScale: 1,
     maximumScale: 1,
     userScalable: false,
+    interactiveWidget: 'resizes-content',
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
@@ -54,7 +55,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 
     return (
         <html lang={locale} className={`${geist.className} ${abhayaLibre.variable} ${alegreya.variable} h-dvh bg-background`}>
-            <body className="h-dvh overflow-hidden overscroll-none antialiased">
+            <body className="h-(--visual-viewport-height) overflow-hidden overscroll-none antialiased">
                 <NextIntlClientProvider>
                     <Providers>{children}</Providers>
                 </NextIntlClientProvider>

@@ -53,7 +53,7 @@ export function OverviewDraftPanel({
         setError(null);
 
         try {
-            navigateToCheckout(eventId, await checkout.mutateAsync());
+            navigateToCheckout(eventId, await checkout.mutateAsync(undefined));
         } catch (checkoutError) {
             setError(toErrorMessage(checkoutError));
         }

@@ -1,6 +1,8 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import type { MouseEvent } from 'react';
 
 import { ModuleQuickNav } from '@/components/modules/ModuleQuickNav';
 import { ModuleRevealRow } from '@/components/modules/ModuleRevealRow';
@@ -8,8 +10,6 @@ import { ModuleScrollTopButton } from '@/components/modules/ModuleScrollTopButto
 import { BackButton } from '@/components/ui/BackButton';
 import { useHomeModuleShowcase } from '@/hooks/useHomeModuleShowcase';
 import { routes } from '@/lib/routes';
-import type {MouseEvent} from "react";
-import {useRouter} from "next/navigation";
 
 export function ModulesContent() {
     const t = useTranslations('ModulesPage');
@@ -27,7 +27,6 @@ export function ModulesContent() {
             router.push(routes.home);
         }
     }
-
 
     return (
         <main className="relative min-h-full overflow-x-hidden bg-[#fff8f0]">

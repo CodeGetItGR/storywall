@@ -75,21 +75,21 @@ export function Modal({
                     className={cn(
                         'motion-surface fixed z-50 flex flex-col bg-background outline-none',
                         isFull
-                            ? 'inset-0 h-dvh max-h-dvh w-screen rounded-none data-ending-style:opacity-0 data-starting-style:opacity-0'
+                            ? 'inset-x-0 top-(--visual-viewport-offset-top) h-(--visual-viewport-height) max-h-(--visual-viewport-height) w-screen rounded-none data-ending-style:opacity-0 data-starting-style:opacity-0'
                             : isDrawer
                               ? cn(
-                                    'inset-y-0 left-0 h-dvh w-[min(88vw,22.5rem)] overflow-hidden rounded-r-[1.75rem] shadow-[18px_0_50px_rgba(36,31,26,0.18)]',
+                                    'left-0 top-(--visual-viewport-offset-top) h-(--visual-viewport-height) w-[min(88vw,22.5rem)] overflow-hidden rounded-r-[1.75rem] shadow-[18px_0_50px_rgba(36,31,26,0.18)]',
                                     'data-ending-style:-translate-x-full data-ending-style:opacity-0 data-starting-style:-translate-x-full data-starting-style:opacity-0'
                                 )
                               : isSheet
                                 ? cn(
-                                      'inset-x-0 bottom-0 mx-auto w-[calc(100vw-1rem)] max-h-[88dvh] overflow-hidden rounded-t-[1.75rem] rounded-b-none shadow-[0_-18px_50px_rgba(36,31,26,0.18)]',
+                                      'inset-x-0 bottom-(--visual-viewport-bottom-inset) mx-auto w-[calc(100vw-1rem)] max-h-[calc(var(--visual-viewport-height)-0.5rem)] overflow-hidden rounded-t-[1.75rem] rounded-b-none shadow-[0_-18px_50px_rgba(36,31,26,0.18)]',
                                       'data-ending-style:translate-y-full data-ending-style:opacity-0 data-starting-style:translate-y-full data-starting-style:opacity-0',
-                                      'sm:bottom-6 sm:max-w-2xl sm:rounded-b-3xl sm:rounded-t-3xl sm:shadow-[0_24px_60px_rgba(36,31,26,0.22)]'
+                                      'sm:bottom-[calc(var(--visual-viewport-bottom-inset)+1.5rem)] sm:max-h-[calc(var(--visual-viewport-height)-3rem)] sm:max-w-2xl sm:rounded-b-3xl sm:rounded-t-3xl sm:shadow-[0_24px_60px_rgba(36,31,26,0.22)]'
                                   )
                                 : cn(
-                                      'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
-                                      'w-[calc(100vw-2rem)] max-h-[90dvh] overflow-hidden rounded-2xl',
+                                      'top-(--visual-viewport-center-y) left-1/2 -translate-x-1/2 -translate-y-1/2',
+                                      'w-[calc(100vw-2rem)] max-h-[calc(var(--visual-viewport-height)-2rem)] overflow-hidden rounded-2xl',
                                       'scale-100 data-ending-style:scale-[0.96] data-ending-style:opacity-0 data-starting-style:scale-[0.96] data-starting-style:opacity-0',
                                       sizeMap[size]
                                   ),

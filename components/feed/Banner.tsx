@@ -1,9 +1,8 @@
-import Image from 'next/image';
 import type { ReactNode } from 'react';
 
+import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { BannerFallback } from '@/components/feed/BannerFallback';
 import { BannerOverlay } from '@/components/feed/BannerOverlay';
-import {ProtectedImage} from "@/components/common/ProtectedImage";
 
 export function Banner({
     image,

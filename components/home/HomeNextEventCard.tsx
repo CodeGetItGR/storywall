@@ -1,16 +1,15 @@
 'use client';
 
 import { ChevronRight } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { HomeNextEventCountdown } from '@/components/home/HomeNextEventCountdown';
 import type { EventGridItem } from '@/hooks/useEventGridItems';
 import { useRecentEventItems } from '@/hooks/useEventGridItems';
 import { formatEventListDate } from '@/lib/datetime';
 import { routes } from '@/lib/routes';
-import {ProtectedImage} from "@/components/common/ProtectedImage";
 
 export function HomeNextEventCard({ items }: { items: EventGridItem[] }) {
     const t = useTranslations('HomePage');

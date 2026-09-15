@@ -79,7 +79,7 @@ export default function LoginPage() {
     }
 
     return (
-        <AuthLayout>
+        <AuthLayout showLanguageSwitcher>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 {/* Status */}
                 {passwordChanged && <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{t('passwordChanged')}</p>}

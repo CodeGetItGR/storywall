@@ -8,7 +8,19 @@ declare global {
             accounts: {
                 id: {
                     initialize: (config: { client_id: string; callback: (response: { credential: string }) => void }) => void;
-                    renderButton: (parent: HTMLElement, options: { theme: string; size: string; width?: number }) => void;
+                    renderButton: (
+                        parent: HTMLElement,
+                        options: {
+                            type?: string;
+                            theme: string;
+                            size: string;
+                            text?: string;
+                            shape?: string;
+                            logo_alignment?: string;
+                            width?: number;
+                            locale?: string;
+                        }
+                    ) => void;
                 };
             };
         };
@@ -18,26 +30,34 @@ declare global {
 // Loads Google's own unversioned gsi/client script once per page (Google
 // rotates it without notice — no SRI hash is possible, see the OAuth guide).
 // Returns whether `window.google.accounts.id` is ready to call.
-export function useGoogleIdentitySdk(): boolean {
+export function useGoogleIdentitySdk(locale?: string): boolean {
     const [ready, setReady] = useState(() => typeof window !== 'undefined' && Boolean(window.google?.accounts?.id));
 
     useEffect(() => {
         if (ready) return;
         if (typeof document === 'undefined') return;
 
-        const existing = document.querySelector<HTMLScriptElement>(`script[src="${SCRIPT_SRC}"]`);
+        const existing = document.querySelector<HTMLScriptElement>('script[data-google-identity-sdk]');
         if (existing) {
-            existing.addEventListener('load', () => setReady(true), { once: true });
-            return;
+            const handleExistingLoad = () => setReady(true);
+            existing.addEventListener('load', handleExistingLoad, { once: true });
+            return () => existing.removeEventListener('load', handleExistingLoad);
         }
 
         const script = document.createElement('script');
-        script.src = SCRIPT_SRC;
+        script.src = locale ? `${SCRIPT_SRC}?hl=${encodeURIComponent(locale)}` : SCRIPT_SRC;
+        script.dataset.googleIdentitySdk = '';
         script.async = true;
         script.defer = true;
-        script.addEventListener('load', () => setReady(true), { once: true });
+
+        const handleLoad = () => setReady(true);
+        script.addEventListener('load', handleLoad, { once: true });
         document.head.appendChild(script);
-    }, [ready]);
+
+        return () => {
+            script.removeEventListener('load', handleLoad);
+        };
+    }, [locale, ready]);
 
     return ready;
 }

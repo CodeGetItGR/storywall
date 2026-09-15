@@ -88,7 +88,7 @@ export default function RegisterPage() {
     }
 
     return (
-        <AuthLayout>
+        <AuthLayout showLanguageSwitcher>
             <h2 className="text-2xl font-bold text-ink mb-1">{t('title')}</h2>
             <p className="text-sm text-ink-muted mb-7">{t('subtitle')}</p>
 

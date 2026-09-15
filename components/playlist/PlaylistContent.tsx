@@ -1,8 +1,8 @@
 'use client';
 
 import { Music, Plus } from 'lucide-react';
-import { PiMusicNotesPlusDuotone } from 'react-icons/pi';
 import { useTranslations } from 'next-intl';
+import { PiMusicNotesPlusDuotone } from 'react-icons/pi';
 
 import { PlaylistItemRow } from '@/components/playlist';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';

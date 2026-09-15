@@ -13,7 +13,7 @@ interface InviteLayoutProps {
 
 export function InviteLayout({ coverImageSrc, coverImageAlt, eventTitle, eventSubtitle, children }: InviteLayoutProps) {
     return (
-        <div className="flex h-dvh flex-col overflow-hidden bg-background lg:flex-row">
+        <div className="flex h-full flex-col overflow-hidden bg-background lg:flex-row">
             <div className="relative h-64 w-full shrink-0 bg-gradient-brand md:h-130 lg:h-full lg:w-1/2">
                 <ProtectedImage
                     src={coverImageSrc}

@@ -9,7 +9,6 @@ import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { Modal } from '@/components/ui/modal';
 import { useDeleteGiftAccount, useGiftAccount, useSaveGiftAccount } from '@/hooks/useGiftAccount';
 import { ERROR_CODES, getErrorCode, getFieldErrors } from '@/lib/api/errors';
-import { cn } from '@/lib/utils';
 
 export function GiftAccountSetup({ eventId, className = 'mt-3 border-t border-border/70 pt-3' }: { eventId: string; className?: string }) {
     const t = useTranslations('ManagePage.giftAccount');
