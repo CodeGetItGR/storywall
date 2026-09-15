@@ -69,7 +69,7 @@ export function CommentsList({ comments, compact = false, limit, onReply, autoEx
                             <div className="min-w-0 flex-1 pt-0.5">
                                 {/* Comment header */}
                                 <div className="flex items-baseline gap-1.5">
-                                    <span className="min-w-0 flex-1 break-words text-[12px] font-semibold leading-tight text-ink">{name}</span>
+                                    <span className="min-w-0 flex-1 wrap-break-word text-[12px] font-semibold leading-tight text-ink">{name}</span>
                                     <span className="shrink-0 whitespace-nowrap text-[10px] text-ink-faint">
                                         {commentTimeAgo.unit === 'now'
                                             ? t('justNow')

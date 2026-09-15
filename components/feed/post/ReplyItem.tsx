@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
+import { CommentActionsMenu } from '@/components/feed/post/CommentActionsMenu';
 import Avatar from '@/components/ui/avatar';
 import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import type { CommentResponseDto } from '@/lib/api/types';
@@ -41,21 +42,25 @@ export function ReplyItem({ reply, parentCommentId, onReply }: ReplyItemProps) {
                 <div className="rounded-2xl rounded-tl-sm bg-surface-muted px-3 py-2">
                     {/* Reply header */}
                     <div className="mb-0.5 flex items-baseline gap-2">
-                        <span className="min-w-0 flex-1 break-words text-xs font-semibold leading-tight text-ink">{name}</span>
+                        <span className="min-w-0 flex-1 wrap-break-word text-xs font-semibold leading-tight text-ink">{name}</span>
                         <span className="shrink-0 whitespace-nowrap text-[10px] text-ink-faint">
                             {timeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${timeAgo.unit}`, { count: timeAgo.value })}
                         </span>
                     </div>
-                    <p className="break-words text-xs leading-relaxed text-ink">{reply.content}</p>
+                    <p className="wrap-break-word text-xs leading-relaxed text-ink">{reply.content}</p>
                 </div>
                 {onReply && (
-                    <button
-                        type="button"
-                        onClick={handleReply}
-                        className="mt-1 px-3 text-xs font-semibold text-ink-faint hover:text-ink transition-colors"
-                    >
-                        {t('reply')}
-                    </button>
+                    <div className={'flex items-center gap-2 mt-2'}>
+                        <button
+                            type="button"
+                            onClick={handleReply}
+                            className="mt-1 px-3 text-xs font-semibold text-ink-faint hover:text-ink transition-colors"
+                        >
+                            {t('reply')}
+                        </button>
+                        {/* Reply actions */}
+                        <CommentActionsMenu comment={reply} wrapperClassName="mt-1 flex justify-end px-1" />
+                    </div>
                 )}
             </div>
         </div>

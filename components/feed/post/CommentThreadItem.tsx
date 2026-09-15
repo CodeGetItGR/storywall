@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
+import { CommentActionsMenu } from '@/components/feed/post/CommentActionsMenu';
 import { ReplyItem } from '@/components/feed/post/ReplyItem';
 import Avatar from '@/components/ui/avatar';
 import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
@@ -45,13 +46,14 @@ export function CommentThreadItem({ thread, onReply, isExpanded, onToggleReplies
                     <div className="rounded-2xl rounded-tl-sm bg-surface-muted px-4 py-3">
                         {/* Comment header */}
                         <div className="mb-1 flex items-baseline gap-2">
-                            <span className="min-w-0 flex-1 break-words text-sm font-semibold leading-tight text-ink">{name}</span>
+                            <span className="min-w-0 flex-1 wrap-break-word text-sm font-semibold leading-tight text-ink">{name}</span>
                             <span className="shrink-0 whitespace-nowrap text-xs text-ink-faint">
                                 {commentTimeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${commentTimeAgo.unit}`, { count: commentTimeAgo.value })}
                             </span>
                         </div>
                         <p className="text-sm leading-relaxed text-ink">{comment.content}</p>
                     </div>
+
                     {onReply && (
                         <div className="mt-1 flex items-center gap-3 px-4">
                             <button
@@ -73,6 +75,8 @@ export function CommentThreadItem({ thread, onReply, isExpanded, onToggleReplies
                                     {isExpanded ? t('hideReplies') : t('viewReplies', { count: replies.length })}
                                 </button>
                             )}
+                            {/* Comment actions */}
+                            <CommentActionsMenu comment={comment} wrapperClassName="mt-1 flex justify-end px-1" />
                         </div>
                     )}
                 </div>

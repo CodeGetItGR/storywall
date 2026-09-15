@@ -90,13 +90,20 @@ export function useCreateComment(eventId: string) {
 }
 
 // DELETE /api/comments/{id} — author or HOST.
-export function useDeleteComment(postId: string) {
+export function useDeleteComment(eventId: string, postId: string) {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: (id: string) => api.del<void>(endpoints.comments.byId(id)),
         onSuccess: () => {
+            const previousPost = queryClient.getQueryData<PostResponseDto>(postKeys.detail(postId));
+            if (previousPost) {
+                patchPostInCaches(queryClient, eventId, postId, { commentCount: Math.max(0, previousPost.commentCount - 1) });
+            } else {
+                queryClient.invalidateQueries({ queryKey: postKeys.detail(postId), exact: true });
+            }
             queryClient.invalidateQueries({ queryKey: commentKeys.list(postId) });
+            queryClient.invalidateQueries({ queryKey: postKeys.list(eventId) });
         },
     });
 }
