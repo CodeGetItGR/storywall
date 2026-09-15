@@ -26,10 +26,8 @@ export function ComposerModal({
     handlePickPhotos,
     handlePostFilesChange,
     handleRemoveImageClick,
-    handleRetryUploadClick,
     images,
     isOpen,
-    isPostBusy,
     isSongBusy,
     maxCaptionLength,
     maxImages,
@@ -38,7 +36,6 @@ export function ComposerModal({
     selectedImageForFilter,
     sizeError,
     songComposerKey,
-    submitError,
     submitPlaylistSuggestion,
     submitPost,
     textareaRef,
@@ -140,39 +137,18 @@ export function ComposerModal({
                                                 type="button"
                                                 onClick={handleRemoveImageClick}
                                                 data-key={img.key}
-                                                disabled={img.status === 'uploading'}
                                                 aria-label={t('removeMedia')}
-                                                className="absolute right-1.5 top-1.5 z-20 flex h-6 w-6 items-center justify-center rounded-full bg-ink/60 text-white transition-colors hover:bg-ink/80 disabled:cursor-not-allowed disabled:opacity-40"
+                                                className="absolute right-1.5 top-1.5 z-20 flex h-6 w-6 items-center justify-center rounded-full bg-ink/60 text-white transition-colors hover:bg-ink/80"
                                             >
                                                 <X className="h-3.5 w-3.5" />
                                             </button>
-                                            {img.status === 'uploading' && (
-                                                <div className="absolute inset-0 flex items-center justify-center bg-ink/40 text-xs text-white">
-                                                    {t('uploading')}
-                                                </div>
-                                            )}
-                                            {img.status === 'failed' && (
-                                                <div className="absolute inset-x-0 bottom-0 z-20 flex items-center justify-between gap-1 bg-destructive/90 px-1.5 py-1 text-[10px] text-white">
-                                                    <span className="truncate">{img.error ?? t('uploadFailed', { filename: img.file.name })}</span>
-                                                    <button
-                                                        type="button"
-                                                        onClick={handleRetryUploadClick}
-                                                        disabled={isPostBusy}
-                                                        className="shrink-0 underline disabled:cursor-not-allowed disabled:opacity-40"
-                                                    >
-                                                        {t('retry')}
-                                                    </button>
-                                                </div>
-                                            )}
                                         </div>
                                     );
                                 })}
                             </div>
                         )}
 
-                        {(sizeError || countError || submitError) && (
-                            <p className="text-xs text-destructive">{sizeError ?? countError ?? submitError}</p>
-                        )}
+                        {(sizeError || countError) && <p className="text-xs text-destructive">{sizeError ?? countError}</p>}
 
                         {/* Actions */}
                         <div className="flex items-center justify-between gap-2">
@@ -198,7 +174,7 @@ export function ComposerModal({
                                 className="flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-full bg-gradient-brand px-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:px-4"
                             >
                                 <Send className="h-4 w-4" />
-                                {isPostBusy ? t('posting') : t('post')}
+                                {t('post')}
                             </button>
                         </div>
                     </form>

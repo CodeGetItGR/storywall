@@ -24,7 +24,6 @@ export function PostMediaPreviewModal({ controller }: PostMediaPreviewModalProps
         closeMediaPreview,
         handleRemoveImageClick,
         images,
-        isPostBusy,
         retreatMediaPreview,
         setImageFilter,
     } = controller;
@@ -92,7 +91,6 @@ export function PostMediaPreviewModal({ controller }: PostMediaPreviewModalProps
                                 type="button"
                                 data-key={activeMediaPreview.key}
                                 onClick={handleRemoveImageClick}
-                                disabled={isPostBusy || activeMediaPreview.status === 'uploading'}
                                 aria-label={t('removeMedia')}
                                 className="flex h-10 w-10 items-center justify-center rounded-full bg-black/50 backdrop-blur-md disabled:opacity-40"
                             >

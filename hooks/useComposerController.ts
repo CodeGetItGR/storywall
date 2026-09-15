@@ -3,19 +3,15 @@
 import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { useCreatePost, useUploadMediaBatch } from '@/hooks';
-import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventModules } from '@/hooks/useEventModules';
 import { useCreatePlaylistSuggestion } from '@/hooks/usePlaylist';
 import { type StoryComposerController, useStoryComposerController } from '@/hooks/useStoryComposerController';
-import { ERROR_CODES, getErrorCode, getQuotaExceededDetails, isModuleNotAvailableError } from '@/lib/api/errors';
 import { isEventWritable } from '@/lib/eventLifecycle';
-import { findNextPlan } from '@/lib/planTiers';
-import { bakeStoryFilter, STORY_FILTER_PRESETS } from '@/lib/story/storyFilters';
 import { initialsFromName } from '@/lib/utils';
 import type { ComposerContextValue } from '@/providers/composer/ComposerContext';
 import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
+import { usePublishQueue } from '@/providers/publishQueue/PublishQueueContext';
 
 type ComposerMode = 'post' | 'song';
 
@@ -39,15 +35,11 @@ export interface ComposerController {
     activeMediaPreview: PendingImage | null;
     sizeError: string | null;
     countError: string | null;
-    submitError: string | null;
-    storyError: string | null;
     storyComposer: StoryComposerController;
     songComposerKey: number;
     fileRef: React.RefObject<HTMLInputElement | null>;
     textareaRef: React.RefObject<HTMLTextAreaElement | null>;
     memberName: string;
-    hasUnresolvedFailures: boolean;
-    isPostBusy: boolean;
     isSongBusy: boolean;
     canSubmit: boolean;
     canComposePost: boolean;
@@ -70,10 +62,9 @@ export interface ComposerController {
     handlePickPhotos: () => void;
     handlePostFilesChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     handleRemoveImageClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
-    handleRetryUploadClick: () => void;
     handleImageFilterSelection: (event: React.MouseEvent<HTMLButtonElement>) => void;
     setImageFilter: (filterId: string) => void;
-    submitPost: (event: React.SubmitEvent<HTMLFormElement>) => Promise<void>;
+    submitPost: (event: React.SubmitEvent<HTMLFormElement>) => void;
     submitPlaylistSuggestion: (input: {
         title: string;
         artist?: string;
@@ -90,13 +81,11 @@ function formatBytes(bytes: number): string {
 
 export function useComposerController(): ComposerController {
     const t = useTranslations('ComposerCard');
-    const toErrorMessage = useApiErrorMessage();
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
     const { data: eventModules = [] } = useEventModules(activeEvent?.id ?? null);
     const { data: appConfig } = useAppConfig();
-    const createPost = useCreatePost();
-    const uploadBatch = useUploadMediaBatch();
+    const publishQueue = usePublishQueue();
     const createPlaylistSuggestion = useCreatePlaylistSuggestion();
 
     const [isOpen, setIsOpen] = useState(false);
@@ -107,7 +96,6 @@ export function useComposerController(): ComposerController {
     const [mediaPreviewKey, setMediaPreviewKey] = useState<string | null>(null);
     const [sizeError, setSizeError] = useState<string | null>(null);
     const [countError, setCountError] = useState<string | null>(null);
-    const [submitError, setSubmitError] = useState<string | null>(null);
     const [songComposerKey, setSongComposerKey] = useState(0);
     const fileRef = useRef<HTMLInputElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -129,10 +117,8 @@ export function useComposerController(): ComposerController {
         };
     }, []);
 
-    const hasUnresolvedFailures = images.some((img) => img.status === 'failed');
     const selectedImageForFilter = images.find((image) => image.key === selectedImageKey && !image.file.type.startsWith('video/')) ?? null;
     const activeMediaPreview = images.find((image) => image.key === mediaPreviewKey) ?? null;
-    const isPostBusy = createPost.isPending || uploadBatch.isPending;
     const isSongBusy = createPlaylistSuggestion.isPending;
     const canCompose = Boolean(activeMember) && isEventWritable(activeEvent?.status);
     const canComposePost = canCompose && eventModules.some((module) => module.moduleKey === 'posts' && module.isAvailable);
@@ -146,12 +132,7 @@ export function useComposerController(): ComposerController {
     const maxImageBytes = appConfig?.media.maxImageBytes ?? 25 * 1024 * 1024;
     const maxVideoBytes = appConfig?.media.maxVideoBytes ?? 200 * 1024 * 1024;
     const maxRequestSizeBytes = appConfig?.media.maxRequestSizeBytes ?? 260 * 1024 * 1024;
-    const canSubmit =
-        (caption.trim().length > 0 || images.length > 0) &&
-        caption.length <= maxCaptionLength &&
-        !hasUnresolvedFailures &&
-        !isPostBusy &&
-        canComposePost;
+    const canSubmit = (caption.trim().length > 0 || images.length > 0) && caption.length <= maxCaptionLength && canComposePost;
 
     const openPostComposer = useCallback(() => {
         if (!canComposePost) return;
@@ -175,7 +156,7 @@ export function useComposerController(): ComposerController {
     }
 
     function closeComposer() {
-        if (isPostBusy || isSongBusy) return;
+        if (isSongBusy) return;
         images.forEach((img) => URL.revokeObjectURL(img.previewUrl));
         setCaption('');
         setImages([]);
@@ -183,7 +164,6 @@ export function useComposerController(): ComposerController {
         setMediaPreviewKey(null);
         setSizeError(null);
         setCountError(null);
-        setSubmitError(null);
         setComposerMode('post');
         setSongComposerKey((current) => current + 1);
         setIsOpen(false);
@@ -279,10 +259,6 @@ export function useComposerController(): ComposerController {
         if (key) removeImage(key);
     }
 
-    function handleRetryUploadClick() {
-        void uploadPendingImages();
-    }
-
     function handleImageFilterSelection(event: React.MouseEvent<HTMLButtonElement>) {
         const key = event.currentTarget.dataset.key;
         if (!key) return;
@@ -322,139 +298,16 @@ export function useComposerController(): ComposerController {
         setImages((current) => current.map((image) => (image.key === selectedImageForFilter.key ? { ...image, filterId } : image)));
     }
 
-    function getComposerErrorMessage(error: unknown): string {
-        if (getErrorCode(error) === ERROR_CODES.EVENT_STORAGE_LIMIT_EXCEEDED) {
-            const details = getQuotaExceededDetails(error);
-            const nextPlan = details ? findNextPlan(appConfig?.planTiers ?? [], 'EVENT', details.planCode) : undefined;
-            return nextPlan ? t('storageLimitExceededWithPlan', { plan: nextPlan.name }) : t('storageLimitExceeded');
-        }
-        if (isModuleNotAvailableError(error)) {
-            return t('moduleUnavailable');
-        }
-        return toErrorMessage(error, t('genericSubmitFailed'));
-    }
-
-    async function uploadPendingImages(): Promise<string[] | null> {
-        const toUpload = images.filter((img) => img.status === 'pending' || img.status === 'failed');
-        const alreadyUploaded = images.filter((img) => img.status === 'uploaded' && img.mediaId);
-
-        if (toUpload.length === 0) {
-            return alreadyUploaded.map((img) => img.mediaId!);
-        }
-
-        setImages((prev) => prev.map((img) => (toUpload.some((u) => u.key === img.key) ? { ...img, status: 'uploading', error: undefined } : img)));
-
-        let result;
-        try {
-            const files = await Promise.all(
-                toUpload.map(async (image) => {
-                    if (image.file.type.startsWith('video/') || image.filterId === 'original') return image.file;
-                    const preset = STORY_FILTER_PRESETS.find((candidate) => candidate.id === image.filterId);
-                    return preset ? bakeStoryFilter(image.file, preset) : image.file;
-                })
-            );
-            result = await uploadBatch.mutateAsync({
-                eventId: activeEvent!.id,
-                files,
-                uploaderMemberId: activeMember?.id,
-            });
-        } catch (error) {
-            const message = getComposerErrorMessage(error);
-            setImages((prev) =>
-                prev.map((img) =>
-                    toUpload.some((u) => u.key === img.key)
-                        ? {
-                              ...img,
-                              status: 'failed' as const,
-                              error: message,
-                          }
-                        : img
-                )
-            );
-            setSubmitError(message);
-            return null;
-        }
-
-        const createdByName = new Map<string, typeof result.created>();
-        result.created.forEach((m) => {
-            const arr = createdByName.get(m.originalFilename) ?? [];
-            arr.push(m);
-            createdByName.set(m.originalFilename, arr);
-        });
-        const failedByName = new Map<string, string[]>();
-        result.failed.forEach((f) => {
-            const arr = failedByName.get(f.filename) ?? [];
-            const errorKey = `uploadErrors.${f.errorCode}`;
-            arr.push(
-                f.errorCode === 'EVENT_STORAGE_LIMIT_EXCEEDED'
-                    ? t('storageLimitExceeded')
-                    : t.has(errorKey)
-                      ? t(errorKey, { filename: f.filename })
-                      : t('uploadFailed', { filename: f.filename })
-            );
-            failedByName.set(f.filename, arr);
-        });
-
-        const newMediaIdByKey = new Map<string, string>();
-        const newErrorByKey = new Map<string, string>();
-        let hasFailure = false;
-        for (const img of toUpload) {
-            const failMsgs = failedByName.get(img.file.name);
-            if (failMsgs && failMsgs.length > 0) {
-                newErrorByKey.set(img.key, failMsgs.shift()!);
-                hasFailure = true;
-                continue;
-            }
-            const createdList = createdByName.get(img.file.name);
-            const created = createdList?.shift();
-            if (created) newMediaIdByKey.set(img.key, created.id);
-        }
-
-        setImages((prev) =>
-            prev.map((img) => {
-                if (newMediaIdByKey.has(img.key)) {
-                    return {
-                        ...img,
-                        status: 'uploaded' as const,
-                        mediaId: newMediaIdByKey.get(img.key),
-                    };
-                }
-                if (newErrorByKey.has(img.key)) {
-                    return { ...img, status: 'failed' as const, error: newErrorByKey.get(img.key) };
-                }
-                return img;
-            })
-        );
-
-        if (hasFailure) return null;
-
-        return imagesRef.current
-            .map((img) => newMediaIdByKey.get(img.key) ?? (img.status === 'uploaded' ? img.mediaId : undefined))
-            .filter((id): id is string => Boolean(id));
-    }
-
-    async function submitPost(event: React.SubmitEvent<HTMLFormElement>) {
+    function submitPost(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
         if (!canSubmit || !activeEvent || !activeMember) return;
 
-        setSubmitError(null);
-
-        const mediaIds = await uploadPendingImages();
-        if (mediaIds === null) return;
-
-        try {
-            await createPost.mutateAsync({
-                eventId: activeEvent.id,
-                authorMemberId: activeMember.id,
-                type: mediaIds.length > 0 ? 'MEDIA' : 'TEXT',
-                content: caption.trim() || undefined,
-                isPinned: false,
-                mediaIds: mediaIds.length > 0 ? mediaIds : undefined,
-            });
-        } catch (error) {
-            setSubmitError(getComposerErrorMessage(error));
-            return;
-        }
+        publishQueue.enqueuePost({
+            eventId: activeEvent.id,
+            authorMemberId: activeMember.id,
+            caption,
+            images,
+        });
 
         closeComposer();
     }
@@ -482,25 +335,12 @@ export function useComposerController(): ComposerController {
             openPostImagePicker,
             openSongComposer,
             openStoryCapture: storyComposer.open,
-            isCreatingStory: storyComposer.isBusy,
-            storyError: storyComposer.error,
             canCompose,
             canComposePost,
             canComposeStory,
             canComposeSong,
         }),
-        [
-            canCompose,
-            canComposePost,
-            canComposeSong,
-            canComposeStory,
-            openPostComposer,
-            openPostImagePicker,
-            openSongComposer,
-            storyComposer.error,
-            storyComposer.isBusy,
-            storyComposer.open,
-        ]
+        [canCompose, canComposePost, canComposeSong, canComposeStory, openPostComposer, openPostImagePicker, openSongComposer, storyComposer.open]
     );
 
     return {
@@ -513,15 +353,11 @@ export function useComposerController(): ComposerController {
         activeMediaPreview,
         sizeError,
         countError,
-        submitError,
-        storyError: storyComposer.error,
         storyComposer,
         songComposerKey,
         fileRef,
         textareaRef,
         memberName: activeMember?.displayName ?? '',
-        hasUnresolvedFailures,
-        isPostBusy,
         isSongBusy,
         canSubmit,
         canComposePost,
@@ -544,7 +380,6 @@ export function useComposerController(): ComposerController {
         handlePickPhotos,
         handlePostFilesChange,
         handleRemoveImageClick,
-        handleRetryUploadClick,
         handleImageFilterSelection,
         setImageFilter,
         submitPost,

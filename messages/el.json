@@ -348,6 +348,16 @@
             "vintage": "Vintage"
         }
     },
+    "PublishQueue": {
+        "postingPost": "Δημοσίευση…",
+        "postingStory": "Δημοσίευση {count, plural, one {της ιστορίας σου} other {των ιστοριών σου}}…",
+        "posted": "Δημοσιεύτηκε",
+        "storyPosted": "{count, plural, one {Η ιστορία δημοσιεύτηκε} other {Οι ιστορίες δημοσιεύτηκαν}}",
+        "postFailed": "Η δημοσίευση απέτυχε. Δοκιμάστε ξανά.",
+        "storyPostFailed": "{failed} από {total} {total, plural, one {ιστορία} other {ιστορίες}} απέτυχαν.",
+        "retry": "Επανάληψη",
+        "dismiss": "Απόρριψη"
+    },
     "EmailVerificationBanner": {
         "message": "Επιβεβαιώστε τη διεύθυνση email σας για να δημιουργήσετε μια εκδήλωση.",
         "resend": "Επαναποστολή email",

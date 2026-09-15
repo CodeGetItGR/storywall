@@ -1,6 +1,6 @@
 'use client';
 
-import { LoaderCircle, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 import { useCallback } from 'react';
@@ -21,7 +21,7 @@ interface StoryAvatarProps {
 
 export function StoryAvatar({ group, author, onOpenStoryAction, isCurrentUser }: StoryAvatarProps) {
     const t = useTranslations('StoryAvatar');
-    const { openStoryCapture, canComposeStory, isCreatingStory } = useComposer();
+    const { openStoryCapture, canComposeStory } = useComposer();
     const memberAvatarUrl = useMemberAvatarUrl();
     const firstStoryId = group.stories[0].id;
 
@@ -66,33 +66,17 @@ export function StoryAvatar({ group, author, onOpenStoryAction, isCurrentUser }:
             <div className="flex shrink-0 flex-col items-center gap-2">
                 {/* Current user story */}
                 <div className="relative">
-                    <button
-                        type="button"
-                        onClick={handleOpenStory}
-                        disabled={isCreatingStory}
-                        aria-label={t('yourStory')}
-                        className="disabled:opacity-70"
-                    >
+                    <button type="button" onClick={handleOpenStory} aria-label={t('yourStory')}>
                         {ring}
-                        {isCreatingStory && (
-                            <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/35">
-                                <LoaderCircle className="h-5 w-5 animate-spin text-white" aria-hidden="true" />
-                            </span>
-                        )}
                     </button>
                     {canComposeStory && (
                         <button
                             type="button"
                             onClick={handleOpenComposeStory}
-                            disabled={isCreatingStory}
                             aria-label={t('addAnotherStory')}
                             className="absolute bottom-0 right-0 flex h-5 w-5 items-center justify-center rounded-full border-2 border-background bg-gradient-brand"
                         >
-                            {isCreatingStory ? (
-                                <LoaderCircle className="h-3 w-3 animate-spin text-white" aria-hidden="true" />
-                            ) : (
-                                <Plus className="h-3 w-3 text-white" strokeWidth={3} />
-                            )}
+                            <Plus className="h-3 w-3 text-white" strokeWidth={3} />
                         </button>
                     )}
                 </div>

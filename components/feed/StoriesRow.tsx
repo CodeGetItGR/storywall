@@ -28,7 +28,7 @@ export function StoriesRow({ eventId, onOpenStoryAction }: StoriesRowProps) {
     const memberAvatarUrl = useMemberAvatarUrl();
     const { data: stories = [] } = useEventStories(eventId);
     const { data: sessions = [], isLoading: isLoadingSessions } = useEventSessions(eventId);
-    const { openStoryCapture, isCreatingStory, storyError, canComposeStory } = useComposer();
+    const { openStoryCapture, canComposeStory } = useComposer();
 
     const groups = useMemo(() => groupStoriesByAuthor(stories), [stories]);
     const ownGroup = activeMember ? groups.find((g) => g.authorMemberId === activeMember.id) : undefined;
@@ -47,7 +47,7 @@ export function StoriesRow({ eventId, onOpenStoryAction }: StoriesRowProps) {
                     <button
                         type="button"
                         onClick={openStoryCapture}
-                        disabled={!activeMember || isCreatingStory}
+                        disabled={!activeMember}
                         aria-label={tAvatar('addYourStory')}
                         className="relative w-15.5 h-15.5 flex items-center justify-center disabled:opacity-60"
                     >
@@ -61,27 +61,12 @@ export function StoriesRow({ eventId, onOpenStoryAction }: StoriesRowProps) {
                         <span className="absolute right-0 bottom-0 flex h-5 w-5 items-center justify-center rounded-full border-2 border-background bg-primary text-white">
                             <Plus className="h-3 w-3" strokeWidth={3} aria-hidden="true" />
                         </span>
-                        {isCreatingStory && (
-                            <span className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/35">
-                                <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-                            </span>
-                        )}
                     </button>
                     <span className="text-[11px] text-ink-muted font-medium text-center leading-tight max-w-14 truncate">{tAvatar('yourStory')}</span>
                 </div>
             ) : null}
 
-            {hasStartItems && (
-                <>
-                    {storyError && (
-                        <p role="alert" className="text-xs text-destructive shrink-0 self-center max-w-32">
-                            {storyError}
-                        </p>
-                    )}
-
-                    <div className="w-px h-14 bg-border self-center shrink-0" aria-hidden="true" />
-                </>
-            )}
+            {hasStartItems && <div className="w-px h-14 bg-border self-center shrink-0" aria-hidden="true" />}
 
             {/* Schedule story */}
             {hasScheduleStory && <ScheduleStoryAvatar />}
