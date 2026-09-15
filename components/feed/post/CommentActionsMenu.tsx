@@ -33,7 +33,12 @@ export function CommentActionsMenu({ comment, wrapperClassName }: CommentActions
     const canWrite = isEventWritable(activeEvent?.status);
     const canDelete = Boolean(activeMember && canWrite && (isMyComment || isHost));
     const canReport = Boolean(
-        activeMember && canWrite && !isMyComment && comment.authorMemberId && appConfig?.reportTargetTypes?.includes('COMMENT')
+        activeMember &&
+        canWrite &&
+        !isMyComment &&
+        comment.authorMemberId &&
+        comment.author?.role !== 'HOST' &&
+        appConfig?.reportTargetTypes?.includes('COMMENT')
     );
 
     if (!activeEvent || (!canDelete && !canReport)) return null;

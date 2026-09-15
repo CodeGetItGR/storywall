@@ -43,7 +43,7 @@ export function PostActionsMenu({
             </Menu.Trigger>
             <Menu.Portal>
                 <Menu.Positioner side="bottom" align="end" sideOffset={6} collisionPadding={12} className="z-50">
-                    <Menu.Popup className="motion-popover w-48 rounded-2xl border border-border bg-background p-1 shadow-[0_2px_16px_0_rgba(36,31,26,0.15)] outline-none">
+                    <Menu.Popup className="motion-popover w-48 rounded-xl border border-border bg-background p-2 shadow-[0_2px_16px_0_rgba(36,31,26,0.15)] outline-none">
                         {onEditAction && editLabel && (
                             <Menu.Item
                                 onClick={onEditAction}
