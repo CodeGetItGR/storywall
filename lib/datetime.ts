@@ -44,6 +44,13 @@ export function parseDatetimeLocalValue(value: string | null | undefined): Date 
     return parseDate(value);
 }
 
+// A datetime-local input yields "YYYY-MM-DDTHH:mm" with no zone offset, which
+// Spring rejects (400) for OffsetDateTime fields. Convert at the form edge to
+// a full ISO-8601 instant before it goes into a request body.
+export function datetimeLocalValueToIso(value: string | null | undefined): string | null {
+    return parseDatetimeLocalValue(value)?.toISOString() ?? null;
+}
+
 export function getLaterDatetimeLocalValue(...values: Array<string | null | undefined>): string | null {
     let latest: Date | null = null;
 
