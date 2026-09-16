@@ -1,15 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import { useDeleteEventMember } from '@/hooks/useEventMembers';
 import type { EventMemberResponseDto } from '@/lib/api/types';
 
-export function useMemberModeration(eventId: string, members: EventMemberResponseDto[], canModerate: boolean) {
+export function useMemberModeration(eventId: string, canModerate: boolean) {
     const deleteMember = useDeleteEventMember(eventId);
     const [memberToRemove, setMemberToRemove] = useState<EventMemberResponseDto | null>(null);
     const [memberToReport, setMemberToReport] = useState<EventMemberResponseDto | null>(null);
     const [removeError, setRemoveError] = useState<string | null>(null);
-
-    const attendees = useMemo(() => members.filter((member) => member.role === 'ATTENDEE'), [members]);
 
     function requestRemove(member: EventMemberResponseDto) {
         if (!canModerate) return;
@@ -43,7 +41,6 @@ export function useMemberModeration(eventId: string, members: EventMemberRespons
     }
 
     return {
-        attendees,
         closeRemove,
         closeReport,
         confirmRemove,

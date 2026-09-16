@@ -1304,6 +1304,7 @@
             "emptyTitle": "No members yet",
             "emptyBody": "Members appear here after they join.",
             "joined": "Joined {date}",
+            "roleHost": "Host",
             "report": "Report",
             "remove": "Remove",
             "cancel": "Cancel",

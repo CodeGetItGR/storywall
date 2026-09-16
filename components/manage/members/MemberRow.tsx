@@ -15,9 +15,10 @@ type MemberRowProps = {
     onReportAction: (member: EventMemberResponseDto) => void;
     removeLabel: string;
     reportLabel: string;
+    roleLabel: string | null;
 };
 
-export function MemberRow({ canModerate, canReport, joinedLabel, member, onRemoveAction, onReportAction, removeLabel, reportLabel }: MemberRowProps) {
+export function MemberRow({ canModerate, canReport, joinedLabel, member, onRemoveAction, onReportAction, removeLabel, reportLabel, roleLabel }: MemberRowProps) {
     const memberAvatarUrl = useMemberAvatarUrl();
     const handleReport = useCallback(() => onReportAction(member), [member, onReportAction]);
     const handleRemove = useCallback(() => onRemoveAction(member), [member, onRemoveAction]);
@@ -26,7 +27,14 @@ export function MemberRow({ canModerate, canReport, joinedLabel, member, onRemov
         <li className="flex items-center gap-3 border-b border-border/70 py-3 last:border-b-0">
             <Avatar src={memberAvatarUrl(member.id, member.avatarUrl)} initials={initialsFromName(member.displayName)} color={avatarColorFromId(member.id)} alt={member.displayName} size="sm" />
             <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-ink">{member.displayName}</p>
+                <p className="flex items-center gap-1.5 truncate text-sm font-semibold text-ink">
+                    <span className="truncate">{member.displayName}</span>
+                    {roleLabel && (
+                        <span className="shrink-0 rounded-full bg-surface-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ink-faint">
+                            {roleLabel}
+                        </span>
+                    )}
+                </p>
                 <p className="mt-0.5 text-xs text-ink-faint">{joinedLabel}</p>
             </div>
             {canModerate && (

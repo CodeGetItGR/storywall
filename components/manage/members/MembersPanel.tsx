@@ -48,7 +48,7 @@ export function MembersPanel({ canModerate, canWrite, eventId, members, invitati
     const [showCreate, setShowCreate] = useState(false);
     const [limitNotice, setLimitNotice] = useState<string | null>(null);
 
-    const moderation = useMemberModeration(eventId, members, canModerate);
+    const moderation = useMemberModeration(eventId, canModerate);
     const handleConfirmRemove = useCallback(() => moderation.confirmRemove(tMembers('removeFailed')), [moderation, tMembers]);
     const canReport = canModerate && Boolean(appConfig?.reportTargetTypes?.includes('MEMBER'));
 
@@ -131,7 +131,7 @@ export function MembersPanel({ canModerate, canWrite, eventId, members, invitati
             {/* Members list */}
             {tab === 'members' && (
                 <>
-                    {moderation.attendees.length === 0 ? (
+                    {members.length === 0 ? (
                         <div className="flex flex-col items-center py-14 text-center">
                             <div className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-muted text-ink-faint">
                                 <Users className="h-5 w-5" aria-hidden="true" />
@@ -141,13 +141,14 @@ export function MembersPanel({ canModerate, canWrite, eventId, members, invitati
                         </div>
                     ) : (
                         <ul>
-                            {moderation.attendees.map((member) => (
+                            {members.map((member) => (
                                 <MemberRow
                                     key={member.id}
                                     member={member}
                                     canModerate={canModerate}
                                     canReport={canReport}
                                     joinedLabel={tMembers('joined', { date: formatDate(locale, member.joinedAt, { dateStyle: 'medium' }) })}
+                                    roleLabel={member.role === 'HOST' ? tMembers('roleHost') : null}
                                     onReportAction={moderation.requestReport}
                                     onRemoveAction={moderation.requestRemove}
                                     reportLabel={tMembers('report')}
