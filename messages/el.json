@@ -847,7 +847,7 @@
         "fields": {
             "title": "Τίτλος εκδήλωσης",
             "startAt": "Έναρξη",
-            "endAt": "Λήξη",
+            "endAt": "Ημερομηνία λήξης εκδήλωσης",
             "timezone": "Ζώνη ώρας",
             "locationName": "Τοποθεσία",
             "locationAddress": "Διεύθυνση",

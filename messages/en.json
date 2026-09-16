@@ -847,7 +847,7 @@
         "fields": {
             "title": "Event title",
             "startAt": "Starts",
-            "endAt": "Ends",
+            "endAt": "Event end date",
             "timezone": "Timezone",
             "locationName": "Location",
             "locationAddress": "Address",
