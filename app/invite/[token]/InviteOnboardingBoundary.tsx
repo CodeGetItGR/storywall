@@ -1,13 +1,17 @@
 'use client';
 
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 
 import { InviteLayout } from '@/components/invite/InviteLayout';
 import { InviteOnboardingState } from '@/components/invite/InviteOnboardingState';
 import { InviteTerminalState } from '@/components/invite/InviteTerminalState';
-import { useEventInvitationPreview } from '@/hooks/useEventInvitations';
+import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useAuth } from '@/hooks/useAuth';
+import { useAcceptEventInvitation, useEventInvitationPreview } from '@/hooks/useEventInvitations';
 import { useMediaItem } from '@/hooks/useMedia';
 import { ApiError } from '@/lib/api/client';
 import { routes } from '@/lib/routes';
@@ -16,9 +20,26 @@ const DEFAULT_HERO_IMAGE = '/images/couple-hero.png';
 
 export default function InviteOnboardingBoundary({ token }: { token: string }) {
     const t = useTranslations('InviteOnboardingPage');
+    const router = useRouter();
+    const toErrorMessage = useApiErrorMessage();
 
-    const { data: preview, isLoading, error } = useEventInvitationPreview(token);
+    const { isAuthenticated, isBootstrapping } = useAuth();
+    const { data: preview, isLoading: isPreviewLoading, error } = useEventInvitationPreview(token);
     const { data: coverMedia } = useMediaItem(preview?.coverMediaId ?? null);
+    const acceptInvitation = useAcceptEventInvitation();
+    const [acceptError, setAcceptError] = useState<string | null>(null);
+
+    const isLoading = isPreviewLoading || isBootstrapping;
+
+    async function handleAcceptAsExistingUser() {
+        setAcceptError(null);
+        try {
+            const member = await acceptInvitation.mutateAsync(token);
+            router.replace(routes.events.feed(member.eventId));
+        } catch (err) {
+            setAcceptError(toErrorMessage(err));
+        }
+    }
 
     function renderTerminalState() {
         if ((error instanceof ApiError && error.status === 404) || !preview) {
@@ -71,20 +92,46 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
                             <p className="text-sm text-ink-muted mb-7 leading-relaxed">{activePreview.eventDescription}</p>
                         )}
 
+                        {acceptError && (
+                            <p role="alert" className="text-xs text-red-500 mb-3">
+                                {acceptError}
+                            </p>
+                        )}
+
                         <div className="flex flex-col gap-3">
-                            <Link
-                                href={loginHref}
-                                className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
-                            >
-                                {t('haveAccount')}
-                                <ArrowRight className="w-4 h-4" />
-                            </Link>
-                            <Link
-                                href={registerHref}
-                                className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-surface-muted text-ink text-sm font-semibold hover:bg-surface-muted/70 transition-colors"
-                            >
-                                {t('createAccount')}
-                            </Link>
+                            {isAuthenticated ? (
+                                <button
+                                    type="button"
+                                    onClick={handleAcceptAsExistingUser}
+                                    disabled={acceptInvitation.isPending}
+                                    className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
+                                >
+                                    {acceptInvitation.isPending ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <>
+                                            {t('haveAccount')}
+                                            <ArrowRight className="w-4 h-4" />
+                                        </>
+                                    )}
+                                </button>
+                            ) : (
+                                <>
+                                    <Link
+                                        href={loginHref}
+                                        className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+                                    >
+                                        {t('haveAccount')}
+                                        <ArrowRight className="w-4 h-4" />
+                                    </Link>
+                                    <Link
+                                        href={registerHref}
+                                        className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-surface-muted text-ink text-sm font-semibold hover:bg-surface-muted/70 transition-colors"
+                                    >
+                                        {t('createAccount')}
+                                    </Link>
+                                </>
+                            )}
                         </div>
                     </InviteLayout>
                 ) : null
