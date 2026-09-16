@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
-    "dev:webpack": "next dev --webpack",
+    "clean": "node -e \"require('fs').rmSync('.next', { recursive: true, force: true })\"",
+    "dev": "npm run clean && next dev --turbo",
+    "dev:webpack": "npm run clean && next dev --webpack",
     "build": "next build",
     "prepare": "node scripts/install-git-hooks.mjs",
     "start": "next start",

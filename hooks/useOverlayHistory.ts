@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useId, useRef } from 'react';
 
+import { useRegisterOverlayPresence } from '@/hooks/useOverlayPresence';
 import { type OverlayHistoryRegistration, registerOverlayHistory } from '@/lib/overlayHistory';
 
 export function useOverlayHistory(open: boolean, onClose: () => void, enabled = true) {
@@ -10,6 +11,10 @@ export function useOverlayHistory(open: boolean, onClose: () => void, enabled = 
     const registrationRef = useRef<OverlayHistoryRegistration | null>(null);
     const openRef = useRef(open);
     const enabledRef = useRef(enabled);
+
+    // Every overlay counts as open on screen, even ones that opt out of
+    // back-button dismissal.
+    useRegisterOverlayPresence(open);
 
     useEffect(() => {
         onCloseRef.current = onClose;
