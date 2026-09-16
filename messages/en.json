@@ -1848,6 +1848,8 @@
         "messagePlaceholder": "Write your message...",
         "messageAriaLabel": "Wishbook message",
         "addToWishbook": "Add wish",
+        "wishSentTitle": "Your wish is on its way",
+        "wishSentBody": "Thank you for taking the time to write something so kind. It's tucked safely into the wishbook now, waiting to be read.",
         "messageCount": "{count, plural, one {# Message} other {# Messages}}",
         "charactersLeft": "{current} / {max} characters",
         "loading": "Loading wishes...",

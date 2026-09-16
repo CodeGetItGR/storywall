@@ -3,7 +3,7 @@
 import { BookHeart, Download, Loader2, Send, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
@@ -30,6 +30,7 @@ export default function WishbookPage() {
     const toErrorMessage = useApiErrorMessage();
     const [message, setMessage] = useState('');
     const [deleteTarget, setDeleteTarget] = useState<WishbookEntryResponseDto | null>(null);
+    const [showSentConfirmation, setShowSentConfirmation] = useState(false);
     const entries = wishbook.data?.pages.flatMap((page) => page.content) ?? [];
     const total = wishbook.data?.pages[0]?.page.totalElements ?? 0;
     const canWrite = event?.status === 'ACTIVE' && !isHost;
@@ -40,12 +41,20 @@ export default function WishbookPage() {
     const showEmptyState = !wishbook.isLoading && !wishbook.error && entries.length === 0;
     const showHeaderArt = canWrite || !showEmptyState;
 
+    useEffect(() => {
+        if (!showSentConfirmation) return;
+        const timeout = setTimeout(() => setShowSentConfirmation(false), 5000);
+        return () => clearTimeout(timeout);
+    }, [showSentConfirmation]);
+
     async function submit(event_: React.SubmitEvent<HTMLFormElement>) {
         event_.preventDefault();
         const trimmed = message.trim();
         if (!trimmed) return;
+        setShowSentConfirmation(false);
         await createEntry.mutateAsync({ message: trimmed, guestName: member?.displayName ?? undefined });
         setMessage('');
+        setShowSentConfirmation(true);
     }
 
     async function confirmDelete() {
@@ -89,7 +98,13 @@ export default function WishbookPage() {
             ) : null}
 
             {/* Composer */}
-            {canWrite ? (
+            {canWrite && showSentConfirmation ? (
+                <div className="mt-8 flex flex-col items-center gap-3 rounded-[1.5rem] bg-pink-50 px-6 py-12 text-center">
+                    <BookHeart className="h-9 w-9 text-pink-500" />
+                    <p className="text-base font-semibold text-ink">{t('wishSentTitle')}</p>
+                    <p className="max-w-xs text-sm leading-6 text-ink-muted">{t('wishSentBody')}</p>
+                </div>
+            ) : canWrite ? (
                 <form onSubmit={submit} className="mt-8 space-y-4">
                     <textarea
                         id="wishbook-message"
@@ -97,9 +112,10 @@ export default function WishbookPage() {
                         rows={8}
                         value={message}
                         onChange={changeMessage}
+                        disabled={createEntry.isPending}
                         aria-label={t('messageAriaLabel')}
                         placeholder={t('currentPlaceholder')}
-                        className="min-h-56 w-full resize-none rounded-[1.5rem] border border-border/70 bg-background px-5 py-4 text-base leading-8 text-ink outline-none transition-shadow focus:border-primary/30 focus:ring-2 focus:ring-primary/20"
+                        className="min-h-56 w-full resize-none rounded-[1.5rem] border border-border/70 bg-background px-5 py-4 text-base leading-8 text-ink outline-none transition-shadow focus:border-primary/30 focus:ring-2 focus:ring-primary/20 disabled:opacity-60"
                     />
                     <div className="flex items-center justify-between gap-3">
                         <span className="text-xs text-ink-faint">{t('charactersLeft', { current: message.length, max: maxMessageLength })}</span>
