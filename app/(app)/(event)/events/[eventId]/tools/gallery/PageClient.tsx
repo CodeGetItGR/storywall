@@ -5,7 +5,7 @@ import { EventRouteGate } from '@/components/routing/EventRouteGate';
 
 export default function GalleryPage() {
     return (
-        <EventRouteGate>
+        <EventRouteGate requireHost>
             <GalleryScreen />
         </EventRouteGate>
     );

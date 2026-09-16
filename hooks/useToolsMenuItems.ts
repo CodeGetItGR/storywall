@@ -36,6 +36,7 @@ export function useToolsMenuItems(): ToolMenuItem[] {
 
     return toolDefinitions
         .filter((tool) => !tool.moduleKey || availableModules.has(tool.moduleKey))
+        .filter((tool) => tool.key !== 'gallery' || isHost)
         .filter((tool) => tool.key !== 'gifts' || isHost || Boolean(giftAccount.data))
         .map((tool) => ({
             key: tool.key,
