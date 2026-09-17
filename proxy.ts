@@ -4,7 +4,7 @@ import { localeCookieName } from '@/i18n/config';
 import { resolveLocale } from '@/i18n/resolveLocale';
 import { ACCESS_TOKEN_HEADER, ACCESS_TOKEN_MAX_AGE_SECONDS, AUTH_COOKIES, baseCookieOptions } from '@/lib/auth/authCookies';
 import { AUTH_RETURN_PATH_PARAM } from '@/lib/auth/returnPath';
-import { springAuth } from '@/lib/auth/springAuth';
+import { springAuth, SpringAuthError } from '@/lib/auth/springAuth';
 import { routes } from '@/lib/routes';
 
 // Explicit allowlist, not a denylist: every prefix listed here requires a
@@ -27,9 +27,24 @@ interface CookieWrite {
     options: ReturnType<typeof baseCookieOptions> & { maxAge?: number };
 }
 
-async function refreshSession(request: NextRequest): Promise<{ accessToken: string; cookies: CookieWrite[] } | null> {
+type SessionResolution =
+    | { kind: 'ok'; accessToken: string; cookies: CookieWrite[] }
+    | { kind: 'signed-out' }
+    // Spring couldn't answer (rate limited, down, unreachable). The refresh
+    // token may well still be valid, so this must not be treated as a logout.
+    | { kind: 'unavailable' };
+
+async function resolveSession(request: NextRequest): Promise<SessionResolution> {
+    // The access-token cookie's maxAge matches the JWT's lifetime, so its
+    // presence means Spring would accept it. Reusing it instead of refreshing
+    // on every request matters because Next runs this for every prefetch as
+    // well as every navigation, and every one of those refreshes reaches
+    // Spring from this server's address rather than the user's.
+    const accessToken = request.cookies.get(AUTH_COOKIES.accessToken)?.value;
+    if (accessToken) return { kind: 'ok', accessToken, cookies: [] };
+
     const refreshToken = request.cookies.get(AUTH_COOKIES.refreshToken)?.value;
-    if (!refreshToken) return null;
+    if (!refreshToken) return { kind: 'signed-out' };
 
     try {
         const locale = resolveLocale(request.cookies.get(localeCookieName)?.value, request.headers.get('accept-language'));
@@ -44,9 +59,10 @@ async function refreshSession(request: NextRequest): Promise<{ accessToken: stri
         if (auth.refreshToken) {
             cookies.push({ name: AUTH_COOKIES.refreshToken, value: auth.refreshToken, options: baseCookieOptions() });
         }
-        return { accessToken: auth.accessToken, cookies };
-    } catch {
-        return null;
+        return { kind: 'ok', accessToken: auth.accessToken, cookies };
+    } catch (error) {
+        if (error instanceof SpringAuthError && error.status === 401) return { kind: 'signed-out' };
+        return { kind: 'unavailable' };
     }
 }
 
@@ -54,13 +70,9 @@ export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
     if (!isProtectedPath(pathname)) return NextResponse.next();
 
-    // An access-token cookie only proves that a browser once had a session.
-    // Re-derive it from the refresh token before a protected route renders so
-    // a revoked or expired session cannot briefly hydrate the old app shell.
-    const refreshed = await refreshSession(request);
-    const accessToken = refreshed?.accessToken ?? null;
+    const session = await resolveSession(request);
 
-    if (!accessToken) {
+    if (session.kind === 'signed-out') {
         const loginUrl = new URL(routes.login, request.url);
         loginUrl.searchParams.set(AUTH_RETURN_PATH_PARAM, `${pathname}${request.nextUrl.search}`);
         const redirect = NextResponse.redirect(loginUrl);
@@ -69,11 +81,15 @@ export async function proxy(request: NextRequest) {
         return redirect;
     }
 
+    // Without a token the page renders without its server-side prefetch and
+    // the client bootstraps through /api/auth/session instead.
+    if (session.kind === 'unavailable') return NextResponse.next();
+
     const requestHeaders = new Headers(request.headers);
-    requestHeaders.set(ACCESS_TOKEN_HEADER, accessToken);
+    requestHeaders.set(ACCESS_TOKEN_HEADER, session.accessToken);
     const response = NextResponse.next({ request: { headers: requestHeaders } });
 
-    for (const cookie of refreshed?.cookies ?? []) {
+    for (const cookie of session.cookies) {
         response.cookies.set(cookie.name, cookie.value, cookie.options);
     }
 

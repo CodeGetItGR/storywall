@@ -72,16 +72,16 @@ async function reauthenticate(): Promise<string | null> {
     refreshPromise = (async () => {
         try {
             const res = await fetch(endpoints.auth.session);
-            if (!res.ok) {
-                clearSession();
-                return null;
-            }
+            // Only a 401 means the session is gone. Anything else is the route
+            // (or Spring behind it) being unable to answer right now — the
+            // refresh cookie is still there and the next attempt may succeed.
+            if (res.status === 401) clearSession();
+            if (!res.ok) return null;
 
             const session = (await res.json()) as AuthSessionDto;
             setSession(session);
             return session.accessToken;
         } catch {
-            clearSession();
             return null;
         }
     })();
