@@ -13,11 +13,19 @@ import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { type SubTabItem, SubTabs } from '@/components/ui/SubTabs';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useMemberModeration } from '@/hooks/useMemberModeration';
-import type { EventInvitationResponseDto, EventMemberResponseDto, EventModuleResponseDto, EventUsageResponseDto, PlanTierResponseDto } from '@/lib/api/types';
+import type {
+    EventHostResponseDto,
+    EventInvitationResponseDto,
+    EventMemberResponseDto,
+    EventModuleResponseDto,
+    EventUsageResponseDto,
+    PlanTierResponseDto,
+} from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
 import { findNextPlan, findPlanByCode } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 
+import { CoHostManagementList } from './CoHostManagementList';
 import { MemberRow } from './MemberRow';
 
 type MembersSubTab = 'members' | 'invites' | 'coHosts';
@@ -31,9 +39,22 @@ type MembersPanelProps = {
     eventUsage: EventUsageResponseDto | null;
     planTiers: PlanTierResponseDto[];
     eventModules: EventModuleResponseDto[];
+    hosts: EventHostResponseDto[];
+    isPrimaryHost: boolean;
 };
 
-export function MembersPanel({ canModerate, canWrite, eventId, members, invitations, eventUsage, planTiers, eventModules }: MembersPanelProps) {
+export function MembersPanel({
+    canModerate,
+    canWrite,
+    eventId,
+    members,
+    invitations,
+    eventUsage,
+    planTiers,
+    eventModules,
+    hosts,
+    isPrimaryHost,
+}: MembersPanelProps) {
     const t = useTranslations('ManagePage');
     const tMembers = useTranslations('ManagePage.members');
     const locale = useLocale();
@@ -146,6 +167,7 @@ export function MembersPanel({ canModerate, canWrite, eventId, members, invitati
                                     key={member.id}
                                     member={member}
                                     canModerate={canModerate}
+                                    canRemove={canModerate && member.role !== 'HOST'}
                                     canReport={canReport}
                                     joinedLabel={tMembers('joined', { date: formatDate(locale, member.joinedAt, { dateStyle: 'medium' }) })}
                                     roleLabel={member.role === 'HOST' ? tMembers('roleHost') : null}
@@ -163,6 +185,10 @@ export function MembersPanel({ canModerate, canWrite, eventId, members, invitati
             {/* Invites / co-hosts */}
             {(showInvites || showCoHosts) && (
                 <>
+                    {/* Co-host management */}
+                    {showCoHosts && <CoHostManagementList canManage={isPrimaryHost && canWrite} eventId={eventId} hosts={hosts} members={members} />}
+
+                    {/* Invitations */}
                     <div className="mb-3 flex items-center justify-between">
                         <p className="text-xs text-ink-muted">
                             {showCoHosts
@@ -181,10 +207,16 @@ export function MembersPanel({ canModerate, canWrite, eventId, members, invitati
                         )}
                     </div>
 
-                    {!canWrite && <p className="mb-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('invitations.readOnly')}</p>}
+                    {!canWrite && (
+                        <p className="mb-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">
+                            {t('invitations.readOnly')}
+                        </p>
+                    )}
 
                     {limitNotice && (
-                        <p className="mb-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900">{limitNotice}</p>
+                        <p className="mb-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900">
+                            {limitNotice}
+                        </p>
                     )}
 
                     {canCreate && !showCreate && (

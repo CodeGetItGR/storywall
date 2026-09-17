@@ -1155,7 +1155,18 @@
                 "submit": "Send invitation",
                 "cancel": "Cancel",
                 "guideTitle": "Invite someone to help",
-                "guideBody": "Co-host invitations are sent by email and are tied to that email address."
+                "guideBody": "Co-host invitations are sent by email and are tied to that email address.",
+                "currentTitle": "Current hosts",
+                "currentSummary": "{count, plural, one {# host} other {# hosts}}",
+                "primary": "Primary host",
+                "coHost": "Co-host",
+                "transfer": "Transfer ownership",
+                "remove": "Remove co-host",
+                "cancel": "Cancel",
+                "transferConfirmTitle": "Transfer ownership to {name}?",
+                "transferConfirmBody": "You will remain a co-host and no longer control ownership.",
+                "removeConfirmTitle": "Remove {name} as co-host?",
+                "removeConfirmBody": "They will no longer be able to manage this event."
             }
         },
         "qr": {
@@ -3172,6 +3183,9 @@
         "invalidEventType": "Choose a valid event type.",
         "invalidPlanTierScope": "That restriction only applies to event plans.",
         "eventDeleteNotPrimaryHost": "Only the event's original host can delete it.",
+        "eventHostDisplayOrderReserved": "The primary host position is reserved.",
+        "eventHostPrimaryCannotBeRemoved": "Transfer ownership before removing the primary host.",
+        "eventHostTransferNotPrimaryHost": "Only the primary host can transfer ownership.",
         "eventDeleteAlreadyPending": "This event already has a deletion scheduled.",
         "qrMediaUploadDisabled": "The QR upload link is turned off for this event's gallery."
     }

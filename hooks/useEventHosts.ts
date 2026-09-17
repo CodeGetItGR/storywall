@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '@/hooks/useAuth';
+import { eventKeys } from '@/hooks/useEvent';
+import { myEventsKeys } from '@/hooks/useMyEvents';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
@@ -58,6 +60,22 @@ export function useDeleteEventHost(eventId: string) {
         mutationFn: (id: string) => api.del<void>(endpoints.eventHosts.byId(id)),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: eventHostKeys.list(eventId) });
+            queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
+            queryClient.invalidateQueries({ queryKey: myEventsKeys.all });
+        },
+    });
+}
+
+// POST /api/events/{eventId}/hosts/{id}/primary — current primary host only.
+export function useTransferPrimaryEventHost(eventId: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (id: string) => api.post<EventHostResponseDto>(endpoints.events.transferPrimaryHost(eventId, id)),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: eventHostKeys.list(eventId) });
+            queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
+            queryClient.invalidateQueries({ queryKey: myEventsKeys.all });
         },
     });
 }

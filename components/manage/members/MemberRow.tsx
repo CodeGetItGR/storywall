@@ -8,6 +8,7 @@ import { avatarColorFromId, initialsFromName } from '@/lib/utils';
 
 type MemberRowProps = {
     canModerate: boolean;
+    canRemove: boolean;
     canReport: boolean;
     joinedLabel: string;
     member: EventMemberResponseDto;
@@ -18,14 +19,31 @@ type MemberRowProps = {
     roleLabel: string | null;
 };
 
-export function MemberRow({ canModerate, canReport, joinedLabel, member, onRemoveAction, onReportAction, removeLabel, reportLabel, roleLabel }: MemberRowProps) {
+export function MemberRow({
+    canModerate,
+    canRemove,
+    canReport,
+    joinedLabel,
+    member,
+    onRemoveAction,
+    onReportAction,
+    removeLabel,
+    reportLabel,
+    roleLabel,
+}: MemberRowProps) {
     const memberAvatarUrl = useMemberAvatarUrl();
     const handleReport = useCallback(() => onReportAction(member), [member, onReportAction]);
     const handleRemove = useCallback(() => onRemoveAction(member), [member, onRemoveAction]);
 
     return (
         <li className="flex items-center gap-3 border-b border-border/70 py-3 last:border-b-0">
-            <Avatar src={memberAvatarUrl(member.id, member.avatarUrl)} initials={initialsFromName(member.displayName)} color={avatarColorFromId(member.id)} alt={member.displayName} size="sm" />
+            <Avatar
+                src={memberAvatarUrl(member.id, member.avatarUrl)}
+                initials={initialsFromName(member.displayName)}
+                color={avatarColorFromId(member.id)}
+                alt={member.displayName}
+                size="sm"
+            />
             <div className="min-w-0 flex-1">
                 <p className="flex items-center gap-1.5 truncate text-sm font-semibold text-ink">
                     <span className="truncate">{member.displayName}</span>
@@ -49,14 +67,16 @@ export function MemberRow({ canModerate, canReport, joinedLabel, member, onRemov
                             <span className="hidden sm:inline">{reportLabel}</span>
                         </button>
                     )}
-                    <button
-                        type="button"
-                        onClick={handleRemove}
-                        className="flex min-h-10 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/10"
-                    >
-                        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                        <span className="hidden sm:inline">{removeLabel}</span>
-                    </button>
+                    {canRemove && (
+                        <button
+                            type="button"
+                            onClick={handleRemove}
+                            className="flex min-h-10 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/10"
+                        >
+                            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                            <span className="hidden sm:inline">{removeLabel}</span>
+                        </button>
+                    )}
                 </div>
             )}
         </li>

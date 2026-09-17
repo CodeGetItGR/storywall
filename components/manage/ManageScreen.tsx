@@ -136,6 +136,7 @@ export function ManageScreen() {
                 ) : (
                     <MembersTab
                         canModerate={canWrite}
+                        isPrimaryHost={canDelete}
                         canWrite={canWrite}
                         eventId={eventId}
                         members={members}
@@ -143,6 +144,7 @@ export function ManageScreen() {
                         eventUsage={eventUsage}
                         planTiers={appConfig?.planTiers ?? []}
                         eventModules={activeEvent.modules}
+                        hosts={activeEvent.hosts}
                     />
                 ))}
 

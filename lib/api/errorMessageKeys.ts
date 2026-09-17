@@ -27,6 +27,9 @@ export type ApiErrorMessageKey =
     | 'eventDatesIncomplete'
     | 'eventDeleteAlreadyPending'
     | 'eventDeleteNotPrimaryHost'
+    | 'eventHostDisplayOrderReserved'
+    | 'eventHostPrimaryCannotBeRemoved'
+    | 'eventHostTransferNotPrimaryHost'
     | 'eventNotActive'
     | 'eventNotDraft'
     | 'eventModuleCompositionLocked'
@@ -126,6 +129,9 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.EVENT_DATES_INCOMPLETE]: 'eventDatesIncomplete',
     [ERROR_CODES.EVENT_DELETE_ALREADY_PENDING]: 'eventDeleteAlreadyPending',
     [ERROR_CODES.EVENT_DELETE_NOT_PRIMARY_HOST]: 'eventDeleteNotPrimaryHost',
+    [ERROR_CODES.EVENT_HOST_DISPLAY_ORDER_RESERVED]: 'eventHostDisplayOrderReserved',
+    [ERROR_CODES.EVENT_HOST_PRIMARY_CANNOT_BE_REMOVED]: 'eventHostPrimaryCannotBeRemoved',
+    [ERROR_CODES.EVENT_HOST_TRANSFER_NOT_PRIMARY_HOST]: 'eventHostTransferNotPrimaryHost',
     [ERROR_CODES.EVENT_MEMBER_LIMIT_EXCEEDED]: 'memberLimit',
     [ERROR_CODES.EVENT_NOT_ACTIVE]: 'eventNotActive',
     [ERROR_CODES.EVENT_NOT_DRAFT]: 'eventNotDraft',
