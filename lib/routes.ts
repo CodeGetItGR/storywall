@@ -70,7 +70,8 @@ export const routes = {
     notifications: '/notifications',
     inviteToken: (token: string) => `/invite/${token}`,
     auth: {
-        login: (params: { invite?: string | null; email?: string | null; passwordChanged?: string | null }) => withQuery('/login', params),
-        register: (params: { invite?: string | null; email?: string | null }) => withQuery('/register', params),
+        login: (params: { invite?: string | null; email?: string | null; passwordChanged?: string | null; next?: string | null } = {}) =>
+            withQuery('/login', params),
+        register: (params: { invite?: string | null; email?: string | null; next?: string | null } = {}) => withQuery('/register', params),
     },
 } as const;

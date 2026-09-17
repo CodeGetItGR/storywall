@@ -12,6 +12,7 @@ import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthPageRedirect } from '@/hooks/useAuthPageRedirect';
+import { AUTH_RETURN_PATH_PARAM, getPostAuthRedirectPath, getSafeReturnPath } from '@/lib/auth/returnPath';
 import { routes } from '@/lib/routes';
 
 export default function RegisterPage() {
@@ -19,9 +20,10 @@ export default function RegisterPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const inviteToken = searchParams.get('invite');
+    const returnPath = getSafeReturnPath(searchParams.get(AUTH_RETURN_PATH_PARAM));
 
     const { register, oauth } = useAuth();
-    const { shouldRenderAuthPage } = useAuthPageRedirect();
+    const { shouldRenderAuthPage } = useAuthPageRedirect(returnPath);
     const toErrorMessage = useApiErrorMessage();
 
     const [showPw, setShowPw] = useState(false);
@@ -39,7 +41,7 @@ export default function RegisterPage() {
 
         try {
             const auth = await register({ email, password, firstName, lastName, inviteToken: inviteToken ?? undefined });
-            router.replace(auth.role === 'ADMIN' ? routes.admin : routes.feed);
+            router.replace(getPostAuthRedirectPath(auth.role, returnPath));
         } catch (err) {
             setError(toErrorMessage(err));
         } finally {
@@ -51,9 +53,9 @@ export default function RegisterPage() {
         async (provider: 'GOOGLE' | 'APPLE', idToken: string) => {
             setError(null);
             const auth = await oauth(provider, { idToken, inviteToken: inviteToken ?? undefined });
-            router.replace(auth.role === 'ADMIN' ? routes.admin : routes.feed);
+            router.replace(getPostAuthRedirectPath(auth.role, returnPath));
         },
-        [oauth, inviteToken, router]
+        [inviteToken, oauth, returnPath, router]
     );
 
     const handleOAuthError = useCallback(
@@ -190,10 +192,7 @@ export default function RegisterPage() {
 
             <p className="text-xs text-center text-ink-muted mt-6">
                 {t('haveAccount')}{' '}
-                <Link
-                    href={inviteToken ? routes.auth.login({ invite: inviteToken }) : routes.login}
-                    className="font-semibold text-ink hover:underline"
-                >
+                <Link href={routes.auth.login({ invite: inviteToken, next: returnPath })} className="font-semibold text-ink hover:underline">
                     {t('signInLink')}
                 </Link>
             </p>

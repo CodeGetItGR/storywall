@@ -1,0 +1,21 @@
+import { describe, expect, it } from 'vitest';
+
+import { getPostAuthRedirectPath, getSafeReturnPath } from '@/lib/auth/returnPath';
+
+describe('getSafeReturnPath', () => {
+    it('keeps an internal path and its query string', () => {
+        expect(getSafeReturnPath('/events/event-1/feed?post=post-1')).toBe('/events/event-1/feed?post=post-1');
+    });
+
+    it.each(['https://example.com', '//example.com', 'events/event-1/feed', '/\\example.com'])('rejects an unsafe return path: %s', (path) => {
+        expect(getSafeReturnPath(path)).toBeNull();
+    });
+
+    it('returns a member to the requested protected path after sign-in', () => {
+        expect(getPostAuthRedirectPath('USER', '/events/event-1/feed?post=post-1')).toBe('/events/event-1/feed?post=post-1');
+    });
+
+    it('keeps the admin landing page for an administrator', () => {
+        expect(getPostAuthRedirectPath('ADMIN', '/events/event-1/feed')).toBe('/admin');
+    });
+});

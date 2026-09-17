@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import { resolveServerEventContext } from '@/lib/auth/serverEventContext';
+import { AUTH_RETURN_PATH_PARAM } from '@/lib/auth/returnPath';
 import { routes } from '@/lib/routes';
 
 // Bare /feed has no event id, so it can't render a feed itself — it exists
@@ -11,5 +12,7 @@ import { routes } from '@/lib/routes';
 export default async function FeedRedirectPage() {
     const context = await resolveServerEventContext();
 
-    redirect(context?.activeEventId ? routes.events.feed(context.activeEventId) : routes.home);
+    if (!context) redirect(routes.auth.login({ [AUTH_RETURN_PATH_PARAM]: routes.feed }));
+
+    redirect(context.activeEventId ? routes.events.feed(context.activeEventId) : routes.home);
 }
