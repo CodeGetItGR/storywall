@@ -27,6 +27,7 @@ export type ApiErrorMessageKey =
     | 'eventDatesIncomplete'
     | 'eventDeleteAlreadyPending'
     | 'eventDeleteNotPrimaryHost'
+    | 'eventWithdrawn'
     | 'eventHostDisplayOrderReserved'
     | 'eventHostPrimaryCannotBeRemoved'
     | 'eventHostTransferNotPrimaryHost'
@@ -102,7 +103,10 @@ export type ApiErrorMessageKey =
     | 'validationFailed'
     | 'webhookAlreadyProcessed'
     | 'webhookNotReplayable'
-    | 'webhookPayloadTooLarge';
+    | 'webhookPayloadTooLarge'
+    | 'withdrawalTermsVersionStale'
+    | 'withdrawalRefused'
+    | 'withdrawalNotHeld';
 
 export const API_ERROR_MESSAGE_KEYS = {
     [AUTH_ERROR_CODES.ACCESS_DENIED]: 'accessDenied',
@@ -129,6 +133,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.EVENT_DATES_INCOMPLETE]: 'eventDatesIncomplete',
     [ERROR_CODES.EVENT_DELETE_ALREADY_PENDING]: 'eventDeleteAlreadyPending',
     [ERROR_CODES.EVENT_DELETE_NOT_PRIMARY_HOST]: 'eventDeleteNotPrimaryHost',
+    [ERROR_CODES.EVENT_WITHDRAWN]: 'eventWithdrawn',
     [ERROR_CODES.EVENT_HOST_DISPLAY_ORDER_RESERVED]: 'eventHostDisplayOrderReserved',
     [ERROR_CODES.EVENT_HOST_PRIMARY_CANNOT_BE_REMOVED]: 'eventHostPrimaryCannotBeRemoved',
     [ERROR_CODES.EVENT_HOST_TRANSFER_NOT_PRIMARY_HOST]: 'eventHostTransferNotPrimaryHost',
@@ -203,6 +208,9 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.WEBHOOK_ALREADY_PROCESSED]: 'webhookAlreadyProcessed',
     [ERROR_CODES.WEBHOOK_NOT_REPLAYABLE]: 'webhookNotReplayable',
     [ERROR_CODES.WEBHOOK_PAYLOAD_TOO_LARGE]: 'webhookPayloadTooLarge',
+    [ERROR_CODES.WITHDRAWAL_TERMS_VERSION_STALE]: 'withdrawalTermsVersionStale',
+    [ERROR_CODES.WITHDRAWAL_REFUSED]: 'withdrawalRefused',
+    [ERROR_CODES.WITHDRAWAL_NOT_HELD]: 'withdrawalNotHeld',
 } satisfies Record<KnownApiErrorCode, ApiErrorMessageKey>;
 
 export function getApiErrorMessageKey(code: number | string | undefined): ApiErrorMessageKey | undefined {

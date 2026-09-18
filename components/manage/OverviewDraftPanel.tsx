@@ -1,19 +1,18 @@
 'use client';
 
-import { Calendar, Clock3, Loader2, Receipt } from 'lucide-react';
+import { Calendar, Clock3, Receipt } from 'lucide-react';
+import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { useState } from 'react';
 
 import { EventOverviewPriceRow } from '@/components/event/create/EventOverviewPriceRow';
 import { GiftAccountSetup } from '@/components/manage/GiftAccountSetup';
 import { TargetedSection } from '@/components/manage/TargetedSection';
-import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import { useCheckout } from '@/hooks/useBilling';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
 import type { EventBillingResponseDto, EventTypeConvention, PlanTierResponseDto } from '@/lib/api/types';
-import { formatMoney, navigateToCheckout } from '@/lib/billing';
+import { formatMoney } from '@/lib/billing';
 import { GIFT_ACCOUNT_SECTION_ID } from '@/lib/manageSectionTargets';
 import { getPlanPriceDetails } from '@/lib/planTiers';
+import { routes } from '@/lib/routes';
 
 export function OverviewDraftPanel({
     eventId,
@@ -40,24 +39,10 @@ export function OverviewDraftPanel({
     const tCreate = useTranslations('CreateEventPage');
     const locale = useLocale();
     const eventTypeCopy = useLocalizedAppEventTypeCopy();
-    const checkout = useCheckout(eventId);
-    const toErrorMessage = useApiErrorMessage();
-    const [error, setError] = useState<string | null>(null);
     const canPay = Boolean(startAt);
     const planActivation = currentPlan ? getPlanPriceDetails(currentPlan) : null;
     const activationTotalLabel = activationTotal !== null ? formatMoney(locale, activationTotal, currency) : tCreate('payment.noCharge');
     const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
-
-    async function handlePay() {
-        if (!canPay) return;
-        setError(null);
-
-        try {
-            navigateToCheckout(eventId, await checkout.mutateAsync(undefined));
-        } catch (checkoutError) {
-            setError(toErrorMessage(checkoutError));
-        }
-    }
 
     return (
         <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-8">
@@ -135,15 +120,12 @@ export function OverviewDraftPanel({
 
                 <div className="mt-4">
                     {canPay ? (
-                        <button
-                            type="button"
-                            onClick={handlePay}
-                            disabled={checkout.isPending}
+                        <Link
+                            href={routes.events.checkoutReview(eventId, 'activation')}
                             className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-4 text-sm font-semibold text-white"
                         >
-                            {checkout.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
-                            {checkout.isPending ? t('draft.openingCheckout') : t('draft.payAndPublish')}
-                        </button>
+                            {t('draft.payAndPublish')}
+                        </Link>
                     ) : (
                         <button
                             type="button"
@@ -154,7 +136,6 @@ export function OverviewDraftPanel({
                         </button>
                     )}
                 </div>
-                {error && <p className="mt-3 text-sm text-rose-600">{error}</p>}
             </div>
         </div>
     );

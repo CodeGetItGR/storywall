@@ -3,7 +3,7 @@
 import { Check, Loader2, LockKeyhole } from 'lucide-react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { useCallback, useMemo, useState } from 'react';
+import { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 
 import { CollaborationCodeSection } from '@/components/checkout/CollaborationCodeSection';
 import { BackButton } from '@/components/ui/BackButton';
@@ -12,6 +12,7 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useCheckout, useEventBilling, useStorageCheckout, useUpgradeCheckout, useUpgradeOptions } from '@/hooks/useBilling';
 import { useEvent } from '@/hooks/useEvent';
+import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { CollaborationCodePreviewResponseDto, EventAddonDto } from '@/lib/api/types';
 import { discountedAmountMinor, formatMoney, navigateToCheckout } from '@/lib/billing';
 import { scopedPlans } from '@/lib/planTiers';
@@ -45,13 +46,19 @@ export default function CheckoutReviewBoundary() {
     const [error, setError] = useState<string | null>(null);
     const [collaborationCode, setCollaborationCode] = useState<string | null>(null);
     const [collaborationPreview, setCollaborationPreview] = useState<CollaborationCodePreviewResponseDto | null>(null);
-    const handleCollaborationPreviewChange = useCallback(
-        (nextCode: string | null, nextPreview: CollaborationCodePreviewResponseDto | null) => {
-            setCollaborationCode(nextCode);
-            setCollaborationPreview(nextPreview);
-        },
-        []
-    );
+    const handleCollaborationPreviewChange = useCallback((nextCode: string | null, nextPreview: CollaborationCodePreviewResponseDto | null) => {
+        setCollaborationCode(nextCode);
+        setCollaborationPreview(nextPreview);
+    }, []);
+    const [requestsImmediateStart, setRequestsImmediateStart] = useState(false);
+    const [acknowledgesWithdrawalTerms, setAcknowledgesWithdrawalTerms] = useState(false);
+    const [staleTerms, setStaleTerms] = useState(false);
+    const handleRequestsImmediateStartChange = useCallback((changeEvent: ChangeEvent<HTMLInputElement>) => {
+        setRequestsImmediateStart(changeEvent.target.checked);
+    }, []);
+    const handleAcknowledgesWithdrawalTermsChange = useCallback((changeEvent: ChangeEvent<HTMLInputElement>) => {
+        setAcknowledgesWithdrawalTerms(changeEvent.target.checked);
+    }, []);
     const retry = useCallback(() => {
         void appConfig.refetch();
         void billing.refetch();
@@ -86,7 +93,6 @@ export default function CheckoutReviewBoundary() {
         !billing.data ||
         !currentPlan ||
         !intent ||
-        (intent === 'activation' && !isCancelledActivation) ||
         (intent === 'upgrade' && upgradeOptions.error)
     ) {
         return (
@@ -116,9 +122,9 @@ export default function CheckoutReviewBoundary() {
     let valid = true;
 
     if (intent === 'activation') {
-        title = t('intent.activationCancelled.title');
-        description = t('intent.activationCancelled.description');
-        consequence = t('intent.activationCancelled.consequence');
+        title = t(isCancelledActivation ? 'intent.activationCancelled.title' : 'intent.activation.title');
+        description = t(isCancelledActivation ? 'intent.activationCancelled.description' : 'intent.activation.description');
+        consequence = t(isCancelledActivation ? 'intent.activationCancelled.consequence' : 'intent.activation.consequence');
         valid = billing.data.eventStatus === 'DRAFT' && currentPlan.priceAmountMinor !== null;
         if (currentPlan.priceAmountMinor !== null) {
             lines = [
@@ -156,6 +162,9 @@ export default function CheckoutReviewBoundary() {
 
     const totalMinor = lines.reduce((sum, line) => sum + line.amountMinor, 0);
     const isPending = activationCheckout.isPending || upgradeCheckout.isPending || storageCheckout.isPending;
+    const requiresConsent = intent === 'activation' || intent === 'upgrade';
+    const termsVersion = appConfig.data?.withdrawal.termsVersion ?? null;
+    const consentSatisfied = !requiresConsent || (requestsImmediateStart && acknowledgesWithdrawalTerms && Boolean(termsVersion));
     const backHref =
         intent === 'storage'
             ? routes.events.settingsAddons(eventId)
@@ -164,20 +173,43 @@ export default function CheckoutReviewBoundary() {
               : routes.events.manage(eventId, { tab: 'billing' });
 
     async function continueToCheckout() {
-        if (!valid) return;
+        if (!valid || !consentSatisfied) return;
         setError(null);
+        setStaleTerms(false);
         try {
             if (intent === 'activation') {
                 navigateToCheckout(
                     eventId,
-                    await activationCheckout.mutateAsync(collaborationCode ? { collaborationCode } : undefined)
+                    await activationCheckout.mutateAsync({
+                        ...(collaborationCode ? { collaborationCode } : {}),
+                        requestsImmediateStart,
+                        acknowledgesWithdrawalTerms,
+                        termsVersion: termsVersion!,
+                    })
                 );
             } else if (intent === 'upgrade' && targetPlan) {
-                navigateToCheckout(eventId, await upgradeCheckout.mutateAsync({ planTierCode: targetPlan.code }), targetPlan.code);
+                navigateToCheckout(
+                    eventId,
+                    await upgradeCheckout.mutateAsync({
+                        planTierCode: targetPlan.code,
+                        requestsImmediateStart,
+                        acknowledgesWithdrawalTerms,
+                        termsVersion: termsVersion!,
+                    }),
+                    targetPlan.code
+                );
             } else if (intent === 'storage' && service) {
                 navigateToCheckout(eventId, await storageCheckout.mutateAsync({ paidServiceCode: service.code }));
             }
         } catch (checkoutError) {
+            if (getErrorCode(checkoutError) === ERROR_CODES.WITHDRAWAL_TERMS_VERSION_STALE) {
+                setStaleTerms(true);
+                setRequestsImmediateStart(false);
+                setAcknowledgesWithdrawalTerms(false);
+                void appConfig.refetch();
+                setError(t('withdrawalTerms.stale'));
+                return;
+            }
             setError(toErrorMessage(checkoutError));
         }
     }
@@ -206,12 +238,7 @@ export default function CheckoutReviewBoundary() {
                 </dl>
             </section>
 
-            {intent === 'activation' && (
-                <CollaborationCodeSection
-                    eventId={eventId}
-                    onPreviewChangeAction={handleCollaborationPreviewChange}
-                />
-            )}
+            {intent === 'activation' && <CollaborationCodeSection eventId={eventId} onPreviewChangeAction={handleCollaborationPreviewChange} />}
 
             {/* Payment breakdown */}
             <section className="mt-6" aria-labelledby="payment-breakdown-title">
@@ -249,6 +276,42 @@ export default function CheckoutReviewBoundary() {
                 </div>
             </section>
 
+            {/* Withdrawal consent */}
+            {requiresConsent && (
+                <section className="mt-6 rounded-lg border border-border bg-surface-muted/40 p-4" aria-labelledby="withdrawal-terms-title">
+                    <h2 id="withdrawal-terms-title" className="text-base font-bold text-ink">
+                        {t('withdrawalTerms.title')}
+                    </h2>
+                    {/* Placeholder copy — pending real legal/product text (Directive 2011/83/EU art. 14). */}
+                    <p className="mt-1 text-sm leading-relaxed text-ink-muted">{t('withdrawalTerms.body')}</p>
+                    <label className="mt-3 flex items-start gap-2.5 text-sm">
+                        <input
+                            type="checkbox"
+                            checked={requestsImmediateStart}
+                            onChange={handleRequestsImmediateStartChange}
+                            className="mt-0.5 h-4 w-4 shrink-0 rounded border-border"
+                        />
+                        <span>
+                            <span className="font-semibold text-ink">{t('withdrawalTerms.requestsImmediateStartLabel')}</span>
+                            <span className="block text-xs text-ink-muted">{t('withdrawalTerms.requestsImmediateStartCaption')}</span>
+                        </span>
+                    </label>
+                    <label className="mt-2 flex items-start gap-2.5 text-sm">
+                        <input
+                            type="checkbox"
+                            checked={acknowledgesWithdrawalTerms}
+                            onChange={handleAcknowledgesWithdrawalTermsChange}
+                            className="mt-0.5 h-4 w-4 shrink-0 rounded border-border"
+                        />
+                        <span>
+                            <span className="font-semibold text-ink">{t('withdrawalTerms.acknowledgesWithdrawalTermsLabel')}</span>
+                            <span className="block text-xs text-ink-muted">{t('withdrawalTerms.acknowledgesWithdrawalTermsCaption')}</span>
+                        </span>
+                    </label>
+                    {staleTerms && <p className="mt-2 text-xs font-semibold text-rose-600">{t('withdrawalTerms.stale')}</p>}
+                </section>
+            )}
+
             {!valid && <p className="mt-6 text-sm text-rose-600">{t('unavailable')}</p>}
             {error && <p className="mt-6 text-sm text-rose-600">{error}</p>}
 
@@ -257,7 +320,7 @@ export default function CheckoutReviewBoundary() {
                 <button
                     type="button"
                     onClick={continueToCheckout}
-                    disabled={!valid || lines.length === 0 || isPending}
+                    disabled={!valid || lines.length === 0 || isPending || !consentSatisfied}
                     className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-ink px-6 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
                 >
                     {isPending ? (

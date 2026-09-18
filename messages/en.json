@@ -1659,6 +1659,15 @@
                 "description": "Check the storage pack charge.",
                 "consequence": "The storage allowance is added permanently after payment is confirmed and is non-refundable."
             }
+        },
+        "withdrawalTerms": {
+            "title": "Right of withdrawal",
+            "body": "Under EU consumer law, you normally have 14 days to change your mind about a paid service. To publish and start using this plan right away, you need to ask for immediate start and acknowledge that doing so affects your withdrawal rights.",
+            "requestsImmediateStartLabel": "Start providing this service immediately",
+            "requestsImmediateStartCaption": "Rather than waiting out the 14-day period first.",
+            "acknowledgesWithdrawalTermsLabel": "I understand this affects my right to a full refund",
+            "acknowledgesWithdrawalTermsCaption": "Once the service starts, part of the charge may no longer be refundable if you withdraw later.",
+            "stale": "These terms were updated. Review them again and confirm once more."
         }
     },
     "CheckoutSuccessPage": {
@@ -3127,6 +3136,10 @@
         "refundNotEligible": "This event no longer meets the refund conditions.",
         "refundAlreadyRequested": "A refund request is already pending for this event.",
         "orderNotRefundable": "Only the activation payment can be refunded.",
+        "eventWithdrawn": "This event's deletion can't be cancelled — it was withdrawn and closed permanently.",
+        "withdrawalTermsVersionStale": "These terms were updated. Review them again and try again.",
+        "withdrawalRefused": "This event doesn't currently qualify for a withdrawal.",
+        "withdrawalNotHeld": "This request was already decided.",
         "subscriptionNotLive": "There was no active subscription to stop - we have refreshed this page.",
         "subscriptionCancelFailed": "We couldn't stop it just now, so the subscription is still running and will still be charged. Please try again in a moment.",
         "originalsAddonNotActive": "Original downloads are not available for this event.",
