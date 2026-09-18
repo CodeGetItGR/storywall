@@ -30,6 +30,7 @@ export default function OverviewTab({
     eventType,
     eventStatus,
     startAt,
+    cancelledCheckout,
 }: {
     memberCount: number;
     daysToGo: number;
@@ -45,6 +46,7 @@ export default function OverviewTab({
     eventType: EventTypeConvention;
     eventStatus: EventStatus;
     startAt: string | null;
+    cancelledCheckout: boolean;
 }) {
     const t = useTranslations('ManagePage');
     const { currentPlan, selectedAddons, activationTotal, wishlistAvailable } = useEventOverviewPlan({
@@ -70,6 +72,7 @@ export default function OverviewTab({
                 selectedAddons={selectedAddons}
                 activationTotal={currentPlan?.priceCurrency ? activationTotal : null}
                 wishlistAvailable={wishlistAvailable}
+                cancelledCheckout={cancelledCheckout}
             />
         );
     }
