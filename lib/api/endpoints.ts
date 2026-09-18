@@ -100,6 +100,9 @@ export const endpoints = {
         upgradeCheckout: (eventId: string) => `/api/events/${eventId}/upgrade-checkout`,
         upgradeOptions: (eventId: string) => `/api/events/${eventId}/upgrade-options`,
         storageCheckout: (eventId: string) => `/api/events/${eventId}/storage-checkout`,
+        withdrawalPreview: (eventId: string) => `/api/events/${eventId}/withdrawal-preview`,
+        // GET (history) and POST (submit) both hit this same path.
+        withdrawals: (eventId: string) => `/api/events/${eventId}/withdrawals`,
         refundEligibility: (eventId: string) => `/api/events/${eventId}/refund-eligibility`,
         refundRequests: (eventId: string) => `/api/events/${eventId}/refund-requests`,
         deletionRequests: (eventId: string) => `/api/events/${eventId}/deletion-requests`,
@@ -257,6 +260,11 @@ export const endpoints = {
         },
         notifications: {
             sweep: '/api/admin/notifications/sweep',
+        },
+        withdrawals: {
+            list: '/api/admin/withdrawals',
+            release: (requestId: string) => `/api/admin/withdrawals/${requestId}/release`,
+            withhold: (requestId: string) => `/api/admin/withdrawals/${requestId}/withhold`,
         },
         refundRequests: {
             list: '/api/admin/refund-requests',
