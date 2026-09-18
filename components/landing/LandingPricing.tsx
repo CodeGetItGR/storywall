@@ -2,8 +2,9 @@
 
 import { useTranslations } from 'next-intl';
 
-import { type LandingPlan, LandingPricingCard } from '@/components/landing/LandingPricingCard';
+import { LandingPricingCard } from '@/components/landing/LandingPricingCard';
 import { useLandingPricingCategory } from '@/hooks/useLandingPricingCategory';
+import type { LandingPlan } from '@/lib/landingPricing';
 import { cn } from '@/lib/utils';
 
 type PricingCategories = Record<'vip' | 'wedding', { label: string; plans: LandingPlan[] }>;

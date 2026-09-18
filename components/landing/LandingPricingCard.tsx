@@ -1,15 +1,5 @@
+import type { LandingPlan } from '@/lib/landingPricing';
 import { routes } from '@/lib/routes';
-
-export type LandingPlan = {
-    audience: string;
-    features: string[];
-    includedNote?: string;
-    name: string;
-    photos: string;
-    price: string;
-    storage: string;
-    videos: string;
-};
 
 type LandingPricingCardProps = {
     chooseLabel: string;
