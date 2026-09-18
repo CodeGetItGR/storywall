@@ -6,21 +6,21 @@ import { useCallback } from 'react';
 
 import { type AdminTab, useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { PlatformQueueCallout } from '@/components/admin/PlatformQueueCallout';
-import { useAdminRefundRequests, useUnprocessedWebhooks } from '@/hooks/useAdmin';
+import { useAdminWithdrawals, useUnprocessedWebhooks } from '@/hooks/useAdmin';
 import { cn } from '@/lib/utils';
 
 export function PlatformNeedsAttention() {
     const t = useTranslations('AdminPage');
     const { setTab } = useAdminNavigation();
-    const refundsQuery = useAdminRefundRequests();
+    const withdrawalsQuery = useAdminWithdrawals();
     const webhooksQuery = useUnprocessedWebhooks();
 
     const openTab = useCallback((tab: AdminTab) => () => setTab(tab), [setTab]);
 
-    const pendingRefunds = (refundsQuery.data ?? []).filter((row) => row.request.status === 'PENDING').length;
+    const heldWithdrawals = (withdrawalsQuery.data ?? []).length;
     const unprocessedWebhooks = (webhooksQuery.data ?? []).length;
-    const loading = refundsQuery.isLoading || webhooksQuery.isLoading;
-    const clear = pendingRefunds === 0 && unprocessedWebhooks === 0;
+    const loading = withdrawalsQuery.isLoading || webhooksQuery.isLoading;
+    const clear = heldWithdrawals === 0 && unprocessedWebhooks === 0;
 
     if (loading) return null;
 
@@ -33,13 +33,13 @@ export function PlatformNeedsAttention() {
                 </p>
             ) : (
                 <>
-                    {pendingRefunds > 0 && (
+                    {heldWithdrawals > 0 && (
                         <PlatformQueueCallout
-                            label={t('metrics.pendingRefunds')}
-                            count={pendingRefunds}
+                            label={t('metrics.heldWithdrawals')}
+                            count={heldWithdrawals}
                             action={t('metrics.openQueue')}
                             icon={Undo2}
-                            onOpen={openTab('refunds')}
+                            onOpen={openTab('withdrawals')}
                         />
                     )}
                     {unprocessedWebhooks > 0 && (

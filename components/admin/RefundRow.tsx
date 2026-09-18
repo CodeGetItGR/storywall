@@ -4,9 +4,9 @@ import { AlertTriangle, Check, Layers3, PackageMinus, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { type ChangeEvent, useCallback, useState } from 'react';
 
+import { AdminEvidenceTile } from '@/components/admin/AdminEvidenceTile';
 import { AdminIdentifier } from '@/components/admin/AdminIdentifier';
 import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
-import { RefundEvidence } from '@/components/admin/RefundEvidence';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useDecideRefundRequest } from '@/hooks/useAdmin';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
@@ -98,13 +98,13 @@ export function RefundRow({ row }: { row: RefundRequestAdminDto }) {
             <p className="mt-3 whitespace-pre-line text-sm leading-6 text-ink">{request.reason}</p>
 
             <div className="mt-3 grid grid-cols-2 gap-3 border-t border-border pt-3 sm:grid-cols-4 lg:grid-cols-7">
-                <RefundEvidence label={t('refunds.guests')} value={String(row.guestCount)} />
-                <RefundEvidence label={t('refunds.hosts')} value={String(row.hostCount)} />
-                <RefundEvidence label={t('refunds.posts')} value={String(row.postCount)} />
-                <RefundEvidence label={t('refunds.media')} value={String(row.mediaCount)} />
-                <RefundEvidence label={t('refunds.storage')} value={formatBytes(row.storageBytes)} />
-                <RefundEvidence label={t('refunds.paidAt')} value={formatDate(row.paidAt, t('none'))} muted />
-                <RefundEvidence label={t('refunds.eventWindow')} value={formatDate(row.eventStartAt, t('none'))} muted />
+                <AdminEvidenceTile label={t('refunds.guests')} value={String(row.guestCount)} />
+                <AdminEvidenceTile label={t('refunds.hosts')} value={String(row.hostCount)} />
+                <AdminEvidenceTile label={t('refunds.posts')} value={String(row.postCount)} />
+                <AdminEvidenceTile label={t('refunds.media')} value={String(row.mediaCount)} />
+                <AdminEvidenceTile label={t('refunds.storage')} value={formatBytes(row.storageBytes)} />
+                <AdminEvidenceTile label={t('refunds.paidAt')} value={formatDate(row.paidAt, t('none'))} muted />
+                <AdminEvidenceTile label={t('refunds.eventWindow')} value={formatDate(row.eventStartAt, t('none'))} muted />
             </div>
 
             <div className="mt-3 grid gap-3 border-t border-border pt-3 sm:grid-cols-3">

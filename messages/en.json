@@ -2128,7 +2128,7 @@
             "eventTypes": "Event types",
             "assignments": "Assignments",
             "billingOps": "Billing ops",
-            "refunds": "Refunds",
+            "withdrawals": "Withdrawals",
             "lifecycle": "Lifecycle"
         },
         "fields": {
@@ -2363,8 +2363,8 @@
             "subtitle": "Dashboard totals from the admin metrics endpoint. Group keys come from live plan and status data.",
             "loading": "Loading metrics...",
             "refresh": "Refresh",
-            "attentionClear": "Nothing is waiting on you. No pending refunds, no unprocessed webhooks.",
-            "pendingRefunds": "Refund requests waiting for a decision",
+            "attentionClear": "Nothing pending. No withdrawals awaiting review, no unprocessed webhooks.",
+            "heldWithdrawals": "Withdrawals awaiting review",
             "unprocessedWebhooks": "Provider deliveries never processed",
             "openQueue": "Open",
             "totalUsers": "Total users",
@@ -2876,6 +2876,34 @@
             },
             "approveConfirmTitle": "Approve the refund for {event}?",
             "rejectConfirmTitle": "Reject the refund for {event}?"
+        },
+        "withdrawals": {
+            "title": "Withdrawals",
+            "subtitle": "These were held for a fraud signal (or manual mode). Decide from the facts sheet, not the reason alone.",
+            "loading": "Loading withdrawals…",
+            "empty": "Nothing held for review.",
+            "noAmount": "No amount recorded",
+            "requestedAt": "Requested {date}",
+            "signalFired": "fired",
+            "sendToAssignments": "Change this event's plan",
+            "sendToPaidServices": "Remove an entitlement",
+            "noteLabel": "Decision note",
+            "noteHint": "This note is sent to the host.",
+            "noteRequiredForWithhold": "required to withhold",
+            "noteRequiredHint": "Withholding needs a note — the host is told only what you write here.",
+            "release": "Release",
+            "withhold": "Withhold",
+            "cancel": "Cancel",
+            "confirmYes": "Confirm",
+            "releaseConfirmTitle": "Release this withdrawal?",
+            "withholdConfirmTitle": "Withhold this withdrawal?",
+            "confirmRelease": "This refunds the request at the price computed when it was filed and takes the event offline. Continue?",
+            "confirmWithhold": "This refuses the withdrawal and suspends the host's account. Continue?",
+            "status": {
+                "HELD": "Held",
+                "REFUNDED": "Refunded",
+                "WITHHELD": "Withheld"
+            }
         },
         "lifecycle": {
             "title": "Event lifecycle",

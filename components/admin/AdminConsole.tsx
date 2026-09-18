@@ -14,7 +14,7 @@ import { PlanAssignmentPanel } from '@/components/admin/PlanAssignmentPanel';
 import { PlanCatalogPanel } from '@/components/admin/PlanCatalogPanel';
 import { PlatformMetricsPanel } from '@/components/admin/PlatformMetricsPanel';
 import { ReactionTypesCatalogPanel } from '@/components/admin/ReactionTypesCatalogPanel';
-import { RefundQueuePanel } from '@/components/admin/RefundQueuePanel';
+import { WithdrawalQueuePanel } from '@/components/admin/WithdrawalQueuePanel';
 
 export function AdminConsole() {
     const t = useTranslations('AdminPage');
@@ -43,7 +43,7 @@ export function AdminConsole() {
                 {tab === 'eventTypes' && <EventTypeRegistryPanel />}
                 {tab === 'assignments' && <PlanAssignmentPanel />}
                 {tab === 'billingOps' && <BillingOpsPanel />}
-                {tab === 'refunds' && <RefundQueuePanel />}
+                {tab === 'withdrawals' && <WithdrawalQueuePanel />}
             </main>
         </div>
     );
