@@ -8,6 +8,7 @@ import { LandingHeroVisual } from '@/components/landing/LandingHeroVisual';
 import { LandingProfileBadge } from '@/components/landing/LandingProfileBadge';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useAuth } from '@/hooks/useAuth';
+import { useLandingTypewriter } from '@/hooks/useLandingTypewriter';
 import { routes } from '@/lib/routes';
 
 const NAV_HREFS = ['#platformStories', '#demo', '#experience', '#pricing', routes.login] as const;
@@ -21,6 +22,7 @@ export function LandingHero() {
     const cta = t.raw('cta') as string[];
     const signedInCta = t.raw('signedInCta') as string[];
     const isSignedIn = isAuthenticated && !isBootstrapping;
+    const typewriterWord = useLandingTypewriter(t.raw('eventTypes') as string[]);
 
     return (
         <motion.section aria-labelledby="sw-new-hero-title" className="sw-new-hero" id="top-preview">
@@ -70,6 +72,9 @@ export function LandingHero() {
                         <p className="sw-new-hero-kicker">
                             {t('kicker')} <strong>{t('kickerStrong')}</strong>
                         </p>
+                        <p aria-label={t('eventTypesLabel')} className="mt-5 text-xs font-bold tracking-[0.1em]">
+                            {t('eventTypesPrefix')} <span className="font-serif text-xl italic">{typewriterWord}</span>
+                        </p>
                         <h1 className="sw-new-hero-title" id="sw-new-hero-title">
                             {title.map((line) => (
                                 <span key={line}>{line}</span>
@@ -89,6 +94,7 @@ export function LandingHero() {
                             <br />
                             {t('subtitleSecondLine')}
                         </p>
+                        <p className="mt-5 text-[10px] font-bold tracking-[0.1em] text-ink/70">{t('trustLine')}</p>
                     </div>
                     <LandingHeroVisual />
                 </div>

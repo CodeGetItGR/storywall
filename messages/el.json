@@ -3201,7 +3201,21 @@
             "subtitleStart": "Ένα",
             "subtitleStrong": "ιδιωτικό social space",
             "subtitleEnd": "για το event σου",
-            "subtitleSecondLine": "πριν, κατά τη διάρκεια και μετά."
+            "subtitleSecondLine": "πριν, κατά τη διάρκεια και μετά.",
+            "eventTypesPrefix": "Για",
+            "eventTypes": ["Γάμο", "Βάπτιση", "Gender Reveal", "VIP Parties"],
+            "eventTypesLabel": "Για Γάμο, Βάπτιση, Gender Reveal και VIP Parties",
+            "trustLine": "ΙΔΙΩΤΙΚΟ • ΜΟΝΑΔΙΚΟ LINK • ΓΙΑ ΚΑΘΕ EVENT"
+        },
+        "howItWorks": {
+            "eyebrow": "ΠΩΣ ΛΕΙΤΟΥΡΓΕΙ",
+            "headingStart": "Τρία βήματα.",
+            "headingEnd": "Μία ιστορία.",
+            "steps": [
+                { "title": "Δημιουργείς", "description": "Στήνεις το StoryWall του event σου σε λίγα βήματα." },
+                { "title": "Μοιράζεσαι", "description": "Στέλνεις το μοναδικό link στους καλεσμένους σου." },
+                { "title": "Ξεκινά η ιστορία", "description": "Όλοι μοιράζονται στιγμές πριν, κατά τη διάρκεια και μετά." }
+            ]
         },
         "transition": {
             "label": "StoryWall demo",
@@ -3570,6 +3584,11 @@
             "intro": "Τρία επίπεδα εμπειρίας. Ένα StoryWall για κάθε event.",
             "choose": "ΕΠΙΛΕΞΕ ΠΑΚΕΤΟ",
             "popular": "most popular",
+            "categoryLabel": "Κατηγορία event",
+            "categories": {
+                "wedding": { "label": "ΓΑΜΟΣ · ΒΑΠΤΙΣΗ · GENDER REVEAL", "plans": [{ "name": "START", "price": "79€", "description": "Έως 150 χρήστες", "features": ["Posts, comments & reactions", "Πρόγραμμα εκδήλωσης", "Gallery", "15 GB χώρος"] }, { "name": "STORY", "price": "99€", "description": "Έως 300 χρήστες", "features": ["Όλα του START", "Stories", "RSVP", "QR Photo Upload", "25 GB χώρος"] }, { "name": "SIGNATURE", "price": "169€", "description": "300+ χρήστες", "features": ["Όλα του STORY", "50 GB χώρος", "Πρόσβαση για 9 μήνες"] }] },
+                "vip": { "label": "VIP & SOCIAL PARTIES", "plans": [{ "name": "START", "price": "49€", "description": "Έως 100 χρήστες", "features": ["Posts, comments & reactions", "Πρόγραμμα εκδήλωσης", "Gallery", "10 GB χώρος"] }, { "name": "STORY", "price": "99€", "description": "Έως 250 χρήστες", "features": ["Όλα του START", "Stories", "RSVP", "QR Photo Upload", "25 GB χώρος"] }, { "name": "SIGNATURE", "price": "149€", "description": "250+ χρήστες", "features": ["Όλα του STORY", "50 GB χώρος", "Πρόσβαση για 9 μήνες"] }] }
+            },
             "note": "Οι τιμές είναι ενδεικτικές για την παρουσίαση και μπορούν να αλλάξουν.",
             "plans": [
                 {

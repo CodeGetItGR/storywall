@@ -2991,7 +2991,21 @@
             "subtitleStart": "A",
             "subtitleStrong": "private social space",
             "subtitleEnd": "for your event",
-            "subtitleSecondLine": "before, during and after."
+            "subtitleSecondLine": "before, during and after.",
+            "eventTypesPrefix": "For",
+            "eventTypes": ["Weddings", "Baptisms", "Gender Reveals", "VIP Parties"],
+            "eventTypesLabel": "For weddings, baptisms, gender reveals and VIP parties",
+            "trustLine": "PRIVATE • UNIQUE LINK • FOR EVERY EVENT"
+        },
+        "howItWorks": {
+            "eyebrow": "HOW IT WORKS",
+            "headingStart": "Three steps.",
+            "headingEnd": "One story.",
+            "steps": [
+                { "title": "Create", "description": "Set up your event's StoryWall in a few steps." },
+                { "title": "Share", "description": "Send the unique link to your guests." },
+                { "title": "The story begins", "description": "Everyone shares moments before, during and after the event." }
+            ]
         },
         "transition": {
             "label": "StoryWall demo",
@@ -3360,6 +3374,11 @@
             "intro": "Three ways to make your event unforgettable.",
             "choose": "CHOOSE PLAN",
             "popular": "most popular",
+            "categoryLabel": "Event category",
+            "categories": {
+                "wedding": { "label": "WEDDING · BAPTISM · GENDER REVEAL", "plans": [{ "name": "START", "price": "79€", "description": "Up to 150 guests", "features": ["Posts, comments & reactions", "Event schedule", "Gallery", "15 GB storage"] }, { "name": "STORY", "price": "99€", "description": "Up to 300 guests", "features": ["Everything in START", "Stories", "RSVP", "QR Photo Upload", "25 GB storage"] }, { "name": "SIGNATURE", "price": "169€", "description": "300+ guests", "features": ["Everything in STORY", "50 GB storage", "9 months of access"] }] },
+                "vip": { "label": "VIP & SOCIAL PARTIES", "plans": [{ "name": "START", "price": "49€", "description": "Up to 100 guests", "features": ["Posts, comments & reactions", "Event schedule", "Gallery", "10 GB storage"] }, { "name": "STORY", "price": "99€", "description": "Up to 250 guests", "features": ["Everything in START", "Stories", "RSVP", "QR Photo Upload", "25 GB storage"] }, { "name": "SIGNATURE", "price": "149€", "description": "250+ guests", "features": ["Everything in STORY", "50 GB storage", "9 months of access"] }] }
+            },
             "note": "Prices shown are indicative and may change.",
             "plans": [
                 {

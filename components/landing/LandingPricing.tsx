@@ -3,12 +3,16 @@
 import { useTranslations } from 'next-intl';
 
 import { LandingPricingCard } from '@/components/landing/LandingPricingCard';
+import { useLandingPricingCategory } from '@/hooks/useLandingPricingCategory';
 
 type LandingPlan = { description: string; features: string[]; name: string; price: string };
+type PricingCategories = Record<'vip' | 'wedding', { label: string; plans: LandingPlan[] }>;
 
 export function LandingPricing() {
     const t = useTranslations('LandingPage.pricing');
-    const plans = t.raw('plans') as LandingPlan[];
+    const categories = t.raw('categories') as PricingCategories;
+    const { category, setCategory } = useLandingPricingCategory();
+    const activeCategory = categories[category];
 
     return (
         /* Pricing */
@@ -28,7 +32,14 @@ export function LandingPricing() {
                 </div>
             </div>
             <div className="mx-auto block w-full max-w-[1280px] min-[761px]:grid min-[761px]:grid-cols-3 min-[761px]:gap-[52px]">
-                {plans.map((plan, index) => (
+                <div aria-label={t('categoryLabel')} className="col-span-3 mb-10 flex gap-5 overflow-x-auto border-b border-ink/20" role="tablist">
+                    {(Object.keys(categories) as Array<keyof PricingCategories>).map((key) => (
+                        <button aria-selected={category === key} className={`shrink-0 border-b-2 px-1 pb-3 text-xs font-extrabold tracking-[0.1em] transition-colors ${category === key ? 'border-ink text-ink' : 'border-transparent text-ink/50 hover:text-ink'}`} key={key} onClick={() => setCategory(key)} role="tab" type="button">
+                            {categories[key].label}
+                        </button>
+                    ))}
+                </div>
+                {activeCategory.plans.map((plan, index) => (
                     <LandingPricingCard
                         chooseLabel={t('choose')}
                         description={plan.description}

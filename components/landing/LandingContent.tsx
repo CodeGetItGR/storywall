@@ -12,6 +12,7 @@ import { LandingFinalCta } from '@/components/landing/LandingFinalCta';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 import { LandingHero } from '@/components/landing/LandingHero';
 import { LandingHeroTransition } from '@/components/landing/LandingHeroTransition';
+import { LandingHowItWorks } from '@/components/landing/LandingHowItWorks';
 import { LandingPricing } from '@/components/landing/LandingPricing';
 import { LandingStories } from '@/components/landing/LandingStories';
 import { useLandingInteractions } from '@/hooks/useLandingInteractions';
@@ -27,6 +28,9 @@ export function LandingContent() {
         >
             {/* Hero */}
             <LandingHero />
+
+            {/* How it works */}
+            <LandingHowItWorks />
 
             {/* Hero transition */}
             <LandingHeroTransition />
