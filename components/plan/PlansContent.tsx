@@ -6,13 +6,14 @@ import type { MouseEvent } from 'react';
 
 import { EventPlanComparison } from '@/components/plan/EventPlanComparison';
 import { BackButton } from '@/components/ui/BackButton';
-import type { AppConfigResponseDto, PlanTierResponseDto, UpgradeOptionResponseDto } from '@/lib/api/types';
+import type { AppConfigResponseDto, AppMediaConfigDto, PlanTierResponseDto, UpgradeOptionResponseDto } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 
 interface PlansContentProps {
     checkoutError: string | null;
     isCheckoutPending: boolean;
     modules: AppConfigResponseDto['modules'];
+    media: AppMediaConfigDto | null;
     paidServices: AppConfigResponseDto['paidServices'];
     nextPlan: PlanTierResponseDto | null;
     onUpgrade: (planTierCode: string) => void;
@@ -28,6 +29,7 @@ export function PlansContent({
     checkoutError,
     isCheckoutPending,
     modules,
+    media,
     paidServices,
     nextPlan,
     onUpgrade,
@@ -83,6 +85,7 @@ export function PlansContent({
                     <EventPlanComparison
                         plans={plans}
                         modules={modules}
+                        media={media}
                         paidServices={paidServices}
                         currentPlanCode={selectedPlanCode}
                         currentPlan={selectedPlan}

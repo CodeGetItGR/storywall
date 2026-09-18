@@ -12,13 +12,14 @@ import { PlanModuleGuideModal } from '@/components/plan/PlanModuleGuideModal';
 import { PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
 import { PlanPriceLabel } from '@/components/plan/PlanPriceLabel';
 import { PlanUpgradeButton } from '@/components/plan/PlanUpgradeButton';
-import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto, UpgradeOptionResponseDto } from '@/lib/api/types';
+import type { AppMediaConfigDto, PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto, UpgradeOptionResponseDto } from '@/lib/api/types';
 import { mediaEstimate, PLAN_COMPARISON_EMPTY } from '@/lib/planComparison';
 import { formatLimitValue } from '@/lib/planTiers';
 
 export function EventPlanComparison({
     plans,
     modules,
+    media,
     paidServices,
     currentPlanCode,
     currentPlan,
@@ -30,6 +31,7 @@ export function EventPlanComparison({
 }: {
     plans: PlanTierResponseDto[];
     modules: PlatformModuleResponseDto[];
+    media: AppMediaConfigDto | null;
     paidServices: PaidServiceResponseDto[];
     currentPlanCode?: string | null;
     currentPlan?: PlanTierResponseDto | null;
@@ -80,7 +82,7 @@ export function EventPlanComparison({
             key: 'media',
             label: t('compare.mediaCapacity'),
             render: (plan) => {
-                const estimate = mediaEstimate(plan.storageBytes);
+                const estimate = media ? mediaEstimate(plan.storageBytes, media) : null;
                 return (
                     <span>
                         {estimate ? t('compare.mediaEstimate', { images: estimate.images, videos: estimate.videos }) : t('compare.unlimitedMedia')}
