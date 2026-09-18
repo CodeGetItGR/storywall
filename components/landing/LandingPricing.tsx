@@ -2,57 +2,90 @@
 
 import { useTranslations } from 'next-intl';
 
-import { LandingPricingCard } from '@/components/landing/LandingPricingCard';
+import { type LandingPlan, LandingPricingCard } from '@/components/landing/LandingPricingCard';
 import { useLandingPricingCategory } from '@/hooks/useLandingPricingCategory';
+import { cn } from '@/lib/utils';
 
-type LandingPlan = { description: string; features: string[]; name: string; price: string };
 type PricingCategories = Record<'vip' | 'wedding', { label: string; plans: LandingPlan[] }>;
+const CATEGORY_ORDER = ['wedding', 'vip'] as const;
 
 export function LandingPricing() {
     const t = useTranslations('LandingPage.pricing');
     const categories = t.raw('categories') as PricingCategories;
-    const { category, setCategory } = useLandingPricingCategory();
-    const activeCategory = categories[category];
+    const { category, selectCategory, handleCategoryKeyDown } = useLandingPricingCategory();
 
     return (
-        /* Pricing */
         <section
-            className="bg-white px-5 pt-16 pb-[72px] [font-family:Arial,Helvetica,sans-serif] text-[#151313] min-[761px]:px-[7vw] min-[761px]:pt-[100px] min-[761px]:pb-[110px]"
+            aria-labelledby="landing-pricing-title"
+            className="bg-white px-5 pt-16 pb-16 text-[#151313] min-[761px]:px-[clamp(24px,4vw,72px)] min-[761px]:pt-20 min-[761px]:pb-24"
             id="pricing"
         >
-            <div className="mx-auto mb-[58px] block w-full max-w-[1280px] min-[761px]:grid min-[761px]:grid-cols-[1fr_2.1fr] min-[761px]:items-start min-[761px]:gap-[72px]">
-                <div className="pt-3 text-[13px] leading-[1.5] font-black tracking-[0.15em] min-[761px]:col-start-2 min-[761px]:row-start-1 min-[761px]:mb-[22px] min-[761px]:pt-0">
-                    {t('eyebrow')}
-                </div>
-                <div className="min-[761px]:col-start-2 min-[761px]:row-start-2">
-                    <h2 className="mt-6 [font-family:var(--editorial)] text-[12vw] leading-[0.9] font-normal tracking-[-0.055em] min-[761px]:mt-0 min-[761px]:text-[4.275vw]">
+            {/* Pricing introduction */}
+            <div className="mx-auto grid max-w-[1200px] gap-x-[5vw] min-[761px]:grid-cols-[1fr_2fr]">
+                <p className="text-[13px] font-black tracking-[.15em]">{t('eyebrow')}</p>
+                <div>
+                    <h2
+                        className="mt-5 max-w-[820px] [font-family:Baskerville,Georgia,serif] text-[clamp(48px,11vw,88px)] leading-[.9] tracking-[-.055em] min-[761px]:mt-0"
+                        id="landing-pricing-title"
+                    >
                         {t('heading')}
                     </h2>
-                    <p className="mt-[18px] max-w-[620px] text-sm leading-[1.55] min-[761px]:mt-[25px] min-[761px]:text-base">{t('intro')}</p>
+                    <p className="mt-5 max-w-[620px] text-base leading-relaxed">{t('intro')}</p>
                 </div>
             </div>
-            <div className="mx-auto block w-full max-w-[1280px] min-[761px]:grid min-[761px]:grid-cols-3 min-[761px]:gap-[52px]">
-                <div aria-label={t('categoryLabel')} className="col-span-3 mb-10 flex gap-5 overflow-x-auto border-b border-ink/20" role="tablist">
-                    {(Object.keys(categories) as Array<keyof PricingCategories>).map((key) => (
-                        <button aria-selected={category === key} className={`shrink-0 border-b-2 px-1 pb-3 text-xs font-extrabold tracking-[0.1em] transition-colors ${category === key ? 'border-ink text-ink' : 'border-transparent text-ink/50 hover:text-ink'}`} key={key} onClick={() => setCategory(key)} role="tab" type="button">
-                            {categories[key].label}
-                        </button>
-                    ))}
-                </div>
-                {activeCategory.plans.map((plan, index) => (
+
+            {/* Event categories */}
+            <div
+                aria-label={t('categoryLabel')}
+                className="mx-auto mt-16 flex max-w-[1324px] border-b border-[#151313]/20 min-[761px]:mt-20"
+                role="tablist"
+            >
+                {CATEGORY_ORDER.map((key) => (
+                    <button
+                        aria-controls="landing-pricing-panel"
+                        aria-selected={category === key}
+                        className={cn(
+                            'relative min-h-[72px] w-1/2 px-2 pb-4 text-center text-[12px] leading-tight font-black transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-[#df7794] min-[761px]:min-h-12 min-[761px]:px-6 min-[761px]:text-[17px]',
+                            category === key
+                                ? 'text-[#151313] after:absolute after:inset-x-0 after:bottom-0 after:h-[3px] after:bg-[linear-gradient(90deg,#df7794,#f2c764)]'
+                                : 'text-[#151313]/50 hover:text-[#151313]'
+                        )}
+                        data-category={key}
+                        id={`landing-pricing-tab-${key}`}
+                        key={key}
+                        onClick={selectCategory}
+                        onKeyDown={handleCategoryKeyDown}
+                        role="tab"
+                        tabIndex={category === key ? 0 : -1}
+                        type="button"
+                    >
+                        {categories[key].label}
+                    </button>
+                ))}
+            </div>
+
+            {/* Plans */}
+            <div
+                aria-labelledby={`landing-pricing-tab-${category}`}
+                className="mx-auto mt-9 grid max-w-[1324px] gap-5 min-[761px]:grid-cols-3 min-[761px]:gap-[clamp(24px,3vw,52px)]"
+                id="landing-pricing-panel"
+                role="tabpanel"
+            >
+                {categories[category].plans.map((plan, index) => (
                     <LandingPricingCard
                         chooseLabel={t('choose')}
-                        description={plan.description}
                         featured={index === 1}
-                        features={plan.features}
-                        key={plan.name}
-                        name={plan.name}
+                        key={`${category}-${plan.name}`}
+                        photosLabel={t('photosLabel')}
+                        plan={plan}
                         popularLabel={t('popular')}
-                        price={plan.price}
+                        storageLabel={t('storageLabel')}
+                        storageNote={t('storageNote')}
+                        videosLabel={t('videosLabel')}
                     />
                 ))}
             </div>
-            <div className="mx-auto mt-7 w-full max-w-[1280px] text-[11px] leading-[1.5]">{t('note')}</div>
+            <p className="mx-auto mt-5 max-w-[1324px] text-right text-[11px]">{t('note')}</p>
         </section>
     );
 }

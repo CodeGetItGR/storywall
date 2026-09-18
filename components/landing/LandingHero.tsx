@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
@@ -8,97 +7,165 @@ import { LandingHeroVisual } from '@/components/landing/LandingHeroVisual';
 import { LandingProfileBadge } from '@/components/landing/LandingProfileBadge';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useAuth } from '@/hooks/useAuth';
+import { useLandingMobileMenu } from '@/hooks/useLandingMobileMenu';
 import { useLandingTypewriter } from '@/hooks/useLandingTypewriter';
 import { routes } from '@/lib/routes';
 
-const NAV_HREFS = ['#platformStories', '#demo', '#experience', '#pricing', routes.login] as const;
+const NAV_HREFS = ['#platformStories', '#howItWorks', '#experience', '#pricing'] as const;
 
 export function LandingHero() {
     const t = useTranslations('LandingPage.hero');
     const { isAuthenticated, isBootstrapping } = useAuth();
+    const { isOpen, menuRef, toggleRef, close, toggle } = useLandingMobileMenu();
+    const isSignedIn = isAuthenticated && !isBootstrapping;
     const navLabels = t.raw('nav') as string[];
     const mobileNavLabels = t.raw('mobileNav') as string[];
     const title = t.raw('title') as string[];
     const cta = t.raw('cta') as string[];
     const signedInCta = t.raw('signedInCta') as string[];
-    const isSignedIn = isAuthenticated && !isBootstrapping;
+    const trustLine = t.raw('trustLine') as string[];
     const typewriterWord = useLandingTypewriter(t.raw('eventTypes') as string[]);
 
     return (
-        <motion.section aria-labelledby="sw-new-hero-title" className="sw-new-hero" id="top-preview">
+        <section
+            aria-labelledby="sw-new-hero-title"
+            className="relative isolate overflow-hidden bg-white text-[#151313] min-[761px]:min-h-svh"
+            id="top-preview"
+        >
             {/* Header */}
-            <header className="sw-new-hero-header">
-                <div className="sw-new-hero-header-inner">
-                    <a aria-label={t('homeLabel')} className="sw-new-hero-logo" href="#top-preview">
-                        <Image alt="StoryWall" src="/landing/storywall.png" width={600} height={119} unoptimized />
+            <header className="relative z-30 h-[104px] bg-white/95 min-[421px]:max-[760px]:h-[124px] min-[761px]:h-28 min-[761px]:backdrop-blur-sm">
+                <div className="mx-auto flex h-full w-[calc(100%-40px)] max-w-[1220px] items-center justify-between gap-6 min-[761px]:w-[calc(100%-64px)]">
+                    <a
+                        aria-label={t('homeLabel')}
+                        className="inline-flex w-[min(196px,49vw)] shrink-0 items-center min-[761px]:w-[clamp(200px,14vw,260px)]"
+                        href="#top-preview"
+                    >
+                        <Image alt="StoryWall" className="h-auto w-full" height={119} src="/landing/storywall.png" unoptimized width={600} />
                     </a>
-                    <nav aria-label={t('navLabel')} className="sw-new-hero-nav">
+                    <nav
+                        aria-label={t('navLabel')}
+                        className="ml-auto hidden items-center gap-[clamp(20px,2vw,38px)] whitespace-nowrap text-xs tracking-[-0.015em] min-[761px]:flex"
+                    >
                         {navLabels.slice(0, -1).map((label, index) => (
-                            <a href={NAV_HREFS[index]} key={label}>
+                            <a
+                                className="transition-opacity hover:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#ef8f72]"
+                                href={NAV_HREFS[index]}
+                                key={label}
+                            >
                                 {label}
                             </a>
                         ))}
-                        {isSignedIn ? <LandingProfileBadge /> : <a href={routes.login}>{navLabels.at(-1)}</a>}
+                        {isSignedIn ? (
+                            <LandingProfileBadge />
+                        ) : (
+                            <a className="font-bold" href={routes.login}>
+                                {navLabels.at(-1)}
+                            </a>
+                        )}
                     </nav>
-                    <LanguageSwitcher className="sw-new-hero-language-switcher" />
+                    <LanguageSwitcher className="hidden shrink-0 min-[761px]:inline-flex" />
                     <button
-                        aria-controls="sw-mobile-menu-panel"
-                        aria-expanded="false"
-                        aria-label={t('openMenu')}
-                        className="sw-mobile-menu-toggle"
-                        data-close-label={t('closeMenu')}
-                        data-open-label={t('openMenu')}
+                        aria-controls="landing-mobile-menu"
+                        aria-expanded={isOpen}
+                        aria-label={isOpen ? t('closeMenu') : t('openMenu')}
+                        className="flex size-11 shrink-0 flex-col items-center justify-center gap-1.5 rounded-full border border-[#151313]/20 min-[761px]:hidden"
+                        onClick={toggle}
+                        ref={toggleRef}
                         type="button"
                     >
-                        <span />
-                        <span />
+                        <span className="h-px w-5 bg-[#151313]" />
+                        <span className="h-px w-5 bg-[#151313]" />
                     </button>
                 </div>
-                {/* Mobile menu */}
-                <nav aria-hidden="true" aria-label={t('mobileNavLabel')} className="sw-mobile-menu-panel" id="sw-mobile-menu-panel">
+                {/* Mobile navigation */}
+                <nav
+                    aria-label={t('mobileNavLabel')}
+                    className={`${isOpen ? 'flex' : 'hidden'} absolute inset-x-0 top-full z-30 flex-col gap-5 bg-white px-6 py-6 shadow-[0_12px_28px_rgba(21,19,19,.1)] min-[761px]:hidden`}
+                    id="landing-mobile-menu"
+                    ref={menuRef}
+                >
                     {mobileNavLabels.slice(0, -1).map((label, index) => (
-                        <a href={NAV_HREFS[index]} key={label}>
+                        <a href={NAV_HREFS[index]} key={label} onClick={close}>
                             {label}
                         </a>
                     ))}
-                    {isSignedIn ? <LandingProfileBadge /> : <a href={routes.login}>{mobileNavLabels.at(-1)}</a>}
-                    <LanguageSwitcher className="sw-mobile-menu-language-switcher" />
+                    {isSignedIn ? (
+                        <LandingProfileBadge />
+                    ) : (
+                        <a href={routes.login} onClick={close}>
+                            {mobileNavLabels.at(-1)}
+                        </a>
+                    )}
+                    <LanguageSwitcher className="self-start" />
                 </nav>
             </header>
+
             {/* Hero content */}
-            <div className="sw-new-hero-stage">
-                <div className="sw-new-hero-inner">
-                    <div className="sw-new-hero-copy">
-                        <p className="sw-new-hero-kicker">
+            <div className="relative bg-[url('/landing/hero-background-v75.jpg')] bg-cover bg-center pt-[34px] pb-[86px] min-[421px]:max-[760px]:pt-[43px] min-[761px]:min-h-[calc(100svh-112px)] min-[761px]:py-0">
+                <div className="relative mx-auto grid w-[calc(100%-40px)] max-w-[1220px] grid-cols-1 items-center min-[761px]:min-h-[calc(100svh-112px)] min-[761px]:w-[calc(100%-64px)] min-[761px]:grid-cols-2">
+                    <div className="relative z-20 self-center min-[761px]:py-10">
+                        <p className="mb-5 text-[clamp(13px,1vw,17px)] leading-tight uppercase">
                             {t('kicker')} <strong>{t('kickerStrong')}</strong>
                         </p>
-                        <p aria-label={t('eventTypesLabel')} className="mt-5 text-xs font-bold tracking-[0.1em]">
-                            {t('eventTypesPrefix')} <span className="font-serif text-xl italic">{typewriterWord}</span>
+                        <p
+                            aria-label={t('eventTypesLabel')}
+                            className="mb-5 flex min-h-8 items-baseline gap-2 whitespace-nowrap [font-family:Baskerville,Georgia,serif] text-[clamp(22px,1.7vw,32px)] leading-none"
+                        >
+                            <span>{t('eventTypesPrefix')}</span>
+                            <span className="bg-[linear-gradient(90deg,#df7794,#f29365_52%,#f2c764)] bg-clip-text font-medium text-transparent">
+                                {typewriterWord}
+                            </span>
+                            <span aria-hidden="true" className="inline-block h-[.85em] w-[2px] animate-pulse bg-[#ee9971]" />
                         </p>
-                        <h1 className="sw-new-hero-title" id="sw-new-hero-title">
+                        <h1
+                            className="max-w-[570px] [font-family:Baskerville,Georgia,serif] text-[clamp(48px,13vw,66px)] leading-[.93] font-normal tracking-[-.06em] min-[761px]:text-[clamp(54px,3.45vw,70px)]"
+                            id="sw-new-hero-title"
+                        >
                             {title.map((line) => (
-                                <span key={line}>{line}</span>
+                                <span className="block" key={line}>
+                                    {line}
+                                </span>
                             ))}
                         </h1>
-                        <a className="sw-new-hero-cta" href={isSignedIn ? routes.home : routes.register}>
-                            <span className="sw-new-hero-cta-label">
-                                <span>{isSignedIn ? signedInCta[0] : cta[0]}</span>
-                                <span>{isSignedIn ? signedInCta[1] : cta[1]}</span>
+                        <a
+                            className="mx-auto mt-7 flex min-h-[62px] w-[min(244px,85%)] items-center justify-between gap-3 rounded-full bg-[linear-gradient(100deg,#ff6f93,#ff936a_52%,#ffd05b)] py-2 pr-2 pl-6 text-white shadow-[0_16px_32px_rgba(217,102,74,.15)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#d27b9b] min-[761px]:mt-8"
+                            href={isSignedIn ? routes.home : routes.register}
+                        >
+                            <span className="flex-1 text-center [font-family:Baskerville,Georgia,serif] text-[17px] leading-[.94]">
+                                {(isSignedIn ? signedInCta : cta).map((line) => (
+                                    <span className="block" key={line}>
+                                        {line}
+                                    </span>
+                                ))}
                             </span>
-                            <span aria-hidden="true" className="sw-new-hero-arrow">
+                            <span
+                                aria-hidden="true"
+                                className="grid size-11 shrink-0 place-items-center rounded-full bg-white text-[27px] leading-none text-[#ee9971]"
+                            >
                                 ↗
                             </span>
                         </a>
-                        <p className="sw-new-hero-subtitle">
+                        <p className="mt-8 max-w-[540px] text-[clamp(18px,1.35vw,24px)] leading-[1.35]">
                             {t('subtitleStart')} <strong>{t('subtitleStrong')}</strong> {t('subtitleEnd')}
                             <br />
                             {t('subtitleSecondLine')}
                         </p>
-                        <p className="mt-5 text-[10px] font-bold tracking-[0.1em] text-ink/70">{t('trustLine')}</p>
+                        <p className="mt-5 flex flex-wrap gap-y-1 text-[clamp(11px,.8vw,13px)] leading-normal font-bold">
+                            {trustLine.map((item, index) => (
+                                <span className="whitespace-nowrap" key={item}>
+                                    {index > 0 && (
+                                        <span aria-hidden="true" className="mx-2 text-[#ee9971]">
+                                            ·
+                                        </span>
+                                    )}
+                                    {item}
+                                </span>
+                            ))}
+                        </p>
                     </div>
                     <LandingHeroVisual />
                 </div>
             </div>
-        </motion.section>
+        </section>
     );
 }

@@ -2982,9 +2982,9 @@
             "openMenu": "Open menu",
             "closeMenu": "Close menu",
             "nav": ["THE PLATFORM", "HOW IT WORKS", "FEATURES", "PLANS", "LOGIN"],
-            "mobileNav": ["The platform", "Demo", "Features", "Plans", "Login"],
-            "kicker": "THE NO. 1 SOCIAL SPACE FOR",
-            "kickerStrong": "PRIVATE EVENTS",
+            "mobileNav": ["The platform", "How it works", "Features", "Plans", "Login"],
+            "kicker": "THE SOCIAL SPACE FOR EVERY",
+            "kickerStrong": "PRIVATE EVENT",
             "title": ["Every moment", "becomes part of", "the story."],
             "cta": ["Create your own", "StoryWall"],
             "signedInCta": ["Your", "events"],
@@ -2995,7 +2995,7 @@
             "eventTypesPrefix": "For",
             "eventTypes": ["Weddings", "Baptisms", "Gender Reveals", "VIP Parties"],
             "eventTypesLabel": "For weddings, baptisms, gender reveals and VIP parties",
-            "trustLine": "PRIVATE • UNIQUE LINK • FOR EVERY EVENT"
+            "trustLine": ["No app", "From any phone", "Private", "Link or QR"]
         },
         "howItWorks": {
             "eyebrow": "HOW IT WORKS",
@@ -3375,9 +3375,102 @@
             "choose": "CHOOSE PLAN",
             "popular": "most popular",
             "categoryLabel": "Event category",
+            "storageLabel": "Storage",
+            "photosLabel": "photos",
+            "videosLabel": "videos",
+            "storageNote": "Estimates assume files up to 5 MB per photo and video clips up to 15 seconds.",
             "categories": {
-                "wedding": { "label": "WEDDING · BAPTISM · GENDER REVEAL", "plans": [{ "name": "START", "price": "79€", "description": "Up to 150 guests", "features": ["Posts, comments & reactions", "Event schedule", "Gallery", "15 GB storage"] }, { "name": "STORY", "price": "99€", "description": "Up to 300 guests", "features": ["Everything in START", "Stories", "RSVP", "QR Photo Upload", "25 GB storage"] }, { "name": "SIGNATURE", "price": "169€", "description": "300+ guests", "features": ["Everything in STORY", "50 GB storage", "9 months of access"] }] },
-                "vip": { "label": "VIP & SOCIAL PARTIES", "plans": [{ "name": "START", "price": "49€", "description": "Up to 100 guests", "features": ["Posts, comments & reactions", "Event schedule", "Gallery", "10 GB storage"] }, { "name": "STORY", "price": "99€", "description": "Up to 250 guests", "features": ["Everything in START", "Stories", "RSVP", "QR Photo Upload", "25 GB storage"] }, { "name": "SIGNATURE", "price": "149€", "description": "250+ guests", "features": ["Everything in STORY", "50 GB storage", "9 months of access"] }] }
+                "wedding": {
+                    "label": "Wedding · Baptism · Gender Reveal · Baby Shower",
+                    "plans": [
+                        {
+                            "name": "START",
+                            "price": "79€",
+                            "audience": "Up to 150 guests",
+                            "features": [
+                                "Posts, comments & reactions",
+                                "Countdown",
+                                "Event schedule",
+                                "Photo & video gallery",
+                                "Download all photos & videos",
+                                "Unique StoryWall link",
+                                "Access for 3 months after the event"
+                            ],
+                            "storage": "15 GB",
+                            "photos": "2000",
+                            "videos": "150"
+                        },
+                        {
+                            "name": "STORY",
+                            "price": "99€",
+                            "audience": "Up to 300 guests",
+                            "features": [
+                                "Everything in START",
+                                "Stories",
+                                "RSVP",
+                                "QR Photo Upload",
+                                "Guestbook",
+                                "Access for 6 months after the event"
+                            ],
+                            "includedNote": "Posts, comments & reactions · Countdown · Event schedule · Photo & video gallery · Download all photos & videos · Unique StoryWall link",
+                            "storage": "25 GB",
+                            "photos": "4000",
+                            "videos": "300"
+                        },
+                        {
+                            "name": "SIGNATURE",
+                            "price": "169€",
+                            "audience": "300+ guests",
+                            "features": ["Everything in STORY", "300+ guests", "Access for 9 months after the event"],
+                            "includedNote": "Posts, comments & reactions · Stories · RSVP · QR Photo Upload · Guestbook · Countdown · Event schedule · Photo & video gallery · Download all photos & videos · Unique StoryWall link",
+                            "storage": "50 GB",
+                            "photos": "7000",
+                            "videos": "500"
+                        }
+                    ]
+                },
+                "vip": {
+                    "label": "VIP & Social Parties",
+                    "plans": [
+                        {
+                            "name": "START",
+                            "price": "49€",
+                            "audience": "Up to 100 guests",
+                            "features": [
+                                "Posts, comments & reactions",
+                                "Countdown",
+                                "Event schedule",
+                                "Photo & video gallery",
+                                "Download all photos & videos",
+                                "Unique StoryWall link",
+                                "Access for 3 months after the event"
+                            ],
+                            "storage": "10 GB",
+                            "photos": "1300",
+                            "videos": "100"
+                        },
+                        {
+                            "name": "STORY",
+                            "price": "99€",
+                            "audience": "Up to 250 guests",
+                            "features": ["Everything in START", "Stories", "RSVP", "QR Photo Upload", "Access for 6 months after the event"],
+                            "includedNote": "Posts, comments & reactions · Countdown · Event schedule · Photo & video gallery · Download all photos & videos · Unique StoryWall link",
+                            "storage": "25 GB",
+                            "photos": "4000",
+                            "videos": "300"
+                        },
+                        {
+                            "name": "SIGNATURE",
+                            "price": "199€",
+                            "audience": "250+ guests",
+                            "features": ["Everything in STORY", "250+ guests", "Access for 9 months after the event"],
+                            "includedNote": "Posts, comments & reactions · Stories · RSVP · QR Photo Upload · Countdown · Event schedule · Photo & video gallery · Download all photos & videos · Unique StoryWall link",
+                            "storage": "50 GB",
+                            "photos": "7000",
+                            "videos": "500"
+                        }
+                    ]
+                }
             },
             "note": "Prices shown are indicative and may change.",
             "plans": [

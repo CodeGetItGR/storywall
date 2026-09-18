@@ -1,3 +1,4 @@
+import { motion, useReducedMotion } from 'framer-motion';
 import Image from 'next/image';
 
 const HERO_SPRITES = [
@@ -164,7 +165,7 @@ const HERO_SPRITES = [
 ] as const;
 
 const HERO_VISUAL_CLASS =
-    'relative z-[2] aspect-[1136/1204] pointer-events-none order-2 self-center w-[137vw] max-w-none left-[3.7vw] mt-[54px] max-[420px]:mt-[42px] min-[761px]:order-none min-[761px]:self-auto min-[761px]:justify-self-start min-[761px]:left-auto min-[761px]:m-0 min-[761px]:w-[min(780px,43vw)] min-[761px]:max-[1080px]:w-[52vw] min-[761px]:max-[1080px]:-ml-2';
+    'pointer-events-none relative z-10 order-2 left-[2vw] mt-[42px] aspect-[1136/1204] w-[135vw] max-w-none self-center min-[761px]:order-none min-[761px]:left-auto min-[761px]:m-0 min-[761px]:w-[min(780px,43vw)] min-[761px]:justify-self-start';
 
 const PHONE_WRAP_CLASS =
     'absolute aspect-[748/1541] left-[19.28%] top-[3.78%] w-[56.47%] z-[5] min-[761px]:left-[23.5%] min-[761px]:top-[5.21%] min-[761px]:w-[43.7%]';
@@ -172,22 +173,39 @@ const PHONE_WRAP_CLASS =
 const PHONE_FEED_TRACK_CLASS = 'absolute top-0 left-[-2.85%] w-[105.65%] will-change-transform min-[761px]:w-[105.7%]';
 
 export function LandingHeroVisual() {
+    const reduceMotion = useReducedMotion();
     const [firstSprite, ...restSprites] = HERO_SPRITES;
 
     return (
         <div aria-hidden="true" className={HERO_VISUAL_CLASS}>
-            <Image
-                alt=""
-                className={`${firstSprite.posClass} ${firstSprite.motionClass}`}
-                height={firstSprite.height}
-                src={firstSprite.src}
-                style={{ animationDuration: firstSprite.duration, animationDelay: firstSprite.delay }}
-                unoptimized
-                width={firstSprite.width}
-            />
-            <div className={`${PHONE_WRAP_CLASS} motion-hero-phone-breathe`}>
+            {/* Floating social post */}
+            <motion.div
+                animate={reduceMotion ? undefined : { y: [0, -5, 0] }}
+                className={firstSprite.posClass}
+                transition={{ duration: 6.8, ease: 'easeInOut', repeat: Infinity }}
+            >
+                <Image alt="" className="h-auto w-full" height={firstSprite.height} src={firstSprite.src} unoptimized width={firstSprite.width} />
+            </motion.div>
+            {/* Phone feed */}
+            <motion.div
+                animate={reduceMotion ? undefined : { y: [0, -4, 0] }}
+                className={PHONE_WRAP_CLASS}
+                transition={{ duration: 7, ease: 'easeInOut', repeat: Infinity }}
+            >
                 <div className="absolute top-[2.1%] right-[4.55%] bottom-[2.1%] left-[4.68%] z-[1] overflow-hidden rounded-[10.5%/4.8%] bg-white">
-                    <div className={`${PHONE_FEED_TRACK_CLASS} motion-hero-feed-scroll`}>
+                    <motion.div
+                        animate={reduceMotion ? undefined : { y: [0, -400, -400, 0] }}
+                        className={PHONE_FEED_TRACK_CLASS}
+                        transition={{ duration: 24, ease: 'easeInOut', repeat: Infinity, times: [0, 0.75, 0.85, 1] }}
+                    >
+                        <Image
+                            alt=""
+                            className="relative block h-auto w-full max-w-none [&+&]:-mt-px"
+                            height={2048}
+                            src="/landing/sw-phone-feed-3.jpg"
+                            unoptimized
+                            width={774}
+                        />
                         <Image
                             alt=""
                             className="relative block h-auto w-full max-w-none [&+&]:-mt-px"
@@ -204,29 +222,32 @@ export function LandingHeroVisual() {
                             unoptimized
                             width={820}
                         />
-                        <Image
-                            alt=""
-                            className="relative block h-auto w-full max-w-none [&+&]:-mt-px"
-                            height={2048}
-                            src="/landing/sw-phone-feed-3.jpg"
-                            unoptimized
-                            width={774}
-                        />
-                    </div>
+                    </motion.div>
                 </div>
-                <Image alt="" className="absolute inset-0 z-[2] h-auto w-full" height={1541} src="/landing/sw-phone-frame.png" unoptimized width={748} />
-            </div>
-            {restSprites.map((sprite) => (
                 <Image
                     alt=""
-                    className={`${sprite.posClass} ${sprite.motionClass}`}
-                    height={sprite.height}
-                    key={sprite.src}
-                    src={sprite.src}
-                    style={{ animationDuration: sprite.duration, animationDelay: sprite.delay }}
+                    className="absolute inset-0 z-[2] h-auto w-full"
+                    height={1541}
+                    src="/landing/sw-phone-frame.png"
                     unoptimized
-                    width={sprite.width}
+                    width={748}
                 />
+            </motion.div>
+            {/* Surrounding reactions and posts */}
+            {restSprites.map((sprite) => (
+                <motion.div
+                    animate={reduceMotion ? undefined : { y: [0, -5, 0] }}
+                    className={sprite.posClass}
+                    key={sprite.src}
+                    transition={{
+                        duration: Number.parseFloat(sprite.duration),
+                        ease: 'easeInOut',
+                        repeat: Infinity,
+                        delay: Number.parseFloat(sprite.delay),
+                    }}
+                >
+                    <Image alt="" className="h-auto w-full" height={sprite.height} src={sprite.src} unoptimized width={sprite.width} />
+                </motion.div>
             ))}
         </div>
     );

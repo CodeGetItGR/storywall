@@ -1,5 +1,5 @@
-export * from './CommentCount';
 export * from './CommentActionsMenu';
+export * from './CommentCount';
 export * from './CommentsList';
 export * from './CommentThreadItem';
 export * from './EditPostModal';

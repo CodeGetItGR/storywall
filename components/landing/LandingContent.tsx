@@ -22,42 +22,43 @@ export function LandingContent() {
     useLandingInteractions(landingRef);
 
     return (
-        <main
-            ref={landingRef}
-            className="landing-page fixed inset-0 overflow-x-hidden overflow-y-auto scroll-smooth bg-[#f4f0e8] font-sans text-[#151313]"
-        >
+        <main ref={landingRef} className="fixed inset-0 overflow-x-hidden overflow-y-auto scroll-smooth bg-white text-[#151313]">
             {/* Hero */}
             <LandingHero />
 
-            {/* How it works */}
-            <LandingHowItWorks />
+            <div className="landing-page">
+                {/* How it works */}
+                <LandingHowItWorks />
 
-            {/* Hero transition */}
-            <LandingHeroTransition />
+                {/* Hero transition */}
+                <LandingHeroTransition />
 
-            {/* Event stories */}
-            <LandingStories />
+                {/* Event stories */}
+                <LandingStories />
 
-            {/* Demo */}
-            <LandingDemo />
+                {/* Demo */}
+                <LandingDemo />
 
-            {/* Social and host experience */}
-            <LandingExperienceStack />
+                {/* Social and host experience */}
+                <LandingExperienceStack />
 
-            {/* Features */}
-            <LandingFeatures />
+                {/* Features */}
+                <LandingFeatures />
+            </div>
 
             {/* Pricing */}
             <LandingPricing />
 
-            {/* FAQ */}
-            <LandingFaq />
+            <div className="landing-page">
+                {/* FAQ */}
+                <LandingFaq />
 
-            {/* Final call to action */}
-            <LandingFinalCta />
+                {/* Final call to action */}
+                <LandingFinalCta />
 
-            {/* Footer */}
-            <LandingFooter />
+                {/* Footer */}
+                <LandingFooter />
+            </div>
         </main>
     );
 }

@@ -3192,9 +3192,9 @@
             "openMenu": "Άνοιγμα μενού",
             "closeMenu": "Κλείσιμο μενού",
             "nav": ["Η ΠΛΑΤΦΟΡΜΑ", "ΠΩΣ ΛΕΙΤΟΥΡΓΕΙ", "ΔΥΝΑΤΟΤΗΤΕΣ", "ΠΑΚΕΤΑ", "ΣΥΝΔΕΣΗ"],
-            "mobileNav": ["Η Πλατφόρμα", "Demo", "Δυνατότητες", "Πακέτα", "Σύνδεση"],
-            "kicker": "ΤΟ ΝΟ1 SOCIAL ΓΙΑ",
-            "kickerStrong": "PRIVATE EVENTS",
+            "mobileNav": ["Η Πλατφόρμα", "Πώς λειτουργεί", "Δυνατότητες", "Πακέτα", "Σύνδεση"],
+            "kicker": "ΤΟ SOCIAL ΓΙΑ ΚΑΘΕ",
+            "kickerStrong": "PRIVATE EVENT",
             "title": ["Κάθε στιγμή", "γίνεται μέρος της", "ιστορίας."],
             "cta": ["Ζήσε το δικό σου", "StoryWall"],
             "signedInCta": ["Οι", "εκδηλώσεις σου"],
@@ -3205,7 +3205,7 @@
             "eventTypesPrefix": "Για",
             "eventTypes": ["Γάμο", "Βάπτιση", "Gender Reveal", "VIP Parties"],
             "eventTypesLabel": "Για Γάμο, Βάπτιση, Gender Reveal και VIP Parties",
-            "trustLine": "ΙΔΙΩΤΙΚΟ • ΜΟΝΑΔΙΚΟ LINK • ΓΙΑ ΚΑΘΕ EVENT"
+            "trustLine": ["Χωρίς app", "Από οποιοδήποτε κινητό", "Ιδιωτικό", "Με link ή QR"]
         },
         "howItWorks": {
             "eyebrow": "ΠΩΣ ΛΕΙΤΟΥΡΓΕΙ",
@@ -3585,9 +3585,102 @@
             "choose": "ΕΠΙΛΕΞΕ ΠΑΚΕΤΟ",
             "popular": "most popular",
             "categoryLabel": "Κατηγορία event",
+            "storageLabel": "Αποθηκευτικός χώρος",
+            "photosLabel": "φωτογραφίες",
+            "videosLabel": "βίντεο",
+            "storageNote": "Ο υπολογισμός βασίζεται σε αρχεία έως 5 MB ανά φωτογραφία και video clips διάρκειας έως 15″.",
             "categories": {
-                "wedding": { "label": "ΓΑΜΟΣ · ΒΑΠΤΙΣΗ · GENDER REVEAL", "plans": [{ "name": "START", "price": "79€", "description": "Έως 150 χρήστες", "features": ["Posts, comments & reactions", "Πρόγραμμα εκδήλωσης", "Gallery", "15 GB χώρος"] }, { "name": "STORY", "price": "99€", "description": "Έως 300 χρήστες", "features": ["Όλα του START", "Stories", "RSVP", "QR Photo Upload", "25 GB χώρος"] }, { "name": "SIGNATURE", "price": "169€", "description": "300+ χρήστες", "features": ["Όλα του STORY", "50 GB χώρος", "Πρόσβαση για 9 μήνες"] }] },
-                "vip": { "label": "VIP & SOCIAL PARTIES", "plans": [{ "name": "START", "price": "49€", "description": "Έως 100 χρήστες", "features": ["Posts, comments & reactions", "Πρόγραμμα εκδήλωσης", "Gallery", "10 GB χώρος"] }, { "name": "STORY", "price": "99€", "description": "Έως 250 χρήστες", "features": ["Όλα του START", "Stories", "RSVP", "QR Photo Upload", "25 GB χώρος"] }, { "name": "SIGNATURE", "price": "149€", "description": "250+ χρήστες", "features": ["Όλα του STORY", "50 GB χώρος", "Πρόσβαση για 9 μήνες"] }] }
+                "wedding": {
+                    "label": "Γάμος · Βάπτιση · Gender Reveal · Baby Shower",
+                    "plans": [
+                        {
+                            "name": "START",
+                            "price": "79€",
+                            "audience": "Έως 150 χρήστες",
+                            "features": [
+                                "Posts, Comments & Reactions",
+                                "Αντίστροφη μέτρηση",
+                                "Πρόγραμμα εκδήλωσης",
+                                "Gallery φωτογραφιών & βίντεο",
+                                "Download όλων των φωτογραφιών & βίντεο",
+                                "Μοναδικό link για το StoryWall",
+                                "Πρόσβαση για 3 μήνες μετά το event"
+                            ],
+                            "storage": "15 GB",
+                            "photos": "2000",
+                            "videos": "150"
+                        },
+                        {
+                            "name": "STORY",
+                            "price": "99€",
+                            "audience": "Έως 300 χρήστες",
+                            "features": [
+                                "Όλα όσα περιλαμβάνει το START",
+                                "Stories",
+                                "RSVP",
+                                "QR Photo Upload",
+                                "Ευχολόγιο",
+                                "Πρόσβαση για 6 μήνες μετά το event"
+                            ],
+                            "includedNote": "Posts, Comments & Reactions · Αντίστροφη μέτρηση · Πρόγραμμα εκδήλωσης · Gallery φωτογραφιών & βίντεο · Download όλων των φωτογραφιών & βίντεο · Μοναδικό link για το StoryWall",
+                            "storage": "25 GB",
+                            "photos": "4000",
+                            "videos": "300"
+                        },
+                        {
+                            "name": "SIGNATURE",
+                            "price": "169€",
+                            "audience": "300+ χρήστες",
+                            "features": ["Όλα όσα περιλαμβάνει το STORY", "300+ χρήστες", "Πρόσβαση για 9 μήνες μετά το event"],
+                            "includedNote": "Posts, Comments & Reactions · Stories · RSVP · QR Photo Upload · Ευχολόγιο · Αντίστροφη μέτρηση · Πρόγραμμα εκδήλωσης · Gallery φωτογραφιών & βίντεο · Download όλων των φωτογραφιών & βίντεο · Μοναδικό link για το StoryWall",
+                            "storage": "50 GB",
+                            "photos": "7000",
+                            "videos": "500"
+                        }
+                    ]
+                },
+                "vip": {
+                    "label": "VIP & Social Parties",
+                    "plans": [
+                        {
+                            "name": "START",
+                            "price": "49€",
+                            "audience": "Έως 100 χρήστες",
+                            "features": [
+                                "Posts, Comments & Reactions",
+                                "Αντίστροφη μέτρηση",
+                                "Πρόγραμμα εκδήλωσης",
+                                "Gallery φωτογραφιών & βίντεο",
+                                "Download όλων των φωτογραφιών & βίντεο",
+                                "Μοναδικό link για το StoryWall",
+                                "Πρόσβαση για 3 μήνες μετά το event"
+                            ],
+                            "storage": "10 GB",
+                            "photos": "1300",
+                            "videos": "100"
+                        },
+                        {
+                            "name": "STORY",
+                            "price": "99€",
+                            "audience": "Έως 250 χρήστες",
+                            "features": ["Όλα όσα περιλαμβάνει το START", "Stories", "RSVP", "QR Photo Upload", "Πρόσβαση για 6 μήνες μετά το event"],
+                            "includedNote": "Posts, Comments & Reactions · Αντίστροφη μέτρηση · Πρόγραμμα εκδήλωσης · Gallery φωτογραφιών & βίντεο · Download όλων των φωτογραφιών & βίντεο · Μοναδικό link για το StoryWall",
+                            "storage": "25 GB",
+                            "photos": "4000",
+                            "videos": "300"
+                        },
+                        {
+                            "name": "SIGNATURE",
+                            "price": "199€",
+                            "audience": "250+ χρήστες",
+                            "features": ["Όλα όσα περιλαμβάνει το STORY", "250+ χρήστες", "Πρόσβαση για 9 μήνες μετά το event"],
+                            "includedNote": "Posts, Comments & Reactions · Stories · RSVP · QR Photo Upload · Αντίστροφη μέτρηση · Πρόγραμμα εκδήλωσης · Gallery φωτογραφιών & βίντεο · Download όλων των φωτογραφιών & βίντεο · Μοναδικό link για το StoryWall",
+                            "storage": "50 GB",
+                            "photos": "7000",
+                            "videos": "500"
+                        }
+                    ]
+                }
             },
             "note": "Οι τιμές είναι ενδεικτικές για την παρουσίαση και μπορούν να αλλάξουν.",
             "plans": [

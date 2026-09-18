@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 
-import { resolveServerEventContext } from '@/lib/auth/serverEventContext';
 import { AUTH_RETURN_PATH_PARAM } from '@/lib/auth/returnPath';
+import { resolveServerEventContext } from '@/lib/auth/serverEventContext';
 import { routes } from '@/lib/routes';
 
 // Bare /feed has no event id, so it can't render a feed itself — it exists
