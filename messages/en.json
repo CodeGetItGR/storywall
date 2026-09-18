@@ -3381,134 +3381,21 @@
             "storageNote": "Estimates assume files up to 5 MB per photo and video clips up to 15 seconds.",
             "categories": {
                 "wedding": {
-                    "label": "Wedding · Baptism · Gender Reveal · Baby Shower",
-                    "plans": [
-                        {
-                            "name": "START",
-                            "price": "79€",
-                            "audience": "Up to 150 guests",
-                            "features": [
-                                "Posts, comments & reactions",
-                                "Countdown",
-                                "Event schedule",
-                                "Photo & video gallery",
-                                "Download all photos & videos",
-                                "Unique StoryWall link",
-                                "Access for 3 months after the event"
-                            ],
-                            "storage": "15 GB",
-                            "photos": "2000",
-                            "videos": "150"
-                        },
-                        {
-                            "name": "STORY",
-                            "price": "99€",
-                            "audience": "Up to 300 guests",
-                            "features": [
-                                "Everything in START",
-                                "Stories",
-                                "RSVP",
-                                "QR Photo Upload",
-                                "Guestbook",
-                                "Access for 6 months after the event"
-                            ],
-                            "includedNote": "Posts, comments & reactions · Countdown · Event schedule · Photo & video gallery · Download all photos & videos · Unique StoryWall link",
-                            "storage": "25 GB",
-                            "photos": "4000",
-                            "videos": "300"
-                        },
-                        {
-                            "name": "SIGNATURE",
-                            "price": "169€",
-                            "audience": "300+ guests",
-                            "features": ["Everything in STORY", "300+ guests", "Access for 9 months after the event"],
-                            "includedNote": "Posts, comments & reactions · Stories · RSVP · QR Photo Upload · Guestbook · Countdown · Event schedule · Photo & video gallery · Download all photos & videos · Unique StoryWall link",
-                            "storage": "50 GB",
-                            "photos": "7000",
-                            "videos": "500"
-                        }
-                    ]
+                    "label": "Wedding · Baptism · Gender Reveal · Baby Shower"
                 },
                 "vip": {
-                    "label": "VIP & Social Parties",
-                    "plans": [
-                        {
-                            "name": "START",
-                            "price": "49€",
-                            "audience": "Up to 100 guests",
-                            "features": [
-                                "Posts, comments & reactions",
-                                "Countdown",
-                                "Event schedule",
-                                "Photo & video gallery",
-                                "Download all photos & videos",
-                                "Unique StoryWall link",
-                                "Access for 3 months after the event"
-                            ],
-                            "storage": "10 GB",
-                            "photos": "1300",
-                            "videos": "100"
-                        },
-                        {
-                            "name": "STORY",
-                            "price": "99€",
-                            "audience": "Up to 250 guests",
-                            "features": ["Everything in START", "Stories", "RSVP", "QR Photo Upload", "Access for 6 months after the event"],
-                            "includedNote": "Posts, comments & reactions · Countdown · Event schedule · Photo & video gallery · Download all photos & videos · Unique StoryWall link",
-                            "storage": "25 GB",
-                            "photos": "4000",
-                            "videos": "300"
-                        },
-                        {
-                            "name": "SIGNATURE",
-                            "price": "199€",
-                            "audience": "250+ guests",
-                            "features": ["Everything in STORY", "250+ guests", "Access for 9 months after the event"],
-                            "includedNote": "Posts, comments & reactions · Stories · RSVP · QR Photo Upload · Countdown · Event schedule · Photo & video gallery · Download all photos & videos · Unique StoryWall link",
-                            "storage": "50 GB",
-                            "photos": "7000",
-                            "videos": "500"
-                        }
-                    ]
+                    "label": "VIP & Social Parties"
                 }
             },
             "note": "Prices shown are indicative and may change.",
-            "plans": [
-                {
-                    "name": "START",
-                    "price": "79€",
-                    "description": "A simple, complete StoryWall for your event.",
-                    "features": ["Digital invitation", "Event schedule", "Countdown", "RSVP", "Posts & reactions", "Gallery", "One special link"]
-                },
-                {
-                    "name": "STORY",
-                    "price": "129€",
-                    "description": "For the full social experience.",
-                    "features": [
-                        "Everything in START",
-                        "Stories",
-                        "QR Photo Upload",
-                        "Comments & reactions",
-                        "Digital guestbook",
-                        "Song requests",
-                        "Before / during / after the event"
-                    ]
-                },
-                {
-                    "name": "SIGNATURE",
-                    "price": "199€",
-                    "description": "For events that want something extra.",
-                    "features": [
-                        "Everything in STORY",
-                        "More customization",
-                        "Extra time",
-                        "Premium styling",
-                        "Advanced control",
-                        "Priority support",
-                        "Premium features"
-                    ]
-                }
-            ]
+            "baselineFeatures": ["Countdown", "Event schedule", "Download all photos & videos", "Unique StoryWall link"],
+            "guestsUpTo": "Up to {count} guests",
+            "guestsUnlimited": "Unlimited guests",
+            "storageUnlimited": "Unlimited storage",
+            "mediaUnlimited": "Unlimited",
+            "accessMonths": "Access for {months} months after the event",
+            "accessUnlimited": "Access never expires",
+            "everythingIn": "Everything in {plan}"
         },
         "faq": {
             "eyebrow": "FAQ",
