@@ -27,6 +27,7 @@ export type ApiErrorMessageKey =
     | 'eventDatesIncomplete'
     | 'eventDeleteAlreadyPending'
     | 'eventDeleteNotPrimaryHost'
+    | 'eventWithdrawn'
     | 'eventHostDisplayOrderReserved'
     | 'eventHostPrimaryCannotBeRemoved'
     | 'eventHostTransferNotPrimaryHost'
@@ -68,7 +69,6 @@ export type ApiErrorMessageKey =
     | 'qrLinkNotAvailable'
     | 'qrSharedLinkHostManaged'
     | 'orderNotPending'
-    | 'orderNotRefundable'
     | 'planCurrencyMismatch'
     | 'planCurrencyUnsupported'
     | 'planInUse'
@@ -86,9 +86,6 @@ export type ApiErrorMessageKey =
     | 'invalidPaidServiceKind'
     | 'qrLinkNotFound'
     | 'rateLimited'
-    | 'refundAlreadyRequested'
-    | 'refundNotEligible'
-    | 'refundNotPending'
     | 'reactionTypeInUse'
     | 'reactionTypeLimitExceeded'
     | 'reactionTypeNotUsable'
@@ -102,7 +99,10 @@ export type ApiErrorMessageKey =
     | 'validationFailed'
     | 'webhookAlreadyProcessed'
     | 'webhookNotReplayable'
-    | 'webhookPayloadTooLarge';
+    | 'webhookPayloadTooLarge'
+    | 'withdrawalTermsVersionStale'
+    | 'withdrawalRefused'
+    | 'withdrawalNotHeld';
 
 export const API_ERROR_MESSAGE_KEYS = {
     [AUTH_ERROR_CODES.ACCESS_DENIED]: 'accessDenied',
@@ -129,6 +129,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.EVENT_DATES_INCOMPLETE]: 'eventDatesIncomplete',
     [ERROR_CODES.EVENT_DELETE_ALREADY_PENDING]: 'eventDeleteAlreadyPending',
     [ERROR_CODES.EVENT_DELETE_NOT_PRIMARY_HOST]: 'eventDeleteNotPrimaryHost',
+    [ERROR_CODES.EVENT_WITHDRAWN]: 'eventWithdrawn',
     [ERROR_CODES.EVENT_HOST_DISPLAY_ORDER_RESERVED]: 'eventHostDisplayOrderReserved',
     [ERROR_CODES.EVENT_HOST_PRIMARY_CANNOT_BE_REMOVED]: 'eventHostPrimaryCannotBeRemoved',
     [ERROR_CODES.EVENT_HOST_TRANSFER_NOT_PRIMARY_HOST]: 'eventHostTransferNotPrimaryHost',
@@ -167,7 +168,6 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.MODULE_NOT_AVAILABLE]: 'moduleUnavailable',
     [ERROR_CODES.QR_MEDIA_UPLOAD_DISABLED]: 'qrMediaUploadDisabled',
     [ERROR_CODES.ORDER_NOT_PENDING]: 'orderNotPending',
-    [ERROR_CODES.ORDER_NOT_REFUNDABLE]: 'orderNotRefundable',
     [ERROR_CODES.PLAN_TIER_CURRENCY_MISMATCH]: 'planCurrencyMismatch',
     [ERROR_CODES.PLAN_TIER_CURRENCY_UNSUPPORTED]: 'planCurrencyUnsupported',
     [ERROR_CODES.PLAN_TIER_IN_USE]: 'planInUse',
@@ -186,9 +186,6 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.QR_SHARED_LINK_HOST_MANAGED]: 'qrSharedLinkHostManaged',
     [ERROR_CODES.RATE_LIMITED]: 'rateLimited',
     [ERROR_CODES.EVENT_SCHEDULE_LOCKED]: 'eventScheduleLocked',
-    [ERROR_CODES.REFUND_ALREADY_REQUESTED]: 'refundAlreadyRequested',
-    [ERROR_CODES.REFUND_NOT_ELIGIBLE]: 'refundNotEligible',
-    [ERROR_CODES.REFUND_REQUEST_NOT_PENDING]: 'refundNotPending',
     [ERROR_CODES.REACTION_TYPE_IN_USE]: 'reactionTypeInUse',
     [ERROR_CODES.REACTION_TYPE_LIMIT_EXCEEDED]: 'reactionTypeLimitExceeded',
     [ERROR_CODES.REACTION_TYPE_NOT_USABLE]: 'reactionTypeNotUsable',
@@ -203,6 +200,9 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.WEBHOOK_ALREADY_PROCESSED]: 'webhookAlreadyProcessed',
     [ERROR_CODES.WEBHOOK_NOT_REPLAYABLE]: 'webhookNotReplayable',
     [ERROR_CODES.WEBHOOK_PAYLOAD_TOO_LARGE]: 'webhookPayloadTooLarge',
+    [ERROR_CODES.WITHDRAWAL_TERMS_VERSION_STALE]: 'withdrawalTermsVersionStale',
+    [ERROR_CODES.WITHDRAWAL_REFUSED]: 'withdrawalRefused',
+    [ERROR_CODES.WITHDRAWAL_NOT_HELD]: 'withdrawalNotHeld',
 } satisfies Record<KnownApiErrorCode, ApiErrorMessageKey>;
 
 export function getApiErrorMessageKey(code: number | string | undefined): ApiErrorMessageKey | undefined {

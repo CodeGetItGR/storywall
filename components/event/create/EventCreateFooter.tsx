@@ -13,9 +13,9 @@ export function EventCreateFooter() {
         canContinueType,
         canContinuePlan,
         isSubmitPending,
-        hasDraft,
         canSubmitDetails,
         isEmailVerified,
+        consentSatisfied,
         goToType,
         goToDetails,
         goToPlan,
@@ -90,16 +90,10 @@ export function EventCreateFooter() {
                         <button
                             form={formId}
                             type="submit"
-                            disabled={isSubmitPending || !isEmailVerified}
+                            disabled={isSubmitPending || !isEmailVerified || !consentSatisfied}
                             className="flex min-h-11 flex-2 items-center justify-center gap-2 rounded-full bg-gradient-brand text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
                         >
-                            {isSubmitPending ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : hasDraft ? (
-                                t('paidModules.openSetup')
-                            ) : (
-                                t('submitAndPay')
-                            )}
+                            {isSubmitPending ? <Loader2 className="h-4 w-4 animate-spin" /> : t('submitAndPay')}
                         </button>
                     </div>
                 )}

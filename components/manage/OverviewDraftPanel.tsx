@@ -1,17 +1,18 @@
 'use client';
 
-import { Calendar, Clock3, Loader2, Receipt } from 'lucide-react';
+import { AlertTriangle, Clock3, Loader2, LockKeyhole, Receipt } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useState } from 'react';
 
+import { ActivationEventSummary } from '@/components/checkout/ActivationEventSummary';
+import { CollaborationCodeSection } from '@/components/checkout/CollaborationCodeSection';
+import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
 import { EventOverviewPriceRow } from '@/components/event/create/EventOverviewPriceRow';
 import { GiftAccountSetup } from '@/components/manage/GiftAccountSetup';
 import { TargetedSection } from '@/components/manage/TargetedSection';
-import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import { useCheckout } from '@/hooks/useBilling';
+import { useDraftActivationCheckout } from '@/hooks/useDraftActivationCheckout';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
 import type { EventBillingResponseDto, EventTypeConvention, PlanTierResponseDto } from '@/lib/api/types';
-import { formatMoney, navigateToCheckout } from '@/lib/billing';
+import { formatMoney } from '@/lib/billing';
 import { GIFT_ACCOUNT_SECTION_ID } from '@/lib/manageSectionTargets';
 import { getPlanPriceDetails } from '@/lib/planTiers';
 
@@ -25,6 +26,7 @@ export function OverviewDraftPanel({
     selectedAddons,
     activationTotal,
     wishlistAvailable,
+    cancelledCheckout,
 }: {
     eventId: string;
     eventTitle: string;
@@ -35,33 +37,32 @@ export function OverviewDraftPanel({
     selectedAddons: EventBillingResponseDto['addons'];
     activationTotal: number | null;
     wishlistAvailable: boolean;
+    cancelledCheckout: boolean;
 }) {
     const t = useTranslations('ManagePage');
     const tCreate = useTranslations('CreateEventPage');
+    const tCheckoutReview = useTranslations('CheckoutReviewPage');
     const locale = useLocale();
     const eventTypeCopy = useLocalizedAppEventTypeCopy();
-    const checkout = useCheckout(eventId);
-    const toErrorMessage = useApiErrorMessage();
-    const [error, setError] = useState<string | null>(null);
     const canPay = Boolean(startAt);
     const planActivation = currentPlan ? getPlanPriceDetails(currentPlan) : null;
-    const activationTotalLabel = activationTotal !== null ? formatMoney(locale, activationTotal, currency) : tCreate('payment.noCharge');
-    const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
 
-    async function handlePay() {
-        if (!canPay) return;
-        setError(null);
+    const { consent, collaborationPreview, handleCollaborationPreviewChange, submit, error, isPending } = useDraftActivationCheckout(eventId);
 
-        try {
-            navigateToCheckout(eventId, await checkout.mutateAsync(undefined));
-        } catch (checkoutError) {
-            setError(toErrorMessage(checkoutError));
-        }
-    }
+    // activationTotal already bundles the plan's own (non-collaboration-code) price with
+    // whichever add-ons count toward activation (see useEventOverviewPlan). A collaboration
+    // code only discounts the plan portion, so swap that portion out rather than replacing
+    // the whole total — this keeps add-on charges intact when a code is applied.
+    const dueNowMinor =
+        collaborationPreview && activationTotal !== null && planActivation
+            ? activationTotal - planActivation.amountMinor + collaborationPreview.payableAmountMinor
+            : activationTotal;
+    const dueNowCurrency = collaborationPreview?.currency ?? currency;
+    const dueNowTotalLabel = dueNowMinor !== null ? formatMoney(locale, dueNowMinor, dueNowCurrency) : tCreate('payment.noCharge');
 
     return (
         <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-8">
-            {/* Left: event & plan details */}
+            {/* Left: event, pricing, collaboration code, consent */}
             <div className="flex flex-col gap-5">
                 {/* Status */}
                 <div className="flex items-start gap-3">
@@ -74,20 +75,21 @@ export function OverviewDraftPanel({
                     </div>
                 </div>
 
-                {/* Event summary */}
-                <section aria-labelledby="draft-event-heading" className="flex items-start gap-3 border-t border-border/70 pt-5">
-                    <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-ink-faint" aria-hidden="true" />
-                    <div className="min-w-0">
-                        <h3 id="draft-event-heading" className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
-                            {tCreate('overview.event')}
-                        </h3>
-                        <p className="mt-1 font-semibold text-ink">{eventTitle}</p>
-                        <p className="mt-0.5 text-sm text-ink-muted">
-                            {eventTypeCopy(eventType).name}
-                            {startAt && ` · ${dateFormatter.format(new Date(startAt))}`}
-                        </p>
+                {/* Cancelled payment notice */}
+                {cancelledCheckout && (
+                    <div className="flex items-start gap-3 rounded-lg bg-amber-50 p-4">
+                        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" aria-hidden="true" />
+                        <div className="min-w-0 text-sm">
+                            <p className="font-semibold text-ink">{tCheckoutReview('intent.activationCancelled.title')}</p>
+                            <p className="mt-1 text-ink-muted">{tCheckoutReview('intent.activationCancelled.description')}</p>
+                        </div>
                     </div>
-                </section>
+                )}
+
+                {/* Event summary */}
+                <div className="border-t border-border/70 pt-5">
+                    <ActivationEventSummary eventTitle={eventTitle} eventTypeName={eventTypeCopy(eventType).name} startAt={startAt} />
+                </div>
 
                 {/* Pricing */}
                 <section aria-labelledby="draft-pricing-heading" className="border-t border-border/70 pt-5">
@@ -117,8 +119,34 @@ export function OverviewDraftPanel({
                                 fallback={tCreate('payment.noCharge')}
                             />
                         ))}
+                        {collaborationPreview && planActivation && (
+                            <EventOverviewPriceRow
+                                label={tCreate('overview.discount')}
+                                detail={tCreate('overview.discountDetail', {
+                                    label: collaborationPreview.label,
+                                    percent: collaborationPreview.combinedDiscountPercent,
+                                })}
+                                amount={`-${formatMoney(locale, planActivation.amountMinor - collaborationPreview.payableAmountMinor, collaborationPreview.currency)}`}
+                                fallback={tCreate('payment.noCharge')}
+                                amountClassName="text-emerald-700"
+                            />
+                        )}
                     </div>
                 </section>
+
+                {/* Collaboration code */}
+                {canPay && <CollaborationCodeSection eventId={eventId} onPreviewChangeAction={handleCollaborationPreviewChange} />}
+
+                {/* Withdrawal consent */}
+                {canPay && (
+                    <WithdrawalConsentSection
+                        requestsImmediateStart={consent.requestsImmediateStart}
+                        acknowledgesWithdrawalTerms={consent.acknowledgesWithdrawalTerms}
+                        staleTerms={consent.staleTerms}
+                        onRequestsImmediateStartChangeAction={consent.handleRequestsImmediateStartChange}
+                        onAcknowledgesWithdrawalTermsChangeAction={consent.handleAcknowledgesWithdrawalTermsChange}
+                    />
+                )}
 
                 {/* Gift account */}
                 {wishlistAvailable && (
@@ -131,18 +159,24 @@ export function OverviewDraftPanel({
             {/* Right: payment action */}
             <div className="rounded-2xl border border-border bg-surface-muted/40 p-5 lg:sticky lg:top-24">
                 <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">{tCreate('overview.dueNow')}</p>
-                <p className="mt-1 text-2xl font-bold text-primary-dark">{activationTotalLabel}</p>
+                <p className="mt-1 text-2xl font-bold text-primary-dark">{dueNowTotalLabel}</p>
+
+                {error && <p className="mt-3 text-sm text-rose-600">{error}</p>}
 
                 <div className="mt-4">
                     {canPay ? (
                         <button
                             type="button"
-                            onClick={handlePay}
-                            disabled={checkout.isPending}
-                            className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-ink px-4 text-sm font-semibold text-white"
+                            onClick={submit}
+                            disabled={isPending || !consent.consentSatisfied}
+                            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
                         >
-                            {checkout.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
-                            {checkout.isPending ? t('draft.openingCheckout') : t('draft.payAndPublish')}
+                            {isPending ? (
+                                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                            ) : (
+                                <LockKeyhole className="h-4 w-4" aria-hidden="true" />
+                            )}
+                            {isPending ? t('draft.openingCheckout') : t('draft.payAndPublish')}
                         </button>
                     ) : (
                         <button
@@ -154,7 +188,6 @@ export function OverviewDraftPanel({
                         </button>
                     )}
                 </div>
-                {error && <p className="mt-3 text-sm text-rose-600">{error}</p>}
             </div>
         </div>
     );

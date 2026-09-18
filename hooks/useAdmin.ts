@@ -41,11 +41,11 @@ import type {
     PlatformModulePatchDto,
     PlatformModuleResponseDto,
     ReactionTypeResponseDto,
-    RefundDecisionRequestDto,
-    RefundRequestAdminDto,
-    RefundRequestResponseDto,
     UnprocessedWebhookDto,
     VoidCollaborationRedemptionRequestDto,
+    WithdrawalAdminDto,
+    WithdrawalResponseDto,
+    WithdrawalWithholdRequestDto,
 } from '@/lib/api/types';
 
 export const adminKeys = {
@@ -55,7 +55,7 @@ export const adminKeys = {
     platformEventTypes: ['admin', 'platform-event-types'] as const,
     unprocessedWebhooks: ['admin', 'webhooks', 'unprocessed'] as const,
     notificationSweep: ['admin', 'notifications', 'sweep'] as const,
-    refundRequests: ['admin', 'refund-requests'] as const,
+    withdrawals: ['admin', 'withdrawals'] as const,
     metrics: ['admin', 'metrics'] as const,
     costSummary: ['admin', 'metrics', 'cost-summary'] as const,
     costTimeline: (weeks: number) => ['admin', 'metrics', 'timeline', weeks] as const,
@@ -297,34 +297,45 @@ export function useRunNotificationSweep() {
     });
 }
 
-// GET /api/admin/refund-requests — the queue, oldest first, each row carrying the
-// usage evidence the gates are derived from (guide §9). The counts include
-// soft-deleted rows on purpose: the bytes were stored and paid for either way.
-export function useAdminRefundRequests() {
+// GET /api/admin/withdrawals — the queue of HELD requests, each with the full
+// facts sheet the automated decision was based on (guide §9).
+export function useAdminWithdrawals() {
     return useQuery({
-        queryKey: adminKeys.refundRequests,
-        queryFn: () => api.get<RefundRequestAdminDto[]>(endpoints.admin.refundRequests.list),
+        queryKey: adminKeys.withdrawals,
+        queryFn: () => api.get<WithdrawalAdminDto[]>(endpoints.admin.withdrawals.list),
     });
 }
 
-// POST /api/admin/refund-requests/{id}/approve | /reject. Never auto-retried:
-// a silently repeated approval is a second refund (guide §11).
-export function useDecideRefundRequest() {
+// POST /api/admin/withdrawals/{id}/release — no body. Refunds at the price
+// computed at request time and deletes the event, same outcome as an automatic
+// REFUNDED. 409 WITHDRAWAL_NOT_HELD if the request isn't currently HELD.
+export function useReleaseWithdrawal() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ requestId, decision, note }: { requestId: string; decision: 'approve' | 'reject'; note?: string }) => {
-            const path =
-                decision === 'approve' ? endpoints.admin.refundRequests.approve(requestId) : endpoints.admin.refundRequests.reject(requestId);
-            const body: RefundDecisionRequestDto = { note: note?.trim() ? note.trim() : null };
-            return api.post<RefundRequestResponseDto>(path, body);
-        },
+        mutationFn: (requestId: string) => api.post<WithdrawalResponseDto>(endpoints.admin.withdrawals.release(requestId)),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: adminKeys.refundRequests });
-            // Approval reverses the order and returns the event to DRAFT.
+            queryClient.invalidateQueries({ queryKey: adminKeys.withdrawals });
             queryClient.invalidateQueries({ queryKey: ['events'] });
             queryClient.invalidateQueries({ queryKey: ['billing'] });
             queryClient.invalidateQueries({ queryKey: adminKeys.metrics });
+        },
+    });
+}
+
+// POST /api/admin/withdrawals/{id}/withhold — note is required and shown to the
+// host verbatim. Also suspends the host's account — not a soft decline.
+export function useWithholdWithdrawal() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ requestId, note }: { requestId: string; note: string }) => {
+            const body: WithdrawalWithholdRequestDto = { note };
+            return api.post<WithdrawalResponseDto>(endpoints.admin.withdrawals.withhold(requestId), body);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: adminKeys.withdrawals });
+            queryClient.invalidateQueries({ queryKey: ['events'] });
         },
     });
 }

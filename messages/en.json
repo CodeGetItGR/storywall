@@ -762,13 +762,17 @@
                 "title": "The media on this event will be deleted",
                 "body": "{days} days left before the photos are permanently removed. This cannot be undone."
             },
-            "REFUND_APPROVED": {
-                "title": "Your refund was approved",
-                "body": "The event has been returned to draft and is no longer visible to guests."
+            "WITHDRAWAL_REFUNDED": {
+                "title": "Your withdrawal was processed",
+                "body": "The event has been taken offline and the refund was issued."
             },
-            "REFUND_REJECTED": {
-                "title": "Your refund request was declined",
-                "body": "Nothing has changed on your event."
+            "WITHDRAWAL_HELD": {
+                "title": "Your withdrawal request is under review",
+                "body": "We'll email you once it's decided."
+            },
+            "WITHDRAWAL_WITHHELD": {
+                "title": "Your withdrawal request was withheld",
+                "body": "Your account has been suspended."
             }
         }
     },
@@ -997,7 +1001,7 @@
             "members": "Members",
             "rsvp": "RSVP",
             "billing": "Billing",
-            "refund": "Refund"
+            "withdrawal": "Withdrawal"
         },
         "sectionSwitcher": "Change section",
         "stats": {
@@ -1500,10 +1504,10 @@
             "PAST_DUE": "Past due",
             "CANCELLED": "Cancelled"
         },
-        "refundStatus": {
-            "PENDING": "Pending",
-            "APPROVED": "Approved",
-            "REJECTED": "Rejected"
+        "withdrawalStatus": {
+            "HELD": "Under review",
+            "REFUNDED": "Refunded",
+            "WITHHELD": "Refused"
         },
         "summary": {
             "DRAFT": "Not published yet. You'll pay to activate once the event dates are set.",
@@ -1547,23 +1551,20 @@
             "cancelConfirmNo": "Keep",
             "noResume": "To continue after that, start a new subscription."
         },
-        "refund": {
-            "title": "Refund",
+        "withdrawal": {
             "loading": "Checking...",
-            "eligible": "You can request a refund for the activation.",
-            "notEligible": "Refunds aren't available right now.",
-            "pending": "A request is already pending.",
+            "eligible": "You can withdraw for a refund of {amount}.",
+            "notEligible": "Withdrawal isn't available right now.",
             "reason": "Reason",
             "reasonPlaceholder": "Optional note",
-            "submit": "Request refund",
+            "submit": "Request withdrawal",
             "submitting": "Submitting...",
-            "requested": "Refund request {status}",
-            "requestedAmount": "Requested amount: {amount}",
-            "requestedNoAmount": "Amount will be set during review.",
-            "confirmBody": "The event returns to draft if approved. Guests lose access.",
-            "confirmSubmit": "Yes, request a refund",
+            "requestedNoAmount": "Amount will be set once processed.",
+            "confirmBody": "This permanently takes the event offline. Guests lose access and there is no undo.",
+            "confirmSubmit": "Yes, withdraw",
             "confirmCancel": "Cancel",
-            "notRefundedYet": "Approved. Your refund is being processed."
+            "held": "Under review. We'll email you once it's decided.",
+            "refunded": "Refunded. The event has been taken offline."
         },
         "orders": {
             "title": "Order history",
@@ -1634,11 +1635,6 @@
             "planUpgrade": "Upgrade to {plan}"
         },
         "intent": {
-            "activation": {
-                "title": "Order preview",
-                "description": "Check the plan and included add-ons before publishing this event.",
-                "consequence": "The event is published after payment is confirmed."
-            },
             "activationCancelled": {
                 "title": "Payment cancelled",
                 "description": "Nothing was charged. Review the charge and continue when you are ready.",
@@ -1659,6 +1655,15 @@
                 "description": "Check the storage pack charge.",
                 "consequence": "The storage allowance is added permanently after payment is confirmed and is non-refundable."
             }
+        },
+        "withdrawalTerms": {
+            "title": "Right of withdrawal",
+            "body": "Under EU consumer law, you normally have 14 days to change your mind about a paid service. To publish and start using this plan right away, you need to ask for immediate start and acknowledge that doing so affects your withdrawal rights.",
+            "requestsImmediateStartLabel": "Start providing this service immediately",
+            "requestsImmediateStartCaption": "Rather than waiting out the 14-day period first.",
+            "acknowledgesWithdrawalTermsLabel": "I understand this affects my right to a full refund",
+            "acknowledgesWithdrawalTermsCaption": "Once the service starts, part of the charge may no longer be refundable if you withdraw later.",
+            "stale": "These terms were updated. Review them again and confirm once more."
         }
     },
     "CheckoutSuccessPage": {
@@ -2081,7 +2086,6 @@
             "eventTypes": "Event types",
             "assignments": "Assignments",
             "billingOps": "Billing ops",
-            "refunds": "Refunds",
             "lifecycle": "Lifecycle",
             "signOutConfirmTitle": "Sign out of admin?",
             "signOutConfirmBody": "Please confirm before leaving the admin area."
@@ -2098,7 +2102,7 @@
             "eventTypes": "Event types",
             "assignments": "Assignments",
             "billingOps": "Billing ops",
-            "refunds": "Refunds",
+            "withdrawals": "Withdrawals",
             "lifecycle": "Lifecycle"
         },
         "fields": {
@@ -2333,8 +2337,8 @@
             "subtitle": "Dashboard totals from the admin metrics endpoint. Group keys come from live plan and status data.",
             "loading": "Loading metrics...",
             "refresh": "Refresh",
-            "attentionClear": "Nothing is waiting on you. No pending refunds, no unprocessed webhooks.",
-            "pendingRefunds": "Refund requests waiting for a decision",
+            "attentionClear": "Nothing pending. No withdrawals awaiting review, no unprocessed webhooks.",
+            "heldWithdrawals": "Withdrawals awaiting review",
             "unprocessedWebhooks": "Provider deliveries never processed",
             "openQueue": "Open",
             "totalUsers": "Total users",
@@ -2439,9 +2443,7 @@
             "generic": "Something went wrong. Please try again.",
             "orderNotPending": "This order has already been settled or cancelled.",
             "notFound": "We could not find that record. Check the id and try again.",
-            "refundNotPending": "This request was already decided — refresh the queue to see the current state.",
-            "refundNotEligible": "This event no longer meets the refund conditions.",
-            "orderNotRefundable": "Only the activation payment can be refunded.",
+            "withdrawalNotHeld": "This request was already decided — refresh the queue to see the current state.",
             "eventNotActive": "This event is not live, so that action does not apply.",
             "webhookAlreadyProcessed": "This webhook was already processed. Refresh the list.",
             "webhookNotReplayable": "This webhook cannot be replayed because its body was not stored.",
@@ -2590,11 +2592,11 @@
             "moduleChangeWarning": "Changing the granted module affects every event that already has this entitlement. Prefer creating a new service and archiving this one.",
             "removeAddon": {
                 "title": "Remove event entitlement",
-                "subtitle": "Post-refund correction tool. Use it to unwind an entitlement on an event that is no longer live.",
+                "subtitle": "Correction tool. Use it to unwind an entitlement on an event that is no longer live.",
                 "eventId": "Event UUID",
                 "code": "Paid service",
                 "action": "Remove add-on",
-                "activeWarning": "The backend refuses this while the event is ACTIVE. Use this only after an activation refund returns the event to draft.",
+                "activeWarning": "The backend refuses this while the event is ACTIVE. Use this only after the event is no longer live.",
                 "confirmTitle": "Remove {service} from this event?",
                 "confirmBody": "This takes {service} off {event}. The host loses whatever it granted as soon as config refreshes.",
                 "success": "The add-on was removed."
@@ -2803,55 +2805,42 @@
             "confirmSweepTitle": "Run notification sweep?",
             "confirmSweepBody": "This can create visible host notifications for quota warnings, offers, and tips. It cannot send arbitrary messages.",
             "orderIdPlaceholder": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            "orderIdSourceHint": "Copy the order ID from an unprocessed webhook below, or from the refund request for the same event — the console has no order search.",
+            "orderIdSourceHint": "Copy the order ID from an unprocessed webhook below — the console has no order search.",
             "orderIdInvalid": "That is not a valid order ID. It should look like 3fa85f64-5717-4562-b3fc-2c963f66afa6."
         },
-        "refunds": {
-            "title": "Refund requests",
-            "subtitle": "Approving refunds the payment, returns the event to draft, and takes it offline. Decide from the usage below rather than from the reason alone.",
-            "loading": "Loading requests…",
-            "empty": "No refund requests.",
-            "emptyPending": "Nothing pending. Every request has been decided.",
-            "filterPending": "Pending ({count})",
-            "filterAll": "All ({count})",
-            "guests": "Guests",
-            "hosts": "Hosts",
-            "posts": "Posts",
-            "media": "Media",
-            "storage": "Storage",
-            "paidAt": "Paid",
-            "eventWindow": "Event starts",
+        "withdrawals": {
+            "title": "Withdrawals",
+            "subtitle": "These were held for a fraud signal (or manual mode). Decide from the facts sheet, not the reason alone.",
+            "loading": "Loading withdrawals…",
+            "empty": "Nothing held for review.",
             "noAmount": "No amount recorded",
             "requestedAt": "Requested {date}",
-            "sendToLifecycle": "Freeze or purge this event",
+            "signalFired": "fired",
             "sendToAssignments": "Change this event's plan",
             "sendToPaidServices": "Remove an entitlement",
-            "notEligible": "No longer meets the refund conditions",
-            "rejectStillAvailable": "Approval is blocked, but you can still reject with a note explaining why.",
-            "notRefundedByProvider": "Approved, but the provider did not return the money. Refund it manually.",
             "noteLabel": "Decision note",
             "noteHint": "This note is sent to the host.",
-            "noteRequiredForReject": "required to reject",
-            "noteRequiredHint": "A rejection needs a note — the host is told only what you write here.",
-            "approve": "Approve",
-            "reject": "Reject",
+            "noteRequiredForWithhold": "required to withhold",
+            "noteRequiredHint": "Withholding needs a note — the host is told only what you write here.",
+            "release": "Release",
+            "withhold": "Withhold",
             "cancel": "Cancel",
             "confirmYes": "Confirm",
-            "confirmApprove": "This refunds the payment and returns the event to draft, taking it offline. Continue?",
-            "confirmReject": "The host will be told this request was rejected. Continue?",
+            "releaseConfirmTitle": "Release this withdrawal?",
+            "withholdConfirmTitle": "Withhold this withdrawal?",
+            "confirmRelease": "This refunds the request at the price computed when it was filed and takes the event offline. Continue?",
+            "confirmWithhold": "This refuses the withdrawal and suspends the host's account. Continue?",
             "status": {
-                "PENDING": "Pending",
-                "APPROVED": "Approved",
-                "REJECTED": "Rejected"
-            },
-            "approveConfirmTitle": "Approve the refund for {event}?",
-            "rejectConfirmTitle": "Reject the refund for {event}?"
+                "HELD": "Held",
+                "REFUNDED": "Refunded",
+                "WITHHELD": "Withheld"
+            }
         },
         "lifecycle": {
             "title": "Event lifecycle",
             "subtitle": "Freeze and purge both act on the event named below. Enter it once, then choose the action.",
             "resolvedEvent": "Acting on: {title}",
-            "idSourceHint": "Copy the event ID from a refund request, or ask the host for the link to their event — the console has no event search.",
+            "idSourceHint": "Copy the event ID from a withdrawal request, or ask the host for the link to their event — the console has no event search.",
             "idInvalid": "That is not a valid event ID. It should look like 3fa85f64-5717-4562-b3fc-2c963f66afa6.",
             "purgeUnverified": "This ID did not come from a console row, so nothing here confirms which event it is. Check it before purging.",
             "freezeTitle": "Freeze event",
@@ -3124,9 +3113,10 @@
         "collaborationAlreadyRedeemed": "This event already has another discount code.",
         "collaborationEarningNotPayable": "That earning cannot be marked paid.",
         "subscriptionAlreadyActive": "A subscription is already running for this event.",
-        "refundNotEligible": "This event no longer meets the refund conditions.",
-        "refundAlreadyRequested": "A refund request is already pending for this event.",
-        "orderNotRefundable": "Only the activation payment can be refunded.",
+        "eventWithdrawn": "This event's deletion can't be cancelled — it was withdrawn and closed permanently.",
+        "withdrawalTermsVersionStale": "These terms were updated. Review them again and try again.",
+        "withdrawalRefused": "This event doesn't currently qualify for a withdrawal.",
+        "withdrawalNotHeld": "This request was already decided.",
         "subscriptionNotLive": "There was no active subscription to stop - we have refreshed this page.",
         "subscriptionCancelFailed": "We couldn't stop it just now, so the subscription is still running and will still be charged. Please try again in a moment.",
         "originalsAddonNotActive": "Original downloads are not available for this event.",
@@ -3168,7 +3158,6 @@
         "webhookNotReplayable": "This webhook cannot be replayed.",
         "accountPlansDisabled": "Account plan changes are currently disabled.",
         "invitationExhausted": "This invite link is full. Ask the host to raise its guest limit or send a new link.",
-        "refundNotPending": "This refund request has already been decided.",
         "internalError": "Something went wrong on our side. Please try again.",
         "renewalAlreadyCovered": "This event is already paid up, so there's nothing to renew yet.",
         "eventScheduleLocked": "This event's schedule can no longer be changed.",

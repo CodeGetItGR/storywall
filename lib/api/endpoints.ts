@@ -100,8 +100,9 @@ export const endpoints = {
         upgradeCheckout: (eventId: string) => `/api/events/${eventId}/upgrade-checkout`,
         upgradeOptions: (eventId: string) => `/api/events/${eventId}/upgrade-options`,
         storageCheckout: (eventId: string) => `/api/events/${eventId}/storage-checkout`,
-        refundEligibility: (eventId: string) => `/api/events/${eventId}/refund-eligibility`,
-        refundRequests: (eventId: string) => `/api/events/${eventId}/refund-requests`,
+        withdrawalPreview: (eventId: string) => `/api/events/${eventId}/withdrawal-preview`,
+        // GET (history) and POST (submit) both hit this same path.
+        withdrawals: (eventId: string) => `/api/events/${eventId}/withdrawals`,
         deletionRequests: (eventId: string) => `/api/events/${eventId}/deletion-requests`,
         posts: (eventId: string) => `/api/events/${eventId}/posts`,
         stream: (eventId: string, token: string) => `/api/events/${eventId}/stream?token=${encodeURIComponent(token)}`,
@@ -258,10 +259,10 @@ export const endpoints = {
         notifications: {
             sweep: '/api/admin/notifications/sweep',
         },
-        refundRequests: {
-            list: '/api/admin/refund-requests',
-            approve: (requestId: string) => `/api/admin/refund-requests/${requestId}/approve`,
-            reject: (requestId: string) => `/api/admin/refund-requests/${requestId}/reject`,
+        withdrawals: {
+            list: '/api/admin/withdrawals',
+            release: (requestId: string) => `/api/admin/withdrawals/${requestId}/release`,
+            withhold: (requestId: string) => `/api/admin/withdrawals/${requestId}/withhold`,
         },
         planTiers: {
             list: '/api/admin/plan-tiers',

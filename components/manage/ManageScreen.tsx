@@ -35,6 +35,7 @@ export function ManageScreen() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const requestedSection = parseManageSection(searchParams.get('tab'));
+    const cancelledCheckout = searchParams.get('cancelled') === 'true';
     const isDraft = activeEvent.status === 'DRAFT';
     const activeMember = useActiveMember();
     const canDelete = isPrimaryHost(activeEvent.hosts, activeMember?.id);
@@ -113,6 +114,7 @@ export function ManageScreen() {
                         eventType={activeEvent.eventType}
                         eventStatus={activeEvent.status}
                         startAt={activeEvent.schedule.startAt}
+                        cancelledCheckout={cancelledCheckout}
                     />
                 ))}
 

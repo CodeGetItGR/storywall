@@ -233,6 +233,17 @@ export interface AppRsvpConfigDto {
     maxChildren: number;
 }
 
+// Automated right-of-withdrawal settings — billing-fe-guide.md §9. Added 2026-09-18.
+export interface AppWithdrawalConfigDto {
+    // Pass back verbatim as ActivationCheckoutRequestDto/UpgradeCheckoutRequestDto's
+    // termsVersion; a stale value is a 400 WITHDRAWAL_TERMS_VERSION_STALE.
+    termsVersion: string;
+    // Statutory withdrawal window, days after payment.
+    windowDays: number;
+    // How long a HELD withdrawal waits for an admin before it is released automatically.
+    holdDays: number;
+}
+
 export interface AppContentLimitsDto {
     postContentMaxLength: number;
     commentContentMaxLength: number;
@@ -269,6 +280,7 @@ export interface AppConfigResponseDto {
     eventTypeKeys: EventTypeConvention[];
     translations: AppTranslationsDto;
     rsvp: AppRsvpConfigDto;
+    withdrawal: AppWithdrawalConfigDto;
     contentLimits: AppContentLimitsDto;
     reactionTypesByEventType: Record<string, ReactionTypeResponseDto[]>;
     rateLimits: AppRateLimitConfigDto[];
@@ -361,7 +373,9 @@ export interface LogoutRequestDto {
 
 // Notifications are produced by backend sweeps/actions; clients can only read,
 // mark read, mark all read, and dismiss them.
-export type BillingNotificationType = 'REFUND_APPROVED' | 'REFUND_REJECTED';
+// BREAKING 2026-09-18: REFUND_APPROVED/REFUND_REJECTED replaced by the three
+// WITHDRAWAL_* types — nothing emits the old pair any more (billing-fe-guide §10).
+export type BillingNotificationType = 'WITHDRAWAL_REFUNDED' | 'WITHDRAWAL_HELD' | 'WITHDRAWAL_WITHHELD';
 
 export type NotificationCategory = 'LIMIT' | 'OFFER' | 'TIP' | 'SYSTEM' | 'BILLING' | (string & {});
 export type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
@@ -544,7 +558,20 @@ export interface CheckoutResponseDto {
     orderId: string;
     redirectUrl: string;
 }
-export interface CheckoutRequestDto {
+
+// Shared by activation and upgrade checkout — the consent Directive 2011/83/EU
+// art. 14(3)/(4)(a) requires before a paid service may begin inside the
+// withdrawal window. Both booleans MUST be sent true; termsVersion comes from
+// AppConfigResponseDto.withdrawal.termsVersion. Added 2026-09-18 — a body is now
+// required on both checkout endpoints, where none was required before.
+export interface WithdrawalConsentDto {
+    requestsImmediateStart: boolean;
+    acknowledgesWithdrawalTerms: boolean;
+    termsVersion: string;
+}
+
+// POST /api/events/{eventId}/checkout — host, DRAFT only (billing-fe-guide §6).
+export interface CheckoutRequestDto extends WithdrawalConsentDto {
     collaborationCode?: string;
 }
 export interface CollaborationCodePreviewRequestDto {
@@ -661,7 +688,8 @@ export interface MarkCollaborationEarningsPaidRequestDto {
 export interface VoidCollaborationRedemptionRequestDto {
     reason: string;
 }
-export interface UpgradeCheckoutRequestDto {
+// POST /api/events/{eventId}/upgrade-checkout — host, ACTIVE only (billing-fe-guide §7d).
+export interface UpgradeCheckoutRequestDto extends WithdrawalConsentDto {
     planTierCode: PlanTierCode;
 }
 export interface UpgradeOptionResponseDto {
@@ -676,15 +704,23 @@ export interface UpgradeOptionResponseDto {
     discountPercent?: number;
     discountLabel?: string;
 }
+export type OrderKind = 'ACTIVATION' | 'UPGRADE' | 'STORAGE_PACK';
+
 export interface OrderSummaryDto {
     id: string;
-    kind: 'ACTIVATION' | 'UPGRADE' | 'STORAGE_PACK';
+    kind: OrderKind;
     status: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED';
     amountMinor: number;
     addonAmountMinor: number | null;
     currency: string;
     paidAt: string | null;
     createdAt: string;
+    // Added 2026-09-18 — the three-line withdrawal split (billing-fe-guide.md §8/§9),
+    // summing to amountMinor. Present on every order kind but only meaningful on
+    // ACTIVATION/UPGRADE.
+    setupAmountMinor: number | null;
+    eventDayAmountMinor: number | null;
+    hostingAmountMinor: number | null;
 }
 export interface EventAddonDto {
     code: string;
@@ -705,52 +741,90 @@ export interface EventBillingResponseDto {
     orders: OrderSummaryDto[];
     addons: EventAddonDto[];
 }
-export type RefundRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
-export interface RefundEligibilityResponseDto {
-    eligible: boolean;
-    reasons: string[];
-    hasPendingRequest: boolean;
+
+// --- Withdrawal (billing-fe-guide.md §9) — replaces the old admin-approved refund flow ---
+
+export type WithdrawalStatus = 'REFUSED' | 'HELD' | 'REFUNDED' | 'WITHHELD';
+// 'PENDING' | 'APPROVED' | 'REJECTED' also exist on legacy rows migrated before this
+// flow shipped; treat any status outside the four above as read-only history, never
+// producible by a new request.
+
+export type RefundBasis = 'CONSENTED_PRO_RATA' | 'NO_CONSENT_FULL_REFUND';
+
+export interface WithdrawalRefusal {
+    code: string;
+    message: string; // show verbatim
+    detail: string | null;
 }
-export interface RefundRequestResponseDto {
+
+export interface WithdrawalLine {
+    orderId: string;
+    orderKind: OrderKind;
+    basis: RefundBasis;
+    hostingStart: string | null;
+    hostingEnd: string | null;
+    usedSeconds: number | null;
+    totalSeconds: number | null;
+    eventPerformed: boolean;
+    refundMinor: number;
+    providerRefunded: boolean;
+    components: Record<string, unknown>; // display-only breakdown; shape not enumerated by the guide
+}
+
+// GET /api/events/{eventId}/withdrawal-preview — host. Nothing persisted; safe to
+// call/poll any time the withdrawal screen is open.
+export interface WithdrawalPreviewResponseDto {
+    eligible: boolean;
+    refusals: WithdrawalRefusal[];
+    windowClosesAt: string;
+    totalRefundMinor: number;
+    currency: string;
+    lines: WithdrawalLine[];
+}
+
+// POST /api/events/{eventId}/withdrawals — host. 201 with this shape when the
+// outcome is REFUNDED or HELD; a REFUSED outcome is instead a 409
+// WITHDRAWAL_REFUSED with the standard error envelope, NOT this shape — read
+// structured refusal reasons from WithdrawalPreviewResponseDto instead.
+export interface WithdrawalResponseDto {
     id: string;
     eventId: string;
-    orderId: string;
-    status: RefundRequestStatus;
-    reason: string;
-    amountMinor: number | null;
-    currency: string | null;
-    requestedById: string;
-    requestedAt: string;
-    decidedById: string | null;
+    status: WithdrawalStatus;
+    reason: string | null;
+    createdAt: string;
     decidedAt: string | null;
     decisionNote: string | null;
-    providerRefunded: boolean;
+    holdUntil: string | null;
+    totalRefundMinor: number | null;
+    currency: string | null;
+    refusals: WithdrawalRefusal[];
+    lines: WithdrawalLine[];
 }
 
-// --- Admin billing operations (billing-fe-guide §13) ---
-
-// The refund queue row: the request plus the usage evidence an admin needs to
-// decide it. Counts include soft-deleted rows, matching the eligibility gates.
-export interface RefundRequestAdminDto {
-    request: RefundRequestResponseDto;
-    eventTitle: string;
-    eventStatus: EventStatus;
-    eventStartAt: string | null;
-    eventEndAt: string | null;
-    paidAt: string | null;
-    hostDisplayName: string | null;
-    hostEmail: string | null;
-    currentlyEligible: boolean;
-    ineligibilityReasons: string[];
-    guestCount: number;
-    hostCount: number;
-    postCount: number;
-    mediaCount: number;
-    storageBytes: number;
+export interface WithdrawalRequestDto {
+    reason?: string; // max 1000 chars, optional
 }
 
-export interface RefundDecisionRequestDto {
-    note?: string | null;
+// --- Admin withdrawal operations (billing-fe-guide §9/§13) ---
+
+export interface WithdrawalFraudSignalDto {
+    code: string;
+    fired: boolean;
+    observed: string;
+    threshold: string;
+}
+
+// GET /api/admin/withdrawals — admin. The facts sheet behind each HELD request.
+export interface WithdrawalAdminDto {
+    request: WithdrawalResponseDto;
+    usageFacts: Record<string, unknown>; // display-only; shape not enumerated by the guide
+    fraudSignals: WithdrawalFraudSignalDto[]; // every signal evaluated, fired or not — show them all
+    recommendation: string; // generated plain text, render as-is
+}
+
+// POST /api/admin/withdrawals/{id}/withhold — admin. note is required.
+export interface WithdrawalWithholdRequestDto {
+    note: string; // max 1000 chars
 }
 
 export interface PlatformMetricsResponseDto {

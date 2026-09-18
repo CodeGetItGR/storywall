@@ -75,6 +75,14 @@ export interface CreateEventFormValue {
     onCheckoutCodeChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     applyCheckoutCode: () => void;
 
+    // Withdrawal consent (required to submit)
+    requestsImmediateStart: boolean;
+    acknowledgesWithdrawalTerms: boolean;
+    staleTerms: boolean;
+    consentSatisfied: boolean;
+    onRequestsImmediateStartChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onAcknowledgesWithdrawalTermsChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+
     isSubmitPending: boolean;
     isEmailVerified: boolean;
 }

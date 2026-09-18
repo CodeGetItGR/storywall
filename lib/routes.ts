@@ -2,7 +2,7 @@ import { DEMO_EVENT_ID } from '@/lib/demo/demoConstants';
 
 type RouteQueryValue = string | number | boolean | null | undefined;
 
-export type CheckoutIntent = 'activation' | 'upgrade' | 'storage';
+export type CheckoutIntent = 'upgrade' | 'storage';
 // 'billing' is kept as an alias for the plan section so existing links keep working.
 export type ManageTab = 'billing' | 'coverage' | 'danger' | 'help' | 'members' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings';
 
@@ -38,7 +38,7 @@ export const routes = {
     profile: '/profile',
     events: {
         new: (params: { step?: string | null } = {}) => withQuery('/events/new', params),
-        manage: (eventId: string, params: { tab?: ManageTab | null; section?: string | null } = {}) =>
+        manage: (eventId: string, params: { tab?: ManageTab | null; section?: string | null; cancelled?: boolean | null } = {}) =>
             withQuery(`${eventBasePath(eventId)}/manage`, params),
         // Share/join QR link management — pulled out of the Members section the
         // same way the gallery upload code lives on its own page, linked from a
