@@ -96,6 +96,13 @@ stream.addEventListener("error", () => {
 });
 ```
 
+- The retry above covers a dropped *stream*. If the `stream-token` mint itself fails, look at
+  the status before retrying: `401`, `403` (no longer a member) and `404` (event gone) will
+  keep failing, so stop; anything else (`429` — honour `Retry-After` — `5xx`, network) is
+  transient, so retry with exponential backoff (1s, 2s, 4s… capped) rather than a fixed 1s.
+  Without that, a tab left open on an event the user was removed from hammers
+  `/stream-token` once a second indefinitely.
+
 - The server also sends a periodic **comment-only** line (an SSE heartbeat, no `event:`
   name) roughly every 20s to keep the connection alive through proxies. `EventSource`
   ignores comment lines on its own — you don't need to handle these.

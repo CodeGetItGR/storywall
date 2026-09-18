@@ -136,9 +136,10 @@ interface SessionResponseDto {
  * There is no request DTO — POST /api/notifications was removed entirely.
  */
 // NOTE: also missing EVENT_REMINDER, EVENT_SUMMARY, EVENT_AUTO_DELETE_WARNING, BILLING_EXPIRING,
-// BILLING_PAST_DUE, BILLING_PURGE_WARNING, REFUND_APPROVED, REFUND_REJECTED — see
-// billing-fe-guide.md §10, which already asked for these to be added. Pre-existing gap, not part
-// of the 2026-08-24 change below.
+// BILLING_PAST_DUE, BILLING_PURGE_WARNING, WITHDRAWAL_REFUNDED, WITHDRAWAL_HELD,
+// WITHDRAWAL_WITHHELD — see billing-fe-guide.md §10, which already asked for these to be added.
+// Pre-existing gap, not part of the 2026-08-24 change below. (REFUND_APPROVED/REFUND_REJECTED,
+// formerly listed here, are dead as of 2026-09-18 — nothing emits them any more.)
 type NotificationType =
   | 'STORAGE_LIMIT_WARNING'
   | 'MEMBER_LIMIT_WARNING'
@@ -824,6 +825,16 @@ interface AppMediaConfigDto {
 interface AppPaginationConfigDto { defaultPageSize: number; maxPageSize: number; }
 interface AppRsvpConfigDto { minAdults: number; maxAdults: number; minChildren: number; maxChildren: number; }
 
+/** Automated right-of-withdrawal settings — see fe-guides/billing-fe-guide.md §9. Added 2026-09-18. */
+interface AppWithdrawalConfigDto {
+  /** Pass back verbatim as the checkout request's `termsVersion`; a stale value is a 400. */
+  termsVersion: string;
+  /** Statutory withdrawal window, days after payment. */
+  windowDays: number;
+  /** How long a HELD withdrawal waits for an admin before it is released automatically. */
+  holdDays: number;
+}
+
 /** Server-enforced `@Size(max=...)` on free-text fields — added 2026-08-23. Mirror these in form
  *  maxLength/counters instead of hardcoding; a request over the limit is a 400 VALIDATION_FAILED. */
 interface AppContentLimitsDto {
@@ -973,6 +984,8 @@ interface AppConfigResponseDto {
   /** Budget for any endpoint not listed in `rateLimits`. Added 2026-08-23. */
   defaultRateLimit: number;
   defaultRateLimitWindowSeconds: number;
+  /** Added 2026-09-18. See fe-guides/billing-fe-guide.md §9 (withdrawal). */
+  withdrawal: AppWithdrawalConfigDto;
 }
 
 /**

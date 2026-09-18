@@ -75,7 +75,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const session = await authClient.session(controller.signal);
                 applyIfCurrent(() => (session ? setSession(session) : clearSession()));
             } catch {
-                applyIfCurrent(clearSession);
+                // authClient.session() only throws for a non-401 failure (503 from a
+                // rate-limited/unreachable Spring, a network error, or the abort
+                // above) — a real "no session" already resolved via the branch
+                // above without throwing. Only a 401 means the session is gone, so
+                // leave whatever's in the store untouched here rather than log the
+                // user out from a transient failure.
             } finally {
                 clearTimeout(timeoutId);
                 // Unlike the session verdict, this always applies: the app must
