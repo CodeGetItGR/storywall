@@ -29,14 +29,10 @@ export const routes = {
     eventNotFound: '/event-not-found',
     login: '/login',
     register: '/register',
-<<<<<<< HEAD
-    demo: '/demo/feed',
-=======
     verifyEmail: '/verify-email',
     forgotPassword: '/forgot-password',
     resetPassword: '/reset-password',
     demo: '/demo/feed',
->>>>>>> main
     invite: '/invite',
     home: '/home',
     modules: '/modules',
