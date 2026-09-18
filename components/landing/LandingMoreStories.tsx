@@ -25,7 +25,7 @@ export function LandingMoreStories({ ariaLabel, eyebrow, heading, mobileHint, st
             {/* Filmstrip */}
             <div
                 aria-label={ariaLabel}
-                className="sw-filmstrip-track ml-[calc(50%-50vw)] mr-[calc(50%-50vw)] flex h-[230px] w-screen gap-1.5 overflow-x-auto overflow-y-hidden pr-[18%] [-webkit-overflow-scrolling:touch] [scroll-snap-type:x_mandatory] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden min-[761px]:ml-0 min-[761px]:mr-0 min-[761px]:grid min-[761px]:h-[clamp(180px,17vw,255px)] min-[761px]:w-auto min-[761px]:grid-cols-5 min-[761px]:gap-[3px] min-[761px]:overflow-hidden min-[761px]:rounded-[36px_0_36px_0] min-[761px]:pr-0"
+                className="sw-filmstrip-track ml-[calc(50%-50vw)] mr-[calc(50%-50vw)] flex h-[230px] w-screen gap-1.5 overflow-x-auto overflow-y-hidden pr-[18%] [-webkit-overflow-scrolling:touch] [scroll-snap-type:x_mandatory] [scrollbar-width:none] [touch-action:pan-x] [&::-webkit-scrollbar]:hidden min-[761px]:ml-0 min-[761px]:mr-0 min-[761px]:grid min-[761px]:h-[clamp(180px,17vw,255px)] min-[761px]:w-auto min-[761px]:grid-cols-5 min-[761px]:gap-[3px] min-[761px]:overflow-hidden min-[761px]:rounded-[36px_0_36px_0] min-[761px]:pr-0"
             >
                 {stories.map((story, index) => (
                     <button
