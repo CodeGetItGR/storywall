@@ -997,7 +997,8 @@
             "members": "Members",
             "rsvp": "RSVP",
             "billing": "Billing",
-            "refund": "Refund"
+            "refund": "Refund",
+            "withdrawal": "Withdrawal"
         },
         "sectionSwitcher": "Change section",
         "stats": {
@@ -1505,6 +1506,11 @@
             "APPROVED": "Approved",
             "REJECTED": "Rejected"
         },
+        "withdrawalStatus": {
+            "HELD": "Under review",
+            "REFUNDED": "Refunded",
+            "WITHHELD": "Refused"
+        },
         "summary": {
             "DRAFT": "Not published yet. You'll pay to activate once the event dates are set.",
             "ACTIVE": "Paid and active.",
@@ -1564,6 +1570,21 @@
             "confirmSubmit": "Yes, request a refund",
             "confirmCancel": "Cancel",
             "notRefundedYet": "Approved. Your refund is being processed."
+        },
+        "withdrawal": {
+            "loading": "Checking...",
+            "eligible": "You can withdraw for a refund of {amount}.",
+            "notEligible": "Withdrawal isn't available right now.",
+            "reason": "Reason",
+            "reasonPlaceholder": "Optional note",
+            "submit": "Request withdrawal",
+            "submitting": "Submitting...",
+            "requestedNoAmount": "Amount will be set once processed.",
+            "confirmBody": "This permanently takes the event offline. Guests lose access and there is no undo.",
+            "confirmSubmit": "Yes, withdraw",
+            "confirmCancel": "Cancel",
+            "held": "Under review. We'll email you once it's decided.",
+            "refunded": "Refunded. The event has been taken offline."
         },
         "orders": {
             "title": "Order history",
