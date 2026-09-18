@@ -25,7 +25,12 @@
     background: var(--paper);
     color: var(--ink);
     font-family: Arial, Helvetica, sans-serif;
-    overflow-x: hidden;
+    /* `clip` (not `hidden`) is required here: per the CSS Overflow spec, pairing
+       overflow-x: hidden with a 'visible' overflow-y silently coerces overflow-y
+       to 'auto', turning this wrapper into its own nested scroll container
+       inside <main>'s scroll container and causing fighting/janky touch scroll
+       on mobile. `clip` is exempt from that coercion. */
+    overflow-x: clip;
 }
 .landing-page img {
     display: block;
