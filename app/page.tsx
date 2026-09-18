@@ -1,5 +1,25 @@
-import { LandingContent } from '@/components/landing';
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
-export default function Page() {
-    return <LandingContent />;
+import { LandingContent } from '@/components/landing';
+import { appConfigKeys } from '@/hooks/useAppConfig';
+import { endpoints } from '@/lib/api/endpoints';
+import { serverPublicGet } from '@/lib/api/serverFetch';
+import type { AppConfigResponseDto } from '@/lib/api/types';
+import { makeQueryClient } from '@/lib/queryClient';
+
+export default async function Page() {
+    const queryClient = makeQueryClient();
+
+    try {
+        const config = await serverPublicGet<AppConfigResponseDto>(endpoints.config.get);
+        queryClient.setQueryData(appConfigKeys.all, config);
+    } catch {
+        // Best-effort — useAppConfig() fetches normally on the client if this fails.
+    }
+
+    return (
+        <HydrationBoundary state={dehydrate(queryClient)}>
+            <LandingContent />
+        </HydrationBoundary>
+    );
 }

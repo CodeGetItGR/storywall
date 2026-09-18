@@ -22,3 +22,19 @@ export async function serverGet<T>(path: string, accessToken: string): Promise<T
 
     return res.json() as Promise<T>;
 }
+
+// Server-only: like serverGet, but for endpoints that don't require auth (e.g.
+// GET /api/config). No Authorization header is sent.
+export async function serverPublicGet<T>(path: string): Promise<T> {
+    const locale = await getServerLocale();
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+        headers: { 'Accept-Language': locale },
+        cache: 'no-store',
+    });
+
+    if (!res.ok) {
+        throw new Error(`Server prefetch failed for ${path} with status ${res.status}`);
+    }
+
+    return res.json() as Promise<T>;
+}
