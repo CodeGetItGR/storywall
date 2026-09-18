@@ -8,8 +8,7 @@ import { useApiErrorMessage, useRetryAfterCountdown } from '@/hooks/useApiErrorM
 import { useEventWithdrawals, useSubmitWithdrawal, useWithdrawalPreview } from '@/hooks/useBilling';
 
 /**
- * The withdrawal preview/history/submit state, extracted out on its own (Danger
- * zone) the same way useEventRefundFlow used to be — replaces it entirely.
+ * The withdrawal preview/history/submit state, extracted out on its own (Danger zone).
  */
 export function useEventWithdrawalFlow(eventId: string) {
     const withdrawalPreview = useWithdrawalPreview(eventId);

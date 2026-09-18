@@ -16,8 +16,6 @@ import type {
     EventAddonDto,
     EventAddonRequestDto,
     EventBillingResponseDto,
-    RefundEligibilityResponseDto,
-    RefundRequestResponseDto,
     StorageCheckoutRequestDto,
     UpgradeCheckoutRequestDto,
     UpgradeOptionResponseDto,
@@ -127,43 +125,6 @@ export function useAddEventAddon(eventId: string) {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
             queryClient.invalidateQueries({ queryKey: ['events', eventId] });
-        },
-    });
-}
-
-export function useRefundEligibility(eventId: string | null) {
-    const { isAuthenticated } = useAuth();
-
-    return useQuery({
-        queryKey: ['events', eventId, 'refund-eligibility'],
-        queryFn: () => api.get<RefundEligibilityResponseDto>(endpoints.events.refundEligibility(eventId!)),
-        enabled: Boolean(eventId) && isAuthenticated,
-    });
-}
-
-// GET /api/events/{id}/refund-requests — the host's own history. Sorted newest
-// first so the current request is [0]; without this the decision, its note and
-// `providerRefunded` would only ever be visible in the tab that submitted it.
-export function useEventRefundRequests(eventId: string | null) {
-    const { isAuthenticated } = useAuth();
-
-    return useQuery({
-        queryKey: ['events', eventId, 'refund-requests'],
-        queryFn: () => api.get<RefundRequestResponseDto[]>(endpoints.events.refundRequests(eventId!)),
-        enabled: Boolean(eventId) && isAuthenticated,
-        select: (requests) => [...requests].sort((left, right) => right.requestedAt.localeCompare(left.requestedAt)),
-    });
-}
-
-export function useRequestRefund(eventId: string) {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: (reason: string) => api.post<RefundRequestResponseDto>(endpoints.events.refundRequests(eventId), { reason }),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['events', eventId] });
-            queryClient.invalidateQueries({ queryKey: ['events', eventId, 'refund-eligibility'] });
-            queryClient.invalidateQueries({ queryKey: ['events', eventId, 'refund-requests'] });
-            queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
         },
     });
 }

@@ -41,9 +41,6 @@ import type {
     PlatformModulePatchDto,
     PlatformModuleResponseDto,
     ReactionTypeResponseDto,
-    RefundDecisionRequestDto,
-    RefundRequestAdminDto,
-    RefundRequestResponseDto,
     UnprocessedWebhookDto,
     VoidCollaborationRedemptionRequestDto,
     WithdrawalAdminDto,
@@ -58,7 +55,6 @@ export const adminKeys = {
     platformEventTypes: ['admin', 'platform-event-types'] as const,
     unprocessedWebhooks: ['admin', 'webhooks', 'unprocessed'] as const,
     notificationSweep: ['admin', 'notifications', 'sweep'] as const,
-    refundRequests: ['admin', 'refund-requests'] as const,
     withdrawals: ['admin', 'withdrawals'] as const,
     metrics: ['admin', 'metrics'] as const,
     costSummary: ['admin', 'metrics', 'cost-summary'] as const,
@@ -297,38 +293,6 @@ export function useRunNotificationSweep() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: notificationKeys.all });
             queryClient.invalidateQueries({ queryKey: notificationKeys.unreadCount });
-        },
-    });
-}
-
-// GET /api/admin/refund-requests — the queue, oldest first, each row carrying the
-// usage evidence the gates are derived from (guide §9). The counts include
-// soft-deleted rows on purpose: the bytes were stored and paid for either way.
-export function useAdminRefundRequests() {
-    return useQuery({
-        queryKey: adminKeys.refundRequests,
-        queryFn: () => api.get<RefundRequestAdminDto[]>(endpoints.admin.refundRequests.list),
-    });
-}
-
-// POST /api/admin/refund-requests/{id}/approve | /reject. Never auto-retried:
-// a silently repeated approval is a second refund (guide §11).
-export function useDecideRefundRequest() {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: ({ requestId, decision, note }: { requestId: string; decision: 'approve' | 'reject'; note?: string }) => {
-            const path =
-                decision === 'approve' ? endpoints.admin.refundRequests.approve(requestId) : endpoints.admin.refundRequests.reject(requestId);
-            const body: RefundDecisionRequestDto = { note: note?.trim() ? note.trim() : null };
-            return api.post<RefundRequestResponseDto>(path, body);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: adminKeys.refundRequests });
-            // Approval reverses the order and returns the event to DRAFT.
-            queryClient.invalidateQueries({ queryKey: ['events'] });
-            queryClient.invalidateQueries({ queryKey: ['billing'] });
-            queryClient.invalidateQueries({ queryKey: adminKeys.metrics });
         },
     });
 }

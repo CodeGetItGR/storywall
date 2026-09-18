@@ -742,55 +742,6 @@ export interface EventBillingResponseDto {
     addons: EventAddonDto[];
 }
 
-// --- Refund (legacy — superseded by the Withdrawal section below; deleted once
-// nothing references it, in the withdrawal migration's cleanup task) ---
-
-export type RefundRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
-export interface RefundEligibilityResponseDto {
-    eligible: boolean;
-    reasons: string[];
-    hasPendingRequest: boolean;
-}
-export interface RefundRequestResponseDto {
-    id: string;
-    eventId: string;
-    orderId: string;
-    status: RefundRequestStatus;
-    reason: string;
-    amountMinor: number | null;
-    currency: string | null;
-    requestedById: string;
-    requestedAt: string;
-    decidedById: string | null;
-    decidedAt: string | null;
-    decisionNote: string | null;
-    providerRefunded: boolean;
-}
-
-// The refund queue row: the request plus the usage evidence an admin needs to
-// decide it. Counts include soft-deleted rows, matching the eligibility gates.
-export interface RefundRequestAdminDto {
-    request: RefundRequestResponseDto;
-    eventTitle: string;
-    eventStatus: EventStatus;
-    eventStartAt: string | null;
-    eventEndAt: string | null;
-    paidAt: string | null;
-    hostDisplayName: string | null;
-    hostEmail: string | null;
-    currentlyEligible: boolean;
-    ineligibilityReasons: string[];
-    guestCount: number;
-    hostCount: number;
-    postCount: number;
-    mediaCount: number;
-    storageBytes: number;
-}
-
-export interface RefundDecisionRequestDto {
-    note?: string | null;
-}
-
 // --- Withdrawal (billing-fe-guide.md §9) — replaces the old admin-approved refund flow ---
 
 export type WithdrawalStatus = 'REFUSED' | 'HELD' | 'REFUNDED' | 'WITHHELD';

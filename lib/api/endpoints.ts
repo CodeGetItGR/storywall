@@ -103,8 +103,6 @@ export const endpoints = {
         withdrawalPreview: (eventId: string) => `/api/events/${eventId}/withdrawal-preview`,
         // GET (history) and POST (submit) both hit this same path.
         withdrawals: (eventId: string) => `/api/events/${eventId}/withdrawals`,
-        refundEligibility: (eventId: string) => `/api/events/${eventId}/refund-eligibility`,
-        refundRequests: (eventId: string) => `/api/events/${eventId}/refund-requests`,
         deletionRequests: (eventId: string) => `/api/events/${eventId}/deletion-requests`,
         posts: (eventId: string) => `/api/events/${eventId}/posts`,
         stream: (eventId: string, token: string) => `/api/events/${eventId}/stream?token=${encodeURIComponent(token)}`,
@@ -265,11 +263,6 @@ export const endpoints = {
             list: '/api/admin/withdrawals',
             release: (requestId: string) => `/api/admin/withdrawals/${requestId}/release`,
             withhold: (requestId: string) => `/api/admin/withdrawals/${requestId}/withhold`,
-        },
-        refundRequests: {
-            list: '/api/admin/refund-requests',
-            approve: (requestId: string) => `/api/admin/refund-requests/${requestId}/approve`,
-            reject: (requestId: string) => `/api/admin/refund-requests/${requestId}/reject`,
         },
         planTiers: {
             list: '/api/admin/plan-tiers',
