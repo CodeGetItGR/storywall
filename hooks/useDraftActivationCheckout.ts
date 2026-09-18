@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCheckout } from '@/hooks/useBilling';
+import { useResetOnBfcacheRestore } from '@/hooks/useResetOnBfcacheRestore';
 import { useWithdrawalConsent } from '@/hooks/useWithdrawalConsent';
 import type { CollaborationCodePreviewResponseDto } from '@/lib/api/types';
 import { navigateToCheckout } from '@/lib/billing';
@@ -20,6 +21,8 @@ export function useDraftActivationCheckout(eventId: string) {
     const [collaborationCode, setCollaborationCode] = useState<string | null>(null);
     const [collaborationPreview, setCollaborationPreview] = useState<CollaborationCodePreviewResponseDto | null>(null);
     const [error, setError] = useState<string | null>(null);
+
+    useResetOnBfcacheRestore(checkout.reset);
 
     const handleCollaborationPreviewChange = useCallback((nextCode: string | null, nextPreview: CollaborationCodePreviewResponseDto | null) => {
         setCollaborationCode(nextCode);

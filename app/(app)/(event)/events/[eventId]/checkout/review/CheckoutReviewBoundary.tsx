@@ -12,6 +12,7 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventBilling, useStorageCheckout, useUpgradeCheckout, useUpgradeOptions } from '@/hooks/useBilling';
 import { useEvent } from '@/hooks/useEvent';
+import { useResetOnBfcacheRestore } from '@/hooks/useResetOnBfcacheRestore';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import { formatMoney, navigateToCheckout } from '@/lib/billing';
 import { scopedPlans } from '@/lib/planTiers';
@@ -50,6 +51,13 @@ export default function CheckoutReviewBoundary() {
         void event.refetch();
         void upgradeOptions.refetch();
     }, [appConfig, billing, event, upgradeOptions]);
+
+    useResetOnBfcacheRestore(
+        useCallback(() => {
+            upgradeCheckout.reset();
+            storageCheckout.reset();
+        }, [upgradeCheckout, storageCheckout])
+    );
 
     const rawIntent = searchParams.get('intent');
     const intent = CHECKOUT_INTENTS.find((value) => value === rawIntent) ?? null;

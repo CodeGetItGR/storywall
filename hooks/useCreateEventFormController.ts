@@ -11,6 +11,7 @@ import { usePreviewCreateEventCode } from '@/hooks/useBilling';
 import { useCreateEvent } from '@/hooks/useEvent';
 import { useMe } from '@/hooks/useMe';
 import { usePlanTiersForEventType } from '@/hooks/usePlanTiersForEventType';
+import { useResetOnBfcacheRestore } from '@/hooks/useResetOnBfcacheRestore';
 import { useWithdrawalConsent } from '@/hooks/useWithdrawalConsent';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -65,6 +66,13 @@ export function useCreateEventFormController(): CreateEventFormValue {
     const [checkoutCodePreview, setCheckoutCodePreview] = useState<CollaborationCodePreviewResponseDto | null>(null);
     const [checkoutCodeError, setCheckoutCodeError] = useState<string | null>(null);
     const [isCheckoutPending, setIsCheckoutPending] = useState(false);
+
+    useResetOnBfcacheRestore(
+        useCallback(() => {
+            createEvent.reset();
+            setIsCheckoutPending(false);
+        }, [createEvent])
+    );
 
     const step = parseCreateEventStep(searchParams.get('step'));
     const eventTypes = appConfig?.eventTypes ?? [];
