@@ -12,7 +12,7 @@ export default function CheckoutCancelledPage() {
 
     useEffect(() => {
         clearPendingCheckout(eventId);
-        router.replace(routes.events.checkoutReview(eventId, 'activation', null, true));
+        router.replace(routes.events.manage(eventId, { tab: 'overview', cancelled: true }));
     }, [eventId, router]);
 
     return null;
