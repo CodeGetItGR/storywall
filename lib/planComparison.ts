@@ -1,16 +1,20 @@
 import type { PlanTierResponseDto } from '@/lib/api/types';
 
-const APPROX_IMAGE_BYTES = 4 * 1024 * 1024;
-const APPROX_VIDEO_BYTES = 90 * 1024 * 1024;
+export interface MediaEstimateConfig {
+    estimateAvgImageBytes: number;
+    estimateAvgVideoBytes: number;
+    estimateImageRatio: number;
+}
 
 export const PLAN_COMPARISON_EMPTY = '-';
 
-export function mediaEstimate(storageBytes: number | null): { images: string; videos: string } | null {
+export function mediaEstimate(storageBytes: number | null, config: MediaEstimateConfig): { images: string; videos: string } | null {
     if (storageBytes === null) return null;
-    return {
-        images: Math.max(1, Math.floor(storageBytes / APPROX_IMAGE_BYTES)).toLocaleString(),
-        videos: Math.max(1, Math.floor(storageBytes / APPROX_VIDEO_BYTES)).toLocaleString(),
-    };
+
+    const images = Math.max(1, Math.floor((storageBytes * config.estimateImageRatio) / config.estimateAvgImageBytes));
+    const videos = Math.max(1, Math.floor((storageBytes * (1 - config.estimateImageRatio)) / config.estimateAvgVideoBytes));
+
+    return { images: images.toLocaleString(), videos: videos.toLocaleString() };
 }
 
 export function formatPlanText(value: string | null): string {
