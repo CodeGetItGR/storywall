@@ -25,7 +25,7 @@ export function useWishbook(eventId: string | null) {
         queryFn: ({ pageParam }) =>
             api.get<Page<WishbookEntryResponseDto>>(`${endpoints.events.wishbook(eventId!)}?page=${pageParam}&size=${WISHBOOK_PAGE_SIZE}`),
         initialPageParam: 0,
-        getNextPageParam: (page) => (page.number + 1 < page.totalPages ? page.number + 1 : undefined),
+        getNextPageParam: (page) => (page.page.number + 1 < page.page.totalPages ? page.page.number + 1 : undefined),
         enabled: Boolean(eventId) && isAuthenticated,
     });
 }

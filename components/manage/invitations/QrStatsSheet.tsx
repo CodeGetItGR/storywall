@@ -23,6 +23,7 @@ export function QrStatsSheet({
     onRaiseLimitAction: () => void;
 }) {
     const t = useTranslations('ManagePage');
+    const tGlobal = useTranslations();
     const remainingSlots = stats.remainingSlots ?? null;
     const isLowOnSlots = remainingSlots !== null && remainingSlots <= 5;
 
@@ -31,7 +32,7 @@ export function QrStatsSheet({
             <Modal.Body className="px-5 pt-6 pb-5">
                 <div className="pr-8">
                     <p className="text-base font-bold text-ink">{t('qr.stats.title')}</p>
-                    <p className="mt-1 truncate text-sm text-ink-muted">{qrLink.label || t('qr.untitled')}</p>
+                    <p className="mt-1 truncate text-sm text-ink-muted">{qrLink.labelKey ? tGlobal(qrLink.labelKey) : qrLink.label || t('qr.untitled')}</p>
                 </div>
 
                 <div className="mt-5 divide-y divide-border rounded-lg border border-border bg-card">

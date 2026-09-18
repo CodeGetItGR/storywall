@@ -4,6 +4,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { usePathname } from 'next/navigation';
 import { ReactNode, useState } from 'react';
 
+import { useVisualViewportSync } from '@/hooks/useVisualViewportSync';
 import { makeQueryClient } from '@/lib/queryClient';
 import { AppConfigBootstrap } from '@/providers/AppConfigBootstrap';
 import { AuthProvider } from '@/providers/AuthProvider';
@@ -14,6 +15,7 @@ import { MobileChromeProvider } from '@/providers/MobileChromeProvider';
 import { ModalProvider } from '@/providers/ModalProvider';
 
 export function Providers({ children }: { children: ReactNode }) {
+    useVisualViewportSync();
     const [queryClient] = useState(makeQueryClient);
     const pathname = usePathname();
     // /demo mounts its own ComposerProvider, scoped to its fake event context (see

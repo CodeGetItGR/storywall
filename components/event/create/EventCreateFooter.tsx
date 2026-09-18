@@ -3,32 +3,23 @@
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-type CreateEventStep = 'type' | 'plan' | 'details' | 'overview';
+import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
-export function EventCreateFooter({
-    step,
-    formId,
-    canContinueType,
-    canContinue,
-    isPending,
-    hasDraft,
-    canSubmitDetails,
-    onGoToTypeAction,
-    onGoToDetailsAction,
-    onGoToPlanAction,
-}: {
-    step: CreateEventStep;
-    formId: string;
-    canContinueType: boolean;
-    canContinue: boolean;
-    isPending: boolean;
-    hasDraft: boolean;
-    canSubmitDetails: boolean;
-    onGoToTypeAction: () => void;
-    onGoToDetailsAction: () => void;
-    onGoToPlanAction: () => void;
-}) {
+export function EventCreateFooter() {
     const t = useTranslations('CreateEventPage');
+    const {
+        step,
+        formId,
+        canContinueType,
+        canContinuePlan,
+        isSubmitPending,
+        canSubmitDetails,
+        isEmailVerified,
+        consentSatisfied,
+        goToType,
+        goToDetails,
+        goToPlan,
+    } = useCreateEventForm();
 
     return (
         <footer className="shrink-0 border-t border-border/60 bg-background">
@@ -38,7 +29,7 @@ export function EventCreateFooter({
                         <button
                             type="button"
                             disabled={!canContinueType}
-                            onClick={onGoToPlanAction}
+                            onClick={goToPlan}
                             className="min-h-11 rounded-full bg-gradient-brand px-5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             {t('continueToPlan')}
@@ -50,15 +41,15 @@ export function EventCreateFooter({
                     <div className="flex gap-3">
                         <button
                             type="button"
-                            onClick={onGoToTypeAction}
+                            onClick={goToType}
                             className="min-h-11 flex-1 rounded-full border border-border text-sm font-semibold text-ink"
                         >
                             {t('actions.back')}
                         </button>
                         <button
                             type="button"
-                            disabled={!canContinue}
-                            onClick={onGoToDetailsAction}
+                            disabled={!canContinuePlan}
+                            onClick={goToDetails}
                             className="min-h-11 flex-2 rounded-full bg-gradient-brand text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             {t('continueToDetails')}
@@ -70,7 +61,7 @@ export function EventCreateFooter({
                     <div className="flex gap-3">
                         <button
                             type="button"
-                            onClick={onGoToPlanAction}
+                            onClick={goToPlan}
                             className="min-h-11 flex-1 rounded-full border border-border text-sm font-semibold text-ink"
                         >
                             {t('actions.back')}
@@ -90,8 +81,8 @@ export function EventCreateFooter({
                     <div className="flex gap-3">
                         <button
                             type="button"
-                            onClick={onGoToDetailsAction}
-                            disabled={isPending}
+                            onClick={goToDetails}
+                            disabled={isSubmitPending}
                             className="min-h-11 flex-1 rounded-full border border-border text-sm font-semibold text-ink"
                         >
                             {t('actions.back')}
@@ -99,16 +90,10 @@ export function EventCreateFooter({
                         <button
                             form={formId}
                             type="submit"
-                            disabled={isPending}
+                            disabled={isSubmitPending || !isEmailVerified || !consentSatisfied}
                             className="flex min-h-11 flex-2 items-center justify-center gap-2 rounded-full bg-gradient-brand text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
                         >
-                            {isPending ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : hasDraft ? (
-                                t('paidModules.openSetup')
-                            ) : (
-                                t('submitAndPay')
-                            )}
+                            {isSubmitPending ? <Loader2 className="h-4 w-4 animate-spin" /> : t('submitAndPay')}
                         </button>
                     </div>
                 )}

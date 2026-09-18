@@ -1,10 +1,10 @@
 'use client';
 
 import { ChevronRight } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { HomeNextEventCountdown } from '@/components/home/HomeNextEventCountdown';
 import type { EventGridItem } from '@/hooks/useEventGridItems';
 import { useRecentEventItems } from '@/hooks/useEventGridItems';
@@ -37,7 +37,7 @@ export function HomeNextEventCard({ items }: { items: EventGridItem[] }) {
             >
                 {event.coverMedia?.mediaUrl && (
                     <div className="relative aspect-video w-full overflow-hidden bg-surface-muted">
-                        <Image
+                        <ProtectedImage
                             src={event.coverMedia.mediaUrl}
                             alt=""
                             fill

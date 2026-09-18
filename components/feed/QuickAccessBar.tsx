@@ -53,6 +53,7 @@ export function QuickAccessBar() {
             .map((module) => {
                 const item = quickAccessItems.find((entry) => entry.moduleKey === module.moduleKey && entry.visible);
                 if (item?.key === 'gifts' && !giftsVisibleToCurrentMember) return null;
+                if (item?.key === 'gallery' && !isHost) return null;
                 return item && availableModules.has(item.moduleKey) ? item : null;
             })
             .filter((item): item is QuickAccessItem => !!item);

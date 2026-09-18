@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
-import type { QrLinkPatchDto, QrLinkRequestDto, QrLinkResolutionDto, QrLinkResponseDto, QrLinkStatsDto } from '@/lib/api/types';
+import type { QrLinkPatchDto, QrLinkResolutionDto, QrLinkResponseDto, QrLinkStatsDto } from '@/lib/api/types';
 
 export const qrLinkKeys = {
     list: (eventId: string) => ['events', eventId, 'qr-links'] as const,
@@ -46,18 +46,6 @@ export function useEventQrLinkStats(eventId: string | null) {
         },
         enabled: Boolean(eventId) && isAuthenticated,
         refetchInterval: 30_000,
-    });
-}
-
-export function useCreateQrLink(eventId: string) {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: (input: QrLinkRequestDto) => api.post<QrLinkResponseDto>(endpoints.events.qrLinks(eventId), input),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: qrLinkKeys.list(eventId) });
-            queryClient.invalidateQueries({ queryKey: qrLinkKeys.stats(eventId) });
-        },
     });
 }
 

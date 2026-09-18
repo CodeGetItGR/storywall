@@ -1,29 +1,35 @@
 import { ReactNode } from 'react';
 
 import { Logo } from '@/components/common/Logo';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 interface AuthLayoutProps {
     children: ReactNode;
+    showLanguageSwitcher?: boolean;
 }
 
-export function AuthLayout({ children }: AuthLayoutProps) {
+export function AuthLayout({ children, showLanguageSwitcher = false }: AuthLayoutProps) {
     return (
-        <div className="min-h-dvh bg-background flex flex-col justify-center lg:h-screen lg:flex-row lg:justify-start max-lg:bg-gradient-brand">
-            {/* Brand panel */}
-            <div className="relative flex shrink-0 items-center justify-center overflow-hidden py-10 lg:py-0 lg:w-1/2 lg:h-screen lg:bg-gradient-brand">
+        <div className="h-full overflow-y-auto bg-surface-muted/30">
+            <div className="relative flex min-h-full flex-col justify-center items-center lg:h-full">
+                {/* Brand panel */}
+                <div className="relative flex shrink-0 items-center justify-center overflow-hidden py-5 lg:w-1/2 lg:py-0">
+                    <Logo
+                        direction="col"
+                        iconClassName="h-16 w-auto sm:h-18 lg:h-22"
+                        wordmarkClassName="h-9 w-auto sm:h-10 lg:h-12"
+                        className="relative"
+                    />
+                </div>
 
-                <Logo
-                    direction="col"
-                    iconClassName="h-12 w-auto sm:h-14 lg:h-20"
-                    wordmarkClassName="h-8 w-auto sm:h-9 lg:h-11 brightness-0 invert"
-                    className="relative"
-                />
-            </div>
+                {/* Language selection */}
+                {showLanguageSwitcher && <LanguageSwitcher variant="auth" className={'mx-auto mt-5'}/>}
 
-            {/* Form panel */}
-            <div className="flex flex-col items-center justify-center px-6 py-10 lg:w-1/2 lg:py-12">
-                <div className="w-full max-w-sm rounded-3xl bg-card p-6 shadow-xl shadow-black/10 lg:rounded-none lg:bg-transparent lg:p-0 lg:shadow-none">
-                    {children}
+                {/* Form panel */}
+                <div className="flex flex-col items-center justify-center gap-3">
+                    <div className="w-full max-w-sm rounded-3xl bg-card p-5 shadow-xl shadow-black/10">
+                        {children}
+                    </div>
                 </div>
             </div>
         </div>

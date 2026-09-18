@@ -12,6 +12,7 @@ import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthPageRedirect } from '@/hooks/useAuthPageRedirect';
+import { AUTH_RETURN_PATH_PARAM, getPostAuthRedirectPath, getSafeReturnPath } from '@/lib/auth/returnPath';
 import { routes } from '@/lib/routes';
 
 export default function RegisterPage() {
@@ -19,9 +20,10 @@ export default function RegisterPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const inviteToken = searchParams.get('invite');
+    const returnPath = getSafeReturnPath(searchParams.get(AUTH_RETURN_PATH_PARAM));
 
     const { register, oauth } = useAuth();
-    const { shouldRenderAuthPage } = useAuthPageRedirect();
+    const { shouldRenderAuthPage } = useAuthPageRedirect(returnPath);
     const toErrorMessage = useApiErrorMessage();
 
     const [showPw, setShowPw] = useState(false);
@@ -39,7 +41,7 @@ export default function RegisterPage() {
 
         try {
             const auth = await register({ email, password, firstName, lastName, inviteToken: inviteToken ?? undefined });
-            router.replace(auth.role === 'ADMIN' ? routes.admin : routes.feed);
+            router.replace(getPostAuthRedirectPath(auth.role, returnPath));
         } catch (err) {
             setError(toErrorMessage(err));
         } finally {
@@ -51,9 +53,9 @@ export default function RegisterPage() {
         async (provider: 'GOOGLE' | 'APPLE', idToken: string) => {
             setError(null);
             const auth = await oauth(provider, { idToken, inviteToken: inviteToken ?? undefined });
-            router.replace(auth.role === 'ADMIN' ? routes.admin : routes.feed);
+            router.replace(getPostAuthRedirectPath(auth.role, returnPath));
         },
-        [oauth, inviteToken, router]
+        [inviteToken, oauth, returnPath, router]
     );
 
     const handleOAuthError = useCallback(
@@ -88,14 +90,14 @@ export default function RegisterPage() {
     }
 
     return (
-        <AuthLayout>
+        <AuthLayout showLanguageSwitcher>
             <h2 className="text-2xl font-bold text-ink mb-1">{t('title')}</h2>
             <p className="text-sm text-ink-muted mb-7">{t('subtitle')}</p>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 <div className="grid grid-cols-2 gap-3">
                     <FormFieldLabel label={t('fields.firstName')} required>
-                        <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
+                        <div className="flex items-center gap-3 bg-surface-muted/70 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
                             <User className="w-4 h-4 text-ink-muted shrink-0" />
                             <input
                                 type="text"
@@ -109,7 +111,7 @@ export default function RegisterPage() {
                     </FormFieldLabel>
 
                     <FormFieldLabel label={t('fields.lastName')} required>
-                        <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
+                        <div className="flex items-center gap-3 bg-surface-muted/70 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
                             <input
                                 type="text"
                                 placeholder={t('placeholders.lastName')}
@@ -123,7 +125,7 @@ export default function RegisterPage() {
                 </div>
 
                 <FormFieldLabel label={t('fields.email')} required>
-                    <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
+                    <div className="flex items-center gap-3 bg-surface-muted/70 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
                         <Mail className="w-4 h-4 text-ink-muted shrink-0" />
                         <input
                             type="email"
@@ -137,7 +139,7 @@ export default function RegisterPage() {
                 </FormFieldLabel>
 
                 <FormFieldLabel label={t('fields.password')} required>
-                    <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
+                    <div className="flex items-center gap-3 bg-surface-muted/70 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
                         <Lock className="w-4 h-4 text-ink-muted shrink-0" />
                         <input
                             type={showPw ? 'text' : 'password'}
@@ -190,10 +192,7 @@ export default function RegisterPage() {
 
             <p className="text-xs text-center text-ink-muted mt-6">
                 {t('haveAccount')}{' '}
-                <Link
-                    href={inviteToken ? routes.auth.login({ invite: inviteToken }) : routes.login}
-                    className="font-semibold text-ink hover:underline"
-                >
+                <Link href={routes.auth.login({ invite: inviteToken, next: returnPath })} className="font-semibold text-ink hover:underline">
                     {t('signInLink')}
                 </Link>
             </p>

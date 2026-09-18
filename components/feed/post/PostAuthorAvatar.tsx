@@ -22,7 +22,7 @@ export function PostAuthorAvatar({
     return (
         <section className="flex items-center gap-3 group">
             {/* Author marker */}
-            {isHostPost && (
+            {isHostPost ? (
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-logo p-0.5" role="img" aria-label={name}>
                     <div className="flex h-full w-full items-center justify-center rounded-full bg-background p-0.5">
                         <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-logo">
@@ -30,8 +30,8 @@ export function PostAuthorAvatar({
                         </div>
                     </div>
                 </div>
-            )}
-            <Avatar src={avatarUrl} initials={getInitials(name)} size="md" alt={name} />
+            ) : <Avatar src={avatarUrl} initials={getInitials(name)} size="md" alt={name} />}
+
             {/* Author details */}
             <div>
                 <p className="text-sm font-semibold text-ink leading-tight">{name}</p>

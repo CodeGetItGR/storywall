@@ -1,46 +1,43 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import type { ChangeEvent } from 'react';
 
 import { EventTimezoneField } from '@/components/event/create/EventTimezoneField';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useCreateEventFieldLabels } from '@/hooks/useCreateEventFieldLabels';
 import { useEventTypeVoice } from '@/hooks/useEventTypeVoice';
-import type { EventTypeConvention } from '@/lib/api/types';
+import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
-type EventDetailsStepProps = {
-    eventType: EventTypeConvention;
-    title: string;
-    titleError?: string | null;
-    startAt: string;
-    scheduleError?: string | null;
-    startAtMin: string;
-    timezone: string;
-    timezoneError?: string | null;
-    timezoneOptions: string[];
-    onTitleChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
-    onStartAtChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
-    onTimezoneChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
-};
-
-export function EventDetailsStep({
-    eventType,
-    title,
-    titleError,
-    startAt,
-    scheduleError,
-    startAtMin,
-    timezone,
-    timezoneError,
-    timezoneOptions,
-    onTitleChangeAction,
-    onStartAtChangeAction,
-    onTimezoneChangeAction,
-}: EventDetailsStepProps) {
+export function EventDetailsStep() {
     const t = useTranslations('CreateEventPage');
-    const voice = useEventTypeVoice(eventType);
-    const labels = useCreateEventFieldLabels(eventType);
+    const {
+        selectedEventType,
+        title,
+        titleError,
+        onTitleChange,
+        startAt,
+        scheduleError,
+        startAtMin,
+        startAtMax,
+        onStartAtChange,
+        endAt,
+        endAtMin,
+        onEndAtChange,
+        timezone,
+        timezoneError,
+        timezoneOptions,
+        onTimezoneChange,
+        locationName,
+        locationNameError,
+        onLocationNameChange,
+        locationAddress,
+        locationAddressError,
+        onLocationAddressChange,
+        mapsUrl,
+        onMapsUrlChange,
+    } = useCreateEventForm();
+    const voice = useEventTypeVoice(selectedEventType);
+    const labels = useCreateEventFieldLabels(selectedEventType);
 
     return (
         <div className="flex h-full flex-col gap-4">
@@ -51,7 +48,7 @@ export function EventDetailsStep({
                         type="text"
                         required
                         value={title}
-                        onChange={onTitleChangeAction}
+                        onChange={onTitleChange}
                         placeholder={voice.titlePlaceholder}
                         className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
                     />
@@ -64,8 +61,20 @@ export function EventDetailsStep({
                         type="datetime-local"
                         required
                         value={startAt}
-                        onChange={onStartAtChangeAction}
+                        onChange={onStartAtChange}
                         min={startAtMin}
+                        max={startAtMax}
+                        className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
+                    />
+                </FormFieldLabel>
+
+                <FormFieldLabel label={t('fields.endAt')} required>
+                    <input
+                        type="datetime-local"
+                        required
+                        value={endAt}
+                        onChange={onEndAtChange}
+                        min={endAtMin}
                         className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
                     />
                 </FormFieldLabel>
@@ -77,8 +86,43 @@ export function EventDetailsStep({
                     value={timezone}
                     options={timezoneOptions}
                     error={timezoneError}
-                    onChangeAction={onTimezoneChangeAction}
+                    onChangeAction={onTimezoneChange}
                 />
+
+                {/* Location */}
+                <div className="grid gap-3 sm:grid-cols-2">
+                    <FormFieldLabel label={t('fields.locationName')} required>
+                        <input
+                            type="text"
+                            required
+                            value={locationName}
+                            onChange={onLocationNameChange}
+                            className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
+                        />
+                        {locationNameError && <span className="text-xs text-rose-500">{locationNameError}</span>}
+                    </FormFieldLabel>
+                    <FormFieldLabel label={t('fields.locationAddress')} required>
+                        <input
+                            type="text"
+                            required
+                            value={locationAddress}
+                            onChange={onLocationAddressChange}
+                            placeholder={t('placeholders.locationAddress')}
+                            className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
+                        />
+                        {locationAddressError && <span className="text-xs text-rose-500">{locationAddressError}</span>}
+                    </FormFieldLabel>
+                </div>
+                <FormFieldLabel label={t('fields.mapsUrl')} optional>
+                    <input
+                        type="url"
+                        value={mapsUrl}
+                        onChange={onMapsUrlChange}
+                        placeholder={t('placeholders.mapsUrl')}
+                        className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
+                    />
+                </FormFieldLabel>
+
                 {/* Creation Hint */}
                 <p className="pt-1 text-xs leading-relaxed text-ink-muted">{t('detailsHint')}</p>
             </div>

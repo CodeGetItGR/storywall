@@ -69,9 +69,12 @@ a concern of the full paginated endpoint only.
 
 ### `recentComments` uses the plain `CommentResponseDto` shape
 
-Same shape as `GET /api/posts/{postId}/comments` — `authorMemberId` only, no embedded display
-name or avatar. Resolve author info for these the same way you already do for the full thread
-(e.g. from a cached event-members list).
+Same shape as `GET /api/posts/{postId}/comments` — `authorMemberId` plus a nested `author`
+object (name, nickname, role, avatar — 2026-09-15, replaces the earlier `authorAvatarUrl`-only
+field). See
+[`comment-story-author-fe-integration.md`](comment-story-author-fe-integration.md) for the
+full shape; render the name and avatar directly from `comment.author`, no separate lookup
+needed.
 
 ## What it does *not* give you
 

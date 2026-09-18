@@ -2,10 +2,10 @@
 
 import { type SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
-import { useDeleteStory, useEventMembers, useEventStories, useMarkStoryViewed, useMediaItem, useStory } from '@/hooks';
+import { useDeleteStory, useEventStories, useMarkStoryViewed, useMediaItem, useStory } from '@/hooks';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import { ApiError } from '@/lib/api/client';
-import type { EventMemberResponseDto, MediaResponseDto, StoryResponseDto } from '@/lib/api/types';
+import type { AuthorDto, MediaResponseDto, StoryResponseDto } from '@/lib/api/types';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { findAdjacentGroup, groupStoriesByAuthor, type StoryGroup } from '@/lib/stories';
 import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
@@ -29,7 +29,7 @@ export interface StoryModalController {
     group: StoryGroup | null;
     storyIndex: number;
     media: MediaResponseDto | undefined;
-    author: EventMemberResponseDto | undefined;
+    author: AuthorDto | null;
     progress: number;
     showMenu: boolean;
     showDeleteConfirm: boolean;
@@ -76,7 +76,6 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
     const { data: allStories = [] } = useEventStories(eventId);
     const activeStory = story ?? allStories.find((item) => item.id === currentStoryId) ?? null;
     const { data: media } = useMediaItem(activeStory?.mediaId ?? null);
-    const { data: members = [] } = useEventMembers(eventId);
     const markViewed = useMarkStoryViewed();
     const deleteStory = useDeleteStory(eventId ?? '');
 
@@ -103,8 +102,7 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
         }
     }
 
-    const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
-    const author = activeStory?.authorMemberId ? membersById.get(activeStory.authorMemberId) : undefined;
+    const author = activeStory?.author ?? null;
     const canWrite = isEventWritable(activeEvent?.status);
     const canManage = Boolean(activeStory && activeMember && (activeMember.id === activeStory.authorMemberId || isHost));
     const canDeleteStory = canManage && canWrite;

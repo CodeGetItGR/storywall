@@ -7,6 +7,7 @@ import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCreateCoHostInvitation } from '@/hooks/useEventInvitations';
 import { getFieldErrors } from '@/lib/api/errors';
+import { datetimeLocalValueToIso } from '@/lib/datetime';
 
 import { fieldControlClass, fieldLabelClass, fieldTextClass, formPanelClass } from './shared';
 
@@ -24,7 +25,7 @@ export function CreateCoHostInvitationForm({ eventId, onDoneAction }: { eventId:
                 email: String(data.get('email') ?? '').trim(),
                 firstName: String(data.get('firstName') ?? '').trim() || undefined,
                 lastName: String(data.get('lastName') ?? '').trim() || undefined,
-                expiresAt: String(data.get('expiresAt') ?? '') || undefined,
+                expiresAt: datetimeLocalValueToIso(String(data.get('expiresAt') ?? '')) ?? undefined,
             });
             onDoneAction();
         } catch {

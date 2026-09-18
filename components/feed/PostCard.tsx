@@ -5,11 +5,20 @@ import { useTranslations } from 'next-intl';
 import React, { useMemo, useState } from 'react';
 
 import { MediaThumbnail } from '@/components/common/MediaThumbnail';
-import { CommentsList, EditPostModal, PostActionsMenu, PostAuthorAvatar, PostMediaViewer, PostReactionPicker, ReactionSummary } from '@/components/feed/post';
-import Badge from '@/components/ui/badge';
+import {
+    CommentsList,
+    EditPostModal,
+    PostActionsMenu,
+    PostAuthorAvatar,
+    PostMediaViewer,
+    PostReactionPicker,
+    ReactionSummary,
+} from '@/components/feed/post';
+import { ReportTargetModal } from '@/components/reports';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { useAppConfig, useDeletePost, useEventMembers, usePostModal, useUpdatePost } from '@/hooks';
+import { useAppConfig, useDeletePost, usePostModal, useUpdatePost } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import type { PostResponseDto } from '@/lib/api/types';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { cn, timeAgoParts } from '@/lib/utils';
@@ -29,6 +38,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const [deleteError, setDeleteError] = useState<string | null>(null);
     const [editOpen, setEditOpen] = useState(false);
     const [pinError, setPinError] = useState<string | null>(null);
+    const [reportOpen, setReportOpen] = useState(false);
 
     const authorName = post.author?.displayName ?? t('unknownAuthor');
     const timeAgo = useMemo(() => timeAgoParts(post.createdAt), [post.createdAt]);
@@ -37,9 +47,8 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
 
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
+    const memberAvatarUrl = useMemberAvatarUrl();
     const { data: appConfig } = useAppConfig();
-    const { data: members = [] } = useEventMembers(post.eventId);
-    const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
     const isHost = useIsHost();
     const toErrorMessage = useApiErrorMessage();
     const deletePost = useDeletePost(post.eventId);
@@ -47,6 +56,9 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const canWrite = isEventWritable(activeEvent?.status);
     const isMyPost = activeMember?.id !== undefined && post.authorMemberId === activeMember.id;
     const canManagePost = isMyPost && canWrite;
+    const canReportPost = Boolean(
+        activeMember && post.authorMemberId && !isMyPost && !isHostPost && canWrite && appConfig?.reportTargetTypes?.includes('POST')
+    );
     const canTogglePin = isHost && canWrite;
     const showHostPostBadge = isHostPost && !isHost;
     const reactionTypes = appConfig?.reactionTypesByEventType[post.eventType ?? activeEvent?.eventType ?? ''] ?? [];
@@ -83,6 +95,14 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
         setEditOpen(false);
     }
 
+    function handleOpenReport() {
+        if (canReportPost) setReportOpen(true);
+    }
+
+    function handleCloseReport() {
+        setReportOpen(false);
+    }
+
     async function handleTogglePin() {
         if (!canTogglePin || updatePost.isPending) return;
 
@@ -115,9 +135,8 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     return (
         <article className={cn('relative border-b border-border/60 bg-card/60', showHostPostBadge && 'pt-3 sm:pt-0 sm:pr-3')}>
             <div className="flex items-center justify-between px-2 pt-4 pb-3">
-                <PostAuthorAvatar avatarUrl={post.author?.avatarUrl} name={authorName} timeAgo={timeAgo} isHostPost={showHostPostBadge} />
+                <PostAuthorAvatar avatarUrl={memberAvatarUrl(post.authorMemberId, post.author?.avatarUrl)} name={authorName} timeAgo={timeAgo} isHostPost={showHostPostBadge} />
                 <div className="relative flex items-center gap-1">
-                    {showHostPostBadge && <Badge variant="primary">{t('hostPost')}</Badge>}
                     {canTogglePin ? (
                         <button
                             type="button"
@@ -142,15 +161,17 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                         )
                     )}
                     {pinError && <p className="absolute right-0 top-full mt-1 w-48 text-right text-xs text-destructive">{pinError}</p>}
-                    {canManagePost && (
+                    {(canManagePost || canReportPost) && (
                         <PostActionsMenu
-                            deleteLabel={t('deletePost')}
+                            deleteLabel={canManagePost ? t('deletePost') : undefined}
                             disabled={deletePost.isPending}
                             isDeleting={deletePost.isPending}
                             moreLabel={t('moreOptions')}
-                            onDeleteAction={handleDeleteRequest}
-                            editLabel={t('editPost')}
-                            onEditAction={handleEditRequest}
+                            onDeleteAction={canManagePost ? handleDeleteRequest : undefined}
+                            editLabel={canManagePost ? t('editPost') : undefined}
+                            onEditAction={canManagePost ? handleEditRequest : undefined}
+                            reportLabel={t('reportPost')}
+                            onReportAction={canReportPost ? handleOpenReport : undefined}
                         />
                     )}
                 </div>
@@ -162,6 +183,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                 </div>
             )}
 
+            {/* Post media */}
             {media.length === 1 && (
                 <button
                     type="button"
@@ -193,7 +215,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                             onContextMenu={preventMediaContextMenu}
                             data-index={i}
                             aria-label={t('viewMediaAt', { index: i + 1, count: media.length, name: authorName })}
-                            className="relative block aspect-square overflow-hidden"
+                            className={cn('relative block aspect-square overflow-hidden', media.length === 3 && i === 2 && 'col-span-2 aspect-[2/1]')}
                         >
                             <MediaThumbnail
                                 src={item.mediaUrl}
@@ -203,7 +225,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                                 alt={t('mediaBy', { name: authorName })}
                                 fill
                                 className="object-cover"
-                                sizes="(max-width: 768px) 50vw, 340px"
+                                sizes={media.length === 3 && i === 2 ? '(max-width: 768px) 100vw, 680px' : '(max-width: 768px) 50vw, 340px'}
                                 loading={isLcpCandidate && i === 0 ? 'eager' : 'lazy'}
                             />
                             {i === 3 && media.length > 4 && (
@@ -245,7 +267,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
             {/* Comment preview */}
             {post.commentCount > 0 && (
                 <div className="border-t border-border/50 px-4 pb-4 pt-3">
-                    <CommentsList comments={post.recentComments} membersById={membersById} compact />
+                    <CommentsList comments={post.recentComments} compact />
                     {post.commentCount > post.recentComments.length && (
                         <button
                             type="button"
@@ -288,6 +310,18 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
 
             {/* Edit post */}
             {editOpen && <EditPostModal post={post} open={editOpen} onCloseAction={handleCloseEdit} />}
+
+            {/* Report post */}
+            {reportOpen && (
+                <ReportTargetModal
+                    open
+                    eventId={post.eventId}
+                    targetType="POST"
+                    targetId={post.id}
+                    targetName={authorName}
+                    onCloseAction={handleCloseReport}
+                />
+            )}
         </article>
     );
 }

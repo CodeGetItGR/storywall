@@ -1,0 +1,3 @@
+- Add desktop "+" composer button, similar to the mobile version, to create a new post / story / music suggestion.
+- RSVP reports don't look good.
+- When scanning a gallery QR code, the user should be prompted to directly upload media to the gallery (without requiring login).

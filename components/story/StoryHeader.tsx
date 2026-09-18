@@ -5,12 +5,14 @@ import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
 import Avatar from '@/components/ui/avatar';
+import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import { cn } from '@/lib/utils';
 import { avatarColorFromId, initialsFromName } from '@/lib/utils';
 
 interface StoryHeaderProps {
     authorName: string;
     authorId: string;
+    avatarUrl?: string | null;
     timeStr: string;
     tone?: 'dark' | 'light';
     canManage: boolean;
@@ -26,6 +28,7 @@ interface StoryHeaderProps {
 export function StoryHeader({
     authorName,
     authorId,
+    avatarUrl,
     timeStr,
     tone = 'dark',
     canManage,
@@ -38,6 +41,7 @@ export function StoryHeader({
     showAvatar
 }: StoryHeaderProps) {
     const t = useTranslations('StoryPage');
+    const memberAvatarUrl = useMemberAvatarUrl();
     const isLight = tone === 'light';
 
     return (
@@ -46,6 +50,7 @@ export function StoryHeader({
                 <div className="flex items-center gap-2.5">
                     {showAvatar && (leadingVisual ?? (
                         <Avatar
+                            src={memberAvatarUrl(authorId, avatarUrl)}
                             initials={initialsFromName(authorName)}
                             color={avatarColorFromId(authorId)}
                             size="sm"

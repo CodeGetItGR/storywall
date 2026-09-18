@@ -26,12 +26,12 @@ describe('useStoryFilterSwipe', () => {
         expect(result.current.visibleName).toBeNull();
     });
 
-    it('previews the next preset with live progress while dragging left', () => {
+    it('previews the next preset with live progress while dragging right', () => {
         const { result } = renderHook(() => useStoryFilterSwipe(['original', 'warm', 'noir']));
 
         act(() => {
-            result.current.handlers.onPointerDown(fakePointerEvent(200));
-            result.current.handlers.onPointerMove(fakePointerEvent(170));
+            result.current.handlers.onPointerDown(fakePointerEvent(170));
+            result.current.handlers.onPointerMove(fakePointerEvent(200));
         });
 
         expect(result.current.targetIndex).toBe(1);
@@ -40,13 +40,13 @@ describe('useStoryFilterSwipe', () => {
         expect(result.current.currentIndex).toBe(0);
     });
 
-    it('previews the previous preset while dragging right', () => {
+    it('previews the previous preset while dragging left', () => {
         const { result } = renderHook(() => useStoryFilterSwipe(['original', 'warm', 'noir']));
         act(() => result.current.setIndex(2));
 
         act(() => {
-            result.current.handlers.onPointerDown(fakePointerEvent(100));
-            result.current.handlers.onPointerMove(fakePointerEvent(130));
+            result.current.handlers.onPointerDown(fakePointerEvent(130));
+            result.current.handlers.onPointerMove(fakePointerEvent(100));
         });
 
         expect(result.current.targetIndex).toBe(1);
@@ -55,9 +55,9 @@ describe('useStoryFilterSwipe', () => {
     it('commits to the target once dragged past the halfway point and released', () => {
         const { result } = renderHook(() => useStoryFilterSwipe(['original', 'warm', 'noir']));
 
-        act(() => result.current.handlers.onPointerDown(fakePointerEvent(200)));
-        act(() => result.current.handlers.onPointerMove(fakePointerEvent(130))); // 70px, > 60px (half of 120px)
-        act(() => result.current.handlers.onPointerUp(fakePointerEvent(130)));
+        act(() => result.current.handlers.onPointerDown(fakePointerEvent(130)));
+        act(() => result.current.handlers.onPointerMove(fakePointerEvent(200))); // 70px, > 60px (half of 120px)
+        act(() => result.current.handlers.onPointerUp(fakePointerEvent(200)));
 
         expect(result.current.currentIndex).toBe(1);
         expect(result.current.targetIndex).toBeNull();
@@ -67,9 +67,9 @@ describe('useStoryFilterSwipe', () => {
     it('snaps back without changing index if released before the halfway point', () => {
         const { result } = renderHook(() => useStoryFilterSwipe(['original', 'warm', 'noir']));
 
-        act(() => result.current.handlers.onPointerDown(fakePointerEvent(200)));
-        act(() => result.current.handlers.onPointerMove(fakePointerEvent(180))); // 20px, < 60px
-        act(() => result.current.handlers.onPointerUp(fakePointerEvent(180)));
+        act(() => result.current.handlers.onPointerDown(fakePointerEvent(180)));
+        act(() => result.current.handlers.onPointerMove(fakePointerEvent(200))); // 20px, < 60px
+        act(() => result.current.handlers.onPointerUp(fakePointerEvent(200)));
 
         expect(result.current.currentIndex).toBe(0);
         expect(result.current.targetIndex).toBeNull();
@@ -81,8 +81,8 @@ describe('useStoryFilterSwipe', () => {
         act(() => result.current.setIndex(2));
 
         act(() => {
-            result.current.handlers.onPointerDown(fakePointerEvent(200));
-            result.current.handlers.onPointerMove(fakePointerEvent(50));
+            result.current.handlers.onPointerDown(fakePointerEvent(50));
+            result.current.handlers.onPointerMove(fakePointerEvent(200));
         });
 
         expect(result.current.targetIndex).toBeNull();
@@ -93,8 +93,8 @@ describe('useStoryFilterSwipe', () => {
         const { result } = renderHook(() => useStoryFilterSwipe(['original', 'warm', 'noir']));
 
         act(() => {
-            result.current.handlers.onPointerDown(fakePointerEvent(100));
-            result.current.handlers.onPointerMove(fakePointerEvent(250));
+            result.current.handlers.onPointerDown(fakePointerEvent(250));
+            result.current.handlers.onPointerMove(fakePointerEvent(100));
         });
 
         expect(result.current.targetIndex).toBeNull();

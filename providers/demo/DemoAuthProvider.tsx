@@ -24,6 +24,7 @@ export function DemoAuthProvider({ children }: { children: ReactNode }) {
                     status: 'ACTIVE',
                     createdAt: new Date().toISOString(),
                     role: 'USER',
+                    emailVerified: true,
                 },
                 isAuthenticated: true,
                 isBootstrapping: false,

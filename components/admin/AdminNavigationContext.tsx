@@ -1,14 +1,27 @@
 'use client';
 
-import { BarChart3, Boxes, CalendarDays, Grid3X3, Handshake, Layers3, type LucideIcon, PackagePlus, Receipt, Shield, Smile, Tag, TicketPercent, Undo2 } from 'lucide-react';
+import {
+    BarChart3,
+    CalendarDays,
+    ChartNoAxesCombined,
+    Handshake,
+    Layers3,
+    type LucideIcon,
+    PackagePlus,
+    Receipt,
+    Shield,
+    Smile,
+    Tag,
+    TicketPercent,
+    Undo2,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 export type AdminTab =
     | 'metrics'
+    | 'costTracking'
     | 'eventPlans'
-    | 'planAvailability'
-    | 'planModules'
     | 'paidServices'
     | 'discountCodes'
     | 'collaborations'
@@ -17,7 +30,7 @@ export type AdminTab =
     | 'reactionTypes'
     | 'assignments'
     | 'billingOps'
-    | 'refunds';
+    | 'withdrawals';
 
 export type AdminTabItem = {
     key: AdminTab;
@@ -37,9 +50,8 @@ export type AdminFocus = {
 
 const HASH_TO_TAB: Record<string, AdminTab> = {
     '#metrics': 'metrics',
+    '#cost-tracking': 'costTracking',
     '#event-plans': 'eventPlans',
-    '#plan-availability': 'planAvailability',
-    '#plan-modules': 'planModules',
     '#paid-services': 'paidServices',
     '#discount-codes': 'discountCodes',
     '#collaborations': 'collaborations',
@@ -48,14 +60,13 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#reaction-types': 'reactionTypes',
     '#assignments': 'assignments',
     '#billing-ops': 'billingOps',
-    '#refunds': 'refunds',
+    '#withdrawals': 'withdrawals',
 };
 
 const TAB_TO_HASH: Record<AdminTab, string> = {
     metrics: '#metrics',
+    costTracking: '#cost-tracking',
     eventPlans: '#event-plans',
-    planAvailability: '#plan-availability',
-    planModules: '#plan-modules',
     paidServices: '#paid-services',
     discountCodes: '#discount-codes',
     collaborations: '#collaborations',
@@ -64,7 +75,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     reactionTypes: '#reaction-types',
     assignments: '#assignments',
     billingOps: '#billing-ops',
-    refunds: '#refunds',
+    withdrawals: '#withdrawals',
 };
 
 const AdminNavigationContext = createContext<
@@ -121,9 +132,8 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
     const tabs = useMemo<AdminTabItem[]>(
         () => [
             { key: 'metrics', label: t('metrics'), icon: BarChart3 },
+            { key: 'costTracking', label: t('costTracking'), icon: ChartNoAxesCombined },
             { key: 'eventPlans', label: t('eventPlans'), icon: CalendarDays },
-            { key: 'planAvailability', label: t('planAvailability'), icon: Grid3X3 },
-            { key: 'planModules', label: t('planModules'), icon: Boxes },
             { key: 'paidServices', label: t('paidServices'), icon: PackagePlus },
             { key: 'discountCodes', label: t('discountCodes'), icon: TicketPercent },
             { key: 'collaborations', label: t('collaborations'), icon: Handshake },
@@ -132,7 +142,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'reactionTypes', label: t('reactionTypes'), icon: Smile },
             { key: 'assignments', label: t('assignments'), icon: Layers3 },
             { key: 'billingOps', label: t('billingOps'), icon: Receipt },
-            { key: 'refunds', label: t('refunds'), icon: Undo2 },
+            { key: 'withdrawals', label: t('withdrawals'), icon: Undo2 },
         ],
         [t]
     );

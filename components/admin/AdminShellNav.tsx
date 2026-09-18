@@ -9,9 +9,8 @@ import { cn } from '@/lib/utils';
 
 const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operations'> = {
     metrics: 'overview',
+    costTracking: 'overview',
     eventPlans: 'catalog',
-    planAvailability: 'catalog',
-    planModules: 'catalog',
     paidServices: 'catalog',
     discountCodes: 'marketing',
     collaborations: 'operations',
@@ -20,7 +19,7 @@ const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operat
     reactionTypes: 'catalog',
     assignments: 'operations',
     billingOps: 'operations',
-    refunds: 'operations',
+    withdrawals: 'operations',
 };
 const GROUP_ORDER = ['overview', 'catalog', 'marketing', 'operations'] as const;
 

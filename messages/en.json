@@ -2968,7 +2968,11 @@
         "invalidEventType": "Choose a valid event type.",
         "invalidPlanTierScope": "That restriction only applies to event plans.",
         "eventDeleteNotPrimaryHost": "Only the event's original host can delete it.",
-        "eventDeleteAlreadyPending": "This event already has a deletion scheduled."
+        "eventDeleteAlreadyPending": "This event already has a deletion scheduled.",
+        "eventHostDisplayOrderReserved": "The primary host position is reserved.",
+        "eventHostPrimaryCannotBeRemoved": "Transfer ownership before removing the primary host.",
+        "eventHostTransferNotPrimaryHost": "Only the primary host can transfer ownership.",
+        "qrMediaUploadDisabled": "The QR upload link is turned off for this event's gallery."
     },
     "LandingPage": {
         "hero": {

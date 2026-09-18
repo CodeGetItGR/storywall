@@ -47,6 +47,13 @@ Authorization: Bearer {accessToken}
       "id": "e7a1...uuid",
       "postId": "f1a2...uuid",
       "authorMemberId": "b3f1...uuid",
+      "author": {
+        "memberId": "b3f1...uuid",
+        "displayName": "Jamie Rivera",
+        "nickname": "Maid of Honour",
+        "role": "ATTENDEE",
+        "avatarUrl": "https://...presigned..."
+      },
       "parentCommentId": null,
       "content": "Congrats!!",
       "createdAt": "2026-07-31T18:10:00Z",
@@ -57,6 +64,13 @@ Authorization: Bearer {accessToken}
       "id": "e7a2...uuid",
       "postId": "f1a2...uuid",
       "authorMemberId": "c4e5...uuid",
+      "author": {
+        "memberId": "c4e5...uuid",
+        "displayName": "Alex Chen",
+        "nickname": null,
+        "role": "ATTENDEE",
+        "avatarUrl": null
+      },
       "parentCommentId": "e7a1...uuid",
       "content": "Thank you!",
       "createdAt": "2026-07-31T18:12:00Z",
@@ -70,6 +84,10 @@ Authorization: Bearer {accessToken}
   "size": 30
 }
 ```
+
+`author` (2026-09-15) replaces the previous `authorAvatarUrl`-only field with the full name
+shape — see
+[`comment-story-author-fe-integration.md`](comment-story-author-fe-integration.md) for details.
 
 Same `Page<T>` envelope as the post feed — see
 [`post-feed-fe-integration.md`](post-feed-fe-integration.md#pagination-ui) for the

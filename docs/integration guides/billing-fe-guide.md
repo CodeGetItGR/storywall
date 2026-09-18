@@ -91,7 +91,7 @@ and `app-config-fe-integration.md` for the rest of `GET /api/config`.
 7c. [Module unlocks](#7c-module-unlocks)
 7d. [Upgrading plan tier](#7d-upgrading-plan-tier)
 8. [The billing read endpoint](#8-the-billing-read-endpoint)
-9. [Refunds](#9-refunds)
+9. [Withdrawal](#9-withdrawal)
 10. [Notifications](#10-notifications)
 11. [Rate limiting and the 429](#11-rate-limiting-and-the-429)
 12. [Error codes, all of them](#12-error-codes-all-of-them)
@@ -169,6 +169,7 @@ account plans are disabled (§13, Assignment). Filter a pricing page by `scope =
 
   "storageBytes": 1073741824,
   "maxMembers": 20,
+  "autoDeleteMonths": 3,               // null = never auto-deleted
 
   "priceAmountMinor": 10000,          // one-time activation charge — 100.00 EUR
   "priceCurrency": "EUR",             // uppercase ISO 4217
@@ -214,6 +215,19 @@ plan.storageBytes === null ? 'Unlimited storage' : `${formatBytes(plan.storageBy
 ```
 
 An uncapped enterprise plan is a real, intended shape — not missing data.
+
+### `autoDeleteMonths` — how long an event's content survives after it ends
+
+`EVENT`-scope only (always `null` on `ACCOUNT` plans). When set, an event on this plan is
+soft-deleted `autoDeleteMonths` months after its `endAt` — the exact same lifecycle as a
+host-requested deletion (§ the delete-event flow): undoable while soft-deleted, hard-purged after
+`app.billing.event-retention-days`. `null` means the plan never auto-deletes its events.
+
+The host gets two warning notifications before it happens — 7 days out and 1 day out — carrying
+`NotificationType: 'EVENT_AUTO_DELETE_WARNING'`, so this is not a silent deletion. Render it on a
+pricing page as e.g. *"Photos kept for 3 months after your event"*; a `null` value should read as
+"kept indefinitely" or be omitted from the row entirely, matching the `storageBytes`/`maxMembers`
+null-handling above.
 
 ### `code` is not a fixed union
 
@@ -407,29 +421,46 @@ Drafts are the host's private workspace: excluded from `GET /api/events` for eve
 cannot be invited, every module reports unavailable. Show them in a clearly separate "not published
 yet" section rather than mixed into the event list.
 
-### Step 2 — `startAt` is required at checkout; `endAt` stays optional
+### Step 2 — `startAt` and `endAt` are both required at checkout
 
-`startAt` is required from creation onward. `endAt` is optional throughout — this is a one-time
-payment with no billing period tied to it, so there's nothing that needs an end date to be priced.
-If an `endAt` is given, though, it still has to make sense. Rejected with `400
+Both are required from creation onward, and `endAt` must be after `startAt`. Rejected with `400
 EVENT_DATES_INCOMPLETE`:
 
 - `startAt` missing
+- `endAt` missing
 - `endAt <= startAt` (also enforced on `PATCH /api/events/{id}`)
 
-Gate the "Pay and publish" button on `startAt` being set (and, if `endAt` is set, on it being after
-`startAt`), and explain why — otherwise the 400 arrives at the worst possible moment.
+Gate the "Pay and publish" button on both dates being set and `endAt` being after `startAt`, and
+explain why — otherwise the 400 arrives at the worst possible moment.
 
 ### Step 3 — opening checkout
 
 ```http
 POST /api/events/{eventId}/checkout
 Authorization: Bearer <jwt>
+Content-Type: application/json
+
+{
+  "collaborationCode": "BARNVENUE",              // optional, max 40 chars
+  "requestsImmediateStart": true,                // required, must be true
+  "acknowledgesWithdrawalTerms": true,            // required, must be true
+  "termsVersion": "2026-09-17"                    // required — from GET /api/config's withdrawal.termsVersion
+}
 ```
 
-**No request body at all.** The plan, price and currency come from rows on the server; there is
-nothing for a client to pass and therefore nothing to tamper with. Host-only (co-hosts count; `403`
-otherwise). Rate limited to 10/min.
+**A body is required as of 2026-09.** `requestsImmediateStart` and `acknowledgesWithdrawalTerms` are
+the express request and acknowledgement Directive 2011/83/EU art. 14(3)/(4)(a) require before a paid
+service may begin inside the statutory withdrawal window — both must be sent as `true` or the request
+is rejected with `400 VALIDATION_FAILED`. `termsVersion` ties the acknowledgement to the wording the
+host actually saw; source it from `GET /api/config`'s `withdrawal.termsVersion` (§14) and show that
+wording (or a link to it) before the host confirms. Host-only (co-hosts count; `403` otherwise). Rate
+limited to 10/min.
+
+**A stale `termsVersion` is refused, not silently accepted.** If the terms changed since the client
+last fetched `/api/config` (e.g. a long-lived tab), the server answers `400
+WITHDRAWAL_TERMS_VERSION_STALE` (5072) naming the version now in force. Reload `/api/config` and
+re-show the current wording before letting the host retry — do not silently resubmit with the old
+version, and do not loop.
 
 ```jsonc
 // 200
@@ -442,19 +473,17 @@ otherwise). Rate limited to 10/min.
 Then `window.location.href = redirectUrl`. **Do not open it in an iframe or a popup** — the hosted
 page sets frame-ancestor headers, and 3DS/SCA needs a real top-level navigation.
 
-Calling it twice is safe: our order id is also the provider's idempotency key, so a retry returns the
-same session rather than opening a second one. Still disable the button while the request is in
-flight.
+Calling it twice (with the same consent) is safe: our order id is also the provider's idempotency
+key, so a retry returns the same session rather than opening a second one. Still disable the button
+while the request is in flight.
 
-**Tax and consent are not handled by this platform today — flag before launch, not FE work by
-itself.** Automatic VAT/sales tax (Stripe Tax) is off by default (`BillingProperties.automaticTax`);
-switching it on is a backend + Stripe-account config change (jurisdictions must be registered on the
-Stripe account first), not something the FE can turn on. Turning it on also makes Stripe collect a
-billing address on the hosted page, which changes that page's shape but not anything the FE calls.
-Separately, the app records no explicit consent/ToS acceptance of its own before opening a recurring
-checkout — only whatever Stripe's hosted page itself shows. If either becomes a compliance
-requirement for the markets you launch into, it needs a product decision and backend work before FE
-has anything to build against; this note exists so it isn't discovered at launch.
+**Tax is not handled by this platform today — flag before launch, not FE work by itself.** Automatic
+VAT/sales tax (Stripe Tax) is off by default (`BillingProperties.automaticTax`); switching it on is a
+backend + Stripe-account config change (jurisdictions must be registered on the Stripe account first),
+not something the FE can turn on. Turning it on also makes Stripe collect a billing address on the
+hosted page, which changes that page's shape but not anything the FE calls. If this becomes a
+compliance requirement for the markets you launch into, it needs a product decision and backend work
+before FE has anything to build against; this note exists so it isn't discovered at launch.
 
 ### Step 4 — the two return routes you must implement
 
@@ -841,12 +870,18 @@ isn't folded into activation and isn't a flat fixed price.
 
 ```http
 POST /api/events/{eventId}/upgrade-checkout
-{ "planTierCode": "PRO" }
+{
+  "planTierCode": "PRO",
+  "requestsImmediateStart": true,
+  "acknowledgesWithdrawalTerms": true,
+  "termsVersion": "2026-09-17"
+}
 ```
 
-Host-only, same response shape (`{ orderId, redirectUrl }`) and same two return routes as activation
-(§6 steps 3–5) — poll `GET /api/events/{id}/billing` and watch the order, same as every other
-checkout here.
+Same consent fields as activation (§6 step 3) — an upgrade is a new paid service and the withdrawal
+window reopens on it. Host-only, same response shape (`{ orderId, redirectUrl }`) and same two return
+routes as activation (§6 steps 3–5) — poll `GET /api/events/{id}/billing` and watch the order, same
+as every other checkout here.
 
 **`ACTIVE`-only.** A `DRAFT` event hasn't paid anything yet, so there's no "upgrade" to speak of —
 `409 EVENT_NOT_ACTIVE` (5014); use activation (§6) instead, with the target plan chosen up front.
@@ -895,7 +930,8 @@ One read, everything about the event's money. This is what the plan-settings pag
   "orders": [                              // newest first; every order ever placed on this event
     { "id": "…", "kind": "ACTIVATION", "status": "PAID",
       "amountMinor": 4900, "addonAmountMinor": null,
-      "currency": "EUR", "paidAt": "…", "createdAt": "…" }
+      "currency": "EUR", "paidAt": "…", "createdAt": "…",
+      "setupAmountMinor": 245, "eventDayAmountMinor": 2940, "hostingAmountMinor": 1715 }
   ],
   "addons": [                              // entitlements the event owns — see §7a
     { "code": "ORIGINALS", "name": "Keep Originals", "priceAmountMinor": 500,
@@ -922,169 +958,168 @@ show it on this settings page so a host who redeemed a code once doesn't have to
 It also silently carries over to any future upgrade (§7d) — the `discount` block does not change when
 an upgrade settles, because the code is bound to the event, not to one order.
 
+**`setupAmountMinor` / `eventDayAmountMinor` / `hostingAmountMinor` (added 2026-09-18) are the
+three-line withdrawal split**, snapshotted on the order at checkout time and summing to
+`amountMinor`. They exist on every order, but only carry meaning on `ACTIVATION` and `UPGRADE` —
+they are the same lines a withdrawal computation refunds from (§9). Not worth rendering on this
+screen by themselves; they matter once a withdrawal is in play.
+
 ---
 
-## 9. Refunds
+## 9. Withdrawal
 
-A refund is **requested**, not taken. There is no endpoint that moves money on a host's say-so.
+The old admin-approved, all-or-nothing "refund request" is gone. Withdrawal is fully automated: the
+host asks, the server computes exactly what is owed under Directive 2011/83/EU and either refunds it
+immediately or holds the request for a human when a fraud signal fires. There is no `DRAFT` return
+path any more — withdrawing is **terminal**.
 
 ```
-host clicks "Request a refund"
+host opens withdrawal-preview  ──►  shows eligibility + exact amount, nothing persisted
         │
-        ├─ server checks four gates ──► fails ──► 409 REFUND_NOT_ELIGIBLE, with reasons
+host confirms POST /withdrawals
+        │
+        ├─ refused at the gate ──► 409 WITHDRAWAL_REFUSED, event untouched
         ▼
-   PENDING request ──► admin reviews the queue
-        │                        ├─ approve ──► money back + event → DRAFT + host notified
-        │                        └─ reject  ──► nothing changes + host notified
-        ▼
-   host sees status on the event's billing page
+   computed + fraud-checked
+        │
+        ├─ clean ──► REFUNDED immediately: money back per line, event soft-deleted
+        └─ flagged ──► HELD for an admin (or always, in MANUAL mode) — released or withheld
+                        within 10 days, auto-released if nobody acts
 ```
 
-### The four gates
+### The price split and what each line does
 
-An activation payment is refundable only while **all four** hold:
+Every `ACTIVATION`/`UPGRADE` order is split into three lines at checkout (§8): **setup** (non-
+refundable once the host asked for immediate start — C-641/19), **event-day** (retained once the
+event has actually taken place), and **hosting** (refunded pro rata for the time between payment and
+withdrawal against the event's retention window). A host who never gave consent — which cannot
+currently happen through this API, since `requestsImmediateStart`/`acknowledgesWithdrawalTerms` are
+mandatory on checkout (§6) — would be entitled to a full refund of everything (art. 14(4)(a)); this
+case is theoretical today, not something the FE needs to branch on.
 
-| gate | fails when |
-|---|---|
-| nobody but the host joined | any non-host member has ever existed, *including ones since removed* |
-| no content exists | any post or media has ever existed, *including soft-deleted ones* |
-| the refund window is open | more than 14 days (configurable) since the payment settled |
-| the event has not started | `startAt` is in the past |
+### `GET /api/events/{eventId}/withdrawal-preview` — host
 
-The "including deleted" part is deliberate and worth surfacing if a host asks: the bytes were stored
-and paid for whether or not they are still visible, so deleting a gallery does not make an event
-refundable again.
-
-**Only the `ACTIVATION` order can be requested for refund.** Approving one also reverses any settled
-`UPGRADE` order on the event (§7d) as part of the same decision — the host gets both back. A
-`STORAGE_PACK` order is never reversed by this flow, refund or not (§7b); the storage grant is final.
-
-### What approval does to the event
-
-The event goes back to `DRAFT`. It disappears from guests, becomes unpublished, and needs a fresh
-activation payment to come back. **Your confirmation dialog must say this plainly** — "your event
-will be taken offline and returned to draft" — because it is not what "refund" implies on its own.
-
-### `GET /api/events/{eventId}/refund-eligibility` — host
-
-Call it when the billing page loads. It decides whether you render the button at all.
+Call it when the withdrawal screen loads. Safe to call any time — **nothing is persisted**, so poll
+it freely as the host reads the confirmation dialog.
 
 ```jsonc
 {
-  "eligible": false,
-  "reasons": [
-    "3 people have already joined this event.",
-    "Content has already been added to this event."
-  ],
-  "hasPendingRequest": false
+  "eligible": true,
+  "refusals": [],                     // [{ code, message, detail }] when eligible is false
+  "windowClosesAt": "2026-09-24T09:14:22Z",
+  "totalRefundMinor": 3965,
+  "currency": "EUR",
+  "lines": [
+    { "orderId": "…", "orderKind": "ACTIVATION", "basis": "CONSENTED_PRO_RATA",
+      "hostingStart": "…", "hostingEnd": "…", "usedSeconds": 432000, "totalSeconds": 2592000,
+      "eventPerformed": false, "refundMinor": 3965, "providerRefunded": false,
+      "components": { "setup": { /* … */ }, "eventDay": { /* … */ }, "hosting": { /* … */ } } }
+  ]
 }
 ```
 
-- `reasons` are written to be shown to the host **verbatim**. They state facts about the host's own
-  event that they can check themselves. Do not paraphrase them into "not eligible".
-- **Every** failing reason is returned, not the first. A host who clears one obstacle and is then
-  told about a second reads it as the platform inventing obstacles — show the whole list at once.
-- `hasPendingRequest` is separate from `eligible` on purpose: a host with a request in flight should
-  see "we're looking at it", not the gates.
+- `refusals[].message` is written to be shown to the host verbatim, same convention as the old
+  eligibility reasons.
+- `lines` covers every order a withdrawal would touch — the activation and any settled upgrade — one
+  line each, each with its own `components` breakdown (JSON, shape-stable but not enumerated here;
+  treat it as display-only detail, not something to recompute from).
 
-Advisory only; everything is re-checked when a request is actually made.
-
-| state | show |
-|---|---|
-| `hasPendingRequest: true` | "Refund request under review" + the pending request |
-| `eligible: true` | the "Request a refund" button |
-| `eligible: false` | the button **disabled**, with `reasons` as the explanation — hiding it entirely just produces a support ticket |
-
-### `POST /api/events/{eventId}/refund-requests` — host
+### `POST /api/events/{eventId}/withdrawals` — host
 
 ```jsonc
-{ "reason": "I created this event by mistake and haven't used it." }
+// body optional
+{ "reason": "Our venue cancelled and we can't reschedule in time." }
 ```
 
-`reason` is **required**, non-blank, max 1000 chars. Stored verbatim and the first thing the admin
-reads — make it a textarea with a real prompt, not an afterthought. Rate limited to **5 per hour per
-user**. Returns a `RefundRequestResponse` (§14).
+`reason` is optional (unlike the old mandatory refund reason), max 1000 chars. Rate limited to **5
+per hour per user**, same budget as before.
 
-### `GET /api/events/{eventId}/refund-requests` — host
+Returns **201** with a `WithdrawalResponseDto` when the outcome is `REFUNDED` or `HELD`. When the
+request is refused at the gate, the server answers **409 `WITHDRAWAL_REFUSED`** (5073) with the
+standard error envelope — `detail` is the joined refusal messages — **not** the
+`WithdrawalResponseDto` body; a persisted `REFUSED` row still exists for the audit trail, but this
+endpoint doesn't hand it back on the 409. If you need the structured reasons for the confirmation UI,
+read them from the preview call instead of this response.
 
-The event's request history, newest first. Drives the "under review" panel and shows a past rejection
-with the admin's note.
+```jsonc
+// 201 — REFUNDED
+{
+  "id": "…", "eventId": "…", "status": "REFUNDED", "reason": "…",
+  "createdAt": "…", "decidedAt": null, "decisionNote": null, "holdUntil": null,
+  "totalRefundMinor": 3965, "currency": "EUR",
+  "refusals": [], "lines": [ /* same shape as the preview's lines */ ]
+}
+```
 
-### `GET /api/admin/refund-requests` — admin
+```jsonc
+// 201 — HELD
+{
+  "id": "…", "eventId": "…", "status": "HELD", "reason": "…",
+  "createdAt": "…", "decidedAt": null, "decisionNote": null,
+  "holdUntil": "2026-09-27T00:00:00Z",
+  "totalRefundMinor": 3965, "currency": "EUR",
+  "refusals": [], "lines": [ /* … */ ]
+}
+```
 
-The queue, oldest first, **with the usage evidence behind each request**. This is what the admin
-refund screen is built on.
+**Terminal on success.** A `REFUNDED` withdrawal soft-deletes the event in the same call: `GET
+/api/events/{eventId}` starts 404ing for non-hosts, and the host's own event list should show a
+"withdrawn" state with a download-only link to gallery and wishbook for `eventRetentionDays` (from
+`GET /api/config`) days — there is no "undo" or "restore to draft" any more. Attempting to cancel a
+pending deletion on a withdrawn event is refused with `409 EVENT_WITHDRAWN` (5071).
+
+A `HELD` withdrawal changes nothing yet — the event stays exactly as it was while an admin (or the
+10-day auto-release) decides it.
+
+### `GET /api/events/{eventId}/withdrawals` — host
+
+The event's withdrawal history, newest first — every attempt, including refused ones. Drives a
+"withdrawal history" panel the same way the old refund-request history did.
+
+### `GET /api/admin/withdrawals` — admin
+
+The queue of `HELD` requests, each with the full facts sheet the automated decision was based on —
+this is what the admin review screen is built on.
 
 ```jsonc
 [
   {
-    "request": { /* RefundRequestResponse — §14 */ },
-
-    "eventTitle": "Anna & Nik's Wedding",
-    "eventStatus": "ACTIVE",
-    "eventStartAt": "2026-09-12T16:00:00Z",
-    "eventEndAt": "2026-09-13T02:00:00Z",
-    "paidAt": "2026-08-05T09:14:22Z",
-
-    "hostDisplayName": "Nikos P.",
-    "hostEmail": "nikos@example.com",
-
-    "currentlyEligible": true,
-    "ineligibilityReasons": [],
-
-    "guestCount": 0,
-    "hostCount": 1,
-    "postCount": 0,
-    "mediaCount": 0,
-    "storageBytes": 0
+    "request": { /* WithdrawalResponseDto — status "HELD" */ },
+    "usageFacts": { /* the UsageFacts the computation ran on — display-only, not enumerated here */ },
+    "fraudSignals": [
+      { "code": "NEW_ACCOUNT_FAST_WITHDRAWAL", "fired": true,
+        "observed": "account 3 days old, withdrawn 1 day after payment", "threshold": "≥7 / ≥3" }
+    ],
+    "recommendation": "Two signals fired: a new account withdrew fast, and this host has a prior "
+                     + "withdrawal on file. Review before releasing."
   }
 ]
 ```
 
-**Why these fields exist.** The server enforces the gates on approval regardless — but "the server
-will stop you" is not the same as "you can tell whether to say yes". The gates are four crude proxies
-for *did this host get what they paid for*, and the admin's actual job is the cases the gates cannot
-see: an event created by mistake, a duplicate payment, the wrong tier bought. Deciding that from a
-request id and a paragraph of free text means clicking approve and hoping.
+Every signal the computation evaluated is listed, fired or not — build the screen to show the whole
+list, same convention as the old gate reasons: an admin who only sees the signals that fired can't
+tell whether the others were even checked. `recommendation` is generated plain text meant to be read
+as-is, not parsed.
 
-So build the screen around the evidence, not the buttons:
+### `POST /api/admin/withdrawals/{requestId}/release` — admin
 
-- Put `guestCount` / `postCount` / `mediaCount` / `storageBytes` where they are read **before** the
-  approve button, not in a collapsed panel.
-- The counts include soft-deleted rows, matching the gates exactly. A host who uploaded fifty photos
-  and deleted them shows as `mediaCount: 50` — that is the point.
-- `currentlyEligible: false` means **approving will be refused** with a `409`. Disable approve and
-  show `ineligibilityReasons`. This happens when an event is used while its request sits in the
-  queue.
-- `hostEmail` is here because deciding a refund usually means contacting the host first. Admin-only;
-  it never appears on the host-facing shape.
-- **Reject stays available when `currentlyEligible` is false** — that is exactly when it is used.
+No body. Refunds the request exactly as it was computed at request time (prices are not
+re-calculated against today's date) and deletes the event, same outcome as an automatic `REFUNDED`.
+Refused with `409 WITHDRAWAL_NOT_HELD` (5074) if the request isn't currently `HELD` — a double-click
+or a stale queue; refetch.
 
-### `POST /api/admin/refund-requests/{requestId}/approve` — admin
+### `POST /api/admin/withdrawals/{requestId}/withhold` — admin
 
 ```jsonc
-// body optional
-{ "note": "Duplicate payment — refunded the second charge." }
+{ "note": "Event has already taken place; withdrawal window closed before this was filed." }
 ```
 
-`note` is optional, max 1000 chars, and **is shown to the host** in their notification. Label the
-field accordingly ("this note is sent to the host").
+`note` is **required**, max 1000 chars, and is shown to the host verbatim as the reason their
+withdrawal was refused. Withholding also **suspends the host's account** — this is not a soft
+decline, treat the confirmation dialog accordingly. Same `409 WITHDRAWAL_NOT_HELD` (5074) guard as
+release.
 
-Approving, in order: asks the provider to reverse the charge → reverses the order so it stops
-counting as coverage → returns the event to `DRAFT` → notifies the host.
-
-**Watch `providerRefunded` in the response.** `false` on an approved request means **no money
-actually moved** and somebody has to return it by hand — the manual provider has no charge to
-reverse, and a provider call can fail. Surface it as a warning row in the decided list, not as a
-silent field.
-
-### `POST /api/admin/refund-requests/{requestId}/reject` — admin
-
-Same body. Nothing about the order or the event changes; the note is the entire outcome and is what
-the host is owed by way of an answer. Treat it as effectively required in your UI even though the
-server allows null.
-
-Both decision endpoints are rate limited to **30/min per admin**, shared with `POST /orders/{id}/settle`.
+Both admin endpoints are rate limited to **30/min per admin**, shared with `POST /orders/{id}/settle`.
 
 ---
 
@@ -1103,37 +1138,43 @@ and every one carries `ctaTarget: "EVENT_PLAN_SETTINGS"` with `ctaParams: { even
 are deleted from `NotificationType` — there is nothing left for a scheduled sweep to warn a host
 about, since activation never lapses. Remove any handling for these three types.
 
-### Refund decisions — produced by the admin's action
+### Withdrawal outcomes (added 2026-09-18)
+
+**`REFUND_APPROVED`/`REFUND_REJECTED` are gone from active use** — nothing emits them any more now
+that admin-approved refunds have been fully replaced by automated withdrawal (§9). They are still
+listed in `NotificationType` on the backend so historical rows keep reading, but no new one is ever
+produced; remove any handling that expects to see them going forward.
 
 | `type` | severity | when |
 |---|---|---|
-| `REFUND_APPROVED` | `CRITICAL` | the refund went through and the event returned to `DRAFT` |
-| `REFUND_REJECTED` | `INFO` | the request was declined |
+| `WITHDRAWAL_REFUNDED` | `CRITICAL` | the withdrawal was executed: money is on its way back and the event is soft-deleted |
+| `WITHDRAWAL_HELD` | `INFO` | a fraud signal fired (or the platform is in `MANUAL` mode); an admin will decide within 10 days |
+| `WITHDRAWAL_WITHHELD` | `CRITICAL` | an admin refused a held withdrawal; the host's account is also suspended |
 
-The admin's note is included in the body. The payload carries what the UI needs without a second
-fetch:
+The payload carries what the UI needs without a second fetch:
 
 ```jsonc
 {
-  "refundRequestId": "…",
-  "orderId": "…",
-  "amountMinor": 4900,
+  "withdrawalId": "…",
+  "status": "REFUNDED",         // "REFUNDED" | "HELD" | "WITHHELD"
+  "totalRefundMinor": 3965,
   "currency": "EUR",
   "providerRefunded": true
 }
 ```
 
-`providerRefunded: false` on an approved refund means the money is being returned by hand — do not
-tell the host to expect it on their statement in the usual few days.
+`providerRefunded: false` on a `WITHDRAWAL_REFUNDED` notification means the money is being returned
+by hand — do not tell the host to expect it on their statement in the usual few days.
 
-`REFUND_APPROVED` is the only notification that reports an event *losing* its live status, so it
-doubles as the explanation for a host who would otherwise find a draft they did not expect. Give it
-real weight in the feed.
+`WITHDRAWAL_REFUNDED` is the only notification of the three that reports an event *disappearing* —
+give it real weight in the feed, the same way `REFUND_APPROVED` used to. `WITHDRAWAL_WITHHELD`'s body
+includes the admin's note as the entire answer the host gets; show it in full, not truncated.
 
 ### What to add on your side
 
-Add `BILLING` to any notification-category filter UI, and `REFUND_APPROVED`/`REFUND_REJECTED` to the
-`NotificationType` union in `frontend-api-types.ts`. Unknown types should already render as a generic
+Add `BILLING` to any notification-category filter UI, and `WITHDRAWAL_REFUNDED`/`WITHDRAWAL_HELD`/
+`WITHDRAWAL_WITHHELD` to the `NotificationType` union in `frontend-api-types.ts`, in place of
+`REFUND_APPROVED`/`REFUND_REJECTED`. Unknown types should already render as a generic
 row rather than crashing — if yours does not, fix that before this ships.
 
 ---
@@ -1211,7 +1252,7 @@ name, for logs). Branch on `errorCode`.
 |---|---|---|---|
 | `3001` `VALIDATION_FAILED` | 400 | any bean-validation failure, incl. all plan-tier field rules | field-level errors from `details` |
 | `3007` `INVALID_PLAN_TIER_SCOPE` | 400 | admin sets `eventTypeKeys` on an `ACCOUNT`-scope plan (§13), or `planTierIds` names one for a paid service | admin panel only |
-| `3008` `EVENT_DATES_INCOMPLETE` | 400 | checkout with no `startAt`, or `endAt <= startAt` | "Set a start date before publishing" — link to the schedule form |
+| `3008` `EVENT_DATES_INCOMPLETE` | 400 | checkout with no `startAt`/`endAt`, or `endAt <= startAt` | "Set your event's dates before publishing" — link to the schedule form |
 | `3010` `RATE_LIMITED` | 429 | the caller's budget for the window is spent | §11 |
 | `3018` `INVALID_EVENT_TYPE` | 400 | unknown `eventType` at `GET /api/plan-tiers?eventType=X` or admin's `.../event-types` (§2, §13) | refetch `GET /api/config`'s `eventTypeKeys`, the value was stale or mistyped |
 
@@ -1251,15 +1292,21 @@ name, for logs). Branch on `errorCode`.
 | `5031` `CHECKOUT_SESSION_UNRESOLVED` | 409 | a checkout session with the provider couldn't be resolved during reconciliation | internal; surfaces as the generic "still processing" state (§6 step 5), not a distinct UI |
 | `5046` `CHECKOUT_AMOUNT_BELOW_MINIMUM` | 409 | a plan discount cut a checkout's price below what the provider will charge at all | catalog misconfiguration (discount set too steep); host sees a generic failure and support has to fix the discount |
 | `5053` `PLAN_TIER_NOT_AVAILABLE_FOR_EVENT_TYPE` | 409 | `POST /api/events`'s `planTierCode` has restricted itself away from the request's `eventType` (§2, §6) | source the plan list from `GET /api/plan-tiers?eventType=X` instead of a stale/cached one |
+| `5071` `EVENT_WITHDRAWN` | 409 | `POST /api/events/{eventId}/cancel-deletion` on an event whose activation was refunded via withdrawal (§9) | not fixable — a withdrawn event's deletion cannot be cancelled; point the host at the download-only gallery/wishbook link instead |
 
-### Refunds
+### Withdrawal
 
 | code | HTTP | when | what to show |
 |---|---|---|---|
-| `5022` `REFUND_NOT_ELIGIBLE` | 409 | a gate failed at request time, or the event was used while queued | the `detail` string — it is the joined `reasons`, written for the host |
-| `5023` `REFUND_ALREADY_REQUESTED` | 409 | a request is already awaiting a decision | refetch eligibility; show the pending panel |
-| `5024` `REFUND_REQUEST_NOT_PENDING` | 409 | admin decided an already-decided request | double-click or stale queue; refetch |
-| `5025` `ORDER_NOT_REFUNDABLE` | 409 | no settled activation payment, or it is no longer `PAID` | "There's no payment on this event to refund" |
+| `5072` `WITHDRAWAL_TERMS_VERSION_STALE` | 400 | checkout's `termsVersion` (§6, §7d) doesn't match the version currently in force | reload `GET /api/config`, re-show the current terms, let the host retry once |
+| `5073` `WITHDRAWAL_REFUSED` | 409 | the withdrawal was refused at the gate — no settled activation, window closed, already in progress, already refunded (§9) | the `detail` string on the error envelope; for the structured per-reason list, call withdrawal-preview instead |
+| `5074` `WITHDRAWAL_NOT_HELD` | 409 | admin release/withhold on a request that isn't currently `HELD` | double-click or stale admin queue; refetch |
+
+**`5022`–`5025` (`REFUND_NOT_ELIGIBLE`, `REFUND_ALREADY_REQUESTED`, `REFUND_REQUEST_NOT_PENDING`,
+`ORDER_NOT_REFUNDABLE`) are dead as of 2026-09-18.** The endpoints that used to throw them are
+deleted along with the admin-approval refund flow; nothing in the API produces them any more. They
+remain defined as `ErrorCode` constants so old log lines still resolve, but there is nothing for the
+FE to branch on — remove any handling for them.
 
 `403` on any host endpoint means the caller is not a host. Co-hosts count as hosts.
 
@@ -1276,8 +1323,8 @@ All require `ROLE_ADMIN`; non-admins get `403`.
 | `POST /api/admin/orders/{orderId}/settle` | marks an order paid without a provider payment — bank transfer, comped event, lost webhook. Activates the event exactly as a real payment would. |
 | `GET /api/admin/webhooks/unprocessed` | deliveries received but never processed — settlements the platform may have lost. The remedy is usually `settle` above. |
 | `POST /api/admin/webhooks/{provider}/{providerEventId}/replay` | re-verifies and re-runs one delivery from the list above against the provider's signed payload. For anything `settle` can't express — a refund, a lost dispute — that only ever arrives once. |
-| `GET /api/admin/refund-requests` | the refund queue with usage evidence (§9) |
-| `POST /api/admin/refund-requests/{id}/approve` \| `/reject` | decide a request (§9) |
+| `GET /api/admin/withdrawals` | the held-withdrawal queue with the full facts sheet (§9) |
+| `POST /api/admin/withdrawals/{id}/release` \| `/withhold` | decide a held withdrawal (§9) |
 | `DELETE /api/admin/events/{eventId}/addons/{code}` | removes an entitlement (add-on or storage pack). Refuses on any `ACTIVE` event (§7a, §7b) — an admin correction tool, not something used on a live event. |
 
 ### The plan catalog
@@ -1298,6 +1345,8 @@ Create/patch validation (server-enforced, `400` / `3001`):
 - `scope`, `name`, `sortOrder`, `isDefault`, `isAssignable`, `isPublic` — required on create.
 - `name` ≤100 chars; `sortOrder >= 0`.
 - `storageBytes`, `maxMembers`, `priceAmountMinor` — if present, `>= 0`.
+- `autoDeleteMonths` — if present, `>= 1`. `EVENT`-scope only; rejected with `400
+  INVALID_PLAN_TIER_SCOPE` (3007) on an `ACCOUNT`-scope plan, same as `storageBytes`/`maxMembers`.
 - `priceCurrency` — if present, exactly 3 chars (ISO 4217).
 - `discountPercent` — if present, 0–100. `discountLabel` ≤100 chars.
 - `billingPeriod` — `'MONTHLY' | 'YEARLY' | 'ONE_TIME'` or null. In practice always `'ONE_TIME'` on an
@@ -1410,6 +1459,7 @@ export interface PlanTierResponse {
 
   storageBytes: number | null;  // null = unlimited
   maxMembers: number | null;    // null = unlimited
+  autoDeleteMonths: number | null;  // EVENT scope only; null = never auto-deleted
 
   priceAmountMinor: number | null;   // the one-time activation charge on EVENT scope
   priceCurrency: string | null;
@@ -1495,6 +1545,26 @@ export interface CheckoutResponse {
   redirectUrl: string;
 }
 
+// Shared by activation and upgrade checkout — the consent Directive 2011/83/EU art. 14(3)/(4)(a)
+// requires before a paid service may begin inside the withdrawal window. Both booleans MUST be
+// sent true; termsVersion comes from AppConfigResponse.withdrawal.termsVersion (below). Added
+// 2026-09-18 — a body is now required on both checkout endpoints, where none was before.
+interface WithdrawalConsent {
+  requestsImmediateStart: boolean;
+  acknowledgesWithdrawalTerms: boolean;
+  termsVersion: string;
+}
+
+// POST /api/events/{eventId}/checkout — host, DRAFT only (§6).
+export interface ActivationCheckoutRequest extends WithdrawalConsent {
+  collaborationCode?: string;   // max 40 chars
+}
+
+// POST /api/events/{eventId}/upgrade-checkout — host, ACTIVE only (§7d).
+export interface UpgradeCheckoutRequest extends WithdrawalConsent {
+  planTierCode: string;         // must be priced above the event's current plan
+}
+
 // ---------- Billing ----------
 // BREAKING: coverage and subscription are gone — there is nothing left to compute a lapse date from.
 export interface EventBillingResponse {
@@ -1515,49 +1585,92 @@ export interface OrderSummary {
   currency: string;
   paidAt: string | null;
   createdAt: string;
+  // Added 2026-09-18 — the three-line withdrawal split (§9), summing to amountMinor. Present on
+  // every order kind but only meaningful on ACTIVATION/UPGRADE.
+  setupAmountMinor: number | null;
+  eventDayAmountMinor: number | null;
+  hostingAmountMinor: number | null;
 }
 
-// ---------- Refunds ----------
-export type RefundRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+// ---------- Withdrawal (replaces the old admin-approved Refunds types, 2026-09-18) ----------
+export type WithdrawalStatus = 'REFUSED' | 'HELD' | 'REFUNDED' | 'WITHHELD';
+// 'PENDING' | 'APPROVED' | 'REJECTED' also exist on legacy rows migrated before this flow shipped;
+// treat any status outside the four above as read-only history, never producible by a new request.
 
-export interface RefundEligibilityResponse {
+export type RefundBasis = 'CONSENTED_PRO_RATA' | 'NO_CONSENT_FULL_REFUND';
+export type OrderKind = 'ACTIVATION' | 'UPGRADE' | 'STORAGE_PACK';
+
+export interface WithdrawalRefusal {
+  code: string;
+  message: string;              // show verbatim
+  detail: string | null;
+}
+
+export interface WithdrawalLine {
+  orderId: string;
+  orderKind: OrderKind;
+  basis: RefundBasis;
+  hostingStart: string | null;
+  hostingEnd: string | null;
+  usedSeconds: number | null;
+  totalSeconds: number | null;
+  eventPerformed: boolean;
+  refundMinor: number;
+  providerRefunded: boolean;
+  components: Record<string, unknown>;  // display-only breakdown; shape not enumerated here
+}
+
+// GET /api/events/{eventId}/withdrawal-preview — host. Nothing persisted; safe to call any time.
+export interface WithdrawalPreview {
   eligible: boolean;
-  reasons: string[];            // show verbatim
-  hasPendingRequest: boolean;
+  refusals: WithdrawalRefusal[];
+  windowClosesAt: string;
+  totalRefundMinor: number;
+  currency: string;
+  lines: WithdrawalLine[];
 }
 
-export interface RefundRequestResponse {
+// POST /api/events/{eventId}/withdrawals — host. Body optional: { reason?: string }.
+// 201 with this shape when status is 'REFUNDED' or 'HELD'; a REFUSED outcome is instead a 409
+// WITHDRAWAL_REFUSED with the standard error envelope, NOT this shape — read structured refusal
+// reasons from WithdrawalPreview instead.
+export interface WithdrawalResponse {
   id: string;
   eventId: string;
-  orderId: string;
-  status: RefundRequestStatus;
-  reason: string;               // the host's own words
-  amountMinor: number | null;
-  currency: string | null;
-  requestedById: string;
-  requestedAt: string;
-  decidedById: string | null;
+  status: WithdrawalStatus;
+  reason: string | null;
+  createdAt: string;
   decidedAt: string | null;
-  decisionNote: string | null;  // safe to show the host — written for them
-  providerRefunded: boolean;    // false on APPROVED = money returned by hand
+  decisionNote: string | null;
+  holdUntil: string | null;
+  totalRefundMinor: number | null;
+  currency: string | null;
+  refusals: WithdrawalRefusal[];
+  lines: WithdrawalLine[];
 }
 
-export interface RefundRequestAdmin {
-  request: RefundRequestResponse;
-  eventTitle: string;
-  eventStatus: EventStatus;
-  eventStartAt: string | null;
-  eventEndAt: string | null;
-  paidAt: string | null;
-  hostDisplayName: string | null;
-  hostEmail: string | null;     // admin-only
-  currentlyEligible: boolean;
-  ineligibilityReasons: string[];
-  guestCount: number;
-  hostCount: number;
-  postCount: number;
-  mediaCount: number;
-  storageBytes: number;
+export interface WithdrawalRequest {
+  reason?: string;               // max 1000 chars, optional
+}
+
+// GET /api/admin/withdrawals — admin. The facts sheet behind each HELD request (§9).
+export interface WithdrawalFraudSignal {
+  code: string;
+  fired: boolean;
+  observed: string;
+  threshold: string;
+}
+
+export interface WithdrawalAdmin {
+  request: WithdrawalResponse;
+  usageFacts: Record<string, unknown>;   // display-only; shape not enumerated here
+  fraudSignals: WithdrawalFraudSignal[]; // every signal evaluated, fired or not — show them all
+  recommendation: string;                // generated plain text, render as-is
+}
+
+// POST /api/admin/withdrawals/{id}/withhold — admin. note is required.
+export interface WithdrawalWithhold {
+  note: string;                  // max 1000 chars
 }
 
 // ---------- Admin metrics ----------
@@ -1587,9 +1700,20 @@ export interface PlatformStorageMetrics {
 
 // ---------- Notifications ----------
 // BREAKING: the three dunning types are deleted — there is no lapse left to warn a host about.
+// BREAKING 2026-09-18: REFUND_APPROVED/REFUND_REJECTED replaced by the three WITHDRAWAL_* types —
+// nothing emits the old pair any more (§10).
 export type BillingNotificationType =
-  | 'REFUND_APPROVED'
-  | 'REFUND_REJECTED';
+  | 'WITHDRAWAL_REFUNDED'
+  | 'WITHDRAWAL_HELD'
+  | 'WITHDRAWAL_WITHHELD';
+
+// ---------- Config ----------
+// Part of GET /api/config's aggregate response. Added 2026-09-18.
+export interface AppWithdrawalConfig {
+  termsVersion: string;   // pass back verbatim as ActivationCheckoutRequest.termsVersion
+  windowDays: number;     // statutory withdrawal window, days after payment
+  holdDays: number;       // how long a HELD request waits before auto-release
+}
 ```
 
 **Every `*AmountMinor` and `*Bytes` field is an integer in minor units / raw bytes.** Format at the

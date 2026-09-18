@@ -5,7 +5,7 @@ import { localeCookieName } from '@/i18n/config';
 import { resolveLocale } from '@/i18n/resolveLocale';
 import { ACCESS_TOKEN_MAX_AGE_SECONDS, AUTH_COOKIES, baseCookieOptions } from '@/lib/auth/authCookies';
 import { toSessionDto } from '@/lib/auth/authRouteHelpers';
-import { springAuth } from '@/lib/auth/springAuth';
+import { springAuth, SpringAuthError } from '@/lib/auth/springAuth';
 
 function clearAuthCookies(cookieStore: Awaited<ReturnType<typeof cookies>>) {
     cookieStore.delete(AUTH_COOKIES.accessToken);
@@ -30,8 +30,13 @@ export async function GET() {
         if (auth.refreshToken) cookieStore.set(AUTH_COOKIES.refreshToken, auth.refreshToken, baseCookieOptions());
 
         return NextResponse.json(toSessionDto(auth));
-    } catch {
-        clearAuthCookies(cookieStore);
-        return NextResponse.json(null, { status: 401 });
+    } catch (error) {
+        if (error instanceof SpringAuthError && error.status === 401) {
+            clearAuthCookies(cookieStore);
+            return NextResponse.json(null, { status: 401 });
+        }
+        // Spring couldn't answer (rate limited, down, unreachable). The refresh
+        // token may well still be valid — keep it so the next attempt can use it.
+        return NextResponse.json(null, { status: 503 });
     }
 }

@@ -14,6 +14,13 @@ export const endpoints = {
         byEventType: (eventType: string) => `/api/plan-tiers?eventType=${encodeURIComponent(eventType)}`,
     },
 
+    eventTypes: {
+        modules: (eventTypeKey: string, planTierCode?: string) =>
+            planTierCode
+                ? `/api/event-types/${eventTypeKey}/modules?planTierCode=${encodeURIComponent(planTierCode)}`
+                : `/api/event-types/${eventTypeKey}/modules`,
+    },
+
     auth: {
         register: '/api/auth/register',
         login: '/api/auth/login',
@@ -24,6 +31,10 @@ export const endpoints = {
         // own route handler, which reads httpOnly cookies to (re)derive a
         // session. See lib/auth/authCookies.ts.
         session: '/api/auth/session',
+        resendVerification: '/api/auth/resend-verification',
+        verifyEmail: '/api/auth/verify-email',
+        forgotPassword: '/api/auth/forgot-password',
+        resetPassword: '/api/auth/reset-password',
     },
 
     me: {
@@ -56,6 +67,7 @@ export const endpoints = {
         byId: (id: string) => `/api/events/${id}`,
         hosts: (eventId: string) => `/api/events/${eventId}/hosts`,
         hostById: (eventId: string, id: string) => `/api/events/${eventId}/hosts/${id}`,
+        transferPrimaryHost: (eventId: string, id: string) => `/api/events/${eventId}/hosts/${id}/primary`,
         invitations: (eventId: string) => `/api/events/${eventId}/invitations`,
         hostInvitations: (eventId: string) => `/api/events/${eventId}/host-invitations`,
         qrLinks: (eventId: string) => `/api/events/${eventId}/qr-links`,
@@ -88,10 +100,13 @@ export const endpoints = {
         upgradeCheckout: (eventId: string) => `/api/events/${eventId}/upgrade-checkout`,
         upgradeOptions: (eventId: string) => `/api/events/${eventId}/upgrade-options`,
         storageCheckout: (eventId: string) => `/api/events/${eventId}/storage-checkout`,
-        refundEligibility: (eventId: string) => `/api/events/${eventId}/refund-eligibility`,
-        refundRequests: (eventId: string) => `/api/events/${eventId}/refund-requests`,
+        withdrawalPreview: (eventId: string) => `/api/events/${eventId}/withdrawal-preview`,
+        // GET (history) and POST (submit) both hit this same path.
+        withdrawals: (eventId: string) => `/api/events/${eventId}/withdrawals`,
         deletionRequests: (eventId: string) => `/api/events/${eventId}/deletion-requests`,
         posts: (eventId: string) => `/api/events/${eventId}/posts`,
+        stream: (eventId: string, token: string) => `/api/events/${eventId}/stream?token=${encodeURIComponent(token)}`,
+        streamToken: (eventId: string) => `/api/events/${eventId}/stream-token`,
         stories: (eventId: string) => `/api/events/${eventId}/stories`,
         playlistSuggestions: (eventId: string) => `/api/events/${eventId}/playlist-suggestions`,
         playlistSuggestionsLeaderboard: (eventId: string) => `/api/events/${eventId}/playlist-suggestions/leaderboard`,
@@ -224,7 +239,15 @@ export const endpoints = {
     },
 
     admin: {
-        metrics: '/api/admin/metrics',
+        metrics: {
+            snapshot: '/api/admin/metrics',
+            calendar: (since: string, until: string) =>
+                `/api/admin/metrics/calendar?since=${encodeURIComponent(since)}&until=${encodeURIComponent(until)}`,
+            calendarDayEvents: (date: string, page: number, size: number) =>
+                `/api/admin/metrics/calendar/${encodeURIComponent(date)}/events?page=${encodeURIComponent(String(page))}&size=${encodeURIComponent(String(size))}`,
+            timeline: (weeks: number) => `/api/admin/metrics/timeline?weeks=${encodeURIComponent(String(weeks))}`,
+            costSummary: '/api/admin/metrics/cost-summary',
+        },
         orders: {
             settle: (orderId: string) => `/api/admin/orders/${orderId}/settle`,
         },
@@ -236,16 +259,16 @@ export const endpoints = {
         notifications: {
             sweep: '/api/admin/notifications/sweep',
         },
-        refundRequests: {
-            list: '/api/admin/refund-requests',
-            approve: (requestId: string) => `/api/admin/refund-requests/${requestId}/approve`,
-            reject: (requestId: string) => `/api/admin/refund-requests/${requestId}/reject`,
+        withdrawals: {
+            list: '/api/admin/withdrawals',
+            release: (requestId: string) => `/api/admin/withdrawals/${requestId}/release`,
+            withhold: (requestId: string) => `/api/admin/withdrawals/${requestId}/withhold`,
         },
         planTiers: {
             list: '/api/admin/plan-tiers',
             byId: (id: string) => `/api/admin/plan-tiers/${id}`,
             modules: (id: string) => `/api/admin/plan-tiers/${id}/modules`,
-            eventTypes: (id: string) => `/api/admin/plan-tiers/${id}/event-types`,
+            duplicate: (id: string) => `/api/admin/plan-tiers/${id}/duplicate`,
         },
         paidServices: {
             list: '/api/admin/paid-services',

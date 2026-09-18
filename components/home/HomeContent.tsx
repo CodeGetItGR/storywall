@@ -1,13 +1,23 @@
 'use client';
 
+import { EmailVerificationBanner } from '@/components/common/EmailVerificationBanner';
 import { EventsQuickRow } from '@/components/home/EventsQuickRow';
 import { HomeEmptyState } from '@/components/home/HomeEmptyState';
 import { HomeHeader } from '@/components/home/HomeHeader';
 import { HomeNextEventCard } from '@/components/home/HomeNextEventCard';
+import { useAuth } from '@/hooks/useAuth';
 import { useEventGridItems } from '@/hooks/useEventGridItems';
+import { useMe } from '@/hooks/useMe';
 import { useMyEventList } from '@/hooks/useMyEventList';
 
 export function HomeContent() {
+    const { user } = useAuth();
+    useMe();
+    // Only a confirmed `false` blocks creation — `null` (not fetched yet)
+    // must not flash the banner/disable the button for the common case of an
+    // already-verified account.
+    const canCreateEvent = user?.emailVerified !== false;
+
     const { eventQueries, isLoading, memberships } = useMyEventList();
     const items = useEventGridItems(memberships, eventQueries);
     const hasEvents = memberships.length > 0;
@@ -27,10 +37,17 @@ export function HomeContent() {
                     <HomeHeader />
                 </section>
 
+                {/* Email verification notice */}
+                {!canCreateEvent && (
+                    <section className={feedSectionClassName}>
+                        <EmailVerificationBanner />
+                    </section>
+                )}
+
                 {!isLoading && !hasEvents ? (
                     /* Empty state */
                     <section className={feedSectionClassName}>
-                        <HomeEmptyState />
+                        <HomeEmptyState canCreateEvent={canCreateEvent} />
                     </section>
                 ) : (
                     <>
@@ -42,7 +59,7 @@ export function HomeContent() {
                         )}
 
                         {/* Your events */}
-                        <EventsQuickRow items={items} isLoading={isLoading} contentClassName={feedSectionClassName} />
+                        <EventsQuickRow items={items} isLoading={isLoading} contentClassName={feedSectionClassName} canCreateEvent={canCreateEvent} />
                     </>
                 )}
             </div>

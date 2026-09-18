@@ -1,7 +1,8 @@
 import { Menu } from '@base-ui/react/menu';
 import { type LucideIcon, Menu as MenuIcon, X } from 'lucide-react';
-import type { MouseEvent } from 'react';
+import { type MouseEvent, useState } from 'react';
 
+import { useRegisterOverlayPresence } from '@/hooks/useOverlayPresence';
 import { cn } from '@/lib/utils';
 
 import type { ContextNavItem } from './types';
@@ -18,8 +19,11 @@ interface ContextMenuTabProps {
 }
 
 export function ContextMenuTab({ active, TriggerIcon = MenuIcon, items, label, pathname, searchParams, onItemClick }: ContextMenuTabProps) {
+    const [open, setOpen] = useState(false);
+    useRegisterOverlayPresence(open);
+
     return (
-        <Menu.Root>
+        <Menu.Root open={open} onOpenChange={setOpen}>
             <Menu.Trigger
                 aria-label={label}
                 className="group flex min-w-12 flex-col items-center gap-0.5 px-3 py-1 transition-opacity lg:hidden"

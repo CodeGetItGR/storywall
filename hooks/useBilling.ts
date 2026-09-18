@@ -16,11 +16,12 @@ import type {
     EventAddonDto,
     EventAddonRequestDto,
     EventBillingResponseDto,
-    RefundEligibilityResponseDto,
-    RefundRequestResponseDto,
     StorageCheckoutRequestDto,
     UpgradeCheckoutRequestDto,
     UpgradeOptionResponseDto,
+    WithdrawalPreviewResponseDto,
+    WithdrawalRequestDto,
+    WithdrawalResponseDto,
 } from '@/lib/api/types';
 
 // The server can now legitimately refuse to settle an order (amount collected
@@ -70,7 +71,9 @@ export function useUpgradeOptions(eventId: string | null, enabled = true) {
 export function useCheckout(eventId: string) {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (input?: CheckoutRequestDto) => api.post<CheckoutResponseDto>(endpoints.events.checkout(eventId), input),
+        // A body is required as of 2026-09 — requestsImmediateStart/acknowledgesWithdrawalTerms
+        // are mandatory consent, not optional metadata (billing-fe-guide §6).
+        mutationFn: (input: CheckoutRequestDto) => api.post<CheckoutResponseDto>(endpoints.events.checkout(eventId), input),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
             queryClient.invalidateQueries({ queryKey: ['events', eventId] });
@@ -126,38 +129,42 @@ export function useAddEventAddon(eventId: string) {
     });
 }
 
-export function useRefundEligibility(eventId: string | null) {
+// GET /api/events/{id}/withdrawal-preview — host. Nothing is persisted server-side,
+// so this is safe to poll while a confirmation dialog is open (billing-fe-guide §9).
+export function useWithdrawalPreview(eventId: string | null, enabled = true) {
     const { isAuthenticated } = useAuth();
 
     return useQuery({
-        queryKey: ['events', eventId, 'refund-eligibility'],
-        queryFn: () => api.get<RefundEligibilityResponseDto>(endpoints.events.refundEligibility(eventId!)),
-        enabled: Boolean(eventId) && isAuthenticated,
+        queryKey: ['events', eventId, 'withdrawal-preview'],
+        queryFn: () => api.get<WithdrawalPreviewResponseDto>(endpoints.events.withdrawalPreview(eventId!)),
+        enabled: Boolean(eventId) && enabled && isAuthenticated,
     });
 }
 
-// GET /api/events/{id}/refund-requests — the host's own history. Sorted newest
-// first so the current request is [0]; without this the decision, its note and
-// `providerRefunded` would only ever be visible in the tab that submitted it.
-export function useEventRefundRequests(eventId: string | null) {
+// GET /api/events/{id}/withdrawals — the host's own history, newest first, so the
+// most recent outcome (and its lines/refusals) survives a reload.
+export function useEventWithdrawals(eventId: string | null) {
     const { isAuthenticated } = useAuth();
 
     return useQuery({
-        queryKey: ['events', eventId, 'refund-requests'],
-        queryFn: () => api.get<RefundRequestResponseDto[]>(endpoints.events.refundRequests(eventId!)),
+        queryKey: ['events', eventId, 'withdrawals'],
+        queryFn: () => api.get<WithdrawalResponseDto[]>(endpoints.events.withdrawals(eventId!)),
         enabled: Boolean(eventId) && isAuthenticated,
-        select: (requests) => [...requests].sort((left, right) => right.requestedAt.localeCompare(left.requestedAt)),
+        select: (withdrawals) => [...withdrawals].sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
     });
 }
 
-export function useRequestRefund(eventId: string) {
+// POST /api/events/{id}/withdrawals — terminal on REFUNDED (the event is
+// soft-deleted in the same call). A REFUSED outcome throws a 409 WITHDRAWAL_REFUSED
+// instead of resolving — read structured reasons from the preview, not this call.
+export function useSubmitWithdrawal(eventId: string) {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (reason: string) => api.post<RefundRequestResponseDto>(endpoints.events.refundRequests(eventId), { reason }),
+        mutationFn: (input: WithdrawalRequestDto) => api.post<WithdrawalResponseDto>(endpoints.events.withdrawals(eventId), input),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['events', eventId] });
-            queryClient.invalidateQueries({ queryKey: ['events', eventId, 'refund-eligibility'] });
-            queryClient.invalidateQueries({ queryKey: ['events', eventId, 'refund-requests'] });
+            queryClient.invalidateQueries({ queryKey: ['events', eventId, 'withdrawal-preview'] });
+            queryClient.invalidateQueries({ queryKey: ['events', eventId, 'withdrawals'] });
             queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
         },
     });

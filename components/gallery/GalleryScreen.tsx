@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { GalleryArchiveDownloadModal } from '@/components/gallery/GalleryArchiveDownloadModal';
 import { GalleryMediaGrid } from '@/components/gallery/GalleryMediaGrid';
+import { GallerySelectionActions } from '@/components/gallery/GallerySelectionActions';
 import { GallerySelectionBar } from '@/components/gallery/GallerySelectionBar';
 import { GalleryUploadSection } from '@/components/gallery/GalleryUploadSection';
 import { GalleryViewer } from '@/components/gallery/GalleryViewer';
@@ -87,41 +88,18 @@ export function GalleryScreen() {
             />
 
             <section className={'mb-5'}>
-                { showGalleryActions ? (
+                {showGalleryActions ? (
                     <div className="flex items-center gap-2">
                         {/* Header actions */}
                         {gallerySelection.selectionMode ? (
-                            <div className={'w-full flex justify-between gap-2'}>
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={exitSelectionMode}
-                                    className="rounded-full px-3 text-xs font-semibold text-ink-muted hover:text-ink inline-flex"
-                                >
-                                    {t('cancelSelection')}
-                                </Button>
-
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    onClick={downloadSelectedMedia}
-                                    disabled={!canDownloadSelected}
-                                    className="rounded-full bg-ink px-3 text-xs font-semibold text-white hidden sm:inline-flex"
-                                >
-                                    {t('downloadSelected', { count: gallerySelection.selectedCount })}
-                                </Button>
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={gallerySelection.selectAll}
-                                    disabled={!media.length || gallerySelection.selectedCount === media.length}
-                                    className="rounded-full border-border bg-background px-3 text-xs font-semibold text-ink-muted hover:text-ink hidden sm:inline-flex"
-                                >
-                                    {t('selectAll')}
-                                </Button>
-                            </div>
+                            <GallerySelectionActions
+                                selectedCount={gallerySelection.selectedCount}
+                                mediaCount={media.length}
+                                canDownloadSelected={canDownloadSelected}
+                                onSelectAll={gallerySelection.selectAll}
+                                onDownloadSelected={downloadSelectedMedia}
+                                onExitSelection={exitSelectionMode}
+                            />
                         ) : (
                             <div className={'w-full flex justify-between gap-2'}>
                                 <Button
@@ -154,19 +132,20 @@ export function GalleryScreen() {
                 ) : undefined}
             </section>
 
-
             {/* Selection bar */}
-            {isHost && <GallerySelectionBar
-                visible={gallerySelection.selectionMode}
-                selectedCount={gallerySelection.selectedCount}
-                mediaCount={media.length}
-                canDownloadSelected={canDownloadSelected}
-                isDownloadingSelection={isDownloadingSelection}
-                onSelectAll={gallerySelection.selectAll}
-                onDownloadSelected={downloadSelectedMedia}
-                onExitSelection={exitSelectionMode}
-                onScrollToTop={handleScrollToTop}
-            />}
+            {isHost && (
+                <GallerySelectionBar
+                    visible={gallerySelection.selectionMode}
+                    selectedCount={gallerySelection.selectedCount}
+                    mediaCount={media.length}
+                    canDownloadSelected={canDownloadSelected}
+                    isDownloadingSelection={isDownloadingSelection}
+                    onSelectAll={gallerySelection.selectAll}
+                    onDownloadSelected={downloadSelectedMedia}
+                    onExitSelection={exitSelectionMode}
+                    onScrollToTop={handleScrollToTop}
+                />
+            )}
 
             {/* Gallery */}
             {selectionDownloadError && <p className="mb-3 text-xs text-rose-600">{selectionDownloadError}</p>}
@@ -182,6 +161,9 @@ export function GalleryScreen() {
                 onMediaPointerEnd={handleMediaPointerEnd}
                 onMediaContextMenu={handleMediaContextMenu}
             />
+
+            {/* Floating actions spacer — keeps the last row clear of the lg+ floating selection bar */}
+            {gallerySelection.selectionMode && <div aria-hidden className="hidden h-28 lg:block" />}
 
             {/* Viewer */}
             <GalleryViewer

@@ -1,6 +1,6 @@
-import Image from 'next/image';
 import type { ReactNode } from 'react';
 
+import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { BannerFallback } from '@/components/feed/BannerFallback';
 import { BannerOverlay } from '@/components/feed/BannerOverlay';
 
@@ -25,14 +25,10 @@ export function Banner({
             <div className="relative isolate overflow-hidden rounded-[1.5rem]">
                 <div className="relative aspect-16/11 w-full">
                     {image ? (
-                        <Image src={image} alt={title} fill className="object-cover" preload sizes="(max-width: 1024px) 100vw, 800px" />
+                        <ProtectedImage src={image} alt={title} fill className="object-cover" preload sizes="(max-width: 1024px) 100vw, 800px" />
                     ) : (
                         <BannerFallback actionHref={fallbackActionHref} actionLabel={fallbackActionLabel} />
                     )}
-                    <div
-                        className="pointer-events-none absolute inset-y-0 right-0 z-0 w-1/2 bg-white/10 [clip-path:polygon(24%_0,100%_0,100%_100%,0_100%)]"
-                        aria-hidden="true"
-                    />
                 </div>
                 <BannerOverlay title={title} actions={actions} glowVisible={glowVisible} />
             </div>

@@ -12,6 +12,7 @@ import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthPageRedirect } from '@/hooks/useAuthPageRedirect';
+import { AUTH_RETURN_PATH_PARAM, getPostAuthRedirectPath, getSafeReturnPath } from '@/lib/auth/returnPath';
 import { routes } from '@/lib/routes';
 
 export default function LoginPage() {
@@ -20,9 +21,10 @@ export default function LoginPage() {
     const searchParams = useSearchParams();
     const inviteToken = searchParams.get('invite');
     const passwordChanged = searchParams.get('passwordChanged') === '1';
+    const returnPath = getSafeReturnPath(searchParams.get(AUTH_RETURN_PATH_PARAM));
 
     const { login, oauth } = useAuth();
-    const { shouldRenderAuthPage } = useAuthPageRedirect();
+    const { shouldRenderAuthPage } = useAuthPageRedirect(returnPath);
     const toErrorMessage = useApiErrorMessage();
 
     const [showPw, setShowPw] = useState(false);
@@ -50,7 +52,7 @@ export default function LoginPage() {
 
         try {
             const auth = await login({ email, password, inviteToken: inviteToken ?? undefined });
-            router.replace(auth.role === 'ADMIN' ? routes.admin : routes.feed);
+            router.replace(getPostAuthRedirectPath(auth.role, returnPath));
         } catch (err) {
             setError(toErrorMessage(err));
         } finally {
@@ -62,9 +64,9 @@ export default function LoginPage() {
         async (provider: 'GOOGLE' | 'APPLE', idToken: string) => {
             setError(null);
             const auth = await oauth(provider, { idToken, inviteToken: inviteToken ?? undefined });
-            router.replace(auth.role === 'ADMIN' ? routes.admin : routes.feed);
+            router.replace(getPostAuthRedirectPath(auth.role, returnPath));
         },
-        [oauth, inviteToken, router]
+        [inviteToken, oauth, returnPath, router]
     );
 
     const handleOAuthError = useCallback(
@@ -79,16 +81,14 @@ export default function LoginPage() {
     }
 
     return (
-        <AuthLayout>
-            {/*<h2 className="text-2xl font-bold text-ink mb-5 text-center">{t('title')}</h2>*/}
-
+        <AuthLayout showLanguageSwitcher>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 {/* Status */}
                 {passwordChanged && <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{t('passwordChanged')}</p>}
 
                 {/* Email */}
                 <FormFieldLabel label={t('fields.email')} required>
-                    <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
+                    <div className="flex items-center gap-3 bg-surface-muted/70 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
                         <Mail className="w-4 h-4 text-ink-muted shrink-0" />
                         <input
                             type="email"
@@ -103,7 +103,7 @@ export default function LoginPage() {
 
                 {/* Password */}
                 <FormFieldLabel label={t('fields.password')} required>
-                    <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
+                    <div className="flex items-center gap-3 bg-surface-muted/70 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
                         <Lock className="w-4 h-4 text-ink-muted shrink-0" />
                         <input
                             type={showPw ? 'text' : 'password'}
@@ -124,6 +124,14 @@ export default function LoginPage() {
                         </button>
                     </div>
                 </FormFieldLabel>
+
+                {/* Password recovery */}
+                <Link
+                    href={routes.forgotPassword}
+                    className="-mt-2 self-end text-xs font-semibold text-ink-muted transition-colors hover:text-ink hover:underline"
+                >
+                    {t('forgotPassword')}
+                </Link>
 
                 {/* Feedback */}
                 {error && (
@@ -159,10 +167,7 @@ export default function LoginPage() {
 
             <p className="text-xs text-center text-ink-muted mt-6">
                 {t('noAccount')}{' '}
-                <Link
-                    href={inviteToken ? routes.auth.register({ invite: inviteToken }) : routes.register}
-                    className="font-semibold text-ink hover:underline"
-                >
+                <Link href={routes.auth.register({ invite: inviteToken, next: returnPath })} className="font-semibold text-ink hover:underline">
                     {t('createAccountLink')}
                 </Link>
             </p>

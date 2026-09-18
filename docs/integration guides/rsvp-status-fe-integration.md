@@ -11,7 +11,7 @@ everything else.
 interface EventMemberResponseDto {
   // ...existing fields unchanged...
   isFeatured: boolean;
-  avatarMediaId: string | null;
+  avatarUrl: string | null;
   rsvpId: string | null; // NEW
   joinedAt: string;
   // ...

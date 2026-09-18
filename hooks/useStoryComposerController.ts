@@ -3,13 +3,11 @@
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
-import { pollMediaUntilProcessed, useDeleteMedia, useUploadMedia, useUploadMediaBatch } from '@/hooks/useMedia';
-import { useCreateStoriesBatch } from '@/hooks/useStories';
-import type { MediaBatchUploadResponseDto, MediaResponseDto } from '@/lib/api/types';
-import { bakeStoryFilter, STORY_FILTER_PRESETS } from '@/lib/story/storyFilters';
+import { pollMediaUntilProcessed, useDeleteMedia, useUploadMedia } from '@/hooks/useMedia';
+import { STORY_FILTER_PRESETS } from '@/lib/story/storyFilters';
 import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
+import { usePublishQueue } from '@/providers/publishQueue/PublishQueueContext';
 
 export type PendingStoryStatus = 'ready' | 'uploading' | 'processing' | 'uploaded' | 'posting' | 'failed';
 
@@ -35,7 +33,6 @@ export interface StoryComposerController {
     isBusy: boolean;
     canSubmit: boolean;
     error: string | null;
-    notice: string | null;
     maxItems: number;
     maxCaptionLength: number;
     libraryInputRef: React.RefObject<HTMLInputElement | null>;
@@ -55,7 +52,7 @@ export interface StoryComposerController {
     updateCaption: (value: string) => void;
     setFilter: (key: string, filterId: string) => void;
     filterPresetIds: string[];
-    submit: (event: React.SubmitEvent<HTMLFormElement>) => Promise<void>;
+    submit: (event: React.SubmitEvent<HTMLFormElement>) => void;
 }
 
 function getVideoDurationSeconds(file: File): Promise<number | null> {
@@ -77,56 +74,18 @@ function getVideoDurationSeconds(file: File): Promise<number | null> {
     });
 }
 
-function mapBatchUploads(items: PendingStory[], result: MediaBatchUploadResponseDto): PendingStory[] {
-    const createdByName = new Map<string, typeof result.created>();
-    result.created.forEach((media) => createdByName.set(media.originalFilename, [...(createdByName.get(media.originalFilename) ?? []), media]));
-
-    const failedByName = new Map<string, typeof result.failed>();
-    result.failed.forEach((failure) => failedByName.set(failure.filename, [...(failedByName.get(failure.filename) ?? []), failure]));
-
-    return items.map((item) => {
-        if (item.mediaId) return item;
-        const failure = failedByName.get(item.file.name)?.shift();
-        if (failure) return { ...item, status: 'failed', error: failure.message };
-        const media = createdByName.get(item.file.name)?.shift();
-        if (!media) return item;
-        return {
-            ...item,
-            mediaId: media.id,
-            remoteUrl: media.mediaUrl,
-            status: media.status === 'PROCESSING' ? 'processing' : 'uploaded',
-            error: undefined,
-        };
-    });
-}
-
-async function waitForStoryVideos(items: PendingStory[]): Promise<PendingStory[]> {
-    const resolved = await Promise.all(
-        items.map(async (item) => {
-            if (!item.mediaId || !item.file.type.startsWith('video/') || item.status === 'failed') return item;
-            const media: MediaResponseDto = await pollMediaUntilProcessed(item.mediaId);
-            if (media.status === 'FAILED') return { ...item, status: 'failed' as const, error: undefined };
-            return { ...item, status: 'uploaded' as const, remoteUrl: media.mediaUrl, error: undefined };
-        })
-    );
-    return resolved;
-}
-
 export function useStoryComposerController(canCompose: boolean): StoryComposerController {
     const t = useTranslations('StoryComposer');
-    const toErrorMessage = useApiErrorMessage();
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
     const { data: appConfig } = useAppConfig();
-    const uploadBatch = useUploadMediaBatch();
     const uploadSingle = useUploadMedia();
     const deleteMedia = useDeleteMedia(activeEvent?.id ?? '');
-    const createStories = useCreateStoriesBatch();
+    const publishQueue = usePublishQueue();
     const [isOpen, setIsOpen] = useState(false);
     const [items, setItems] = useState<PendingStory[]>([]);
     const [activeKey, setActiveKey] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const [notice, setNotice] = useState<string | null>(null);
     const libraryInputRef = useRef<HTMLInputElement>(null);
     const photoInputRef = useRef<HTMLInputElement>(null);
     const videoInputRef = useRef<HTMLInputElement>(null);
@@ -138,7 +97,7 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
     const maxStoryVideoBytes = appConfig?.media.maxStoryVideoBytes ?? 50 * 1024 * 1024;
     const maxStoryVideoDurationSeconds = appConfig?.media.maxStoryVideoDurationSeconds ?? 60;
     const maxRequestSizeBytes = appConfig?.media.maxRequestSizeBytes ?? 260 * 1024 * 1024;
-    const isBusy = uploadSingle.isPending || uploadBatch.isPending || createStories.isPending;
+    const isBusy = uploadSingle.isPending;
     const activeItem = items.find((item) => item.key === activeKey) ?? items[0] ?? null;
 
     useEffect(() => {
@@ -160,13 +119,11 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
         setItems([]);
         setActiveKey(null);
         setError(null);
-        setNotice(null);
     }, []);
 
     const open = useCallback(() => {
         if (!canCompose) return;
         setError(null);
-        setNotice(null);
         setIsOpen(true);
     }, [canCompose]);
 
@@ -184,7 +141,6 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
     async function addFiles(fileList: FileList | File[] | null) {
         if (!fileList?.length || !canCompose) return;
         setError(null);
-        setNotice(null);
 
         const room = maxItems - items.length;
         const currentBytes = items.reduce((total, item) => total + (item.mediaId ? 0 : item.file.size), 0);
@@ -308,93 +264,18 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
         setItems((current) => current.map((item) => (item.key === key ? { ...item, filterId } : item)));
     }
 
-    async function submit(event: React.SubmitEvent<HTMLFormElement>) {
+    function submit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
         if (!activeEvent || !activeMember || items.length === 0 || isBusy) return;
-        setError(null);
-        setNotice(null);
 
-        let working: PendingStory[] = await Promise.all(
-            items.map(async (item) => {
-                if (item.mediaId || item.filterId === 'original' || item.file.type.startsWith('video/')) {
-                    return { ...item, status: item.mediaId ? item.status : ('uploading' as const), error: undefined };
-                }
-                const preset = STORY_FILTER_PRESETS.find((candidate) => candidate.id === item.filterId);
-                const bakedFile = preset ? await bakeStoryFilter(item.file, preset) : item.file;
-                return { ...item, file: bakedFile, status: 'uploading' as const, error: undefined };
-            })
-        );
-        setItems(working);
+        publishQueue.enqueueStory({
+            eventId: activeEvent.id,
+            authorMemberId: activeMember.id,
+            items,
+        });
 
-        const toUpload = working.filter((item) => !item.mediaId);
-        if (toUpload.length > 0) {
-            try {
-                const result = await uploadBatch.mutateAsync({
-                    eventId: activeEvent.id,
-                    files: toUpload.map((item) => item.file),
-                    uploaderMemberId: activeMember.id,
-                    context: 'STORY',
-                });
-                working = mapBatchUploads(working, result);
-                setItems(working);
-            } catch (cause) {
-                const message = toErrorMessage(cause, t('uploadFailed'));
-                working = working.map((item) => (!item.mediaId ? { ...item, status: 'failed' as const, error: message } : item));
-                setItems(working);
-                setError(message);
-            }
-        }
-
-        const processing = working.filter((item) => item.status === 'processing');
-        if (processing.length > 0) {
-            setItems((current) =>
-                current.map((item) => (processing.some((candidate) => candidate.key === item.key) ? { ...item, status: 'processing' } : item))
-            );
-            working = await waitForStoryVideos(working);
-            working = working.map((item) =>
-                item.status === 'failed' && item.error === undefined ? { ...item, error: t('processingFailed') } : item
-            );
-            setItems(working);
-        }
-
-        const readyToPost = working.filter((item) => item.mediaId && item.status === 'uploaded');
-        if (readyToPost.length === 0) return;
-        setItems((current) =>
-            current.map((item) => (readyToPost.some((candidate) => candidate.key === item.key) ? { ...item, status: 'posting' } : item))
-        );
-
-        try {
-            const result = await createStories.mutateAsync(
-                readyToPost.map((item) => ({
-                    eventId: activeEvent.id,
-                    authorMemberId: activeMember.id,
-                    mediaId: item.mediaId!,
-                    caption: item.caption.trim() || undefined,
-                }))
-            );
-            const failedByMediaId = new Map(result.failed.map((failure) => [failure.mediaId, failure.message]));
-            const successfulMediaIds = new Set(result.created.map((story) => story.mediaId));
-            const remaining = working
-                .filter((item) => !item.mediaId || !successfulMediaIds.has(item.mediaId))
-                .map((item) => {
-                    const failure = item.mediaId ? failedByMediaId.get(item.mediaId) : undefined;
-                    return failure ? { ...item, status: 'failed' as const, error: failure } : item;
-                });
-
-            working.filter((item) => item.mediaId && successfulMediaIds.has(item.mediaId)).forEach((item) => URL.revokeObjectURL(item.previewUrl));
-            if (remaining.length === 0) {
-                reset();
-                setIsOpen(false);
-                return;
-            }
-            setItems(remaining);
-            setActiveKey(remaining[0]?.key ?? null);
-            setNotice(t('partialSuccess', { posted: result.created.length, failed: remaining.length }));
-        } catch (cause) {
-            const message = toErrorMessage(cause, t('postFailed'));
-            setItems((current) => current.map((item) => (item.mediaId ? { ...item, status: 'failed', error: message } : item)));
-            setError(message);
-        }
+        reset();
+        setIsOpen(false);
     }
 
     return {
@@ -405,7 +286,6 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
         isBusy,
         canSubmit: items.length > 0 && !isBusy && canCompose,
         error,
-        notice,
         maxItems,
         maxCaptionLength,
         libraryInputRef,

@@ -2,9 +2,9 @@ import { DEMO_EVENT_ID } from '@/lib/demo/demoConstants';
 
 type RouteQueryValue = string | number | boolean | null | undefined;
 
-export type CheckoutIntent = 'activation' | 'upgrade' | 'storage';
+export type CheckoutIntent = 'upgrade' | 'storage';
 // 'billing' is kept as an alias for the plan section so existing links keep working.
-export type ManageTab = 'billing' | 'coverage' | 'danger' | 'help' | 'invitations' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings';
+export type ManageTab = 'billing' | 'coverage' | 'danger' | 'help' | 'members' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings';
 
 // The demo event lives outside the real /events/{eventId} tree (which proxy.ts protects
 // behind a real session) — see docs/superpowers/plans/2026-09-05-demo-event.md, design note 1.
@@ -29,20 +29,32 @@ export const routes = {
     eventNotFound: '/event-not-found',
     login: '/login',
     register: '/register',
+<<<<<<< HEAD
     demo: '/demo/feed',
+=======
+    verifyEmail: '/verify-email',
+    forgotPassword: '/forgot-password',
+    resetPassword: '/reset-password',
+    demo: '/demo/feed',
+>>>>>>> main
     invite: '/invite',
     home: '/home',
     modules: '/modules',
     profile: '/profile',
     events: {
         new: (params: { step?: string | null } = {}) => withQuery('/events/new', params),
-        manage: (eventId: string, params: { tab?: ManageTab | null; section?: string | null } = {}) =>
+        manage: (eventId: string, params: { tab?: ManageTab | null; section?: string | null; cancelled?: boolean | null } = {}) =>
             withQuery(`${eventBasePath(eventId)}/manage`, params),
+        // Share/join QR link management — pulled out of the Members section the
+        // same way the gallery upload code lives on its own page, linked from a
+        // compact pointer instead of an embedded panel.
+        invitationsQr: (eventId: string) => `${eventBasePath(eventId)}/manage/qr`,
         tools: {
             rsvp: (eventId: string) => `${eventBasePath(eventId)}/tools/rsvp`,
             rsvpSubmit: (eventId: string, attending?: 'attending' | 'not-attending' | null) =>
                 withQuery(`${eventBasePath(eventId)}/tools/rsvp/submit`, { attending }),
             gallery: (eventId: string) => `${eventBasePath(eventId)}/tools/gallery`,
+            galleryQr: (eventId: string) => `${eventBasePath(eventId)}/tools/gallery/qr`,
             playlist: (eventId: string) => `${eventBasePath(eventId)}/tools/playlist`,
             quiz: (eventId: string) => `${eventBasePath(eventId)}/tools/quiz`,
             gifts: (eventId: string) => `${eventBasePath(eventId)}/tools/gifts`,
@@ -63,7 +75,8 @@ export const routes = {
     notifications: '/notifications',
     inviteToken: (token: string) => `/invite/${token}`,
     auth: {
-        login: (params: { invite?: string | null; email?: string | null; passwordChanged?: string | null }) => withQuery('/login', params),
-        register: (params: { invite?: string | null; email?: string | null }) => withQuery('/register', params),
+        login: (params: { invite?: string | null; email?: string | null; passwordChanged?: string | null; next?: string | null } = {}) =>
+            withQuery('/login', params),
+        register: (params: { invite?: string | null; email?: string | null; next?: string | null } = {}) => withQuery('/register', params),
     },
 } as const;

@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, Loader2, VideoOff } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
-import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { PostMediaImageSlide } from '@/components/feed/post/PostMediaImageSlide';
 import type { MediaResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
@@ -81,13 +81,11 @@ export function PostMediaCarousel({ media, initialIndex, onIndexChange, alt, cla
                                     className="h-full w-full object-contain"
                                 />
                             ) : (
-                                <ProtectedImage
-                                    src={item.mediaUrl}
+                                <PostMediaImageSlide
+                                    mediaUrl={item.mediaUrl}
                                     alt={alt}
-                                    fill
-                                    className="object-contain"
-                                    sizes="100vw"
                                     loading={index === currentIndex ? 'eager' : 'lazy'}
+                                    active={index === currentIndex}
                                 />
                             )}
                         </div>

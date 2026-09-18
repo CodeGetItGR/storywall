@@ -1,10 +1,10 @@
 'use client';
 
 import { Check, ImagePlus, Loader2, X } from 'lucide-react';
-import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import React, { useEffect, useRef, useState } from 'react';
 
+import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { TargetedSection } from '@/components/manage/TargetedSection';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
@@ -49,7 +49,6 @@ export default function SettingsTab({
         locationName: event.location.name ?? '',
         locationAddress: event.location.address ?? '',
         mapsUrl: event.location.mapsUrl ?? '',
-        rsvpDeadline: toDatetimeLocalValue(event.schedule.rsvpDeadline),
         startAt: toDatetimeLocalValue(event.schedule.startAt),
         endAt: toDatetimeLocalValue(event.schedule.endAt),
     };
@@ -59,7 +58,6 @@ export default function SettingsTab({
     const [locationName, setLocationName] = useState(initial.locationName);
     const [locationAddress, setLocationAddress] = useState(initial.locationAddress);
     const [mapsUrl, setMapsUrl] = useState(initial.mapsUrl);
-    const [rsvpDeadline, setRsvpDeadline] = useState(initial.rsvpDeadline);
     const [startAt, setStartAt] = useState(initial.startAt);
     const [endAt, setEndAt] = useState(initial.endAt);
 
@@ -90,7 +88,6 @@ export default function SettingsTab({
         locationName.trim() !== savedValues.locationName ||
         locationAddress.trim() !== savedValues.locationAddress ||
         mapsUrl.trim() !== savedValues.mapsUrl ||
-        Boolean(rsvpDeadline && rsvpDeadline !== savedValues.rsvpDeadline) ||
         Boolean(!eventHasStarted && startAt && startAt !== savedValues.startAt) ||
         Boolean(endAt && endAt !== savedValues.endAt) ||
         Boolean(pendingCoverMediaId);
@@ -165,10 +162,6 @@ export default function SettingsTab({
         if (value) setEndAt(value);
     }
 
-    function handleRsvpDeadlineChange(e: React.ChangeEvent<HTMLInputElement>) {
-        setRsvpDeadline(e.target.value);
-    }
-
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
         if (!canWrite) return;
@@ -181,7 +174,6 @@ export default function SettingsTab({
         if (locationName.trim() !== savedValues.locationName) patch.locationName = locationName.trim();
         if (locationAddress.trim() !== savedValues.locationAddress) patch.locationAddress = locationAddress.trim();
         if (mapsUrl.trim() !== savedValues.mapsUrl) patch.mapsUrl = mapsUrl.trim();
-        if (rsvpDeadline && rsvpDeadline !== savedValues.rsvpDeadline) patch.rsvpDeadline = new Date(rsvpDeadline).toISOString();
         if (!eventHasStarted && startAt && startAt !== savedValues.startAt) patch.startAt = new Date(startAt).toISOString();
         if (endAt && endAt !== savedValues.endAt) patch.endAt = new Date(endAt).toISOString();
         if (pendingCoverMediaId) patch.coverMediaId = pendingCoverMediaId;
@@ -197,7 +189,6 @@ export default function SettingsTab({
                 locationName: locationName.trim(),
                 locationAddress: locationAddress.trim(),
                 mapsUrl: mapsUrl.trim(),
-                rsvpDeadline,
                 startAt,
                 endAt,
             });
@@ -226,7 +217,7 @@ export default function SettingsTab({
                     <TargetedSection id={COVER_PHOTO_SECTION_ID} className="mt-1.5">
                         {coverPreview ? (
                             <div className="relative rounded-2xl overflow-hidden aspect-21/9 bg-surface-muted">
-                                <Image src={coverPreview} alt="" fill className="object-cover" sizes="700px" loading="lazy" />
+                                <ProtectedImage src={coverPreview} alt="" fill className="object-cover" sizes="700px" loading="lazy" />
                                 {isUploading && (
                                     <div className="absolute inset-0 bg-ink/40 flex items-center justify-center">
                                         <Loader2 className="w-6 h-6 text-white animate-spin" />
@@ -301,12 +292,20 @@ export default function SettingsTab({
 
                 {/* Location */}
                 <div className="grid gap-3 sm:grid-cols-2">
-                    <FormFieldLabel label={t('settings.fields.locationName')} optional labelClassName={labelClass}>
-                        <input type="text" value={locationName} onChange={handleLocationNameChange} disabled={disabled} className={inputClass} />
-                    </FormFieldLabel>
-                    <FormFieldLabel label={t('settings.fields.locationAddress')} optional labelClassName={labelClass}>
+                    <FormFieldLabel label={t('settings.fields.locationName')} required labelClassName={labelClass}>
                         <input
                             type="text"
+                            required
+                            value={locationName}
+                            onChange={handleLocationNameChange}
+                            disabled={disabled}
+                            className={inputClass}
+                        />
+                    </FormFieldLabel>
+                    <FormFieldLabel label={t('settings.fields.locationAddress')} required labelClassName={labelClass}>
+                        <input
+                            type="text"
+                            required
                             value={locationAddress}
                             onChange={handleLocationAddressChange}
                             disabled={disabled}
@@ -342,9 +341,10 @@ export default function SettingsTab({
                         />
                         {eventHasStarted && <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('settings.startLocked')}</p>}
                     </FormFieldLabel>
-                    <FormFieldLabel label={t('settings.fields.endAt')} optional labelClassName={labelClass}>
+                    <FormFieldLabel label={t('settings.fields.endAt')} required labelClassName={labelClass}>
                         <input
                             type="datetime-local"
+                            required
                             value={endAt}
                             onChange={handleEndAtChange}
                             disabled={disabled}
@@ -370,16 +370,6 @@ export default function SettingsTab({
                 </div>
                 {scheduleError && <p className="text-xs text-rose-500">{scheduleError}</p>}
 
-                <FormFieldLabel label={t('settings.fields.rsvpDeadline')} optional labelClassName={labelClass}>
-                    <input
-                        type="datetime-local"
-                        value={rsvpDeadline}
-                        onChange={handleRsvpDeadlineChange}
-                        disabled={disabled}
-                        className={inputClass}
-                    />
-                </FormFieldLabel>
-
                 {updateEvent.isError && !fieldErrors && <p className="text-xs text-rose-500">{toErrorMessage(updateEvent.error)}</p>}
 
                 {/* Actions */}
@@ -397,7 +387,18 @@ export default function SettingsTab({
                     )}
                     <button
                         type="submit"
-                        disabled={disabled || isSaving || isUploading || !hasChanges || !title.trim() || !startAt || Boolean(scheduleError)}
+                        disabled={
+                            disabled ||
+                            isSaving ||
+                            isUploading ||
+                            !hasChanges ||
+                            !title.trim() ||
+                            !locationName.trim() ||
+                            !locationAddress.trim() ||
+                            !startAt ||
+                            !endAt ||
+                            Boolean(scheduleError)
+                        }
                         className={cn(
                             'min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-brand px-5 text-sm font-semibold text-white shadow-lg transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 lg:flex lg:shadow-none',
                             hasChanges ? 'flex' : 'hidden'

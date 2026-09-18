@@ -6,9 +6,14 @@ import { useLocale, useTranslations } from 'next-intl';
 import { MetricStrip } from '@/components/ui/MetricStrip';
 import { formatDate, getDaysUntil } from '@/lib/datetime';
 
+import { RsvpDeadlineField } from './RsvpDeadlineField';
+
 const categories = ['GOING', 'NOT_GOING'] as const;
 
 export function RsvpStatsPanel({
+    eventId,
+    canWrite,
+    rsvpDeadline,
     countdownTarget,
     isRsvpDeadline,
     responseCount,
@@ -18,6 +23,9 @@ export function RsvpStatsPanel({
     peopleGoing,
     peopleNotGoing,
 }: {
+    eventId: string;
+    canWrite: boolean;
+    rsvpDeadline: string | null;
     countdownTarget: string;
     isRsvpDeadline: boolean;
     responseCount: number;
@@ -40,7 +48,7 @@ export function RsvpStatsPanel({
     return (
         <div className="flex flex-col gap-8">
             {/* Countdown */}
-            <div className="flex items-center gap-3 bg-background">
+            <div className="flex items-start gap-3 bg-background">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                     <CalendarClock className="h-5 w-5" aria-hidden="true" />
                 </div>
@@ -48,11 +56,14 @@ export function RsvpStatsPanel({
                     <p className="text-xs font-bold uppercase tracking-wide text-ink-faint">
                         {t(isRsvpDeadline ? 'rsvpStats.deadlineLabel' : 'rsvpStats.eventDateLabel')}
                     </p>
-                    <p className="truncate text-sm font-semibold text-ink">
+                    <p className="text-sm font-semibold break-words text-ink">
                         {t('rsvpStats.daysToGo', { count: daysToGo })} · {formattedTargetDate}
                     </p>
                 </div>
             </div>
+
+            {/* RSVP deadline */}
+            <RsvpDeadlineField eventId={eventId} rsvpDeadline={rsvpDeadline} canWrite={canWrite} />
 
             {/* Headline numbers */}
             <MetricStrip

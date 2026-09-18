@@ -8,11 +8,13 @@ import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { useEventMembers } from '@/hooks/useEventMembers';
 import { useEventRsvps } from '@/hooks/useRsvps';
+import { isEventWritable } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
 
 export function RsvpScreen() {
     const { activeEvent, eventId, isHost } = useEventRouteContext();
     const t = useTranslations('ManagePage');
+    const canWrite = isEventWritable(activeEvent?.status);
 
     const { data: members = [] } = useEventMembers(isHost ? eventId : null);
     const { data: rsvps = [] } = useEventRsvps(isHost ? eventId : null);
@@ -33,6 +35,7 @@ export function RsvpScreen() {
                 rsvps={rsvps}
                 startAt={activeEvent.schedule.startAt}
                 rsvpDeadline={activeEvent.schedule.rsvpDeadline}
+                canWrite={canWrite}
             />
         </ModulePageShell>
     );

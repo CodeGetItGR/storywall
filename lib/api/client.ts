@@ -57,7 +57,7 @@ function isJsonContentType(contentType: string | null): boolean {
     return contentType !== null && /json/i.test(contentType);
 }
 
-type ApiFetchOptions = RequestInit & { skipAuthRetry?: boolean };
+type ApiFetchOptions = RequestInit & { allowNotModified?: boolean; skipAuthRetry?: boolean };
 
 // The refresh flow is only ever run once at a time, no matter how many
 // requests 401 concurrently — every caller awaits the same promise. The
@@ -72,16 +72,16 @@ async function reauthenticate(): Promise<string | null> {
     refreshPromise = (async () => {
         try {
             const res = await fetch(endpoints.auth.session);
-            if (!res.ok) {
-                clearSession();
-                return null;
-            }
+            // Only a 401 means the session is gone. Anything else is the route
+            // (or Spring behind it) being unable to answer right now — the
+            // refresh cookie is still there and the next attempt may succeed.
+            if (res.status === 401) clearSession();
+            if (!res.ok) return null;
 
             const session = (await res.json()) as AuthSessionDto;
             setSession(session);
             return session.accessToken;
         } catch {
-            clearSession();
             return null;
         }
     })();
@@ -163,7 +163,7 @@ async function rawPostForm<T>(path: string, formData: FormData, options: Request
 }
 
 async function apiFetchResponse(path: string, options: ApiFetchOptions = {}): Promise<Response> {
-    const { skipAuthRetry, ...init } = options;
+    const { allowNotModified, skipAuthRetry, ...init } = options;
     const accessToken = getAccessToken();
     const isFormData = init.body instanceof FormData;
 
@@ -184,12 +184,18 @@ async function apiFetchResponse(path: string, options: ApiFetchOptions = {}): Pr
         }
     }
 
-    if (!res.ok) {
+    if (!res.ok && !(allowNotModified && res.status === 304)) {
         const body = await parseResponseBody(res);
         throw new ApiError(res.status, body, undefined, res.headers.get('retry-after'));
     }
 
     return res;
+}
+
+async function apiConditionalGet<T>(path: string, options: RequestInit = {}): Promise<{ data?: T; etag?: string; notModified: boolean }> {
+    const res = await apiFetchResponse(path, { ...options, allowNotModified: true, method: 'GET' });
+    if (res.status === 304) return { notModified: true };
+    return { data: (await parseResponseBody(res)) as T, etag: res.headers.get('etag') ?? undefined, notModified: false };
 }
 
 async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise<T> {
@@ -213,6 +219,8 @@ async function parseResponseBody(res: Response): Promise<unknown> {
 
 export const api = {
     get: <T>(path: string, options?: RequestInit) => apiFetch<T>(path, { ...options, method: 'GET' }),
+    conditionalGet: <T>(path: string, options?: RequestInit) => apiConditionalGet<T>(path, options),
+    url: (path: string) => `${API_BASE_URL}${path}`,
     download: (path: string, options?: RequestInit) => apiFetchResponse(path, { ...options, method: 'GET' }),
     publicGet: <T>(path: string, options?: RequestInit) => rawFetch<T>(path, { ...options, method: 'GET' }),
     publicPostForm: <T>(path: string, formData: FormData, options?: RequestInit) => rawPostForm<T>(path, formData, options),

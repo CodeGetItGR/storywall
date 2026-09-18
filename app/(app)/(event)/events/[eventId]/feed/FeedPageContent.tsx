@@ -14,6 +14,7 @@ import { FeedEmptyState } from '@/components/feed/FeedEmptyState';
 import { FeedPostRenderer } from '@/components/feed/FeedPostRenderer';
 import { Header } from '@/components/feed/Header';
 import { PostModal } from '@/components/feed/PostModal';
+import { PublishQueueCards } from '@/components/feed/PublishQueueCards';
 import { RsvpPrompt } from '@/components/feed/RsvpPrompt';
 import { StoriesRow } from '@/components/feed/StoriesRow';
 import { StoryModal } from '@/components/story/StoryModal';
@@ -113,6 +114,7 @@ export function FeedPageContent() {
                 {moduleFlags.posts && (
                     <div className="flex flex-col px-0 pb-24 lg:pb-10">
                         <ComposerCard />
+                        <PublishQueueCards />
                         <div className="flex flex-col">
                             {posts.length === 0 ? (
                                 <FeedEmptyState />

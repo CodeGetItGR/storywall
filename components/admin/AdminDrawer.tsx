@@ -46,7 +46,7 @@ export function AdminDrawer({ open, onClose, title, subtitle, closeLabel, footer
                 {/* Surface */}
                 <Dialog.Popup
                     className={cn(
-                        'motion-surface fixed inset-y-0 right-0 z-50 flex h-dvh w-[min(440px,100vw)] flex-col overflow-hidden',
+                        'motion-surface fixed right-0 top-(--visual-viewport-offset-top) z-50 flex h-(--visual-viewport-height) w-[min(440px,100vw)] flex-col overflow-hidden',
                         'border-l border-border bg-card text-ink shadow-[0_24px_60px_-20px_rgba(18,20,28,0.45)] outline-none',
                         'data-ending-style:translate-x-full data-ending-style:opacity-0 data-starting-style:translate-x-full data-starting-style:opacity-0'
                     )}

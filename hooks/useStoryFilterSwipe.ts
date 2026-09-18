@@ -17,18 +17,18 @@ export interface StoryFilterSwipe {
     setIndex: (index: number) => void;
 }
 
-const NAME_PILL_DURATION_MS = 1000;
+const NAME_PILL_DURATION_MS = 1500;
 const DRAG_FULL_PX = 120;
 const COMMIT_PROGRESS = 0.5;
 
 function candidateForOffset(offsetPx: number, currentIndex: number, length: number): number | null {
     if (offsetPx === 0) return null;
-    const next = currentIndex + (offsetPx < 0 ? 1 : -1);
+    const next = currentIndex + (offsetPx > 0 ? 1 : -1);
     return next >= 0 && next < length ? next : null;
 }
 
-/** Drives the story composer's live filter swipe: the photo stays fixed while dragging
- * crossfades a preview of the next/previous preset on top of it in real time, committing on
+/** Drives the story composer's live filter swipe: the photo stays fixed while a rightward drag
+ * crossfades a preview of the next preset on top of it in real time, committing on
  * release once dragged at least halfway, or snapping back if released early. Clamped at both
  * ends — no wraparound. */
 export function useStoryFilterSwipe(presetIds: string[]): StoryFilterSwipe {

@@ -1,10 +1,11 @@
 'use client';
 
 import { Heart, Plus } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
+import { type MouseEvent, useCallback } from 'react';
 
+import {ProtectedImage} from "@/components/common/ProtectedImage";
 import { HomeHorizontalScroller } from '@/components/home/HomeHorizontalScroller';
 import type { EventGridItem } from '@/hooks/useEventGridItems';
 import { formatEventListDate } from '@/lib/datetime';
@@ -31,7 +32,7 @@ function EventQuickCard({ member, event }: EventGridItem) {
             className="group relative h-62 w-44 shrink-0 overflow-hidden rounded-lg bg-surface-muted transition-transform hover:-translate-y-0.5 lg:h-56 lg:w-40"
         >
             {event?.coverMedia?.mediaUrl ? (
-                <Image
+                <ProtectedImage
                     src={event.coverMedia.mediaUrl}
                     alt=""
                     fill
@@ -55,13 +56,22 @@ export function EventsQuickRow({
     items,
     isLoading = false,
     contentClassName,
+    canCreateEvent = true,
 }: {
     items: EventGridItem[];
     isLoading?: boolean;
     contentClassName?: string;
+    canCreateEvent?: boolean;
 }) {
     const t = useTranslations('HomePage');
     const tEvents = useTranslations('EventsPage');
+
+    const onNewEventClick = useCallback(
+        (event: MouseEvent<HTMLAnchorElement>) => {
+            if (!canCreateEvent) event.preventDefault();
+        },
+        [canCreateEvent]
+    );
 
     return (
         <section aria-labelledby="home-events-heading" className="flex w-full flex-col gap-3">
@@ -71,8 +81,13 @@ export function EventsQuickRow({
                     {tEvents('yourEvents')}
                 </h2>
                 <Link
-                    href={routes.events.new()}
-                    className="inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-full bg-primary-light px-3 py-1 text-xs font-semibold text-primary-dark ring-1 ring-primary/12 transition-colors hover:bg-accent"
+                    href={canCreateEvent ? routes.events.new() : '#'}
+                    aria-disabled={!canCreateEvent}
+                    onClick={onNewEventClick}
+                    className={cn(
+                        'inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-full bg-primary-light px-3 py-1 text-xs font-semibold text-primary-dark ring-1 ring-primary/12 transition-colors hover:bg-accent',
+                        !canCreateEvent && 'pointer-events-none opacity-40'
+                    )}
                 >
                     <Plus className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
                     <span>{t('newEvent')}</span>

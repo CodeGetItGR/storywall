@@ -3,11 +3,13 @@
 import type { ReactNode } from 'react';
 
 import { ComposerModal } from '@/components/composer/ComposerModal';
+import { PostMediaPreviewModal } from '@/components/composer/PostMediaPreviewModal';
 import { StoryComposerModal } from '@/components/composer/StoryComposerModal';
 import { useComposerController } from '@/hooks/useComposerController';
 import { ComposerContext, useComposer } from '@/providers/composer/ComposerContext';
+import { PublishQueueProvider } from '@/providers/PublishQueueProvider';
 
-export function ComposerProvider({ children }: { children: ReactNode }) {
+function ComposerProviderInner({ children }: { children: ReactNode }) {
     const controller = useComposerController();
     const { contextValue, storyComposer } = controller;
 
@@ -15,8 +17,17 @@ export function ComposerProvider({ children }: { children: ReactNode }) {
         <ComposerContext.Provider value={contextValue}>
             {children}
             <ComposerModal {...controller} />
+            <PostMediaPreviewModal controller={controller} />
             <StoryComposerModal controller={storyComposer} />
         </ComposerContext.Provider>
+    );
+}
+
+export function ComposerProvider({ children }: { children: ReactNode }) {
+    return (
+        <PublishQueueProvider>
+            <ComposerProviderInner>{children}</ComposerProviderInner>
+        </PublishQueueProvider>
     );
 }
 

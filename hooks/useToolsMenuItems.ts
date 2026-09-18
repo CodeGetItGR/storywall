@@ -1,9 +1,10 @@
 'use client';
 
-import { BookHeart, CalendarCheck, CalendarDays, Gift, HelpCircle, Images, LayoutDashboard, type LucideIcon } from 'lucide-react';
+import { BookHeart, CalendarCheck, CalendarDays, Gift, HelpCircle, Images, LayoutDashboard, type LucideIcon, QrCode, Ticket } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { useGiftAccount } from '@/hooks/useGiftAccount';
+import { isGalleryQrFeatureEnabled } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useIsHost } from '@/providers/EventProvider';
 
@@ -35,6 +36,7 @@ export function useToolsMenuItems(): ToolMenuItem[] {
 
     return toolDefinitions
         .filter((tool) => !tool.moduleKey || availableModules.has(tool.moduleKey))
+        .filter((tool) => tool.key !== 'gallery' || isHost)
         .filter((tool) => tool.key !== 'gifts' || isHost || Boolean(giftAccount.data))
         .map((tool) => ({
             key: tool.key,
@@ -54,16 +56,23 @@ export function useHostMenuItems(): ToolMenuItem[] {
 
     if (!activeEvent) return [];
 
-    const hostAdminDefinitions: { key: string; href: string; icon: LucideIcon }[] = [
+    const galleryQrEnabled = isGalleryQrFeatureEnabled(activeEvent.modules);
+    const isDraft = activeEvent.status === 'DRAFT';
+
+    const hostAdminDefinitions: { key: string; href: string; icon: LucideIcon; hidden?: boolean }[] = [
         { key: 'manage', href: routes.events.manage(activeEvent.id), icon: LayoutDashboard },
+        { key: 'galleryQr', href: routes.events.tools.galleryQr(activeEvent.id), icon: QrCode, hidden: !galleryQrEnabled },
+        { key: 'invitationsQr', href: routes.events.invitationsQr(activeEvent.id), icon: Ticket, hidden: isDraft },
         { key: 'help', href: routes.events.manage(activeEvent.id, { tab: 'help' }), icon: HelpCircle },
     ];
 
-    return hostAdminDefinitions.map((item) => ({
-        key: item.key,
-        href: item.href,
-        icon: item.icon,
-        label: t(`${item.key}.label`),
-        description: t(`${item.key}.description`),
-    }));
+    return hostAdminDefinitions
+        .filter((item) => !item.hidden)
+        .map((item) => ({
+            key: item.key,
+            href: item.href,
+            icon: item.icon,
+            label: t(`${item.key}.label`),
+            description: t(`${item.key}.description`),
+        }));
 }

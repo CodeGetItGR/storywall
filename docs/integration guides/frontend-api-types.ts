@@ -2,9 +2,10 @@
  * TypeScript type schema for the event_social_media API.
  *
  * Generated directly from the current backend DTOs/entities (not from prose docs) as of
- * 2026-07-30, last extended 2026-08-26 (EventMemberResponseDto gained rsvpId — see
- * docs/fe-guides/rsvp-status-fe-integration.md). Companion reference to
- * docs/fe-guides/frontend-integration-guide.md, which covers
+ * 2026-07-30, last extended 2026-09-12 (CommentResponseDto, StoryResponseDto gained
+ * authorAvatarUrl, and EventMemberResponseDto gained avatarUrl — presigned member/author
+ * avatar image URLs, resolved the same way PostResponseDto.author.avatarUrl already was).
+ * Companion reference to docs/fe-guides/frontend-integration-guide.md, which covers
  * endpoints, auth rules, and error codes — this file is just the shapes.
  *
  * Conventions:
@@ -43,13 +44,17 @@ interface ApiError {
 //     the same email) -> 409, errorCode 5001 CONFLICT, generic "conflicts with existing data" detail
 //     that does not leak the constraint name.
 
-// Spring Data's Page<T> JSON shape — trimmed to the fields worth relying on.
+// Spring Data's Page<T> JSON shape, as of the PagedModel/VIA_DTO migration (see
+// docs/fe-pagination-migration.md). Every endpoint documented below as returning
+// `Page<T>` now returns this shape instead of the old flat PageImpl JSON.
 interface Page<T> {
   content: T[];
-  totalElements: number;
-  totalPages: number;
-  number: number; // current page, 0-indexed
-  size: number;
+  page: {
+    size: number;
+    number: number; // current page, 0-indexed
+    totalElements: number;
+    totalPages: number;
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -130,9 +135,11 @@ interface SessionResponseDto {
  * Notifications are host-facing and produced solely by the backend quota sweep.
  * There is no request DTO — POST /api/notifications was removed entirely.
  */
-// NOTE: also missing EVENT_REMINDER, EVENT_SUMMARY, BILLING_EXPIRING, BILLING_PAST_DUE,
-// BILLING_PURGE_WARNING, REFUND_APPROVED, REFUND_REJECTED — see billing-fe-guide.md §10, which
-// already asked for these to be added. Pre-existing gap, not part of the 2026-08-24 change below.
+// NOTE: also missing EVENT_REMINDER, EVENT_SUMMARY, EVENT_AUTO_DELETE_WARNING, BILLING_EXPIRING,
+// BILLING_PAST_DUE, BILLING_PURGE_WARNING, WITHDRAWAL_REFUNDED, WITHDRAWAL_HELD,
+// WITHDRAWAL_WITHHELD — see billing-fe-guide.md §10, which already asked for these to be added.
+// Pre-existing gap, not part of the 2026-08-24 change below. (REFUND_APPROVED/REFUND_REJECTED,
+// formerly listed here, are dead as of 2026-09-18 — nothing emits them any more.)
 type NotificationType =
   | 'STORAGE_LIMIT_WARNING'
   | 'MEMBER_LIMIT_WARNING'
@@ -231,7 +238,7 @@ interface EventRequestDto {
   eventType: string;              // required, max 50 — free text (WEDDING | BAPTISM | BIRTHDAY | CONFERENCE | <custom>)
   visibility: EventVisibility;    // required on this DTO despite the entity's DB default
   startAt: string;                // required
-  endAt?: string;
+  endAt: string;                  // required, must be after startAt
   timezone: string;               // required, max 100
   locationName?: string;          // max 255
   locationAddress?: string;
@@ -248,7 +255,7 @@ interface EventRequestDto {
 interface EventResponseDto {
   id: string; title: string; subtitle: string | null; description: string | null;
   eventType: string; visibility: EventVisibility;
-  startAt: string; endAt: string | null; timezone: string;
+  startAt: string; endAt: string; timezone: string;
   locationName: string | null; locationAddress: string | null; mapsUrl: string | null;
   coverMediaId: string | null;
   brandingSettings: Record<string, unknown>;
@@ -271,7 +278,7 @@ interface EventPatchDto {
 // --- GET /api/events/{id} detail response (grouped/enriched — added 2026-07-30) ---
 
 interface EventScheduleDto {
-  startAt: string; endAt: string | null; timezone: string; rsvpDeadline: string | null;
+  startAt: string; endAt: string; timezone: string; rsvpDeadline: string | null;
 }
 interface EventLocationDto {
   name: string | null; address: string | null; mapsUrl: string | null;
@@ -358,21 +365,21 @@ interface EventMemberRequestDto {
   relationshipRole?: string;       // max 50
   customRelationshipRole?: string; // max 100
   isFeatured?: boolean;   // optional on the wire — defaults to false server-side
-  avatarMediaId?: string;
   joinedAt: string;       // required
 }
 interface EventMemberResponseDto {
   id: string; eventId: string; userId: string | null; invitationId: string | null;
   role: EventRole; displayName: string; nickname: string | null;
   relationshipRole: string | null; customRelationshipRole: string | null;
-  isFeatured: boolean; avatarMediaId: string | null; joinedAt: string;
+  isFeatured: boolean; joinedAt: string;
+  avatarUrl: string | null; // short-lived presigned URL resolved from the account's profilePictureKey; null for an account-less member or one who never uploaded a profile picture. Do not cache.
   rsvpId: string | null; // NEW 2026-08-26 — this member's own RSVP id, null if not submitted yet; see rsvp-status-fe-integration.md
   createdAt: string; updatedAt: string; deletedAt: string | null;
 }
 interface EventMemberPatchDto { // every field optional — isFeatured is HOST-only even on your own membership
   displayName?: string; nickname?: string;
   relationshipRole?: string; customRelationshipRole?: string;
-  isFeatured?: boolean; avatarMediaId?: string;
+  isFeatured?: boolean;
 } // no userId — see POST /api/event-members/{id}/claim for the narrow self-link path instead
 
 // --- Event Modules ---
@@ -552,8 +559,8 @@ interface PostRequestDto {
 }
 interface PostAuthorDto {
   memberId: string; displayName: string; nickname: string | null;
-  role: EventRole; avatarMediaId: string | null;
-  avatarUrl: string | null; // presigned, resolved from avatarMediaId — null if no avatar set
+  role: EventRole;
+  avatarUrl: string | null; // presigned, resolved from the account's profilePictureKey — null for an account-less author or one with no profile picture
 }
 interface PostResponseDto {
   id: string; eventId: string; authorMemberId: string | null;
@@ -580,7 +587,9 @@ interface CommentRequestDto {
   postId: string; authorMemberId?: string; parentCommentId?: string; content: string; // content required
 }
 interface CommentResponseDto {
-  id: string; postId: string; authorMemberId: string | null; parentCommentId: string | null;
+  id: string; postId: string; authorMemberId: string | null;
+  authorAvatarUrl: string | null; // short-lived presigned URL resolved from the author's account profilePictureKey; null if no author or no profile picture. Do not cache.
+  parentCommentId: string | null;
   content: string; createdAt: string; updatedAt: string; deletedAt: string | null;
 }
 // GET /api/posts/{postId}/comments now returns Page<CommentResponseDto>, not CommentResponseDto[].
@@ -627,7 +636,9 @@ interface StoryRequestDto {
 // Don't offer a just-uploaded video in the "post as story" picker until its MediaResponseDto
 // status flips to 'READY' — poll GET /api/medias/{id} rather than letting the user hit this.
 interface StoryResponseDto {
-  id: string; eventId: string; authorMemberId: string | null; mediaId: string;
+  id: string; eventId: string; authorMemberId: string | null;
+  authorAvatarUrl: string | null; // short-lived presigned URL resolved from the author's account profilePictureKey; null if no author or no profile picture. Do not cache.
+  mediaId: string;
   caption: string | null; songUrl: string | null; expiresAt: string;
   createdAt: string; deletedAt: string | null;
   viewedByCurrentUser: boolean; // has the caller viewed this story (any of their memberships)
@@ -733,12 +744,19 @@ interface ModerationActionResponseDto {
 // GET /api/moderation-actions now returns Page<ModerationActionResponseDto>, not ModerationActionResponseDto[].
 // Default 50/page, max 100 (?page=&size=), sorted createdAt desc then id desc (newest first).
 
+// targetType and reason are now enum-backed server-side (previously unrestricted strings) —
+// an unrecognized value 400s. The valid sets are also published at GET /api/config as
+// reportTargetTypes / reportReasons (see app-config-fe-integration.md) so the FE doesn't
+// have to hardcode them.
+type ReportTargetType = "POST" | "COMMENT" | "MEMBER";
+type ReportReason = "SPAM" | "HARASSMENT" | "INAPPROPRIATE_CONTENT" | "IMPERSONATION" | "OTHER";
+
 interface ReportRequestDto {
   reporterMemberId?: string; // sent but IGNORED server-side — bound to the caller automatically
   eventId: string;    // required
-  targetType: string; // required
+  targetType: ReportTargetType; // required
   targetId: string;   // required
-  reason: string;     // required
+  reason: ReportReason;     // required
   description?: string;
   status?: string;             // set by moderators only, defaults to "OPEN" server-side
   reviewedByMemberId?: string;
@@ -746,8 +764,8 @@ interface ReportRequestDto {
   resolutionNotes?: string;
 }
 interface ReportResponseDto {
-  id: string; reporterMemberId: string | null; eventId: string; targetType: string; targetId: string;
-  reason: string; description: string | null; status: string | null; reviewedByMemberId: string | null;
+  id: string; reporterMemberId: string | null; eventId: string; targetType: ReportTargetType; targetId: string;
+  reason: ReportReason; description: string | null; status: string | null; reviewedByMemberId: string | null;
   reviewedAt: string | null; resolutionNotes: string | null; createdAt: string; updatedAt: string;
 }
 // GET /api/reports now returns Page<ReportResponseDto>, not ReportResponseDto[].
@@ -807,6 +825,16 @@ interface AppMediaConfigDto {
 interface AppPaginationConfigDto { defaultPageSize: number; maxPageSize: number; }
 interface AppRsvpConfigDto { minAdults: number; maxAdults: number; minChildren: number; maxChildren: number; }
 
+/** Automated right-of-withdrawal settings — see fe-guides/billing-fe-guide.md §9. Added 2026-09-18. */
+interface AppWithdrawalConfigDto {
+  /** Pass back verbatim as the checkout request's `termsVersion`; a stale value is a 400. */
+  termsVersion: string;
+  /** Statutory withdrawal window, days after payment. */
+  windowDays: number;
+  /** How long a HELD withdrawal waits for an admin before it is released automatically. */
+  holdDays: number;
+}
+
 /** Server-enforced `@Size(max=...)` on free-text fields — added 2026-08-23. Mirror these in form
  *  maxLength/counters instead of hardcoding; a request over the limit is a 400 VALIDATION_FAILED. */
 interface AppContentLimitsDto {
@@ -849,6 +877,10 @@ export interface PlanTierResponseDto {
   isPublic: boolean;
   storageBytes: number | null;      // null = no limit enforced
   maxMembers: number | null;        // null = no limit enforced
+  autoDeleteMonths: number | null;  // EVENT-scope only; null = never auto-deleted. Months after
+                                     // the event's endAt before it is soft-deleted (same lifecycle
+                                     // as a host-requested deletion — undoable, then hard-purged
+                                     // after the platform's retention window).
   priceAmountMinor: number | null;  // minor units (cents)
   priceCurrency: string | null;     // ISO 4217
   billingPeriod: BillingPeriod | null;
@@ -952,6 +984,8 @@ interface AppConfigResponseDto {
   /** Budget for any endpoint not listed in `rateLimits`. Added 2026-08-23. */
   defaultRateLimit: number;
   defaultRateLimitWindowSeconds: number;
+  /** Added 2026-09-18. See fe-guides/billing-fe-guide.md §9 (withdrawal). */
+  withdrawal: AppWithdrawalConfigDto;
 }
 
 /**

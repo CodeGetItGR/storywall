@@ -2,9 +2,9 @@ import type { LucideIcon } from 'lucide-react';
 import { Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import type { ReactNode } from 'react';
+import { IconType } from 'react-icons';
 
 import { cn } from '@/lib/utils';
-import {IconType} from "react-icons";
 
 interface ToolEmptyStateProps {
     title: string;

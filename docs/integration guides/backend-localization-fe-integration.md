@@ -70,11 +70,11 @@ an unmigrated error just doesn't change — nothing breaks, it simply isn't tran
 ## 3. Notifications (in-app feed)
 
 `GET /api/notifications`, `GET /api/notifications/{id}`, and `PATCH /api/notifications/{id}/read`
-all render `title`/`body` in `Accept-Language` at read time — same request, same rule as errors.
-The DTO shape is unchanged:
+all render `title`/`body`/`ctaLabel` in `Accept-Language` at read time — same request, same rule as
+errors. The DTO shape is unchanged:
 
 ```json
-{ "id": "...", "title": "Το Sarah's Birthday πλησιάζει", "body": "...", "readAt": null }
+{ "id": "...", "title": "Το Sarah's Birthday πλησιάζει", "body": "...", "ctaLabel": "Δείτε τα πλάνα", "readAt": null }
 ```
 
 Nothing to change on your side beyond sending the header. A couple of things worth knowing:
@@ -83,9 +83,13 @@ Nothing to change on your side beyond sending the header. A couple of things wor
   switching the app's language and re-requesting the same notification re-renders it in the new
   language immediately. There's no stale-locale state to worry about.
 - **Old rows still work.** Notifications created before this shipped have no message key stored,
-  so they keep rendering their original English `title`/`body` verbatim regardless of
+  so they keep rendering their original English `title`/`body`/`ctaLabel` verbatim regardless of
   `Accept-Language`. This is permanent for those rows, not a startup transient — there's no
   backfill planned.
+- **`ctaLabel` shipped slightly later than `title`/`body`.** It was originally missed in the first
+  pass and localizes on the same `cta_label_key` column added afterward — no behavioral difference
+  from the frontend's perspective, since it follows the identical "key present → render, else
+  fall back to stored English" rule.
 
 ---
 

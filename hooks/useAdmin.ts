@@ -5,7 +5,9 @@ import { notificationKeys } from '@/hooks/useNotifications';
 import { usageKeys } from '@/hooks/useUsage';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
+import type { Page } from '@/lib/api/pagination';
 import type {
+    CalendarSummaryResponseDto,
     CollaborationCodePatchDto,
     CollaborationCodeRequestDto,
     CollaborationCodeResponseDto,
@@ -14,10 +16,11 @@ import type {
     CollaboratorPortalTokenResponseDto,
     CollaboratorRequestDto,
     CollaboratorResponseDto,
+    CostSummaryResponseDto,
     DiscountCodePatchDto,
     DiscountCodeRequestDto,
     DiscountCodeResponseDto,
-    EventTypeConvention,
+    EventDashboardRowDto,
     EventUsageResponseDto,
     LinkDiscountCodeRequestDto,
     MarkCollaborationEarningsPaidRequestDto,
@@ -27,20 +30,22 @@ import type {
     PaidServiceResponseDto,
     PlanAssignmentRequestDto,
     PlanScope,
+    PlanTierDuplicateRequestDto,
     PlanTierPatchDto,
     PlanTierRequestDto,
     PlanTierResponseDto,
+    PlanTimelineRowDto,
     PlatformEventTypePatchDto,
     PlatformEventTypeResponseDto,
     PlatformMetricsResponseDto,
     PlatformModulePatchDto,
     PlatformModuleResponseDto,
     ReactionTypeResponseDto,
-    RefundDecisionRequestDto,
-    RefundRequestAdminDto,
-    RefundRequestResponseDto,
     UnprocessedWebhookDto,
     VoidCollaborationRedemptionRequestDto,
+    WithdrawalAdminDto,
+    WithdrawalResponseDto,
+    WithdrawalWithholdRequestDto,
 } from '@/lib/api/types';
 
 export const adminKeys = {
@@ -50,8 +55,12 @@ export const adminKeys = {
     platformEventTypes: ['admin', 'platform-event-types'] as const,
     unprocessedWebhooks: ['admin', 'webhooks', 'unprocessed'] as const,
     notificationSweep: ['admin', 'notifications', 'sweep'] as const,
-    refundRequests: ['admin', 'refund-requests'] as const,
+    withdrawals: ['admin', 'withdrawals'] as const,
     metrics: ['admin', 'metrics'] as const,
+    costSummary: ['admin', 'metrics', 'cost-summary'] as const,
+    costTimeline: (weeks: number) => ['admin', 'metrics', 'timeline', weeks] as const,
+    costCalendar: (since: string, until: string) => ['admin', 'metrics', 'calendar', since, until] as const,
+    costCalendarDayEvents: (date: string, page: number, size: number) => ['admin', 'metrics', 'calendar', date, 'events', page, size] as const,
     paidServices: (kind?: PaidServiceKind, includeArchived?: boolean) => ['admin', 'paid-services', kind ?? 'ALL', Boolean(includeArchived)] as const,
     collaborators: ['admin', 'collaborators'] as const,
     collaboratorCodes: (id: string) => ['admin', 'collaborators', id, 'codes'] as const,
@@ -198,7 +207,36 @@ export function useVoidCollaborationRedemption() {
 export function useAdminMetrics() {
     return useQuery({
         queryKey: adminKeys.metrics,
-        queryFn: () => api.get<PlatformMetricsResponseDto>(endpoints.admin.metrics),
+        queryFn: () => api.get<PlatformMetricsResponseDto>(endpoints.admin.metrics.snapshot),
+    });
+}
+
+export function useAdminCostSummary() {
+    return useQuery({
+        queryKey: adminKeys.costSummary,
+        queryFn: () => api.get<CostSummaryResponseDto>(endpoints.admin.metrics.costSummary),
+    });
+}
+
+export function useAdminCostTimeline(weeks: number) {
+    return useQuery({
+        queryKey: adminKeys.costTimeline(weeks),
+        queryFn: () => api.get<PlanTimelineRowDto[]>(endpoints.admin.metrics.timeline(weeks)),
+    });
+}
+
+export function useAdminCostCalendar({ since, until }: { since: string; until: string }) {
+    return useQuery({
+        queryKey: adminKeys.costCalendar(since, until),
+        queryFn: () => api.get<CalendarSummaryResponseDto>(endpoints.admin.metrics.calendar(since, until)),
+    });
+}
+
+export function useAdminCostCalendarDayEvents({ date, page, size }: { date: string | null; page: number; size: number }) {
+    return useQuery({
+        queryKey: adminKeys.costCalendarDayEvents(date ?? '', page, size),
+        queryFn: () => api.get<Page<EventDashboardRowDto>>(endpoints.admin.metrics.calendarDayEvents(date!, page, size)),
+        enabled: Boolean(date),
     });
 }
 
@@ -259,34 +297,45 @@ export function useRunNotificationSweep() {
     });
 }
 
-// GET /api/admin/refund-requests — the queue, oldest first, each row carrying the
-// usage evidence the gates are derived from (guide §9). The counts include
-// soft-deleted rows on purpose: the bytes were stored and paid for either way.
-export function useAdminRefundRequests() {
+// GET /api/admin/withdrawals — the queue of HELD requests, each with the full
+// facts sheet the automated decision was based on (guide §9).
+export function useAdminWithdrawals() {
     return useQuery({
-        queryKey: adminKeys.refundRequests,
-        queryFn: () => api.get<RefundRequestAdminDto[]>(endpoints.admin.refundRequests.list),
+        queryKey: adminKeys.withdrawals,
+        queryFn: () => api.get<WithdrawalAdminDto[]>(endpoints.admin.withdrawals.list),
     });
 }
 
-// POST /api/admin/refund-requests/{id}/approve | /reject. Never auto-retried:
-// a silently repeated approval is a second refund (guide §11).
-export function useDecideRefundRequest() {
+// POST /api/admin/withdrawals/{id}/release — no body. Refunds at the price
+// computed at request time and deletes the event, same outcome as an automatic
+// REFUNDED. 409 WITHDRAWAL_NOT_HELD if the request isn't currently HELD.
+export function useReleaseWithdrawal() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ requestId, decision, note }: { requestId: string; decision: 'approve' | 'reject'; note?: string }) => {
-            const path =
-                decision === 'approve' ? endpoints.admin.refundRequests.approve(requestId) : endpoints.admin.refundRequests.reject(requestId);
-            const body: RefundDecisionRequestDto = { note: note?.trim() ? note.trim() : null };
-            return api.post<RefundRequestResponseDto>(path, body);
-        },
+        mutationFn: (requestId: string) => api.post<WithdrawalResponseDto>(endpoints.admin.withdrawals.release(requestId)),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: adminKeys.refundRequests });
-            // Approval reverses the order and returns the event to DRAFT.
+            queryClient.invalidateQueries({ queryKey: adminKeys.withdrawals });
             queryClient.invalidateQueries({ queryKey: ['events'] });
             queryClient.invalidateQueries({ queryKey: ['billing'] });
             queryClient.invalidateQueries({ queryKey: adminKeys.metrics });
+        },
+    });
+}
+
+// POST /api/admin/withdrawals/{id}/withhold — note is required and shown to the
+// host verbatim. Also suspends the host's account — not a soft decline.
+export function useWithholdWithdrawal() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ requestId, note }: { requestId: string; note: string }) => {
+            const body: WithdrawalWithholdRequestDto = { note };
+            return api.post<WithdrawalResponseDto>(endpoints.admin.withdrawals.withhold(requestId), body);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: adminKeys.withdrawals });
+            queryClient.invalidateQueries({ queryKey: ['events'] });
         },
     });
 }
@@ -318,32 +367,19 @@ export function useCreatePlanTier() {
     });
 }
 
-export function useSetPlanEventTypes() {
+// POST /api/admin/plan-tiers/{id}/duplicate — clones a source plan into one or
+// more new plans for other event types in a single call. Replaces the old
+// PUT .../event-types "create + restrict" flow entirely. See
+// plan-tiers-by-event-type-fe-integration.md §5.
+export function useDuplicatePlanTier() {
     const queryClient = useQueryClient();
-    const plansKey = adminKeys.planTiers('EVENT', true);
 
     return useMutation({
-        mutationFn: ({ planId, eventTypeKeys }: { planId: string; eventTypeKeys: EventTypeConvention[] }) =>
-            api.put<PlanTierResponseDto>(endpoints.admin.planTiers.eventTypes(planId), { eventTypeKeys }),
-        onMutate: async ({ planId, eventTypeKeys }) => {
-            await queryClient.cancelQueries({ queryKey: plansKey });
-            const previousPlans = queryClient.getQueryData<PlanTierResponseDto[]>(plansKey);
-            queryClient.setQueryData<PlanTierResponseDto[]>(plansKey, (plans = []) =>
-                plans.map((plan) => (plan.id === planId ? { ...plan, eventTypeKeys } : plan))
-            );
-            return { previousPlans };
-        },
-        onError: (_error, _variables, context) => {
-            if (context?.previousPlans) queryClient.setQueryData(plansKey, context.previousPlans);
-        },
-        onSuccess: (updatedPlan) => {
-            queryClient.setQueryData<PlanTierResponseDto[]>(plansKey, (plans = []) =>
-                plans.map((plan) => (plan.id === updatedPlan.id ? updatedPlan : plan))
-            );
+        mutationFn: ({ planId, clones }: { planId: string; clones: PlanTierDuplicateRequestDto['clones'] }) =>
+            api.post<PlanTierResponseDto[]>(endpoints.admin.planTiers.duplicate(planId), { clones }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: adminKeys.planTiers('EVENT', true) });
             queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
-        },
-        onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: plansKey });
         },
     });
 }

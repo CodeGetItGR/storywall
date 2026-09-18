@@ -6,16 +6,15 @@ import { AdminDiscountCodesPanel } from '@/components/admin/AdminDiscountCodesPa
 import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { BillingOpsPanel } from '@/components/admin/BillingOpsPanel';
 import { CollaborationsPanel } from '@/components/admin/CollaborationsPanel';
+import { CostTrackingPanel } from '@/components/admin/CostTrackingPanel';
 import { EventTypeRegistryPanel } from '@/components/admin/EventTypeRegistryPanel';
 import { ModuleRegistryPanel } from '@/components/admin/ModuleRegistryPanel';
 import { PaidServicesCatalogPanel } from '@/components/admin/PaidServicesCatalogPanel';
 import { PlanAssignmentPanel } from '@/components/admin/PlanAssignmentPanel';
-import { PlanAvailabilityPanel } from '@/components/admin/PlanAvailabilityPanel';
 import { PlanCatalogPanel } from '@/components/admin/PlanCatalogPanel';
-import { PlanModulesPanel } from '@/components/admin/PlanModulesPanel';
 import { PlatformMetricsPanel } from '@/components/admin/PlatformMetricsPanel';
 import { ReactionTypesCatalogPanel } from '@/components/admin/ReactionTypesCatalogPanel';
-import { RefundQueuePanel } from '@/components/admin/RefundQueuePanel';
+import { WithdrawalQueuePanel } from '@/components/admin/WithdrawalQueuePanel';
 
 export function AdminConsole() {
     const t = useTranslations('AdminPage');
@@ -38,14 +37,13 @@ export function AdminConsole() {
 
             <main className="min-w-0">
                 {tab === 'metrics' && <PlatformMetricsPanel />}
+                {tab === 'costTracking' && <CostTrackingPanel />}
                 {tab === 'eventPlans' && <PlanCatalogPanel scope="EVENT" />}
-                {tab === 'planAvailability' && <PlanAvailabilityPanel />}
-                {tab === 'planModules' && <PlanModulesPanel />}
                 {tab === 'modules' && <ModuleRegistryPanel />}
                 {tab === 'eventTypes' && <EventTypeRegistryPanel />}
                 {tab === 'assignments' && <PlanAssignmentPanel />}
                 {tab === 'billingOps' && <BillingOpsPanel />}
-                {tab === 'refunds' && <RefundQueuePanel />}
+                {tab === 'withdrawals' && <WithdrawalQueuePanel />}
             </main>
         </div>
     );

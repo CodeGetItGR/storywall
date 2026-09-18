@@ -2,24 +2,25 @@
 
 import { useTranslations } from 'next-intl';
 
+import { CommentActionsMenu } from '@/components/feed/post/CommentActionsMenu';
 import { ReplyItem } from '@/components/feed/post/ReplyItem';
 import Avatar from '@/components/ui/avatar';
-import type { EventMemberResponseDto } from '@/lib/api/types';
+import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import { authorNameFor, type CommentThread } from '@/lib/comments';
 import { avatarColorFromId, initialsFromName, timeAgoParts } from '@/lib/utils';
 
 interface CommentThreadItemProps {
     thread: CommentThread;
-    membersById: Map<string, EventMemberResponseDto>;
     onReply?: (parentCommentId: string, authorName: string, mention?: boolean) => void;
     isExpanded: boolean;
     onToggleReplies: (threadId: string) => void;
 }
 
-export function CommentThreadItem({ thread, membersById, onReply, isExpanded, onToggleReplies }: CommentThreadItemProps) {
+export function CommentThreadItem({ thread, onReply, isExpanded, onToggleReplies }: CommentThreadItemProps) {
     const t = useTranslations('PostModal');
     const { comment, replies } = thread;
-    const name = authorNameFor(comment, membersById, t('unknownAuthor'));
+    const memberAvatarUrl = useMemberAvatarUrl();
+    const name = authorNameFor(comment, t('unknownAuthor'));
     const commentTimeAgo = timeAgoParts(comment.createdAt);
 
     function handleReply() {
@@ -34,6 +35,7 @@ export function CommentThreadItem({ thread, membersById, onReply, isExpanded, on
         <div className="flex flex-col gap-2" data-comment-id={comment.id}>
             <div className="flex gap-3">
                 <Avatar
+                    src={memberAvatarUrl(comment.authorMemberId, comment.author?.avatarUrl)}
                     initials={initialsFromName(name)}
                     color={avatarColorFromId(comment.authorMemberId ?? comment.id)}
                     size="sm"
@@ -42,14 +44,16 @@ export function CommentThreadItem({ thread, membersById, onReply, isExpanded, on
                 />
                 <div className="min-w-0 flex-1">
                     <div className="rounded-2xl rounded-tl-sm bg-surface-muted px-4 py-3">
+                        {/* Comment header */}
                         <div className="mb-1 flex items-baseline gap-2">
-                            <span className="text-sm font-semibold leading-tight text-ink">{name}</span>
-                            <span className="text-xs text-ink-faint">
+                            <span className="min-w-0 flex-1 wrap-break-word text-sm font-semibold leading-tight text-ink">{name}</span>
+                            <span className="shrink-0 whitespace-nowrap text-xs text-ink-faint">
                                 {commentTimeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${commentTimeAgo.unit}`, { count: commentTimeAgo.value })}
                             </span>
                         </div>
                         <p className="text-sm leading-relaxed text-ink">{comment.content}</p>
                     </div>
+
                     {onReply && (
                         <div className="mt-1 flex items-center gap-3 px-4">
                             <button
@@ -71,6 +75,8 @@ export function CommentThreadItem({ thread, membersById, onReply, isExpanded, on
                                     {isExpanded ? t('hideReplies') : t('viewReplies', { count: replies.length })}
                                 </button>
                             )}
+                            {/* Comment actions */}
+                            <CommentActionsMenu comment={comment} wrapperClassName="mt-1 flex justify-end px-1" />
                         </div>
                     )}
                 </div>
@@ -79,7 +85,7 @@ export function CommentThreadItem({ thread, membersById, onReply, isExpanded, on
             {isExpanded && (
                 <div className="ml-9 flex flex-col gap-2 border-l border-border pl-3">
                     {replies.map((reply) => (
-                        <ReplyItem key={reply.id} reply={reply} membersById={membersById} parentCommentId={comment.id} onReply={onReply} />
+                        <ReplyItem key={reply.id} reply={reply} parentCommentId={comment.id} onReply={onReply} />
                     ))}
                 </div>
             )}

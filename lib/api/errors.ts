@@ -42,10 +42,6 @@ export const ERROR_CODES = {
     PLAN_TIER_NOT_PURCHASABLE: 5015,
     PLAN_TIER_NOT_PRICED: 5019,
     PLAN_TIER_CURRENCY_UNSUPPORTED: 5021,
-    REFUND_NOT_ELIGIBLE: 5022,
-    REFUND_ALREADY_REQUESTED: 5023,
-    REFUND_REQUEST_NOT_PENDING: 5024,
-    ORDER_NOT_REFUNDABLE: 5025,
     PLAN_TIER_NOT_AN_UPGRADE: 5029,
     PLAN_TIER_CURRENCY_MISMATCH: 5030,
     CHECKOUT_SESSION_UNRESOLVED: 5031,
@@ -84,6 +80,7 @@ export const ERROR_CODES = {
     INVALID_EVENT_TYPE: 3018,
     PLAN_TIER_NOT_AVAILABLE_FOR_EVENT_TYPE: 5053,
     EVENT_SESSION_MAIN_DATES_READ_ONLY: 5055,
+    EVENT_SESSION_MAIN_LOCATION_READ_ONLY: 5065,
     EVENT_SESSION_SECONDARY_ALREADY_ASSIGNED: 5056,
     REACTION_TYPE_NOT_USABLE: 5057,
     REACTION_TYPE_IN_USE: 5058,
@@ -93,6 +90,16 @@ export const ERROR_CODES = {
     COLLABORATION_EARNING_NOT_PAYABLE: 5062,
     EVENT_DELETE_NOT_PRIMARY_HOST: 4003,
     EVENT_DELETE_ALREADY_PENDING: 5064,
+    QR_MEDIA_UPLOAD_DISABLED: 5066,
+    EVENT_SESSION_LIMIT_REACHED: 5067,
+    QR_SHARED_LINK_HOST_MANAGED: 5068,
+    EVENT_HOST_PRIMARY_CANNOT_BE_REMOVED: 5069,
+    EVENT_HOST_DISPLAY_ORDER_RESERVED: 5070,
+    EVENT_HOST_TRANSFER_NOT_PRIMARY_HOST: 4004,
+    EVENT_WITHDRAWN: 5071,
+    WITHDRAWAL_TERMS_VERSION_STALE: 5072,
+    WITHDRAWAL_REFUSED: 5073,
+    WITHDRAWAL_NOT_HELD: 5074,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the
@@ -138,6 +145,20 @@ export function getQuotaExceededDetails(error: unknown): QuotaExceededDetails | 
 
 export function isModuleNotAvailableError(error: unknown): boolean {
     return getErrorCode(error) === ERROR_CODES.MODULE_NOT_AVAILABLE;
+}
+
+// Gallery's QR upload-link toggle is a `configuration` flag, not a module, so
+// it 409s with its own code instead of MODULE_NOT_AVAILABLE — see
+// event-type-feature-toggles-quotas-fe-integration.md §4.
+export function isQrUploadDisabledError(error: unknown): boolean {
+    return getErrorCode(error) === ERROR_CODES.QR_MEDIA_UPLOAD_DISABLED;
+}
+
+// The event type's schedule-section cap was reached (`defaultConfig.maxSections`
+// on GET /api/event-types/{eventTypeKey}/modules) — distinct from the module
+// being unavailable at all. See event-type-feature-toggles-quotas-fe-integration.md §3.
+export function isScheduleLimitReachedError(error: unknown): boolean {
+    return getErrorCode(error) === ERROR_CODES.EVENT_SESSION_LIMIT_REACHED;
 }
 
 // Seconds the caller must wait after a 429, or undefined when this isn't one.

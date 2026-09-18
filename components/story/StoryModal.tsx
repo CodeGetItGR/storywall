@@ -84,6 +84,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                         <StoryHeader
                             authorName={authorName}
                             authorId={activeStory.authorMemberId ?? activeStory.id}
+                            avatarUrl={author?.avatarUrl}
                             timeStr={timeStr}
                             canManage={canManage}
                             canDelete={canDeleteStory}

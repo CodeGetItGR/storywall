@@ -5,7 +5,6 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventBilling, useUpgradeOptions } from '@/hooks/useBilling';
-import { useEventRefundFlow } from '@/hooks/useEventRefundFlow';
 import { billingCurrency, formatBillingDate, newestBillingOrder, paidBillingTotal } from '@/lib/billing';
 import { publicAssignablePlans, scopedPlans } from '@/lib/planTiers';
 
@@ -18,7 +17,6 @@ const ORDER_PREVIEW_COUNT = 6;
 export function useEventBillingPanel(eventId: string) {
     const appConfigQuery = useAppConfig();
     const billing = useEventBilling(eventId, true);
-    const refundFlow = useEventRefundFlow(eventId);
 
     const [showAllOrders, setShowAllOrders] = useState(false);
 
@@ -92,8 +90,6 @@ export function useEventBillingPanel(eventId: string) {
         handleRetry,
         // Orders
         handleShowAllOrders,
-        // Refunds
-        ...refundFlow,
     };
 }
 

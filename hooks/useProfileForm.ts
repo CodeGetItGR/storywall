@@ -1,12 +1,12 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import type { ChangeEvent, SubmitEvent } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
+import { useMe } from '@/hooks/useMe';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { ERROR_CODES,getErrorCode, getErrorMessage, getFieldErrors } from '@/lib/api/errors';
@@ -36,11 +36,7 @@ export function useProfileForm() {
     const router = useRouter();
     const { logout, updateProfile, user } = useAuth();
     const toErrorMessage = useApiErrorMessage();
-    const profileQuery = useQuery({
-        queryKey: ['me'],
-        queryFn: () => api.get<UserResponseDto>(endpoints.me.profile),
-        enabled: Boolean(user),
-    });
+    const profileQuery = useMe();
 
     const profile = profileQuery.data;
     const sourceFirstName = profile?.firstName ?? user?.firstName ?? '';
@@ -62,10 +58,6 @@ export function useProfileForm() {
     const [isSavingProfile, setIsSavingProfile] = useState(false);
     const [isSavingProfilePicture, setIsSavingProfilePicture] = useState(false);
     const [isSavingPassword, setIsSavingPassword] = useState(false);
-
-    useEffect(() => {
-        if (profile) updateProfile(profile);
-    }, [profile, updateProfile]);
 
     useEffect(() => {
         return () => {

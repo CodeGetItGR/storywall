@@ -40,7 +40,7 @@ export function PostMediaViewer({ post, media, initialIndex, alt, onCloseAction 
                 <Dialog.Popup aria-label={alt} className="fixed inset-0 z-50 bg-black outline-none">
                     <Dialog.Close
                         aria-label={t('close')}
-                        className="absolute left-3 top-3 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/45 text-white transition-colors hover:bg-black/65"
+                        className="absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/45 text-white transition-colors hover:bg-black/65"
                     >
                         <X className="h-6 w-6" />
                     </Dialog.Close>

@@ -2,6 +2,7 @@
 
 import { CheckCircle2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { useEventTypeVoice } from '@/hooks/useEventTypeVoice';
 import type { EventTypeConvention } from '@/lib/api/types';

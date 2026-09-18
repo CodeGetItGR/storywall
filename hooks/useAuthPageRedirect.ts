@@ -4,15 +4,15 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
-import { routes } from '@/lib/routes';
+import { getPostAuthRedirectPath } from '@/lib/auth/returnPath';
 
-export function useAuthPageRedirect() {
+export function useAuthPageRedirect(returnPath: string | null = null) {
     const router = useRouter();
     const { isAuthenticated, isBootstrapping, user } = useAuth();
-    const authenticatedRedirectPath = user?.role === 'ADMIN' ? routes.admin : routes.home;
+    const authenticatedRedirectPath = user ? getPostAuthRedirectPath(user.role, returnPath) : null;
 
     useEffect(() => {
-        if (isBootstrapping || !isAuthenticated) return;
+        if (isBootstrapping || !isAuthenticated || !authenticatedRedirectPath) return;
         router.replace(authenticatedRedirectPath);
     }, [authenticatedRedirectPath, isAuthenticated, isBootstrapping, router]);
 

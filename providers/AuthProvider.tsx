@@ -20,6 +20,9 @@ export interface AuthUser {
     status: AccountStatus;
     createdAt: string;
     role: PlatformRole;
+    // null until /api/me has been fetched at least once this session — see
+    // updateProfile below, the only thing that ever sets it.
+    emailVerified: boolean | null;
 }
 
 export interface AuthContextValue {
@@ -30,7 +33,7 @@ export interface AuthContextValue {
     login: (input: { email: string; password: string; inviteToken?: string }) => Promise<AuthSessionDto>;
     oauth: (provider: 'GOOGLE' | 'APPLE', input: { idToken: string; inviteToken?: string }) => Promise<AuthSessionDto>;
     logout: () => Promise<void>;
-    updateProfile: (profile: Pick<UserResponseDto, 'firstName' | 'lastName' | 'profilePictureUrl'>) => void;
+    updateProfile: (profile: Pick<UserResponseDto, 'firstName' | 'lastName' | 'profilePictureUrl' | 'emailVerified'>) => void;
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
@@ -72,7 +75,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const session = await authClient.session(controller.signal);
                 applyIfCurrent(() => (session ? setSession(session) : clearSession()));
             } catch {
-                applyIfCurrent(clearSession);
+                // authClient.session() only throws for a non-401 failure (503 from a
+                // rate-limited/unreachable Spring, a network error, or the abort
+                // above) — a real "no session" already resolved via the branch
+                // above without throwing. Only a 401 means the session is gone, so
+                // leave whatever's in the store untouched here rather than log the
+                // user out from a transient failure.
             } finally {
                 clearTimeout(timeoutId);
                 // Unlike the session verdict, this always applies: the app must
@@ -90,23 +98,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
     }, []);
 
-    const register = useCallback(async (input: { email: string; password: string; firstName: string; lastName: string; inviteToken?: string }) => {
-        const session = await authClient.register(input);
-        setSession(session);
-        return session;
-    }, []);
+    const register = useCallback(
+        async (input: { email: string; password: string; firstName: string; lastName: string; inviteToken?: string }) => {
+            const session = await authClient.register(input);
+            // A prior session's queries (e.g. the un-scoped myEventsKeys.all) can
+            // still be sitting in cache if the previous account never went through
+            // an explicit logout (silent refresh-token expiry, account switch) —
+            // clear before setSession so nothing ever renders their data.
+            queryClient.clear();
+            setSession(session);
+            return session;
+        },
+        [queryClient]
+    );
 
-    const login = useCallback(async (input: { email: string; password: string; inviteToken?: string }) => {
-        const session = await authClient.login(input);
-        setSession(session);
-        return session;
-    }, []);
+    const login = useCallback(
+        async (input: { email: string; password: string; inviteToken?: string }) => {
+            const session = await authClient.login(input);
+            queryClient.clear();
+            setSession(session);
+            return session;
+        },
+        [queryClient]
+    );
 
-    const oauth = useCallback(async (provider: 'GOOGLE' | 'APPLE', input: { idToken: string; inviteToken?: string }) => {
-        const session = await authClient.oauth(provider, input);
-        setSession(session);
-        return session;
-    }, []);
+    const oauth = useCallback(
+        async (provider: 'GOOGLE' | 'APPLE', input: { idToken: string; inviteToken?: string }) => {
+            const session = await authClient.oauth(provider, input);
+            queryClient.clear();
+            setSession(session);
+            return session;
+        },
+        [queryClient]
+    );
 
     const logout = useCallback(async () => {
         try {
@@ -123,11 +147,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         queryClient.clear();
     }, [queryClient]);
 
-    const updateProfile = useCallback((profile: Pick<UserResponseDto, 'firstName' | 'lastName' | 'profilePictureUrl'>) => {
+    const updateProfile = useCallback((profile: Pick<UserResponseDto, 'firstName' | 'lastName' | 'profilePictureUrl' | 'emailVerified'>) => {
         updateSessionProfile({
             firstName: profile.firstName ?? '',
             lastName: profile.lastName,
             profilePictureUrl: profile.profilePictureUrl,
+            emailVerified: profile.emailVerified,
         });
     }, []);
 
@@ -137,7 +162,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // does change them propagates, which keying the memo on `isAuthenticated`
     // alone did not: a role or display name arriving later left consumers
     // holding the previous user.
-    const { accessToken, userId, email, firstName, lastName, profilePictureUrl, authProvider, isGuestAccount, status, createdAt, role } = authState;
+    const { accessToken, userId, email, firstName, lastName, profilePictureUrl, authProvider, isGuestAccount, status, createdAt, role, emailVerified } =
+        authState;
     const user = useMemo(
         () =>
             accessToken
@@ -152,9 +178,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                       status: status!,
                       createdAt: createdAt!,
                       role: role!,
+                      emailVerified,
                   }
                 : null,
-        [accessToken, userId, email, firstName, lastName, profilePictureUrl, authProvider, isGuestAccount, status, createdAt, role]
+        [accessToken, userId, email, firstName, lastName, profilePictureUrl, authProvider, isGuestAccount, status, createdAt, role, emailVerified]
     );
     const isAuthenticated = Boolean(accessToken);
 

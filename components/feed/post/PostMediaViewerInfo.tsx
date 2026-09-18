@@ -8,6 +8,7 @@ import { PostAuthorAvatar } from '@/components/feed/post/PostAuthorAvatar';
 import { PostReactionPicker } from '@/components/feed/post/PostReactionPicker';
 import { ReactionSummary } from '@/components/feed/post/ReactionSummary';
 import { useAppConfig, usePostModal } from '@/hooks';
+import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import type { PostResponseDto } from '@/lib/api/types';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { cn, timeAgoParts } from '@/lib/utils';
@@ -39,6 +40,7 @@ export function PostMediaViewerInfo({ post }: PostMediaViewerInfoProps) {
     const t = useTranslations('PostCard');
     const { open: openPostModal } = usePostModal();
     const activeEvent = useActiveEvent();
+    const memberAvatarUrl = useMemberAvatarUrl();
     const { data: appConfig } = useAppConfig();
 
     const authorName = post.author?.displayName ?? t('unknownAuthor');
@@ -53,7 +55,7 @@ export function PostMediaViewerInfo({ post }: PostMediaViewerInfoProps) {
     return (
         <div className="media-viewer-overlay w-full bg-gradient-to-t from-black/85 via-black/55 to-transparent px-4 pb-4 pt-10">
             {/* Author */}
-            <PostAuthorAvatar avatarUrl={post.author?.avatarUrl} name={authorName} timeAgo={timeAgo} />
+            <PostAuthorAvatar avatarUrl={memberAvatarUrl(post.authorMemberId, post.author?.avatarUrl)} name={authorName} timeAgo={timeAgo} />
 
             {/* Caption */}
             {post.content && <PostMediaCaption content={post.content} />}

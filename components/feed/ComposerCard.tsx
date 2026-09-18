@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { AddImageButton } from '@/components/composer/AddImageButton';
 import Avatar from '@/components/ui/avatar';
+import { useAuth } from '@/hooks';
 import { initialsFromName } from '@/lib/utils';
 import { useComposer } from '@/providers/ComposerProvider';
 import { useActiveMember } from '@/providers/EventProvider';
@@ -11,6 +12,7 @@ import { useActiveMember } from '@/providers/EventProvider';
 export function ComposerCard() {
     const t = useTranslations('ComposerCard');
     const activeMember = useActiveMember();
+    const profile = useAuth();
     const { openPostComposer, openPostImagePicker, canComposePost } = useComposer();
 
     const initials = activeMember ? initialsFromName(activeMember.displayName) : '?';
@@ -18,12 +20,12 @@ export function ComposerCard() {
     if (!canComposePost) return null;
 
     return (
-        <article className="relative isolate mx-2 mb-2 rounded-xl bg-background/50 p-px shadow-[0_14px_32px_rgba(36,31,26,0.12)] after:pointer-events-none after:absolute after:-inset-0.75 after:-z-10 after:rounded-[inherit] sm:mx-5">
+        <article className="relative isolate mx-2 mb-2 rounded-xl story-ring-50 p-px!">
             {/* Composer shell */}
-            <div className="rounded-[calc(1.75rem-1px)] bg-card/95 px-4 py-4 sm:px-5">
+            <div className="rounded-2xl bg-card/95 p-1 w-full">
                 {/* Compose row */}
                 <div className="flex items-center gap-3">
-                    <Avatar initials={initials} size="md" alt={activeMember?.displayName} />
+                    <Avatar src={profile.user?.profilePictureUrl} initials={initials} size="md" alt={activeMember?.displayName} />
                     <button
                         type="button"
                         onClick={openPostComposer}

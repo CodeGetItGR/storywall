@@ -4,27 +4,18 @@ import { ChevronRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Fragment } from 'react';
 
-const STEPS = ['type', 'plan', 'details', 'overview'] as const;
+import { type CreateEventStep, useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
-export type CreateEventStep = (typeof STEPS)[number];
+const STEPS: CreateEventStep[] = ['type', 'plan', 'details', 'overview'];
 
-export function EventCreateStepBreadcrumb({
-    step,
-    onGoToTypeAction,
-    onGoToPlanAction,
-    onGoToDetailsAction,
-}: {
-    step: CreateEventStep;
-    onGoToTypeAction: () => void;
-    onGoToPlanAction: () => void;
-    onGoToDetailsAction: () => void;
-}) {
+export function EventCreateStepBreadcrumb() {
     const t = useTranslations('CreateEventPage');
+    const { step, goToType, goToPlan, goToDetails } = useCreateEventForm();
     const currentIndex = STEPS.indexOf(step);
     const goTo: Partial<Record<CreateEventStep, () => void>> = {
-        type: onGoToTypeAction,
-        plan: onGoToPlanAction,
-        details: onGoToDetailsAction,
+        type: goToType,
+        plan: goToPlan,
+        details: goToDetails,
     };
 
     return (

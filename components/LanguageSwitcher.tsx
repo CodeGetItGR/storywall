@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback, useTransition } from 'react';
 
@@ -12,18 +11,22 @@ import { endpoints } from '@/lib/api/endpoints';
 import type { MeUpdateRequestDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
-export function LanguageSwitcher({ className, variant = 'default' }: { className?: string; variant?: 'default' | 'sidebar' }) {
+type LanguageSwitcherVariant = 'auth' | 'default' | 'sidebar';
+
+export function LanguageSwitcher({ className, variant = 'default' }: { className?: string; variant?: LanguageSwitcherVariant }) {
     const locale = useLocale();
     const t = useTranslations('LanguageSwitcher');
-    const router = useRouter();
     const { isAuthenticated } = useAuth();
     const [isPending, startTransition] = useTransition();
 
     const handleChange = useCallback(
         (next: Locale) => {
             if (next === locale) return;
-            startTransition(() => {
-                void setLocale(next).then(() => router.refresh());
+            startTransition(async () => {
+                await setLocale(next);
+                if (variant === 'auth') {
+                    window.location.reload();
+                }
             });
             // Best-effort: keeps the stored account locale (used for async
             // notification/invitation emails, see backend-localization-fe-integration.md
@@ -33,7 +36,7 @@ export function LanguageSwitcher({ className, variant = 'default' }: { className
                 void api.patch<unknown>(endpoints.me.profile, { locale: next } satisfies MeUpdateRequestDto).catch(() => {});
             }
         },
-        [locale, router, startTransition, isAuthenticated]
+        [locale, startTransition, isAuthenticated, variant]
     );
 
     const handleLocaleClick = useCallback(
@@ -48,8 +51,8 @@ export function LanguageSwitcher({ className, variant = 'default' }: { className
         <div
             className={cn(
                 'inline-flex items-center rounded-full',
-                variant === 'sidebar' ? 'gap-3' : 'gap-0.5 p-0.5',
-                variant === 'sidebar' ? 'bg-transparent' : 'bg-surface-muted',
+                variant === 'sidebar' ? 'gap-3' : variant === 'auth' ? 'gap-0' : 'gap-0.5 p-0.5',
+                variant === 'default' ? 'bg-surface-muted' : 'bg-transparent',
                 className
             )}
             role="group"
@@ -70,9 +73,16 @@ export function LanguageSwitcher({ className, variant = 'default' }: { className
                                   'px-0 py-0.5 text-sm',
                                   locale === l ? 'text-white underline underline-offset-4' : 'text-white/55 hover:text-white/85'
                               )
-                            : locale === l
-                              ? 'min-w-10 bg-card px-2.5 py-1 text-xs text-ink shadow-sm'
-                              : 'min-w-10 px-2.5 py-1 text-xs text-ink-muted hover:text-ink'
+                            : variant === 'auth'
+                              ? cn(
+                                    'min-h-11 min-w-9 px-1.5 text-[11px] tracking-wide outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
+                                    locale === l
+                                        ? 'text-ink-muted underline decoration-ink-faint/70 underline-offset-4'
+                                        : 'text-ink-faint hover:text-ink-muted'
+                                )
+                              : locale === l
+                                ? 'min-w-10 bg-card px-2.5 py-1 text-xs text-ink shadow-sm'
+                                : 'min-w-10 px-2.5 py-1 text-xs text-ink-muted hover:text-ink'
                     )}
                 >
                     {t(`languages.${l}`)}

@@ -1,10 +1,12 @@
 'use client';
 
-import { Camera, Images, Loader2, RefreshCw, Send, Trash2 } from 'lucide-react';
+import { Camera, ChevronsRight, Images, Loader2, RefreshCw, Send, Sun, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { type ChangeEvent, type MouseEvent, useEffect, useState } from 'react';
+import { type ChangeEvent, type MouseEvent, type PointerEvent as ReactPointerEvent, useEffect, useState } from 'react';
 
+import { FilterNameOverlay } from '@/components/composer/FilterNameOverlay';
+import { PostImageFilterPicker } from '@/components/composer/PostImageFilterPicker';
 import { StoryVideo } from '@/components/story/StoryVideo';
 import { Modal } from '@/components/ui/modal';
 import { useStoryCameraController } from '@/hooks/useStoryCameraController';
@@ -41,6 +43,7 @@ function FilterLayer({ src, alt, preset }: { src: string; alt: string; preset: S
 export function StoryComposerModal({ controller }: { controller: StoryComposerController }) {
     const t = useTranslations('StoryComposer');
     const [cameraActive, setCameraActive] = useState(true);
+    const [showFilterSwipeCue, setShowFilterSwipeCue] = useState(true);
     // Some Android browsers can't decode a locally-picked video's blob: URL preview.
     // Track that per item and fall back to the eagerly-uploaded remote copy once ready.
     const [failedPreviewKeys, setFailedPreviewKeys] = useState<Set<string>>(new Set());
@@ -58,7 +61,6 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
         libraryInputRef,
         maxCaptionLength,
         maxItems,
-        notice,
         pickFromLibrary,
         removeItem,
         selectItem,
@@ -88,6 +90,12 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
     }, [currentIndex]);
 
     useEffect(() => {
+        if (!showFilterSwipeCue) return;
+        const timeout = setTimeout(() => setShowFilterSwipeCue(false), 3500);
+        return () => clearTimeout(timeout);
+    }, [showFilterSwipeCue]);
+
+    useEffect(() => {
         if (!activeItem) return;
         const index = STORY_FILTER_PRESETS.findIndex((preset) => preset.id === activeItem.filterId);
         if (index >= 0) setFilterIndex(index);
@@ -100,6 +108,9 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
         isReady: isCameraReady,
         isRecording,
         error: cameraError,
+        exposure,
+        setExposure,
+        zoomHandlers,
         setPhotoMode,
         setVideoMode,
         capture,
@@ -118,6 +129,9 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
     function handleCaptionChange(event: ChangeEvent<HTMLTextAreaElement>) {
         updateCaption(event.target.value);
     }
+    function handleExposureChange(event: ChangeEvent<HTMLInputElement>) {
+        setExposure(Number(event.target.value));
+    }
     function handleStoryLibraryChange(event: ChangeEvent<HTMLInputElement>) {
         const hasFiles = Boolean(event.target.files?.length);
         handleLibraryChange(event);
@@ -125,6 +139,7 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
     }
     function handleCapturedFile(file: File) {
         addCapturedFile(file);
+        setShowFilterSwipeCue(true);
         setCameraActive(false);
     }
     function showCameraView() {
@@ -133,6 +148,14 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
     function handlePreviewError() {
         if (!activeItem) return;
         setFailedPreviewKeys((current) => new Set(current).add(activeItem.key));
+    }
+    function handleFilterPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+        setShowFilterSwipeCue(false);
+        filterSwipeHandlers.onPointerDown(event);
+    }
+    function handleStoryFilterChange(filterId: string) {
+        const index = STORY_FILTER_PRESETS.findIndex((preset) => preset.id === filterId);
+        if (index >= 0) setFilterIndex(index);
     }
 
     const activePreviewFailed = Boolean(activeItem && failedPreviewKeys.has(activeItem.key));
@@ -163,7 +186,11 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                         />
                                     )
                                 ) : (
-                                    <div className="relative h-full w-full touch-none" {...filterSwipeHandlers}>
+                                    <div
+                                        className="relative h-full w-full touch-none"
+                                        {...filterSwipeHandlers}
+                                        onPointerDown={handleFilterPointerDown}
+                                    >
                                         <FilterLayer src={activeItem.previewUrl} alt={t('previewAlt')} preset={activeFilterPreset} />
                                         {targetFilterPreset && (
                                             <div className="absolute inset-0" style={{ opacity: dragProgress }}>
@@ -172,10 +199,12 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                         )}
                                     </div>
                                 )}
-                                {/* Filter name pill */}
-                                {isActiveImage && visibleName && (
-                                    <div className="pointer-events-none absolute top-1/2 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/60 px-4 py-1.5 text-sm font-semibold text-white backdrop-blur-md">
-                                        {t(`filters.${visibleName}`)}
+                                <FilterNameOverlay name={isActiveImage && visibleName ? t(`filters.${visibleName}`) : null} />
+                                {/* Filter swipe cue */}
+                                {isActiveImage && showFilterSwipeCue && (
+                                    <div className="pointer-events-none absolute top-1/2 right-5 z-10 flex -translate-y-1/2 flex-col items-center gap-1 rounded-full bg-black/55 px-3 py-2 text-white/90 backdrop-blur-md motion-safe:animate-pulse">
+                                        <ChevronsRight aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
+                                        <span className="text-[10px] leading-tight font-medium whitespace-nowrap">{t('swipeRightForFilters')}</span>
                                     </div>
                                 )}
                                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/80" />
@@ -270,14 +299,13 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                             {activeItem.caption.length}/{maxCaptionLength}
                                         </span>
                                     </div>
-                                    {(activeItem.error || error || notice) && (
-                                        <p
-                                            className={cn(
-                                                'rounded-md bg-black/55 px-3 py-2 text-xs backdrop-blur-md',
-                                                activeItem.error || error ? 'text-red-200' : 'text-white/75'
-                                            )}
-                                        >
-                                            {activeItem.error ?? error ?? notice}
+                                    {/* Filter tray */}
+                                    {isActiveImage && (
+                                        <PostImageFilterPicker image={activeItem} onFilterChange={handleStoryFilterChange} variant="overlay" />
+                                    )}
+                                    {(activeItem.error || error) && (
+                                        <p className="rounded-md bg-black/55 px-3 py-2 text-xs text-red-200 backdrop-blur-md">
+                                            {activeItem.error ?? error}
                                         </p>
                                     )}
                                     <button
@@ -299,10 +327,29 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                 muted
                                 playsInline
                                 autoPlay
-                                className="absolute inset-0 h-full w-full object-cover"
+                                className="absolute inset-0 h-full w-full touch-none object-contain"
                                 aria-label={t('cameraPreview')}
+                                {...zoomHandlers}
                             />
                             <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/65" />
+
+                            {/* Brightness control */}
+                            {exposure && (
+                                <div className="absolute top-1/2 right-4 z-10 flex -translate-y-1/2 flex-col items-center gap-2 rounded-full bg-black/45 px-2 py-3 backdrop-blur-md">
+                                    <Sun className="h-4 w-4 text-white/80" aria-hidden="true" />
+                                    <input
+                                        type="range"
+                                        min={exposure.min}
+                                        max={exposure.max}
+                                        step={exposure.step}
+                                        value={exposure.value}
+                                        onChange={handleExposureChange}
+                                        aria-label={t('brightness')}
+                                        className="h-28 w-1.5 accent-white"
+                                        style={{ writingMode: 'vertical-lr', direction: 'rtl' }}
+                                    />
+                                </div>
+                            )}
 
                             {/* Camera fallback */}
                             {cameraError && (

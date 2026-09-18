@@ -2,7 +2,7 @@
 
 import { useCreate, useCustomMutation, useInvalidate } from '@refinedev/core';
 import { useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import React, { type ChangeEvent, useCallback, useMemo, useRef, useState } from 'react';
 
@@ -11,23 +11,17 @@ import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminSection } from '@/components/admin/AdminSection';
 import { PlanCreateAssignments } from '@/components/admin/PlanCreateAssignments';
 import { VisibilitySegmentedControl } from '@/components/admin/VisibilitySegmentedControl';
+import { useDuplicatePlanTier } from '@/hooks/useAdmin';
 import { appConfigKeys } from '@/hooks/useAppConfig';
+import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { usePlanCreateAssignments } from '@/hooks/usePlanCreateAssignments';
-import {
-    codeFromName,
-    instantToLocalInput,
-    localInputToInstant,
-    priceInputToMinor,
-    priceMinorToInput,
-    STORAGE_UNITS,
-    storageBytesToInput,
-    storageInputToBytes,
-} from '@/lib/adminPlanForm';
+import { codeFromName, localInputToInstant, priceInputToMinor, STORAGE_UNITS, storageInputToBytes } from '@/lib/adminPlanForm';
 import { adminErrorMessageKey, checked, emptyToNull, numberOrNull } from '@/lib/adminUtils';
-import { type Visibility, visibilityFlags, visibilityOf } from '@/lib/adminVisibility';
+import { type Visibility, visibilityFlags } from '@/lib/adminVisibility';
 import { endpoints } from '@/lib/api/endpoints';
 import type {
     BillingPeriod,
+    EventTypeConvention,
     PlanScope,
     PlanTierRequestDto,
     PlanTierResponseDto,
@@ -36,6 +30,18 @@ import type {
 } from '@/lib/api/types';
 
 const BILLING_PERIODS: BillingPeriod[] = ['ONE_TIME'];
+
+type CloneRow = {
+    rowId: string;
+    eventTypeKey: EventTypeConvention | '';
+    name: string;
+    description: string;
+    codeOverride: string | null;
+};
+
+function makeCloneRow(): CloneRow {
+    return { rowId: Math.random().toString(36).slice(2), eventTypeKey: '', name: '', description: '', codeOverride: null };
+}
 
 export function PlanCreateForm({
     open,
@@ -56,6 +62,269 @@ export function PlanCreateForm({
     scope: PlanScope;
     sourcePlan?: PlanTierResponseDto | null;
 }) {
+    return sourcePlan ? (
+        <PlanDuplicateForm
+            open={open}
+            onCloseAction={onCloseAction}
+            onCreatedAction={onCreatedAction}
+            plans={plans}
+            eventTypes={eventTypes}
+            scope={scope}
+            sourcePlan={sourcePlan}
+        />
+    ) : (
+        <PlanCreateNewForm
+            open={open}
+            onCloseAction={onCloseAction}
+            onCreatedAction={onCreatedAction}
+            plans={plans}
+            eventTypes={eventTypes}
+            modules={modules}
+            scope={scope}
+        />
+    );
+}
+
+function PlanDuplicateForm({
+    open,
+    onCloseAction,
+    onCreatedAction,
+    plans,
+    eventTypes,
+    scope,
+    sourcePlan,
+}: {
+    open: boolean;
+    onCloseAction: () => void;
+    onCreatedAction: (name: string) => void;
+    plans: PlanTierResponseDto[];
+    eventTypes: PlatformEventTypeResponseDto[];
+    scope: PlanScope;
+    sourcePlan: PlanTierResponseDto;
+}) {
+    const t = useTranslations('AdminPage');
+    const queryClient = useQueryClient();
+    const invalidate = useInvalidate();
+    const duplicatePlan = useDuplicatePlanTier();
+    const [rows, setRows] = useState<CloneRow[]>([makeCloneRow()]);
+
+    const orderedEventTypes = useMemo(() => [...eventTypes].sort((left, right) => left.sortOrder - right.sortOrder), [eventTypes]);
+    const takenCodes = useMemo(() => plans.map((plan) => plan.code), [plans]);
+
+    function resetForm() {
+        setRows([makeCloneRow()]);
+    }
+
+    function handleClose() {
+        resetForm();
+        onCloseAction();
+    }
+
+    function addRow() {
+        setRows((current) => [...current, makeCloneRow()]);
+    }
+
+    function removeRow(rowId: string) {
+        setRows((current) => current.filter((row) => row.rowId !== rowId));
+    }
+
+    function updateRow(rowId: string, patch: Partial<CloneRow>) {
+        setRows((current) => current.map((row) => (row.rowId === rowId ? { ...row, ...patch } : row)));
+    }
+
+    // Every other row's chosen event type (and the source's own) is off the table for this row.
+    function availableEventTypesFor(rowId: string) {
+        const usedElsewhere = new Set(rows.filter((row) => row.rowId !== rowId).map((row) => row.eventTypeKey));
+        return orderedEventTypes.filter((eventType) => eventType.eventTypeKey !== sourcePlan.eventTypeKey && !usedElsewhere.has(eventType.eventTypeKey));
+    }
+
+    function codeForRow(row: CloneRow) {
+        if (row.codeOverride !== null) return row.codeOverride;
+        const nameForCode = row.name.trim() || `${sourcePlan.name} ${row.eventTypeKey}`;
+        return codeFromName(nameForCode, takenCodes);
+    }
+
+    const canSubmit = rows.length > 0 && rows.every((row) => row.eventTypeKey && codeForRow(row));
+
+    async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
+        event.preventDefault();
+        if (!canSubmit) return;
+        await duplicatePlan.mutateAsync({
+            planId: sourcePlan.id,
+            clones: rows.map((row) => ({
+                eventTypeKey: row.eventTypeKey as EventTypeConvention,
+                code: codeForRow(row),
+                name: row.name.trim() || undefined,
+                description: emptyToNull(row.description) ?? undefined,
+            })),
+        });
+        invalidate({ resource: 'plan-tiers', dataProviderName: 'plan-tiers', invalidates: ['list'] });
+        queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
+        resetForm();
+        onCreatedAction(sourcePlan.name);
+    }
+
+    return (
+        <AdminDrawer
+            open={open}
+            onClose={handleClose}
+            closeLabel={t('cancel')}
+            title={t('plans.duplicate.title')}
+            subtitle={t('plans.duplicate.subtitle', { plan: sourcePlan.name })}
+            footer={
+                <>
+                    <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[11px] font-semibold text-ink-muted">{scope}</span>
+                    <div className="flex items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={handleClose}
+                            className="min-h-9 rounded-md border border-border px-3.5 text-sm font-semibold text-ink-muted"
+                        >
+                            {t('cancel')}
+                        </button>
+                        <button
+                            type="submit"
+                            form="plan-duplicate-form"
+                            disabled={!canSubmit || duplicatePlan.isPending}
+                            className="inline-flex min-h-9 items-center gap-2 rounded-md bg-ink px-3.5 text-sm font-semibold text-white disabled:opacity-50"
+                        >
+                            {duplicatePlan.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                            {t('plans.duplicate.submit')}
+                        </button>
+                    </div>
+                </>
+            }
+        >
+            <form id="plan-duplicate-form" onSubmit={handleSubmit} className="space-y-5">
+                <AdminSection title={t('plans.duplicate.cloneTargetsTitle')} description={t('plans.duplicate.cloneTargetsHint')}>
+                    <div className="space-y-4">
+                        {rows.map((row) => (
+                            <PlanCloneTargetRow
+                                key={row.rowId}
+                                row={row}
+                                code={codeForRow(row)}
+                                sourcePlan={sourcePlan}
+                                eventTypeOptions={availableEventTypesFor(row.rowId)}
+                                canRemove={rows.length > 1}
+                                onUpdateAction={updateRow}
+                                onRemoveAction={removeRow}
+                            />
+                        ))}
+                    </div>
+                    <button
+                        type="button"
+                        onClick={addRow}
+                        className="mt-3 inline-flex min-h-8 items-center gap-1.5 rounded-md border border-border px-3 text-xs font-semibold text-ink-muted hover:text-ink"
+                    >
+                        <Plus className="h-3.5 w-3.5" />
+                        {t('plans.duplicate.addTarget')}
+                    </button>
+                </AdminSection>
+
+                {duplicatePlan.error && (
+                    <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(duplicatePlan.error)}`)}</p>
+                )}
+            </form>
+        </AdminDrawer>
+    );
+}
+
+function PlanCloneTargetRow({
+    row,
+    code,
+    sourcePlan,
+    eventTypeOptions,
+    canRemove,
+    onUpdateAction,
+    onRemoveAction,
+}: {
+    row: CloneRow;
+    code: string;
+    sourcePlan: PlanTierResponseDto;
+    eventTypeOptions: PlatformEventTypeResponseDto[];
+    canRemove: boolean;
+    onUpdateAction: (rowId: string, patch: Partial<CloneRow>) => void;
+    onRemoveAction: (rowId: string) => void;
+}) {
+    const t = useTranslations('AdminPage');
+    const localizedText = useLocalizedText();
+
+    const handleEventTypeChange = useCallback(
+        (changeEvent: ChangeEvent<HTMLSelectElement>) =>
+            onUpdateAction(row.rowId, { eventTypeKey: changeEvent.currentTarget.value as EventTypeConvention | '' }),
+        [onUpdateAction, row.rowId]
+    );
+    const handleCodeChange = useCallback(
+        (changeEvent: ChangeEvent<HTMLInputElement>) => onUpdateAction(row.rowId, { codeOverride: changeEvent.target.value.toUpperCase() }),
+        [onUpdateAction, row.rowId]
+    );
+    const handleNameChange = useCallback(
+        (changeEvent: ChangeEvent<HTMLInputElement>) => onUpdateAction(row.rowId, { name: changeEvent.target.value }),
+        [onUpdateAction, row.rowId]
+    );
+    const handleDescriptionChange = useCallback(
+        (changeEvent: ChangeEvent<HTMLInputElement>) => onUpdateAction(row.rowId, { description: changeEvent.target.value }),
+        [onUpdateAction, row.rowId]
+    );
+    const handleRemove = useCallback(() => onRemoveAction(row.rowId), [onRemoveAction, row.rowId]);
+
+    return (
+        <div className="rounded-lg border border-border p-3">
+            <div className="grid grid-cols-2 gap-2.5">
+                <AdminField label={t('plans.tabs.eventTypes')} required className="col-span-2 sm:col-span-1">
+                    <select required value={row.eventTypeKey} onChange={handleEventTypeChange} className={adminInputClass()}>
+                        <option value="" disabled>
+                            {t('planAvailability.selectType')}
+                        </option>
+                        {eventTypeOptions.map((eventType) => (
+                            <option key={eventType.eventTypeKey} value={eventType.eventTypeKey} disabled={!eventType.isEnabled}>
+                                {localizedText(eventType.name)}
+                            </option>
+                        ))}
+                    </select>
+                </AdminField>
+                <AdminField label={t('fields.code')} required hint={t('fields.codeHint')} className="col-span-2 sm:col-span-1">
+                    <input required value={code} onChange={handleCodeChange} spellCheck={false} className={adminInputClass('font-mono')} />
+                </AdminField>
+                <AdminField label={t('fields.name')} optional className="col-span-2">
+                    <input value={row.name} onChange={handleNameChange} placeholder={sourcePlan.name} maxLength={100} className={adminInputClass()} />
+                </AdminField>
+                <AdminField label={t('fields.description')} optional className="col-span-2">
+                    <input
+                        value={row.description}
+                        onChange={handleDescriptionChange}
+                        placeholder={sourcePlan.description ?? ''}
+                        className={adminInputClass()}
+                    />
+                </AdminField>
+            </div>
+            {canRemove && (
+                <button type="button" onClick={handleRemove} className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-status-danger">
+                    <Trash2 className="h-3.5 w-3.5" />
+                    {t('plans.duplicate.removeTarget')}
+                </button>
+            )}
+        </div>
+    );
+}
+
+function PlanCreateNewForm({
+    open,
+    onCloseAction,
+    onCreatedAction,
+    plans,
+    eventTypes,
+    modules,
+    scope,
+}: {
+    open: boolean;
+    onCloseAction: () => void;
+    onCreatedAction: (name: string) => void;
+    plans: PlanTierResponseDto[];
+    eventTypes: PlatformEventTypeResponseDto[];
+    modules: PlatformModuleResponseDto[];
+    scope: PlanScope;
+}) {
     const t = useTranslations('AdminPage');
     const queryClient = useQueryClient();
     const invalidate = useInvalidate();
@@ -67,22 +336,16 @@ export function PlanCreateForm({
         dataProviderName: 'plan-tiers',
         mutationOptions: { onSuccess: onMutationSuccess },
     });
-    const { mutateAsync: setPlanEventTypes, mutation: eventTypesMutation } = useCustomMutation<PlanTierResponseDto>({
-        mutationOptions: { onSuccess: onMutationSuccess },
-    });
     const { mutateAsync: setPlanModules, mutation: modulesMutation } = useCustomMutation<PlanTierResponseDto>({
         mutationOptions: { onSuccess: onMutationSuccess },
     });
     const formRef = useRef<HTMLFormElement>(null);
-    const initialName = sourcePlan ? t('plans.duplicate.copyName', { plan: sourcePlan.name }) : '';
-    const initialVisibility = sourcePlan ? visibilityOf(sourcePlan) : 'LIVE';
-    const sourceStorage = storageBytesToInput(sourcePlan?.storageBytes ?? null);
-    const [name, setName] = useState(initialName);
+    const [name, setName] = useState('');
     const [codeOverride, setCodeOverride] = useState<string | null>(null);
-    const [visibility, setVisibility] = useState<Visibility>(initialVisibility);
+    const [visibility, setVisibility] = useState<Visibility>('LIVE');
     const [createdPlanId, setCreatedPlanId] = useState<string | null>(null);
     const nextSortOrder = useMemo(() => Math.max(-1, ...plans.map((plan) => plan.sortOrder)) + 1, [plans]);
-    const assignments = usePlanCreateAssignments(eventTypes, modules, sourcePlan?.eventTypeKeys, sourcePlan?.moduleKeys);
+    const assignments = usePlanCreateAssignments(eventTypes, modules);
 
     // The code is an identifier the admin should not have to invent: it follows the
     // name until they deliberately type over it.
@@ -102,9 +365,9 @@ export function PlanCreateForm({
 
     function resetForm() {
         formRef.current?.reset();
-        setName(initialName);
+        setName('');
         setCodeOverride(null);
-        setVisibility(initialVisibility);
+        setVisibility('LIVE');
         assignments.resetAssignments();
         setCreatedPlanId(null);
     }
@@ -116,6 +379,7 @@ export function PlanCreateForm({
 
     async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
+        if (scope === 'EVENT' && !assignments.eventTypeKey) return;
         const formData = new FormData(event.currentTarget);
         const flags = visibilityFlags(visibility);
         const input: PlanTierRequestDto = {
@@ -138,6 +402,7 @@ export function PlanCreateForm({
             discountLabel: emptyToNull(formData.get('discountLabel')),
             discountStartsAt: localInputToInstant(formData.get('discountStartsAt')),
             discountEndsAt: localInputToInstant(formData.get('discountEndsAt')),
+            eventTypeKey: scope === 'EVENT' ? (assignments.eventTypeKey ?? undefined) : undefined,
         };
 
         let planId = createdPlanId;
@@ -145,14 +410,6 @@ export function PlanCreateForm({
             const created = await createPlan({ resource: 'plan-tiers', values: input });
             planId = created.data.id;
             setCreatedPlanId(planId);
-        }
-        if (assignments.availabilityMode === 'SELECTED') {
-            await setPlanEventTypes({
-                url: endpoints.admin.planTiers.eventTypes(planId),
-                method: 'put',
-                values: { eventTypeKeys: assignments.eventTypeKeys },
-                dataProviderName: 'plan-tiers',
-            });
         }
         if (assignments.moduleKeys.length > 0) {
             await setPlanModules({
@@ -171,8 +428,8 @@ export function PlanCreateForm({
             open={open}
             onClose={handleClose}
             closeLabel={t('cancel')}
-            title={sourcePlan ? t('plans.duplicate.title') : t('plans.create.title')}
-            subtitle={sourcePlan ? t('plans.duplicate.subtitle', { plan: sourcePlan.name }) : t('plans.create.subtitle')}
+            title={t('plans.create.title')}
+            subtitle={t('plans.create.subtitle')}
             footer={
                 <>
                     <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[11px] font-semibold text-ink-muted">{scope}</span>
@@ -187,18 +444,11 @@ export function PlanCreateForm({
                         <button
                             type="submit"
                             form="plan-create-form"
-                            disabled={
-                                createMutation.isPending ||
-                                eventTypesMutation.isPending ||
-                                modulesMutation.isPending ||
-                                (assignments.availabilityMode === 'SELECTED' && assignments.eventTypeKeys.length === 0)
-                            }
+                            disabled={createMutation.isPending || modulesMutation.isPending || (scope === 'EVENT' && !assignments.eventTypeKey)}
                             className="inline-flex min-h-9 items-center gap-2 rounded-md bg-ink px-3.5 text-sm font-semibold text-white disabled:opacity-50"
                         >
-                            {(createMutation.isPending || eventTypesMutation.isPending || modulesMutation.isPending) && (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            )}
-                            {sourcePlan ? t('plans.duplicate.submit') : t('plans.create.submit')}
+                            {(createMutation.isPending || modulesMutation.isPending) && <Loader2 className="h-4 w-4 animate-spin" />}
+                            {t('plans.create.submit')}
                         </button>
                     </div>
                 </>
@@ -235,7 +485,7 @@ export function PlanCreateForm({
                             />
                         </AdminField>
                         <AdminField label={t('fields.description')} optional className="col-span-2">
-                            <input name="description" defaultValue={sourcePlan?.description ?? ''} className={adminInputClass()} />
+                            <input name="description" className={adminInputClass()} />
                         </AdminField>
                     </div>
                 </AdminSection>
@@ -251,13 +501,12 @@ export function PlanCreateForm({
                                             type="number"
                                             min={0}
                                             step="0.01"
-                                            defaultValue={sourceStorage.amount}
                                             placeholder={t('fields.blankUnlimited')}
                                             className={adminInputClass('max-w-32')}
                                         />
                                     </AdminField>
                                     <AdminField label={t('fields.unit')}>
-                                        <select name="storageUnit" defaultValue={sourceStorage.unit} className={adminInputClass('max-w-20')}>
+                                        <select name="storageUnit" defaultValue={STORAGE_UNITS[0]} className={adminInputClass('max-w-20')}>
                                             {STORAGE_UNITS.map((unit) => (
                                                 <option key={unit} value={unit}>
                                                     {unit}
@@ -271,7 +520,6 @@ export function PlanCreateForm({
                                         name="maxMembers"
                                         type="number"
                                         min={0}
-                                        defaultValue={sourcePlan?.maxMembers ?? ''}
                                         placeholder={t('fields.blankUnlimited')}
                                         className={adminInputClass('max-w-28')}
                                     />
@@ -284,27 +532,13 @@ export function PlanCreateForm({
                 <AdminSection title={t('plans.sections.pricing')}>
                     <div className="grid grid-cols-2 gap-2.5">
                         <AdminField label={t('fields.price')} optional className="col-span-1">
-                            <input
-                                name="price"
-                                type="number"
-                                min={0}
-                                step="0.01"
-                                defaultValue={priceMinorToInput(sourcePlan?.priceAmountMinor ?? null)}
-                                placeholder="499"
-                                className={adminInputClass('max-w-32')}
-                            />
+                            <input name="price" type="number" min={0} step="0.01" placeholder="499" className={adminInputClass('max-w-32')} />
                         </AdminField>
                         <AdminField label={t('fields.priceCurrency')} optional className="col-span-1">
-                            <input
-                                name="priceCurrency"
-                                maxLength={3}
-                                defaultValue={sourcePlan?.priceCurrency ?? ''}
-                                placeholder="EUR"
-                                className={adminInputClass('max-w-20')}
-                            />
+                            <input name="priceCurrency" maxLength={3} placeholder="EUR" className={adminInputClass('max-w-20')} />
                         </AdminField>
                         <AdminField label={t('fields.billingPeriod')} optional className="col-span-2">
-                            <select name="billingPeriod" defaultValue={sourcePlan?.billingPeriod ?? ''} className={adminInputClass('max-w-40')}>
+                            <select name="billingPeriod" defaultValue="" className={adminInputClass('max-w-40')}>
                                 <option value="">{t('none')}</option>
                                 {BILLING_PERIODS.map((item) => (
                                     <option key={item} value={item}>
@@ -319,38 +553,16 @@ export function PlanCreateForm({
                 <AdminSection title={t('plans.sections.promotion')} description={t('plans.sections.promotionHint')}>
                     <div className="grid grid-cols-2 gap-2.5">
                         <AdminField label={t('fields.discountPercent')} optional className="col-span-1">
-                            <input
-                                name="discountPercent"
-                                type="number"
-                                min={0}
-                                max={100}
-                                defaultValue={sourcePlan?.discountPercent ?? ''}
-                                className={adminInputClass('max-w-24')}
-                            />
+                            <input name="discountPercent" type="number" min={0} max={100} className={adminInputClass('max-w-24')} />
                         </AdminField>
                         <AdminField label={t('fields.discountLabel')} optional className="col-span-1">
-                            <input
-                                name="discountLabel"
-                                maxLength={100}
-                                defaultValue={sourcePlan?.discountLabel ?? ''}
-                                className={adminInputClass()}
-                            />
+                            <input name="discountLabel" maxLength={100} className={adminInputClass()} />
                         </AdminField>
                         <AdminField label={t('fields.discountStartsAt')} optional hint={t('fields.discountBoundHint')} className="col-span-1">
-                            <input
-                                name="discountStartsAt"
-                                type="datetime-local"
-                                defaultValue={instantToLocalInput(sourcePlan?.discountStartsAt ?? null)}
-                                className={adminInputClass()}
-                            />
+                            <input name="discountStartsAt" type="datetime-local" className={adminInputClass()} />
                         </AdminField>
                         <AdminField label={t('fields.discountEndsAt')} optional hint={t('fields.discountEndsAtHint')} className="col-span-1">
-                            <input
-                                name="discountEndsAt"
-                                type="datetime-local"
-                                defaultValue={instantToLocalInput(sourcePlan?.discountEndsAt ?? null)}
-                                className={adminInputClass()}
-                            />
+                            <input name="discountEndsAt" type="datetime-local" className={adminInputClass()} />
                         </AdminField>
                     </div>
                 </AdminSection>
@@ -375,22 +587,17 @@ export function PlanCreateForm({
 
                 {scope === 'EVENT' && (
                     <PlanCreateAssignments
-                        availabilityMode={assignments.availabilityMode}
-                        eventTypeKeys={assignments.eventTypeKeys}
+                        eventTypeKey={assignments.eventTypeKey}
                         moduleKeys={assignments.moduleKeys}
                         eventTypes={assignments.orderedEventTypes}
                         modules={assignments.orderedModules}
-                        onSelectAllEventTypesAction={assignments.selectAllEventTypes}
-                        onSelectSpecificEventTypesAction={assignments.selectSpecificEventTypes}
-                        onEventTypeChangeAction={assignments.handleEventTypeChange}
+                        onEventTypeSelectAction={assignments.handleEventTypeSelect}
                         onModuleChangeAction={assignments.handleModuleChange}
                     />
                 )}
 
-                {(createMutation.error || eventTypesMutation.error || modulesMutation.error) && (
-                    <p className="text-sm text-status-danger">
-                        {t(`errors.${adminErrorMessageKey(createMutation.error ?? eventTypesMutation.error ?? modulesMutation.error)}`)}
-                    </p>
+                {(createMutation.error || modulesMutation.error) && (
+                    <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(createMutation.error ?? modulesMutation.error)}`)}</p>
                 )}
             </form>
         </AdminDrawer>

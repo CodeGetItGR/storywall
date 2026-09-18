@@ -63,7 +63,7 @@ export function GalleryMediaGrid({
             ) : (
                 <>
                     {/* Media grid */}
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 px-2">
                         {items.map((item) => {
                             const isSelected = selectedIds.has(item.id);
                             return (

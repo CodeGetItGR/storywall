@@ -53,9 +53,16 @@ export function PostCommentForm({
             {error && <p className="text-xs text-destructive px-4">{error}</p>}
             {replyingToLabel && (
                 <div className="w-full flex items-center justify-between px-4 text-xs text-ink-faint">
-                    <span>{replyingToLabel}</span>
+                    <span className="min-w-0 truncate" title={replyingToLabel}>
+                        {replyingToLabel}
+                    </span>
                     {onCancelReply && (
-                        <button type="button" onClick={onCancelReply} aria-label={cancelReplyAriaLabel} className="text-ink-faint hover:text-ink">
+                        <button
+                            type="button"
+                            onClick={onCancelReply}
+                            aria-label={cancelReplyAriaLabel}
+                            className="shrink-0 text-ink-faint hover:text-ink"
+                        >
                             <X className="w-3.5 h-3.5" />
                         </button>
                     )}

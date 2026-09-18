@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { type ReactNode, useEffect } from 'react';
 
 import { AccountPanelShell } from '@/components/account/AccountPanelShell';
@@ -12,22 +12,23 @@ import { AccountPanelProvider } from '@/providers/AccountPanelProvider';
 export function AppShell({ children }: { children: ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
+    const searchParams = useSearchParams();
     const { user, isBootstrapping } = useAuth();
-    const allowsGuestAccess = pathname === routes.eventNotFound || pathname === routes.home;
     const isAuthenticated = Boolean(user);
 
     useEffect(() => {
         if (isBootstrapping) return;
-        if (!isAuthenticated && !allowsGuestAccess) {
-            router.replace(routes.login);
+        if (!isAuthenticated) {
+            const next = `${pathname}${searchParams.size ? `?${searchParams.toString()}` : ''}`;
+            router.replace(routes.auth.login({ next }));
             return;
         }
         if (user?.role === 'ADMIN') {
             router.replace(routes.admin);
         }
-    }, [allowsGuestAccess, isAuthenticated, isBootstrapping, router, user?.role]);
+    }, [isAuthenticated, isBootstrapping, pathname, router, searchParams, user?.role]);
 
-    if (isBootstrapping || (!isAuthenticated && !allowsGuestAccess) || user?.role === 'ADMIN') {
+    if (isBootstrapping || !isAuthenticated || user?.role === 'ADMIN') {
         return <div className="h-full bg-background" />;
     }
 

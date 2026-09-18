@@ -1,11 +1,11 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import React, { useMemo } from 'react';
+import React from 'react';
 
 import { PostCommentsPanel } from '@/components/feed/post';
 import { Modal } from '@/components/ui/modal';
-import { useEventMembers, usePost, usePostCommentThread, usePostModal } from '@/hooks';
+import { usePost, usePostCommentThread, usePostModal } from '@/hooks';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { ApiError } from '@/lib/api/client';
 import { isEventWritable } from '@/lib/eventLifecycle';
@@ -17,7 +17,6 @@ export function PostModal() {
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
     const { data: post, error, isPending } = usePost(postId);
-    const { data: members = [] } = useEventMembers(post?.eventId ?? null);
     const { data: appConfig } = useAppConfig();
 
     const canComment = Boolean(activeMember) && isEventWritable(activeEvent?.status);
@@ -41,7 +40,6 @@ export function PostModal() {
         lastPostedCommentId,
     } = usePostCommentThread(postId, post?.eventId ?? '', canComment);
 
-    const membersById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
     const maxCommentLength = appConfig?.contentLimits.commentContentMaxLength ?? 300;
     const reactionTypes = post ? (appConfig?.reactionTypesByEventType[post.eventType ?? activeEvent?.eventType ?? ''] ?? []) : [];
 
@@ -63,7 +61,6 @@ export function PostModal() {
             isLoadingMoreComments={isLoadingMoreComments}
             isFetchingComments={isFetchingComments}
             onLoadMoreComments={onLoadMoreComments}
-            membersById={membersById}
             commentText={commentText}
             onCommentTextChange={onCommentTextChange}
             commentError={!isEventWritable(activeEvent?.status) ? t('eventReadOnly') : commentError}

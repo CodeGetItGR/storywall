@@ -5,13 +5,13 @@ import { useState } from 'react';
 
 import { CommentThreadItem } from '@/components/feed/post/CommentThreadItem';
 import Avatar from '@/components/ui/avatar';
-import type { CommentResponseDto, EventMemberResponseDto } from '@/lib/api/types';
+import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
+import type { CommentResponseDto } from '@/lib/api/types';
 import { authorNameFor, groupCommentsIntoThreads } from '@/lib/comments';
 import { avatarColorFromId, initialsFromName, timeAgoParts } from '@/lib/utils';
 
 interface CommentsListProps {
     comments: CommentResponseDto[];
-    membersById: Map<string, EventMemberResponseDto>;
     compact?: boolean;
     limit?: number;
     onReply?: (parentCommentId: string, authorName: string, mention?: boolean) => void;
@@ -21,8 +21,9 @@ interface CommentsListProps {
     autoExpandThread?: { threadId: string; nonce: number } | null;
 }
 
-export function CommentsList({ comments, membersById, compact = false, limit, onReply, autoExpandThread }: CommentsListProps) {
+export function CommentsList({ comments, compact = false, limit, onReply, autoExpandThread }: CommentsListProps) {
     const t = useTranslations('PostModal');
+    const memberAvatarUrl = useMemberAvatarUrl();
     const [expandedThreadIds, setExpandedThreadIds] = useState<Set<string>>(new Set());
     const visibleComments = typeof limit === 'number' ? comments.slice(0, limit) : comments;
 
@@ -52,12 +53,13 @@ export function CommentsList({ comments, membersById, compact = false, limit, on
         return (
             <div className="flex flex-col gap-2">
                 {visibleComments.map((comment) => {
-                    const name = authorNameFor(comment, membersById, t('unknownAuthor'));
+                    const name = authorNameFor(comment, t('unknownAuthor'));
                     const commentTimeAgo = timeAgoParts(comment.createdAt);
 
                     return (
                         <div key={comment.id} className="flex gap-2">
                             <Avatar
+                                src={memberAvatarUrl(comment.authorMemberId, comment.author?.avatarUrl)}
                                 initials={initialsFromName(name)}
                                 color={avatarColorFromId(comment.authorMemberId ?? comment.id)}
                                 size="xs"
@@ -65,9 +67,10 @@ export function CommentsList({ comments, membersById, compact = false, limit, on
                                 className="mt-0.5 shrink-0"
                             />
                             <div className="min-w-0 flex-1 pt-0.5">
+                                {/* Comment header */}
                                 <div className="flex items-baseline gap-1.5">
-                                    <span className="text-[12px] font-semibold leading-tight text-ink">{name}</span>
-                                    <span className="text-[10px] text-ink-faint">
+                                    <span className="min-w-0 flex-1 wrap-break-word text-[12px] font-semibold leading-tight text-ink">{name}</span>
+                                    <span className="shrink-0 whitespace-nowrap text-[10px] text-ink-faint">
                                         {commentTimeAgo.unit === 'now'
                                             ? t('justNow')
                                             : t(`timeAgo.${commentTimeAgo.unit}`, { count: commentTimeAgo.value })}
@@ -90,7 +93,6 @@ export function CommentsList({ comments, membersById, compact = false, limit, on
                 <CommentThreadItem
                     key={thread.comment.id}
                     thread={thread}
-                    membersById={membersById}
                     onReply={onReply}
                     isExpanded={expandedThreadIds.has(thread.comment.id)}
                     onToggleReplies={toggleThread}
