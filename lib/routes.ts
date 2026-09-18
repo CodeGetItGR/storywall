@@ -38,7 +38,7 @@ export const routes = {
     profile: '/profile',
     events: {
         new: (params: { step?: string | null } = {}) => withQuery('/events/new', params),
-        manage: (eventId: string, params: { tab?: ManageTab | null; section?: string | null } = {}) =>
+        manage: (eventId: string, params: { tab?: ManageTab | null; section?: string | null; cancelled?: boolean | null } = {}) =>
             withQuery(`${eventBasePath(eventId)}/manage`, params),
         // Share/join QR link management — pulled out of the Members section the
         // same way the gallery upload code lives on its own page, linked from a
