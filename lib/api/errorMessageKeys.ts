@@ -69,7 +69,6 @@ export type ApiErrorMessageKey =
     | 'qrLinkNotAvailable'
     | 'qrSharedLinkHostManaged'
     | 'orderNotPending'
-    | 'orderNotRefundable'
     | 'planCurrencyMismatch'
     | 'planCurrencyUnsupported'
     | 'planInUse'
@@ -87,9 +86,6 @@ export type ApiErrorMessageKey =
     | 'invalidPaidServiceKind'
     | 'qrLinkNotFound'
     | 'rateLimited'
-    | 'refundAlreadyRequested'
-    | 'refundNotEligible'
-    | 'refundNotPending'
     | 'reactionTypeInUse'
     | 'reactionTypeLimitExceeded'
     | 'reactionTypeNotUsable'
@@ -172,7 +168,6 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.MODULE_NOT_AVAILABLE]: 'moduleUnavailable',
     [ERROR_CODES.QR_MEDIA_UPLOAD_DISABLED]: 'qrMediaUploadDisabled',
     [ERROR_CODES.ORDER_NOT_PENDING]: 'orderNotPending',
-    [ERROR_CODES.ORDER_NOT_REFUNDABLE]: 'orderNotRefundable',
     [ERROR_CODES.PLAN_TIER_CURRENCY_MISMATCH]: 'planCurrencyMismatch',
     [ERROR_CODES.PLAN_TIER_CURRENCY_UNSUPPORTED]: 'planCurrencyUnsupported',
     [ERROR_CODES.PLAN_TIER_IN_USE]: 'planInUse',
@@ -191,9 +186,6 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.QR_SHARED_LINK_HOST_MANAGED]: 'qrSharedLinkHostManaged',
     [ERROR_CODES.RATE_LIMITED]: 'rateLimited',
     [ERROR_CODES.EVENT_SCHEDULE_LOCKED]: 'eventScheduleLocked',
-    [ERROR_CODES.REFUND_ALREADY_REQUESTED]: 'refundAlreadyRequested',
-    [ERROR_CODES.REFUND_NOT_ELIGIBLE]: 'refundNotEligible',
-    [ERROR_CODES.REFUND_REQUEST_NOT_PENDING]: 'refundNotPending',
     [ERROR_CODES.REACTION_TYPE_IN_USE]: 'reactionTypeInUse',
     [ERROR_CODES.REACTION_TYPE_LIMIT_EXCEEDED]: 'reactionTypeLimitExceeded',
     [ERROR_CODES.REACTION_TYPE_NOT_USABLE]: 'reactionTypeNotUsable',
