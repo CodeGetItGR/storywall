@@ -389,6 +389,9 @@ export function buildSeedAppConfig(): AppConfigResponseDto {
             maxArchivePartBytes: 500 * 1024 * 1024,
             presignedUrlTtlMinutes: 15,
             publicHost: null,
+            estimateAvgImageBytes: 4 * 1024 * 1024,
+            estimateAvgVideoBytes: 90 * 1024 * 1024,
+            estimateImageRatio: 0.7,
         },
         pagination: { defaultPageSize: 20, maxPageSize: 100 },
         planTiers: [
@@ -404,6 +407,7 @@ export function buildSeedAppConfig(): AppConfigResponseDto {
                 isPublic: true,
                 storageBytes: 5 * 1024 * 1024 * 1024,
                 maxMembers: 100,
+                autoDeleteMonths: null,
                 priceAmountMinor: 0,
                 priceCurrency: 'USD',
                 billingPeriod: null,

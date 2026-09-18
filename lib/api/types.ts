@@ -70,6 +70,12 @@ export interface AppMediaConfigDto {
     maxArchivePartBytes: number;
     presignedUrlTtlMinutes: number;
     publicHost: string | null;
+    // Estimation assumptions for "how many photos/videos does this storage
+    // quota hold" — NOT upload-time validation limits. Admin-tunable. See
+    // app-config-fe-integration.md "media.estimateAvgImageBytes...".
+    estimateAvgImageBytes: number;
+    estimateAvgVideoBytes: number;
+    estimateImageRatio: number; // fraction 0-1
 }
 
 export type PaidServiceKind = 'STORAGE_PACK' | 'RECURRING_ADDON' | 'MODULE_UNLOCK';
@@ -121,6 +127,11 @@ export interface PlanTierResponseDto {
     isPublic: boolean;
     storageBytes: number | null;
     maxMembers: number | null;
+    // EVENT-scope only; always null on ACCOUNT scope. Months after the event's
+    // endAt before it is soft-deleted (same lifecycle as a host-requested
+    // deletion). null = never auto-deleted. See billing-fe-guide.md
+    // "autoDeleteMonths — how long an event's content survives after it ends".
+    autoDeleteMonths: number | null;
     priceAmountMinor: number | null;
     priceCurrency: string | null;
     billingPeriod: BillingPeriod | null;
