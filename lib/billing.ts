@@ -10,7 +10,7 @@ function pendingCheckoutKey(eventId: string): string {
 }
 
 export function formatMoney(locale: string, minor: number, currency: string): string {
-    return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(minor / 100);
+    return formatOptionalMoney(minor, currency, locale) ?? '0.00';
 }
 
 export function formatOptionalMoney(minor: number | null, currency: string | null, locale?: string): string | null {

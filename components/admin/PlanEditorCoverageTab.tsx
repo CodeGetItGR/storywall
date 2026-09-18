@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { AdminTabPanel } from '@/components/admin/AdminTabs';
 import { type AdminToggleItem, AdminToggleList } from '@/components/admin/AdminToggleList';
+import { useLocalizedModuleLabel } from '@/hooks/useLocalizedModuleLabel';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import type { PlatformEventTypeResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 
@@ -30,10 +31,11 @@ export function PlanEditorCoverageTab({
 }) {
     const t = useTranslations('AdminPage');
     const localizedText = useLocalizedText();
+    const moduleLabel = useLocalizedModuleLabel(orderedModules);
 
     const moduleItems: AdminToggleItem[] = orderedModules.map((module) => ({
         key: module.moduleKey,
-        label: module.name,
+        label: moduleLabel(module.moduleKey).name,
         hint: module.isEnabled ? undefined : t('plans.coverage.modulePlatformOff'),
         // A module switched off platform-wide can be dropped from a plan but not added to one.
         locked: !module.isEnabled && !moduleKeysDraft.includes(module.moduleKey),

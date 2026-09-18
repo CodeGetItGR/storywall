@@ -67,6 +67,13 @@ enum-backed server-side (an unrecognized value 400s), and their valid sets are p
 the FE doesn't have to hardcode them. `targetType` also gained a new value, `MEMBER`, for
 reporting an event member. See `ReportRequestDto` in `frontend-api-types.ts`.
 
+**2026-09-18:** `media` gained `estimateAvgImageBytes` / `estimateAvgVideoBytes` /
+`estimateImageRatio` — a single source of truth for "how many photos/videos does this storage
+quota hold," replacing the FE's own hand-picked constants (the landing page's static per-plan
+photo/video counts, and `planComparison.ts`'s hardcoded `4MB`/`90MB`). These are **estimation**
+assumptions, unrelated to `maxImageBytes`/`maxVideoBytes` which are real upload-time validation
+ceilings.
+
 ## GET /api/config
 
 Public — no `Authorization` header needed, safe to call before login (e.g. to gate the login
@@ -90,6 +97,9 @@ interface AppConfigResponseDto {
     maxArchivePartBytes: number;     // added 2026-08-25 — see below
     presignedUrlTtlMinutes: number;
     publicHost: string | null; // hostname media URLs are served from
+    estimateAvgImageBytes: number;  // added 2026-09-18 — see below
+    estimateAvgVideoBytes: number;  // added 2026-09-18 — see below
+    estimateImageRatio: number;     // added 2026-09-18 — see below, fraction 0-1
   };
   pagination: { defaultPageSize: number; maxPageSize: number };
   planTiers: PlanTierResponseDto[];   // was Record<'FREE'|'PLUS'|'PRO', {...}> — see plan-tiers-fe-integration.md
@@ -145,6 +155,20 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
   to a terminal `status: "FAILED"` rather than an upload-time error. See
   [`video-processing-fe-integration.md`](video-processing-fe-integration.md) for the full async
   processing flow these two caps are part of.
+- **`media.estimateAvgImageBytes`** / **`estimateAvgVideoBytes`** / **`estimateImageRatio`**
+  (4MB / 90MB / 0.7 as of 2026-09-18) — not validation limits, an **estimation** assumption for
+  "how many photos and videos does a plan's storage quota hold," for pricing/plan-comparison
+  copy. Compute a combined figure by splitting the quota's `storageBytes` by the ratio, then
+  dividing each half by the matching average:
+  ```ts
+  const photos = Math.floor((storageBytes * estimateImageRatio) / estimateAvgImageBytes);
+  const videos = Math.floor((storageBytes * (1 - estimateImageRatio)) / estimateAvgVideoBytes);
+  ```
+  Use this everywhere a photo/video count estimate is shown — replace `lib/planComparison.ts`'s
+  hardcoded `APPROX_IMAGE_BYTES`/`APPROX_VIDEO_BYTES` constants and the landing page's static
+  per-plan `photos`/`videos` copy in `messages/*.json`, both of which currently invent their own,
+  mutually inconsistent numbers. Admin-tunable, so a vendor/behavior assumption change is a config
+  edit, not a redeploy of copy across two unrelated files.
 - **`media.maxMediaPerPost`** — same idea for the post composer's "max 10 images" guard.
 - **`media.maxBatchStoryItems`** (5 as of 2026-08-29) — the item-count cap on
   `POST /api/stories/batch` (see

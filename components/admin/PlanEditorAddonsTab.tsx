@@ -6,6 +6,7 @@ import type { ChangeEventHandler, KeyboardEvent, MouseEventHandler } from 'react
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminTabPanel } from '@/components/admin/AdminTabs';
+import { useLocalizedModuleLabel } from '@/hooks/useLocalizedModuleLabel';
 import type { UnlockDraft } from '@/lib/adminPlanEditor';
 import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
@@ -48,6 +49,7 @@ export function PlanEditorAddonsTab({
 }) {
     const t = useTranslations('AdminPage');
     const locale = useLocale();
+    const moduleLabel = useLocalizedModuleLabel(orderedModules);
     const excludedModules = orderedModules.filter((module) => !plan.moduleKeys.includes(module.moduleKey));
 
     function unlockAppliesToPlan(service: PaidServiceResponseDto) {
@@ -74,6 +76,7 @@ export function PlanEditorAddonsTab({
             {/* Add-on modules */}
             <div className="divide-y divide-border/70">
                 {excludedModules.map((module) => {
+                    const localizedModule = moduleLabel(module.moduleKey);
                     const unlocks = moduleUnlocks.filter((service) => service.grantsModuleKey === module.moduleKey);
                     const planUnlocks = unlocks.filter(unlockAppliesToPlan);
                     const otherUnlocks = unlocks.filter((service) => !unlockAppliesToPlan(service));
@@ -83,8 +86,10 @@ export function PlanEditorAddonsTab({
                         <div key={module.moduleKey} className="py-3 first:pt-0 last:pb-0">
                             {/* Module */}
                             <div>
-                                <p className="text-sm font-semibold text-ink">{module.name}</p>
-                                {module.description && <p className="mt-0.5 text-xs leading-5 text-ink-muted">{module.description}</p>}
+                                <p className="text-sm font-semibold text-ink">{localizedModule.name}</p>
+                                {localizedModule.description && (
+                                    <p className="mt-0.5 text-xs leading-5 text-ink-muted">{localizedModule.description}</p>
+                                )}
                             </div>
 
                             {/* Add-on status */}

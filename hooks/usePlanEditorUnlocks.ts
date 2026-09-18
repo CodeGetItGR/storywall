@@ -8,6 +8,7 @@ import { useCallback, useMemo } from 'react';
 
 import { adminKeys } from '@/hooks/useAdmin';
 import { appConfigKeys } from '@/hooks/useAppConfig';
+import { useLocalizedModuleLabel } from '@/hooks/useLocalizedModuleLabel';
 import type { UnlockDraft } from '@/lib/adminPlanEditor';
 import { codeFromName, defaultCurrency, priceInputToMinor } from '@/lib/adminPlanForm';
 import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
@@ -30,6 +31,7 @@ export function usePlanEditorUnlocks({
     setUnlockDraftAction,
 }: UsePlanEditorUnlocksArgs) {
     const t = useTranslations('AdminPage');
+    const moduleLabel = useLocalizedModuleLabel(orderedModules);
     const queryClient = useQueryClient();
     // The admin drawer reads paid services through useAdminPaidServices' custom query key,
     // not refine's own resource-keyed cache — refine's automatic invalidation on mutate
@@ -88,8 +90,8 @@ export function usePlanEditorUnlocks({
         if (!moduleKey || !moduleItem) return;
         setUnlockDraftAction({
             moduleKey,
-            moduleName: moduleItem.name,
-            name: t('plans.modules.defaultAddonName', { module: moduleItem.name }),
+            moduleName: moduleLabel(moduleKey).name,
+            name: t('plans.modules.defaultAddonName', { module: moduleLabel(moduleKey).name }),
             description: '',
             price: '0',
             priceCurrency: defaultCurrency(plan),

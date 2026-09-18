@@ -1948,13 +1948,16 @@
             "eventTypes": "Event types",
             "assignments": "Assignments",
             "billingOps": "Billing ops",
+            "withdrawals": "Withdrawals",
             "refunds": "Refunds",
+            "costTracking": "Cost tracking",
             "lifecycle": "Lifecycle",
             "signOutConfirmTitle": "Sign out of admin?",
             "signOutConfirmBody": "Please confirm before leaving the admin area."
         },
         "tabs": {
             "metrics": "Metrics",
+            "costTracking": "Cost tracking",
             "eventPlans": "Event plans",
             "planAvailability": "Plan availability",
             "planModules": "Plan modules",
@@ -1966,6 +1969,7 @@
             "eventTypes": "Event types",
             "assignments": "Assignments",
             "billingOps": "Billing ops",
+            "withdrawals": "Withdrawals",
             "refunds": "Refunds",
             "lifecycle": "Lifecycle"
         },
@@ -2026,6 +2030,7 @@
             "lastType": "A plan must be available for at least one event type.",
             "createTitle": "Event types",
             "createHint": "Choose where this plan is available.",
+            "selectType": "Select an event type",
             "confirmTitle": "Apply plan availability changes?",
             "confirmBody": "{count, plural, one {This changes which event types can use one plan.} other {This changes which event types can use # plans.}}"
         },
@@ -2061,7 +2066,11 @@
                 "title": "Duplicate plan",
                 "subtitle": "Review the copied details from {plan} before creating it.",
                 "submit": "Create copy",
-                "copyName": "{plan} copy"
+                "copyName": "{plan} copy",
+                "cloneTargetsTitle": "Event types",
+                "cloneTargetsHint": "Add one row for each event type that should receive a copy of this plan.",
+                "addTarget": "Add event type",
+                "removeTarget": "Remove"
             },
             "storage": "storage",
             "members": "members",
@@ -2096,8 +2105,17 @@
                 "details": "Details",
                 "limits": "Limits",
                 "pricing": "Pricing",
+                "coverage": "Coverage",
+                "eventTypes": "Event types",
                 "addons": "Add-ons",
                 "danger": "Danger zone"
+            },
+            "coverage": {
+                "changed": "Changed",
+                "modulesCount": "{count} of {total} included",
+                "modulePlatformOff": "Disabled across the platform",
+                "eventTypeLabel": "Event type",
+                "sharedGroupLabel": "Shared with copies ({group})"
             },
             "pendingChanges": "{count, plural, one {# unsaved change} other {# unsaved changes}}",
             "noPendingChanges": "No changes yet.",
@@ -2110,7 +2128,9 @@
                 "limitsHint": "Blank means no limit. These caps apply to every event on this plan.",
                 "promotion": "Promotion",
                 "promotionHint": "A discount inside its window is charged, not just advertised. Leave the percentage blank to run no promotion.",
-                "availability": "Availability"
+                "availability": "Availability",
+                "modulesHint": "Choose the modules included in this plan.",
+                "eventTypesHint": "Set when creating the plan. Duplicate this plan to offer it for another event type."
             },
             "filters": {
                 "all": "All",
@@ -2160,7 +2180,9 @@
                 "noChanges": "No changes detected. You can cancel and keep editing.",
                 "review": "Review the exact updates before they are applied.",
                 "fields": "Plan fields",
-                "to": "to"
+                "to": "to",
+                "added": "Added:",
+                "removed": "Removed:"
             },
             "create": {
                 "title": "Create plan",
@@ -2232,6 +2254,7 @@
             "usersByAccountPlan": "Users by account plan",
             "eventsByStatus": "Events by status",
             "eventsByPlanTier": "Events by event plan",
+            "heldWithdrawals": "Withdrawals awaiting review",
             "storage": {
                 "title": "Storage economics",
                 "usedBytes": "Active storage used",
@@ -2243,6 +2266,116 @@
                 "estimatedMonthlyCostMinor": "Estimated monthly storage cost"
             }
         },
+        "withdrawals": {
+            "title": "Withdrawals",
+            "subtitle": "These requests were held for a fraud signal or manual review. Decide from the evidence, not the signal alone.",
+            "loading": "Loading withdrawals...",
+            "empty": "No withdrawals are awaiting review.",
+            "noAmount": "No amount recorded",
+            "requestedAt": "Submitted {date}",
+            "signalFired": "triggered",
+            "sendToAssignments": "Change event plan",
+            "sendToPaidServices": "Remove entitlement",
+            "noteLabel": "Decision note",
+            "noteHint": "The host receives this note.",
+            "noteRequiredForWithhold": "required to withhold",
+            "noteRequiredHint": "Withholding requires a note. The host only sees what you write here.",
+            "release": "Release",
+            "withhold": "Withhold",
+            "cancel": "Cancel",
+            "confirmYes": "Confirm",
+            "releaseConfirmTitle": "Release this withdrawal?",
+            "withholdConfirmTitle": "Withhold this withdrawal?",
+            "confirmRelease": "The payment will be refunded at the amount calculated when the request was submitted, and the event will be withdrawn. Continue?",
+            "confirmWithhold": "This rejects the withdrawal and suspends the host account. Continue?",
+            "status": {
+                "HELD": "Awaiting review",
+                "REFUNDED": "Refunded",
+                "WITHHELD": "Withheld"
+            }
+        },
+        "costTracking": {
+            "eyebrow": "Cost and volume",
+            "title": "Cost tracking",
+            "subtitle": "Current event traffic, estimated costs, and provider snapshots.",
+            "loading": "Loading cost tracking...",
+            "refresh": "Refresh",
+            "range": {
+                "label": "Time range",
+                "WEEK": "7 days",
+                "MONTH": "30 days"
+            },
+            "summary": {
+                "title": "Estimated cost",
+                "description": "Current estimates, not invoice totals.",
+                "week": "This week",
+                "month": "This month"
+            },
+            "providers": {
+                "title": "Provider snapshots",
+                "description": "Each provider is shown for its latest reconciliation period.",
+                "empty": "No provider snapshots yet.",
+                "period": "{start} to {end}",
+                "usageOnly": "Usage only",
+                "fetched": "Fetched {date}"
+            },
+            "trends": {
+                "title": "Trends",
+                "description": "Weekly event volume by plan and estimated cost for each week.",
+                "loading": "Loading trends...",
+                "empty": "No event volume in this period.",
+                "volume": "Event volume",
+                "cost": "Estimated cost",
+                "estimated": "Estimated cost"
+            },
+            "traffic": {
+                "title": "Event traffic",
+                "description": "Events in the selected period and their plan limits.",
+                "loading": "Loading event traffic...",
+                "error": "We couldn't load event traffic. Try again.",
+                "empty": "No events in this period.",
+                "unlimited": "Unlimited",
+                "guestsValue": "Guests: {value}",
+                "copyEventId": "Copy event ID",
+                "copiedEventId": "Event ID copied",
+                "previous": "Previous",
+                "next": "Next",
+                "pageStatus": "Page {page} of {total}, {count} events",
+                "columns": {
+                    "plan": "Plan",
+                    "eventType": "Event type",
+                    "starts": "Starts",
+                    "storage": "Storage limit",
+                    "guests": "Guest limit",
+                    "eventId": "Event ID"
+                }
+            },
+            "calendar": {
+                "title": "Event calendar",
+                "description": "Scheduled event load by day. Select a day to view its events.",
+                "loading": "Loading calendar...",
+                "error": "We couldn't load the calendar. Try again.",
+                "previousMonth": "Previous month",
+                "nextMonth": "Next month",
+                "dayEmpty": "{date}, no events",
+                "openDay": "{date}, {count} events. Open details.",
+                "eventCount": "{count} events",
+                "quotaSummary": "{storage} storage · {guests} guests",
+                "legend": {
+                    "label": "Daily load",
+                    "low": "Low, 1–{max}",
+                    "medium": "Medium, {min}–{max}",
+                    "high": "High, {min}–{max}",
+                    "peak": "Peak, {min}+"
+                },
+                "dayDetails": "Day details",
+                "drawerSubtitle": "{count} events",
+                "closeDrawer": "Close day details",
+                "drawerLoading": "Loading events...",
+                "drawerError": "We couldn't load events for this day. Try again.",
+                "drawerEmpty": "No events are available for this day."
+            }
+        },
         "errors": {
             "planInUse": "This plan is in use. Archive it instead of deleting it.",
             "onlyDefault": "Make another plan the default for this scope first.",
@@ -2250,6 +2383,7 @@
             "orderNotPending": "This order has already been settled or cancelled.",
             "notFound": "We could not find that record. Check the id and try again.",
             "refundNotPending": "This request was already decided — refresh the queue to see the current state.",
+            "withdrawalNotHeld": "This request was already decided. Refresh the list to see its current status.",
             "refundNotEligible": "This event no longer meets the refund conditions.",
             "orderNotRefundable": "Only the activation payment can be refunded.",
             "eventNotActive": "This event is not live, so that action does not apply.",
@@ -2776,6 +2910,18 @@
         "wishbook": {
             "name": "Wishbook",
             "description": "Guests can leave written wishes and messages for the host to keep."
+        },
+        "co_hosts": {
+            "name": "Co-hosts",
+            "description": "Invite co-hosts to help manage the event."
+        },
+        "named_invites": {
+            "name": "Named invitations",
+            "description": "Create invitations for specific guests."
+        },
+        "schedule": {
+            "name": "Schedule",
+            "description": "Plan the event timeline with schedule sections."
         }
     },
     "PlanUsage": {

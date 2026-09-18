@@ -8,15 +8,10 @@ import { useState } from 'react';
 import { useAdminDrawerFooterSlot } from '@/components/admin/AdminDrawer';
 import { useSetPlanModules } from '@/hooks/useAdmin';
 import { appConfigKeys } from '@/hooks/useAppConfig';
+import { useLocalizedModuleLabel } from '@/hooks/useLocalizedModuleLabel';
 import { usePlanEditorState } from '@/hooks/usePlanEditorState';
 import { usePlanEditorUnlocks } from '@/hooks/usePlanEditorUnlocks';
-import {
-    membershipDelta,
-    type PendingPlanSave,
-    planChangeSummary,
-    type PlanMembershipChange,
-    planPatchFromFormData,
-} from '@/lib/adminPlanEditor';
+import { membershipDelta, type PendingPlanSave, planChangeSummary, type PlanMembershipChange, planPatchFromFormData } from '@/lib/adminPlanEditor';
 import { type Visibility } from '@/lib/adminVisibility';
 import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformEventTypeResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 
@@ -32,6 +27,7 @@ export type UsePlanEditorCardArgs = {
 
 export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eventPlans, scope, onSavedAction }: UsePlanEditorCardArgs) {
     const t = useTranslations('AdminPage');
+    const moduleLabel = useLocalizedModuleLabel(modules);
     const queryClient = useQueryClient();
     const invalidate = useInvalidate();
     const footerSlot = useAdminDrawerFooterSlot();
@@ -125,7 +121,7 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
         if (!editor.canSave) return;
         const patch = planPatchFromFormData(plan, new FormData(event.currentTarget), editor.visibility);
 
-        const moduleName = (key: string) => editor.orderedModules.find((module) => module.moduleKey === key)?.name ?? key;
+        const moduleName = (key: string) => moduleLabel(key).name;
 
         const memberships: PlanMembershipChange[] = [];
         if (editor.modulesDirty) {
