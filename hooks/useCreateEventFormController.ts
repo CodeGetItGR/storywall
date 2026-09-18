@@ -11,16 +11,11 @@ import { usePreviewCreateEventCode } from '@/hooks/useBilling';
 import { useCreateEvent } from '@/hooks/useEvent';
 import { useMe } from '@/hooks/useMe';
 import { usePlanTiersForEventType } from '@/hooks/usePlanTiersForEventType';
+import { useWithdrawalConsent } from '@/hooks/useWithdrawalConsent';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { getFieldErrors } from '@/lib/api/errors';
-import type {
-    CheckoutResponseDto,
-    CollaborationCodePreviewResponseDto,
-    EventRequestDto,
-    EventResponseDto,
-    EventTypeConvention,
-} from '@/lib/api/types';
+import type { CheckoutResponseDto, CollaborationCodePreviewResponseDto, EventRequestDto, EventTypeConvention } from '@/lib/api/types';
 import { navigateToCheckout } from '@/lib/billing';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import { getScheduleDatetimeLocalBounds, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
@@ -52,6 +47,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
     const previewCreateEventCode = usePreviewCreateEventCode();
     const { data: appConfig, refetch: refetchAppConfig } = useAppConfig();
     const toErrorMessage = useApiErrorMessage();
+    const consent = useWithdrawalConsent();
 
     const [title, setTitle] = useState('');
     const [eventType, setEventType] = useState<EventTypeConvention>('WEDDING');
@@ -195,67 +191,69 @@ export function useCreateEventFormController(): CreateEventFormValue {
                 return;
             }
             if (step !== 'overview') return;
-            if (!isEmailVerified) return;
-            if (createdDraftEventId) {
-                router.push(routes.events.manage(createdDraftEventId));
-                return;
-            }
-            if (!canSubmitDetails) return;
+            if (!isEmailVerified || !consent.consentSatisfied) return;
 
-            const input: EventRequestDto = {
-                title: trimmedTitle,
-                planTierCode: selectedCode,
-                eventType: selectedEventType,
-                visibility: 'PRIVATE',
-                startAt: new Date(startAt).toISOString(),
-                endAt: new Date(endAt).toISOString(),
-                timezone,
-                locationName: trimmedLocationName,
-                locationAddress: trimmedLocationAddress,
-                mapsUrl: mapsUrl.trim() || undefined,
-                brandingSettings: {},
-                initialSessionTitle,
-            };
+            let eventId = createdDraftEventId;
 
-            let event: EventResponseDto | null = null;
+            if (!eventId) {
+                if (!canSubmitDetails) return;
 
-            try {
-                setIsCheckoutPending(true);
-                event = await createEvent.mutateAsync(input);
-            } catch (err) {
-                setIsCheckoutPending(false);
-                if (Object.keys(getFieldErrors(err) ?? {}).length > 0) {
-                    goToStep('details');
+                const input: EventRequestDto = {
+                    title: trimmedTitle,
+                    planTierCode: selectedCode,
+                    eventType: selectedEventType,
+                    visibility: 'PRIVATE',
+                    startAt: new Date(startAt).toISOString(),
+                    endAt: new Date(endAt).toISOString(),
+                    timezone,
+                    locationName: trimmedLocationName,
+                    locationAddress: trimmedLocationAddress,
+                    mapsUrl: mapsUrl.trim() || undefined,
+                    brandingSettings: {},
+                    initialSessionTitle,
+                };
+
+                try {
+                    setIsCheckoutPending(true);
+                    const event = await createEvent.mutateAsync(input);
+                    eventId = event.id;
+                    setCreatedDraftEventId(event.id);
+                } catch (err) {
+                    setIsCheckoutPending(false);
+                    if (Object.keys(getFieldErrors(err) ?? {}).length > 0) {
+                        goToStep('details');
+                        return;
+                    }
+                    setError(toErrorMessage(err));
                     return;
                 }
-
-                setError(toErrorMessage(err));
-                return;
             }
 
+            setIsCheckoutPending(true);
             try {
-                const checkout = await api.post<CheckoutResponseDto>(
-                    endpoints.events.checkout(event.id),
-                    appliedCheckoutCode ? { collaborationCode: appliedCheckoutCode } : undefined
-                );
-                window.history.replaceState(null, '', routes.events.new({ step: 'overview' }));
-                navigateToCheckout(event.id, checkout);
+                const checkout = await api.post<CheckoutResponseDto>(endpoints.events.checkout(eventId), {
+                    ...(appliedCheckoutCode ? { collaborationCode: appliedCheckoutCode } : {}),
+                    requestsImmediateStart: consent.requestsImmediateStart,
+                    acknowledgesWithdrawalTerms: consent.acknowledgesWithdrawalTerms,
+                    termsVersion: consent.termsVersion!,
+                });
+                navigateToCheckout(eventId, checkout);
             } catch (checkoutError) {
-                setCreatedDraftEventId(event.id);
-                setError(toErrorMessage(checkoutError));
                 setIsCheckoutPending(false);
+                if (consent.handleCheckoutError(checkoutError)) return;
+                setError(toErrorMessage(checkoutError));
             }
         },
         [
             appliedCheckoutCode,
             canSubmitDetails,
+            consent,
             createEvent,
             createdDraftEventId,
             goToStep,
             initialSessionTitle,
             isEmailVerified,
             mapsUrl,
-            router,
             selectedCode,
             selectedEventType,
             step,
@@ -326,6 +324,13 @@ export function useCreateEventFormController(): CreateEventFormValue {
         isCheckingCheckoutCode: previewCreateEventCode.isPending,
         onCheckoutCodeChange,
         applyCheckoutCode,
+
+        requestsImmediateStart: consent.requestsImmediateStart,
+        acknowledgesWithdrawalTerms: consent.acknowledgesWithdrawalTerms,
+        staleTerms: consent.staleTerms,
+        consentSatisfied: consent.consentSatisfied,
+        onRequestsImmediateStartChange: consent.handleRequestsImmediateStartChange,
+        onAcknowledgesWithdrawalTermsChange: consent.handleAcknowledgesWithdrawalTermsChange,
 
         isSubmitPending: createEvent.isPending || isCheckoutPending,
         isEmailVerified,

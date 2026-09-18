@@ -1,8 +1,10 @@
 'use client';
 
-import { Calendar, Loader2, Receipt } from 'lucide-react';
+import { Loader2, Receipt } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { ActivationEventSummary } from '@/components/checkout/ActivationEventSummary';
+import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
 import { EventOverviewPriceRow } from '@/components/event/create/EventOverviewPriceRow';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
 import { formatMoney } from '@/lib/billing';
@@ -29,13 +31,17 @@ export function EventOverviewStep() {
         isCheckingCheckoutCode,
         onCheckoutCodeChange: onCheckoutCodeChangeAction,
         applyCheckoutCode: onApplyCheckoutCodeAction,
+        requestsImmediateStart,
+        acknowledgesWithdrawalTerms,
+        staleTerms,
+        onRequestsImmediateStartChange: onRequestsImmediateStartChangeAction,
+        onAcknowledgesWithdrawalTermsChange: onAcknowledgesWithdrawalTermsChangeAction,
     } = useCreateEventForm();
 
     if (!plan) return null;
 
     const planActivation = getPlanPriceDetails(plan);
     const activationTotalLabel = planActivation ? formatMoney(locale, planActivation.amountMinor, planActivation.currency) : t('payment.noCharge');
-    const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' });
     const matchedEventType = eventTypes.find((type) => type.eventTypeKey === eventType);
     const eventTypeName = matchedEventType ? eventTypeCopy(matchedEventType.eventTypeKey).name : eventType;
     const trimmedCheckoutCode = checkoutCode.trim();
@@ -50,21 +56,9 @@ export function EventOverviewStep() {
     return (
         <div className="flex h-full flex-col">
             {/* Event Summary */}
-            <section aria-labelledby="plan-details-heading" className="flex items-start gap-3 border-b border-border/70 pb-5">
-                <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-ink-faint" />
-
-                <div className="min-w-0">
-                    <h3 id="plan-details-heading" className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
-                        {t('overview.event')}
-                    </h3>
-
-                    <p className="mt-1 font-semibold text-ink">{title}</p>
-
-                    <p className="mt-0.5 text-sm text-ink-muted">
-                        {eventTypeName} · {dateFormatter.format(new Date(startAt))}
-                    </p>
-                </div>
-            </section>
+            <div className="border-b border-border/70 pb-5">
+                <ActivationEventSummary eventTitle={title} eventTypeName={eventTypeName} startAt={startAt} />
+            </div>
 
             {/* Pricing */}
             <section aria-labelledby="pricing-heading" className="border-b border-border/70 py-5">
@@ -147,6 +141,17 @@ export function EventOverviewStep() {
                         {checkoutCodeError}
                     </p>
                 )}
+            </section>
+
+            {/* Withdrawal consent */}
+            <section aria-labelledby="withdrawal-terms-title" className="border-t border-border/70 pt-5">
+                <WithdrawalConsentSection
+                    requestsImmediateStart={requestsImmediateStart}
+                    acknowledgesWithdrawalTerms={acknowledgesWithdrawalTerms}
+                    staleTerms={staleTerms}
+                    onRequestsImmediateStartChangeAction={onRequestsImmediateStartChangeAction}
+                    onAcknowledgesWithdrawalTermsChangeAction={onAcknowledgesWithdrawalTermsChangeAction}
+                />
             </section>
 
             {/* Error State */}
