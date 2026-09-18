@@ -165,7 +165,7 @@ const HERO_SPRITES = [
 ] as const;
 
 const HERO_VISUAL_CLASS =
-    'pointer-events-none relative z-10 order-2 left-[2vw] mt-[42px] aspect-[1136/1204] w-[135vw] max-w-none self-center min-[761px]:order-none min-[761px]:left-auto min-[761px]:m-0 min-[761px]:w-[min(780px,43vw)] min-[761px]:justify-self-start';
+    'pointer-events-none relative z-10 order-2 left-[3.7vw] mt-[42px] aspect-[1136/1204] w-[137vw] max-w-none justify-self-center self-center min-[761px]:order-none min-[761px]:left-auto min-[761px]:m-0 min-[761px]:w-[min(780px,43vw)] min-[761px]:justify-self-start';
 
 const PHONE_WRAP_CLASS =
     'absolute aspect-[748/1541] left-[19.28%] top-[3.78%] w-[56.47%] z-[5] min-[761px]:left-[23.5%] min-[761px]:top-[5.21%] min-[761px]:w-[43.7%]';

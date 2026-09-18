@@ -13,6 +13,31 @@ import { routes } from '@/lib/routes';
 
 const NAV_HREFS = ['#platformStories', '#howItWorks', '#experience', '#pricing'] as const;
 
+type LandingHeroCtaProps = { className: string; href: string; lines: string[] };
+
+function LandingHeroCta({ className, href, lines }: LandingHeroCtaProps) {
+    return (
+        <a
+            className={`items-center justify-between gap-4 rounded-full bg-[linear-gradient(100deg,#ff6f93,#ff936a_52%,#ffd05b)] py-[17px] pr-[18px] pl-[30px] text-white shadow-[0_16px_32px_rgba(217,102,74,.15)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#d27b9b] min-[761px]:gap-2.5 min-[761px]:py-[10px] min-[761px]:pr-[11px] min-[761px]:pl-5 ${className}`}
+            href={href}
+        >
+            <span className="flex-1 text-center [font-family:Baskerville,Georgia,serif] text-[24px] leading-[1.02] tracking-[-0.025em] min-[421px]:text-[clamp(25px,6.2vw,34px)] min-[761px]:text-[clamp(15px,1vw,19px)]">
+                {lines.map((line) => (
+                    <span className="block" key={line}>
+                        {line}
+                    </span>
+                ))}
+            </span>
+            <span
+                aria-hidden="true"
+                className="grid size-[58px] shrink-0 place-items-center rounded-full bg-white text-[36px] leading-none text-[#ee9971] min-[421px]:size-[68px] min-[421px]:text-[42px] min-[761px]:size-[42px] min-[761px]:text-[27px]"
+            >
+                ↗
+            </span>
+        </a>
+    );
+}
+
 export function LandingHero() {
     const t = useTranslations('LandingPage.hero');
     const { isAuthenticated, isBootstrapping } = useAuth();
@@ -127,24 +152,11 @@ export function LandingHero() {
                                 </span>
                             ))}
                         </h1>
-                        <a
-                            className="mx-auto mt-7 flex min-h-[62px] w-[min(244px,85%)] items-center justify-between gap-3 rounded-full bg-[linear-gradient(100deg,#ff6f93,#ff936a_52%,#ffd05b)] py-2 pr-2 pl-6 text-white shadow-[0_16px_32px_rgba(217,102,74,.15)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#d27b9b] min-[761px]:mt-8"
+                        <LandingHeroCta
+                            className="mx-auto hidden min-[761px]:mt-[26px] min-[761px]:flex min-[761px]:h-[62px] min-[761px]:w-[min(228px,52%)]"
                             href={isSignedIn ? routes.home : routes.register}
-                        >
-                            <span className="flex-1 text-center [font-family:Baskerville,Georgia,serif] text-[17px] leading-[.94]">
-                                {(isSignedIn ? signedInCta : cta).map((line) => (
-                                    <span className="block" key={line}>
-                                        {line}
-                                    </span>
-                                ))}
-                            </span>
-                            <span
-                                aria-hidden="true"
-                                className="grid size-11 shrink-0 place-items-center rounded-full bg-white text-[27px] leading-none text-[#ee9971]"
-                            >
-                                ↗
-                            </span>
-                        </a>
+                            lines={isSignedIn ? signedInCta : cta}
+                        />
                         <p className="mt-8 max-w-[540px] text-[clamp(18px,1.35vw,24px)] leading-[1.35]">
                             {t('subtitleStart')} <strong>{t('subtitleStrong')}</strong> {t('subtitleEnd')}
                             <br />
@@ -164,6 +176,11 @@ export function LandingHero() {
                         </p>
                     </div>
                     <LandingHeroVisual />
+                    <LandingHeroCta
+                        className="order-3 mx-auto mt-[34vw] h-[92px] w-[min(415px,78vw)] flex min-[421px]:h-[112px] min-[761px]:hidden"
+                        href={isSignedIn ? routes.home : routes.register}
+                        lines={isSignedIn ? signedInCta : cta}
+                    />
                 </div>
             </div>
         </section>

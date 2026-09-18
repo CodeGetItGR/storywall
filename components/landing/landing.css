@@ -181,153 +181,29 @@
 }
 
 /* SECTION 2 */
-.landing-page .platform {
-    padding: clamp(90px, 11vw, 180px) clamp(22px, 6vw, 104px);
-}
-.landing-page .section-intro {
-    display: grid;
-    grid-template-columns: 1fr 2.1fr;
-    column-gap: 6vw;
-    align-items: start;
-}
-.landing-page .eyebrow {
-    padding-top: 10px;
-    font-size: 11px;
-    line-height: 1.4;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-}
-.landing-page .section-intro h2 {
-    margin: 0;
-    font-family: var(--editorial);
-    font-size: clamp(48px, 6.5vw, 108px);
-    font-weight: 400;
-    line-height: 0.93;
-    letter-spacing: -0.055em;
-}
-.landing-page .section-intro p {
-    grid-column: 2;
-    max-width: 660px;
-    margin: 42px 0 0;
-    font-size: clamp(16px, 1.45vw, 22px);
-    line-height: 1.55;
-}
 
-.landing-page .showcase {
-    margin: clamp(80px, 10vw, 150px) calc(clamp(22px, 6vw, 104px) * -1) 0;
-    padding: 0 clamp(22px, 4vw, 72px) 0 0;
-    display: grid;
-    grid-template-columns: minmax(360px, 46vw) minmax(0, 1fr);
-    gap: clamp(34px, 5vw, 92px);
-    align-items: start;
-}
-.landing-page .stage {
-    position: sticky;
-    top: 7vh;
-    height: 86vh;
-    min-height: 620px;
-    overflow: hidden;
-    background: #111;
-}
-.landing-page .stage-img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0;
-    transform: scale(1.12) translateY(var(--desktop-parallax, 0px));
-    transition:
-        opacity 0.7s ease,
-        transform 1.05s cubic-bezier(0.2, 0.75, 0.2, 1);
-}
-.landing-page .stage-img.active {
-    opacity: 1;
-    transform: scale(1.06) translateY(var(--desktop-parallax, 0px));
-}
-.landing-page .stage::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.34));
-    pointer-events: none;
-}
-.landing-page .meta {
-    position: absolute;
-    z-index: 2;
-    left: 24px;
-    right: 24px;
-    bottom: 22px;
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-    color: #fff;
-    font-size: 9px;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-}
-.landing-page .story-list {
-    border-top: 1px solid var(--ink);
-}
-.landing-page .story-row {
-    min-height: 48vh;
-    padding: clamp(34px, 4vw, 64px) 0;
-    display: grid;
-    grid-template-columns: 64px minmax(0, 1fr) 40px;
-    gap: clamp(18px, 2vw, 34px);
-    align-items: start;
-    border-bottom: 1px solid var(--line);
-    opacity: 0.36;
-    transition: opacity 0.3s ease;
-    outline: none;
-}
-.landing-page .story-row.active {
-    opacity: 1;
-}
-.landing-page .story-row:focus-visible {
-    box-shadow: inset 0 0 0 2px var(--coral);
-}
-.landing-page .num {
-    padding-top: 7px;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.13em;
-}
-.landing-page .story-copy > span {
-    display: block;
-    margin-bottom: 25px;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-}
-.landing-page .story-copy h3 {
-    max-width: 780px;
-    margin: 0;
-    font-family: var(--editorial);
-    font-size: clamp(42px, 5vw, 82px);
-    font-weight: 400;
-    line-height: 0.92;
-    letter-spacing: -0.055em;
-    text-wrap: balance;
-}
-.landing-page .story-copy p {
-    max-width: 580px;
-    margin: 28px 0 0;
-    color: #151313;
-    font-size: clamp(14px, 1.15vw, 17px);
-    line-height: 1.6;
-}
-.landing-page .arr {
-    font-size: 30px;
-    transition: transform 0.35s ease;
-}
-.landing-page .story-row.active .arr {
-    transform: translate(4px, -4px);
-}
-.landing-page .mobile-photo-wrap {
-    display: none;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* MOBILE ANIMATION */
 @media (max-width: 760px) {
@@ -392,116 +268,29 @@
         height: 48px;
     }
 
-    .landing-page .platform {
-        padding: 82px 20px;
-    }
-    .landing-page .section-intro {
-        display: block;
-    }
-    .landing-page .section-intro h2 {
-        margin-top: 28px;
-        font-size: clamp(43px, 12vw, 63px);
-    }
-    .landing-page .section-intro p {
-        margin-top: 30px;
-    }
-    .landing-page .showcase {
-        margin: 64px -20px 0;
-        padding: 0 20px;
-        display: block;
-    }
-    .landing-page .stage {
-        display: none;
-    }
-    .landing-page .story-list {
-        border-top: 1px solid var(--ink);
-    }
-    .landing-page .story-row {
-        min-height: 0;
-        padding: 34px 0 40px;
-        grid-template-columns: 42px minmax(0, 1fr) 26px;
-        gap: 12px;
-        opacity: 1;
-        border-bottom: 1px solid var(--line);
-    }
+    
+    
+    
+    
+    
+    
+    
+    
 
-    .landing-page .mobile-photo-wrap {
-        grid-column: 1/4;
-        display: block;
-        width: 90vw;
-        margin-bottom: 24px;
-        overflow: hidden;
-        opacity: 0;
-        transition:
-            clip-path 1.05s cubic-bezier(0.18, 0.8, 0.2, 1),
-            transform 1.05s cubic-bezier(0.18, 0.8, 0.2, 1),
-            opacity 0.55s ease;
-        will-change: transform, clip-path, opacity;
-    }
-    .landing-page .story-row:nth-child(odd) .mobile-photo-wrap {
-        margin-left: -20px;
-        margin-right: auto;
-        clip-path: inset(0 38% 0 0);
-        transform: translateX(-34vw);
-    }
-    .landing-page .story-row:nth-child(even) .mobile-photo-wrap {
-        margin-left: auto;
-        margin-right: -20px;
-        clip-path: inset(0 0 0 38%);
-        transform: translateX(34vw);
-    }
-    .landing-page .mobile-photo-wrap img {
-        width: 100%;
-        height: 60vw;
-        min-height: 230px;
-        max-height: 410px;
-        object-fit: cover;
-        transform: scale(1.18) translateY(var(--mobile-parallax, 0px));
-        transition: transform 1.25s cubic-bezier(0.18, 0.8, 0.2, 1);
-        will-change: transform;
-    }
-    .landing-page .num,
-    .landing-page .story-copy,
-    .landing-page .arr {
-        opacity: 0;
-        transform: translateY(18px);
-        transition:
-            opacity 0.55s ease,
-            transform 0.7s cubic-bezier(0.2, 0.75, 0.2, 1);
-    }
-    .landing-page .story-row.mobile-visible .mobile-photo-wrap {
-        clip-path: inset(0 0 0 0);
-        transform: translateX(0);
-        opacity: 1;
-    }
-    .landing-page .story-row.mobile-visible .mobile-photo-wrap img {
-        transform: scale(1.06) translateY(var(--mobile-parallax, 0px));
-    }
-    .landing-page .story-row.mobile-visible .num,
-    .landing-page .story-row.mobile-visible .story-copy,
-    .landing-page .story-row.mobile-visible .arr {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    .landing-page .story-row.mobile-visible .story-copy {
-        transition-delay: 0.12s;
-    }
-    .landing-page .story-row.mobile-visible .arr {
-        transition-delay: 0.18s;
-    }
-    .landing-page .story-copy > span {
-        margin-bottom: 16px;
-    }
-    .landing-page .story-copy h3 {
-        font-size: clamp(36px, 10.5vw, 52px);
-    }
-    .landing-page .story-copy p {
-        margin-top: 18px;
-        font-size: 14px;
-    }
-    .landing-page .arr {
-        font-size: 22px;
-    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 }
 
 /* SECTION 3 — SOCIAL SIDE / SCROLL CURTAIN */
@@ -553,9 +342,7 @@
     color: var(--ink);
     will-change: left;
 }
-.landing-page .statement-copy .eyebrow {
-    color: #151313;
-}
+
 .landing-page .statement-copy h2 {
     margin: 34px 0 28px;
     max-width: 880px;
@@ -653,12 +440,7 @@
         justify-content: flex-end;
         pointer-events: none;
     }
-    .landing-page .statement-copy .eyebrow {
-        margin-bottom: 18px;
-        color: #151313;
-        font-size: 10px;
-        letter-spacing: 0.14em;
-    }
+    
     .landing-page .statement-copy h2 {
         margin: 0;
         max-width: 94%;
@@ -698,9 +480,7 @@
     align-items: start;
     padding-bottom: clamp(70px, 8vw, 120px);
 }
-.landing-page .journey-head .eyebrow {
-    padding-top: 10px;
-}
+
 .landing-page .journey-head h2 {
     margin: 0;
     font-family: var(--editorial);
@@ -861,17 +641,7 @@
     .landing-page * {
         scroll-behavior: auto !important;
     }
-    .landing-page .stage-img,
-    .landing-page .mobile-photo-wrap,
-    .landing-page .mobile-photo-wrap img,
-    .landing-page .num,
-    .landing-page .story-copy,
-    .landing-page .arr {
-        transition: none !important;
-        transform: none !important;
-        clip-path: none !important;
-        opacity: 1 !important;
-    }
+    
     .landing-page .statement {
         --curtain-top: 34% !important;
     }
@@ -2103,21 +1873,11 @@
 }
 
 /* One Platform desktop */
-.landing-page .stage-img[data-img='0'] {
-    object-position: 52% 50% !important;
-}
-.landing-page .stage-img[data-img='1'] {
-    object-position: 50% 45% !important;
-}
-.landing-page .stage-img[data-img='2'] {
-    object-position: 50% 48% !important;
-}
-.landing-page .stage-img[data-img='3'] {
-    object-position: 50% 46% !important;
-}
-.landing-page .stage-img[data-img='4'] {
-    object-position: 50% 50% !important;
-}
+
+
+
+
+
 
 /* Social side */
 .landing-page .statement-image img {
@@ -2159,23 +1919,7 @@
     object-position: 50% 50% !important;
 }
 
-@media (max-width: 760px) {
-    .landing-page .story-row:nth-child(1) .mobile-photo-wrap img {
-        object-position: 50% 48% !important;
-    }
-    .landing-page .story-row:nth-child(2) .mobile-photo-wrap img {
-        object-position: 50% 42% !important;
-    }
-    .landing-page .story-row:nth-child(3) .mobile-photo-wrap img {
-        object-position: 50% 47% !important;
-    }
-    .landing-page .story-row:nth-child(4) .mobile-photo-wrap img {
-        object-position: 50% 45% !important;
-    }
-    .landing-page .story-row:nth-child(5) .mobile-photo-wrap img {
-        object-position: 50% 50% !important;
-    }
-}
+
 
 /* Chapter 01 background-photo tuning */
 .landing-page .swx-layer-1 {
@@ -2244,18 +1988,7 @@
 }
 
 /* PHOTOS — edge-to-edge crop, no black letterbox gutters */
-.landing-page .hero-photo img,
-.landing-page .stage-img,
-.landing-page .mobile-photo-wrap img,
-.landing-page .statement-image img,
-.landing-page .journey-panel-media img,
-.landing-page .swg-panel img,
-.landing-page .swx-float img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-    display: block !important;
-}
+
 
 /* Hero crop for more energetic image */
 .landing-page .hero-photo img {
@@ -2349,27 +2082,9 @@
 }
 
 /* ONE PLATFORM category labels — larger + StoryWall gradient */
-.landing-page .story-copy > span {
-    margin-bottom: 24px !important;
-    font-size: clamp(16px, 1.35vw, 22px) !important;
-    font-weight: 900 !important;
-    letter-spacing: 0.13em !important;
-    line-height: 1.1 !important;
-    width: max-content;
-    max-width: 100%;
-    background: linear-gradient(135deg, #d27b9b 0%, #e78274 28%, #f4905f 58%, #fcba63 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-}
 
-@media (max-width: 760px) {
-    .landing-page .story-copy > span {
-        margin-bottom: 14px !important;
-        font-size: clamp(15px, 4.4vw, 19px) !important;
-        letter-spacing: 0.11em !important;
-    }
-}
+
+
 
 /* ============================================================
    ALL REQUESTED REFINEMENTS
@@ -2841,49 +2556,23 @@
     }
 }
 
-.landing-page .stage-img[data-img='0'] {
-    object-position: 50% 48% !important;
-}
-.landing-page .story-row[data-row='0'] .mobile-photo-wrap img {
-    object-position: 50% 48% !important;
-}
 
-.landing-page .stage-img[data-img='2'] {
-    object-position: 50% 46% !important;
-}
-.landing-page .story-row[data-row='2'] .mobile-photo-wrap img {
-    object-position: 50% 46% !important;
-}
 
-.landing-page .stage-img[data-img='4'] {
-    object-position: 50% 46% !important;
-}
-.landing-page .story-row[data-row='4'] .mobile-photo-wrap img {
-    object-position: 50% 46% !important;
-}
 
-.landing-page .stage-img[data-img='1'] {
-    object-position: 50% 48% !important;
-}
-.landing-page .story-row[data-row='1'] .mobile-photo-wrap img {
-    object-position: 50% 48% !important;
-}
+
+
+
+
+
+
+
+
 
 /* v56 — remove dark overlay from ONE PLATFORM. MANY STORIES desktop photos */
-.landing-page .stage::after {
-    content: none !important;
-    display: none !important;
-    background: none !important;
-}
+
 
 /* v57 — ONE PLATFORM: slower card progression on desktop */
-@media (min-width: 761px) {
-    .landing-page .story-row {
-        min-height: 76vh !important;
-        padding-top: clamp(52px, 6vw, 92px) !important;
-        padding-bottom: clamp(52px, 6vw, 92px) !important;
-    }
-}
+
 
 .landing-page .journey-panel:nth-child(1) .journey-panel-media img {
     object-position: 50% 50% !important;
@@ -3076,11 +2765,7 @@
         pointer-events: auto !important;
     }
 
-    .landing-page .statement-copy .eyebrow {
-        margin: 0 0 16px !important;
-        font-size: 10px !important;
-        line-height: 1.4 !important;
-    }
+    
 
     .landing-page .statement-copy h2 {
         margin: 0 0 22px !important;
@@ -3574,501 +3259,92 @@
     background: #fff !important;
 }
 
-.landing-page #platformStories .stage {
-    background: #fff;
-}
 
-.landing-page .sw-wedding-accordion {
-    position: absolute;
-    z-index: 8;
-    inset: 0;
-    display: flex;
-    align-items: stretch;
-    gap: 0;
-    padding: 0;
-    overflow: hidden;
-    background: #fff;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.35s ease;
-}
 
-.landing-page .sw-wedding-accordion.is-visible {
-    opacity: 1;
-    pointer-events: auto;
-}
 
-.landing-page .sw-wedding-panel {
-    position: relative;
-    flex: 0.72 1 0;
-    min-width: 0;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    overflow: hidden;
-    background: #111;
-    cursor: pointer;
-    appearance: none;
-    transition:
-        flex 0.8s cubic-bezier(0.2, 0.78, 0.18, 1),
-        filter 0.55s ease,
-        opacity 0.55s ease;
-    isolation: isolate;
-}
 
-.landing-page .sw-wedding-panel.is-active {
-    flex: 5.25 1 0;
-}
 
-.landing-page .sw-wedding-panel img {
-    position: absolute;
-    inset: -2%;
-    width: 104%;
-    height: 104%;
-    object-fit: cover;
-    object-position: center;
-    filter: grayscale(1) contrast(0.96) brightness(0.82);
-    transform: scale(1.045);
-    transition:
-        filter 0.65s ease,
-        transform 0.85s cubic-bezier(0.2, 0.78, 0.18, 1);
-    will-change: transform, filter;
-}
 
-.landing-page .sw-wedding-panel.is-active img {
-    filter: grayscale(0) contrast(1) brightness(1);
-    animation: swWeddingDrift 5.2s ease-in-out infinite alternate;
-}
 
-.landing-page .sw-wedding-panel:nth-child(1) img {
-    object-position: 50% 45%;
-}
-.landing-page .sw-wedding-panel:nth-child(2) img {
-    object-position: 50% 42%;
-}
-.landing-page .sw-wedding-panel:nth-child(3) img {
-    object-position: 50% 47%;
-}
-.landing-page .sw-wedding-panel:nth-child(4) img {
-    object-position: 50% 45%;
-}
-.landing-page .sw-wedding-panel:nth-child(5) img {
-    object-position: 50% 50%;
-}
 
-.landing-page .sw-wedding-plus {
-    position: absolute;
-    z-index: 3;
-    top: 17px;
-    right: 17px;
-    width: 30px;
-    height: 30px;
-    display: grid;
-    place-items: center;
-    border: 1px solid rgba(255, 255, 255, 0.78);
-    border-radius: 50%;
-    background: rgba(17, 17, 17, 0.3);
-    backdrop-filter: blur(6px);
-    color: #fff;
-    font:
-        400 21px/1 Arial,
-        sans-serif;
-    transition:
-        transform 0.4s ease,
-        background 0.4s ease,
-        color 0.4s ease;
-}
 
-.landing-page .sw-wedding-panel.is-active .sw-wedding-plus {
-    transform: rotate(45deg);
-    background: rgba(255, 255, 255, 0.88);
-    color: #111;
-}
 
-@keyframes swWeddingDrift {
-    0% {
-        transform: scale(1.055) translateX(-5px);
-    }
-    100% {
-        transform: scale(1.055) translateX(5px);
-    }
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* Keep the accordion compact on desktop; mobile keeps the site's original mobile story treatment. */
-@media (max-width: 760px) {
-    .landing-page #platformStories .stage {
-        min-height: 58svh;
-    }
-    .landing-page .sw-wedding-accordion {
-        display: flex !important;
-        inset: auto 0 0 0;
-        height: 58svh;
-        min-height: 420px;
-        opacity: 1;
-        pointer-events: auto;
-    }
-    .landing-page .sw-wedding-panel {
-        flex: 0.52 1 0;
-    }
-    .landing-page .sw-wedding-panel.is-active {
-        flex: 3.9 1 0;
-    }
-    .landing-page .sw-wedding-plus {
-        top: 12px;
-        right: 12px;
-        width: 26px;
-        height: 26px;
-        font-size: 18px;
-    }
-}
 
-@media (prefers-reduced-motion: reduce) {
-    .landing-page .sw-wedding-panel,
-    .landing-page .sw-wedding-panel img {
-        transition: none !important;
-    }
-    .landing-page .sw-wedding-panel.is-active img {
-        animation: none !important;
-    }
-}
 
-.landing-page .sw-wedding-accordion {
-    gap: 0 !important;
-    column-gap: 0 !important;
-    row-gap: 0 !important;
-}
-.landing-page .sw-wedding-panel {
-    margin: 0 !important;
-    border: 0 !important;
-    box-shadow: none !important;
-}
+
+
+
+
 
 /* Desktop: accordion remains in the existing sticky image stage. */
-@media (min-width: 761px) {
-    .landing-page .sw-wedding-accordion-mobile {
-        display: none !important;
-    }
-}
+
 
 /* Mobile: use the SAME horizontal photo slot the original WEDDING image occupied. */
 @media (max-width: 760px) {
-    .landing-page #platformStories .stage {
-        display: none !important;
-    }
+    
 
-    .landing-page .story-row[data-row='0'] .mobile-photo-wrap.has-wedding-accordion {
-        position: relative !important;
-        display: block !important;
-        height: 60vw !important;
-        min-height: 230px !important;
-        max-height: 410px !important;
-        overflow: hidden !important;
-        background: #111 !important;
-    }
+    
 
-    .landing-page .story-row[data-row='0'] .mobile-photo-wrap.has-wedding-accordion > img {
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-    }
+    
 
-    .landing-page .story-row[data-row='0'] .sw-wedding-accordion-mobile {
-        position: absolute !important;
-        inset: 0 !important;
-        z-index: 4 !important;
-        display: flex !important;
-        width: 100% !important;
-        height: 100% !important;
-        min-height: 0 !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-        background: #111 !important;
-    }
+    
 
-    .landing-page .story-row[data-row='0'] .sw-wedding-panel {
-        flex: 0.52 1 0 !important;
-        min-width: 0 !important;
-        height: 100% !important;
-    }
+    
 
-    .landing-page .story-row[data-row='0'] .sw-wedding-panel.is-active {
-        flex: 4.2 1 0 !important;
-    }
+    
 
-    .landing-page .story-row[data-row='0'] .sw-wedding-plus {
-        top: 8px !important;
-        right: 8px !important;
-        width: 25px !important;
-        height: 25px !important;
-        font-size: 17px !important;
-    }
+    
 
     /* Preserve the existing mobile reveal animation on the containing photo slot. */
-    .landing-page .story-row[data-row='0'].mobile-visible .mobile-photo-wrap.has-wedding-accordion {
-        opacity: 1 !important;
-    }
+    
 }
 
 .landing-page #platformStories {
     background: #fff !important;
 }
-.landing-page #platformStories .stage {
-    background: #fff !important;
-}
 
-.landing-page #platformStories .stage > .sw-wedding-accordion[data-story-accordion] {
-    position: absolute !important;
-    inset: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    z-index: 8 !important;
-    gap: 0 !important;
-    opacity: 0;
-    pointer-events: none;
-    background: #111 !important;
-}
-.landing-page #platformStories .stage > .sw-wedding-accordion[data-story-accordion].is-visible {
-    opacity: 1;
-    pointer-events: auto;
-}
 
-.landing-page .sw-wedding-accordion .sw-wedding-panel {
-    margin: 0 !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-}
 
-@media (max-width: 760px) {
-    .landing-page #platformStories .stage {
-        display: none !important;
-    }
 
-    .landing-page .story-row[data-row] .mobile-photo-wrap.has-wedding-accordion {
-        position: relative !important;
-        display: block !important;
-        height: 60vw !important;
-        min-height: 230px !important;
-        max-height: 410px !important;
-        overflow: hidden !important;
-        background: #111 !important;
-    }
 
-    .landing-page .story-row[data-row] .mobile-photo-wrap.has-wedding-accordion > img {
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-    }
 
-    .landing-page .story-row[data-row] .sw-wedding-accordion-mobile {
-        position: absolute !important;
-        inset: 0 !important;
-        z-index: 4 !important;
-        display: flex !important;
-        width: 100% !important;
-        height: 100% !important;
-        min-height: 0 !important;
-        gap: 0 !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-        background: #111 !important;
-    }
 
-    .landing-page .story-row[data-row] .sw-wedding-panel {
-        flex: 0.52 1 0 !important;
-        min-width: 0 !important;
-        height: 100% !important;
-    }
 
-    .landing-page .story-row[data-row] .sw-wedding-panel.is-active {
-        flex: 4.2 1 0 !important;
-    }
 
-    .landing-page .story-row[data-row] .sw-wedding-plus {
-        top: 8px !important;
-        right: 8px !important;
-        width: 25px !important;
-        height: 25px !important;
-        font-size: 17px !important;
-    }
-}
 
-.landing-page .sw-filmstrip-more {
-    margin: clamp(74px, 8vw, 118px) 0 0;
-    padding: clamp(34px, 4vw, 54px) 0 clamp(18px, 2vw, 28px);
-    display: grid;
-    grid-template-columns: minmax(220px, 27%) minmax(0, 1fr);
-    gap: clamp(26px, 4vw, 64px);
-    align-items: end;
-}
-.landing-page .sw-filmstrip-eyebrow {
-    margin-bottom: 14px;
-    font-size: 10px;
-    font-weight: 900;
-    letter-spacing: 0.16em;
-    color: #151313;
-}
-.landing-page .sw-filmstrip-intro h3 {
-    margin: 0;
-    max-width: 300px;
-    font-family: var(--editorial);
-    font-size: clamp(38px, 4.5vw, 68px);
-    font-weight: 400;
-    line-height: 0.92;
-    letter-spacing: -0.05em;
-}
-.landing-page .sw-filmstrip-track {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 3px;
-    height: clamp(180px, 17vw, 255px);
-    min-width: 0;
-    overflow: hidden;
-}
-.landing-page .sw-filmstrip-card {
-    position: relative;
-    min-width: 0;
-    height: 100%;
-    padding: 0;
-    margin: 0;
-    border: 0;
-    overflow: hidden;
-    background: #111;
-    cursor: pointer;
-    appearance: none;
-}
-.landing-page .sw-filmstrip-card img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: grayscale(1) brightness(0.78);
-    transform: scale(1.035);
-    transition:
-        filter 0.5s ease,
-        transform 0.65s cubic-bezier(0.2, 0.75, 0.2, 1);
-}
-.landing-page .sw-filmstrip-card.is-active img {
-    filter: grayscale(0) brightness(1);
-    transform: scale(1.01);
-}
-.landing-page .sw-filmstrip-plus {
-    position: absolute;
-    z-index: 2;
-    top: 10px;
-    right: 10px;
-    width: 25px;
-    height: 25px;
-    display: grid;
-    place-items: center;
-    border: 1px solid rgba(255, 255, 255, 0.9);
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.18);
-    color: #fff;
-    font:
-        400 17px/1 Arial,
-        sans-serif;
-    backdrop-filter: blur(4px);
-}
-.landing-page .sw-filmstrip-name {
-    position: absolute;
-    z-index: 2;
-    left: 10px;
-    right: 8px;
-    bottom: 10px;
-    color: #fff;
-    font-size: 8px;
-    font-weight: 900;
-    line-height: 1.2;
-    letter-spacing: 0.11em;
-    text-transform: uppercase;
-    text-align: left;
-}
-.landing-page .sw-filmstrip-mobile-hint {
-    display: none;
-}
 
-@media (hover: hover) and (pointer: fine) {
-    .landing-page .sw-filmstrip-card:hover img {
-        filter: grayscale(0) brightness(1);
-        transform: scale(1.01);
-    }
-}
+
+
+
+
+
+
+
+
+
+
 
 /* MOBILE — horizontal swipe filmstrip */
-@media (max-width: 760px) {
-    .landing-page .sw-filmstrip-more {
-        display: block;
-        margin-top: 64px;
-        padding: 28px 0 24px;
-    }
-    .landing-page .sw-filmstrip-intro {
-        padding: 0 0 22px;
-    }
-    .landing-page .sw-filmstrip-intro h3 {
-        max-width: 280px;
-        font-size: 42px;
-    }
-    .landing-page .sw-filmstrip-track {
-        display: flex;
-        gap: 6px;
-        height: 230px;
-        overflow-x: auto;
-        overflow-y: hidden;
-        scroll-snap-type: x mandatory;
-        scrollbar-width: none;
-        -webkit-overflow-scrolling: touch;
-        padding-right: 18%;
-    }
-    .landing-page .sw-filmstrip-track::-webkit-scrollbar {
-        display: none;
-    }
-    .landing-page .sw-filmstrip-card {
-        flex: 0 0 28%;
-        scroll-snap-align: start;
-        transition: flex-basis 0.55s cubic-bezier(0.2, 0.75, 0.2, 1);
-    }
-    .landing-page .sw-filmstrip-card.is-active {
-        flex-basis: 72%;
-    }
-    .landing-page .sw-filmstrip-card img {
-        filter: grayscale(1) brightness(0.76);
-    }
-    .landing-page .sw-filmstrip-card.is-active img {
-        filter: grayscale(0) brightness(1);
-    }
-    .landing-page .sw-filmstrip-plus {
-        top: 9px;
-        right: 9px;
-        width: 24px;
-        height: 24px;
-        font-size: 16px;
-    }
-    .landing-page .sw-filmstrip-name {
-        left: 9px;
-        right: 6px;
-        bottom: 9px;
-        font-size: 7.5px;
-    }
-    .landing-page .sw-filmstrip-mobile-hint {
-        display: block;
-        margin-top: 12px;
-        font-size: 9px;
-        font-weight: 800;
-        letter-spacing: 0.14em;
-        color: #151313;
-    }
-}
 
-@media (prefers-reduced-motion: reduce) {
-    .landing-page .sw-filmstrip-card,
-    .landing-page .sw-filmstrip-card img {
-        transition: none !important;
-    }
-}
+
+
 
 /* 03 — Experience: one continuous dark environment */
 .landing-page .swx-stack {
@@ -4079,152 +3355,28 @@
     background: #0b0b0f !important;
 }
 
-.landing-page .sw-filmstrip-caption {
-    grid-column: 2;
-    margin-top: 16px;
-    max-width: 760px;
-    min-height: 40px;
-    display: flex;
-    align-items: baseline;
-    gap: 16px;
-    color: #151313;
-}
-.landing-page .sw-filmstrip-caption-title {
-    flex: 0 0 auto;
-    font-size: 9px;
-    font-weight: 900;
-    letter-spacing: 0.13em;
-    text-transform: uppercase;
-}
-.landing-page .sw-filmstrip-caption-text {
-    font-size: 14px;
-    line-height: 1.45;
-    color: #151313;
-    transition:
-        opacity 0.18s ease,
-        transform 0.18s ease;
-}
-.landing-page .sw-filmstrip-caption.is-changing .sw-filmstrip-caption-text {
-    opacity: 0;
-    transform: translateY(3px);
-}
-@media (max-width: 760px) {
-    .landing-page .sw-filmstrip-caption {
-        margin-top: 15px;
-        min-height: 58px;
-        display: block;
-    }
-    .landing-page .sw-filmstrip-caption-title {
-        display: block;
-        margin-bottom: 6px;
-        font-size: 9px;
-    }
-    .landing-page .sw-filmstrip-caption-text {
-        display: block;
-        max-width: 92%;
-        font-size: 13px;
-        line-height: 1.4;
-    }
-}
+
+
+
+
+
 
 /* More Stories captions — larger and easier to read */
-.landing-page .sw-filmstrip-caption {
-    margin-top: 20px !important;
-    gap: 20px !important;
-}
-.landing-page .sw-filmstrip-caption-title {
-    font-size: 12px !important;
-    letter-spacing: 0.12em !important;
-}
-.landing-page .sw-filmstrip-caption-text {
-    font-size: 18px !important;
-    line-height: 1.45 !important;
-    color: #151313 !important;
-}
+
+
+
 
 /* Additional editorial copy + compact CTA for story panels */
-.landing-page .story-extra {
-    margin-top: clamp(24px, 2.6vw, 38px);
-    max-width: 720px;
-}
-.landing-page .story-extra-text {
-    margin: 0 0 18px !important;
-    max-width: 680px;
-    font-size: clamp(15px, 1.1vw, 18px) !important;
-    line-height: 1.5 !important;
-    color: #151313 !important;
-}
-.landing-page .story-extra-cta {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 42px;
-    padding: 0 18px;
-    border: 1px solid rgba(21, 19, 19, 0.28);
-    border-radius: 999px;
-    color: #151313;
-    background: #fff;
-    font-family: Arial, sans-serif;
-    font-size: 9px;
-    font-weight: 900;
-    letter-spacing: 0.105em;
-    text-transform: uppercase;
-    white-space: nowrap;
-    transition:
-        transform 0.25s ease,
-        background 0.25s ease,
-        color 0.25s ease;
-}
-@media (hover: hover) and (pointer: fine) {
-    .landing-page .story-extra-cta:hover {
-        transform: translateY(-1px);
-        background: #151313;
-        color: #fff;
-    }
-}
+
+
+
+
 
 /* Let the longer first and fifth panels breathe a little more */
-.landing-page .story-row[data-row='0'] .story-extra,
-.landing-page .story-row[data-row='4'] .story-extra {
-    max-width: 760px;
-}
-.landing-page .story-row[data-row='0'] .story-extra-text,
-.landing-page .story-row[data-row='4'] .story-extra-text {
-    max-width: 720px;
-}
 
-@media (max-width: 760px) {
-    .landing-page .sw-filmstrip-caption {
-        margin-top: 16px !important;
-        min-height: 76px !important;
-    }
-    .landing-page .sw-filmstrip-caption-title {
-        font-size: 11px !important;
-        margin-bottom: 8px !important;
-    }
-    .landing-page .sw-filmstrip-caption-text {
-        max-width: 96% !important;
-        font-size: 16px !important;
-        line-height: 1.45 !important;
-    }
 
-    .landing-page .story-extra {
-        margin-top: 20px;
-        max-width: 100%;
-    }
-    .landing-page .story-extra-text {
-        margin-bottom: 15px !important;
-        max-width: 100%;
-        font-size: 15px !important;
-        line-height: 1.45 !important;
-    }
-    .landing-page .story-extra-cta {
-        min-height: 40px;
-        padding: 0 15px;
-        font-size: 8px;
-        letter-spacing: 0.09em;
-    }
-}
+
+
 
 /* =========================================================
    [01]–[05] STORY ACCORDIONS
@@ -4236,171 +3388,54 @@
 /* Restore scroll parallax to the accordion images.
    --desktop-parallax is already updated on .stage by the original site JS.
    --mobile-parallax is already updated on each .story-row. */
-@media (min-width: 761px) {
-    .landing-page #platformStories .stage .sw-wedding-panel img {
-        transform: scale(1.07) translateY(var(--desktop-parallax, 0px)) !important;
-        transition:
-            filter 0.65s ease,
-            transform 0.35s linear !important;
-    }
 
-    .landing-page #platformStories .stage .sw-wedding-panel.is-active img {
-        transform: scale(1.07) translateY(var(--desktop-parallax, 0px)) !important;
-    }
-}
 
-@media (max-width: 760px) {
-    .landing-page .story-row[data-row] .sw-wedding-panel img {
-        transform: scale(1.09) translateY(var(--mobile-parallax, 0px)) !important;
-        transition:
-            filter 0.65s ease,
-            transform 0.35s linear !important;
-    }
 
-    .landing-page .story-row[data-row] .sw-wedding-panel.is-active img {
-        transform: scale(1.09) translateY(var(--mobile-parallax, 0px)) !important;
-    }
-}
 
 /* Stop the old animation from running on every active photo. */
-.landing-page .sw-wedding-panel.is-active img {
-    animation: none !important;
-}
+
 
 /* ONLY the first / initially visible photo gets the subtle interaction hint. */
-.landing-page .sw-wedding-panel:first-child.is-active img {
-    animation: swFirstPhotoHint 4.8s ease-in-out infinite alternate !important;
-}
 
-@keyframes swFirstPhotoHint {
-    0% {
-        transform: scale(1.075) translateY(var(--desktop-parallax, var(--mobile-parallax, 0px))) translateX(-5px);
-    }
-    100% {
-        transform: scale(1.075) translateY(var(--desktop-parallax, var(--mobile-parallax, 0px))) translateX(5px);
-    }
-}
+
+
 
 /* Alternating rounded lower outside corner — desktop accordion stage */
-@media (min-width: 761px) {
-    .landing-page #platformStories .stage > .sw-wedding-accordion[data-story-accordion='0'] {
-        border-radius: 0 0 48px 0 !important; /* [01] bottom-right */
-    }
-    .landing-page #platformStories .stage > .sw-wedding-accordion[data-story-accordion='1'] {
-        border-radius: 0 0 0 48px !important; /* [02] bottom-left */
-    }
-    .landing-page #platformStories .stage > .sw-wedding-accordion[data-story-accordion='2'] {
-        border-radius: 0 0 48px 0 !important; /* [03] bottom-right */
-    }
-    .landing-page #platformStories .stage > .sw-wedding-accordion[data-story-accordion='3'] {
-        border-radius: 0 0 0 48px !important; /* [04] bottom-left */
-    }
-    .landing-page #platformStories .stage > .sw-wedding-accordion[data-story-accordion='4'] {
-        border-radius: 0 0 48px 0 !important; /* [05] bottom-right */
-    }
-}
+
 
 /* Same alternating treatment on mobile horizontal photo slots */
-@media (max-width: 760px) {
-    .landing-page .story-row[data-row='0'] .mobile-photo-wrap.has-wedding-accordion,
-    .landing-page .story-row[data-row='0'] .sw-wedding-accordion-mobile {
-        border-radius: 0 0 38px 0 !important;
-    }
 
-    .landing-page .story-row[data-row='1'] .mobile-photo-wrap.has-wedding-accordion,
-    .landing-page .story-row[data-row='1'] .sw-wedding-accordion-mobile {
-        border-radius: 0 0 0 38px !important;
-    }
-
-    .landing-page .story-row[data-row='2'] .mobile-photo-wrap.has-wedding-accordion,
-    .landing-page .story-row[data-row='2'] .sw-wedding-accordion-mobile {
-        border-radius: 0 0 38px 0 !important;
-    }
-
-    .landing-page .story-row[data-row='3'] .mobile-photo-wrap.has-wedding-accordion,
-    .landing-page .story-row[data-row='3'] .sw-wedding-accordion-mobile {
-        border-radius: 0 0 0 38px !important;
-    }
-
-    .landing-page .story-row[data-row='4'] .mobile-photo-wrap.has-wedding-accordion,
-    .landing-page .story-row[data-row='4'] .sw-wedding-accordion-mobile {
-        border-radius: 0 0 38px 0 !important;
-    }
-}
 
 /* =========================================================
    MORE STORIES
    Rounded top-left + bottom-right for the full photo strip
    ========================================================= */
-.landing-page .sw-filmstrip-track {
-    border-radius: 36px 0 36px 0 !important;
-    overflow: hidden !important;
-}
+
 
 /* Keep mobile horizontal scrolling while preserving the visual corner treatment.
    The first and last cards carry the visible outer corners. */
-@media (max-width: 760px) {
-    .landing-page .sw-filmstrip-track {
-        border-radius: 0 !important;
-        overflow-x: auto !important;
-        overflow-y: hidden !important;
-    }
 
-    .landing-page .sw-filmstrip-card:first-child {
-        border-radius: 30px 0 0 0 !important;
-    }
 
-    .landing-page .sw-filmstrip-card:last-child {
-        border-radius: 0 0 30px 0 !important;
-    }
-}
 
-@media (prefers-reduced-motion: reduce) {
-    .landing-page .sw-wedding-panel:first-child.is-active img {
-        animation: none !important;
-    }
-}
 
 /* =========================================================
    FIX 1 — PARALLAX OVERSCAN
    Prevent any white/black seam while the image moves vertically.
    ========================================================= */
-.landing-page .sw-wedding-panel img {
-    inset: -7% !important;
-    width: 114% !important;
-    height: 114% !important;
-}
 
-@media (min-width: 761px) {
-    .landing-page #platformStories .stage .sw-wedding-panel img {
-        transform: scale(1.1) translateY(var(--desktop-parallax, 0px)) !important;
-    }
-    .landing-page #platformStories .stage .sw-wedding-panel.is-active img {
-        transform: scale(1.1) translateY(var(--desktop-parallax, 0px)) !important;
-    }
-}
 
-@media (max-width: 760px) {
-    .landing-page .story-row[data-row] .sw-wedding-panel img {
-        transform: scale(1.11) translateY(var(--mobile-parallax, 0px)) !important;
-    }
-    .landing-page .story-row[data-row] .sw-wedding-panel.is-active img {
-        transform: scale(1.11) translateY(var(--mobile-parallax, 0px)) !important;
-    }
-}
+
+
+
 
 /* =========================================================
    FIX 2 — ONLY FIRST PHOTO MOVES
    First image of every [01]–[05], desktop + mobile.
    Other active images never sway.
    ========================================================= */
-.landing-page .sw-wedding-panel.is-active img {
-    animation: none !important;
-}
 
-.landing-page .sw-wedding-panel:first-child.is-active img {
-    animation: swFirstPhotoHint104 4.6s ease-in-out infinite alternate !important;
-}
+
+
 
 @keyframes swFirstPhotoHint104 {
     0% {
@@ -4418,34 +3453,16 @@
    sticky stage, original stage images, overlay and accordion.
    ========================================================= */
 @media (min-width: 761px) {
-    .landing-page #platformStories .stage {
-        border-radius: 0 0 52px 0 !important;
-        overflow: hidden !important;
-        background: #111 !important;
-    }
+    
 
-    .landing-page #platformStories .stage::after,
-    .landing-page #platformStories .stage > .stage-img,
-    .landing-page #platformStories .stage > .sw-wedding-accordion[data-story-accordion] {
-        border-radius: 0 0 52px 0 !important;
-    }
+    
 
-    .landing-page #platformStories .stage > .stage-img {
-        clip-path: inset(0 round 0 0 52px 0) !important;
-    }
+    
 
-    .landing-page #platformStories .stage > .sw-wedding-accordion[data-story-accordion] {
-        overflow: hidden !important;
-    }
+    
 
     /* Remove the previous alternating desktop rule completely */
-    .landing-page #platformStories .stage > .sw-wedding-accordion[data-story-accordion='0'],
-    .landing-page #platformStories .stage > .sw-wedding-accordion[data-story-accordion='1'],
-    .landing-page #platformStories .stage > .sw-wedding-accordion[data-story-accordion='2'],
-    .landing-page #platformStories .stage > .sw-wedding-accordion[data-story-accordion='3'],
-    .landing-page #platformStories .stage > .sw-wedding-accordion[data-story-accordion='4'] {
-        border-radius: 0 0 52px 0 !important;
-    }
+    
 }
 
 /* =========================================================
@@ -4454,71 +3471,36 @@
    wrapper, original image and accordion.
    ========================================================= */
 @media (max-width: 760px) {
-    .landing-page .story-row[data-row] .mobile-photo-wrap.has-wedding-accordion {
-        overflow: hidden !important;
-        background: #111 !important;
-    }
+    
 
     /* [01] bottom-right */
-    .landing-page .story-row[data-row='0'] .mobile-photo-wrap.has-wedding-accordion,
-    .landing-page .story-row[data-row='0'] .mobile-photo-wrap.has-wedding-accordion > img,
-    .landing-page .story-row[data-row='0'] .sw-wedding-accordion-mobile {
-        border-radius: 0 0 42px 0 !important;
-    }
+    
 
     /* [02] bottom-left */
-    .landing-page .story-row[data-row='1'] .mobile-photo-wrap.has-wedding-accordion,
-    .landing-page .story-row[data-row='1'] .mobile-photo-wrap.has-wedding-accordion > img,
-    .landing-page .story-row[data-row='1'] .sw-wedding-accordion-mobile {
-        border-radius: 0 0 0 42px !important;
-    }
+    
 
     /* [03] bottom-right */
-    .landing-page .story-row[data-row='2'] .mobile-photo-wrap.has-wedding-accordion,
-    .landing-page .story-row[data-row='2'] .mobile-photo-wrap.has-wedding-accordion > img,
-    .landing-page .story-row[data-row='2'] .sw-wedding-accordion-mobile {
-        border-radius: 0 0 42px 0 !important;
-    }
+    
 
     /* [04] bottom-left */
-    .landing-page .story-row[data-row='3'] .mobile-photo-wrap.has-wedding-accordion,
-    .landing-page .story-row[data-row='3'] .mobile-photo-wrap.has-wedding-accordion > img,
-    .landing-page .story-row[data-row='3'] .sw-wedding-accordion-mobile {
-        border-radius: 0 0 0 42px !important;
-    }
+    
 
     /* [05] bottom-right */
-    .landing-page .story-row[data-row='4'] .mobile-photo-wrap.has-wedding-accordion,
-    .landing-page .story-row[data-row='4'] .mobile-photo-wrap.has-wedding-accordion > img,
-    .landing-page .story-row[data-row='4'] .sw-wedding-accordion-mobile {
-        border-radius: 0 0 42px 0 !important;
-    }
+    
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .landing-page .sw-wedding-panel:first-child.is-active img {
-        animation: none !important;
-    }
-}
+
 
 /* FIX: the previous sway animated transform, but parallax transform was !important.
    Animate the independent CSS translate property instead, so it composes with parallax. */
 
-.landing-page .sw-wedding-panel img {
-    translate: 0 0;
-}
+
 
 /* No sway on any active image by default */
-.landing-page .sw-wedding-panel.is-active img {
-    animation: none !important;
-    translate: 0 0;
-}
+
 
 /* Only FIRST photo of every accordion gets the hint */
-.landing-page .sw-wedding-panel:first-child.is-active img {
-    animation: swFirstPhotoHint105 3.8s ease-in-out infinite alternate !important;
-    will-change: transform, translate, filter;
-}
+
 
 @keyframes swFirstPhotoHint105 {
     0% {
@@ -4531,9 +3513,7 @@
 
 /* Slightly calmer on mobile but still clearly visible */
 @media (max-width: 760px) {
-    .landing-page .sw-wedding-panel:first-child.is-active img {
-        animation-duration: 3.4s !important;
-    }
+    
 
     @keyframes swFirstPhotoHint105 {
         0% {
@@ -4545,165 +3525,40 @@
     }
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .landing-page .sw-wedding-panel:first-child.is-active img {
-        animation: none !important;
-        translate: 0 0 !important;
-    }
-}
+
 
 /* Remove the previous inner-image sway completely. */
-.landing-page .sw-wedding-panel:first-child.is-active img,
-.landing-page .sw-wedding-panel.is-active img {
-    animation: none !important;
-    translate: 0 0 !important;
-}
+
 
 /* Nudge the WHOLE first panel, not the image inside it. */
-.landing-page .sw-wedding-panel:first-child.sw-panel-hint {
-    animation: swPanelNudgeDesktop 1.45s cubic-bezier(0.22, 0.75, 0.2, 1) 1 !important;
-    will-change: transform;
-}
 
-@keyframes swPanelNudgeDesktop {
-    0% {
-        transform: translateX(0);
-    }
-    22% {
-        transform: translateX(-11px);
-    }
-    42% {
-        transform: translateX(0);
-    }
-    62% {
-        transform: translateX(-7px);
-    }
-    82% {
-        transform: translateX(0);
-    }
-    100% {
-        transform: translateX(0);
-    }
-}
 
-@media (max-width: 760px) {
-    .landing-page .sw-wedding-panel:first-child.sw-panel-hint {
-        animation: swPanelNudgeMobile 1.35s cubic-bezier(0.22, 0.75, 0.2, 1) 1 !important;
-    }
 
-    @keyframes swPanelNudgeMobile {
-        0% {
-            transform: translateX(0);
-        }
-        22% {
-            transform: translateX(-8px);
-        }
-        42% {
-            transform: translateX(0);
-        }
-        62% {
-            transform: translateX(-5px);
-        }
-        82% {
-            transform: translateX(0);
-        }
-        100% {
-            transform: translateX(0);
-        }
-    }
-}
 
-@media (prefers-reduced-motion: reduce) {
-    .landing-page .sw-wedding-panel:first-child.sw-panel-hint {
-        animation: none !important;
-    }
-}
+
+
+
 
 /* Replace translate nudge with a real accordion "peek":
    the first active panel briefly narrows, so the NEXT photo becomes more visible.
    No black background is exposed. */
 
 /* Cancel previous transform-based hint */
-.landing-page .sw-wedding-panel:first-child.sw-panel-hint {
-    transform: none !important;
-    animation: none !important;
-}
+
 
 /* Desktop */
-@media (min-width: 761px) {
-    .landing-page .sw-wedding-panel:first-child.sw-panel-hint.is-active {
-        animation: swPanelPeekDesktop 1.55s cubic-bezier(0.22, 0.75, 0.2, 1) 1 !important;
-    }
 
-    @keyframes swPanelPeekDesktop {
-        0% {
-            flex-grow: 5.25;
-        }
-        22% {
-            flex-grow: 4.35;
-        }
-        43% {
-            flex-grow: 5.25;
-        }
-        64% {
-            flex-grow: 4.65;
-        }
-        84% {
-            flex-grow: 5.25;
-        }
-        100% {
-            flex-grow: 5.25;
-        }
-    }
-}
 
 /* Mobile */
-@media (max-width: 760px) {
-    .landing-page .story-row[data-row] .sw-wedding-panel:first-child.sw-panel-hint.is-active {
-        animation: swPanelPeekMobile 1.45s cubic-bezier(0.22, 0.75, 0.2, 1) 1 !important;
-    }
 
-    @keyframes swPanelPeekMobile {
-        0% {
-            flex-grow: 4.2;
-        }
-        22% {
-            flex-grow: 3.45;
-        }
-        43% {
-            flex-grow: 4.2;
-        }
-        64% {
-            flex-grow: 3.7;
-        }
-        84% {
-            flex-grow: 4.2;
-        }
-        100% {
-            flex-grow: 4.2;
-        }
-    }
-}
 
-@media (prefers-reduced-motion: reduce) {
-    .landing-page .sw-wedding-panel:first-child.sw-panel-hint.is-active {
-        animation: none !important;
-    }
-}
+
 
 /* =========================================================
    Slower first-panel peek — same behavior, more relaxed timing
    ========================================================= */
-@media (min-width: 761px) {
-    .landing-page .sw-wedding-panel:first-child.sw-panel-hint.is-active {
-        animation-duration: 2.65s !important;
-    }
-}
-@media (max-width: 760px) {
-    .landing-page .story-row[data-row] .sw-wedding-panel:first-child.sw-panel-hint.is-active {
-        animation-duration: 2.45s !important;
-    }
-}
+
+
 
 .landing-page {
     scroll-behavior: smooth;
@@ -7392,12 +6247,8 @@
     .landing-page .sw-new-hero-title {
         font-size: clamp(48px, 3.42vw, 70.5px) !important;
     }
-    .landing-page .section-intro h2 {
-        font-size: clamp(36px, 4.875vw, 81px) !important;
-    }
-    .landing-page .story-copy h3 {
-        font-size: clamp(36px, 3.45vw, 61.5px) !important;
-    }
+    
+    
     .landing-page .journey-head h2 {
         font-size: clamp(36px, 4.875vw, 81px) !important;
     }
@@ -7410,159 +6261,28 @@
 }
 
 /* User-requested contrast: muted dark text is now solid black; existing white text remains white. */
-.landing-page .story-copy strong,
-.landing-page .story-extra-text strong {
-    font-weight: 700;
-}
+
 
 /* Section labels: above their titles, +30% size */
-@media (min-width: 761px) {
-    .landing-page .section-intro > .eyebrow {
-        grid-column: 2;
-        grid-row: 1;
-        margin: 0 0 22px;
-        padding-top: 0;
-    }
-    .landing-page .section-intro > h2 {
-        grid-column: 2;
-        grid-row: 2;
-    }
-    .landing-page .section-intro > p {
-        grid-column: 2;
-        grid-row: 3;
-    }
-}
 
-.landing-page .eyebrow,
-.landing-page .sw-filmstrip-eyebrow {
-    font-size: 13px !important;
-}
 
-@media (max-width: 760px) {
-    .landing-page .eyebrow,
-    .landing-page .sw-filmstrip-eyebrow {
-        font-size: 13px !important;
-    }
-}
+
+
+
 
 /* v9 — mobile fix for One Platform story rows */
-@media (max-width: 760px) {
-    .landing-page .platform {
-        padding-bottom: 64px !important;
-    }
-    .landing-page .showcase {
-        margin-top: 38px !important;
-    }
-    .landing-page .story-list {
-        margin-top: 0 !important;
-    }
-    .landing-page .story-row {
-        grid-template-columns: minmax(0, 1fr) auto !important;
-        grid-template-areas:
-            'photo photo'
-            'copy arr' !important;
-        gap: 14px 12px !important;
-        align-items: start !important;
-        padding: 26px 0 34px !important;
-    }
-    .landing-page .story-row .mobile-photo-wrap {
-        grid-area: photo !important;
-        width: calc(100vw - 40px) !important;
-        max-width: calc(100vw - 40px) !important;
-        margin-bottom: 16px !important;
-    }
-    .landing-page .story-row .num {
-        display: none !important;
-    }
-    .landing-page .story-row .story-copy {
-        grid-area: copy !important;
-        min-width: 0 !important;
-        width: 100% !important;
-        max-width: none !important;
-    }
-    .landing-page .story-row .story-copy > span {
-        margin-bottom: 14px !important;
-        font-size: 13px !important;
-        line-height: 1.15 !important;
-        letter-spacing: 0.12em !important;
-    }
-    .landing-page .story-row .story-copy h3 {
-        max-width: none !important;
-        font-size: clamp(28px, 8.6vw, 44px) !important;
-        line-height: 0.95 !important;
-        letter-spacing: -0.05em !important;
-        text-wrap: pretty !important;
-        word-break: normal !important;
-    }
-    .landing-page .story-row .story-copy p {
-        max-width: none !important;
-        margin-top: 14px !important;
-        font-size: 15px !important;
-        line-height: 1.55 !important;
-        text-wrap: pretty !important;
-    }
-    .landing-page .story-row .arr {
-        grid-area: arr !important;
-        align-self: start !important;
-        justify-self: end !important;
-        font-size: 26px !important;
-        line-height: 1 !important;
-        margin-top: 32px !important;
-    }
-}
+
 
 /* v10 — remove story CTA pills and make More Stories photos touch the mobile viewport edges */
-.landing-page .story-extra-cta {
-    display: none !important;
-}
 
-@media (max-width: 760px) {
-    .landing-page .sw-filmstrip-track {
-        width: 100vw !important;
-        margin-left: calc(50% - 50vw) !important;
-        margin-right: calc(50% - 50vw) !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-    }
-    .landing-page .sw-filmstrip-card:first-child {
-        margin-left: 0 !important;
-    }
-    .landing-page .sw-filmstrip-card:last-child {
-        margin-right: 0 !important;
-    }
-}
+
+
 
 /* v11 — on mobile, More Stories should touch only the RIGHT edge of the screen */
-@media (max-width: 760px) {
-    .landing-page .sw-filmstrip-more {
-        overflow: hidden !important;
-    }
-    .landing-page .sw-filmstrip-track {
-        width: calc(100% + 20px) !important;
-        max-width: none !important;
-        margin-left: 0 !important;
-        margin-right: -20px !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-        box-sizing: border-box !important;
-    }
-}
+
 
 /* v12 — Mobile More Stories: keep left inset, break out ONLY to viewport right edge */
-@media (max-width: 760px) {
-    .landing-page .sw-filmstrip-more {
-        overflow: visible !important;
-    }
-    .landing-page .sw-filmstrip-track {
-        width: calc(100vw - 20px) !important;
-        max-width: none !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-        box-sizing: border-box !important;
-    }
-}
+
 
 /* MOBILE ONLY — restore the approved Chapter 01/02 composition.
    Desktop is intentionally untouched. */
@@ -7955,195 +6675,72 @@
     }
 }
 
-@media (min-width: 761px) {
-    .landing-page #platformStories .stage {
-        height: 52vh !important;
-        min-height: 370px !important;
-    }
-}
 
-@media (min-width: 761px) {
-    .landing-page #platformStories .stage {
-        height: 62.4vh !important;
-        min-height: unset !important;
-    }
-}
+
+
 
 /* DESKTOP ONLY — each story gets its own photo accordion, alternating left/right */
 @media (min-width: 761px) {
-    .landing-page #platformStories .showcase {
-        display: block !important;
-        margin: clamp(80px, 10vw, 150px) calc(clamp(22px, 6vw, 104px) * -1) 0 !important;
-        padding: 0 !important;
-    }
+    
 
     /* Hide the old single sticky photo stage on desktop. */
-    .landing-page #platformStories .stage {
-        display: none !important;
-    }
+    
 
-    .landing-page #platformStories .story-list {
-        border-top: 1px solid var(--ink) !important;
-    }
+    
 
-    .landing-page #platformStories .story-row {
-        width: 100% !important;
-        min-height: 0 !important;
-        padding: clamp(42px, 5vw, 78px) clamp(22px, 4vw, 72px) !important;
-        align-items: center !important;
-        column-gap: clamp(20px, 2.5vw, 44px) !important;
-    }
+    
 
     /* 01 / 03 / 05 — photos LEFT, copy RIGHT */
-    .landing-page #platformStories .story-row:nth-child(odd) {
-        grid-template-columns: minmax(0, 1.08fr) 54px minmax(0, 0.92fr) 34px !important;
-    }
-    .landing-page #platformStories .story-row:nth-child(odd) .mobile-photo-wrap {
-        grid-column: 1 !important;
-        grid-row: 1 !important;
-    }
-    .landing-page #platformStories .story-row:nth-child(odd) .num {
-        grid-column: 2 !important;
-        grid-row: 1 !important;
-    }
-    .landing-page #platformStories .story-row:nth-child(odd) .story-copy {
-        grid-column: 3 !important;
-        grid-row: 1 !important;
-    }
-    .landing-page #platformStories .story-row:nth-child(odd) .arr {
-        grid-column: 4 !important;
-        grid-row: 1 !important;
-    }
+    
+    
+    
+    
+    
 
     /* 02 / 04 — copy LEFT, photos RIGHT */
-    .landing-page #platformStories .story-row:nth-child(even) {
-        grid-template-columns: 54px minmax(0, 0.92fr) 34px minmax(0, 1.08fr) !important;
-    }
-    .landing-page #platformStories .story-row:nth-child(even) .num {
-        grid-column: 1 !important;
-        grid-row: 1 !important;
-    }
-    .landing-page #platformStories .story-row:nth-child(even) .story-copy {
-        grid-column: 2 !important;
-        grid-row: 1 !important;
-    }
-    .landing-page #platformStories .story-row:nth-child(even) .arr {
-        grid-column: 3 !important;
-        grid-row: 1 !important;
-    }
-    .landing-page #platformStories .story-row:nth-child(even) .mobile-photo-wrap {
-        grid-column: 4 !important;
-        grid-row: 1 !important;
-    }
+    
+    
+    
+    
+    
 
-    .landing-page #platformStories .story-row .mobile-photo-wrap.has-wedding-accordion {
-        position: relative !important;
-        display: block !important;
-        width: 100% !important;
-        height: 62.4vh !important;
-        min-height: 0 !important;
-        max-height: none !important;
-        margin: 0 !important;
-        overflow: hidden !important;
-        opacity: 1 !important;
-        transform: none !important;
-        clip-path: none !important;
-        background: #111 !important;
-    }
+    
 
-    .landing-page #platformStories .story-row:nth-child(odd) .mobile-photo-wrap.has-wedding-accordion {
-        border-radius: 0 0 42px 0 !important;
-    }
-    .landing-page #platformStories .story-row:nth-child(even) .mobile-photo-wrap.has-wedding-accordion {
-        border-radius: 0 0 0 42px !important;
-    }
+    
+    
 
-    .landing-page #platformStories .story-row .mobile-photo-wrap.has-wedding-accordion > img {
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-    }
+    
 
     /* Re-use each row's existing accordion on desktop. */
-    .landing-page #platformStories .story-row .sw-wedding-accordion-mobile {
-        position: absolute !important;
-        inset: 0 !important;
-        z-index: 4 !important;
-        display: flex !important;
-        width: 100% !important;
-        height: 100% !important;
-        min-height: 0 !important;
-        gap: 0 !important;
-        opacity: 1 !important;
-        pointer-events: auto !important;
-        background: #111 !important;
-    }
+    
 
-    .landing-page #platformStories .story-row .sw-wedding-panel {
-        min-width: 0 !important;
-        height: 100% !important;
-    }
+    
 
-    .landing-page #platformStories .story-row .num,
-    .landing-page #platformStories .story-row .arr {
-        align-self: start !important;
-        padding-top: 8px !important;
-    }
+    
 
-    .landing-page #platformStories .story-row .story-copy {
-        align-self: center !important;
-        min-width: 0 !important;
-    }
+    
 
-    .landing-page #platformStories .story-row .story-copy h3 {
-        font-size: clamp(48px, 4.6vw, 82px) !important;
-    }
+    
 }
 
 @media (min-width: 761px) {
     /* Remove the editorial divider lines between the five story rows. */
-    .landing-page #platformStories .story-list {
-        border-top: none !important;
-    }
-    .landing-page #platformStories .story-row {
-        border-bottom: none !important;
-    }
+    
+    
 
     /* Let the media side physically touch the viewport edge. */
-    .landing-page #platformStories .story-row:nth-child(odd) {
-        padding-top: clamp(42px, 5vw, 78px) !important;
-        padding-right: clamp(22px, 4vw, 72px) !important;
-        padding-bottom: clamp(42px, 5vw, 78px) !important;
-        padding-left: 0 !important;
-    }
+    
 
-    .landing-page #platformStories .story-row:nth-child(even) {
-        padding-top: clamp(42px, 5vw, 78px) !important;
-        padding-right: 0 !important;
-        padding-bottom: clamp(42px, 5vw, 78px) !important;
-        padding-left: clamp(22px, 4vw, 72px) !important;
-    }
+    
 
     /* Keep the alternating rounded outer bottom corner only. */
-    .landing-page #platformStories .story-row:nth-child(odd) .mobile-photo-wrap.has-wedding-accordion {
-        border-radius: 0 0 42px 0 !important;
-    }
-    .landing-page #platformStories .story-row:nth-child(even) .mobile-photo-wrap.has-wedding-accordion {
-        border-radius: 0 0 0 42px !important;
-    }
+    
+    
 }
 
 /* User correction: reduce the large white gap after the DEMO strip. */
-@media (min-width: 761px) {
-    .landing-page .platform {
-        padding-top: 56px !important;
-    }
-}
-@media (max-width: 760px) {
-    .landing-page .platform {
-        padding-top: 44px !important;
-    }
-}
+
+
 
 /* Mobile hero actions — stable sizing now that the CTA stays inside the copy. */
 @media (max-width: 760px) {

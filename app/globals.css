@@ -967,6 +967,53 @@
     animation-iteration-count: infinite;
 }
 
+@keyframes sw-wedding-first-hint {
+    0% {
+        transform: scale(1.075) translateX(-5px);
+    }
+    100% {
+        transform: scale(1.075) translateX(5px);
+    }
+}
+
+@keyframes sw-panel-peek-desktop {
+    0%,
+    100% {
+        flex-grow: 5.25;
+    }
+    22% {
+        flex-grow: 4.35;
+    }
+    43% {
+        flex-grow: 5.25;
+    }
+    64% {
+        flex-grow: 4.65;
+    }
+    84% {
+        flex-grow: 5.25;
+    }
+}
+
+@keyframes sw-panel-peek-mobile {
+    0%,
+    100% {
+        flex-grow: 4.2;
+    }
+    22% {
+        flex-grow: 3.45;
+    }
+    43% {
+        flex-grow: 4.2;
+    }
+    64% {
+        flex-grow: 3.7;
+    }
+    84% {
+        flex-grow: 4.2;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     *,
     ::before,

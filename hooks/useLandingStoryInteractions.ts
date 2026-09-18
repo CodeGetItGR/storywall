@@ -8,8 +8,6 @@ export function useLandingStoryInteractions(landingRef: RefObject<HTMLElement | 
         const abortController = new AbortController();
         const { signal } = abortController;
         const rows = [...root.querySelectorAll<HTMLElement>('.story-row')];
-        const stageImages = [...root.querySelectorAll<HTMLElement>('.stage-img')];
-        const counter = root.querySelector<HTMLElement>('#counter');
         const observers: Array<IntersectionObserver | MutationObserver> = [];
         const hintTimeouts: number[] = [];
         const seenHints = new Set<number>();
@@ -23,7 +21,6 @@ export function useLandingStoryInteractions(landingRef: RefObject<HTMLElement | 
             accordionsFor(rowIndex).forEach((accordion) => {
                 accordion.querySelectorAll<HTMLElement>('.sw-wedding-panel').forEach((panel, index) => {
                     const active = index === activeIndex;
-                    panel.classList.toggle('is-active', active);
                     panel.setAttribute('aria-pressed', String(active));
                 });
             });
@@ -40,7 +37,7 @@ export function useLandingStoryInteractions(landingRef: RefObject<HTMLElement | 
                 panel.classList.remove('sw-panel-hint');
                 void panel.offsetWidth;
                 panel.classList.add('sw-panel-hint');
-                const timeout = window.setTimeout(() => panel.classList.remove('sw-panel-hint'), 1800);
+                const timeout = window.setTimeout(() => panel.classList.remove('sw-panel-hint'), 2900);
                 hintTimeouts.push(timeout);
             });
         };
@@ -49,9 +46,9 @@ export function useLandingStoryInteractions(landingRef: RefObject<HTMLElement | 
         const activateRow = (index: number) => {
             if (index !== activeRow && (index === 2 || index === 3)) setAccordionIndex(index, 0);
             activeRow = index;
-            rows.forEach((row, rowIndex) => row.classList.toggle('active', rowIndex === index));
-            stageImages.forEach((image, imageIndex) => image.classList.toggle('active', imageIndex === index));
-            if (counter) counter.textContent = `[ ${String(index + 1).padStart(2, '0')} / 05 ]`;
+            rows.forEach((row, rowIndex) => {
+                row.dataset.active = String(rowIndex === index);
+            });
             triggerHint(index);
         };
 
@@ -76,7 +73,7 @@ export function useLandingStoryInteractions(landingRef: RefObject<HTMLElement | 
                     entries.forEach((entry) => {
                         if (!entry.isIntersecting) return;
                         const row = entry.target as HTMLElement;
-                        row.classList.add('mobile-visible');
+                        row.dataset.visible = 'true';
                         triggerHint(Number(row.dataset.row));
                     });
                 },
@@ -120,17 +117,15 @@ export function useLandingStoryInteractions(landingRef: RefObject<HTMLElement | 
 
         const activateFilmstrip = (index: number, shouldScroll: boolean) => {
             filmstripCards.forEach((card, cardIndex) => {
-                const active = cardIndex === index;
-                card.classList.toggle('is-active', active);
-                card.setAttribute('aria-pressed', String(active));
+                card.setAttribute('aria-pressed', String(cardIndex === index));
             });
-            caption?.classList.add('is-changing');
+            if (caption) caption.dataset.changing = 'true';
             window.clearTimeout(captionTimeout);
             captionTimeout = window.setTimeout(() => {
                 const card = filmstripCards[index];
                 if (captionTitle) captionTitle.textContent = card?.dataset.captionTitle ?? '';
                 if (captionText) captionText.textContent = card?.dataset.captionText ?? '';
-                caption?.classList.remove('is-changing');
+                if (caption) caption.dataset.changing = 'false';
             }, 120);
             if (shouldScroll && window.matchMedia('(max-width:760px)').matches) {
                 filmstripCards[index]?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
