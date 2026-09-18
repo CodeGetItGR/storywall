@@ -73,19 +73,23 @@ export function LandingPricing() {
                 id="landing-pricing-panel"
                 role="tabpanel"
             >
-                {categories[category].plans.map((plan, index) => (
-                    <LandingPricingCard
-                        chooseLabel={t('choose')}
-                        featured={index === 1}
-                        key={`${category}-${plan.name}`}
-                        photosLabel={t('photosLabel')}
-                        plan={plan}
-                        popularLabel={t('popular')}
-                        storageLabel={t('storageLabel')}
-                        storageNote={t('storageNote')}
-                        videosLabel={t('videosLabel')}
-                    />
-                ))}
+                {categories[category].plans.length === 0 ? (
+                    <p className="text-base text-[#151313]/60 min-[761px]:col-span-3">{t('comingSoon')}</p>
+                ) : (
+                    categories[category].plans.map((plan, index) => (
+                        <LandingPricingCard
+                            chooseLabel={t('choose')}
+                            featured={index === 1}
+                            key={`${category}-${plan.name}`}
+                            photosLabel={t('photosLabel')}
+                            plan={plan}
+                            popularLabel={t('popular')}
+                            storageLabel={t('storageLabel')}
+                            storageNote={t('storageNote')}
+                            videosLabel={t('videosLabel')}
+                        />
+                    ))
+                )}
             </div>
             <p className="mx-auto mt-5 max-w-[1324px] text-right text-[11px]">{t('note')}</p>
         </section>

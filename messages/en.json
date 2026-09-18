@@ -3388,6 +3388,7 @@
                 }
             },
             "note": "Prices shown are indicative and may change.",
+            "comingSoon": "Plans for this category are coming soon.",
             "baselineFeatures": ["Countdown", "Event schedule", "Download all photos & videos", "Unique StoryWall link"],
             "guestsUpTo": "Up to {count} guests",
             "guestsUnlimited": "Unlimited guests",
