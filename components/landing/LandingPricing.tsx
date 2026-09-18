@@ -4,16 +4,17 @@ import { useTranslations } from 'next-intl';
 
 import { LandingPricingCard } from '@/components/landing/LandingPricingCard';
 import { useLandingPricingCategory } from '@/hooks/useLandingPricingCategory';
-import type { LandingPlan } from '@/lib/landingPricing';
+import { useLandingPricingPlans } from '@/hooks/useLandingPricingPlans';
 import { cn } from '@/lib/utils';
 
-type PricingCategories = Record<'vip' | 'wedding', { label: string; plans: LandingPlan[] }>;
 const CATEGORY_ORDER = ['wedding', 'vip'] as const;
 
 export function LandingPricing() {
     const t = useTranslations('LandingPage.pricing');
-    const categories = t.raw('categories') as PricingCategories;
+    const { categories } = useLandingPricingPlans();
     const { category, selectCategory, handleCategoryKeyDown } = useLandingPricingCategory();
+
+    if (!categories) return null;
 
     return (
         <section
