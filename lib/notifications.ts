@@ -14,7 +14,11 @@ export function notificationCtaRoute(notification: NotificationResponseDto): str
     return build ? build(notification.ctaParams ?? {}) : null;
 }
 
-const BILLING_TYPES: readonly string[] = ['REFUND_APPROVED', 'REFUND_REJECTED'] satisfies readonly BillingNotificationType[];
+const BILLING_TYPES: readonly string[] = [
+    'WITHDRAWAL_REFUNDED',
+    'WITHDRAWAL_HELD',
+    'WITHDRAWAL_WITHHELD',
+] satisfies readonly BillingNotificationType[];
 
 export function isBillingNotification(notification: NotificationResponseDto): boolean {
     return notification.category === 'BILLING' || BILLING_TYPES.includes(notification.type);
@@ -26,7 +30,10 @@ export function isBillingNotificationType(type: string): type is BillingNotifica
 
 export function notificationSeverity(notification: NotificationResponseDto): NotificationSeverity {
     if (notification.severity) return notification.severity;
-    if (notification.type === 'REFUND_APPROVED') return 'CRITICAL';
+    // Both report the event disappearing/the host losing standing — give them the
+    // same weight the old REFUND_APPROVED had. WITHDRAWAL_HELD changes nothing yet,
+    // so it stays INFO via the fallback below.
+    if (notification.type === 'WITHDRAWAL_REFUNDED' || notification.type === 'WITHDRAWAL_WITHHELD') return 'CRITICAL';
     return 'INFO';
 }
 

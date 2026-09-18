@@ -373,7 +373,9 @@ export interface LogoutRequestDto {
 
 // Notifications are produced by backend sweeps/actions; clients can only read,
 // mark read, mark all read, and dismiss them.
-export type BillingNotificationType = 'REFUND_APPROVED' | 'REFUND_REJECTED';
+// BREAKING 2026-09-18: REFUND_APPROVED/REFUND_REJECTED replaced by the three
+// WITHDRAWAL_* types — nothing emits the old pair any more (billing-fe-guide §10).
+export type BillingNotificationType = 'WITHDRAWAL_REFUNDED' | 'WITHDRAWAL_HELD' | 'WITHDRAWAL_WITHHELD';
 
 export type NotificationCategory = 'LIMIT' | 'OFFER' | 'TIP' | 'SYSTEM' | 'BILLING' | (string & {});
 export type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';

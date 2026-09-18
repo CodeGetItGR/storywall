@@ -12,7 +12,7 @@ export const NOTIFICATION_SEVERITY_STYLES = {
 export function NotificationSeverityIcon({ notification }: { notification: NotificationResponseDto }) {
     const severity = notificationSeverity(notification);
     if (!isBillingNotification(notification)) return <Bell className="h-2.5 w-2.5" strokeWidth={2} />;
-    if (notification.type === 'REFUND_REJECTED') return <XCircle className="h-2.5 w-2.5" strokeWidth={2} />;
+    if (notification.type === 'WITHDRAWAL_WITHHELD') return <XCircle className="h-2.5 w-2.5" strokeWidth={2} />;
     if (severity === 'INFO') return <CreditCard className="h-2.5 w-2.5" strokeWidth={2} />;
     return <AlertTriangle className="h-2.5 w-2.5" strokeWidth={2} />;
 }
