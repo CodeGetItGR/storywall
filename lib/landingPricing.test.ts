@@ -153,17 +153,24 @@ describe('buildLandingPlan', () => {
             'Gallery',
             'Access for 3 months after the event',
         ]);
-        expect(card?.includedNote).toBeUndefined();
     });
 
-    it('shows an "Everything in X" rollup when the tier is a strict superset of the previous one', () => {
+    it('shows an "Everything in X" rollup plus only the additional modules for each later tier', () => {
         const previous = makePlan({ name: 'START', moduleKeys: ['gallery'] });
         const plan = makePlan({ name: 'STORY', moduleKeys: ['gallery', 'stories', 'rsvp', 'wishbook'], autoDeleteMonths: 6 });
 
         const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY);
 
-        expect(card?.includedNote).toBe('Everything in START');
-        expect(card?.features).toEqual(['RSVP', 'Stories', 'Guestbook', 'Access for 6 months after the event']);
+        expect(card?.features).toEqual(['Everything in START', 'RSVP', 'Stories', 'Guestbook', 'Access for 6 months after the event']);
+    });
+
+    it('keeps the prior-tier rollup when catalog rows do not repeat inherited modules', () => {
+        const previous = makePlan({ name: 'START', moduleKeys: ['gallery', 'rsvp'] });
+        const plan = makePlan({ name: 'STORY', moduleKeys: ['stories'], autoDeleteMonths: 6 });
+
+        const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY);
+
+        expect(card?.features).toEqual(['Everything in START', 'Stories', 'Access for 6 months after the event']);
     });
 
     it('renders "Unlimited" copy for null storage, members, and access window', () => {

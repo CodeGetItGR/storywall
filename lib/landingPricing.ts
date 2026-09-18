@@ -19,7 +19,6 @@ export const LANDING_PRICING_CATEGORY_EVENT_TYPES: Record<LandingPricingCategory
 export type LandingPlan = {
     audience: string;
     features: string[];
-    includedNote?: string;
     name: string;
     photos: string;
     price: string;
@@ -72,12 +71,11 @@ function sortedModuleNames(moduleKeys: string[], modules: PlatformModuleResponse
 
 // Builds one landing pricing card from a plan tier plus the tier directly
 // below it in the same tab (already sorted by sortOrder — see
-// resolveLandingCategoryPlans). When every module the previous tier includes
-// is also included here, the card shows "Everything in <previous>" plus only
-// the newly-added modules, mirroring the original static copy's rollup style
-// instead of repeating the full feature list on every card. Returns null for
-// a plan with no resolvable price — a pricing card with no price to show
-// doesn't belong on the pricing page.
+// resolveLandingCategoryPlans). Each tier after the first rolls up the
+// previous card and lists only its additional modules, so catalog rows do not
+// need to repeat every inherited module. Returns null for a plan with no
+// resolvable price — a pricing card with no price to show doesn't belong on
+// the pricing page.
 export function buildLandingPlan(
     plan: PlanTierResponseDto,
     previousPlan: PlanTierResponseDto | undefined,
@@ -91,12 +89,11 @@ export function buildLandingPlan(
 
     const estimate = mediaEstimate(plan.storageBytes, media);
     const accessBullet = plan.autoDeleteMonths === null ? copy.accessUnlimited : copy.accessMonths(plan.autoDeleteMonths);
-    const inheritsFromPrevious = previousPlan !== undefined && previousPlan.moduleKeys.every((moduleKey) => plan.moduleKeys.includes(moduleKey));
-
-    const features = inheritsFromPrevious
+    const features = previousPlan
         ? [
+              copy.everythingIn(previousPlan.name),
               ...sortedModuleNames(
-                  plan.moduleKeys.filter((moduleKey) => !previousPlan!.moduleKeys.includes(moduleKey)),
+                  plan.moduleKeys.filter((moduleKey) => !previousPlan.moduleKeys.includes(moduleKey)),
                   modules,
                   moduleName
               ),
@@ -107,7 +104,6 @@ export function buildLandingPlan(
     return {
         audience: plan.maxMembers === null ? copy.guestsUnlimited : copy.guestsUpTo(plan.maxMembers),
         features,
-        includedNote: inheritsFromPrevious ? copy.everythingIn(previousPlan!.name) : undefined,
         name: plan.name,
         photos: estimate?.images ?? copy.mediaUnlimited,
         price,
