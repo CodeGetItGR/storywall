@@ -5,9 +5,7 @@ export type AdminErrorMessageKey =
     | 'onlyDefault'
     | 'orderNotPending'
     | 'notFound'
-    | 'refundNotPending'
-    | 'refundNotEligible'
-    | 'orderNotRefundable'
+    | 'withdrawalNotHeld'
     | 'eventNotActive'
     | 'webhookAlreadyProcessed'
     | 'webhookNotReplayable'
@@ -52,12 +50,10 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.PLAN_TIER_IS_ONLY_DEFAULT) return 'onlyDefault';
     if (code === ERROR_CODES.ORDER_NOT_PENDING) return 'orderNotPending';
     if (code === ERROR_CODES.RESOURCE_NOT_FOUND) return 'notFound';
-    // Refund-queue outcomes. The first one is the common concurrent case: two
-    // admins open the queue and the second one's decision lands on a request
-    // that is no longer PENDING. "Something went wrong" hides exactly that.
-    if (code === ERROR_CODES.REFUND_REQUEST_NOT_PENDING) return 'refundNotPending';
-    if (code === ERROR_CODES.REFUND_NOT_ELIGIBLE) return 'refundNotEligible';
-    if (code === ERROR_CODES.ORDER_NOT_REFUNDABLE) return 'orderNotRefundable';
+    // The common concurrent case: two admins open the withdrawal queue and the
+    // second one's decision lands on a request that is no longer HELD.
+    // "Something went wrong" hides exactly that.
+    if (code === ERROR_CODES.WITHDRAWAL_NOT_HELD) return 'withdrawalNotHeld';
     if (code === ERROR_CODES.EVENT_NOT_ACTIVE) return 'eventNotActive';
     if (code === ERROR_CODES.WEBHOOK_ALREADY_PROCESSED) return 'webhookAlreadyProcessed';
     if (code === ERROR_CODES.WEBHOOK_NOT_REPLAYABLE) return 'webhookNotReplayable';

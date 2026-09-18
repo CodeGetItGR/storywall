@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { EventDangerZone } from '@/components/manage/danger/EventDangerZone';
 import { EventDeleteConfirmModal } from '@/components/manage/danger/EventDeleteConfirmModal';
 import { EventPendingDeletionBanner } from '@/components/manage/danger/EventPendingDeletionBanner';
-import { EventRefundSection } from '@/components/manage/danger/EventRefundSection';
+import { EventWithdrawalSection } from '@/components/manage/danger/EventWithdrawalSection';
 import { useEventDeletionFlow } from '@/hooks/useEventDeletionFlow';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 
@@ -25,10 +25,10 @@ export default function DangerZoneTab({ event }: { event: EventDetailResponseDto
 
     return (
         <div className="flex flex-col gap-6">
-            {/* Refund */}
+            {/* Withdrawal */}
             <section>
-                <h3 className="mb-2 text-sm font-semibold text-ink">{t('sections.refund')}</h3>
-                <EventRefundSection eventId={event.id} />
+                <h3 className="mb-2 text-sm font-semibold text-ink">{t('sections.withdrawal')}</h3>
+                <EventWithdrawalSection eventId={event.id} />
             </section>
 
             {/* Delete event */}

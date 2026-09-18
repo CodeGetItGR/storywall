@@ -431,6 +431,7 @@ export function buildSeedAppConfig(): AppConfigResponseDto {
         eventTypeKeys: ['WEDDING'],
         translations: { eventTypes: {} },
         rsvp: { minAdults: 0, maxAdults: 10, minChildren: 0, maxChildren: 10 },
+        withdrawal: { termsVersion: 'demo-1', windowDays: 14, holdDays: 7 },
         contentLimits: {
             postContentMaxLength: 500,
             commentContentMaxLength: 500,

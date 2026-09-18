@@ -1,6 +1,20 @@
 'use client';
 
-import { BarChart3, CalendarDays, ChartNoAxesCombined, Handshake, Layers3, type LucideIcon, PackagePlus, Receipt, Shield, Smile, Tag, TicketPercent, Undo2 } from 'lucide-react';
+import {
+    BarChart3,
+    CalendarDays,
+    ChartNoAxesCombined,
+    Handshake,
+    Layers3,
+    type LucideIcon,
+    PackagePlus,
+    Receipt,
+    Shield,
+    Smile,
+    Tag,
+    TicketPercent,
+    Undo2,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
@@ -16,7 +30,7 @@ export type AdminTab =
     | 'reactionTypes'
     | 'assignments'
     | 'billingOps'
-    | 'refunds';
+    | 'withdrawals';
 
 export type AdminTabItem = {
     key: AdminTab;
@@ -46,7 +60,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#reaction-types': 'reactionTypes',
     '#assignments': 'assignments',
     '#billing-ops': 'billingOps',
-    '#refunds': 'refunds',
+    '#withdrawals': 'withdrawals',
 };
 
 const TAB_TO_HASH: Record<AdminTab, string> = {
@@ -61,7 +75,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     reactionTypes: '#reaction-types',
     assignments: '#assignments',
     billingOps: '#billing-ops',
-    refunds: '#refunds',
+    withdrawals: '#withdrawals',
 };
 
 const AdminNavigationContext = createContext<
@@ -128,7 +142,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'reactionTypes', label: t('reactionTypes'), icon: Smile },
             { key: 'assignments', label: t('assignments'), icon: Layers3 },
             { key: 'billingOps', label: t('billingOps'), icon: Receipt },
-            { key: 'refunds', label: t('refunds'), icon: Undo2 },
+            { key: 'withdrawals', label: t('withdrawals'), icon: Undo2 },
         ],
         [t]
     );
