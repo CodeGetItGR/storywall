@@ -46,6 +46,9 @@ import type {
     RefundRequestResponseDto,
     UnprocessedWebhookDto,
     VoidCollaborationRedemptionRequestDto,
+    WithdrawalAdminDto,
+    WithdrawalResponseDto,
+    WithdrawalWithholdRequestDto,
 } from '@/lib/api/types';
 
 export const adminKeys = {
@@ -56,6 +59,7 @@ export const adminKeys = {
     unprocessedWebhooks: ['admin', 'webhooks', 'unprocessed'] as const,
     notificationSweep: ['admin', 'notifications', 'sweep'] as const,
     refundRequests: ['admin', 'refund-requests'] as const,
+    withdrawals: ['admin', 'withdrawals'] as const,
     metrics: ['admin', 'metrics'] as const,
     costSummary: ['admin', 'metrics', 'cost-summary'] as const,
     costTimeline: (weeks: number) => ['admin', 'metrics', 'timeline', weeks] as const,
@@ -325,6 +329,49 @@ export function useDecideRefundRequest() {
             queryClient.invalidateQueries({ queryKey: ['events'] });
             queryClient.invalidateQueries({ queryKey: ['billing'] });
             queryClient.invalidateQueries({ queryKey: adminKeys.metrics });
+        },
+    });
+}
+
+// GET /api/admin/withdrawals — the queue of HELD requests, each with the full
+// facts sheet the automated decision was based on (guide §9).
+export function useAdminWithdrawals() {
+    return useQuery({
+        queryKey: adminKeys.withdrawals,
+        queryFn: () => api.get<WithdrawalAdminDto[]>(endpoints.admin.withdrawals.list),
+    });
+}
+
+// POST /api/admin/withdrawals/{id}/release — no body. Refunds at the price
+// computed at request time and deletes the event, same outcome as an automatic
+// REFUNDED. 409 WITHDRAWAL_NOT_HELD if the request isn't currently HELD.
+export function useReleaseWithdrawal() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (requestId: string) => api.post<WithdrawalResponseDto>(endpoints.admin.withdrawals.release(requestId)),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: adminKeys.withdrawals });
+            queryClient.invalidateQueries({ queryKey: ['events'] });
+            queryClient.invalidateQueries({ queryKey: ['billing'] });
+            queryClient.invalidateQueries({ queryKey: adminKeys.metrics });
+        },
+    });
+}
+
+// POST /api/admin/withdrawals/{id}/withhold — note is required and shown to the
+// host verbatim. Also suspends the host's account — not a soft decline.
+export function useWithholdWithdrawal() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ requestId, note }: { requestId: string; note: string }) => {
+            const body: WithdrawalWithholdRequestDto = { note };
+            return api.post<WithdrawalResponseDto>(endpoints.admin.withdrawals.withhold(requestId), body);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: adminKeys.withdrawals });
+            queryClient.invalidateQueries({ queryKey: ['events'] });
         },
     });
 }
