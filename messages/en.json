@@ -1635,11 +1635,6 @@
             "planUpgrade": "Upgrade to {plan}"
         },
         "intent": {
-            "activation": {
-                "title": "Order preview",
-                "description": "Check the plan and included add-ons before publishing this event.",
-                "consequence": "The event is published after payment is confirmed."
-            },
             "activationCancelled": {
                 "title": "Payment cancelled",
                 "description": "Nothing was charged. Review the charge and continue when you are ready.",

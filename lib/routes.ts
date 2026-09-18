@@ -2,7 +2,7 @@ import { DEMO_EVENT_ID } from '@/lib/demo/demoConstants';
 
 type RouteQueryValue = string | number | boolean | null | undefined;
 
-export type CheckoutIntent = 'activation' | 'upgrade' | 'storage';
+export type CheckoutIntent = 'upgrade' | 'storage';
 // 'billing' is kept as an alias for the plan section so existing links keep working.
 export type ManageTab = 'billing' | 'coverage' | 'danger' | 'help' | 'members' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings';
 

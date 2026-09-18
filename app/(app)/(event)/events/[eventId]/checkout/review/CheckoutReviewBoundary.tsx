@@ -5,29 +5,21 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 
-import { CollaborationCodeSection } from '@/components/checkout/CollaborationCodeSection';
+import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
 import { BackButton } from '@/components/ui/BackButton';
 import { PageErrorState } from '@/components/ui/PageErrorState';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
-import { useCheckout, useEventBilling, useStorageCheckout, useUpgradeCheckout, useUpgradeOptions } from '@/hooks/useBilling';
+import { useEventBilling, useStorageCheckout, useUpgradeCheckout, useUpgradeOptions } from '@/hooks/useBilling';
 import { useEvent } from '@/hooks/useEvent';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
-import type { CollaborationCodePreviewResponseDto, EventAddonDto } from '@/lib/api/types';
-import { discountedAmountMinor, formatMoney, navigateToCheckout } from '@/lib/billing';
+import { formatMoney, navigateToCheckout } from '@/lib/billing';
 import { scopedPlans } from '@/lib/planTiers';
 import { type CheckoutIntent, routes } from '@/lib/routes';
 
 type ReviewLine = { label: string; amountMinor: number };
 
-const CHECKOUT_INTENTS: CheckoutIntent[] = ['activation', 'upgrade', 'storage'];
-
-function addonLines(addons: EventAddonDto[]): ReviewLine[] {
-    return addons.map((addon) => ({
-        label: addon.name,
-        amountMinor: addon.priceAmountMinor,
-    }));
-}
+const CHECKOUT_INTENTS: CheckoutIntent[] = ['upgrade', 'storage'];
 
 export default function CheckoutReviewBoundary() {
     const { eventId } = useParams<{ eventId: string }>();
@@ -38,18 +30,11 @@ export default function CheckoutReviewBoundary() {
     const appConfig = useAppConfig();
     const billing = useEventBilling(eventId, true);
     const event = useEvent(eventId);
-    const activationCheckout = useCheckout(eventId);
     const upgradeCheckout = useUpgradeCheckout(eventId);
     const storageCheckout = useStorageCheckout(eventId);
     const upgradeOptions = useUpgradeOptions(eventId);
     const toErrorMessage = useApiErrorMessage();
     const [error, setError] = useState<string | null>(null);
-    const [collaborationCode, setCollaborationCode] = useState<string | null>(null);
-    const [collaborationPreview, setCollaborationPreview] = useState<CollaborationCodePreviewResponseDto | null>(null);
-    const handleCollaborationPreviewChange = useCallback((nextCode: string | null, nextPreview: CollaborationCodePreviewResponseDto | null) => {
-        setCollaborationCode(nextCode);
-        setCollaborationPreview(nextPreview);
-    }, []);
     const [requestsImmediateStart, setRequestsImmediateStart] = useState(false);
     const [acknowledgesWithdrawalTerms, setAcknowledgesWithdrawalTerms] = useState(false);
     const [staleTerms, setStaleTerms] = useState(false);
@@ -69,7 +54,6 @@ export default function CheckoutReviewBoundary() {
     const rawIntent = searchParams.get('intent');
     const intent = CHECKOUT_INTENTS.find((value) => value === rawIntent) ?? null;
     const code = searchParams.get('code');
-    const isCancelledActivation = intent === 'activation' && searchParams.get('cancelled') === 'true';
     const plans = useMemo(() => scopedPlans(appConfig.data?.planTiers ?? [], 'EVENT'), [appConfig.data?.planTiers]);
     const currentPlan = plans.find((plan) => plan.code === billing.data?.planTierCode) ?? null;
     const targetPlan = code ? (plans.find((plan) => plan.code === code) ?? null) : null;
@@ -106,36 +90,19 @@ export default function CheckoutReviewBoundary() {
         );
     }
 
-    const addons = billing.data.addons;
     const currency =
         intent === 'storage'
             ? (service?.priceCurrency ?? currentPlan.priceCurrency ?? 'EUR')
-            : intent === 'upgrade'
-              ? (upgradeOption?.currency ?? currentPlan.priceCurrency ?? 'EUR')
-              : (targetPlan?.priceCurrency ?? currentPlan.priceCurrency ?? billing.data.orders[0]?.currency ?? 'EUR');
+            : (upgradeOption?.currency ?? currentPlan.priceCurrency ?? 'EUR');
 
-    let title = t('intent.activationCancelled.title');
-    let description = t('intent.activationCancelled.description');
+    let title: string;
+    let description: string;
     let planLabel = currentPlan.name;
     let lines: ReviewLine[] = [];
-    let consequence = t('intent.activationCancelled.consequence');
-    let valid = true;
+    let consequence: string;
+    let valid: boolean;
 
-    if (intent === 'activation') {
-        title = t(isCancelledActivation ? 'intent.activationCancelled.title' : 'intent.activation.title');
-        description = t(isCancelledActivation ? 'intent.activationCancelled.description' : 'intent.activation.description');
-        consequence = t(isCancelledActivation ? 'intent.activationCancelled.consequence' : 'intent.activation.consequence');
-        valid = billing.data.eventStatus === 'DRAFT' && currentPlan.priceAmountMinor !== null;
-        if (currentPlan.priceAmountMinor !== null) {
-            lines = [
-                {
-                    label: t('items.planActivation', { plan: currentPlan.name }),
-                    amountMinor: collaborationPreview?.payableAmountMinor ?? discountedAmountMinor(currentPlan.priceAmountMinor, currentPlan),
-                },
-                ...addonLines(addons),
-            ];
-        }
-    } else if (intent === 'upgrade') {
+    if (intent === 'upgrade') {
         title = t('intent.upgrade.title');
         description = t('intent.upgrade.description');
         consequence = t('intent.upgrade.consequence');
@@ -161,33 +128,19 @@ export default function CheckoutReviewBoundary() {
     }
 
     const totalMinor = lines.reduce((sum, line) => sum + line.amountMinor, 0);
-    const isPending = activationCheckout.isPending || upgradeCheckout.isPending || storageCheckout.isPending;
-    const requiresConsent = intent === 'activation' || intent === 'upgrade';
+    const isPending = upgradeCheckout.isPending || storageCheckout.isPending;
+    const requiresConsent = intent === 'upgrade';
     const termsVersion = appConfig.data?.withdrawal.termsVersion ?? null;
     const consentSatisfied = !requiresConsent || (requestsImmediateStart && acknowledgesWithdrawalTerms && Boolean(termsVersion));
     const backHref =
-        intent === 'storage'
-            ? routes.events.settingsAddons(eventId)
-            : intent === 'activation'
-              ? routes.events.manage(eventId, { tab: 'overview' })
-              : routes.events.manage(eventId, { tab: 'billing' });
+        intent === 'storage' ? routes.events.settingsAddons(eventId) : routes.events.manage(eventId, { tab: 'billing' });
 
     async function continueToCheckout() {
         if (!valid || !consentSatisfied) return;
         setError(null);
         setStaleTerms(false);
         try {
-            if (intent === 'activation') {
-                navigateToCheckout(
-                    eventId,
-                    await activationCheckout.mutateAsync({
-                        ...(collaborationCode ? { collaborationCode } : {}),
-                        requestsImmediateStart,
-                        acknowledgesWithdrawalTerms,
-                        termsVersion: termsVersion!,
-                    })
-                );
-            } else if (intent === 'upgrade' && targetPlan) {
+            if (intent === 'upgrade' && targetPlan) {
                 navigateToCheckout(
                     eventId,
                     await upgradeCheckout.mutateAsync({
@@ -238,8 +191,6 @@ export default function CheckoutReviewBoundary() {
                 </dl>
             </section>
 
-            {intent === 'activation' && <CollaborationCodeSection eventId={eventId} onPreviewChangeAction={handleCollaborationPreviewChange} />}
-
             {/* Payment breakdown */}
             <section className="mt-6" aria-labelledby="payment-breakdown-title">
                 <h2 id="payment-breakdown-title" className="text-base font-bold text-ink">
@@ -278,38 +229,15 @@ export default function CheckoutReviewBoundary() {
 
             {/* Withdrawal consent */}
             {requiresConsent && (
-                <section className="mt-6 rounded-lg border border-border bg-surface-muted/40 p-4" aria-labelledby="withdrawal-terms-title">
-                    <h2 id="withdrawal-terms-title" className="text-base font-bold text-ink">
-                        {t('withdrawalTerms.title')}
-                    </h2>
-                    {/* Placeholder copy — pending real legal/product text (Directive 2011/83/EU art. 14). */}
-                    <p className="mt-1 text-sm leading-relaxed text-ink-muted">{t('withdrawalTerms.body')}</p>
-                    <label className="mt-3 flex items-start gap-2.5 text-sm">
-                        <input
-                            type="checkbox"
-                            checked={requestsImmediateStart}
-                            onChange={handleRequestsImmediateStartChange}
-                            className="mt-0.5 h-4 w-4 shrink-0 rounded border-border"
-                        />
-                        <span>
-                            <span className="font-semibold text-ink">{t('withdrawalTerms.requestsImmediateStartLabel')}</span>
-                            <span className="block text-xs text-ink-muted">{t('withdrawalTerms.requestsImmediateStartCaption')}</span>
-                        </span>
-                    </label>
-                    <label className="mt-2 flex items-start gap-2.5 text-sm">
-                        <input
-                            type="checkbox"
-                            checked={acknowledgesWithdrawalTerms}
-                            onChange={handleAcknowledgesWithdrawalTermsChange}
-                            className="mt-0.5 h-4 w-4 shrink-0 rounded border-border"
-                        />
-                        <span>
-                            <span className="font-semibold text-ink">{t('withdrawalTerms.acknowledgesWithdrawalTermsLabel')}</span>
-                            <span className="block text-xs text-ink-muted">{t('withdrawalTerms.acknowledgesWithdrawalTermsCaption')}</span>
-                        </span>
-                    </label>
-                    {staleTerms && <p className="mt-2 text-xs font-semibold text-rose-600">{t('withdrawalTerms.stale')}</p>}
-                </section>
+                <div className="mt-6">
+                    <WithdrawalConsentSection
+                        requestsImmediateStart={requestsImmediateStart}
+                        acknowledgesWithdrawalTerms={acknowledgesWithdrawalTerms}
+                        staleTerms={staleTerms}
+                        onRequestsImmediateStartChangeAction={handleRequestsImmediateStartChange}
+                        onAcknowledgesWithdrawalTermsChangeAction={handleAcknowledgesWithdrawalTermsChange}
+                    />
+                </div>
             )}
 
             {!valid && <p className="mt-6 text-sm text-rose-600">{t('unavailable')}</p>}
