@@ -1,5 +1,4 @@
 import type { LandingPlan } from '@/lib/landingPricing';
-import { routes } from '@/lib/routes';
 
 type LandingPricingCardProps = {
     featured: boolean;
