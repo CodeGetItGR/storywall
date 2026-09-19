@@ -2,7 +2,6 @@ import type { LandingPlan } from '@/lib/landingPricing';
 import { routes } from '@/lib/routes';
 
 type LandingPricingCardProps = {
-    chooseLabel: string;
     featured: boolean;
     photosLabel: string;
     plan: LandingPlan;
@@ -13,7 +12,6 @@ type LandingPricingCardProps = {
 };
 
 export function LandingPricingCard({
-    chooseLabel,
     featured,
     photosLabel,
     plan,

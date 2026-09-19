@@ -18,10 +18,10 @@ type LandingHeroCtaProps = { className: string; href: string; lines: string[] };
 function LandingHeroCta({ className, href, lines }: LandingHeroCtaProps) {
     return (
         <a
-            className={`items-center justify-between gap-4 rounded-full bg-[linear-gradient(100deg,#ff6f93,#ff936a_52%,#ffd05b)] py-[17px] pr-[18px] pl-[30px] text-white shadow-[0_16px_32px_rgba(217,102,74,.15)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#d27b9b] min-[761px]:gap-2.5 min-[761px]:py-[10px] min-[761px]:pr-[11px] min-[761px]:pl-5 ${className}`}
+            className={`items-center justify-between gap-4 rounded-full bg-[linear-gradient(100deg,#ff6f93,#ff936a_52%,#ffd05b)] py-4.25 pr-4.5 pl-7.5 text-white shadow-[0_16px_32px_rgba(217,102,74,.15)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#d27b9b] min-[761px]:gap-2.5 min-[761px]:py-2.5 min-[761px]:pr-2.75 min-[761px]:pl-5 ${className}`}
             href={href}
         >
-            <span className="flex-1 text-center [font-family:Baskerville,Georgia,serif] text-[24px] leading-[1.02] tracking-[-0.025em] min-[421px]:text-[clamp(25px,6.2vw,34px)] min-[761px]:text-[clamp(15px,1vw,19px)]">
+            <span className="flex-1 text-center font-[Baskerville,Georgia,serif] text-[24px] leading-[1.02] tracking-tight min-[421px]:text-[clamp(25px,6.2vw,34px)] min-[761px]:text-[clamp(15px,1vw,19px)]">
                 {lines.map((line) => (
                     <span className="block" key={line}>
                         {line}
@@ -30,7 +30,7 @@ function LandingHeroCta({ className, href, lines }: LandingHeroCtaProps) {
             </span>
             <span
                 aria-hidden="true"
-                className="grid size-[58px] shrink-0 place-items-center rounded-full bg-white text-[36px] leading-none text-[#ee9971] min-[421px]:size-[68px] min-[421px]:text-[42px] min-[761px]:size-[42px] min-[761px]:text-[27px]"
+                className="grid size-14.5 shrink-0 place-items-center rounded-full bg-white text-[36px] leading-none text-[#ee9971] min-[421px]:size-17 min-[421px]:text-[42px] min-[761px]:size-10.5 min-[761px]:text-[27px]"
             >
                 ↗
             </span>
@@ -58,8 +58,8 @@ export function LandingHero() {
             id="top-preview"
         >
             {/* Header */}
-            <header className="relative z-30 h-[104px] bg-white/95 min-[421px]:max-[760px]:h-[124px] min-[761px]:h-28 min-[761px]:backdrop-blur-sm">
-                <div className="mx-auto flex h-full w-[calc(100%-40px)] max-w-[1220px] items-center justify-between gap-6 min-[761px]:w-[calc(100%-64px)]">
+            <header className="relative z-30 h-20 bg-white/95 min-[421px]:max-[760px]:h-31 min-[761px]:h-28 min-[761px]:backdrop-blur-sm">
+                <div className="mx-auto flex h-full w-[calc(100%-40px)] max-w-305 items-center justify-between gap-6 min-[761px]:w-[calc(100%-64px)]">
                     <a
                         aria-label={t('homeLabel')}
                         className="inline-flex w-[min(196px,49vw)] shrink-0 items-center min-[761px]:w-[clamp(200px,14vw,260px)]"
@@ -126,24 +126,24 @@ export function LandingHero() {
             </header>
 
             {/* Hero content */}
-            <div className="relative bg-[url('/landing/hero-background-v75.jpg')] bg-cover bg-center pt-[34px] pb-[86px] min-[421px]:max-[760px]:pt-[43px] min-[761px]:min-h-[calc(100svh-112px)] min-[761px]:py-0">
-                <div className="relative mx-auto grid w-[calc(100%-40px)] max-w-[1220px] grid-cols-1 items-center min-[761px]:min-h-[calc(100svh-112px)] min-[761px]:w-[calc(100%-64px)] min-[761px]:grid-cols-2">
-                    <div className="relative z-20 self-center min-[761px]:py-10">
+            <div className="relative bg-[url('/landing/hero-background-v75.jpg')] bg-cover bg-center pt-6 pb-21.5 min-[421px]:max-[760px]:pt-10.75 min-[761px]:min-h-[calc(100svh-112px)] min-[761px]:py-0">
+                <div className="relative mx-auto grid w-[calc(100%-40px)] max-w-305 grid-cols-1 items-center min-[761px]:min-h-[calc(100svh-112px)] min-[761px]:w-[calc(100%-64px)] min-[761px]:grid-cols-2">
+                    <div className="relative z-20 self-center min-[761px]:py-2.5">
                         <p className="mb-5 text-[clamp(13px,1vw,17px)] leading-tight uppercase">
                             {t('kicker')} <strong>{t('kickerStrong')}</strong>
                         </p>
                         <p
                             aria-label={t('eventTypesLabel')}
-                            className="mb-5 flex min-h-8 items-baseline gap-2 whitespace-nowrap [font-family:Baskerville,Georgia,serif] text-[clamp(22px,1.7vw,32px)] leading-none"
+                            className="mb-5 flex min-h-8 items-baseline gap-2 whitespace-nowrap font-[Baskerville,Georgia,serif] text-[clamp(22px,1.7vw,32px)] leading-none"
                         >
                             <span>{t('eventTypesPrefix')}</span>
                             <span className="bg-[linear-gradient(90deg,#df7794,#f29365_52%,#f2c764)] bg-clip-text font-medium text-transparent">
                                 {typewriterWord}
                             </span>
-                            <span aria-hidden="true" className="inline-block h-[.85em] w-[2px] animate-pulse bg-[#ee9971]" />
+                            <span aria-hidden="true" className="inline-block h-[.85em] w-0.5 animate-pulse bg-[#ee9971]" />
                         </p>
                         <h1
-                            className="max-w-[570px] [font-family:Baskerville,Georgia,serif] text-[clamp(48px,13vw,66px)] leading-[.93] font-normal tracking-[-.06em] min-[761px]:text-[clamp(54px,3.45vw,70px)]"
+                            className="max-w-142.5 font-[Baskerville,Georgia,serif] text-[clamp(48px,13vw,66px)] leading-[.93] font-normal tracking-[-.06em] min-[761px]:text-[clamp(54px,3.45vw,70px)]"
                             id="sw-new-hero-title"
                         >
                             {title.map((line) => (
@@ -153,11 +153,11 @@ export function LandingHero() {
                             ))}
                         </h1>
                         <LandingHeroCta
-                            className="mx-auto hidden min-[761px]:mt-[26px] min-[761px]:flex min-[761px]:h-[62px] min-[761px]:w-[min(228px,52%)]"
+                            className="mx-auto hidden min-[761px]:mt-6.5 min-[761px]:flex min-[761px]:h-15.5 min-[761px]:w-[min(228px,52%)]"
                             href={isSignedIn ? routes.home : routes.register}
                             lines={isSignedIn ? signedInCta : cta}
                         />
-                        <p className="mt-8 max-w-[540px] text-[clamp(18px,1.35vw,24px)] leading-[1.35]">
+                        <p className="mt-8 max-w-135 text-[clamp(18px,1.35vw,24px)] leading-[1.35]">
                             {t('subtitleStart')} <strong>{t('subtitleStrong')}</strong> {t('subtitleEnd')}
                             <br />
                             {t('subtitleSecondLine')}
@@ -177,7 +177,7 @@ export function LandingHero() {
                     </div>
                     <LandingHeroVisual />
                     <LandingHeroCta
-                        className="order-3 mx-auto mt-[34vw] h-[92px] w-[min(415px,78vw)] flex min-[421px]:h-[112px] min-[761px]:hidden"
+                        className="order-3 mx-auto mt-[34vw] h-23 w-[min(415px,78vw)] flex min-[421px]:h-28 min-[761px]:hidden"
                         href={isSignedIn ? routes.home : routes.register}
                         lines={isSignedIn ? signedInCta : cta}
                     />

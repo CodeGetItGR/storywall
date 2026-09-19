@@ -23,23 +23,23 @@ export function LandingPricing() {
             id="pricing"
         >
             {/* Pricing introduction */}
-            <div className="mx-auto grid max-w-[1200px] gap-x-[5vw] min-[761px]:grid-cols-[1fr_2fr]">
+            <div className="mx-auto grid max-w-300 gap-x-[5vw] min-[761px]:grid-cols-[1fr_2fr]">
                 <p className="text-[13px] font-black tracking-[.15em]">{t('eyebrow')}</p>
                 <div>
                     <h2
-                        className="mt-5 max-w-[820px] [font-family:Baskerville,Georgia,serif] text-[clamp(48px,11vw,88px)] leading-[.9] tracking-[-.055em] min-[761px]:mt-0"
+                        className="mt-5 max-w-205 font-[Baskerville,Georgia,serif] text-[clamp(48px,11vw,88px)] leading-[.9] tracking-[-.055em] min-[761px]:mt-0"
                         id="landing-pricing-title"
                     >
                         {t('heading')}
                     </h2>
-                    <p className="mt-5 max-w-[620px] text-base leading-relaxed">{t('intro')}</p>
+                    <p className="mt-5 max-w-155 text-base leading-relaxed">{t('intro')}</p>
                 </div>
             </div>
 
             {/* Event categories */}
             <div
                 aria-label={t('categoryLabel')}
-                className="mx-auto mt-16 flex max-w-[1324px] border-b border-[#151313]/20 min-[761px]:mt-20"
+                className="mx-auto mt-16 flex max-w-331 border-b border-[#151313]/20 min-[761px]:mt-20"
                 role="tablist"
             >
                 {CATEGORY_ORDER.map((key) => (
@@ -47,9 +47,9 @@ export function LandingPricing() {
                         aria-controls="landing-pricing-panel"
                         aria-selected={category === key}
                         className={cn(
-                            'relative min-h-[72px] w-1/2 px-2 pb-4 text-center text-[12px] leading-tight font-black transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-[#df7794] min-[761px]:min-h-12 min-[761px]:px-6 min-[761px]:text-[17px]',
+                            'relative min-h-18 w-1/2 px-2 pb-4 text-center text-[12px] leading-tight font-black transition-colors focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-[#df7794] min-[761px]:min-h-12 min-[761px]:px-6 min-[761px]:text-[17px]',
                             category === key
-                                ? 'text-[#151313] after:absolute after:inset-x-0 after:bottom-0 after:h-[3px] after:bg-[linear-gradient(90deg,#df7794,#f2c764)]'
+                                ? 'text-[#151313] after:absolute after:inset-x-0 after:bottom-0 after:h-0.75 after:bg-[linear-gradient(90deg,#df7794,#f2c764)]'
                                 : 'text-[#151313]/50 hover:text-[#151313]'
                         )}
                         data-category={key}
@@ -78,7 +78,6 @@ export function LandingPricing() {
                 ) : (
                     categories[category].plans.map((plan, index) => (
                         <LandingPricingCard
-                            chooseLabel={t('choose')}
                             featured={index === 1}
                             key={`${category}-${plan.name}`}
                             photosLabel={t('photosLabel')}
