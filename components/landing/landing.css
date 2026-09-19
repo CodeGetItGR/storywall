@@ -6808,35 +6808,3 @@
         height: 52px;
     }
 }
-
-/* The strip fades into the following white section. */
-.landing-page [data-landing-hero-transition]::after {
-    content: '';
-    position: absolute;
-    inset: auto 0 -1px;
-    z-index: 2;
-    height: 139px;
-    pointer-events: none;
-    background: linear-gradient(
-        to bottom,
-        rgb(255 255 255 / 0%) 0%,
-        rgb(255 255 255 / 10%) 22%,
-        rgb(255 255 255 / 34%) 50%,
-        rgb(255 255 255 / 70%) 76%,
-        rgb(255 255 255) 100%
-    );
-}
-
-@media (min-width: 761px) {
-    .landing-page [data-landing-hero-transition]::after {
-        height: 191px;
-        background: linear-gradient(
-            to bottom,
-            rgb(255 255 255 / 0%) 0%,
-            rgb(255 255 255 / 8%) 20%,
-            rgb(255 255 255 / 28%) 45%,
-            rgb(255 255 255 / 62%) 72%,
-            rgb(255 255 255) 100%
-        );
-    }
-}
