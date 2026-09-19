@@ -7,6 +7,7 @@ import { useRef } from 'react';
 import { LandingDemo } from '@/components/landing/LandingDemo';
 import { LandingExperienceStack } from '@/components/landing/LandingExperienceStack';
 import { LandingFaq } from '@/components/landing/LandingFaq';
+import { LandingFeatureDetails } from '@/components/landing/LandingFeatureDetails';
 import { LandingFeatures } from '@/components/landing/LandingFeatures';
 import { LandingFinalCta } from '@/components/landing/LandingFinalCta';
 import { LandingFooter } from '@/components/landing/LandingFooter';
@@ -44,6 +45,9 @@ export function LandingContent() {
 
                 {/* Features */}
                 <LandingFeatures />
+
+                {/* Feature details */}
+                <LandingFeatureDetails />
             </div>
 
             {/* Pricing */}

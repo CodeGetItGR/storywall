@@ -3516,6 +3516,41 @@
                 "Gift list"
             ]
         },
+        "featureDetails": {
+            "eyebrow": "A FEW ARE WORTH A CLOSER LOOK.",
+            "heading": "From the invitation to the wishes.",
+            "label": "A closer look at StoryWall features",
+            "items": [
+                {
+                    "title": "INVITATION",
+                    "subtitle": "One invitation. Every detail.",
+                    "description": "StoryWall's digital invitation brings every event detail together in one clear, easy experience before the day arrives.",
+                    "items": ["Date, schedule, locations, maps, and more", "Instant access on mobile", "Everything stays up to date"],
+                    "imageAlt": "Guest viewing a StoryWall invitation on a phone"
+                },
+                {
+                    "title": "QR PHOTO UPLOAD",
+                    "subtitle": "Every guest. A different point of view.",
+                    "description": "Guests scan the QR code and upload photos and videos directly to StoryWall as the moments happen.",
+                    "items": ["Upload with one simple scan", "No app or sign-up needed", "Photos and videos ready to download"],
+                    "imageAlt": "Guest scanning a StoryWall QR code"
+                },
+                {
+                    "title": "RSVP",
+                    "subtitle": "Know who's coming.",
+                    "description": "Guests confirm their attendance directly in StoryWall, giving you a clear picture before the event.",
+                    "items": ["Instant attendance confirmation", "Reports and statistics", "Every response in one place"],
+                    "imageAlt": "Guest confirming attendance in StoryWall"
+                },
+                {
+                    "title": "GUESTBOOK",
+                    "subtitle": "Every wish stays.",
+                    "description": "Messages, thoughts, and wishes come together in a modern digital guestbook.",
+                    "items": ["Wishes from every guest", "A digital keepsake that lasts", "Download a PDF to save or print"],
+                    "imageAlt": "Guest sharing a wish in the StoryWall guestbook"
+                }
+            ]
+        },
         "pricing": {
             "eyebrow": "PLANS",
             "heading": "Every event deserves its own StoryWall.",
