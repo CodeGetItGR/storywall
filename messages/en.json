@@ -130,7 +130,8 @@
         "unpinPost": "Unpin post",
         "pinPostFailed": "Couldn't pin this post. Please try again.",
         "unpinPostFailed": "Couldn't unpin this post. Please try again.",
-        "hostPost": "Host post"
+        "hostPost": "Host post",
+        "reportPost": "Report post"
     },
     "DesktopNavRail": {
         "mainNavigation": "Main navigation",
@@ -168,6 +169,14 @@
             "manage": {
                 "label": "Dashboard",
                 "description": "Overview of your event"
+            },
+            "galleryQr": {
+                "label": "Gallery QR",
+                "description": "Download or share your gallery's upload code"
+            },
+            "invitationsQr": {
+                "label": "Share links",
+                "description": "QR codes and links guests can use to join"
             },
             "help": {
                 "label": "Help",
@@ -248,7 +257,27 @@
         "post": "Post",
         "posting": "Posting…",
         "storageLimitExceededWithPlan": "This event has no room left for new media on its current plan. Upgrade to {plan} to add more.",
-        "uploading": "Uploading…"
+        "uploading": "Uploading…",
+        "mediaPreview": "Media preview",
+        "closeMediaPreview": "Close media preview",
+        "done": "Done",
+        "previous": "Previous",
+        "next": "Next",
+        "playVideo": "Play video",
+        "pauseVideo": "Pause video",
+        "filtersLabel": "Photo filters",
+        "imageSelected": "Edit photo filters",
+        "filters": {
+            "original": "Original",
+            "warm": "Warm",
+            "goldenHour": "Golden Hour",
+            "cool": "Cool",
+            "vivid": "Vivid",
+            "fade": "Fade",
+            "mono": "Mono",
+            "noir": "Noir",
+            "vintage": "Vintage"
+        }
     },
     "StoryComposer": {
         "title": "Add stories",
@@ -759,21 +788,9 @@
                 "title": "Celebration name",
                 "startAt": "Party date"
             },
-            "CORPORATE": {
-                "title": "Event name",
-                "startAt": "Event date"
-            },
-            "FESTIVAL": {
-                "title": "Festival name",
-                "startAt": "Opening date"
-            },
             "PRIVATE_PARTY": {
                 "title": "Party name",
                 "startAt": "Party date"
-            },
-            "CONFERENCE": {
-                "title": "Conference name",
-                "startAt": "Start date"
             }
         },
         "initialSessions": {
@@ -1212,7 +1229,8 @@
             "kids": "Kids",
             "byCategory": "Attendance by category",
             "attendingNote": "Includes plus-ones",
-            "notGoing": "Not going"
+            "notGoing": "Not going",
+            "deadlineField": "RSVP deadline"
         },
         "rsvpReports": {
             "title": "RSVP reports",
@@ -3010,6 +3028,22 @@
         "loadingMore": "Loading more…",
         "videoProcessing": "Processing video…",
         "videoFailed": "This video couldn't be processed."
+    },
+    "GalleryQrPage": {
+        "title": "Gallery QR",
+        "back": "Back to feed",
+        "subtitle": "Anyone who scans this code can upload photos and videos straight to your gallery — no sign-in required.",
+        "permanentNote": "This code is set up for you and can't be deleted or replaced.",
+        "temporarilyOff": "Uploads through this code are temporarily turned off. Existing photos and videos aren't affected.",
+        "linkUnavailable": "This code isn't accepting uploads right now.",
+        "missing": {
+            "body": "This event doesn't have a gallery upload code yet."
+        }
+    },
+    "InvitationsQrPage": {
+        "title": "Share links",
+        "back": "Back to feed",
+        "subtitle": "QR codes and links guests can use to join right away."
     },
     "MediaThumbnail": {
         "processing": "Processing video",

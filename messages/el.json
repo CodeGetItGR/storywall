@@ -884,21 +884,9 @@
                 "title": "Όνομα γιορτής",
                 "startAt": "Ημερομηνία πάρτι"
             },
-            "CORPORATE": {
-                "title": "Όνομα εκδήλωσης",
-                "startAt": "Ημερομηνία εκδήλωσης"
-            },
-            "FESTIVAL": {
-                "title": "Όνομα φεστιβάλ",
-                "startAt": "Ημερομηνία έναρξης"
-            },
             "PRIVATE_PARTY": {
                 "title": "Όνομα πάρτι",
                 "startAt": "Ημερομηνία πάρτι"
-            },
-            "CONFERENCE": {
-                "title": "Όνομα συνεδρίου",
-                "startAt": "Ημερομηνία έναρξης"
             }
         },
         "initialSessions": {

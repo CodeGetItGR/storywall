@@ -18,19 +18,8 @@ const SHORT_EVENT_PRESETS: EventEndPresetConfig[] = [
     { key: '1w', labelKey: 'oneWeek', duration: { days: 7 } },
 ];
 
-const MULTI_DAY_EVENT_PRESETS: EventEndPresetConfig[] = [
-    { key: '1d', labelKey: 'oneDay', duration: { days: 1 } },
-    { key: '2d', labelKey: 'twoDays', duration: { days: 2 } },
-    { key: '3d', labelKey: 'threeDays', duration: { days: 3 } },
-    { key: '1w', labelKey: 'oneWeek', duration: { days: 7 } },
-];
-
-const MULTI_DAY_EVENT_TYPES = new Set<EventTypeConvention>(['CONFERENCE', 'CORPORATE', 'FESTIVAL']);
-
-export function getEventEndPresets(eventType: EventTypeConvention, startAt: string): EventEndPreset[] {
-    const presets = MULTI_DAY_EVENT_TYPES.has(eventType) ? MULTI_DAY_EVENT_PRESETS : SHORT_EVENT_PRESETS;
-
-    return presets.map(({ duration, ...preset }) => ({
+export function getEventEndPresets(_eventType: EventTypeConvention, startAt: string): EventEndPreset[] {
+    return SHORT_EVENT_PRESETS.map(({ duration, ...preset }) => ({
         ...preset,
         value: addDatetimeLocalDuration(startAt, duration),
     }));

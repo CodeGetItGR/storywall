@@ -94,8 +94,16 @@ export function EventTypeStep() {
                                     <Check className="h-4 w-4" />
                                 </span>
                             )}
-                            <span className={cn('relative z-10 block pr-8 text-xl font-bold', backgroundImageSrc ? 'text-white' : 'mt-5 text-ink')}>
-                                {copy.name}
+                            <span
+                                className={cn(
+                                    'relative z-10 flex items-center gap-2 pr-8 text-xl font-bold',
+                                    backgroundImageSrc ? 'text-white' : 'mt-5 text-ink'
+                                )}
+                            >
+                                <span aria-hidden="true" className="text-2xl leading-none">
+                                    {type.icon}
+                                </span>
+                                <span>{copy.name}</span>
                             </span>
                             {copy.tagline && (
                                 <span

@@ -4,6 +4,7 @@ import type { Page } from '@/lib/api/pagination';
 import type {
     AuthorDto,
     CommentResponseDto,
+    EventGiftAccountResponseDto,
     EventInvitationResponseDto,
     EventMemberResponseDto,
     EventModuleResponseDto,
@@ -22,14 +23,18 @@ import { createMockDb, type MockDb } from '@/lib/demo/mockDb';
 import {
     buildSeedAppConfig,
     buildSeedBilling,
+    buildSeedComments,
     buildSeedEvent,
+    buildSeedGiftAccount,
     buildSeedInvitations,
     buildSeedMedia,
     buildSeedMembers,
     buildSeedModules,
+    buildSeedPlaylistSuggestions,
     buildSeedPosts,
     buildSeedQrLinks,
     buildSeedQrLinkStats,
+    buildSeedReactions,
     buildSeedRsvps,
     buildSeedSessions,
     buildSeedStories,
@@ -157,13 +162,14 @@ type DemoSchema = {
     invitations: EventInvitationResponseDto[];
     qrLinks: QrLinkResponseDto[];
     playlistSuggestions: PlaylistSuggestionResponseDto[];
+    giftAccounts: EventGiftAccountResponseDto[];
 };
 
 function seedDemoSchema(): DemoSchema {
     return {
         posts: buildSeedPosts(),
-        comments: [],
-        reactions: [],
+        comments: buildSeedComments(),
+        reactions: buildSeedReactions(),
         media: buildSeedMedia(),
         members: buildSeedMembers(),
         modules: buildSeedModules(),
@@ -173,7 +179,8 @@ function seedDemoSchema(): DemoSchema {
         wishbook: buildSeedWishbookEntries(),
         invitations: buildSeedInvitations(),
         qrLinks: buildSeedQrLinks(),
-        playlistSuggestions: [],
+        playlistSuggestions: buildSeedPlaylistSuggestions(),
+        giftAccounts: [buildSeedGiftAccount()],
     };
 }
 
@@ -219,6 +226,37 @@ export const demoHandlers = [
     http.get(`${API_BASE_URL}/api/events/:eventId/billing`, () => HttpResponse.json(buildSeedBilling())),
     http.get(`${API_BASE_URL}/api/events/:eventId/qr-links/stats`, () => HttpResponse.json(buildSeedQrLinkStats())),
 
+    // --- Gift account (single record per event, not id-keyed like the other collections) ---
+    http.get(`${API_BASE_URL}/api/events/:eventId/gift-account`, ({ params }) => {
+        const account = demoDb.list('giftAccounts').find((a) => a.eventId === params.eventId);
+        return account ? HttpResponse.json(account) : new HttpResponse(null, { status: 404 });
+    }),
+    http.put(`${API_BASE_URL}/api/events/:eventId/gift-account`, async ({ params, request }) => {
+        const body = (await request.json()) as Record<string, unknown>;
+        const eventId = params.eventId as string;
+        const existing = demoDb.list('giftAccounts').find((a) => a.eventId === eventId);
+        const record: EventGiftAccountResponseDto = {
+            id: existing?.id ?? newId('demo-gift-account'),
+            eventId,
+            iban: String(body.iban ?? ''),
+            accountHolder: String(body.accountHolder ?? ''),
+            bankName: String(body.bankName ?? ''),
+            note: (body.note as string) ?? null,
+            updatedAt: new Date().toISOString(),
+        };
+        if (existing) {
+            demoDb.update('giftAccounts', existing.id, () => record);
+        } else {
+            demoDb.create('giftAccounts', record);
+        }
+        return HttpResponse.json(record);
+    }),
+    http.delete(`${API_BASE_URL}/api/events/:eventId/gift-account`, ({ params }) => {
+        const existing = demoDb.list('giftAccounts').find((a) => a.eventId === params.eventId);
+        if (existing) demoDb.remove('giftAccounts', existing.id);
+        return new HttpResponse(null, { status: 204 });
+    }),
+
     // --- Members ---
     ...buildArrayHandlers(demoDb, 'members', '/api/events/:eventId/members'),
     ...buildDetailHandlers(demoDb, 'members', '/api/event-members/:id', { patch: true }),
@@ -254,7 +292,9 @@ export const demoHandlers = [
     ...buildArrayHandlers(demoDb, 'qrLinks', '/api/events/:eventId/qr-links'),
 
     // --- RSVPs ---
-    ...buildArrayHandlers(demoDb, 'rsvps', '/api/events/:eventId/rsvps'),
+    // RsvpResponseDto has no eventId field (only eventMemberId), so this list can't be
+    // filtered by event the way the other collections are.
+    ...buildArrayHandlers(demoDb, 'rsvps', '/api/events/:eventId/rsvps', false),
     ...buildDetailHandlers(demoDb, 'rsvps', '/api/rsvps/:id', { patch: true, del: true }),
     buildCreateHandler(demoDb, 'rsvps', '/api/rsvps', (body) => ({
         id: newId('demo-rsvp'),

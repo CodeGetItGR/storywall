@@ -111,7 +111,7 @@ describe('resolveLandingCategoryPlans', () => {
     });
 
     it('returns an empty array when the category has no matching event type at all', () => {
-        expect(resolveLandingCategoryPlans([makePlan({ eventTypeKey: 'CORPORATE' })], 'vip')).toEqual([]);
+        expect(resolveLandingCategoryPlans([makePlan({ eventTypeKey: 'PRIVATE_PARTY' })], 'vip')).toEqual([]);
     });
 
     it('defines the wedding and vip category mappings', () => {

@@ -2,6 +2,7 @@
 
 import { CalendarDays, Layers3, Pencil, WalletCards } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
 import { AccountLogoutButton } from '@/components/account/AccountLogoutButton';
@@ -17,6 +18,11 @@ export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => 
     const t = useTranslations('AccountDrawer');
     const { user } = useAuth();
     const activeEvent = useActiveEvent();
+    const pathname = usePathname();
+    // These nav destinations (account-wide event list, plans, modules, profile edit) all
+    // require a real signed-in session and have no demo equivalent — linking to them from
+    // /demo would just dead-end the host on the real login page.
+    const isDemoRoute = pathname?.startsWith('/demo') ?? false;
     const accountName = [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.firstName || t('fallbackName');
 
     return (
@@ -25,12 +31,7 @@ export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => 
                 <section className={'flex flex-col pb-3 border-b border-border'}>
                     {/* Identity */}
                     <div className="flex items-center gap-4">
-                        <Link
-                            href={routes.profile}
-                            onClick={onCloseAction}
-                            aria-label={t('editProfile')}
-                            className="group relative shrink-0 rounded-full"
-                        >
+                        {isDemoRoute ? (
                             <Avatar
                                 src={user?.profilePictureUrl}
                                 initials={getInitials(accountName)}
@@ -38,10 +39,25 @@ export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => 
                                 alt={accountName}
                                 className="ring-2 ring-white/40"
                             />
-                            <span className="absolute right-0 bottom-0 flex h-6 w-6 items-center justify-center rounded-full bg-white text-primary shadow-soft ring-2 ring-primary transition-transform group-hover:scale-105 group-focus-visible:scale-105">
-                                <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
-                            </span>
-                        </Link>
+                        ) : (
+                            <Link
+                                href={routes.profile}
+                                onClick={onCloseAction}
+                                aria-label={t('editProfile')}
+                                className="group relative shrink-0 rounded-full"
+                            >
+                                <Avatar
+                                    src={user?.profilePictureUrl}
+                                    initials={getInitials(accountName)}
+                                    size="xl"
+                                    alt={accountName}
+                                    className="ring-2 ring-white/40"
+                                />
+                                <span className="absolute right-0 bottom-0 flex h-6 w-6 items-center justify-center rounded-full bg-white text-primary shadow-soft ring-2 ring-primary transition-transform group-hover:scale-105 group-focus-visible:scale-105">
+                                    <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                                </span>
+                            </Link>
+                        )}
                         <div className="min-w-0">
                             <p className="truncate text-lg font-bold">{accountName}</p>
                             {user?.email && <p className="truncate text-sm text-white/70">{user.email}</p>}
@@ -55,16 +71,18 @@ export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => 
                 </section>
 
                 {/* Navigation */}
-                <nav className="mt-7 flex max-w-[52vw] flex-col gap-4">
-                    <AccountSidebarNavLink href={routes.home} icon={CalendarDays} label={t('events')} onNavigateAction={onCloseAction} />
-                    <AccountSidebarNavLink
-                        href={routes.plans({ eventId: activeEvent?.id })}
-                        icon={WalletCards}
-                        label={t('plans')}
-                        onNavigateAction={onCloseAction}
-                    />
-                    <AccountSidebarNavLink href={routes.modules} icon={Layers3} label={t('modules')} onNavigateAction={onCloseAction} />
-                </nav>
+                {!isDemoRoute && (
+                    <nav className="mt-7 flex max-w-[52vw] flex-col gap-4">
+                        <AccountSidebarNavLink href={routes.home} icon={CalendarDays} label={t('events')} onNavigateAction={onCloseAction} />
+                        <AccountSidebarNavLink
+                            href={routes.plans({ eventId: activeEvent?.id })}
+                            icon={WalletCards}
+                            label={t('plans')}
+                            onNavigateAction={onCloseAction}
+                        />
+                        <AccountSidebarNavLink href={routes.modules} icon={Layers3} label={t('modules')} onNavigateAction={onCloseAction} />
+                    </nav>
+                )}
 
                 {/* Footer */}
                 <div className="mt-auto flex items-center justify-between gap-4 pt-8">

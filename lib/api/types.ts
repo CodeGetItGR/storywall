@@ -16,7 +16,14 @@ export type PlatformRole = 'USER' | 'ADMIN' | 'GUEST';
 // INVALID_EVENT_TYPE. Not every key is necessarily offered right now: which
 // ones are currently enabled comes from GET /api/config's eventTypeKeys, not
 // this type — build pickers from that, not from this union directly.
-export type EventTypeConvention = 'WEDDING' | 'BAPTISM' | 'SOCIAL_EVENT' | 'BIRTHDAY' | 'CORPORATE' | 'FESTIVAL' | 'PRIVATE_PARTY' | 'CONFERENCE';
+export type EventTypeConvention =
+    | 'WEDDING'
+    | 'BAPTISM'
+    | 'SOCIAL_EVENT'
+    | 'BIRTHDAY'
+    | 'PRIVATE_PARTY'
+    | 'GENDER_REVEAL'
+    | 'BABY_SHOWER';
 // Post.type / Reaction.reactionType are free strings server-side.
 // moduleKey is now a closed set on the backend and should match the config payload.
 export const EVENT_MODULE_KEYS = [

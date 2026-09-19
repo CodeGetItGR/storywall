@@ -75,7 +75,9 @@ export function useCreateEventFormController(): CreateEventFormValue {
     );
 
     const step = parseCreateEventStep(searchParams.get('step'));
-    const eventTypes = appConfig?.eventTypes ?? [];
+    // Public config should already contain only enabled rows. Keep the picker
+    // fail-closed if a stale or malformed response includes a disabled type.
+    const eventTypes = appConfig?.eventTypes.filter((eventType) => eventType.isEnabled) ?? [];
     const modules = appConfig?.modules ?? [];
 
     const fieldErrors = getFieldErrors(createEvent.error);

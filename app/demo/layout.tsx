@@ -2,9 +2,12 @@
 
 import { type ReactNode, useEffect, useState } from 'react';
 
+import { AccountPanelShell } from '@/components/account/AccountPanelShell';
 import { DemoUnavailable } from '@/components/demo/DemoUnavailable';
 import { ResetDemoButton } from '@/components/demo/ResetDemoButton';
+import { MobileTabBar } from '@/components/layout';
 import { startDemoMocking, stopDemoMocking } from '@/lib/demo/mockWorker';
+import { AccountPanelProvider } from '@/providers/AccountPanelProvider';
 import { ComposerProvider } from '@/providers/ComposerProvider';
 import { DemoAuthProvider } from '@/providers/demo/DemoAuthProvider';
 import { DemoEventProvider } from '@/providers/demo/DemoEventProvider';
@@ -48,12 +51,19 @@ export default function DemoLayout({ children }: { children: ReactNode }) {
             <DemoEventProvider>
                 <ComposerProvider>
                     <ModalProvider>
-                        <div className="h-dvh overflow-y-auto overscroll-contain bg-background">
-                            <div className="flex items-center justify-end gap-2 px-4 py-2">
-                                <ResetDemoButton />
-                            </div>
-                            {children}
-                        </div>
+                        <AccountPanelProvider>
+                            <AccountPanelShell>
+                                <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-background">
+                                    <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-background pb-20 lg:pb-0">
+                                        <div className="flex items-center justify-end gap-2 px-4 py-2">
+                                            <ResetDemoButton />
+                                        </div>
+                                        {children}
+                                    </main>
+                                    <MobileTabBar />
+                                </div>
+                            </AccountPanelShell>
+                        </AccountPanelProvider>
                     </ModalProvider>
                 </ComposerProvider>
             </DemoEventProvider>
