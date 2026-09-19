@@ -48,8 +48,13 @@ export function planPatchFromFormData(plan: PlanTierResponseDto, formData: FormD
         sortOrder: Number(formData.get('sortOrder') ?? plan.sortOrder),
         isPublic: flags.isPublic,
         isAssignable: flags.isAssignable,
-        storageBytes: plan.scope === 'EVENT' ? storageInputToBytes(formData.get('storageAmount'), formData.get('storageUnit')) : null,
-        maxMembers: plan.scope === 'EVENT' ? numberOrNull(formData.get('maxMembers')) : null,
+        ...(plan.scope === 'EVENT'
+            ? {
+                  storageBytes: storageInputToBytes(formData.get('storageAmount'), formData.get('storageUnit')),
+                  maxMembers: numberOrNull(formData.get('maxMembers')),
+                  autoDeleteMonths: numberOrNull(formData.get('autoDeleteMonths')),
+              }
+            : {}),
         priceAmountMinor: priceInputToMinor(formData.get('price')),
         priceCurrency: emptyToNull(formData.get('priceCurrency'))?.toUpperCase() ?? null,
         billingPeriod: (emptyToNull(formData.get('billingPeriod')) as BillingPeriod | null) ?? null,
@@ -83,6 +88,7 @@ export function planChangeSummary(plan: PlanTierResponseDto, patch: PlanTierPatc
     if (plan.scope === 'EVENT') {
         add(t('fields.storage'), storageLabel(plan.storageBytes), storageLabel(patch.storageBytes ?? null));
         add(t('fields.maxMembers'), countLabel(plan.maxMembers), countLabel(patch.maxMembers ?? null));
+        add(t('fields.autoDeleteMonths'), countLabel(plan.autoDeleteMonths), countLabel(patch.autoDeleteMonths ?? null));
     }
 
     add(

@@ -2119,6 +2119,8 @@
             "storage": "Αποθήκευση",
             "unit": "Μονάδα",
             "maxMembers": "Μέλη",
+            "autoDeleteMonths": "Διατήρηση περιεχομένου εκδήλωσης",
+            "autoDeleteMonthsHint": "Μήνες μετά το τέλος της εκδήλωσης. Κενό = διατήρηση για πάντα.",
             "price": "Τιμή",
             "priceCurrency": "Νόμισμα",
             "billingPeriod": "Χρέωση",

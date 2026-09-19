@@ -1981,6 +1981,8 @@
             "storage": "Storage",
             "unit": "Unit",
             "maxMembers": "Members",
+            "autoDeleteMonths": "Keep event content",
+            "autoDeleteMonthsHint": "Months after the event ends. Blank = keep indefinitely.",
             "price": "Price",
             "priceCurrency": "Currency",
             "billingPeriod": "Billing",

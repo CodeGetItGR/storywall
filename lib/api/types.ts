@@ -1705,6 +1705,7 @@ export interface PlanTierRequestDto {
     isPublic: boolean;
     storageBytes?: number | null;
     maxMembers?: number | null;
+    autoDeleteMonths?: number | null;
     priceAmountMinor?: number | null;
     priceCurrency?: string | null;
     billingPeriod?: BillingPeriod | null;

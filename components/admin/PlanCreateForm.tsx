@@ -135,7 +135,9 @@ function PlanDuplicateForm({
     // Every other row's chosen event type (and the source's own) is off the table for this row.
     function availableEventTypesFor(rowId: string) {
         const usedElsewhere = new Set(rows.filter((row) => row.rowId !== rowId).map((row) => row.eventTypeKey));
-        return orderedEventTypes.filter((eventType) => eventType.eventTypeKey !== sourcePlan.eventTypeKey && !usedElsewhere.has(eventType.eventTypeKey));
+        return orderedEventTypes.filter(
+            (eventType) => eventType.eventTypeKey !== sourcePlan.eventTypeKey && !usedElsewhere.has(eventType.eventTypeKey)
+        );
     }
 
     function codeForRow(row: CloneRow) {
@@ -221,9 +223,7 @@ function PlanDuplicateForm({
                     </button>
                 </AdminSection>
 
-                {duplicatePlan.error && (
-                    <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(duplicatePlan.error)}`)}</p>
-                )}
+                {duplicatePlan.error && <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(duplicatePlan.error)}`)}</p>}
             </form>
         </AdminDrawer>
     );
@@ -393,8 +393,13 @@ function PlanCreateNewForm({
             isDefault: checked(formData, 'isDefault'),
             isAssignable: flags.isAssignable,
             isPublic: flags.isPublic,
-            storageBytes: scope === 'EVENT' ? storageInputToBytes(formData.get('storageAmount'), formData.get('storageUnit')) : null,
-            maxMembers: scope === 'EVENT' ? numberOrNull(formData.get('maxMembers')) : null,
+            ...(scope === 'EVENT'
+                ? {
+                      storageBytes: storageInputToBytes(formData.get('storageAmount'), formData.get('storageUnit')),
+                      maxMembers: numberOrNull(formData.get('maxMembers')),
+                      autoDeleteMonths: numberOrNull(formData.get('autoDeleteMonths')),
+                  }
+                : {}),
             priceAmountMinor: priceInputToMinor(formData.get('price')),
             priceCurrency: emptyToNull(formData.get('priceCurrency'))?.toUpperCase() ?? null,
             billingPeriod: (emptyToNull(formData.get('billingPeriod')) as BillingPeriod | null) ?? null,
@@ -520,6 +525,20 @@ function PlanCreateNewForm({
                                         name="maxMembers"
                                         type="number"
                                         min={0}
+                                        placeholder={t('fields.blankUnlimited')}
+                                        className={adminInputClass('max-w-28')}
+                                    />
+                                </AdminField>
+                                <AdminField
+                                    label={t('fields.autoDeleteMonths')}
+                                    optional
+                                    hint={t('fields.autoDeleteMonthsHint')}
+                                    className="col-span-2"
+                                >
+                                    <input
+                                        name="autoDeleteMonths"
+                                        type="number"
+                                        min={1}
                                         placeholder={t('fields.blankUnlimited')}
                                         className={adminInputClass('max-w-28')}
                                     />
