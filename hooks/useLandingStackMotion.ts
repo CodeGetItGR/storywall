@@ -109,15 +109,15 @@ export function useLandingStackMotion(landingRef: RefObject<HTMLElement | null>)
                 socialEntrance = autoProgress(socialStart, 2300, timestamp);
             }
 
-            const socialExit = clamp((progress - 0.3) / 0.17);
+            const socialExit = mobile ? clamp((progress - 0.32) / 0.18) : clamp((progress - 0.3) / 0.17);
             revealCards(socialCards, socialEntrance, socialExit, mobile);
-            const socialTitleExit = smooth(clamp((progress - 0.275) / 0.115));
+            const socialTitleExit = mobile ? smooth(clamp((progress - 0.3) / 0.12)) : smooth(clamp((progress - 0.275) / 0.115));
             if (socialCenter) {
                 socialCenter.style.opacity = (1 - socialTitleExit).toFixed(3);
                 socialCenter.style.transform = `translate(-50%,-50%) translateY(${-10 * socialTitleExit}px) scale(${1 - 0.035 * socialTitleExit})`;
                 socialCenter.style.filter = `blur(${(0.55 * socialTitleExit).toFixed(2)}px)`;
             }
-            const socialChromeExit = smooth(clamp((progress - 0.33) / 0.12));
+            const socialChromeExit = mobile ? smooth(clamp((progress - 0.35) / 0.12)) : smooth(clamp((progress - 0.33) / 0.12));
             if (socialTop) socialTop.style.opacity = (1 - socialChromeExit).toFixed(3);
             if (socialLine) socialLine.style.opacity = (1 - socialChromeExit).toFixed(3);
 
@@ -133,7 +133,7 @@ export function useLandingStackMotion(landingRef: RefObject<HTMLElement | null>)
             socialLayer.style.setProperty('--swx-photo-x', `${50 + mouseX * 4 + (progress - 0.5) * 2}%`);
             socialLayer.style.setProperty('--swx-photo-y', `${50 + mouseY * 3 + (progress - 0.5) * 2}%`);
 
-            const handoff = smoother(clamp((progress - 0.43) / 0.2));
+            const handoff = mobile ? smoother(clamp((progress - 0.34) / 0.23)) : smoother(clamp((progress - 0.43) / 0.2));
             hostLayer.style.opacity = handoff.toFixed(3);
             hostLayer.style.transform = `translate3d(0,${(7.5 * (1 - handoff)).toFixed(2)}%,0) scale(${(0.987 + 0.013 * handoff).toFixed(4)})`;
             hostLayer.style.pointerEvents = handoff > 0.96 ? 'auto' : 'none';
@@ -146,7 +146,7 @@ export function useLandingStackMotion(landingRef: RefObject<HTMLElement | null>)
             hostLayer.style.setProperty('--swx-g2a', `${0.3 + handoff * 0.22}`);
             hostLayer.style.setProperty('--swx-angle', `${150 - handoff * 30 + mouseX * 14 - mouseY * 8}deg`);
 
-            const hostTitleEntrance = smooth(clamp((progress - 0.49) / 0.13));
+            const hostTitleEntrance = mobile ? smooth(clamp((progress - 0.4) / 0.18)) : smooth(clamp((progress - 0.49) / 0.13));
             if (hostCenter) {
                 hostCenter.style.opacity = hostTitleEntrance.toFixed(3);
                 hostCenter.style.transform = `translate(-50%,-50%) translateY(${18 * (1 - hostTitleEntrance)}px) scale(${0.97 + 0.03 * hostTitleEntrance})`;
@@ -156,7 +156,7 @@ export function useLandingStackMotion(landingRef: RefObject<HTMLElement | null>)
             if (hostLine) hostLine.style.opacity = hostTitleEntrance.toFixed(3);
             if (handoff > 0.55 && !hostStart) hostStart = timestamp;
             if (handoff < 0.18) hostStart = 0;
-            const hostEntrance = autoProgress(hostStart, 2300, timestamp);
+            const hostEntrance = mobile ? smooth(clamp((progress - 0.43) / 0.31)) : autoProgress(hostStart, 2300, timestamp);
             revealCards(hostCards, hostEntrance, 0, mobile, true);
 
             if (mobile) {
