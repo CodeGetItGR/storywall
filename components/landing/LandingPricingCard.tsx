@@ -28,7 +28,7 @@ export function LandingPricingCard({
         >
             <div>
                 {/* Plan identity */}
-                <div className="relative min-h-26.5 pr-24">
+                <div className="relative min-h-26.5  pr-24">
                     <h3 className="text-[clamp(20px,1.65vw,27px)] leading-[1.05] font-black tracking-[.09em]">
                         {plan.name}
                         <span className="ml-2 inline-block align-middle text-[9px] leading-none font-bold tracking-widest normal-case">
@@ -51,18 +51,13 @@ export function LandingPricingCard({
                             <span className={featured && index > 0 && index < plan.features.length - 1 ? 'font-bold' : ''}>{feature}</span>
                         </li>
                     ))}
-                    <li
-                        className="relative border-b border-[#151313]/10 py-2.75 pr-1 pl-6 text-[13px] leading-[1.4] before:absolute before:top-2.75 before:left-0 before:content-['✓'] min-[761px]:text-sm"
-                        key={`${plan.name}-storage`}
-                    >
-                        <strong>{plan.storage}</strong> {storageLabel}
-                    </li>
                 </ul>
             </div>
 
             <div>
+                <strong>{plan.storage}</strong> {storageLabel}
                 {/* Storage */}
-                <div className="mt-6 text-sm leading-[1.45]">
+                <div className="mt-3 text-sm leading-[1.45]">
                     <strong>~ {plan.photos}</strong> {photosLabel} <span aria-hidden="true">·</span> ~ <strong>{plan.videos}</strong> {videosLabel}
                 </div>
                 <p className="mt-1 text-[10px] leading-[1.35] italic text-[#151313]/50">{storageNote}</p>

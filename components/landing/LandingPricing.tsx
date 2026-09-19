@@ -69,7 +69,7 @@ export function LandingPricing() {
             {/* Plans */}
             <div
                 aria-labelledby={`landing-pricing-tab-${category}`}
-                className="mx-auto mt-9 grid max-w-[1324px] gap-5 min-[761px]:grid-cols-3 min-[761px]:gap-[clamp(24px,3vw,52px)]"
+                className="mx-auto mt-9 grid max-w-331 gap-5 min-[761px]:grid-cols-3 min-[761px]:gap-[clamp(24px,3vw,52px)]"
                 id="landing-pricing-panel"
                 role="tabpanel"
             >
@@ -91,7 +91,7 @@ export function LandingPricing() {
                     ))
                 )}
             </div>
-            <p className="mx-auto mt-5 max-w-[1324px] text-right text-[11px]">{t('note')}</p>
+            <p className="mx-auto mt-5 max-w-331 text-right text-[11px]">{t('note')}</p>
         </section>
     );
 }
