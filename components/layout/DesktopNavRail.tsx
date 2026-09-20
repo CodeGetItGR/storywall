@@ -31,8 +31,6 @@ export function DesktopNavRail() {
     const homeHref = activeEvent ? (isDraft ? routes.events.manage(activeEvent.id) : routes.events.feed(activeEvent.id)) : null;
     const homeActive = Boolean(homeHref) && (isPathActive(pathname, homeHref!) || isPathActive(pathname, routes.feed));
     const eventsActive = isPathActive(pathname, routes.home);
-    const plansActive = isPathActive(pathname, routes.plans());
-    const modulesActive = isPathActive(pathname, routes.modules);
 
     function handleRailClick(event: MouseEvent<HTMLElement>) {
         if (event.target === event.currentTarget) {
@@ -90,14 +88,6 @@ export function DesktopNavRail() {
                 )}
 
                 <DesktopAccountNavLink href={routes.home} icon={CalendarDays} label={tAccount('events')} active={eventsActive} expanded={expanded} />
-                <DesktopAccountNavLink
-                    href={routes.plans({ eventId: activeEvent?.id })}
-                    icon={WalletCards}
-                    label={tAccount('plans')}
-                    active={plansActive}
-                    expanded={expanded}
-                />
-                <DesktopAccountNavLink href={routes.modules} icon={Layers3} label={tAccount('modules')} active={modulesActive} expanded={expanded} />
             </div>
 
             {/* Footer */}

@@ -35,7 +35,6 @@ export const routes = {
     demo: '/demo/feed',
     invite: '/invite',
     home: '/home',
-    modules: '/modules',
     profile: '/profile',
     events: {
         new: (params: { step?: string | null } = {}) => withQuery('/events/new', params),
@@ -66,7 +65,6 @@ export const routes = {
         checkoutSuccess: (eventId: string, orderId?: string | null) => withQuery(`${eventBasePath(eventId)}/checkout/success`, { orderId }),
         checkoutCancelled: (eventId: string) => `${eventBasePath(eventId)}/checkout/cancelled`,
     },
-    plans: (params: { eventId?: string | null; plan?: string | null } = {}) => withQuery('/plans', params),
     admin: '/admin',
     notifications: '/notifications',
     inviteToken: (token: string) => `/invite/${token}`,

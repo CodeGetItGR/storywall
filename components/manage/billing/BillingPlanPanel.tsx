@@ -77,12 +77,6 @@ export function BillingPlanPanel({
                                 {t('compare.upgradeSubtitle', { plan: data.planTierName })}
                             </p>
                         </div>
-                        <Link
-                            href={routes.plans({ eventId, plan: data.planTierCode })}
-                            className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-full bg-surface-muted px-3 text-xs font-semibold text-ink-muted hover:text-ink"
-                        >
-                            {t('compare.allPlansTitle')}
-                        </Link>
                     </div>
                     <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-ink-muted">
                         <span className="font-semibold text-ink">{currentPlan.name}</span>
