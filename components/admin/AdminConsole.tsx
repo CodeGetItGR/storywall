@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
+import { AccountsPanel } from '@/components/admin/AccountsPanel';
 import { AdminDiscountCodesPanel } from '@/components/admin/AdminDiscountCodesPanel';
 import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { BillingOpsPanel } from '@/components/admin/BillingOpsPanel';
@@ -26,6 +27,13 @@ export function AdminConsole() {
     if (tab === 'discountCodes') return <AdminDiscountCodesPanel />;
     if (tab === 'collaborations') return <CollaborationsPanel />;
     if (tab === 'reactionTypes') return <ReactionTypesCatalogPanel />;
+    if (tab === 'accounts') {
+        return (
+            <div className="mx-auto px-4 pb-16 pt-5 text-[15px] sm:px-6 lg:px-8 lg:pb-10 lg:pt-6">
+                <AccountsPanel />
+            </div>
+        );
+    }
 
     return (
         <div className="mx-auto px-4 pb-16 pt-5 text-[15px] sm:px-6 lg:px-8 lg:pb-10 lg:pt-6">

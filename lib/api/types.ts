@@ -16,14 +16,7 @@ export type PlatformRole = 'USER' | 'ADMIN' | 'GUEST';
 // INVALID_EVENT_TYPE. Not every key is necessarily offered right now: which
 // ones are currently enabled comes from GET /api/config's eventTypeKeys, not
 // this type — build pickers from that, not from this union directly.
-export type EventTypeConvention =
-    | 'WEDDING'
-    | 'BAPTISM'
-    | 'SOCIAL_EVENT'
-    | 'BIRTHDAY'
-    | 'PRIVATE_PARTY'
-    | 'GENDER_REVEAL'
-    | 'BABY_SHOWER';
+export type EventTypeConvention = 'WEDDING' | 'BAPTISM' | 'SOCIAL_EVENT' | 'BIRTHDAY' | 'PRIVATE_PARTY' | 'GENDER_REVEAL' | 'BABY_SHOWER';
 // Post.type / Reaction.reactionType are free strings server-side.
 // moduleKey is now a closed set on the backend and should match the config payload.
 export const EVENT_MODULE_KEYS = [
@@ -447,6 +440,13 @@ export interface UserRequestDto {
     isGuestAccount?: boolean;
     status?: AccountStatus;
     platformRole?: PlatformRole;
+    eventCreationLocked?: boolean;
+}
+
+export interface ProvisionedUserRequestDto {
+    email: string;
+    firstName: string;
+    lastName: string;
 }
 
 export interface UserResponseDto {
@@ -460,6 +460,7 @@ export interface UserResponseDto {
     isGuestAccount: boolean;
     status: AccountStatus;
     platformRole: PlatformRole;
+    eventCreationLocked: boolean;
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
@@ -501,6 +502,11 @@ export interface EventRequestDto {
     initialSessionTitle?: string;
 }
 
+export interface AdminProvisionEventRequestDto {
+    hostUserId: string;
+    event: EventRequestDto;
+}
+
 // Returned by GET /api/events (list) and POST /api/events — flat summary shape.
 // GET /api/events/{id} returns EventDetailResponseDto instead (see below).
 export interface EventResponseDto {
@@ -523,6 +529,7 @@ export interface EventResponseDto {
     updatedAt: string;
     deletedAt: string | null;
     deletionScheduledFor: string | null; // ISO-8601; non-null while a deletion request is pending
+    status: EventStatus;
 }
 
 export interface EventScheduleDto {

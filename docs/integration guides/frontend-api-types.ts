@@ -235,7 +235,7 @@ interface EventRequestDto {
   title: string;                 // required, max 255
   subtitle?: string;              // max 255
   description?: string;
-  eventType: string;              // required, max 50 — free text (WEDDING | BAPTISM | BIRTHDAY | CONFERENCE | <custom>)
+  eventType: string;              // required, max 50 — free text (WEDDING | BAPTISM | BIRTHDAY | SOCIAL_EVENT | PRIVATE_PARTY | GENDER_REVEAL | BABY_SHOWER | <custom>)
   visibility: EventVisibility;    // required on this DTO despite the entity's DB default
   startAt: string;                // required
   endAt: string;                  // required, must be after startAt
@@ -821,6 +821,9 @@ interface AppMediaConfigDto {
   maxArchivePartBytes: number;     // added 2026-08-25 — combined-size cap for that request AND one gallery-archive part
   presignedUrlTtlMinutes: number;
   publicHost: string | null; // hostname media URLs are served from — feed into next/image's images.remotePatterns
+  estimateAvgImageBytes: number;  // added 2026-09-18 — NOT a validation limit, see maxImageBytes for that
+  estimateAvgVideoBytes: number;  // added 2026-09-18 — NOT a validation limit, see maxVideoBytes for that
+  estimateImageRatio: number;     // added 2026-09-18 — fraction (0-1) of a quota assumed spent on photos vs video
 }
 interface AppPaginationConfigDto { defaultPageSize: number; maxPageSize: number; }
 interface AppRsvpConfigDto { minAdults: number; maxAdults: number; minChildren: number; maxChildren: number; }
@@ -891,6 +894,17 @@ export interface PlanTierResponseDto {
 
   /** Module keys this plan includes. Always empty for ACCOUNT-scope plans. */
   moduleKeys: string[];
+
+  /** The one event type this plan may be bought for — required for EVENT scope, null for
+   *  ACCOUNT scope. A plan belongs to exactly one type; there is no restriction-set field.
+   *  See `plan-tiers-by-event-type-fe-integration.md`. */
+  eventTypeKey: string | null;
+
+  /** Set only by the admin "duplicate" action (`POST /api/admin/plan-tiers/{id}/duplicate`) —
+   *  null for a plan never duplicated or duplicated from. Plans sharing this UUID were created
+   *  together and represent "the same offer" across event types; group by it on a landing page
+   *  that shows several types' plans together. */
+  sharedGroupKey: string | null;
 
   /** The `MODULE_UNLOCK` paid services offered on this plan for a module not already in
    *  `moduleKeys` — full price/billing detail included, not just the key. Always empty for

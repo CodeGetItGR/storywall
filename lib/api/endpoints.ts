@@ -59,6 +59,7 @@ export const endpoints = {
 
     users: {
         list: '/api/users',
+        provisioned: '/api/users/provisioned',
         byId: (id: string) => `/api/users/${id}`,
     },
 
@@ -310,6 +311,7 @@ export const endpoints = {
             planTier: (userId: string) => `/api/admin/users/${userId}/plan-tier`,
         },
         events: {
+            provision: '/api/admin/events',
             planTier: (eventId: string) => `/api/admin/events/${eventId}/plan-tier`,
             addon: (eventId: string, code: string) => `/api/admin/events/${eventId}/addons/${encodeURIComponent(code)}`,
             collaborationRedemptionVoid: (eventId: string) => `/api/admin/events/${eventId}/collaboration-redemption/void`,

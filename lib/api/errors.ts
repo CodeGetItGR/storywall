@@ -100,6 +100,7 @@ export const ERROR_CODES = {
     WITHDRAWAL_TERMS_VERSION_STALE: 5072,
     WITHDRAWAL_REFUSED: 5073,
     WITHDRAWAL_NOT_HELD: 5074,
+    EVENT_CREATION_LOCKED: 5075,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the

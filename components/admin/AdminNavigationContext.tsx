@@ -14,6 +14,7 @@ import {
     Tag,
     TicketPercent,
     Undo2,
+    Users,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
@@ -30,7 +31,8 @@ export type AdminTab =
     | 'reactionTypes'
     | 'assignments'
     | 'billingOps'
-    | 'withdrawals';
+    | 'withdrawals'
+    | 'accounts';
 
 export type AdminTabItem = {
     key: AdminTab;
@@ -61,6 +63,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#assignments': 'assignments',
     '#billing-ops': 'billingOps',
     '#withdrawals': 'withdrawals',
+    '#accounts': 'accounts',
 };
 
 const TAB_TO_HASH: Record<AdminTab, string> = {
@@ -76,6 +79,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     assignments: '#assignments',
     billingOps: '#billing-ops',
     withdrawals: '#withdrawals',
+    accounts: '#accounts',
 };
 
 const AdminNavigationContext = createContext<
@@ -109,6 +113,8 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             window.history.replaceState(null, '', TAB_TO_HASH.metrics);
         }
 
+        syncFromHash();
+
         window.addEventListener('hashchange', syncFromHash);
         return () => window.removeEventListener('hashchange', syncFromHash);
     }, []);
@@ -140,6 +146,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'modules', label: t('modules'), icon: Shield },
             { key: 'eventTypes', label: t('eventTypes'), icon: Tag },
             { key: 'reactionTypes', label: t('reactionTypes'), icon: Smile },
+            { key: 'accounts', label: t('accounts'), icon: Users },
             { key: 'assignments', label: t('assignments'), icon: Layers3 },
             { key: 'billingOps', label: t('billingOps'), icon: Receipt },
             { key: 'withdrawals', label: t('withdrawals'), icon: Undo2 },

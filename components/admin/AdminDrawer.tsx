@@ -14,6 +14,7 @@ interface AdminDrawerProps {
     closeLabel: string;
     footer?: ReactNode;
     children: ReactNode;
+    size?: 'default' | 'wide';
 }
 
 const DrawerFooterSlotContext = createContext<HTMLDivElement | null>(null);
@@ -29,7 +30,7 @@ export function useAdminDrawerFooterSlot() {
 
 // A right slide-over scoped to one record, per AGENTS.md — editing and
 // browsing stay visually distinct modes instead of a full-screen modal.
-export function AdminDrawer({ open, onClose, title, subtitle, closeLabel, footer, children }: AdminDrawerProps) {
+export function AdminDrawer({ open, onClose, title, subtitle, closeLabel, footer, children, size = 'default' }: AdminDrawerProps) {
     const [footerSlot, setFooterSlot] = useState<HTMLDivElement | null>(null);
     const onOpenChange = useCallback(
         (nextOpen: boolean) => {
@@ -46,7 +47,8 @@ export function AdminDrawer({ open, onClose, title, subtitle, closeLabel, footer
                 {/* Surface */}
                 <Dialog.Popup
                     className={cn(
-                        'motion-surface fixed right-0 top-(--visual-viewport-offset-top) z-50 flex h-(--visual-viewport-height) w-[min(440px,100vw)] flex-col overflow-hidden',
+                        'motion-surface fixed right-0 top-(--visual-viewport-offset-top) z-50 flex h-(--visual-viewport-height) flex-col overflow-hidden',
+                        size === 'wide' ? 'w-[min(680px,100vw)]' : 'w-[min(440px,100vw)]',
                         'border-l border-border bg-card text-ink shadow-[0_24px_60px_-20px_rgba(18,20,28,0.45)] outline-none',
                         'data-ending-style:translate-x-full data-ending-style:opacity-0 data-starting-style:translate-x-full data-starting-style:opacity-0'
                     )}
