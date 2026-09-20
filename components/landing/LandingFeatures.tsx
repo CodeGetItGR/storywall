@@ -3,12 +3,31 @@
 import { useTranslations } from 'next-intl';
 
 import { LandingFeatureItem } from '@/components/landing/LandingFeatureItem';
+import { useLandingModuleGates } from '@/hooks/useLandingModuleGates';
+import { LANDING_FEATURE_MODULE_KEYS } from '@/lib/landingFeatureGates';
 
-const FEATURE_ICONS = Array.from({ length: 13 }, (_, index) => `/landing/decor-${String(index + 5).padStart(2, '0')}.png`);
+const FEATURE_ICONS = [
+    '/landing/decor-05.png',
+    '/landing/decor-06.png',
+    '/landing/decor-07.png',
+    '/landing/decor-08.png',
+    '/landing/decor-09.png',
+    '/landing/decor-10.png',
+    '/landing/decor-11.png',
+    '/landing/decor-12.png',
+    '/landing/decor-13.png',
+    '/landing/decor-14.png',
+    '/landing/decor-15.png',
+    '/landing/decor-17.png',
+] as const;
 
 export function LandingFeatures() {
     const t = useTranslations('LandingPage.features');
     const labels = t.raw('items') as string[];
+    const { isAvailable } = useLandingModuleGates();
+    const features = labels.flatMap((label, index) =>
+        isAvailable(LANDING_FEATURE_MODULE_KEYS[index] ?? null) ? [{ iconPath: FEATURE_ICONS[index]!, label, position: index }] : []
+    );
 
     return (
         <section
@@ -41,16 +60,16 @@ export function LandingFeatures() {
                         role="list"
                         tabIndex={0}
                     >
-                        {labels.map((label, index) => (
-                            <LandingFeatureItem iconPath={FEATURE_ICONS[index]} key={label} label={label} position={index} />
+                        {features.map((feature) => (
+                            <LandingFeatureItem iconPath={feature.iconPath} key={feature.label} label={feature.label} position={feature.position} />
                         ))}
-                        {labels.map((label, index) => (
+                        {features.map((feature, index) => (
                             <LandingFeatureItem
                                 clone
-                                iconPath={FEATURE_ICONS[index]}
-                                key={`clone-${label}`}
-                                label={label}
-                                position={labels.length + index}
+                                iconPath={feature.iconPath}
+                                key={`clone-${feature.label}`}
+                                label={feature.label}
+                                position={features.length + index}
                             />
                         ))}
                     </div>

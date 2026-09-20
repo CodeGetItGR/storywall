@@ -325,7 +325,9 @@
             "mono": "Mono",
             "noir": "Noir",
             "vintage": "Vintage"
-        }
+        },
+        "brightness": "Brightness",
+        "swipeRightForFilters": "Swipe right for filters"
     },
     "EventLifecycleBanner": {
         "DRAFT": {
@@ -373,7 +375,8 @@
         "tabTitle": "Login",
         "noAccount": "Don't have an account?",
         "createAccountLink": "Create one",
-        "orContinueWith": "Or continue with"
+        "orContinueWith": "Or continue with",
+        "forgotPassword": "Forgot password?"
     },
     "RegisterPage": {
         "title": "Create account",
@@ -505,7 +508,10 @@
             "chooseFiles": "Choose files",
             "filesSelected": "{count, plural, one {# file selected} other {# files selected}}",
             "submit": "Upload",
-            "success": "Thanks! Your photos are on their way to the gallery."
+            "success": "Thanks! Your photos are on their way to the gallery.",
+            "addMore": "Add more",
+            "dropHint": "or drag and drop",
+            "removeFile": "Remove"
         },
         "unknown": {
             "title": "Code not found",
@@ -689,6 +695,18 @@
             "REFUND_REJECTED": {
                 "title": "Your refund request was declined",
                 "body": "Nothing has changed on your event."
+            },
+            "WITHDRAWAL_REFUNDED": {
+                "title": "Your withdrawal was processed",
+                "body": "The event has been taken offline and the refund was issued."
+            },
+            "WITHDRAWAL_HELD": {
+                "title": "Your withdrawal request is under review",
+                "body": "We'll email you once it's decided."
+            },
+            "WITHDRAWAL_WITHHELD": {
+                "title": "Your withdrawal request was withheld",
+                "body": "Your account has been suspended."
             }
         }
     },
@@ -728,7 +746,13 @@
         "hideReplies": "Hide replies",
         "replyingTo": "Replying to {name}",
         "replyPlaceholder": "Add a reply...",
-        "cancelReply": "Cancel reply"
+        "cancelReply": "Cancel reply",
+        "moreCommentOptions": "More comment options",
+        "deleteComment": "Delete comment",
+        "deleteCommentConfirmTitle": "Delete this comment?",
+        "deleteCommentConfirmBody": "This comment will be removed for everyone and can't be undone.",
+        "deleteCommentFailed": "Couldn't delete this comment. Please try again.",
+        "reportComment": "Report comment"
     },
     "StoryPage": {
         "closeStory": "Close story",
@@ -764,7 +788,9 @@
             "endAt": "Ends",
             "timezone": "Timezone",
             "locationName": "Location (optional)",
-            "visibility": "Visibility"
+            "visibility": "Visibility",
+            "locationAddress": "Address",
+            "mapsUrl": "Maps link"
         },
         "validation": {
             "startInPast": "The start time must be now or later.",
@@ -791,6 +817,18 @@
             "PRIVATE_PARTY": {
                 "title": "Party name",
                 "startAt": "Party date"
+            },
+            "CORPORATE": {
+                "title": "Event name",
+                "startAt": "Event date"
+            },
+            "FESTIVAL": {
+                "title": "Festival name",
+                "startAt": "Opening date"
+            },
+            "CONFERENCE": {
+                "title": "Conference name",
+                "startAt": "Start date"
             }
         },
         "initialSessions": {
@@ -870,6 +908,10 @@
             "dueNow": "Due at activation",
             "futureMonthly": "Future renewal",
             "futureMonthlyHint": "There are no automatic renewals."
+        },
+        "placeholders": {
+            "locationAddress": "e.g. 1842 Silverado Trail, Napa, CA 94558",
+            "mapsUrl": "https://maps.google.com/..."
         }
     },
     "ManagePage": {
@@ -895,7 +937,10 @@
             "plan": "Plan",
             "coverage": "Coverage",
             "orders": "Orders",
-            "refund": "Refund"
+            "refund": "Refund",
+            "members": "Members",
+            "billing": "Billing",
+            "withdrawal": "Withdrawal"
         },
         "sectionSwitcher": "Change section",
         "stats": {
@@ -1054,7 +1099,17 @@
                 "submit": "Send invitation",
                 "cancel": "Cancel",
                 "guideTitle": "Invite someone to help",
-                "guideBody": "Co-host invitations are sent by email and are tied to that email address."
+                "guideBody": "Co-host invitations are sent by email and are tied to that email address.",
+                "currentTitle": "Current hosts",
+                "currentSummary": "{count, plural, one {# host} other {# hosts}}",
+                "primary": "Primary host",
+                "coHost": "Co-host",
+                "transfer": "Transfer ownership",
+                "remove": "Remove co-host",
+                "transferConfirmTitle": "Transfer ownership to {name}?",
+                "transferConfirmBody": "You will remain a co-host and no longer control ownership.",
+                "removeConfirmTitle": "Remove {name} as co-host?",
+                "removeConfirmBody": "They will no longer be able to manage this event."
             }
         },
         "qr": {
@@ -1115,7 +1170,10 @@
                 "REVOKED": "Revoked",
                 "EXPIRED": "Expired",
                 "TARGET_UNAVAILABLE": "Target unavailable"
-            }
+            },
+            "share": "Share",
+            "managedAutomatically": "Managed automatically",
+            "locked": "Locked"
         },
         "sessionManagement": {
             "title": "Event sessions",
@@ -1254,6 +1312,19 @@
                 }
             },
             "failed": "Couldn't generate the report. Please try again."
+        },
+        "members": {
+            "title": "Members",
+            "emptyTitle": "No members yet",
+            "emptyBody": "Members appear here after they join.",
+            "joined": "Joined {date}",
+            "roleHost": "Host",
+            "report": "Report",
+            "remove": "Remove",
+            "cancel": "Cancel",
+            "removeConfirmTitle": "Remove this member?",
+            "removeConfirmBody": "{name} will lose access to this event.",
+            "removeFailed": "Couldn't remove this member. Please try again."
         }
     },
     "EventPlanSettingsPage": {
@@ -1492,6 +1563,26 @@
         },
         "panels": {
             "plan": "Plan & add-ons"
+        },
+        "withdrawalStatus": {
+            "HELD": "Under review",
+            "REFUNDED": "Refunded",
+            "WITHHELD": "Refused"
+        },
+        "withdrawal": {
+            "loading": "Checking...",
+            "eligible": "You can withdraw for a refund of {amount}.",
+            "notEligible": "Withdrawal isn't available right now.",
+            "reason": "Reason",
+            "reasonPlaceholder": "Optional note",
+            "submit": "Request withdrawal",
+            "submitting": "Submitting...",
+            "requestedNoAmount": "Amount will be set once processed.",
+            "confirmBody": "This permanently takes the event offline. Guests lose access and there is no undo.",
+            "confirmSubmit": "Yes, withdraw",
+            "confirmCancel": "Cancel",
+            "held": "Under review. We'll email you once it's decided.",
+            "refunded": "Refunded. The event has been taken offline."
         }
     },
     "EventAddonsSettingsPage": {
@@ -1559,6 +1650,15 @@
                 "description": "Check the storage pack charge.",
                 "consequence": "The storage allowance is added permanently after payment is confirmed and is non-refundable."
             }
+        },
+        "withdrawalTerms": {
+            "title": "Right of withdrawal",
+            "body": "Under EU consumer law, you normally have 14 days to change your mind about a paid service. To publish and start using this plan right away, you need to ask for immediate start and acknowledge that doing so affects your withdrawal rights.",
+            "requestsImmediateStartLabel": "Start providing this service immediately",
+            "requestsImmediateStartCaption": "Rather than waiting out the 14-day period first.",
+            "acknowledgesWithdrawalTermsLabel": "I understand this affects my right to a full refund",
+            "acknowledgesWithdrawalTermsCaption": "Once the service starts, part of the charge may no longer be refundable if you withdraw later.",
+            "stale": "These terms were updated. Review them again and confirm once more."
         }
     },
     "CheckoutSuccessPage": {
@@ -1678,18 +1778,22 @@
                 "untitled": "Untitled",
                 "editNamed": "Edit {title}",
                 "addNamed": "Add {title}",
-                "deleteNamed": "Delete {title}"
+                "deleteNamed": "Delete {title}",
+                "sessionLimitReached": "This event type allows up to {max} schedule sessions."
             }
         },
         "guest": {
             "emptyTitle": "Schedule coming soon",
             "emptyBody": "The host hasn't published the run of show yet. Check back later."
-        }
+        },
+        "moduleUnavailable": "Schedule is not available on this event's current plan."
     },
     "HostOnboarding": {
         "welcome": {
             "title": "Welcome! Let's set up {eventTitle}",
-            "body": "A few quick steps to get things ready for your guests."
+            "body": "A few quick steps to get things ready for your guests.",
+            "greeting": "Welcome!",
+            "subtitle": "Let's get your event ready"
         },
         "dashboard": {
             "title": "Manage your event",
@@ -1727,6 +1831,36 @@
         "done": {
             "title": "You're all set",
             "body": "You can always come back and change things later."
+        },
+        "steps": {
+            "section": {
+                "title": "Manage your event",
+                "body": "A few steps and everything's ready for your guests"
+            },
+            "details": {
+                "title": "Event details",
+                "edit": "Edit event details",
+                "venueAdd": "Add venue details",
+                "venueEdit": "Edit venue details"
+            },
+            "rsvp": {
+                "title": "RSVP",
+                "edit": "Set RSVP deadline"
+            },
+            "giftAccount": {
+                "title": "Gift account",
+                "edit": "Add gift account"
+            },
+            "schedule": {
+                "title": "Schedule",
+                "edit": "Edit schedule"
+            },
+            "invitations": {
+                "title": "Invitations & QR codes",
+                "body": "Share your QR links, or create named invitations for specific guests.",
+                "qr": "Go to QR links",
+                "named": "Create named invitations"
+            }
         }
     },
     "GiftsPage": {
@@ -1780,7 +1914,9 @@
         "delete": "Delete",
         "deleteTitle": "Delete this wish?",
         "deleteBody": "This removes the wish from the wishbook.",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "wishSentTitle": "Your wish is on its way",
+        "wishSentBody": "Thank you for taking the time to write something so kind. It's tucked safely into the wishbook now, waiting to be read."
     },
     "PlaylistPage": {
         "backToFeed": "Back to feed",
@@ -1910,17 +2046,36 @@
         "dashboard": "Dashboard",
         "hostActions": "Host actions",
         "eventDate": "Event date",
-        "links": {
-            "manage": "Dashboard",
-            "gallery": "Gallery",
-            "rsvps": "RSVPs"
+        "usageTitle": "Plan usage",
+        "eventTools": "Event tools",
+        "toolsTitle": "Tools",
+        "rsvpSummary": {
+            "title": "RSVP summary",
+            "attending": "Attending",
+            "declined": "Declined",
+            "noResponse": "No response"
         },
-        "helper": {
-            "manage": "Overview and event controls",
-            "gallery": "Review guest uploads",
-            "rsvps": "See attendance and replies"
+        "mediaSummary": {
+            "title": "Media",
+            "images": "Images",
+            "videos": "Videos"
         },
-        "usageTitle": "Plan usage"
+        "qrLinks": {
+            "title": "Links",
+            "gallery": {
+                "body": "Scan to upload photos and videos",
+                "missing": "No upload code yet"
+            },
+            "invitations": {
+                "body": "{count, plural, one {# share link} other {# share links}}",
+                "missing": "No active share link"
+            }
+        },
+        "wishbookSummary": {
+            "title": "Wishbook",
+            "count": "{count, plural, one {# message} other {# messages}}",
+            "empty": "No messages yet"
+        }
     },
     "AdminPage": {
         "checkingAccess": "Checking admin access...",
@@ -3154,7 +3309,14 @@
         "eventHostDisplayOrderReserved": "The primary host position is reserved.",
         "eventHostPrimaryCannotBeRemoved": "Transfer ownership before removing the primary host.",
         "eventHostTransferNotPrimaryHost": "Only the primary host can transfer ownership.",
-        "qrMediaUploadDisabled": "The QR upload link is turned off for this event's gallery."
+        "qrMediaUploadDisabled": "The QR upload link is turned off for this event's gallery.",
+        "eventWithdrawn": "This event's deletion can't be cancelled — it was withdrawn and closed permanently.",
+        "withdrawalTermsVersionStale": "These terms were updated. Review them again and try again.",
+        "withdrawalRefused": "This event doesn't currently qualify for a withdrawal.",
+        "withdrawalNotHeld": "This request was already decided.",
+        "qrSharedLinkHostManaged": "This shared link is managed automatically.",
+        "eventSessionMainLocationReadOnly": "This is the event's main session, so its location always matches the event's own.",
+        "eventSessionLimitReached": "This event type has reached its limit of schedule sections."
     },
     "LandingPage": {
         "hero": {
@@ -3546,7 +3708,6 @@
                 "RSVP",
                 "QR Photo Upload",
                 "Guestbook",
-                "Google Maps",
                 "Gift list"
             ]
         },
@@ -3684,6 +3845,87 @@
             "copyright": "© 2026 STORYWALL",
             "legal": ["Privacy Policy", "Terms of Use", "Cookies", "Cookie Settings", "Cancellations & Withdrawal", "Contact"],
             "backToTop": "BACK TO TOP"
+        }
+    },
+    "Report": {
+        "title": "Report",
+        "body": "Report {name} to the platform team.",
+        "reason": "Reason",
+        "chooseReason": "Choose a reason",
+        "details": "Details",
+        "detailsPlaceholder": "Add details",
+        "submit": "Send report",
+        "submitting": "Sending…",
+        "cancel": "Cancel",
+        "failed": "Couldn't send the report. Please try again.",
+        "reasons": {
+            "SPAM": "Spam",
+            "HARASSMENT": "Harassment",
+            "INAPPROPRIATE_CONTENT": "Inappropriate content",
+            "IMPERSONATION": "Impersonation",
+            "OTHER": "Other"
+        }
+    },
+    "PublishQueue": {
+        "postingPost": "Posting…",
+        "postingStory": "Posting {count, plural, one {your story} other {your stories}}…",
+        "posted": "Posted",
+        "storyPosted": "{count, plural, one {Story posted} other {Stories posted}}",
+        "postFailed": "Couldn't post. Try again.",
+        "storyPostFailed": "{failed} of {total} {total, plural, one {story} other {stories}} couldn't post.",
+        "retry": "Retry",
+        "dismiss": "Dismiss"
+    },
+    "EmailVerificationBanner": {
+        "message": "Confirm your email address to create an event.",
+        "resend": "Resend email",
+        "resendPending": "Sending...",
+        "resendSent": "Email sent",
+        "resendError": "Couldn't send the email. Try again."
+    },
+    "VerifyEmailPage": {
+        "pendingTitle": "Confirming your email",
+        "pendingDescription": "Please wait.",
+        "verifiedTitle": "Email confirmed",
+        "verifiedDescription": "You can now sign in.",
+        "invalidTitle": "This confirmation link is no longer valid.",
+        "invalidDescription": "Request a new confirmation email and try again.",
+        "signIn": "Sign in"
+    },
+    "ResetPasswordPage": {
+        "title": "Reset your password",
+        "subtitle": "Choose a new password.",
+        "invalidTitle": "This reset link is no longer valid.",
+        "invalidDescription": "Request a new reset link and try again.",
+        "invalidLink": "This reset link is no longer valid. Request a new one.",
+        "passwordMismatch": "Passwords do not match.",
+        "fields": {
+            "password": "New password",
+            "confirmation": "Confirm password"
+        },
+        "showPassword": "Show password",
+        "hidePassword": "Hide password",
+        "submit": "Reset password",
+        "signIn": "Back to sign in"
+    },
+    "ForgotPasswordPage": {
+        "title": "Reset your password",
+        "subtitle": "Enter your email address.",
+        "submitted": "If that email has an account, we sent a reset link.",
+        "requestFailed": "Couldn't send the reset link. Try again.",
+        "fields": {
+            "email": "Email"
+        },
+        "placeholders": {
+            "email": "you@example.com"
+        },
+        "submit": "Send reset link",
+        "signIn": "Back to sign in"
+    },
+    "qrLink": {
+        "default": {
+            "eventJoinLabel": "Event Invite",
+            "mediaUploadLabel": "Gallery Upload"
         }
     }
 }
