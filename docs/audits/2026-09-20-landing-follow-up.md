@@ -86,7 +86,7 @@ The public experience supports more than one locale but does not publish canonic
 
 ### Recommended implementation
 
-1. Choose and document one URL scheme: locale prefixes such as `/en` and `/el`, or a single default root plus a locale-prefixed alternate.
+1. Use `/` as the canonical English landing page and `/el` as the canonical Greek landing page. Redirect `/en` to `/`.
 2. Emit a self-referential canonical for each locale page.
 3. Emit `alternates.languages` for every supported locale and `x-default` for the preferred language-picker/default page.
 4. Make the sitemap list every language URL once, using the same canonical URL helper.
@@ -98,6 +98,11 @@ The public experience supports more than one locale but does not publish canonic
 - Each page exposes reciprocal language alternates and `x-default`.
 - Sitemaps contain the same URL set.
 - Locale selection still works for human visitors without creating duplicate indexable URLs.
+
+### Implemented route behavior
+
+- The public language switcher changes `/` to `/el` and `/el` to `/` through client navigation, without a full browser-document reload.
+- The switcher also persists its choice in the existing locale cookie, so authenticated product routes continue to use the selected language.
 
 ## 12. Replace placeholder and missing-anchor links
 

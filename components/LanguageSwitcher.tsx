@@ -1,11 +1,13 @@
 'use client';
 
+import { usePathname, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback, useTransition } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { setLocale } from '@/i18n/actions';
 import { type Locale, locales } from '@/i18n/config';
+import { getPublicLandingPath, isPublicLandingPath } from '@/i18n/publicLocale';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { MeUpdateRequestDto } from '@/lib/api/types';
@@ -15,6 +17,8 @@ type LanguageSwitcherVariant = 'auth' | 'default' | 'sidebar';
 
 export function LanguageSwitcher({ className, variant = 'default' }: { className?: string; variant?: LanguageSwitcherVariant }) {
     const locale = useLocale();
+    const pathname = usePathname();
+    const router = useRouter();
     const t = useTranslations('LanguageSwitcher');
     const { isAuthenticated } = useAuth();
     const [isPending, startTransition] = useTransition();
@@ -26,6 +30,10 @@ export function LanguageSwitcher({ className, variant = 'default' }: { className
                 await setLocale(next);
                 if (variant === 'auth') {
                     window.location.reload();
+                } else if (isPublicLandingPath(pathname)) {
+                    router.push(getPublicLandingPath(next));
+                } else {
+                    router.refresh();
                 }
             });
             // Best-effort: keeps the stored account locale (used for async
@@ -36,7 +44,7 @@ export function LanguageSwitcher({ className, variant = 'default' }: { className
                 void api.patch<unknown>(endpoints.me.profile, { locale: next } satisfies MeUpdateRequestDto).catch(() => {});
             }
         },
-        [locale, startTransition, isAuthenticated, variant]
+        [isAuthenticated, locale, pathname, router, startTransition, variant]
     );
 
     const handleLocaleClick = useCallback(

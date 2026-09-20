@@ -1,14 +1,20 @@
 import { cookies, headers } from 'next/headers';
 import { getRequestConfig } from 'next-intl/server';
 
-import { localeCookieName } from '@/i18n/config';
+import { type Locale, localeCookieName, locales } from '@/i18n/config';
 import { resolveLocale } from '@/i18n/resolveLocale';
 
-export default getRequestConfig(async () => {
+export default getRequestConfig(async ({ requestLocale }) => {
     const cookieStore = await cookies();
     const headerStore = await headers();
+    const routeLocale = await requestLocale;
+    const forcedLocale = headerStore.get('x-storywall-locale');
+    const localeFromRoute = routeLocale ?? forcedLocale;
 
-    const locale = resolveLocale(cookieStore.get(localeCookieName)?.value, headerStore.get('accept-language'));
+    const locale =
+        localeFromRoute && (locales as readonly string[]).includes(localeFromRoute)
+            ? (localeFromRoute as Locale)
+            : resolveLocale(cookieStore.get(localeCookieName)?.value, headerStore.get('accept-language'));
 
     return {
         locale,
