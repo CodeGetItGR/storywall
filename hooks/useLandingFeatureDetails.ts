@@ -1,5 +1,5 @@
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { type TouchEvent, useRef, useState } from 'react';
 
 import { useLandingModuleGates } from '@/hooks/useLandingModuleGates';
 import { LANDING_FEATURE_DETAIL_MODULE_KEYS } from '@/lib/landingFeatureGates';
@@ -19,23 +19,55 @@ type FeatureDetail = {
     title: string;
 };
 
+type TransitionDirection = 'next' | 'previous';
+
 export function useLandingFeatureDetails() {
     const t = useTranslations('LandingPage.featureDetails');
     const { isAvailable } = useLandingModuleGates();
     const [selectedIndex, setSelectedIndex] = useState(0);
+    const [transitionDirection, setTransitionDirection] = useState<TransitionDirection>('next');
+    const swipeStartX = useRef<number | null>(null);
     const details = t.raw('items') as FeatureDetail[];
     const availableDetails = details.flatMap((detail, index) =>
         isAvailable(LANDING_FEATURE_DETAIL_MODULE_KEYS[index] ?? null) ? [{ ...detail, imagePath: FEATURE_IMAGES[index]! }] : []
     );
 
     const activeIndex = selectedIndex >= availableDetails.length ? 0 : selectedIndex;
-    const selectDetail = (index: number) => () => setSelectedIndex(index);
+    const selectDetail = (index: number) => () => {
+        if (index === activeIndex) return;
+        setTransitionDirection(index > activeIndex ? 'next' : 'previous');
+        setSelectedIndex(index);
+    };
+    const selectPrevious = () => {
+        setTransitionDirection('previous');
+        setSelectedIndex((index) => (index <= 0 ? Math.max(availableDetails.length - 1, 0) : index - 1));
+    };
+    const selectNext = () => {
+        setTransitionDirection('next');
+        setSelectedIndex((index) => (availableDetails.length ? (index + 1) % availableDetails.length : 0));
+    };
+    const startSwipe = (event: TouchEvent<HTMLElement>) => {
+        swipeStartX.current = event.changedTouches[0]?.clientX ?? null;
+    };
+    const endSwipe = (event: TouchEvent<HTMLElement>) => {
+        const startX = swipeStartX.current;
+        const endX = event.changedTouches[0]?.clientX;
+        swipeStartX.current = null;
+        if (startX === null || endX === undefined || Math.abs(endX - startX) < 48) return;
+        if (endX < startX) selectNext();
+        else selectPrevious();
+    };
 
     return {
         activeDetail: availableDetails[activeIndex] ?? null,
         availableDetails,
         selectedIndex: activeIndex,
         selectDetail,
+        selectNext,
+        selectPrevious,
+        startSwipe,
         t,
+        transitionDirection,
+        endSwipe,
     };
 }

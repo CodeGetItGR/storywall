@@ -1,16 +1,40 @@
 'use client';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { LandingFeatureDetailCard } from '@/components/landing/LandingFeatureDetailCard';
 import { useLandingFeatureDetails } from '@/hooks/useLandingFeatureDetails';
 
 export function LandingFeatureDetails() {
-    const { activeDetail, availableDetails, selectedIndex, selectDetail, t } = useLandingFeatureDetails();
+    const { activeDetail, availableDetails, endSwipe, selectedIndex, selectDetail, selectNext, selectPrevious, startSwipe, t, transitionDirection } =
+        useLandingFeatureDetails();
 
     if (!activeDetail) return null;
 
     return (
         <section aria-labelledby="landing-feature-details-title" className="bg-[#0b0b0f] px-0 py-0 text-white min-[761px]:px-[5vw] min-[761px]:py-16">
-            <div className="overflow-hidden border border-[#0ea5b7] bg-[#0b0b0f] min-[761px]:mx-auto min-[761px]:max-w-300 min-[761px]:rounded-[28px]">
+            {/* Desktop feature cards */}
+            <div className="hidden min-[761px]:block">
+                {/* Feature introduction */}
+                <div className="mx-auto max-w-155 text-center">
+                    <p className="text-[13px] font-black tracking-[0.15em] text-[#f2c66a] uppercase">{t('eyebrow')}</p>
+                    <h2
+                        className="mt-4 font-(--editorial) text-[clamp(42px,4vw,62px)] leading-[0.95] tracking-[-0.045em]"
+                        id="landing-feature-details-title"
+                    >
+                        {t('heading')}
+                    </h2>
+                </div>
+
+                {/* Feature cards */}
+                <div aria-label={t('label')} className="mx-auto mt-12 grid max-w-375 grid-cols-2 gap-6 min-[1440px]:grid-cols-4 min-[1440px]:gap-4.5">
+                    {availableDetails.map((detail) => (
+                        <LandingFeatureDetailCard {...detail} key={detail.title} />
+                    ))}
+                </div>
+            </div>
+
+            {/* Mobile feature panel */}
+            <div className="overflow-hidden border border-[#0ea5b7] bg-[#0b0b0f] min-[761px]:hidden">
                 {/* Feature introduction */}
                 <div className="px-5 pt-6 min-[761px]:grid min-[761px]:grid-cols-12 min-[761px]:gap-x-10 min-[761px]:px-12 min-[761px]:pt-12">
                     <div className="min-[761px]:col-span-5">
@@ -51,8 +75,12 @@ export function LandingFeatureDetails() {
                 {/* Active feature */}
                 <article
                     aria-labelledby={`landing-feature-tab-${selectedIndex}`}
-                    className="min-[761px]:grid min-[761px]:grid-cols-2"
+                    className="landing-feature-detail-panel touch-pan-y min-[761px]:grid min-[761px]:grid-cols-2"
+                    data-direction={transitionDirection}
                     id="landing-feature-detail-panel"
+                    key={activeDetail.title}
+                    onTouchEnd={endSwipe}
+                    onTouchStart={startSwipe}
                     role="tabpanel"
                 >
                     {/* Feature image */}
@@ -86,6 +114,27 @@ export function LandingFeatureDetails() {
                                 </li>
                             ))}
                         </ul>
+
+                        {/* Feature controls */}
+                        <div className="mt-12 flex items-center justify-between gap-4 min-[761px]:mt-16">
+                            <button
+                                aria-label={t('previous')}
+                                className="grid size-12 shrink-0 place-items-center rounded-full border border-white/25 text-xl text-white transition-colors duration-200 hover:border-[#f2c66a] hover:text-[#f2c66a] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f2c66a]"
+                                onClick={selectPrevious}
+                                type="button"
+                            >
+                                ←
+                            </button>
+                            <p className="text-center text-[10px] font-black tracking-[0.13em] text-white/60 uppercase">{t('interactionHint')}</p>
+                            <button
+                                aria-label={t('next')}
+                                className="grid size-12 shrink-0 place-items-center rounded-full border border-white/25 text-xl text-white transition-colors duration-200 hover:border-[#f2c66a] hover:text-[#f2c66a] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f2c66a]"
+                                onClick={selectNext}
+                                type="button"
+                            >
+                                →
+                            </button>
+                        </div>
                     </div>
                 </article>
             </div>

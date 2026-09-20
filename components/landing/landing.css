@@ -41,6 +41,43 @@
     text-decoration: none;
 }
 
+@keyframes sw-feature-detail-enter-next {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes sw-feature-detail-enter-previous {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.landing-page .landing-feature-detail-panel {
+    animation: sw-feature-detail-enter-next 360ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.landing-page .landing-feature-detail-panel[data-direction='previous'] {
+    animation-name: sw-feature-detail-enter-previous;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .landing-page .landing-feature-detail-panel,
+    .landing-page .landing-feature-detail-panel[data-direction='previous'] {
+        animation: none;
+    }
+}
+
 /* SECTION 1 */
 .landing-page .site-header {
     position: absolute;
@@ -187,29 +224,6 @@
 
 /* SECTION 2 */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* MOBILE ANIMATION */
 @media (max-width: 760px) {
     .landing-page .site-header {
@@ -272,30 +286,6 @@
         width: 48px;
         height: 48px;
     }
-
-    
-    
-    
-    
-    
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 }
 
 /* SECTION 3 — SOCIAL SIDE / SCROLL CURTAIN */
@@ -445,7 +435,7 @@
         justify-content: flex-end;
         pointer-events: none;
     }
-    
+
     .landing-page .statement-copy h2 {
         margin: 0;
         max-width: 94%;
@@ -646,7 +636,7 @@
     .landing-page * {
         scroll-behavior: auto !important;
     }
-    
+
     .landing-page .statement {
         --curtain-top: 34% !important;
     }
@@ -1879,11 +1869,6 @@
 
 /* One Platform desktop */
 
-
-
-
-
-
 /* Social side */
 .landing-page .statement-image img {
     object-position: 50% 50% !important;
@@ -1923,8 +1908,6 @@
 .landing-page .swg-panel:nth-child(5) img {
     object-position: 50% 50% !important;
 }
-
-
 
 /* Chapter 01 background-photo tuning */
 .landing-page .swx-layer-1 {
@@ -1993,7 +1976,6 @@
 }
 
 /* PHOTOS — edge-to-edge crop, no black letterbox gutters */
-
 
 /* Hero crop for more energetic image */
 .landing-page .hero-photo img {
@@ -2087,9 +2069,6 @@
 }
 
 /* ONE PLATFORM category labels — larger + StoryWall gradient */
-
-
-
 
 /* ============================================================
    ALL REQUESTED REFINEMENTS
@@ -2561,23 +2540,9 @@
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 /* v56 — remove dark overlay from ONE PLATFORM. MANY STORIES desktop photos */
 
-
 /* v57 — ONE PLATFORM: slower card progression on desktop */
-
 
 .landing-page .journey-panel:nth-child(1) .journey-panel-media img {
     object-position: 50% 50% !important;
@@ -2769,8 +2734,6 @@
         display: block !important;
         pointer-events: auto !important;
     }
-
-    
 
     .landing-page .statement-copy h2 {
         margin: 0 0 22px !important;
@@ -3264,92 +3227,20 @@
     background: #fff !important;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* Keep the accordion compact on desktop; mobile keeps the site's original mobile story treatment. */
-
-
-
-
-
-
 
 /* Desktop: accordion remains in the existing sticky image stage. */
 
-
 /* Mobile: use the SAME horizontal photo slot the original WEDDING image occupied. */
 @media (max-width: 760px) {
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
     /* Preserve the existing mobile reveal animation on the containing photo slot. */
-    
 }
 
 .landing-page #platformStories {
     background: #fff !important;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* MOBILE — horizontal swipe filmstrip */
-
-
-
 
 /* 03 — Experience: one continuous dark environment */
 .landing-page .swx-stack {
@@ -3360,28 +3251,11 @@
     background: #0b0b0f !important;
 }
 
-
-
-
-
-
-
 /* More Stories captions — larger and easier to read */
-
-
-
 
 /* Additional editorial copy + compact CTA for story panels */
 
-
-
-
-
 /* Let the longer first and fifth panels breathe a little more */
-
-
-
-
 
 /* =========================================================
    [01]–[05] STORY ACCORDIONS
@@ -3394,53 +3268,32 @@
    --desktop-parallax is already updated on .stage by the original site JS.
    --mobile-parallax is already updated on each .story-row. */
 
-
-
-
 /* Stop the old animation from running on every active photo. */
-
 
 /* ONLY the first / initially visible photo gets the subtle interaction hint. */
 
-
-
-
 /* Alternating rounded lower outside corner — desktop accordion stage */
 
-
 /* Same alternating treatment on mobile horizontal photo slots */
-
 
 /* =========================================================
    MORE STORIES
    Rounded top-left + bottom-right for the full photo strip
    ========================================================= */
 
-
 /* Keep mobile horizontal scrolling while preserving the visual corner treatment.
    The first and last cards carry the visible outer corners. */
-
-
-
 
 /* =========================================================
    FIX 1 — PARALLAX OVERSCAN
    Prevent any white/black seam while the image moves vertically.
    ========================================================= */
 
-
-
-
-
-
 /* =========================================================
    FIX 2 — ONLY FIRST PHOTO MOVES
    First image of every [01]–[05], desktop + mobile.
    Other active images never sway.
    ========================================================= */
-
-
-
 
 @keyframes swFirstPhotoHint104 {
     0% {
@@ -3458,16 +3311,7 @@
    sticky stage, original stage images, overlay and accordion.
    ========================================================= */
 @media (min-width: 761px) {
-    
-
-    
-
-    
-
-    
-
     /* Remove the previous alternating desktop rule completely */
-    
 }
 
 /* =========================================================
@@ -3476,36 +3320,23 @@
    wrapper, original image and accordion.
    ========================================================= */
 @media (max-width: 760px) {
-    
-
     /* [01] bottom-right */
-    
 
     /* [02] bottom-left */
-    
 
     /* [03] bottom-right */
-    
 
     /* [04] bottom-left */
-    
 
     /* [05] bottom-right */
-    
 }
-
-
 
 /* FIX: the previous sway animated transform, but parallax transform was !important.
    Animate the independent CSS translate property instead, so it composes with parallax. */
 
-
-
 /* No sway on any active image by default */
 
-
 /* Only FIRST photo of every accordion gets the hint */
-
 
 @keyframes swFirstPhotoHint105 {
     0% {
@@ -3518,8 +3349,6 @@
 
 /* Slightly calmer on mobile but still clearly visible */
 @media (max-width: 760px) {
-    
-
     @keyframes swFirstPhotoHint105 {
         0% {
             translate: -5px 0;
@@ -3530,19 +3359,9 @@
     }
 }
 
-
-
 /* Remove the previous inner-image sway completely. */
 
-
 /* Nudge the WHOLE first panel, not the image inside it. */
-
-
-
-
-
-
-
 
 /* Replace translate nudge with a real accordion "peek":
    the first active panel briefly narrows, so the NEXT photo becomes more visible.
@@ -3550,20 +3369,13 @@
 
 /* Cancel previous transform-based hint */
 
-
 /* Desktop */
 
-
 /* Mobile */
-
-
-
 
 /* =========================================================
    Slower first-panel peek — same behavior, more relaxed timing
    ========================================================= */
-
-
 
 .landing-page {
     scroll-behavior: smooth;
@@ -6252,8 +6064,7 @@
     .landing-page .sw-new-hero-title {
         font-size: clamp(48px, 3.42vw, 70.5px) !important;
     }
-    
-    
+
     .landing-page .journey-head h2 {
         font-size: clamp(36px, 4.875vw, 81px) !important;
     }
@@ -6267,27 +6078,15 @@
 
 /* User-requested contrast: muted dark text is now solid black; existing white text remains white. */
 
-
 /* Section labels: above their titles, +30% size */
-
-
-
-
-
 
 /* v9 — mobile fix for One Platform story rows */
 
-
 /* v10 — remove story CTA pills and make More Stories photos touch the mobile viewport edges */
-
-
-
 
 /* v11 — on mobile, More Stories should touch only the RIGHT edge of the screen */
 
-
 /* v12 — Mobile More Stories: keep left inset, break out ONLY to viewport right edge */
-
 
 /* MOBILE ONLY — restore the approved Chapter 01/02 composition.
    Desktop is intentionally untouched. */
@@ -6680,72 +6479,26 @@
     }
 }
 
-
-
-
-
 /* DESKTOP ONLY — each story gets its own photo accordion, alternating left/right */
 @media (min-width: 761px) {
-    
-
     /* Hide the old single sticky photo stage on desktop. */
-    
-
-    
-
-    
 
     /* 01 / 03 / 05 — photos LEFT, copy RIGHT */
-    
-    
-    
-    
-    
 
     /* 02 / 04 — copy LEFT, photos RIGHT */
-    
-    
-    
-    
-    
-
-    
-
-    
-    
-
-    
 
     /* Re-use each row's existing accordion on desktop. */
-    
-
-    
-
-    
-
-    
-
-    
 }
 
 @media (min-width: 761px) {
     /* Remove the editorial divider lines between the five story rows. */
-    
-    
 
     /* Let the media side physically touch the viewport edge. */
-    
-
-    
 
     /* Keep the alternating rounded outer bottom corner only. */
-    
-    
 }
 
 /* User correction: reduce the large white gap after the DEMO strip. */
-
-
 
 /* Mobile hero actions — stable sizing now that the CTA stays inside the copy. */
 @media (max-width: 760px) {

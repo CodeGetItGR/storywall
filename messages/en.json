@@ -3789,6 +3789,9 @@
             "eyebrow": "A FEW ARE WORTH A CLOSER LOOK.",
             "heading": "From the invitation to the wishes.",
             "label": "A closer look at StoryWall features",
+            "previous": "Previous feature",
+            "next": "Next feature",
+            "interactionHint": "Swipe or click",
             "items": [
                 {
                     "title": "INVITATION",
