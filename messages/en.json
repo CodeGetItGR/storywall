@@ -2164,10 +2164,28 @@
             "status": { "ACTIVE": "Active", "SUSPENDED": "Suspended", "DELETED": "Deleted" },
             "role": { "USER": "User", "ADMIN": "Admin", "GUEST": "Guest" },
             "access": {
-                "accountAndAdmins": "Account and admins",
-                "adminsOnly": "Admins only",
-                "accountAndAdminsHint": "This account can create events.",
-                "adminsOnlyHint": "Only an admin can provision events for this account."
+                "enabled": "Enabled",
+                "disabled": "Disabled",
+                "enabledHint": "This account can create events.",
+                "disabledHint": "Only an admin can provision events for this account.",
+                "confirmAllowTitle": "Enable event creation?",
+                "confirmAllowBody": "This account will be able to create events.",
+                "confirmRestrictTitle": "Disable event creation?",
+                "confirmRestrictBody": "Only an admin will be able to provision events for this account.",
+                "confirm": "Update access",
+                "cancel": "Cancel"
+            },
+            "danger": {
+                "title": "Account actions",
+                "suspend": "Suspend account",
+                "suspendHint": "Block this account from using the service.",
+                "suspendConfirmTitle": "Suspend {name}?",
+                "suspendConfirmBody": "They will no longer be able to use their account.",
+                "delete": "Delete account",
+                "deleteHint": "Mark this account as deleted.",
+                "deleteConfirmTitle": "Delete {name}?",
+                "deleteConfirmBody": "This account will be marked as deleted and can no longer be used.",
+                "cancel": "Cancel"
             },
             "pagination": "{count, plural, one {# account} other {# accounts}}",
             "previous": "Previous page",

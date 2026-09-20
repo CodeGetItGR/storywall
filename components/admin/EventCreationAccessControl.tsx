@@ -36,7 +36,7 @@ export function EventCreationAccessControl({
                         !locked ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted'
                     )}
                 >
-                    {t('accountAndAdmins')}
+                    {t('enabled')}
                 </button>
                 <button
                     type="button"
@@ -48,10 +48,10 @@ export function EventCreationAccessControl({
                         locked ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted'
                     )}
                 >
-                    {t('adminsOnly')}
+                    {t('disabled')}
                 </button>
             </div>
-            <p className="mt-2 text-xs leading-5 text-ink-faint">{locked ? t('adminsOnlyHint') : t('accountAndAdminsHint')}</p>
+            <p className="mt-2 text-xs leading-5 text-ink-faint">{locked ? t('disabledHint') : t('enabledHint')}</p>
         </div>
     );
 }

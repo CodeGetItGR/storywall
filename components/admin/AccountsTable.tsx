@@ -71,7 +71,7 @@ export function AccountsTable({
                             </div>
                             <div className="flex items-center justify-between gap-3">
                                 <p className="text-xs font-semibold text-ink-muted">
-                                    {account.eventCreationLocked ? t('access.adminsOnly') : t('access.accountAndAdmins')}
+                                    {account.eventCreationLocked ? t('access.disabled') : t('access.enabled')}
                                 </p>
                                 <button
                                     type="button"
@@ -124,7 +124,7 @@ export function AccountsTable({
                                     </td>
                                     <td className="px-3 py-3.5 text-xs font-semibold text-ink-muted">{t(`role.${account.platformRole}`)}</td>
                                     <td className="px-3 py-3.5 text-xs font-semibold text-ink-muted">
-                                        {account.eventCreationLocked ? t('access.adminsOnly') : t('access.accountAndAdmins')}
+                                        {account.eventCreationLocked ? t('access.disabled') : t('access.enabled')}
                                     </td>
                                     <td className="px-3 py-3.5 text-xs text-ink-faint">
                                         {formatDate(locale, account.createdAt, { day: 'numeric', month: 'short', year: 'numeric' })}
