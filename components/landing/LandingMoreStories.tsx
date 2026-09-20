@@ -8,11 +8,10 @@ type LandingMoreStoriesProps = {
     ariaLabel: string;
     eyebrow: string;
     heading: string;
-    mobileHint: string;
     stories: LandingMoreStory[];
 };
 
-export function LandingMoreStories({ ariaLabel, eyebrow, heading, mobileHint, stories }: LandingMoreStoriesProps) {
+export function LandingMoreStories({ ariaLabel, eyebrow, heading, stories }: LandingMoreStoriesProps) {
     return (
         <div className="sw-filmstrip-more mt-16 block pt-7 px-5 min-[761px]:px-24 pb-6 min-[761px]:mt-[clamp(74px,8vw,118px)] min-[761px]:grid min-[761px]:grid-cols-[minmax(220px,27%)_minmax(0,1fr)] min-[761px]:items-end min-[761px]:gap-[clamp(26px,4vw,64px)] min-[761px]:py-[clamp(34px,4vw,54px)_0_clamp(18px,2vw,28px)]">
             {/* Eyebrow + heading */}
@@ -25,12 +24,12 @@ export function LandingMoreStories({ ariaLabel, eyebrow, heading, mobileHint, st
             {/* Filmstrip */}
             <div
                 aria-label={ariaLabel}
-                className="sw-filmstrip-track ml-[calc(50%-50vw)] mr-[calc(50%-50vw)] flex h-57.5 w-screen gap-1.5 overflow-x-auto overflow-y-hidden pr-[18%] [-webkit-overflow-scrolling:touch] [scroll-snap-type:x_mandatory] scrollbar-none [touch-action:pan-x] [&::-webkit-scrollbar]:hidden min-[761px]:ml-0 min-[761px]:mr-0 min-[761px]:grid min-[761px]:h-[clamp(180px,17vw,255px)] min-[761px]:w-auto min-[761px]:grid-cols-5 min-[761px]:gap-0.75 min-[761px]:overflow-hidden min-[761px]:rounded-[36px_0_36px_0] min-[761px]:pr-0"
+                className="sw-filmstrip-track flex h-[clamp(205px,62vw,250px)] w-[calc(100vw-20px)] max-w-none gap-1 overflow-hidden rounded-tl-[30px] min-[761px]:h-[clamp(180px,17vw,255px)] min-[761px]:w-auto min-[761px]:gap-0.75 min-[761px]:rounded-tl-[36px]"
             >
                 {stories.map((story, index) => (
                     <button
                         aria-pressed={index === 0}
-                        className="sw-filmstrip-card group relative h-full min-w-0 flex-[0_0_28%] snap-start cursor-pointer appearance-none overflow-hidden border-0 bg-[#111] p-0 transition-[flex-basis] duration-550 ease-[cubic-bezier(0.2,0.75,0.2,1)] aria-pressed:flex-[0_0_72%] min-[761px]:h-full min-[761px]:flex-none"
+                        className="sw-filmstrip-card group relative h-full min-w-0 flex-[1_1_0%] cursor-pointer appearance-none overflow-hidden border-0 bg-[#111] p-0 transition-[flex-grow] duration-400 ease-[cubic-bezier(0.2,0.75,0.2,1)] aria-pressed:flex-[4_1_0%] min-[480px]:aria-pressed:flex-[3_1_0%] min-[761px]:aria-pressed:flex-[1.85_1_0%]"
                         data-caption-text={story.text}
                         data-caption-title={story.label}
                         data-film-index={index}
@@ -51,14 +50,17 @@ export function LandingMoreStories({ ariaLabel, eyebrow, heading, mobileHint, st
                         >
                             +
                         </span>
-                        <span className="sw-filmstrip-name absolute bottom-2.25 left-2.25 right-1.5 z-2 text-left text-[7.5px] font-black tracking-[0.11em] text-white uppercase min-[761px]:bottom-2.5 min-[761px]:left-2.5 min-[761px]:right-2 min-[761px]:text-[8px]">
+                        <span className="sw-filmstrip-name absolute right-1.5 bottom-2.25 left-2.25 z-2 text-left text-[8px] font-black tracking-[0.11em] text-white uppercase opacity-0 transition-opacity duration-200 group-aria-pressed:opacity-100 min-[761px]:right-2 min-[761px]:bottom-2.5 min-[761px]:left-2.5 min-[761px]:opacity-100">
                             {story.label}
                         </span>
                     </button>
                 ))}
             </div>
             {/* Caption */}
-            <div aria-live="polite" className="sw-filmstrip-caption group mt-4 block min-h-19 text-ink min-[761px]:col-start-2 min-[761px]:mt-5 min-[761px]:flex min-[761px]:min-h-0 min-[761px]:items-baseline min-[761px]:gap-5">
+            <div
+                aria-live="polite"
+                className="sw-filmstrip-caption group mt-4 block min-h-19 text-ink min-[761px]:col-start-2 min-[761px]:mt-5 min-[761px]:flex min-[761px]:min-h-0 min-[761px]:items-baseline min-[761px]:gap-5"
+            >
                 <strong className="sw-filmstrip-caption-title mb-2 block text-[11px] font-black tracking-[0.12em] uppercase min-[761px]:mb-0 min-[761px]:inline min-[761px]:shrink-0 min-[761px]:text-[12px]">
                     {stories[0]?.label}
                 </strong>
@@ -66,7 +68,6 @@ export function LandingMoreStories({ ariaLabel, eyebrow, heading, mobileHint, st
                     {stories[0]?.text}
                 </span>
             </div>
-            <div className="sw-filmstrip-mobile-hint mt-3 text-[9px] font-extrabold tracking-[0.14em] text-ink min-[761px]:hidden">{mobileHint}</div>
         </div>
     );
 }

@@ -29,18 +29,12 @@ export function LandingStories() {
                 </p>
             </div>
             {/* Story rows */}
-            <div className="showcase story-list mt-[50px] min-[761px]:mt-[clamp(80px,10vw,150px)]">
+            <div className="showcase story-list mt-12.5 min-[761px]:mt-[clamp(80px,10vw,150px)]">
                 {rows.map((copy, index) => (
                     <LandingStoryRow copy={copy} index={index} key={copy.tag} media={landingStoryMedia[index]} />
                 ))}
             </div>
-            <LandingMoreStories
-                ariaLabel={t('moreLabel')}
-                eyebrow={t('moreEyebrow')}
-                heading={t('moreHeading')}
-                mobileHint={t('mobileHint')}
-                stories={moreStories}
-            />
+            <LandingMoreStories ariaLabel={t('moreLabel')} eyebrow={t('moreEyebrow')} heading={t('moreHeading')} stories={moreStories} />
         </section>
     );
 }

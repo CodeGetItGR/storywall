@@ -115,7 +115,7 @@ export function useLandingStoryInteractions(landingRef: RefObject<HTMLElement | 
         const captionText = filmstrip?.querySelector<HTMLElement>('.sw-filmstrip-caption-text');
         let captionTimeout = 0;
 
-        const activateFilmstrip = (index: number, shouldScroll: boolean) => {
+        const activateFilmstrip = (index: number) => {
             filmstripCards.forEach((card, cardIndex) => {
                 card.setAttribute('aria-pressed', String(cardIndex === index));
             });
@@ -127,15 +127,12 @@ export function useLandingStoryInteractions(landingRef: RefObject<HTMLElement | 
                 if (captionText) captionText.textContent = card?.dataset.captionText ?? '';
                 if (caption) caption.dataset.changing = 'false';
             }, 120);
-            if (shouldScroll && window.matchMedia('(max-width:760px)').matches) {
-                filmstripCards[index]?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
-            }
         };
 
         filmstripCards.forEach((card, index) => {
-            card.addEventListener('click', () => activateFilmstrip(index, true), { signal });
+            card.addEventListener('click', () => activateFilmstrip(index), { signal });
             if (window.matchMedia('(hover:hover) and (pointer:fine)').matches) {
-                card.addEventListener('mouseenter', () => activateFilmstrip(index, false), { signal });
+                card.addEventListener('mouseenter', () => activateFilmstrip(index), { signal });
             }
         });
 
