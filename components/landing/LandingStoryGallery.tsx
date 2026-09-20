@@ -23,7 +23,7 @@ export function LandingStoryGallery({ alts, ariaLabel, imageLabels, images, rowI
                 <button
                     aria-label={imageLabels[index]}
                     aria-pressed={index === 0}
-                    className="sw-wedding-panel group relative isolate h-full min-w-0 shrink grow-[0.72] basis-0 cursor-pointer appearance-none overflow-hidden border-0 bg-[#111] p-0 transition-[flex-grow] duration-[800ms] ease-[cubic-bezier(0.2,0.78,0.18,1)] aria-pressed:grow-[5.25] max-[760px]:grow-[0.52] max-[760px]:aria-pressed:grow-[4.2] first:aria-pressed:[&.sw-panel-hint]:animate-[sw-panel-peek-desktop_2.65s_cubic-bezier(0.22,0.75,0.2,1)_1] max-[760px]:first:aria-pressed:[&.sw-panel-hint]:animate-[sw-panel-peek-mobile_2.45s_cubic-bezier(0.22,0.75,0.2,1)_1]"
+                    className="sw-wedding-panel group relative isolate h-full min-w-12 shrink grow-[0.72] basis-0 cursor-pointer appearance-none overflow-hidden border-0 bg-[#111] p-0 transition-[flex-grow] duration-[800ms] ease-[cubic-bezier(0.2,0.78,0.18,1)] aria-pressed:grow-[5.25] max-[760px]:min-w-9 max-[760px]:grow-[0.52] max-[760px]:aria-pressed:grow-[4.2] first:aria-pressed:[&.sw-panel-hint]:animate-[sw-panel-peek-desktop_2.65s_cubic-bezier(0.22,0.75,0.2,1)_1] max-[760px]:first:aria-pressed:[&.sw-panel-hint]:animate-[sw-panel-peek-mobile_2.45s_cubic-bezier(0.22,0.75,0.2,1)_1]"
                     data-panel-index={index}
                     key={image.src}
                     type="button"

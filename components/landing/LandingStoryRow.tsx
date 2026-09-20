@@ -23,7 +23,7 @@ export function LandingStoryRow({ copy, index, media }: LandingStoryRowProps) {
 
     return (
         <article
-            className={`story-row group grid grid-cols-1 gap-y-3.5 border-b border-(--line) py-6.5 pb-8.5 opacity-100 outline-none [grid-template-areas:'photo'_'copy'] focus-visible:ring-2 focus-visible:ring-(--coral) focus-visible:ring-inset min-[761px]:items-center min-[761px]:gap-x-[clamp(120px,14vw,236px)] min-[761px]:gap-y-0 min-[761px]:border-b-0 min-[761px]:py-[clamp(42px,5vw,78px)] min-[761px]:opacity-[0.36] min-[761px]:transition-opacity min-[761px]:duration-300 min-[761px]:[grid-template-areas:unset] min-[761px]:data-[active=true]:opacity-100 ${
+            className={`story-row group grid grid-cols-1 gap-y-3.5 border-b border-(--line) py-6.5 pb-8.5 opacity-100 outline-none [grid-template-areas:'photo'_'copy'] focus-visible:ring-2 focus-visible:ring-(--coral) focus-visible:ring-inset min-[761px]:items-center min-[761px]:gap-x-[clamp(48px,calc(23vw_-_126px),200px)] min-[761px]:gap-y-0 min-[761px]:border-b-0 min-[761px]:py-[clamp(42px,5vw,78px)] min-[761px]:opacity-[0.36] min-[761px]:transition-opacity min-[761px]:duration-300 min-[761px]:[grid-template-areas:unset] min-[761px]:data-[active=true]:opacity-100 ${
                 isOdd
                     ? 'min-[761px]:pr-[clamp(22px,4vw,72px)] min-[761px]:pl-0 min-[761px]:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)]'
                     : 'min-[761px]:pr-0 min-[761px]:pl-[clamp(22px,4vw,72px)] min-[761px]:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]'
