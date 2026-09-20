@@ -3551,53 +3551,6 @@
                             }
                         ]
                     ]
-                },
-                {
-                    "tag": "ΣΥΝΕΔΡΙΑ & ΗΜΕΡΙΔΕΣ",
-                    "title": ["Η εμπειρία συνεχίζεται", "πέρα από τη σκηνή."],
-                    "paragraphs": [
-                        "Πρόγραμμα, ομιλίες, υλικό, reactions και στιγμές του event συγκεντρώνονται σε έναν κοινό social χώρο.",
-                        "Οι συμμετέχοντες δεν παρακολουθούν απλώς. Γίνονται μέρος της εμπειρίας."
-                    ],
-                    "galleryLabel": "Story moments for section 5",
-                    "imageLabels": [
-                        "Conference speaker presenting on stage to a professional audience",
-                        "Wide view of a large professional conference auditorium and stage",
-                        "Conference attendees networking in a bright event venue"
-                    ],
-                    "imageAlts": [
-                        "Conference speaker presenting on stage to a professional audience",
-                        "Wide view of a large professional conference auditorium and stage",
-                        "Conference attendees networking in a bright event venue"
-                    ],
-                    "titleSegments": [
-                        {
-                            "text": "Η εμπειρία συνεχίζεται ",
-                            "strong": false
-                        },
-                        {
-                            "text": "πέρα από τη σκηνή.",
-                            "strong": true
-                        }
-                    ],
-                    "paragraphSegments": [
-                        [
-                            {
-                                "text": "Πρόγραμμα, ομιλίες, υλικό, reactions και στιγμές του event συγκεντρώνονται σε έναν κοινό social χώρο.",
-                                "strong": false
-                            }
-                        ],
-                        [
-                            {
-                                "text": "Οι συμμετέχοντες δεν παρακολουθούν απλώς. ",
-                                "strong": false
-                            },
-                            {
-                                "text": "Γίνονται μέρος της εμπειρίας.",
-                                "strong": true
-                            }
-                        ]
-                    ]
                 }
             ],
             "moreEyebrow": "MORE STORIES",

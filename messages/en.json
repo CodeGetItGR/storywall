@@ -3678,53 +3678,6 @@
                             }
                         ]
                     ]
-                },
-                {
-                    "tag": "CONFERENCES & SUMMITS",
-                    "title": ["The experience continues", "beyond the stage."],
-                    "paragraphs": [
-                        "Schedules, talks, highlights, reactions, and event moments come together in one social space.",
-                        "People do not just attend. They become part of the experience."
-                    ],
-                    "galleryLabel": "Story moments for section 5",
-                    "imageLabels": [
-                        "Conference speaker presenting on stage to a professional audience",
-                        "Wide view of a large professional conference auditorium and stage",
-                        "Conference attendees networking in a bright event venue"
-                    ],
-                    "imageAlts": [
-                        "Conference speaker presenting on stage to a professional audience",
-                        "Wide view of a large professional conference auditorium and stage",
-                        "Conference attendees networking in a bright event venue"
-                    ],
-                    "titleSegments": [
-                        {
-                            "text": "The experience continues ",
-                            "strong": false
-                        },
-                        {
-                            "text": "beyond the stage.",
-                            "strong": true
-                        }
-                    ],
-                    "paragraphSegments": [
-                        [
-                            {
-                                "text": "Schedules, talks, highlights, reactions, and event moments come together in one social space.",
-                                "strong": false
-                            }
-                        ],
-                        [
-                            {
-                                "text": "People do not just attend. ",
-                                "strong": false
-                            },
-                            {
-                                "text": "They become part of the experience.",
-                                "strong": true
-                            }
-                        ]
-                    ]
                 }
             ],
             "moreEyebrow": "MORE STORIES",
