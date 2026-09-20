@@ -1,12 +1,10 @@
-'use client';
+import { getTranslations } from 'next-intl/server';
 
-import Image from 'next/image';
-import { useTranslations } from 'next-intl';
-
+import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { routes } from '@/lib/routes';
 
-export function LandingFinalCta() {
-    const t = useTranslations('LandingPage.finalCta');
+export async function LandingFinalCta() {
+    const t = await getTranslations('LandingPage.finalCta');
     const heading = t.raw('heading') as string[];
 
     return (
@@ -15,21 +13,19 @@ export function LandingFinalCta() {
             id="create"
         >
             <div className="h-[78vw] min-h-80 overflow-hidden min-[761px]:h-180 min-[761px]:min-h-0">
-                <Image
+                <ProtectedImage
                     alt={t('imageAlt')}
                     data-filename="storywall-final-cta-wedding-santorini.webp"
                     src="/landing/storywall-final-cta-wedding-santorini.webp"
                     width={1448}
                     height={1086}
-                    unoptimized
+                    loading="lazy"
+                    sizes="(max-width: 760px) 100vw, 44vw"
                     className="block h-full w-full object-cover object-[50%_40%] saturate-[.96] contrast-[.98] transition-transform duration-1200 ease-[cubic-bezier(0.22,0.61,0.36,1)] group-hover:scale-[1.025] motion-reduce:transition-none min-[761px]:object-[50%_42%]"
                 />
             </div>
             <div className="flex flex-col justify-center bg-[radial-gradient(circle_at_84%_15%,rgba(255,255,255,0.28),rgba(0,0,0,0)_31%),linear-gradient(135deg,#ffc969_0%,#f9a462_48%,#f39a72_100%)] px-5 pt-10 pb-11 min-[761px]:box-border min-[761px]:h-180 min-[761px]:px-[7vw]">
-                <div
-                    aria-hidden="true"
-                    className="mb-6 flex size-12 items-center justify-center min-[761px]:mb-10.5 min-[761px]:size-14.5"
-                >
+                <div aria-hidden="true" className="mb-6 flex size-12 items-center justify-center min-[761px]:mb-10.5 min-[761px]:size-14.5">
                     <svg
                         className="size-11.5 overflow-visible fill-none stroke-[#151313] [stroke-linecap:round] [stroke-linejoin:round] stroke-[2.8] min-[761px]:size-14"
                         role="presentation"
@@ -42,9 +38,7 @@ export function LandingFinalCta() {
                         />
                     </svg>
                 </div>
-                <div className="mb-3.5 text-[13px] font-black tracking-[0.17em] min-[761px]:mb-6.5 min-[761px]:text-[9px]">
-                    {t('eyebrow')}
-                </div>
+                <div className="mb-3.5 text-[13px] font-black tracking-[0.17em] min-[761px]:mb-6.5 min-[761px]:text-[9px]">{t('eyebrow')}</div>
                 <h2 className="m-0 max-w-205 text-[clamp(50px,14vw,70px)] leading-[0.82] font-normal tracking-[-0.065em] [font-family:var(--editorial)] min-[761px]:text-[clamp(72px,6.7vw,124px)] min-[761px]:leading-[0.78]">
                     {heading[0]}
                     <br />

@@ -1,15 +1,13 @@
-'use client';
+import { getTranslations } from 'next-intl/server';
 
-import Image from 'next/image';
-import { useTranslations } from 'next-intl';
-
+import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { routes } from '@/lib/routes';
 
 const DEMO_BUTTON_CLASS =
     'group flex-none items-center justify-center rounded-full bg-white px-[22px] text-[10px] font-black tracking-[0.14em] text-[#151313] uppercase shadow-[0_10px_28px_rgba(21,19,19,0.1)] transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-[3px] hover:shadow-[0_14px_34px_rgba(21,19,19,0.15)]';
 
-export function LandingDemo() {
-    const t = useTranslations('LandingPage.demo');
+export async function LandingDemo() {
+    const t = await getTranslations('LandingPage.demo');
     const heading = t.raw('heading') as string[];
 
     return (
@@ -48,12 +46,13 @@ export function LandingDemo() {
                 aria-label={t('previewLabel')}
                 className="flex items-center justify-center min-[761px]:col-start-3 min-[761px]:row-start-1 min-[761px]:justify-self-end min-[761px]:self-center min-[761px]:pr-2"
             >
-                <Image
+                <ProtectedImage
                     alt={t('imageAlt')}
                     className="block h-auto w-[min(620px,118vw)] max-w-none translate-x-[-2vw] object-contain drop-shadow-[-16px_30px_32px_rgba(70,38,24,0.2)] min-[761px]:w-[min(720px,37vw)] min-[761px]:translate-x-0 min-[761px]:translate-y-[10px] min-[761px]:drop-shadow-[-12px_24px_26px_rgba(70,38,24,0.2)]"
                     height={1120}
                     src="/landing/storywall-demo-preview-with-two-angled-smartphones-showing-the-a.webp"
-                    unoptimized
+                    loading="lazy"
+                    sizes="(max-width: 760px) 118vw, 37vw"
                     width={1115}
                 />
             </div>
@@ -63,7 +62,9 @@ export function LandingDemo() {
                 href={routes.demo}
             >
                 <span>{t('button')}</span>
-                <span className="text-[23px] leading-none transition-transform duration-300 ease-out group-hover:translate-x-[3px] group-hover:-translate-y-[3px]">↗</span>
+                <span className="text-[23px] leading-none transition-transform duration-300 ease-out group-hover:translate-x-[3px] group-hover:-translate-y-[3px]">
+                    ↗
+                </span>
             </a>
         </section>
     );

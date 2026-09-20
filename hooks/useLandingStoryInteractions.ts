@@ -42,9 +42,7 @@ export function useLandingStoryInteractions(landingRef: RefObject<HTMLElement | 
             });
         };
 
-        let activeRow = 0;
         const activateRow = (index: number) => {
-            activeRow = index;
             rows.forEach((row, rowIndex) => {
                 row.dataset.active = String(rowIndex === index);
             });
@@ -76,7 +74,7 @@ export function useLandingStoryInteractions(landingRef: RefObject<HTMLElement | 
                         triggerHint(Number(row.dataset.row));
                     });
                 },
-                { root, rootMargin: '0px 0px -8% 0px', threshold: 0.22 }
+                { root: null, rootMargin: '0px 0px -8% 0px', threshold: 0.22 }
             );
             rows.forEach((row) => revealObserver.observe(row));
             observers.push(revealObserver);
@@ -104,7 +102,7 @@ export function useLandingStoryInteractions(landingRef: RefObject<HTMLElement | 
         const scheduleRows = () => {
             if (!animationFrame) animationFrame = requestAnimationFrame(updateRows);
         };
-        root.addEventListener('scroll', scheduleRows, { passive: true, signal });
+        window.addEventListener('scroll', scheduleRows, { passive: true, signal });
         window.addEventListener('resize', scheduleRows, { passive: true, signal });
 
         const filmstrip = root.querySelector<HTMLElement>('.sw-filmstrip-more');

@@ -194,7 +194,7 @@ export function useLandingStackMotion(landingRef: RefObject<HTMLElement | null>)
             );
         }
 
-        root.addEventListener('scroll', schedule, { passive: true, signal });
+        window.addEventListener('scroll', schedule, { passive: true, signal });
         window.addEventListener('resize', schedule, { passive: true, signal });
         update();
 

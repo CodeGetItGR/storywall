@@ -183,7 +183,7 @@ export function useLandingFeatureCarousel(landingRef: RefObject<HTMLElement | nu
                     stopTween();
                 }
             },
-            { root, threshold: [0, 0.18, 0.35] }
+            { root: null, threshold: [0, 0.18, 0.35] }
         );
         observer.observe(section);
 

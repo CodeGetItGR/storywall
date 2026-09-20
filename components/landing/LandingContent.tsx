@@ -1,11 +1,7 @@
-'use client';
-
 import './landing.css';
 
-import { useRef } from 'react';
-
+import { LandingDeferredExperience } from '@/components/landing/LandingDeferredExperience';
 import { LandingDemo } from '@/components/landing/LandingDemo';
-import { LandingExperienceStack } from '@/components/landing/LandingExperienceStack';
 import { LandingFaq } from '@/components/landing/LandingFaq';
 import { LandingFeatureDetails } from '@/components/landing/LandingFeatureDetails';
 import { LandingFeatures } from '@/components/landing/LandingFeatures';
@@ -14,16 +10,13 @@ import { LandingFooter } from '@/components/landing/LandingFooter';
 import { LandingHero } from '@/components/landing/LandingHero';
 import { LandingHeroTransition } from '@/components/landing/LandingHeroTransition';
 import { LandingHowItWorks } from '@/components/landing/LandingHowItWorks';
+import { LandingPageShell } from '@/components/landing/LandingPageShell';
 import { LandingPricing } from '@/components/landing/LandingPricing';
 import { LandingStories } from '@/components/landing/LandingStories';
-import { useLandingInteractions } from '@/hooks/useLandingInteractions';
 
 export function LandingContent() {
-    const landingRef = useRef<HTMLElement>(null);
-    useLandingInteractions(landingRef);
-
     return (
-        <main ref={landingRef} className="fixed inset-0 overflow-x-hidden overflow-y-auto scroll-smooth bg-white text-[#151313]">
+        <LandingPageShell>
             {/* Hero */}
             <LandingHero />
 
@@ -41,7 +34,7 @@ export function LandingContent() {
                 <LandingDemo />
 
                 {/* Social and host experience */}
-                <LandingExperienceStack />
+                <LandingDeferredExperience />
 
                 {/* Features */}
                 <LandingFeatures />
@@ -63,6 +56,6 @@ export function LandingContent() {
                 {/* Footer */}
                 <LandingFooter />
             </div>
-        </main>
+        </LandingPageShell>
     );
 }

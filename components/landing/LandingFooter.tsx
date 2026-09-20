@@ -1,12 +1,10 @@
-'use client';
+import { getTranslations } from 'next-intl/server';
 
-import Image from 'next/image';
-import { useTranslations } from 'next-intl';
-
+import { ProtectedImage } from '@/components/common/ProtectedImage';
 const EXPLORE_HREFS = ['#platform', '#journey', '#experience', '#pricing', '#faq'];
 
-export function LandingFooter() {
-    const t = useTranslations('LandingPage.footer');
+export async function LandingFooter() {
+    const t = await getTranslations('LandingPage.footer');
     const exploreLinks = t.raw('exploreLinks') as string[];
     const eventLinks = t.raw('eventLinks') as string[];
     const socialLinks = t.raw('socialLinks') as string[];
@@ -17,12 +15,13 @@ export function LandingFooter() {
             <div className="grid grid-cols-2 gap-x-6.5 gap-y-10.5 border-b border-white/14 pb-13.5 min-[761px]:grid-cols-[1.65fr_0.75fr_0.75fr_0.75fr] min-[761px]:gap-[5vw] min-[761px]:pb-19">
                 <div className="col-span-2 min-[761px]:col-span-1">
                     <div className="w-[min(82vw,330px)] leading-none min-[761px]:w-[clamp(179px,19.6vw,301px)]">
-                        <Image
+                        <ProtectedImage
                             alt={t('imageAlt')}
                             src="/landing/storywall-2.png"
                             width={600}
                             height={119}
-                            unoptimized
+                            loading="lazy"
+                            sizes="(max-width: 760px) 82vw, 20vw"
                             className="block h-auto w-full object-contain"
                         />
                     </div>
@@ -81,10 +80,7 @@ export function LandingFooter() {
                         </a>
                     ))}
                 </div>
-                <a
-                    className="max-[760px]:col-start-2 max-[760px]:row-start-1 justify-self-end text-white no-underline"
-                    href="#platformStories"
-                >
+                <a className="max-[760px]:col-start-2 max-[760px]:row-start-1 justify-self-end text-white no-underline" href="#platformStories">
                     {t('backToTop')} ↑
                 </a>
             </div>

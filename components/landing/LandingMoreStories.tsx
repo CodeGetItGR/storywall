@@ -1,5 +1,4 @@
-import Image from 'next/image';
-
+import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { landingMoreStoryMedia } from '@/lib/landingMedia';
 
 export type LandingMoreStory = { alt: string; label: string; text: string };
@@ -36,13 +35,14 @@ export function LandingMoreStories({ ariaLabel, eyebrow, heading, stories }: Lan
                         key={story.label}
                         type="button"
                     >
-                        <Image
+                        <ProtectedImage
                             alt={story.alt}
                             className="absolute inset-0 h-full w-full object-cover brightness-[0.76] grayscale transition-[filter,transform] duration-650 ease-[cubic-bezier(0.2,0.75,0.2,1)] group-aria-pressed:grayscale-0 group-aria-pressed:brightness-100 min-[761px]:brightness-[0.78] min-[761px]:hover:scale-[1.01] min-[761px]:hover:grayscale-0 min-[761px]:hover:brightness-100"
                             height={1}
                             src={landingMoreStoryMedia[index].src}
                             style={{ objectPosition: landingMoreStoryMedia[index].objectPosition }}
-                            unoptimized
+                            loading="lazy"
+                            sizes="(max-width: 760px) 100vw, 20vw"
                             width={1}
                         />
                         <span

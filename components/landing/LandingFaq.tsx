@@ -1,13 +1,11 @@
-'use client';
-
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 
 import { LandingFaqItem } from '@/components/landing/LandingFaqItem';
 
 type FaqItem = [question: string, answer: string];
 
-export function LandingFaq() {
-    const t = useTranslations('LandingPage.faq');
+export async function LandingFaq() {
+    const t = await getTranslations('LandingPage.faq');
     const items = t.raw('items') as FaqItem[];
 
     return (

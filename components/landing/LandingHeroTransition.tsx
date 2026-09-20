@@ -1,9 +1,7 @@
-'use client';
+import { getTranslations } from 'next-intl/server';
 
-import { useTranslations } from 'next-intl';
-
-export function LandingHeroTransition() {
-    const t = useTranslations('LandingPage.transition');
+export async function LandingHeroTransition() {
+    const t = await getTranslations('LandingPage.transition');
 
     return (
         /* Hero-to-demo transition */

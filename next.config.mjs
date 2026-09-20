@@ -21,6 +21,10 @@ const nextConfig = {
                 protocol: 'https',
                 hostname: '**.71ade89bbcb4e06fa046d831464581b0.r2.cloudflarestorage.com',
             },
+            {
+                protocol: 'https',
+                hostname: 'images.pexels.com',
+            },
         ],
         formats: ['image/webp'],
         minimumCacheTTL: 2678400,

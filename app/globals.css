@@ -246,6 +246,14 @@
     body {
         @apply bg-background text-foreground;
     }
+
+    body.landing-document-scroll {
+        height: auto !important;
+        min-height: 100dvh;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        overscroll-behavior: auto !important;
+    }
 }
 
 /* ── Scrollbar ── */

@@ -1,13 +1,11 @@
-'use client';
-
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 
 import { LandingMoreStories, type LandingMoreStory } from '@/components/landing/LandingMoreStories';
 import { type LandingStoryCopyData, LandingStoryRow } from '@/components/landing/LandingStoryRow';
 import { landingStoryMedia } from '@/lib/landingMedia';
 
-export function LandingStories() {
-    const t = useTranslations('LandingPage.stories');
+export async function LandingStories() {
+    const t = await getTranslations('LandingPage.stories');
     const heading = t.raw('heading') as string[];
     const rows = t.raw('rows') as LandingStoryCopyData[];
     const moreStories = t.raw('moreStories') as LandingMoreStory[];

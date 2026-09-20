@@ -1,5 +1,4 @@
-import Image from 'next/image';
-
+import { ProtectedImage } from '@/components/common/ProtectedImage';
 type LandingFeatureDetailCardProps = {
     description: string;
     imageAlt: string;
@@ -14,10 +13,12 @@ export function LandingFeatureDetailCard({ description, imageAlt, imagePath, ite
         <article className="group flex h-[900px] snap-start flex-col overflow-hidden rounded-[24px] bg-[#101014] ring-1 ring-white/12 transition-[transform,background-color] duration-300 hover:-translate-y-1 hover:bg-white/[0.08] motion-reduce:transition-none min-[761px]:h-[860px] min-[1440px]:h-[940px]">
             {/* Feature image */}
             <div className="relative h-[400px] shrink-0 overflow-hidden min-[761px]:h-[450px] min-[1440px]:h-[520px]">
-                <Image
+                <ProtectedImage
                     alt={imageAlt}
                     className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.035] motion-reduce:transition-none"
                     height={900}
+                    loading="lazy"
+                    sizes="(max-width: 760px) 84vw, (max-width: 1440px) 50vw, 25vw"
                     src={imagePath}
                     width={1200}
                 />

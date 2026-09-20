@@ -1,6 +1,6 @@
 import { motion, useReducedMotion } from 'framer-motion';
-import Image from 'next/image';
 
+import { ProtectedImage } from '@/components/common/ProtectedImage';
 const HERO_SPRITES = [
     {
         src: '/landing/sw-scene-item-sw-post-1.png',
@@ -184,7 +184,7 @@ export function LandingHeroVisual() {
                 className={firstSprite.posClass}
                 transition={{ duration: 6.8, ease: 'easeInOut', repeat: Infinity }}
             >
-                <Image alt="" className="h-auto w-full" height={firstSprite.height} src={firstSprite.src} unoptimized width={firstSprite.width} />
+                <ProtectedImage alt="" className="h-auto w-full" height={firstSprite.height} src={firstSprite.src} width={firstSprite.width} />
             </motion.div>
             {/* Phone feed */}
             <motion.div
@@ -198,40 +198,30 @@ export function LandingHeroVisual() {
                         className={PHONE_FEED_TRACK_CLASS}
                         transition={{ duration: 24, ease: 'easeInOut', repeat: Infinity, times: [0, 0.75, 0.85, 1] }}
                     >
-                        <Image
+                        <ProtectedImage
                             alt=""
                             className="relative block h-auto w-full max-w-none [&+&]:-mt-px"
                             height={2048}
                             src="/landing/sw-phone-feed-3.jpg"
-                            unoptimized
                             width={774}
                         />
-                        <Image
+                        <ProtectedImage
                             alt=""
                             className="relative block h-auto w-full max-w-none [&+&]:-mt-px"
                             height={2048}
                             src="/landing/sw-phone-feed.jpg"
-                            unoptimized
                             width={451}
                         />
-                        <Image
+                        <ProtectedImage
                             alt=""
                             className="relative block h-auto w-full max-w-none [&+&]:-mt-px"
                             height={2048}
                             src="/landing/sw-phone-feed-2.jpg"
-                            unoptimized
                             width={820}
                         />
                     </motion.div>
                 </div>
-                <Image
-                    alt=""
-                    className="absolute inset-0 z-[2] h-auto w-full"
-                    height={1541}
-                    src="/landing/sw-phone-frame.png"
-                    unoptimized
-                    width={748}
-                />
+                <ProtectedImage alt="" className="absolute inset-0 z-[2] h-auto w-full" height={1541} src="/landing/sw-phone-frame.png" width={748} />
             </motion.div>
             {/* Surrounding reactions and posts */}
             {restSprites.map((sprite) => (
@@ -246,7 +236,7 @@ export function LandingHeroVisual() {
                         delay: Number.parseFloat(sprite.delay),
                     }}
                 >
-                    <Image alt="" className="h-auto w-full" height={sprite.height} src={sprite.src} unoptimized width={sprite.width} />
+                    <ProtectedImage alt="" className="h-auto w-full" height={sprite.height} src={sprite.src} width={sprite.width} />
                 </motion.div>
             ))}
         </div>

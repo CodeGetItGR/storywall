@@ -1,8 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
+import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { LandingHeroVisual } from '@/components/landing/LandingHeroVisual';
 import { LandingProfileBadge } from '@/components/landing/LandingProfileBadge';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -65,7 +65,7 @@ export function LandingHero() {
                         className="inline-flex w-[min(196px,49vw)] shrink-0 items-center min-[761px]:w-[clamp(200px,14vw,260px)]"
                         href="#top-preview"
                     >
-                        <Image alt="StoryWall" className="h-auto w-full" height={119} src="/landing/storywall.png" unoptimized width={600} />
+                        <ProtectedImage alt="StoryWall" className="h-auto w-full" height={119} priority src="/landing/storywall.png" width={600} />
                     </a>
                     <nav
                         aria-label={t('navLabel')}
