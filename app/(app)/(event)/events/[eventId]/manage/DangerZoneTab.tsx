@@ -14,13 +14,7 @@ export default function DangerZoneTab({ event }: { event: EventDetailResponseDto
     const deletionFlow = useEventDeletionFlow(event.id);
 
     if (event.deletionScheduledFor) {
-        return (
-            <EventPendingDeletionBanner
-                deletionScheduledFor={event.deletionScheduledFor}
-                onUndoAction={deletionFlow.undoDeletion}
-                isUndoing={deletionFlow.isUndoing}
-            />
-        );
+        return <EventPendingDeletionBanner deletionScheduledFor={event.deletionScheduledFor} />;
     }
 
     return (

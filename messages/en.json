@@ -1246,9 +1246,7 @@
             },
             "pendingDeletion": {
                 "title": "This event is scheduled for deletion",
-                "body": "It will be permanently deleted on {date}. Guests can no longer see it.",
-                "undo": "Undo deletion",
-                "undoing": "Restoring…"
+                "body": "It will be permanently deleted on {date}. Guests can no longer see it."
             }
         },
         "usage": {

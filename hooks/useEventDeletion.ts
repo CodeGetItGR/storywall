@@ -21,18 +21,3 @@ export function useRequestEventDeletion(eventId: string) {
         },
     });
 }
-
-// DELETE /api/events/{eventId}/deletion-requests — any host, no password
-// ("Undo"). A no-op 200 if nothing was pending, so it's safe to call from a
-// stale button without a pre-check.
-export function useCancelEventDeletion(eventId: string) {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: () => api.del<EventResponseDto>(endpoints.events.deletionRequests(eventId)),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
-            queryClient.invalidateQueries({ queryKey: myEventsKeys.all });
-        },
-    });
-}

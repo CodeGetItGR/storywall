@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarDays, Layers3, Pencil, WalletCards } from 'lucide-react';
+import { CalendarDays, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -74,13 +74,6 @@ export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => 
                 {!isDemoRoute && (
                     <nav className="mt-7 flex max-w-[52vw] flex-col gap-4">
                         <AccountSidebarNavLink href={routes.home} icon={CalendarDays} label={t('events')} onNavigateAction={onCloseAction} />
-                        <AccountSidebarNavLink
-                            href={routes.plans({ eventId: activeEvent?.id })}
-                            icon={WalletCards}
-                            label={t('plans')}
-                            onNavigateAction={onCloseAction}
-                        />
-                        <AccountSidebarNavLink href={routes.modules} icon={Layers3} label={t('modules')} onNavigateAction={onCloseAction} />
                     </nav>
                 )}
 

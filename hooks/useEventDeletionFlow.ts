@@ -5,7 +5,7 @@ import { type ChangeEvent, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { eventKeys } from '@/hooks/useEvent';
-import { useCancelEventDeletion, useRequestEventDeletion } from '@/hooks/useEventDeletion';
+import { useRequestEventDeletion } from '@/hooks/useEventDeletion';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 
 // Mirrors useProfileForm's password-confirmation shape: local state for the
@@ -21,7 +21,6 @@ export function useEventDeletionFlow(eventId: string) {
     const [deleteError, setDeleteError] = useState<string | null>(null);
 
     const requestDeletion = useRequestEventDeletion(eventId);
-    const cancelDeletion = useCancelEventDeletion(eventId);
 
     function openConfirm() {
         setPassword('');
@@ -65,10 +64,6 @@ export function useEventDeletionFlow(eventId: string) {
         }
     }
 
-    async function undoDeletion() {
-        await cancelDeletion.mutateAsync();
-    }
-
     return {
         confirmOpen,
         openConfirm,
@@ -79,7 +74,5 @@ export function useEventDeletionFlow(eventId: string) {
         deleteError,
         confirmDelete,
         isDeleting: requestDeletion.isPending,
-        undoDeletion,
-        isUndoing: cancelDeletion.isPending,
     };
 }
