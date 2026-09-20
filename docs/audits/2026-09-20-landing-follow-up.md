@@ -21,6 +21,12 @@ The audit was performed against the production build and a local browser run on 
 | 9 | Small pricing-note text has insufficient contrast | Low-vision users may not be able to read it | Small |
 | 10 | Mobile menu needs a documented focus and escape test | Overlay navigation can trap or misplace focus | Small to medium |
 
+## Completed prerequisite: cache public configuration
+
+The landing page's `GET /api/config` server prefetch now uses a five-minute, tagged Next.js data-cache entry. The cache key includes the resolved `Accept-Language` request header, so English and Greek configuration variants are kept separate. Authenticated server prefetches remain `no-store`.
+
+The `public-config` tag is exported for a future authenticated revalidation endpoint or trusted backend webhook. Until that integration exists, configuration updates become visible within five minutes.
+
 ## 9. Send only the translations each client island needs
 
 ### Evidence

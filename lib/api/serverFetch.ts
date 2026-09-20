@@ -9,6 +9,9 @@ import { getServerLocale } from '@/i18n/serverLocale';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 
+export const PUBLIC_CONFIG_CACHE_TAG = 'public-config';
+export const PUBLIC_CONFIG_REVALIDATE_SECONDS = 300;
+
 export async function serverGet<T>(path: string, accessToken: string): Promise<T> {
     const locale = await getServerLocale();
     const res = await fetch(`${API_BASE_URL}${path}`, {
@@ -30,6 +33,27 @@ export async function serverPublicGet<T>(path: string): Promise<T> {
     const res = await fetch(`${API_BASE_URL}${path}`, {
         headers: { 'Accept-Language': locale },
         cache: 'no-store',
+    });
+
+    if (!res.ok) {
+        throw new Error(`Server prefetch failed for ${path} with status ${res.status}`);
+    }
+
+    return res.json() as Promise<T>;
+}
+
+// The public configuration controls landing-page feature gates and pricing.
+// It is safe to share between visitors, but is deliberately separate from the
+// generic public helper so future public endpoints do not become cached by
+// accident.
+export async function serverPublicConfigGet<T>(path: string): Promise<T> {
+    const locale = await getServerLocale();
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+        headers: { 'Accept-Language': locale },
+        next: {
+            revalidate: PUBLIC_CONFIG_REVALIDATE_SECONDS,
+            tags: [PUBLIC_CONFIG_CACHE_TAG],
+        },
     });
 
     if (!res.ok) {
