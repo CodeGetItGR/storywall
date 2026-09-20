@@ -97,7 +97,9 @@ export function useRsvpSubmitPageData() {
             : toErrorMessage(submitError, t('submitError'))
         : null;
 
-    const backHref = eventId ? routes.events.tools.rsvp(eventId) : routes.feed;
+    // Members cannot access the host-only RSVP overview. Sending them there makes the
+    // route gate redirect straight back to this form, leaving the Back control stuck.
+    const backHref = eventId ? routes.events.feed(eventId) : routes.feed;
 
     const handleBackToWall = useCallback(() => {
         router.push(eventId ? routes.events.feed(eventId) : routes.feed);

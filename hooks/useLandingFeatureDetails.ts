@@ -1,9 +1,6 @@
 import { useTranslations } from 'next-intl';
 import { type TouchEvent, useRef, useState } from 'react';
 
-import { useLandingModuleGates } from '@/hooks/useLandingModuleGates';
-import { LANDING_FEATURE_DETAIL_MODULE_KEYS } from '@/lib/landingFeatureGates';
-
 const FEATURE_IMAGES = [
     '/landing/guest-viewing-the-storywall-invitation-on-a-phone.jpg',
     '/landing/guest-scanning-the-storywall-qr-code.jpg',
@@ -23,14 +20,11 @@ type TransitionDirection = 'next' | 'previous';
 
 export function useLandingFeatureDetails() {
     const t = useTranslations('LandingPage.featureDetails');
-    const { isAvailable } = useLandingModuleGates();
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [transitionDirection, setTransitionDirection] = useState<TransitionDirection>('next');
     const swipeStartX = useRef<number | null>(null);
     const details = t.raw('items') as FeatureDetail[];
-    const availableDetails = details.flatMap((detail, index) =>
-        isAvailable(LANDING_FEATURE_DETAIL_MODULE_KEYS[index] ?? null) ? [{ ...detail, imagePath: FEATURE_IMAGES[index]! }] : []
-    );
+    const availableDetails = details.map((detail, index) => ({ ...detail, imagePath: FEATURE_IMAGES[index]! }));
 
     const activeIndex = selectedIndex >= availableDetails.length ? 0 : selectedIndex;
     const selectDetail = (index: number) => () => {
