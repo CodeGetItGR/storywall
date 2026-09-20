@@ -44,7 +44,6 @@ export function useLandingStoryInteractions(landingRef: RefObject<HTMLElement | 
 
         let activeRow = 0;
         const activateRow = (index: number) => {
-            if (index !== activeRow && (index === 2 || index === 3)) setAccordionIndex(index, 0);
             activeRow = index;
             rows.forEach((row, rowIndex) => {
                 row.dataset.active = String(rowIndex === index);

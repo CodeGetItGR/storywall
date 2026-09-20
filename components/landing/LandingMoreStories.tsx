@@ -13,7 +13,7 @@ type LandingMoreStoriesProps = {
 
 export function LandingMoreStories({ ariaLabel, eyebrow, heading, stories }: LandingMoreStoriesProps) {
     return (
-        <div className="sw-filmstrip-more mt-16 block pt-7 px-5 min-[761px]:px-24 pb-6 min-[761px]:mt-[clamp(74px,8vw,118px)] min-[761px]:grid min-[761px]:grid-cols-[minmax(220px,27%)_minmax(0,1fr)] min-[761px]:items-end min-[761px]:gap-[clamp(26px,4vw,64px)] min-[761px]:py-[clamp(34px,4vw,54px)_0_clamp(18px,2vw,28px)]">
+        <div className="sw-filmstrip-more mt-16 block pt-7 px-5 min-[761px]:px-18 pb-6 min-[761px]:mt-[clamp(74px,8vw,118px)] min-[761px]:grid min-[761px]:grid-cols-[minmax(220px,27%)_minmax(0,1fr)] min-[761px]:items-end min-[761px]:gap-[clamp(26px,4vw,64px)] min-[761px]:py-[clamp(34px,4vw,54px)_0_clamp(18px,2vw,28px)]">
             {/* Eyebrow + heading */}
             <div className="sw-filmstrip-intro pb-5.5 min-[761px]:pb-0">
                 <div className="sw-filmstrip-eyebrow mb-3.5 text-[13px] font-black tracking-[0.16em] text-ink">{eyebrow}</div>

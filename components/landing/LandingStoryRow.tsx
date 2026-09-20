@@ -34,8 +34,8 @@ export function LandingStoryRow({ copy, index, media }: LandingStoryRowProps) {
             <div
                 className={`mobile-photo-wrap relative mb-4 block h-[60vw] max-h-102.5 min-h-57.5 w-[calc(100vw-40px)] max-w-[calc(100vw-40px)] overflow-hidden bg-[#111] opacity-0 transition-[clip-path,transform,opacity] duration-1050 ease-[cubic-bezier(0.18,0.8,0.2,1)] will-change-transform [grid-area:photo] min-[761px]:m-0 min-[761px]:h-[62.4vh] min-[761px]:max-h-none min-[761px]:min-h-0 min-[761px]:w-full min-[761px]:max-w-none min-[761px]:opacity-100 min-[761px]:[clip-path:none]! min-[761px]:translate-x-0! min-[761px]:row-1 ${
                     isOdd
-                        ? "-ml-5 mr-auto max-[760px]:rounded-br-[38px] max-[760px]:[clip-path:inset(0_38%_0_0)] max-[760px]:translate-x-[-34vw] max-[760px]:group-data-[visible=true]:[clip-path:inset(0_0_0_0)] max-[760px]:group-data-[visible=true]:translate-x-0 max-[760px]:group-data-[visible=true]:opacity-100 min-[761px]:rounded-br-[42px] min-[761px]:col-1"
-                        : "ml-auto -mr-5 max-[760px]:rounded-bl-[38px] max-[760px]:[clip-path:inset(0_0_0_38%)] max-[760px]:translate-x-[34vw] max-[760px]:group-data-[visible=true]:[clip-path:inset(0_0_0_0)] max-[760px]:group-data-[visible=true]:translate-x-0 max-[760px]:group-data-[visible=true]:opacity-100 min-[761px]:rounded-bl-[42px] min-[761px]:col-2"
+                        ? "-ml-1 mr-auto max-[760px]:rounded-br-[38px] max-[760px]:[clip-path:inset(0_38%_0_0)] max-[760px]:translate-x-[-34vw] max-[760px]:group-data-[visible=true]:[clip-path:inset(0_0_0_0)] max-[760px]:group-data-[visible=true]:translate-x-0 max-[760px]:group-data-[visible=true]:opacity-100 min-[761px]:rounded-br-[42px] min-[761px]:col-1"
+                        : "ml-auto -mr-1 max-[760px]:rounded-bl-[38px] max-[760px]:[clip-path:inset(0_0_0_38%)] max-[760px]:translate-x-[34vw] max-[760px]:group-data-[visible=true]:[clip-path:inset(0_0_0_0)] max-[760px]:group-data-[visible=true]:translate-x-0 max-[760px]:group-data-[visible=true]:opacity-100 min-[761px]:rounded-bl-[42px] min-[761px]:col-2"
                 }`}
             >
                 <LandingStoryGallery
