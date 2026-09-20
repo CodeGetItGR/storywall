@@ -42,28 +42,36 @@ export function LandingPricing() {
                 className="mx-auto mt-16 flex max-w-331 border-b border-[#151313]/20 min-[761px]:mt-20"
                 role="tablist"
             >
-                {CATEGORY_ORDER.map((key) => (
-                    <button
-                        aria-controls="landing-pricing-panel"
-                        aria-selected={category === key}
-                        className={cn(
-                            'relative min-h-18 w-1/2 px-2 pb-4 text-center text-[12px] leading-tight font-black transition-colors focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-[#df7794] min-[761px]:min-h-12 min-[761px]:px-6 min-[761px]:text-[17px]',
-                            category === key
-                                ? 'text-[#151313] after:absolute after:inset-x-0 after:bottom-0 after:h-0.75 after:bg-[linear-gradient(90deg,#df7794,#f2c764)]'
-                                : 'text-[#151313]/50 hover:text-[#151313]'
-                        )}
-                        data-category={key}
-                        id={`landing-pricing-tab-${key}`}
-                        key={key}
-                        onClick={selectCategory}
-                        onKeyDown={handleCategoryKeyDown}
-                        role="tab"
-                        tabIndex={category === key ? 0 : -1}
-                        type="button"
-                    >
-                        {categories[key].label}
-                    </button>
-                ))}
+                {CATEGORY_ORDER.map((key) => {
+                    const categoryHasPlans = categories[key].plans.length > 0;
+                  return  (
+                        <button
+                            aria-controls="landing-pricing-panel"
+                            aria-selected={category === key}
+                            className={cn(
+                                'relative min-h-18 w-1/2 px-2 pb-4 text-center text-[12px] leading-tight font-black transition-colors focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-[#df7794] min-[761px]:min-h-12 min-[761px]:px-6 min-[761px]:text-[17px]',
+                                {
+                                    'text-[#151313]/50 hover:text-[#151313]' : category !== key && categoryHasPlans,
+                                    'text-[#151313] after:absolute after:inset-x-0 after:bottom-0 after:h-0.75 after:bg-[linear-gradient(90deg,#df7794,#f2c764)]' : category === key,
+                                    'cursor-not-allowed text-[#151313]/30' : !categoryHasPlans,
+                                }
+                            )}
+                            data-category={key}
+                            id={`landing-pricing-tab-${key}`}
+                            key={key}
+                            onClick={selectCategory}
+                            onKeyDown={handleCategoryKeyDown}
+                            role="tab"
+                            tabIndex={category === key ? 0 : -1}
+                            type="button"
+                            disabled={!categoryHasPlans}
+                        >
+                            <span>{categories[key].label}</span>
+                            {!categoryHasPlans &&
+                                <p className="text-lg text-center text-[#151313]/60 min-[761px]:col-span-3">{t('comingSoon')}</p>}
+                        </button>
+                    )
+                })}
             </div>
 
             {/* Plans */}
@@ -73,9 +81,7 @@ export function LandingPricing() {
                 id="landing-pricing-panel"
                 role="tabpanel"
             >
-                {categories[category].plans.length === 0 ? (
-                    <p className="text-base text-[#151313]/60 min-[761px]:col-span-3">{t('comingSoon')}</p>
-                ) : (
+                {categories[category].plans.length &&
                     categories[category].plans.map((plan, index) => (
                         <LandingPricingCard
                             featured={index === 1}
@@ -87,10 +93,8 @@ export function LandingPricing() {
                             storageNote={t('storageNote')}
                             videosLabel={t('videosLabel')}
                         />
-                    ))
-                )}
+                ))}
             </div>
-            <p className="mx-auto mt-5 max-w-331 text-right text-[11px]">{t('note')}</p>
         </section>
     );
 }
