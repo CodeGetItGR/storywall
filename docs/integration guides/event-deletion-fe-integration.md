@@ -8,15 +8,14 @@ record for deletion specifically.
 
 **Revision note:** the first version of this doc said there was no way to look up a pending
 deletion after the initial `POST`/`DELETE .../deletion-requests` response — that the undo banner
-only worked from an in-session toast, and reloading or navigating away lost it. That's fixed: §5
+only worked from an in-session toast, and reloading or navigating away lost it. That's fixed: §4
 below now describes the real, current contract (`GET /api/events/{id}` and `GET /api/events` both
 surface a pending-deletion event to its hosts). There is no outstanding backend follow-up for this.
 
 ## Why
 
-Events could be un-published (a withdrawal refunds the host and soft-deletes the event, see
-`billing-fe-guide.md` §9) but there was previously no way to remove an event outright without going
-through that refund flow. This closes that gap with a soft-delete-and-undo flow rather than an
+Events could be un-published (an approved refund returns one to `DRAFT`, see `billing-fe-guide.md`
+§9) but never actually removed. This closes that gap with a soft-delete-and-undo flow rather than an
 instant, irreversible one: a deletion request takes the event down immediately but leaves 30 days to
 change your mind before anything is actually purged.
 

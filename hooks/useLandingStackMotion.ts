@@ -10,14 +10,13 @@ const smoother = (value: number) => {
     return progress * progress * progress * (progress * (progress * 6 - 15) + 10);
 };
 
-export function useLandingStackMotion(landingRef: RefObject<HTMLElement | null>) {
+export function useLandingStackMotion(stackRef: RefObject<HTMLElement | null>) {
     useEffect(() => {
-        const root = landingRef.current;
-        const stack = root?.querySelector<HTMLElement>('#swxStack');
+        const stack = stackRef.current;
         const stage = stack?.querySelector<HTMLElement>('.swx-stage');
         const socialLayer = stack?.querySelector<HTMLElement>('.swx-layer-1');
         const hostLayer = stack?.querySelector<HTMLElement>('#swxLayer2');
-        if (!root || !stack || !stage || !socialLayer || !hostLayer) return;
+        if (!stack || !stage || !socialLayer || !hostLayer) return;
 
         const abortController = new AbortController();
         const { signal } = abortController;
@@ -202,5 +201,5 @@ export function useLandingStackMotion(landingRef: RefObject<HTMLElement | null>)
             abortController.abort();
             if (animationFrame) cancelAnimationFrame(animationFrame);
         };
-    }, [landingRef]);
+    }, [stackRef]);
 }

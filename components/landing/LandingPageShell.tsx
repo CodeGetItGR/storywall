@@ -14,7 +14,7 @@ export function LandingPageShell({ children }: { children: ReactNode }) {
     }, []);
 
     return (
-        <main ref={landingRef} className="overflow-x-hidden bg-white text-[#151313]">
+        <main ref={landingRef} className="overflow-x-clip bg-white text-[#151313]">
             {children}
         </main>
     );

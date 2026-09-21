@@ -2,12 +2,10 @@ import { type RefObject, useEffect } from 'react';
 
 import { useLandingFaqInteraction } from '@/hooks/useLandingFaqInteraction';
 import { useLandingFeatureCarousel } from '@/hooks/useLandingFeatureCarousel';
-import { useLandingStackMotion } from '@/hooks/useLandingStackMotion';
 import { useLandingStoryInteractions } from '@/hooks/useLandingStoryInteractions';
 
 export function useLandingInteractions(landingRef: RefObject<HTMLElement | null>) {
     useLandingStoryInteractions(landingRef);
-    useLandingStackMotion(landingRef);
     useLandingFeatureCarousel(landingRef);
     useLandingFaqInteraction(landingRef);
 

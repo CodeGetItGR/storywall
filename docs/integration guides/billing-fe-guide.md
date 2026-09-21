@@ -8,11 +8,9 @@ needs to sell an event and give money back. Current as of 2026-09-04.
 with a CTA, not just billing ones. **`notification-cta-target-fe-integration.md` has the full
 reference.**
 
-**2026-09-02, revised 2026-09-21:** Hosts can delete an event — `POST`/`DELETE
-/api/events/{eventId}/deletion-requests`, primary-host-only, confirmed with a one-time 6-digit code
-mailed to the primary host (previously: their account password), undoable for 30 days (§5). The old
-any-host, no-confirmation `DELETE /api/events/{id}` is gone. **`event-deletion-fe-integration.md` has
-the full reference.**
+**2026-09-02:** Hosts can delete an event — `POST`/`DELETE /api/events/{eventId}/deletion-requests`,
+primary-host-only, password-confirmed, undoable for 30 days (§5). The old any-host, no-confirmation
+`DELETE /api/events/{id}` is gone. **`event-deletion-fe-integration.md` has the full reference.**
 
 **2026-08-26:** The monthly "preservation" subscription is gone — **every purchase on this platform
 is now one-time.** An event, once activated, stays `ACTIVE` indefinitely; there is no coverage window,
@@ -376,6 +374,8 @@ the top tier.
 
 ```
 DRAFT ──(activation paid)──► ACTIVE
+   ▲                            │
+   └────(refund approved)───────┘
 ```
 
 That's the whole lifecycle. `FROZEN` and `PURGED` do not exist — there is nothing left to lapse into
@@ -387,8 +387,9 @@ them, since activation no longer buys a coverage window that can run out. `statu
 | `DRAFT` | hosts only | hosts only | **cannot join or be invited** | not in listings for anyone else |
 | `ACTIVE` | yes | yes | yes | the normal, permanent state once paid for |
 
-There is no backwards transition any more: **withdrawal is terminal** — it refunds the host and
-soft-deletes the event in the same call, rather than returning it to `DRAFT`. See §9.
+One thing worth internalising: **an approved refund returns an `ACTIVE` event to `DRAFT`** — the one
+backwards transition, and it is about a refund decision, never about non-payment (there is nothing to
+under-pay any more). See §9.
 
 If your code still branches on `'FROZEN'` or `'PURGED'` — a read-only banner, a purge-warning screen,
 an `EVENT_FROZEN` error handler — delete it. `EventStatus` is a two-value union now (§14) and a `409`
@@ -397,10 +398,8 @@ from a write is never about the event's own lapsed payment status any more.
 **Orthogonal to `status`: an event can now also be pending deletion.** `deletionScheduledFor`
 (non-null = a deletion request is pending, purged permanently on that date) is set by the primary
 host via `POST /api/events/{eventId}/deletion-requests` and cleared by any host via `DELETE` on the
-same path — undoable up until the purge date. A pending-deletion event 404s from normal reads for
-everyone except its hosts, who can still retrieve it via `GET /api/events/{id}` and
-`GET /api/events` — same as any other soft-deleted event. See `event-deletion-fe-integration.md` for
-the full contract.
+same path — undoable up until the purge date. A pending-deletion event 404s from every normal read,
+same as any other soft-deleted event. See `event-deletion-fe-integration.md` for the full contract.
 
 ---
 
@@ -1300,7 +1299,7 @@ name, for logs). Branch on `errorCode`.
 | `5031` `CHECKOUT_SESSION_UNRESOLVED` | 409 | a checkout session with the provider couldn't be resolved during reconciliation | internal; surfaces as the generic "still processing" state (§6 step 5), not a distinct UI |
 | `5046` `CHECKOUT_AMOUNT_BELOW_MINIMUM` | 409 | a plan discount cut a checkout's price below what the provider will charge at all | catalog misconfiguration (discount set too steep); host sees a generic failure and support has to fix the discount |
 | `5053` `PLAN_TIER_NOT_AVAILABLE_FOR_EVENT_TYPE` | 409 | `POST /api/events`'s `planTierCode` has restricted itself away from the request's `eventType` (§2, §6) | source the plan list from `GET /api/plan-tiers?eventType=X` instead of a stale/cached one |
-| `5071` `EVENT_WITHDRAWN` | 409 | `DELETE /api/events/{eventId}/deletion-requests` on an event whose activation was refunded via withdrawal (§9) | not fixable — a withdrawn event's deletion cannot be cancelled; point the host at the download-only gallery/wishbook link instead |
+| `5071` `EVENT_WITHDRAWN` | 409 | `POST /api/events/{eventId}/cancel-deletion` on an event whose activation was refunded via withdrawal (§9) | not fixable — a withdrawn event's deletion cannot be cancelled; point the host at the download-only gallery/wishbook link instead |
 
 ### Withdrawal
 
