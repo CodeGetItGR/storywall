@@ -14,6 +14,7 @@ export function PlanCreateAssignments({
     moduleKeys,
     eventTypes,
     modules,
+    eventTypeLocked = false,
     onEventTypeSelectAction,
     onModuleChangeAction,
 }: {
@@ -21,6 +22,7 @@ export function PlanCreateAssignments({
     moduleKeys: ModuleKey[];
     eventTypes: PlatformEventTypeResponseDto[];
     modules: PlatformModuleResponseDto[];
+    eventTypeLocked?: boolean;
     onEventTypeSelectAction: ChangeEventHandler<HTMLSelectElement>;
     onModuleChangeAction: ChangeEventHandler<HTMLInputElement>;
 }) {
@@ -32,7 +34,13 @@ export function PlanCreateAssignments({
             {/* Event type */}
             <AdminSection title={t('planAvailability.createTitle')} description={t('planAvailability.createHint')}>
                 <AdminField label={t('plans.tabs.eventTypes')} required>
-                    <select required value={eventTypeKey ?? ''} onChange={onEventTypeSelectAction} className={adminInputClass('max-w-xs')}>
+                    <select
+                        required
+                        disabled={eventTypeLocked}
+                        value={eventTypeKey ?? ''}
+                        onChange={onEventTypeSelectAction}
+                        className={adminInputClass('max-w-xs')}
+                    >
                         <option value="" disabled>
                             {t('planAvailability.selectType')}
                         </option>

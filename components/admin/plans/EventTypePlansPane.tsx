@@ -57,6 +57,7 @@ export function EventTypePlansPane({ eventType, section }: { eventType: Platform
                 modules={section.modules}
                 scope="EVENT"
                 sourcePlan={pane.duplicatePlan}
+                initialEventTypeKey={eventType.eventTypeKey}
             />
 
             <AdminDrawer

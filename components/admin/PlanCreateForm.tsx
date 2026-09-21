@@ -52,6 +52,7 @@ export function PlanCreateForm({
     modules,
     scope,
     sourcePlan,
+    initialEventTypeKey,
 }: {
     open: boolean;
     onCloseAction: () => void;
@@ -61,6 +62,7 @@ export function PlanCreateForm({
     modules: PlatformModuleResponseDto[];
     scope: PlanScope;
     sourcePlan?: PlanTierResponseDto | null;
+    initialEventTypeKey?: EventTypeConvention | null;
 }) {
     return sourcePlan ? (
         <PlanDuplicateForm
@@ -81,6 +83,7 @@ export function PlanCreateForm({
             eventTypes={eventTypes}
             modules={modules}
             scope={scope}
+            initialEventTypeKey={initialEventTypeKey ?? null}
         />
     );
 }
@@ -316,6 +319,7 @@ function PlanCreateNewForm({
     eventTypes,
     modules,
     scope,
+    initialEventTypeKey,
 }: {
     open: boolean;
     onCloseAction: () => void;
@@ -324,6 +328,7 @@ function PlanCreateNewForm({
     eventTypes: PlatformEventTypeResponseDto[];
     modules: PlatformModuleResponseDto[];
     scope: PlanScope;
+    initialEventTypeKey: EventTypeConvention | null;
 }) {
     const t = useTranslations('AdminPage');
     const queryClient = useQueryClient();
@@ -345,7 +350,7 @@ function PlanCreateNewForm({
     const [visibility, setVisibility] = useState<Visibility>('LIVE');
     const [createdPlanId, setCreatedPlanId] = useState<string | null>(null);
     const nextSortOrder = useMemo(() => Math.max(-1, ...plans.map((plan) => plan.sortOrder)) + 1, [plans]);
-    const assignments = usePlanCreateAssignments(eventTypes, modules);
+    const assignments = usePlanCreateAssignments(eventTypes, modules, initialEventTypeKey);
 
     // The code is an identifier the admin should not have to invent: it follows the
     // name until they deliberately type over it.
@@ -610,6 +615,7 @@ function PlanCreateNewForm({
                         moduleKeys={assignments.moduleKeys}
                         eventTypes={assignments.orderedEventTypes}
                         modules={assignments.orderedModules}
+                        eventTypeLocked={Boolean(initialEventTypeKey)}
                         onEventTypeSelectAction={assignments.handleEventTypeSelect}
                         onModuleChangeAction={assignments.handleModuleChange}
                     />
