@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion, type TargetAndTransition, useReducedMotion } from 'framer-motion';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 const HERO_SPRITES = [
@@ -9,7 +9,7 @@ const HERO_SPRITES = [
         posClass:
             'absolute h-auto max-w-none left-[-0.72%] top-[56.88%] w-[40.43%] z-[4] min-[761px]:left-[-4.66%] min-[761px]:top-[41.73%] min-[761px]:w-[43.3%] min-[761px]:z-[3]',
         motionClass: 'motion-hero-drift-left',
-        duration: '6.8s',
+        duration: '5.2s',
         delay: '0s',
     },
     {
@@ -19,7 +19,7 @@ const HERO_SPRITES = [
         posClass:
             'absolute h-auto max-w-none left-[53.62%] top-[67.51%] w-[38.24%] z-[12] min-[761px]:left-[59.2%] min-[761px]:top-[53.67%] min-[761px]:w-[32.3%] min-[761px]:z-[8]',
         motionClass: 'motion-hero-drift-right',
-        duration: '7.4s',
+        duration: '5.5s',
         delay: '0s',
     },
     {
@@ -29,7 +29,7 @@ const HERO_SPRITES = [
         posClass:
             'absolute h-auto max-w-none left-[42.75%] top-[37.68%] w-[44.99%] z-[12] min-[761px]:left-[51.2%] min-[761px]:top-[37.4%] min-[761px]:w-[35%] min-[761px]:z-[9]',
         motionClass: 'motion-hero-drift-right',
-        duration: '6.2s',
+        duration: '5s',
         delay: '-1.4s',
     },
     {
@@ -39,7 +39,7 @@ const HERO_SPRITES = [
         posClass:
             'absolute h-auto max-w-none left-[49.39%] top-[99.25%] w-[36.65%] z-[12] min-[761px]:left-[58.07%] min-[761px]:top-[81.38%] min-[761px]:w-[39.1%] min-[761px]:z-[9]',
         motionClass: 'motion-hero-drift-left',
-        duration: '7.1s',
+        duration: '5.5s',
         delay: '-0.8s',
     },
     {
@@ -49,7 +49,7 @@ const HERO_SPRITES = [
         posClass:
             'absolute h-auto max-w-none left-[8.73%] top-[12.27%] w-[23.39%] z-[12] min-[761px]:left-[6.14%] min-[761px]:top-[13.72%] min-[761px]:w-[18.2%] min-[761px]:z-[10]',
         motionClass: 'motion-hero-float-strong',
-        duration: '5.8s',
+        duration: '4.5s',
         delay: '0s',
     },
     {
@@ -59,7 +59,7 @@ const HERO_SPRITES = [
         posClass:
             'absolute h-auto max-w-none left-[68.93%] top-[27.59%] w-[13.62%] z-[12] min-[761px]:left-[64.97%] min-[761px]:top-[22.78%] min-[761px]:w-[10.4%] min-[761px]:z-[10]',
         motionClass: 'motion-hero-float-soft',
-        duration: '6.4s',
+        duration: '3.8s',
         delay: '-0.9s',
     },
     {
@@ -69,7 +69,7 @@ const HERO_SPRITES = [
         posClass:
             'absolute h-auto max-w-none left-[6.3%] top-[67.92%] w-[5.4%] z-[12] min-[761px]:left-[-2.33%] min-[761px]:top-[66.52%] min-[761px]:w-[10.3%] min-[761px]:z-[10]',
         motionClass: 'motion-hero-float-soft',
-        duration: '5.4s',
+        duration: '4.5s',
         delay: '-1.6s',
     },
     {
@@ -79,7 +79,7 @@ const HERO_SPRITES = [
         posClass:
             'absolute h-auto max-w-none left-[62.45%] top-[93.06%] w-[4.2%] z-[12] min-[761px]:left-[76.24%] min-[761px]:top-[74.09%] min-[761px]:w-[4.2%] min-[761px]:z-[11]',
         motionClass: 'motion-hero-pulse-flash',
-        duration: '3.8s',
+        duration: '3.0s',
         delay: '0s',
     },
     {
@@ -89,7 +89,7 @@ const HERO_SPRITES = [
         posClass:
             'absolute h-auto max-w-none left-[62.64%] top-[85.86%] w-[17.42%] z-[12] min-[761px]:left-[76.82%] min-[761px]:top-[72.86%] min-[761px]:w-[12.9%] min-[761px]:z-[11]',
         motionClass: 'motion-hero-float-soft',
-        duration: '6.7s',
+        duration: '4.5s',
         delay: '-2.1s',
     },
     {
@@ -99,7 +99,7 @@ const HERO_SPRITES = [
         posClass:
             'absolute h-auto max-w-none left-[13.2%] top-[85.25%] w-[17.46%] z-[12] min-[761px]:left-[12.7%] min-[761px]:top-[71.44%] min-[761px]:w-[15.7%] min-[761px]:z-[10]',
         motionClass: 'motion-hero-note-float',
-        duration: '6s',
+        duration: '4.5s',
         delay: '-0.5s',
     },
     {
@@ -109,7 +109,7 @@ const HERO_SPRITES = [
         posClass:
             'absolute h-auto max-w-none left-[53.54%] top-[34.68%] w-[10.85%] z-[12] min-[761px]:left-[67.4%] min-[761px]:top-[34.2%] min-[761px]:w-[7%] min-[761px]:z-[11]',
         motionClass: 'motion-hero-float-soft',
-        duration: '5.5s',
+        duration: '3.5s',
         delay: '-1.2s',
     },
     {
@@ -119,7 +119,7 @@ const HERO_SPRITES = [
         posClass:
             'absolute h-auto max-w-none left-[18.41%] top-[40.31%] w-[5.6%] z-[12] min-[761px]:left-[18.4%] min-[761px]:top-[40.3%] min-[761px]:w-[5.6%] min-[761px]:z-[10]',
         motionClass: 'motion-hero-heart-float',
-        duration: '5.1s',
+        duration: '4s',
         delay: '-0.8s',
     },
     {
@@ -129,7 +129,7 @@ const HERO_SPRITES = [
         posClass:
             'absolute h-auto max-w-none left-[75.58%] top-[21.78%] w-[4.5%] z-[12] min-[761px]:left-[72.04%] min-[761px]:top-[15.84%] min-[761px]:w-[3.9%] min-[761px]:z-[10]',
         motionClass: 'motion-hero-heart-float',
-        duration: '4.7s',
+        duration: '3.5s',
         delay: '-1.8s',
     },
     {
@@ -139,7 +139,7 @@ const HERO_SPRITES = [
         posClass:
             'absolute h-auto max-w-none left-[88.07%] top-[48.02%] w-[9.21%] z-[12] min-[761px]:left-[80.53%] min-[761px]:top-[49.4%] min-[761px]:w-[9.2%] min-[761px]:z-[10]',
         motionClass: 'motion-hero-heart-float',
-        duration: '5.6s',
+        duration: '4.5s',
         delay: '-0.2s',
     },
     {
@@ -149,7 +149,7 @@ const HERO_SPRITES = [
         posClass:
             'absolute h-auto max-w-none left-[12.97%] top-[103.22%] w-[7.61%] z-[12] min-[761px]:left-[17.83%] min-[761px]:top-[87.98%] min-[761px]:w-[5%] min-[761px]:z-[10]',
         motionClass: 'motion-hero-heart-float',
-        duration: '4.9s',
+        duration: '3.5s',
         delay: '-2.4s',
     },
     {
@@ -159,7 +159,7 @@ const HERO_SPRITES = [
         posClass:
             'absolute h-auto max-w-none left-[73.08%] top-[66.76%] w-[4.5%] z-[12] min-[761px]:left-[67.36%] min-[761px]:top-[82.01%] min-[761px]:w-[4.5%] min-[761px]:z-[10]',
         motionClass: 'motion-hero-heart-float',
-        duration: '5.3s',
+        duration: '4.5s',
         delay: '-1.1s',
     },
 ] as const;
@@ -172,6 +172,16 @@ const PHONE_WRAP_CLASS =
 
 const PHONE_FEED_TRACK_CLASS = 'absolute top-0 left-[-2.85%] w-[105.65%] will-change-transform min-[761px]:w-[105.7%]';
 
+const HERO_SPRITE_MOTION = {
+    'motion-hero-drift-left': { x: [8, -12, 8], y: [5, -14, 5], rotate: [0.8, -0.9, 0.8] },
+    'motion-hero-drift-right': { x: [-10, 14, -10], y: [4, -12, 4], rotate: [-0.8, 0.9, -0.8] },
+    'motion-hero-float-strong': { x: [-6, 12, -6], y: [7, -24, 7], rotate: [-3, 5, -3], scale: [0.99, 1.035, 0.99] },
+    'motion-hero-float-soft': { x: [-4, 8, -4], y: [5, -17, 5], rotate: [-1.5, 2.2, -1.5] },
+    'motion-hero-pulse-flash': { x: [-3, 5, -3], y: [4, -13, 4], rotate: [-2, 3, -2], scale: [0.94, 1.08, 0.94] },
+    'motion-hero-note-float': { x: [-7, 13, -7], y: [7, -23, 7], rotate: [-8, 9, -8], scale: [0.98, 1.055, 0.98] },
+    'motion-hero-heart-float': { x: [-4, 7, -4], y: [5, -18, 5], rotate: [-2, 3, -2], scale: [0.97, 1.045, 0.97] },
+} satisfies Record<(typeof HERO_SPRITES)[number]['motionClass'], TargetAndTransition>;
+
 export function LandingHeroVisual() {
     const reduceMotion = useReducedMotion();
     const [firstSprite, ...restSprites] = HERO_SPRITES;
@@ -180,9 +190,9 @@ export function LandingHeroVisual() {
         <div aria-hidden="true" className={HERO_VISUAL_CLASS}>
             {/* Floating social post */}
             <motion.div
-                animate={reduceMotion ? undefined : { y: [0, -5, 0] }}
+                animate={reduceMotion ? undefined : HERO_SPRITE_MOTION[firstSprite.motionClass]}
                 className={firstSprite.posClass}
-                transition={{ duration: 6.8, ease: 'easeInOut', repeat: Infinity }}
+                transition={{ duration: Number.parseFloat(firstSprite.duration), ease: 'easeInOut', repeat: Infinity }}
             >
                 <ProtectedImage alt="" className="h-auto w-full" height={firstSprite.height} src={firstSprite.src} width={firstSprite.width} />
             </motion.div>
@@ -226,7 +236,7 @@ export function LandingHeroVisual() {
             {/* Surrounding reactions and posts */}
             {restSprites.map((sprite) => (
                 <motion.div
-                    animate={reduceMotion ? undefined : { y: [0, -5, 0] }}
+                    animate={reduceMotion ? undefined : HERO_SPRITE_MOTION[sprite.motionClass]}
                     className={sprite.posClass}
                     key={sprite.src}
                     transition={{

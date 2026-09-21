@@ -143,7 +143,7 @@ export function LandingHero() {
                             <span aria-hidden="true" className="inline-block h-[.85em] w-0.5 animate-pulse bg-[#ee9971]" />
                         </p>
                         <h1
-                            className="max-w-142.5 font-[Baskerville,Georgia,serif] text-[clamp(48px,13vw,66px)] leading-[.93] font-normal tracking-[-.06em] min-[761px]:text-[clamp(54px,3.45vw,70px)]"
+                            className="max-w-142.5 font-[Baskerville,Georgia,serif] text-[clamp(44px,13vw,64px)] leading-[.93] font-normal tracking-[-.06em] min-[761px]:text-[clamp(54px,3.45vw,70px)]"
                             id="sw-new-hero-title"
                         >
                             {title.map((line) => (
