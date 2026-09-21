@@ -2366,6 +2366,19 @@
         },
         "plans": {
             "loading": "Loading plans...",
+            "sectionTitle": "Plans",
+            "noEventTypes": "No event types yet.",
+            "rail": {
+                "eventTypes": "Event types",
+                "noMatches": "No matches.",
+                "settings": "Settings",
+                "modules": "Modules",
+                "eventTypesSettings": "Event types"
+            },
+            "settings": {
+                "modulesTitle": "Modules",
+                "eventTypesTitle": "Event types"
+            },
             "default": "Default",
             "archived": "Archived",
             "noPrice": "No price",

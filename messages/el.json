@@ -2294,6 +2294,19 @@
         },
         "plans": {
             "loading": "Φόρτωση πλάνων...",
+            "sectionTitle": "Πλάνα",
+            "noEventTypes": "Δεν υπάρχουν τύποι εκδηλώσεων.",
+            "rail": {
+                "eventTypes": "Τύποι εκδηλώσεων",
+                "noMatches": "Δεν βρέθηκαν αποτελέσματα.",
+                "settings": "Ρυθμίσεις",
+                "modules": "Ενότητες",
+                "eventTypesSettings": "Τύποι εκδηλώσεων"
+            },
+            "settings": {
+                "modulesTitle": "Ενότητες",
+                "eventTypesTitle": "Τύποι εκδηλώσεων"
+            },
             "default": "Προεπιλογή",
             "archived": "Αρχειοθετημένο",
             "noPrice": "Χωρίς τιμή",
