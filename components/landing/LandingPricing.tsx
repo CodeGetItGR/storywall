@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
-import { LandingPricingCard } from '@/components/landing/LandingPricingCard';
+import { MarketingPlanCard } from '@/components/plan/MarketingPlanCard';
 import { useLandingPricingCategory } from '@/hooks/useLandingPricingCategory';
 import { useLandingPricingPlans } from '@/hooks/useLandingPricingPlans';
 import { cn } from '@/lib/utils';
@@ -83,7 +83,7 @@ export function LandingPricing() {
             >
                 {categories[category].plans.length &&
                     categories[category].plans.map((plan, index) => (
-                        <LandingPricingCard
+                        <MarketingPlanCard
                             featured={index === 1}
                             key={`${category}-${plan.name}`}
                             photosLabel={t('photosLabel')}

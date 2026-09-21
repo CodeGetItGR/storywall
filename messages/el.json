@@ -927,6 +927,7 @@
         "continueToOverview": "Συνέχεια στην επισκόπηση",
         "backToPlans": "Πίσω στα πλάνα",
         "selectedPlan": "Επιλεγμένο πλάνο: {plan}",
+        "planSelected": "ΕΠΙΛΕΓΜΕΝΟ",
         "actions": {
             "back": "Πίσω"
         },
@@ -1400,6 +1401,7 @@
             "upgradeChargeUnlimited": "{amount} για την αναβάθμιση. Η κάλυψη παραμένει απεριόριστη.",
             "upgradeChargeNoDate": "{amount} για την αναβάθμιση.",
             "upgradeChargeUnavailable": "Η τιμή της αναβάθμισης δεν είναι διαθέσιμη αυτή τη στιγμή.",
+            "upgradePriceLabel": "Ποσό για την αναβάθμιση",
             "upgradeOptions": "Επιλογές αναβάθμισης",
             "upgradeOptionsTitle": "Διαθέσιμες από το {plan}",
             "upgradeCoverageThrough": "Η κάλυψη συνεχίζεται έως {date}.",
@@ -1449,8 +1451,10 @@
             "flags": "Ρυθμίσεις",
             "modules": "Λειτουργίες",
             "moduleChanges": "Νέες λειτουργίες",
+            "removedModules": "Δεν περιλαμβάνονται πλέον",
             "moduleCount": "{count, plural, one {# λειτουργία} other {# λειτουργίες}}",
             "noModuleChanges": "Δεν προστίθενται νέες λειτουργίες. Η αναβάθμιση αυξάνει κυρίως τα όρια.",
+            "noChanges": "Δεν αναφέρονται αλλαγές σε όρια ή λειτουργίες για αυτό το πλάνο.",
             "allPlansTitle": "Όλα τα πλάνα",
             "mediaCapacity": "Χωρητικότητα αρχείων",
             "mediaAssumption": "Υπολογισμός με φωτογραφίες περίπου 4 MB και βίντεο περίπου 90 MB.",

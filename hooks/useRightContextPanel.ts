@@ -1,12 +1,13 @@
 'use client';
 
 import { useAppConfig } from '@/hooks/useAppConfig';
+import { useUpgradeOptions } from '@/hooks/useBilling';
 import { useGalleryArchiveManifest } from '@/hooks/useGalleryArchive';
 import { useEventQrLinks } from '@/hooks/useQrLinks';
 import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
 import { useEventUsage } from '@/hooks/useUsage';
 import { useWishbook } from '@/hooks/useWishbook';
-import { findNextPlan, findPlanByCode } from '@/lib/planTiers';
+import { findPlanByCode } from '@/lib/planTiers';
 import { findGalleryQrLink, isGalleryQrFeatureEnabled } from '@/lib/qrLinks';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
@@ -24,6 +25,7 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
     const { data: appConfig } = useAppConfig();
 
     const isDraft = activeEvent?.status === 'DRAFT';
+    const { data: upgradeOptions = [] } = useUpgradeOptions(isHost ? (activeEvent?.id ?? null) : null, !isDraft);
     const availableModuleKeys = new Set((activeEvent?.modules ?? []).filter((module) => module.isAvailable).map((module) => module.moduleKey));
 
     const showRsvpSummary = isHost && !isDraft && availableModuleKeys.has('rsvp');
@@ -55,7 +57,7 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
           : [...hostItemsForActions, ...toolItems.filter((item) => item.key !== 'rsvp')];
 
     const currentPlan = eventUsage ? findPlanByCode(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
-    const nextPlan = eventUsage ? findNextPlan(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
+    const nextUpgradeOption = upgradeOptions[0];
     const globallyEnabledModules = (appConfig?.modules ?? []).filter((module_) => module_.isEnabled);
     const enabledModuleKeys = new Set(globallyEnabledModules.map((module_) => module_.moduleKey));
     const includedModuleKeys =
@@ -68,7 +70,7 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
         isDraft,
         eventUsage,
         currentPlan,
-        nextPlan,
+        nextUpgradeOption,
         includedModuleKeys,
         actionItems,
         showRsvpSummary,

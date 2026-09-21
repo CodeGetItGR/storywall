@@ -869,6 +869,7 @@
         "continueToOverview": "Continue to overview",
         "backToPlans": "Back to plans",
         "selectedPlan": "Selected plan: {plan}",
+        "planSelected": "SELECTED",
         "actions": {
             "back": "Back"
         },
@@ -1372,6 +1373,7 @@
             "upgradeChargeUnlimited": "{amount} for the upgrade. Your coverage stays unlimited.",
             "upgradeChargeNoDate": "{amount} for the upgrade.",
             "upgradeChargeUnavailable": "The upgrade price is not available right now.",
+            "upgradePriceLabel": "Amount due for the upgrade",
             "upgradeOptions": "Upgrade options",
             "upgradeOptionsTitle": "Available from {plan}",
             "upgradeCoverageThrough": "Your coverage still runs through {date}.",
@@ -1421,8 +1423,10 @@
             "flags": "Flags",
             "modules": "Included modules",
             "moduleChanges": "New modules",
+            "removedModules": "No longer included",
             "moduleCount": "{count} modules",
             "noModuleChanges": "No new modules on this tier. The upgrade mainly increases limits.",
+            "noChanges": "No quota or module changes are listed for this plan.",
             "allPlansTitle": "All published tiers",
             "mediaCapacity": "Approx media",
             "mediaAssumption": "Based on ~4 MB photos and ~90 MB videos.",

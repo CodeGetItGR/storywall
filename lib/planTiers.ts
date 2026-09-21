@@ -51,10 +51,19 @@ export function findPlanByCode(plans: PlanTierResponseDto[], scope: PlanScope, c
 }
 
 export function findNextPlan(plans: PlanTierResponseDto[], scope: PlanScope, code: string): PlanTierResponseDto | undefined {
-    const scopedPlans = publicAssignablePlans(plans, scope);
-    const currentIndex = scopedPlans.findIndex((plan) => plan.code === code);
-    if (currentIndex < 0) return scopedPlans[0];
-    return scopedPlans[currentIndex + 1];
+    const currentPlan = scopedPlans(plans, scope).find((plan) => plan.code === code);
+    if (!currentPlan || currentPlan.priceAmountMinor === null || !currentPlan.priceCurrency) return undefined;
+    const currentPriceAmountMinor = currentPlan.priceAmountMinor;
+    const currentPriceCurrency = currentPlan.priceCurrency;
+
+    return publicAssignablePlans(plans, scope).find(
+        (plan) =>
+            plan.code !== currentPlan.code &&
+            (scope !== 'EVENT' || plan.eventTypeKey === currentPlan.eventTypeKey) &&
+            plan.priceCurrency === currentPriceCurrency &&
+            plan.priceAmountMinor !== null &&
+            plan.priceAmountMinor > currentPriceAmountMinor
+    );
 }
 
 export function findPlansUnlockingModule(plans: PlanTierResponseDto[], moduleKey: ModuleKey): PlanTierResponseDto[] {

@@ -12,6 +12,7 @@ import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { type SubTabItem, SubTabs } from '@/components/ui/SubTabs';
 import { useAppConfig } from '@/hooks/useAppConfig';
+import { useUpgradeOptions } from '@/hooks/useBilling';
 import { useMemberModeration } from '@/hooks/useMemberModeration';
 import type {
     EventHostResponseDto,
@@ -22,7 +23,7 @@ import type {
     PlanTierResponseDto,
 } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
-import { findNextPlan, findPlanByCode } from '@/lib/planTiers';
+import { findPlanByCode } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 
 import { CoHostManagementList } from './CoHostManagementList';
@@ -70,6 +71,7 @@ export function MembersPanel({
     const [limitNotice, setLimitNotice] = useState<string | null>(null);
 
     const moderation = useMemberModeration(eventId, canModerate);
+    const { data: upgradeOptions = [] } = useUpgradeOptions(eventId);
     const handleConfirmRemove = useCallback(() => moderation.confirmRemove(tMembers('removeFailed')), [moderation, tMembers]);
     const canReport = canModerate && Boolean(appConfig?.reportTargetTypes?.includes('MEMBER'));
 
@@ -86,7 +88,8 @@ export function MembersPanel({
     const memberCount = eventUsage?.memberCount ?? 0;
     const isFull = memberLimit !== null && memberCount >= memberLimit;
     const currentPlan = eventUsage ? findPlanByCode(planTiers, 'EVENT', eventUsage.planTier) : undefined;
-    const nextPlan = eventUsage ? findNextPlan(planTiers, 'EVENT', eventUsage.planTier) : undefined;
+    const nextUpgradeOption = upgradeOptions[0];
+    const nextPlan = nextUpgradeOption ? findPlanByCode(planTiers, 'EVENT', nextUpgradeOption.planTierCode) : undefined;
     const upgradeHref = routes.events.manage(eventId, { tab: 'billing' });
 
     const canCreate = canWrite && !isFull;
@@ -125,7 +128,7 @@ export function MembersPanel({
                     <UsagePanel
                         title={t('invitations.capacity.title')}
                         planName={currentPlan?.name ?? eventUsage.planTier}
-                        nextPlanName={isFull ? nextPlan?.name : undefined}
+                        nextPlanName={isFull ? nextUpgradeOption?.planTierName : undefined}
                         upgradeHref={upgradeHref}
                         items={[
                             {

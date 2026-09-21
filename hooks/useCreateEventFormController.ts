@@ -79,6 +79,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
     // fail-closed if a stale or malformed response includes a disabled type.
     const eventTypes = appConfig?.eventTypes.filter((eventType) => eventType.isEnabled) ?? [];
     const modules = appConfig?.modules ?? [];
+    const media = appConfig?.media ?? null;
 
     const fieldErrors = getFieldErrors(createEvent.error);
     const selectedEventType = eventTypes.find((type) => type.eventTypeKey === eventType)?.eventTypeKey ?? eventTypes[0]?.eventTypeKey ?? eventType;
@@ -293,6 +294,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
 
         eventPlans,
         modules,
+        media,
         selectedCode,
         selectedPlan,
         onSelectPlan: setSelectedPlanCode,

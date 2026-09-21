@@ -14,6 +14,7 @@ import { EventPlanSelector } from '@/components/plan/EventPlanSelector';
 import { BackButton } from '@/components/ui/BackButton';
 import { useAuth } from '@/hooks/useAuth';
 import { routes } from '@/lib/routes';
+import { cn } from '@/lib/utils';
 import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 import { CreateEventFormProvider } from '@/providers/CreateEventFormProvider';
 
@@ -53,11 +54,11 @@ export default function CreateEventPage() {
 
 function CreateEventFormBody() {
     const t = useTranslations('CreateEventPage');
-    const { step, formId, handleSubmit, eventPlans, modules, selectedCode, onSelectPlan, isPlansLoading } = useCreateEventForm();
+    const { step, formId, handleSubmit, eventPlans, modules, media, selectedCode, onSelectPlan, isPlansLoading } = useCreateEventForm();
 
     return (
         <main className="flex h-full flex-col bg-background">
-            <div className="mx-auto flex min-h-0 w-full max-w-2xl flex-1 flex-col px-4">
+            <div className={cn('mx-auto flex min-h-0 w-full flex-1 flex-col px-4', step === 'plan' ? 'max-w-6xl' : 'max-w-2xl')}>
                 {/* Header */}
                 <div className="flex shrink-0 items-center gap-3 py-4">
                     <BackButton variant="icon" href={routes.home} label={t('goBack')} />
@@ -84,6 +85,7 @@ function CreateEventFormBody() {
                             <EventPlanSelector
                                 plans={eventPlans}
                                 modules={modules}
+                                media={media}
                                 selectedCode={selectedCode}
                                 onSelectAction={onSelectPlan}
                                 isLoading={isPlansLoading}

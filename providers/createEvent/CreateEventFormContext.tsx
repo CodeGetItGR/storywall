@@ -5,6 +5,7 @@ import { createContext, useContext } from 'react';
 
 import type {
     AppEventTypeResponseDto,
+    AppMediaConfigDto,
     CollaborationCodePreviewResponseDto,
     EventTypeConvention,
     PlanTierResponseDto,
@@ -31,6 +32,7 @@ export interface CreateEventFormValue {
     // Plan step
     eventPlans: PlanTierResponseDto[];
     modules: PlatformModuleResponseDto[];
+    media: AppMediaConfigDto | null;
     selectedCode: string;
     selectedPlan: PlanTierResponseDto | undefined;
     onSelectPlan: (code: string) => void;

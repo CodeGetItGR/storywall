@@ -2,9 +2,10 @@ import { PackagePlus } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { PlanUpgradeDiff } from '@/components/manage/billing/PlanUpgradeDiff';
 import Section from '@/components/manage/Section';
 import { type BillingData, type BillingDerived, type BillingInsights } from '@/hooks/useEventBillingPanel';
-import type { PaidServiceResponseDto, PlanTierResponseDto } from '@/lib/api/types';
+import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto, UpgradeOptionResponseDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
 import { routes } from '@/lib/routes';
 
@@ -14,7 +15,9 @@ export function BillingPlanPanel({
     derived,
     insights,
     currentPlan,
-    nextPlan,
+    nextUpgradeOption,
+    nextUpgradePlan,
+    platformModules,
     paidAddonOffers,
 }: {
     eventId: string;
@@ -22,7 +25,9 @@ export function BillingPlanPanel({
     derived: BillingDerived;
     insights: BillingInsights;
     currentPlan: PlanTierResponseDto | null;
-    nextPlan: PlanTierResponseDto | null;
+    nextUpgradeOption: UpgradeOptionResponseDto | null;
+    nextUpgradePlan: PlanTierResponseDto | null;
+    platformModules: PlatformModuleResponseDto[];
     paidAddonOffers: PaidServiceResponseDto[];
 }) {
     const t = useTranslations('EventPlanSettingsPage');
@@ -34,8 +39,6 @@ export function BillingPlanPanel({
         upgradeListAmount !== null && upgradeAmount !== null && upgradeAmount !== upgradeListAmount
             ? formatMoney(locale, upgradeListAmount, upgradeCurrency)
             : null;
-    const upgradeChargeLabel = upgradeDueLabel ? t('compare.upgradeChargeNoDate', { amount: upgradeDueLabel }) : null;
-
     return (
         <div className="flex flex-col gap-5">
             {/* Active add-ons */}
@@ -68,36 +71,45 @@ export function BillingPlanPanel({
             )}
 
             {/* Upgrade */}
-            {nextPlan && currentPlan && (
+            {nextUpgradeOption && (
                 <Section divider>
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div className="min-w-0">
-                            <h3 className="text-base font-bold text-ink">{t('compare.upgradeTitle', { plan: nextPlan.name })}</h3>
+                            <h3 className="text-base font-bold text-ink">{t('compare.upgradeTitle', { plan: nextUpgradeOption.planTierName })}</h3>
                             <p className="mt-1 max-w-3xl text-sm leading-relaxed text-ink-muted">
                                 {t('compare.upgradeSubtitle', { plan: data.planTierName })}
                             </p>
                         </div>
                     </div>
-                    <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-ink-muted">
-                        <span className="font-semibold text-ink">{currentPlan.name}</span>
-                        <span className="text-ink-faint">{t('compare.to')}</span>
-                        <span className="font-semibold text-ink">{nextPlan.name}</span>
-                        <span className="text-ink-faint">-</span>
-                        <span>
-                            {upgradeChargeLabel ?? t('compare.upgradeChargeUnavailable')}
-                            {upgradeListDueLabel && (
-                                <span className="ml-2 text-xs font-semibold text-ink-faint">
-                                    <span className="line-through">{upgradeListDueLabel}</span>
-                                    {derived.upgradeDiscountLabel && <span className="ml-1">{derived.upgradeDiscountLabel}</span>}
-                                </span>
+                    <PlanUpgradeDiff currentPlan={currentPlan} targetPlan={nextUpgradePlan} modules={platformModules} />
+                    {/* Upgrade payment */}
+                    <div className="mt-5 flex flex-col gap-4 rounded-xl bg-primary-light/55 p-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="min-w-0">
+                            <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-muted">{t('compare.upgradePriceLabel')}</p>
+                            {upgradeDueLabel ? (
+                                <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                                    <span className="text-3xl font-bold text-primary-dark tabular-nums">{upgradeDueLabel}</span>
+                                    {upgradeListDueLabel && (
+                                        <span className="text-sm font-semibold text-ink-faint">
+                                            <span className="line-through">{upgradeListDueLabel}</span>
+                                            {derived.upgradeDiscountLabel && <span className="ml-1.5">{derived.upgradeDiscountLabel}</span>}
+                                        </span>
+                                    )}
+                                </div>
+                            ) : (
+                                <p className="mt-1 text-sm font-semibold text-ink">{t('compare.upgradeChargeUnavailable')}</p>
                             )}
-                        </span>
+                            <p className="mt-1 text-sm text-ink-muted">
+                                <span className="font-semibold text-ink">{data.planTierName}</span> {t('compare.to')}{' '}
+                                <span className="font-semibold text-ink">{nextUpgradeOption.planTierName}</span>
+                            </p>
+                        </div>
                         {upgradeDueLabel && (
                             <Link
-                                href={routes.events.checkoutReview(eventId, 'upgrade', nextPlan.code)}
-                                className="inline-flex min-h-10 items-center rounded-full bg-surface-muted px-3 text-xs font-semibold text-ink"
+                                href={routes.events.checkoutReview(eventId, 'upgrade', nextUpgradeOption.planTierCode)}
+                                className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-full bg-primary px-5 text-sm font-semibold text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                             >
-                                {t('actions.upgradeTo', { plan: nextPlan.name })}
+                                {t('compare.upgradeButton', { plan: nextUpgradeOption.planTierName, amount: upgradeDueLabel })}
                             </Link>
                         )}
                     </div>

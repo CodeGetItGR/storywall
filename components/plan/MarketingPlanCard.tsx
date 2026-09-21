@@ -1,6 +1,7 @@
 import type { LandingPlan } from '@/lib/landingPricing';
+import { cn } from '@/lib/utils';
 
-type LandingPricingCardProps = {
+type MarketingPlanCardProps = {
     featured: boolean;
     photosLabel: string;
     plan: LandingPlan;
@@ -8,9 +9,13 @@ type LandingPricingCardProps = {
     storageLabel: string;
     storageNote: string;
     videosLabel: string;
+    planCode?: string;
+    selected?: boolean;
+    selectionLabel?: string;
+    onSelectAction?: (planCode: string) => void;
 };
 
-export function LandingPricingCard({
+export function MarketingPlanCard({
     featured,
     photosLabel,
     plan,
@@ -18,14 +23,30 @@ export function LandingPricingCard({
     storageLabel,
     storageNote,
     videosLabel,
-}: LandingPricingCardProps) {
-    return (
-        <article
-            className={`flex h-full min-h-155 flex-col justify-between rounded-[22px] px-5 pt-5 pb-4 text-[#151313] min-[761px]:min-h-166.5 min-[761px]:px-5 ${featured ? 'border border-[#f29380]' : 'border border-transparent'}`}
-        >
+    planCode,
+    selected = false,
+    selectionLabel,
+    onSelectAction,
+}: MarketingPlanCardProps) {
+    function handleSelect() {
+        if (planCode) onSelectAction?.(planCode);
+    }
+
+    const cardClassName = cn(
+        'flex h-full min-h-155 w-full flex-col justify-between rounded-[22px] border px-5 pt-5 pb-4 text-left text-[#151313] transition-colors min-[761px]:min-h-166.5 min-[761px]:px-5',
+        onSelectAction && !selected && 'hover:border-[#151313]/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#df7794]',
+        {
+            'border-transparent' : !featured && !selected,
+            'border-[#f29380]' : featured && !selected,
+            'border-[#151313]/25 bg-[#fff9f6]' : selected,
+        }
+    );
+
+    const content = (
+        <>
             <div>
                 {/* Plan identity */}
-                <div className="relative min-h-26.5  pr-24">
+                <div className="relative min-h-26.5 pr-24">
                     <h3 className="text-[clamp(20px,1.65vw,27px)] leading-[1.05] font-black tracking-[.09em]">
                         {plan.name}
                         <span className="ml-2 inline-block align-middle text-[9px] leading-none font-bold tracking-widest normal-case">
@@ -51,14 +72,30 @@ export function LandingPricingCard({
                 </ul>
             </div>
 
+            {/* Storage estimate */}
             <div>
                 <strong>{plan.storage}</strong> {storageLabel}
-                {/* Storage */}
                 <div className="mt-3 text-sm leading-[1.45]">
-                    <strong>~ {plan.photos}</strong> {photosLabel} <span aria-hidden="true">·</span> ~ <strong>{plan.videos}</strong> {videosLabel}
+                    <strong>~ {plan.photos}</strong> {photosLabel} <span aria-hidden="true">·</span> ~ <strong>{plan.videos}</strong>{' '}
+                    {videosLabel}
                 </div>
                 <p className="mt-1 text-[10px] leading-[1.35] italic text-[#151313]/50">{storageNote}</p>
+                {selectionLabel && (
+                    <p className={cn('mt-4 text-center text-[11px] font-black tracking-[.12em]', selected ? 'text-[#151313]' : 'text-[#151313]/55')}>
+                        {selectionLabel}
+                    </p>
+                )}
             </div>
-        </article>
+        </>
     );
+
+    if (onSelectAction) {
+        return (
+            <button type="button" aria-pressed={selected} className={cardClassName} onClick={handleSelect}>
+                {content}
+            </button>
+        );
+    }
+
+    return <article className={cardClassName}>{content}</article>;
 }

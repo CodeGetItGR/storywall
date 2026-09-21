@@ -188,4 +188,10 @@ describe('buildLandingPlan', () => {
     it('returns null for a plan with no resolvable price', () => {
         expect(buildLandingPlan(makePlan({ priceAmountMinor: null }), undefined, MODULES, MEDIA, MODULE_NAME, COPY)).toBeNull();
     });
+
+    it('uses a supplied no-charge label when a selectable configured plan has no price', () => {
+        const card = buildLandingPlan(makePlan({ priceAmountMinor: null }), undefined, MODULES, MEDIA, MODULE_NAME, COPY, 'No charge');
+
+        expect(card?.price).toBe('No charge');
+    });
 });

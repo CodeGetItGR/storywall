@@ -50,7 +50,9 @@ export default function BillingTab({ eventId }: { eventId: string }) {
                 derived={derived}
                 insights={insights}
                 currentPlan={panel.currentPlan}
-                nextPlan={panel.nextPlan}
+                nextUpgradeOption={panel.nextUpgradeOption}
+                nextUpgradePlan={panel.nextUpgradePlan}
+                platformModules={panel.platformModules}
                 paidAddonOffers={panel.paidAddonOffers}
             />
 

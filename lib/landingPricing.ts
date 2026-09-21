@@ -82,9 +82,10 @@ export function buildLandingPlan(
     modules: PlatformModuleResponseDto[],
     media: AppMediaConfigDto,
     moduleName: (moduleKey: string) => string,
-    copy: LandingPlanCopy
+    copy: LandingPlanCopy,
+    priceFallback?: string
 ): LandingPlan | null {
-    const price = formatLandingPlanPrice(plan);
+    const price = formatLandingPlanPrice(plan) ?? priceFallback ?? null;
     if (price === null) return null;
 
     const estimate = mediaEstimate(plan.storageBytes, media);

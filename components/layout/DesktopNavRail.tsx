@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarDays, Home as HomeIcon, Layers3, Pencil, WalletCards } from 'lucide-react';
+import { CalendarDays, Home as HomeIcon, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';

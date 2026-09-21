@@ -27,7 +27,7 @@ export function HostContextSections({
         activeEvent,
         eventUsage,
         currentPlan,
-        nextPlan,
+        nextUpgradeOption,
         includedModuleKeys,
         actionItems,
         showRsvpSummary,
@@ -89,7 +89,7 @@ export function HostContextSections({
                 <UsagePanel
                     title={t('usageTitle')}
                     planName={currentPlan?.name ?? eventUsage.planTier}
-                    nextPlanName={nextPlan?.name}
+                    nextPlanName={nextUpgradeOption?.planTierName}
                     upgradeHref={routes.events.manage(activeEvent.id, { tab: 'billing' })}
                     includedModuleKeys={includedModuleKeys}
                     items={[

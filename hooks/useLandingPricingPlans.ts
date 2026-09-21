@@ -3,11 +3,11 @@
 import { useTranslations } from 'next-intl';
 
 import { useAppConfig } from '@/hooks/useAppConfig';
+import { usePlanMarketingCopy } from '@/hooks/usePlanMarketingCopy';
 import {
     buildLandingPlan,
     LANDING_PRICING_CATEGORY_EVENT_TYPES,
     type LandingPlan,
-    type LandingPlanCopy,
     type LandingPricingCategoryKey,
     resolveLandingCategoryPlans,
 } from '@/lib/landingPricing';
@@ -18,22 +18,10 @@ const CATEGORY_KEYS = Object.keys(LANDING_PRICING_CATEGORY_EVENT_TYPES) as Landi
 
 export function useLandingPricingPlans(): { categories: LandingPricingCategories | null } {
     const t = useTranslations('LandingPage.pricing');
-    const tModules = useTranslations('Modules');
     const { data } = useAppConfig();
+    const { copy, moduleName } = usePlanMarketingCopy();
 
     if (!data) return { categories: null };
-
-    const moduleName = (moduleKey: string) => (tModules.has(`${moduleKey}.name`) ? tModules(`${moduleKey}.name`) : moduleKey);
-    const copy: LandingPlanCopy = {
-        accessMonths: (months) => t('accessMonths', { months }),
-        accessUnlimited: t('accessUnlimited'),
-        baselineFeatures: t.raw('baselineFeatures') as string[],
-        everythingIn: (planName) => t('everythingIn', { plan: planName }),
-        guestsUnlimited: t('guestsUnlimited'),
-        guestsUpTo: (count) => t('guestsUpTo', { count }),
-        mediaUnlimited: t('mediaUnlimited'),
-        storageUnlimited: t('storageUnlimited'),
-    };
 
     const categories = CATEGORY_KEYS.reduce<LandingPricingCategories>((result, category) => {
         const plans = resolveLandingCategoryPlans(data.planTiers, category);

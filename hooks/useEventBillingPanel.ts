@@ -6,7 +6,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventBilling, useUpgradeOptions } from '@/hooks/useBilling';
 import { billingCurrency, formatBillingDate, newestBillingOrder, paidBillingTotal } from '@/lib/billing';
-import { publicAssignablePlans, scopedPlans } from '@/lib/planTiers';
+import { scopedPlans } from '@/lib/planTiers';
 
 const ORDER_PREVIEW_COUNT = 6;
 
@@ -22,16 +22,15 @@ export function useEventBillingPanel(eventId: string) {
 
     const data = billing.data;
     const planTiers = useMemo(() => appConfigQuery.data?.planTiers ?? [], [appConfigQuery.data?.planTiers]);
-    const eventPlans = useMemo(() => publicAssignablePlans(planTiers, 'EVENT'), [planTiers]);
     const currentPlan = useMemo(
         () => scopedPlans(planTiers, 'EVENT').find((plan) => plan.code === data?.planTierCode) ?? null,
         [data?.planTierCode, planTiers]
     );
     const upgradeOptions = useUpgradeOptions(eventId);
     const firstUpgradeOption = upgradeOptions.data?.[0] ?? null;
-    const nextPlan = useMemo(
-        () => (firstUpgradeOption ? (eventPlans.find((plan) => plan.code === firstUpgradeOption.planTierCode) ?? null) : null),
-        [eventPlans, firstUpgradeOption]
+    const nextUpgradePlan = useMemo(
+        () => (firstUpgradeOption ? (scopedPlans(planTiers, 'EVENT').find((plan) => plan.code === firstUpgradeOption.planTierCode) ?? null) : null),
+        [firstUpgradeOption, planTiers]
     );
     const paidAddonOffers = useMemo(
         () =>
@@ -53,9 +52,10 @@ export function useEventBillingPanel(eventId: string) {
 
     const handleShowAllOrders = useCallback(() => setShowAllOrders(true), []);
     const handleRetry = useCallback(() => {
+        void appConfigQuery.refetch();
         void billing.refetch();
         void upgradeOptions.refetch();
-    }, [billing, upgradeOptions]);
+    }, [appConfigQuery, billing, upgradeOptions]);
 
     const derived = useMemo(() => {
         if (!data || !insights) return null;
@@ -83,10 +83,12 @@ export function useEventBillingPanel(eventId: string) {
         insights,
         derived,
         currentPlan,
-        nextPlan,
+        nextUpgradeOption: firstUpgradeOption,
+        nextUpgradePlan,
+        platformModules: appConfigQuery.data?.modules ?? [],
         paidAddonOffers,
-        isLoading: billing.isLoading,
-        hasError: Boolean(billing.error) || !data || !insights || !derived,
+        isLoading: appConfigQuery.isLoading || billing.isLoading || upgradeOptions.isLoading,
+        hasError: Boolean(appConfigQuery.error || billing.error || upgradeOptions.error) || !data || !insights || !derived,
         handleRetry,
         // Orders
         handleShowAllOrders,
