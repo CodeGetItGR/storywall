@@ -8,11 +8,9 @@ import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { BillingOpsPanel } from '@/components/admin/BillingOpsPanel';
 import { CollaborationsPanel } from '@/components/admin/CollaborationsPanel';
 import { CostTrackingPanel } from '@/components/admin/CostTrackingPanel';
-import { EventTypeRegistryPanel } from '@/components/admin/EventTypeRegistryPanel';
-import { ModuleRegistryPanel } from '@/components/admin/ModuleRegistryPanel';
 import { PaidServicesCatalogPanel } from '@/components/admin/PaidServicesCatalogPanel';
 import { PlanAssignmentPanel } from '@/components/admin/PlanAssignmentPanel';
-import { PlanCatalogPanel } from '@/components/admin/PlanCatalogPanel';
+import { PlansSection } from '@/components/admin/plans/PlansSection';
 import { PlatformMetricsPanel } from '@/components/admin/PlatformMetricsPanel';
 import { ReactionTypesCatalogPanel } from '@/components/admin/ReactionTypesCatalogPanel';
 import { WithdrawalQueuePanel } from '@/components/admin/WithdrawalQueuePanel';
@@ -24,6 +22,7 @@ export function AdminConsole() {
     // The Paid Services panel supplies its own page head (title, stat tiles,
     // primary action) — the shared eyebrow/title block would just duplicate it.
     if (tab === 'paidServices') return <PaidServicesCatalogPanel />;
+    if (tab === 'plans') return <PlansSection />;
     if (tab === 'discountCodes') return <AdminDiscountCodesPanel />;
     if (tab === 'collaborations') return <CollaborationsPanel />;
     if (tab === 'reactionTypes') return <ReactionTypesCatalogPanel />;
@@ -46,9 +45,6 @@ export function AdminConsole() {
             <main className="min-w-0">
                 {tab === 'metrics' && <PlatformMetricsPanel />}
                 {tab === 'costTracking' && <CostTrackingPanel />}
-                {tab === 'eventPlans' && <PlanCatalogPanel scope="EVENT" />}
-                {tab === 'modules' && <ModuleRegistryPanel />}
-                {tab === 'eventTypes' && <EventTypeRegistryPanel />}
                 {tab === 'assignments' && <PlanAssignmentPanel />}
                 {tab === 'billingOps' && <BillingOpsPanel />}
                 {tab === 'withdrawals' && <WithdrawalQueuePanel />}

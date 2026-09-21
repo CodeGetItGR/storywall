@@ -1241,6 +1241,29 @@ export interface EventTypeModuleResponseDto {
     includedInPlan: boolean | null;
 }
 
+// PATCH /api/admin/event-types/{eventTypeKey}/modules/{moduleKey} — every field
+// optional. `defaultConfig` here is only the seed template for new per-plan
+// rows; a plan's live value is PlanTierModuleConfigDto below. See
+// event-lifecycle-locks-and-event-types-fe-integration.md "Admin: editing the matrix".
+export interface EventTypeModulePatchDto {
+    applicability?: EventTypeModuleApplicability;
+    defaultConfig?: Record<string, unknown>;
+    sortOrder?: number;
+}
+
+// GET /api/admin/plan-tiers/{planTierId}/modules — one row per module the
+// plan's event type supports. Runtime source of truth for per-plan module
+// config (plan-tiers-by-event-type-fe-integration.md §6).
+export interface PlanTierModuleConfigDto {
+    moduleKey: ModuleKey;
+    defaultConfig: Record<string, unknown>;
+}
+
+// PATCH /api/admin/plan-tiers/{planTierId}/modules/{moduleKey}
+export interface PlanTierModuleConfigPatchDto {
+    defaultConfig: Record<string, unknown>;
+}
+
 export interface EventSessionRequestDto {
     eventId: string;
     title: string;

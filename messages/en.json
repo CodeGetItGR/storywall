@@ -2144,15 +2144,11 @@
         "tabs": {
             "metrics": "Metrics",
             "costTracking": "Cost tracking",
-            "eventPlans": "Event plans",
-            "planAvailability": "Plan availability",
-            "planModules": "Plan modules",
+            "plans": "Plans",
             "paidServices": "Paid services",
             "discountCodes": "Discount codes",
             "collaborations": "Collaborations",
             "reactionTypes": "Reactions",
-            "modules": "Modules",
-            "eventTypes": "Event types",
             "assignments": "Assignments",
             "billingOps": "Billing ops",
             "withdrawals": "Withdrawals",
@@ -2370,6 +2366,19 @@
         },
         "plans": {
             "loading": "Loading plans...",
+            "sectionTitle": "Plans",
+            "noEventTypes": "No event types yet.",
+            "rail": {
+                "eventTypes": "Event types",
+                "noMatches": "No matches.",
+                "settings": "Settings",
+                "modules": "Modules",
+                "eventTypesSettings": "Event types"
+            },
+            "settings": {
+                "modulesTitle": "Modules",
+                "eventTypesTitle": "Event types"
+            },
             "default": "Default",
             "archived": "Archived",
             "noPrice": "No price",
@@ -2411,54 +2420,40 @@
                 "billingOnce": "once",
                 "billingMonthly": "/mo"
             },
-            "eventTypes": {
-                "allBadge": "All types"
-            },
             "accountDisabledNotice": "Account plans no longer grant quotas. Existing rows remain here for historical review and limited maintenance.",
-            "saveModules": "Save modules",
             "destructiveHint": "Archive plans instead of deleting them once they may be in use.",
             "deleteConfirmTitle": "Delete {plan}?",
             "deleteConfirmBody": "Only delete plans created by mistake and never assigned. In-use plans should be archived.",
             "tabs": {
-                "details": "Details",
-                "limits": "Limits",
-                "pricing": "Pricing",
-                "coverage": "Coverage",
-                "eventTypes": "Event types",
-                "addons": "Add-ons",
-                "danger": "Danger zone"
+                "eventTypes": "Event types"
             },
+            "editInGrid": "Edit in the modules grid",
+            "archiveInsteadHint": "To retire a plan that is in use, set it to Archived under Availability.",
             "coverage": {
-                "changed": "Changed",
                 "modulesCount": "{count} of {total} included",
                 "modulePlatformOff": "Disabled across the platform",
-                "eventTypeLabel": "Event type",
-                "sharedGroupLabel": "Shared with copies ({group})"
+                "eventTypeLabel": "Event type"
             },
             "pendingChanges": "{count, plural, one {# unsaved change} other {# unsaved changes}}",
             "noPendingChanges": "No changes yet.",
             "saveSuccess": "{plan} updated.",
             "sections": {
                 "identity": "Plan identity",
+                "details": "Details",
                 "limits": "Limits",
                 "pricing": "Pricing",
+                "modules": "Modules",
+                "addons": "Add-ons",
+                "danger": "Danger zone",
                 "addonsHint": "Sell modules that are not included in this plan as paid add-ons.",
                 "limitsHint": "Blank means no limit. These caps apply to every event on this plan.",
                 "promotion": "Promotion",
                 "promotionHint": "A discount inside its window is charged, not just advertised. Leave the percentage blank to run no promotion.",
-                "availability": "Availability",
-                "modulesHint": "Choose the modules included in this plan.",
-                "eventTypesHint": "Set when creating the plan. Duplicate this plan to offer it for another event type."
+                "availability": "Availability"
             },
             "filters": {
                 "all": "All",
                 "includeArchived": "Include archived"
-            },
-            "stats": {
-                "total": "Total plans",
-                "live": "Live",
-                "hidden": "Hidden",
-                "archived": "Archived"
             },
             "status": {
                 "ALL": "All",
@@ -2468,27 +2463,54 @@
             },
             "columns": {
                 "plan": "Plan",
-                "eventTypes": "Event types",
                 "price": "Price",
-                "limits": "Limits",
-                "modules": "Modules",
-                "status": "Status"
+                "storage": "Storage",
+                "members": "Members",
+                "autoDelete": "Auto-delete",
+                "status": "Status",
+                "sharedGroup": "Shared with",
+                "never": "Never",
+                "months": "{count, plural, one {# month} other {# months}}"
             },
+            "sharedGroup": {
+                "label": "Also offered for"
+            },
+                "grid": {
+                    "title": "Modules",
+                    "count": "{supported} supported · {unsupported} unsupported",
+                    "showHidden": "Show hidden plans",
+                    "noPlans": "No plans yet.",
+                    "columnError": "Could not load this plan's module settings.",
+                    "included": "Included",
+                    "notIncluded": "Not included",
+                    "unlockOnce": "+{price} once",
+                    "unlockMonthly": "+{price}/mo",
+                    "applicability": {
+                        "label": "Availability for this event type",
+                        "UNSUPPORTED": "Unsupported",
+                        "DEFAULT_OFF": "Off",
+                        "DEFAULT_ON": "On",
+                        "confirmTitle": "Change {module} for {eventType}?",
+                        "confirmBody": "{before} → {after}",
+                        "unsupportedWarning": "The module is removed from every event of this type.",
+                        "confirm": "Apply"
+                    },
+                    "cell": {
+                        "title": "{module} · {plan}",
+                        "includedSwitch": "Included in plan",
+                        "resetToDefault": "Reset to type default",
+                        "otherKeys": "Other settings (JSON)",
+                        "invalidJson": "Enter a JSON object.",
+                        "invalidNumber": "Enter a whole number of at least {min}.",
+                        "confirmTitle": "Save changes to {module} for {plan}?",
+                        "included": "Included",
+                        "yes": "Yes",
+                        "no": "No",
+                        "noChanges": "No changes yet."
+                    }
+                },
             "search": {
                 "placeholder": "Search by name or code"
-            },
-            "rowCount": "{shown} of {total} plans",
-            "panel": {
-                "ACCOUNT": {
-                    "eyebrow": "Account catalog",
-                    "title": "Account plans",
-                    "subtitle": "Historical account plan rows for pricing and maintenance."
-                },
-                "EVENT": {
-                    "eyebrow": "Event catalog",
-                    "title": "Event plans",
-                    "subtitle": "Limits and modules that apply to one event, such as members, storage, and enabled tools."
-                }
             },
             "selectorHint": "Pick a plan on the left to edit it in the main pane.",
             "empty": "No plans to show.",
@@ -2516,8 +2538,6 @@
             "archiveConfirmBody": "This plan will stop being assignable and will be hidden from normal plan lists. You can restore it later from the archived plans view.",
             "makeDefaultConfirmTitle": "Make {plan} the default?",
             "makeDefaultConfirmBody": "New accounts or events in this scope will use this plan when no plan has been chosen. Existing assignments are not changed.",
-            "modulesConfirmTitle": "Save modules for {code}?",
-            "modulesConfirmBody": "This changes which event tools the plan unlocks. Events on this plan may gain or lose access after config refresh.",
             "restoreConfirmTitle": "Restore {plan}?",
             "restoreConfirmBody": "This plan will become assignable again and can appear anywhere archived plans are included.",
             "saveConfirmTitle": "Save changes to {plan}?",
