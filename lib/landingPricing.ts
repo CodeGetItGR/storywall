@@ -92,7 +92,7 @@ export function buildLandingPlan(
 
     const estimate = mediaEstimate(plan.storageBytes, media);
     const accessBullet = plan.autoDeleteMonths === null ? copy.accessUnlimited : copy.accessMonths(plan.autoDeleteMonths);
-    const inheritedKeys = inheritedModuleKeys ?? previousPlan?.moduleKeys ?? [];
+    const inheritedKeys = [...new Set(inheritedModuleKeys ?? previousPlan?.moduleKeys ?? [])];
     const features = previousPlan
         ? [
               copy.everythingIn(previousPlan.name),

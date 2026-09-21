@@ -178,7 +178,7 @@ describe('buildLandingPlan', () => {
         const previous = makePlan({ name: 'STORY', moduleKeys: ['stories'] });
         const plan = makePlan({ name: 'SIGNATURE', moduleKeys: ['wishbook'], autoDeleteMonths: 9 });
 
-        const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY, undefined, ['gallery', 'rsvp', 'stories']);
+        const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY, undefined, ['gallery', 'rsvp', 'stories', 'gallery']);
 
         expect(card?.features).toEqual(['Everything in STORY', 'Guestbook', 'Access for 9 months after the event']);
         expect(card?.includedFeatures).toEqual([

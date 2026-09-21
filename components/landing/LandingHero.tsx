@@ -98,8 +98,12 @@ export function LandingHero() {
                         ref={toggleRef}
                         type="button"
                     >
-                        <span className="h-px w-5 bg-[#151313]" />
-                        <span className="h-px w-5 bg-[#151313]" />
+                        <span
+                            className={`h-px w-5 bg-[#151313] transition-transform duration-200 ${isOpen ? 'translate-y-[3.5px] rotate-45' : ''}`}
+                        />
+                        <span
+                            className={`h-px w-5 bg-[#151313] transition-transform duration-200 ${isOpen ? '-translate-y-[3.5px] -rotate-45' : ''}`}
+                        />
                     </button>
                 </div>
                 {/* Mobile navigation */}

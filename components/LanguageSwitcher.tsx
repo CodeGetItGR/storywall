@@ -6,7 +6,7 @@ import { type MouseEvent, useCallback, useTransition } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { setLocale } from '@/i18n/actions';
-import { type Locale, locales } from '@/i18n/config';
+import { type Locale, localeCookieName, locales } from '@/i18n/config';
 import { getPublicLandingPath, isPublicLandingPath } from '@/i18n/publicLocale';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -26,12 +26,29 @@ export function LanguageSwitcher({ className, variant = 'default' }: { className
     const handleChange = useCallback(
         (next: Locale) => {
             if (next === locale) return;
+
+            if (isPublicLandingPath(pathname)) {
+                // `/` and `/[locale]` are sibling routes under the same root layout, so a
+                // plain router.push leaves the layout (and its NextIntlClientProvider
+                // messages) mounted with the old locale. router.refresh() forces the server
+                // components, including the layout, to re-render with the new locale.
+                document.cookie = `${localeCookieName}=${encodeURIComponent(next)}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
+
+                startTransition(() => {
+                    router.push(getPublicLandingPath(next));
+                    router.refresh();
+                });
+
+                if (isAuthenticated) {
+                    void api.patch<unknown>(endpoints.me.profile, { locale: next } satisfies MeUpdateRequestDto).catch(() => {});
+                }
+                return;
+            }
+
             startTransition(async () => {
                 await setLocale(next);
                 if (variant === 'auth') {
                     window.location.reload();
-                } else if (isPublicLandingPath(pathname)) {
-                    router.push(getPublicLandingPath(next));
                 } else {
                     router.refresh();
                 }
