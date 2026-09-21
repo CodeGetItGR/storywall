@@ -2483,6 +2483,40 @@
             "sharedGroup": {
                 "label": "Also offered for"
             },
+                "grid": {
+                    "title": "Modules",
+                    "count": "{supported} supported · {unsupported} unsupported",
+                    "showHidden": "Show hidden plans",
+                    "noPlans": "No plans yet.",
+                    "columnError": "Could not load this plan's module settings.",
+                    "included": "Included",
+                    "notIncluded": "Not included",
+                    "unlockOnce": "+{price} once",
+                    "unlockMonthly": "+{price}/mo",
+                    "applicability": {
+                        "label": "Availability for this event type",
+                        "UNSUPPORTED": "Unsupported",
+                        "DEFAULT_OFF": "Off",
+                        "DEFAULT_ON": "On",
+                        "confirmTitle": "Change {module} for {eventType}?",
+                        "confirmBody": "{before} → {after}",
+                        "unsupportedWarning": "The module is removed from every event of this type.",
+                        "confirm": "Apply"
+                    },
+                    "cell": {
+                        "title": "{module} · {plan}",
+                        "includedSwitch": "Included in plan",
+                        "resetToDefault": "Reset to type default",
+                        "otherKeys": "Other settings (JSON)",
+                        "invalidJson": "Enter a JSON object.",
+                        "invalidNumber": "Enter a whole number of at least {min}.",
+                        "confirmTitle": "Save changes to {module} for {plan}?",
+                        "included": "Included",
+                        "yes": "Yes",
+                        "no": "No",
+                        "noChanges": "No changes yet."
+                    }
+                },
             "search": {
                 "placeholder": "Search by name or code"
             },

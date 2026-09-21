@@ -2406,6 +2406,40 @@
             "sharedGroup": {
                 "label": "Διατίθεται και για"
             },
+                "grid": {
+                    "title": "Ενότητες",
+                    "count": "{supported} υποστηρίζονται · {unsupported} δεν υποστηρίζονται",
+                    "showHidden": "Εμφάνιση κρυφών πλάνων",
+                    "noPlans": "Δεν υπάρχουν πλάνα.",
+                    "columnError": "Δεν ήταν δυνατή η φόρτωση των ρυθμίσεων ενοτήτων του πλάνου.",
+                    "included": "Περιλαμβάνεται",
+                    "notIncluded": "Δεν περιλαμβάνεται",
+                    "unlockOnce": "+{price} εφάπαξ",
+                    "unlockMonthly": "+{price}/μήνα",
+                    "applicability": {
+                        "label": "Διαθεσιμότητα για αυτόν τον τύπο",
+                        "UNSUPPORTED": "Μη διαθέσιμη",
+                        "DEFAULT_OFF": "Ανενεργή",
+                        "DEFAULT_ON": "Ενεργή",
+                        "confirmTitle": "Αλλαγή της ενότητας {module} για {eventType};",
+                        "confirmBody": "{before} → {after}",
+                        "unsupportedWarning": "Η ενότητα αφαιρείται από κάθε εκδήλωση αυτού του τύπου.",
+                        "confirm": "Εφαρμογή"
+                    },
+                    "cell": {
+                        "title": "{module} · {plan}",
+                        "includedSwitch": "Περιλαμβάνεται στο πλάνο",
+                        "resetToDefault": "Επαναφορά στην προεπιλογή τύπου",
+                        "otherKeys": "Άλλες ρυθμίσεις (JSON)",
+                        "invalidJson": "Εισάγετε ένα αντικείμενο JSON.",
+                        "invalidNumber": "Εισάγετε ακέραιο αριθμό τουλάχιστον {min}.",
+                        "confirmTitle": "Αποθήκευση αλλαγών στην ενότητα {module} για το πλάνο {plan};",
+                        "included": "Περιλαμβάνεται",
+                        "yes": "Ναι",
+                        "no": "Όχι",
+                        "noChanges": "Δεν υπάρχουν αλλαγές."
+                    }
+                },
             "search": {
                 "placeholder": "Αναζήτηση με όνομα ή κωδικό"
             },
