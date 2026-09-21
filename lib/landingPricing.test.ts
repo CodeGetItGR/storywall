@@ -162,6 +162,7 @@ describe('buildLandingPlan', () => {
         const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY);
 
         expect(card?.features).toEqual(['Everything in START', 'RSVP', 'Stories', 'Guestbook', 'Access for 6 months after the event']);
+        expect(card?.includedFeatures).toEqual(['Countdown', 'Event schedule', 'Download all photos & videos', 'Unique StoryWall link', 'Gallery']);
     });
 
     it('keeps the prior-tier rollup when catalog rows do not repeat inherited modules', () => {
@@ -171,6 +172,24 @@ describe('buildLandingPlan', () => {
         const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY);
 
         expect(card?.features).toEqual(['Everything in START', 'Stories', 'Access for 6 months after the event']);
+    });
+
+    it('uses the cumulative inherited modules for later tiers with sparse catalog rows', () => {
+        const previous = makePlan({ name: 'STORY', moduleKeys: ['stories'] });
+        const plan = makePlan({ name: 'SIGNATURE', moduleKeys: ['wishbook'], autoDeleteMonths: 9 });
+
+        const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY, undefined, ['gallery', 'rsvp', 'stories']);
+
+        expect(card?.features).toEqual(['Everything in STORY', 'Guestbook', 'Access for 9 months after the event']);
+        expect(card?.includedFeatures).toEqual([
+            'Countdown',
+            'Event schedule',
+            'Download all photos & videos',
+            'Unique StoryWall link',
+            'Gallery',
+            'RSVP',
+            'Stories',
+        ]);
     });
 
     it('renders "Unlimited" copy for null storage, members, and access window', () => {

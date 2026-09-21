@@ -26,7 +26,18 @@ export function useLandingPricingPlans(): { categories: LandingPricingCategories
     const categories = CATEGORY_KEYS.reduce<LandingPricingCategories>((result, category) => {
         const plans = resolveLandingCategoryPlans(data.planTiers, category);
         const landingPlans = plans
-            .map((plan, index) => buildLandingPlan(plan, plans[index - 1], data.modules, data.media, moduleName, copy))
+            .map((plan, index) =>
+                buildLandingPlan(
+                    plan,
+                    plans[index - 1],
+                    data.modules,
+                    data.media,
+                    moduleName,
+                    copy,
+                    undefined,
+                    plans.slice(0, index).flatMap((previousPlan) => previousPlan.moduleKeys)
+                )
+            )
             .filter((plan): plan is LandingPlan => plan !== null);
         result[category] = { label: t(`categories.${category}.label`), plans: landingPlans };
         return result;

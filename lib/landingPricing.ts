@@ -19,6 +19,7 @@ export const LANDING_PRICING_CATEGORY_EVENT_TYPES: Record<LandingPricingCategory
 export type LandingPlan = {
     audience: string;
     features: string[];
+    includedFeatures?: string[];
     name: string;
     photos: string;
     price: string;
@@ -83,18 +84,20 @@ export function buildLandingPlan(
     media: AppMediaConfigDto,
     moduleName: (moduleKey: string) => string,
     copy: LandingPlanCopy,
-    priceFallback?: string
+    priceFallback?: string,
+    inheritedModuleKeys?: string[]
 ): LandingPlan | null {
     const price = formatLandingPlanPrice(plan) ?? priceFallback ?? null;
     if (price === null) return null;
 
     const estimate = mediaEstimate(plan.storageBytes, media);
     const accessBullet = plan.autoDeleteMonths === null ? copy.accessUnlimited : copy.accessMonths(plan.autoDeleteMonths);
+    const inheritedKeys = inheritedModuleKeys ?? previousPlan?.moduleKeys ?? [];
     const features = previousPlan
         ? [
               copy.everythingIn(previousPlan.name),
               ...sortedModuleNames(
-                  plan.moduleKeys.filter((moduleKey) => !previousPlan.moduleKeys.includes(moduleKey)),
+                  plan.moduleKeys.filter((moduleKey) => !inheritedKeys.includes(moduleKey)),
                   modules,
                   moduleName
               ),
@@ -105,6 +108,7 @@ export function buildLandingPlan(
     return {
         audience: plan.maxMembers === null ? copy.guestsUnlimited : copy.guestsUpTo(plan.maxMembers),
         features,
+        includedFeatures: previousPlan ? [...copy.baselineFeatures, ...sortedModuleNames(inheritedKeys, modules, moduleName)] : undefined,
         name: plan.name,
         photos: estimate?.images ?? copy.mediaUnlimited,
         price,
