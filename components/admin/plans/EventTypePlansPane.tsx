@@ -7,6 +7,7 @@ import { PlanCreateForm } from '@/components/admin/PlanCreateForm';
 import { PlanEditorCard } from '@/components/admin/PlanEditorCard';
 import { EventTypePlansHeader } from '@/components/admin/plans/EventTypePlansHeader';
 import { EventTypePlansTable } from '@/components/admin/plans/EventTypePlansTable';
+import { PlanModuleGrid } from '@/components/admin/plans/PlanModuleGrid';
 import { PlanStatusFilter } from '@/components/admin/plans/PlanStatusFilter';
 import { useEventTypePlansPane } from '@/hooks/useEventTypePlansPane';
 import type { PlansSectionState } from '@/hooks/usePlansSection';
@@ -43,7 +44,8 @@ export function EventTypePlansPane({ eventType, section }: { eventType: Platform
                 />
             </section>
 
-            {/* Modules — added in Task 11 */}
+            {/* Modules */}
+            <PlanModuleGrid eventType={eventType} plans={section.plansForType} modules={section.modules} unlocks={section.unlocks} />
 
             <PlanCreateForm
                 key={pane.duplicatePlan?.id ?? `new-plan-${eventType.eventTypeKey}`}
