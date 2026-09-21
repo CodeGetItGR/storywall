@@ -2420,11 +2420,7 @@
                 "billingOnce": "once",
                 "billingMonthly": "/mo"
             },
-            "eventTypes": {
-                "allBadge": "All types"
-            },
             "accountDisabledNotice": "Account plans no longer grant quotas. Existing rows remain here for historical review and limited maintenance.",
-            "saveModules": "Save modules",
             "destructiveHint": "Archive plans instead of deleting them once they may be in use.",
             "deleteConfirmTitle": "Delete {plan}?",
             "deleteConfirmBody": "Only delete plans created by mistake and never assigned. In-use plans should be archived.",
@@ -2542,8 +2538,6 @@
             "archiveConfirmBody": "This plan will stop being assignable and will be hidden from normal plan lists. You can restore it later from the archived plans view.",
             "makeDefaultConfirmTitle": "Make {plan} the default?",
             "makeDefaultConfirmBody": "New accounts or events in this scope will use this plan when no plan has been chosen. Existing assignments are not changed.",
-            "modulesConfirmTitle": "Save modules for {code}?",
-            "modulesConfirmBody": "This changes which event tools the plan unlocks. Events on this plan may gain or lose access after config refresh.",
             "restoreConfirmTitle": "Restore {plan}?",
             "restoreConfirmBody": "This plan will become assignable again and can appear anywhere archived plans are included.",
             "saveConfirmTitle": "Save changes to {plan}?",
