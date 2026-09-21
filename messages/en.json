@@ -2463,12 +2463,6 @@
                 "all": "All",
                 "includeArchived": "Include archived"
             },
-            "stats": {
-                "total": "Total plans",
-                "live": "Live",
-                "hidden": "Hidden",
-                "archived": "Archived"
-            },
             "status": {
                 "ALL": "All",
                 "LIVE": "Live",
@@ -2477,27 +2471,20 @@
             },
             "columns": {
                 "plan": "Plan",
-                "eventTypes": "Event types",
                 "price": "Price",
-                "limits": "Limits",
-                "modules": "Modules",
-                "status": "Status"
+                "storage": "Storage",
+                "members": "Members",
+                "autoDelete": "Auto-delete",
+                "status": "Status",
+                "sharedGroup": "Shared with",
+                "never": "Never",
+                "months": "{count, plural, one {# month} other {# months}}"
+            },
+            "sharedGroup": {
+                "label": "Also offered for"
             },
             "search": {
                 "placeholder": "Search by name or code"
-            },
-            "rowCount": "{shown} of {total} plans",
-            "panel": {
-                "ACCOUNT": {
-                    "eyebrow": "Account catalog",
-                    "title": "Account plans",
-                    "subtitle": "Historical account plan rows for pricing and maintenance."
-                },
-                "EVENT": {
-                    "eyebrow": "Event catalog",
-                    "title": "Event plans",
-                    "subtitle": "Limits and modules that apply to one event, such as members, storage, and enabled tools."
-                }
             },
             "selectorHint": "Pick a plan on the left to edit it in the main pane.",
             "empty": "No plans to show.",

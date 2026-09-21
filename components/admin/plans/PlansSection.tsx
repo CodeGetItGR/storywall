@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
+import { EventTypePlansPane } from '@/components/admin/plans/EventTypePlansPane';
 import { PlansPaneEmpty } from '@/components/admin/plans/PlansPaneEmpty';
 import { PlansRail } from '@/components/admin/plans/PlansRail';
 import { PlansSettingsEventTypes } from '@/components/admin/plans/PlansSettingsEventTypes';
@@ -44,7 +45,9 @@ export function PlansSection() {
                     <p className="py-6 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(section.error)}`)}</p>
                 )}
                 {showingEventType && !section.isLoading && !section.error && !section.selectedEventType && <PlansPaneEmpty />}
-                {/* Event type pane is added in Task 8 */}
+                {showingEventType && !section.isLoading && !section.error && section.selectedEventType && (
+                    <EventTypePlansPane key={section.selectedEventType.eventTypeKey} eventType={section.selectedEventType} section={section} />
+                )}
             </div>
         </div>
     );
