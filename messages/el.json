@@ -2097,13 +2097,11 @@
             "costTracking": "Παρακολούθηση κόστους"
         },
         "tabs": {
-            "eventPlans": "Πλάνα εκδηλώσεων",
+            "plans": "Πλάνα",
             "paidServices": "Υπηρεσίες επί πληρωμή",
             "discountCodes": "Κωδικοί έκπτωσης",
             "collaborations": "Συνεργασίες",
             "reactionTypes": "Αντιδράσεις",
-            "modules": "Λειτουργίες",
-            "eventTypes": "Τύποι εκδηλώσεων",
             "assignments": "Αναθέσεις",
             "billingOps": "Χρεώσεις",
             "withdrawals": "Αποσύρσεις",

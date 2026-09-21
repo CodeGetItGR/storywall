@@ -9,9 +9,7 @@ import {
     type LucideIcon,
     PackagePlus,
     Receipt,
-    Shield,
     Smile,
-    Tag,
     TicketPercent,
     Undo2,
     Users,
@@ -19,15 +17,15 @@ import {
 import { useTranslations } from 'next-intl';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
+import { isPlansHash, PLANS_HASH_ROOT } from '@/lib/adminPlansRouting';
+
 export type AdminTab =
     | 'metrics'
     | 'costTracking'
-    | 'eventPlans'
+    | 'plans'
     | 'paidServices'
     | 'discountCodes'
     | 'collaborations'
-    | 'modules'
-    | 'eventTypes'
     | 'reactionTypes'
     | 'assignments'
     | 'billingOps'
@@ -53,12 +51,9 @@ export type AdminFocus = {
 const HASH_TO_TAB: Record<string, AdminTab> = {
     '#metrics': 'metrics',
     '#cost-tracking': 'costTracking',
-    '#event-plans': 'eventPlans',
     '#paid-services': 'paidServices',
     '#discount-codes': 'discountCodes',
     '#collaborations': 'collaborations',
-    '#modules': 'modules',
-    '#event-types': 'eventTypes',
     '#reaction-types': 'reactionTypes',
     '#assignments': 'assignments',
     '#billing-ops': 'billingOps',
@@ -69,12 +64,10 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
 const TAB_TO_HASH: Record<AdminTab, string> = {
     metrics: '#metrics',
     costTracking: '#cost-tracking',
-    eventPlans: '#event-plans',
+    plans: PLANS_HASH_ROOT,
     paidServices: '#paid-services',
     discountCodes: '#discount-codes',
     collaborations: '#collaborations',
-    modules: '#modules',
-    eventTypes: '#event-types',
     reactionTypes: '#reaction-types',
     assignments: '#assignments',
     billingOps: '#billing-ops',
@@ -94,9 +87,14 @@ const AdminNavigationContext = createContext<
     | undefined
 >(undefined);
 
+// `#plans/...` carries its own sub-route (event type or settings view), parsed
+// by the Plans section itself; legacy `#event-plans`, `#modules`, `#event-types`
+// land there too so old links keep working.
 function currentHashTab(): AdminTab {
     if (typeof window === 'undefined') return 'metrics';
-    return HASH_TO_TAB[window.location.hash] ?? 'metrics';
+    const hash = window.location.hash;
+    if (isPlansHash(hash)) return 'plans';
+    return HASH_TO_TAB[hash] ?? 'metrics';
 }
 
 export function AdminNavigationProvider({ children }: { children: ReactNode }) {
@@ -139,12 +137,10 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
         () => [
             { key: 'metrics', label: t('metrics'), icon: BarChart3 },
             { key: 'costTracking', label: t('costTracking'), icon: ChartNoAxesCombined },
-            { key: 'eventPlans', label: t('eventPlans'), icon: CalendarDays },
+            { key: 'plans', label: t('plans'), icon: CalendarDays },
             { key: 'paidServices', label: t('paidServices'), icon: PackagePlus },
             { key: 'discountCodes', label: t('discountCodes'), icon: TicketPercent },
             { key: 'collaborations', label: t('collaborations'), icon: Handshake },
-            { key: 'modules', label: t('modules'), icon: Shield },
-            { key: 'eventTypes', label: t('eventTypes'), icon: Tag },
             { key: 'reactionTypes', label: t('reactionTypes'), icon: Smile },
             { key: 'accounts', label: t('accounts'), icon: Users },
             { key: 'assignments', label: t('assignments'), icon: Layers3 },

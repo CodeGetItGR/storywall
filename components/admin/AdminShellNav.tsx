@@ -10,12 +10,10 @@ import { cn } from '@/lib/utils';
 const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operations'> = {
     metrics: 'overview',
     costTracking: 'overview',
-    eventPlans: 'catalog',
+    plans: 'catalog',
     paidServices: 'catalog',
     discountCodes: 'marketing',
     collaborations: 'operations',
-    modules: 'catalog',
-    eventTypes: 'catalog',
     reactionTypes: 'catalog',
     assignments: 'operations',
     billingOps: 'operations',
