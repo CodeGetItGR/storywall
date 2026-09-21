@@ -68,17 +68,36 @@ export function getLaterDatetimeLocalValue(...values: Array<string | null | unde
 export function getScheduleDatetimeLocalBounds({
     startAt,
     endAt,
+    maxLeadDays,
     referenceDate = new Date(),
 }: {
     startAt?: string | null;
     endAt?: string | null;
+    // Furthest ahead the start may be scheduled, counted from `referenceDate`.
+    maxLeadDays?: number;
     referenceDate?: Date;
 }): { startAtMin: string; startAtMax?: string; endAtMin: string } {
     const nowAt = getCurrentDatetimeLocalValue(referenceDate);
-    const startAtMax = isDatetimeLocalAfter(endAt, nowAt) ? (endAt ?? undefined) : undefined;
+    const leadCap = maxLeadDays !== undefined ? addDatetimeLocalDuration(nowAt, { days: maxLeadDays }) : null;
+    const endCap = isDatetimeLocalAfter(endAt, nowAt) ? endAt : null;
+    const startAtMax = getEarlierDatetimeLocalValue(leadCap, endCap) ?? undefined;
     const endAtMin = getLaterDatetimeLocalValue(nowAt, startAt) ?? nowAt;
 
     return { startAtMin: nowAt, startAtMax, endAtMin };
+}
+
+export function getEarlierDatetimeLocalValue(...values: Array<string | null | undefined>): string | null {
+    let earliest: Date | null = null;
+
+    for (const value of values) {
+        const date = parseDatetimeLocalValue(value);
+        if (!date) continue;
+        if (!earliest || date.getTime() < earliest.getTime()) {
+            earliest = date;
+        }
+    }
+
+    return earliest ? formatDatetimeLocalValue(earliest) : null;
 }
 
 export function addDatetimeLocalDuration(value: string | null | undefined, duration: { days?: number; hours?: number }): string | null {

@@ -782,10 +782,11 @@
         "title": "Create an event",
         "subtitle": "Add the event details.",
         "detailsHint": "You can add or edit more details after creation.",
+        "startAtHint": "Events can be scheduled up to 18 months ahead.",
+        "coverageProjection": "Gallery opens {opensAt} · Photos kept until {endsAt}",
         "fields": {
             "title": "Event title",
             "startAt": "Starts",
-            "endAt": "Ends",
             "timezone": "Timezone",
             "locationName": "Location (optional)",
             "visibility": "Visibility",
@@ -794,6 +795,7 @@
         },
         "validation": {
             "startInPast": "The start time must be now or later.",
+            "startTooFarAhead": "The start time can't be more than 18 months from now.",
             "endBeforeStart": "The end time must be after the start time.",
             "invalidTimezone": "Choose a timezone from the list."
         },
@@ -916,6 +918,13 @@
         }
     },
     "ManagePage": {
+        "coverage": {
+            "opensIn": "Gallery opens in {days, plural, one {# day} other {# days}}",
+            "openUntil": "Gallery open · closes {date}",
+            "closingIn": "Closing in {days, plural, one {# day} other {# days}} — download your gallery",
+            "ended": "Gallery closed on {date}",
+            "download": "Download gallery"
+        },
         "title": "Host Dashboard",
         "backToTools": "Back",
         "hostView": "Host View",
@@ -1211,9 +1220,11 @@
             },
             "validation": {
                 "startInPast": "The start time must be now or later.",
+                "startTooFarAhead": "The start time can't be more than 18 months from now.",
                 "endBeforeStart": "The end time must be after the start time."
             },
             "startLocked": "This event has already started, so the start date cannot be changed.",
+            "coverageFixed": "Your coverage window was fixed at payment and won't move. Photos are still kept until {date}.",
             "placeholders": {
                 "subtitle": "e.g. Join us for an evening to remember",
                 "description": "Tell your guests a little more about the celebration...",
@@ -1337,6 +1348,15 @@
         }
     },
     "EventPlanSettingsPage": {
+        "coverage": {
+            "title": "Coverage",
+            "activatedOn": "Activated on",
+            "galleryOpens": "Gallery opens",
+            "keptUntil": "Photos kept until",
+            "planTerm": "Plan term",
+            "planTermUnlimited": "Never expires",
+            "fixedNote": "These dates were fixed at payment. Changing the event date won't move them."
+        },
         "back": "Back",
         "emptyDate": "Not set",
         "notApplicable": "Not applicable",
@@ -1591,6 +1611,7 @@
             "submitting": "Submitting...",
             "requestedNoAmount": "Amount will be set once processed.",
             "confirmBody": "This permanently takes the event offline. Guests lose access and there is no undo.",
+            "confirmReviewed": "Because this event's date was changed after payment, your request will be reviewed by a person.",
             "confirmSubmit": "Yes, withdraw",
             "confirmCancel": "Cancel",
             "held": "Under review. We'll email you once it's decided.",
@@ -1662,6 +1683,17 @@
                 "description": "Check the storage pack charge.",
                 "consequence": "The storage allowance is added permanently after payment is confirmed and is non-refundable."
             }
+        },
+        "activation": {
+            "title": "What you're buying",
+            "activatesTodayTitle": "Activates today",
+            "activatesTodayBody": "Your event goes live the moment payment completes.",
+            "datesFixedTitle": "Your dates are fixed at payment",
+            "datesFixedBody": "Changing your event date later won't move when the gallery opens or closes.",
+            "galleryOpensTitle": "Gallery opens {date}",
+            "galleryOpensBody": "{days, plural, =0 {Right after payment — upload preparations from then.} one {# day before your event — upload preparations from then.} other {# days before your event — upload preparations from then.}}",
+            "keptUntilTitle": "Photos kept until {date}",
+            "keptUntilBody": "{months, plural, one {# month} other {# months}} after your event date. After that everything is permanently deleted — we'll remind you 7 days and 1 day before."
         },
         "withdrawalTerms": {
             "title": "Right of withdrawal",
@@ -2612,6 +2644,7 @@
             "noAmount": "No amount recorded",
             "requestedAt": "Submitted {date}",
             "signalFired": "triggered",
+            "usageFacts": "Usage facts",
             "sendToAssignments": "Change event plan",
             "sendToPaidServices": "Remove entitlement",
             "noteLabel": "Decision note",
@@ -3399,6 +3432,7 @@
         "memberLimitWithPlan": "Guest limit reached on the {plan} plan. Upgrade to invite more.",
         "moduleUnavailable": "This feature is not included in the current plan.",
         "eventDatesIncomplete": "Add a start date to the event before paying.",
+        "eventStartTooFarAhead": "An event can't be scheduled more than 18 months ahead.",
         "eventCreationLocked": "An admin has limited event creation for this account.",
         "eventNotDraft": "This event has already been published.",
         "planNotPurchasable": "This plan cannot be bought directly. Contact us to switch to it.",

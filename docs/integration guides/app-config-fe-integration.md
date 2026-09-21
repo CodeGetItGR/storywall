@@ -106,6 +106,7 @@ interface AppConfigResponseDto {
   paidServices: PaidServiceResponseDto[];   // "keep originals" add-on, storage packs, module unlocks — see billing-fe-guide.md §5
   eventModuleKeys: ('posts' | 'rsvp' | 'playlist' | 'stories' | 'gallery' | 'wishlist' | 'wishbook')[];
   rsvp: { minAdults: number; maxAdults: number; minChildren: number; maxChildren: number };
+  coverage: { maxLeadDays: number; maxPreEventDays: number; defaultHostingMonths: number; defaultEventDurationHours: number }; // added 2026-09-21 — see event-coverage-window-fe-integration.md
   contentLimits: AppContentLimitsDto;   // added 2026-08-23 — see below
   reactionTypesByEventType: Record<string, ReactionTypeResponseDto[]>; // added 2026-08-30 — see below
   rateLimits: AppRateLimitConfigDto[];  // added 2026-08-23 — see below
@@ -215,6 +216,9 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
   unrestricted strings). Source your report-target and report-reason pickers from these instead
   of hardcoding them, the same way `eventModuleKeys` is the source of truth for module keys.
 - **`rsvp`** — see "RSVP guest-count bounds" below.
+- **`coverage`** — the event date-picker bound (`maxLeadDays`) and the coverage-window constants.
+  Constants only; the dates for a given event come from the event itself. See
+  [`event-coverage-window-fe-integration.md`](event-coverage-window-fe-integration.md).
 - **`contentLimits`** / **`rateLimits`** — see the two new sections below.
 - **`reactionTypesByEventType`** — active post-reaction options, keyed by `eventTypeKey`, each list
   pre-sorted by `sortOrder`. Build the reaction picker from

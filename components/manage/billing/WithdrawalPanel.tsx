@@ -90,7 +90,11 @@ export function WithdrawalPanel({ panel }: { panel: EventWithdrawalFlow }) {
             <ConfirmActionModal
                 open={panel.confirmingWithdrawal}
                 title={t('withdrawal.submit')}
-                body={t('withdrawal.confirmBody')}
+                body={
+                    withdrawalPreview.data?.scheduleMovedAfterPayment
+                        ? `${t('withdrawal.confirmBody')} ${t('withdrawal.confirmReviewed')}`
+                        : t('withdrawal.confirmBody')
+                }
                 confirmLabel={
                     panel.withdrawalRetryIn > 0 ? t('actions.retryIn', { seconds: panel.withdrawalRetryIn }) : t('withdrawal.confirmSubmit')
                 }

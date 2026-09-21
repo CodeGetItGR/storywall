@@ -105,6 +105,19 @@ form for RSVP counts gets built later.
 
 ---
 
+## 11. Withdrawal preview — "schedule moved after payment" flag — OPEN (2026-09-21)
+
+The billing guide (§ price split, "Changed 2026-09-21") says the host confirmation dialog can warn
+that a withdrawal on a rescheduled event will be reviewed by a person, but the preview response
+does not flag this and `activatedStartAt` is not on the host DTO, so the FE has nothing to
+compare. The guide offers to add a flag on request.
+
+**FE side is already wired:** `WithdrawalPreviewResponseDto.scheduleMovedAfterPayment?: boolean`
+(optional) — when the server sends `true`, `WithdrawalPanel` appends the "reviewed by a person"
+line to the confirmation body. Nothing renders until BE publishes the field.
+
+**Ask BE:** add `scheduleMovedAfterPayment: boolean` to `GET /api/events/{id}/withdrawal-preview`.
+
 ## Extra — module gating
 
 `ModuleKeyConvention` is typed to exactly the 5 real keys

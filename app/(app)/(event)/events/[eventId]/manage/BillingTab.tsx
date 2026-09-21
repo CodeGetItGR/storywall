@@ -2,12 +2,14 @@
 
 import { useTranslations } from 'next-intl';
 
+import { BillingCoveragePanel } from '@/components/manage/billing/BillingCoveragePanel';
 import { BillingOrdersPanel } from '@/components/manage/billing/BillingOrdersPanel';
 import { BillingPlanPanel } from '@/components/manage/billing/BillingPlanPanel';
 import { BillingStatusHeader } from '@/components/manage/billing/BillingStatusHeader';
 import { useEventBillingPanel } from '@/hooks/useEventBillingPanel';
+import type { EventScheduleDto } from '@/lib/api/types';
 
-export default function BillingTab({ eventId }: { eventId: string }) {
+export default function BillingTab({ eventId, schedule }: { eventId: string; schedule: EventScheduleDto }) {
     const tPageError = useTranslations('PageErrorState.billing');
     const tPageErrorCommon = useTranslations('PageErrorState');
     const panel = useEventBillingPanel(eventId);
@@ -42,6 +44,9 @@ export default function BillingTab({ eventId }: { eventId: string }) {
         <div className="flex flex-col gap-5">
             {/* Status */}
             <BillingStatusHeader data={data} derived={derived} insights={insights} />
+
+            {/* Coverage window */}
+            <BillingCoveragePanel schedule={schedule} insights={insights} currentPlan={panel.currentPlan} />
 
             {/* Plan */}
             <BillingPlanPanel

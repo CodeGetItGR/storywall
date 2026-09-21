@@ -1,7 +1,7 @@
 'use client';
 
 import { Check, ImagePlus, Loader2, X } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import React, { useEffect, useRef, useState } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
@@ -14,6 +14,7 @@ import { useUploadMedia } from '@/hooks/useMedia';
 import { getFieldErrors } from '@/lib/api/errors';
 import type { EventDetailResponseDto, EventPatchDto } from '@/lib/api/types';
 import {
+    formatDate,
     getCurrentDatetimeLocalValue,
     getScheduleDatetimeLocalBounds,
     isDatetimeLocalAfter,
@@ -40,6 +41,7 @@ export default function SettingsTab({
 }) {
     const t = useTranslations('ManagePage');
     const tCreateEvent = useTranslations('CreateEventPage');
+    const locale = useLocale();
     const toErrorMessage = useApiErrorMessage();
     const { data: appConfig } = useAppConfig();
 
@@ -73,14 +75,30 @@ export default function SettingsTab({
     const fieldErrors = getFieldErrors(updateEvent.error);
     const nowAt = getCurrentDatetimeLocalValue();
     const eventHasStarted = Boolean(event.schedule.startAt && isDatetimeLocalBefore(toDatetimeLocalValue(event.schedule.startAt), nowAt));
-    const { startAtMin, startAtMax, endAtMin } = getScheduleDatetimeLocalBounds({ startAt, endAt });
+    const { startAtMin, startAtMax, endAtMin } = getScheduleDatetimeLocalBounds({ startAt, endAt, maxLeadDays: appConfig?.coverage.maxLeadDays });
     const endAtPresets = React.useMemo(() => getEventEndPresets(event.eventType, startAt), [event.eventType, startAt]);
+    // Order matters: startAtMax is the earlier of the end date and the lead-day cap,
+    // so a start past the end must be reported as that, not as "too far ahead".
     const scheduleError =
         !eventHasStarted && startAt && isDatetimeLocalBefore(startAt, startAtMin)
             ? t('settings.validation.startInPast')
             : startAt && endAt && !isDatetimeLocalAfter(endAt, startAt)
               ? t('settings.validation.endBeforeStart')
-              : null;
+              : !eventHasStarted && startAt && isDatetimeLocalAfter(startAt, startAtMax)
+                ? t('settings.validation.startTooFarAhead')
+                : null;
+    // The coverage window is pinned at activation, so moving a live event's start
+    // does not move it. Say so inline the moment the host changes the date.
+    const startMovedOnLiveEvent = Boolean(event.schedule.coverageEndsAt && startAt && startAt !== savedValues.startAt);
+    const coverageKeptUntil = event.schedule.coverageEndsAt ? formatDate(locale, event.schedule.coverageEndsAt, { dateStyle: 'long' }) : null;
+    // While DRAFT the server projects the window on every read; the PATCH reply carries the updated one.
+    const projection = event.schedule.projectedCoverage;
+    const coverageProjection = projection
+        ? tCreateEvent('coverageProjection', {
+              opensAt: formatDate(locale, projection.galleryOpensAt, { dateStyle: 'medium' }),
+              endsAt: formatDate(locale, projection.coverageEndsAt, { dateStyle: 'medium' }),
+          })
+        : null;
     const maxDescriptionLength = appConfig?.contentLimits.eventDescriptionMaxLength ?? 2000;
     const hasChanges =
         title.trim() !== savedValues.title ||
@@ -339,7 +357,15 @@ export default function SettingsTab({
                             max={startAtMax}
                             className={inputClass}
                         />
-                        {eventHasStarted && <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('settings.startLocked')}</p>}
+                        {eventHasStarted ? (
+                            <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('settings.startLocked')}</p>
+                        ) : startMovedOnLiveEvent && coverageKeptUntil ? (
+                            <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('settings.coverageFixed', { date: coverageKeptUntil })}</p>
+                        ) : coverageProjection ? (
+                            <p className="mt-1 text-xs leading-relaxed text-ink-muted">{coverageProjection}</p>
+                        ) : (
+                            <p className="mt-1 text-xs leading-relaxed text-ink-muted">{tCreateEvent('startAtHint')}</p>
+                        )}
                     </FormFieldLabel>
                     <FormFieldLabel label={t('settings.fields.endAt')} required labelClassName={labelClass}>
                         <input

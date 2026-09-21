@@ -69,3 +69,14 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.METHOD_NOT_ALLOWED) return 'methodNotAllowed';
     return 'generic';
 }
+
+/**
+ * Flattens a withdrawal's display-only `usageFacts` into label/value pairs. The
+ * shape is not enumerated by the guide, so every value is rendered as text.
+ */
+export function formatUsageFacts(usageFacts: Record<string, unknown>): Array<[string, string]> {
+    return Object.entries(usageFacts).map(([key, value]) => [
+        key,
+        value === null || value === undefined ? '—' : typeof value === 'object' ? JSON.stringify(value) : String(value),
+    ]);
+}

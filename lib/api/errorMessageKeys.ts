@@ -25,6 +25,7 @@ export type ApiErrorMessageKey =
     | 'duplicateReaction'
     | 'emailAlreadyExists'
     | 'eventDatesIncomplete'
+    | 'eventStartTooFarAhead'
     | 'eventCreationLocked'
     | 'eventDeleteAlreadyPending'
     | 'eventDeleteNotPrimaryHost'
@@ -132,6 +133,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.DUPLICATE_REACTION]: 'duplicateReaction',
     [ERROR_CODES.EMAIL_ALREADY_EXISTS]: 'emailAlreadyExists',
     [ERROR_CODES.EVENT_DATES_INCOMPLETE]: 'eventDatesIncomplete',
+    [ERROR_CODES.EVENT_START_TOO_FAR_AHEAD]: 'eventStartTooFarAhead',
     [ERROR_CODES.EVENT_CREATION_LOCKED]: 'eventCreationLocked',
     [ERROR_CODES.EVENT_DELETE_ALREADY_PENDING]: 'eventDeleteAlreadyPending',
     [ERROR_CODES.EVENT_DELETE_NOT_PRIMARY_HOST]: 'eventDeleteNotPrimaryHost',

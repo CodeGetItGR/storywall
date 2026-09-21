@@ -128,9 +128,10 @@ export interface PlanTierResponseDto {
     storageBytes: number | null;
     maxMembers: number | null;
     // EVENT-scope only; always null on ACCOUNT scope. Months after the event's
-    // endAt before it is soft-deleted (same lifecycle as a host-requested
-    // deletion). null = never auto-deleted. See billing-fe-guide.md
-    // "autoDeleteMonths — how long an event's content survives after it ends".
+    // startAt before it is soft-deleted (same lifecycle as a host-requested
+    // deletion); pinned as coverageEndsAt at activation. null = never
+    // auto-deleted. See billing-fe-guide.md
+    // "autoDeleteMonths — how long an event's content survives after it starts".
     autoDeleteMonths: number | null;
     priceAmountMinor: number | null;
     priceCurrency: string | null;
@@ -244,6 +245,19 @@ export interface AppRsvpConfigDto {
     maxChildren: number;
 }
 
+// Coverage-window constants — event-coverage-window-fe-integration.md. Added 2026-09-21.
+// Constants only; a given event's dates come from the event itself.
+export interface AppCoverageConfigDto {
+    // Furthest ahead startAt may be scheduled, in days from now (3032 past it).
+    maxLeadDays: number;
+    // Gallery opens this many days before startAt (clamped to activation).
+    maxPreEventDays: number;
+    // Retention after startAt when the plan does not set autoDeleteMonths.
+    defaultHostingMonths: number;
+    // endAt the server fills when a request omits it.
+    defaultEventDurationHours: number;
+}
+
 // Automated right-of-withdrawal settings — billing-fe-guide.md §9. Added 2026-09-18.
 export interface AppWithdrawalConfigDto {
     // Pass back verbatim as ActivationCheckoutRequestDto/UpgradeCheckoutRequestDto's
@@ -292,6 +306,7 @@ export interface AppConfigResponseDto {
     translations: AppTranslationsDto;
     rsvp: AppRsvpConfigDto;
     withdrawal: AppWithdrawalConfigDto;
+    coverage: AppCoverageConfigDto;
     contentLimits: AppContentLimitsDto;
     reactionTypesByEventType: Record<string, ReactionTypeResponseDto[]>;
     rateLimits: AppRateLimitConfigDto[];
@@ -491,7 +506,7 @@ export interface EventRequestDto {
     eventType: EventTypeConvention;
     visibility: EventVisibility; // required on this DTO despite the entity's DB default of PRIVATE
     startAt: string;
-    endAt: string;
+    endAt?: string; // optional — omitted, the server fills startAt + 24h
     timezone: string;
     locationName?: string;
     locationAddress?: string;
@@ -518,6 +533,9 @@ export interface EventResponseDto {
     visibility: EventVisibility;
     startAt: string;
     endAt: string | null;
+    galleryOpensAt: string | null; // null while DRAFT; pinned at activation
+    coverageEndsAt: string | null; // null while DRAFT; pinned at activation
+    projectedCoverage: ProjectedCoverageDto | null; // set while DRAFT, null once ACTIVE
     timezone: string;
     locationName: string | null;
     locationAddress: string | null;
@@ -535,8 +553,24 @@ export interface EventResponseDto {
 export interface EventScheduleDto {
     startAt: string;
     endAt: string | null;
+    // Both null while DRAFT. Computed once at activation and never moved by later
+    // startAt/endAt edits — render the coverage window from these, never from
+    // startAt/endAt arithmetic.
+    galleryOpensAt: string | null;
+    coverageEndsAt: string | null;
+    // The mirror image: set while DRAFT, null once ACTIVE. Recomputed on every
+    // read, so it follows startAt as the host edits the draft. Exactly one of
+    // projectedCoverage / coverageEndsAt is non-null on any event.
+    projectedCoverage: ProjectedCoverageDto | null;
     timezone: string;
     rsvpDeadline: string | null;
+}
+
+// The window a DRAFT event would get if activated at the moment of the request.
+export interface ProjectedCoverageDto {
+    galleryOpensAt: string;
+    coverageEndsAt: string;
+    hostingMonths: number; // the plan's retention term (12 unless the plan overrides it)
 }
 
 export interface EventLocationDto {
@@ -805,6 +839,9 @@ export interface WithdrawalPreviewResponseDto {
     totalRefundMinor: number;
     currency: string;
     lines: WithdrawalLine[];
+    // Not sent by the server yet — requested, see fe-be-open-questions.md. True when
+    // the event's startAt was moved after payment, which forces a HELD outcome.
+    scheduleMovedAfterPayment?: boolean;
 }
 
 // POST /api/events/{eventId}/withdrawals — host. 201 with this shape when the

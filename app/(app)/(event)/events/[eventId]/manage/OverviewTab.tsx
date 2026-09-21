@@ -1,12 +1,14 @@
 import { useTranslations } from 'next-intl';
 
 import { HostContextSections } from '@/components/layout/right-context-panel/HostContextSections';
+import { CoverageStatusStrip } from '@/components/manage/CoverageStatusStrip';
 import { OverviewDraftPanel } from '@/components/manage/OverviewDraftPanel';
 import { MetricStrip } from '@/components/ui/MetricStrip';
 import { useEventOverviewPlan } from '@/hooks/useEventOverviewPlan';
 import { useRightContextPanel } from '@/hooks/useRightContextPanel';
 import type {
     EventModuleResponseDto,
+    EventScheduleDto,
     EventStatus,
     EventTypeConvention,
     EventUsageResponseDto,
@@ -29,7 +31,7 @@ export default function OverviewTab({
     eventTitle,
     eventType,
     eventStatus,
-    startAt,
+    schedule,
     cancelledCheckout,
 }: {
     memberCount: number;
@@ -45,7 +47,7 @@ export default function OverviewTab({
     eventTitle: string;
     eventType: EventTypeConvention;
     eventStatus: EventStatus;
-    startAt: string | null;
+    schedule: EventScheduleDto;
     cancelledCheckout: boolean;
 }) {
     const t = useTranslations('ManagePage');
@@ -66,7 +68,8 @@ export default function OverviewTab({
                 eventId={eventId}
                 eventTitle={eventTitle}
                 eventType={eventType}
-                startAt={startAt}
+                startAt={schedule.startAt}
+                projectedCoverage={schedule.projectedCoverage}
                 currentPlan={currentPlan}
                 currency={currentPlan?.priceCurrency ?? 'EUR'}
                 selectedAddons={selectedAddons}
@@ -84,6 +87,9 @@ export default function OverviewTab({
 
     return (
         <div className="flex flex-col gap-5">
+            {/* Coverage status */}
+            <CoverageStatusStrip eventId={eventId} schedule={schedule} />
+
             {/* Headline numbers */}
             <MetricStrip
                 items={[

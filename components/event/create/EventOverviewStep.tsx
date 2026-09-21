@@ -3,6 +3,7 @@
 import { Loader2, Receipt } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { ActivationDisclosures } from '@/components/checkout/ActivationDisclosures';
 import { ActivationEventSummary } from '@/components/checkout/ActivationEventSummary';
 import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
 import { EventOverviewPriceRow } from '@/components/event/create/EventOverviewPriceRow';
@@ -21,6 +22,7 @@ export function EventOverviewStep() {
         selectedEventType: eventType,
         eventTypes,
         startAt,
+        projectedCoverage,
         selectedPlan: plan,
         error,
         hasDraft,
@@ -142,6 +144,11 @@ export function EventOverviewStep() {
                     </p>
                 )}
             </section>
+
+            {/* Activation disclosures */}
+            <div className="border-t border-border/70 py-5">
+                <ActivationDisclosures startAt={startAt || null} projectedCoverage={projectedCoverage} />
+            </div>
 
             {/* Withdrawal consent */}
             <section aria-labelledby="withdrawal-terms-title" className="border-t border-border/70 pt-5">

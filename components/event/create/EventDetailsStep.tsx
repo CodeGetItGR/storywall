@@ -1,15 +1,17 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { EventTimezoneField } from '@/components/event/create/EventTimezoneField';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useCreateEventFieldLabels } from '@/hooks/useCreateEventFieldLabels';
 import { useEventTypeVoice } from '@/hooks/useEventTypeVoice';
+import { formatDate } from '@/lib/datetime';
 import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
 export function EventDetailsStep() {
     const t = useTranslations('CreateEventPage');
+    const locale = useLocale();
     const {
         selectedEventType,
         title,
@@ -17,12 +19,10 @@ export function EventDetailsStep() {
         onTitleChange,
         startAt,
         scheduleError,
+        projectedCoverage,
         startAtMin,
         startAtMax,
         onStartAtChange,
-        endAt,
-        endAtMin,
-        onEndAtChange,
         timezone,
         timezoneError,
         timezoneOptions,
@@ -66,19 +66,19 @@ export function EventDetailsStep() {
                         max={startAtMax}
                         className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
                     />
+                    {scheduleError ? (
+                        <span className="text-xs text-rose-500">{scheduleError}</span>
+                    ) : projectedCoverage ? (
+                        <span className="text-xs text-ink-muted">
+                            {t('coverageProjection', {
+                                opensAt: formatDate(locale, projectedCoverage.galleryOpensAt, { dateStyle: 'medium' }),
+                                endsAt: formatDate(locale, projectedCoverage.coverageEndsAt, { dateStyle: 'medium' }),
+                            })}
+                        </span>
+                    ) : (
+                        <span className="text-xs text-ink-muted">{t('startAtHint')}</span>
+                    )}
                 </FormFieldLabel>
-
-                <FormFieldLabel label={t('fields.endAt')} required>
-                    <input
-                        type="datetime-local"
-                        required
-                        value={endAt}
-                        onChange={onEndAtChange}
-                        min={endAtMin}
-                        className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
-                    />
-                </FormFieldLabel>
-                {scheduleError && <p className="text-xs text-rose-500">{scheduleError}</p>}
 
                 {/* Timezone */}
                 <EventTimezoneField

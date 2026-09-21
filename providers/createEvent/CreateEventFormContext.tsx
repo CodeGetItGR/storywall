@@ -10,6 +10,7 @@ import type {
     EventTypeConvention,
     PlanTierResponseDto,
     PlatformModuleResponseDto,
+    ProjectedCoverageDto,
 } from '@/lib/api/types';
 
 export type CreateEventStep = 'type' | 'plan' | 'details' | 'overview';
@@ -46,11 +47,10 @@ export interface CreateEventFormValue {
     startAt: string;
     startAtMin: string;
     startAtMax?: string;
-    endAt: string;
-    endAtMin: string;
     scheduleError: string | null;
+    // Client-side estimate from /api/config — the server pins the real window at activation.
+    projectedCoverage: ProjectedCoverageDto | null;
     onStartAtChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onEndAtChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     timezone: string;
     timezoneOptions: string[];
     timezoneError: string | null;

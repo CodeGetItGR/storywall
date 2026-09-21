@@ -220,7 +220,7 @@ An uncapped enterprise plan is a real, intended shape — not missing data.
 ### `autoDeleteMonths` — how long an event's content survives after it ends
 
 `EVENT`-scope only (always `null` on `ACCOUNT` plans). When set, an event on this plan is
-soft-deleted `autoDeleteMonths` months after its `endAt` — the exact same lifecycle as a
+soft-deleted at its `coverageEndsAt` (pinned at activation; see the coverage-window FE guide) — the exact same lifecycle as a
 host-requested deletion (§ the delete-event flow): undoable while soft-deleted, hard-purged after
 `app.billing.event-retention-days`. `null` means the plan never auto-deletes its events.
 
@@ -997,9 +997,24 @@ host confirms POST /withdrawals
 ### The price split and what each line does
 
 Every `ACTIVATION`/`UPGRADE` order is split into three lines at checkout (§8): **setup** (non-
-refundable once the host asked for immediate start — C-641/19), **event-day** (retained once the
-event has actually taken place), and **hosting** (refunded pro rata for the time between payment and
-withdrawal against the event's retention window). A host who never gave consent — which cannot
+refundable once the host asked for immediate start — C-641/19), **event-day** (retained once
+`startAt` has passed — not `endAt`, which the host can still move on a live event), and **hosting**
+(refunded pro rata for the time between payment and withdrawal against `coverageEndsAt`, the
+retention window pinned at activation).
+
+**Changed 2026-09-21 — rescheduled events.** A host may still move `startAt` forward on a live event
+(postponing is ordinary), but the date they paid for is pinned server-side and a withdrawal on an
+event whose `startAt` differs from it is **always `HELD`** for review, never auto-refunded. Two
+things follow for the FE:
+- A new fraud signal code appears in the admin queue: `SCHEDULE_MOVED_AFTER_PAYMENT` (`observed`
+  carries both dates, e.g. `"paid for 2026-10-03T18:00Z, now set to 2026-12-01T18:00Z"`). Nothing
+  to special-case — the admin screen already renders every signal generically.
+- `usageFacts` gains `activatedStartAt` (ISO string, may be `null` for events activated before this
+  change). Display-only, as before.
+- Host copy: the withdrawal confirmation dialog can say "Because this event's date was changed after
+  payment, your request will be reviewed by a person" when the preview's event `startAt` differs from
+  what they originally booked — the preview response does not flag this itself; if you want a flag
+  rather than a comparison, ask and it can be added. A host who never gave consent — which cannot
 currently happen through this API, since `requestsImmediateStart`/`acknowledgesWithdrawalTerms` are
 mandatory on checkout (§6) — would be entitled to a full refund of everything (art. 14(4)(a)); this
 case is theoretical today, not something the FE needs to branch on.

@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
-import type { AppConfigResponseDto, AppMediaConfigDto, AppRsvpConfigDto, PlatformFeatureFlagResponseDto } from '@/lib/api/types';
+import type { AppConfigResponseDto, AppCoverageConfigDto, AppMediaConfigDto, AppRsvpConfigDto, PlatformFeatureFlagResponseDto } from '@/lib/api/types';
 
 export const appConfigKeys = {
     all: ['app-config'] as const,
@@ -32,4 +32,9 @@ export function useAppRsvpConfig(): AppRsvpConfigDto | null {
 export function useAppFeatureFlags(): PlatformFeatureFlagResponseDto[] {
     const { data } = useAppConfig();
     return data?.featureFlags ?? [];
+}
+
+export function useAppCoverageConfig(): AppCoverageConfigDto | null {
+    const { data } = useAppConfig();
+    return data?.coverage ?? null;
 }

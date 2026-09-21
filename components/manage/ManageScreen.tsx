@@ -114,7 +114,7 @@ export function ManageScreen() {
                         eventTitle={activeEvent.title}
                         eventType={activeEvent.eventType}
                         eventStatus={activeEvent.status}
-                        startAt={activeEvent.schedule.startAt}
+                        schedule={activeEvent.schedule}
                         cancelledCheckout={cancelledCheckout}
                     />
                 ))}
@@ -167,7 +167,7 @@ export function ManageScreen() {
 
             {section === 'danger' && <DangerZoneTab event={activeEvent} />}
 
-            {section === 'billing' && <BillingTab eventId={eventId} />}
+            {section === 'billing' && <BillingTab eventId={eventId} schedule={activeEvent.schedule} />}
         </>
     );
 

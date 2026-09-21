@@ -9,7 +9,7 @@ import { AdminIdentifier } from '@/components/admin/AdminIdentifier';
 import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useReleaseWithdrawal, useWithholdWithdrawal } from '@/hooks/useAdmin';
-import { adminErrorMessageKey } from '@/lib/adminUtils';
+import { adminErrorMessageKey, formatUsageFacts } from '@/lib/adminUtils';
 import type { WithdrawalAdminDto } from '@/lib/api/types';
 import { formatOptionalMoney } from '@/lib/billing';
 import { cn } from '@/lib/utils';
@@ -34,6 +34,7 @@ export function WithdrawalRow({ row }: { row: WithdrawalAdminDto }) {
     const cancelConfirm = useCallback(() => setConfirming(null), []);
 
     const { request } = row;
+    const usageFacts = formatUsageFacts(row.usageFacts);
     const held = request.status === 'HELD';
     const amount = formatOptionalMoney(request.totalRefundMinor, request.currency, locale);
     const isPending = release.isPending || withhold.isPending;
@@ -94,6 +95,18 @@ export function WithdrawalRow({ row }: { row: WithdrawalAdminDto }) {
                     />
                 ))}
             </div>
+
+            {/* Usage facts */}
+            {usageFacts.length > 0 && (
+                <div className="mt-3 border-t border-border pt-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('withdrawals.usageFacts')}</p>
+                    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                        {usageFacts.map(([key, value]) => (
+                            <AdminEvidenceTile key={key} label={key} value={value} />
+                        ))}
+                    </div>
+                </div>
+            )}
 
             <div className="mt-3 grid gap-3 border-t border-border pt-3 sm:grid-cols-2">
                 <AdminIdentifier label={t('identifiers.eventId')} value={request.eventId} />

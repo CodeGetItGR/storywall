@@ -3,6 +3,7 @@
 import { AlertTriangle, Clock3, Loader2, LockKeyhole, Receipt } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { ActivationDisclosures } from '@/components/checkout/ActivationDisclosures';
 import { ActivationEventSummary } from '@/components/checkout/ActivationEventSummary';
 import { CollaborationCodeSection } from '@/components/checkout/CollaborationCodeSection';
 import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
@@ -11,7 +12,7 @@ import { GiftAccountSetup } from '@/components/manage/GiftAccountSetup';
 import { TargetedSection } from '@/components/manage/TargetedSection';
 import { useDraftActivationCheckout } from '@/hooks/useDraftActivationCheckout';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
-import type { EventBillingResponseDto, EventTypeConvention, PlanTierResponseDto } from '@/lib/api/types';
+import type { EventBillingResponseDto, EventTypeConvention, PlanTierResponseDto, ProjectedCoverageDto } from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
 import { GIFT_ACCOUNT_SECTION_ID } from '@/lib/manageSectionTargets';
 import { getPlanPriceDetails } from '@/lib/planTiers';
@@ -21,6 +22,7 @@ export function OverviewDraftPanel({
     eventTitle,
     eventType,
     startAt,
+    projectedCoverage,
     currentPlan,
     currency,
     selectedAddons,
@@ -32,6 +34,7 @@ export function OverviewDraftPanel({
     eventTitle: string;
     eventType: EventTypeConvention;
     startAt: string | null;
+    projectedCoverage: ProjectedCoverageDto | null;
     currentPlan: PlanTierResponseDto | undefined;
     currency: string;
     selectedAddons: EventBillingResponseDto['addons'];
@@ -136,6 +139,9 @@ export function OverviewDraftPanel({
 
                 {/* Collaboration code */}
                 {canPay && <CollaborationCodeSection eventId={eventId} onPreviewChangeAction={handleCollaborationPreviewChange} />}
+
+                {/* Activation disclosures */}
+                {canPay && <ActivationDisclosures startAt={startAt} projectedCoverage={projectedCoverage} />}
 
                 {/* Withdrawal consent */}
                 {canPay && (

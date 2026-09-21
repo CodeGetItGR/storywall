@@ -87,6 +87,7 @@ function makeConfig(): AppConfigResponseDto {
         translations: { eventTypes: {} },
         rsvp: { minAdults: 1, maxAdults: 5, minChildren: 0, maxChildren: 4 },
         withdrawal: { termsVersion: '1' } as AppConfigResponseDto['withdrawal'],
+        coverage: { maxLeadDays: 548, maxPreEventDays: 90, defaultHostingMonths: 12, defaultEventDurationHours: 24 },
         contentLimits: {} as AppConfigResponseDto['contentLimits'],
         reactionTypesByEventType: {},
         rateLimits: [],
