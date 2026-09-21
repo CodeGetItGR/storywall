@@ -5,7 +5,6 @@ import { useLocale, useTranslations } from 'next-intl';
 import type { ChangeEventHandler, KeyboardEvent, MouseEventHandler } from 'react';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
-import { AdminTabPanel } from '@/components/admin/AdminTabs';
 import { useLocalizedModuleLabel } from '@/hooks/useLocalizedModuleLabel';
 import type { UnlockDraft } from '@/lib/adminPlanEditor';
 import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
@@ -16,9 +15,8 @@ function billingSuffix(t: ReturnType<typeof useTranslations>, billingPeriod: Pai
     return billingPeriod === 'ONE_TIME' ? t('plans.modules.billingOnce') : t('plans.modules.billingMonthly');
 }
 
-export function PlanEditorAddonsTab({
-    editorId,
-    activeTab,
+export function PlanEditorAddonsSection({
+    id,
     plan,
     orderedModules,
     moduleUnlocks,
@@ -32,8 +30,7 @@ export function PlanEditorAddonsTab({
     onUnlockAction,
     isUpdatingUnlocks,
 }: {
-    editorId: string;
-    activeTab: string;
+    id: string;
     plan: PlanTierResponseDto;
     orderedModules: PlatformModuleResponseDto[];
     moduleUnlocks: PaidServiceResponseDto[];
@@ -68,8 +65,9 @@ export function PlanEditorAddonsTab({
     }
 
     return (
-        <AdminTabPanel id={editorId} tabKey="addons" active={activeTab} className="pt-5">
-            {/* Add-on guidance */}
+        <section id={id} className="scroll-mt-14 pt-6">
+            {/* Add-ons */}
+            <h4 className="mb-1 text-sm font-bold text-ink">{t('plans.sections.addons')}</h4>
             <p className="mb-3 max-w-2xl text-sm leading-6 text-ink-muted">{t('plans.sections.addonsHint')}</p>
             {excludedModules.length === 0 && <p className="text-sm text-ink-muted">{t('plans.modules.addonsEmpty')}</p>}
 
@@ -234,6 +232,6 @@ export function PlanEditorAddonsTab({
                     );
                 })}
             </div>
-        </AdminTabPanel>
+        </section>
     );
 }

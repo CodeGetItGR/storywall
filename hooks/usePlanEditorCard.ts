@@ -3,17 +3,19 @@
 import { useDelete, useInvalidate, useUpdate } from '@refinedev/core';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useAdminDrawerFooterSlot } from '@/components/admin/AdminDrawer';
-import { useSetPlanModules } from '@/hooks/useAdmin';
+import type { PlanEditorAnchor } from '@/components/admin/PlanEditorAnchors';
 import { appConfigKeys } from '@/hooks/useAppConfig';
-import { useLocalizedModuleLabel } from '@/hooks/useLocalizedModuleLabel';
 import { usePlanEditorState } from '@/hooks/usePlanEditorState';
 import { usePlanEditorUnlocks } from '@/hooks/usePlanEditorUnlocks';
-import { membershipDelta, type PendingPlanSave, planChangeSummary, type PlanMembershipChange, planPatchFromFormData } from '@/lib/adminPlanEditor';
+import { useScrollSpy } from '@/hooks/useScrollSpy';
+import { type PendingPlanSave, planChangeSummary, planPatchFromFormData } from '@/lib/adminPlanEditor';
 import { type Visibility } from '@/lib/adminVisibility';
 import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformEventTypeResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+
+const SECTION_KEYS = ['details', 'availability', 'limits', 'pricing', 'modules', 'addons', 'danger'] as const;
 
 export type UsePlanEditorCardArgs = {
     plan: PlanTierResponseDto;
@@ -23,17 +25,42 @@ export type UsePlanEditorCardArgs = {
     eventPlans: PlanTierResponseDto[];
     scope: 'ACCOUNT' | 'EVENT';
     onSavedAction: (name: string) => void;
+    onOpenGridAction?: () => void;
+    onOpenSiblingAction?: (plan: PlanTierResponseDto) => void;
 };
 
-export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eventPlans, scope, onSavedAction }: UsePlanEditorCardArgs) {
+export function usePlanEditorCard({
+    plan,
+    modules,
+    eventTypes,
+    paidServices,
+    eventPlans,
+    scope,
+    onSavedAction,
+    onOpenGridAction,
+    onOpenSiblingAction,
+}: UsePlanEditorCardArgs) {
     const t = useTranslations('AdminPage');
-    const moduleLabel = useLocalizedModuleLabel(modules);
     const queryClient = useQueryClient();
     const invalidate = useInvalidate();
     const footerSlot = useAdminDrawerFooterSlot();
     const [makeDefaultOpen, setMakeDefaultOpen] = useState(false);
     const [pendingSave, setPendingSave] = useState<PendingPlanSave | null>(null);
     const [deleteOpen, setDeleteOpen] = useState(false);
+
+    const editorId = `plan-editor-${plan.id}`;
+    const anchorIds = useMemo(() => SECTION_KEYS.map((key) => `${editorId}-${key}`), [editorId]);
+    const activeAnchor = useScrollSpy(anchorIds);
+    const anchors: PlanEditorAnchor[] = SECTION_KEYS.map((key) => ({
+        id: `${editorId}-${key}`,
+        label: t(`plans.sections.${key}`),
+        tone: key === 'danger' ? 'danger' : 'default',
+    }));
+
+    const siblings = useMemo(
+        () => eventPlans.filter((other) => other.sharedGroupKey && other.sharedGroupKey === plan.sharedGroupKey && other.id !== plan.id),
+        [eventPlans, plan.id, plan.sharedGroupKey]
+    );
 
     const invalidateAppConfig = () => {
         queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
@@ -50,7 +77,6 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
     const updatePlan = useUpdate<PlanTierResponseDto>({ dataProviderName: 'plan-tiers', mutationOptions: { onSuccess: onMutationSuccess } });
     // useDelete's mutationOptions doesn't expose onSuccess, unlike useCreate/useUpdate — invalidate manually after it resolves.
     const deletePlan = useDelete<PlanTierResponseDto>();
-    const setPlanModules = useSetPlanModules();
 
     const editor = usePlanEditorState({ plan, modules, eventTypes, scope });
     const unlocks = usePlanEditorUnlocks({
@@ -62,13 +88,8 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
         setUnlockDraftAction: editor.setUnlockDraft,
     });
 
-    const error =
-        updatePlan.mutation.error ??
-        deletePlan.mutation.error ??
-        unlocks.createPaidService.mutation.error ??
-        unlocks.updatePaidService.mutation.error ??
-        setPlanModules.error;
-    const isSaving = updatePlan.mutation.isPending || setPlanModules.isPending;
+    const error = updatePlan.mutation.error ?? deletePlan.mutation.error ?? unlocks.createPaidService.mutation.error ?? unlocks.updatePaidService.mutation.error;
+    const isSaving = updatePlan.mutation.isPending;
 
     function handleMakeDefaultClick() {
         setMakeDefaultOpen(true);
@@ -95,15 +116,12 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
         setPendingSave(null);
     }
 
-    // One Save covers the whole editor: the plan patch plus whichever coverage
-    // lists changed. The card is remounted on success, which resets the drafts.
+    // Module membership is edited in the grid, so one Save is just the plan
+    // patch. The card is remounted on success, which resets the form.
     async function handleSaveConfirm() {
         if (!pendingSave) return;
         if (pendingSave.changes.length > 0) {
             await updatePlan.mutateAsync({ resource: 'plan-tiers', id: plan.id, values: pendingSave.patch });
-        }
-        if (pendingSave.moduleKeys) {
-            await setPlanModules.mutateAsync({ planId: plan.id, moduleKeys: pendingSave.moduleKeys });
         }
         editor.setPlanChangeCount(0);
         setPendingSave(null);
@@ -120,32 +138,7 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
         event.preventDefault();
         if (!editor.canSave) return;
         const patch = planPatchFromFormData(plan, new FormData(event.currentTarget), editor.visibility);
-
-        const moduleName = (key: string) => moduleLabel(key).name;
-
-        const memberships: PlanMembershipChange[] = [];
-        if (editor.modulesDirty) {
-            const delta = membershipDelta(plan.moduleKeys, editor.moduleKeysDraft);
-            memberships.push({
-                label: t('plans.includedModules'),
-                added: delta.added.map(moduleName),
-                removed: delta.removed.map(moduleName),
-            });
-        }
-
-        setPendingSave({
-            patch,
-            changes: planChangeSummary(plan, patch, t),
-            memberships,
-            moduleKeys: editor.modulesDirty ? editor.moduleKeysDraft : null,
-        });
-    }
-
-    // Recompute the full change summary from the live form state whenever the form changes.
-    function handleFormChange() {
-        if (!editor.formRef.current) return;
-        const patch = planPatchFromFormData(plan, new FormData(editor.formRef.current), editor.visibility);
-        editor.setPlanChangeCount(planChangeSummary(plan, patch, t).length);
+        setPendingSave({ patch, changes: planChangeSummary(plan, patch, t), memberships: [], moduleKeys: null });
     }
 
     function handleVisibilityChange(next: Visibility) {
@@ -155,9 +148,12 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
     return {
         plan,
         isEvent: editor.isEvent,
-        tabs: editor.tabs,
-        tab: editor.tab,
-        setTab: editor.setTab,
+        editorId,
+        anchors,
+        activeAnchor,
+        siblings,
+        onOpenGridAction,
+        onOpenSiblingAction,
         visibility: editor.visibility,
         unlockDraft: editor.unlockDraft,
         error,
@@ -173,13 +169,9 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
         deleteOpen,
         footerSlot,
         formRef: editor.formRef,
-        editorId: `plan-editor-${plan.id}`,
         orderedModules: editor.orderedModules,
         orderedEventTypes: editor.orderedEventTypes,
         moduleUnlocks: unlocks.moduleUnlocks,
-        moduleKeysDraft: editor.moduleKeysDraft,
-        modulesDirty: editor.modulesDirty,
-        toggleModule: editor.toggleModule,
         handleMakeDefaultClick,
         handleMakeDefaultClose,
         handleMakeDefaultConfirm,
@@ -189,7 +181,7 @@ export function usePlanEditorCard({ plan, modules, eventTypes, paidServices, eve
         handleSaveConfirm,
         handleDeleteConfirm,
         handleSubmit,
-        handleFormChange,
+        handleFormChange: editor.handleFormChange,
         handleVisibilityChange,
         openUnlockEditor: unlocks.openUnlockEditor,
         closeUnlockEditor: unlocks.closeUnlockEditor,

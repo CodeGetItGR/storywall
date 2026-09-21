@@ -21,15 +21,6 @@ export type PendingPlanSave = {
     moduleKeys: string[] | null;
 };
 
-export function membershipDelta(before: string[], after: string[]) {
-    const beforeSet = new Set(before);
-    const afterSet = new Set(after);
-    return {
-        added: after.filter((key) => !beforeSet.has(key)),
-        removed: before.filter((key) => !afterSet.has(key)),
-    };
-}
-
 export type UnlockDraft = {
     moduleKey: string;
     moduleName: string;

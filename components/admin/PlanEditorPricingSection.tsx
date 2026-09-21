@@ -4,18 +4,18 @@ import { useTranslations } from 'next-intl';
 
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminSection } from '@/components/admin/AdminSection';
-import { AdminTabPanel } from '@/components/admin/AdminTabs';
 import { defaultCurrency, instantToLocalInput, priceMinorToInput } from '@/lib/adminPlanForm';
 import type { BillingPeriod, PlanTierResponseDto } from '@/lib/api/types';
 
 const BILLING_PERIODS: BillingPeriod[] = ['ONE_TIME'];
 
-export function PlanEditorPricingTab({ editorId, activeTab, plan }: { editorId: string; activeTab: string; plan: PlanTierResponseDto }) {
+export function PlanEditorPricingSection({ id, plan }: { id: string; plan: PlanTierResponseDto }) {
     const t = useTranslations('AdminPage');
 
     return (
-        <AdminTabPanel id={editorId} tabKey="pricing" active={activeTab} className="pt-5">
+        <section id={id} className="scroll-mt-14 pt-6">
             {/* Pricing */}
+            <h4 className="mb-3 text-sm font-bold text-ink">{t('plans.sections.pricing')}</h4>
             <div className="grid grid-cols-2 gap-3">
                 <AdminField label={t('fields.price')} optional>
                     <input
@@ -83,6 +83,6 @@ export function PlanEditorPricingTab({ editorId, activeTab, plan }: { editorId: 
                     </AdminField>
                 </div>
             </AdminSection>
-        </AdminTabPanel>
+        </section>
     );
 }

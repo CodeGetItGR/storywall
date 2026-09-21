@@ -76,6 +76,8 @@ export function EventTypePlansPane({ eventType, section }: { eventType: Platform
                         eventPlans={section.allPlans}
                         scope="EVENT"
                         onSavedAction={pane.handleSaved}
+                        onOpenGridAction={pane.openGridFromEditor}
+                        onOpenSiblingAction={pane.openSibling}
                     />
                 )}
             </AdminDrawer>

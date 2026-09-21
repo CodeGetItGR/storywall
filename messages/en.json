@@ -2429,35 +2429,31 @@
             "deleteConfirmTitle": "Delete {plan}?",
             "deleteConfirmBody": "Only delete plans created by mistake and never assigned. In-use plans should be archived.",
             "tabs": {
-                "details": "Details",
-                "limits": "Limits",
-                "pricing": "Pricing",
-                "coverage": "Coverage",
-                "eventTypes": "Event types",
-                "addons": "Add-ons",
-                "danger": "Danger zone"
+                "eventTypes": "Event types"
             },
+            "editInGrid": "Edit in the modules grid",
+            "archiveInsteadHint": "To retire a plan that is in use, set it to Archived under Availability.",
             "coverage": {
-                "changed": "Changed",
                 "modulesCount": "{count} of {total} included",
                 "modulePlatformOff": "Disabled across the platform",
-                "eventTypeLabel": "Event type",
-                "sharedGroupLabel": "Shared with copies ({group})"
+                "eventTypeLabel": "Event type"
             },
             "pendingChanges": "{count, plural, one {# unsaved change} other {# unsaved changes}}",
             "noPendingChanges": "No changes yet.",
             "saveSuccess": "{plan} updated.",
             "sections": {
                 "identity": "Plan identity",
+                "details": "Details",
                 "limits": "Limits",
                 "pricing": "Pricing",
+                "modules": "Modules",
+                "addons": "Add-ons",
+                "danger": "Danger zone",
                 "addonsHint": "Sell modules that are not included in this plan as paid add-ons.",
                 "limitsHint": "Blank means no limit. These caps apply to every event on this plan.",
                 "promotion": "Promotion",
                 "promotionHint": "A discount inside its window is charged, not just advertised. Leave the percentage blank to run no promotion.",
-                "availability": "Availability",
-                "modulesHint": "Choose the modules included in this plan.",
-                "eventTypesHint": "Set when creating the plan. Duplicate this plan to offer it for another event type."
+                "availability": "Availability"
             },
             "filters": {
                 "all": "All",
