@@ -53,6 +53,8 @@ export const adminKeys = {
     planTiers: (scope?: PlanScope, includeArchived?: boolean) => ['admin', 'plan-tiers', scope ?? 'ALL', Boolean(includeArchived)] as const,
     platformModules: ['admin', 'platform-modules'] as const,
     platformEventTypes: ['admin', 'platform-event-types'] as const,
+    eventTypeModules: (eventTypeKey: string) => ['admin', 'event-types', eventTypeKey, 'modules'] as const,
+    planTierModuleConfigs: (planId: string) => ['admin', 'plan-tiers', planId, 'module-configs'] as const,
     unprocessedWebhooks: ['admin', 'webhooks', 'unprocessed'] as const,
     notificationSweep: ['admin', 'notifications', 'sweep'] as const,
     withdrawals: ['admin', 'withdrawals'] as const,

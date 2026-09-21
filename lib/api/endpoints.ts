@@ -270,7 +270,13 @@ export const endpoints = {
             list: '/api/admin/plan-tiers',
             byId: (id: string) => `/api/admin/plan-tiers/${id}`,
             modules: (id: string) => `/api/admin/plan-tiers/${id}/modules`,
+            moduleConfig: (id: string, moduleKey: string) => `/api/admin/plan-tiers/${id}/modules/${encodeURIComponent(moduleKey)}`,
             duplicate: (id: string) => `/api/admin/plan-tiers/${id}/duplicate`,
+        },
+        eventTypes: {
+            modules: (eventTypeKey: string) => `/api/admin/event-types/${encodeURIComponent(eventTypeKey)}/modules`,
+            module: (eventTypeKey: string, moduleKey: string) =>
+                `/api/admin/event-types/${encodeURIComponent(eventTypeKey)}/modules/${encodeURIComponent(moduleKey)}`,
         },
         paidServices: {
             list: '/api/admin/paid-services',
