@@ -1238,16 +1238,26 @@
                 "confirmBody": "This event will be hidden from everyone right away. You'll be able to undo this from this page until it's permanently deleted.",
                 "confirmAction": "Delete event",
                 "cancelAction": "Cancel",
-                "password": {
-                    "label": "Current password",
+                "otp": {
+                    "send": "Send code",
+                    "sending": "Sending…",
+                    "verifyBody": "Enter the 6-digit code sent to your email.",
+                    "label": "Confirmation code",
+                    "resend": "Send a new code",
+                    "resendIn": "Send a new code in {seconds}s",
                     "errors": {
-                        "currentPasswordInvalid": "Your current password is incorrect."
+                        "invalid": "Incorrect code.",
+                        "notRequested": "Request a new code to continue.",
+                        "expired": "That code has expired. Request a new one.",
+                        "tooManyAttempts": "Too many incorrect attempts. Request a new code."
                     }
                 }
             },
             "pendingDeletion": {
                 "title": "This event is scheduled for deletion",
-                "body": "It will be permanently deleted on {date}. Guests can no longer see it."
+                "body": "It will be permanently deleted on {date}. Guests can no longer see it.",
+                "undo": "Undo deletion",
+                "undoing": "Restoring…"
             }
         },
         "usage": {
@@ -3440,6 +3450,10 @@
         "invalidPlanTierScope": "That restriction only applies to event plans.",
         "eventDeleteNotPrimaryHost": "Only the event's original host can delete it.",
         "eventDeleteAlreadyPending": "This event already has a deletion scheduled.",
+        "eventDeleteOtpNotRequested": "Request a new deletion code.",
+        "eventDeleteOtpExpired": "The deletion code has expired.",
+        "eventDeleteOtpTooManyAttempts": "Too many incorrect deletion code attempts.",
+        "eventDeleteOtpInvalid": "The deletion code is incorrect.",
         "eventHostDisplayOrderReserved": "The primary host position is reserved.",
         "eventHostPrimaryCannotBeRemoved": "Transfer ownership before removing the primary host.",
         "eventHostTransferNotPrimaryHost": "Only the primary host can transfer ownership.",

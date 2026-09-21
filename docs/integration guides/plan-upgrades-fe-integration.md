@@ -308,8 +308,9 @@ export async function startUpgrade(eventId: string, planTierCode: string) {
 Neither is a bug you can work around client-side; both are listed so you do not design around
 behaviour that does not exist.
 
-- **A refunded or disputed upgrade leaves the event on the upgraded tier.** Reversing an order clears
-  coverage but does not revert plans, and the refund flow only targets `ACTIVATION` orders anyway —
-  so an upgrade is effectively non-refundable through the host-facing refund UI. Do not offer a
-  refund button on an `UPGRADE` order row; `GET /refund-eligibility` speaks only to the activation.
+- **A refunded or disputed upgrade leaves the event on the upgraded tier.** Reversing an order does
+  not revert plans. `GET /api/events/{eventId}/withdrawal-preview` (`billing-fe-guide.md` §9, replaces
+  the old `refund-eligibility` endpoint) does cover settled `UPGRADE` orders as their own line, but
+  withdrawal is a whole-event, terminal action (refund + soft-delete) — there is no per-order refund
+  UI that targets just the upgrade and leaves the event running on its prior tier.
 - **A draft's plan cannot be changed.** See §1.

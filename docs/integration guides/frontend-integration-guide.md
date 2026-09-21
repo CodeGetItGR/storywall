@@ -160,7 +160,7 @@ the two conditions failed. Guest invitations are unchanged and stay forwardable.
 |---|---|---|---|
 | POST | `/api/events` | `ROLE_USER` | atomically creates the `Event` + host's `EventMember` + `EventHost` + (2026-08-26) an optional initial `EventSession` when `initialSessionTitle` is sent — see [`event-creation-initial-session-fe-integration.md`](event-creation-initial-session-fe-integration.md) |
 | PATCH | `/api/events/{id}` | host of the event | all fields editable **except `eventType`** (see §3) |
-| DELETE | `/api/events/{id}` | host of the event | |
+| POST | `/api/events/{eventId}/deletion-requests/otp` + `/deletion-requests` | primary host | replaces the old `DELETE /api/events/{id}` — OTP-confirmed deletion, see [`event-deletion-fe-integration.md`](event-deletion-fe-integration.md) |
 | POST | `/api/events/{eventId}/hosts` | existing host | promote a co-host **immediately** (`{ userId }`) — target must be a registered, non-guest user whose id you already hold |
 | POST | `/api/events/{eventId}/host-invitations` | existing host | new 2026-08-16 — invite a co-host **by email**, pending until they accept; works for people with no account yet. Returns an `EventInvitationResponseDto` with `role: 'HOST'`. See [`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-integration.md) §1 |
 | GET | `/api/events/{eventId}/hosts` | authenticated | |

@@ -39,7 +39,8 @@ export function ManageScreen() {
     const isDraft = activeEvent.status === 'DRAFT';
     const activeMember = useActiveMember();
     const canDelete = isPrimaryHost(activeEvent.hosts, activeMember?.id);
-    const visibleSections = canDelete ? manageSections : manageSections.filter((entry) => entry !== 'danger');
+    const canOpenDangerZone = canDelete || Boolean(activeEvent.deletionScheduledFor);
+    const visibleSections = canOpenDangerZone ? manageSections : manageSections.filter((entry) => entry !== 'danger');
     const section = isDraft ? 'overview' : visibleSections.includes(requestedSection) ? requestedSection : 'overview';
     const [switcherOpen, setSwitcherOpen] = useState(false);
 

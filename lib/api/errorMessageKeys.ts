@@ -28,6 +28,10 @@ export type ApiErrorMessageKey =
     | 'eventCreationLocked'
     | 'eventDeleteAlreadyPending'
     | 'eventDeleteNotPrimaryHost'
+    | 'eventDeleteOtpExpired'
+    | 'eventDeleteOtpInvalid'
+    | 'eventDeleteOtpNotRequested'
+    | 'eventDeleteOtpTooManyAttempts'
     | 'eventWithdrawn'
     | 'eventHostDisplayOrderReserved'
     | 'eventHostPrimaryCannotBeRemoved'
@@ -131,6 +135,10 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.EVENT_CREATION_LOCKED]: 'eventCreationLocked',
     [ERROR_CODES.EVENT_DELETE_ALREADY_PENDING]: 'eventDeleteAlreadyPending',
     [ERROR_CODES.EVENT_DELETE_NOT_PRIMARY_HOST]: 'eventDeleteNotPrimaryHost',
+    [ERROR_CODES.EVENT_DELETE_OTP_EXPIRED]: 'eventDeleteOtpExpired',
+    [ERROR_CODES.EVENT_DELETE_OTP_INVALID]: 'eventDeleteOtpInvalid',
+    [ERROR_CODES.EVENT_DELETE_OTP_NOT_REQUESTED]: 'eventDeleteOtpNotRequested',
+    [ERROR_CODES.EVENT_DELETE_OTP_TOO_MANY_ATTEMPTS]: 'eventDeleteOtpTooManyAttempts',
     [ERROR_CODES.EVENT_WITHDRAWN]: 'eventWithdrawn',
     [ERROR_CODES.EVENT_HOST_DISPLAY_ORDER_RESERVED]: 'eventHostDisplayOrderReserved',
     [ERROR_CODES.EVENT_HOST_PRIMARY_CANNOT_BE_REMOVED]: 'eventHostPrimaryCannotBeRemoved',

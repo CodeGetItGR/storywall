@@ -1,20 +1,22 @@
 # FE integration guide: deleting an event
 
-Covers a change shipped 2026-09-02, revised the same day: hosts can now delete an event, gated
-behind the primary host's password. See `frontend-integration-guide.md` §0 for base setup (auth
-header, the RFC 7807 error envelope) and `billing-fe-guide.md` §5 for the rest of the event
-lifecycle — this doc is the focused "what's new" record for deletion specifically.
+Covers a change shipped 2026-09-02, revised 2026-09-21: hosts can now delete an event, gated behind
+a one-time 6-digit code mailed to the primary host (previously: their account password). See
+`frontend-integration-guide.md` §0 for base setup (auth header, the RFC 7807 error envelope) and
+`billing-fe-guide.md` §5 for the rest of the event lifecycle — this doc is the focused "what's new"
+record for deletion specifically.
 
 **Revision note:** the first version of this doc said there was no way to look up a pending
 deletion after the initial `POST`/`DELETE .../deletion-requests` response — that the undo banner
-only worked from an in-session toast, and reloading or navigating away lost it. That's fixed: §4
+only worked from an in-session toast, and reloading or navigating away lost it. That's fixed: §5
 below now describes the real, current contract (`GET /api/events/{id}` and `GET /api/events` both
 surface a pending-deletion event to its hosts). There is no outstanding backend follow-up for this.
 
 ## Why
 
-Events could be un-published (an approved refund returns one to `DRAFT`, see `billing-fe-guide.md`
-§9) but never actually removed. This closes that gap with a soft-delete-and-undo flow rather than an
+Events could be un-published (a withdrawal refunds the host and soft-deletes the event, see
+`billing-fe-guide.md` §9) but there was previously no way to remove an event outright without going
+through that refund flow. This closes that gap with a soft-delete-and-undo flow rather than an
 instant, irreversible one: a deletion request takes the event down immediately but leaves 30 days to
 change your mind before anything is actually purged.
 
@@ -26,26 +28,47 @@ The old any-host, no-confirmation delete is gone, replaced entirely by the two e
 your client still calls `DELETE /api/events/{id}`, that route now 404s — remove it in favor of
 `POST .../deletion-requests`.
 
-### 2. `POST /api/events/{eventId}/deletion-requests` — primary host only
+### 2. `POST /api/events/{eventId}/deletion-requests/otp` — request a code
+
+```http
+POST /api/events/{eventId}/deletion-requests/otp
+Authorization: Bearer <jwt>
+```
+
+**Primary-host-only — a co-host cannot request this, even though co-hosts can do almost everything
+else a host can.** "Primary host" is the host who created the event (`displayOrder: 0` in the
+`hosts` array on `GET /api/events/{id}`, §5 of `billing-fe-guide.md`) — in practice, whoever is
+first in that list. A co-host attempting this gets `403 EVENT_DELETE_NOT_PRIMARY_HOST` (4003); do
+not show the "Delete event" danger-zone button to anyone but the primary host in the first place.
+
+Rate-limited to **one request per 60 seconds per caller** — debounce the "resend code" button
+client-side too, but treat the server limit as the real guard.
+
+`204 No Content` on success; no body. The 6-digit code is mailed to the primary host's own address
+and expires in **10 minutes**. Calling this while a deletion is already pending →
+`409 EVENT_DELETE_ALREADY_PENDING` (5064).
+
+### 3. `POST /api/events/{eventId}/deletion-requests` — confirm with the code
 
 ```http
 POST /api/events/{eventId}/deletion-requests
 Authorization: Bearer <jwt>
 Content-Type: application/json
 
-{ "currentPassword": "the host's current account password" }
+{ "otpCode": "042817" }
 ```
 
-**Primary-host-only — a co-host cannot delete the event, even though co-hosts can do almost
-everything else a host can.** "Primary host" is the host who created the event (`displayOrder: 0`
-in the `hosts` array on `GET /api/events/{id}`, §5 of `billing-fe-guide.md`) — in practice, whoever
-is first in that list. A co-host attempting this gets `403 EVENT_DELETE_NOT_PRIMARY_HOST` (4003); do
-not show the "Delete event" danger-zone button to anyone but the primary host in the first place,
-the same way you already gate host-only UI on host membership.
+**Primary-host-only**, same 403 as above. `otpCode` must be exactly 6 digits.
 
-**Password re-entry is required**, verified the same way `POST /api/me/change-password` verifies
-`currentPassword` — a wrong password returns `401 INVALID_CREDENTIALS` (1001), the same code your
-change-password error handling already branches on. Reuse that handler rather than adding a new one.
+- No code was ever requested (or it was superseded — see below) → `400 EVENT_DELETE_OTP_NOT_REQUESTED` (3028)
+- The code expired (10 minutes) → `400 EVENT_DELETE_OTP_EXPIRED` (3029)
+- 5 wrong guesses already made against this code → `400 EVENT_DELETE_OTP_TOO_MANY_ATTEMPTS` (3030) — request a new one, don't keep retrying
+- Wrong code (attempt 1–5) → `400 EVENT_DELETE_OTP_INVALID` (3031) — each wrong guess counts toward the 5-attempt cap above
+- Deletion already pending → `409 EVENT_DELETE_ALREADY_PENDING` (5064)
+
+Requesting a **new** code (calling §2 again) immediately invalidates any previous outstanding code
+for that event — if the host clicks "resend," the old code in an earlier email stops working, even
+if it hadn't expired yet. Only the most recently mailed code is ever live.
 
 ```jsonc
 // 200 — EventResponse, same shape as every other event write
@@ -53,23 +76,23 @@ change-password error handling already branches on. Reuse that handler rather th
   "id": "…",
   "title": "Anna & Nik's Wedding",
   "status": "ACTIVE",
-  "deletedAt": "2026-09-02T14:03:11Z",
-  "deletionScheduledFor": "2026-10-02T14:03:11Z",   // new field — see §4 below
+  "deletedAt": "2026-09-21T14:03:11Z",
+  "deletionScheduledFor": "2026-10-21T14:03:11Z",   // see §4 below
   …
 }
 ```
-
-Calling it a second time while a request is already pending → `409 EVENT_DELETE_ALREADY_PENDING`
-(5064). Refetch the event instead of retrying — it's already in the state you wanted.
 
 **On success, redirect the host out of the event** (e.g. to their event list) — it is immediately
 inaccessible to guests and plain attendees (`GET /api/events/{id}` 404s it for them, same as any
 other soft-deleted event). It is **not** inaccessible to the host who just deleted it, or to any
 co-host: `GET /api/events/{id}` keeps working for them, now returning `deletionScheduledFor` instead
-of the normal null — see §4. That's what makes the undo banner survive a reload rather than only
-existing as an in-session toast.
+of the normal null — see §4.
 
-### 3. `DELETE /api/events/{eventId}/deletion-requests` — any host, no password ("Undo")
+**Suggested UI flow:** danger-zone button → "Send code" (calls §2, shows "check your email") → code
+input + "Confirm deletion" (calls §3). Don't collapse this into one step; the whole point is that the
+host has to actually receive and read the email before the event is gone.
+
+### 4. `DELETE /api/events/{eventId}/deletion-requests` — any host, no password ("Undo")
 
 ```http
 DELETE /api/events/{eventId}/deletion-requests
@@ -86,7 +109,7 @@ pending — safe to call from a stale "Undo" button without checking first.
 { "id": "…", "deletedAt": null, "deletionScheduledFor": null, … }
 ```
 
-### 4. `deletionScheduledFor` on the event, and where you can still read it from
+### 5. `deletionScheduledFor` on the event, and where you can still read it from
 
 Both `EventResponse` and `EventDetailResponse` gain:
 
@@ -98,7 +121,7 @@ Non-null means a deletion request is pending and this is the exact permanent-pur
 (currently 30 days after the request — configurable server-side, so don't hard-code "30 days" in
 copy; render the actual date).
 
-**§2 said `GET /api/events/{id}` 404s a deleted event "for everyone" — that's true for guests and
+**§3 said `GET /api/events/{id}` 404s a deleted event "for everyone" — that's true for guests and
 plain attendees, but not for hosts.** A pending-deletion event stays visible to any of its hosts
 (primary or co-) on both:
 
@@ -131,29 +154,48 @@ needed — the existing list/detail endpoints already carry this state for a hos
 // → 404 RESOURCE_NOT_FOUND (2001), identical to any other soft-deleted event
 ```
 
-## Refund interaction (unchanged, frontend-only)
+## Withdrawal interaction (revised 2026-09-21 — the old refund-eligibility flow is gone)
 
-Nothing on the backend changed here — this is a reminder, not a new contract. Before showing the
-delete confirmation, call the existing `GET /api/events/{eventId}/refund-eligibility`
-(`billing-fe-guide.md` §9) and, if `eligible: true`, lead the confirmation modal with a callout
-offering "Request a refund instead" alongside the destructive "Delete anyway" path — the host is
-prompted, not blocked. If not eligible, or a request is already pending, skip straight to the
-password-confirmation step.
+**This section previously pointed at `GET /api/events/{eventId}/refund-eligibility`. That endpoint
+no longer exists** — `billing-fe-guide.md` §9 replaced the old admin-approved refund-request flow
+with automated **withdrawal**, and withdrawal is **terminal**: a successful withdrawal refunds the
+host and soft-deletes the event in the same call, with no "return to draft" any more. That changes
+the shape of this interaction — it's not a refund nudge bolted onto the delete confirmation, it's two
+separate ways to remove the event, one with money back and one without.
+
+Before showing the delete confirmation, call `GET /api/events/{eventId}/withdrawal-preview`
+(`billing-fe-guide.md` §9). Nothing is persisted by this call, so it's safe to call every time the
+danger-zone screen loads.
+
+- **`eligible: true`** — offer "Request withdrawal (get a refund)" as its own primary action,
+  alongside "Delete without a refund" (the OTP flow in §2–§3 above). Withdrawal calls
+  `POST /api/events/{eventId}/withdrawals` directly — it does **not** go through the OTP flow at all.
+  - A `REFUNDED` outcome means the event is already gone; don't also run the OTP-deletion flow.
+  - A `HELD` outcome (fraud review) leaves the event completely untouched — tell the host their
+    withdrawal is pending admin review, and let them still choose the OTP-deletion path below if
+    they don't want to wait for it.
+- **`eligible: false`** (`refusals` non-empty) or the host declines the refund — go straight to the
+  OTP flow (§2–§3); no refund is issued.
 
 ## Error codes
 
 | code | HTTP | when | what to show |
 |---|---|---|---|
-| `4003` `EVENT_DELETE_NOT_PRIMARY_HOST` | 403 | a co-host called `POST .../deletion-requests` | don't show the delete control to non-primary hosts at all; if reached anyway, "Only the event's original host can delete it" |
-| `1001` `INVALID_CREDENTIALS` | 401 | wrong `currentPassword` | inline field error, same handling as `POST /api/me/change-password` |
+| `4003` `EVENT_DELETE_NOT_PRIMARY_HOST` | 403 | a co-host called either endpoint | don't show the delete control to non-primary hosts at all; if reached anyway, "Only the event's original host can delete it" |
 | `5064` `EVENT_DELETE_ALREADY_PENDING` | 409 | a deletion request already exists for this event | refetch the event; show the pending-deletion banner instead of the confirmation modal |
-| `403` (generic `FORBIDDEN`, 4001) | 403 | caller isn't a host at all, on either endpoint | shouldn't be reachable from correctly-gated UI |
+| `3028` `EVENT_DELETE_OTP_NOT_REQUESTED` | 400 | confirming with no live code (never requested, or superseded by a resend) | send the host back to the "send code" step |
+| `3029` `EVENT_DELETE_OTP_EXPIRED` | 400 | the 10-minute window passed | prompt to request a new code |
+| `3030` `EVENT_DELETE_OTP_TOO_MANY_ATTEMPTS` | 400 | 5 wrong guesses already made | prompt to request a new code; don't let the user keep retyping |
+| `3031` `EVENT_DELETE_OTP_INVALID` | 400 | wrong code, attempt 1–5, or a code superseded by a resend | inline field error, "Incorrect code" — show remaining-attempts messaging if you want, the response doesn't include a count |
+| `403` (generic `FORBIDDEN`, 4001) | 403 | caller isn't a host at all, on any endpoint | shouldn't be reachable from correctly-gated UI |
 
 ## TypeScript types
 
 ```ts
+// No body for POST .../deletion-requests/otp — 204 No Content.
+
 export interface EventDeletionRequest {
-  currentPassword: string;
+  otpCode: string;   // exactly 6 digits
 }
 
 // Additions to the existing EventResponse / EventDetailResponse:

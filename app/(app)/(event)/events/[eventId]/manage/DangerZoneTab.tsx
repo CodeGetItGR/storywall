@@ -14,7 +14,7 @@ export default function DangerZoneTab({ event }: { event: EventDetailResponseDto
     const deletionFlow = useEventDeletionFlow(event.id);
 
     if (event.deletionScheduledFor) {
-        return <EventPendingDeletionBanner deletionScheduledFor={event.deletionScheduledFor} />;
+        return <EventPendingDeletionBanner eventId={event.id} deletionScheduledFor={event.deletionScheduledFor} />;
     }
 
     return (
@@ -33,12 +33,16 @@ export default function DangerZoneTab({ event }: { event: EventDetailResponseDto
 
             <EventDeleteConfirmModal
                 open={deletionFlow.confirmOpen}
-                password={deletionFlow.password}
-                onPasswordChangeAction={deletionFlow.handlePasswordChange}
-                passwordInvalid={deletionFlow.passwordInvalid}
+                step={deletionFlow.step}
+                otpCode={deletionFlow.otpCode}
+                onOtpChangeAction={deletionFlow.handleOtpChange}
+                otpInvalid={deletionFlow.otpInvalid}
                 deleteError={deletionFlow.deleteError}
-                isConfirming={deletionFlow.isDeleting}
+                resendSeconds={deletionFlow.resendSeconds}
+                isSendingCode={deletionFlow.isSendingCode}
+                isDeleting={deletionFlow.isDeleting}
                 onCloseAction={deletionFlow.closeConfirm}
+                onSendCodeAction={deletionFlow.sendOtp}
                 onConfirmAction={deletionFlow.confirmDelete}
             />
         </div>

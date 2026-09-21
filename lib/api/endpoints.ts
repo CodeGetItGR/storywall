@@ -105,6 +105,7 @@ export const endpoints = {
         // GET (history) and POST (submit) both hit this same path.
         withdrawals: (eventId: string) => `/api/events/${eventId}/withdrawals`,
         deletionRequests: (eventId: string) => `/api/events/${eventId}/deletion-requests`,
+        deletionRequestOtp: (eventId: string) => `/api/events/${eventId}/deletion-requests/otp`,
         posts: (eventId: string) => `/api/events/${eventId}/posts`,
         stream: (eventId: string, token: string) => `/api/events/${eventId}/stream?token=${encodeURIComponent(token)}`,
         streamToken: (eventId: string) => `/api/events/${eventId}/stream-token`,

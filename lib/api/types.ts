@@ -1032,7 +1032,7 @@ export interface EventPatchDto {
 }
 
 export interface EventDeletionRequestDto {
-    currentPassword: string;
+    otpCode: string;
 }
 
 export interface CoHostInviteRequestDto {
