@@ -1019,7 +1019,7 @@ currently happen through this API, since `requestsImmediateStart`/`acknowledgesW
 mandatory on checkout (§6) — would be entitled to a full refund of everything (art. 14(4)(a)); this
 case is theoretical today, not something the FE needs to branch on.
 
-### `GET /api/events/{eventId}/withdrawal-preview` — host
+### `GET /api/events/{eventId}/withdrawal-preview` — primary host
 
 Call it when the withdrawal screen loads. Safe to call any time — **nothing is persisted**, so poll
 it freely as the host reads the confirmation dialog.
@@ -1046,7 +1046,7 @@ it freely as the host reads the confirmation dialog.
   line each, each with its own `components` breakdown (JSON, shape-stable but not enumerated here;
   treat it as display-only detail, not something to recompute from).
 
-### `POST /api/events/{eventId}/withdrawals` — host
+### `POST /api/events/{eventId}/withdrawals` — primary host
 
 ```jsonc
 // body optional
@@ -1093,10 +1093,14 @@ pending deletion on a withdrawn event is refused with `409 EVENT_WITHDRAWN` (507
 A `HELD` withdrawal changes nothing yet — the event stays exactly as it was while an admin (or the
 10-day auto-release) decides it.
 
-### `GET /api/events/{eventId}/withdrawals` — host
+### `GET /api/events/{eventId}/withdrawals` — primary host
 
 The event's withdrawal history, newest first — every attempt, including refused ones. Drives a
 "withdrawal history" panel the same way the old refund-request history did.
+
+All three host-side withdrawal endpoints (preview, file, history) answer **403
+`WITHDRAWAL_NOT_PRIMARY_HOST`** (4005) for a co-host. Withdrawal ends the event and refunds the
+card that paid for it, so it is the primary host's alone — exactly like requesting deletion.
 
 ### `GET /api/admin/withdrawals` — admin
 
@@ -1322,6 +1326,7 @@ name, for logs). Branch on `errorCode`.
 |---|---|---|---|
 | `5072` `WITHDRAWAL_TERMS_VERSION_STALE` | 400 | checkout's `termsVersion` (§6, §7d) doesn't match the version currently in force | reload `GET /api/config`, re-show the current terms, let the host retry once |
 | `5073` `WITHDRAWAL_REFUSED` | 409 | the withdrawal was refused at the gate — no settled activation, window closed, already in progress, already refunded (§9) | the `detail` string on the error envelope; for the structured per-reason list, call withdrawal-preview instead |
+| `4005` `WITHDRAWAL_NOT_PRIMARY_HOST` | 403 | the caller is a co-host, not the primary host (`displayOrder: 0` in `GET /api/events/{id}/hosts`) — withdrawal refunds the payer and deletes the event, so it is gated like deletion | hide the withdraw entry point for co-hosts; if reached, "Only the primary host can withdraw this event." |
 | `5074` `WITHDRAWAL_NOT_HELD` | 409 | admin release/withhold on a request that isn't currently `HELD` | double-click or stale admin queue; refetch |
 
 **`5022`–`5025` (`REFUND_NOT_ELIGIBLE`, `REFUND_ALREADY_REQUESTED`, `REFUND_REQUEST_NOT_PENDING`,
@@ -1643,7 +1648,7 @@ export interface WithdrawalLine {
   components: Record<string, unknown>;  // display-only breakdown; shape not enumerated here
 }
 
-// GET /api/events/{eventId}/withdrawal-preview — host. Nothing persisted; safe to call any time.
+// GET /api/events/{eventId}/withdrawal-preview — primary host. Nothing persisted; safe to call any time.
 export interface WithdrawalPreview {
   eligible: boolean;
   refusals: WithdrawalRefusal[];
@@ -1653,7 +1658,7 @@ export interface WithdrawalPreview {
   lines: WithdrawalLine[];
 }
 
-// POST /api/events/{eventId}/withdrawals — host. Body optional: { reason?: string }.
+// POST /api/events/{eventId}/withdrawals — primary host. Body optional: { reason?: string }.
 // 201 with this shape when status is 'REFUNDED' or 'HELD'; a REFUSED outcome is instead a 409
 // WITHDRAWAL_REFUSED with the standard error envelope, NOT this shape — read structured refusal
 // reasons from WithdrawalPreview instead.

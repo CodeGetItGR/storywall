@@ -24,6 +24,9 @@ function urlEventId(pathname: string): string | null {
 
 export interface EventContextValue {
     memberships: EventMemberResponseDto[];
+    // The event id named by the URL, or null on id-less chrome pages (/home,
+    // /profile, ...) where activeEvent is only the remembered fallback.
+    routeEventId: string | null;
     activeEvent: EventDetailResponseDto | null;
     activeMember: EventMemberResponseDto | null;
     isHost: boolean;
@@ -85,12 +88,13 @@ export function EventProvider({ children }: { children: ReactNode }) {
     const value: EventContextValue = useMemo(
         () => ({
             memberships,
+            routeEventId,
             activeEvent: activeEvent ?? null,
             activeMember,
             isHost,
             isLoading,
         }),
-        [memberships, activeEvent, activeMember, isHost, isLoading]
+        [memberships, routeEventId, activeEvent, activeMember, isHost, isLoading]
     );
 
     return <EventContext.Provider value={value}>{children}</EventContext.Provider>;
@@ -106,6 +110,10 @@ function useEventContext(): EventContextValue {
 
 export function useActiveEvent(): EventDetailResponseDto | null {
     return useEventContext().activeEvent;
+}
+
+export function useRouteEventId(): string | null {
+    return useEventContext().routeEventId;
 }
 
 export function useActiveMember(): EventMemberResponseDto | null {

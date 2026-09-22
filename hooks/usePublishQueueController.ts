@@ -90,7 +90,7 @@ export function usePublishQueueController(): PublishQueueContextValue {
     }
 
     async function uploadPostImages(jobId: string, payload: PostPublishPayload): Promise<string[] | null> {
-        const { eventId, authorMemberId, images } = payload;
+        const { eventId, images } = payload;
         const toUpload = images.filter((img) => img.status === 'pending' || img.status === 'failed');
         const alreadyUploaded = images.filter((img) => img.status === 'uploaded' && img.mediaId);
         if (toUpload.length === 0) return alreadyUploaded.map((img) => img.mediaId!);
@@ -114,7 +114,7 @@ export function usePublishQueueController(): PublishQueueContextValue {
                     return preset ? bakeStoryFilter(image.file, preset) : image.file;
                 })
             );
-            result = await uploadBatch.mutateAsync({ eventId, files, uploaderMemberId: authorMemberId });
+            result = await uploadBatch.mutateAsync({ eventId, files });
         } catch (error) {
             updateJob(jobId, (current) => ({ ...current, status: 'error', error: getPostErrorMessage(error) }));
             return null;
@@ -223,7 +223,6 @@ export function usePublishQueueController(): PublishQueueContextValue {
                 const result = await uploadBatch.mutateAsync({
                     eventId: payload.eventId,
                     files: toUpload.map((item) => item.file),
-                    uploaderMemberId: payload.authorMemberId,
                     context: 'STORY',
                 });
                 working = mapBatchUploads(working, result);

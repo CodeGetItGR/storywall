@@ -4,9 +4,9 @@ import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAppConfig } from '@/hooks/useAppConfig';
-import { useEventModules } from '@/hooks/useEventModules';
 import { useCreatePlaylistSuggestion } from '@/hooks/usePlaylist';
 import { type StoryComposerController, useStoryComposerController } from '@/hooks/useStoryComposerController';
+import type { EventModuleResponseDto } from '@/lib/api/types';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { initialsFromName } from '@/lib/utils';
 import type { ComposerContextValue } from '@/providers/composer/ComposerContext';
@@ -79,11 +79,14 @@ function formatBytes(bytes: number): string {
     return `${Number.isInteger(megabytes) ? megabytes : megabytes.toFixed(1)} MB`;
 }
 
+const EMPTY_MODULES: EventModuleResponseDto[] = [];
+
 export function useComposerController(): ComposerController {
     const t = useTranslations('ComposerCard');
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
-    const { data: eventModules = [] } = useEventModules(activeEvent?.id ?? null);
+    // The event detail already carries its modules; no separate /modules read.
+    const eventModules = activeEvent?.modules ?? EMPTY_MODULES;
     const { data: appConfig } = useAppConfig();
     const publishQueue = usePublishQueue();
     const createPlaylistSuggestion = useCreatePlaylistSuggestion();

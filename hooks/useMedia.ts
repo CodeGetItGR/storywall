@@ -41,22 +41,21 @@ export function useMediaItem(id: string | null) {
 interface UploadMediaInput {
     eventId: string;
     file: File;
-    uploaderMemberId?: string;
     context?: MediaUploadContext;
 }
 
 // POST /api/events/{eventId}/media (multipart/form-data) — streams straight
-// through this backend to R2, no separate presigned-upload-URL step. Large
+// through this backend to R2, no separate presigned-upload-URL step. The
+// uploader is always the caller's own membership, not a form field. Large
 // uploads go through the app server, so plan progress/timeout UX around that.
 export function useUploadMedia() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ eventId, file, uploaderMemberId, context = 'GALLERY' }: UploadMediaInput) => {
+        mutationFn: ({ eventId, file, context = 'GALLERY' }: UploadMediaInput) => {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('context', context);
-            if (uploaderMemberId) formData.append('uploaderMemberId', uploaderMemberId);
             return api.postForm<MediaResponseDto>(endpoints.events.media(eventId), formData);
         },
         onSuccess: (media) => {
@@ -68,7 +67,6 @@ export function useUploadMedia() {
 interface UploadMediaBatchInput {
     eventId: string;
     files: File[];
-    uploaderMemberId?: string;
     context?: MediaUploadContext;
 }
 
@@ -81,11 +79,10 @@ export function useUploadMediaBatch() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ eventId, files, uploaderMemberId, context = 'GALLERY' }: UploadMediaBatchInput) => {
+        mutationFn: ({ eventId, files, context = 'GALLERY' }: UploadMediaBatchInput) => {
             const formData = new FormData();
             files.forEach((file) => formData.append('files', file));
             formData.append('context', context);
-            if (uploaderMemberId) formData.append('uploaderMemberId', uploaderMemberId);
             return api.postForm<MediaBatchUploadResponseDto>(endpoints.events.mediaBatch(eventId), formData);
         },
         onSuccess: (result, { eventId }) => {

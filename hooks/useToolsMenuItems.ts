@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useGiftAccount } from '@/hooks/useGiftAccount';
 import { isGalleryQrFeatureEnabled } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
-import { useActiveEvent, useIsHost } from '@/providers/EventProvider';
+import { useActiveEvent, useIsHost, useRouteEventId } from '@/providers/EventProvider';
 
 export interface ToolMenuItem {
     key: string;
@@ -21,7 +21,10 @@ export function useToolsMenuItems(): ToolMenuItem[] {
     const t = useTranslations('ToolsMenu');
     const activeEvent = useActiveEvent();
     const isHost = useIsHost();
-    const giftAccount = useGiftAccount(activeEvent?.id ?? null);
+    // Only read the gift account on event routes — id-less pages like /home
+    // still show the menu for the remembered event but must not fire
+    // event-scoped requests for it.
+    const giftAccount = useGiftAccount(useRouteEventId());
     const availableModules = new Set(activeEvent?.modules.filter((module_) => module_.isAvailable).map((module_) => module_.moduleKey) ?? []);
 
     if (!activeEvent) return [];

@@ -108,7 +108,9 @@ export type ApiErrorMessageKey =
     | 'webhookPayloadTooLarge'
     | 'withdrawalTermsVersionStale'
     | 'withdrawalRefused'
-    | 'withdrawalNotHeld';
+    | 'withdrawalNotHeld'
+    | 'withdrawalNotPrimaryHost'
+    | 'oauthEmailUnverified';
 
 export const API_ERROR_MESSAGE_KEYS = {
     [AUTH_ERROR_CODES.ACCESS_DENIED]: 'accessDenied',
@@ -116,6 +118,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.ACCOUNT_NOT_ACTIVE]: 'accountNotActive',
     [ERROR_CODES.OAUTH_TOKEN_INVALID]: 'oauthTokenInvalid',
     [ERROR_CODES.OAUTH_EMAIL_REQUIRED]: 'oauthEmailRequired',
+    [ERROR_CODES.OAUTH_EMAIL_UNVERIFIED]: 'oauthEmailUnverified',
     [ERROR_CODES.ACCOUNT_PLANS_DISABLED]: 'accountPlansDisabled',
     [ERROR_CODES.ADDON_ALREADY_ACTIVE]: 'addonAlreadyActive',
     [ERROR_CODES.ADDON_LOCKED_WHILE_ACTIVE]: 'addonLockedWhileActive',
@@ -145,6 +148,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.EVENT_HOST_DISPLAY_ORDER_RESERVED]: 'eventHostDisplayOrderReserved',
     [ERROR_CODES.EVENT_HOST_PRIMARY_CANNOT_BE_REMOVED]: 'eventHostPrimaryCannotBeRemoved',
     [ERROR_CODES.EVENT_HOST_TRANSFER_NOT_PRIMARY_HOST]: 'eventHostTransferNotPrimaryHost',
+    [ERROR_CODES.WITHDRAWAL_NOT_PRIMARY_HOST]: 'withdrawalNotPrimaryHost',
     [ERROR_CODES.EVENT_MEMBER_LIMIT_EXCEEDED]: 'memberLimit',
     [ERROR_CODES.EVENT_NOT_ACTIVE]: 'eventNotActive',
     [ERROR_CODES.EVENT_NOT_DRAFT]: 'eventNotDraft',

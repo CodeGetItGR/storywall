@@ -102,6 +102,7 @@ present on later sign-ins, and don't treat its absence as an error.
 |---|---|---|---|
 | 401 | 1004 (`OAUTH_TOKEN_INVALID`) | Token failed verification (expired, wrong app, tampered) | "Something went wrong signing you in — please try again." Retry with a fresh token; don't retry with the same one. |
 | 400 | 3027 (`OAUTH_EMAIL_REQUIRED`) | Only reachable in an edge case (a returning Apple user whose identity was somehow lost server-side) | "Please try signing in again." Should not occur in normal use. |
+| 400 | 3033 (`OAUTH_EMAIL_UNVERIFIED`) | The provider shared an email it has **not** verified (`email_verified=false`) and no account is linked to this identity yet. Google does this for Workspace users on domains the customer has not verified; Gmail addresses and Apple are never affected. | "This sign-in method could not verify your email address. Please sign in with your password, or ask your Google Workspace admin to verify the domain." Do not retry automatically. |
 | 403 | 1003 (`ACCOUNT_NOT_ACTIVE`) | The matched account is suspended | Same handling as a suspended password-login account. |
 | 400 | — (path validation) | `{provider}` in the URL wasn't exactly `GOOGLE` or `APPLE` | Frontend bug — check the URL is built correctly. |
 
@@ -115,6 +116,8 @@ present on later sign-ins, and don't treat its absence as an error.
   (e.g. someone who originally registered with a password): the two are linked automatically.
   They can keep logging in either way. Their password (if they had one) is untouched.
 - **Every later sign-in with the same identity:** logs into the same account, same as before.
+- **Unverified email:** if the provider marks the email as unverified and the identity is not
+  already linked, the sign-in is rejected (3033) — neither linking nor creation happens.
 
 ## Configuration required before this works end-to-end
 

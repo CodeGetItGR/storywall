@@ -191,7 +191,7 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
             for (const item of next) {
                 if (!item.file.type.startsWith('video/')) continue;
                 uploadSingle.mutate(
-                    { eventId: activeEvent.id, file: item.file, uploaderMemberId: activeMember.id, context: 'STORY' },
+                    { eventId: activeEvent.id, file: item.file, context: 'STORY' },
                     {
                         onSuccess: (media) => {
                             setItems((current) =>

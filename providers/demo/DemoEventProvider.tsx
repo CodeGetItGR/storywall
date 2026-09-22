@@ -18,6 +18,7 @@ export function DemoEventProvider({ children }: { children: ReactNode }) {
         <EventContext.Provider
             value={{
                 memberships,
+                routeEventId: activeEvent.id,
                 activeEvent,
                 activeMember,
                 isHost: true,

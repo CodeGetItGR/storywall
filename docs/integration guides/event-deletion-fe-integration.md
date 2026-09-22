@@ -65,6 +65,10 @@ Content-Type: application/json
 - Wrong code (attempt 1–5) → `400 EVENT_DELETE_OTP_INVALID` (3031) — each wrong guess counts toward the 5-attempt cap above
 - Deletion already pending → `409 EVENT_DELETE_ALREADY_PENDING` (5064)
 
+Also rate-limited (added 2026-09-21): **five confirms per 60 seconds per caller** → `429` on the
+sixth. A host who mistypes five times in a minute has exhausted the code anyway (3030), so this only
+bites an automated guesser — no UI change needed beyond handling `429` like any other endpoint.
+
 Requesting a **new** code (calling §2 again) immediately invalidates any previous outstanding code
 for that event — if the host clicks "resend," the old code in an earlier email stops working, even
 if it hadn't expired yet. Only the most recently mailed code is ever live.

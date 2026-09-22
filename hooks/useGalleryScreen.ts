@@ -101,7 +101,6 @@ export function useGalleryScreen() {
             result = await uploadMediaBatch.mutateAsync({
                 eventId,
                 files: selectedFiles,
-                uploaderMemberId: activeMember.id,
             });
         } catch (error) {
             setUploadNotice(toErrorMessage(error, t('uploadFailed')));

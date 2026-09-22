@@ -1097,13 +1097,12 @@ export interface EventHostPatchDto {
 export interface EventInvitationRequestDto {
     eventId: string;
     inviteCode: string;
-    inviteToken?: string;
     email?: string;
     firstName?: string;
     lastName?: string;
     maxGuests: number;
     expiresAt?: string;
-    usedAt?: string | null; // system-managed; set on accept
+    // inviteToken and usedAt are server-managed; sending either is a 400.
 }
 
 export interface EventInvitationResponseDto {

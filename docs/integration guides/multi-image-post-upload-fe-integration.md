@@ -18,8 +18,12 @@ Authorization: Bearer {accessToken}
 Content-Type: multipart/form-data
 
 files:            <binary>[]   required — repeat the "files" part once per file, 1..10 files
-uploaderMemberId: uuid         optional
 ```
+
+**`uploaderMemberId` is no longer a request param** (2026-09-21). The uploader is always the
+caller's own membership of the event — attribution drives who may delete the media and fetch its
+archival original, so it is not the client's to choose. Sending the part is harmless (ignored);
+drop it. Same for the single-file `POST /api/events/{eventId}/media`.
 
 **`mediaType` is no longer a request param.** It used to be a client-supplied field; it's now
 derived server-side from the file's own magic bytes (so a mislabeled or spoofed content type
