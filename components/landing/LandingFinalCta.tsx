@@ -14,13 +14,13 @@ export async function LandingFinalCta() {
         >
             <div className="h-[78vw] min-h-80 overflow-hidden min-[761px]:h-180 min-[761px]:min-h-0">
                 <ProtectedImage
+                    unoptimized
                     alt={t('imageAlt')}
                     data-filename="storywall-final-cta-wedding-santorini.webp"
                     src="/landing/storywall-final-cta-wedding-santorini.webp"
                     width={1448}
                     height={1086}
                     loading="lazy"
-                    sizes="(max-width: 760px) 100vw, 44vw"
                     className="block h-full w-full object-cover object-[50%_40%] saturate-[.96] contrast-[.98] transition-transform duration-1200 ease-[cubic-bezier(0.22,0.61,0.36,1)] group-hover:scale-[1.025] motion-reduce:transition-none min-[761px]:object-[50%_42%]"
                 />
             </div>

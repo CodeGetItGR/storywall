@@ -14,7 +14,7 @@ const protectedImageStyle: CSSProperties & { WebkitUserDrag: 'none' } = {
     WebkitUserDrag: 'none',
 };
 
-// Staging runs on a metered image-optimization plan, so remote images skip Next's optimizer there to avoid burning quota.
+// Staging runs on a metered image-optimization plan, so every image skips Next's optimizer there to avoid burning quota.
 const skipRemoteOptimization = process.env.NEXT_PUBLIC_APP_ENV === 'staging';
 
 export function ProtectedImage({ className, draggable, onContextMenu, style, unoptimized, ...props }: ImageProps) {

@@ -64,7 +64,7 @@ export function LandingHero() {
                         className="inline-flex w-[min(196px,49vw)] shrink-0 items-center min-[761px]:w-[clamp(200px,14vw,260px)]"
                         href="#top-preview"
                     >
-                        <ProtectedImage alt="StoryWall" className="h-auto w-full" height={119} priority src="/landing/storywall.webp" width={600} />
+                        <ProtectedImage unoptimized alt="StoryWall" className="h-auto w-full" height={119} priority src="/landing/storywall.webp" width={600} />
                     </a>
                     <nav
                         aria-label={t('navLabel')}

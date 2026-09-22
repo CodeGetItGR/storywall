@@ -47,12 +47,12 @@ export async function LandingDemo() {
                 className="flex items-center justify-center min-[761px]:col-start-3 min-[761px]:row-start-1 min-[761px]:justify-self-end min-[761px]:self-center min-[761px]:pr-2"
             >
                 <ProtectedImage
+                    unoptimized
                     alt={t('imageAlt')}
                     className="block h-auto w-[min(620px,118vw)] max-w-none translate-x-[-2vw] object-contain drop-shadow-[-16px_30px_32px_rgba(70,38,24,0.2)] min-[761px]:w-[min(720px,37vw)] min-[761px]:translate-x-0 min-[761px]:translate-y-[10px] min-[761px]:drop-shadow-[-12px_24px_26px_rgba(70,38,24,0.2)]"
                     height={1120}
                     src="/landing/storywall-demo-preview-with-two-angled-smartphones-showing-the-a.webp"
                     loading="lazy"
-                    sizes="(max-width: 760px) 118vw, 37vw"
                     width={1115}
                 />
             </div>

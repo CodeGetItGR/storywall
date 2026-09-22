@@ -15,11 +15,11 @@ export function LandingFeatureDetailCard({ description, imageAlt, imagePath, ite
             {/* Feature image */}
             <div className="aspect-[0.69] shrink-0 overflow-hidden">
                 <ProtectedImage
+                    unoptimized
                     alt={imageAlt}
                     className="size-full object-cover"
                     height={900}
                     loading="lazy"
-                    sizes="25vw"
                     src={imagePath}
                     width={1200}
                 />

@@ -86,10 +86,10 @@ export function LandingFeatureDetails() {
                     {/* Feature image */}
                     <div className="relative aspect-[1.06] overflow-hidden bg-white/5 min-[761px]:aspect-auto min-[761px]:min-h-145">
                         <ProtectedImage
+                            unoptimized
                             alt={activeDetail.imageAlt}
                             className="size-full object-cover"
                             height={1000}
-                            sizes="(max-width: 760px) 100vw, 50vw"
                             src={activeDetail.imagePath}
                             width={1200}
                         />

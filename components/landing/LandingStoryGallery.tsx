@@ -18,22 +18,22 @@ export function LandingStoryGallery({ alts, ariaLabel, imageLabels, images, rowI
                 <button
                     aria-label={imageLabels[index]}
                     aria-pressed={index === 0}
-                    className="sw-wedding-panel group relative isolate h-full min-w-12 shrink grow-[0.72] basis-0 cursor-pointer appearance-none overflow-hidden border-0 bg-[#111] p-0 transition-[flex-grow] duration-[800ms] ease-[cubic-bezier(0.2,0.78,0.18,1)] aria-pressed:grow-[5.25] max-[760px]:min-w-9 max-[760px]:grow-[0.52] max-[760px]:aria-pressed:grow-[4.2] first:aria-pressed:[&.sw-panel-hint]:animate-[sw-panel-peek-desktop_2.65s_cubic-bezier(0.22,0.75,0.2,1)_1] max-[760px]:first:aria-pressed:[&.sw-panel-hint]:animate-[sw-panel-peek-mobile_2.45s_cubic-bezier(0.22,0.75,0.2,1)_1]"
+                    className="sw-wedding-panel group relative isolate h-full min-w-12 shrink grow-[0.72] basis-0 cursor-pointer appearance-none overflow-hidden border-0 bg-[#111] p-0 transition-[flex-grow] duration-800 ease-[cubic-bezier(0.2,0.78,0.18,1)] aria-pressed:grow-[5.25] max-[760px]:min-w-9 max-[760px]:grow-[0.52] max-[760px]:aria-pressed:grow-[4.2] first:aria-pressed:[&.sw-panel-hint]:animate-[sw-panel-peek-desktop_2.65s_cubic-bezier(0.22,0.75,0.2,1)_1] max-[760px]:first:aria-pressed:[&.sw-panel-hint]:animate-[sw-panel-peek-mobile_2.45s_cubic-bezier(0.22,0.75,0.2,1)_1]"
                     data-panel-index={index}
                     key={image.src}
                     type="button"
                 >
                     <ProtectedImage
+                        unoptimized
                         alt={alts[index]}
-                        className={`absolute inset-[-2%] h-[104%] w-[104%] scale-[1.045] object-cover object-[${PANEL_IMAGE_OBJECT_POSITION[index % PANEL_IMAGE_OBJECT_POSITION.length]}] grayscale contrast-[0.96] brightness-[0.82] transition-[filter,transform] duration-[650ms] ease-[cubic-bezier(0.2,0.78,0.18,1)] group-aria-pressed:grayscale-0 group-aria-pressed:contrast-100 group-aria-pressed:brightness-100 group-first:group-aria-pressed:animate-[sw-wedding-first-hint_4.8s_ease-in-out_infinite_alternate] max-[760px]:scale-[1.09]`}
+                        className={`absolute inset-[-2%] h-[104%] w-[104%] scale-[1.045] object-cover object-[${PANEL_IMAGE_OBJECT_POSITION[index % PANEL_IMAGE_OBJECT_POSITION.length]}] grayscale contrast-[0.96] brightness-[0.82] transition-[filter,transform] duration-650 ease-[cubic-bezier(0.2,0.78,0.18,1)] group-aria-pressed:grayscale-0 group-aria-pressed:contrast-100 group-aria-pressed:brightness-100 group-first:group-aria-pressed:animate-[sw-wedding-first-hint_4.8s_ease-in-out_infinite_alternate] max-[760px]:scale-[1.09]`}
                         decoding="async"
                         loading="lazy"
-                        sizes="(max-width: 760px) 100vw, 50vw"
                         {...image}
                     />
                     <span
                         aria-hidden="true"
-                        className="sw-wedding-plus pointer-events-none absolute top-[17px] right-[17px] z-3 grid size-[30px] place-items-center rounded-full border border-white/78 bg-[rgba(17,17,17,0.3)] text-[21px] leading-none text-white backdrop-blur-[6px] transition-[transform,background-color,color] duration-[400ms] ease-in group-aria-pressed:rotate-45 group-aria-pressed:bg-white/88 group-aria-pressed:text-[#111] max-[760px]:top-2 max-[760px]:right-2 max-[760px]:size-[25px] max-[760px]:text-[17px]"
+                        className="sw-wedding-plus pointer-events-none absolute top-4.25 right-4.25 z-3 grid size-7.5 place-items-center rounded-full border border-white/78 bg-[rgba(17,17,17,0.3)] text-[21px] leading-none text-white backdrop-blur-[6px] transition-[transform,background-color,color] duration-400 ease-in group-aria-pressed:rotate-45 group-aria-pressed:bg-white/88 group-aria-pressed:text-[#111] max-[760px]:top-2 max-[760px]:right-2 max-[760px]:size-6.25 max-[760px]:text-[17px]"
                     >
                         +
                     </span>

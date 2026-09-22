@@ -12,10 +12,10 @@ export function LandingExperienceAsset({ alt, asset, host }: LandingExperienceAs
         <div className={asset.className} data-swx-p1={host ? undefined : ''} data-swx-p2={host ? '' : undefined}>
             <div className={host ? 'swx-host-ref-inner' : 'swx-ref-asset-inner'}>
                 <ProtectedImage
+                    unoptimized
                     alt={alt}
                     decoding="async"
                     loading="lazy"
-                    sizes="(max-width: 760px) 50vw, 20vw"
                     src={asset.src}
                     width={asset.width}
                     height={asset.height}

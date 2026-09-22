@@ -16,12 +16,12 @@ export async function LandingFooter() {
                 <div className="col-span-2 min-[761px]:col-span-1">
                     <div className="w-[min(82vw,330px)] leading-none min-[761px]:w-[clamp(179px,19.6vw,301px)]">
                         <ProtectedImage
+                            unoptimized
                             alt={t('imageAlt')}
                             src="/landing/storywall-2.webp"
                             width={600}
                             height={119}
                             loading="lazy"
-                            sizes="(max-width: 760px) 82vw, 20vw"
                             className="block h-auto w-full object-contain"
                         />
                     </div>
