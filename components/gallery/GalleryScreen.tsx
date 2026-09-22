@@ -1,7 +1,7 @@
 'use client';
 
 import { Download, Images, MousePointer2 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { GalleryArchiveDownloadModal } from '@/components/gallery/GalleryArchiveDownloadModal';
 import { GalleryMediaGrid } from '@/components/gallery/GalleryMediaGrid';
@@ -13,13 +13,17 @@ import { ModuleNotice } from '@/components/tools/ModuleNotice';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { Button } from '@/components/ui/button';
 import { useGalleryScreen } from '@/hooks/useGalleryScreen';
+import { formatDate } from '@/lib/datetime';
 import { routes } from '@/lib/routes';
 
 export function GalleryScreen() {
     const t = useTranslations('GalleryPage');
+    const locale = useLocale();
     const {
+        activeEvent,
         eventId,
         isHost,
+        isDeleted,
         galleryEnabled,
         canUpload,
         showArchiveDownload,
@@ -62,6 +66,7 @@ export function GalleryScreen() {
         exitSelectionMode,
         closeMedia,
     } = useGalleryScreen();
+    const deletionDate = activeEvent?.deletionScheduledFor ? formatDate(locale, activeEvent.deletionScheduledFor, { dateStyle: 'long' }) : null;
 
     return (
         <ModulePageShell
@@ -70,22 +75,29 @@ export function GalleryScreen() {
             icon={Images}
             iconClassName="text-cyan-600"
             backLabel={t('backToTools')}
-            backHref={routes.events.feed(eventId)}
+            backHref={isDeleted ? routes.events.manage(eventId) : routes.events.feed(eventId)}
             subtitle={isHost ? t('hostSubtitle') : t('guestSubtitle')}
-            notice={!galleryEnabled && <ModuleNotice>{t('moduleUnavailable')}</ModuleNotice>}
+            notice={
+                <>
+                    {!galleryEnabled && <ModuleNotice>{t('moduleUnavailable')}</ModuleNotice>}
+                    {isDeleted && deletionDate && <ModuleNotice tone="warning">{t('deletedReadOnly', { date: deletionDate })}</ModuleNotice>}
+                </>
+            }
         >
             {/* Upload */}
-            <GalleryUploadSection
-                canUpload={canUpload}
-                selectedFiles={selectedFiles}
-                selectedSize={selectedSize}
-                uploadNotice={uploadNotice}
-                maxFiles={maxFiles}
-                isUploading={uploadMediaBatch.isPending}
-                onFilesChange={handleFilesChange}
-                onClearSelection={handleClearSelection}
-                onUpload={handleUpload}
-            />
+            {!isDeleted && (
+                <GalleryUploadSection
+                    canUpload={canUpload}
+                    selectedFiles={selectedFiles}
+                    selectedSize={selectedSize}
+                    uploadNotice={uploadNotice}
+                    maxFiles={maxFiles}
+                    isUploading={uploadMediaBatch.isPending}
+                    onFilesChange={handleFilesChange}
+                    onClearSelection={handleClearSelection}
+                    onUpload={handleUpload}
+                />
+            )}
 
             <section className={'mb-5'}>
                 {showGalleryActions ? (

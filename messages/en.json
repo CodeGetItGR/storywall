@@ -3326,6 +3326,7 @@
         "unselectMedia": "Unselect {filename}",
         "selectionDownloadFailed": "We couldn't download those files. Please try again.",
         "moduleUnavailable": "Gallery is not available on this event's current plan.",
+        "deletedReadOnly": "Read-only. This event will be deleted on {date}.",
         "eventFrozen": "This event is read-only. Existing photos and videos are still available, but new uploads are paused.",
         "uploadTitle": "Upload media",
         "uploadHint": "Choose up to {count} files at a time.",
