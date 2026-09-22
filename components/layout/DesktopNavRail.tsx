@@ -13,6 +13,7 @@ import { isEventRoute, isPathActive } from '@/components/layout/mobile-tab-bar';
 import Avatar from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useDesktopAccountSidebar } from '@/hooks/useDesktopAccountSidebar';
+import { isEventDeleted } from '@/lib/eventLifecycle';
 import { getInitials } from '@/lib/format';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -28,7 +29,8 @@ export function DesktopNavRail() {
     const isDraft = activeEvent?.status === 'DRAFT';
     const showEventActions = Boolean(activeEvent) && isEventRoute(pathname);
     const accountName = [authUser?.firstName, authUser?.lastName].filter(Boolean).join(' ') || authUser?.firstName || tAccount('fallbackName');
-    const homeHref = activeEvent ? (isDraft ? routes.events.manage(activeEvent.id) : routes.events.feed(activeEvent.id)) : null;
+    // Draft and deleted events have no feed to land on; the manage page is home.
+    const homeHref = activeEvent ? (isDraft || isEventDeleted(activeEvent) ? routes.events.manage(activeEvent.id) : routes.events.feed(activeEvent.id)) : null;
     const homeActive = Boolean(homeHref) && (isPathActive(pathname, homeHref!) || isPathActive(pathname, routes.feed));
     const eventsActive = isPathActive(pathname, routes.home);
 

@@ -8,6 +8,7 @@ import type { MouseEvent } from 'react';
 import { ComposerFab, type ContextNavItem, ContextNavSlot, isFeedRoute, isPathActive, TabLink } from '@/components/layout/mobile-tab-bar';
 import { useHasOpenOverlay } from '@/hooks/useOverlayPresence';
 import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
+import { isEventDeleted } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 import { useAccountPanel } from '@/providers/AccountPanelProvider';
@@ -32,13 +33,15 @@ export function MobileTabBar() {
     const isFeedDetailPage = isFeedRoute(pathname);
     const showEventNavigation = !isLoading && Boolean(activeEvent);
     const isDraft = activeEvent?.status === 'DRAFT';
-    const homeHref = activeEvent ? (isDraft ? routes.events.manage(activeEvent.id) : routes.events.feed(activeEvent.id)) : homeTabItem.href;
+    // Draft and deleted events have no feed to land on; the manage page is home.
+    const isDeleted = isEventDeleted(activeEvent);
+    const homeHref = activeEvent ? (isDraft || isDeleted ? routes.events.manage(activeEvent.id) : routes.events.feed(activeEvent.id)) : homeTabItem.href;
 
     const homeActive = isPathActive(pathname, homeHref) || isPathActive(pathname, homeTabItem.href);
     const availableModules = new Set(activeEvent?.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey) ?? []);
-    const playlistAvailable = availableModules.has('playlist');
+    const playlistAvailable = availableModules.has('playlist') && !isDeleted;
     const playlistActive = playlistAvailable && Boolean(activeEvent) && isPathActive(pathname, routes.events.tools.playlist(activeEvent?.id ?? ''));
-    const rsvpTabAvailable = isHost && !isDraft;
+    const rsvpTabAvailable = isHost && !isDraft && !isDeleted;
     const rsvpHref = activeEvent ? routes.events.manage(activeEvent.id, { tab: 'rsvp' }) : '';
     const rsvpActive = rsvpTabAvailable && isPathActive(pathname, rsvpHref, searchParams);
     const hostItems = useHostMenuItems();
