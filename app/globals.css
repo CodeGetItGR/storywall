@@ -150,6 +150,9 @@
     --border: #f0e2d2;
     --input: #f0e2d2;
     --ring: #ff7a59;
+    /* Focus ring for the marketing surfaces, dark enough to clear 3:1 on both
+       the white sections and the near-black ones. */
+    --marketing-focus-ring: #c75a37;
 
     /* Radius */
     --radius: 1.25rem;
@@ -278,6 +281,13 @@
 
 ::-webkit-scrollbar-thumb:hover {
     background-color: var(--scrollbar-thumb-hover);
+}
+
+/* ── Marketing focus ring ── */
+@utility focus-ring {
+    &:focus-visible {
+        outline: 2px solid var(--marketing-focus-ring);
+    }
 }
 
 /* ── Brand gradient utilities ── */

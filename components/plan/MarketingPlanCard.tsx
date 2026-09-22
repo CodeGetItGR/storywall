@@ -30,7 +30,7 @@ export function MarketingPlanCard({
         'flex h-full min-h-155 w-full flex-col justify-between rounded-[22px] border px-5 pt-5 pb-4 text-left text-[#151313] transition-colors min-[761px]:min-h-13 min-[761px]:px-5',
         onSelectAction &&
             !selected &&
-            'hover:border-[#151313]/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#df7794]',
+            'hover:border-[#151313]/25 focus-ring focus-visible:outline-offset-2',
         {
             'border-transparent': !featured && !selected,
             'border-[#f29380]': featured && !selected,

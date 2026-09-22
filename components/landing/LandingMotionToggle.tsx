@@ -14,7 +14,7 @@ export function LandingMotionToggle({ className = '' }: { className?: string }) 
     return (
         <button
             aria-label={paused ? t('playMotion') : t('pauseMotion')}
-            className={`grid size-11 shrink-0 place-items-center rounded-full border border-[#151313]/20 text-[#151313] transition-opacity hover:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#ef8f72] ${className}`}
+            className={`grid size-11 shrink-0 place-items-center rounded-full border border-[#151313]/20 text-[#151313] transition-opacity hover:opacity-60 focus-ring focus-visible:outline-offset-4 ${className}`}
             onClick={toggle}
             type="button"
         >

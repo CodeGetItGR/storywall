@@ -60,7 +60,7 @@ export function LandingFeatureDetails() {
                         <button
                             aria-controls="landing-feature-detail-panel"
                             aria-selected={selectedIndex === index}
-                            className="relative shrink-0 pb-3 text-left text-[16px] leading-none font-black tracking-[0.02em] text-white/42 uppercase transition-colors duration-200 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f2c66a] aria-selected:text-white after:absolute after:right-0 after:bottom-0 after:left-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#f2c66a] after:transition-transform after:duration-200 aria-selected:after:scale-x-100"
+                            className="relative shrink-0 pb-3 text-left text-[16px] leading-none font-black tracking-[0.02em] text-white/42 uppercase transition-colors duration-200 hover:text-white focus-ring focus-visible:outline-offset-4 aria-selected:text-white after:absolute after:right-0 after:bottom-0 after:left-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#f2c66a] after:transition-transform after:duration-200 aria-selected:after:scale-x-100"
                             id={`landing-feature-tab-${index}`}
                             key={detail.title}
                             onClick={selectDetail(index)}
@@ -119,7 +119,7 @@ export function LandingFeatureDetails() {
                         <div className="mt-12 flex items-center justify-between gap-4 min-[761px]:mt-16">
                             <button
                                 aria-label={t('previous')}
-                                className="grid size-12 shrink-0 place-items-center rounded-full border border-white/25 text-xl text-white transition-colors duration-200 hover:border-[#f2c66a] hover:text-[#f2c66a] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f2c66a]"
+                                className="grid size-12 shrink-0 place-items-center rounded-full border border-white/25 text-xl text-white transition-colors duration-200 hover:border-[#f2c66a] hover:text-[#f2c66a] focus-ring focus-visible:outline-offset-4"
                                 onClick={selectPrevious}
                                 type="button"
                             >
@@ -128,7 +128,7 @@ export function LandingFeatureDetails() {
                             <p className="text-center text-[11px] leading-[1.5] font-black tracking-[0.13em] text-white/70 uppercase">{t('interactionHint')}</p>
                             <button
                                 aria-label={t('next')}
-                                className="grid size-12 shrink-0 place-items-center rounded-full border border-white/25 text-xl text-white transition-colors duration-200 hover:border-[#f2c66a] hover:text-[#f2c66a] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f2c66a]"
+                                className="grid size-12 shrink-0 place-items-center rounded-full border border-white/25 text-xl text-white transition-colors duration-200 hover:border-[#f2c66a] hover:text-[#f2c66a] focus-ring focus-visible:outline-offset-4"
                                 onClick={selectNext}
                                 type="button"
                             >

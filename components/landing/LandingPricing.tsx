@@ -49,7 +49,7 @@ export function LandingPricing() {
                             aria-controls="landing-pricing-panel"
                             aria-selected={category === key}
                             className={cn(
-                                'relative min-h-18 w-1/2 px-2 pb-4 text-center text-[12px] leading-tight font-black transition-colors focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-[#df7794] min-[761px]:min-h-12 min-[761px]:px-6 min-[761px]:text-[17px]',
+                                'relative min-h-18 w-1/2 px-2 pb-4 text-center text-[12px] leading-tight font-black transition-colors focus-ring focus-visible:-outline-offset-4 min-[761px]:min-h-12 min-[761px]:px-6 min-[761px]:text-[17px]',
                                 {
                                     'text-[#151313]/65 hover:text-[#151313]' : category !== key && categoryHasPlans,
                                     'text-[#151313] after:absolute after:inset-x-0 after:bottom-0 after:h-0.75 after:bg-[linear-gradient(90deg,#df7794,#f2c764)]' : category === key,

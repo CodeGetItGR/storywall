@@ -20,7 +20,7 @@ type LandingHeroCtaProps = { className: string; href: string; lines: string[] };
 function LandingHeroCta({ className, href, lines }: LandingHeroCtaProps) {
     return (
         <a
-            className={`items-center justify-between gap-4 rounded-full bg-[linear-gradient(100deg,#ff6f93,#ff936a_52%,#ffd05b)] py-4.25 pr-4.5 pl-7.5 text-white shadow-[0_16px_32px_rgba(217,102,74,.15)] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#d27b9b] min-[761px]:gap-2.5 min-[761px]:py-2.5 min-[761px]:pr-2.75 min-[761px]:pl-5 ${className}`}
+            className={`items-center justify-between gap-4 rounded-full bg-[linear-gradient(100deg,#ff6f93,#ff936a_52%,#ffd05b)] py-4.25 pr-4.5 pl-7.5 text-white shadow-[0_16px_32px_rgba(217,102,74,.15)] transition-transform hover:-translate-y-0.5 focus-ring focus-visible:outline-offset-4 min-[761px]:gap-2.5 min-[761px]:py-2.5 min-[761px]:pr-2.75 min-[761px]:pl-5 ${className}`}
             href={href}
         >
             <span className="flex-1 text-center font-[Baskerville,Georgia,serif] text-[24px] leading-[1.02] tracking-tight min-[421px]:text-[clamp(25px,6.2vw,34px)] min-[761px]:text-[clamp(15px,1vw,19px)]">
@@ -75,7 +75,7 @@ export function LandingHero() {
                     >
                         {navLabels.slice(0, -1).map((label, index) => (
                             <a
-                                className="transition-opacity hover:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#ef8f72]"
+                                className="transition-opacity hover:opacity-60 focus-ring focus-visible:outline-offset-4"
                                 href={NAV_HREFS[index]}
                                 key={label}
                             >
