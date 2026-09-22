@@ -32,16 +32,3 @@ export function useRequestEventDeletion(eventId: string) {
         },
     });
 }
-
-// DELETE on the same resource cancels a pending deletion. Any event host can
-// restore it, including a co-host who could not initiate the deletion.
-export function useCancelEventDeletion(eventId: string) {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: () => api.del<EventResponseDto>(endpoints.events.deletionRequests(eventId)),
-        onSuccess: () => {
-            invalidateEventDeletionQueries(queryClient, eventId);
-        },
-    });
-}
