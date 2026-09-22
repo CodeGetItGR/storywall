@@ -33,8 +33,8 @@ export function LandingFeatureDetails() {
                 </div>
             </div>
 
-            {/* Mobile feature panel */}
-            <div className="overflow-hidden border border-[#0ea5b7] bg-[#0b0b0f] min-[761px]:hidden">
+            {/* Mobile feature panel — gold reads better than the default ring on this near-black surface */}
+            <div className="overflow-hidden bg-[#0b0b0f] [--marketing-focus-ring:#f2c66a] min-[761px]:hidden">
                 {/* Feature introduction */}
                 <div className="px-5 pt-6 min-[761px]:grid min-[761px]:grid-cols-12 min-[761px]:gap-x-10 min-[761px]:px-12 min-[761px]:pt-12">
                     <div className="min-[761px]:col-span-5">
