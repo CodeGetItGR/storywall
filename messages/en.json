@@ -1934,6 +1934,7 @@
         "removeBody": "Members will no longer see this bank account."
     },
     "WishbookPage": {
+        "deletedReadOnly": "Read-only. This event will be deleted on {date}.",
         "currentSubtitle": "Leave a message for the hosts.",
         "currentPlaceholder": "Write your wish...",
         "goBack": "Go back",

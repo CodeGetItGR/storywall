@@ -1888,6 +1888,7 @@
         "removeBody": "Τα μέλη δεν θα βλέπουν πλέον αυτόν τον τραπεζικό λογαριασμό."
     },
     "WishbookPage": {
+        "deletedReadOnly": "Μόνο για προβολή. Αυτή η εκδήλωση θα διαγραφεί στις {date}.",
         "currentSubtitle": "Αφήστε μια ευχή στους διοργανωτές.",
         "currentPlaceholder": "Γράψτε την ευχή σας...",
         "charactersLeft": "{current} / {max} χαρακτήρες",

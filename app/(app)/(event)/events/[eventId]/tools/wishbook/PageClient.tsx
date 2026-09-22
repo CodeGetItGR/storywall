@@ -2,9 +2,10 @@
 
 import { BookHeart, Download, Loader2, Send, Trash2 } from 'lucide-react';
 import Image from 'next/image';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import React, { useEffect, useState } from 'react';
 
+import { ModuleNotice } from '@/components/tools/ModuleNotice';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
@@ -13,6 +14,8 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useCreateWishbookEntry, useDeleteWishbookEntry, useWishbook, useWishbookExportDownload } from '@/hooks/useWishbook';
 import type { WishbookEntryResponseDto } from '@/lib/api/types';
+import { formatDate } from '@/lib/datetime';
+import { isEventDeleted } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
 
@@ -21,6 +24,9 @@ export default function WishbookPage() {
     const event = useActiveEvent();
     const member = useActiveMember();
     const isHost = useIsHost();
+    const locale = useLocale();
+    const isDeleted = isEventDeleted(event);
+    const deletionDate = event?.deletionScheduledFor ? formatDate(locale, event.deletionScheduledFor, { dateStyle: 'long' }) : null;
     const { data: appConfig } = useAppConfig();
     const eventId = event?.id ?? '';
     const wishbook = useWishbook(event?.id ?? null);
@@ -87,8 +93,9 @@ export default function WishbookPage() {
             iconClassName="text-pink-500"
             showTitleIcon={false}
             backLabel={t('goBack')}
-            backHref={routes.events.feed(eventId)}
+            backHref={isDeleted ? routes.events.manage(eventId) : routes.events.feed(eventId)}
             subtitle={subtitle}
+            notice={isDeleted && deletionDate ? <ModuleNotice tone="warning">{t('deletedReadOnly', { date: deletionDate })}</ModuleNotice> : undefined}
         >
             {/* Header art */}
             {showHeaderArt ? (
@@ -179,7 +186,7 @@ export default function WishbookPage() {
                                         )}
                                     </time>
                                 </div>
-                                {entry.canDelete && (
+                                {entry.canDelete && !isDeleted && (
                                     <button
                                         type="button"
                                         data-entry-id={entry.id}
