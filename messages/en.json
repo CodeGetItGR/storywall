@@ -866,6 +866,8 @@
         "noPlans": "No public event plans are available yet.",
         "loadingPlans": "Loading plans for this event type…",
         "noEventTypes": "No event types are available yet.",
+        "typeStartingPrice": "From {price}",
+        "typeFree": "Free",
         "planDescriptionFallback": "Everything you need for this event tier.",
         "continueToPlan": "Continue to plan",
         "continueToDetails": "Continue to details",

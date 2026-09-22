@@ -1,4 +1,4 @@
-import type { ModuleKey, PlanScope, PlanTierResponseDto } from '@/lib/api/types';
+import type { EventTypeConvention, ModuleKey, PlanScope, PlanTierResponseDto } from '@/lib/api/types';
 import { discountedAmountMinor, isPlanDiscountActive } from '@/lib/billing';
 import { formatBytes } from '@/lib/format';
 
@@ -44,6 +44,15 @@ export function formatLimitValue(value: number | null, unit: 'bytes' | 'count'):
 
 export function publicAssignablePlans(plans: PlanTierResponseDto[], scope: PlanScope): PlanTierResponseDto[] {
     return scopedPlans(plans, scope).filter((plan) => plan.isAssignable && plan.isPublic);
+}
+
+// Cheapest price (after any active discount) among the public EVENT plans for
+// one event type. null when the type has no priced plan.
+export function lowestEventTypePlanPrice(plans: PlanTierResponseDto[], eventTypeKey: EventTypeConvention): PlanPriceDetails | null {
+    return publicAssignablePlans(plans, 'EVENT')
+        .filter((plan) => plan.eventTypeKey === eventTypeKey)
+        .map(getPlanPriceDetails)
+        .reduce<PlanPriceDetails | null>((lowest, price) => (price && (!lowest || price.amountMinor < lowest.amountMinor) ? price : lowest), null);
 }
 
 export function findPlanByCode(plans: PlanTierResponseDto[], scope: PlanScope, code: string): PlanTierResponseDto | undefined {

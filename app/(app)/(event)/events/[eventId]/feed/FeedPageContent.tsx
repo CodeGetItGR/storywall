@@ -104,7 +104,7 @@ export function FeedPageContent() {
 
             {/* RSVP */}
             {shouldShowRSVP && (
-                <section className={'px-4 pb-5'}>
+                <section className={'px-4 pb-5 mt-5'}>
                     <RsvpPrompt eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} />
                 </section>
             )}
@@ -112,7 +112,7 @@ export function FeedPageContent() {
             {/* Posts */}
             <section id="posts">
                 {moduleFlags.posts && (
-                    <div className="flex flex-col px-0 pb-24 lg:pb-10">
+                    <div className={cn("flex flex-col px-0 pb-24 lg:pb-10", {"lg:mt-4": (!moduleFlags.stories || !event.description) && !shouldShowRSVP})}>
                         <ComposerCard />
                         <PublishQueueCards />
                         <div className="flex flex-col">

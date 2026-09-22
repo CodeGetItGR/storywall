@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { useEventTypeStartingPrice } from '@/hooks/useEventTypeStartingPrice';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
 import type { EventTypeAccentToken, EventTypeConvention } from '@/lib/api/types';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
@@ -42,6 +43,7 @@ const FALLBACK_STYLE = {
 export function EventTypeStep() {
     const t = useTranslations('CreateEventPage');
     const eventTypeCopy = useLocalizedAppEventTypeCopy();
+    const startingPrice = useEventTypeStartingPrice();
     const { eventTypes, selectedEventType, onSelectEventType } = useCreateEventForm();
 
     function handleClick(event: MouseEvent<HTMLButtonElement>) {
@@ -62,6 +64,7 @@ export function EventTypeStep() {
                     const isSelected = type.eventTypeKey === selectedEventType;
                     const copy = eventTypeCopy(type.eventTypeKey);
                     const backgroundImageSrc = getCreateEventCatalogEntry(type.eventTypeKey)?.backgroundImageSrc;
+                    const priceLabel = startingPrice(type.eventTypeKey);
 
                     return (
                         <button
@@ -71,11 +74,12 @@ export function EventTypeStep() {
                             onClick={handleClick}
                             aria-pressed={isSelected}
                             className={cn(
-                                'group relative min-h-44 overflow-hidden rounded-lg border bg-card p-5 text-left transition duration-200 hover:-translate-y-0.5',
-                                backgroundImageSrc && 'flex flex-col justify-end text-white',
+                                'group relative flex min-h-56 flex-col justify-end overflow-hidden rounded-lg border bg-card p-5 text-left transition duration-200 hover:-translate-y-0.5',
+                                backgroundImageSrc && 'text-white',
                                 isSelected ? cn('border-2', style.selected) : cn('border-border shadow-sm', !backgroundImageSrc && style.surface)
                             )}
                         >
+                            {/* Background */}
                             {backgroundImageSrc && (
                                 <>
                                     <ProtectedImage
@@ -86,30 +90,34 @@ export function EventTypeStep() {
                                         className="object-cover transition duration-300 group-hover:scale-105"
                                     />
                                     <span className="absolute inset-0 bg-black/10" />
-                                    <span className="absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-black/88 via-black/60 to-transparent backdrop-blur-[1px]" />
+                                    <span className="absolute inset-x-0 bottom-0 h-3/4 bg-linear-to-t from-black/90 via-black/55 to-transparent" />
                                 </>
+                            )}
+                            {/* Price */}
+                            {priceLabel && (
+                                <span className="absolute left-4 top-4 z-10 rounded-full bg-white px-3 py-1 text-xs font-semibold text-ink shadow-sm">
+                                    {priceLabel}
+                                </span>
                             )}
                             {isSelected && (
                                 <span className="absolute right-4 top-4 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-ink text-white shadow-sm">
                                     <Check className="h-4 w-4" />
                                 </span>
                             )}
+                            {/* Name */}
                             <span
                                 className={cn(
-                                    'relative z-10 flex items-center gap-2 pr-8 text-xl font-bold',
-                                    backgroundImageSrc ? 'text-white' : 'mt-5 text-ink'
+                                    'relative z-10 block pr-8 text-xl font-bold',
+                                    backgroundImageSrc ? 'text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]' : 'text-ink'
                                 )}
                             >
-                                <span aria-hidden="true" className="text-2xl leading-none">
-                                    {type.icon}
-                                </span>
-                                <span>{copy.name}</span>
+                                {copy.name}
                             </span>
                             {copy.tagline && (
                                 <span
                                     className={cn(
                                         'relative z-10 mt-1.5 block max-w-64 text-sm leading-5',
-                                        backgroundImageSrc ? 'text-white/86' : 'text-ink-muted'
+                                        backgroundImageSrc ? 'text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.6)]' : 'text-ink-muted'
                                     )}
                                 >
                                     {copy.tagline}
