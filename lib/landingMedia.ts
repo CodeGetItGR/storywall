@@ -24,8 +24,8 @@ export const landingStoryMedia: LandingStoryMedia[] = [
         main: { src: '/landing/happy-baptism-celebration-outside-the-church-on-a-greek-island.png', width: 1536, height: 1024 },
         gallery: [
             { src: '/landing/happy-baptism-celebration-outside-the-church-on-a-greek-island.png', width: 1536, height: 1024 },
-            { src: '/landing/baptism-ceremony-inside-the-church.png', width: 1448, height: 1086 },
-            { src: '/landing/baptism-celebration-at-the-table.png', width: 1448, height: 1086 },
+            { src: '/landing/baptism-ceremony-inside-the-church.webp', width: 1448, height: 1086 },
+            { src: '/landing/baptism-celebration-at-the-table.webp', width: 1448, height: 1086 },
         ],
     },
     {
@@ -44,14 +44,7 @@ export const landingStoryMedia: LandingStoryMedia[] = [
             { src: '/landing/guests-mingling-with-champagne-at-an-elegant-formal-vip-social-e.png', width: 1536, height: 1024 },
         ],
     },
-    {
-        main: { src: '/landing/conference-speaker-presenting-on-stage-to-a-professional-audienc.webp', width: 1448, height: 1086 },
-        gallery: [
-            { src: '/landing/conference-speaker-presenting-on-stage-to-a-professional-audienc.webp', width: 1448, height: 1086 },
-            { src: '/landing/wide-view-of-a-large-professional-conference-auditorium-and-stag.webp', width: 1448, height: 1086 },
-            { src: '/landing/conference-attendees-networking-in-a-bright-event-venue.webp', width: 1448, height: 1086 },
-        ],
-    },
+
 ];
 
 export const landingMoreStoryMedia = [

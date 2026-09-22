@@ -47,7 +47,6 @@ export function LandingHero() {
     const mobileNavLabels = t.raw('mobileNav') as string[];
     const title = t.raw('title') as string[];
     const cta = t.raw('cta') as string[];
-    const signedInCta = t.raw('signedInCta') as string[];
     const trustLine = t.raw('trustLine') as string[];
     const typewriterWord = useLandingTypewriter(t.raw('eventTypes') as string[]);
 
@@ -160,7 +159,7 @@ export function LandingHero() {
                             <LandingHeroCta
                                 className="mx-auto  md:ml-44 lg:ml-68 hidden min-[761px]:mt-6.5 min-[761px]:flex min-[761px]:h-15.5 min-[761px]:w-[min(228px,52%)]"
                                 href={isSignedIn ? routes.home : routes.register}
-                                lines={isSignedIn ? signedInCta : cta}
+                                lines={cta}
                             />
                         </div>
                         <p className="mt-8 max-w-135 text-[clamp(18px,1.35vw,24px)] leading-[1.35]">
@@ -185,7 +184,7 @@ export function LandingHero() {
                     <LandingHeroCta
                         className="order-3 mx-auto mt-[34vw] h-23 w-[min(415px,78vw)] flex min-[421px]:h-28 min-[761px]:hidden"
                         href={isSignedIn ? routes.home : routes.register}
-                        lines={isSignedIn ? signedInCta : cta}
+                        lines={cta}
                     />
                 </div>
             </div>
