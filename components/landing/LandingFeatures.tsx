@@ -7,18 +7,18 @@ import { useLandingModuleGates } from '@/hooks/useLandingModuleGates';
 import { LANDING_FEATURE_MODULE_KEYS } from '@/lib/landingFeatureGates';
 
 const FEATURE_ICONS = [
-    '/landing/decor-05.png',
-    '/landing/decor-06.png',
-    '/landing/decor-07.png',
-    '/landing/decor-08.png',
-    '/landing/decor-09.png',
-    '/landing/decor-10.png',
-    '/landing/decor-11.png',
-    '/landing/decor-12.png',
-    '/landing/decor-13.png',
-    '/landing/decor-14.png',
-    '/landing/decor-15.png',
-    '/landing/decor-17.png',
+    '/landing/decor-05.webp',
+    '/landing/decor-06.webp',
+    '/landing/decor-07.webp',
+    '/landing/decor-08.webp',
+    '/landing/decor-09.webp',
+    '/landing/decor-10.webp',
+    '/landing/decor-11.webp',
+    '/landing/decor-12.webp',
+    '/landing/decor-13.webp',
+    '/landing/decor-14.webp',
+    '/landing/decor-15.webp',
+    '/landing/decor-17.webp',
 ] as const;
 
 export function LandingFeatures() {

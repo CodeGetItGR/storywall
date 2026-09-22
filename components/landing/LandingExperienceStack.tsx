@@ -25,7 +25,7 @@ export function LandingExperienceStack() {
                     chapterCount="01 / 02"
                     copy={t('socialCopy')}
                     cue={t('scroll')}
-                    phoneImage="/landing/decor-01.jpg"
+                    phoneImage="/landing/decor-01.webp"
                     title={socialTitle}
                     topbar={t('socialTopbar')}
                 />
@@ -36,7 +36,7 @@ export function LandingExperienceStack() {
                     chapterCount="02 / 02"
                     copy={t('hostCopy')}
                     host
-                    phoneImage="/landing/decor-04.jpg"
+                    phoneImage="/landing/decor-04.webp"
                     title={[t('hostTitle')]}
                     topbar={t('hostTopbar')}
                 />

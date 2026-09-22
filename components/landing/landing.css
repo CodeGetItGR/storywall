@@ -676,7 +676,7 @@
         radial-gradient(circle at var(--swx-g1x) var(--swx-g1y), rgba(178, 66, 144, var(--swx-g1a)), transparent 34%),
         radial-gradient(circle at var(--swx-g2x) var(--swx-g2y), rgba(232, 118, 72, var(--swx-g2a)), transparent 34%),
         linear-gradient(var(--swx-angle, 145deg), rgba(10, 10, 14, 0.76) 0%, rgba(15, 13, 20, 0.7) 48%, rgba(9, 10, 13, 0.78) 100%),
-        url('/landing/decor-01.jpg') center center / cover no-repeat;
+        url('/landing/decor-01.webp') center center / cover no-repeat;
 }
 .landing-page .swx-layer-2 {
     z-index: 2;
@@ -706,7 +706,7 @@
             transparent 46%
         ),
         linear-gradient(var(--swx-angle, 145deg), rgba(12, 14, 22, 0.72) 0%, rgba(24, 16, 31, 0.64) 48%, rgba(16, 17, 22, 0.74) 100%),
-        url('/landing/decor-01.jpg') center center / cover no-repeat;
+        url('/landing/decor-01.webp') center center / cover no-repeat;
 
     box-shadow: 0 -20px 45px rgba(0, 0, 0, 0.35);
 }
@@ -2843,7 +2843,7 @@
 .landing-page .sw-new-hero-stage {
     position: relative;
     min-height: calc(100svh - 112px);
-    background-image: url('/landing/decor-02.jpg');
+    background-image: url('/landing/decor-02.webp');
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;
@@ -2984,7 +2984,7 @@
     .landing-page .sw-new-hero-stage {
         min-height: 0;
         padding: 43px 0 58px;
-        background-image: url('/landing/decor-03.jpg');
+        background-image: url('/landing/decor-03.webp');
         background-position: center top;
         background-size: cover;
     }
@@ -5365,7 +5365,7 @@
             radial-gradient(circle at var(--swx-g1x) var(--swx-g1y), rgba(108, 72, 215, var(--swx-g1a)), transparent 38%),
             radial-gradient(circle at var(--swx-g2x) var(--swx-g2y), rgba(228, 69, 143, var(--swx-g2a)), transparent 38%),
             linear-gradient(var(--swx-angle, 145deg), rgba(7, 8, 12, 0.43) 0%, rgba(12, 10, 18, 0.5) 50%, rgba(7, 8, 11, 0.58) 100%),
-            url('/landing/decor-04.jpg') !important;
+            url('/landing/decor-04.webp') !important;
         background-size: auto, auto, auto, cover !important;
         background-position:
             center,
@@ -5384,7 +5384,7 @@
 @media (max-width: 760px) {
     /* The mobile phone/photo is a separate layer, same mechanism as Chapter 01. */
     .landing-page .swx-mobile-host-phone-visual {
-        --swx-host-phone-bg: url('/landing/decor-04.jpg') !important;
+        --swx-host-phone-bg: url('/landing/decor-04.webp') !important;
         background-position: 50% 50% !important;
     }
 

@@ -4,7 +4,7 @@ import { type TouchEvent, useRef, useState } from 'react';
 const FEATURE_IMAGES = [
     '/landing/guest-viewing-the-storywall-invitation-on-a-phone.webp',
     '/landing/guest-scanning-the-storywall-qr-code.webp',
-    '/landing/guest-confirming-the-storywall-rsvp.jpg',
+    '/landing/guest-confirming-the-storywall-rsvp.webp',
     '/landing/guest-sharing-a-wish-in-the-storywall-guestbook.webp',
 ] as const;
 

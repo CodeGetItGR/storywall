@@ -3,7 +3,7 @@ import { motion, type TargetAndTransition, useReducedMotion } from 'framer-motio
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 const HERO_SPRITES = [
     {
-        src: '/landing/sw-scene-item-sw-post-1.png',
+        src: '/landing/sw-scene-item-sw-post-1.webp',
         width: 696,
         height: 612,
         posClass:
@@ -13,7 +13,7 @@ const HERO_SPRITES = [
         delay: '0s',
     },
     {
-        src: '/landing/sw-scene-item-sw-post-2.png',
+        src: '/landing/sw-scene-item-sw-post-2.webp',
         width: 624,
         height: 677,
         posClass:
@@ -23,7 +23,7 @@ const HERO_SPRITES = [
         delay: '0s',
     },
     {
-        src: '/landing/sw-scene-item-sw-comment-1.png',
+        src: '/landing/sw-scene-item-sw-comment-1.webp',
         width: 705,
         height: 360,
         posClass:
@@ -33,7 +33,7 @@ const HERO_SPRITES = [
         delay: '-1.4s',
     },
     {
-        src: '/landing/sw-scene-item-sw-comment-2.png',
+        src: '/landing/sw-scene-item-sw-comment-2.webp',
         width: 557,
         height: 300,
         posClass:
@@ -43,7 +43,7 @@ const HERO_SPRITES = [
         delay: '-0.8s',
     },
     {
-        src: '/landing/sw-scene-item-sw-love.png',
+        src: '/landing/sw-scene-item-sw-love.webp',
         width: 441,
         height: 440,
         posClass:
@@ -53,7 +53,7 @@ const HERO_SPRITES = [
         delay: '0s',
     },
     {
-        src: '/landing/sw-scene-item-sw-happy.png',
+        src: '/landing/sw-scene-item-sw-happy.webp',
         width: 240,
         height: 281,
         posClass:
@@ -63,7 +63,7 @@ const HERO_SPRITES = [
         delay: '-0.9s',
     },
     {
-        src: '/landing/sw-scene-item-sw-fire.png',
+        src: '/landing/sw-scene-item-sw-fire.webp',
         width: 165,
         height: 231,
         posClass:
@@ -73,7 +73,7 @@ const HERO_SPRITES = [
         delay: '-1.6s',
     },
     {
-        src: '/landing/sw-scene-item-sw-flash.png',
+        src: '/landing/sw-scene-item-sw-flash.webp',
         width: 124,
         height: 181,
         posClass:
@@ -83,7 +83,7 @@ const HERO_SPRITES = [
         delay: '0s',
     },
     {
-        src: '/landing/sw-scene-item-sw-glasses.png',
+        src: '/landing/sw-scene-item-sw-glasses.webp',
         width: 253,
         height: 331,
         posClass:
@@ -93,7 +93,7 @@ const HERO_SPRITES = [
         delay: '-2.1s',
     },
     {
-        src: '/landing/sw-scene-item-sw-note.png',
+        src: '/landing/sw-scene-item-sw-note.webp',
         width: 241,
         height: 324,
         posClass:
@@ -103,7 +103,7 @@ const HERO_SPRITES = [
         delay: '-0.5s',
     },
     {
-        src: '/landing/sw-scene-item-sw-celebrate.png',
+        src: '/landing/sw-scene-item-sw-celebrate.webp',
         width: 171,
         height: 269,
         posClass:
@@ -113,7 +113,7 @@ const HERO_SPRITES = [
         delay: '-1.2s',
     },
     {
-        src: '/landing/sw-scene-item-sw-heart-1.png',
+        src: '/landing/sw-scene-item-sw-heart-1.webp',
         width: 111,
         height: 155,
         posClass:
@@ -123,7 +123,7 @@ const HERO_SPRITES = [
         delay: '-0.8s',
     },
     {
-        src: '/landing/sw-scene-item-sw-heart-2.png',
+        src: '/landing/sw-scene-item-sw-heart-2.webp',
         width: 167,
         height: 219,
         posClass:
@@ -133,7 +133,7 @@ const HERO_SPRITES = [
         delay: '-1.8s',
     },
     {
-        src: '/landing/sw-scene-item-sw-heart-3.png',
+        src: '/landing/sw-scene-item-sw-heart-3.webp',
         width: 200,
         height: 243,
         posClass:
@@ -143,7 +143,7 @@ const HERO_SPRITES = [
         delay: '-0.2s',
     },
     {
-        src: '/landing/sw-scene-item-sw-heart-4.png',
+        src: '/landing/sw-scene-item-sw-heart-4.webp',
         width: 108,
         height: 153,
         posClass:
@@ -153,7 +153,7 @@ const HERO_SPRITES = [
         delay: '-2.4s',
     },
     {
-        src: '/landing/sw-scene-item-sw-heart-5.png',
+        src: '/landing/sw-scene-item-sw-heart-5.webp',
         width: 127,
         height: 176,
         posClass:
@@ -231,7 +231,7 @@ export function LandingHeroVisual() {
                         />
                     </motion.div>
                 </div>
-                <ProtectedImage alt="" className="absolute inset-0 z-[2] h-auto w-full" height={1541} src="/landing/sw-phone-frame.png" width={748} />
+                <ProtectedImage alt="" className="absolute inset-0 z-[2] h-auto w-full" height={1541} src="/landing/sw-phone-frame.webp" width={748} />
             </motion.div>
             {/* Surrounding reactions and posts */}
             {restSprites.map((sprite) => (

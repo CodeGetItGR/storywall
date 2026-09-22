@@ -17,7 +17,7 @@ export async function LandingFooter() {
                     <div className="w-[min(82vw,330px)] leading-none min-[761px]:w-[clamp(179px,19.6vw,301px)]">
                         <ProtectedImage
                             alt={t('imageAlt')}
-                            src="/landing/storywall-2.png"
+                            src="/landing/storywall-2.webp"
                             width={600}
                             height={119}
                             loading="lazy"

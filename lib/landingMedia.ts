@@ -21,9 +21,9 @@ export const landingStoryMedia: LandingStoryMedia[] = [
         ],
     },
     {
-        main: { src: '/landing/happy-baptism-celebration-outside-the-church-on-a-greek-island.png', width: 1536, height: 1024 },
+        main: { src: '/landing/happy-baptism-celebration-outside-the-church-on-a-greek-island.webp', width: 1536, height: 1024 },
         gallery: [
-            { src: '/landing/happy-baptism-celebration-outside-the-church-on-a-greek-island.png', width: 1536, height: 1024 },
+            { src: '/landing/happy-baptism-celebration-outside-the-church-on-a-greek-island.webp', width: 1536, height: 1024 },
             { src: '/landing/baptism-ceremony-inside-the-church.webp', width: 1448, height: 1086 },
             { src: '/landing/baptism-celebration-at-the-table.webp', width: 1448, height: 1086 },
         ],
@@ -37,11 +37,11 @@ export const landingStoryMedia: LandingStoryMedia[] = [
         ],
     },
     {
-        main: { src: '/landing/close-up-selfie-of-stylish-guests-and-influencers-celebrating-at.png', width: 1370, height: 1148 },
+        main: { src: '/landing/close-up-selfie-of-stylish-guests-and-influencers-celebrating-at.webp', width: 1370, height: 1148 },
         gallery: [
-            { src: '/landing/close-up-selfie-of-stylish-guests-and-influencers-celebrating-at.png', width: 1370, height: 1148 },
-            { src: '/landing/stylish-guests-dancing-at-an-elegant-vip-social-party-at-night.png', width: 1536, height: 1024 },
-            { src: '/landing/guests-mingling-with-champagne-at-an-elegant-formal-vip-social-e.png', width: 1536, height: 1024 },
+            { src: '/landing/close-up-selfie-of-stylish-guests-and-influencers-celebrating-at.webp', width: 1370, height: 1148 },
+            { src: '/landing/stylish-guests-dancing-at-an-elegant-vip-social-party-at-night.webp', width: 1536, height: 1024 },
+            { src: '/landing/guests-mingling-with-champagne-at-an-elegant-formal-vip-social-e.webp', width: 1536, height: 1024 },
         ],
     },
 
