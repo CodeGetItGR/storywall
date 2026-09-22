@@ -90,7 +90,6 @@ export function LandingHero() {
                             </a>
                         )}
                     </nav>
-                    <LandingMotionToggle />
                     <LanguageSwitcher className="hidden shrink-0 min-[761px]:inline-flex" />
                     <button
                         aria-controls="landing-mobile-menu"
@@ -129,6 +128,7 @@ export function LandingHero() {
                         </a>
                     )}
                     <LanguageSwitcher className="self-start" />
+                    <LandingMotionToggle className="self-start text-[13px] text-[#151313]/62" />
                 </nav>
             </header>
 

@@ -23,7 +23,7 @@ export function LandingPageShell({ children }: { children: ReactNode }) {
         <>
             {/* Skip link — first focusable element, visible only while focused */}
             <a
-                className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-100 focus:rounded-md focus:bg-[#151313] focus:px-4 focus:py-2.5 focus:text-sm focus:font-bold focus:text-white focus:no-underline focus:outline-2 focus:outline-offset-2 focus:outline-white"
+                className="sr-only focus:not-sr-only focus:fixed focus:inset-x-3 focus:top-3 focus:z-100 focus:mx-auto focus:w-fit focus:rounded-full focus:bg-[#151313] focus:px-5 focus:py-2.5 focus:text-[13px] focus:font-bold focus:text-white focus:no-underline focus:shadow-[0_12px_28px_rgba(21,19,19,.25)] focus-ring focus-visible:outline-offset-2"
                 href={`#${LANDING_MAIN_ID}`}
             >
                 {t('skipToContent')}

@@ -5,20 +5,21 @@ import { useTranslations } from 'next-intl';
 
 import { useLandingMotion } from '@/providers/LandingMotionProvider';
 
-// The accessible name carries the state, matching how the menu toggle here
-// already reports open versus closed.
+// The visible label carries the state, so the button needs no separate
+// accessible name. Colour and size come from whichever surface hosts it.
 export function LandingMotionToggle({ className = '' }: { className?: string }) {
     const t = useTranslations('LandingPage.shell');
     const { paused, toggle } = useLandingMotion();
+    const Icon = paused ? Play : Pause;
 
     return (
         <button
-            aria-label={paused ? t('playMotion') : t('pauseMotion')}
-            className={`grid size-11 shrink-0 place-items-center rounded-full border border-[#151313]/20 text-[#151313] transition-opacity hover:opacity-60 focus-ring focus-visible:outline-offset-4 ${className}`}
+            className={`inline-flex items-center gap-2 py-1.5 text-left transition-opacity hover:opacity-60 focus-ring focus-visible:outline-offset-4 ${className}`}
             onClick={toggle}
             type="button"
         >
-            {paused ? <Play aria-hidden="true" className="size-4 translate-x-px" /> : <Pause aria-hidden="true" className="size-4" />}
+            <Icon aria-hidden="true" className="size-3.5 shrink-0" />
+            {paused ? t('playMotion') : t('pauseMotion')}
         </button>
     );
 }
