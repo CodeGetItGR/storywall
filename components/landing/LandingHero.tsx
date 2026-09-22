@@ -129,7 +129,7 @@ export function LandingHero() {
             </header>
 
             {/* Hero content */}
-            <div className="relative bg-[url('/landing/hero-background-v75.jpg')] bg-cover bg-center pt-6 pb-21.5 min-[421px]:max-[760px]:pt-10.75 min-[761px]:min-h-[calc(100svh-112px)] min-[761px]:py-0">
+            <div className="relative bg-[url('/landing/hero-background-v75.webp')] bg-cover bg-center pt-6 pb-21.5 min-[421px]:max-[760px]:pt-10.75 min-[761px]:min-h-[calc(100svh-112px)] min-[761px]:py-0">
                 <div className="relative mx-auto grid w-[calc(100%-40px)] max-w-305 grid-cols-1 items-center min-[761px]:min-h-[calc(100svh-112px)] min-[761px]:w-[calc(100%-64px)] min-[761px]:grid-cols-2">
                     <div className="relative z-20 self-center min-[761px]:py-2.5">
                         <p className="mb-5 text-[clamp(13px,1vw,17px)] leading-tight uppercase">

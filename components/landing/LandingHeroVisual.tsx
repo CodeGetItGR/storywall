@@ -212,21 +212,21 @@ export function LandingHeroVisual() {
                             alt=""
                             className="relative block h-auto w-full max-w-none [&+&]:-mt-px"
                             height={2048}
-                            src="/landing/sw-phone-feed-3.jpg"
+                            src="/landing/sw-phone-feed-3.webp"
                             width={774}
                         />
                         <ProtectedImage
                             alt=""
                             className="relative block h-auto w-full max-w-none [&+&]:-mt-px"
                             height={2048}
-                            src="/landing/sw-phone-feed.jpg"
+                            src="/landing/sw-phone-feed.webp"
                             width={451}
                         />
                         <ProtectedImage
                             alt=""
                             className="relative block h-auto w-full max-w-none [&+&]:-mt-px"
                             height={2048}
-                            src="/landing/sw-phone-feed-2.jpg"
+                            src="/landing/sw-phone-feed-2.webp"
                             width={820}
                         />
                     </motion.div>

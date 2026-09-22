@@ -24,7 +24,7 @@ export const socialExperienceAssets: LandingExperienceAsset[] = [
     ['swx-ref-asset swx-a17 swx-depth-mid swx-motion-card', '/landing/party-story.png', 751, 887],
     ['swx-ref-asset swx-a18 swx-depth-front swx-motion-music', '/landing/music-request.png', 601, 478],
     ['swx-ref-asset swx-a19 swx-depth-front swx-motion-emoji', '/landing/wink-reaction.png', 224, 199],
-    ['swx-ref-asset swx-a20 swx-depth-back swx-motion-card', '/landing/blurred-social-post.png', 547, 514],
+    ['swx-ref-asset swx-a20 swx-depth-back swx-motion-card', '/landing/blurred-social-post.webp', 547, 514],
     ['swx-ref-asset swx-a21 swx-depth-back swx-motion-comment', '/landing/blurred-comment.webp', 384, 211],
     ['swx-ref-asset swx-a22 swx-depth-front swx-motion-note', '/landing/music-note-reaction.png', 212, 235],
 ].map(([className, src, width, height]) => ({ className, src, width, height })) as LandingExperienceAsset[];
@@ -33,7 +33,7 @@ export const hostExperienceAssets: LandingExperienceAsset[] = [
     ['swx-host-ref swx-h01 swx-host-depth-front swx-host-motion-report', '/landing/rsvp-material-report.png', 1049, 550],
     ['swx-host-ref swx-h02 swx-host-depth-mid swx-host-motion-card', '/landing/venue-map-card.png', 450, 390],
     ['swx-host-ref swx-h03 swx-host-depth-front swx-host-motion-card', '/landing/thank-you-bank-details.png', 463, 545],
-    ['swx-host-ref swx-h04 swx-host-depth-front swx-host-motion-card', '/landing/ceremony-map-card.png', 349, 352],
+    ['swx-host-ref swx-h04 swx-host-depth-front swx-host-motion-card', '/landing/ceremony-map-card.webp', 349, 352],
     ['swx-host-ref swx-h05 swx-host-depth-mid swx-host-motion-card', '/landing/host-photo-gallery.png', 625, 800],
     ['swx-host-ref swx-h06 swx-host-depth-front swx-host-motion-avatar', '/landing/guest-avatar-2.png', 334, 274],
     ['swx-host-ref swx-h07 swx-host-depth-front swx-host-motion-music', '/landing/music-requests-card.png', 556, 478],

@@ -11,7 +11,7 @@ export type LandingStoryMedia = {
 
 export const landingStoryMedia: LandingStoryMedia[] = [
     {
-        main: { src: '/landing/wedding-party-celebrating-with-social-storywall-overlays.jpg', width: 2048, height: 1152 },
+        main: { src: '/landing/wedding-party-celebrating-with-social-storywall-overlays.webp', width: 2048, height: 1152 },
         gallery: [
             { src: '/landing/01-bachelor-santorini.webp', width: 1536, height: 1024 },
             { src: '/landing/02-bride-preparation-santorini.webp', width: 1536, height: 1024 },
