@@ -9,6 +9,7 @@ import { normalizeList } from '@/lib/api/pagination';
 import { serverGet } from '@/lib/api/serverFetch';
 import type { EventDetailResponseDto, EventInvitationResponseDto, EventMemberResponseDto, EventUsageResponseDto, RsvpResponseDto } from '@/lib/api/types';
 import { resolveServerEventContext } from '@/lib/auth/serverEventContext';
+import { isEventDeleted } from '@/lib/eventLifecycle';
 import { makeQueryClient } from '@/lib/queryClient';
 
 import ManagePage from './PageClient';
@@ -32,6 +33,10 @@ export default async function Page({ params }: PageProps) {
         try {
             const event = await serverGet<EventDetailResponseDto>(endpoints.events.byId(eventId), accessToken);
             const isDraft = event.status === 'DRAFT';
+
+            // A deleted event's manage page shows only the banner and billing;
+            // ManageScreen passes null ids for everything else, so don't prefetch it.
+            if (isEventDeleted(event)) throw new Error('deleted');
 
             const usage = await serverGet<EventUsageResponseDto>(endpoints.events.usage(eventId), accessToken);
             queryClient.setQueryData(usageKeys.event(eventId), usage);

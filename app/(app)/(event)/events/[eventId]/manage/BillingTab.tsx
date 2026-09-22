@@ -9,10 +9,10 @@ import { BillingStatusHeader } from '@/components/manage/billing/BillingStatusHe
 import { useEventBillingPanel } from '@/hooks/useEventBillingPanel';
 import type { EventScheduleDto } from '@/lib/api/types';
 
-export default function BillingTab({ eventId, schedule }: { eventId: string; schedule: EventScheduleDto }) {
+export default function BillingTab({ eventId, schedule, isDeleted = false }: { eventId: string; schedule: EventScheduleDto; isDeleted?: boolean }) {
     const tPageError = useTranslations('PageErrorState.billing');
     const tPageErrorCommon = useTranslations('PageErrorState');
-    const panel = useEventBillingPanel(eventId);
+    const panel = useEventBillingPanel(eventId, { isDeleted });
 
     if (panel.isLoading) {
         return (

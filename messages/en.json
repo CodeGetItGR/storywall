@@ -634,6 +634,7 @@
         }
     },
     "EventsPage": {
+        "deletingOn": "Deleting on {date}",
         "yourEvents": "Your events",
         "createEventCta": "Create event",
         "eventUnavailable": "Event unavailable",
@@ -1243,10 +1244,10 @@
             "saved": "Saved",
             "readOnly": "This event is read-only. Event details and cover photo changes are paused until the event is active again.",
             "dangerZone": {
-                "body": "Deleting this event hides it immediately. You'll have a grace period to undo this before it's permanently deleted.",
+                "body": "Deleting this event hides it from guests right away. This can't be undone.",
                 "delete": "Delete event",
                 "confirmTitle": "Delete this event?",
-                "confirmBody": "This event will be hidden from everyone right away. You'll be able to undo this from this page until it's permanently deleted.",
+                "confirmBody": "Guests lose access right away and the event is permanently deleted later. This can't be undone. Until then you can still view and download the gallery and wishes.",
                 "confirmAction": "Delete event",
                 "cancelAction": "Cancel",
                 "otp": {
@@ -1264,11 +1265,11 @@
                     }
                 }
             },
-            "pendingDeletion": {
-                "title": "This event is scheduled for deletion",
-                "body": "It will be permanently deleted on {date}. Guests can no longer see it.",
-                "undo": "Undo deletion",
-                "undoing": "Restoring…"
+            "deleted": {
+                "title": "This event is being deleted",
+                "body": "It will be permanently deleted on {date}. Guests can't see it. Only the gallery and wishes stay available until then.",
+                "galleryLink": "Gallery",
+                "wishbookLink": "Wishes"
             }
         },
         "usage": {
@@ -1610,7 +1611,7 @@
             "submit": "Request withdrawal",
             "submitting": "Submitting...",
             "requestedNoAmount": "Amount will be set once processed.",
-            "confirmBody": "This permanently takes the event offline. Guests lose access and there is no undo.",
+            "confirmBody": "This permanently takes the event offline and can't be undone. You can still view and download the gallery and wishes until it's deleted.",
             "confirmReviewed": "Because this event's date was changed after payment, your request will be reviewed by a person.",
             "confirmSubmit": "Yes, withdraw",
             "confirmCancel": "Cancel",
@@ -1934,6 +1935,7 @@
         "removeBody": "Members will no longer see this bank account."
     },
     "WishbookPage": {
+        "deletedReadOnly": "Read-only. This event will be deleted on {date}.",
         "currentSubtitle": "Leave a message for the hosts.",
         "currentPlaceholder": "Write your wish...",
         "goBack": "Go back",
@@ -3326,6 +3328,7 @@
         "unselectMedia": "Unselect {filename}",
         "selectionDownloadFailed": "We couldn't download those files. Please try again.",
         "moduleUnavailable": "Gallery is not available on this event's current plan.",
+        "deletedReadOnly": "Read-only. This event will be deleted on {date}.",
         "eventFrozen": "This event is read-only. Existing photos and videos are still available, but new uploads are paused.",
         "uploadTitle": "Upload media",
         "uploadHint": "Choose up to {count} files at a time.",

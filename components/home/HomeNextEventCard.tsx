@@ -3,19 +3,23 @@
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
+import { useMemo } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { HomeNextEventCountdown } from '@/components/home/HomeNextEventCountdown';
 import type { EventGridItem } from '@/hooks/useEventGridItems';
 import { useRecentEventItems } from '@/hooks/useEventGridItems';
 import { formatEventListDate } from '@/lib/datetime';
+import { isEventDeleted } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
 
 export function HomeNextEventCard({ items }: { items: EventGridItem[] }) {
     const t = useTranslations('HomePage');
     const tEvents = useTranslations('EventsPage');
     const locale = useLocale();
-    const [next] = useRecentEventItems(items, 1);
+    // A deleted event is never "next" — it has no feed to open.
+    const liveItems = useMemo(() => items.filter((item) => !isEventDeleted(item.event)), [items]);
+    const [next] = useRecentEventItems(liveItems, 1);
 
     if (!next || next.isLoading || !next.event) return null;
 

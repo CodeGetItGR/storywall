@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { DeletedEventManageScreen } from '@/components/manage/DeletedEventManageScreen';
 import { ManageSectionNav, sectionIcons } from '@/components/manage/ManageSectionNav';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { LoadingState } from '@/components/ui/LoadingState';
@@ -14,7 +15,7 @@ import { useEventInvitations } from '@/hooks/useEventInvitations';
 import { useEventMembers } from '@/hooks/useEventMembers';
 import { useEventRsvps } from '@/hooks/useRsvps';
 import { useEventUsage } from '@/hooks/useUsage';
-import { isEventWritable, isPrimaryHost } from '@/lib/eventLifecycle';
+import { isEventDeleted, isEventWritable, isPrimaryHost } from '@/lib/eventLifecycle';
 import { type ManageSection, manageSections, parseManageSection } from '@/lib/manageSections';
 import { routes } from '@/lib/routes';
 import { eventStatusBadgeTone } from '@/lib/statusTones';
@@ -38,19 +39,20 @@ export function ManageScreen() {
     const cancelledCheckout = searchParams.get('cancelled') === 'true';
     const isDraft = activeEvent.status === 'DRAFT';
     const activeMember = useActiveMember();
+    const isDeleted = isEventDeleted(activeEvent);
     const canDelete = isPrimaryHost(activeEvent.hosts, activeMember?.id);
-    const canOpenDangerZone = canDelete || Boolean(activeEvent.deletionScheduledFor);
-    const visibleSections = canOpenDangerZone ? manageSections : manageSections.filter((entry) => entry !== 'danger');
+    const visibleSections = canDelete ? manageSections : manageSections.filter((entry) => entry !== 'danger');
     const section = isDraft ? 'overview' : visibleSections.includes(requestedSection) ? requestedSection : 'overview';
     const [switcherOpen, setSwitcherOpen] = useState(false);
 
     const canWrite = isEventWritable(activeEvent?.status);
     const canEditDetails = canWrite;
-    const activeHostEventId = isHost && !isDraft ? eventId : null;
+    // Deleted events are read-only: no roster, RSVPs, invitations or usage to load.
+    const activeHostEventId = isHost && !isDraft && !isDeleted ? eventId : null;
     const { data: members = [], isLoading: membersLoading } = useEventMembers(activeHostEventId);
     const { data: rsvps = [], isLoading: rsvpsLoading } = useEventRsvps(activeHostEventId);
     const { data: invitations = [], isLoading: invitationsLoading } = useEventInvitations(activeHostEventId);
-    const { data: eventUsage = null, isLoading: usageLoading } = useEventUsage(isHost ? eventId : null);
+    const { data: eventUsage = null, isLoading: usageLoading } = useEventUsage(isHost && !isDeleted ? eventId : null);
     const { data: appConfig } = useAppConfig();
 
     const overviewLoading = membersLoading || invitationsLoading || rsvpsLoading || usageLoading;
@@ -85,12 +87,14 @@ export function ManageScreen() {
     }, [activeEvent]);
 
     useEffect(() => {
-        if (requestedSection !== section) router.replace(routes.events.manage(eventId));
-    }, [eventId, requestedSection, router, section]);
+        if (!isDeleted && requestedSection !== section) router.replace(routes.events.manage(eventId));
+    }, [eventId, isDeleted, requestedSection, router, section]);
 
     // Party sizes belong to the overview's headline numbers, so the RSVP roster
     // never restates a total that is already visible one section away.
     const seatsClaimed = useMemo(() => rsvps.reduce((sum, rsvp) => sum + rsvp.adultCount + rsvp.childCount, 0), [rsvps]);
+
+    if (isDeleted) return <DeletedEventManageScreen event={activeEvent} />;
 
     const ActiveIcon = sectionIcons[section];
 

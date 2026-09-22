@@ -15,7 +15,7 @@ import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { MediaResponseDto } from '@/lib/api/types';
 import { downloadBlob } from '@/lib/download';
-import { isEventWritable } from '@/lib/eventLifecycle';
+import { isEventDeleted, isEventWritable } from '@/lib/eventLifecycle';
 import { useActiveMember } from '@/providers/EventProvider';
 import { useMobileChrome } from '@/providers/MobileChromeProvider';
 
@@ -47,7 +47,8 @@ export function useGalleryScreen() {
 
     const galleryModule = activeEvent?.modules.find((module) => module.moduleKey === 'gallery');
     const galleryEnabled = galleryModule?.isAvailable ?? false;
-    const canUpload = Boolean(eventId && activeMember && galleryEnabled && isEventWritable(activeEvent?.status));
+    const isDeleted = isEventDeleted(activeEvent);
+    const canUpload = Boolean(eventId && activeMember && galleryEnabled && isEventWritable(activeEvent?.status) && !isDeleted);
     const selectedSize = useMemo(() => selectedFiles.reduce((sum, file) => sum + file.size, 0), [selectedFiles]);
     const maxArchiveSelectedItems = appConfig?.media.maxArchiveSelectedItems ?? 100;
     const maxArchivePartBytes = appConfig?.media.maxArchivePartBytes ?? 2 * 1024 * 1024 * 1024;
@@ -266,6 +267,7 @@ export function useGalleryScreen() {
         activeEvent,
         eventId,
         isHost,
+        isDeleted,
         galleryEnabled,
         canUpload,
         showArchiveDownload,

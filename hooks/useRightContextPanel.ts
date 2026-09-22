@@ -7,6 +7,7 @@ import { useEventQrLinks } from '@/hooks/useQrLinks';
 import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
 import { useEventUsage } from '@/hooks/useUsage';
 import { useWishbook } from '@/hooks/useWishbook';
+import { isEventDeleted } from '@/lib/eventLifecycle';
 import { findPlanByCode } from '@/lib/planTiers';
 import { findGalleryQrLink, isGalleryQrFeatureEnabled } from '@/lib/qrLinks';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
@@ -21,18 +22,22 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
     const activeEvent = useActiveEvent();
     const isHost = useIsHost();
     const isLoading = useEventContextLoading();
-    const { data: eventUsage = null } = useEventUsage(isHost ? (activeEvent?.id ?? null) : null);
+    // Deleted events keep no plan, no upgrade path and no live counts —
+    // every summary below is a write surface or a number that can't change.
+    const isDeleted = isEventDeleted(activeEvent);
+    const { data: eventUsage = null } = useEventUsage(isHost && !isDeleted ? (activeEvent?.id ?? null) : null);
     const { data: appConfig } = useAppConfig();
 
     const isDraft = activeEvent?.status === 'DRAFT';
-    const { data: upgradeOptions = [] } = useUpgradeOptions(isHost ? (activeEvent?.id ?? null) : null, !isDraft);
+    const { data: upgradeOptions = [] } = useUpgradeOptions(isHost && !isDeleted ? (activeEvent?.id ?? null) : null, !isDraft);
     const availableModuleKeys = new Set((activeEvent?.modules ?? []).filter((module) => module.isAvailable).map((module) => module.moduleKey));
 
-    const showRsvpSummary = isHost && !isDraft && availableModuleKeys.has('rsvp');
-    const showMediaSummary = isHost && !isDraft && availableModuleKeys.has('gallery');
-    const showWishbookSummary = isHost && !isDraft && availableModuleKeys.has('wishbook');
-    const showGalleryQr = isHost && !isDraft && isGalleryQrFeatureEnabled(activeEvent?.modules);
-    const showInvitationsQr = isHost && !isDraft;
+    const isLiveHost = isHost && !isDraft && !isDeleted;
+    const showRsvpSummary = isLiveHost && availableModuleKeys.has('rsvp');
+    const showMediaSummary = isLiveHost && availableModuleKeys.has('gallery');
+    const showWishbookSummary = isLiveHost && availableModuleKeys.has('wishbook');
+    const showGalleryQr = isLiveHost && isGalleryQrFeatureEnabled(activeEvent?.modules);
+    const showInvitationsQr = isLiveHost;
 
     const galleryManifest = useGalleryArchiveManifest(activeEvent?.id ?? null, 'DISPLAY', showMediaSummary);
     const wishbook = useWishbook(showWishbookSummary ? (activeEvent?.id ?? null) : null);

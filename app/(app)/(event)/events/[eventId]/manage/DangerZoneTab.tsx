@@ -4,7 +4,6 @@ import { useTranslations } from 'next-intl';
 
 import { EventDangerZone } from '@/components/manage/danger/EventDangerZone';
 import { EventDeleteConfirmModal } from '@/components/manage/danger/EventDeleteConfirmModal';
-import { EventPendingDeletionBanner } from '@/components/manage/danger/EventPendingDeletionBanner';
 import { EventWithdrawalSection } from '@/components/manage/danger/EventWithdrawalSection';
 import { useEventDeletionFlow } from '@/hooks/useEventDeletionFlow';
 import type { EventDetailResponseDto } from '@/lib/api/types';
@@ -12,10 +11,6 @@ import type { EventDetailResponseDto } from '@/lib/api/types';
 export default function DangerZoneTab({ event }: { event: EventDetailResponseDto }) {
     const t = useTranslations('ManagePage');
     const deletionFlow = useEventDeletionFlow(event.id);
-
-    if (event.deletionScheduledFor) {
-        return <EventPendingDeletionBanner eventId={event.id} deletionScheduledFor={event.deletionScheduledFor} />;
-    }
 
     return (
         <div className="flex flex-col gap-6">
