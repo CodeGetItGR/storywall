@@ -3410,6 +3410,12 @@
         "failed": "Το βίντεο δεν είναι διαθέσιμο"
     },
     "LandingPage": {
+        "meta": {
+            "title": "StoryWall — Ένα ιδιωτικό social space για το event σου",
+            "description": "Μοιράσου φωτογραφίες, ευχές και στιγμές με τους καλεσμένους σου πριν, κατά τη διάρκεια και μετά τον γάμο, τη βάπτιση ή το πάρτι σου. Χωρίς app.",
+            "siteName": "StoryWall",
+            "imageAlt": "StoryWall — το social space για κάθε private event"
+        },
         "hero": {
             "homeLabel": "StoryWall — Αρχική",
             "navLabel": "Κύρια πλοήγηση",
@@ -3882,9 +3888,13 @@
             "lineOne": "Οι στιγμές περνούν.",
             "lineTwo": "Η ιστορία μένει.",
             "explore": "EXPLORE",
-            "exploreLinks": ["Η πλατφόρμα", "Πώς λειτουργεί", "Δυνατότητες", "Πακέτα", "FAQ"],
-            "events": "EVENTS",
-            "eventLinks": ["Γάμος", "Βάπτιση", "Gender Reveal", "VIP Parties", "Συνέδρια"],
+            "exploreLinks": {
+                "platform": "Η πλατφόρμα",
+                "howItWorks": "Πώς λειτουργεί",
+                "features": "Δυνατότητες",
+                "plans": "Πακέτα",
+                "faq": "FAQ"
+            },
             "social": "SOCIAL",
             "socialLinks": ["Instagram", "TikTok", "Facebook"],
             "copyright": "© 2026 STORYWALL",

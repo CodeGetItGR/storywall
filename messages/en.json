@@ -3529,6 +3529,12 @@
         "eventSessionLimitReached": "This event type has reached its limit of schedule sections."
     },
     "LandingPage": {
+        "meta": {
+            "title": "StoryWall — A private social space for your event",
+            "description": "Share photos, wishes and moments with your guests before, during and after your wedding, baptism or party. No app needed.",
+            "siteName": "StoryWall",
+            "imageAlt": "StoryWall — the social space for every private event"
+        },
         "hero": {
             "homeLabel": "StoryWall — Home",
             "navLabel": "Main navigation",
@@ -3992,9 +3998,13 @@
             "lineOne": "Moments pass.",
             "lineTwo": "The story stays.",
             "explore": "EXPLORE",
-            "exploreLinks": ["The platform", "How it works", "Features", "Plans", "FAQ"],
-            "events": "EVENTS",
-            "eventLinks": ["Weddings", "Baptisms", "Gender reveals", "VIP parties", "Conferences"],
+            "exploreLinks": {
+                "platform": "The platform",
+                "howItWorks": "How it works",
+                "features": "Features",
+                "plans": "Plans",
+                "faq": "FAQ"
+            },
             "social": "SOCIAL",
             "socialLinks": ["Instagram", "TikTok", "Facebook"],
             "copyright": "© 2026 STORYWALL",

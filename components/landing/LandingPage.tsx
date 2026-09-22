@@ -1,6 +1,7 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
 import { LandingContent } from '@/components/landing/LandingContent';
+import { LandingStructuredData } from '@/components/landing/LandingStructuredData';
 import { appConfigKeys } from '@/hooks/useAppConfig';
 import { endpoints } from '@/lib/api/endpoints';
 import { serverPublicConfigGet } from '@/lib/api/serverFetch';
@@ -19,6 +20,7 @@ export async function LandingPage() {
 
     return (
         <HydrationBoundary state={dehydrate(queryClient)}>
+            <LandingStructuredData />
             <LandingContent />
         </HydrationBoundary>
     );
