@@ -3416,7 +3416,7 @@
             "kickerStrong": "PRIVATE EVENT",
             "title": ["Κάθε στιγμή", "γίνεται μέρος της", "ιστορίας."],
             "cta": ["Ζήσε το δικό σου", "StoryWall"],
-            "signedInCta": ["Οι", "εκδηλώσεις σου"],
+            "signedInCta": ["Ζήσε το δικό σου", "StoryWall"],
             "subtitleStart": "Ένα",
             "subtitleStrong": "ιδιωτικό social space",
             "subtitleEnd": "για το event σου",
