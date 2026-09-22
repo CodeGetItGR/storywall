@@ -8,7 +8,8 @@ import { type MouseEvent, useCallback } from 'react';
 import {ProtectedImage} from "@/components/common/ProtectedImage";
 import { HomeHorizontalScroller } from '@/components/home/HomeHorizontalScroller';
 import type { EventGridItem } from '@/hooks/useEventGridItems';
-import { formatEventListDate } from '@/lib/datetime';
+import { formatDate, formatEventListDate } from '@/lib/datetime';
+import { isEventDeleted } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
@@ -25,10 +26,17 @@ function EventQuickCard({ member, event }: EventGridItem) {
         member.relationshipRole ??
         (member.role === 'HOST' ? tEvents('roleFallback.host') : tEvents('roleFallback.attendee'));
     const eventDate = formatEventListDate(event?.schedule.startAt, locale, tEvents('dateAt'));
+    // A deleted event opens on its manage page (the only place left to land)
+    // and shows its purge date instead of the event date.
+    const isDeleted = isEventDeleted(event);
+    const secondaryLabel =
+        isDeleted && event?.deletionScheduledFor
+            ? tEvents('deletingOn', { date: formatDate(locale, event.deletionScheduledFor, { dateStyle: 'medium' }) })
+            : (eventDate ?? roleLabel);
 
     return (
         <Link
-            href={routes.events.feed(member.eventId)}
+            href={isDeleted ? routes.events.manage(member.eventId) : routes.events.feed(member.eventId)}
             className="group relative h-62 w-44 shrink-0 overflow-hidden rounded-lg bg-surface-muted transition-transform hover:-translate-y-0.5 lg:h-56 lg:w-40"
         >
             {event?.coverMedia?.mediaUrl ? (
@@ -46,7 +54,7 @@ function EventQuickCard({ member, event }: EventGridItem) {
             )}
             <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-ink/85 via-ink/35 to-transparent px-3 pt-8 pb-3">
                 <p className="truncate text-sm font-semibold text-white">{event?.title ?? tEvents('eventUnavailable')}</p>
-                <p className="mt-0.5 truncate text-xs text-white/75">{eventDate ?? roleLabel}</p>
+                <p className="mt-0.5 truncate text-xs text-white/75">{secondaryLabel}</p>
             </div>
         </Link>
     );

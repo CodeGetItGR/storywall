@@ -634,6 +634,7 @@
         }
     },
     "EventsPage": {
+        "deletingOn": "Deleting on {date}",
         "yourEvents": "Your events",
         "createEventCta": "Create event",
         "eventUnavailable": "Event unavailable",

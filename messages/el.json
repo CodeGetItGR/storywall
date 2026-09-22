@@ -708,6 +708,7 @@
         }
     },
     "EventsPage": {
+        "deletingOn": "Διαγράφεται στις {date}",
         "yourEvents": "Οι εκδηλώσεις σου",
         "createEventCta": "Δημιουργία εκδήλωσης",
         "eventUnavailable": "Η εκδήλωση δεν είναι διαθέσιμη",
