@@ -1,6 +1,7 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { type ReactNode } from 'react';
 
+import { DeletedEventRouteGuard } from '@/components/event/DeletedEventRouteGuard';
 import { DraftEventRouteGuard } from '@/components/event/DraftEventRouteGuard';
 import { EventLifecycleBanner } from '@/components/event/EventLifecycleBanner';
 import { eventKeys } from '@/hooks/useEvent';
@@ -38,7 +39,9 @@ export default async function EventLayout({ children }: { children: ReactNode })
             <div className="min-h-full bg-background">
                 <EventLifecycleBanner />
                 <DraftEventRouteGuard>
-                    <div className="lg:max-w-none">{children}</div>
+                    <DeletedEventRouteGuard>
+                        <div className="lg:max-w-none">{children}</div>
+                    </DeletedEventRouteGuard>
                 </DraftEventRouteGuard>
             </div>
         </HydrationBoundary>
