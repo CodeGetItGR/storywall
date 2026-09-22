@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { isDeletedEventRouteAllowed, isEventDeleted } from '@/lib/eventLifecycle';
+import type { EventModuleResponseDto } from '@/lib/api/types';
+import { isDeletedEventRouteAllowed, isEventDeleted, readableModuleKeys } from '@/lib/eventLifecycle';
 
 describe('isEventDeleted', () => {
     it('is true only when deletedAt is set', () => {
@@ -28,5 +29,25 @@ describe('isDeletedEventRouteAllowed', () => {
         expect(isDeletedEventRouteAllowed('/events/event-1/manage/qr', id)).toBe(false);
         expect(isDeletedEventRouteAllowed('/events/event-1/tools/gallery/qr', id)).toBe(false);
         expect(isDeletedEventRouteAllowed('/events/event-1/tools/rsvp', id)).toBe(false);
+    });
+});
+
+describe('readableModuleKeys', () => {
+    const modules = [
+        { moduleKey: 'gallery', isEnabled: true, isAvailable: false },
+        { moduleKey: 'wishbook', isEnabled: false, isAvailable: false },
+        { moduleKey: 'rsvp', isEnabled: true, isAvailable: true },
+    ] as EventModuleResponseDto[];
+
+    it('uses availability for a live event', () => {
+        expect([...readableModuleKeys({ deletedAt: null, modules })]).toEqual(['rsvp']);
+    });
+
+    it('falls back to the enabled flag for a deleted event, where the backend marks every module unavailable', () => {
+        expect([...readableModuleKeys({ deletedAt: '2026-09-22T10:00:00Z', modules })]).toEqual(['gallery', 'rsvp']);
+    });
+
+    it('is empty without an event', () => {
+        expect(readableModuleKeys(null).size).toBe(0);
     });
 });

@@ -27,7 +27,7 @@ export function DeletedEventManageScreen({ event }: { event: EventDetailResponse
             {/* Body */}
             <div className="flex flex-col gap-6 px-4 pt-4 lg:max-w-4xl lg:px-6 lg:pt-5">
                 {/* Deleted */}
-                <EventDeletedBanner eventId={event.id} deletionScheduledFor={event.deletionScheduledFor} modules={event.modules} />
+                <EventDeletedBanner event={event} />
 
                 {/* Billing */}
                 <section>

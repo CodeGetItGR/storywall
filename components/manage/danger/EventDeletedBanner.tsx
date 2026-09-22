@@ -3,26 +3,19 @@
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 
-import type { EventModuleResponseDto } from '@/lib/api/types';
+import type { EventDetailResponseDto } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
+import { readableModuleKeys } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
 
-export function EventDeletedBanner({
-    eventId,
-    deletionScheduledFor,
-    modules,
-}: {
-    eventId: string;
-    deletionScheduledFor: string | null;
-    modules: EventModuleResponseDto[];
-}) {
+export function EventDeletedBanner({ event }: { event: EventDetailResponseDto }) {
     const t = useTranslations('ManagePage');
     const locale = useLocale();
-    const date = deletionScheduledFor ? formatDate(locale, deletionScheduledFor, { dateStyle: 'long' }) : null;
-    const available = new Set(modules.filter((module) => module.isAvailable).map((module) => module.moduleKey));
+    const date = event.deletionScheduledFor ? formatDate(locale, event.deletionScheduledFor, { dateStyle: 'long' }) : null;
+    const readable = readableModuleKeys(event);
     const links = [
-        { key: 'gallery', href: routes.events.tools.gallery(eventId), label: t('settings.deleted.galleryLink'), show: available.has('gallery') },
-        { key: 'wishbook', href: routes.events.tools.wishbook(eventId), label: t('settings.deleted.wishbookLink'), show: available.has('wishbook') },
+        { key: 'gallery', href: routes.events.tools.gallery(event.id), label: t('settings.deleted.galleryLink'), show: readable.has('gallery') },
+        { key: 'wishbook', href: routes.events.tools.wishbook(event.id), label: t('settings.deleted.wishbookLink'), show: readable.has('wishbook') },
     ].filter((link) => link.show);
 
     return (

@@ -15,7 +15,7 @@ import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { MediaResponseDto } from '@/lib/api/types';
 import { downloadBlob } from '@/lib/download';
-import { isEventDeleted, isEventWritable } from '@/lib/eventLifecycle';
+import { isEventDeleted, isEventWritable, readableModuleKeys } from '@/lib/eventLifecycle';
 import { useActiveMember } from '@/providers/EventProvider';
 import { useMobileChrome } from '@/providers/MobileChromeProvider';
 
@@ -45,8 +45,7 @@ export function useGalleryScreen() {
     const { data: appConfig } = useAppConfig();
     const billing = useEventBilling(eventId, isHost);
 
-    const galleryModule = activeEvent?.modules.find((module) => module.moduleKey === 'gallery');
-    const galleryEnabled = galleryModule?.isAvailable ?? false;
+    const galleryEnabled = readableModuleKeys(activeEvent).has('gallery');
     const isDeleted = isEventDeleted(activeEvent);
     const canUpload = Boolean(eventId && activeMember && galleryEnabled && isEventWritable(activeEvent?.status) && !isDeleted);
     const selectedSize = useMemo(() => selectedFiles.reduce((sum, file) => sum + file.size, 0), [selectedFiles]);

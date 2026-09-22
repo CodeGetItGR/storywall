@@ -27,9 +27,18 @@ function event(overrides: Record<string, unknown> = {}) {
         id: 'event-1',
         status: 'ACTIVE',
         deletedAt: null,
-        modules: ['rsvp', 'gallery', 'wishbook', 'wishlist'].map((moduleKey) => ({ moduleKey, isAvailable: true })),
+        modules: ['rsvp', 'gallery', 'wishbook', 'wishlist'].map((moduleKey) => ({ moduleKey, isEnabled: true, isAvailable: true })),
         ...overrides,
     };
+}
+
+// The backend closes every module (isAvailable: false) the moment an event is
+// deleted, while isEnabled still reflects what the host had turned on.
+function deletedEvent() {
+    return event({
+        deletedAt: '2026-09-22T10:00:00Z',
+        modules: ['rsvp', 'gallery', 'wishbook', 'wishlist'].map((moduleKey) => ({ moduleKey, isEnabled: true, isAvailable: false })),
+    });
 }
 
 describe('useToolsMenuItems', () => {
@@ -44,7 +53,7 @@ describe('useToolsMenuItems', () => {
     });
 
     it('keeps only gallery and wishbook for a deleted event', () => {
-        mocks.activeEvent = event({ deletedAt: '2026-09-22T10:00:00Z' });
+        mocks.activeEvent = deletedEvent();
         const { result } = renderHook(() => useToolsMenuItems());
         expect(result.current.map((item) => item.key)).toEqual(['gallery', 'wishbook']);
     });
@@ -52,7 +61,7 @@ describe('useToolsMenuItems', () => {
 
 describe('useHostMenuItems', () => {
     it('keeps only manage for a deleted event', () => {
-        mocks.activeEvent = event({ deletedAt: '2026-09-22T10:00:00Z' });
+        mocks.activeEvent = deletedEvent();
         const { result } = renderHook(() => useHostMenuItems());
         expect(result.current.map((item) => item.key)).toEqual(['manage']);
     });

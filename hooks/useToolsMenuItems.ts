@@ -4,7 +4,7 @@ import { BookHeart, CalendarCheck, CalendarDays, Gift, HelpCircle, Images, Layou
 import { useTranslations } from 'next-intl';
 
 import { useGiftAccount } from '@/hooks/useGiftAccount';
-import { isEventDeleted } from '@/lib/eventLifecycle';
+import { isEventDeleted, readableModuleKeys } from '@/lib/eventLifecycle';
 import { isGalleryQrFeatureEnabled } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useIsHost, useRouteEventId } from '@/providers/EventProvider';
@@ -26,7 +26,7 @@ export function useToolsMenuItems(): ToolMenuItem[] {
     // still show the menu for the remembered event but must not fire
     // event-scoped requests for it.
     const giftAccount = useGiftAccount(useRouteEventId());
-    const availableModules = new Set(activeEvent?.modules.filter((module_) => module_.isAvailable).map((module_) => module_.moduleKey) ?? []);
+    const availableModules = readableModuleKeys(activeEvent);
 
     if (!activeEvent) return [];
 
