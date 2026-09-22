@@ -5,8 +5,21 @@ import { LandingFeatureDetailCard } from '@/components/landing/LandingFeatureDet
 import { useLandingFeatureDetails } from '@/hooks/useLandingFeatureDetails';
 
 export function LandingFeatureDetails() {
-    const { activeDetail, availableDetails, endSwipe, selectedIndex, selectDetail, selectNext, selectPrevious, startSwipe, t, transitionDirection } =
-        useLandingFeatureDetails();
+    const {
+        activeDetail,
+        availableDetails,
+        canSelectNext,
+        canSelectPrevious,
+        endSwipe,
+        selectedIndex,
+        selectDetail,
+        selectNext,
+        selectPrevious,
+        startSwipe,
+        t,
+        tabListRef,
+        transitionDirection,
+    } = useLandingFeatureDetails();
 
     if (!activeDetail) return null;
 
@@ -54,6 +67,7 @@ export function LandingFeatureDetails() {
                 <div
                     aria-label={t('label')}
                     className="mt-7 flex gap-7 overflow-x-auto px-5 pb-2 [-webkit-overflow-scrolling:touch] min-[761px]:mt-12 min-[761px]:gap-10 min-[761px]:px-12"
+                    ref={tabListRef}
                     role="tablist"
                 >
                     {availableDetails.map((detail, index) => (
@@ -84,7 +98,7 @@ export function LandingFeatureDetails() {
                     role="tabpanel"
                 >
                     {/* Feature image */}
-                    <div className="relative aspect-[1.06] overflow-hidden bg-white/5 min-[761px]:aspect-auto min-[761px]:min-h-145">
+                    <div className="relative aspect-[1.38] overflow-hidden bg-white/5 min-[761px]:aspect-auto min-[761px]:min-h-145">
                         <ProtectedImage
                             unoptimized
                             alt={activeDetail.imageAlt}
@@ -119,16 +133,20 @@ export function LandingFeatureDetails() {
                         <div className="mt-12 flex items-center justify-between gap-4 min-[761px]:mt-16">
                             <button
                                 aria-label={t('previous')}
-                                className="grid size-12 shrink-0 place-items-center rounded-full border border-white/25 text-xl text-white transition-colors duration-200 hover:border-[#f2c66a] hover:text-[#f2c66a] focus-ring focus-visible:outline-offset-4"
+                                className="grid size-12 shrink-0 place-items-center rounded-full border border-white/25 text-xl text-white transition-colors duration-200 hover:border-[#f2c66a] hover:text-[#f2c66a] focus-ring focus-visible:outline-offset-4 disabled:border-white/12 disabled:text-white/30 disabled:hover:border-white/12 disabled:hover:text-white/30"
+                                disabled={!canSelectPrevious}
                                 onClick={selectPrevious}
                                 type="button"
                             >
                                 ←
                             </button>
-                            <p className="text-center text-[11px] leading-[1.5] font-black tracking-[0.13em] text-white/70 uppercase">{t('interactionHint')}</p>
+                            <p className="text-center text-[11px] leading-[1.5] font-black tracking-[0.13em] text-white/70 uppercase">
+                                {t('interactionHint')}
+                            </p>
                             <button
                                 aria-label={t('next')}
-                                className="grid size-12 shrink-0 place-items-center rounded-full border border-white/25 text-xl text-white transition-colors duration-200 hover:border-[#f2c66a] hover:text-[#f2c66a] focus-ring focus-visible:outline-offset-4"
+                                className="grid size-12 shrink-0 place-items-center rounded-full border border-white/25 text-xl text-white transition-colors duration-200 hover:border-[#f2c66a] hover:text-[#f2c66a] focus-ring focus-visible:outline-offset-4 disabled:border-white/12 disabled:text-white/30 disabled:hover:border-white/12 disabled:hover:text-white/30"
+                                disabled={!canSelectNext}
                                 onClick={selectNext}
                                 type="button"
                             >
