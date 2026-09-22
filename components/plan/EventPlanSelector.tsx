@@ -38,9 +38,6 @@ export function EventPlanSelector({ plans, modules, media, selectedCode, onSelec
                                 featured={featured}
                                 popularLabel={tPricing('popular')}
                                 storageLabel={tPricing('storageLabel')}
-                                photosLabel={tPricing('photosLabel')}
-                                videosLabel={tPricing('videosLabel')}
-                                storageNote={tPricing('storageNote')}
                                 selected={selectedCode === config.code}
                                 selectionLabel={selectedCode === config.code ? t('planSelected') : tPricing('choose')}
                                 onSelectAction={onSelectAction}

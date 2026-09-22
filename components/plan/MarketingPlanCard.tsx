@@ -3,12 +3,9 @@ import { cn } from '@/lib/utils';
 
 type MarketingPlanCardProps = {
     featured: boolean;
-    photosLabel: string;
     plan: LandingPlan;
     popularLabel: string;
     storageLabel: string;
-    storageNote: string;
-    videosLabel: string;
     planCode?: string;
     selected?: boolean;
     selectionLabel?: string;
@@ -17,12 +14,9 @@ type MarketingPlanCardProps = {
 
 export function MarketingPlanCard({
     featured,
-    photosLabel,
     plan,
     popularLabel,
     storageLabel,
-    storageNote,
-    videosLabel,
     planCode,
     selected = false,
     selectionLabel,
@@ -33,7 +27,7 @@ export function MarketingPlanCard({
     }
 
     const cardClassName = cn(
-        'flex h-full min-h-155 w-full flex-col justify-between rounded-[22px] border px-5 pt-5 pb-4 text-left text-[#151313] transition-colors min-[761px]:min-h-166.5 min-[761px]:px-5',
+        'flex h-full min-h-155 w-full flex-col justify-between rounded-[22px] border px-5 pt-5 pb-4 text-left text-[#151313] transition-colors min-[761px]:min-h-13 min-[761px]:px-5',
         onSelectAction &&
             !selected &&
             'hover:border-[#151313]/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#df7794]',
@@ -56,6 +50,7 @@ export function MarketingPlanCard({
                         </span>
                     </h3>
                     <p className="mt-1 text-sm text-[#151313]/65">{plan.audience}</p>
+                    <p className="mt-1 text-sm text-[#151313]/65">{plan.storage} {storageLabel}</p>
                     <div className="absolute top-0 right-0 bg-[linear-gradient(110deg,#d889a0,#e98778_28%,#f39a63_58%,#f5b967)] bg-clip-text font-[Baskerville,Georgia,serif] text-[clamp(48px,4vw,64px)] tracking-[-.06em] text-transparent">
                         {plan.price}
                     </div>
@@ -86,11 +81,6 @@ export function MarketingPlanCard({
 
             {/* Storage estimate */}
             <div>
-                <strong>{plan.storage}</strong> {storageLabel}
-                <div className="mt-3 text-sm leading-[1.45]">
-                    <strong>~ {plan.photos}</strong> {photosLabel} <span aria-hidden="true">·</span> ~ <strong>{plan.videos}</strong> {videosLabel}
-                </div>
-                <p className="mt-1 text-[10px] leading-[1.35] italic text-[#151313]/50">{storageNote}</p>
                 {selectionLabel && (
                     <p className={cn('mt-4 text-center text-[11px] font-black tracking-[.12em]', selected ? 'text-[#151313]' : 'text-[#151313]/55')}>
                         {selectionLabel}

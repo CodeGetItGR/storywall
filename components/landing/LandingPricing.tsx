@@ -86,12 +86,9 @@ export function LandingPricing() {
                         <MarketingPlanCard
                             featured={index === 1}
                             key={`${category}-${plan.name}`}
-                            photosLabel={t('photosLabel')}
                             plan={plan}
                             popularLabel={t('popular')}
                             storageLabel={t('storageLabel')}
-                            storageNote={t('storageNote')}
-                            videosLabel={t('videosLabel')}
                         />
                 ))}
             </div>

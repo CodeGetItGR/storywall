@@ -15,9 +15,6 @@ export async function LandingFaq() {
             id="faq"
         >
             <div className="mb-6.5 block w-full max-w-295 min-[761px]:mx-auto min-[761px]:mb-7.5 min-[761px]:grid min-[761px]:grid-cols-[auto_minmax(0,1fr)] min-[761px]:items-end min-[761px]:gap-x-10.5 min-[761px]:gap-y-2">
-                <div className="mb-3 pt-3 text-[13px] leading-normal font-black tracking-[0.15em] min-[761px]:col-span-2 min-[761px]:mb-1.5">
-                    {t('eyebrow')}
-                </div>
                 <h2 className="m-0 [font-family:var(--editorial)] text-[68px] leading-[0.82] font-normal tracking-[-0.065em] min-[761px]:col-start-1 min-[761px]:row-start-2 min-[761px]:text-[clamp(64px,6.5vw,104px)]">
                     {t('heading')}
                 </h2>
