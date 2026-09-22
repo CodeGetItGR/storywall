@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { defaultLocale, localeCookieName, locales } from '@/i18n/config';
+import { PUBLIC_LOCALE_HEADER } from '@/i18n/publicMessages';
 import { resolveLocale } from '@/i18n/resolveLocale';
 import { ACCESS_TOKEN_HEADER, ACCESS_TOKEN_MAX_AGE_SECONDS, AUTH_COOKIES, baseCookieOptions } from '@/lib/auth/authCookies';
 import { AUTH_RETURN_PATH_PARAM } from '@/lib/auth/returnPath';
@@ -71,7 +72,7 @@ export async function proxy(request: NextRequest) {
     const publicLocale = pathname === '/' ? defaultLocale : locales.find((locale) => pathname === `/${locale}`);
     if (publicLocale) {
         const requestHeaders = new Headers(request.headers);
-        requestHeaders.set('x-storywall-locale', publicLocale);
+        requestHeaders.set(PUBLIC_LOCALE_HEADER, publicLocale);
         return NextResponse.next({ request: { headers: requestHeaders } });
     }
     if (!isProtectedPath(pathname)) return NextResponse.next();
