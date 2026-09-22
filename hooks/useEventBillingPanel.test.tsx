@@ -73,4 +73,15 @@ describe('useEventBillingPanel', () => {
 
         expect(result.current.hasError).toBe(true);
     });
+
+    it('never requests upgrade options or offers add-ons for a deleted event', () => {
+        mocks.useAppConfig.mockReturnValue(queryResult({ planTiers: [], paidServices: [{ id: 'svc-1', planTierIds: [] }] }));
+        mocks.useUpgradeOptions.mockReturnValue(queryResult<UpgradeOptionResponseDto[] | undefined>(undefined));
+
+        const { result } = renderHook(() => useEventBillingPanel('event-1', { isDeleted: true }));
+
+        expect(mocks.useUpgradeOptions).toHaveBeenCalledWith('event-1', false);
+        expect(result.current.nextUpgradeOption).toBeNull();
+        expect(result.current.paidAddonOffers).toEqual([]);
+    });
 });

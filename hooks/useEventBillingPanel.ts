@@ -14,7 +14,7 @@ const ORDER_PREVIEW_COUNT = 6;
  * Every derived fact, mutation and dialog flag the billing section renders.
  * The panels under components/manage/billing stay declarative shells over this.
  */
-export function useEventBillingPanel(eventId: string) {
+export function useEventBillingPanel(eventId: string, { isDeleted = false }: { isDeleted?: boolean } = {}) {
     const appConfigQuery = useAppConfig();
     const billing = useEventBilling(eventId, true);
 
@@ -26,7 +26,9 @@ export function useEventBillingPanel(eventId: string) {
         () => scopedPlans(planTiers, 'EVENT').find((plan) => plan.code === data?.planTierCode) ?? null,
         [data?.planTierCode, planTiers]
     );
-    const upgradeOptions = useUpgradeOptions(eventId);
+    // upgrade-options 404s on purpose for a deleted event, and nothing can be
+    // bought for it — keep billing (the refund shows there) and drop the rest.
+    const upgradeOptions = useUpgradeOptions(eventId, !isDeleted);
     const firstUpgradeOption = upgradeOptions.data?.[0] ?? null;
     const nextUpgradePlan = useMemo(
         () => (firstUpgradeOption ? (scopedPlans(planTiers, 'EVENT').find((plan) => plan.code === firstUpgradeOption.planTierCode) ?? null) : null),
@@ -34,10 +36,12 @@ export function useEventBillingPanel(eventId: string) {
     );
     const paidAddonOffers = useMemo(
         () =>
-            (appConfigQuery.data?.paidServices ?? []).filter(
-                (service) => service.planTierIds.length === 0 || (currentPlan ? service.planTierIds.includes(currentPlan.id) : false)
-            ),
-        [appConfigQuery.data?.paidServices, currentPlan]
+            isDeleted
+                ? []
+                : (appConfigQuery.data?.paidServices ?? []).filter(
+                      (service) => service.planTierIds.length === 0 || (currentPlan ? service.planTierIds.includes(currentPlan.id) : false)
+                  ),
+        [appConfigQuery.data?.paidServices, currentPlan, isDeleted]
     );
     const insights = useMemo(() => {
         if (!data) return null;
