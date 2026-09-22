@@ -1268,8 +1268,11 @@
             "deleted": {
                 "title": "This event is being deleted",
                 "body": "It will be permanently deleted on {date}. Guests can't see it. Only the gallery and wishes stay available until then.",
-                "galleryLink": "Gallery",
-                "wishbookLink": "Wishes"
+                "actionsTitle": "Still available",
+                "actions": {
+                    "gallery": "View and download all photos and videos",
+                    "wishbook": "Read the wishes and export them as a PDF"
+                }
             }
         },
         "usage": {

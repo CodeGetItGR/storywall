@@ -3,6 +3,7 @@
 import { LayoutDashboard } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { DeletedEventActions } from '@/components/manage/danger/DeletedEventActions';
 import { EventDeletedBanner } from '@/components/manage/danger/EventDeletedBanner';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 
@@ -28,6 +29,9 @@ export function DeletedEventManageScreen({ event }: { event: EventDetailResponse
             <div className="flex flex-col gap-6 px-4 pt-4 lg:max-w-4xl lg:px-6 lg:pt-5">
                 {/* Deleted */}
                 <EventDeletedBanner event={event} />
+
+                {/* Still available */}
+                <DeletedEventActions />
 
                 {/* Billing */}
                 <section>
