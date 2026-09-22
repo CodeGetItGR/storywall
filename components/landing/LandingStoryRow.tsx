@@ -5,7 +5,6 @@ import { type LandingStoryMedia } from '@/lib/landingMedia';
 export type LandingStoryCopyData = {
     galleryLabel: string;
     imageAlts: string[];
-    imageLabels: string[];
     paragraphSegments: LandingTextSegment[][];
     tag: string;
     titleSegments: LandingTextSegment[];
@@ -23,13 +22,12 @@ export function LandingStoryRow({ copy, index, media }: LandingStoryRowProps) {
 
     return (
         <article
-            className={`story-row group grid grid-cols-1 gap-y-3.5 py-6.5 pb-8.5 opacity-100 outline-none [grid-template-areas:'photo'_'copy'] focus-visible:ring-2 focus-visible:ring-(--coral) focus-visible:ring-inset min-[761px]:items-center min-[761px]:gap-x-[clamp(48px,calc(23vw-126px),200px)] min-[761px]:gap-y-0 min-[761px]:border-b-0 min-[761px]:py-[clamp(42px,5vw,78px)] min-[761px]:opacity-[0.36] min-[761px]:transition-opacity min-[761px]:duration-300 min-[761px]:[grid-template-areas:unset] min-[761px]:data-[active=true]:opacity-100 ${
+            className={`story-row group grid grid-cols-1 gap-y-3.5 py-6.5 pb-8.5 opacity-100 [grid-template-areas:'photo'_'copy'] min-[761px]:items-center min-[761px]:gap-x-[clamp(48px,calc(23vw-126px),200px)] min-[761px]:gap-y-0 min-[761px]:border-b-0 min-[761px]:py-[clamp(42px,5vw,78px)] min-[761px]:opacity-[0.36] min-[761px]:transition-opacity min-[761px]:duration-300 min-[761px]:[grid-template-areas:unset] min-[761px]:data-[active=true]:opacity-100 ${
                 isOdd
                     ? 'min-[761px]:pr-[clamp(22px,4vw,72px)] min-[761px]:pl-0 min-[761px]:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)]'
                     : 'min-[761px]:pr-0 min-[761px]:pl-[clamp(22px,4vw,72px)] min-[761px]:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]'
             }`}
             data-row={index}
-            tabIndex={0}
         >
             <div
                 className={`mobile-photo-wrap relative mb-4 block h-[60vw] max-h-102.5 min-h-57.5 w-[calc(100vw-40px)] max-w-[calc(100vw-40px)] overflow-hidden bg-[#111] opacity-0 transition-[clip-path,transform,opacity] duration-1050 ease-[cubic-bezier(0.18,0.8,0.2,1)] will-change-transform [grid-area:photo] min-[761px]:m-0 min-[761px]:h-[62.4vh] min-[761px]:max-h-none min-[761px]:min-h-0 min-[761px]:w-full min-[761px]:max-w-none min-[761px]:opacity-100 min-[761px]:[clip-path:none]! min-[761px]:translate-x-0! min-[761px]:row-1 ${
@@ -41,7 +39,6 @@ export function LandingStoryRow({ copy, index, media }: LandingStoryRowProps) {
                 <LandingStoryGallery
                     alts={copy.imageAlts}
                     ariaLabel={copy.galleryLabel}
-                    imageLabels={copy.imageLabels}
                     images={media.gallery}
                     rowIndex={index}
                 />
@@ -51,6 +48,7 @@ export function LandingStoryRow({ copy, index, media }: LandingStoryRowProps) {
             >
                 <LandingStoryCopy paragraphSegments={copy.paragraphSegments} tag={copy.tag} titleSegments={copy.titleSegments} wide={wide} />
                 <div
+                    aria-hidden="true"
                     className="arr mt-8 self-start text-[26px] leading-none text-ink transition-[opacity,transform] duration-350 ease-in-out group-data-[active=true]:-translate-y-1 group-data-[active=true]:translate-x-1 max-[760px]:translate-y-4.5 max-[760px]:opacity-0 max-[760px]:duration-700 max-[760px]:ease-[cubic-bezier(0.2,0.75,0.2,1)] max-[760px]:group-data-[visible=true]:translate-y-0 max-[760px]:group-data-[visible=true]:opacity-100 max-[760px]:group-data-[visible=true]:delay-[180ms] min-[761px]:mt-0 min-[761px]:self-start min-[761px]:pt-2 min-[761px]:text-[30px]"
                 >
                     ↗

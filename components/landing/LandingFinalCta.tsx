@@ -52,7 +52,7 @@ export async function LandingFinalCta() {
                     href={routes.register}
                 >
                     <span>{t('cta')}</span>
-                    <span className="motion-final-cta-arrow inline-block text-[22px] transition-transform duration-280 ease-[ease] group-hover:translate-x-0.75 group-hover:-translate-y-0.75 min-[761px]:inline-flex min-[761px]:items-center min-[761px]:justify-center min-[761px]:text-[21px] min-[761px]:leading-none">
+                    <span aria-hidden="true" className="motion-final-cta-arrow inline-block text-[22px] transition-transform duration-280 ease-[ease] group-hover:translate-x-0.75 group-hover:-translate-y-0.75 min-[761px]:inline-flex min-[761px]:items-center min-[761px]:justify-center min-[761px]:text-[21px] min-[761px]:leading-none">
                         ↗
                     </span>
                 </a>

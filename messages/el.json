@@ -3410,6 +3410,9 @@
         "failed": "Το βίντεο δεν είναι διαθέσιμο"
     },
     "LandingPage": {
+        "shell": {
+            "skipToContent": "Μετάβαση στο περιεχόμενο"
+        },
         "meta": {
             "title": "StoryWall — Ένα ιδιωτικό social space για το event σου",
             "description": "Μοιράσου φωτογραφίες, ευχές και στιγμές με τους καλεσμένους σου πριν, κατά τη διάρκεια και μετά τον γάμο, τη βάπτιση ή το πάρτι σου. Χωρίς app.",
@@ -3467,7 +3470,6 @@
                         "Posts, φωτογραφίες, ευχές και αντιδράσεις από όλους όσους τη ζουν μαζί σας."
                     ],
                     "galleryLabel": "Wedding story moments mobile",
-                    "imageLabels": ["Wedding moment 1", "Wedding moment 2", "Wedding moment 3", "Wedding moment 4", "Wedding moment 5"],
                     "imageAlts": [
                         "Bachelor celebration with friends in Santorini",
                         "Bride preparation with bridesmaids in Santorini",
@@ -3520,7 +3522,6 @@
                         "Όλα όσα μοιράστηκαν οι άνθρωποί σας, συγκεντρωμένα σε ένα StoryWall."
                     ],
                     "galleryLabel": "Story moments for section 2",
-                    "imageLabels": ["Baptism outside the church", "Baptism ceremony inside the church", "Baptism celebration at the table"],
                     "imageAlts": ["Baptism outside the church", "Baptism ceremony inside the church", "Baptism celebration at the table"],
                     "titleSegments": [
                         {
@@ -3555,7 +3556,6 @@
                         "Φωτογραφίες, videos, αντιδράσεις και ευχές από όλους όσους μοιράζονται τη στιγμή μαζί σας."
                     ],
                     "galleryLabel": "Story moments for section 3",
-                    "imageLabels": ["Gender reveal moment", "Pregnant couple before the reveal", "Family and friends celebrating together"],
                     "imageAlts": [
                         "Gender reveal box opening with blue balloons and confetti",
                         "Pregnant couple at a baby boy celebration",
@@ -3603,7 +3603,6 @@
                     "title": ["Για", "private events", "που γίνονται κάτι περισσότερο από ένα party."],
                     "paragraphs": ["Το party αποκτά τον δικό του ιδιωτικό social χώρο, γεμάτο στιγμές, reactions και backstage περιεχόμενο."],
                     "galleryLabel": "Story moments for section 4",
-                    "imageLabels": ["VIP influencer selfie moment", "VIP social party dance floor", "VIP elegant cocktail reception"],
                     "imageAlts": [
                         "Close-up selfie of stylish guests and influencers celebrating at an elegant VIP party",
                         "Stylish guests dancing at an elegant VIP social party at night",
@@ -3651,17 +3650,14 @@
             "moreStories": [
                 {
                     "label": "ΓΕΝΕΘΛΙΑ",
-                    "alt": "Elegant glamorous birthday celebration",
                     "text": "Η δική σου βραδιά, οι φίλοι σου και όλες οι στιγμές συγκεντρωμένες σε ένα StoryWall."
                 },
                 {
                     "label": "BABY SHOWER",
-                    "alt": "Baby shower with friends and balloons",
                     "text": "Μία γλυκιά ιστορία πριν από τη μεγάλη άφιξη — ευχές, φωτογραφίες και στιγμές με τους ανθρώπους σου."
                 },
                 {
                     "label": "ENGAGEMENT PARTY",
-                    "alt": "Couple celebrating their engagement with friends",
                     "text": "Η αρχή του “μαζί” αξίζει τον δικό της χώρο — από το πρώτο cheers μέχρι την τελευταία φωτογραφία."
                 }
             ]
@@ -3688,46 +3684,7 @@
             "hostTopbar": "CHAPTER 02 — HOST SIDE",
             "hostChapter": "CHAPTER 02",
             "hostTitle": "Όλα στο χέρι σου.",
-            "hostCopy": "RSVP, φωτογραφίες, ευχές, περιεχόμενο και διαχείριση του event — όλα από ένα σημείο.",
-            "socialAlts": [
-                "Reaction emoji",
-                "Baptism story",
-                "Wedding social post",
-                "Champagne reaction",
-                "Guest comment",
-                "Heart reaction",
-                "Guest avatar",
-                "Heart eyes reaction",
-                "Wedding post",
-                "Conference post",
-                "Guest comment",
-                "Party social post",
-                "Laugh reaction",
-                "Heart reaction",
-                "Party avatar",
-                "Wedding social post",
-                "Party story",
-                "Music request",
-                "Wink reaction",
-                "Blurred social post",
-                "Blurred comment",
-                "Music note reaction"
-            ],
-            "hostAlts": [
-                "RSVP material report",
-                "Venue map card",
-                "Thank you bank details",
-                "Ceremony map card",
-                "Host photo gallery",
-                "Guest avatar",
-                "Music requests card",
-                "Baptism story",
-                "Guest comment Emily Johnson",
-                "Guest comment Maria Papadopoulou",
-                "Create content menu",
-                "Host statistics dashboard",
-                "Cropped post card"
-            ]
+            "hostCopy": "RSVP, φωτογραφίες, ευχές, περιεχόμενο και διαχείριση του event — όλα από ένα σημείο."
         },
         "features": {
             "eyebrow": "ΕΝΑ STORYWALL. ΠΟΛΛΑ ΠΕΡΙΣΣΟΤΕΡΑ.",

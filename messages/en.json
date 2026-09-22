@@ -3529,6 +3529,9 @@
         "eventSessionLimitReached": "This event type has reached its limit of schedule sections."
     },
     "LandingPage": {
+        "shell": {
+            "skipToContent": "Skip to main content"
+        },
         "meta": {
             "title": "StoryWall — A private social space for your event",
             "description": "Share photos, wishes and moments with your guests before, during and after your wedding, baptism or party. No app needed.",
@@ -3586,7 +3589,6 @@
                         "Posts, photos, wishes, and reactions from everyone sharing it with you."
                     ],
                     "galleryLabel": "Wedding story moments mobile",
-                    "imageLabels": ["Wedding moment 1", "Wedding moment 2", "Wedding moment 3", "Wedding moment 4", "Wedding moment 5"],
                     "imageAlts": [
                         "Bachelor celebration with friends in Santorini",
                         "Bride preparation with bridesmaids in Santorini",
@@ -3639,7 +3641,6 @@
                         "Everything your people share, gathered in one StoryWall."
                     ],
                     "galleryLabel": "Story moments for section 2",
-                    "imageLabels": ["Baptism outside the church", "Baptism ceremony inside the church", "Baptism celebration at the table"],
                     "imageAlts": ["Baptism outside the church", "Baptism ceremony inside the church", "Baptism celebration at the table"],
                     "titleSegments": [
                         {
@@ -3674,7 +3675,6 @@
                         "Photos, videos, reactions, and wishes from everyone sharing the moment with you."
                     ],
                     "galleryLabel": "Story moments for section 3",
-                    "imageLabels": ["Gender reveal moment", "Pregnant couple before the reveal", "Family and friends celebrating together"],
                     "imageAlts": [
                         "Gender reveal box opening with blue balloons and confetti",
                         "Pregnant couple at a baby boy celebration",
@@ -3722,7 +3722,6 @@
                     "title": ["For", "private events", "that become more than a party."],
                     "paragraphs": ["Give your party its own private social space, full of moments, reactions, and behind-the-scenes memories."],
                     "galleryLabel": "Story moments for section 4",
-                    "imageLabels": ["VIP influencer selfie moment", "VIP social party dance floor", "VIP elegant cocktail reception"],
                     "imageAlts": [
                         "Close-up selfie of stylish guests and influencers celebrating at an elegant VIP party",
                         "Stylish guests dancing at an elegant VIP social party at night",
@@ -3770,17 +3769,14 @@
             "moreStories": [
                 {
                     "label": "BIRTHDAYS",
-                    "alt": "Elegant glamorous birthday celebration",
                     "text": "Your night, your friends, and every moment gathered in one StoryWall."
                 },
                 {
                     "label": "BABY SHOWERS",
-                    "alt": "Baby shower with friends and balloons",
                     "text": "A sweet story before the big arrival, filled with wishes, photos, and moments with your people."
                 },
                 {
                     "label": "ENGAGEMENT PARTIES",
-                    "alt": "Couple celebrating their engagement with friends",
                     "text": "The beginning of forever deserves its own space, from the first cheers to the last photo."
                 }
             ]
@@ -3807,46 +3803,7 @@
             "hostTopbar": "CHAPTER 02 — HOST SIDE",
             "hostChapter": "CHAPTER 02",
             "hostTitle": "All in your hands.",
-            "hostCopy": "RSVPs, photos, wishes, content, and event control, all in one place.",
-            "socialAlts": [
-                "Reaction emoji",
-                "Baptism story",
-                "Wedding social post",
-                "Champagne reaction",
-                "Guest comment",
-                "Heart reaction",
-                "Guest avatar",
-                "Heart eyes reaction",
-                "Wedding post",
-                "Conference post",
-                "Guest comment",
-                "Party social post",
-                "Laugh reaction",
-                "Heart reaction",
-                "Party avatar",
-                "Wedding social post",
-                "Party story",
-                "Music request",
-                "Wink reaction",
-                "Blurred social post",
-                "Blurred comment",
-                "Music note reaction"
-            ],
-            "hostAlts": [
-                "RSVP material report",
-                "Venue map card",
-                "Thank you bank details",
-                "Ceremony map card",
-                "Host photo gallery",
-                "Guest avatar",
-                "Music requests card",
-                "Baptism story",
-                "Guest comment Emily Johnson",
-                "Guest comment Maria Papadopoulou",
-                "Create content menu",
-                "Host statistics dashboard",
-                "Cropped post card"
-            ]
+            "hostCopy": "RSVPs, photos, wishes, content, and event control, all in one place."
         },
         "features": {
             "eyebrow": "ONE STORYWALL. SO MUCH MORE.",

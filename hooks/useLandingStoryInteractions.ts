@@ -51,7 +51,7 @@ export function useLandingStoryInteractions(landingRef: RefObject<HTMLElement | 
 
         rows.forEach((row, index) => {
             row.addEventListener('mouseenter', () => activateRow(index), { signal });
-            row.addEventListener('focus', () => activateRow(index), { signal });
+            row.addEventListener('focusin', () => activateRow(index), { signal });
         });
 
         root.querySelectorAll<HTMLElement>('.sw-wedding-accordion[data-story-accordion]').forEach((accordion) => {

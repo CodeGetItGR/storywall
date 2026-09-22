@@ -65,7 +65,7 @@ describe('pickPublicMessages', () => {
     it('drops everything outside the listed namespaces', () => {
         const picked = pickPublicMessages(en);
         expect(Object.keys(picked).sort()).toEqual(['AccountDrawer', 'LandingPage', 'LanguageSwitcher', 'Modules']);
-        expect(Object.keys(picked.LandingPage as object).sort()).toEqual(['featureDetails', 'features', 'hero', 'pricing', 'stack']);
+        expect(Object.keys(picked.LandingPage as object).sort()).toEqual(['featureDetails', 'features', 'hero', 'pricing', 'shell', 'stack']);
         expect(picked.RootLayout).toBeUndefined();
     });
 });

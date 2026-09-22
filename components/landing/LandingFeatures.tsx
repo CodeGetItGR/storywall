@@ -44,7 +44,6 @@ export function LandingFeatures() {
             {/* Feature icon strip */}
             <div className="sw-feature-block mt-10.5 w-full min-[761px]:col-span-2 min-[761px]:row-start-3 min-[761px]:mx-auto min-[761px]:mt-[clamp(52px,5.2vw,76px)] min-[761px]:w-[min(88%,1480px)] min-[761px]:max-w-370">
                 <div
-                    aria-label={t('label')}
                     className="relative w-full overflow-hidden pb-2 max-[760px]:ml-[calc(50%-50vw)] max-[760px]:mr-[calc(50%-50vw)] max-[760px]:w-screen max-[760px]:max-w-none min-[761px]:overflow-visible"
                 >
                     <div
@@ -57,8 +56,8 @@ export function LandingFeatures() {
                     />
                     <div
                         className="sw-feature-track flex items-start gap-4.5 overflow-x-auto overflow-y-hidden px-5 pt-2 pb-5 [-webkit-overflow-scrolling:touch] scroll-auto snap-none [touch-action:pan-x] min-[761px]:w-full min-[761px]:max-w-none min-[761px]:flex-wrap min-[761px]:justify-center min-[761px]:gap-[clamp(34px,3vw,48px)_clamp(24px,2.2vw,34px)] min-[761px]:overflow-visible min-[761px]:px-0 min-[761px]:py-0"
+                        aria-label={t('label')}
                         role="list"
-                        tabIndex={0}
                     >
                         {features.map((feature) => (
                             <LandingFeatureItem iconPath={feature.iconPath} key={feature.label} label={feature.label} position={feature.position} />

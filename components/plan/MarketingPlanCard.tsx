@@ -72,7 +72,7 @@ export function MarketingPlanCard({
                                 {feature}
                             </span>
                             {index === 0 && plan.includedFeatures && (
-                                <span className="mt-1 block text-[11px] leading-[1.55] text-[#151313]/55">({plan.includedFeatures.join(' · ')})</span>
+                                <span className="mt-1 block text-[12px] leading-[1.55] text-[#151313]/70">({plan.includedFeatures.join(' · ')})</span>
                             )}
                         </li>
                     ))}
@@ -82,7 +82,7 @@ export function MarketingPlanCard({
             {/* Storage estimate */}
             <div>
                 {selectionLabel && (
-                    <p className={cn('mt-4 text-center text-[11px] font-black tracking-[.12em]', selected ? 'text-[#151313]' : 'text-[#151313]/55')}>
+                    <p className={cn('mt-4 text-center text-[12px] font-black tracking-[.12em]', selected ? 'text-[#151313]' : 'text-[#151313]/70')}>
                         {selectionLabel}
                     </p>
                 )}

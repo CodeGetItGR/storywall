@@ -187,7 +187,15 @@ export function useLandingFeatureCarousel(landingRef: RefObject<HTMLElement | nu
         );
         observer.observe(section);
 
+        // Only a track that can actually scroll earns a tab stop; on desktop it
+        // wraps instead, so focusing it would do nothing.
+        const syncTrackFocusability = () => {
+            if (track.scrollWidth > track.clientWidth + 1) track.setAttribute('tabindex', '0');
+            else track.removeAttribute('tabindex');
+        };
+
         const resetForViewport = () => {
+            syncTrackFocusability();
             recalculate();
             position = track.scrollLeft;
             if (!mobileQuery.matches) {
@@ -202,6 +210,7 @@ export function useLandingFeatureCarousel(landingRef: RefObject<HTMLElement | nu
         mobileQuery.addEventListener('change', resetForViewport, { signal });
         reduceMotionQuery.addEventListener('change', () => (reduceMotionQuery.matches ? stopAuto() : startAuto()), { signal });
         recalculate();
+        syncTrackFocusability();
         startAuto();
 
         return () => {

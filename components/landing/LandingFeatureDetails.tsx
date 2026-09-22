@@ -125,7 +125,7 @@ export function LandingFeatureDetails() {
                             >
                                 ←
                             </button>
-                            <p className="text-center text-[10px] font-black tracking-[0.13em] text-white/60 uppercase">{t('interactionHint')}</p>
+                            <p className="text-center text-[11px] leading-[1.5] font-black tracking-[0.13em] text-white/70 uppercase">{t('interactionHint')}</p>
                             <button
                                 aria-label={t('next')}
                                 className="grid size-12 shrink-0 place-items-center rounded-full border border-white/25 text-xl text-white transition-colors duration-200 hover:border-[#f2c66a] hover:text-[#f2c66a] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f2c66a]"

@@ -36,7 +36,7 @@ export async function LandingDemo() {
                         href={routes.demo}
                     >
                         <span>{t('button')}</span>
-                        <span className="text-2xl leading-none transition-transform duration-300 ease-out group-hover:translate-x-[3px] group-hover:-translate-y-[3px]">
+                        <span aria-hidden="true" className="text-2xl leading-none transition-transform duration-300 ease-out group-hover:translate-x-[3px] group-hover:-translate-y-[3px]">
                             ↗
                         </span>
                     </a>
@@ -62,7 +62,7 @@ export async function LandingDemo() {
                 href={routes.demo}
             >
                 <span>{t('button')}</span>
-                <span className="text-[23px] leading-none transition-transform duration-300 ease-out group-hover:translate-x-[3px] group-hover:-translate-y-[3px]">
+                <span aria-hidden="true" className="text-[23px] leading-none transition-transform duration-300 ease-out group-hover:translate-x-[3px] group-hover:-translate-y-[3px]">
                     ↗
                 </span>
             </a>

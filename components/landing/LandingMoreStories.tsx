@@ -1,7 +1,7 @@
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { landingMoreStoryMedia } from '@/lib/landingMedia';
 
-export type LandingMoreStory = { alt: string; label: string; text: string };
+export type LandingMoreStory = { label: string; text: string };
 
 type LandingMoreStoriesProps = {
     ariaLabel: string;
@@ -23,6 +23,7 @@ export function LandingMoreStories({ ariaLabel, eyebrow, heading, stories }: Lan
             {/* Filmstrip */}
             <div
                 aria-label={ariaLabel}
+                role="group"
                 className="sw-filmstrip-track flex h-[clamp(205px,62vw,250px)] w-[calc(100vw-20px)] max-w-none gap-1 overflow-hidden rounded-tl-[30px] min-[761px]:h-[clamp(180px,17vw,255px)] min-[761px]:w-auto min-[761px]:gap-0.75 min-[761px]:rounded-[36px_0_36px_0]"
             >
                 {stories.map((story, index) => (
@@ -37,7 +38,7 @@ export function LandingMoreStories({ ariaLabel, eyebrow, heading, stories }: Lan
                     >
                         <ProtectedImage
                             unoptimized
-                            alt={story.alt}
+                            alt=""
                             className="absolute inset-0 h-full w-full object-cover brightness-[0.76] grayscale transition-[filter,transform] duration-650 ease-[cubic-bezier(0.2,0.75,0.2,1)] group-aria-pressed:grayscale-0 group-aria-pressed:brightness-100 min-[761px]:brightness-[0.78] min-[761px]:hover:scale-[1.01] min-[761px]:hover:grayscale-0 min-[761px]:hover:brightness-100"
                             height={1}
                             src={landingMoreStoryMedia[index].src}

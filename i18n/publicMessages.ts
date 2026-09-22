@@ -10,6 +10,7 @@ export const PUBLIC_LOCALE_HEADER = 'x-storywall-locale';
 // list complete.
 export const PUBLIC_CLIENT_NAMESPACES = [
     'LandingPage.hero',
+    'LandingPage.shell',
     'LandingPage.features',
     'LandingPage.featureDetails',
     'LandingPage.pricing',

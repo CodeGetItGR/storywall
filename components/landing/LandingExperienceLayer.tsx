@@ -4,7 +4,6 @@ import { LandingExperienceAsset } from '@/components/landing/LandingExperienceAs
 import { type LandingExperienceAsset as LandingExperienceAssetData } from '@/lib/landingExperienceMedia';
 
 type LandingExperienceLayerProps = {
-    alts: string[];
     assets: LandingExperienceAssetData[];
     chapter: string;
     chapterCount: string;
@@ -17,7 +16,6 @@ type LandingExperienceLayerProps = {
 };
 
 export function LandingExperienceLayer({
-    alts,
     assets,
     chapter,
     chapterCount,
@@ -53,8 +51,8 @@ export function LandingExperienceLayer({
                 </h2>
                 <p>{copy}</p>
             </div>
-            {assets.map((asset, index) => (
-                <LandingExperienceAsset alt={alts[index]} asset={asset} host={host} key={asset.src} />
+            {assets.map((asset) => (
+                <LandingExperienceAsset asset={asset} host={host} key={asset.src} />
             ))}
             {cue ? <div className="swx-cue">{cue} ↓</div> : null}
         </div>
