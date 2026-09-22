@@ -7,10 +7,10 @@ export async function LandingHeroTransition() {
         /* Hero-to-demo transition */
         <section
             aria-label={t('label')}
-            className="relative z-20 min-h-47 w-full isolate overflow-hidden bg-[linear-gradient(90deg,rgba(255,111,145,0.6)_0%,rgba(255,143,111,0.6)_28%,rgba(247,183,91,0.6)_58%,rgba(248,210,92,0.6)_100%)] text-[#151313] after:pointer-events-none after:absolute after:inset-x-0 after:-bottom-px after:z-10 after:h-16 after:bg-[linear-gradient(to_bottom,rgba(255,255,255,0)_0%,rgba(255,255,255,0.1)_22%,rgba(255,255,255,0.34)_50%,rgba(255,255,255,0.7)_76%,rgb(255,255,255)_100%)] after:content-[''] min-[761px]:min-h-62 min-[761px]:after:h-19"
+            className="relative z-20 min-h-47 w-full isolate overflow-hidden bg-[linear-gradient(90deg,rgba(255,111,145,0.6)_0%,rgba(255,143,111,0.6)_28%,rgba(247,183,91,0.6)_58%,rgba(248,210,92,0.6)_100%)] text-[#151313] after:pointer-events-none after:absolute after:inset-x-0 after:-bottom-px after:z-10 after:h-16 after:bg-[linear-gradient(to_bottom,rgba(255,255,255,0)_0%,rgba(255,255,255,0.1)_22%,rgba(255,255,255,0.34)_50%,rgba(255,255,255,0.7)_76%,rgb(255,255,255)_100%)] after:content-[''] min-[761px]:min-h-44 min-[761px]:after:h-19"
         >
-            <div className="relative z-20 mx-auto flex min-h-47 w-[calc(100%-34px)] items-center justify-between gap-3.5 min-[421px]:justify-center min-[421px]:gap-4.5 min-[761px]:min-h-62 min-[761px]:w-[min(1500px,calc(100%-120px))] min-[761px]:gap-7">
-                <div className="m-0 max-w-34.5 [font-family:var(--editorial)] text-[19px] leading-[1.05] tracking-[-0.03em] min-[421px]:max-w-none min-[421px]:whitespace-nowrap min-[421px]:text-[21px] min-[761px]:text-[clamp(27px,2vw,42px)] min-[761px]:leading-[1.04] min-[761px]:tracking-[-0.035em]">
+            <div className="relative z-20 mx-auto flex min-h-47 w-[calc(100%-34px)] items-center justify-between gap-3.5 min-[421px]:justify-center min-[421px]:gap-4.5 min-[761px]:min-h-44 min-[761px]:w-[min(1500px,calc(100%-120px))] min-[761px]:gap-7">
+                <div className="m-0 max-w-34.5 [font-family:var(--editorial)] text-[19px] leading-[1.05] tracking-[-0.03em] min-[421px]:max-w-none min-[421px]:whitespace-nowrap min-[421px]:text-[21px] min-[761px]:text-[clamp(27px,2vw,42px)] min-[761px]:leading-[1.04] min-[761px]:tracking-[-0.035em] min-[761px]:mb-5">
                     {t('slogan')} <strong className="font-bold">{t('brand')}</strong>
                 </div>
                 <a
