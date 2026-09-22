@@ -8,37 +8,22 @@ type LandingExperienceLayerProps = {
     chapter: string;
     chapterCount: string;
     copy: string;
-    cue?: string;
     host?: boolean;
-    phoneImage: string;
     title: string[];
     topbar: string;
 };
 
-export function LandingExperienceLayer({
-    assets,
-    chapter,
-    chapterCount,
-    copy,
-    cue,
-    host = false,
-    phoneImage,
-    title,
-    topbar,
-}: LandingExperienceLayerProps) {
-    const phoneVariable = host ? '--swx-host-phone-bg' : '--swx-phone-bg';
+export function LandingExperienceLayer({ assets, chapter, chapterCount, copy, host = false, title, topbar }: LandingExperienceLayerProps) {
     return (
-        <div className={`swx-layer ${host ? 'swx-layer-2' : 'swx-layer-1'}`} id={host ? 'swxLayer2' : undefined}>
-            <div
-                aria-hidden="true"
-                className={host ? 'swx-mobile-host-phone-visual' : 'swx-mobile-phone-visual'}
-                style={{ [phoneVariable]: `url("${phoneImage}")` } as React.CSSProperties}
-            />
+        <div className={`swx-layer ${host ? 'swx-layer-2' : 'swx-layer-1'}`}>
+            {/* Chapter label */}
             <div className="swx-topbar">
                 <span>{topbar}</span>
                 <span>{chapterCount}</span>
             </div>
             <div className="swx-line" />
+
+            {/* Heading */}
             <div className="swx-center">
                 <div className="swx-chapter-no">{chapter}</div>
                 <h2>
@@ -51,10 +36,11 @@ export function LandingExperienceLayer({
                 </h2>
                 <p>{copy}</p>
             </div>
+
+            {/* Floating collage */}
             {assets.map((asset) => (
                 <LandingExperienceAsset asset={asset} host={host} key={asset.src} />
             ))}
-            {cue ? <div className="swx-cue">{cue} ↓</div> : null}
         </div>
     );
 }

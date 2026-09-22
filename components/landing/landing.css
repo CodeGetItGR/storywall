@@ -642,27 +642,17 @@
     }
 }
 
-/* ONE section. ONE sticky viewport. TWO layers. NO spacer after it. */
+/* ONE section. TWO chapters, each a full viewport tall, scrolled past normally. */
 .landing-page .swx-stack {
     position: relative;
-    height: 410vh;
-    background: var(--dark);
-}
-.landing-page .swx-stage {
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    overflow: hidden;
     background: var(--dark);
 }
 .landing-page .swx-layer {
-    position: absolute;
-    inset: 0;
+    position: relative;
     width: 100%;
-    height: 100%;
+    height: 100vh;
     overflow: hidden;
     color: var(--ink);
-    will-change: background, transform;
 }
 .landing-page .swx-layer-1 {
     z-index: 1;
@@ -680,17 +670,15 @@
 }
 .landing-page .swx-layer-2 {
     z-index: 2;
-    transform: translateY(100%);
-    will-change: transform, background;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
 
-    --swx-g1x: 8%;
-    --swx-g1y: 12%;
-    --swx-g2x: 94%;
-    --swx-g2y: 90%;
-    --swx-g1a: 0.44;
-    --swx-g2a: 0.34;
+    /* Tuned for a chapter that is read at rest, not mid-handoff: the two
+       colour pools sit inside the frame instead of bleeding off the corners. */
+    --swx-g1x: 22%;
+    --swx-g1y: 26%;
+    --swx-g2x: 80%;
+    --swx-g2y: 74%;
+    --swx-g1a: 0.52;
+    --swx-g2a: 0.42;
 
     background:
         radial-gradient(
@@ -905,29 +893,8 @@
     top: 42%;
 }
 
-.landing-page .swx-cue {
-    position: absolute;
-    z-index: 60;
-    left: 50%;
-    bottom: 15px;
-    transform: translateX(-50%);
-    padding: 8px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 999px;
-    background: rgba(17, 18, 20, 0.72);
-    color: #e8e4dd;
-    font-size: 8px;
-    font-weight: 900;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    white-space: nowrap;
-}
-
 @media (max-width: 760px) {
-    .landing-page .swx-stack {
-        height: 410svh;
-    }
-    .landing-page .swx-stage {
+    .landing-page .swx-layer {
         height: 100svh;
         min-height: 100svh;
     }
@@ -1032,12 +999,6 @@
     .landing-page .swx-c8 {
         right: 10px;
         top: 43%;
-    }
-
-    .landing-page .swx-cue {
-        bottom: 10px;
-        font-size: 7px;
-        padding: 7px 9px;
     }
 }
 
@@ -3247,9 +3208,6 @@
     margin-top: -1px;
     background: #0b0b0f !important;
 }
-.landing-page .swx-stage {
-    background: #0b0b0f !important;
-}
 
 /* More Stories captions — larger and easier to read */
 
@@ -3586,14 +3544,12 @@
 .landing-page .swx-ref-asset {
     position: absolute;
     z-index: 24;
-    opacity: 0;
     pointer-events: none;
     background: none !important;
     border: 0 !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    will-change: opacity, transform;
     transform-origin: center;
 }
 .landing-page .swx-ref-asset-inner {
@@ -4181,70 +4137,70 @@
 /* Stronger movement ONLY for the floating elements in CHAPTER 01 */
 
 .landing-page .swx-layer-1 .swx-motion-emoji .swx-ref-asset-inner {
-    animation: swxFloatEmojiStrong 5s ease-in-out infinite alternate !important;
+    animation: swxFloatEmojiStrong 4.6s ease-in-out infinite alternate !important;
 }
 .landing-page .swx-layer-1 .swx-motion-comment .swx-ref-asset-inner {
-    animation: swxFloatCommentStrong 7s ease-in-out infinite alternate !important;
+    animation: swxFloatCommentStrong 6.5s ease-in-out infinite alternate !important;
 }
 .landing-page .swx-layer-1 .swx-motion-card .swx-ref-asset-inner {
-    animation: swxFloatCardStrong 8s ease-in-out infinite alternate !important;
+    animation: swxFloatCardStrong 7.4s ease-in-out infinite alternate !important;
 }
 .landing-page .swx-layer-1 .swx-motion-avatar .swx-ref-asset-inner {
-    animation: swxFloatAvatarStrong 8.8s ease-in-out infinite alternate !important;
+    animation: swxFloatAvatarStrong 8.1s ease-in-out infinite alternate !important;
 }
 .landing-page .swx-layer-1 .swx-motion-music .swx-ref-asset-inner {
-    animation: swxFloatMusicStrong 5.6s ease-in-out infinite alternate !important;
+    animation: swxFloatMusicStrong 5.2s ease-in-out infinite alternate !important;
 }
 .landing-page .swx-layer-1 .swx-motion-note .swx-ref-asset-inner {
-    animation: swxFloatNoteStrong 4.2s ease-in-out infinite alternate !important;
+    animation: swxFloatNoteStrong 3.9s ease-in-out infinite alternate !important;
 }
 
 @keyframes swxFloatEmojiStrong {
     0% {
-        transform: translate3d(-4px, 4px, 0) rotate(-2deg);
+        transform: translate3d(-4.5px, 4.5px, 0) rotate(-2.25deg);
     }
     100% {
-        transform: translate3d(8px, -18px, 0) rotate(4deg);
+        transform: translate3d(9px, -20.2px, 0) rotate(4.5deg);
     }
 }
 @keyframes swxFloatCommentStrong {
     0% {
-        transform: translate3d(-10px, 3px, 0) rotate(-0.8deg);
+        transform: translate3d(-11.2px, 3.4px, 0) rotate(-0.9deg);
     }
     100% {
-        transform: translate3d(16px, -6px, 0) rotate(1deg);
+        transform: translate3d(18px, -6.8px, 0) rotate(1.12deg);
     }
 }
 @keyframes swxFloatCardStrong {
     0% {
-        transform: translate3d(-3px, 5px, 0) rotate(-0.8deg) scale(0.995);
+        transform: translate3d(-3.4px, 5.6px, 0) rotate(-0.9deg) scale(0.9944);
     }
     100% {
-        transform: translate3d(8px, -12px, 0) rotate(0.9deg) scale(1.01);
+        transform: translate3d(9px, -13.5px, 0) rotate(1.01deg) scale(1.0112);
     }
 }
 @keyframes swxFloatAvatarStrong {
     0% {
-        transform: translate3d(-2px, 2px, 0) scale(0.99);
+        transform: translate3d(-2.2px, 2.2px, 0) scale(0.9888);
     }
     100% {
-        transform: translate3d(6px, -9px, 0) scale(1.03);
+        transform: translate3d(6.8px, -10.1px, 0) scale(1.0337);
     }
 }
 @keyframes swxFloatMusicStrong {
     0% {
-        transform: translate3d(-4px, 4px, 0) rotate(-1.8deg);
+        transform: translate3d(-4.5px, 4.5px, 0) rotate(-2.02deg);
     }
     100% {
-        transform: translate3d(9px, -15px, 0) rotate(2.4deg);
+        transform: translate3d(10.1px, -16.9px, 0) rotate(2.7deg);
     }
 }
 @keyframes swxFloatNoteStrong {
     0% {
-        transform: translate3d(-5px, 4px, 0) rotate(-7deg) scale(0.98);
+        transform: translate3d(-5.6px, 4.5px, 0) rotate(-7.88deg) scale(0.9775);
     }
     100% {
-        transform: translate3d(10px, -18px, 0) rotate(8deg) scale(1.06);
+        transform: translate3d(11.2px, -20.2px, 0) rotate(9deg) scale(1.0675);
     }
 }
 
@@ -4252,50 +4208,50 @@
 @media (max-width: 760px) {
     @keyframes swxFloatEmojiStrong {
         0% {
-            transform: translate3d(-2px, 2px, 0) rotate(-1deg);
+            transform: translate3d(-2.2px, 2.2px, 0) rotate(-1.12deg);
         }
         100% {
-            transform: translate3d(5px, -10px, 0) rotate(2deg);
+            transform: translate3d(5.6px, -11.2px, 0) rotate(2.25deg);
         }
     }
     @keyframes swxFloatCommentStrong {
         0% {
-            transform: translate3d(-5px, 1px, 0);
+            transform: translate3d(-5.6px, 1.1px, 0);
         }
         100% {
-            transform: translate3d(8px, -4px, 0);
+            transform: translate3d(9px, -4.5px, 0);
         }
     }
     @keyframes swxFloatCardStrong {
         0% {
-            transform: translate3d(-2px, 3px, 0) rotate(-0.4deg);
+            transform: translate3d(-2.2px, 3.4px, 0) rotate(-0.45deg);
         }
         100% {
-            transform: translate3d(5px, -7px, 0) rotate(0.5deg);
+            transform: translate3d(5.6px, -7.9px, 0) rotate(0.56deg);
         }
     }
     @keyframes swxFloatAvatarStrong {
         0% {
-            transform: translate3d(-1px, 1px, 0) scale(0.995);
+            transform: translate3d(-1.1px, 1.1px, 0) scale(0.9944);
         }
         100% {
-            transform: translate3d(3px, -5px, 0) scale(1.018);
+            transform: translate3d(3.4px, -5.6px, 0) scale(1.0203);
         }
     }
     @keyframes swxFloatMusicStrong {
         0% {
-            transform: translate3d(-2px, 2px, 0) rotate(-1deg);
+            transform: translate3d(-2.2px, 2.2px, 0) rotate(-1.12deg);
         }
         100% {
-            transform: translate3d(5px, -9px, 0) rotate(1.3deg);
+            transform: translate3d(5.6px, -10.1px, 0) rotate(1.46deg);
         }
     }
     @keyframes swxFloatNoteStrong {
         0% {
-            transform: translate3d(-3px, 2px, 0) rotate(-4deg);
+            transform: translate3d(-3.4px, 2.2px, 0) rotate(-4.5deg);
         }
         100% {
-            transform: translate3d(6px, -11px, 0) rotate(5deg);
+            transform: translate3d(6.8px, -12.4px, 0) rotate(5.62deg);
         }
     }
 }
@@ -4616,18 +4572,12 @@
 
 /* =========================================================
    MOBILE CHAPTER 01:
-   central phone recedes/darkens/fades while social elements
-   progressively occupy more of the viewport.
+   no baked phone photo — the collage reads against flat dark gradients.
    Desktop is untouched.
    ========================================================= */
 
-.landing-page .swx-mobile-phone-visual {
-    display: none;
-}
-
 @media (max-width: 760px) {
-    /* On mobile the baked phone image becomes its own visual layer.
-     The underlying Chapter 01 keeps only the animated dark gradients. */
+    /* Mobile keeps only the dark gradients behind the collage. */
     .landing-page .swx-layer-1 {
         background:
             radial-gradient(circle at var(--swx-g1x) var(--swx-g1y), rgba(178, 66, 144, var(--swx-g1a)), transparent 34%),
@@ -4636,48 +4586,14 @@
         background-color: #08090c !important;
     }
 
-    .landing-page .swx-mobile-phone-visual {
-        display: block;
-        position: absolute;
-        z-index: 0;
-        inset: -2%;
-        pointer-events: none;
-
-        background-image: var(--swx-phone-bg);
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: 50% 50%;
-
-        opacity: var(--swx-phone-opacity, 1);
-        filter: brightness(var(--swx-phone-brightness, 1)) saturate(var(--swx-phone-saturation, 1)) blur(var(--swx-phone-blur, 0px));
-
-        transform: translate3d(0, var(--swx-phone-y, 0px), 0) scale(var(--swx-phone-scale, 1));
-
-        transform-origin: 50% 52%;
-        will-change: opacity, filter, transform;
-    }
-
-    /* Slightly stronger dark veil as the phone recedes. */
     .landing-page .swx-layer-1::before {
         background:
             radial-gradient(circle at 17% 19%, rgba(145, 35, 112, 0.18), transparent 31%),
             radial-gradient(circle at 86% 78%, rgba(210, 91, 49, 0.12), transparent 31%),
-            linear-gradient(
-                180deg,
-                rgba(5, 6, 8, calc(0.1 + var(--swx-mobile-dim, 0) * 0.18)),
-                rgba(5, 6, 8, calc(0.2 + var(--swx-mobile-dim, 0) * 0.28))
-            ) !important;
+            linear-gradient(180deg, rgba(5, 6, 8, 0.1), rgba(5, 6, 8, 0.2)) !important;
     }
 
-    /* Growth happens on the image itself, so it doesn't conflict
-     with the existing reveal transform or floating animation. */
-    .landing-page .swx-layer-1 .swx-ref-asset img {
-        transform: scale(var(--swx-mobile-grow, 1));
-        transform-origin: center center;
-        will-change: transform;
-    }
-
-    /* Keep the copy dominant and crisp as the phone disappears. */
+    /* Keep the copy dominant and crisp against the collage. */
     .landing-page .swx-layer-1 .swx-center {
         z-index: 70 !important;
     }
@@ -4689,34 +4605,15 @@
     }
 }
 
-@media (prefers-reduced-motion: reduce) {
-    @media (max-width: 760px) {
-        .landing-page .swx-mobile-phone-visual {
-            filter: brightness(0.55);
-            opacity: 0.35;
-            transform: scale(0.94);
-        }
-        .landing-page .swx-layer-1 .swx-ref-asset img {
-            transform: none !important;
-        }
-    }
-}
-
 /* =========================================================
    CHAPTER 02 — HOST SIDE
    Exact uploaded PNG assets + same layered logic as Chapter 01.
    ========================================================= */
 
-.landing-page .swx-mobile-host-phone-visual {
-    display: none;
-}
-
 .landing-page .swx-layer-2 .swx-host-ref {
     position: absolute;
     z-index: 24;
     pointer-events: none;
-    opacity: 0;
-    will-change: opacity, transform;
     transform-origin: center;
 }
 .landing-page .swx-layer-2 .swx-host-ref img {
@@ -4967,23 +4864,6 @@
         background-color: #08090c !important;
     }
 
-    .landing-page .swx-mobile-host-phone-visual {
-        display: block;
-        position: absolute;
-        z-index: 0;
-        inset: -2%;
-        pointer-events: none;
-        background-image: var(--swx-host-phone-bg);
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: 50% 50%;
-        opacity: var(--swx-host-phone-opacity, 1);
-        filter: brightness(var(--swx-host-phone-brightness, 1)) saturate(var(--swx-host-phone-saturation, 1)) blur(var(--swx-host-phone-blur, 0px));
-        transform: translate3d(0, var(--swx-host-phone-y, 0px), 0) scale(var(--swx-host-phone-scale, 1));
-        transform-origin: 50% 52%;
-        will-change: opacity, filter, transform;
-    }
-
     .landing-page .swx-layer-2 .swx-center {
         top: 51%;
         width: 88vw;
@@ -5054,28 +4934,11 @@
         top: 65%;
         width: 39%;
     } /* music */
-
-    /* Same Chapter 01 mobile logic: assets expand while phone recedes */
-    .landing-page .swx-layer-2 .swx-host-ref img {
-        transform: scale(var(--swx-host-grow, 1));
-        transform-origin: center;
-        will-change: transform;
-    }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .landing-page .swx-layer-2 .swx-host-ref-inner {
         animation: none !important;
-    }
-    @media (max-width: 760px) {
-        .landing-page .swx-mobile-host-phone-visual {
-            opacity: 0.32;
-            filter: brightness(0.5);
-            transform: scale(0.94);
-        }
-        .landing-page .swx-layer-2 .swx-host-ref img {
-            transform: none !important;
-        }
     }
 }
 
@@ -5321,34 +5184,9 @@
     }
 }
 
-/* Faster Chapter 01 → 02 pacing */
-.landing-page .swx-stack {
-    height: 330vh !important;
-}
-.landing-page .swx-layer-2 {
-    opacity: 0;
-    transform: translate3d(0, 7.5%, 0) scale(0.987);
-    transform-origin: 50% 50%;
-    will-change: transform, opacity, background;
-}
 .landing-page .swx-layer-1,
 .landing-page .swx-layer-2 {
     transition: none !important;
-}
-@media (max-width: 760px) {
-    .landing-page .swx-stack {
-        height: 300svh !important;
-    }
-}
-@media (prefers-reduced-motion: reduce) {
-    .landing-page .swx-stack {
-        height: 250vh !important;
-    }
-    @media (max-width: 760px) {
-        .landing-page .swx-stack {
-            height: 240svh !important;
-        }
-    }
 }
 
 /* =========================================================
@@ -5382,12 +5220,6 @@
 }
 
 @media (max-width: 760px) {
-    /* The mobile phone/photo is a separate layer, same mechanism as Chapter 01. */
-    .landing-page .swx-mobile-host-phone-visual {
-        --swx-host-phone-bg: url('/landing/decor-04.webp') !important;
-        background-position: 50% 50% !important;
-    }
-
     /* Close the small bottom gap on mobile too. */
     .landing-page .swx-layer-2 .swx-h01 {
         top: 85% !important;
@@ -5396,92 +5228,92 @@
 
 /* Slightly stronger, still controlled independent floating. */
 .landing-page .swx-layer-2 .swx-host-motion-card .swx-host-ref-inner {
-    animation: swxHostFloatCard144 7.8s ease-in-out infinite alternate !important;
+    animation: swxHostFloatCard144 7.2s ease-in-out infinite alternate !important;
 }
 .landing-page .swx-layer-2 .swx-host-motion-comment .swx-host-ref-inner {
-    animation: swxHostFloatComment144 6.5s ease-in-out infinite alternate !important;
+    animation: swxHostFloatComment144 6s ease-in-out infinite alternate !important;
 }
 .landing-page .swx-layer-2 .swx-host-motion-menu .swx-host-ref-inner {
-    animation: swxHostFloatMenu144 7.1s ease-in-out infinite alternate !important;
+    animation: swxHostFloatMenu144 6.6s ease-in-out infinite alternate !important;
 }
 .landing-page .swx-layer-2 .swx-host-motion-dashboard .swx-host-ref-inner {
-    animation: swxHostFloatDashboard144 8.5s ease-in-out infinite alternate !important;
+    animation: swxHostFloatDashboard144 7.9s ease-in-out infinite alternate !important;
 }
 .landing-page .swx-layer-2 .swx-host-motion-report .swx-host-ref-inner {
-    animation: swxHostFloatReport144 7.7s ease-in-out infinite alternate !important;
+    animation: swxHostFloatReport144 7.1s ease-in-out infinite alternate !important;
 }
 .landing-page .swx-layer-2 .swx-host-motion-story .swx-host-ref-inner {
-    animation: swxHostFloatStory144 7.3s ease-in-out infinite alternate !important;
+    animation: swxHostFloatStory144 6.8s ease-in-out infinite alternate !important;
 }
 .landing-page .swx-layer-2 .swx-host-motion-avatar .swx-host-ref-inner {
-    animation: swxHostFloatAvatar144 6.2s ease-in-out infinite alternate !important;
+    animation: swxHostFloatAvatar144 5.7s ease-in-out infinite alternate !important;
 }
 .landing-page .swx-layer-2 .swx-host-motion-music .swx-host-ref-inner {
-    animation: swxHostFloatMusic144 5.6s ease-in-out infinite alternate !important;
+    animation: swxHostFloatMusic144 5.2s ease-in-out infinite alternate !important;
 }
 
 @keyframes swxHostFloatCard144 {
     from {
-        transform: translate3d(-5px, 7px, 0) rotate(-0.8deg);
+        transform: translate3d(-5.6px, 7.9px, 0) rotate(-0.9deg);
     }
     to {
-        transform: translate3d(9px, -15px, 0) rotate(0.95deg);
+        transform: translate3d(10.1px, -16.9px, 0) rotate(1.07deg);
     }
 }
 @keyframes swxHostFloatComment144 {
     from {
-        transform: translate3d(-13px, 4px, 0) rotate(-1.1deg);
+        transform: translate3d(-14.6px, 4.5px, 0) rotate(-1.24deg);
     }
     to {
-        transform: translate3d(18px, -8px, 0) rotate(1.25deg);
+        transform: translate3d(20.2px, -9px, 0) rotate(1.41deg);
     }
 }
 @keyframes swxHostFloatMenu144 {
     from {
-        transform: translate3d(-6px, 7px, 0) rotate(-1deg);
+        transform: translate3d(-6.8px, 7.9px, 0) rotate(-1.12deg);
     }
     to {
-        transform: translate3d(11px, -16px, 0) rotate(1.15deg);
+        transform: translate3d(12.4px, -18px, 0) rotate(1.29deg);
     }
 }
 @keyframes swxHostFloatDashboard144 {
     from {
-        transform: translate3d(2px, 7px, 0) rotate(-0.7deg);
+        transform: translate3d(2.2px, 7.9px, 0) rotate(-0.79deg);
     }
     to {
-        transform: translate3d(-11px, -15px, 0) rotate(0.8deg);
+        transform: translate3d(-12.4px, -16.9px, 0) rotate(0.9deg);
     }
 }
 @keyframes swxHostFloatReport144 {
     from {
-        transform: translate3d(-7px, 8px, 0) rotate(-0.95deg);
+        transform: translate3d(-7.9px, 9px, 0) rotate(-1.07deg);
     }
     to {
-        transform: translate3d(10px, -17px, 0) rotate(1deg);
+        transform: translate3d(11.2px, -19.1px, 0) rotate(1.12deg);
     }
 }
 @keyframes swxHostFloatStory144 {
     from {
-        transform: translate3d(-5px, 7px, 0) rotate(-1deg);
+        transform: translate3d(-5.6px, 7.9px, 0) rotate(-1.12deg);
     }
     to {
-        transform: translate3d(10px, -18px, 0) rotate(1.15deg);
+        transform: translate3d(11.2px, -20.2px, 0) rotate(1.29deg);
     }
 }
 @keyframes swxHostFloatAvatar144 {
     from {
-        transform: translate3d(-3px, 3px, 0) scale(0.985);
+        transform: translate3d(-3.4px, 3.4px, 0) scale(0.9831);
     }
     to {
-        transform: translate3d(7px, -11px, 0) scale(1.035);
+        transform: translate3d(7.9px, -12.4px, 0) scale(1.0394);
     }
 }
 @keyframes swxHostFloatMusic144 {
     from {
-        transform: translate3d(-6px, 7px, 0) rotate(-1.7deg);
+        transform: translate3d(-6.8px, 7.9px, 0) rotate(-1.91deg);
     }
     to {
-        transform: translate3d(11px, -19px, 0) rotate(2.1deg);
+        transform: translate3d(12.4px, -21.4px, 0) rotate(2.36deg);
     }
 }
 
@@ -5489,66 +5321,66 @@
     /* Mobile: a little calmer than desktop, but clearly more alive than before. */
     @keyframes swxHostFloatCard144 {
         from {
-            transform: translate3d(-3px, 4px, 0) rotate(-0.5deg);
+            transform: translate3d(-3.4px, 4.5px, 0) rotate(-0.56deg);
         }
         to {
-            transform: translate3d(6px, -10px, 0) rotate(0.65deg);
+            transform: translate3d(6.8px, -11.2px, 0) rotate(0.73deg);
         }
     }
     @keyframes swxHostFloatComment144 {
         from {
-            transform: translate3d(-7px, 2px, 0) rotate(-0.65deg);
+            transform: translate3d(-7.9px, 2.2px, 0) rotate(-0.73deg);
         }
         to {
-            transform: translate3d(10px, -5px, 0) rotate(0.8deg);
+            transform: translate3d(11.2px, -5.6px, 0) rotate(0.9deg);
         }
     }
     @keyframes swxHostFloatMenu144 {
         from {
-            transform: translate3d(-4px, 4px, 0) rotate(-0.6deg);
+            transform: translate3d(-4.5px, 4.5px, 0) rotate(-0.67deg);
         }
         to {
-            transform: translate3d(7px, -10px, 0) rotate(0.75deg);
+            transform: translate3d(7.9px, -11.2px, 0) rotate(0.84deg);
         }
     }
     @keyframes swxHostFloatDashboard144 {
         from {
-            transform: translate3d(1px, 4px, 0) rotate(-0.45deg);
+            transform: translate3d(1.1px, 4.5px, 0) rotate(-0.51deg);
         }
         to {
-            transform: translate3d(-7px, -10px, 0) rotate(0.5deg);
+            transform: translate3d(-7.9px, -11.2px, 0) rotate(0.56deg);
         }
     }
     @keyframes swxHostFloatReport144 {
         from {
-            transform: translate3d(-4px, 5px, 0) rotate(-0.6deg);
+            transform: translate3d(-4.5px, 5.6px, 0) rotate(-0.67deg);
         }
         to {
-            transform: translate3d(7px, -11px, 0) rotate(0.7deg);
+            transform: translate3d(7.9px, -12.4px, 0) rotate(0.79deg);
         }
     }
     @keyframes swxHostFloatStory144 {
         from {
-            transform: translate3d(-3px, 4px, 0) rotate(-0.7deg);
+            transform: translate3d(-3.4px, 4.5px, 0) rotate(-0.79deg);
         }
         to {
-            transform: translate3d(7px, -12px, 0) rotate(0.8deg);
+            transform: translate3d(7.9px, -13.5px, 0) rotate(0.9deg);
         }
     }
     @keyframes swxHostFloatAvatar144 {
         from {
-            transform: translate3d(-2px, 2px, 0) scale(0.992);
+            transform: translate3d(-2.2px, 2.2px, 0) scale(0.991);
         }
         to {
-            transform: translate3d(4px, -7px, 0) scale(1.022);
+            transform: translate3d(4.5px, -7.9px, 0) scale(1.0248);
         }
     }
     @keyframes swxHostFloatMusic144 {
         from {
-            transform: translate3d(-4px, 4px, 0) rotate(-1deg);
+            transform: translate3d(-4.5px, 4.5px, 0) rotate(-1.12deg);
         }
         to {
-            transform: translate3d(7px, -12px, 0) rotate(1.25deg);
+            transform: translate3d(7.9px, -13.5px, 0) rotate(1.41deg);
         }
     }
 }
@@ -6093,20 +5925,14 @@
 @media (max-width: 760px) {
     /* Stable mobile viewport for both chapters */
     .landing-page .swx-stack {
-        height: 300svh !important;
         overflow: visible !important;
-    }
-    .landing-page .swx-stage {
-        height: 100svh !important;
-        min-height: 100svh !important;
-        max-height: 100svh !important;
-        overflow: hidden !important;
     }
     .landing-page .swx-layer-1,
     .landing-page .swx-layer-2 {
-        inset: 0 !important;
         width: 100% !important;
-        height: 100% !important;
+        height: 100svh !important;
+        min-height: 100svh !important;
+        max-height: 100svh !important;
         overflow: hidden !important;
     }
 
@@ -6137,13 +5963,13 @@
     }
     .landing-page .swx-layer-1 .swx-a02 {
         display: block !important;
-        left: -14% !important;
+        left: -9% !important;
         top: 28% !important;
         width: 42% !important;
     }
     .landing-page .swx-layer-1 .swx-a03 {
         display: block !important;
-        left: -17% !important;
+        left: -10% !important;
         top: -3% !important;
         width: 34% !important;
     }
@@ -6168,7 +5994,7 @@
     }
     .landing-page .swx-layer-1 .swx-a12 {
         display: block !important;
-        left: 78% !important;
+        left: 74% !important;
         top: 3% !important;
         width: 31% !important;
     }
@@ -6223,16 +6049,34 @@
     }
     .landing-page .swx-layer-1 .swx-a20 {
         display: block !important;
-        left: 86% !important;
+        left: 78% !important;
         top: 52% !important;
         width: 31% !important;
     }
 
+    /* Centre band above the heading: a post, a reaction and a comment, so the
+       middle of the frame is not left hollow once the phone photo is gone. */
+    .landing-page .swx-layer-1 .swx-a09 {
+        display: block !important;
+        left: 20% !important;
+        top: 15% !important;
+        width: 27% !important;
+    }
+    .landing-page .swx-layer-1 .swx-a19 {
+        display: block !important;
+        left: 52% !important;
+        top: 20.5% !important;
+        width: 15% !important;
+    }
+    .landing-page .swx-layer-1 .swx-a11 {
+        display: block !important;
+        left: 38% !important;
+        top: 28% !important;
+        width: 32% !important;
+    }
+
     .landing-page .swx-layer-1 .swx-a06,
-    .landing-page .swx-layer-1 .swx-a09,
-    .landing-page .swx-layer-1 .swx-a11,
     .landing-page .swx-layer-1 .swx-a14,
-    .landing-page .swx-layer-1 .swx-a19,
     .landing-page .swx-layer-1 .swx-a21 {
         display: none !important;
     }
@@ -6265,7 +6109,7 @@
     }
     .landing-page .swx-layer-2 .swx-h02 {
         display: block !important;
-        left: 72.56% !important;
+        left: 68% !important;
         top: 37.1% !important;
         width: 36.24% !important;
         z-index: 24 !important;
@@ -6279,7 +6123,7 @@
     }
     .landing-page .swx-layer-2 .swx-h04 {
         display: block !important;
-        left: -9.83% !important;
+        left: -5% !important;
         top: 25.46% !important;
         width: 33.5% !important;
         z-index: 38 !important;
@@ -6300,16 +6144,16 @@
     }
     .landing-page .swx-layer-2 .swx-h07 {
         display: block !important;
-        left: 79.62% !important;
+        left: 68% !important;
         top: 66.9% !important;
         width: 39% !important;
         z-index: 38 !important;
     }
     .landing-page .swx-layer-2 .swx-h08 {
         display: block !important;
-        left: -48.24% !important;
-        top: 60.4% !important;
-        width: 31% !important;
+        left: 31% !important;
+        top: 23% !important;
+        width: 26% !important;
         z-index: 24 !important;
     }
     .landing-page .swx-layer-2 .swx-h09 {
@@ -6335,16 +6179,16 @@
     }
     .landing-page .swx-layer-2 .swx-h12 {
         display: block !important;
-        left: 65.54% !important;
+        left: 60% !important;
         top: 5.89% !important;
         width: 51.3% !important;
         z-index: 24 !important;
     }
     .landing-page .swx-layer-2 .swx-h13 {
         display: block !important;
-        left: 56% !important;
-        top: -7% !important;
-        width: 35% !important;
+        left: 66% !important;
+        top: 59.5% !important;
+        width: 40% !important;
         z-index: 12 !important;
     }
 
@@ -6422,38 +6266,20 @@
         linear-gradient(180deg, rgba(7, 8, 12, 0.24), rgba(7, 8, 12, 0.42)) !important;
 }
 
+/* Chapter 02 pins its chrome to the frame, exactly like Chapter 01. */
 .landing-page .swx-layer-2 .swx-topbar,
 .landing-page .swx-layer-2 .swx-line,
 .landing-page .swx-layer-2 .swx-center,
-.landing-page .swx-layer-2 .swx-float,
 .landing-page .swx-layer-2 .swx-ref-asset {
-    position: relative;
+    position: absolute;
 }
 
 @media (max-width: 760px) {
-    /* On mobile the phone is a dedicated visual layer,
-     so reduce its presence directly. */
-    .landing-page .swx-mobile-phone-visual {
-        opacity: calc(var(--swx-phone-opacity, 1) * 0.7) !important;
-        filter: brightness(calc(var(--swx-phone-brightness, 1) * 0.92)) saturate(calc(var(--swx-phone-saturation, 1) * 0.9))
-            blur(var(--swx-phone-blur, 0px)) !important;
-    }
-
-    .landing-page .swx-mobile-host-phone-visual {
-        opacity: calc(var(--swx-host-phone-opacity, 1) * 0.7) !important;
-        filter: brightness(calc(var(--swx-host-phone-brightness, 1) * 0.92)) saturate(calc(var(--swx-host-phone-saturation, 1) * 0.9))
-            blur(var(--swx-host-phone-blur, 0px)) !important;
-    }
-
     .landing-page .swx-layer-1::before {
         background:
             radial-gradient(circle at 17% 19%, rgba(145, 35, 112, 0.16), transparent 31%),
             radial-gradient(circle at 86% 78%, rgba(210, 91, 49, 0.1), transparent 31%),
-            linear-gradient(
-                180deg,
-                rgba(5, 6, 8, calc(0.18 + var(--swx-mobile-dim, 0) * 0.22)),
-                rgba(5, 6, 8, calc(0.3 + var(--swx-mobile-dim, 0) * 0.3))
-            ) !important;
+            linear-gradient(180deg, rgba(5, 6, 8, 0.18), rgba(5, 6, 8, 0.3)) !important;
     }
 
     .landing-page .swx-layer-2::before {
@@ -6461,21 +6287,6 @@
             radial-gradient(circle at 10% 14%, rgba(108, 72, 215, 0.14), transparent 40%),
             radial-gradient(circle at 92% 88%, rgba(228, 69, 143, 0.12), transparent 42%),
             linear-gradient(180deg, rgba(7, 8, 12, 0.22), rgba(7, 8, 12, 0.38)) !important;
-    }
-}
-
-/* Mobile-only: make both baked phone/photo layers visibly softer
-   from the start, while keeping their existing scroll fade. */
-@media (max-width: 760px) {
-    .landing-page .swx-mobile-phone-visual {
-        opacity: var(--swx-phone-opacity, 0.62) !important;
-        filter: brightness(calc(var(--swx-phone-brightness, 1) * 0.86)) saturate(calc(var(--swx-phone-saturation, 1) * 0.88))
-            blur(var(--swx-phone-blur, 0px)) !important;
-    }
-    .landing-page .swx-mobile-host-phone-visual {
-        opacity: var(--swx-host-phone-opacity, 0.62) !important;
-        filter: brightness(calc(var(--swx-host-phone-brightness, 1) * 0.86)) saturate(calc(var(--swx-host-phone-saturation, 1) * 0.88))
-            blur(var(--swx-host-phone-blur, 0px)) !important;
     }
 }
 
