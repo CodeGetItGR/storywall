@@ -22,7 +22,7 @@ export function isPrimaryHost(hosts: EventHostResponseDto[], memberId: string | 
 // withdrawal, coverage expiry). status stays ACTIVE, so never gate on it.
 // See soft-deleted-events-fe-integration.md §1.
 export function isEventDeleted(event: { deletedAt: string | null } | null | undefined): boolean {
-    return event?.deletedAt != null;
+    return event?.deletedAt !== null && event?.deletedAt !== undefined;
 }
 
 // A host of a deleted event keeps exactly three destinations: the reduced
