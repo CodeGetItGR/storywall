@@ -4,6 +4,7 @@ import { BookHeart, CalendarCheck, CalendarDays, Gift, HelpCircle, Images, Layou
 import { useTranslations } from 'next-intl';
 
 import { useGiftAccount } from '@/hooks/useGiftAccount';
+import { isEventDeleted } from '@/lib/eventLifecycle';
 import { isGalleryQrFeatureEnabled } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useIsHost, useRouteEventId } from '@/providers/EventProvider';
@@ -29,6 +30,10 @@ export function useToolsMenuItems(): ToolMenuItem[] {
 
     if (!activeEvent) return [];
 
+    // A deleted event is download-only: the gallery archive and the wishbook
+    // PDF are the only tools that still do anything.
+    const isDeleted = isEventDeleted(activeEvent);
+
     const toolDefinitions: { key: string; href: string; icon: LucideIcon; moduleKey?: string }[] = [
         { key: 'rsvp', href: routes.events.tools.rsvpSubmit(activeEvent.id), icon: CalendarCheck, moduleKey: 'rsvp' },
         { key: 'schedule', href: routes.events.tools.schedule(activeEvent.id), icon: CalendarDays },
@@ -41,6 +46,7 @@ export function useToolsMenuItems(): ToolMenuItem[] {
         .filter((tool) => !tool.moduleKey || availableModules.has(tool.moduleKey))
         .filter((tool) => tool.key !== 'gallery' || isHost)
         .filter((tool) => tool.key !== 'gifts' || isHost || Boolean(giftAccount.data))
+        .filter((tool) => !isDeleted || tool.key === 'gallery' || tool.key === 'wishbook')
         .map((tool) => ({
             key: tool.key,
             href: tool.href,
@@ -61,12 +67,14 @@ export function useHostMenuItems(): ToolMenuItem[] {
 
     const galleryQrEnabled = isGalleryQrFeatureEnabled(activeEvent.modules);
     const isDraft = activeEvent.status === 'DRAFT';
+    // Deleted events keep the manage page (deletion notice + billing) and nothing else.
+    const isDeleted = isEventDeleted(activeEvent);
 
     const hostAdminDefinitions: { key: string; href: string; icon: LucideIcon; hidden?: boolean }[] = [
         { key: 'manage', href: routes.events.manage(activeEvent.id), icon: LayoutDashboard },
-        { key: 'galleryQr', href: routes.events.tools.galleryQr(activeEvent.id), icon: QrCode, hidden: !galleryQrEnabled },
-        { key: 'invitationsQr', href: routes.events.invitationsQr(activeEvent.id), icon: Ticket, hidden: isDraft },
-        { key: 'help', href: routes.events.manage(activeEvent.id, { tab: 'help' }), icon: HelpCircle },
+        { key: 'galleryQr', href: routes.events.tools.galleryQr(activeEvent.id), icon: QrCode, hidden: isDeleted || !galleryQrEnabled },
+        { key: 'invitationsQr', href: routes.events.invitationsQr(activeEvent.id), icon: Ticket, hidden: isDeleted || isDraft },
+        { key: 'help', href: routes.events.manage(activeEvent.id, { tab: 'help' }), icon: HelpCircle, hidden: isDeleted },
     ];
 
     return hostAdminDefinitions
