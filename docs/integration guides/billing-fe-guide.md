@@ -398,8 +398,9 @@ from a write is never about the event's own lapsed payment status any more.
 **Orthogonal to `status`: an event can now also be pending deletion.** `deletionScheduledFor`
 (non-null = a deletion request is pending, purged permanently on that date) is set by the primary
 host via `POST /api/events/{eventId}/deletion-requests` and cleared by any host via `DELETE` on the
-same path — undoable up until the purge date. A pending-deletion event 404s from every normal read,
-same as any other soft-deleted event. See `event-deletion-fe-integration.md` for the full contract.
+same path — undoable up until the purge date. A pending-deletion event 404s from every read for
+non-hosts; its hosts can still read everything (detail, billing, gallery, wishbook) but write
+nothing. See `soft-deleted-events-fe-integration.md` for the full read/write contract.
 
 ---
 
@@ -1086,9 +1087,12 @@ read them from the preview call instead of this response.
 
 **Terminal on success.** A `REFUNDED` withdrawal soft-deletes the event in the same call: `GET
 /api/events/{eventId}` starts 404ing for non-hosts, and the host's own event list should show a
-"withdrawn" state with a download-only link to gallery and wishbook for `eventRetentionDays` (from
-`GET /api/config`) days — there is no "undo" or "restore to draft" any more. Attempting to cancel a
-pending deletion on a withdrawn event is refused with `409 EVENT_WITHDRAWN` (5071).
+"withdrawn" state with a download-only link to gallery and wishbook until the event's
+`deletionScheduledFor` (the purge timestamp on `GET /api/events/{id}`; the retention term itself is
+not exposed on `GET /api/config`) — there is no "undo" or "restore to draft" any more. Attempting to
+cancel a pending deletion on a withdrawn event (`DELETE /api/events/{eventId}/deletion-requests`) is
+refused with `409 EVENT_WITHDRAWN` (5071). See `soft-deleted-events-fe-integration.md` for what a
+host can still read and do on a withdrawn event.
 
 A `HELD` withdrawal changes nothing yet — the event stays exactly as it was while an admin (or the
 10-day auto-release) decides it.
@@ -1318,7 +1322,7 @@ name, for logs). Branch on `errorCode`.
 | `5031` `CHECKOUT_SESSION_UNRESOLVED` | 409 | a checkout session with the provider couldn't be resolved during reconciliation | internal; surfaces as the generic "still processing" state (§6 step 5), not a distinct UI |
 | `5046` `CHECKOUT_AMOUNT_BELOW_MINIMUM` | 409 | a plan discount cut a checkout's price below what the provider will charge at all | catalog misconfiguration (discount set too steep); host sees a generic failure and support has to fix the discount |
 | `5053` `PLAN_TIER_NOT_AVAILABLE_FOR_EVENT_TYPE` | 409 | `POST /api/events`'s `planTierCode` has restricted itself away from the request's `eventType` (§2, §6) | source the plan list from `GET /api/plan-tiers?eventType=X` instead of a stale/cached one |
-| `5071` `EVENT_WITHDRAWN` | 409 | `POST /api/events/{eventId}/cancel-deletion` on an event whose activation was refunded via withdrawal (§9) | not fixable — a withdrawn event's deletion cannot be cancelled; point the host at the download-only gallery/wishbook link instead |
+| `5071` `EVENT_WITHDRAWN` | 409 | `DELETE /api/events/{eventId}/deletion-requests` on an event whose activation was refunded via withdrawal (§9) | not fixable — a withdrawn event's deletion cannot be cancelled; point the host at the download-only gallery/wishbook link instead |
 
 ### Withdrawal
 
