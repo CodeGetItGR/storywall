@@ -8,6 +8,7 @@ import { hostExperienceAssets, socialExperienceAssets } from '@/lib/landingExper
 export function LandingExperienceStack() {
     const t = useTranslations('LandingPage.stack');
     const socialTitle = t.raw('socialTitle') as string[];
+    const hostTitle = t.raw('hostTitle') as string[];
 
     return (
         <section className="swx-stack">
@@ -28,7 +29,7 @@ export function LandingExperienceStack() {
                 chapterCount="02 / 02"
                 copy={t('hostCopy')}
                 host
-                title={[t('hostTitle')]}
+                title={hostTitle}
                 topbar={t('hostTopbar')}
             />
         </section>

@@ -3530,7 +3530,6 @@
     },
     "LandingPage": {
         "shell": {
-            "skipToContent": "Skip to main content",
             "pauseMotion": "Pause animations",
             "playMotion": "Play animations"
         },
@@ -3799,11 +3798,11 @@
         "stack": {
             "socialTopbar": "CHAPTER 01 — SOCIAL SIDE",
             "socialChapter": "CHAPTER 01",
-            "socialTitle": ["Everything you", "need."],
+            "socialTitle": ["Everything you", "need..."],
             "socialCopy": "Posts, stories, reactions, and comments from everyone sharing your event.",
             "hostTopbar": "CHAPTER 02 — HOST SIDE",
             "hostChapter": "CHAPTER 02",
-            "hostTitle": "All in your hands.",
+            "hostTitle": ["...is in your", "hands!"],
             "hostCopy": "RSVPs, photos, wishes, content, and event control, all in one place."
         },
         "features": {

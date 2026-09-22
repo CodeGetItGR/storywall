@@ -5954,129 +5954,122 @@
         line-height: 1.45 !important;
     }
 
-    /* Re-assert the final clean Chapter 01 mobile placement */
-    .landing-page .swx-layer-1 .swx-a01 {
-        display: block !important;
-        left: -4% !important;
-        top: 20% !important;
-        width: 13% !important;
-    }
-    .landing-page .swx-layer-1 .swx-a02 {
-        display: block !important;
-        left: -9% !important;
-        top: 28% !important;
-        width: 42% !important;
+    /* Chapter 01 collage — positions measured from the approved mobile design (360×800). */
+    .landing-page .swx-layer-1 .swx-ref-asset {
+        right: auto !important;
+        bottom: auto !important;
     }
     .landing-page .swx-layer-1 .swx-a03 {
         display: block !important;
-        left: -10% !important;
-        top: -3% !important;
-        width: 34% !important;
+        left: -19.44% !important;
+        top: -4.62% !important;
+        width: 39.72% !important;
+        z-index: 24 !important;
     }
-    .landing-page .swx-layer-1 .swx-a04 {
-        display: block !important;
-        left: 18% !important;
-        top: 7% !important;
-        width: 15% !important;
-    }
-
     .landing-page .swx-layer-1 .swx-a15 {
         display: block !important;
-        left: 48% !important;
-        top: 0% !important;
-        width: 14% !important;
-    }
-    .landing-page .swx-layer-1 .swx-a22 {
-        display: block !important;
-        left: 67% !important;
-        top: 11% !important;
-        width: 14% !important;
+        left: 47.22% !important;
+        top: -0.12% !important;
+        width: 15.28% !important;
+        z-index: 38 !important;
     }
     .landing-page .swx-layer-1 .swx-a12 {
         display: block !important;
-        left: 74% !important;
-        top: 3% !important;
-        width: 31% !important;
+        left: 75.56% !important;
+        top: 2% !important;
+        width: 36.11% !important;
+        z-index: 24 !important;
+    }
+    .landing-page .swx-layer-1 .swx-a04 {
+        display: block !important;
+        left: 17.5% !important;
+        top: 6.12% !important;
+        width: 16.94% !important;
+        z-index: 38 !important;
+    }
+    .landing-page .swx-layer-1 .swx-a22 {
+        display: block !important;
+        left: 65.83% !important;
+        top: 10.38% !important;
+        width: 15.83% !important;
+        z-index: 38 !important;
+    }
+    .landing-page .swx-layer-1 .swx-a01 {
+        display: block !important;
+        left: -4.44% !important;
+        top: 19% !important;
+        width: 14.72% !important;
+        z-index: 38 !important;
     }
     .landing-page .swx-layer-1 .swx-a13 {
         display: block !important;
-        left: 86% !important;
-        top: 20% !important;
-        width: 11% !important;
+        left: 86.11% !important;
+        top: 19.38% !important;
+        width: 11.94% !important;
+        z-index: 38 !important;
     }
     .landing-page .swx-layer-1 .swx-a16 {
         display: block !important;
-        left: 75% !important;
-        top: 25% !important;
-        width: 29% !important;
+        left: 72.78% !important;
+        top: 23.38% !important;
+        width: 33.89% !important;
+        z-index: 24 !important;
     }
-
-    .landing-page .swx-layer-1 .swx-a05 {
+    .landing-page .swx-layer-1 .swx-a02 {
         display: block !important;
-        left: 1% !important;
-        top: 66% !important;
-        width: 27% !important;
-    }
-    .landing-page .swx-layer-1 .swx-a07 {
-        display: block !important;
-        left: -1% !important;
-        top: 72% !important;
-        width: 14% !important;
-    }
-    .landing-page .swx-layer-1 .swx-a08 {
-        display: block !important;
-        left: 76% !important;
-        top: 62% !important;
-        width: 18% !important;
-    }
-    .landing-page .swx-layer-1 .swx-a10 {
-        display: block !important;
-        left: 4% !important;
-        top: 84% !important;
-        width: 42% !important;
-    }
-    .landing-page .swx-layer-1 .swx-a17 {
-        display: block !important;
-        left: 59% !important;
-        top: 69% !important;
-        width: 42% !important;
-    }
-    .landing-page .swx-layer-1 .swx-a18 {
-        display: block !important;
-        left: 25% !important;
-        top: 73% !important;
-        width: 34% !important;
+        left: -17.5% !important;
+        top: 25.62% !important;
+        width: 49.44% !important;
+        z-index: 24 !important;
     }
     .landing-page .swx-layer-1 .swx-a20 {
         display: block !important;
-        left: 78% !important;
-        top: 52% !important;
-        width: 31% !important;
+        left: 83.61% !important;
+        top: 50.38% !important;
+        width: 37.5% !important;
+        z-index: 12 !important;
     }
-
-    /* Centre band above the heading: a post, a reaction and a comment, so the
-       middle of the frame is not left hollow once the phone photo is gone. */
-    .landing-page .swx-layer-1 .swx-a09 {
+    .landing-page .swx-layer-1 .swx-a08 {
         display: block !important;
-        left: 20% !important;
-        top: 15% !important;
-        width: 27% !important;
+        left: 75.83% !important;
+        top: 61.25% !important;
+        width: 19.44% !important;
+        z-index: 38 !important;
     }
-    .landing-page .swx-layer-1 .swx-a19 {
+    .landing-page .swx-layer-1 .swx-a05 {
         display: block !important;
-        left: 52% !important;
-        top: 20.5% !important;
-        width: 15% !important;
+        left: 0.28% !important;
+        top: 65.38% !important;
+        width: 30.56% !important;
+        z-index: 38 !important;
     }
-    .landing-page .swx-layer-1 .swx-a11 {
+    .landing-page .swx-layer-1 .swx-a17 {
         display: block !important;
-        left: 38% !important;
-        top: 28% !important;
-        width: 32% !important;
+        left: 55.28% !important;
+        top: 66.88% !important;
+        width: 49.44% !important;
+        z-index: 24 !important;
+    }
+    .landing-page .swx-layer-1 .swx-a18 {
+        display: block !important;
+        left: 23.89% !important;
+        top: 71.12% !important;
+        width: 38.89% !important;
+        z-index: 38 !important;
+    }
+    .landing-page .swx-layer-1 .swx-a07 {
+        display: block !important;
+        left: -1.94% !important;
+        top: 71.88% !important;
+        width: 15.28% !important;
+        z-index: 38 !important;
     }
 
     .landing-page .swx-layer-1 .swx-a06,
+    .landing-page .swx-layer-1 .swx-a09,
+    .landing-page .swx-layer-1 .swx-a11,
     .landing-page .swx-layer-1 .swx-a14,
+    .landing-page .swx-layer-1 .swx-a19,
     .landing-page .swx-layer-1 .swx-a21 {
         display: none !important;
     }
@@ -6084,7 +6077,7 @@
     /* Chapter 02 title — centered and clear */
     .landing-page .swx-layer-2 .swx-center {
         left: 50% !important;
-        top: 51% !important;
+        top: 52.6% !important;
         width: 88vw !important;
         z-index: 70 !important;
     }
@@ -6099,97 +6092,87 @@
         line-height: 1.45 !important;
     }
 
-    /* Restore the user-approved Chapter 02 mobile editor values */
-    .landing-page .swx-layer-2 .swx-h01 {
+    /* Chapter 02 collage — positions measured from the approved mobile design (360×800). */
+    .landing-page .swx-layer-2 .swx-h11 {
         display: block !important;
-        left: 39.26% !important;
-        top: 83.31% !important;
-        width: 64.24% !important;
+        left: -2.78% !important;
+        top: -5.88% !important;
+        width: 43.33% !important;
         z-index: 38 !important;
-    }
-    .landing-page .swx-layer-2 .swx-h02 {
-        display: block !important;
-        left: 68% !important;
-        top: 37.1% !important;
-        width: 36.24% !important;
-        z-index: 24 !important;
-    }
-    .landing-page .swx-layer-2 .swx-h03 {
-        display: block !important;
-        left: 36.05% !important;
-        top: 6.33% !important;
-        width: 30% !important;
-        z-index: 38 !important;
-    }
-    .landing-page .swx-layer-2 .swx-h04 {
-        display: block !important;
-        left: -5% !important;
-        top: 25.46% !important;
-        width: 33.5% !important;
-        z-index: 38 !important;
-    }
-    .landing-page .swx-layer-2 .swx-h05 {
-        display: block !important;
-        left: -3.8% !important;
-        top: 45.45% !important;
-        width: 47.88% !important;
-        z-index: 24 !important;
     }
     .landing-page .swx-layer-2 .swx-h06 {
         display: block !important;
-        left: 62.97% !important;
-        top: -1.16% !important;
-        width: 18% !important;
-        z-index: 38 !important;
-    }
-    .landing-page .swx-layer-2 .swx-h07 {
-        display: block !important;
-        left: 68% !important;
-        top: 66.9% !important;
-        width: 39% !important;
-        z-index: 38 !important;
-    }
-    .landing-page .swx-layer-2 .swx-h08 {
-        display: block !important;
-        left: 31% !important;
-        top: 23% !important;
-        width: 26% !important;
-        z-index: 24 !important;
-    }
-    .landing-page .swx-layer-2 .swx-h09 {
-        display: block !important;
-        left: 36.33% !important;
-        top: 73.46% !important;
-        width: 31% !important;
-        z-index: 38 !important;
-    }
-    .landing-page .swx-layer-2 .swx-h10 {
-        display: block !important;
-        left: 0.48% !important;
-        top: 84.21% !important;
-        width: 37.4% !important;
-        z-index: 38 !important;
-    }
-    .landing-page .swx-layer-2 .swx-h11 {
-        display: block !important;
-        left: 1.12% !important;
-        top: -5.03% !important;
-        width: 38% !important;
+        left: 61.94% !important;
+        top: -1.62% !important;
+        width: 20.28% !important;
         z-index: 38 !important;
     }
     .landing-page .swx-layer-2 .swx-h12 {
         display: block !important;
-        left: 60% !important;
-        top: 5.89% !important;
-        width: 51.3% !important;
+        left: 60.83% !important;
+        top: 3.75% !important;
+        width: 60.83% !important;
         z-index: 24 !important;
     }
-    .landing-page .swx-layer-2 .swx-h13 {
+    .landing-page .swx-layer-2 .swx-h03 {
         display: block !important;
-        left: 66% !important;
-        top: 59.5% !important;
-        width: 40% !important;
-        z-index: 12 !important;
+        left: 35.28% !important;
+        top: 4.38% !important;
+        width: 33.89% !important;
+        z-index: 38 !important;
+    }
+    .landing-page .swx-layer-2 .swx-h04 {
+        display: block !important;
+        left: -10.83% !important;
+        top: 23.62% !important;
+        width: 38.33% !important;
+        z-index: 38 !important;
+    }
+    .landing-page .swx-layer-2 .swx-h02 {
+        display: block !important;
+        left: 71.11% !important;
+        top: 35.38% !important;
+        width: 40.83% !important;
+        z-index: 24 !important;
+    }
+    .landing-page .swx-layer-2 .swx-h05 {
+        display: block !important;
+        left: -5.83% !important;
+        top: 43% !important;
+        width: 54.17% !important;
+        z-index: 24 !important;
+    }
+    .landing-page .swx-layer-2 .swx-h07 {
+        display: block !important;
+        left: 77.22% !important;
+        top: 65.12% !important;
+        width: 44.44% !important;
+        z-index: 38 !important;
+    }
+    .landing-page .swx-layer-2 .swx-h09 {
+        display: block !important;
+        left: 32.78% !important;
+        top: 73.5% !important;
+        width: 34.17% !important;
+        z-index: 38 !important;
+    }
+    .landing-page .swx-layer-2 .swx-h01 {
+        display: block !important;
+        left: 34.17% !important;
+        top: 81.38% !important;
+        width: 75.83% !important;
+        z-index: 38 !important;
+    }
+    .landing-page .swx-layer-2 .swx-h10 {
+        display: block !important;
+        left: -3.61% !important;
+        top: 84% !important;
+        width: 41.67% !important;
+        z-index: 38 !important;
+    }
+    .landing-page .swx-layer-2 .swx-h08,
+    .landing-page .swx-layer-2 .swx-h13 {
+        display: none !important;
     }
 
     .landing-page .swx-layer-2 .swx-host-ref {

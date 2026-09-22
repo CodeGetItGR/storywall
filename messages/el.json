@@ -3411,7 +3411,6 @@
     },
     "LandingPage": {
         "shell": {
-            "skipToContent": "Μετάβαση στο περιεχόμενο",
             "pauseMotion": "Παύση κινήσεων",
             "playMotion": "Έναρξη κινήσεων"
         },
@@ -3680,11 +3679,11 @@
         "stack": {
             "socialTopbar": "CHAPTER 01 — SOCIAL SIDE",
             "socialChapter": "CHAPTER 01",
-            "socialTitle": ["Όλα όσα", "χρειάζεσαι."],
+            "socialTitle": ["Όλα όσα", "χρειάζεσαι..."],
             "socialCopy": "Posts, stories, reactions και σχόλια από όλους όσους ζουν το event μαζί σας.",
             "hostTopbar": "CHAPTER 02 — HOST SIDE",
             "hostChapter": "CHAPTER 02",
-            "hostTitle": "Όλα στο χέρι σου.",
+            "hostTitle": ["...είναι στο", "χέρι σου!"],
             "hostCopy": "RSVP, φωτογραφίες, ευχές, περιεχόμενο και διαχείριση του event — όλα από ένα σημείο."
         },
         "features": {

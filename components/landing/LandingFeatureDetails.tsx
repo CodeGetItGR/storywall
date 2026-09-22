@@ -66,7 +66,7 @@ export function LandingFeatureDetails() {
                 {/* Feature navigation */}
                 <div
                     aria-label={t('label')}
-                    className="mt-7 flex gap-7 overflow-x-auto px-5 pb-2 [-webkit-overflow-scrolling:touch] min-[761px]:mt-12 min-[761px]:gap-10 min-[761px]:px-12"
+                    className="mt-7 flex gap-7 overflow-x-auto px-5 pb-2 [-webkit-overflow-scrolling:touch] [scrollbar-width:none]! [&::-webkit-scrollbar]:hidden min-[761px]:mt-12 min-[761px]:gap-10 min-[761px]:px-12"
                     ref={tabListRef}
                     role="tablist"
                 >
