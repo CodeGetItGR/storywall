@@ -6355,3 +6355,36 @@
         height: 52px;
     }
 }
+
+/* Chapter backgrounds (desktop): the hands-and-phone photo sits at --swx-photo-opacity.
+   A flat scrim in the stack colour (#0b0b0f) between the gradients and the photo
+   reads exactly like `opacity` on the photo alone. Mobile has no photo. */
+@media (min-width: 761px) {
+    .landing-page .swx-layer-1,
+    .landing-page .swx-layer-2 {
+        --swx-photo-opacity: 0.38;
+        --swx-photo-scrim: linear-gradient(rgb(11 11 15 / calc(1 - var(--swx-photo-opacity))) 0 0);
+        background-size: auto, auto, auto, auto, cover !important;
+        background-position:
+            center,
+            center,
+            center,
+            center,
+            var(--swx-photo-x) var(--swx-photo-y) !important;
+        background-repeat: no-repeat !important;
+    }
+    .landing-page .swx-layer-1 {
+        background-image:
+            radial-gradient(circle at var(--swx-g1x) var(--swx-g1y), rgba(178, 66, 144, var(--swx-g1a)), transparent 34%),
+            radial-gradient(circle at var(--swx-g2x) var(--swx-g2y), rgba(232, 118, 72, var(--swx-g2a)), transparent 34%),
+            linear-gradient(var(--swx-angle, 145deg), rgba(10, 10, 14, 0.76) 0%, rgba(15, 13, 20, 0.7) 48%, rgba(9, 10, 13, 0.78) 100%),
+            var(--swx-photo-scrim), url('/landing/decor-01.webp') !important;
+    }
+    .landing-page .swx-layer-2 {
+        background-image:
+            radial-gradient(circle at var(--swx-g1x) var(--swx-g1y), rgba(108, 72, 215, var(--swx-g1a)), transparent 38%),
+            radial-gradient(circle at var(--swx-g2x) var(--swx-g2y), rgba(228, 69, 143, var(--swx-g2a)), transparent 38%),
+            linear-gradient(var(--swx-angle, 145deg), rgba(7, 8, 12, 0.43) 0%, rgba(12, 10, 18, 0.5) 50%, rgba(7, 8, 11, 0.58) 100%),
+            var(--swx-photo-scrim), url('/landing/decor-04.webp') !important;
+    }
+}
