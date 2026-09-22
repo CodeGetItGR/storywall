@@ -4,13 +4,15 @@ import { useTranslations } from 'next-intl';
 import { type ReactNode, useEffect, useRef } from 'react';
 
 import { useLandingInteractions } from '@/hooks/useLandingInteractions';
+import { useLandingMotion } from '@/providers/LandingMotionProvider';
 
 export const LANDING_MAIN_ID = 'main-content';
 
 export function LandingPageShell({ children }: { children: ReactNode }) {
     const landingRef = useRef<HTMLElement>(null);
     const t = useTranslations('LandingPage.shell');
-    useLandingInteractions(landingRef);
+    const { paused } = useLandingMotion();
+    useLandingInteractions(landingRef, paused);
 
     useEffect(() => {
         document.body.classList.add('landing-document-scroll');

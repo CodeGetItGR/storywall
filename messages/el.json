@@ -3411,7 +3411,9 @@
     },
     "LandingPage": {
         "shell": {
-            "skipToContent": "Μετάβαση στο περιεχόμενο"
+            "skipToContent": "Μετάβαση στο περιεχόμενο",
+            "pauseMotion": "Παύση κινήσεων",
+            "playMotion": "Έναρξη κινήσεων"
         },
         "meta": {
             "title": "StoryWall — Ένα ιδιωτικό social space για το event σου",

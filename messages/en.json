@@ -3530,7 +3530,9 @@
     },
     "LandingPage": {
         "shell": {
-            "skipToContent": "Skip to main content"
+            "skipToContent": "Skip to main content",
+            "pauseMotion": "Pause animations",
+            "playMotion": "Play animations"
         },
         "meta": {
             "title": "StoryWall — A private social space for your event",

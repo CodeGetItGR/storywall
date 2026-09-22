@@ -4,12 +4,14 @@ import { useTranslations } from 'next-intl';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { LandingHeroVisual } from '@/components/landing/LandingHeroVisual';
+import { LandingMotionToggle } from '@/components/landing/LandingMotionToggle';
 import { LandingProfileBadge } from '@/components/landing/LandingProfileBadge';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useAuth } from '@/hooks/useAuth';
 import { useLandingMobileMenu } from '@/hooks/useLandingMobileMenu';
 import { useLandingTypewriter } from '@/hooks/useLandingTypewriter';
 import { routes } from '@/lib/routes';
+import { useLandingMotion } from '@/providers/LandingMotionProvider';
 
 const NAV_HREFS = ['#platformStories', '#howItWorks', '#experience', '#pricing'] as const;
 
@@ -42,13 +44,14 @@ export function LandingHero() {
     const t = useTranslations('LandingPage.hero');
     const { isAuthenticated, isBootstrapping } = useAuth();
     const { isOpen, menuRef, toggleRef, close, toggle } = useLandingMobileMenu();
+    const { paused } = useLandingMotion();
     const isSignedIn = isAuthenticated && !isBootstrapping;
     const navLabels = t.raw('nav') as string[];
     const mobileNavLabels = t.raw('mobileNav') as string[];
     const title = t.raw('title') as string[];
     const cta = t.raw('cta') as string[];
     const trustLine = t.raw('trustLine') as string[];
-    const typewriterWord = useLandingTypewriter(t.raw('eventTypes') as string[]);
+    const typewriterWord = useLandingTypewriter(t.raw('eventTypes') as string[], paused);
 
     return (
         <section
@@ -87,6 +90,7 @@ export function LandingHero() {
                             </a>
                         )}
                     </nav>
+                    <LandingMotionToggle />
                     <LanguageSwitcher className="hidden shrink-0 min-[761px]:inline-flex" />
                     <button
                         aria-controls="landing-mobile-menu"
@@ -143,7 +147,7 @@ export function LandingHero() {
                             <span className="bg-[linear-gradient(90deg,#df7794,#f29365_52%,#f2c764)] bg-clip-text font-medium text-transparent">
                                 {typewriterWord}
                             </span>
-                            <span aria-hidden="true" className="inline-block h-[.85em] w-0.5 animate-pulse bg-[#ee9971]" />
+                            <span aria-hidden="true" className={`inline-block h-[.85em] w-0.5 bg-[#ee9971] ${paused ? '' : 'animate-pulse'}`} />
                         </p>
                         <h1
                             className="max-w-142.5 font-[Baskerville,Georgia,serif] text-[clamp(44px,13vw,64px)] leading-[.93] font-normal tracking-[-.06em] min-[761px]:text-[clamp(54px,3.45vw,70px)]"

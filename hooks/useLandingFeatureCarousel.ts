@@ -1,6 +1,16 @@
-import { type RefObject, useEffect } from 'react';
+import { type RefObject, useEffect, useRef } from 'react';
 
-export function useLandingFeatureCarousel(landingRef: RefObject<HTMLElement | null>) {
+export function useLandingFeatureCarousel(landingRef: RefObject<HTMLElement | null>, paused = false) {
+    const pausedRef = useRef(paused);
+    const syncRef = useRef<(() => void) | null>(null);
+
+    // The track keeps its listeners across a pause so nothing is rebound; the
+    // running effect just re-reads the preference and starts or stops.
+    useEffect(() => {
+        pausedRef.current = paused;
+        syncRef.current?.();
+    }, [paused]);
+
     useEffect(() => {
         const root = landingRef.current;
         if (!root) return;
@@ -44,7 +54,7 @@ export function useLandingFeatureCarousel(landingRef: RefObject<HTMLElement | nu
             if (tweenFrame) cancelAnimationFrame(tweenFrame);
             tweenFrame = 0;
         };
-        const shouldAuto = () => mobileQuery.matches && visible && !interacting && !reduceMotionQuery.matches && !document.hidden && !tweenFrame;
+        const shouldAuto = () => !pausedRef.current && mobileQuery.matches && visible && !interacting && !reduceMotionQuery.matches && !document.hidden && !tweenFrame;
 
         const autoTick = (timestamp: number) => {
             if (!shouldAuto()) {
@@ -209,11 +219,19 @@ export function useLandingFeatureCarousel(landingRef: RefObject<HTMLElement | nu
         document.addEventListener('visibilitychange', () => (document.hidden ? (stopAuto(), stopTween()) : startAuto()), { signal });
         mobileQuery.addEventListener('change', resetForViewport, { signal });
         reduceMotionQuery.addEventListener('change', () => (reduceMotionQuery.matches ? stopAuto() : startAuto()), { signal });
+        syncRef.current = () => {
+            if (pausedRef.current) {
+                stopAuto();
+                stopTween();
+                window.clearTimeout(resumeTimeout);
+            } else startAuto();
+        };
         recalculate();
         syncTrackFocusability();
         startAuto();
 
         return () => {
+            syncRef.current = null;
             abortController.abort();
             observer.disconnect();
             stopAuto();

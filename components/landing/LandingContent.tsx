@@ -13,49 +13,52 @@ import { LandingHowItWorks } from '@/components/landing/LandingHowItWorks';
 import { LandingPageShell } from '@/components/landing/LandingPageShell';
 import { LandingPricing } from '@/components/landing/LandingPricing';
 import { LandingStories } from '@/components/landing/LandingStories';
+import { LandingMotionProvider } from '@/providers/LandingMotionProvider';
 
 export function LandingContent() {
     return (
-        <LandingPageShell>
-            {/* Hero */}
-            <LandingHero />
+        <LandingMotionProvider>
+            <LandingPageShell>
+                {/* Hero */}
+                <LandingHero />
 
-            <div className="landing-page">
-                {/* How it works */}
-                <LandingHowItWorks />
+                <div className="landing-page">
+                    {/* How it works */}
+                    <LandingHowItWorks />
 
-                {/* Hero transition */}
-                <LandingHeroTransition />
+                    {/* Hero transition */}
+                    <LandingHeroTransition />
 
-                {/* Event stories */}
-                <LandingStories />
+                    {/* Event stories */}
+                    <LandingStories />
 
-                {/* Demo */}
-                <LandingDemo />
+                    {/* Demo */}
+                    <LandingDemo />
 
-                {/* Social and host experience */}
-                <LandingDeferredExperience />
+                    {/* Social and host experience */}
+                    <LandingDeferredExperience />
 
-                {/* Features */}
-                <LandingFeatures />
+                    {/* Features */}
+                    <LandingFeatures />
 
-                {/* Feature details */}
-                <LandingFeatureDetails />
-            </div>
+                    {/* Feature details */}
+                    <LandingFeatureDetails />
+                </div>
 
-            {/* Pricing */}
-            <LandingPricing />
+                {/* Pricing */}
+                <LandingPricing />
 
-            <div className="landing-page">
-                {/* FAQ */}
-                <LandingFaq />
+                <div className="landing-page">
+                    {/* FAQ */}
+                    <LandingFaq />
 
-                {/* Final call to action */}
-                <LandingFinalCta />
+                    {/* Final call to action */}
+                    <LandingFinalCta />
 
-                {/* Footer */}
-                <LandingFooter />
-            </div>
-        </LandingPageShell>
+                    {/* Footer */}
+                    <LandingFooter />
+                </div>
+            </LandingPageShell>
+        </LandingMotionProvider>
     );
 }
