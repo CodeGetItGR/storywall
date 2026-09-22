@@ -156,11 +156,13 @@ export function LandingHero() {
                                 </span>
                             ))}
                         </h1>
-                        <LandingHeroCta
-                            className="mx-auto hidden min-[761px]:mt-6.5 min-[761px]:flex min-[761px]:h-15.5 min-[761px]:w-[min(228px,52%)]"
-                            href={isSignedIn ? routes.home : routes.register}
-                            lines={isSignedIn ? signedInCta : cta}
-                        />
+                        <div className={'flex'}>
+                            <LandingHeroCta
+                                className="mx-auto  md:ml-44 lg:ml-68 hidden min-[761px]:mt-6.5 min-[761px]:flex min-[761px]:h-15.5 min-[761px]:w-[min(228px,52%)]"
+                                href={isSignedIn ? routes.home : routes.register}
+                                lines={isSignedIn ? signedInCta : cta}
+                            />
+                        </div>
                         <p className="mt-8 max-w-135 text-[clamp(18px,1.35vw,24px)] leading-[1.35]">
                             {t('subtitleStart')} <strong>{t('subtitleStrong')}</strong> {t('subtitleEnd')}
                             <br />
