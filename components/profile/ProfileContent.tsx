@@ -3,6 +3,7 @@
 import { Camera, CheckCircle2, KeyRound, Loader2, Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { ProfileNewsletterSection } from '@/components/profile/ProfileNewsletterSection';
 import Avatar from '@/components/ui/avatar';
 import { BackButton } from '@/components/ui/BackButton';
 import { Button } from '@/components/ui/button';
@@ -237,6 +238,9 @@ export function ProfileContent() {
                         </div>
                     </form>
                 )}
+
+                {/* Newsletter */}
+                <ProfileNewsletterSection />
             </div>
         </main>
     );

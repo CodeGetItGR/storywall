@@ -8,8 +8,10 @@ import React, { ChangeEvent, useCallback, useState } from 'react';
 
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
+import { RegisterNewsletterCheckbox } from '@/components/auth/RegisterNewsletterCheckbox';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useAppNewsletterConfig } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthPageRedirect } from '@/hooks/useAuthPageRedirect';
 import { AUTH_RETURN_PATH_PARAM, getPostAuthRedirectPath, getSafeReturnPath } from '@/lib/auth/returnPath';
@@ -25,12 +27,14 @@ export default function RegisterPage() {
     const { register, oauth } = useAuth();
     const { shouldRenderAuthPage } = useAuthPageRedirect(returnPath);
     const toErrorMessage = useApiErrorMessage();
+    const newsletterConfig = useAppNewsletterConfig();
 
     const [showPw, setShowPw] = useState(false);
     const [email, setEmail] = useState(searchParams.get('email') ?? '');
     const [firstName, setFirstName] = useState(searchParams.get('firstName') ?? '');
     const [lastName, setLastName] = useState(searchParams.get('lastName') ?? '');
     const [password, setPassword] = useState('');
+    const [subscribeToNewsletter, setSubscribeToNewsletter] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -40,7 +44,14 @@ export default function RegisterPage() {
         setIsSubmitting(true);
 
         try {
-            const auth = await register({ email, password, firstName, lastName, inviteToken: inviteToken ?? undefined });
+            const auth = await register({
+                email,
+                password,
+                firstName,
+                lastName,
+                inviteToken: inviteToken ?? undefined,
+                subscribeToNewsletter: newsletterConfig ? subscribeToNewsletter : undefined,
+            });
             router.replace(getPostAuthRedirectPath(auth.role, returnPath));
         } catch (err) {
             setError(toErrorMessage(err));
@@ -81,6 +92,10 @@ export default function RegisterPage() {
         setLastName(e.target.value);
     }, []);
 
+    const onSubscribeToNewsletterChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+        setSubscribeToNewsletter(e.target.checked);
+    }, []);
+
     const onTogglePasswordVisibility = useCallback(() => {
         setShowPw((p) => !p);
     }, []);
@@ -92,9 +107,8 @@ export default function RegisterPage() {
     return (
         <AuthLayout showLanguageSwitcher>
             <h2 className="text-2xl font-bold text-ink mb-1">{t('title')}</h2>
-            <p className="text-sm text-ink-muted mb-7">{t('subtitle')}</p>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-4">
                 <div className="grid grid-cols-2 gap-3">
                     <FormFieldLabel label={t('fields.firstName')} required>
                         <div className="flex items-center gap-3 bg-surface-muted/70 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
@@ -160,6 +174,15 @@ export default function RegisterPage() {
                         </button>
                     </div>
                 </FormFieldLabel>
+
+                {/* Newsletter */}
+                {newsletterConfig && (
+                    <RegisterNewsletterCheckbox
+                        checked={subscribeToNewsletter}
+                        discountPercent={newsletterConfig.discountPercent}
+                        onChangeAction={onSubscribeToNewsletterChange}
+                    />
+                )}
 
                 {error && (
                     <p role="alert" className="text-xs text-center text-red-500 -mt-1">

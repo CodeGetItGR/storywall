@@ -18,6 +18,7 @@ export const PUBLIC_CLIENT_NAMESPACES = [
     'LanguageSwitcher',
     'Modules',
     'AccountDrawer',
+    'NewsletterForm',
 ] as const;
 
 function readPath(messages: AbstractIntlMessages, segments: string[]): AbstractIntlMessages | string | undefined {

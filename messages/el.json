@@ -416,7 +416,6 @@
     },
     "RegisterPage": {
         "title": "Δημιουργία λογαριασμού",
-        "subtitle": "Γίνετε μέλος του τοίχου του γάμου και μοιραστείτε την αγάπη.",
         "fields": {
             "firstName": "Όνομα",
             "lastName": "Επώνυμο",
@@ -434,7 +433,40 @@
         "tabTitle": "Εγγραφή",
         "haveAccount": "Έχετε ήδη λογαριασμό;",
         "signInLink": "Σύνδεση",
-        "orContinueWith": "Ή συνεχίστε με"
+        "orContinueWith": "Ή συνεχίστε με",
+        "newsletter": {
+            "label": "Εγγραφείτε στο newsletter και κερδίστε {percent}% έκπτωση στην επόμενη εκδήλωσή σας",
+            "hint": "Θα σας στείλουμε τον κωδικό μόλις επιβεβαιώσετε το email σας."
+        }
+    },
+    "NewsletterForm": {
+        "offer": "Κερδίστε {percent}% έκπτωση στην επόμενη εκδήλωσή σας, με ισχύ {months} μήνες.",
+        "emailLabel": "Email",
+        "placeholder": "you@example.com",
+        "submit": "Εγγραφή",
+        "sent": "Ελέγξτε τα εισερχόμενά σας για επιβεβαίωση.",
+        "errors": {
+            "invalid": "Συμπληρώστε ένα έγκυρο email.",
+            "rateLimited": "Πάρα πολλά αιτήματα για αυτό το email. Δοκιμάστε ξανά αργότερα.",
+            "failed": "Η εγγραφή δεν ολοκληρώθηκε. Δοκιμάστε ξανά."
+        }
+    },
+    "NewsletterPage": {
+        "confirm": {
+            "pendingTitle": "Επιβεβαίωση εγγραφής",
+            "doneTitle": "Η εγγραφή σας ολοκληρώθηκε"
+        },
+        "unsubscribe": {
+            "pendingTitle": "Απεγγραφή",
+            "doneTitle": "Η απεγγραφή σας ολοκληρώθηκε",
+            "doneDescription": "Όποιος κωδικός έκπτωσης έχετε εξακολουθεί να ισχύει.",
+            "resubscribeTitle": "Αλλάξατε γνώμη;"
+        },
+        "pendingDescription": "Παρακαλώ περιμένετε.",
+        "missingTitle": "Αυτός ο σύνδεσμος είναι ελλιπής.",
+        "missingDescription": "Ανοίξτε ξανά τον σύνδεσμο από το email σας.",
+        "errorTitle": "Κάτι πήγε στραβά",
+        "home": "Μετάβαση στο StoryWall"
     },
     "VerifyEmailPage": {
         "pendingTitle": "Επιβεβαίωση email",
@@ -676,6 +708,19 @@
         "back": "Πίσω",
         "title": "Προφίλ",
         "fallbackName": "Λογαριασμός",
+        "newsletter": {
+            "title": "Newsletter",
+            "offer": "Εγγραφείτε και κερδίστε {percent}% έκπτωση στην επόμενη εκδήλωσή σας.",
+            "subscribed": "Είστε εγγεγραμμένοι.",
+            "awaitingConfirmation": "Ελέγξτε τα εισερχόμενά σας για επιβεβαίωση.",
+            "subscribe": "Εγγραφή",
+            "unsubscribe": "Απεγγραφή",
+            "loading": "Φόρτωση newsletter",
+            "rewardLabel": "Ο κωδικός έκπτωσής σας",
+            "rewardExpires": "Χρησιμοποιήστε τον όταν ενεργοποιήσετε μια εκδήλωση. Ισχύει έως {date}.",
+            "copy": "Αντιγραφή κωδικού",
+            "copied": "Αντιγράφηκε"
+        },
         "save": "Αποθήκευση",
         "saving": "Αποθήκευση…",
         "profileUpdated": "Το προφίλ ενημερώθηκε.",
@@ -2963,6 +3008,13 @@
             "purgeConfirmBody": "Αυτό διαγράφει δεδομένα και αρχεία της εκδήλωσης όπου είναι δυνατό. Η ενέργεια δεν πρέπει να εκτελείται χωρίς τελικό έλεγχο."
         },
         "metrics": {
+            "newsletter": {
+                "title": "Newsletter",
+                "pending": "Αναμονή επιβεβαίωσης",
+                "confirmed": "Εγγεγραμμένοι",
+                "unsubscribed": "Απεγγραμμένοι",
+                "rewardsIssued": "Κωδικοί έκπτωσης που εκδόθηκαν"
+            },
             "eyebrow": "Τρέχοντα στοιχεία πλατφόρμας",
             "title": "Στατιστικά πλατφόρμας",
             "subtitle": "Συνολικά στοιχεία χρηστών και εκδηλώσεων, ομαδοποιημένα ανά πλάνο και κατάσταση.",
@@ -3837,6 +3889,7 @@
             "imageAlt": "StoryWall",
             "lineOne": "Οι στιγμές περνούν.",
             "lineTwo": "Η ιστορία μένει.",
+            "newsletter": "NEWSLETTER",
             "explore": "EXPLORE",
             "exploreLinks": {
                 "platform": "Η πλατφόρμα",

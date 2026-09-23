@@ -2,7 +2,14 @@ import { useQuery } from '@tanstack/react-query';
 
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
-import type { AppConfigResponseDto, AppCoverageConfigDto, AppMediaConfigDto, AppRsvpConfigDto, PlatformFeatureFlagResponseDto } from '@/lib/api/types';
+import type {
+    AppConfigResponseDto,
+    AppCoverageConfigDto,
+    AppMediaConfigDto,
+    AppNewsletterConfigDto,
+    AppRsvpConfigDto,
+    PlatformFeatureFlagResponseDto,
+} from '@/lib/api/types';
 
 export const appConfigKeys = {
     all: ['app-config'] as const,
@@ -37,4 +44,11 @@ export function useAppFeatureFlags(): PlatformFeatureFlagResponseDto[] {
 export function useAppCoverageConfig(): AppCoverageConfigDto | null {
     const { data } = useAppConfig();
     return data?.coverage ?? null;
+}
+
+// Null while the newsletter is switched off (or config hasn't loaded) — every
+// newsletter surface hides on null rather than on a build-time flag.
+export function useAppNewsletterConfig(): AppNewsletterConfigDto | null {
+    const { data } = useAppConfig();
+    return data?.newsletter?.enabled ? data.newsletter : null;
 }

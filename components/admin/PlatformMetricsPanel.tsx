@@ -11,7 +11,7 @@ import { LoadingState } from '@/components/ui/LoadingState';
 import { useAdminMetrics } from '@/hooks/useAdmin';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import { formatMoney } from '@/lib/billing';
-import { formatBytes } from '@/lib/format';
+import { formatBytes, formatCount } from '@/lib/format';
 
 export function PlatformMetricsPanel() {
     const t = useTranslations('AdminPage');
@@ -81,6 +81,19 @@ export function PlatformMetricsPanel() {
                             ))}
                         </dl>
                     </AdminSection>
+                    {/* Newsletter */}
+                    {metrics.newsletter && (
+                        <AdminSection title={t('metrics.newsletter.title')}>
+                            <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
+                                {(['confirmed', 'pending', 'unsubscribed', 'rewardsIssued'] as const).map((key) => (
+                                    <div key={key} className="border-b border-border pb-3">
+                                        <dt className="text-xs text-ink-muted">{t(`metrics.newsletter.${key}`)}</dt>
+                                        <dd className="mt-1 text-sm font-bold tabular-nums text-ink">{formatCount(metrics.newsletter[key])}</dd>
+                                    </div>
+                                ))}
+                            </dl>
+                        </AdminSection>
+                    )}
                 </>
             )}
         </section>

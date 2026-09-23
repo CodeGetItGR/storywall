@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { LandingMotionToggle } from '@/components/landing/LandingMotionToggle';
+import { LandingNewsletter } from '@/components/landing/LandingNewsletter';
 
 // Every in-page anchor here must match an id rendered by a landing section.
 const EXPLORE_LINKS = [
@@ -46,6 +47,8 @@ export async function LandingFooter() {
                         {t('lineTwo')}
                     </p>
                     <LandingMotionToggle className="mt-3 text-[13px] text-white/68" />
+                    {/* Newsletter */}
+                    <LandingNewsletter heading={t('newsletter')} headingClassName={COLUMN_HEADING} />
                 </div>
                 {/* Explore */}
                 <div className="flex flex-col items-start">

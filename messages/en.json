@@ -380,7 +380,6 @@
     },
     "RegisterPage": {
         "title": "Create account",
-        "subtitle": "Join the wedding wall and share the love.",
         "fields": {
             "firstName": "First name",
             "lastName": "Last name",
@@ -398,7 +397,11 @@
         "tabTitle": "Register",
         "haveAccount": "Already have an account?",
         "signInLink": "Sign in",
-        "orContinueWith": "Or continue with"
+        "orContinueWith": "Or continue with",
+        "newsletter": {
+            "label": "Subscribe to the newsletter and get {percent}% off your next event",
+            "hint": "We'll send your code after you verify your email."
+        }
     },
     "WelcomePage": {
         "title": "Let's get started",
@@ -601,6 +604,19 @@
         "back": "Back",
         "title": "Profile",
         "fallbackName": "Account",
+        "newsletter": {
+            "title": "Newsletter",
+            "offer": "Subscribe and get {percent}% off your next event.",
+            "subscribed": "You're subscribed.",
+            "awaitingConfirmation": "Check your inbox to confirm.",
+            "subscribe": "Subscribe",
+            "unsubscribe": "Unsubscribe",
+            "loading": "Loading newsletter",
+            "rewardLabel": "Your discount code",
+            "rewardExpires": "Use it when you activate an event. Valid until {date}.",
+            "copy": "Copy code",
+            "copied": "Copied"
+        },
         "save": "Save",
         "saving": "Saving…",
         "profileUpdated": "Profile updated.",
@@ -2445,6 +2461,13 @@
             "confirmEventBody": "This changes the event plan to {plan} and may alter storage, member, and module limits immediately."
         },
         "metrics": {
+            "newsletter": {
+                "title": "Newsletter",
+                "pending": "Awaiting confirmation",
+                "confirmed": "Subscribed",
+                "unsubscribed": "Unsubscribed",
+                "rewardsIssued": "Discount codes issued"
+            },
             "eyebrow": "Live platform counts",
             "title": "Platform metrics",
             "subtitle": "Dashboard totals from the admin metrics endpoint. Group keys come from live plan and status data.",
@@ -3741,6 +3764,7 @@
             "imageAlt": "StoryWall",
             "lineOne": "Moments pass.",
             "lineTwo": "The story stays.",
+            "newsletter": "NEWSLETTER",
             "explore": "EXPLORE",
             "exploreLinks": {
                 "platform": "The platform",
@@ -3791,6 +3815,35 @@
         "resendPending": "Sending...",
         "resendSent": "Email sent",
         "resendError": "Couldn't send the email. Try again."
+    },
+    "NewsletterForm": {
+        "offer": "Get {percent}% off your next event, valid for {months} months.",
+        "emailLabel": "Email",
+        "placeholder": "you@example.com",
+        "submit": "Subscribe",
+        "sent": "Check your inbox to confirm.",
+        "errors": {
+            "invalid": "Enter a valid email address.",
+            "rateLimited": "Too many requests for this email. Try again later.",
+            "failed": "Couldn't subscribe. Please try again."
+        }
+    },
+    "NewsletterPage": {
+        "confirm": {
+            "pendingTitle": "Confirming your subscription",
+            "doneTitle": "You're subscribed"
+        },
+        "unsubscribe": {
+            "pendingTitle": "Unsubscribing",
+            "doneTitle": "You're unsubscribed",
+            "doneDescription": "Any discount code you have still works.",
+            "resubscribeTitle": "Changed your mind?"
+        },
+        "pendingDescription": "Please wait.",
+        "missingTitle": "This link is incomplete.",
+        "missingDescription": "Open the link from your email again.",
+        "errorTitle": "Something went wrong",
+        "home": "Go to StoryWall"
     },
     "VerifyEmailPage": {
         "pendingTitle": "Confirming your email",

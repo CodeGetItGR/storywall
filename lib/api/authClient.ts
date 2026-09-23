@@ -6,7 +6,7 @@
 
 import { ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
-import type { AuthSessionDto } from '@/lib/api/types';
+import type { AuthSessionDto, RegisterRequestDto } from '@/lib/api/types';
 
 async function parseBody(res: Response): Promise<unknown> {
     const text = await res.text();
@@ -30,7 +30,7 @@ async function authRequest<T>(path: string, options: RequestInit = {}): Promise<
 }
 
 export const authClient = {
-    register: (input: { email: string; password: string; firstName: string; lastName: string; inviteToken?: string }) =>
+    register: (input: RegisterRequestDto) =>
         authRequest<AuthSessionDto>(endpoints.auth.register, { method: 'POST', body: JSON.stringify(input) }),
 
     login: (input: { email: string; password: string; inviteToken?: string }) =>

@@ -312,6 +312,15 @@ export interface AppConfigResponseDto {
     rateLimits: AppRateLimitConfigDto[];
     reportTargetTypes: ReportTargetType[];
     reportReasons: ReportReason[];
+    newsletter: AppNewsletterConfigDto;
+}
+
+// GET /api/config → newsletter (newsletter-fe-integration §6). Describes the
+// offer made to whoever subscribes next — an existing reward keeps its own terms.
+export interface AppNewsletterConfigDto {
+    enabled: boolean;
+    discountPercent: number;
+    rewardValidityMonths: number;
 }
 
 // --- Β§2 Errors ---
@@ -373,6 +382,7 @@ export interface RegisterRequestDto {
     firstName: string;
     lastName: string;
     inviteToken?: string;
+    subscribeToNewsletter?: boolean;
 }
 
 export interface LoginRequestDto {
@@ -922,6 +932,14 @@ export interface PlatformMetricsResponseDto {
     eventsByStatus: Record<string, number>;
     eventsByPlanTier: Record<string, number>;
     storage: PlatformStorageMetricsDto;
+    newsletter: PlatformNewsletterMetricsDto;
+}
+
+export interface PlatformNewsletterMetricsDto {
+    pending: number;
+    confirmed: number;
+    unsubscribed: number;
+    rewardsIssued: number;
 }
 
 export interface PlatformStorageMetricsDto {
@@ -1848,4 +1866,30 @@ export interface PlatformModulePatchDto {
 export interface PlatformEventTypePatchDto {
     isEnabled?: boolean;
     sortOrder?: number;
+}
+
+// --- Newsletter (newsletter-fe-integration.md) ---
+
+// POST /api/newsletter/subscribe — always 202 with no body.
+export interface NewsletterSubscribeRequestDto {
+    email: string;
+    locale?: string;
+}
+
+// POST /api/newsletter/confirm and /unsubscribe — always 204.
+export interface NewsletterTokenRequestDto {
+    token: string;
+}
+
+// GET /api/me/newsletter. rewardCode is non-null only while checkout would accept it.
+export interface NewsletterStatusResponseDto {
+    subscribed: boolean;
+    confirmedAt: string | null;
+    rewardCode: string | null;
+    rewardExpiresAt: string | null;
+}
+
+// PUT /api/me/newsletter — `subscribed` is required.
+export interface NewsletterUpdateRequestDto {
+    subscribed: boolean;
 }

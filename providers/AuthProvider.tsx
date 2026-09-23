@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { authClient } from '@/lib/api/authClient';
-import type { AccountStatus, AuthProvider as AuthProviderName, AuthSessionDto, PlatformRole, UserResponseDto } from '@/lib/api/types';
+import type { AccountStatus, AuthProvider as AuthProviderName, AuthSessionDto, PlatformRole, RegisterRequestDto, UserResponseDto } from '@/lib/api/types';
 import { clearSession, getAuthState, getSessionGeneration, setSession, subscribeAuthState, updateSessionProfile } from '@/lib/auth/tokenStore';
 
 const BOOTSTRAP_TIMEOUT_MS = 8000;
@@ -29,7 +29,7 @@ export interface AuthContextValue {
     user: AuthUser | null;
     isAuthenticated: boolean;
     isBootstrapping: boolean;
-    register: (input: { email: string; password: string; firstName: string; lastName: string; inviteToken?: string }) => Promise<AuthSessionDto>;
+    register: (input: RegisterRequestDto) => Promise<AuthSessionDto>;
     login: (input: { email: string; password: string; inviteToken?: string }) => Promise<AuthSessionDto>;
     oauth: (provider: 'GOOGLE' | 'APPLE', input: { idToken: string; inviteToken?: string }) => Promise<AuthSessionDto>;
     logout: () => Promise<void>;
@@ -99,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const register = useCallback(
-        async (input: { email: string; password: string; firstName: string; lastName: string; inviteToken?: string }) => {
+        async (input: RegisterRequestDto) => {
             const session = await authClient.register(input);
             // A prior session's queries (e.g. the un-scoped myEventsKeys.all) can
             // still be sitting in cache if the previous account never went through

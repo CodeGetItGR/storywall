@@ -42,6 +42,13 @@ export const endpoints = {
         profilePicture: '/api/me/profile-picture',
         changePassword: '/api/me/change-password',
         events: '/api/me/events',
+        newsletter: '/api/me/newsletter',
+    },
+
+    newsletter: {
+        subscribe: '/api/newsletter/subscribe',
+        confirm: '/api/newsletter/confirm',
+        unsubscribe: '/api/newsletter/unsubscribe',
     },
 
     notifications: {

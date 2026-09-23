@@ -93,6 +93,7 @@ function makeConfig(): AppConfigResponseDto {
         rateLimits: [],
         reportTargetTypes: ['POST'],
         reportReasons: ['SPAM'],
+        newsletter: { enabled: false, discountPercent: 10, rewardValidityMonths: 12 },
     };
 }
 

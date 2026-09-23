@@ -1235,5 +1235,6 @@ export function buildSeedAppConfig(): AppConfigResponseDto {
         rateLimits: [],
         reportTargetTypes: ['POST', 'COMMENT', 'MEMBER'],
         reportReasons: ['SPAM', 'HARASSMENT', 'INAPPROPRIATE_CONTENT', 'IMPERSONATION', 'OTHER'],
+        newsletter: { enabled: false, discountPercent: 10, rewardValidityMonths: 12 },
     };
 }
