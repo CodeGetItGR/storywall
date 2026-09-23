@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import type { LandingPlan } from '@/lib/landingPricing';
 import { cn } from '@/lib/utils';
 
@@ -10,6 +12,7 @@ type MarketingPlanCardProps = {
     selected?: boolean;
     selectionLabel?: string;
     onSelectAction?: (planCode: string) => void;
+    footer?: ReactNode;
 };
 
 export function MarketingPlanCard({
@@ -21,6 +24,7 @@ export function MarketingPlanCard({
     selected = false,
     selectionLabel,
     onSelectAction,
+    footer,
 }: MarketingPlanCardProps) {
     function handleSelect() {
         if (planCode) onSelectAction?.(planCode);
@@ -86,6 +90,7 @@ export function MarketingPlanCard({
                         {selectionLabel}
                     </p>
                 )}
+                {footer}
             </div>
         </>
     );
