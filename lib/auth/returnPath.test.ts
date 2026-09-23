@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getPostAuthRedirectPath, getSafeReturnPath } from '@/lib/auth/returnPath';
+import { buildReturnPath, getPostAuthRedirectPath, getPostRegisterRedirectPath, getSafeReturnPath } from '@/lib/auth/returnPath';
 
 describe('getSafeReturnPath', () => {
     it('keeps an internal path and its query string', () => {
@@ -17,5 +17,29 @@ describe('getSafeReturnPath', () => {
 
     it('keeps the admin landing page for an administrator', () => {
         expect(getPostAuthRedirectPath('ADMIN', '/events/event-1/feed')).toBe('/admin');
+    });
+});
+
+describe('buildReturnPath', () => {
+    it('joins pathname and search', () => {
+        expect(buildReturnPath('/events/new', '?step=plan')).toBe('/events/new?step=plan');
+    });
+
+    it('returns the pathname alone when there is no query', () => {
+        expect(buildReturnPath('/events/new', '')).toBe('/events/new');
+    });
+});
+
+describe('getPostRegisterRedirectPath', () => {
+    it('sends a new account with no invite to home', () => {
+        expect(getPostRegisterRedirectPath('USER', false)).toBe('/home');
+    });
+
+    it('sends an invited account to the feed', () => {
+        expect(getPostRegisterRedirectPath('USER', true)).toBe('/feed');
+    });
+
+    it('keeps the admin landing page for an administrator', () => {
+        expect(getPostRegisterRedirectPath('ADMIN', false)).toBe('/admin');
     });
 });
