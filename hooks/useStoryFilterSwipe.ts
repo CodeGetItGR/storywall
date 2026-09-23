@@ -1,6 +1,9 @@
 'use client';
 
-import { type PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from 'react';
+import { type PointerEvent as ReactPointerEvent, useRef, useState } from 'react';
+
+import { useTransientValue } from '@/hooks/useTransientValue';
+import { FILTER_NAME_PILL_DURATION_MS } from '@/lib/story/storyFilters';
 
 export interface StoryFilterSwipeHandlers {
     onPointerDown: (event: ReactPointerEvent<HTMLElement>) => void;
@@ -17,7 +20,6 @@ export interface StoryFilterSwipe {
     setIndex: (index: number) => void;
 }
 
-const NAME_PILL_DURATION_MS = 1500;
 const DRAG_FULL_PX = 120;
 const COMMIT_PROGRESS = 0.5;
 
@@ -34,16 +36,8 @@ function candidateForOffset(offsetPx: number, currentIndex: number, length: numb
 export function useStoryFilterSwipe(presetIds: string[]): StoryFilterSwipe {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [dragOffsetPx, setDragOffsetPx] = useState(0);
-    const [committedName, setCommittedName] = useState<string | null>(null);
+    const { value: committedName, show: showName, clear: clearName } = useTransientValue<string | null>(FILTER_NAME_PILL_DURATION_MS);
     const dragStartX = useRef<number | null>(null);
-    const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    useEffect(
-        () => () => {
-            if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
-        },
-        []
-    );
 
     const targetIndex = candidateForOffset(dragOffsetPx, currentIndex, presetIds.length);
     const dragProgress = targetIndex === null ? 0 : Math.min(Math.abs(dragOffsetPx) / DRAG_FULL_PX, 1);
@@ -52,9 +46,7 @@ export function useStoryFilterSwipe(presetIds: string[]): StoryFilterSwipe {
     function setIndex(index: number) {
         const clamped = Math.max(0, Math.min(presetIds.length - 1, index));
         setCurrentIndex(clamped);
-        setCommittedName(presetIds[clamped] ?? null);
-        if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
-        hideTimeoutRef.current = setTimeout(() => setCommittedName(null), NAME_PILL_DURATION_MS);
+        showName(presetIds[clamped] ?? null);
     }
 
     function onPointerDown(event: ReactPointerEvent<HTMLElement>) {
@@ -73,7 +65,7 @@ export function useStoryFilterSwipe(presetIds: string[]): StoryFilterSwipe {
         if (targetIndex !== null && dragProgress >= COMMIT_PROGRESS) {
             setIndex(targetIndex);
         } else {
-            setCommittedName(null);
+            clearName();
         }
         setDragOffsetPx(0);
     }
