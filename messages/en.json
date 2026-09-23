@@ -3685,6 +3685,8 @@
             "photosLabel": "photos",
             "videosLabel": "videos",
             "storageNote": "Estimates assume files up to 5 MB per photo and video clips up to 15 seconds.",
+            "cta": "CREATE YOUR STORYWALL",
+            "verifyNotice": "Verify your email before creating an event.",
             "categories": {
                 "wedding": {
                     "label": "Wedding · Baptism · Gender Reveal · Baby Shower"

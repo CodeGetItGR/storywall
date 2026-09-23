@@ -3805,6 +3805,8 @@
             "photosLabel": "φωτογραφίες",
             "videosLabel": "βίντεο",
             "storageNote": "Ο υπολογισμός βασίζεται σε αρχεία έως 5 MB ανά φωτογραφία και video clips διάρκειας έως 15″.",
+            "cta": "ΔΗΜΙΟΥΡΓΗΣΕ ΤΟ STORYWALL ΣΟΥ",
+            "verifyNotice": "Επιβεβαίωσε το email σου πριν δημιουργήσεις event.",
             "categories": {
                 "wedding": {
                     "label": "Γάμος · Βάπτιση · Gender Reveal · Baby Shower"
