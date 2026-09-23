@@ -22,13 +22,13 @@ import { eventStatusBadgeTone } from '@/lib/statusTones';
 import { cn } from '@/lib/utils';
 import { useActiveMember } from '@/providers/EventProvider';
 
-import BillingTab from '../../app/(app)/(event)/events/[eventId]/manage/BillingTab';
-import DangerZoneTab from '../../app/(app)/(event)/events/[eventId]/manage/DangerZoneTab';
-import HelpTab from '../../app/(app)/(event)/events/[eventId]/manage/HelpTab';
-import MembersTab from '../../app/(app)/(event)/events/[eventId]/manage/MembersTab';
-import OverviewTab from '../../app/(app)/(event)/events/[eventId]/manage/OverviewTab';
-import RsvpTab from '../../app/(app)/(event)/events/[eventId]/manage/RsvpTab';
-import SettingsTab from '../../app/(app)/(event)/events/[eventId]/manage/SettingsTab';
+import BillingTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/BillingTab';
+import DangerZoneTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/DangerZoneTab';
+import HelpTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/HelpTab';
+import MembersTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/MembersTab';
+import OverviewTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/OverviewTab';
+import RsvpTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/RsvpTab';
+import SettingsTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/SettingsTab';
 
 export function ManageScreen() {
     const { activeEvent, eventId, isHost } = useEventRouteContext();

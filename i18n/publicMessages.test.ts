@@ -10,7 +10,7 @@ import enCatalog from '@/messages/en.json';
 // Arrays in the catalog do not fit next-intl's message type, so cast once here.
 const en = enCatalog as unknown as AbstractIntlMessages;
 const ROOT = process.cwd();
-const ENTRY_FILES = ['components/landing/LandingPage.tsx', 'providers/PublicProviders.tsx'];
+const ENTRY_FILES = ['app/(landing)/layout.tsx', 'components/landing/LandingPage.tsx'];
 
 function resolveImport(specifier: string): string | null {
     if (!specifier.startsWith('@/')) return null;

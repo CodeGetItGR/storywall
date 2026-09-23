@@ -7,7 +7,7 @@ import { DeletedEventActions } from '@/components/manage/danger/DeletedEventActi
 import { EventDeletedBanner } from '@/components/manage/danger/EventDeletedBanner';
 import type { EventDetailResponseDto } from '@/lib/api/types';
 
-import BillingTab from '../../app/(app)/(event)/events/[eventId]/manage/BillingTab';
+import BillingTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/BillingTab';
 
 /** The manage page for a deleted event: the deletion notice and the billing
  * record. No sections, no switcher — there is nothing left to manage. */
