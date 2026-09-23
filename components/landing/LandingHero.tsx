@@ -184,7 +184,7 @@ export function LandingHero() {
                             ))}
                         </p>
                     </div>
-                    <LandingHeroVisual />
+                    <LandingHeroVisual motionPaused={paused} />
                     <LandingHeroCta
                         className="order-3 mx-auto mt-[34vw] h-23 w-[min(415px,78vw)] flex min-[421px]:h-28 min-[761px]:hidden"
                         href={isSignedIn ? routes.home : routes.register}

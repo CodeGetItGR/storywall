@@ -834,20 +834,9 @@
     }
 }
 
-@keyframes sw-hero-phone-breathe {
-    0%,
-    100% {
-        transform: translate3d(0, 0, 0);
-    }
-    50% {
-        transform: translate3d(0, -7px, 0);
-    }
-}
-
-.motion-hero-phone-breathe {
-    animation: sw-hero-phone-breathe 7s ease-in-out infinite;
-}
-
+/* Hero phone feed: scrolls to the bottom with two pauses, holds, then plays
+   back up. useLandingHeroFeedTravel measures the stops for the rendered phone;
+   the fallbacks only cover the moment before it runs. */
 @keyframes sw-hero-feed-scroll {
     0%,
     5% {
@@ -855,15 +844,15 @@
     }
     24%,
     30% {
-        transform: translate3d(0, -25%, 0);
+        transform: translate3d(0, var(--sw-feed-stop-1, -25%), 0);
     }
     50%,
     56% {
-        transform: translate3d(0, -53%, 0);
+        transform: translate3d(0, var(--sw-feed-stop-2, -53%), 0);
     }
     88%,
     100% {
-        transform: translate3d(0, -78.8%, 0);
+        transform: translate3d(0, var(--sw-feed-end, -78.8%), 0);
     }
 }
 
@@ -871,118 +860,8 @@
     animation: sw-hero-feed-scroll 20s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
 }
 
-@keyframes sw-hero-drift-left {
-    0%,
-    100% {
-        transform: translate3d(0, 0, 0) rotate(-1.5deg);
-    }
-    50% {
-        transform: translate3d(-5px, -8px, 0) rotate(0.5deg);
-    }
-}
-
-.motion-hero-drift-left {
-    animation-name: sw-hero-drift-left;
-    animation-timing-function: ease-in-out;
-    animation-iteration-count: infinite;
-}
-
-@keyframes sw-hero-drift-right {
-    0%,
-    100% {
-        transform: translate3d(0, 0, 0) rotate(1deg);
-    }
-    50% {
-        transform: translate3d(6px, -9px, 0) rotate(-0.6deg);
-    }
-}
-
-.motion-hero-drift-right {
-    animation-name: sw-hero-drift-right;
-    animation-timing-function: ease-in-out;
-    animation-iteration-count: infinite;
-}
-
-@keyframes sw-hero-float-strong {
-    0%,
-    100% {
-        transform: translate3d(0, 0, 0) rotate(-4deg);
-    }
-    50% {
-        transform: translate3d(5px, -14px, 0) rotate(3deg);
-    }
-}
-
-.motion-hero-float-strong {
-    animation-name: sw-hero-float-strong;
-    animation-timing-function: ease-in-out;
-    animation-iteration-count: infinite;
-}
-
-@keyframes sw-hero-float-soft {
-    0%,
-    100% {
-        transform: translate3d(0, 0, 0) rotate(-1deg);
-    }
-    50% {
-        transform: translate3d(3px, -9px, 0) rotate(2deg);
-    }
-}
-
-.motion-hero-float-soft {
-    animation-name: sw-hero-float-soft;
-    animation-timing-function: ease-in-out;
-    animation-iteration-count: infinite;
-}
-
-@keyframes sw-hero-heart-float {
-    0%,
-    100% {
-        transform: translate3d(0, 0, 0) scale(1);
-    }
-    50% {
-        transform: translate3d(2px, -10px, 0) scale(1.06);
-    }
-}
-
-.motion-hero-heart-float {
-    animation-name: sw-hero-heart-float;
-    animation-timing-function: ease-in-out;
-    animation-iteration-count: infinite;
-}
-
-@keyframes sw-hero-note-float {
-    0%,
-    100% {
-        transform: translate3d(0, 0, 0) rotate(-5deg);
-    }
-    50% {
-        transform: translate3d(6px, -12px, 0) rotate(4deg);
-    }
-}
-
-.motion-hero-note-float {
-    animation-name: sw-hero-note-float;
-    animation-timing-function: ease-in-out;
-    animation-iteration-count: infinite;
-}
-
-@keyframes sw-hero-pulse-flash {
-    0%,
-    100% {
-        transform: scale(0.94) rotate(-4deg);
-        opacity: 0.84;
-    }
-    50% {
-        transform: scale(1.08) rotate(4deg);
-        opacity: 1;
-    }
-}
-
-.motion-hero-pulse-flash {
-    animation-name: sw-hero-pulse-flash;
-    animation-timing-function: ease-in-out;
-    animation-iteration-count: infinite;
+.motion-hero-feed-scroll[data-paused] {
+    animation-play-state: paused;
 }
 
 @keyframes sw-wedding-first-hint {

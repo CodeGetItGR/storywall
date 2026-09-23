@@ -1,6 +1,7 @@
 import { motion, type TargetAndTransition, useReducedMotion } from 'framer-motion';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { useLandingHeroFeedTravel } from '@/hooks/useLandingHeroFeedTravel';
 const HERO_SPRITES = [
     {
         src: '/landing/sw-scene-item-sw-post-1.webp',
@@ -170,7 +171,14 @@ const HERO_VISUAL_CLASS =
 const PHONE_WRAP_CLASS =
     'absolute aspect-[748/1541] left-[19.28%] top-[3.78%] w-[56.47%] z-[5] min-[761px]:left-[23.5%] min-[761px]:top-[5.21%] min-[761px]:w-[43.7%]';
 
-const PHONE_FEED_TRACK_CLASS = 'absolute top-0 left-[-2.85%] w-[105.65%] will-change-transform min-[761px]:w-[105.7%]';
+const PHONE_FEED_TRACK_CLASS = 'motion-hero-feed-scroll absolute top-0 left-[-2.85%] w-[105.65%] will-change-transform min-[761px]:w-[105.7%]';
+
+// Stacked top to bottom: the event header, then two runs of posts.
+const PHONE_FEED_SCREENSHOTS = [
+    { src: '/landing/sw-phone-feed.webp', width: 451 },
+    { src: '/landing/sw-phone-feed-2.webp', width: 820 },
+    { src: '/landing/sw-phone-feed-3.webp', width: 774 },
+] as const;
 
 const HERO_SPRITE_MOTION = {
     'motion-hero-drift-left': { x: [5, -7, 5], y: [3, -8, 3], rotate: [0.5, -0.6, 0.5] },
@@ -182,8 +190,9 @@ const HERO_SPRITE_MOTION = {
     'motion-hero-heart-float': { x: [-2, 5, -2], y: [3, -10, 3], rotate: [-1.2, 1.8, -1.2], scale: [0.985, 1.03, 0.985] },
 } satisfies Record<(typeof HERO_SPRITES)[number]['motionClass'], TargetAndTransition>;
 
-export function LandingHeroVisual() {
+export function LandingHeroVisual({ motionPaused }: { motionPaused: boolean }) {
     const reduceMotion = useReducedMotion();
+    const { screenRef, trackRef } = useLandingHeroFeedTravel();
     const [firstSprite, ...restSprites] = HERO_SPRITES;
 
     return (
@@ -198,41 +207,28 @@ export function LandingHeroVisual() {
             </motion.div>
             {/* Phone feed */}
             <motion.div
-                animate={reduceMotion ? undefined : { y: [0, -4, 0] }}
+                animate={reduceMotion ? undefined : { y: [0, -7, 0] }}
                 className={PHONE_WRAP_CLASS}
                 transition={{ duration: 7, ease: 'easeInOut', repeat: Infinity }}
             >
-                <div className="absolute top-[2.1%] right-[4.55%] bottom-[2.1%] left-[4.68%] z-[1] overflow-hidden rounded-[10.5%/4.8%] bg-white">
-                    <motion.div
-                        animate={reduceMotion ? undefined : { y: [0, -400, -400, 0] }}
-                        className={PHONE_FEED_TRACK_CLASS}
-                        transition={{ duration: 24, ease: 'easeInOut', repeat: Infinity, times: [0, 0.75, 0.85, 1] }}
-                    >
-                        <ProtectedImage
-                            unoptimized
-                            alt=""
-                            className="relative block h-auto w-full max-w-none [&+&]:-mt-px"
-                            height={2048}
-                            src="/landing/sw-phone-feed-3.webp"
-                            width={774}
-                        />
-                        <ProtectedImage
-                            unoptimized
-                            alt=""
-                            className="relative block h-auto w-full max-w-none [&+&]:-mt-px"
-                            height={2048}
-                            src="/landing/sw-phone-feed.webp"
-                            width={451}
-                        />
-                        <ProtectedImage
-                            unoptimized
-                            alt=""
-                            className="relative block h-auto w-full max-w-none [&+&]:-mt-px"
-                            height={2048}
-                            src="/landing/sw-phone-feed-2.webp"
-                            width={820}
-                        />
-                    </motion.div>
+                <div
+                    className="absolute top-[2.1%] right-[4.55%] bottom-[2.1%] left-[4.68%] z-[1] overflow-hidden rounded-[10.5%/4.8%] bg-white"
+                    ref={screenRef}
+                >
+                    <div className={PHONE_FEED_TRACK_CLASS} data-paused={motionPaused || undefined} ref={trackRef}>
+                        {PHONE_FEED_SCREENSHOTS.map((screenshot) => (
+                            <ProtectedImage
+                                unoptimized
+                                alt=""
+                                className="relative block h-auto w-full max-w-none [&+&]:-mt-px"
+                                height={2048}
+                                key={screenshot.src}
+                                loading="eager"
+                                src={screenshot.src}
+                                width={screenshot.width}
+                            />
+                        ))}
+                    </div>
                 </div>
                 <ProtectedImage unoptimized alt="" className="absolute inset-0 z-[2] h-auto w-full" height={1541} src="/landing/sw-phone-frame.webp" width={748} />
             </motion.div>
