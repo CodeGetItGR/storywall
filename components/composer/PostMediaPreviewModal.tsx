@@ -3,14 +3,14 @@
 import { Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { useEffect, useRef, useState } from 'react';
 
 import { FilterNameOverlay } from '@/components/composer/FilterNameOverlay';
 import { PostImageFilterPicker } from '@/components/composer/PostImageFilterPicker';
 import { PostPreviewVideo } from '@/components/composer/PostPreviewVideo';
 import { Modal } from '@/components/ui/modal';
 import type { ComposerController } from '@/hooks/useComposerController';
-import { STORY_FILTER_PRESETS } from '@/lib/story/storyFilters';
+import { useTransientValue } from '@/hooks/useTransientValue';
+import { FILTER_NAME_PILL_DURATION_MS, STORY_FILTER_PRESETS } from '@/lib/story/storyFilters';
 
 interface PostMediaPreviewModalProps {
     controller: ComposerController;
@@ -27,25 +27,15 @@ export function PostMediaPreviewModal({ controller }: PostMediaPreviewModalProps
         retreatMediaPreview,
         setImageFilter,
     } = controller;
-    const [appliedFilterName, setAppliedFilterName] = useState<string | null>(null);
-    const hideFilterNameTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const { value: appliedFilterName, show: showAppliedFilterName } = useTransientValue<string>(FILTER_NAME_PILL_DURATION_MS);
     const isImage = activeMediaPreview ? !activeMediaPreview.file.type.startsWith('video/') : false;
     const filter = activeMediaPreview ? STORY_FILTER_PRESETS.find((preset) => preset.id === activeMediaPreview.filterId)?.cssFilter : undefined;
     const previewIndex = activeMediaPreview ? images.findIndex((image) => image.key === activeMediaPreview.key) : -1;
     const isLastMedia = previewIndex === images.length - 1;
 
-    useEffect(
-        () => () => {
-            if (hideFilterNameTimeoutRef.current) clearTimeout(hideFilterNameTimeoutRef.current);
-        },
-        []
-    );
-
     function handleFilterChange(filterId: string) {
         setImageFilter(filterId);
-        setAppliedFilterName(filterId);
-        if (hideFilterNameTimeoutRef.current) clearTimeout(hideFilterNameTimeoutRef.current);
-        hideFilterNameTimeoutRef.current = setTimeout(() => setAppliedFilterName(null), 1500);
+        showAppliedFilterName(filterId);
     }
 
     return (

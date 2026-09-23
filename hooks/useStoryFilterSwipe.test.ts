@@ -100,13 +100,13 @@ describe('useStoryFilterSwipe', () => {
         expect(result.current.targetIndex).toBeNull();
     });
 
-    it('clears the committed name pill about 1s after a commit', () => {
+    it('clears the committed name pill about 1.5s after a commit', () => {
         const { result } = renderHook(() => useStoryFilterSwipe(['original', 'warm', 'noir']));
 
         act(() => result.current.setIndex(1));
         expect(result.current.visibleName).toBe('warm');
 
-        act(() => vi.advanceTimersByTime(1000));
+        act(() => vi.advanceTimersByTime(1500));
         expect(result.current.visibleName).toBeNull();
     });
 });

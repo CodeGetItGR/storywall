@@ -9,6 +9,8 @@ export interface StoryFilterPreset {
     overlays?: StoryFilterOverlay[];
 }
 
+export const FILTER_NAME_PILL_DURATION_MS = 1500;
+
 export const STORY_FILTER_PRESETS: StoryFilterPreset[] = [
     { id: 'original', cssFilter: '' },
     { id: 'warm', cssFilter: 'brightness(1.05) saturate(1.15) sepia(0.08) contrast(1.05)' },
