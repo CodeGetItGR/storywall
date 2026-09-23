@@ -36,7 +36,7 @@ Spec: `docs/superpowers/specs/2026-09-22-landing-to-create-event-redirect-design
 - Modify: `lib/auth/returnPath.ts`
 - Test: `lib/auth/returnPath.test.ts`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `lib/auth/returnPath.test.ts` (inside the file, after the existing `describe`):
 
@@ -72,12 +72,12 @@ Update the import line at the top of the test file:
 import { buildReturnPath, getPostAuthRedirectPath, getPostRegisterRedirectPath, getSafeReturnPath } from '@/lib/auth/returnPath';
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `npx vitest run lib/auth/returnPath.test.ts`
 Expected: FAIL — `buildReturnPath` / `getPostRegisterRedirectPath` are not exported.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Replace the whole of `lib/auth/returnPath.ts` with:
 
@@ -131,12 +131,12 @@ export function getPostRegisterRedirectPath(role: PlatformRole, hasInvite: boole
 }
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `npx vitest run lib/auth/returnPath.test.ts`
 Expected: PASS (all cases, including the pre-existing ones).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add lib/auth/returnPath.ts lib/auth/returnPath.test.ts
@@ -153,7 +153,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 - Create: `hooks/useCurrentReturnPath.ts`
 - Modify: `app/events/new/CreateEventBoundary.tsx:21-40`
 
-- [ ] **Step 1: Create the hook**
+- [x] **Step 1: Create the hook**
 
 `hooks/useCurrentReturnPath.ts`:
 
@@ -173,7 +173,7 @@ export function useCurrentReturnPath(): string {
 }
 ```
 
-- [ ] **Step 2: Use it in the client gate**
+- [x] **Step 2: Use it in the client gate**
 
 In `app/events/new/CreateEventBoundary.tsx`, add the import:
 
@@ -209,12 +209,12 @@ Replace the top of `CreateEventPage` (from `const router = useRouter();` through
     }, [isAuthenticated, isBootstrapping, isConfirmedUnverified, returnPath, router, user?.role]);
 ```
 
-- [ ] **Step 3: Type-check**
+- [x] **Step 3: Type-check**
 
 Run: `npx tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add hooks/useCurrentReturnPath.ts app/events/new/CreateEventBoundary.tsx
@@ -231,7 +231,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 - Modify: `proxy.ts:15-21`
 - Test: `proxy.test.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 In `proxy.test.ts`, change the `request` helper to accept a URL:
 
@@ -256,12 +256,12 @@ Add inside `describe('proxy', …)`, after the `'redirects to login with no cook
     });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `npx vitest run proxy.test.ts`
 Expected: FAIL — `res.status` is 200 (the request passes through untouched).
 
-- [ ] **Step 3: Remove the carve-out**
+- [x] **Step 3: Remove the carve-out**
 
 In `proxy.ts`, replace `isProtectedPath`:
 
@@ -274,12 +274,12 @@ function isProtectedPath(pathname: string): boolean {
 }
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [x] **Step 4: Run the tests to verify they pass**
 
 Run: `npx vitest run proxy.test.ts`
 Expected: PASS (all cases).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add proxy.ts proxy.test.ts
@@ -295,7 +295,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 **Files:**
 - Modify: `app/register/page.tsx:15-58`
 
-- [ ] **Step 1: Switch the redirect helper**
+- [x] **Step 1: Switch the redirect helper**
 
 Change the import:
 
@@ -323,12 +323,12 @@ In `handleOAuthSignIn`, replace the same line with the same call, and update its
 
 `returnPath` stays in the file: `useAuthPageRedirect(returnPath)` (an already-signed-in visitor still goes to `next`) and the `routes.auth.login({ invite: inviteToken, next: returnPath })` link both keep using it.
 
-- [ ] **Step 2: Type-check and lint**
+- [x] **Step 2: Type-check and lint**
 
 Run: `npx tsc --noEmit && npx eslint app/register/page.tsx`
 Expected: no errors (in particular no unused-import warning for `getPostAuthRedirectPath`).
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add app/register/page.tsx
@@ -345,7 +345,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 - Modify: `components/landing/LandingHero.tsx:162,187`
 - Modify: `components/landing/LandingFinalCta.tsx:52`
 
-- [ ] **Step 1: Hero**
+- [x] **Step 1: Hero**
 
 In `components/landing/LandingHero.tsx`, both `<LandingHeroCta … />` usages change
 
@@ -359,7 +359,7 @@ to
 href={isSignedIn ? routes.home : routes.events.new()}
 ```
 
-- [ ] **Step 2: Final CTA**
+- [x] **Step 2: Final CTA**
 
 In `components/landing/LandingFinalCta.tsx`, change
 
@@ -373,12 +373,12 @@ to
 href={routes.events.new()}
 ```
 
-- [ ] **Step 3: Type-check**
+- [x] **Step 3: Type-check**
 
 Run: `npx tsc --noEmit`
 Expected: no errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add components/landing/LandingHero.tsx components/landing/LandingFinalCta.tsx
@@ -395,7 +395,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 - Modify: `messages/en.json` (`LandingPage.pricing`, around line 3910)
 - Modify: `messages/el.json` (`LandingPage.pricing`, around line 3795)
 
-- [ ] **Step 1: English**
+- [x] **Step 1: English**
 
 In `messages/en.json`, inside `"LandingPage" → "pricing"`, add after `"storageNote"`:
 
@@ -404,7 +404,7 @@ In `messages/en.json`, inside `"LandingPage" → "pricing"`, add after `"storage
             "verifyNotice": "Verify your email before creating an event.",
 ```
 
-- [ ] **Step 2: Greek**
+- [x] **Step 2: Greek**
 
 In `messages/el.json`, inside `"LandingPage" → "pricing"`, add after `"storageNote"`:
 
@@ -413,12 +413,12 @@ In `messages/el.json`, inside `"LandingPage" → "pricing"`, add after `"storage
             "verifyNotice": "Επιβεβαίωσε το email σου πριν δημιουργήσεις event.",
 ```
 
-- [ ] **Step 3: Validate JSON**
+- [x] **Step 3: Validate JSON**
 
 Run: `node -e "JSON.parse(require('fs').readFileSync('messages/en.json','utf8'));JSON.parse(require('fs').readFileSync('messages/el.json','utf8'));console.log('ok')"`
 Expected: `ok`
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add messages/en.json messages/el.json
@@ -435,7 +435,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 - Create: `components/landing/LandingPricingCta.tsx`
 - Modify: `components/plan/MarketingPlanCard.tsx`
 
-- [ ] **Step 1: Create the CTA**
+- [x] **Step 1: Create the CTA**
 
 `components/landing/LandingPricingCta.tsx`:
 
@@ -465,7 +465,7 @@ export function LandingPricingCta({ className, label }: LandingPricingCtaProps) 
 }
 ```
 
-- [ ] **Step 2: Add the `footer` slot to the card**
+- [x] **Step 2: Add the `footer` slot to the card**
 
 In `components/plan/MarketingPlanCard.tsx`:
 
@@ -489,12 +489,12 @@ In the `{/* Storage estimate */}` bottom `<div>`, after the `{selectionLabel && 
                 {footer}
 ```
 
-- [ ] **Step 3: Type-check and lint**
+- [x] **Step 3: Type-check and lint**
 
 Run: `npx tsc --noEmit && npx eslint components/landing/LandingPricingCta.tsx components/plan/MarketingPlanCard.tsx`
 Expected: no errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add components/landing/LandingPricingCta.tsx components/plan/MarketingPlanCard.tsx
@@ -510,7 +510,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 **Files:**
 - Modify: `components/landing/LandingPricing.tsx:1-10,81-108`
 
-- [ ] **Step 1: Import**
+- [x] **Step 1: Import**
 
 Add:
 
@@ -518,7 +518,7 @@ Add:
 import { LandingPricingCta } from '@/components/landing/LandingPricingCta';
 ```
 
-- [ ] **Step 2: Per-card CTA (mobile) and shared CTA + notice (desktop)**
+- [x] **Step 2: Per-card CTA (mobile) and shared CTA + notice (desktop)**
 
 Replace the `{/* Plans */}` block through the closing `</section>` with:
 
@@ -553,12 +553,12 @@ Replace the `{/* Plans */}` block through the closing `</section>` with:
 }
 ```
 
-- [ ] **Step 3: Type-check and lint**
+- [x] **Step 3: Type-check and lint**
 
 Run: `npx tsc --noEmit && npx eslint components/landing/LandingPricing.tsx`
 Expected: no errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add components/landing/LandingPricing.tsx
@@ -573,12 +573,12 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 
 **Files:** none new.
 
-- [ ] **Step 1: Full test, type-check, lint**
+- [x] **Step 1: Full test, type-check, lint**
 
 Run: `npm test && npx tsc --noEmit && npm run lint`
 Expected: all pass, no lint errors.
 
-- [ ] **Step 2: Visual check — pricing section**
+- [x] **Step 2: Visual check — pricing section**
 
 Start the dev server (`preview_start` with `{ name: "storywall-dev" }` from `.claude/launch.json`) and open `/`.
 
