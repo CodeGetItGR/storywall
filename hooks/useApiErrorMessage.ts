@@ -45,7 +45,7 @@ export function useApiErrorMessage() {
 
             return fallback ?? t('generic');
         },
-        [t]
+        [t],
     );
 }
 

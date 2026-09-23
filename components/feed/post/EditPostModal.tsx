@@ -58,7 +58,7 @@ export function EditPostModal({ post, open, onCloseAction }: EditPostModalProps)
                         rows={4}
                         maxLength={maxContentLength}
                         autoFocus
-                        className="min-h-36 w-full resize-none rounded-[1.5rem] bg-surface-muted px-5 py-4 text-base leading-relaxed text-ink placeholder:text-ink-faint outline-none transition focus:ring-2 focus:ring-primary/30 sm:min-h-32 sm:text-sm"
+                        className="min-h-36 w-full resize-none rounded-[1.5rem] bg-surface-muted px-5 py-4 text-base leading-relaxed text-ink transition outline-none placeholder:text-ink-faint focus:ring-2 focus:ring-primary/30 sm:min-h-32 sm:text-sm"
                     />
                     <div className="-mt-2 flex items-center justify-end text-xs text-ink-faint">
                         <span>{t('captionCharacterCount', { count: content.length, max: maxContentLength })}</span>
@@ -77,7 +77,7 @@ export function EditPostModal({ post, open, onCloseAction }: EditPostModalProps)
                         <button
                             type="submit"
                             disabled={!canSubmit}
-                            className="rounded-full bg-gradient-brand px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                            className="rounded-full px-4 py-2 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             {updatePost.isPending ? t('saving') : t('save')}
                         </button>

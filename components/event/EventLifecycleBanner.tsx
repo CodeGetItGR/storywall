@@ -36,7 +36,7 @@ export function EventLifecycleBanner() {
             <div
                 className={cn(
                     'mx-auto flex max-w-5xl flex-col gap-3 rounded-lg border px-3 py-3 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-4',
-                    tone(status)
+                    tone(status),
                 )}
             >
                 <div className="flex min-w-0 gap-2">

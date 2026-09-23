@@ -76,7 +76,7 @@ export function EventTypeStep() {
                             className={cn(
                                 'group relative flex min-h-56 flex-col justify-end overflow-hidden rounded-lg border bg-card p-5 text-left transition duration-200 hover:-translate-y-0.5',
                                 backgroundImageSrc && 'text-white',
-                                isSelected ? cn('border-2', style.selected) : cn('border-border shadow-sm', !backgroundImageSrc && style.surface)
+                                isSelected ? cn('border-2', style.selected) : cn('border-border shadow-sm', !backgroundImageSrc && style.surface),
                             )}
                         >
                             {/* Background */}
@@ -95,12 +95,12 @@ export function EventTypeStep() {
                             )}
                             {/* Price */}
                             {priceLabel && (
-                                <span className="absolute left-4 top-4 z-10 rounded-full bg-white px-3 py-1 text-xs font-semibold text-ink shadow-sm">
+                                <span className="absolute top-4 left-4 z-10 rounded-full bg-white px-3 py-1 text-xs font-semibold text-ink shadow-sm">
                                     {priceLabel}
                                 </span>
                             )}
                             {isSelected && (
-                                <span className="absolute right-4 top-4 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-ink text-white shadow-sm">
+                                <span className="absolute top-4 right-4 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-ink text-white shadow-sm">
                                     <Check className="h-4 w-4" />
                                 </span>
                             )}
@@ -108,7 +108,7 @@ export function EventTypeStep() {
                             <span
                                 className={cn(
                                     'relative z-10 block pr-8 text-xl font-bold',
-                                    backgroundImageSrc ? 'text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]' : 'text-ink'
+                                    backgroundImageSrc ? 'text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.6)]' : 'text-ink',
                                 )}
                             >
                                 {copy.name}
@@ -117,7 +117,7 @@ export function EventTypeStep() {
                                 <span
                                     className={cn(
                                         'relative z-10 mt-1.5 block max-w-64 text-sm leading-5',
-                                        backgroundImageSrc ? 'text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.6)]' : 'text-ink-muted'
+                                        backgroundImageSrc ? 'text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.6)]' : 'text-ink-muted',
                                     )}
                                 >
                                     {copy.tagline}

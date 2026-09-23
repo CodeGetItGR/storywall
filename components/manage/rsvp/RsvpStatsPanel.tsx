@@ -53,7 +53,7 @@ export function RsvpStatsPanel({
                     <CalendarClock className="h-5 w-5" aria-hidden="true" />
                 </div>
                 <div className="min-w-0">
-                    <p className="text-xs font-bold uppercase tracking-wide text-ink-faint">
+                    <p className="text-xs font-bold tracking-wide text-ink-faint uppercase">
                         {t(isRsvpDeadline ? 'rsvpStats.deadlineLabel' : 'rsvpStats.eventDateLabel')}
                     </p>
                     <p className="text-sm font-semibold break-words text-ink">
@@ -77,7 +77,7 @@ export function RsvpStatsPanel({
 
             {/* Attendance by category */}
             <div className="p-4" hidden={peopleTotal === 0}>
-                <p className="mb-3 text-xs font-bold uppercase tracking-wide text-ink-faint">{t('rsvpStats.byCategory')}</p>
+                <p className="mb-3 text-xs font-bold tracking-wide text-ink-faint uppercase">{t('rsvpStats.byCategory')}</p>
                 <div className="flex flex-col gap-3">
                     {categories.map((status) => {
                         const count = peopleByCategory[status];
@@ -87,10 +87,8 @@ export function RsvpStatsPanel({
                         return (
                             <div key={status}>
                                 <div className="mb-1 flex items-baseline justify-between gap-2 text-xs">
-                                    <span className="text-ink-muted">
-                                        {t(status === 'GOING' ? 'rsvpBreakdown.attending' : 'rsvpStats.notGoing')}
-                                    </span>
-                                    <span className="font-bold tabular-nums text-ink">
+                                    <span className="text-ink-muted">{t(status === 'GOING' ? 'rsvpBreakdown.attending' : 'rsvpStats.notGoing')}</span>
+                                    <span className="font-bold text-ink tabular-nums">
                                         {count} <span className="font-normal text-ink-faint">{percent}%</span>
                                     </span>
                                 </div>

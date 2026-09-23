@@ -23,7 +23,7 @@ export function ContextTabLink({ item, active, label }: ContextTabLinkProps) {
             <span
                 className={cn(
                     'flex h-10 w-10 items-center justify-center transition-all duration-200',
-                    active ? 'scale-105 opacity-100' : 'scale-100 opacity-50'
+                    active ? 'scale-105 opacity-100' : 'scale-100 opacity-50',
                 )}
             >
                 <Icon className="h-5.5 w-5.5 text-ink transition-all duration-200" aria-hidden="true" />

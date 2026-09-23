@@ -17,9 +17,9 @@ export function EventInfo({ date, place, className }: { date: number; place: str
         <div className={cn(className, 'flex items-center justify-between')}>
             <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                <p className="text-[1rem] alegreya-light">{formatted}</p>
+                <p className="alegreya-light text-[1rem]">{formatted}</p>
             </div>
-            <div className="flex items-center gap-1 text-[1rem] alegreya-light" hidden={!place}>
+            <div className="flex items-center gap-1 alegreya-light text-[1rem]" hidden={!place}>
                 <MapPin className="h-4 w-4" />
                 <p className="text-nowrap text-ellipsis whitespace-nowrap">{place}</p>
             </div>

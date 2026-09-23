@@ -35,7 +35,7 @@ function plan(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto {
 describe('admin account provisioning', () => {
     it('builds a paginated user search with trimmed filters', () => {
         expect(adminAccountsPath({ page: 2, size: 20, query: '  ada  ', email: ' ada@example.com ' })).toBe(
-            '/api/users?page=2&size=20&query=ada&email=ada%40example.com'
+            '/api/users?page=2&size=20&query=ada&email=ada%40example.com',
         );
     });
 

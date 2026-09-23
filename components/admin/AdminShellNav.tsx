@@ -55,7 +55,7 @@ export function AdminShellNav({
         <aside
             className={cn(
                 'flex flex-col gap-5 bg-card px-3 py-4.5',
-                mobile ? 'min-h-full' : 'hidden h-full w-64 shrink-0 overflow-y-auto border-r border-border lg:flex'
+                mobile ? 'min-h-full' : 'hidden h-full w-64 shrink-0 overflow-y-auto border-r border-border lg:flex',
             )}
         >
             <div className="flex items-center gap-2.5 px-2">
@@ -64,7 +64,7 @@ export function AdminShellNav({
                 </div>
                 <div className="min-w-0 leading-tight">
                     <p className="truncate text-[14.5px] font-extrabold tracking-tight text-ink">{t('layout.console')}</p>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-faint">{t('eyebrow')}</p>
+                    <p className="text-[10px] font-semibold tracking-[0.06em] text-ink-faint uppercase">{t('eyebrow')}</p>
                 </div>
             </div>
 
@@ -73,7 +73,7 @@ export function AdminShellNav({
                 if (groupTabs.length === 0) return null;
                 return (
                     <nav key={group}>
-                        <p className="mb-1.5 px-2.5 text-[10.5px] font-bold uppercase tracking-[0.08em] text-ink-faint">
+                        <p className="mb-1.5 px-2.5 text-[10.5px] font-bold tracking-[0.08em] text-ink-faint uppercase">
                             {t(`layout.group${group.charAt(0).toUpperCase()}${group.slice(1)}` as 'layout.groupOverview')}
                         </p>
                         <div className="space-y-px">
@@ -88,7 +88,7 @@ export function AdminShellNav({
                                         onClick={handleNavClick}
                                         className={cn(
                                             'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13.3px] font-semibold transition-colors',
-                                            active ? 'bg-primary-light text-primary-dark' : 'text-ink-muted hover:bg-canvas hover:text-ink'
+                                            active ? 'bg-primary-light text-primary-dark' : 'text-ink-muted hover:bg-canvas hover:text-ink',
                                         )}
                                     >
                                         <Icon className="h-4 w-4 shrink-0 opacity-85" />

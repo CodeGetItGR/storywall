@@ -35,7 +35,7 @@ export function EmailVerificationPageContent() {
             {!isPending && (
                 <Link
                     href={routes.login}
-                    className="mt-7 flex w-full items-center justify-center rounded-full bg-gradient-brand py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                    className="mt-7 flex w-full items-center justify-center rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
                 >
                     {t('signIn')}
                 </Link>

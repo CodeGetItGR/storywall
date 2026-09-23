@@ -9,7 +9,7 @@ export function PlanEditorDangerSection({ id, isDeleting, onDeleteOpenAction }: 
     const t = useTranslations('AdminPage');
 
     return (
-        <section id={id} className="scroll-mt-14 pb-2 pt-6">
+        <section id={id} className="scroll-mt-14 pt-6 pb-2">
             {/* Danger */}
             <h4 className="mb-1 text-sm font-bold text-ink">{t('plans.sections.danger')}</h4>
             <p className="mb-3 max-w-2xl text-sm leading-6 text-ink-muted">{t('plans.archiveInsteadHint')}</p>

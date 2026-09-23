@@ -22,7 +22,7 @@ export function LandingDeferredExperience() {
                 setShouldRender(true);
                 observer.disconnect();
             },
-            { rootMargin: '1200px 0px' }
+            { rootMargin: '1200px 0px' },
         );
 
         observer.observe(section);

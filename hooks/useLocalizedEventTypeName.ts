@@ -10,6 +10,6 @@ export function useLocalizedEventTypeName() {
 
     return useCallback(
         (eventType: Pick<PlatformEventTypeResponseDto, 'eventTypeKey' | 'name'>) => localizedText(eventType.name, eventType.eventTypeKey),
-        [localizedText]
+        [localizedText],
     );
 }

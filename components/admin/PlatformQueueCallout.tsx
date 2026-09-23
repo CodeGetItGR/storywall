@@ -23,7 +23,7 @@ export function PlatformQueueCallout({
         >
             <Icon className="h-5 w-5 shrink-0 text-status-warn" aria-hidden="true" />
             <span className="min-w-0 flex-1">
-                <span className="block text-lg font-bold tabular-nums leading-tight text-status-warn">{formatCount(count)}</span>
+                <span className="block text-lg leading-tight font-bold text-status-warn tabular-nums">{formatCount(count)}</span>
                 <span className="block truncate text-xs font-semibold text-status-warn">{label}</span>
             </span>
             <span className="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-status-warn group-hover:underline">

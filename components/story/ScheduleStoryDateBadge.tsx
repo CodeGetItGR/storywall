@@ -21,9 +21,9 @@ export function ScheduleStoryDateBadge({ date, locale, size = 'md', className }:
         return (
             <div
                 className={cn(
-                    'flex items-center justify-center rounded-full bg-gradient-brand p-0.75',
+                    'flex items-center justify-center rounded-full p-0.75 bg-gradient-brand',
                     isSmall ? 'h-9 w-9' : 'h-15.5 w-15.5',
-                    className
+                    className,
                 )}
                 aria-hidden="true"
             >
@@ -42,17 +42,17 @@ export function ScheduleStoryDateBadge({ date, locale, size = 'md', className }:
 
     return (
         <div
-            className={cn('flex items-center justify-center rounded-full bg-gradient-brand p-0.75', isSmall ? 'h-9 w-9' : 'h-15.5 w-15.5', className)}
+            className={cn('flex items-center justify-center rounded-full p-0.75 bg-gradient-brand', isSmall ? 'h-9 w-9' : 'h-15.5 w-15.5', className)}
             role="img"
             aria-label={t('scheduleStory')}
             title={label}
         >
             <div className="flex h-full w-full items-center justify-center rounded-full bg-background p-0.5">
                 <div className="flex h-full w-full flex-col items-center justify-center rounded-full bg-amber-100 text-amber-700">
-                    <span className={cn('font-semibold uppercase leading-none tracking-[0.08em]', isSmall ? 'text-[8px]' : 'text-[10px]')}>
+                    <span className={cn('leading-none font-semibold tracking-[0.08em] uppercase', isSmall ? 'text-[8px]' : 'text-[10px]')}>
                         {month}
                     </span>
-                    <span className={cn('font-bold leading-none', isSmall ? 'text-[11px]' : 'text-base')}>{day}</span>
+                    <span className={cn('leading-none font-bold', isSmall ? 'text-[11px]' : 'text-base')}>{day}</span>
                 </div>
             </div>
         </div>

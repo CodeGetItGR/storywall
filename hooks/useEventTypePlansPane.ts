@@ -45,14 +45,14 @@ export function useEventTypePlansPane(plans: PlanTierResponseDto[], selectEventT
             setDuplicatePlanId(null);
             setSavedMessage(t('create.createSuccess', { plan: name }));
         },
-        [t]
+        [t],
     );
     const handleSaved = useCallback(
         (name: string) => {
             setSelectedPlanId(null);
             setSavedMessage(t('saveSuccess', { plan: name }));
         },
-        [t]
+        [t],
     );
 
     // The drawer's "edit in grid" link: close, then bring the grid into view.
@@ -65,7 +65,7 @@ export function useEventTypePlansPane(plans: PlanTierResponseDto[], selectEventT
         (sibling: PlanTierResponseDto) => {
             if (sibling.eventTypeKey) selectEventType(sibling.eventTypeKey);
         },
-        [selectEventType]
+        [selectEventType],
     );
 
     useEffect(() => {

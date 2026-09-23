@@ -56,7 +56,7 @@ export function FeedPageBoundary({ eventId }: { eventId: string }) {
 
     const moduleFlags = useMemo<Record<ModuleKeyConvention, boolean>>(() => {
         const registryKeys = new Set(
-            appConfig?.modules.filter((module_) => module_.isEnabled).map((module_) => module_.moduleKey) ?? EVENT_MODULE_KEYS
+            appConfig?.modules.filter((module_) => module_.isEnabled).map((module_) => module_.moduleKey) ?? EVENT_MODULE_KEYS,
         );
         const defaults = Object.fromEntries(EVENT_MODULE_KEYS.map((key) => [key, false])) as Record<ModuleKeyConvention, boolean>;
 
@@ -67,7 +67,7 @@ export function FeedPageBoundary({ eventId }: { eventId: string }) {
         return {
             ...defaults,
             ...Object.fromEntries(
-                event.modules.filter(({ moduleKey }) => registryKeys.has(moduleKey)).map(({ moduleKey, isAvailable }) => [moduleKey, isAvailable])
+                event.modules.filter(({ moduleKey }) => registryKeys.has(moduleKey)).map(({ moduleKey, isAvailable }) => [moduleKey, isAvailable]),
             ),
         } as Record<ModuleKeyConvention, boolean>;
     }, [appConfig?.modules, event]);

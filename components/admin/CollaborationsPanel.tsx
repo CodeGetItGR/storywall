@@ -24,11 +24,11 @@ export function CollaborationsPanel() {
     const state = useCollaborationsAdmin(collaborators);
 
     return (
-        <div className="mx-auto max-w-6xl px-4 pb-16 pt-5 text-[15px] sm:px-6 lg:px-8 lg:pb-10 lg:pt-6">
+        <div className="mx-auto max-w-6xl px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
             {/* Header */}
             <header className="mb-5 flex flex-wrap items-start justify-between gap-3">
                 <div>
-                    <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-primary-dark">{tAdmin('eyebrow')}</p>
+                    <p className="text-[11px] font-bold tracking-[0.14em] text-primary-dark uppercase">{tAdmin('eyebrow')}</p>
                     <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">{t('title')}</h1>
                     <p className="mt-1.5 max-w-2xl text-sm leading-6 text-ink-muted">{t('subtitle')}</p>
                 </div>
@@ -54,8 +54,13 @@ export function CollaborationsPanel() {
             <section className="rounded-xl border border-border bg-card">
                 <div className="flex flex-wrap items-center gap-3 border-b border-border p-3">
                     <div className="relative min-w-0 flex-1 sm:max-w-72">
-                        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
-                        <input value={state.search} onChange={state.handleSearchChange} placeholder={t('search')} className={adminInputClass('w-full pl-8')} />
+                        <Search className="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+                        <input
+                            value={state.search}
+                            onChange={state.handleSearchChange}
+                            placeholder={t('search')}
+                            className={adminInputClass('w-full pl-8')}
+                        />
                     </div>
                     <div className="flex flex-wrap gap-1 rounded-lg bg-canvas p-1">
                         {STATUS_FILTERS.map((status) => (
@@ -67,7 +72,7 @@ export function CollaborationsPanel() {
                                 aria-pressed={state.statusFilter === status}
                                 className={cn(
                                     'rounded-md px-2.5 py-1.5 text-[12.5px] font-bold transition-colors',
-                                    state.statusFilter === status ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted'
+                                    state.statusFilter === status ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted',
                                 )}
                             >
                                 {status === 'ALL' ? t('status.ALL') : t(`status.${status}`)}

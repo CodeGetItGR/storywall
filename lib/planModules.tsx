@@ -77,7 +77,7 @@ export function publicEnabledModules(modules: PlatformModuleResponseDto[]): Plat
 export function publicAssignableModuleUnlocks(
     paidServices: PaidServiceResponseDto[],
     modules: PlatformModuleResponseDto[],
-    plan?: PlanTierResponseDto | null
+    plan?: PlanTierResponseDto | null,
 ): PaidServiceResponseDto[] {
     if (!plan) return [];
 
@@ -92,7 +92,7 @@ export function publicAssignableModuleUnlocks(
                 service.grantsModuleKey &&
                 enabledModules.has(service.grantsModuleKey) &&
                 !plan.moduleKeys.includes(service.grantsModuleKey) &&
-                (service.planTierIds.length === 0 || service.planTierIds.includes(plan.id))
+                (service.planTierIds.length === 0 || service.planTierIds.includes(plan.id)),
         )
         .sort((left, right) => {
             const leftModuleOrder = enabledModules.get(left.grantsModuleKey ?? '')?.sortOrder ?? Number.MAX_SAFE_INTEGER;
@@ -104,7 +104,7 @@ export function publicAssignableModuleUnlocks(
 export function publicAssignableEventAddons(
     paidServices: PaidServiceResponseDto[],
     modules: PlatformModuleResponseDto[],
-    plan?: PlanTierResponseDto | null
+    plan?: PlanTierResponseDto | null,
 ): PaidServiceResponseDto[] {
     if (!plan) return [];
 
@@ -117,7 +117,7 @@ export function publicAssignableEventAddons(
 
             if (service.kind === 'MODULE_UNLOCK') {
                 return Boolean(
-                    service.grantsModuleKey && enabledModuleKeys.has(service.grantsModuleKey) && !plan.moduleKeys.includes(service.grantsModuleKey)
+                    service.grantsModuleKey && enabledModuleKeys.has(service.grantsModuleKey) && !plan.moduleKeys.includes(service.grantsModuleKey),
                 );
             }
 

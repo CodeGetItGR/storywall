@@ -88,7 +88,7 @@ export function GalleryArchiveDownloadModal({ eventId, open, onClose, preferOrig
                 setActivePart(null);
             }
         },
-        [eventId, manifestQuery, t, tError, totalParts, variant]
+        [eventId, manifestQuery, t, tError, totalParts, variant],
     );
 
     const handlePartClick = useCallback(
@@ -97,7 +97,7 @@ export function GalleryArchiveDownloadModal({ eventId, open, onClose, preferOrig
             if (!Number.isFinite(part)) return;
             void downloadPart(part);
         },
-        [downloadPart]
+        [downloadPart],
     );
 
     return (
@@ -110,7 +110,7 @@ export function GalleryArchiveDownloadModal({ eventId, open, onClose, preferOrig
             closeLabel={t('closeDownloadGallery')}
             ariaLabel={t('downloadGalleryTitle')}
         >
-            <Modal.Body className="px-4 pb-4 pt-12 sm:px-5">
+            <Modal.Body className="px-4 pt-12 pb-4 sm:px-5">
                 <div className="flex h-full min-h-0 flex-col">
                     {/* Header */}
                     <div className="pr-8">
@@ -122,7 +122,7 @@ export function GalleryArchiveDownloadModal({ eventId, open, onClose, preferOrig
                     <div className="mt-5 rounded-2xl border border-border/70 bg-surface-muted/40 px-4 py-3">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                             <div className="min-w-0">
-                                <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{t('archiveSummaryTitle')}</p>
+                                <p className="text-xs font-semibold tracking-wide text-ink-muted uppercase">{t('archiveSummaryTitle')}</p>
                                 <p className="mt-1 text-sm leading-relaxed text-ink">{totalsLabel}</p>
                             </div>
                             {manifest?.originalsAvailable && (
@@ -132,7 +132,7 @@ export function GalleryArchiveDownloadModal({ eventId, open, onClose, preferOrig
                                         onClick={handleSelectDisplayVariant}
                                         className={cn(
                                             'rounded-full px-3 py-1.5 text-xs font-semibold transition-colors',
-                                            variant === 'DISPLAY' ? 'bg-ink text-background shadow-sm' : 'text-ink-muted hover:text-ink'
+                                            variant === 'DISPLAY' ? 'bg-ink text-background shadow-sm' : 'text-ink-muted hover:text-ink',
                                         )}
                                     >
                                         {t('displayVariant')}
@@ -142,7 +142,7 @@ export function GalleryArchiveDownloadModal({ eventId, open, onClose, preferOrig
                                         onClick={handleSelectOriginalVariant}
                                         className={cn(
                                             'rounded-full px-3 py-1.5 text-xs font-semibold transition-colors',
-                                            variant === 'ORIGINAL' ? 'bg-ink text-background shadow-sm' : 'text-ink-muted hover:text-ink'
+                                            variant === 'ORIGINAL' ? 'bg-ink text-background shadow-sm' : 'text-ink-muted hover:text-ink',
                                         )}
                                     >
                                         {t('originalVariant')}

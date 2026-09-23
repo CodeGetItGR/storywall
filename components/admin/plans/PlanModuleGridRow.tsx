@@ -29,7 +29,11 @@ export function PlanModuleGridRow({
             <th scope="row" className="sticky left-0 z-10 bg-card px-3 py-2 text-left align-top">
                 <p className="text-[13px] font-semibold text-ink">{moduleName}</p>
                 <div className="mt-1">
-                    <ModuleApplicabilityPill moduleKey={row.moduleKey} value={row.applicability} onRequestChangeAction={onRequestApplicabilityAction} />
+                    <ModuleApplicabilityPill
+                        moduleKey={row.moduleKey}
+                        value={row.applicability}
+                        onRequestChangeAction={onRequestApplicabilityAction}
+                    />
                 </div>
             </th>
             {/* Plan cells */}

@@ -113,7 +113,7 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
         <article
             className={cn(
                 'relative overflow-hidden rounded-[1.5rem] border bg-card shadow-[0_18px_36px_rgba(35,28,22,0.07)] transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_48px_rgba(35,28,22,0.1)]',
-                topRank ? 'border-primary/45 ring-1 ring-primary/15' : 'border-border/60'
+                topRank ? 'border-primary/45 ring-1 ring-primary/15' : 'border-border/60',
             )}
         >
             {/* Actions */}
@@ -136,7 +136,7 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
                         <div className="flex flex-wrap items-center gap-2">
                             <h3 className="truncate text-base font-semibold text-ink">{suggestion.title}</h3>
                             {topRank && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-primary-light px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-primary-dark">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-primary-light px-2.5 py-1 text-[10px] font-semibold tracking-[0.14em] text-primary-dark uppercase">
                                     <Award className="h-3.5 w-3.5" />
                                     {t('topSongBadge', { rank: topRank })}
                                 </span>
@@ -144,8 +144,8 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
                             {previewSource && (
                                 <span
                                     className={cn(
-                                        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]',
-                                        'bg-primary-light text-primary-dark'
+                                        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.18em] uppercase',
+                                        'bg-primary-light text-primary-dark',
                                     )}
                                 >
                                     {previewSource === 'spotify' ? <SpotifyMark className="h-3.5 w-3.5" /> : <YouTubeMark className="h-3.5 w-3.5" />}
@@ -182,7 +182,7 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
                     </div>
 
                     {/* Voting */}
-                    <div className="flex shrink-0 items-center gap-2 mt-10">
+                    <div className="mt-10 flex shrink-0 items-center gap-2">
                         <button
                             type="button"
                             onClick={handleUpvoteClick}
@@ -194,7 +194,7 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
                                 upvoteActive
                                     ? 'bg-primary-light text-primary shadow-sm shadow-primary/10'
                                     : 'text-ink-faint hover:bg-surface-muted hover:text-ink-muted',
-                                (!canVote || isBusy) && 'cursor-not-allowed opacity-60'
+                                (!canVote || isBusy) && 'cursor-not-allowed opacity-60',
                             )}
                         >
                             <ThumbsUp className={cn('h-4 w-4', upvoteActive && 'fill-primary')} strokeWidth={upvoteActive ? 0 : 1.8} />
@@ -212,7 +212,7 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
                                 downvoteActive
                                     ? 'bg-destructive/10 text-destructive shadow-sm shadow-destructive/10'
                                     : 'text-ink-faint hover:bg-surface-muted hover:text-ink-muted',
-                                (!canVote || isBusy) && 'cursor-not-allowed opacity-60'
+                                (!canVote || isBusy) && 'cursor-not-allowed opacity-60',
                             )}
                         >
                             <ThumbsDown className={cn('h-4 w-4', downvoteActive && 'fill-destructive')} strokeWidth={downvoteActive ? 0 : 1.8} />

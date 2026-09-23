@@ -42,19 +42,19 @@ export function ReplyItem({ reply, parentCommentId, onReply }: ReplyItemProps) {
                 <div className="rounded-2xl rounded-tl-sm bg-surface-muted px-3 py-2">
                     {/* Reply header */}
                     <div className="mb-0.5 flex items-baseline gap-2">
-                        <span className="min-w-0 flex-1 wrap-break-word text-xs font-semibold leading-tight text-ink">{name}</span>
-                        <span className="shrink-0 whitespace-nowrap text-[10px] text-ink-faint">
+                        <span className="min-w-0 flex-1 text-xs leading-tight font-semibold wrap-break-word text-ink">{name}</span>
+                        <span className="shrink-0 text-[10px] whitespace-nowrap text-ink-faint">
                             {timeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${timeAgo.unit}`, { count: timeAgo.value })}
                         </span>
                     </div>
-                    <p className="wrap-break-word text-xs leading-relaxed text-ink">{reply.content}</p>
+                    <p className="text-xs leading-relaxed wrap-break-word text-ink">{reply.content}</p>
                 </div>
                 {onReply && (
-                    <div className={'flex items-center gap-2 mt-2'}>
+                    <div className={'mt-2 flex items-center gap-2'}>
                         <button
                             type="button"
                             onClick={handleReply}
-                            className="mt-1 px-3 text-xs font-semibold text-ink-faint hover:text-ink transition-colors"
+                            className="mt-1 px-3 text-xs font-semibold text-ink-faint transition-colors hover:text-ink"
                         >
                             {t('reply')}
                         </button>

@@ -75,7 +75,7 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
     }
 
     if (done) {
-        return <p className="text-sm text-center text-ink-muted">{t('anonymousUpload.success')}</p>;
+        return <p className="text-center text-sm text-ink-muted">{t('anonymousUpload.success')}</p>;
     }
 
     return (
@@ -87,7 +87,7 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
                     value={uploaderName}
                     onChange={handleUploaderNameChange}
                     placeholder={t('anonymousUpload.namePlaceholder')}
-                    className="w-full bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
+                    className="w-full rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:ring-2 focus:ring-primary/30"
                 />
             </FormFieldLabel>
 
@@ -97,12 +97,12 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                     className={cn(
-                        'flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed px-4 text-center cursor-pointer transition-colors',
+                        'flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed px-4 text-center transition-colors',
                         files.length > 0 ? 'py-4' : 'py-10',
-                        isDragActive ? 'border-primary bg-primary/5' : 'border-ink-faint/30 bg-surface-muted hover:border-ink-faint/50'
+                        isDragActive ? 'border-primary bg-primary/5' : 'border-ink-faint/30 bg-surface-muted hover:border-ink-faint/50',
                     )}
                 >
-                    <ImagePlus className={cn('w-6 h-6', isDragActive ? 'text-primary' : 'text-ink-faint')} />
+                    <ImagePlus className={cn('h-6 w-6', isDragActive ? 'text-primary' : 'text-ink-faint')} />
                     <span className="text-sm font-medium text-ink">
                         {files.length > 0 ? t('anonymousUpload.addMore') : t('anonymousUpload.chooseFiles')}
                     </span>
@@ -111,9 +111,12 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
                 </label>
 
                 {previews.length > 0 && (
-                    <div className="mt-3 -mx-1 flex gap-2 overflow-x-auto px-1 pb-1" onClick={handleRemoveFileClick}>
+                    <div className="-mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-1" onClick={handleRemoveFileClick}>
                         {previews.map((preview, index) => (
-                            <div key={`${preview.file.name}-${preview.file.lastModified}-${index}`} className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-surface-muted">
+                            <div
+                                key={`${preview.file.name}-${preview.file.lastModified}-${index}`}
+                                className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-surface-muted"
+                            >
                                 {preview.isVideo ? (
                                     <>
                                         <video src={preview.url} className="h-full w-full object-cover" muted playsInline preload="metadata" />
@@ -126,7 +129,7 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
                                     type="button"
                                     data-remove-index={index}
                                     aria-label={t('anonymousUpload.removeFile')}
-                                    className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white"
+                                    className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white"
                                 >
                                     <X className="h-3 w-3" />
                                 </button>
@@ -137,7 +140,7 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
             </FormFieldLabel>
 
             {submitError && (
-                <p role="alert" className="text-xs text-center text-red-500 -mt-1">
+                <p role="alert" className="-mt-1 text-center text-xs text-red-500">
                     {submitError}
                 </p>
             )}
@@ -145,14 +148,14 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
             <button
                 type="submit"
                 disabled={uploadBatch.isPending || files.length === 0}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
+                className="flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
                 {uploadBatch.isPending ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                     <>
                         {t('anonymousUpload.submit')}
-                        <ArrowRight className="w-4 h-4" />
+                        <ArrowRight className="h-4 w-4" />
                     </>
                 )}
             </button>

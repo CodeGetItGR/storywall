@@ -219,7 +219,7 @@ export function ScheduleEditorForm({
             {/* Header */}
             <div className="border-b border-border/70 bg-background/95 px-4 py-4 backdrop-blur-sm sm:px-5">
                 <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-border/70" aria-hidden="true" />
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-faint">
+                <p className="text-[11px] font-semibold tracking-[0.18em] text-ink-faint uppercase">
                     {editingSession ? t('host.editingEyebrow') : t('host.eyebrow')}
                 </p>
                 <h2 className="mt-1 text-base font-semibold text-ink">{editingSession ? t('host.editingTitle') : t('host.title')}</h2>
@@ -241,7 +241,7 @@ export function ScheduleEditorForm({
                             type="text"
                             value={title}
                             onChange={handleTitleChange}
-                            className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                            className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                             placeholder={t('host.placeholders.title')}
                             required
                         />
@@ -256,7 +256,7 @@ export function ScheduleEditorForm({
                         <textarea
                             value={description}
                             onChange={handleDescriptionChange}
-                            className="w-full min-h-24 rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                            className="min-h-24 w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                             placeholder={t('host.placeholders.description')}
                             maxLength={maxDescriptionLength}
                         />
@@ -279,7 +279,7 @@ export function ScheduleEditorForm({
                                 disabled={datesDisabled}
                                 min={startAtMin}
                                 max={startAtMax}
-                                className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
+                                className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
                             />
                             {sessionHasStarted && !isMainSession && (
                                 <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('host.startLocked')}</p>
@@ -297,7 +297,7 @@ export function ScheduleEditorForm({
                                 onChange={handleEndAtChange}
                                 disabled={isMainSession}
                                 min={endAtMin}
-                                className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
+                                className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-60"
                             />
                         </FormFieldLabel>
                     </div>
@@ -316,7 +316,7 @@ export function ScheduleEditorForm({
                                 type="text"
                                 value={locationName}
                                 onChange={handleLocationNameChange}
-                                className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                                className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                                 placeholder={t('host.placeholders.locationName')}
                             />
                         </FormFieldLabel>
@@ -330,7 +330,7 @@ export function ScheduleEditorForm({
                                 type="url"
                                 value={mapsUrl}
                                 onChange={handleMapsUrlChange}
-                                className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                                className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                                 placeholder={t('host.placeholders.mapsUrl')}
                             />
                         </FormFieldLabel>
@@ -356,7 +356,7 @@ export function ScheduleEditorForm({
                         type="submit"
                         form={formId}
                         disabled={isSaving || !canSubmit}
-                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-brand px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="inline-flex flex-1 items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         {editingSession ? (
                             updateSession.isPending ? (

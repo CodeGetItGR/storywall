@@ -17,7 +17,7 @@ export async function LandingStories() {
                 <div className="eyebrow pt-2.5 text-[13px] leading-[1.4] font-extrabold tracking-[0.14em] uppercase min-[761px]:col-start-2 min-[761px]:row-start-1 min-[761px]:mb-5.5 min-[761px]:pt-0">
                     {t('eyebrow')}
                 </div>
-                <h2 className="m-0 text-[clamp(48px,6.5vw,108px)] leading-[0.93] font-normal tracking-[-0.055em] text-ink [font-family:var(--editorial)] min-[761px]:col-start-2 min-[761px]:row-start-2">
+                <h2 className="m-0 [font-family:var(--editorial)] text-[clamp(48px,6.5vw,108px)] leading-[0.93] font-normal tracking-[-0.055em] text-ink min-[761px]:col-start-2 min-[761px]:row-start-2">
                     {heading[0]}
                     <br />
                     {heading[1]}

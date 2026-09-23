@@ -66,7 +66,7 @@ export function EventOverviewStep() {
             <section aria-labelledby="pricing-heading" className="border-b border-border/70 py-5">
                 <div className="flex items-center gap-1.5">
                     <Receipt className="h-3.5 w-3.5 text-ink-faint" />
-                    <h3 id="pricing-heading" className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+                    <h3 id="pricing-heading" className="text-[11px] font-semibold tracking-wide text-ink-faint uppercase">
                         {t('overview.pricing')}
                     </h3>
                 </div>
@@ -103,7 +103,7 @@ export function EventOverviewStep() {
 
             {/* Checkout code */}
             <section aria-labelledby="checkout-code-heading" className="py-5">
-                <h3 id="checkout-code-heading" className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+                <h3 id="checkout-code-heading" className="text-[11px] font-semibold tracking-wide text-ink-faint uppercase">
                     {t('collaboration.title')}
                 </h3>
 
@@ -122,10 +122,10 @@ export function EventOverviewStep() {
                         aria-describedby={checkoutCodeError ? 'event-checkout-code-error' : undefined}
                         placeholder={t('collaboration.placeholder')}
                         className={cn(
-                            'min-h-11 flex-1 rounded-full border bg-card px-4 text-sm font-semibold text-ink outline-none transition focus:ring-2 disabled:bg-surface-muted disabled:text-ink-muted',
+                            'min-h-11 flex-1 rounded-full border bg-card px-4 text-sm font-semibold text-ink transition outline-none focus:ring-2 disabled:bg-surface-muted disabled:text-ink-muted',
                             checkoutCodeError
                                 ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/15'
-                                : 'border-border focus:border-primary focus:ring-primary/15'
+                                : 'border-border focus:border-primary focus:ring-primary/15',
                         )}
                     />
                     <button

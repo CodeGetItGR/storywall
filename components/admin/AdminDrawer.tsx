@@ -36,7 +36,7 @@ export function AdminDrawer({ open, onClose, title, subtitle, closeLabel, footer
         (nextOpen: boolean) => {
             if (!nextOpen) onClose();
         },
-        [onClose]
+        [onClose],
     );
 
     return (
@@ -47,14 +47,14 @@ export function AdminDrawer({ open, onClose, title, subtitle, closeLabel, footer
                 {/* Surface */}
                 <Dialog.Popup
                     className={cn(
-                        'motion-surface fixed right-0 top-(--visual-viewport-offset-top) z-50 flex h-(--visual-viewport-height) flex-col overflow-hidden',
+                        'motion-surface fixed top-(--visual-viewport-offset-top) right-0 z-50 flex h-(--visual-viewport-height) flex-col overflow-hidden',
                         size === 'wide' ? 'w-[min(680px,100vw)]' : 'w-[min(440px,100vw)]',
                         'border-l border-border bg-card text-ink shadow-[0_24px_60px_-20px_rgba(18,20,28,0.45)] outline-none',
-                        'data-ending-style:translate-x-full data-ending-style:opacity-0 data-starting-style:translate-x-full data-starting-style:opacity-0'
+                        'data-ending-style:translate-x-full data-ending-style:opacity-0 data-starting-style:translate-x-full data-starting-style:opacity-0',
                     )}
                 >
                     {/* Header */}
-                    <div className="flex items-start justify-between gap-3 border-b border-border px-5 pb-3.5 pt-4.5">
+                    <div className="flex items-start justify-between gap-3 border-b border-border px-5 pt-4.5 pb-3.5">
                         <div className="min-w-0">
                             <Dialog.Title className="truncate text-[16.5px] font-extrabold tracking-tight text-ink">{title}</Dialog.Title>
                             {subtitle && <p className="mt-0.5 truncate text-xs text-ink-faint">{subtitle}</p>}

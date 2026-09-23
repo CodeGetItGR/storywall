@@ -34,7 +34,10 @@ export function QrLinksSection({ eventId, showGallery, galleryQrLink, showInvita
                     >
                         <Images className="h-4 w-4 shrink-0 text-ink-faint" aria-hidden="true" />
                         <p className="min-w-0 flex-1 truncate text-xs text-ink-muted">{galleryQrLink ? t('gallery.body') : t('gallery.missing')}</p>
-                        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-ink-faint transition-colors group-hover:text-ink-muted" aria-hidden="true" />
+                        <ChevronRight
+                            className="h-3.5 w-3.5 shrink-0 text-ink-faint transition-colors group-hover:text-ink-muted"
+                            aria-hidden="true"
+                        />
                     </Link>
                 )}
                 {showInvitations && (
@@ -46,7 +49,10 @@ export function QrLinksSection({ eventId, showGallery, galleryQrLink, showInvita
                         <p className="min-w-0 flex-1 truncate text-xs text-ink-muted">
                             {invitationsQrCount > 0 ? t('invitations.body', { count: invitationsQrCount }) : t('invitations.missing')}
                         </p>
-                        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-ink-faint transition-colors group-hover:text-ink-muted" aria-hidden="true" />
+                        <ChevronRight
+                            className="h-3.5 w-3.5 shrink-0 text-ink-faint transition-colors group-hover:text-ink-muted"
+                            aria-hidden="true"
+                        />
                     </Link>
                 )}
             </div>

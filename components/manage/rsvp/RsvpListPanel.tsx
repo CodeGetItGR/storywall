@@ -23,7 +23,7 @@ export function RsvpListPanel({ members, rsvps }: { members: RosterMember[]; rsv
         (event: ChangeEvent<HTMLSelectElement>) => {
             setFilter(event.target.value as RosterFilter);
         },
-        [setFilter]
+        [setFilter],
     );
 
     const rows = visibleGuests.map((member) => {
@@ -50,12 +50,12 @@ export function RsvpListPanel({ members, rsvps }: { members: RosterMember[]; rsv
     return (
         <div className="flex flex-col gap-4">
             {/* Filters */}
-            <div className="relative inline-block w-max ml-auto">
-                <Filter className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-faint" />
+            <div className="relative ml-auto inline-block w-max">
+                <Filter className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-ink-faint" />
                 <select
                     value={filter}
                     onChange={handleFilterChange}
-                    className="min-h-5 appearance-none rounded-md border border-border bg-background py-2 pl-8 pr-9 text-sm font-semibold text-ink transition-colors hover:border-ink-faint focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className="min-h-5 appearance-none rounded-md border border-border bg-background py-2 pr-9 pl-8 text-sm font-semibold text-ink transition-colors hover:border-ink-faint focus:ring-2 focus:ring-primary/30 focus:outline-none"
                 >
                     {filters.map(({ key, labelKey }) => {
                         const count = key === 'all' ? guestCount : counts[key];
@@ -66,7 +66,7 @@ export function RsvpListPanel({ members, rsvps }: { members: RosterMember[]; rsv
                         );
                     })}
                 </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+                <ChevronDown className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-ink-faint" />
             </div>
 
             {/* Roster */}
@@ -81,7 +81,7 @@ export function RsvpListPanel({ members, rsvps }: { members: RosterMember[]; rsv
                         {rows.map((row) => (
                             <li key={row.id} className="flex items-start justify-between gap-3 py-3">
                                 <div className="min-w-0">
-                                    <p className="truncate text-sm font-semibold leading-tight text-ink">{row.name}</p>
+                                    <p className="truncate text-sm leading-tight font-semibold text-ink">{row.name}</p>
                                     <p className="mt-0.5 text-xs text-ink-faint">{row.partyLabel}</p>
                                     {row.notes && <p className="mt-1 text-xs leading-6 text-ink-muted">{row.notes}</p>}
                                 </div>
@@ -98,7 +98,7 @@ export function RsvpListPanel({ members, rsvps }: { members: RosterMember[]; rsv
                     <div className="hidden overflow-x-auto md:block">
                         <table className="w-full min-w-[640px] border-collapse text-sm">
                             <thead>
-                                <tr className="border-b border-border text-left text-[11px] font-bold uppercase tracking-wide text-ink-faint">
+                                <tr className="border-b border-border text-left text-[11px] font-bold tracking-wide text-ink-faint uppercase">
                                     <th className="py-2.5 pr-3 font-bold">{t('rsvpColumns.guest')}</th>
                                     <th className="w-40 px-3 py-2.5 font-bold">{t('rsvpColumns.party')}</th>
                                     <th className="w-36 px-3 py-2.5 font-bold">{t('rsvpColumns.status')}</th>
@@ -116,7 +116,7 @@ export function RsvpListPanel({ members, rsvps }: { members: RosterMember[]; rsv
                                             <span
                                                 className={cn(
                                                     'inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold',
-                                                    rsvpStatusTone[row.status]
+                                                    rsvpStatusTone[row.status],
                                                 )}
                                             >
                                                 {row.statusLabel}

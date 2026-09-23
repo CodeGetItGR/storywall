@@ -27,7 +27,7 @@ export function EventTimezoneField({ label, value, options, error, onChangeActio
                     onChange={onChangeAction}
                     aria-invalid={Boolean(error)}
                     autoComplete="off"
-                    className="w-full rounded-xl bg-surface-muted py-3 pr-12 pl-4 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:ring-2 focus:ring-primary/30"
+                    className="w-full rounded-xl bg-surface-muted py-3 pr-12 pl-4 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:ring-2 focus:ring-primary/30"
                 />
                 <Search aria-hidden="true" className="pointer-events-none absolute top-1/2 right-4 h-4 w-4 -translate-y-1/2 text-ink-muted" />
             </span>

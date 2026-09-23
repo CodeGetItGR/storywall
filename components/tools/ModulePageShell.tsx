@@ -53,7 +53,7 @@ export function ModulePageShell({
                 backHref={backHref}
                 action={action}
             />
-            {subtitle && <p className="mb-5 text-sm leading-relaxed text-ink-muted text-center">{subtitle}</p>}
+            {subtitle && <p className="mb-5 text-center text-sm leading-relaxed text-ink-muted">{subtitle}</p>}
             {notice}
             {children}
         </div>

@@ -15,6 +15,6 @@ export function useLocalizedPlanDescription() {
             if (locale === 'en' && plan.description?.trim()) return plan.description.trim();
             return t('fallback', { plan: plan.name });
         },
-        [locale, t]
+        [locale, t],
     );
 }

@@ -64,7 +64,7 @@ export function WithdrawalPanel({ panel }: { panel: EventWithdrawalFlow }) {
                     })}
                 </p>
                 <label className="block">
-                    <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+                    <span className="text-[11px] font-semibold tracking-wide text-ink-faint uppercase">
                         {t('withdrawal.reason')} <span className="text-ink-faint/80">({tCommon('optional')})</span>
                     </span>
                     <textarea
@@ -72,7 +72,7 @@ export function WithdrawalPanel({ panel }: { panel: EventWithdrawalFlow }) {
                         onChange={panel.handleWithdrawalReasonChange}
                         rows={2}
                         maxLength={1000}
-                        className="mt-1 w-full rounded-lg bg-background px-3 py-2 text-sm text-ink outline-none transition focus:ring-2 focus:ring-primary/15"
+                        className="mt-1 w-full rounded-lg bg-background px-3 py-2 text-sm text-ink transition outline-none focus:ring-2 focus:ring-primary/15"
                         placeholder={t('withdrawal.reasonPlaceholder')}
                     />
                 </label>

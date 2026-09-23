@@ -57,7 +57,7 @@ export function buildArrayHandlers<Schema extends Record<string, { id: string }[
     db: MockDb<{ [P in keyof Schema]: Schema[P][number] }>,
     collection: K,
     path: string,
-    filterByEventId = true
+    filterByEventId = true,
 ) {
     return [
         http.get(`${API_BASE_URL}${path}`, ({ params }) => {
@@ -74,7 +74,7 @@ export function buildPageHandlers<Schema extends Record<string, { id: string }[]
     db: MockDb<{ [P in keyof Schema]: Schema[P][number] }>,
     collection: K,
     path: string,
-    pageSize: number
+    pageSize: number,
 ) {
     return [
         http.get(`${API_BASE_URL}${path}`, ({ request, params }) => {
@@ -94,7 +94,7 @@ export function buildDetailHandlers<Schema extends Record<string, { id: string }
     db: MockDb<{ [P in keyof Schema]: Schema[P][number] }>,
     collection: K,
     path: string,
-    options: { patch?: boolean; del?: boolean } = {}
+    options: { patch?: boolean; del?: boolean } = {},
 ) {
     const handlers = [
         http.get(`${API_BASE_URL}${path}`, ({ params }) => {
@@ -109,7 +109,7 @@ export function buildDetailHandlers<Schema extends Record<string, { id: string }
                 const body = (await request.json()) as Record<string, unknown>;
                 const updated = db.update(collection, params.id as string, (record) => ({ ...record, ...body }));
                 return updated ? HttpResponse.json(updated) : new HttpResponse(null, { status: 404 });
-            })
+            }),
         );
     }
 
@@ -118,7 +118,7 @@ export function buildDetailHandlers<Schema extends Record<string, { id: string }
             http.delete(`${API_BASE_URL}${path}`, ({ params }) => {
                 db.remove(collection, params.id as string);
                 return new HttpResponse(null, { status: 204 });
-            })
+            }),
         );
     }
 
@@ -131,7 +131,7 @@ export function buildCreateHandler<Schema extends Record<string, { id: string }[
     db: MockDb<{ [P in keyof Schema]: Schema[P][number] }>,
     collection: K,
     path: string,
-    buildRecord: (body: Record<string, unknown>) => Schema[K][number]
+    buildRecord: (body: Record<string, unknown>) => Schema[K][number],
 ) {
     // The response body type can't be inferred through Schema's generic here — MSW's
     // http.post infers it from the resolver's return value, but Schema isn't concrete at
@@ -220,7 +220,7 @@ export const demoHandlers = [
 
     // --- Event detail ---
     http.get(`${API_BASE_URL}/api/events/:eventId`, ({ params }) =>
-        params.eventId === DEMO_EVENT_ID ? HttpResponse.json(buildSeedEvent()) : new HttpResponse(null, { status: 404 })
+        params.eventId === DEMO_EVENT_ID ? HttpResponse.json(buildSeedEvent()) : new HttpResponse(null, { status: 404 }),
     ),
     http.get(`${API_BASE_URL}/api/events/:eventId/usage`, () => HttpResponse.json(buildSeedUsage())),
     http.get(`${API_BASE_URL}/api/events/:eventId/billing`, () => HttpResponse.json(buildSeedBilling())),
@@ -375,8 +375,8 @@ export const demoHandlers = [
                     metadata: {},
                     createdAt: new Date().toISOString(),
                     deletedAt: null,
-                })
-            )
+                }),
+            ),
         );
         return HttpResponse.json({ created, failed: [] });
     }),
@@ -442,7 +442,7 @@ export const demoHandlers = [
     }),
     ...buildDetailHandlers(demoDb, 'comments', '/api/comments/:id', { del: true }),
     http.get(`${API_BASE_URL}/api/posts/:postId/reactions`, ({ params }) =>
-        HttpResponse.json(demoDb.list('reactions').filter((r) => r.postId === params.postId))
+        HttpResponse.json(demoDb.list('reactions').filter((r) => r.postId === params.postId)),
     ),
     buildCreateHandler(demoDb, 'reactions', '/api/reactions', (body) => ({
         id: newId('demo-reaction'),

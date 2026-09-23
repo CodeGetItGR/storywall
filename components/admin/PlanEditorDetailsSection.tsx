@@ -54,28 +54,34 @@ export function PlanEditorDetailsSection({
 
             {/* Read-only identifiers */}
             <dl className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 text-xs">
-                <dt className="font-bold uppercase tracking-wide text-ink-muted">{t('fields.code')}</dt>
+                <dt className="font-bold tracking-wide text-ink-muted uppercase">{t('fields.code')}</dt>
                 <dd className="font-mono text-ink">{plan.code}</dd>
                 {eventType && (
                     <>
-                        <dt className="font-bold uppercase tracking-wide text-ink-muted">{t('plans.coverage.eventTypeLabel')}</dt>
+                        <dt className="font-bold tracking-wide text-ink-muted uppercase">{t('plans.coverage.eventTypeLabel')}</dt>
                         <dd className="text-ink">{localizedText(eventType.name, eventType.eventTypeKey)}</dd>
                     </>
                 )}
                 {siblings.length > 0 && (
                     <>
-                        <dt className="font-bold uppercase tracking-wide text-ink-muted">{t('plans.sharedGroup.label')}</dt>
+                        <dt className="font-bold tracking-wide text-ink-muted uppercase">{t('plans.sharedGroup.label')}</dt>
                         <dd className="flex flex-wrap gap-1">
                             {siblings.map((sibling) =>
                                 onOpenSiblingAction ? (
-                                    <button key={sibling.id} type="button" data-plan-id={sibling.id} onClick={handleSiblingClick} className={`${SIBLING_CHIP} hover:text-ink`}>
+                                    <button
+                                        key={sibling.id}
+                                        type="button"
+                                        data-plan-id={sibling.id}
+                                        onClick={handleSiblingClick}
+                                        className={`${SIBLING_CHIP} hover:text-ink`}
+                                    >
                                         {eventTypeLabel(sibling.eventTypeKey) ?? sibling.code}
                                     </button>
                                 ) : (
                                     <span key={sibling.id} className={SIBLING_CHIP}>
                                         {eventTypeLabel(sibling.eventTypeKey) ?? sibling.code}
                                     </span>
-                                )
+                                ),
                             )}
                         </dd>
                     </>

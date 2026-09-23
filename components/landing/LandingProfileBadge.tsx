@@ -17,7 +17,7 @@ export function LandingProfileBadge() {
         <Link
             href={routes.profile}
             aria-label={t('editProfile')}
-            className="inline-flex items-center gap-2 whitespace-nowrap text-xs font-bold text-[#151313] transition-opacity hover:opacity-60"
+            className="inline-flex items-center gap-2 text-xs font-bold whitespace-nowrap text-[#151313] transition-opacity hover:opacity-60"
         >
             <Avatar src={user?.profilePictureUrl} initials={getInitials(accountName)} size="sm" alt="" />
             <span>{accountName}</span>

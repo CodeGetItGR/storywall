@@ -66,14 +66,14 @@ export default function LoginPage() {
             const auth = await oauth(provider, { idToken, inviteToken: inviteToken ?? undefined });
             router.replace(getPostAuthRedirectPath(auth.role, returnPath));
         },
-        [inviteToken, oauth, returnPath, router]
+        [inviteToken, oauth, returnPath, router],
     );
 
     const handleOAuthError = useCallback(
         (err: unknown) => {
             setError(toErrorMessage(err));
         },
-        [toErrorMessage]
+        [toErrorMessage],
     );
 
     if (!shouldRenderAuthPage) {
@@ -88,23 +88,23 @@ export default function LoginPage() {
 
                 {/* Email */}
                 <FormFieldLabel label={t('fields.email')} required>
-                    <div className="flex items-center gap-3 bg-surface-muted/70 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
-                        <Mail className="w-4 h-4 text-ink-muted shrink-0" />
+                    <div className="flex items-center gap-3 rounded-xl bg-surface-muted/70 px-4 py-3 transition focus-within:ring-2 focus-within:ring-primary/30">
+                        <Mail className="h-4 w-4 shrink-0 text-ink-muted" />
                         <input
                             type="email"
                             placeholder={t('placeholders.email')}
                             required
                             value={email}
                             onChange={handleEmailChange}
-                            className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink-faint outline-none"
+                            className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-faint"
                         />
                     </div>
                 </FormFieldLabel>
 
                 {/* Password */}
                 <FormFieldLabel label={t('fields.password')} required>
-                    <div className="flex items-center gap-3 bg-surface-muted/70 rounded-xl px-4 py-3 focus-within:ring-2 focus-within:ring-primary/30 transition">
-                        <Lock className="w-4 h-4 text-ink-muted shrink-0" />
+                    <div className="flex items-center gap-3 rounded-xl bg-surface-muted/70 px-4 py-3 transition focus-within:ring-2 focus-within:ring-primary/30">
+                        <Lock className="h-4 w-4 shrink-0 text-ink-muted" />
                         <input
                             type={showPw ? 'text' : 'password'}
                             placeholder="••••••••"
@@ -112,15 +112,15 @@ export default function LoginPage() {
                             minLength={8}
                             value={password}
                             onChange={handlePasswordChange}
-                            className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink-faint outline-none"
+                            className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-faint"
                         />
                         <button
                             type="button"
                             onClick={handleTogglePasswordVisibility}
                             aria-label={showPw ? t('hidePassword') : t('showPassword')}
-                            className="text-ink-faint hover:text-ink-muted transition-colors"
+                            className="text-ink-faint transition-colors hover:text-ink-muted"
                         >
-                            {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                     </div>
                 </FormFieldLabel>
@@ -135,7 +135,7 @@ export default function LoginPage() {
 
                 {/* Feedback */}
                 {error && (
-                    <p role="alert" className="text-xs text-center text-red-500 -mt-1">
+                    <p role="alert" className="-mt-1 text-center text-xs text-red-500">
                         {error}
                     </p>
                 )}
@@ -144,14 +144,14 @@ export default function LoginPage() {
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="mt-2 w-full flex items-center justify-center gap-2 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="mt-2 flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                     {isSubmitting ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                         <>
                             {t('submit')}
-                            <ArrowRight className="w-4 h-4" />
+                            <ArrowRight className="h-4 w-4" />
                         </>
                     )}
                 </button>
@@ -165,7 +165,7 @@ export default function LoginPage() {
             </div>
             <OAuthButtons onSignIn={handleOAuthSignIn} onError={handleOAuthError} />
 
-            <p className="text-xs text-center text-ink-muted mt-6">
+            <p className="mt-6 text-center text-xs text-ink-muted">
                 {t('noAccount')}{' '}
                 <Link href={routes.auth.register({ invite: inviteToken, next: returnPath })} className="font-semibold text-ink hover:underline">
                     {t('createAccountLink')}

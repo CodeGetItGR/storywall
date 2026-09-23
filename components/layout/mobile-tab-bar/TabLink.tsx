@@ -24,10 +24,18 @@ export function TabLink({ href, icon, label, active, onClick }: TabLinkProps) {
             <span
                 className={cn(
                     'flex h-10 w-10 items-center justify-center transition-all duration-200',
-                    active ? 'scale-105 opacity-100' : 'scale-100 opacity-50'
+                    active ? 'scale-105 opacity-100' : 'scale-100 opacity-50',
                 )}
             >
-                <Image src={icon} alt={label} width={22} height={22} className="h-5.5 w-5.5 transition-all duration-200" loading="eager" unoptimized />
+                <Image
+                    src={icon}
+                    alt={label}
+                    width={22}
+                    height={22}
+                    className="h-5.5 w-5.5 transition-all duration-200"
+                    loading="eager"
+                    unoptimized
+                />
             </span>
         </Link>
     );

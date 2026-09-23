@@ -33,7 +33,7 @@ export function FormFieldLabel({
 
     return (
         <label className={cn('flex min-w-0 flex-col gap-1.5', className)}>
-            <span className={cn('text-xs font-semibold uppercase tracking-wide text-ink-muted', labelClassName)}>
+            <span className={cn('text-xs font-semibold tracking-wide text-ink-muted uppercase', labelClassName)}>
                 <span>{label}</span>
                 {resolvedIndicator && (
                     <span
@@ -41,8 +41,8 @@ export function FormFieldLabel({
                         className={cn(
                             resolvedIndicator === 'required'
                                 ? 'ml-1 align-top text-[1.5em] font-medium text-ink-muted/80'
-                                : 'ml-1 text-[10px] font-medium normal-case tracking-normal text-ink-faint',
-                            indicatorClassName
+                                : 'ml-1 text-[10px] font-medium tracking-normal text-ink-faint normal-case',
+                            indicatorClassName,
                         )}
                     >
                         {resolvedIndicator === 'required' ? '*' : `(${t('optional')})`}

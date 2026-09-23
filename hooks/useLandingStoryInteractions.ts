@@ -74,7 +74,7 @@ export function useLandingStoryInteractions(landingRef: RefObject<HTMLElement | 
                         triggerHint(Number(row.dataset.row));
                     });
                 },
-                { root: null, rootMargin: '0px 0px -8% 0px', threshold: 0.22 }
+                { root: null, rootMargin: '0px 0px -8% 0px', threshold: 0.22 },
             );
             rows.forEach((row) => revealObserver.observe(row));
             observers.push(revealObserver);

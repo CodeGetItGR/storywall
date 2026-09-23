@@ -27,19 +27,19 @@ export function setMemberRsvpIdInCaches(
     queryClient: ReturnType<typeof useQueryClient>,
     eventMemberId: string,
     rsvpId: string | null,
-    eventId?: string
+    eventId?: string,
 ) {
     queryClient.setQueryData<EventMemberResponseDto[] | undefined>(myEventsKeys.all, (members) =>
-        updateMemberRsvpIdInCollection(members, eventMemberId, rsvpId)
+        updateMemberRsvpIdInCollection(members, eventMemberId, rsvpId),
     );
 
     if (eventId) {
         queryClient.setQueryData<EventMemberResponseDto[] | undefined>(eventMemberKeys.list(eventId), (members) =>
-            updateMemberRsvpIdInCollection(members, eventMemberId, rsvpId)
+            updateMemberRsvpIdInCollection(members, eventMemberId, rsvpId),
         );
 
         queryClient.setQueryData<EventMemberResponseDto | undefined>(eventMemberKeys.detail(eventMemberId), (member) =>
-            member ? { ...member, rsvpId } : member
+            member ? { ...member, rsvpId } : member,
         );
     }
 }

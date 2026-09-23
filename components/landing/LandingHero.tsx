@@ -20,7 +20,7 @@ type LandingHeroCtaProps = { className: string; href: string; lines: string[] };
 function LandingHeroCta({ className, href, lines }: LandingHeroCtaProps) {
     return (
         <a
-            className={`items-center justify-between gap-4 rounded-full bg-[linear-gradient(100deg,#ff6f93,#ff936a_52%,#ffd05b)] py-4.25 pr-4.5 pl-7.5 text-white shadow-[0_16px_32px_rgba(217,102,74,.15)] transition-transform hover:-translate-y-0.5 focus-ring focus-visible:outline-offset-4 min-[761px]:gap-2.5 min-[761px]:py-2.5 min-[761px]:pr-2.75 min-[761px]:pl-5 ${className}`}
+            className={`items-center justify-between gap-4 rounded-full bg-[linear-gradient(100deg,#ff6f93,#ff936a_52%,#ffd05b)] py-4.25 pr-4.5 pl-7.5 text-white shadow-[0_16px_32px_rgba(217,102,74,.15)] focus-ring transition-transform hover:-translate-y-0.5 focus-visible:outline-offset-4 min-[761px]:gap-2.5 min-[761px]:py-2.5 min-[761px]:pr-2.75 min-[761px]:pl-5 ${className}`}
             href={href}
         >
             <span className="flex-1 text-center font-[Baskerville,Georgia,serif] text-[24px] leading-[1.02] tracking-tight min-[421px]:text-[clamp(25px,6.2vw,34px)] min-[761px]:text-[clamp(15px,1vw,19px)]">
@@ -67,15 +67,23 @@ export function LandingHero() {
                         className="inline-flex w-[min(196px,49vw)] shrink-0 items-center min-[761px]:w-[clamp(200px,14vw,260px)]"
                         href="#top-preview"
                     >
-                        <ProtectedImage unoptimized alt="StoryWall" className="h-auto w-full" height={119} priority src="/landing/storywall.webp" width={600} />
+                        <ProtectedImage
+                            unoptimized
+                            alt="StoryWall"
+                            className="h-auto w-full"
+                            height={119}
+                            priority
+                            src="/landing/storywall.webp"
+                            width={600}
+                        />
                     </a>
                     <nav
                         aria-label={t('navLabel')}
-                        className="ml-auto hidden items-center gap-[clamp(20px,2vw,38px)] whitespace-nowrap text-xs tracking-[-0.015em] min-[761px]:flex"
+                        className="ml-auto hidden items-center gap-[clamp(20px,2vw,38px)] text-xs tracking-[-0.015em] whitespace-nowrap min-[761px]:flex"
                     >
                         {navLabels.slice(0, -1).map((label, index) => (
                             <a
-                                className="transition-opacity hover:opacity-60 focus-ring focus-visible:outline-offset-4"
+                                className="focus-ring transition-opacity hover:opacity-60 focus-visible:outline-offset-4"
                                 href={NAV_HREFS[index]}
                                 key={label}
                             >
@@ -141,7 +149,7 @@ export function LandingHero() {
                         </p>
                         <p
                             aria-label={t('eventTypesLabel')}
-                            className="mb-5 flex min-h-8 items-baseline gap-2 whitespace-nowrap font-[Baskerville,Georgia,serif] text-[clamp(22px,1.7vw,32px)] leading-none"
+                            className="mb-5 flex min-h-8 items-baseline gap-2 font-[Baskerville,Georgia,serif] text-[clamp(22px,1.7vw,32px)] leading-none whitespace-nowrap"
                         >
                             <span>{t('eventTypesPrefix')}</span>
                             <span className="bg-[linear-gradient(90deg,#df7794,#f29365_52%,#f2c764)] bg-clip-text font-medium text-transparent">
@@ -161,7 +169,7 @@ export function LandingHero() {
                         </h1>
                         <div className={'flex'}>
                             <LandingHeroCta
-                                className="mx-auto  md:ml-44 lg:ml-68 hidden min-[761px]:mt-6.5 min-[761px]:flex min-[761px]:h-15.5 min-[761px]:w-[min(228px,52%)]"
+                                className="mx-auto hidden min-[761px]:mt-6.5 min-[761px]:flex min-[761px]:h-15.5 min-[761px]:w-[min(228px,52%)] md:ml-44 lg:ml-68"
                                 href={isSignedIn ? routes.home : routes.events.new()}
                                 lines={cta}
                             />
@@ -186,7 +194,7 @@ export function LandingHero() {
                     </div>
                     <LandingHeroVisual motionPaused={paused} />
                     <LandingHeroCta
-                        className="order-3 mx-auto mt-[34vw] h-23 w-[min(415px,78vw)] flex min-[421px]:h-28 min-[761px]:hidden"
+                        className="order-3 mx-auto mt-[34vw] flex h-23 w-[min(415px,78vw)] min-[421px]:h-28 min-[761px]:hidden"
                         href={isSignedIn ? routes.home : routes.events.new()}
                         lines={cta}
                     />

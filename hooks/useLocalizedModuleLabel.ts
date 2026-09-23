@@ -18,6 +18,6 @@ export function useLocalizedModuleLabel(modules: PlatformModuleResponseDto[]) {
                 Icon: meta.Icon,
             };
         },
-        [modules, tModules]
+        [modules, tModules],
     );
 }

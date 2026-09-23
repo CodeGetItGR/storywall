@@ -38,18 +38,18 @@ export function StoriesRow({ eventId, onOpenStoryAction }: StoriesRowProps) {
     const hasStartItems = Boolean(ownAuthor || canComposeStory || hasScheduleStory);
 
     return (
-        <section aria-label={t('ariaLabel')} className="flex items-start gap-4 overflow-x-auto no-scrollbar px-4 py-4">
+        <section aria-label={t('ariaLabel')} className="no-scrollbar flex items-start gap-4 overflow-x-auto px-4 py-4">
             {/* Current user slot */}
             {ownGroup && activeMember && ownAuthor ? (
                 <StoryAvatar group={ownGroup} author={ownAuthor} isCurrentUser onOpenStoryAction={onOpenStoryAction} />
             ) : canComposeStory ? (
-                <div className="flex flex-col items-center gap-2 shrink-0">
+                <div className="flex shrink-0 flex-col items-center gap-2">
                     <button
                         type="button"
                         onClick={openStoryCapture}
                         disabled={!activeMember}
                         aria-label={tAvatar('addYourStory')}
-                        className="relative w-15.5 h-15.5 flex items-center justify-center disabled:opacity-60"
+                        className="relative flex h-15.5 w-15.5 items-center justify-center disabled:opacity-60"
                     >
                         <Avatar
                             src={memberAvatarUrl(activeMember?.id, activeMember?.avatarUrl)}
@@ -62,11 +62,11 @@ export function StoriesRow({ eventId, onOpenStoryAction }: StoriesRowProps) {
                             <Plus className="h-3 w-3" strokeWidth={3} aria-hidden="true" />
                         </span>
                     </button>
-                    <span className="text-[11px] text-ink-muted font-medium text-center leading-tight max-w-14 truncate">{tAvatar('yourStory')}</span>
+                    <span className="max-w-14 truncate text-center text-[11px] leading-tight font-medium text-ink-muted">{tAvatar('yourStory')}</span>
                 </div>
             ) : null}
 
-            {hasStartItems && <div className="w-px h-14 bg-border self-center shrink-0" aria-hidden="true" />}
+            {hasStartItems && <div className="h-14 w-px shrink-0 self-center bg-border" aria-hidden="true" />}
 
             {/* Schedule story */}
             {hasScheduleStory && <ScheduleStoryAvatar />}

@@ -45,8 +45,7 @@ async function springAuthFetch(path: string, body: unknown, locale: Locale): Pro
 }
 
 export const springAuth = {
-    register: (input: RegisterRequestDto, locale: Locale) =>
-        springAuthFetch(endpoints.auth.register, input, locale),
+    register: (input: RegisterRequestDto, locale: Locale) => springAuthFetch(endpoints.auth.register, input, locale),
     login: (input: { email: string; password: string; inviteToken?: string }, locale: Locale) => springAuthFetch(endpoints.auth.login, input, locale),
     oauth: (provider: 'GOOGLE' | 'APPLE', input: { idToken: string; inviteToken?: string }, locale: Locale) =>
         springAuthFetch(endpoints.auth.oauth(provider), input, locale),

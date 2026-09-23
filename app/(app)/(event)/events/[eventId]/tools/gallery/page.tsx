@@ -26,7 +26,7 @@ export default async function Page({ params }: PageProps) {
         try {
             const firstPage = await serverGet<Page<MediaResponseDto>>(
                 `${endpoints.events.media(eventId)}?page=0&size=${MEDIA_PAGE_SIZE}`,
-                context.accessToken
+                context.accessToken,
             );
             queryClient.setQueryData(mediaKeys.list(eventId), { pages: [firstPage], pageParams: [0] });
         } catch {

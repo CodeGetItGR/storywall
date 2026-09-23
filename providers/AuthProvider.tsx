@@ -4,7 +4,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { authClient } from '@/lib/api/authClient';
-import type { AccountStatus, AuthProvider as AuthProviderName, AuthSessionDto, PlatformRole, RegisterRequestDto, UserResponseDto } from '@/lib/api/types';
+import type {
+    AccountStatus,
+    AuthProvider as AuthProviderName,
+    AuthSessionDto,
+    PlatformRole,
+    RegisterRequestDto,
+    UserResponseDto,
+} from '@/lib/api/types';
 import { clearSession, getAuthState, getSessionGeneration, setSession, subscribeAuthState, updateSessionProfile } from '@/lib/auth/tokenStore';
 
 const BOOTSTRAP_TIMEOUT_MS = 8000;
@@ -109,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setSession(session);
             return session;
         },
-        [queryClient]
+        [queryClient],
     );
 
     const login = useCallback(
@@ -119,7 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setSession(session);
             return session;
         },
-        [queryClient]
+        [queryClient],
     );
 
     const oauth = useCallback(
@@ -129,7 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setSession(session);
             return session;
         },
-        [queryClient]
+        [queryClient],
     );
 
     const logout = useCallback(async () => {
@@ -162,8 +169,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // does change them propagates, which keying the memo on `isAuthenticated`
     // alone did not: a role or display name arriving later left consumers
     // holding the previous user.
-    const { accessToken, userId, email, firstName, lastName, profilePictureUrl, authProvider, isGuestAccount, status, createdAt, role, emailVerified } =
-        authState;
+    const {
+        accessToken,
+        userId,
+        email,
+        firstName,
+        lastName,
+        profilePictureUrl,
+        authProvider,
+        isGuestAccount,
+        status,
+        createdAt,
+        role,
+        emailVerified,
+    } = authState;
     const user = useMemo(
         () =>
             accessToken
@@ -181,13 +200,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                       emailVerified,
                   }
                 : null,
-        [accessToken, userId, email, firstName, lastName, profilePictureUrl, authProvider, isGuestAccount, status, createdAt, role, emailVerified]
+        [accessToken, userId, email, firstName, lastName, profilePictureUrl, authProvider, isGuestAccount, status, createdAt, role, emailVerified],
     );
     const isAuthenticated = Boolean(accessToken);
 
     const value: AuthContextValue = useMemo(
         () => ({ user, isAuthenticated, isBootstrapping, register, login, oauth, logout, updateProfile }),
-        [user, isAuthenticated, isBootstrapping, register, login, oauth, logout, updateProfile]
+        [user, isAuthenticated, isBootstrapping, register, login, oauth, logout, updateProfile],
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -22,7 +22,7 @@ export function PlaylistItemActionsMenu({ deleteLabel, disabled, isDeleting, mor
                 className={cn(
                     'flex h-9 w-9 items-center justify-center rounded-full text-ink-faint transition-colors',
                     'hover:bg-surface-muted hover:text-ink-muted',
-                    disabled && 'cursor-not-allowed opacity-60'
+                    disabled && 'cursor-not-allowed opacity-60',
                 )}
             >
                 <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
@@ -36,7 +36,7 @@ export function PlaylistItemActionsMenu({ deleteLabel, disabled, isDeleting, mor
                             className={cn(
                                 'motion-menu-item flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm font-medium text-destructive outline-none',
                                 'hover:bg-destructive/10',
-                                disabled && 'cursor-not-allowed opacity-60'
+                                disabled && 'cursor-not-allowed opacity-60',
                             )}
                         >
                             {isDeleting ? (

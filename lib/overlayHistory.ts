@@ -43,7 +43,7 @@ function replaceOverlayStack(stack: string[]) {
             [OVERLAY_HISTORY_KEY]: stack,
         },
         '',
-        window.location.href
+        window.location.href,
     );
 }
 
@@ -143,7 +143,7 @@ export function registerOverlayHistory(layer: OverlayLayer): OverlayHistoryRegis
             [OVERLAY_ANCHOR_KEY]: undefined,
         },
         '',
-        openedHref
+        openedHref,
     );
 
     function remove(markAnchorSkippable = false) {

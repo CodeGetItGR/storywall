@@ -50,11 +50,11 @@ export function RsvpForm({
     const voice = useEventTypeVoice(eventType);
 
     return (
-        <div className="p-3 mb-6">
-            <h2 className="text-base font-bold text-ink mb-4">{t('yourRsvp')}</h2>
+        <div className="mb-6 p-3">
+            <h2 className="mb-4 text-base font-bold text-ink">{t('yourRsvp')}</h2>
             <form onSubmit={onSubmit} className="flex flex-col gap-4">
                 <div>
-                    <p className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-2">
+                    <p className="mb-2 text-xs font-semibold tracking-wide text-ink-muted uppercase">
                         {t('willYouAttend')} <span className="text-ink-faint">({tCommon('required')})</span>
                     </p>
                     <div className="grid grid-cols-2 gap-2">
@@ -62,26 +62,26 @@ export function RsvpForm({
                             type="button"
                             onClick={onAttend}
                             className={cn(
-                                'flex items-center justify-center gap-2 py-3 rounded-xl border-2 text-sm font-semibold transition-all px-1',
+                                'flex items-center justify-center gap-2 rounded-xl border-2 px-1 py-3 text-sm font-semibold transition-all',
                                 attending === 'attending'
                                     ? 'border-emerald-400 bg-emerald-50 text-emerald-600'
-                                    : 'border-border text-ink-muted hover:border-emerald-200'
+                                    : 'border-border text-ink-muted hover:border-emerald-200',
                             )}
                         >
-                            <CheckCircle2 className="w-4 h-4" />
+                            <CheckCircle2 className="h-4 w-4" />
                             {t('joyfullyAccept')}
                         </button>
                         <button
                             type="button"
                             onClick={onDecline}
                             className={cn(
-                                'flex items-center justify-center gap-2 py-3 rounded-xl border-2 text-sm font-semibold transition-all px-1',
+                                'flex items-center justify-center gap-2 rounded-xl border-2 px-1 py-3 text-sm font-semibold transition-all',
                                 attending === 'not-attending'
                                     ? 'border-rose-300 bg-rose-50 text-rose-500'
-                                    : 'border-border text-ink-muted hover:border-rose-200'
+                                    : 'border-border text-ink-muted hover:border-rose-200',
                             )}
                         >
-                            <XCircle className="w-4 h-4" />
+                            <XCircle className="h-4 w-4" />
                             {t('regretfullyDecline')}
                         </button>
                     </div>
@@ -90,13 +90,13 @@ export function RsvpForm({
                 {attending === 'attending' && (
                     <>
                         <div className="flex flex-col items-center gap-2">
-                            <p className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-2">{t('plusOnes')}</p>
-                            <div className={'flex flex-col sm:flex-row justify-around gap-2 w-full'}>
-                                <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 flex-1">
+                            <p className="mb-2 text-xs font-semibold tracking-wide text-ink-muted uppercase">{t('plusOnes')}</p>
+                            <div className={'flex w-full flex-col justify-around gap-2 sm:flex-row'}>
+                                <div className="flex flex-1 items-center gap-3 rounded-xl bg-surface-muted px-4 py-3">
                                     <button
                                         type="button"
                                         onClick={onDecrementPlusOnes('adult')}
-                                        className="w-7 h-7 rounded-full bg-card border border-border flex items-center justify-center text-ink-muted hover:text-ink transition-colors font-bold"
+                                        className="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-card font-bold text-ink-muted transition-colors hover:text-ink"
                                     >
                                         −
                                     </button>
@@ -106,16 +106,16 @@ export function RsvpForm({
                                     <button
                                         type="button"
                                         onClick={onIncrementPlusOnes('adult')}
-                                        className="w-7 h-7 rounded-full bg-card border border-border flex items-center justify-center text-ink-muted hover:text-ink transition-colors font-bold"
+                                        className="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-card font-bold text-ink-muted transition-colors hover:text-ink"
                                     >
                                         +
                                     </button>
                                 </div>
-                                <div className="flex items-center gap-3 bg-surface-muted rounded-xl px-4 py-3 flex-1">
+                                <div className="flex flex-1 items-center gap-3 rounded-xl bg-surface-muted px-4 py-3">
                                     <button
                                         type="button"
                                         onClick={onDecrementPlusOnes('child')}
-                                        className="w-7 h-7 rounded-full bg-card border border-border flex items-center justify-center text-ink-muted hover:text-ink transition-colors font-bold"
+                                        className="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-card font-bold text-ink-muted transition-colors hover:text-ink"
                                     >
                                         −
                                     </button>
@@ -125,7 +125,7 @@ export function RsvpForm({
                                     <button
                                         type="button"
                                         onClick={onIncrementPlusOnes('child')}
-                                        className="w-7 h-7 rounded-full bg-card border border-border flex items-center justify-center text-ink-muted hover:text-ink transition-colors font-bold"
+                                        className="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-card font-bold text-ink-muted transition-colors hover:text-ink"
                                     >
                                         +
                                     </button>
@@ -136,7 +136,7 @@ export function RsvpForm({
                 )}
 
                 <div>
-                    <p className="text-xs font-semibold text-ink-muted uppercase tracking-wide mb-2">
+                    <p className="mb-2 text-xs font-semibold tracking-wide text-ink-muted uppercase">
                         {voice.rsvpMessageLabel} <span className="text-ink-faint">({tCommon('optional')})</span>
                     </p>
                     <textarea
@@ -145,7 +145,7 @@ export function RsvpForm({
                         rows={3}
                         placeholder={t('messagePlaceholder')}
                         maxLength={maxMessageLength}
-                        className="w-full bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 resize-none transition leading-relaxed"
+                        className="w-full resize-none rounded-xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink transition outline-none placeholder:text-ink-faint focus:ring-2 focus:ring-primary/30"
                         aria-label={voice.rsvpMessageLabel}
                     />
                     <p className="mt-1 text-right text-xs text-ink-faint">
@@ -153,14 +153,14 @@ export function RsvpForm({
                     </p>
                 </div>
 
-                {submitError && <p className="text-xs text-rose-500 text-center">{submitError}</p>}
+                {submitError && <p className="text-center text-xs text-rose-500">{submitError}</p>}
 
                 <button
                     type="submit"
                     disabled={submitDisabled}
-                    className="w-full py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity flex items-center justify-center"
+                    className="flex w-full items-center justify-center rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : submitLabel}
+                    {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : submitLabel}
                 </button>
             </form>
         </div>

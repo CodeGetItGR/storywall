@@ -36,7 +36,7 @@ export function useForgotPassword() {
                 setIsSubmitting(false);
             }
         },
-        [email, t, toErrorMessage]
+        [email, t, toErrorMessage],
     );
 
     return { email, error, isSubmitted, isSubmitting, shouldRenderAuthPage, submit, updateEmail };

@@ -33,7 +33,7 @@ export function useGallerySelection<TItem extends GallerySelectableItem>(items: 
                 return next;
             });
         },
-        [maxSelectedItems]
+        [maxSelectedItems],
     );
 
     const exitSelectionMode = useCallback(() => {
@@ -57,7 +57,7 @@ export function useGallerySelection<TItem extends GallerySelectableItem>(items: 
                 return next;
             });
         },
-        [maxSelectedItems]
+        [maxSelectedItems],
     );
 
     const selectAll = useCallback(() => {
@@ -76,7 +76,7 @@ export function useGallerySelection<TItem extends GallerySelectableItem>(items: 
                 longPressTimerRef.current = null;
             }, longPressMs);
         },
-        [clearLongPressTimer, enterSelectionMode, longPressMs]
+        [clearLongPressTimer, enterSelectionMode, longPressMs],
     );
 
     const stopLongPressSelection = useCallback(() => {

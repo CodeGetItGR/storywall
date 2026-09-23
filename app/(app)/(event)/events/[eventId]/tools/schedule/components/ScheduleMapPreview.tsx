@@ -21,7 +21,7 @@ export function ScheduleMapPreview({ mapsUrl, title, openLabel, previewLabel, un
                 target="_blank"
                 rel="noreferrer"
                 aria-label={title}
-                className="flex flex-col items-center gap-3 rounded-2xl border border-border/70 bg-surface-muted px-4 py-5 text-center transition-colors hover:bg-surface-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="flex flex-col items-center gap-3 rounded-2xl border border-border/70 bg-surface-muted px-4 py-5 text-center transition-colors hover:bg-surface-muted/80 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none"
             >
                 <div className="max-w-[14rem]">
                     <p className="text-sm font-semibold text-ink">{title}</p>
@@ -37,7 +37,7 @@ export function ScheduleMapPreview({ mapsUrl, title, openLabel, previewLabel, un
             <iframe
                 title={title}
                 src={embedUrl}
-                className="h-44 w-full pointer-events-none"
+                className="pointer-events-none h-44 w-full"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
             />
@@ -49,14 +49,14 @@ export function ScheduleMapPreview({ mapsUrl, title, openLabel, previewLabel, un
                 rel="noreferrer"
                 className={cn(
                     'absolute inset-0 z-10 flex items-end justify-between p-3',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset'
+                    'focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:outline-none focus-visible:ring-inset',
                 )}
                 aria-label={title}
             >
                 <span className="rounded-full bg-background/90 px-3 py-1 text-[11px] font-semibold text-ink shadow-sm backdrop-blur-sm">
                     {openLabel}
                 </span>
-                <span className="rounded-full bg-background/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-faint shadow-sm backdrop-blur-sm">
+                <span className="rounded-full bg-background/90 px-3 py-1 text-[11px] font-semibold tracking-[0.16em] text-ink-faint uppercase shadow-sm backdrop-blur-sm">
                     {previewLabel}
                 </span>
             </a>

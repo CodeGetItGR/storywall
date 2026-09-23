@@ -85,7 +85,7 @@ export function EventProvisionDrawer({ host, onCloseAction }: { host: UserRespon
                         <span
                             className={cn(
                                 'rounded-full px-3 py-1.5',
-                                form.step === 'event' ? 'bg-primary-light text-primary-dark' : 'bg-canvas text-ink-muted'
+                                form.step === 'event' ? 'bg-primary-light text-primary-dark' : 'bg-canvas text-ink-muted',
                             )}
                         >
                             {t('stepEvent')}
@@ -94,7 +94,7 @@ export function EventProvisionDrawer({ host, onCloseAction }: { host: UserRespon
                         <span
                             className={cn(
                                 'rounded-full px-3 py-1.5',
-                                form.step === 'review' ? 'bg-primary-light text-primary-dark' : 'bg-canvas text-ink-faint'
+                                form.step === 'review' ? 'bg-primary-light text-primary-dark' : 'bg-canvas text-ink-faint',
                             )}
                         >
                             {t('stepReview')}
@@ -104,7 +104,7 @@ export function EventProvisionDrawer({ host, onCloseAction }: { host: UserRespon
                     {/* Selected host */}
                     <section className="flex items-center justify-between gap-4 rounded-lg bg-canvas px-4 py-3">
                         <div className="min-w-0">
-                            <p className="text-[10px] font-bold uppercase tracking-wide text-ink-faint">{t('host')}</p>
+                            <p className="text-[10px] font-bold tracking-wide text-ink-faint uppercase">{t('host')}</p>
                             <p className="truncate text-sm font-semibold text-ink">{hostName}</p>
                         </div>
                         <p className="truncate text-xs text-ink-faint">{host.email}</p>

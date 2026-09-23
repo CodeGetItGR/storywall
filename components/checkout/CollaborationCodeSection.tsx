@@ -79,7 +79,7 @@ export function CollaborationCodeSection({
                                 maxLength={MAX_COLLABORATION_CODE_LENGTH}
                                 autoComplete="off"
                                 placeholder={t('placeholder')}
-                                className="min-h-11 flex-1 rounded-full border border-border bg-card px-4 text-sm font-semibold text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+                                className="min-h-11 flex-1 rounded-full border border-border bg-card px-4 text-sm font-semibold text-ink transition outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
                             />
                             <button
                                 type="submit"

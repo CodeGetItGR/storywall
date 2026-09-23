@@ -40,7 +40,7 @@ export function ActivationDisclosures({ startAt, projectedCoverage }: { startAt:
 
     return (
         <section aria-labelledby="activation-disclosures-title">
-            <h2 id="activation-disclosures-title" className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+            <h2 id="activation-disclosures-title" className="text-[11px] font-semibold tracking-wide text-ink-faint uppercase">
                 {t('title')}
             </h2>
             <ul className="mt-3 flex flex-col gap-3">

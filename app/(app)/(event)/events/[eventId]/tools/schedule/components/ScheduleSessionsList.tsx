@@ -13,10 +13,7 @@ interface ScheduleSessionsListProps {
     locale: string;
 }
 
-export function ScheduleSessionsList({
-    sessions,
-    locale,
-}: ScheduleSessionsListProps) {
+export function ScheduleSessionsList({ sessions, locale }: ScheduleSessionsListProps) {
     const t = useTranslations('SchedulePage');
     const sortedSessions = sortSessions(sessions);
     const groupedSessions = groupSessions(sortedSessions);
@@ -31,10 +28,10 @@ export function ScheduleSessionsList({
                 <section key={date}>
                     <div className="mb-4 flex items-center gap-3">
                         <div className="flex h-10 w-10 flex-col items-center justify-center rounded-xl border border-border bg-card shadow-sm">
-                            <span className="text-[9px] font-medium uppercase leading-none text-ink-muted">
+                            <span className="text-[9px] leading-none font-medium text-ink-muted uppercase">
                                 {formatDate(locale, `${date}T00:00:00`, { month: 'short' })}
                             </span>
-                            <span className="text-sm font-bold leading-none text-ink">
+                            <span className="text-sm leading-none font-bold text-ink">
                                 {formatDate(locale, `${date}T00:00:00`, { day: 'numeric' })}
                             </span>
                         </div>
@@ -44,19 +41,19 @@ export function ScheduleSessionsList({
                     </div>
 
                     <div className="relative flex flex-col gap-4 pl-5">
-                        <div className="absolute bottom-2 top-2 left-2 w-px bg-border" aria-hidden="true" />
+                        <div className="absolute top-2 bottom-2 left-2 w-px bg-border" aria-hidden="true" />
 
                         {groupedSessions[date].map((session) => (
                             <div key={session.id} className="relative">
                                 <div
-                                    className="absolute -left-5 top-3 h-3.5 w-3.5 rounded-full border-2 border-background bg-amber-200"
+                                    className="absolute top-3 -left-5 h-3.5 w-3.5 rounded-full border-2 border-background bg-amber-200"
                                     aria-hidden="true"
                                 />
                                 <ScheduleSessionCard
                                     session={session}
                                     timeContent={
                                         <div className="text-right">
-                                            <p className="text-sm font-semibold tabular-nums text-ink">
+                                            <p className="text-sm font-semibold text-ink tabular-nums">
                                                 {formatTimeRange(locale, session.startAt, session.endAt, t('timeTba'))}
                                             </p>
                                         </div>
@@ -77,10 +74,7 @@ export function ScheduleSessionsList({
 
                     <div className="flex flex-col gap-4">
                         {unscheduledSessions.map((session) => (
-                            <ScheduleSessionCard
-                                key={session.id}
-                                session={session}
-                            />
+                            <ScheduleSessionCard key={session.id} session={session} />
                         ))}
                     </div>
                 </section>

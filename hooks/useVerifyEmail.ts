@@ -27,7 +27,7 @@ export function useVerifyEmail() {
             (error: unknown) => {
                 setErrorMessage(isRateLimitedError(error) ? toErrorMessage(error) : t('invalidDescription'));
                 setState('error');
-            }
+            },
         );
     }, [t, toErrorMessage, token]);
 

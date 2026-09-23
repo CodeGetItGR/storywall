@@ -34,7 +34,7 @@ export function SetupChecklist({ className, items }: { className?: string; items
         <section
             className={cn(
                 'rounded-lg bg-[linear-gradient(135deg,rgba(255,111,160,0.16),rgba(255,122,89,0.11)_48%,rgba(255,178,89,0.18))] p-4 shadow-[0_14px_32px_rgba(36,31,26,0.07)]',
-                className
+                className,
             )}
         >
             {/* Checklist summary */}

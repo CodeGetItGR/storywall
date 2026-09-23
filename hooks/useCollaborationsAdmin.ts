@@ -42,7 +42,7 @@ export function useCollaborationsAdmin(collaborators: CollaboratorResponseDto[])
             setEditingCollaborator(collaborator);
             setCollaboratorDrawerOpen(true);
         },
-        [collaborators]
+        [collaborators],
     );
 
     const openPartnerDrawer = useCallback(
@@ -53,7 +53,7 @@ export function useCollaborationsAdmin(collaborators: CollaboratorResponseDto[])
             setManagingCollaborator(collaborator);
             setPartnerDrawerOpen(true);
         },
-        [collaborators]
+        [collaborators],
     );
 
     const openEditManagedCollaborator = useCallback(() => {

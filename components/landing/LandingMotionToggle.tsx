@@ -14,7 +14,7 @@ export function LandingMotionToggle({ className = '' }: { className?: string }) 
 
     return (
         <button
-            className={`inline-flex items-center gap-2 py-1.5 text-left transition-opacity hover:opacity-60 focus-ring focus-visible:outline-offset-4 ${className}`}
+            className={`inline-flex items-center gap-2 py-1.5 text-left focus-ring transition-opacity hover:opacity-60 focus-visible:outline-offset-4 ${className}`}
             onClick={toggle}
             type="button"
         >

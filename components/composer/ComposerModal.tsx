@@ -69,7 +69,7 @@ export function ComposerModal({
                             aria-label={t('captionAriaLabel')}
                             rows={4}
                             maxLength={maxCaptionLength}
-                            className="min-h-36 w-full resize-none rounded-[1.5rem] bg-surface-muted px-5 py-4 text-base leading-relaxed text-ink placeholder:text-ink-faint outline-none transition focus:ring-2 focus:ring-primary/30 sm:min-h-32 sm:text-sm"
+                            className="min-h-36 w-full resize-none rounded-[1.5rem] bg-surface-muted px-5 py-4 text-base leading-relaxed text-ink transition outline-none placeholder:text-ink-faint focus:ring-2 focus:ring-primary/30 sm:min-h-32 sm:text-sm"
                         />
                         <div className="-mt-2 flex items-center justify-between gap-3 text-xs text-ink-faint">
                             <span>{t('mediaLimitHint', { count: maxImages })}</span>
@@ -78,7 +78,7 @@ export function ComposerModal({
 
                         {/* Media previews */}
                         {images.length > 0 && (
-                            <div className="grid grid-cols-10 gap-2 flex-nowrap">
+                            <div className="grid grid-cols-10 flex-nowrap gap-2">
                                 {images.map((img) => {
                                     const isVideo = img.file.type.startsWith('video/');
                                     return (
@@ -86,7 +86,7 @@ export function ComposerModal({
                                             key={img.key}
                                             className={cn(
                                                 'relative col-span-2 aspect-square overflow-hidden rounded-xl bg-surface-muted',
-                                                selectedImageForFilter?.key === img.key && 'ring-2 ring-primary ring-offset-2'
+                                                selectedImageForFilter?.key === img.key && 'ring-2 ring-primary ring-offset-2',
                                             )}
                                         >
                                             {isVideo ? (
@@ -138,7 +138,7 @@ export function ComposerModal({
                                                 onClick={handleRemoveImageClick}
                                                 data-key={img.key}
                                                 aria-label={t('removeMedia')}
-                                                className="absolute right-1.5 top-1.5 z-20 flex h-6 w-6 items-center justify-center rounded-full bg-ink/60 text-white transition-colors hover:bg-ink/80"
+                                                className="absolute top-1.5 right-1.5 z-20 flex h-6 w-6 items-center justify-center rounded-full bg-ink/60 text-white transition-colors hover:bg-ink/80"
                                             >
                                                 <X className="h-3.5 w-3.5" />
                                             </button>
@@ -171,7 +171,7 @@ export function ComposerModal({
                             <button
                                 type="submit"
                                 disabled={!canSubmit}
-                                className="flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-full bg-gradient-brand px-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:px-4"
+                                className="flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-full px-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 sm:px-4"
                             >
                                 <Send className="h-4 w-4" />
                                 {t('post')}

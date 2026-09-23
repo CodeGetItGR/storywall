@@ -53,7 +53,7 @@ function bannerImage(title: string, subtitle: string, from: string, to: string):
             `<circle cx="1030" cy="520" r="200" fill="#ffffff" opacity="0.08"/>` +
             `<text x="600" y="320" font-family="Georgia, 'Times New Roman', serif" font-size="76" fill="#ffffff" text-anchor="middle" opacity="0.97">${safeTitle}</text>` +
             `<text x="600" y="378" font-family="Georgia, 'Times New Roman', serif" font-size="26" letter-spacing="6" fill="#ffffff" text-anchor="middle" opacity="0.85">${safeSubtitle}</text>` +
-            `</svg>`
+            `</svg>`,
     );
 }
 
@@ -67,7 +67,7 @@ function photoImage(label: string, from: string, to: string, width = 900, height
             `<rect width="${width}" height="${height}" fill="url(#g)"/>` +
             `<circle cx="${width * 0.5}" cy="${height * 0.38}" r="${r}" fill="#ffffff" opacity="0.16"/>` +
             `<text x="${width / 2}" y="${height - 56}" font-family="Georgia, 'Times New Roman', serif" font-size="${width * 0.045}" fill="#ffffff" text-anchor="middle" opacity="0.92">${safeLabel}</text>` +
-            `</svg>`
+            `</svg>`,
     );
 }
 
@@ -740,7 +740,7 @@ export function buildSeedComments(): CommentResponseDto[] {
             createdAt: MINUTES_AFTER(seed.daysAgo, c.minutesAfter),
             updatedAt: MINUTES_AFTER(seed.daysAgo, c.minutesAfter),
             deletedAt: null,
-        }))
+        })),
     );
 }
 
@@ -752,7 +752,7 @@ export function buildSeedReactions(): ReactionResponseDto[] {
             memberId: r.authorId,
             reactionType: r.type,
             createdAt: MINUTES_AFTER(seed.daysAgo, reactionIndex * 3),
-        }))
+        })),
     );
 }
 

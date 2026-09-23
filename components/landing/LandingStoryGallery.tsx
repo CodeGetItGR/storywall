@@ -14,7 +14,12 @@ type LandingStoryGalleryProps = {
 // on the button. The image itself would otherwise be announced twice.
 export function LandingStoryGallery({ alts, ariaLabel, images, rowIndex }: LandingStoryGalleryProps) {
     return (
-        <div aria-label={ariaLabel} className="sw-wedding-accordion absolute inset-0 z-4 flex size-full bg-[#111]" data-story-accordion={rowIndex} role="group">
+        <div
+            aria-label={ariaLabel}
+            className="sw-wedding-accordion absolute inset-0 z-4 flex size-full bg-[#111]"
+            data-story-accordion={rowIndex}
+            role="group"
+        >
             {images.map((image, index) => (
                 <button
                     aria-label={alts[index]}
@@ -27,7 +32,7 @@ export function LandingStoryGallery({ alts, ariaLabel, images, rowIndex }: Landi
                     <ProtectedImage
                         unoptimized
                         alt=""
-                        className={`absolute inset-[-2%] h-[104%] w-[104%] scale-[1.045] object-cover object-[${PANEL_IMAGE_OBJECT_POSITION[index % PANEL_IMAGE_OBJECT_POSITION.length]}] grayscale contrast-[0.96] brightness-[0.82] transition-[filter,transform] duration-650 ease-[cubic-bezier(0.2,0.78,0.18,1)] group-aria-pressed:grayscale-0 group-aria-pressed:contrast-100 group-aria-pressed:brightness-100 group-first:group-aria-pressed:animate-[sw-wedding-first-hint_4.8s_ease-in-out_infinite_alternate] max-[760px]:scale-[1.09]`}
+                        className={`absolute inset-[-2%] h-[104%] w-[104%] scale-[1.045] object-cover object-[${PANEL_IMAGE_OBJECT_POSITION[index % PANEL_IMAGE_OBJECT_POSITION.length]}] brightness-[0.82] contrast-[0.96] grayscale transition-[filter,transform] duration-650 ease-[cubic-bezier(0.2,0.78,0.18,1)] group-aria-pressed:brightness-100 group-aria-pressed:contrast-100 group-aria-pressed:grayscale-0 group-first:group-aria-pressed:animate-[sw-wedding-first-hint_4.8s_ease-in-out_infinite_alternate] max-[760px]:scale-[1.09]`}
                         decoding="async"
                         loading="lazy"
                         {...image}

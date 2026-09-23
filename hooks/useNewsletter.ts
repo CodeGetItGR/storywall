@@ -50,7 +50,7 @@ export function useNewsletterTokenAction(action: NewsletterTokenAction) {
                 // 404 means the newsletter is switched off, not that the token is bad.
                 setErrorMessage(error instanceof ApiError && error.status === 404 ? t('unavailableDescription') : toErrorMessage(error));
                 setState('error');
-            }
+            },
         );
     }, [action, isAlreadyDone, pathname, router, t, toErrorMessage, token]);
 
@@ -100,7 +100,11 @@ export function useNewsletterSettings() {
     const unsubscribe = useCallback(() => mutate(false), [mutate]);
 
     const isSubscribed = statusQuery.data?.subscribed ?? false;
-    const statusKind: 'subscribed' | 'awaitingConfirmation' | 'offer' = isSubscribed ? 'subscribed' : isAwaitingConfirmation ? 'awaitingConfirmation' : 'offer';
+    const statusKind: 'subscribed' | 'awaitingConfirmation' | 'offer' = isSubscribed
+        ? 'subscribed'
+        : isAwaitingConfirmation
+          ? 'awaitingConfirmation'
+          : 'offer';
 
     const rewardCode = statusQuery.data?.rewardCode ?? null;
     const copyRewardCode = useCallback(async () => {

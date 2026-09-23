@@ -15,12 +15,7 @@ interface ScheduleSessionCardProps {
     className?: string;
 }
 
-export function ScheduleSessionCard({
-    session,
-    locationContent,
-    timeContent,
-    className,
-}: ScheduleSessionCardProps) {
+export function ScheduleSessionCard({ session, locationContent, timeContent, className }: ScheduleSessionCardProps) {
     const t = useTranslations('SchedulePage');
     const isManagedSession = session.isMain || session.isSecondary;
     const SessionIcon = session.isMain ? Church : session.isSecondary ? Martini : null;
@@ -32,24 +27,22 @@ export function ScheduleSessionCard({
                 isManagedSession &&
                     'bg-[linear-gradient(135deg,rgba(255,111,160,0.10),rgba(255,122,89,0.055)_46%,rgba(255,178,89,0.11))] shadow-[0_12px_26px_rgba(36,31,26,0.06)]',
                 isManagedSession ? 'border-primary/20' : 'border-border/60',
-                className
+                className,
             )}
         >
-            <div className="flex flex-wrap items-center justify-between gap-3 w-full">
-                <div className="min-w-0 w-full">
+            <div className="flex w-full flex-wrap items-center justify-between gap-3">
+                <div className="w-full min-w-0">
                     {/* Session title */}
-                    <div className="flex items-center gap-2 justify-between">
+                    <div className="flex items-center justify-between gap-2">
                         <div className={'flex gap-2'}>
-                        {SessionIcon && (
-                            <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-background/72 text-primary shadow-[0_8px_18px_rgba(36,31,26,0.06)]">
-                                <SessionIcon className="h-4 w-4" aria-hidden="true" />
-                            </span>
-                        )}
-                        <h3 className="text-xl font-semibold leading-snug text-ink">{session.title}</h3>
+                            {SessionIcon && (
+                                <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-background/72 text-primary shadow-[0_8px_18px_rgba(36,31,26,0.06)]">
+                                    <SessionIcon className="h-4 w-4" aria-hidden="true" />
+                                </span>
+                            )}
+                            <h3 className="text-xl leading-snug font-semibold text-ink">{session.title}</h3>
                         </div>
-                        <div className="gap-2 text-sm">
-                            {timeContent}
-                        </div>
+                        <div className="gap-2 text-sm">{timeContent}</div>
                     </div>
                     {session.description && <p className="mt-1 text-sm leading-relaxed text-ink-muted">{session.description}</p>}
                 </div>
@@ -61,7 +54,7 @@ export function ScheduleSessionCard({
                 <div className={cn('mt-3 grid gap-2', !locationContent && 'mt-4')}>
                     {session.locationName && (
                         <div className="flex items-center gap-1.5 text-xs text-ink-muted">
-                            <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true"/>
+                            <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                             <span className="font-medium text-ink-muted">{session.locationName}</span>
                         </div>
                     )}

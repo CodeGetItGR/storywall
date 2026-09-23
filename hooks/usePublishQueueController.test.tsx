@@ -71,7 +71,7 @@ describe('usePublishQueueController — post jobs', () => {
         expect(apiPostForm).toHaveBeenCalledTimes(1);
         expect(apiPost).toHaveBeenCalledWith(
             expect.stringContaining('posts'),
-            expect.objectContaining({ eventId: 'event-1', mediaIds: ['media-1'] })
+            expect.objectContaining({ eventId: 'event-1', mediaIds: ['media-1'] }),
         );
     });
 

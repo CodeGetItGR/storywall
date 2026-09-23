@@ -13,7 +13,7 @@ export function PlatformMetricBreakdown({ title, values }: { title: string; valu
                     {entries.map(([key, value]) => (
                         <div key={key} className="flex items-center justify-between gap-4 py-2">
                             <dt className="min-w-0 truncate text-sm font-semibold text-ink">{key}</dt>
-                            <dd className="text-sm font-bold tabular-nums text-ink-muted">{formatCount(value)}</dd>
+                            <dd className="text-sm font-bold text-ink-muted tabular-nums">{formatCount(value)}</dd>
                         </div>
                     ))}
                 </dl>

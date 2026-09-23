@@ -27,7 +27,7 @@ export function ProvisionEventReview({ form, host }: { form: ProvisionEventForm;
         <div className="space-y-7">
             {/* Review */}
             <section aria-labelledby="provision-review-heading">
-                <h3 id="provision-review-heading" className="text-xs font-bold uppercase tracking-wide text-ink-faint">
+                <h3 id="provision-review-heading" className="text-xs font-bold tracking-wide text-ink-faint uppercase">
                     {t('reviewTitle')}
                 </h3>
                 <dl className="mt-3 divide-y divide-border">

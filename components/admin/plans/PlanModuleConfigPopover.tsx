@@ -40,18 +40,33 @@ export function PlanModuleConfigPopover({
                     <Popover.Positioner anchor={anchor} side="bottom" align="start" sideOffset={6} className="z-40">
                         <Popover.Popup className="w-[min(360px,calc(100vw-32px))] rounded-xl border border-border bg-card p-4 text-ink shadow-[0_20px_50px_-20px_rgba(18,20,28,0.4)] outline-none">
                             {/* Title */}
-                            <Popover.Title className="text-sm font-bold text-ink">{t('plans.grid.cell.title', { module: moduleName, plan: plan.name })}</Popover.Title>
+                            <Popover.Title className="text-sm font-bold text-ink">
+                                {t('plans.grid.cell.title', { module: moduleName, plan: plan.name })}
+                            </Popover.Title>
 
                             {/* Included */}
                             <div className="mt-3 rounded-lg border border-border">
-                                <AdminSwitch label={t('plans.grid.cell.includedSwitch')} checked={draft.included} onCheckedChangeAction={draft.handleIncludedChange} />
+                                <AdminSwitch
+                                    label={t('plans.grid.cell.includedSwitch')}
+                                    checked={draft.included}
+                                    onCheckedChangeAction={draft.handleIncludedChange}
+                                />
                             </div>
 
                             {/* Config */}
                             <div className="mt-4 space-y-3">
-                                <PlanModuleConfigFields fields={draft.fields} draft={draft.knownDraft} errors={draft.fieldErrors} onChangeAction={draft.handleKnownChange} />
+                                <PlanModuleConfigFields
+                                    fields={draft.fields}
+                                    draft={draft.knownDraft}
+                                    errors={draft.fieldErrors}
+                                    onChangeAction={draft.handleKnownChange}
+                                />
                                 <PlanModuleConfigJsonField value={draft.jsonText} error={draft.jsonError} onChangeAction={draft.handleJsonChange} />
-                                <button type="button" onClick={draft.resetToSeed} className="text-xs font-semibold text-ink-muted underline-offset-2 hover:underline">
+                                <button
+                                    type="button"
+                                    onClick={draft.resetToSeed}
+                                    className="text-xs font-semibold text-ink-muted underline-offset-2 hover:underline"
+                                >
                                     {t('plans.grid.cell.resetToDefault')}
                                 </button>
                             </div>
@@ -61,7 +76,11 @@ export function PlanModuleConfigPopover({
 
                             {/* Footer */}
                             <div className="mt-4 flex items-center justify-end gap-2 border-t border-border pt-3">
-                                <button type="button" onClick={onCloseAction} className="h-9 rounded-md px-3 text-sm font-semibold text-ink-muted hover:text-ink">
+                                <button
+                                    type="button"
+                                    onClick={onCloseAction}
+                                    className="h-9 rounded-md px-3 text-sm font-semibold text-ink-muted hover:text-ink"
+                                >
                                     {t('cancel')}
                                 </button>
                                 <button

@@ -203,7 +203,14 @@ export function LandingHeroVisual({ motionPaused }: { motionPaused: boolean }) {
                 className={firstSprite.posClass}
                 transition={{ duration: Number.parseFloat(firstSprite.duration), ease: 'easeInOut', repeat: Infinity }}
             >
-                <ProtectedImage unoptimized alt="" className="h-auto w-full" height={firstSprite.height} src={firstSprite.src} width={firstSprite.width} />
+                <ProtectedImage
+                    unoptimized
+                    alt=""
+                    className="h-auto w-full"
+                    height={firstSprite.height}
+                    src={firstSprite.src}
+                    width={firstSprite.width}
+                />
             </motion.div>
             {/* Phone feed */}
             <motion.div
@@ -230,7 +237,14 @@ export function LandingHeroVisual({ motionPaused }: { motionPaused: boolean }) {
                         ))}
                     </div>
                 </div>
-                <ProtectedImage unoptimized alt="" className="absolute inset-0 z-[2] h-auto w-full" height={1541} src="/landing/sw-phone-frame.webp" width={748} />
+                <ProtectedImage
+                    unoptimized
+                    alt=""
+                    className="absolute inset-0 z-[2] h-auto w-full"
+                    height={1541}
+                    src="/landing/sw-phone-frame.webp"
+                    width={748}
+                />
             </motion.div>
             {/* Surrounding reactions and posts */}
             {restSprites.map((sprite) => (

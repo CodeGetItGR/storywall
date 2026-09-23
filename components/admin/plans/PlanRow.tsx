@@ -44,7 +44,9 @@ export function PlanRow({
                 <div className="flex items-center gap-2">
                     <p className="truncate font-semibold text-ink">{plan.name}</p>
                     {plan.isDefault && (
-                        <span className="shrink-0 rounded-full bg-primary-light px-1.5 py-0.5 text-[9.5px] font-bold text-primary-dark">{t('plans.default')}</span>
+                        <span className="shrink-0 rounded-full bg-primary-light px-1.5 py-0.5 text-[9.5px] font-bold text-primary-dark">
+                            {t('plans.default')}
+                        </span>
                     )}
                 </div>
                 <p className="truncate font-mono text-[11px] text-ink-faint">{plan.code}</p>

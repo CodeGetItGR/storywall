@@ -46,8 +46,8 @@ export function CommentThreadItem({ thread, onReply, isExpanded, onToggleReplies
                     <div className="rounded-2xl rounded-tl-sm bg-surface-muted px-4 py-3">
                         {/* Comment header */}
                         <div className="mb-1 flex items-baseline gap-2">
-                            <span className="min-w-0 flex-1 wrap-break-word text-sm font-semibold leading-tight text-ink">{name}</span>
-                            <span className="shrink-0 whitespace-nowrap text-xs text-ink-faint">
+                            <span className="min-w-0 flex-1 text-sm leading-tight font-semibold wrap-break-word text-ink">{name}</span>
+                            <span className="shrink-0 text-xs whitespace-nowrap text-ink-faint">
                                 {commentTimeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${commentTimeAgo.unit}`, { count: commentTimeAgo.value })}
                             </span>
                         </div>
@@ -59,7 +59,7 @@ export function CommentThreadItem({ thread, onReply, isExpanded, onToggleReplies
                             <button
                                 type="button"
                                 onClick={handleReply}
-                                className="text-xs font-semibold text-ink-faint hover:text-ink transition-colors"
+                                className="text-xs font-semibold text-ink-faint transition-colors hover:text-ink"
                             >
                                 {t('reply')}
                             </button>
@@ -70,7 +70,7 @@ export function CommentThreadItem({ thread, onReply, isExpanded, onToggleReplies
                                 <button
                                     type="button"
                                     onClick={handleToggleReplies}
-                                    className="text-xs font-semibold text-ink-faint hover:text-ink transition-colors"
+                                    className="text-xs font-semibold text-ink-faint transition-colors hover:text-ink"
                                 >
                                     {isExpanded ? t('hideReplies') : t('viewReplies', { count: replies.length })}
                                 </button>

@@ -55,5 +55,4 @@ describe('useLandingTypewriter', () => {
         act(() => void vi.advanceTimersByTime(1250));
         expect(result.current).toBe('p');
     });
-
 });

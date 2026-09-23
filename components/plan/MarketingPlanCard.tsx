@@ -32,14 +32,12 @@ export function MarketingPlanCard({
 
     const cardClassName = cn(
         'flex h-full w-full flex-col justify-between rounded-[22px] border px-5 pt-5 pb-4 text-left text-[#151313] transition-colors min-[761px]:px-5',
-        onSelectAction &&
-            !selected &&
-            'hover:border-[#151313]/25 focus-ring focus-visible:outline-offset-2',
+        onSelectAction && !selected && 'focus-ring hover:border-[#151313]/25 focus-visible:outline-offset-2',
         {
             'border-transparent': !featured && !selected,
             'border-[#f29380]': featured && !selected,
             'border-[#151313]/25 bg-[#fff9f6]': selected,
-        }
+        },
     );
 
     const content = (
@@ -54,7 +52,9 @@ export function MarketingPlanCard({
                         </span>
                     </h3>
                     <p className="mt-1 text-sm text-[#151313]/65">{plan.audience}</p>
-                    <p className="mt-1 text-sm text-[#151313]/65">{plan.storage} {storageLabel}</p>
+                    <p className="mt-1 text-sm text-[#151313]/65">
+                        {plan.storage} {storageLabel}
+                    </p>
                     <div className="absolute top-0 right-0 bg-[linear-gradient(110deg,#d889a0,#e98778_28%,#f39a63_58%,#f5b967)] bg-clip-text font-[Baskerville,Georgia,serif] text-[clamp(48px,4vw,64px)] tracking-[-.06em] text-transparent">
                         {plan.price}
                     </div>
@@ -70,7 +70,7 @@ export function MarketingPlanCard({
                             <span
                                 className={cn(
                                     index === 0 && plan.includedFeatures ? 'font-bold' : '',
-                                    featured && index > 0 && index < plan.features.length - 1 ? 'font-bold' : ''
+                                    featured && index > 0 && index < plan.features.length - 1 ? 'font-bold' : '',
                                 )}
                             >
                                 {feature}

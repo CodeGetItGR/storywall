@@ -61,7 +61,7 @@ export function PlanCreateAssignments({
                             key={moduleItem.moduleKey}
                             className={cn(
                                 'flex min-h-10 items-center gap-2 border-b border-border/70 py-2 text-sm font-semibold',
-                                moduleItem.isEnabled ? 'cursor-pointer text-ink-muted' : 'cursor-not-allowed text-ink-faint'
+                                moduleItem.isEnabled ? 'cursor-pointer text-ink-muted' : 'cursor-not-allowed text-ink-faint',
                             )}
                         >
                             <input

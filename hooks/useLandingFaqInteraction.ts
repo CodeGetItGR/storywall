@@ -16,7 +16,7 @@ export function useLandingFaqInteraction(landingRef: RefObject<HTMLElement | nul
                         if (other !== item) other.open = false;
                     });
                 },
-                { signal: abortController.signal }
+                { signal: abortController.signal },
             );
         });
 

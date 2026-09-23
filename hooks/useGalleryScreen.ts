@@ -54,7 +54,7 @@ export function useGalleryScreen() {
     const gallerySelection = useGallerySelection(media, 450, maxArchiveSelectedItems);
     const selectedArchiveSize = useMemo(
         () => gallerySelection.selectedItems.reduce((sum, item) => sum + item.fileSize, 0),
-        [gallerySelection.selectedItems]
+        [gallerySelection.selectedItems],
     );
 
     const maxFiles = appConfig?.media.maxBatchUploadFiles ?? MAX_FILES_PER_BATCH;
@@ -84,7 +84,7 @@ export function useGalleryScreen() {
             }
             event.target.value = '';
         },
-        [maxFiles, maxImageBytes, maxVideoBytes, t]
+        [maxFiles, maxImageBytes, maxVideoBytes, t],
     );
 
     const handleClearSelection = useCallback(() => {
@@ -118,7 +118,7 @@ export function useGalleryScreen() {
                               : t('uploadFailedItem', { filename: failure.filename });
                       })
                       .join(' ')
-                : t('uploadComplete', { count: result.created.length, failed: 0 })
+                : t('uploadComplete', { count: result.created.length, failed: 0 }),
         );
     }, [activeMember, canUpload, eventId, maxFiles, selectedFiles, t, toErrorMessage, uploadMediaBatch]);
 
@@ -142,8 +142,8 @@ export function useGalleryScreen() {
             const response = await api.download(
                 endpoints.events.mediaArchiveSelected(
                     eventId,
-                    gallerySelection.selectedItems.map((item) => item.id)
-                )
+                    gallerySelection.selectedItems.map((item) => item.id),
+                ),
             );
             downloadBlob(await response.blob(), `gallery-selected-${gallerySelection.selectedCount}.zip`);
             gallerySelection.exitSelectionMode();
@@ -154,10 +154,7 @@ export function useGalleryScreen() {
         }
     }, [canDownloadSelected, eventId, gallerySelection, t, toErrorMessage]);
 
-    const selectedMediaIndex = useMemo(
-        () => (selectedMedia ? media.findIndex((item) => item.id === selectedMedia.id) : -1),
-        [media, selectedMedia]
-    );
+    const selectedMediaIndex = useMemo(() => (selectedMedia ? media.findIndex((item) => item.id === selectedMedia.id) : -1), [media, selectedMedia]);
     const hasPreviousMedia = selectedMediaIndex > 0;
     const hasNextMedia = selectedMediaIndex !== -1 && (selectedMediaIndex < media.length - 1 || hasNextPage);
 
@@ -198,7 +195,7 @@ export function useGalleryScreen() {
             }
             setSelectedMedia(media.find((item) => item.id === id) ?? null);
         },
-        [gallerySelection, isHost, media]
+        [gallerySelection, isHost, media],
     );
 
     const handleMediaPointerDown = useCallback(
@@ -206,7 +203,7 @@ export function useGalleryScreen() {
             if (!isHost) return;
             gallerySelection.startLongPressSelection(event, id);
         },
-        [gallerySelection, isHost]
+        [gallerySelection, isHost],
     );
 
     const handleMediaContextMenu = useCallback((event: MouseEvent<HTMLButtonElement>) => {

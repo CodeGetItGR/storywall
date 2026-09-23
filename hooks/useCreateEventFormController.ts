@@ -71,7 +71,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
         useCallback(() => {
             createEvent.reset();
             setIsCheckoutPending(false);
-        }, [createEvent])
+        }, [createEvent]),
     );
 
     const step = parseCreateEventStep(searchParams.get('step'));
@@ -102,8 +102,11 @@ export function useCreateEventFormController(): CreateEventFormValue {
     // No event exists yet, so there is no server projection to read; estimate
     // from the config constants and the selected plan's term instead.
     const projectedCoverage = useMemo(
-        () => (scheduleError ? null : projectCoverage({ startAt: startAt || null, hostingMonths: selectedPlan?.autoDeleteMonths, coverage: appConfig?.coverage })),
-        [scheduleError, startAt, selectedPlan?.autoDeleteMonths, appConfig?.coverage]
+        () =>
+            scheduleError
+                ? null
+                : projectCoverage({ startAt: startAt || null, hostingMonths: selectedPlan?.autoDeleteMonths, coverage: appConfig?.coverage }),
+        [scheduleError, startAt, selectedPlan?.autoDeleteMonths, appConfig?.coverage],
     );
     const timezoneError = timezone && !isTimezoneValid ? t('validation.invalidTimezone') : null;
     const trimmedTitle = title.trim();
@@ -112,9 +115,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
 
     const canReachPlan = eventTypes.length > 0;
     const canReachDetails = canReachPlan && Boolean(selectedCode);
-    const canSubmitDetails = Boolean(
-        trimmedTitle && startAt && isTimezoneValid && !scheduleError && trimmedLocationName && trimmedLocationAddress
-    );
+    const canSubmitDetails = Boolean(trimmedTitle && startAt && isTimezoneValid && !scheduleError && trimmedLocationName && trimmedLocationAddress);
     const canReachOverview = canReachDetails && canSubmitDetails;
     const reachableStep: CreateEventStep = canReachOverview ? 'overview' : canReachDetails ? 'details' : canReachPlan ? 'plan' : 'type';
 
@@ -122,7 +123,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
         (nextStep: CreateEventStep) => {
             router.push(routes.events.new({ step: nextStep }), { scroll: false });
         },
-        [router]
+        [router],
     );
 
     const goToType = useCallback(() => goToStep('type'), [goToStep]);
@@ -156,7 +157,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
             setCheckoutCode('');
             setIsCheckoutPending(false);
         },
-        [eventType]
+        [eventType],
     );
 
     const onTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value), []);
@@ -175,7 +176,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
             previewCreateEventCode.reset();
             setError(null);
         },
-        [previewCreateEventCode]
+        [previewCreateEventCode],
     );
 
     const applyCheckoutCode = useCallback(async () => {
@@ -278,7 +279,7 @@ export function useCreateEventFormController(): CreateEventFormValue {
             trimmedLocationName,
             trimmedTitle,
             startAt,
-        ]
+        ],
     );
 
     return {

@@ -38,7 +38,7 @@ export function CommentActionsMenu({ comment, wrapperClassName }: CommentActions
         !isMyComment &&
         comment.authorMemberId &&
         comment.author?.role !== 'HOST' &&
-        appConfig?.reportTargetTypes?.includes('COMMENT')
+        appConfig?.reportTargetTypes?.includes('COMMENT'),
     );
 
     if (!activeEvent || (!canDelete && !canReport)) return null;

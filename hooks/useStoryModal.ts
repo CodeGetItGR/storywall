@@ -199,7 +199,7 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
         (nextOpen: boolean) => {
             if (!nextOpen) requestClose();
         },
-        [requestClose]
+        [requestClose],
     );
 
     useEffect(() => {

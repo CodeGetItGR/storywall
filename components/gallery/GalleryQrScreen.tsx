@@ -40,9 +40,7 @@ export function GalleryQrScreen() {
             ) : qrLink ? (
                 <div className="flex flex-col items-center">
                     {qrLink.status !== 'ACTIVE' && (
-                        <ModuleNotice tone="warning">
-                            {t(qrLink.status === 'TARGET_UNAVAILABLE' ? 'temporarilyOff' : 'linkUnavailable')}
-                        </ModuleNotice>
+                        <ModuleNotice tone="warning">{t(qrLink.status === 'TARGET_UNAVAILABLE' ? 'temporarilyOff' : 'linkUnavailable')}</ModuleNotice>
                     )}
                     <div className="w-full max-w-xs">
                         <QrCodeCard qrLink={qrLink} size={280} />

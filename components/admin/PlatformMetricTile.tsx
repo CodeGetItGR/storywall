@@ -9,7 +9,7 @@ export function PlatformMetricTile({ label, value, icon: Icon }: { label: string
                 <p className="text-sm font-semibold text-ink-muted">{label}</p>
                 <Icon className="h-4 w-4 text-primary-dark" aria-hidden="true" />
             </div>
-            <p className="mt-2 text-3xl font-bold tabular-nums tracking-tight text-ink">{formatCount(value)}</p>
+            <p className="mt-2 text-3xl font-bold tracking-tight text-ink tabular-nums">{formatCount(value)}</p>
         </div>
     );
 }

@@ -39,13 +39,13 @@ export function ToolEmptyState({
                 {/* Icon */}
                 <div className={cn('relative mx-auto flex h-24 w-24 items-center justify-center', iconAreaClassName)}>
                     <div className="absolute inset-0 rounded-full bg-background shadow-[0_12px_34px_rgba(36,31,26,0.1)]" />
-                    <div className="absolute -right-1 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_8px_20px_rgba(255,122,89,0.32)]">
+                    <div className="absolute top-3 -right-1 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_8px_20px_rgba(255,122,89,0.32)]">
                         <Sparkles className="h-4 w-4" aria-hidden="true" />
                     </div>
                     <div
                         className={cn(
                             'relative flex h-16 w-16 items-center justify-center',
-                            hasGradientIcon ? 'rounded-full bg-gradient-brand text-primary-foreground' : 'text-ink-muted'
+                            hasGradientIcon ? 'rounded-full text-primary-foreground bg-gradient-brand' : 'text-ink-muted',
                         )}
                     >
                         {Icon ? (

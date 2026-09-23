@@ -18,7 +18,7 @@ export function useTransientValue<T>(durationMs: number): TransientValue<T> {
         () => () => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
         },
-        []
+        [],
     );
 
     function cancelTimeout() {

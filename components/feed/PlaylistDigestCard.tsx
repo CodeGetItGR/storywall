@@ -28,7 +28,7 @@ export function PlaylistDigestCard({ post }: PlaylistDigestCardProps) {
             month: new Intl.DateTimeFormat(locale, { month: '2-digit' }).format(createdAt),
             time: new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(createdAt),
         }),
-        [createdAt, locale]
+        [createdAt, locale],
     );
     // post.recentComments is already the 2 most recent, oldest-first, batch-
     // resolved server-side with the feed page itself — fetching the full
@@ -39,17 +39,17 @@ export function PlaylistDigestCard({ post }: PlaylistDigestCardProps) {
     return (
         <article className="bg-transparent p-2">
             {/* Playlist digest */}
-            <div className="relative isolate overflow-hidden bg-linear-to-br from-[#9d3868] via-primary to-accent-orange px-4 py-4 text-white sm:px-5 rounded-xl">
+            <div className="relative isolate overflow-hidden rounded-xl bg-linear-to-br from-[#9d3868] via-primary to-accent-orange px-4 py-4 text-white sm:px-5">
                 <div
                     className="pointer-events-none absolute inset-y-0 right-0 z-0 w-1/2 bg-white/10 [clip-path:polygon(24%_0,100%_0,100%_100%,0_100%)]"
                     aria-hidden="true"
                 />
                 <div
-                    className="playlist-light-ray pointer-events-none absolute -top-20 z-20 h-[200%] w-48 rotate-24 bg-linear-to-r from-transparent via-[#fff2a8]/55 to-transparent blur-md mix-blend-screen"
+                    className="playlist-light-ray pointer-events-none absolute -top-20 z-20 h-[200%] w-48 rotate-24 bg-linear-to-r from-transparent via-[#fff2a8]/55 to-transparent mix-blend-screen blur-md"
                     aria-hidden="true"
                 />
                 <PiMusicNotesPlusFill
-                    className="playlist-note-drift pointer-events-none absolute left-1/2 top-1/2 z-0 h-28 w-28 -translate-x-1/2 -translate-y-1/2 text-white/10 sm:h-36 sm:w-36"
+                    className="playlist-note-drift pointer-events-none absolute top-1/2 left-1/2 z-0 h-28 w-28 -translate-x-1/2 -translate-y-1/2 text-white/10 sm:h-36 sm:w-36"
                     aria-hidden="true"
                 />
 
@@ -58,18 +58,18 @@ export function PlaylistDigestCard({ post }: PlaylistDigestCardProps) {
                     <div className="mt-1.5 mb-2.5 flex min-w-0 items-center gap-3 text-white">
                         <div className="flex items-end gap-1.5">
                             <div>
-                                <p className="text-[0.625rem] font-semibold uppercase leading-none text-white/75">{t('date')}</p>
-                                <p className="text-xl font-black leading-none tabular-nums">{dateParts.day}</p>
+                                <p className="text-[0.625rem] leading-none font-semibold text-white/75 uppercase">{t('date')}</p>
+                                <p className="text-xl leading-none font-black tabular-nums">{dateParts.day}</p>
                             </div>
                             <span className="mb-0.5 h-7 w-px bg-white/80" aria-hidden="true" />
                             <div>
-                                <p className="text-[0.625rem] font-semibold uppercase leading-none text-white/75">{t('month')}</p>
-                                <p className="text-xl font-black leading-none tabular-nums">{dateParts.month}</p>
+                                <p className="text-[0.625rem] leading-none font-semibold text-white/75 uppercase">{t('month')}</p>
+                                <p className="text-xl leading-none font-black tabular-nums">{dateParts.month}</p>
                             </div>
                             <span className="mb-0.5 h-7 w-px bg-white/80" aria-hidden="true" />
                             <div>
-                                <p className="text-[0.625rem] font-semibold uppercase leading-none text-white/75">{t('time')}</p>
-                                <p className="text-xl font-black leading-none tabular-nums">{dateParts.time}</p>
+                                <p className="text-[0.625rem] leading-none font-semibold text-white/75 uppercase">{t('time')}</p>
+                                <p className="text-xl leading-none font-black tabular-nums">{dateParts.time}</p>
                             </div>
                         </div>
                     </div>
@@ -86,8 +86,8 @@ export function PlaylistDigestCard({ post }: PlaylistDigestCardProps) {
                 {/* Details */}
                 <div className="relative z-10 mt-4 grid grid-cols-[1fr_5rem] items-center gap-4">
                     <div className="min-w-0">
-                        <p className="text-[0.7rem] font-normal uppercase leading-none text-white/75">{t('playlistDigest')}</p>
-                        <h2 className="mt-1.5 text-lg font-semibold leading-tight text-white">{formatPlaylistDigestContent(post.content, t)}</h2>
+                        <p className="text-[0.7rem] leading-none font-normal text-white/75 uppercase">{t('playlistDigest')}</p>
+                        <h2 className="mt-1.5 text-lg leading-tight font-semibold text-white">{formatPlaylistDigestContent(post.content, t)}</h2>
                         <p className="mt-1.5 text-xs text-white/75">
                             {timeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${timeAgo.unit}`, { count: timeAgo.value })}
                         </p>
@@ -115,7 +115,7 @@ export function PlaylistDigestCard({ post }: PlaylistDigestCardProps) {
 
             {post.recentComments.length > 0 && (
                 /* Comments */
-                <div className="border-t border-border/50 px-4 pb-4 pt-3">
+                <div className="border-t border-border/50 px-4 pt-3 pb-4">
                     <CommentsList comments={post.recentComments} compact />
                 </div>
             )}

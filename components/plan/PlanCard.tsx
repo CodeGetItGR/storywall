@@ -58,8 +58,8 @@ export function PlanCard({ plan, modules, emphasis, badge, footer, onSelectActio
     const content = (
         <>
             <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0 flex items-start justify-between w-full">
-                    <div className="min-w-0 flex items-center gap-2">
+                <div className="flex w-full min-w-0 items-start justify-between">
+                    <div className="flex min-w-0 items-center gap-2">
                         <p className="truncate text-3xl font-bold text-ink">{plan.name}</p>
                         {badge}
                     </div>
@@ -71,15 +71,15 @@ export function PlanCard({ plan, modules, emphasis, badge, footer, onSelectActio
             <div className="mt-4 flex items-baseline gap-8">
                 <div>
                     <p className="text-2xl font-bold text-ink">{renderLimit(plan.maxMembers, 'count')}</p>
-                    <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('members')}</p>
+                    <p className="mt-0.5 text-[11px] font-semibold tracking-wide text-ink-faint uppercase">{t('members')}</p>
                 </div>
                 <div>
                     <p className="text-2xl font-bold text-ink">{renderLimit(plan.storageBytes, 'bytes')}</p>
-                    <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('storage')}</p>
+                    <p className="mt-0.5 text-[11px] font-semibold tracking-wide text-ink-faint uppercase">{t('storage')}</p>
                 </div>
             </div>
             <div className="mt-4">
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('modules')}</p>
+                <p className="mb-2 text-[11px] font-semibold tracking-wide text-ink-faint uppercase">{t('modules')}</p>
                 <PlanModuleIcons moduleKeys={plan.moduleKeys} modules={modules} />
             </div>
             {(plan.paidModules?.length ?? 0) > 0 && (
@@ -107,7 +107,7 @@ export function PlanCard({ plan, modules, emphasis, badge, footer, onSelectActio
                 emphasis === 'primary' && 'border-primary bg-primary-light/50',
                 emphasis === 'secondary' && 'border-primary/20 bg-primary-light/20',
                 !emphasis && 'border-border bg-white',
-                isSelectable && emphasis !== 'primary' && 'hover:border-primary/40 hover:bg-primary-light/30'
+                isSelectable && emphasis !== 'primary' && 'hover:border-primary/40 hover:bg-primary-light/30',
             )}
         >
             {/* Accent */}

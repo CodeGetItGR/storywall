@@ -26,7 +26,7 @@ export function PostHeader({ post, timeAgo }: PostHeaderProps) {
                 </div>
                 <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-sm font-semibold leading-tight text-ink">{t('playlistDigest')}</p>
+                        <p className="text-sm leading-tight font-semibold text-ink">{t('playlistDigest')}</p>
                     </div>
                     <span className="text-xs text-ink-muted">
                         {timeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${timeAgo.unit}`, { count: timeAgo.value })}
@@ -41,5 +41,12 @@ export function PostHeader({ post, timeAgo }: PostHeaderProps) {
 
     // The star marker is a feed-only affordance (see PostCard) — the comments
     // view always shows the author's real avatar/initials, regardless of role.
-    return <PostAuthorAvatar avatarUrl={memberAvatarUrl(post.authorMemberId, post.author?.avatarUrl)} name={authorName} subtitle={authorSubtitle} timeAgo={timeAgo} />;
+    return (
+        <PostAuthorAvatar
+            avatarUrl={memberAvatarUrl(post.authorMemberId, post.author?.avatarUrl)}
+            name={authorName}
+            subtitle={authorSubtitle}
+            timeAgo={timeAgo}
+        />
+    );
 }

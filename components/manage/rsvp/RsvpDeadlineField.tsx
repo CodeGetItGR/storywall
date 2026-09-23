@@ -69,8 +69,8 @@ export function RsvpDeadlineField({ eventId, rsvpDeadline, canWrite }: { eventId
                     type="submit"
                     disabled={disabled || isSaving || !hasChanges}
                     className={cn(
-                        'items-center justify-center gap-2 rounded-full bg-gradient-brand px-5 py-2 text-sm font-semibold text-white shadow-lg transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40',
-                        hasChanges ? 'flex' : 'hidden'
+                        'items-center justify-center gap-2 rounded-full px-5 py-2 text-sm font-semibold text-white shadow-lg transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40',
+                        hasChanges ? 'flex' : 'hidden',
                     )}
                 >
                     {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : t('settings.save')}

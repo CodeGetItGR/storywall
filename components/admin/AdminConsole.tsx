@@ -28,16 +28,16 @@ export function AdminConsole() {
     if (tab === 'reactionTypes') return <ReactionTypesCatalogPanel />;
     if (tab === 'accounts') {
         return (
-            <div className="mx-auto px-4 pb-16 pt-5 text-[15px] sm:px-6 lg:px-8 lg:pb-10 lg:pt-6">
+            <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
                 <AccountsPanel />
             </div>
         );
     }
 
     return (
-        <div className="mx-auto px-4 pb-16 pt-5 text-[15px] sm:px-6 lg:px-8 lg:pb-10 lg:pt-6">
+        <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
             <header className="mb-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary-dark">{t('eyebrow')}</p>
+                <p className="text-[11px] font-semibold tracking-[0.18em] text-primary-dark uppercase">{t('eyebrow')}</p>
                 <h1 className="mt-1 text-3xl font-bold tracking-tight text-ink sm:text-4xl">{t('title')}</h1>
                 <p className="mt-2 max-w-3xl text-base leading-7 text-ink-muted">{t('subtitle')}</p>
             </header>

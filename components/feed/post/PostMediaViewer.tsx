@@ -27,7 +27,7 @@ export function PostMediaViewer({ post, media, initialIndex, alt, onCloseAction 
         (open: boolean) => {
             if (!open) requestClose();
         },
-        [requestClose]
+        [requestClose],
     );
 
     return (
@@ -40,7 +40,7 @@ export function PostMediaViewer({ post, media, initialIndex, alt, onCloseAction 
                 <Dialog.Popup aria-label={alt} className="fixed inset-0 z-50 bg-black outline-none">
                     <Dialog.Close
                         aria-label={t('close')}
-                        className="absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/45 text-white transition-colors hover:bg-black/65"
+                        className="absolute top-3 right-3 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/45 text-white transition-colors hover:bg-black/65"
                     >
                         <X className="h-6 w-6" />
                     </Dialog.Close>
@@ -49,7 +49,7 @@ export function PostMediaViewer({ post, media, initialIndex, alt, onCloseAction 
                     {/* Caption, author, and engagement overlay */}
                     <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center">
                         {media.length > 1 && (
-                            <div className="mb-2 rounded-full bg-black/50 px-2.5 py-1 text-xs tabular-nums text-white">
+                            <div className="mb-2 rounded-full bg-black/50 px-2.5 py-1 text-xs text-white tabular-nums">
                                 {currentIndex + 1} / {media.length}
                             </div>
                         )}

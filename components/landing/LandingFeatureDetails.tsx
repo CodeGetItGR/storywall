@@ -31,7 +31,7 @@ export function LandingFeatureDetails() {
                 <div className="mx-auto max-w-155 text-center">
                     <p className="text-[13px] font-black tracking-[0.15em] text-[#f2c66a] uppercase">{t('eyebrow')}</p>
                     <h2
-                        className="mt-4 font-(--editorial) text-[clamp(42px,4vw,62px)] leading-[0.95] tracking-[-0.045em]"
+                        className="mt-4 text-[clamp(42px,4vw,62px)] leading-[0.95] font-(--editorial) tracking-[-0.045em]"
                         id="landing-feature-details-title"
                     >
                         {t('heading')}
@@ -56,7 +56,7 @@ export function LandingFeatureDetails() {
                         </p>
                     </div>
                     <h2
-                        className="mt-4 font-(--editorial) text-[clamp(40px,4.4vw,68px)] leading-[0.95] tracking-[-0.055em] min-[761px]:col-span-7 min-[761px]:mt-0"
+                        className="mt-4 text-[clamp(40px,4.4vw,68px)] leading-[0.95] font-(--editorial) tracking-[-0.055em] min-[761px]:col-span-7 min-[761px]:mt-0"
                         id="landing-feature-details-title"
                     >
                         {t('heading')}
@@ -66,7 +66,7 @@ export function LandingFeatureDetails() {
                 {/* Feature navigation */}
                 <div
                     aria-label={t('label')}
-                    className="mt-7 flex gap-7 overflow-x-auto px-5 pb-2 [-webkit-overflow-scrolling:touch] [scrollbar-width:none]! [&::-webkit-scrollbar]:hidden min-[761px]:mt-12 min-[761px]:gap-10 min-[761px]:px-12"
+                    className="mt-7 flex [scrollbar-width:none]! gap-7 overflow-x-auto px-5 pb-2 [-webkit-overflow-scrolling:touch] min-[761px]:mt-12 min-[761px]:gap-10 min-[761px]:px-12 [&::-webkit-scrollbar]:hidden"
                     ref={tabListRef}
                     role="tablist"
                 >
@@ -74,7 +74,7 @@ export function LandingFeatureDetails() {
                         <button
                             aria-controls="landing-feature-detail-panel"
                             aria-selected={selectedIndex === index}
-                            className="relative shrink-0 pb-3 text-left text-[16px] leading-none font-black tracking-[0.02em] text-white/42 uppercase transition-colors duration-200 hover:text-white focus-ring focus-visible:outline-offset-4 aria-selected:text-white after:absolute after:right-0 after:bottom-0 after:left-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#f2c66a] after:transition-transform after:duration-200 aria-selected:after:scale-x-100"
+                            className="relative shrink-0 pb-3 text-left text-[16px] leading-none font-black tracking-[0.02em] text-white/42 uppercase focus-ring transition-colors duration-200 after:absolute after:right-0 after:bottom-0 after:left-0 after:h-0.5 after:origin-left after:scale-x-0 after:bg-[#f2c66a] after:transition-transform after:duration-200 hover:text-white focus-visible:outline-offset-4 aria-selected:text-white aria-selected:after:scale-x-100"
                             id={`landing-feature-tab-${index}`}
                             key={detail.title}
                             onClick={selectDetail(index)}
@@ -111,7 +111,7 @@ export function LandingFeatureDetails() {
 
                     {/* Feature details */}
                     <div className="flex flex-col px-5 pt-8 pb-10 min-[761px]:justify-center min-[761px]:px-[clamp(2.5rem,5vw,7rem)] min-[761px]:py-14">
-                        <h3 className="font-(--editorial) text-[clamp(42px,4vw,66px)] leading-[0.9] tracking-[-0.055em] text-white">
+                        <h3 className="text-[clamp(42px,4vw,66px)] leading-[0.9] font-(--editorial) tracking-[-0.055em] text-white">
                             {activeDetail.title}
                         </h3>
                         <p className="mt-4 text-[16px] leading-[1.3] font-black text-[#f2c66a] min-[761px]:text-[18px]">{activeDetail.subtitle}</p>
@@ -133,7 +133,7 @@ export function LandingFeatureDetails() {
                         <div className="mt-12 flex items-center justify-between gap-4 min-[761px]:mt-16">
                             <button
                                 aria-label={t('previous')}
-                                className="grid size-12 shrink-0 place-items-center rounded-full border border-white/25 text-xl text-white transition-colors duration-200 hover:border-[#f2c66a] hover:text-[#f2c66a] focus-ring focus-visible:outline-offset-4 disabled:border-white/12 disabled:text-white/30 disabled:hover:border-white/12 disabled:hover:text-white/30"
+                                className="grid size-12 shrink-0 place-items-center rounded-full border border-white/25 text-xl text-white focus-ring transition-colors duration-200 hover:border-[#f2c66a] hover:text-[#f2c66a] focus-visible:outline-offset-4 disabled:border-white/12 disabled:text-white/30 disabled:hover:border-white/12 disabled:hover:text-white/30"
                                 disabled={!canSelectPrevious}
                                 onClick={selectPrevious}
                                 type="button"
@@ -145,7 +145,7 @@ export function LandingFeatureDetails() {
                             </p>
                             <button
                                 aria-label={t('next')}
-                                className="grid size-12 shrink-0 place-items-center rounded-full border border-white/25 text-xl text-white transition-colors duration-200 hover:border-[#f2c66a] hover:text-[#f2c66a] focus-ring focus-visible:outline-offset-4 disabled:border-white/12 disabled:text-white/30 disabled:hover:border-white/12 disabled:hover:text-white/30"
+                                className="grid size-12 shrink-0 place-items-center rounded-full border border-white/25 text-xl text-white focus-ring transition-colors duration-200 hover:border-[#f2c66a] hover:text-[#f2c66a] focus-visible:outline-offset-4 disabled:border-white/12 disabled:text-white/30 disabled:hover:border-white/12 disabled:hover:text-white/30"
                                 disabled={!canSelectNext}
                                 onClick={selectNext}
                                 type="button"

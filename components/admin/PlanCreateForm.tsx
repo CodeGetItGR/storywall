@@ -139,7 +139,7 @@ function PlanDuplicateForm({
     function availableEventTypesFor(rowId: string) {
         const usedElsewhere = new Set(rows.filter((row) => row.rowId !== rowId).map((row) => row.eventTypeKey));
         return orderedEventTypes.filter(
-            (eventType) => eventType.eventTypeKey !== sourcePlan.eventTypeKey && !usedElsewhere.has(eventType.eventTypeKey)
+            (eventType) => eventType.eventTypeKey !== sourcePlan.eventTypeKey && !usedElsewhere.has(eventType.eventTypeKey),
         );
     }
 
@@ -255,19 +255,19 @@ function PlanCloneTargetRow({
     const handleEventTypeChange = useCallback(
         (changeEvent: ChangeEvent<HTMLSelectElement>) =>
             onUpdateAction(row.rowId, { eventTypeKey: changeEvent.currentTarget.value as EventTypeConvention | '' }),
-        [onUpdateAction, row.rowId]
+        [onUpdateAction, row.rowId],
     );
     const handleCodeChange = useCallback(
         (changeEvent: ChangeEvent<HTMLInputElement>) => onUpdateAction(row.rowId, { codeOverride: changeEvent.target.value.toUpperCase() }),
-        [onUpdateAction, row.rowId]
+        [onUpdateAction, row.rowId],
     );
     const handleNameChange = useCallback(
         (changeEvent: ChangeEvent<HTMLInputElement>) => onUpdateAction(row.rowId, { name: changeEvent.target.value }),
-        [onUpdateAction, row.rowId]
+        [onUpdateAction, row.rowId],
     );
     const handleDescriptionChange = useCallback(
         (changeEvent: ChangeEvent<HTMLInputElement>) => onUpdateAction(row.rowId, { description: changeEvent.target.value }),
-        [onUpdateAction, row.rowId]
+        [onUpdateAction, row.rowId],
     );
     const handleRemove = useCallback(() => onRemoveAction(row.rowId), [onRemoveAction, row.rowId]);
 
@@ -358,14 +358,14 @@ function PlanCreateNewForm({
         codeOverride ??
         codeFromName(
             name,
-            plans.map((plan) => plan.code)
+            plans.map((plan) => plan.code),
         );
 
     const handleNameChange = useCallback((event: ChangeEvent<HTMLInputElement>) => setName(event.target.value), []);
     // Clearing the field hands the code back to the name rather than pinning it empty.
     const handleCodeChange = useCallback(
         (event: ChangeEvent<HTMLInputElement>) => setCodeOverride(event.target.value === '' ? null : event.target.value.toUpperCase()),
-        []
+        [],
     );
 
     function resetForm() {

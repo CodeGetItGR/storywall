@@ -223,7 +223,7 @@ export default function SettingsTab({
     return (
         <div>
             {/* Event details */}
-            <p className="text-sm text-ink-muted mb-5">{t('settings.subtitle')}</p>
+            <p className="mb-5 text-sm text-ink-muted">{t('settings.subtitle')}</p>
             {!canWrite && (
                 <p className="mb-5 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('settings.readOnly')}</p>
             )}
@@ -234,19 +234,19 @@ export default function SettingsTab({
                     <span className={labelClass}>{t('settings.coverPhoto.label')}</span>
                     <TargetedSection id={COVER_PHOTO_SECTION_ID} className="mt-1.5">
                         {coverPreview ? (
-                            <div className="relative rounded-2xl overflow-hidden aspect-21/9 bg-surface-muted">
+                            <div className="relative aspect-21/9 overflow-hidden rounded-2xl bg-surface-muted">
                                 <ProtectedImage src={coverPreview} alt="" fill className="object-cover" sizes="700px" loading="lazy" />
                                 {isUploading && (
-                                    <div className="absolute inset-0 bg-ink/40 flex items-center justify-center">
-                                        <Loader2 className="w-6 h-6 text-white animate-spin" />
+                                    <div className="absolute inset-0 flex items-center justify-center bg-ink/40">
+                                        <Loader2 className="h-6 w-6 animate-spin text-white" />
                                     </div>
                                 )}
-                                <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                                <div className="absolute right-3 bottom-3 flex items-center gap-2">
                                     <button
                                         type="button"
                                         onClick={handleChangeCoverClick}
                                         disabled={disabled || !canUploadCover}
-                                        className="px-3 py-1.5 rounded-full bg-ink/60 text-white text-xs font-semibold hover:bg-ink/80 transition-colors"
+                                        className="rounded-full bg-ink/60 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-ink/80"
                                     >
                                         {t('settings.coverPhoto.change')}
                                     </button>
@@ -256,9 +256,9 @@ export default function SettingsTab({
                                             onClick={handleRemovePendingCover}
                                             disabled={disabled}
                                             aria-label={t('settings.coverPhoto.remove')}
-                                            className="w-8 h-8 rounded-full bg-ink/60 flex items-center justify-center text-white hover:bg-ink/80 transition-colors"
+                                            className="flex h-8 w-8 items-center justify-center rounded-full bg-ink/60 text-white transition-colors hover:bg-ink/80"
                                         >
-                                            <X className="w-4 h-4" />
+                                            <X className="h-4 w-4" />
                                         </button>
                                     )}
                                 </div>
@@ -268,9 +268,9 @@ export default function SettingsTab({
                                 type="button"
                                 onClick={handleChangeCoverClick}
                                 disabled={disabled || !canUploadCover}
-                                className="w-full flex flex-col items-center justify-center gap-2 border-2 border-dashed border-border rounded-2xl py-10 text-ink-faint hover:border-primary/40 hover:text-primary/60 hover:bg-primary-light/30 transition-colors"
+                                className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border py-10 text-ink-faint transition-colors hover:border-primary/40 hover:bg-primary-light/30 hover:text-primary/60"
                             >
-                                <ImagePlus className="w-7 h-7" />
+                                <ImagePlus className="h-7 w-7" />
                                 <span className="text-sm font-medium">{t('settings.coverPhoto.upload')}</span>
                                 <span className="text-xs">{t('settings.coverPhoto.formats')}</span>
                             </button>
@@ -402,7 +402,7 @@ export default function SettingsTab({
                 <div
                     className={cn(
                         'fixed right-4 bottom-20 z-30 flex items-center justify-end gap-3 lg:static lg:z-auto lg:mt-2 lg:flex',
-                        !hasChanges && !saved && 'hidden'
+                        !hasChanges && !saved && 'hidden',
                     )}
                 >
                     {saved && !isSaving && (
@@ -426,8 +426,8 @@ export default function SettingsTab({
                             Boolean(scheduleError)
                         }
                         className={cn(
-                            'min-h-11 items-center justify-center gap-2 rounded-full bg-gradient-brand px-5 text-sm font-semibold text-white shadow-lg transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 lg:flex lg:shadow-none',
-                            hasChanges ? 'flex' : 'hidden'
+                            'min-h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold text-white shadow-lg transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 lg:flex lg:shadow-none',
+                            hasChanges ? 'flex' : 'hidden',
                         )}
                     >
                         {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : t('settings.save')}

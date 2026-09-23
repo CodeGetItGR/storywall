@@ -56,7 +56,7 @@ export function useResetPassword() {
                 setIsSubmitting(false);
             }
         },
-        [confirmation, password, router, t, toErrorMessage, token]
+        [confirmation, password, router, t, toErrorMessage, token],
     );
 
     return {

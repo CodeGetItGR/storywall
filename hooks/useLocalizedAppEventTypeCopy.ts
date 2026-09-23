@@ -20,6 +20,6 @@ export function useLocalizedAppEventTypeCopy() {
                 voice: translation?.voice,
             };
         },
-        [appConfig?.translations.eventTypes, localizedText]
+        [appConfig?.translations.eventTypes, localizedText],
     );
 }

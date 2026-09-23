@@ -36,7 +36,8 @@ export function useEventFeedStream(eventId: string | null) {
 
         function refresh() {
             void queryClient.invalidateQueries({ queryKey: postKeys.list(eventId!) });
-            const posts = queryClient.getQueryData<InfiniteData<Page<PostResponseDto>>>(postKeys.list(eventId!))?.pages.flatMap((page) => page.content) ?? [];
+            const posts =
+                queryClient.getQueryData<InfiniteData<Page<PostResponseDto>>>(postKeys.list(eventId!))?.pages.flatMap((page) => page.content) ?? [];
             for (const post of posts) void queryClient.invalidateQueries({ queryKey: commentKeys.list(post.id), exact: true });
         }
 

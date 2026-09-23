@@ -60,7 +60,7 @@ export function usePlanModuleCellDraft({ cell, plan, onSavedAction }: { cell: Ed
 
     const configAfter = useMemo(
         () => mergeConfigDraft(cell.moduleKey, knownDraft, parsedJson.ok ? parsedJson.value : initialSplit.unknown),
-        [cell.moduleKey, initialSplit.unknown, knownDraft, parsedJson]
+        [cell.moduleKey, initialSplit.unknown, knownDraft, parsedJson],
     );
     const changes = useMemo(() => configChangeSummary(cell.config, configAfter, t('none')), [cell.config, configAfter, t]);
     const includedChanged = included !== (cell.kind === 'included');

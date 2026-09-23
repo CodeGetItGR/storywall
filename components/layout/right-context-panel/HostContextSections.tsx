@@ -15,13 +15,7 @@ import { routes } from '@/lib/routes';
  * summaries shared between the feed's RightContextPanel (inside an aside)
  * and the manage page's Overview tab (inline in normal page flow).
  */
-export function HostContextSections({
-    panel,
-    showMembersUsage = true,
-}: {
-    panel: UseRightContextPanelResult;
-    showMembersUsage?: boolean;
-}) {
+export function HostContextSections({ panel, showMembersUsage = true }: { panel: UseRightContextPanelResult; showMembersUsage?: boolean }) {
     const t = useTranslations('RightContextPanel');
     const {
         activeEvent,
@@ -46,7 +40,7 @@ export function HostContextSections({
     if (!activeEvent) return null;
 
     return (
-        <div className="flex flex-col gap-3 xxl:gap-8">
+        <div className="xxl:gap-8 flex flex-col gap-3">
             {/* Actions */}
             {actionItems.length > 0 && (
                 <div>
@@ -105,17 +99,17 @@ export function HostContextSections({
                         },
                         ...(showMembersUsage
                             ? [
-                                {
-                                    key: 'members' as const,
-                                    used: eventUsage.memberCount,
-                                    limit: eventUsage.memberLimit,
-                                    percent: eventUsage.memberPercent,
-                                    valueLabel:
-                                        eventUsage.memberLimit === null
-                                            ? `${eventUsage.memberCount}`
-                                            : `${eventUsage.memberCount} / ${eventUsage.memberLimit}`,
-                                },
-                            ]
+                                  {
+                                      key: 'members' as const,
+                                      used: eventUsage.memberCount,
+                                      limit: eventUsage.memberLimit,
+                                      percent: eventUsage.memberPercent,
+                                      valueLabel:
+                                          eventUsage.memberLimit === null
+                                              ? `${eventUsage.memberCount}`
+                                              : `${eventUsage.memberCount} / ${eventUsage.memberLimit}`,
+                                  },
+                              ]
                             : []),
                     ]}
                 />

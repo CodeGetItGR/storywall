@@ -76,7 +76,7 @@ function CreateEventFormBody() {
                 <div className="mt-3 min-h-0 flex-1 overflow-y-auto p-5">
                     <form id={formId} onSubmit={handleSubmit}>
                         {/* Subtitle */}
-                        <h2 className="text-lg font-bold text-ink mb-5">
+                        <h2 className="mb-5 text-lg font-bold text-ink">
                             {step === 'type' && t('steps.typeSubtitle')}
                             {step === 'plan' && t('steps.planSubtitle')}
                             {step === 'details' && t('subtitle')}

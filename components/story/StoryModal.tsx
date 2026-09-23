@@ -127,11 +127,11 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                         )}
 
                         {/* Tap zones */}
-                        <button onClick={goPrev} className="absolute left-0 top-0 z-10 h-full w-1/3" aria-label={t('previousStory')} />
-                        <button onClick={goNext} className="absolute right-0 top-0 z-10 h-full w-1/3" aria-label={t('nextStory')} />
+                        <button onClick={goPrev} className="absolute top-0 left-0 z-10 h-full w-1/3" aria-label={t('previousStory')} />
+                        <button onClick={goNext} className="absolute top-0 right-0 z-10 h-full w-1/3" aria-label={t('nextStory')} />
 
                         {/* Desktop arrows */}
-                        <div className="absolute left-2 top-1/2 z-20 hidden -translate-y-1/2 sm:flex">
+                        <div className="absolute top-1/2 left-2 z-20 hidden -translate-y-1/2 sm:flex">
                             <button
                                 onClick={goPrev}
                                 aria-label={t('previous')}
@@ -140,7 +140,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                                 <ChevronLeft className="h-5 w-5" />
                             </button>
                         </div>
-                        <div className="absolute right-2 top-1/2 z-20 hidden -translate-y-1/2 sm:flex">
+                        <div className="absolute top-1/2 right-2 z-20 hidden -translate-y-1/2 sm:flex">
                             <button
                                 onClick={goNext}
                                 aria-label={t('next')}
@@ -152,7 +152,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
 
                         {/* Caption */}
                         {hasMedia && <StoryCaptionBar story={activeStory} />}
-                        {!hasMedia && <section className="absolute inset-0 flex w-full min-w-0 min-h-0 flex-1 flex-col" />}
+                        {!hasMedia && <section className="absolute inset-0 flex min-h-0 w-full min-w-0 flex-1 flex-col" />}
                     </div>
                 </Dialog.Popup>
 

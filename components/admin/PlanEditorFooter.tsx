@@ -39,6 +39,6 @@ export function PlanEditorFooter({
                 {t('save')}
             </button>
         </>,
-        footerSlot
+        footerSlot,
     );
 }

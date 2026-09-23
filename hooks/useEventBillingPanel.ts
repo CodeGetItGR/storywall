@@ -38,16 +38,16 @@ export function useEventBillingPanel(eventId: string, { isDeleted = false }: { i
                 option,
                 plan: eventPlans.find((plan) => plan.code === option.planTierCode) ?? null,
             })),
-        [eventPlans, upgradeOptions.data]
+        [eventPlans, upgradeOptions.data],
     );
     const paidAddonOffers = useMemo(
         () =>
             isDeleted
                 ? []
                 : (appConfigQuery.data?.paidServices ?? []).filter(
-                      (service) => service.planTierIds.length === 0 || (currentPlan ? service.planTierIds.includes(currentPlan.id) : false)
+                      (service) => service.planTierIds.length === 0 || (currentPlan ? service.planTierIds.includes(currentPlan.id) : false),
                   ),
-        [appConfigQuery.data?.paidServices, currentPlan, isDeleted]
+        [appConfigQuery.data?.paidServices, currentPlan, isDeleted],
     );
     const insights = useMemo(() => {
         if (!data) return null;

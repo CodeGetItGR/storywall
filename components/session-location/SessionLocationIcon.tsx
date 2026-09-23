@@ -8,7 +8,7 @@ import type { SessionLocationIcon as SessionLocationIconModel } from '@/lib/sess
 type SessionLocationIconProps = {
     icon: SessionLocationIconModel;
     size?: 'sm' | 'lg';
-    className?:string
+    className?: string;
 };
 
 export function SessionLocationIcon({ icon, size = 'lg', className }: SessionLocationIconProps) {
@@ -18,5 +18,15 @@ export function SessionLocationIcon({ icon, size = 'lg', className }: SessionLoc
         return <MapPin className={dimensions} strokeWidth={1.8} aria-hidden="true" />;
     }
 
-    return <Image src={icon.src ?? ''} alt="" width={size === 'lg' ? 80 : 18} height={size === 'lg' ? 80 : 18} aria-hidden="true" unoptimized  className={className}/>;
+    return (
+        <Image
+            src={icon.src ?? ''}
+            alt=""
+            width={size === 'lg' ? 80 : 18}
+            height={size === 'lg' ? 80 : 18}
+            aria-hidden="true"
+            unoptimized
+            className={className}
+        />
+    );
 }

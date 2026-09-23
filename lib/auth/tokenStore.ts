@@ -88,9 +88,7 @@ export function setSession(session: AuthSessionDto) {
     emit();
 }
 
-export function updateSessionProfile(
-    profile: Pick<AuthSessionDto, 'firstName' | 'lastName' | 'profilePictureUrl'> & { emailVerified?: boolean }
-) {
+export function updateSessionProfile(profile: Pick<AuthSessionDto, 'firstName' | 'lastName' | 'profilePictureUrl'> & { emailVerified?: boolean }) {
     state = {
         ...state,
         firstName: profile.firstName,

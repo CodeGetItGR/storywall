@@ -35,8 +35,8 @@ export function useLandingPricingPlans(): { categories: LandingPricingCategories
                     moduleName,
                     copy,
                     undefined,
-                    plans.slice(0, index).flatMap((previousPlan) => previousPlan.moduleKeys)
-                )
+                    plans.slice(0, index).flatMap((previousPlan) => previousPlan.moduleKeys),
+                ),
             )
             .filter((plan): plan is LandingPlan => plan !== null);
         result[category] = { label: t(`categories.${category}.label`), plans: landingPlans };

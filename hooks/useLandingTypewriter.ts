@@ -28,7 +28,7 @@ export function useLandingTypewriter(words: string[], paused = false) {
                 }
                 setLength((value) => value + 1);
             },
-            complete ? 1250 : 92
+            complete ? 1250 : 92,
         );
         return () => window.clearTimeout(timer);
     }, [index, length, paused, reducedMotion, words]);

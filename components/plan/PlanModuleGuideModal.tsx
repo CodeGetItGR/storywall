@@ -25,12 +25,12 @@ export function PlanModuleGuideModal({
     const publicModuleUnlocks = new Set(
         paidServices
             .filter((service) => service.kind === 'MODULE_UNLOCK' && service.isPublic && service.isAssignable && service.grantsModuleKey)
-            .map((service) => service.grantsModuleKey)
+            .map((service) => service.grantsModuleKey),
     );
 
     return (
         <Modal open={open} onClose={onCloseAction} size="sm" closeLabel={t('compare.moduleLegendClose')}>
-            <Modal.Body className="px-4 pb-4 pt-12 sm:px-5">
+            <Modal.Body className="px-4 pt-12 pb-4 sm:px-5">
                 <h2 className="text-lg font-semibold text-ink">
                     {planName ? t('compare.moduleLegendTitleForPlan', { plan: planName }) : t('compare.moduleLegendTitle')}
                 </h2>

@@ -30,7 +30,7 @@ export function EventCreateFooter() {
                             type="button"
                             disabled={!canContinueType}
                             onClick={goToPlan}
-                            className="min-h-11 rounded-full bg-gradient-brand px-5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                            className="min-h-11 rounded-full px-5 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             {t('continueToPlan')}
                         </button>
@@ -50,7 +50,7 @@ export function EventCreateFooter() {
                             type="button"
                             disabled={!canContinuePlan}
                             onClick={goToDetails}
-                            className="min-h-11 flex-2 rounded-full bg-gradient-brand text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                            className="min-h-11 flex-2 rounded-full text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             {t('continueToDetails')}
                         </button>
@@ -70,7 +70,7 @@ export function EventCreateFooter() {
                             form={formId}
                             type="submit"
                             disabled={!canSubmitDetails}
-                            className="min-h-11 flex-2 rounded-full bg-gradient-brand text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                            className="min-h-11 flex-2 rounded-full text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             {t('continueToOverview')}
                         </button>
@@ -91,7 +91,7 @@ export function EventCreateFooter() {
                             form={formId}
                             type="submit"
                             disabled={isSubmitPending || !isEmailVerified || !consentSatisfied}
-                            className="flex min-h-11 flex-2 items-center justify-center gap-2 rounded-full bg-gradient-brand text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+                            className="flex min-h-11 flex-2 items-center justify-center gap-2 rounded-full text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:opacity-40"
                         >
                             {isSubmitPending ? <Loader2 className="h-4 w-4 animate-spin" /> : t('submitAndPay')}
                         </button>

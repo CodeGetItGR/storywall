@@ -30,7 +30,7 @@ export function NotificationRow({ notification }: { notification: NotificationRe
             event.stopPropagation();
             deleteNotification.mutate(notification.id);
         },
-        [deleteNotification, notification.id]
+        [deleteNotification, notification.id],
     );
 
     const titleKey = `types.${notification.type}.title`;
@@ -78,7 +78,7 @@ export function NotificationRow({ notification }: { notification: NotificationRe
 
     const rowClass = cn(
         'flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-surface-muted',
-        !isRead && 'bg-primary-light/40'
+        !isRead && 'bg-primary-light/40',
     );
 
     return (
@@ -97,7 +97,7 @@ export function NotificationRow({ notification }: { notification: NotificationRe
                 onClick={handleDelete}
                 disabled={deleteNotification.isPending}
                 aria-label={t('delete')}
-                className="absolute top-3 right-3 hidden rounded-full p-1.5 text-ink-faint transition hover:bg-background hover:text-ink group-hover:block disabled:opacity-50"
+                className="absolute top-3 right-3 hidden rounded-full p-1.5 text-ink-faint transition group-hover:block hover:bg-background hover:text-ink disabled:opacity-50"
             >
                 <Trash2 className="h-3.5 w-3.5" />
             </button>

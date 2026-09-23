@@ -29,7 +29,7 @@ export function usePlanModuleGrid({
 
     const columnPlans = useMemo(
         () => plans.filter((plan) => plan.eventTypeKey === eventTypeKey && (showHidden || visibilityOf(plan) === 'LIVE')),
-        [eventTypeKey, plans, showHidden]
+        [eventTypeKey, plans, showHidden],
     );
     const planIds = useMemo(() => columnPlans.map((plan) => plan.id), [columnPlans]);
 
@@ -46,7 +46,7 @@ export function usePlanModuleGrid({
                 configsByPlanId: configs.configsByPlanId,
                 unlocks,
             }),
-        [columnPlans, configs.configsByPlanId, matrixQuery.data, modules, unlocks]
+        [columnPlans, configs.configsByPlanId, matrixQuery.data, modules, unlocks],
     );
 
     const toggleShowHidden = useCallback(() => setShowHidden((current) => !current), []);
@@ -57,7 +57,7 @@ export function usePlanModuleGrid({
             if (!row) return;
             applicability.request({ moduleKey, moduleName: moduleName(moduleKey), before: row.applicability, after: next });
         },
-        [applicability, grid.rows, moduleName]
+        [applicability, grid.rows, moduleName],
     );
 
     const handleCellClick = useCallback(
@@ -68,11 +68,14 @@ export function usePlanModuleGrid({
             if (!cell || cell.kind === 'unsupported') return;
             setOpenCell({ cell, anchor: event.currentTarget });
         },
-        [grid.rows]
+        [grid.rows],
     );
     const closeCell = useCallback(() => setOpenCell(null), []);
 
-    const openCellPlan = useMemo(() => (openCell ? (columnPlans.find((plan) => plan.id === openCell.cell.planId) ?? null) : null), [columnPlans, openCell]);
+    const openCellPlan = useMemo(
+        () => (openCell ? (columnPlans.find((plan) => plan.id === openCell.cell.planId) ?? null) : null),
+        [columnPlans, openCell],
+    );
 
     return {
         grid,

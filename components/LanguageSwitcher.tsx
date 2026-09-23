@@ -61,7 +61,7 @@ export function LanguageSwitcher({ className, variant = 'default' }: { className
                 void api.patch<unknown>(endpoints.me.profile, { locale: next } satisfies MeUpdateRequestDto).catch(() => {});
             }
         },
-        [isAuthenticated, locale, pathname, router, startTransition, variant]
+        [isAuthenticated, locale, pathname, router, startTransition, variant],
     );
 
     const handleLocaleClick = useCallback(
@@ -69,7 +69,7 @@ export function LanguageSwitcher({ className, variant = 'default' }: { className
             const nextLocale = event.currentTarget.dataset.locale as Locale | undefined;
             if (nextLocale) handleChange(nextLocale);
         },
-        [handleChange]
+        [handleChange],
     );
 
     return (
@@ -78,7 +78,7 @@ export function LanguageSwitcher({ className, variant = 'default' }: { className
                 'inline-flex items-center rounded-full',
                 variant === 'sidebar' ? 'gap-3' : variant === 'auth' ? 'gap-0' : 'gap-0.5 p-0.5',
                 variant === 'default' ? 'bg-surface-muted' : 'bg-transparent',
-                className
+                className,
             )}
             role="group"
             aria-label={t('label')}
@@ -96,18 +96,18 @@ export function LanguageSwitcher({ className, variant = 'default' }: { className
                         variant === 'sidebar'
                             ? cn(
                                   'px-0 py-0.5 text-sm',
-                                  locale === l ? 'text-white underline underline-offset-4' : 'text-white/55 hover:text-white/85'
+                                  locale === l ? 'text-white underline underline-offset-4' : 'text-white/55 hover:text-white/85',
                               )
                             : variant === 'auth'
                               ? cn(
                                     'min-h-11 min-w-9 px-1.5 text-[11px] tracking-wide outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
                                     locale === l
                                         ? 'text-ink-muted underline decoration-ink-faint/70 underline-offset-4'
-                                        : 'text-ink-faint hover:text-ink-muted'
+                                        : 'text-ink-faint hover:text-ink-muted',
                                 )
                               : locale === l
                                 ? 'min-w-10 bg-card px-2.5 py-1 text-xs text-ink shadow-sm'
-                                : 'min-w-10 px-2.5 py-1 text-xs text-ink-muted hover:text-ink'
+                                : 'min-w-10 px-2.5 py-1 text-xs text-ink-muted hover:text-ink',
                     )}
                 >
                     {t(`languages.${l}`)}

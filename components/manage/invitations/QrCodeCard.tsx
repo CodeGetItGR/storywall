@@ -91,7 +91,7 @@ export function QrCodeCard({ qrLink, size = 240 }: { qrLink: QrLinkResponseDto; 
                 />
             </div>
 
-            <p className="mt-4 mb-4 break-all rounded-xl bg-surface-muted px-3 py-2 text-xs text-ink-muted">{qrLink.publicUrl}</p>
+            <p className="mt-4 mb-4 rounded-xl bg-surface-muted px-3 py-2 text-xs break-all text-ink-muted">{qrLink.publicUrl}</p>
 
             <div className="flex flex-wrap gap-2">
                 <button
@@ -114,7 +114,7 @@ export function QrCodeCard({ qrLink, size = 240 }: { qrLink: QrLinkResponseDto; 
                     <button
                         type="button"
                         onClick={handleShare}
-                        className="flex min-w-28 flex-1 items-center justify-center gap-2 rounded-full bg-gradient-brand px-3 py-2.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+                        className="flex min-w-28 flex-1 items-center justify-center gap-2 rounded-full px-3 py-2.5 text-xs font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
                     >
                         <Share2 className="h-3.5 w-3.5" />
                         {t('qr.share')}

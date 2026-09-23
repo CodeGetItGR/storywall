@@ -37,7 +37,7 @@ export function CoHostManagementRow({ canManage, host, member, onRemoveAction, o
                 <p className="mt-0.5 text-xs text-ink-muted">{isPrimary ? t('primary') : t('coHost')}</p>
             </div>
             {isPrimary ? (
-                <span className="flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-amber-800">
+                <span className="flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-[10px] font-bold tracking-wide text-amber-800 uppercase">
                     <Crown className="h-3 w-3" aria-hidden="true" />
                     {t('primary')}
                 </span>

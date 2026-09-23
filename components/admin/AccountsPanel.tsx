@@ -62,7 +62,7 @@ export function AccountsPanel() {
                 <div className="border-b border-border p-4">
                     <label className="relative block max-w-sm">
                         <span className="sr-only">{t('searchLabel')}</span>
-                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+                        <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-ink-faint" />
                         <input
                             type="search"
                             value={panel.search}

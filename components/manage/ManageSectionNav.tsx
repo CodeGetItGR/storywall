@@ -58,7 +58,7 @@ export function ManageSectionNav({
                         aria-current={isActive ? 'page' : undefined}
                         className={cn(
                             'flex min-h-11 w-full items-center gap-2.5 rounded-xl px-3 text-left text-sm font-semibold transition-colors',
-                            isActive ? 'bg-primary-light text-primary-dark' : 'text-ink-muted hover:bg-surface-muted hover:text-ink'
+                            isActive ? 'bg-primary-light text-primary-dark' : 'text-ink-muted hover:bg-surface-muted hover:text-ink',
                         )}
                     >
                         <Icon className="h-4 w-4 shrink-0" strokeWidth={isActive ? 2.4 : 1.8} aria-hidden="true" />

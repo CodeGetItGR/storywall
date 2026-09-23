@@ -32,7 +32,11 @@ export function PlanEditorAvailabilitySection({
                 value={visibility}
                 onChangeAction={onVisibilityChangeAction}
                 labels={{ LIVE: t('fields.visibilityLive'), HIDDEN: t('fields.visibilityHidden'), ARCHIVED: t('fields.visibilityArchived') }}
-                hints={{ LIVE: t('fields.visibilityLiveHint'), HIDDEN: t('fields.visibilityHiddenHint'), ARCHIVED: t('fields.visibilityArchivedHint') }}
+                hints={{
+                    LIVE: t('fields.visibilityLiveHint'),
+                    HIDDEN: t('fields.visibilityHiddenHint'),
+                    ARCHIVED: t('fields.visibilityArchivedHint'),
+                }}
             />
 
             {/* Default */}

@@ -239,7 +239,7 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                     <Images className="h-5 w-5" />
                                 </button>
                                 {items.length > 1 && (
-                                    <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto px-1 py-1 no-scrollbar" aria-label={t('storyList')}>
+                                    <div className="no-scrollbar flex min-w-0 flex-1 gap-2 overflow-x-auto px-1 py-1" aria-label={t('storyList')}>
                                         {items.map((item, index) => (
                                             <button
                                                 key={item.key}
@@ -250,7 +250,7 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                                 aria-current={item.key === activeKey}
                                                 className={cn(
                                                     'relative h-12 w-9 shrink-0 overflow-hidden rounded-md bg-black ring-2 ring-white/30 transition',
-                                                    item.key === activeKey && 'ring-white'
+                                                    item.key === activeKey && 'ring-white',
                                                 )}
                                             >
                                                 {item.file.type.startsWith('video/') ? (
@@ -293,7 +293,7 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                             maxLength={maxCaptionLength}
                                             aria-label={t('caption')}
                                             placeholder={t('captionPlaceholder')}
-                                            className="min-h-11 w-full resize-none rounded-lg bg-black/50 px-4 py-3 pr-16 text-sm text-white placeholder:text-white/60 outline-none backdrop-blur-md focus:ring-2 focus:ring-white/60 disabled:opacity-50"
+                                            className="min-h-11 w-full resize-none rounded-lg bg-black/50 px-4 py-3 pr-16 text-sm text-white backdrop-blur-md outline-none placeholder:text-white/60 focus:ring-2 focus:ring-white/60 disabled:opacity-50"
                                         />
                                         <span className="absolute right-3 bottom-2 text-[10px] text-white/50">
                                             {activeItem.caption.length}/{maxCaptionLength}
@@ -311,7 +311,7 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                     <button
                                         type="submit"
                                         disabled={!canSubmit}
-                                        className="flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-gradient-brand px-4 text-sm font-semibold text-white disabled:opacity-40"
+                                        className="flex min-h-11 w-full items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold text-white bg-gradient-brand disabled:opacity-40"
                                     >
                                         {isBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                                         {isBusy ? t('posting') : t('post', { count: items.length })}
@@ -406,14 +406,14 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                                             }
                                             className={cn(
                                                 'flex h-19 w-19 items-center justify-center justify-self-center rounded-full border-4 border-white bg-white/20 transition disabled:opacity-40',
-                                                isRecording && 'border-red-500 bg-red-500/25'
+                                                isRecording && 'border-red-500 bg-red-500/25',
                                             )}
                                         >
                                             <span
                                                 className={cn(
                                                     'h-15 w-15 rounded-full bg-white transition-all',
                                                     cameraMode === 'video' && 'h-11 w-11 bg-red-500',
-                                                    isRecording && 'h-7 w-7 rounded-md'
+                                                    isRecording && 'h-7 w-7 rounded-md',
                                                 )}
                                             />
                                         </button>

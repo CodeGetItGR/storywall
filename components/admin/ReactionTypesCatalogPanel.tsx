@@ -33,7 +33,7 @@ export function ReactionTypesCatalogPanel() {
     const eventTypesQuery = useAdminPlatformEventTypes();
     const eventTypes = useMemo(
         () => [...(eventTypesQuery.data ?? [])].sort((left, right) => left.sortOrder - right.sortOrder),
-        [eventTypesQuery.data]
+        [eventTypesQuery.data],
     );
     const [selectedEventTypeKey, setSelectedEventTypeKey] = useState<EventTypeConvention | undefined>(eventTypes[0]?.eventTypeKey);
     const effectiveEventTypeKey = selectedEventTypeKey ?? eventTypes[0]?.eventTypeKey;
@@ -94,16 +94,16 @@ export function ReactionTypesCatalogPanel() {
             const reactionType = reactionTypes.find((item) => item.id === reactionTypeId);
             if (reactionType) openEdit(reactionType);
         },
-        [openEdit, reactionTypes]
+        [openEdit, reactionTypes],
     );
 
     const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
     return (
-        <div className="mx-auto max-w-6xl px-4 pb-16 pt-5 text-[15px] sm:px-6 lg:px-8 lg:pb-10 lg:pt-6">
+        <div className="mx-auto max-w-6xl px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
             <header className="mb-5 flex flex-wrap items-start justify-between gap-3">
                 <div>
-                    <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-primary-dark">{tAdmin('eyebrow')}</p>
+                    <p className="text-[11px] font-bold tracking-[0.14em] text-primary-dark uppercase">{tAdmin('eyebrow')}</p>
                     <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">{t('title')}</h1>
                     <p className="mt-1.5 max-w-2xl text-sm leading-6 text-ink-muted">{t('subtitle')}</p>
                 </div>
@@ -130,7 +130,7 @@ export function ReactionTypesCatalogPanel() {
                     </select>
                 </AdminField>
                 <div className="rounded-lg bg-canvas px-3 py-2">
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-ink-muted">{t('activeCounter')}</p>
+                    <p className="text-[11px] font-bold tracking-wide text-ink-muted uppercase">{t('activeCounter')}</p>
                     <p className={cn('mt-0.5 font-mono text-lg font-bold', canCreateActive ? 'text-ink' : 'text-status-warn')}>{activeCount}/5</p>
                 </div>
             </section>
@@ -139,7 +139,7 @@ export function ReactionTypesCatalogPanel() {
                 {/* Filters */}
                 <div className="flex flex-wrap items-center gap-3 border-b border-border p-3">
                     <div className="relative min-w-0 flex-1 sm:max-w-64">
-                        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+                        <Search className="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-ink-faint" />
                         <input value={search} onChange={handleSearchChange} placeholder={t('search')} className={adminInputClass('w-full pl-8')} />
                     </div>
                     <div className="flex flex-wrap gap-1 rounded-lg bg-canvas p-1">
@@ -152,7 +152,7 @@ export function ReactionTypesCatalogPanel() {
                                 aria-pressed={statusFilter === status}
                                 className={cn(
                                     'rounded-md px-2.5 py-1.5 text-[12.5px] font-bold transition-colors',
-                                    statusFilter === status ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted'
+                                    statusFilter === status ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted',
                                 )}
                             >
                                 {t(`status.${status}`)}
@@ -178,7 +178,7 @@ export function ReactionTypesCatalogPanel() {
                     <div className="overflow-x-auto">
                         <table className="w-full min-w-[620px] border-collapse text-sm">
                             <thead>
-                                <tr className="border-b border-border text-left text-[11px] font-bold uppercase tracking-wide text-ink-faint">
+                                <tr className="border-b border-border text-left text-[11px] font-bold tracking-wide text-ink-faint uppercase">
                                     <th className="px-4 py-2.5 font-bold">{t('columns.reaction')}</th>
                                     <th className="px-3 py-2.5 font-bold">{t('columns.code')}</th>
                                     <th className="px-3 py-2.5 font-bold">{t('columns.order')}</th>
@@ -202,7 +202,9 @@ export function ReactionTypesCatalogPanel() {
                                             <td className="px-3 py-2.5 font-mono text-[12px] text-ink-muted">{reactionType.code}</td>
                                             <td className="px-3 py-2.5 font-mono text-ink">{reactionType.sortOrder}</td>
                                             <td className="px-3 py-2.5">
-                                                <span className={cn('inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold', STATUS_PILL[status])}>
+                                                <span
+                                                    className={cn('inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold', STATUS_PILL[status])}
+                                                >
                                                     {t(`status.${status}`)}
                                                 </span>
                                             </td>

@@ -147,7 +147,7 @@ export function PaidServicesCatalogPanel() {
             const service = allServices.find((item) => item.id === serviceId);
             if (service) openEdit(service);
         },
-        [allServices, openEdit]
+        [allServices, openEdit],
     );
 
     const closeDrawer = useCallback(() => {
@@ -161,10 +161,10 @@ export function PaidServicesCatalogPanel() {
     const plansById = useMemo(() => new Map((eventPlans.data ?? []).map((plan) => [plan.id, plan.name])), [eventPlans.data]);
 
     return (
-        <div className="mx-auto max-w-6xl px-4 pb-16 pt-5 text-[15px] sm:px-6 lg:px-8 lg:pb-10 lg:pt-6">
+        <div className="mx-auto max-w-6xl px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
             <header className="mb-5 flex flex-wrap items-start justify-between gap-3">
                 <div>
-                    <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-primary-dark">{tAdmin('eyebrow')}</p>
+                    <p className="text-[11px] font-bold tracking-[0.14em] text-primary-dark uppercase">{tAdmin('eyebrow')}</p>
                     <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">{t('title')}</h1>
                     <p className="mt-1.5 max-w-2xl text-sm leading-6 text-ink-muted">{t('subtitle')}</p>
                 </div>
@@ -188,7 +188,7 @@ export function PaidServicesCatalogPanel() {
             <section className="rounded-xl border border-border bg-card">
                 <div className="flex flex-wrap items-center gap-3 border-b border-border p-3">
                     <div className="relative min-w-0 flex-1 sm:max-w-64">
-                        <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+                        <Search className="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-ink-faint" />
                         <input
                             value={search}
                             onChange={handleSearchChange}
@@ -206,7 +206,7 @@ export function PaidServicesCatalogPanel() {
                                 aria-pressed={kindFilter === kind}
                                 className={cn(
                                     'rounded-md px-2.5 py-1.5 text-[12.5px] font-bold transition-colors',
-                                    kindFilter === kind ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted'
+                                    kindFilter === kind ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted',
                                 )}
                             >
                                 {kind === 'ALL' ? t('kindFilterAll') : t(`kinds.${kind}`)}
@@ -223,7 +223,7 @@ export function PaidServicesCatalogPanel() {
                                 aria-pressed={statusFilter === status}
                                 className={cn(
                                     'rounded-md px-2.5 py-1.5 text-[12.5px] font-bold transition-colors',
-                                    statusFilter === status ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted'
+                                    statusFilter === status ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted',
                                 )}
                             >
                                 {status === 'ALL' ? t('status.ALL') : t(`status.${status}`)}
@@ -247,7 +247,7 @@ export function PaidServicesCatalogPanel() {
                     <div className="overflow-x-auto">
                         <table className="w-full min-w-[720px] border-collapse text-sm">
                             <thead>
-                                <tr className="border-b border-border text-left text-[11px] font-bold uppercase tracking-wide text-ink-faint">
+                                <tr className="border-b border-border text-left text-[11px] font-bold tracking-wide text-ink-faint uppercase">
                                     <th className="px-4 py-2.5 font-bold">{t('columns.service')}</th>
                                     <th className="px-3 py-2.5 font-bold">{t('columns.kind')}</th>
                                     <th className="px-3 py-2.5 font-bold">{t('columns.price')}</th>
@@ -283,7 +283,7 @@ export function PaidServicesCatalogPanel() {
                                                 <span
                                                     className={cn(
                                                         'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold',
-                                                        STATUS_PILL[status]
+                                                        STATUS_PILL[status],
                                                     )}
                                                 >
                                                     <span className={cn('h-1.5 w-1.5 rounded-full', STATUS_DOT[status])} />
@@ -376,7 +376,7 @@ export function PaidServicesCatalogPanel() {
                 body={
                     <>
                         <p>{t('removeAddon.confirmBody', { service: selectedAddon?.name ?? addonCode, event: eventTitle ?? trimmedId })}</p>
-                        <p className="mt-2 break-all font-mono text-xs text-ink-faint">{trimmedId}</p>
+                        <p className="mt-2 font-mono text-xs break-all text-ink-faint">{trimmedId}</p>
                     </>
                 }
                 cancelLabel={tAdmin('cancel')}

@@ -48,7 +48,7 @@ export function MemberRow({
                 <p className="flex items-center gap-1.5 truncate text-sm font-semibold text-ink">
                     <span className="truncate">{member.displayName}</span>
                     {roleLabel && (
-                        <span className="shrink-0 rounded-full bg-surface-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ink-faint">
+                        <span className="shrink-0 rounded-full bg-surface-muted px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-ink-faint uppercase">
                             {roleLabel}
                         </span>
                     )}

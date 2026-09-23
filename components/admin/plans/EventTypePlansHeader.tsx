@@ -19,7 +19,7 @@ export function EventTypePlansHeader({ eventType, onCreateAction }: { eventType:
                 <span
                     className={cn(
                         'rounded-full px-2 py-0.5 text-[10px] font-bold',
-                        eventType.isEnabled ? 'bg-status-good-wash text-status-good' : 'bg-status-neutral-wash text-status-neutral'
+                        eventType.isEnabled ? 'bg-status-good-wash text-status-good' : 'bg-status-neutral-wash text-status-neutral',
                     )}
                 >
                     {eventType.isEnabled ? t('eventTypes.enabled') : t('eventTypes.disabled')}

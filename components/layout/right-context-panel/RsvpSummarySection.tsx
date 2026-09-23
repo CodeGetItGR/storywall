@@ -29,9 +29,9 @@ export function RsvpSummarySection({ eventId, summary }: RsvpSummarySectionProps
                 {t('title')}
                 <ChevronRight className="h-3.5 w-3.5 shrink-0 text-ink-faint transition-colors group-hover:text-ink-muted" aria-hidden="true" />
             </Link>
-            <div className="rounded-xl bg-surface-muted/70 px-3 py-2.5 flex justify-between">
+            <div className="flex justify-between rounded-xl bg-surface-muted/70 px-3 py-2.5">
                 {rows.map(({ key, value, icon: Icon }) => (
-                    <div key={key} className="flex items-center justify-between text-sm gap-2">
+                    <div key={key} className="flex items-center justify-between gap-2 text-sm">
                         <span className="text-ink-muted">
                             <Icon />
                         </span>

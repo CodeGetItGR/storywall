@@ -18,15 +18,8 @@ interface PostMediaPreviewModalProps {
 
 export function PostMediaPreviewModal({ controller }: PostMediaPreviewModalProps) {
     const t = useTranslations('ComposerCard');
-    const {
-        activeMediaPreview,
-        advanceMediaPreview,
-        closeMediaPreview,
-        handleRemoveImageClick,
-        images,
-        retreatMediaPreview,
-        setImageFilter,
-    } = controller;
+    const { activeMediaPreview, advanceMediaPreview, closeMediaPreview, handleRemoveImageClick, images, retreatMediaPreview, setImageFilter } =
+        controller;
     const { value: appliedFilterName, show: showAppliedFilterName } = useTransientValue<string>(FILTER_NAME_PILL_DURATION_MS);
     const isImage = activeMediaPreview ? !activeMediaPreview.file.type.startsWith('video/') : false;
     const filter = activeMediaPreview ? STORY_FILTER_PRESETS.find((preset) => preset.id === activeMediaPreview.filterId)?.cssFilter : undefined;

@@ -14,7 +14,7 @@ function orderStatusClassName(status: Order['status']) {
         status === 'PENDING' && 'bg-amber-50 text-amber-700',
         status === 'FAILED' && 'bg-red-50 text-red-700',
         status === 'CANCELLED' && 'bg-surface-muted text-ink-muted',
-        status === 'REFUNDED' && 'bg-sky-50 text-sky-700'
+        status === 'REFUNDED' && 'bg-sky-50 text-sky-700',
     );
 }
 
@@ -85,7 +85,7 @@ export function BillingOrdersPanel({
             {/* Orders (desktop) */}
             <div className="hidden overflow-hidden rounded-lg border border-ink/10 md:block">
                 <table className="w-full table-fixed text-left text-sm">
-                    <thead className="bg-surface-muted text-[11px] uppercase tracking-wide text-ink-faint">
+                    <thead className="bg-surface-muted text-[11px] tracking-wide text-ink-faint uppercase">
                         <tr>
                             <th className="px-3 py-2 font-semibold">{t('orders.columns.kind')}</th>
                             <th className="px-3 py-2 font-semibold md:w-28">{t('orders.columns.status')}</th>

@@ -60,10 +60,7 @@ export function HomeHorizontalScroller({ children, previousLabel, nextLabel, cla
     return (
         <div className={cn('group/scroller relative rounded-xl', className)}>
             {/* Scrollable row */}
-            <div
-                ref={scrollRef}
-                className="flex items-stretch gap-3 overflow-x-auto scroll-smooth touch-no-scrollbar pb-3"
-            >
+            <div ref={scrollRef} className="touch-no-scrollbar flex items-stretch gap-3 overflow-x-auto scroll-smooth pb-3">
                 {children}
             </div>
 

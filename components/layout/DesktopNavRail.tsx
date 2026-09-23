@@ -30,7 +30,11 @@ export function DesktopNavRail() {
     const showEventActions = Boolean(activeEvent) && isEventRoute(pathname);
     const accountName = [authUser?.firstName, authUser?.lastName].filter(Boolean).join(' ') || authUser?.firstName || tAccount('fallbackName');
     // Draft and deleted events have no feed to land on; the manage page is home.
-    const homeHref = activeEvent ? (isDraft || isEventDeleted(activeEvent) ? routes.events.manage(activeEvent.id) : routes.events.feed(activeEvent.id)) : null;
+    const homeHref = activeEvent
+        ? isDraft || isEventDeleted(activeEvent)
+            ? routes.events.manage(activeEvent.id)
+            : routes.events.feed(activeEvent.id)
+        : null;
     const homeActive = Boolean(homeHref) && (isPathActive(pathname, homeHref!) || isPathActive(pathname, routes.feed));
     const eventsActive = isPathActive(pathname, routes.home);
 
@@ -49,7 +53,7 @@ export function DesktopNavRail() {
             data-expanded={expanded}
             className={cn(
                 'desktop-account-rail fixed top-0 left-0 z-40 hidden h-screen flex-col overflow-hidden text-[#3d332b] transition-[width,padding,color] duration-700 ease-out lg:flex',
-                expanded ? 'w-80 px-5 pt-14 pb-7 text-white' : 'w-20 px-3 pt-6 pb-5'
+                expanded ? 'w-80 px-5 pt-14 pb-7 text-white' : 'w-20 px-3 pt-6 pb-5',
             )}
         >
             {/* Identity */}
@@ -62,10 +66,10 @@ export function DesktopNavRail() {
                             color="rgba(255, 255, 255, 0.14)"
                             size={expanded ? 'xl' : 'sm'}
                             alt={accountName}
-                            className={cn('ring-2 transition-shadow duration-700 ease-out ring-white/40')}
+                            className={cn('ring-2 ring-white/40 transition-shadow duration-700 ease-out')}
                         />
                         {expanded && (
-                            <span className="absolute right-0 bottom-0 flex h-6 w-6 items-center justify-center rounded-full bg-white text-primary shadow-soft ring-2 ring-primary transition-transform group-hover:scale-105 group-focus-visible:scale-105">
+                            <span className="shadow-soft absolute right-0 bottom-0 flex h-6 w-6 items-center justify-center rounded-full bg-white text-primary ring-2 ring-primary transition-transform group-hover:scale-105 group-focus-visible:scale-105">
                                 <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                             </span>
                         )}

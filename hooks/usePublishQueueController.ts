@@ -58,7 +58,7 @@ async function waitForStoryVideos(items: PendingStory[]): Promise<PendingStory[]
             const media: MediaResponseDto = await pollMediaUntilProcessed(item.mediaId);
             if (media.status === 'FAILED') return { ...item, status: 'failed' as const, error: undefined };
             return { ...item, status: 'uploaded' as const, remoteUrl: media.mediaUrl, error: undefined };
-        })
+        }),
     );
 }
 
@@ -100,7 +100,7 @@ export function usePublishQueueController(): PublishQueueContextValue {
             payload: {
                 ...(job as PostPublishJob).payload,
                 images: (job as PostPublishJob).payload.images.map((img) =>
-                    toUpload.some((u) => u.key === img.key) ? { ...img, status: 'uploading' as const, error: undefined } : img
+                    toUpload.some((u) => u.key === img.key) ? { ...img, status: 'uploading' as const, error: undefined } : img,
                 ),
             },
         }));
@@ -112,7 +112,7 @@ export function usePublishQueueController(): PublishQueueContextValue {
                     if (image.file.type.startsWith('video/') || image.filterId === 'original') return image.file;
                     const preset = STORY_FILTER_PRESETS.find((candidate) => candidate.id === image.filterId);
                     return preset ? bakeStoryFilter(image.file, preset) : image.file;
-                })
+                }),
             );
             result = await uploadBatch.mutateAsync({ eventId, files });
         } catch (error) {
@@ -213,7 +213,7 @@ export function usePublishQueueController(): PublishQueueContextValue {
                 const preset = STORY_FILTER_PRESETS.find((candidate) => candidate.id === item.filterId);
                 const bakedFile = preset ? await bakeStoryFilter(item.file, preset) : item.file;
                 return { ...item, file: bakedFile, status: 'uploading' as const, error: undefined };
-            })
+            }),
         );
         updateJob(jobId, (current) => ({ ...(current as StoryPublishJob), payload: { ...(current as StoryPublishJob).payload, items: working } }));
 
@@ -237,16 +237,22 @@ export function usePublishQueueController(): PublishQueueContextValue {
                 }));
                 return;
             }
-            updateJob(jobId, (current) => ({ ...(current as StoryPublishJob), payload: { ...(current as StoryPublishJob).payload, items: working } }));
+            updateJob(jobId, (current) => ({
+                ...(current as StoryPublishJob),
+                payload: { ...(current as StoryPublishJob).payload, items: working },
+            }));
         }
 
         const processing = working.filter((item) => item.status === 'processing');
         if (processing.length > 0) {
             working = await waitForStoryVideos(working);
             working = working.map((item) =>
-                item.status === 'failed' && item.error === undefined ? { ...item, error: tStory('processingFailed') } : item
+                item.status === 'failed' && item.error === undefined ? { ...item, error: tStory('processingFailed') } : item,
             );
-            updateJob(jobId, (current) => ({ ...(current as StoryPublishJob), payload: { ...(current as StoryPublishJob).payload, items: working } }));
+            updateJob(jobId, (current) => ({
+                ...(current as StoryPublishJob),
+                payload: { ...(current as StoryPublishJob).payload, items: working },
+            }));
         }
 
         const readyToPost = working.filter((item) => item.mediaId && item.status === 'uploaded');
@@ -262,7 +268,7 @@ export function usePublishQueueController(): PublishQueueContextValue {
                     authorMemberId: payload.authorMemberId,
                     mediaId: item.mediaId!,
                     caption: item.caption.trim() || undefined,
-                }))
+                })),
             );
             const failedByMediaId = new Map(result.failed.map((failure) => [failure.mediaId, failure.message]));
             const successfulMediaIds = new Set(result.created.map((story) => story.mediaId));

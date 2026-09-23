@@ -32,7 +32,7 @@ function saveState<Schema>(storageKey: string, state: Schema): void {
 
 export function createMockDb<Schema extends Record<string, WithId[]>>(
     storageKey: string,
-    seed: () => Schema
+    seed: () => Schema,
 ): MockDb<{ [K in keyof Schema]: Schema[K][number] }> {
     let state = loadState(storageKey, seed);
 

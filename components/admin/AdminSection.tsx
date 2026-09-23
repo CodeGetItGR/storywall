@@ -16,7 +16,7 @@ export function AdminSection({
     return (
         <section className={cn('border-t-2 border-border py-6 first:border-t-0 first:pt-0', className)}>
             <div className="mb-3 flex items-baseline gap-3">
-                <p className="text-xs font-bold uppercase tracking-wide text-primary-dark">{title}</p>
+                <p className="text-xs font-bold tracking-wide text-primary-dark uppercase">{title}</p>
             </div>
             {description && <p className="-mt-1 mb-4 max-w-2xl text-sm leading-6 text-ink-muted">{description}</p>}
             {children}

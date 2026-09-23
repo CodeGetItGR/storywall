@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useMe } from '@/hooks/useMe';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
-import { ERROR_CODES,getErrorCode, getErrorMessage, getFieldErrors } from '@/lib/api/errors';
+import { ERROR_CODES, getErrorCode, getErrorMessage, getFieldErrors } from '@/lib/api/errors';
 import type { ChangePasswordRequestDto, MeUpdateRequestDto, UserResponseDto } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 
@@ -69,7 +69,10 @@ export function useProfileForm() {
     const lastName = profileDirty.lastName ? profileDraft.lastName : sourceLastName;
     const profilePictureUrl = selectedProfilePictureUrl ?? sourceProfilePictureUrl;
 
-    const accountName = useMemo(() => [firstName.trim(), lastName.trim()].filter(Boolean).join(' ') || user?.firstName || '', [firstName, lastName, user?.firstName]);
+    const accountName = useMemo(
+        () => [firstName.trim(), lastName.trim()].filter(Boolean).join(' ') || user?.firstName || '',
+        [firstName, lastName, user?.firstName],
+    );
     const canChangePassword = user?.role === 'USER' || user?.role === 'ADMIN';
     const hasProfileChanges = firstName !== sourceFirstName || lastName !== sourceLastName;
     const hasProfilePictureChange = Boolean(selectedProfilePicture);

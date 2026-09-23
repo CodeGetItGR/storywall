@@ -28,7 +28,7 @@ export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => 
     return (
         <div className="account-panel-surface flex h-full flex-col overflow-y-auto px-6 pt-16 pb-8 text-white">
             <div className="flex h-full max-w-[50vw] flex-col">
-                <section className={'flex flex-col pb-3 border-b border-border'}>
+                <section className={'flex flex-col border-b border-border pb-3'}>
                     {/* Identity */}
                     <div className="flex items-center gap-4">
                         {isDemoRoute ? (
@@ -53,7 +53,7 @@ export function AccountSidebarContent({ onCloseAction }: { onCloseAction: () => 
                                     alt={accountName}
                                     className="ring-2 ring-white/40"
                                 />
-                                <span className="absolute right-0 bottom-0 flex h-6 w-6 items-center justify-center rounded-full bg-white text-primary shadow-soft ring-2 ring-primary transition-transform group-hover:scale-105 group-focus-visible:scale-105">
+                                <span className="shadow-soft absolute right-0 bottom-0 flex h-6 w-6 items-center justify-center rounded-full bg-white text-primary ring-2 ring-primary transition-transform group-hover:scale-105 group-focus-visible:scale-105">
                                     <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                                 </span>
                             </Link>

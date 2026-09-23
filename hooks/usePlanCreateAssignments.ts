@@ -8,7 +8,7 @@ export function usePlanCreateAssignments(
     eventTypes: PlatformEventTypeResponseDto[],
     modules: PlatformModuleResponseDto[],
     initialEventTypeKey: EventTypeConvention | null = null,
-    initialModuleKeys: ModuleKey[] = []
+    initialModuleKeys: ModuleKey[] = [],
 ) {
     const [eventTypeKey, setEventTypeKey] = useState<EventTypeConvention | null>(initialEventTypeKey);
     const [moduleKeys, setModuleKeys] = useState<ModuleKey[]>(initialModuleKeys);

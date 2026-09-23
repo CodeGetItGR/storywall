@@ -46,7 +46,7 @@ export function useEventOverviewPlan({
             (service) =>
                 service.code === 'ORIGINALS' &&
                 service.kind === 'RECURRING_ADDON' &&
-                (service.planTierIds.length === 0 || (currentPlan ? service.planTierIds.includes(currentPlan.id) : false))
+                (service.planTierIds.length === 0 || (currentPlan ? service.planTierIds.includes(currentPlan.id) : false)),
         );
         const originalsActive = activeAddonCodes.has('ORIGINALS');
         const moduleUnlocks = paidServices.filter(
@@ -54,7 +54,7 @@ export function useEventOverviewPlan({
                 service.kind === 'MODULE_UNLOCK' &&
                 service.grantsModuleKey &&
                 !currentPlan?.moduleKeys.includes(service.grantsModuleKey) &&
-                (service.planTierIds.length === 0 || (currentPlan ? service.planTierIds.includes(currentPlan.id) : false))
+                (service.planTierIds.length === 0 || (currentPlan ? service.planTierIds.includes(currentPlan.id) : false)),
         );
         const activationAddonAmount = originalsService ? originalsService.priceAmountMinor : 0;
         const activationTotal =

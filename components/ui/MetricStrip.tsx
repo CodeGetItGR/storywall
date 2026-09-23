@@ -29,13 +29,13 @@ export function MetricStrip({ items, className }: { items: Metric[]; className?:
             className={cn(
                 'grid gap-px overflow-hidden rounded-md border border-border bg-border',
                 columnClass[items.length] ?? 'grid-cols-2 sm:grid-cols-4',
-                className
+                className,
             )}
         >
             {items.map((item) => (
                 <div key={item.key} className="bg-background px-3.5 py-3">
-                    <dt className="truncate text-[11px] font-bold uppercase tracking-wide text-ink-faint">{item.label}</dt>
-                    <dd className={cn('mt-1 text-2xl font-extrabold leading-none tabular-nums text-ink', item.tone)}>{item.value}</dd>
+                    <dt className="truncate text-[11px] font-bold tracking-wide text-ink-faint uppercase">{item.label}</dt>
+                    <dd className={cn('mt-1 text-2xl leading-none font-extrabold text-ink tabular-nums', item.tone)}>{item.value}</dd>
                 </div>
             ))}
         </dl>

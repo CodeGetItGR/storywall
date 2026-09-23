@@ -61,7 +61,7 @@ export function ProvisionEventForm({ form }: { form: ProvisionEventFormState }) 
             {/* Event setup */}
             <section aria-labelledby="provision-event-setup" className="space-y-4">
                 <div>
-                    <h3 id="provision-event-setup" className="text-xs font-bold uppercase tracking-wide text-ink-faint">
+                    <h3 id="provision-event-setup" className="text-xs font-bold tracking-wide text-ink-faint uppercase">
                         {t('eventSection')}
                     </h3>
                 </div>
@@ -109,7 +109,7 @@ export function ProvisionEventForm({ form }: { form: ProvisionEventFormState }) 
 
             {/* Details */}
             <section aria-labelledby="provision-event-details" className="space-y-4 border-t border-border pt-6">
-                <h3 id="provision-event-details" className="text-xs font-bold uppercase tracking-wide text-ink-faint">
+                <h3 id="provision-event-details" className="text-xs font-bold tracking-wide text-ink-faint uppercase">
                     {t('detailsSection')}
                 </h3>
                 <AdminField label={t('eventName')} required>
@@ -166,7 +166,7 @@ export function ProvisionEventForm({ form }: { form: ProvisionEventFormState }) 
 
             {/* Location */}
             <section aria-labelledby="provision-event-location" className="space-y-4 border-t border-border pt-6">
-                <h3 id="provision-event-location" className="text-xs font-bold uppercase tracking-wide text-ink-faint">
+                <h3 id="provision-event-location" className="text-xs font-bold tracking-wide text-ink-faint uppercase">
                     {t('locationSection')}
                 </h3>
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -184,7 +184,7 @@ export function ProvisionEventForm({ form }: { form: ProvisionEventFormState }) 
 
             {/* Visibility */}
             <section aria-labelledby="provision-event-visibility" className="border-t border-border pt-6">
-                <h3 id="provision-event-visibility" className="mb-3 text-xs font-bold uppercase tracking-wide text-ink-faint">
+                <h3 id="provision-event-visibility" className="mb-3 text-xs font-bold tracking-wide text-ink-faint uppercase">
                     {t('visibility')}
                 </h3>
                 <div className="grid grid-cols-2 gap-1 rounded-lg bg-canvas p-1">
@@ -197,7 +197,7 @@ export function ProvisionEventForm({ form }: { form: ProvisionEventFormState }) 
                             onClick={handleVisibilityClick}
                             className={cn(
                                 'rounded-md px-3 py-2 text-sm font-bold transition-colors',
-                                form.visibility === visibility ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted'
+                                form.visibility === visibility ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted',
                             )}
                         >
                             {t(`visibilityOption.${visibility}`)}

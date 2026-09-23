@@ -26,7 +26,7 @@ export function usePlansPageData() {
             if (!eventId) return;
             router.push(routes.events.checkoutReview(eventId, 'upgrade', targetPlan));
         },
-        [eventId, router]
+        [eventId, router],
     );
 
     return {

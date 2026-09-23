@@ -20,7 +20,7 @@ export function useCodeRestrictionOptions() {
             [...(eventTypesQuery.data ?? [])]
                 .sort((left, right) => left.sortOrder - right.sortOrder)
                 .map((eventType) => ({ value: eventType.eventTypeKey, label: eventTypeName(eventType) })),
-        [eventTypeName, eventTypesQuery.data]
+        [eventTypeName, eventTypesQuery.data],
     );
 
     const planGroups = useMemo<CodeRestrictionPlanGroup[]>(() => {
@@ -39,7 +39,7 @@ export function useCodeRestrictionOptions() {
 
     const eventTypeLabel = useCallback(
         (eventTypeKey: string) => eventTypes.find((eventType) => eventType.value === eventTypeKey)?.label ?? eventTypeKey,
-        [eventTypes]
+        [eventTypes],
     );
 
     return {

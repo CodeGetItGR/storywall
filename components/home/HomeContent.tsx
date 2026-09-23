@@ -24,11 +24,11 @@ export function HomeContent() {
     const feedSectionClassName = 'px-4 sm:px-8 lg:mx-auto lg:w-[clamp(32rem,40vw,42rem)] lg:px-0';
 
     return (
-        <div className="relative h-full w-full overflow-y-auto overflow-x-hidden">
+        <div className="relative h-full w-full overflow-x-hidden overflow-y-auto">
             {/* Ambient gradient */}
             <div
                 aria-hidden="true"
-                className="bg-gradient-logo pointer-events-none absolute inset-x-0 top-0 h-90 opacity-60 mask-[radial-gradient(ellipse_120%_100%_at_top,black,transparent_70%)]"
+                className="pointer-events-none absolute inset-x-0 top-0 h-90 mask-[radial-gradient(ellipse_120%_100%_at_top,black,transparent_70%)] opacity-60 bg-gradient-logo"
             />
 
             <div className="relative flex w-full flex-col gap-6 pt-8 pb-12 lg:pt-14">

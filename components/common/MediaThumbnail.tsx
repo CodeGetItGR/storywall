@@ -30,7 +30,7 @@ export function MediaThumbnail({ src, mediaType, status = 'READY', thumbnailUrl,
                 className={cn(
                     'flex flex-col items-center justify-center gap-2 bg-surface-muted text-xs font-semibold text-ink-muted',
                     fill && 'absolute inset-0 h-full w-full',
-                    className
+                    className,
                 )}
             >
                 <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
@@ -45,7 +45,7 @@ export function MediaThumbnail({ src, mediaType, status = 'READY', thumbnailUrl,
                 className={cn(
                     'flex flex-col items-center justify-center gap-2 bg-surface-muted px-3 text-center text-xs font-semibold text-ink-muted',
                     fill && 'absolute inset-0 h-full w-full',
-                    className
+                    className,
                 )}
             >
                 <VideoOff className="h-5 w-5 text-ink-faint" aria-hidden="true" />

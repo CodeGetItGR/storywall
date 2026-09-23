@@ -16,7 +16,7 @@ export async function prefetchMyEventDetails(queryClient: QueryClient, context: 
 
     try {
         const details = await Promise.all(
-            context.memberships.map((member) => serverGet<EventDetailResponseDto>(endpoints.events.byId(member.eventId), context.accessToken))
+            context.memberships.map((member) => serverGet<EventDetailResponseDto>(endpoints.events.byId(member.eventId), context.accessToken)),
         );
         details.forEach((event, i) => {
             queryClient.setQueryData(eventKeys.detail(context.memberships[i].eventId), event);

@@ -98,7 +98,7 @@ export function OverviewDraftPanel({
                 <section aria-labelledby="draft-pricing-heading" className="border-t border-border/70 pt-5">
                     <div className="flex items-center gap-1.5">
                         <Receipt className="h-3.5 w-3.5 text-ink-faint" aria-hidden="true" />
-                        <h3 id="draft-pricing-heading" className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+                        <h3 id="draft-pricing-heading" className="text-[11px] font-semibold tracking-wide text-ink-faint uppercase">
                             {tCreate('overview.pricing')}
                         </h3>
                     </div>
@@ -164,7 +164,7 @@ export function OverviewDraftPanel({
 
             {/* Right: payment action */}
             <div className="rounded-2xl border border-border bg-surface-muted/40 p-5 lg:sticky lg:top-24">
-                <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">{tCreate('overview.dueNow')}</p>
+                <p className="text-xs font-semibold tracking-wide text-ink-faint uppercase">{tCreate('overview.dueNow')}</p>
                 <p className="mt-1 text-2xl font-bold text-primary-dark">{dueNowTotalLabel}</p>
 
                 {error && <p className="mt-3 text-sm text-rose-600">{error}</p>}

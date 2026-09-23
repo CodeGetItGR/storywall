@@ -58,7 +58,9 @@ export function CollaborationVoidRedemptionForm() {
             </form>
             {trimmedEventId && !isUuid(trimmedEventId) && <p className="mt-2 text-xs font-semibold text-status-danger">{t('void.invalidEventId')}</p>}
             {voidRedemption.isSuccess && <p className="mt-2 text-sm text-status-good">{t('void.success')}</p>}
-            {voidRedemption.error && <p className="mt-2 text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(voidRedemption.error)}`)}</p>}
+            {voidRedemption.error && (
+                <p className="mt-2 text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(voidRedemption.error)}`)}</p>
+            )}
 
             <ConfirmActionModal
                 open={confirmOpen}

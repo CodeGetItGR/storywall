@@ -19,7 +19,7 @@ declare global {
                             logo_alignment?: string;
                             width?: number;
                             locale?: string;
-                        }
+                        },
                     ) => void;
                 };
             };

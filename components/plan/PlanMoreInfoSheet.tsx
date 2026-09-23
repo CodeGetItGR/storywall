@@ -29,7 +29,7 @@ export function PlanMoreInfoSheet({ open, onCloseAction, plan, modules }: PlanMo
 
     return (
         <Modal open={open} onClose={onCloseAction} size="sm" variant="sheet" closeLabel={t('moreInfoClose')}>
-            <Modal.Body className="px-4 pb-5 pt-12 sm:px-5">
+            <Modal.Body className="px-4 pt-12 pb-5 sm:px-5">
                 <div className="space-y-5">
                     <div>
                         <h2 className="text-lg font-semibold text-ink">{t('moreInfoTitle')}</h2>
@@ -38,13 +38,13 @@ export function PlanMoreInfoSheet({ open, onCloseAction, plan, modules }: PlanMo
 
                     {discount !== '-' && (
                         <div className="rounded-xl bg-surface-muted/70 px-3 py-3">
-                            <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('moreInfoDiscount')}</p>
+                            <p className="text-[11px] font-semibold tracking-wide text-ink-faint uppercase">{t('moreInfoDiscount')}</p>
                             <p className="mt-1 text-base font-bold text-ink">{discount}</p>
                         </div>
                     )}
 
                     <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">{t('moreInfoModules')}</p>
+                        <p className="text-xs font-semibold tracking-wide text-ink-faint uppercase">{t('moreInfoModules')}</p>
                         <ul className="mt-2 space-y-3">
                             {includedModuleKeys.map((moduleKey) => {
                                 const { name, description, Icon } = moduleLabel(moduleKey);
@@ -65,7 +65,7 @@ export function PlanMoreInfoSheet({ open, onCloseAction, plan, modules }: PlanMo
 
                     {addOnServices.length > 0 && (
                         <div>
-                            <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">{t('moreInfoAddons')}</p>
+                            <p className="text-xs font-semibold tracking-wide text-ink-faint uppercase">{t('moreInfoAddons')}</p>
                             <ul className="mt-2 space-y-3">
                                 {addOnServices.map((service) => {
                                     const { name, description, Icon } = moduleLabel(service.grantsModuleKey as string);
@@ -77,8 +77,7 @@ export function PlanMoreInfoSheet({ open, onCloseAction, plan, modules }: PlanMo
                                             </span>
                                             <div className="min-w-0">
                                                 <p className="text-sm font-semibold text-ink">
-                                                    {name}{' '}
-                                                    <span className="font-normal text-ink-muted">· {t('oncePrice', { price })}</span>
+                                                    {name} <span className="font-normal text-ink-muted">· {t('oncePrice', { price })}</span>
                                                 </p>
                                                 <p className="mt-0.5 text-sm leading-6 text-ink-muted">{description}</p>
                                             </div>

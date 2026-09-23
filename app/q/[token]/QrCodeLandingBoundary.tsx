@@ -67,7 +67,7 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
                         eventTitle={resolution.eventTitle ?? t('fallbackTitle')}
                         eventSubtitle={resolution.eventSubtitle}
                     >
-                        <div className="flex items-center gap-2 mb-4 text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                        <div className="mb-4 flex items-center gap-2 text-xs font-semibold tracking-wide text-ink-muted uppercase">
                             {t('mediaUploadEyebrow')}
                         </div>
                         <AnonymousQrMediaUploadForm token={token} />

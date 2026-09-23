@@ -5,13 +5,13 @@ import { Logo } from '@/components/common/Logo';
 
 export function InviteTerminalState({ title, description, action }: { title: string; description: string; action?: ReactNode }) {
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center text-center px-6 py-16">
+        <div className="flex min-h-screen flex-col items-center justify-center px-6 py-16 text-center">
             <Logo direction="col" className="mb-8" />
-            <div className="w-16 h-16 rounded-full bg-gradient-brand flex items-center justify-center mb-6">
-                <HeartCrack className="w-7 h-7 text-white" />
+            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-brand">
+                <HeartCrack className="h-7 w-7 text-white" />
             </div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-ink mb-3 text-balance">{title}</h1>
-            <p className="text-sm text-ink-muted max-w-sm leading-relaxed">{description}</p>
+            <h1 className="mb-3 text-2xl font-bold text-balance text-ink lg:text-3xl">{title}</h1>
+            <p className="max-w-sm text-sm leading-relaxed text-ink-muted">{description}</p>
             {action && <div className="mt-8">{action}</div>}
         </div>
     );

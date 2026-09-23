@@ -36,7 +36,7 @@ export default function Avatar({ src, initials = '?', color = '#ff7a59', size = 
             <div
                 role="img"
                 aria-label={alt ?? initials}
-                className={cn('relative rounded-full overflow-hidden select-none shrink-0', sizeMap[size], className)}
+                className={cn('relative shrink-0 overflow-hidden rounded-full select-none', sizeMap[size], className)}
             >
                 <ProtectedImage src={src} alt="" fill className="object-cover" sizes={`${sizePx[size]}px`} loading="lazy" />
             </div>
@@ -47,7 +47,7 @@ export default function Avatar({ src, initials = '?', color = '#ff7a59', size = 
         <div
             role="img"
             aria-label={alt ?? initials}
-            className={cn('rounded-full flex items-center justify-center font-semibold text-white select-none shrink-0', sizeMap[size], className)}
+            className={cn('flex shrink-0 items-center justify-center rounded-full font-semibold text-white select-none', sizeMap[size], className)}
             style={{ backgroundColor: color }}
         >
             {initials}

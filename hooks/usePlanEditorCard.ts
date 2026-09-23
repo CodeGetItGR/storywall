@@ -59,7 +59,7 @@ export function usePlanEditorCard({
 
     const siblings = useMemo(
         () => eventPlans.filter((other) => other.sharedGroupKey && other.sharedGroupKey === plan.sharedGroupKey && other.id !== plan.id),
-        [eventPlans, plan.id, plan.sharedGroupKey]
+        [eventPlans, plan.id, plan.sharedGroupKey],
     );
 
     const invalidateAppConfig = () => {
@@ -88,7 +88,11 @@ export function usePlanEditorCard({
         setUnlockDraftAction: editor.setUnlockDraft,
     });
 
-    const error = updatePlan.mutation.error ?? deletePlan.mutation.error ?? unlocks.createPaidService.mutation.error ?? unlocks.updatePaidService.mutation.error;
+    const error =
+        updatePlan.mutation.error ??
+        deletePlan.mutation.error ??
+        unlocks.createPaidService.mutation.error ??
+        unlocks.updatePaidService.mutation.error;
     const isSaving = updatePlan.mutation.isPending;
 
     function handleMakeDefaultClick() {

@@ -25,14 +25,14 @@ export function InviteLayout({ coverImageSrc, coverImageAlt, eventTitle, eventSu
                     loading="eager"
                 />
                 <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-12 xl:p-16">
-                    <h1 className="text-2xl lg:text-4xl xl:text-5xl font-bold text-white text-balance">{eventTitle}</h1>
-                    {eventSubtitle && <p className="text-sm lg:text-base text-white/80 mt-2 max-w-md">{eventSubtitle}</p>}
+                <div className="absolute right-0 bottom-0 left-0 p-6 lg:p-12 xl:p-16">
+                    <h1 className="text-2xl font-bold text-balance text-white lg:text-4xl xl:text-5xl">{eventTitle}</h1>
+                    {eventSubtitle && <p className="mt-2 max-w-md text-sm text-white/80 lg:text-base">{eventSubtitle}</p>}
                 </div>
             </div>
 
             <div className="flex flex-1 flex-col items-center overflow-y-auto px-6 py-8 lg:w-1/2 lg:p-12">
-                <div className="w-full max-w-sm lg:max-w-md flex flex-col items-center">
+                <div className="flex w-full max-w-sm flex-col items-center lg:max-w-md">
                     <Logo direction="col" iconClassName="h-7 w-auto" wordmarkClassName="h-5 w-auto" className="mb-6" />
                     <div className="w-full">{children}</div>
                 </div>

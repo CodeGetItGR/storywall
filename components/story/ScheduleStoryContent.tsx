@@ -25,17 +25,17 @@ export function ScheduleStoryContent({ sessions, locale }: ScheduleStoryContentP
     return (
         <div className="absolute inset-0 bg-surface-muted">
             {/* Schedule Content */}
-            <div className="h-full overflow-y-auto px-5 pb-10 pt-24 text-ink">
+            <div className="h-full overflow-y-auto px-5 pt-24 pb-10 text-ink">
                 <div className="flex flex-col gap-6">
                     {datedKeys.map((date) => (
                         <section key={date}>
                             {/* Date Header */}
                             <div className="mb-3 flex items-center gap-3">
                                 <div className="flex h-11 w-11 flex-col items-center justify-center rounded-full bg-background text-center shadow-[0_10px_24px_rgba(36,31,26,0.1)]">
-                                    <span className="text-[10px] font-semibold uppercase leading-none text-amber-700">
+                                    <span className="text-[10px] leading-none font-semibold text-amber-700 uppercase">
                                         {formatDate(locale, `${date}T00:00:00`, { month: 'short' })}
                                     </span>
-                                    <span className="text-base font-bold leading-none text-[#1b2232]">
+                                    <span className="text-base leading-none font-bold text-[#1b2232]">
                                         {formatDate(locale, `${date}T00:00:00`, { day: 'numeric' })}
                                     </span>
                                 </div>

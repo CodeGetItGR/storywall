@@ -8,7 +8,7 @@ import { useState } from 'react';
 
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
-import { type ReactionTypeAvailability,ReactionTypeAvailabilityControl } from '@/components/admin/ReactionTypeAvailabilityControl';
+import { type ReactionTypeAvailability, ReactionTypeAvailabilityControl } from '@/components/admin/ReactionTypeAvailabilityControl';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { appConfigKeys } from '@/hooks/useAppConfig';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
@@ -39,7 +39,7 @@ function inputFromForm(
     eventTypeKey: EventTypeConvention,
     availability: ReactionTypeAvailability,
     takenCodes: string[],
-    reactionType?: ReactionTypeResponseDto
+    reactionType?: ReactionTypeResponseDto,
 ): ReactionTypeRequestDto {
     const name = String(formData.get('name') ?? '').trim();
     return {
@@ -95,7 +95,7 @@ export function ReactionTypeDrawer({
             eventTypeKey,
             availability,
             reactionTypes.map((item) => item.code),
-            reactionType ?? undefined
+            reactionType ?? undefined,
         );
 
         if (reactionType) {
@@ -196,7 +196,7 @@ export function ReactionTypeDrawer({
 
                     {reactionType && (
                         <div className="rounded-lg bg-canvas px-3 py-2">
-                            <p className="text-[11px] font-bold uppercase tracking-wide text-ink-muted">{t('fields.code')}</p>
+                            <p className="text-[11px] font-bold tracking-wide text-ink-muted uppercase">{t('fields.code')}</p>
                             <p className="mt-1 font-mono text-sm text-ink">{reactionType.code}</p>
                         </div>
                     )}

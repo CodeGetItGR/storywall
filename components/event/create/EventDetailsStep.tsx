@@ -50,7 +50,7 @@ export function EventDetailsStep() {
                         value={title}
                         onChange={onTitleChange}
                         placeholder={voice.titlePlaceholder}
-                        className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
+                        className="rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:ring-2 focus:ring-primary/30"
                     />
                     {titleError && <span className="text-xs text-rose-500">{titleError}</span>}
                 </FormFieldLabel>
@@ -64,7 +64,7 @@ export function EventDetailsStep() {
                         onChange={onStartAtChange}
                         min={startAtMin}
                         max={startAtMax}
-                        className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/30 transition"
+                        className="rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink transition outline-none focus:ring-2 focus:ring-primary/30"
                     />
                     {scheduleError ? (
                         <span className="text-xs text-rose-500">{scheduleError}</span>
@@ -97,7 +97,7 @@ export function EventDetailsStep() {
                             required
                             value={locationName}
                             onChange={onLocationNameChange}
-                            className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
+                            className="rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:ring-2 focus:ring-primary/30"
                         />
                         {locationNameError && <span className="text-xs text-rose-500">{locationNameError}</span>}
                     </FormFieldLabel>
@@ -108,7 +108,7 @@ export function EventDetailsStep() {
                             value={locationAddress}
                             onChange={onLocationAddressChange}
                             placeholder={t('placeholders.locationAddress')}
-                            className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
+                            className="rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:ring-2 focus:ring-primary/30"
                         />
                         {locationAddressError && <span className="text-xs text-rose-500">{locationAddressError}</span>}
                     </FormFieldLabel>
@@ -119,7 +119,7 @@ export function EventDetailsStep() {
                         value={mapsUrl}
                         onChange={onMapsUrlChange}
                         placeholder={t('placeholders.mapsUrl')}
-                        className="bg-surface-muted rounded-xl px-4 py-3 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition"
+                        className="rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:ring-2 focus:ring-primary/30"
                     />
                 </FormFieldLabel>
 

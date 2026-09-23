@@ -53,17 +53,19 @@ export function PlanModuleGrid({
             <div className="rounded-xl border border-border bg-card">
                 {grid.isLoading && <LoadingState label={t('plans.loading')} className="justify-start px-4 py-6" />}
                 {grid.error && <p className="px-4 py-6 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(grid.error)}`)}</p>}
-                {!grid.isLoading && !grid.error && grid.grid.columns.length === 0 && <p className="px-4 py-6 text-sm text-ink-muted">{t('plans.grid.noPlans')}</p>}
+                {!grid.isLoading && !grid.error && grid.grid.columns.length === 0 && (
+                    <p className="px-4 py-6 text-sm text-ink-muted">{t('plans.grid.noPlans')}</p>
+                )}
                 {!grid.isLoading && !grid.error && grid.grid.columns.length > 0 && (
                     <div className="overflow-x-auto">
                         <table className="w-full border-collapse text-[13px]">
                             <thead>
-                                <tr className="border-b border-border text-left text-[11px] font-bold uppercase tracking-wide text-ink-faint">
+                                <tr className="border-b border-border text-left text-[11px] font-bold tracking-wide text-ink-faint uppercase">
                                     <th className="sticky left-0 z-10 bg-card px-3 py-2 font-bold">{t('plans.grid.title')}</th>
                                     {grid.grid.columns.map(({ plan }) => (
                                         <th key={plan.id} className={cn('min-w-40 px-2.5 py-2 font-bold', !plan.isPublic && 'text-ink-faint/70')}>
-                                            <span className="block truncate normal-case text-ink">{plan.name}</span>
-                                            <span className="font-mono text-[10px] font-semibold normal-case text-ink-faint">{plan.code}</span>
+                                            <span className="block truncate text-ink normal-case">{plan.name}</span>
+                                            <span className="font-mono text-[10px] font-semibold text-ink-faint normal-case">{plan.code}</span>
                                         </th>
                                     ))}
                                 </tr>
@@ -111,7 +113,9 @@ export function PlanModuleGrid({
                                     after: t(`plans.grid.applicability.${pending.after}`),
                                 })}
                             </p>
-                            {pending.after === 'UNSUPPORTED' && <p className="mt-2 text-sm text-status-danger">{t('plans.grid.applicability.unsupportedWarning')}</p>}
+                            {pending.after === 'UNSUPPORTED' && (
+                                <p className="mt-2 text-sm text-status-danger">{t('plans.grid.applicability.unsupportedWarning')}</p>
+                            )}
                             {grid.applicability.error && (
                                 <p className="mt-2 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(grid.applicability.error)}`)}</p>
                             )}

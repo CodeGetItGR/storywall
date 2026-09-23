@@ -27,7 +27,7 @@ export default function EventAddonsSettingsBoundary() {
 
     const currentPlan = useMemo(
         () => scopedPlans(appConfig.data?.planTiers ?? [], 'EVENT').find((plan) => plan.code === data?.planTierCode) ?? null,
-        [appConfig.data?.planTiers, data?.planTierCode]
+        [appConfig.data?.planTiers, data?.planTierCode],
     );
 
     const storagePacks = useMemo(
@@ -35,9 +35,9 @@ export default function EventAddonsSettingsBoundary() {
             (appConfig.data?.paidServices ?? []).filter(
                 (service) =>
                     service.kind === 'STORAGE_PACK' &&
-                    (service.planTierIds.length === 0 || (currentPlan ? service.planTierIds.includes(currentPlan.id) : false))
+                    (service.planTierIds.length === 0 || (currentPlan ? service.planTierIds.includes(currentPlan.id) : false)),
             ),
-        [appConfig.data?.paidServices, currentPlan]
+        [appConfig.data?.paidServices, currentPlan],
     );
 
     if (appConfig.isLoading || billing.isLoading) {
@@ -62,7 +62,7 @@ export default function EventAddonsSettingsBoundary() {
     }
 
     return (
-        <main className="mx-auto max-w-3xl px-4 pb-24 pt-5 sm:pt-6 lg:pb-10">
+        <main className="mx-auto max-w-3xl px-4 pt-5 pb-24 sm:pt-6 lg:pb-10">
             <BackButton href={routes.events.manage(eventId, { tab: 'billing' })} label={t('backToBilling')} />
 
             <section className="mt-4">

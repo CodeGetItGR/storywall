@@ -27,7 +27,7 @@ export function useRsvpRoster(members: RosterMember[], rsvps: RosterRsvp[]) {
 
     const statusOf = useCallback(
         (memberId: string): RsvpDisplayStatus => rsvpByMember.get(memberId)?.attendanceStatus ?? 'NO_RESPONSE',
-        [rsvpByMember]
+        [rsvpByMember],
     );
 
     const counts = useMemo(
@@ -37,9 +37,9 @@ export function useRsvpRoster(members: RosterMember[], rsvps: RosterRsvp[]) {
                     totals[statusOf(member.id)] += 1;
                     return totals;
                 },
-                { ATTENDING: 0, DECLINED: 0, NO_RESPONSE: 0 } as Record<RsvpDisplayStatus, number>
+                { ATTENDING: 0, DECLINED: 0, NO_RESPONSE: 0 } as Record<RsvpDisplayStatus, number>,
             ),
-        [guests, statusOf]
+        [guests, statusOf],
     );
 
     const visibleGuests = useMemo(
@@ -50,7 +50,7 @@ export function useRsvpRoster(members: RosterMember[], rsvps: RosterRsvp[]) {
                     const orderDelta = rsvpStatusOrder[statusOf(left.id)] - rsvpStatusOrder[statusOf(right.id)];
                     return orderDelta !== 0 ? orderDelta : left.displayName.localeCompare(right.displayName);
                 }),
-        [filter, guests, statusOf]
+        [filter, guests, statusOf],
     );
 
     // Adult/child counts only mean anything for guests who are actually attending —

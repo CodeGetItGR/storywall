@@ -27,7 +27,7 @@ export function CostTrackingPanel() {
             {/* Page header and range controls */}
             <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border pb-4">
                 <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary-dark">{t('costTracking.eyebrow')}</p>
+                    <p className="text-[11px] font-semibold tracking-[0.18em] text-primary-dark uppercase">{t('costTracking.eyebrow')}</p>
                     <h2 className="mt-1 text-xl font-semibold tracking-tight text-ink">{t('costTracking.title')}</h2>
                     <p className="mt-2 max-w-2xl text-base leading-7 text-ink-muted">{t('costTracking.subtitle')}</p>
                 </div>

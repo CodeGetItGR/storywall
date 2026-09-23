@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback } from 'react';
 
-import {ProtectedImage} from "@/components/common/ProtectedImage";
+import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { HomeHorizontalScroller } from '@/components/home/HomeHorizontalScroller';
 import type { EventGridItem } from '@/hooks/useEventGridItems';
 import { formatDate, formatEventListDate } from '@/lib/datetime';
@@ -78,14 +78,14 @@ export function EventsQuickRow({
         (event: MouseEvent<HTMLAnchorElement>) => {
             if (!canCreateEvent) event.preventDefault();
         },
-        [canCreateEvent]
+        [canCreateEvent],
     );
 
     return (
         <section aria-labelledby="home-events-heading" className="flex w-full flex-col gap-3">
             {/* Section heading */}
             <div className={cn('flex items-center justify-between gap-3 px-4', contentClassName)}>
-                <h2 id="home-events-heading" className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
+                <h2 id="home-events-heading" className="text-xs font-semibold tracking-wide text-ink-faint uppercase">
                     {tEvents('yourEvents')}
                 </h2>
                 <Link
@@ -94,7 +94,7 @@ export function EventsQuickRow({
                     onClick={onNewEventClick}
                     className={cn(
                         'inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-full bg-primary-light px-3 py-1 text-xs font-semibold text-primary-dark ring-1 ring-primary/12 transition-colors hover:bg-accent',
-                        !canCreateEvent && 'pointer-events-none opacity-40'
+                        !canCreateEvent && 'pointer-events-none opacity-40',
                     )}
                 >
                     <Plus className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
@@ -103,15 +103,11 @@ export function EventsQuickRow({
             </div>
 
             {/* Event shortcuts */}
-            <HomeHorizontalScroller
-                previousLabel={tEvents('previous')}
-                nextLabel={tEvents('next')}
-                className={contentClassName}
-            >
+            <HomeHorizontalScroller previousLabel={tEvents('previous')} nextLabel={tEvents('next')} className={contentClassName}>
                 {isLoading
                     ? [0, 1, 2].map((key) => <QuickRowSkeleton key={key} />)
                     : items.map((item) =>
-                          item.isLoading ? <QuickRowSkeleton key={item.member.eventId} /> : <EventQuickCard key={item.member.eventId} {...item} />
+                          item.isLoading ? <QuickRowSkeleton key={item.member.eventId} /> : <EventQuickCard key={item.member.eventId} {...item} />,
                       )}
             </HomeHorizontalScroller>
         </section>

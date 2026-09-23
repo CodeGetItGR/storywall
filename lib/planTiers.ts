@@ -71,7 +71,7 @@ export function findNextPlan(plans: PlanTierResponseDto[], scope: PlanScope, cod
             (scope !== 'EVENT' || plan.eventTypeKey === currentPlan.eventTypeKey) &&
             plan.priceCurrency === currentPriceCurrency &&
             plan.priceAmountMinor !== null &&
-            plan.priceAmountMinor > currentPriceAmountMinor
+            plan.priceAmountMinor > currentPriceAmountMinor,
     );
 }
 

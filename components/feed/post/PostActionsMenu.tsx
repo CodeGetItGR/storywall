@@ -36,7 +36,7 @@ export function PostActionsMenu({
                 className={cn(
                     'flex h-8 w-8 items-center justify-center rounded-full text-ink-faint transition-colors',
                     'hover:bg-surface-muted hover:text-ink-muted',
-                    disabled && 'cursor-not-allowed opacity-60'
+                    disabled && 'cursor-not-allowed opacity-60',
                 )}
             >
                 <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
@@ -51,7 +51,7 @@ export function PostActionsMenu({
                                 className={cn(
                                     'motion-menu-item flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm font-medium text-ink outline-none',
                                     'hover:bg-surface-muted',
-                                    disabled && 'cursor-not-allowed opacity-60'
+                                    disabled && 'cursor-not-allowed opacity-60',
                                 )}
                             >
                                 <Pencil className="h-4 w-4" aria-hidden="true" />
@@ -65,7 +65,7 @@ export function PostActionsMenu({
                                 className={cn(
                                     'motion-menu-item flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm font-medium text-ink outline-none',
                                     'hover:bg-surface-muted',
-                                    disabled && 'cursor-not-allowed opacity-60'
+                                    disabled && 'cursor-not-allowed opacity-60',
                                 )}
                             >
                                 <Flag className="h-4 w-4" aria-hidden="true" />
@@ -79,7 +79,7 @@ export function PostActionsMenu({
                                 className={cn(
                                     'motion-menu-item flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm font-medium text-destructive outline-none',
                                     'hover:bg-destructive/10',
-                                    disabled && 'cursor-not-allowed opacity-60'
+                                    disabled && 'cursor-not-allowed opacity-60',
                                 )}
                             >
                                 {isDeleting ? (

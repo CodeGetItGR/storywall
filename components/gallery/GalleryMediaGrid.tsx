@@ -42,7 +42,7 @@ export function GalleryMediaGrid({
             const id = event.currentTarget.dataset.mediaId;
             if (id) onMediaClick(id);
         },
-        [onMediaClick]
+        [onMediaClick],
     );
 
     const handleMediaPointerDown = useCallback(
@@ -50,7 +50,7 @@ export function GalleryMediaGrid({
             const id = event.currentTarget.dataset.mediaId;
             if (id) onMediaPointerDown(event, id);
         },
-        [onMediaPointerDown]
+        [onMediaPointerDown],
     );
 
     return (
@@ -63,7 +63,7 @@ export function GalleryMediaGrid({
             ) : (
                 <>
                     {/* Media grid */}
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 px-2">
+                    <div className="grid grid-cols-2 gap-3 px-2 sm:grid-cols-3 lg:grid-cols-4">
                         {items.map((item) => {
                             const isSelected = selectedIds.has(item.id);
                             return (
@@ -87,7 +87,7 @@ export function GalleryMediaGrid({
                                         'group overflow-hidden rounded-md border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md',
                                         'touch-pan-y select-none [-webkit-touch-callout:none]',
                                         isSelected ? 'border-primary ring-4 ring-primary/15' : 'border-border',
-                                        selectionMode && 'cursor-grab'
+                                        selectionMode && 'cursor-grab',
                                     )}
                                 >
                                     <div className="relative aspect-square bg-surface-muted">
@@ -101,14 +101,14 @@ export function GalleryMediaGrid({
                                             sizes="(min-width: 1024px) 25vw, 50vw"
                                             className={cn(
                                                 'object-cover transition-transform group-hover:scale-[1.02]',
-                                                isSelected && 'brightness-75'
+                                                isSelected && 'brightness-75',
                                             )}
                                         />
                                         {selectionMode && (
                                             <span
                                                 className={cn(
-                                                    'absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full border text-white shadow-sm',
-                                                    isSelected ? 'border-primary bg-primary' : 'border-white/80 bg-black/35'
+                                                    'absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full border text-white shadow-sm',
+                                                    isSelected ? 'border-primary bg-primary' : 'border-white/80 bg-black/35',
                                                 )}
                                             >
                                                 {isSelected && <Check className="h-4 w-4" />}

@@ -37,7 +37,7 @@ export function useProvisionEventForm(host: UserResponseDto) {
 
     const eventTypes = useMemo(
         () => (eventTypesQuery.data ?? []).filter((item) => item.isEnabled).toSorted((left, right) => left.sortOrder - right.sortOrder),
-        [eventTypesQuery.data]
+        [eventTypesQuery.data],
     );
     const selectedEventType = eventType || eventTypes[0]?.eventTypeKey || '';
     const eligiblePlans = useMemo(() => eligibleProvisioningPlans(plansQuery.data ?? [], selectedEventType), [plansQuery.data, selectedEventType]);
@@ -62,7 +62,7 @@ export function useProvisionEventForm(host: UserResponseDto) {
         isTimezoneValid &&
         !scheduleError &&
         locationName.trim() &&
-        locationAddress.trim()
+        locationAddress.trim(),
     );
 
     function fieldError(name: string) {

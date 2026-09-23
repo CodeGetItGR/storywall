@@ -14,7 +14,7 @@ export function useCodeRestrictionPicker(restrictions: CodeRestrictionsDto | nul
     // A stored plan implies its event type, so ticking that type too keeps the same meaning.
     const selectedEventTypes = useMemo(
         () => pickedEventTypes ?? restrictionEventTypesWithPlans(restrictions, planGroups),
-        [pickedEventTypes, planGroups, restrictions]
+        [pickedEventTypes, planGroups, restrictions],
     );
 
     const visiblePlanGroups = useMemo(() => planGroups.filter((group) => selectedEventTypes.includes(group.key)), [planGroups, selectedEventTypes]);
@@ -24,9 +24,9 @@ export function useCodeRestrictionPicker(restrictions: CodeRestrictionsDto | nul
             unknownRestrictionValues(
                 restrictions,
                 eventTypes.map((eventType) => eventType.value),
-                planGroups.flatMap((group) => group.plans.map((plan) => plan.value))
+                planGroups.flatMap((group) => group.plans.map((plan) => plan.value)),
             ),
-        [eventTypes, planGroups, restrictions]
+        [eventTypes, planGroups, restrictions],
     );
 
     const handleEventTypeChange = useCallback(
@@ -34,7 +34,7 @@ export function useCodeRestrictionPicker(restrictions: CodeRestrictionsDto | nul
             const { checked, value } = event.currentTarget;
             setPickedEventTypes(checked ? [...selectedEventTypes, value] : selectedEventTypes.filter((key) => key !== value));
         },
-        [selectedEventTypes]
+        [selectedEventTypes],
     );
 
     return {

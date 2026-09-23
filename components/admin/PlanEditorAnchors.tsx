@@ -24,7 +24,7 @@ export function PlanEditorAnchors({ anchors, active }: { anchors: PlanEditorAnch
                     className={cn(
                         'shrink-0 rounded-md px-2.5 py-1 text-[12px] font-bold transition-colors',
                         active === anchor.id ? 'bg-primary-light text-primary-dark' : 'text-ink-faint hover:text-ink',
-                        anchor.tone === 'danger' && active !== anchor.id && 'text-status-danger/70'
+                        anchor.tone === 'danger' && active !== anchor.id && 'text-status-danger/70',
                     )}
                 >
                     {anchor.label}

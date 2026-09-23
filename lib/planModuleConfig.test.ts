@@ -1,13 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-    configChangeSummary,
-    formatConfigValue,
-    knownConfigFields,
-    mergeConfigDraft,
-    parseConfigJson,
-    splitConfig,
-} from '@/lib/planModuleConfig';
+import { configChangeSummary, formatConfigValue, knownConfigFields, mergeConfigDraft, parseConfigJson, splitConfig } from '@/lib/planModuleConfig';
 
 describe('knownConfigFields', () => {
     it('returns typed fields for documented modules', () => {

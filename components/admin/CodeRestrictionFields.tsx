@@ -54,7 +54,7 @@ export function CodeRestrictionFields({ restrictions }: { restrictions: CodeRest
                             <div className="space-y-3">
                                 {picker.visiblePlanGroups.map((group) => (
                                     <div key={group.key}>
-                                        <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wide text-ink-muted">{group.label}</p>
+                                        <p className="mb-1.5 text-[11px] font-bold tracking-wide text-ink-muted uppercase">{group.label}</p>
                                         <div className="grid gap-1.5 sm:grid-cols-2">
                                             {group.plans.map((option) => (
                                                 <RestrictionCheckbox

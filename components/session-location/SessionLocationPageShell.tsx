@@ -19,7 +19,7 @@ export function SessionLocationPageShell({ eventId, location }: SessionLocationP
     const hasLocationName = Boolean(location.locationName);
 
     return (
-        <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col bg-background px-6 pb-14 pt-4">
+        <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col bg-background px-6 pt-4 pb-14">
             {/* Header */}
             <header>
                 <BackButton href={routes.events.feed(eventId)} label={t('back')} />

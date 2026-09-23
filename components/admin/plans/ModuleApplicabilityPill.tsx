@@ -34,7 +34,7 @@ export function ModuleApplicabilityPill({
                     aria-pressed={value === option}
                     className={cn(
                         'rounded px-1.5 py-0.5 text-[10.5px] font-bold transition-colors',
-                        value === option ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted'
+                        value === option ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted',
                     )}
                 >
                     {t(option)}

@@ -76,7 +76,7 @@ export function GiftAccountSetup({ eventId, className = 'mt-3 border-t border-bo
             {shouldShowChecklist && <SetupChecklist className={className} items={checklistItems} />}
 
             <Modal open={open} onClose={closeEditor} size="md" closeLabel={t('cancel')}>
-                <Modal.Body className="px-4 pb-5 pt-12 sm:px-5">
+                <Modal.Body className="px-4 pt-12 pb-5 sm:px-5">
                     <form onSubmit={submit} className="space-y-4">
                         <div className="pr-8">
                             <h2 className="text-lg font-semibold text-ink">{t('editorTitle')}</h2>
@@ -139,7 +139,7 @@ export function GiftAccountSetup({ eventId, className = 'mt-3 border-t border-bo
                             <button
                                 type="submit"
                                 disabled={save.isPending}
-                                className="inline-flex min-h-10 items-center gap-2 rounded-full bg-gradient-brand px-5 text-sm font-semibold text-white disabled:opacity-50"
+                                className="inline-flex min-h-10 items-center gap-2 rounded-full px-5 text-sm font-semibold text-white bg-gradient-brand disabled:opacity-50"
                             >
                                 {save.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                                 {t('save')}

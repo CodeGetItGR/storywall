@@ -34,29 +34,29 @@ export function StoryAvatar({ group, author, onOpenStoryAction, isCurrentUser }:
             event.stopPropagation();
             openStoryCapture();
         },
-        [openStoryCapture]
+        [openStoryCapture],
     );
 
     const ring = (
         <div
-            className={cn('w-15.5 h-15.5 rounded-full p-0.75 flex items-center justify-center', group.allSeen ? 'bg-border' : 'bg-gradient-brand')}
+            className={cn('flex h-15.5 w-15.5 items-center justify-center rounded-full p-0.75', group.allSeen ? 'bg-border' : 'bg-gradient-brand')}
             aria-hidden="true"
         >
-            <div className="w-full h-full rounded-full p-0.5 bg-background flex items-center justify-center">
+            <div className="flex h-full w-full items-center justify-center rounded-full bg-background p-0.5">
                 <Avatar
                     src={memberAvatarUrl(author.memberId, author.avatarUrl)}
                     initials={initialsFromName(author.displayName)}
                     color={avatarColorFromId(author.memberId)}
                     size="xl"
                     alt={author.displayName}
-                    className="w-full h-full"
+                    className="h-full w-full"
                 />
             </div>
         </div>
     );
 
     const label = (
-        <span className="text-[11px] text-ink-muted font-medium text-center leading-tight max-w-14 truncate">
+        <span className="max-w-14 truncate text-center text-[11px] leading-tight font-medium text-ink-muted">
             {isCurrentUser ? t('yourStory') : author.displayName.split(' ')[0]}
         </span>
     );
@@ -74,7 +74,7 @@ export function StoryAvatar({ group, author, onOpenStoryAction, isCurrentUser }:
                             type="button"
                             onClick={handleOpenComposeStory}
                             aria-label={t('addAnotherStory')}
-                            className="absolute bottom-0 right-0 flex h-5 w-5 items-center justify-center rounded-full border-2 border-background bg-gradient-brand"
+                            className="absolute right-0 bottom-0 flex h-5 w-5 items-center justify-center rounded-full border-2 border-background bg-gradient-brand"
                         >
                             <Plus className="h-3 w-3 text-white" strokeWidth={3} />
                         </button>

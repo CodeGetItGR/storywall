@@ -61,7 +61,7 @@ export function CostTrackingDayDrawer({
             ) : (
                 <div className="overflow-hidden rounded-lg border border-border">
                     <table className="w-full border-collapse text-sm">
-                        <thead className="bg-surface-muted/70 text-left text-[11px] font-bold uppercase tracking-wide text-ink-faint">
+                        <thead className="bg-surface-muted/70 text-left text-[11px] font-bold tracking-wide text-ink-faint uppercase">
                             <tr>
                                 <th className="px-3 py-2.5 font-bold">{trafficT('columns.eventType')}</th>
                                 <th className="px-3 py-2.5 font-bold">{trafficT('columns.plan')}</th>
@@ -76,7 +76,7 @@ export function CostTrackingDayDrawer({
                                 <tr key={event.eventId} className="border-t border-border text-ink last:border-b-0">
                                     <td className="px-3 py-3 font-semibold">{event.eventType}</td>
                                     <td className="px-3 py-3 font-mono text-xs font-bold">{event.planTierCode}</td>
-                                    <td className="px-3 py-3 font-mono text-xs tabular-nums text-ink-muted">
+                                    <td className="px-3 py-3 font-mono text-xs text-ink-muted tabular-nums">
                                         {event.storageQuotaBytes === null ? trafficT('unlimited') : formatBytes(event.storageQuotaBytes)}
                                         <span className="block pt-0.5 text-[10px] text-ink-faint">
                                             {trafficT('guestsValue', {

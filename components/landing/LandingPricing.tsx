@@ -45,17 +45,18 @@ export function LandingPricing() {
             >
                 {CATEGORY_ORDER.map((key) => {
                     const categoryHasPlans = categories[key].plans.length > 0;
-                  return  (
+                    return (
                         <button
                             aria-controls="landing-pricing-panel"
                             aria-selected={category === key}
                             className={cn(
-                                'relative min-h-18 w-1/2 px-2 pb-4 text-center text-[12px] leading-tight font-black transition-colors focus-ring focus-visible:-outline-offset-4 min-[761px]:min-h-12 min-[761px]:px-6 min-[761px]:text-[17px]',
+                                'relative min-h-18 w-1/2 px-2 pb-4 text-center text-[12px] leading-tight font-black focus-ring transition-colors focus-visible:-outline-offset-4 min-[761px]:min-h-12 min-[761px]:px-6 min-[761px]:text-[17px]',
                                 {
-                                    'text-[#151313]/65 hover:text-[#151313]' : category !== key && categoryHasPlans,
-                                    'text-[#151313] after:absolute after:inset-x-0 after:bottom-0 after:h-0.75 after:bg-[linear-gradient(90deg,#df7794,#f2c764)]' : category === key,
-                                    'cursor-not-allowed text-[#151313]/30' : !categoryHasPlans,
-                                }
+                                    'text-[#151313]/65 hover:text-[#151313]': category !== key && categoryHasPlans,
+                                    'text-[#151313] after:absolute after:inset-x-0 after:bottom-0 after:h-0.75 after:bg-[linear-gradient(90deg,#df7794,#f2c764)]':
+                                        category === key,
+                                    'cursor-not-allowed text-[#151313]/30': !categoryHasPlans,
+                                },
                             )}
                             data-category={key}
                             id={`landing-pricing-tab-${key}`}
@@ -68,10 +69,9 @@ export function LandingPricing() {
                             disabled={!categoryHasPlans}
                         >
                             <span>{categories[key].label}</span>
-                            {!categoryHasPlans &&
-                                <p className="text-lg text-center text-[#151313]/60 min-[761px]:col-span-3">{t('comingSoon')}</p>}
+                            {!categoryHasPlans && <p className="text-center text-lg text-[#151313]/60 min-[761px]:col-span-3">{t('comingSoon')}</p>}
                         </button>
-                    )
+                    );
                 })}
             </div>
 
@@ -92,7 +92,7 @@ export function LandingPricing() {
                             popularLabel={t('popular')}
                             storageLabel={t('storageLabel')}
                         />
-                ))}
+                    ))}
             </div>
 
             {/* Create CTA */}

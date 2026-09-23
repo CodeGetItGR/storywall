@@ -111,7 +111,7 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
                 if (item.mediaId) deleteMedia.mutate(item.mediaId);
             }),
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        []
+        [],
     );
 
     const reset = useCallback(() => {
@@ -203,8 +203,8 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
                                               remoteUrl: media.mediaUrl,
                                               status: media.status === 'PROCESSING' ? 'processing' : 'uploaded',
                                           }
-                                        : existing
-                                )
+                                        : existing,
+                                ),
                             );
                             if (media.status === 'PROCESSING') {
                                 pollMediaUntilProcessed(media.id)
@@ -218,20 +218,22 @@ export function useStoryComposerController(canCompose: boolean): StoryComposerCo
                                                           status: processed.status === 'FAILED' ? 'failed' : 'uploaded',
                                                           error: processed.status === 'FAILED' ? t('processingFailed') : existing.error,
                                                       }
-                                                    : existing
-                                            )
+                                                    : existing,
+                                            ),
                                         );
                                     })
                                     .catch(() => {
                                         setItems((current) =>
                                             current.map((existing) =>
-                                                existing.key === item.key ? { ...existing, status: 'failed', error: t('processingFailed') } : existing
-                                            )
+                                                existing.key === item.key
+                                                    ? { ...existing, status: 'failed', error: t('processingFailed') }
+                                                    : existing,
+                                            ),
                                         );
                                     });
                             }
                         },
-                    }
+                    },
                 );
             }
         }

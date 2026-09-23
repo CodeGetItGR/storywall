@@ -52,7 +52,7 @@ export function EventDeleteConfirmModal({
                         <>
                             {/* Verification code */}
                             <label className="flex flex-col gap-1.5 text-left">
-                                <span className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                                <span className="text-xs font-semibold tracking-wide text-ink-muted uppercase">
                                     {t('settings.dangerZone.otp.label')}
                                 </span>
                                 <input

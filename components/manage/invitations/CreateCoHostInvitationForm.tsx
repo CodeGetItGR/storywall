@@ -69,7 +69,7 @@ export function CreateCoHostInvitationForm({ eventId, onDoneAction }: { eventId:
             <button
                 type="submit"
                 disabled={create.isPending}
-                className="mt-4 flex min-h-10 w-full items-center justify-center gap-2 rounded-full bg-gradient-brand px-4 text-sm font-semibold text-white disabled:opacity-50"
+                className="mt-4 flex min-h-10 w-full items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold text-white bg-gradient-brand disabled:opacity-50"
             >
                 {create.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                 {t('submit')}

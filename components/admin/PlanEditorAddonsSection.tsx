@@ -95,7 +95,7 @@ export function PlanEditorAddonsSection({
                                 <span
                                     className={cn(
                                         'rounded-full px-2 py-1 font-bold',
-                                        planUnlocks.length > 0 ? 'bg-primary-light text-primary-dark' : 'bg-status-neutral-wash text-status-neutral'
+                                        planUnlocks.length > 0 ? 'bg-primary-light text-primary-dark' : 'bg-status-neutral-wash text-status-neutral',
                                     )}
                                 >
                                     {planUnlocks.length > 0 ? t('plans.modules.paidAddon') : t('plans.modules.unavailable')}
@@ -103,7 +103,7 @@ export function PlanEditorAddonsSection({
                                 {planUnlocks.map((service) => (
                                     <span
                                         key={service.id}
-                                        className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-muted/70 py-1 pl-2.5 pr-1 font-semibold text-ink"
+                                        className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-muted/70 py-1 pr-1 pl-2.5 font-semibold text-ink"
                                     >
                                         {service.name}
                                         <span className="font-medium text-ink-muted">

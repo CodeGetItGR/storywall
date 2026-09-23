@@ -101,7 +101,7 @@ export function PostReactionPicker({ post, disabled = false, showEmptyIcon = tru
                 className={cn(
                     'flex min-h-10 items-center rounded-full px-1.5 py-2 text-sm font-medium text-ink-muted transition-[color,scale] hover:text-ink active:scale-[0.97]',
                     reaction.selectedType && 'text-ink',
-                    disabled && 'cursor-not-allowed opacity-60 hover:text-ink-muted'
+                    disabled && 'cursor-not-allowed opacity-60 hover:text-ink-muted',
                 )}
             >
                 {selectedEmoji ? (
@@ -132,8 +132,8 @@ export function PostReactionPicker({ post, disabled = false, showEmptyIcon = tru
                                 title={option.name}
                                 onClick={selectReaction}
                                 className={cn(
-                                    'motion-reaction-option flex h-9 w-9 items-center justify-center rounded-full text-lg transition-[scale] hover:scale-125 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
-                                    selected && 'scale-125'
+                                    'motion-reaction-option flex h-9 w-9 items-center justify-center rounded-full text-lg transition-[scale] hover:scale-125 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:scale-95',
+                                    selected && 'scale-125',
                                 )}
                             >
                                 <span aria-hidden>{option.emoji}</span>
@@ -145,7 +145,7 @@ export function PostReactionPicker({ post, disabled = false, showEmptyIcon = tru
             )}
 
             {reaction.error !== null && reaction.error !== undefined && (
-                <p className="absolute left-0 top-full mt-1 w-56 text-xs text-destructive">
+                <p className="absolute top-full left-0 mt-1 w-56 text-xs text-destructive">
                     {isModuleNotAvailableError(reaction.error) ? t('moduleUnavailable') : toErrorMessage(reaction.error, t('reactionFailed'))}
                 </p>
             )}

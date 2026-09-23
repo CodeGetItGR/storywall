@@ -34,17 +34,17 @@ export function PlanComparisonMatrix({
         <div className="overflow-x-auto rounded-lg bg-surface-muted/45 p-3">
             <div className="min-w-230">
                 <div
-                    className="grid gap-4 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint"
+                    className="grid gap-4 px-3 py-2 text-[11px] font-semibold tracking-wide text-ink-faint uppercase"
                     style={{ gridTemplateColumns }}
                 >
                     <div>{fieldLabel}</div>
                     {plans.map((plan) => (
                         <div key={plan.id} className="min-w-0">
                             <div className="flex flex-wrap items-center gap-1.5">
-                                <span className="truncate text-sm font-semibold normal-case tracking-normal text-ink">{plan.name}</span>
+                                <span className="truncate text-sm font-semibold tracking-normal text-ink normal-case">{plan.name}</span>
                                 <PlanComparisonBadges isCurrent={Boolean(currentPlanCode) && plan.code === currentPlanCode} />
                             </div>
-                            <p className="mt-1 text-xs font-normal normal-case leading-5 tracking-normal text-ink-muted">
+                            <p className="mt-1 text-xs leading-5 font-normal tracking-normal text-ink-muted normal-case">
                                 {localizedPlanDescription(plan)}
                             </p>
                         </div>
@@ -64,7 +64,7 @@ export function PlanComparisonMatrix({
                                     className={cn(
                                         'min-w-0 rounded-md px-2 py-1 text-sm leading-6 text-ink-muted',
                                         Boolean(currentPlanCode) && plan.code === currentPlanCode && 'bg-primary-light/20 text-ink',
-                                        nextPlanId === plan.id && 'bg-surface-muted/70'
+                                        nextPlanId === plan.id && 'bg-surface-muted/70',
                                     )}
                                 >
                                     {row.render(plan)}

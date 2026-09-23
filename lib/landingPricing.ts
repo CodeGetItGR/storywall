@@ -85,7 +85,7 @@ export function buildLandingPlan(
     moduleName: (moduleKey: string) => string,
     copy: LandingPlanCopy,
     priceFallback?: string,
-    inheritedModuleKeys?: string[]
+    inheritedModuleKeys?: string[],
 ): LandingPlan | null {
     const price = formatLandingPlanPrice(plan) ?? priceFallback ?? null;
     if (price === null) return null;
@@ -99,7 +99,7 @@ export function buildLandingPlan(
               ...sortedModuleNames(
                   plan.moduleKeys.filter((moduleKey) => !inheritedKeys.includes(moduleKey)),
                   modules,
-                  moduleName
+                  moduleName,
               ),
               accessBullet,
           ]

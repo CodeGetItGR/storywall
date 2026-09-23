@@ -21,7 +21,7 @@ export function ToolsMenu() {
             const href = event.currentTarget.dataset.href;
             if (href) router.push(href);
         },
-        [router]
+        [router],
     );
 
     if (items.length === 0) return null;
@@ -33,7 +33,7 @@ export function ToolsMenu() {
             <Menu.Trigger
                 className={cn(
                     'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
-                    active ? 'bg-primary-light text-primary-dark' : 'text-ink-muted hover:bg-surface-muted hover:text-ink'
+                    active ? 'bg-primary-light text-primary-dark' : 'text-ink-muted hover:bg-surface-muted hover:text-ink',
                 )}
             >
                 <LayoutGrid className={cn('h-5 w-5 shrink-0', active ? 'text-primary' : '')} strokeWidth={active ? 2.5 : 1.8} />
@@ -53,7 +53,7 @@ export function ToolsMenu() {
                                     data-href={item.href}
                                     className={cn(
                                         'motion-menu-item flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-1.5 outline-none',
-                                        itemActive ? 'bg-surface-muted' : 'hover:bg-surface-muted'
+                                        itemActive ? 'bg-surface-muted' : 'hover:bg-surface-muted',
                                     )}
                                 >
                                     <Icon className="h-4 w-4 shrink-0 text-ink-muted" aria-hidden="true" />

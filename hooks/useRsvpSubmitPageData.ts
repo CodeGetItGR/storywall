@@ -40,7 +40,7 @@ export function useRsvpSubmitPageData() {
     const presetAttending = searchParams.get('attending');
 
     const [attending, setAttending] = useState<AttendingStatus | null>(
-        presetAttending === 'attending' || presetAttending === 'not-attending' ? presetAttending : null
+        presetAttending === 'attending' || presetAttending === 'not-attending' ? presetAttending : null,
     );
     const [message, setMessage] = useState('');
     const [plusOnes, setPlusOnes] = useState<RsvpPlusOnes>({
@@ -112,7 +112,7 @@ export function useRsvpSubmitPageData() {
                 childCount: type === 'child' ? Math.min(maxChildCount, currentPlusOnes.childCount + 1) : currentPlusOnes.childCount,
             }));
         },
-        [maxAdultPlusOnes, maxChildCount]
+        [maxAdultPlusOnes, maxChildCount],
     );
 
     const handleDecrementPlusOnes = useCallback(
@@ -122,7 +122,7 @@ export function useRsvpSubmitPageData() {
                 childCount: type === 'child' ? Math.max(minChildCount, currentPlusOnes.childCount - 1) : currentPlusOnes.childCount,
             }));
         },
-        [minAdultPlusOnes, minChildCount]
+        [minAdultPlusOnes, minChildCount],
     );
 
     const handleSubmit = useCallback(
@@ -163,7 +163,7 @@ export function useRsvpSubmitPageData() {
 
             setSubmitted(true);
         },
-        [attending, canSubmitRsvp, createRsvp, effectiveRsvpId, memberId, message, plusOnes.adultCount, plusOnes.childCount, updateRsvp]
+        [attending, canSubmitRsvp, createRsvp, effectiveRsvpId, memberId, message, plusOnes.adultCount, plusOnes.childCount, updateRsvp],
     );
 
     return {

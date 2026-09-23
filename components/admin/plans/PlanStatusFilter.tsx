@@ -34,7 +34,7 @@ export function PlanStatusFilter({
                     aria-pressed={value === status}
                     className={cn(
                         'inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[12.5px] font-bold transition-colors',
-                        value === status ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted'
+                        value === status ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted',
                     )}
                 >
                     {t(`status.${status}`)}

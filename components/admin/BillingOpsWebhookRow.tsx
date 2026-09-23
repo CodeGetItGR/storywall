@@ -30,7 +30,7 @@ export function BillingOpsWebhookRow({ webhook }: { webhook: UnprocessedWebhookD
                 <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                         <p className="text-sm font-semibold text-ink">{webhook.eventType}</p>
-                        <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[11px] font-bold uppercase text-ink-muted">
+                        <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[11px] font-bold text-ink-muted uppercase">
                             {webhook.provider}
                         </span>
                     </div>

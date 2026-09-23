@@ -57,7 +57,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const isMyPost = activeMember?.id !== undefined && post.authorMemberId === activeMember.id;
     const canManagePost = isMyPost && canWrite;
     const canReportPost = Boolean(
-        activeMember && post.authorMemberId && !isMyPost && !isHostPost && canWrite && appConfig?.reportTargetTypes?.includes('POST')
+        activeMember && post.authorMemberId && !isMyPost && !isHostPost && canWrite && appConfig?.reportTargetTypes?.includes('POST'),
     );
     const canTogglePin = isHost && canWrite;
     const showHostPostBadge = isHostPost && !isHost;
@@ -135,7 +135,12 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     return (
         <article className={cn('relative border-b border-border/60 bg-card/60', showHostPostBadge && 'pt-3 sm:pt-0 sm:pr-3')}>
             <div className="flex items-center justify-between px-2 pt-4 pb-3">
-                <PostAuthorAvatar avatarUrl={memberAvatarUrl(post.authorMemberId, post.author?.avatarUrl)} name={authorName} timeAgo={timeAgo} isHostPost={showHostPostBadge} />
+                <PostAuthorAvatar
+                    avatarUrl={memberAvatarUrl(post.authorMemberId, post.author?.avatarUrl)}
+                    name={authorName}
+                    timeAgo={timeAgo}
+                    isHostPost={showHostPostBadge}
+                />
                 <div className="relative flex items-center gap-1">
                     {canTogglePin ? (
                         <button
@@ -148,19 +153,19 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                             className={cn(
                                 'flex h-8 w-8 items-center justify-center rounded-full transition-colors',
                                 post.isPinned ? 'text-primary hover:bg-primary/10' : 'text-ink-faint hover:bg-surface-muted hover:text-ink-muted',
-                                updatePost.isPending && 'cursor-not-allowed opacity-60'
+                                updatePost.isPending && 'cursor-not-allowed opacity-60',
                             )}
                         >
-                            <Pin className="w-4 h-4" strokeWidth={1.8} />
+                            <Pin className="h-4 w-4" strokeWidth={1.8} />
                         </button>
                     ) : (
                         post.isPinned && (
                             <span className="flex h-8 w-8 items-center justify-center text-primary" aria-label={t('pinned')} title={t('pinned')}>
-                                <Pin className="w-4 h-4" strokeWidth={1.8} />
+                                <Pin className="h-4 w-4" strokeWidth={1.8} />
                             </span>
                         )
                     )}
-                    {pinError && <p className="absolute right-0 top-full mt-1 w-48 text-right text-xs text-destructive">{pinError}</p>}
+                    {pinError && <p className="absolute top-full right-0 mt-1 w-48 text-right text-xs text-destructive">{pinError}</p>}
                     {(canManagePost || canReportPost) && (
                         <PostActionsMenu
                             deleteLabel={canManagePost ? t('deletePost') : undefined}
@@ -266,7 +271,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
 
             {/* Comment preview */}
             {post.commentCount > 0 && (
-                <div className="border-t border-border/50 px-4 pb-4 pt-3">
+                <div className="border-t border-border/50 px-4 pt-3 pb-4">
                     <CommentsList comments={post.recentComments} compact />
                     {post.commentCount > post.recentComments.length && (
                         <button

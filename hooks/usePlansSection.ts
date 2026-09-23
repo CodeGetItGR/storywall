@@ -48,7 +48,7 @@ export function usePlansSection() {
 
     const orderedEventTypes = useMemo(
         () => [...(eventTypesQuery.data ?? [])].sort((left, right) => left.sortOrder - right.sortOrder),
-        [eventTypesQuery.data]
+        [eventTypesQuery.data],
     );
     const allPlans = useMemo(() => [...plansResult.data].sort((left, right) => left.sortOrder - right.sortOrder), [plansResult.data]);
 
@@ -61,7 +61,7 @@ export function usePlansSection() {
 
     const selectedEventType = useMemo(
         () => orderedEventTypes.find((type) => type.eventTypeKey === selectedEventTypeKey) ?? null,
-        [orderedEventTypes, selectedEventTypeKey]
+        [orderedEventTypes, selectedEventTypeKey],
     );
 
     const needle = search.trim().toLowerCase();
@@ -75,7 +75,7 @@ export function usePlansSection() {
                 if (!needle) return true;
                 return plan.name.toLowerCase().includes(needle) || plan.code.toLowerCase().includes(needle);
             }),
-        [needle, plansForType, statusFilter]
+        [needle, plansForType, statusFilter],
     );
 
     const statusCounts = useMemo(() => {
@@ -97,7 +97,7 @@ export function usePlansSection() {
                     if (type.eventTypeKey.toLowerCase().includes(needle)) return true;
                     return plans.some((plan) => plan.name.toLowerCase().includes(needle) || plan.code.toLowerCase().includes(needle));
                 }),
-        [allPlans, needle, orderedEventTypes]
+        [allPlans, needle, orderedEventTypes],
     );
 
     const handleSearchChange = useCallback((event: ChangeEvent<HTMLInputElement>) => setSearch(event.target.value), []);

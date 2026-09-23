@@ -18,11 +18,11 @@ export function ProfileContent() {
     const displayName = form.accountName || t('fallbackName');
 
     return (
-        <main className="relative h-full overflow-y-auto overflow-x-hidden">
+        <main className="relative h-full overflow-x-hidden overflow-y-auto">
             {/* Ambient gradient */}
             <div
                 aria-hidden="true"
-                className="bg-gradient-logo pointer-events-none absolute inset-x-0 top-0 h-80 opacity-55 mask-[radial-gradient(ellipse_120%_100%_at_top,black,transparent_70%)]"
+                className="pointer-events-none absolute inset-x-0 top-0 h-80 mask-[radial-gradient(ellipse_120%_100%_at_top,black,transparent_70%)] opacity-55 bg-gradient-logo"
             />
 
             <div className="relative mx-auto flex max-w-3xl flex-col gap-6 px-4 pt-8 pb-16 sm:px-8 lg:pt-14">
@@ -77,7 +77,7 @@ export function ProfileContent() {
                                 maxLength={100}
                                 required
                                 aria-invalid={Boolean(form.profileFieldErrors.firstName)}
-                                className="min-h-11 rounded-2xl border border-border/70 bg-background px-4 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                                className="min-h-11 rounded-2xl border border-border/70 bg-background px-4 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                             />
                         </FormFieldLabel>
                         <FormFieldLabel label={t('fields.lastName')} optional>
@@ -86,13 +86,17 @@ export function ProfileContent() {
                                 onChange={form.handleLastNameChange}
                                 maxLength={100}
                                 aria-invalid={Boolean(form.profileFieldErrors.lastName)}
-                                className="min-h-11 rounded-2xl border border-border/70 bg-background px-4 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                                className="min-h-11 rounded-2xl border border-border/70 bg-background px-4 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                             />
                         </FormFieldLabel>
                     </div>
 
                     {/* Profile feedback */}
-                    {(form.profileFieldErrors.firstName || form.profileFieldErrors.lastName || form.profileError || form.profileQueryError || form.profileSuccess) && (
+                    {(form.profileFieldErrors.firstName ||
+                        form.profileFieldErrors.lastName ||
+                        form.profileError ||
+                        form.profileQueryError ||
+                        form.profileSuccess) && (
                         <div className="mt-4 space-y-2">
                             {form.profileFieldErrors.firstName && (
                                 <p role="alert" className="text-sm text-red-600">
@@ -126,7 +130,11 @@ export function ProfileContent() {
                     {/* Actions */}
                     <div className="mt-5 flex justify-end">
                         <Button type="submit" disabled={!form.hasProfileChanges || form.isSavingProfile} className="gap-2 rounded-full px-4">
-                            {form.isSavingProfile ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Save className="h-4 w-4" aria-hidden="true" />}
+                            {form.isSavingProfile ? (
+                                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                            ) : (
+                                <Save className="h-4 w-4" aria-hidden="true" />
+                            )}
                             {form.isSavingProfile ? t('saving') : t('save')}
                         </Button>
                     </div>
@@ -134,7 +142,10 @@ export function ProfileContent() {
 
                 {/* Password */}
                 {form.canChangePassword && (
-                    <form onSubmit={form.handlePasswordSubmit} className="rounded-[1.5rem] bg-card p-4 shadow-[0_18px_48px_rgba(35,28,22,0.08)] sm:p-5">
+                    <form
+                        onSubmit={form.handlePasswordSubmit}
+                        className="rounded-[1.5rem] bg-card p-4 shadow-[0_18px_48px_rgba(35,28,22,0.08)] sm:p-5"
+                    >
                         {/* Password header */}
                         <div className="flex items-center gap-2">
                             <KeyRound className="h-4 w-4 text-primary" aria-hidden="true" />
@@ -155,7 +166,7 @@ export function ProfileContent() {
                                     maxLength={100}
                                     required
                                     aria-invalid={Boolean(form.passwordFieldErrors.currentPassword)}
-                                    className="min-h-11 rounded-2xl border border-border/70 bg-background px-4 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                                    className="min-h-11 rounded-2xl border border-border/70 bg-background px-4 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                                 />
                             </FormFieldLabel>
                             <FormFieldLabel label={t('password.new')} required>
@@ -167,7 +178,7 @@ export function ProfileContent() {
                                     maxLength={100}
                                     required
                                     aria-invalid={Boolean(form.passwordFieldErrors.newPassword)}
-                                    className="min-h-11 rounded-2xl border border-border/70 bg-background px-4 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                                    className="min-h-11 rounded-2xl border border-border/70 bg-background px-4 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                                 />
                             </FormFieldLabel>
                             <FormFieldLabel label={t('password.confirm')} required>
@@ -179,7 +190,7 @@ export function ProfileContent() {
                                     maxLength={100}
                                     required
                                     aria-invalid={Boolean(form.passwordFieldErrors.confirmPassword)}
-                                    className="min-h-11 rounded-2xl border border-border/70 bg-background px-4 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                                    className="min-h-11 rounded-2xl border border-border/70 bg-background px-4 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                                 />
                             </FormFieldLabel>
                         </div>

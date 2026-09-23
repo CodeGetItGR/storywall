@@ -2,7 +2,17 @@
 
 import { useTranslations } from 'next-intl';
 
-export function PlanEditorModulesSummary({ id, included, total, onOpenGridAction }: { id: string; included: number; total: number; onOpenGridAction: () => void }) {
+export function PlanEditorModulesSummary({
+    id,
+    included,
+    total,
+    onOpenGridAction,
+}: {
+    id: string;
+    included: number;
+    total: number;
+    onOpenGridAction: () => void;
+}) {
     const t = useTranslations('AdminPage.plans');
 
     return (

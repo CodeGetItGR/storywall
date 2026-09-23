@@ -32,7 +32,9 @@ export function QrStatsSheet({
             <Modal.Body className="px-5 pt-6 pb-5">
                 <div className="pr-8">
                     <p className="text-base font-bold text-ink">{t('qr.stats.title')}</p>
-                    <p className="mt-1 truncate text-sm text-ink-muted">{qrLink.labelKey ? tGlobal(qrLink.labelKey) : qrLink.label || t('qr.untitled')}</p>
+                    <p className="mt-1 truncate text-sm text-ink-muted">
+                        {qrLink.labelKey ? tGlobal(qrLink.labelKey) : qrLink.label || t('qr.untitled')}
+                    </p>
                 </div>
 
                 <div className="mt-5 divide-y divide-border rounded-lg border border-border bg-card">
@@ -54,7 +56,7 @@ export function QrStatsSheet({
                     <button
                         type="button"
                         onClick={onRaiseLimitAction}
-                        className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-brand px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                        className="mt-4 flex w-full items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
                     >
                         <AlertTriangle className="h-4 w-4" />
                         {t('qr.stats.raiseLimit')}

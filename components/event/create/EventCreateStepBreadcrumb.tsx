@@ -21,7 +21,7 @@ export function EventCreateStepBreadcrumb() {
     return (
         <nav
             aria-label={t('steps.navigationLabel')}
-            className="flex items-center gap-1 overflow-x-auto pb-1 text-sm font-semibold w-auto justify-between"
+            className="flex w-auto items-center justify-between gap-1 overflow-x-auto pb-1 text-sm font-semibold"
         >
             {STEPS.map((item, index) => {
                 const isCurrent = item === step;

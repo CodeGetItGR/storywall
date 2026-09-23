@@ -75,7 +75,7 @@ export function PostCommentsPanel({
 
     return (
         <>
-            <section className="flex justify-between pb-2 px-3 shrink-0 pt-2">
+            <section className="flex shrink-0 justify-between px-3 pt-2 pb-2">
                 {/*<PostHeader post={post} timeAgo={timeAgo} />*/}
                 <div className="flex gap-2">
                     <ReactionSummary counts={post.reactionCounts} reactionTypes={reactionTypes} />
@@ -84,13 +84,13 @@ export function PostCommentsPanel({
             </section>
             <Modal.Body
                 ref={bodyRef}
-                className={cn('lg:px-4 px-3 pt-5 pb-4', {
+                className={cn('px-3 pt-5 pb-4 lg:px-4', {
                     'flex items-center justify-center': comments.length === 0,
                 })}
             >
                 {/* The count already lives in the header above — this heading
                     only carries the empty state, never restates the number. */}
-                {commentCount === 0 && <h3 className="text-sm font-bold text-ink mb-4">{t('noCommentsYet')}</h3>}
+                {commentCount === 0 && <h3 className="mb-4 text-sm font-bold text-ink">{t('noCommentsYet')}</h3>}
                 <CommentsList comments={comments} onReply={onReply} autoExpandThread={autoExpandThread} />
                 <div ref={loadMoreRef} className="h-1" />
                 {isLoadingMoreComments && <p className="pt-2 text-center text-xs text-ink-muted">{t('loadingMore')}</p>}

@@ -35,7 +35,7 @@ function AdminToggleRow({
             disabled={item.locked}
             badge={
                 changed ? (
-                    <span className="rounded-full bg-primary-light px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.04em] text-primary-dark">
+                    <span className="rounded-full bg-primary-light px-1.5 py-0.5 text-[10px] font-bold tracking-[0.04em] text-primary-dark uppercase">
                         {changedLabel}
                     </span>
                 ) : undefined

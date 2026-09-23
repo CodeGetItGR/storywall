@@ -74,7 +74,7 @@ export async function LandingFooter() {
                 </div>
             </div>
             {/* Wordmark */}
-            <div className="w-full overflow-visible box-border pt-10.5 pb-6.5 text-[clamp(52px,16.5vw,70px)] leading-[0.82] tracking-[-0.06em] whitespace-nowrap text-white [font-family:var(--editorial)] font-normal min-[761px]:w-auto min-[761px]:pt-12.5 min-[761px]:pb-7.5 min-[761px]:text-[clamp(110px,17vw,310px)] min-[761px]:leading-[0.72] min-[761px]:tracking-[-0.075em]">
+            <div className="box-border w-full overflow-visible pt-10.5 pb-6.5 [font-family:var(--editorial)] text-[clamp(52px,16.5vw,70px)] leading-[0.82] font-normal tracking-[-0.06em] whitespace-nowrap text-white min-[761px]:w-auto min-[761px]:pt-12.5 min-[761px]:pb-7.5 min-[761px]:text-[clamp(110px,17vw,310px)] min-[761px]:leading-[0.72] min-[761px]:tracking-[-0.075em]">
                 STORYWALL
             </div>
             {/* Legal */}
@@ -85,7 +85,7 @@ export async function LandingFooter() {
                         <span key={label}>{label}</span>
                     ))}
                 </div>
-                <a className="max-[760px]:col-start-2 max-[760px]:row-start-1 justify-self-end text-white no-underline" href={TOP_HREF}>
+                <a className="justify-self-end text-white no-underline max-[760px]:col-start-2 max-[760px]:row-start-1" href={TOP_HREF}>
                     {t('backToTop')} ↑
                 </a>
             </div>

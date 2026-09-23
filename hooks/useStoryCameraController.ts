@@ -185,7 +185,7 @@ export function useStoryCameraController(open: boolean, onCapture: (file: File) 
                 onCaptureRef.current(new File([blob], `story-${Date.now()}.jpg`, { type: 'image/jpeg' }));
             },
             'image/jpeg',
-            0.92
+            0.92,
         );
     }
 

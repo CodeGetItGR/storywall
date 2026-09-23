@@ -8,7 +8,12 @@ import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { LoadingState } from '@/components/ui/LoadingState';
-import { useCollaboratorEarnings, useCollaboratorEarningsTotals, useMarkCollaborationEarningsPaid, useVoidCollaborationRedemption } from '@/hooks/useAdmin';
+import {
+    useCollaboratorEarnings,
+    useCollaboratorEarningsTotals,
+    useMarkCollaborationEarningsPaid,
+    useVoidCollaborationRedemption,
+} from '@/hooks/useAdmin';
 import { balanceMinor, owedMinor, sortEarningsNewestFirst } from '@/lib/adminCollaborations';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { CollaborationEarningResponseDto, CollaboratorResponseDto } from '@/lib/api/types';
@@ -46,9 +51,12 @@ export function CollaborationEarningsPanel({ collaborator }: { collaborator: Col
                 if (statusFilter === 'ALL') return true;
                 return earning.status === statusFilter;
             }),
-        [earnings, statusFilter]
+        [earnings, statusFilter],
     );
-    const accruedIds = useMemo(() => filteredEarnings.filter((earning) => earning.status === 'ACCRUED').map((earning) => earning.id), [filteredEarnings]);
+    const accruedIds = useMemo(
+        () => filteredEarnings.filter((earning) => earning.status === 'ACCRUED').map((earning) => earning.id),
+        [filteredEarnings],
+    );
     const selectedAccrued = useMemo(() => earnings.filter((earning) => selectedIds.includes(earning.id)), [earnings, selectedIds]);
     const detailEarning = earnings.find((earning) => earning.id === detailId) ?? null;
     const voidTarget = earnings.find((earning) => earning.id === voidTargetId) ?? null;
@@ -60,7 +68,10 @@ export function CollaborationEarningsPanel({ collaborator }: { collaborator: Col
 
     const handleReferenceChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => setPayoutReference(event.target.value), []);
     const handleVoidReasonChange = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => setVoidReason(event.target.value), []);
-    const handleStatusFilterChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => setStatusFilter(event.target.value as EarningStatusFilter), []);
+    const handleStatusFilterChange = useCallback(
+        (event: React.ChangeEvent<HTMLSelectElement>) => setStatusFilter(event.target.value as EarningStatusFilter),
+        [],
+    );
     const closeConfirm = useCallback(() => setConfirmOpen(false), []);
     const closeDetail = useCallback(() => setDetailId(null), []);
     const closeVoidConfirm = useCallback(() => {
@@ -112,14 +123,18 @@ export function CollaborationEarningsPanel({ collaborator }: { collaborator: Col
             <div>
                 <h2 className="text-base font-semibold text-ink">{t('earnings.title')}</h2>
                 {totalsQuery.isLoading && <LoadingState label={t('earnings.loadingTotals')} className="justify-start py-3" />}
-                {totalsQuery.error && <p className="py-3 text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(totalsQuery.error)}`)}</p>}
+                {totalsQuery.error && (
+                    <p className="py-3 text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(totalsQuery.error)}`)}</p>
+                )}
                 {totalsQuery.data && totalsQuery.data.length === 0 && <p className="py-3 text-sm text-ink-muted">{t('earnings.emptyTotals')}</p>}
                 {totalsQuery.data && totalsQuery.data.length > 0 && (
                     <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         {totalsQuery.data.map((total) => (
                             <div key={total.currency} className="rounded-lg bg-surface-muted/55 p-4">
                                 <p className="font-mono text-xs font-bold text-ink-faint">{total.currency}</p>
-                                <p className="mt-2 text-lg font-bold tabular-nums text-ink">{formatMoney(locale, owedMinor(total), total.currency)}</p>
+                                <p className="mt-2 text-lg font-bold text-ink tabular-nums">
+                                    {formatMoney(locale, owedMinor(total), total.currency)}
+                                </p>
                                 <p className="mt-1 text-xs text-ink-muted">
                                     {t('earnings.paidBalance', {
                                         paid: formatMoney(locale, total.paidMinor, total.currency),
@@ -164,14 +179,23 @@ export function CollaborationEarningsPanel({ collaborator }: { collaborator: Col
                             <option value="REVERSED">{t('earnings.status.REVERSED')}</option>
                             <option value="ALL">{t('earnings.filters.all')}</option>
                         </select>
-                        <button type="button" onClick={handleSelectAll} disabled={accruedIds.length === 0} className="text-xs font-semibold text-ink-muted disabled:opacity-40">
+                        <button
+                            type="button"
+                            onClick={handleSelectAll}
+                            disabled={accruedIds.length === 0}
+                            className="text-xs font-semibold text-ink-muted disabled:opacity-40"
+                        >
                             {selectedIds.length === accruedIds.length && accruedIds.length > 0 ? t('earnings.clear') : t('earnings.selectAccrued')}
                         </button>
                     </div>
                 </div>
                 {earningsQuery.isLoading && <LoadingState label={t('earnings.loading')} className="justify-start py-3" />}
-                {earningsQuery.error && <p className="py-3 text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(earningsQuery.error)}`)}</p>}
-                {filteredEarnings.length === 0 && !earningsQuery.isLoading && !earningsQuery.error && <p className="py-3 text-sm text-ink-muted">{t('earnings.empty')}</p>}
+                {earningsQuery.error && (
+                    <p className="py-3 text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(earningsQuery.error)}`)}</p>
+                )}
+                {filteredEarnings.length === 0 && !earningsQuery.isLoading && !earningsQuery.error && (
+                    <p className="py-3 text-sm text-ink-muted">{t('earnings.empty')}</p>
+                )}
                 {filteredEarnings.length > 0 && (
                     <div>
                         {/* Mobile Ledger */}
@@ -180,7 +204,9 @@ export function CollaborationEarningsPanel({ collaborator }: { collaborator: Col
                                 <div key={earning.id} className="space-y-3 p-3">
                                     <div className="flex items-start justify-between gap-3">
                                         <div>
-                                            <p className="font-mono text-sm font-semibold text-ink">{formatMoney(locale, earning.amountMinor, earning.currency)}</p>
+                                            <p className="font-mono text-sm font-semibold text-ink">
+                                                {formatMoney(locale, earning.amountMinor, earning.currency)}
+                                            </p>
                                             <p className="mt-1 text-xs text-ink-muted">{new Date(earning.accruedAt).toLocaleString()}</p>
                                         </div>
                                         <span className={cn('inline-flex rounded-full px-2 py-1 text-[11px] font-bold', STATUS_PILL[earning.status])}>
@@ -191,7 +217,8 @@ export function CollaborationEarningsPanel({ collaborator }: { collaborator: Col
                                         <div>
                                             <p className="font-semibold text-ink-faint">{t('earnings.columns.basis')}</p>
                                             <p className="mt-0.5 text-ink-muted">
-                                                {earning.commissionPercent}% {t('earnings.on')} {formatMoney(locale, earning.basisAmountMinor, earning.currency)}
+                                                {earning.commissionPercent}% {t('earnings.on')}{' '}
+                                                {formatMoney(locale, earning.basisAmountMinor, earning.currency)}
                                             </p>
                                         </div>
                                         <div>
@@ -239,74 +266,79 @@ export function CollaborationEarningsPanel({ collaborator }: { collaborator: Col
 
                         {/* Desktop Ledger */}
                         <div className="hidden overflow-x-auto rounded-lg bg-card ring-1 ring-border md:block">
-                        <table className="w-full min-w-[900px] text-left text-sm">
-                            <thead className="bg-surface-muted/70 text-[11px] font-bold uppercase tracking-wide text-ink-faint">
-                                <tr>
-                                    <th className="px-3 py-2">{t('earnings.columns.select')}</th>
-                                    <th className="px-3 py-2">{t('earnings.columns.date')}</th>
-                                    <th className="px-3 py-2">{t('earnings.columns.amount')}</th>
-                                    <th className="px-3 py-2">{t('earnings.columns.basis')}</th>
-                                    <th className="px-3 py-2">{t('earnings.columns.status')}</th>
-                                    <th className="px-3 py-2">{t('earnings.columns.reference')}</th>
-                                    <th className="px-3 py-2" />
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border">
-                                {filteredEarnings.map((earning) => (
-                                    <tr key={earning.id}>
-                                        <td className="px-3 py-2">
-                                            <input
-                                                type="checkbox"
-                                                value={earning.id}
-                                                checked={selectedIds.includes(earning.id)}
-                                                onChange={handleEarningToggle}
-                                                disabled={earning.status !== 'ACCRUED'}
-                                                className="h-4 w-4 accent-primary disabled:opacity-30"
-                                            />
-                                        </td>
-                                        <td className="px-3 py-2 text-ink-muted">{new Date(earning.accruedAt).toLocaleString()}</td>
-                                        <td className="px-3 py-2 font-mono font-semibold text-ink">
-                                            {formatMoney(locale, earning.amountMinor, earning.currency)}
-                                        </td>
-                                        <td className="px-3 py-2 text-ink-muted">
-                                            {earning.commissionPercent}% {t('earnings.on')}{' '}
-                                            {formatMoney(locale, earning.basisAmountMinor, earning.currency)}
-                                        </td>
-                                        <td className="px-3 py-2">
-                                            <span className={cn('inline-flex rounded-full px-2 py-1 text-[11px] font-bold', STATUS_PILL[earning.status])}>
-                                                {t(`earnings.status.${earning.status}`)}
-                                            </span>
-                                        </td>
-                                        <td className="px-3 py-2 font-mono text-[11px] text-ink-faint">
-                                            {earning.payoutReference ?? t('earnings.noReference')}
-                                        </td>
-                                        <td className="px-3 py-2">
-                                            <div className="flex justify-end gap-1.5">
-                                                <button
-                                                    type="button"
-                                                    data-earning-id={earning.id}
-                                                    onClick={handleOpenDetail}
-                                                    aria-label={t('earnings.details')}
-                                                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-faint hover:bg-canvas hover:text-ink"
-                                                >
-                                                    <Eye className="h-3.5 w-3.5" />
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    data-earning-id={earning.id}
-                                                    onClick={handleOpenVoid}
-                                                    disabled={earning.status === 'REVERSED'}
-                                                    aria-label={t('void.action')}
-                                                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-status-danger hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-30"
-                                                >
-                                                    <Unlink2 className="h-3.5 w-3.5" />
-                                                </button>
-                                            </div>
-                                        </td>
+                            <table className="w-full min-w-[900px] text-left text-sm">
+                                <thead className="bg-surface-muted/70 text-[11px] font-bold tracking-wide text-ink-faint uppercase">
+                                    <tr>
+                                        <th className="px-3 py-2">{t('earnings.columns.select')}</th>
+                                        <th className="px-3 py-2">{t('earnings.columns.date')}</th>
+                                        <th className="px-3 py-2">{t('earnings.columns.amount')}</th>
+                                        <th className="px-3 py-2">{t('earnings.columns.basis')}</th>
+                                        <th className="px-3 py-2">{t('earnings.columns.status')}</th>
+                                        <th className="px-3 py-2">{t('earnings.columns.reference')}</th>
+                                        <th className="px-3 py-2" />
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-border">
+                                    {filteredEarnings.map((earning) => (
+                                        <tr key={earning.id}>
+                                            <td className="px-3 py-2">
+                                                <input
+                                                    type="checkbox"
+                                                    value={earning.id}
+                                                    checked={selectedIds.includes(earning.id)}
+                                                    onChange={handleEarningToggle}
+                                                    disabled={earning.status !== 'ACCRUED'}
+                                                    className="h-4 w-4 accent-primary disabled:opacity-30"
+                                                />
+                                            </td>
+                                            <td className="px-3 py-2 text-ink-muted">{new Date(earning.accruedAt).toLocaleString()}</td>
+                                            <td className="px-3 py-2 font-mono font-semibold text-ink">
+                                                {formatMoney(locale, earning.amountMinor, earning.currency)}
+                                            </td>
+                                            <td className="px-3 py-2 text-ink-muted">
+                                                {earning.commissionPercent}% {t('earnings.on')}{' '}
+                                                {formatMoney(locale, earning.basisAmountMinor, earning.currency)}
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                <span
+                                                    className={cn(
+                                                        'inline-flex rounded-full px-2 py-1 text-[11px] font-bold',
+                                                        STATUS_PILL[earning.status],
+                                                    )}
+                                                >
+                                                    {t(`earnings.status.${earning.status}`)}
+                                                </span>
+                                            </td>
+                                            <td className="px-3 py-2 font-mono text-[11px] text-ink-faint">
+                                                {earning.payoutReference ?? t('earnings.noReference')}
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                <div className="flex justify-end gap-1.5">
+                                                    <button
+                                                        type="button"
+                                                        data-earning-id={earning.id}
+                                                        onClick={handleOpenDetail}
+                                                        aria-label={t('earnings.details')}
+                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-faint hover:bg-canvas hover:text-ink"
+                                                    >
+                                                        <Eye className="h-3.5 w-3.5" />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        data-earning-id={earning.id}
+                                                        onClick={handleOpenVoid}
+                                                        disabled={earning.status === 'REVERSED'}
+                                                        aria-label={t('void.action')}
+                                                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-status-danger hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-30"
+                                                    >
+                                                        <Unlink2 className="h-3.5 w-3.5" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 )}
@@ -356,8 +388,10 @@ export function CollaborationEarningsPanel({ collaborator }: { collaborator: Col
                     <div className="space-y-4">
                         {/* Summary */}
                         <div className="rounded-lg bg-surface-muted/55 p-4">
-                            <p className="text-xs font-bold uppercase tracking-wide text-ink-faint">{t('earnings.amount')}</p>
-                            <p className="mt-1 font-mono text-xl font-bold text-ink">{formatMoney(locale, detailEarning.amountMinor, detailEarning.currency)}</p>
+                            <p className="text-xs font-bold tracking-wide text-ink-faint uppercase">{t('earnings.amount')}</p>
+                            <p className="mt-1 font-mono text-xl font-bold text-ink">
+                                {formatMoney(locale, detailEarning.amountMinor, detailEarning.currency)}
+                            </p>
                         </div>
 
                         {/* Details */}
@@ -365,7 +399,9 @@ export function CollaborationEarningsPanel({ collaborator }: { collaborator: Col
                             <div>
                                 <dt className="text-xs font-semibold text-ink-faint">{t('earnings.columns.status')}</dt>
                                 <dd className="mt-1">
-                                    <span className={cn('inline-flex rounded-full px-2 py-1 text-[11px] font-bold', STATUS_PILL[detailEarning.status])}>
+                                    <span
+                                        className={cn('inline-flex rounded-full px-2 py-1 text-[11px] font-bold', STATUS_PILL[detailEarning.status])}
+                                    >
                                         {t(`earnings.status.${detailEarning.status}`)}
                                     </span>
                                 </dd>
@@ -373,7 +409,8 @@ export function CollaborationEarningsPanel({ collaborator }: { collaborator: Col
                             <div>
                                 <dt className="text-xs font-semibold text-ink-faint">{t('earnings.columns.basis')}</dt>
                                 <dd className="mt-1 text-ink">
-                                    {detailEarning.commissionPercent}% {t('earnings.on')} {formatMoney(locale, detailEarning.basisAmountMinor, detailEarning.currency)}
+                                    {detailEarning.commissionPercent}% {t('earnings.on')}{' '}
+                                    {formatMoney(locale, detailEarning.basisAmountMinor, detailEarning.currency)}
                                 </dd>
                             </div>
                             <div>
@@ -402,9 +439,16 @@ export function CollaborationEarningsPanel({ collaborator }: { collaborator: Col
                     <div className="space-y-3">
                         <p>{t('void.confirmBody')}</p>
                         <AdminField label={t('void.reason')} required>
-                            <textarea value={voidReason} onChange={handleVoidReasonChange} maxLength={500} className={adminInputClass('min-h-24 resize-y')} />
+                            <textarea
+                                value={voidReason}
+                                onChange={handleVoidReasonChange}
+                                maxLength={500}
+                                className={adminInputClass('min-h-24 resize-y')}
+                            />
                         </AdminField>
-                        {voidRedemption.error && <p className="text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(voidRedemption.error)}`)}</p>}
+                        {voidRedemption.error && (
+                            <p className="text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(voidRedemption.error)}`)}</p>
+                        )}
                     </div>
                 }
                 cancelLabel={tAdmin('cancel')}

@@ -35,7 +35,7 @@ export function AccountAdminActions({
             {/* Event creation access */}
             <section aria-labelledby="account-access-heading" className="border-t border-border pt-5">
                 <div className="mb-3 flex items-center justify-between gap-3">
-                    <h3 id="account-access-heading" className="text-xs font-bold uppercase tracking-wide text-ink-faint">
+                    <h3 id="account-access-heading" className="text-xs font-bold tracking-wide text-ink-faint uppercase">
                         {t('detail.eventCreation')}
                     </h3>
                     {actions.updateAccount.isPending ? <Loader2 className="h-4 w-4 animate-spin text-ink-faint" /> : null}
@@ -60,7 +60,7 @@ export function AccountAdminActions({
             {/* Account danger actions */}
             {account.status !== 'DELETED' ? (
                 <section aria-labelledby="account-danger-heading" className="border-t border-border pt-5">
-                    <h3 id="account-danger-heading" className="text-xs font-bold uppercase tracking-wide text-status-danger">
+                    <h3 id="account-danger-heading" className="text-xs font-bold tracking-wide text-status-danger uppercase">
                         {t('danger.title')}
                     </h3>
                     <div className="mt-3 space-y-3">

@@ -87,17 +87,17 @@ export function PostModal() {
             closeButtonPosition="right"
             className="min-h-[70vh]"
         >
-            {isPending && <p className="text-center text-sm text-ink-muted py-16">{t('loading')}</p>}
+            {isPending && <p className="py-16 text-center text-sm text-ink-muted">{t('loading')}</p>}
 
             {error instanceof ApiError && error.status === 404 && (
-                <div className="flex flex-col items-center justify-center text-center px-6 py-16">
-                    <p className="text-base font-semibold text-ink mb-1">{t('notFoundTitle')}</p>
+                <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+                    <p className="mb-1 text-base font-semibold text-ink">{t('notFoundTitle')}</p>
                     <p className="text-sm text-ink-muted">{t('notFoundDescription')}</p>
                 </div>
             )}
 
             {/* Comments */}
-            {post && <section className="w-full min-w-0 min-h-0 flex-1 flex flex-col mt-5">{commentsPanel}</section>}
+            {post && <section className="mt-5 flex min-h-0 w-full min-w-0 flex-1 flex-col">{commentsPanel}</section>}
         </Modal>
     );
 }

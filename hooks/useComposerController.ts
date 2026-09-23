@@ -343,7 +343,7 @@ export function useComposerController(): ComposerController {
             canComposeStory,
             canComposeSong,
         }),
-        [canCompose, canComposePost, canComposeSong, canComposeStory, openPostComposer, openPostImagePicker, openSongComposer, storyComposer.open]
+        [canCompose, canComposePost, canComposeSong, canComposeStory, openPostComposer, openPostImagePicker, openSongComposer, storyComposer.open],
     );
 
     return {

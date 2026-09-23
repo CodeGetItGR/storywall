@@ -63,7 +63,11 @@ export function ProfileNewsletterSection() {
                             <div className="mt-2 flex items-center justify-between gap-3">
                                 <code className="font-mono text-lg font-bold tracking-wider text-ink">{status.rewardCode}</code>
                                 <Button type="button" variant="outline" onClick={newsletter.copyRewardCode} className="gap-2 rounded-full px-3">
-                                    {newsletter.isCopied ? <Check className="h-4 w-4" aria-hidden="true" /> : <Copy className="h-4 w-4" aria-hidden="true" />}
+                                    {newsletter.isCopied ? (
+                                        <Check className="h-4 w-4" aria-hidden="true" />
+                                    ) : (
+                                        <Copy className="h-4 w-4" aria-hidden="true" />
+                                    )}
                                     {newsletter.isCopied ? t('copied') : t('copy')}
                                 </Button>
                             </div>

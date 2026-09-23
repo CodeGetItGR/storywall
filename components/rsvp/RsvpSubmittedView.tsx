@@ -30,7 +30,7 @@ export function RsvpSubmittedView({
             action={
                 <button
                     onClick={onBackToWallAction}
-                    className="inline-flex min-h-11 items-center justify-center rounded-full bg-gradient-brand px-8 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(255,122,89,0.28)] hover:opacity-90 transition-opacity"
+                    className="inline-flex min-h-11 items-center justify-center rounded-full px-8 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(255,122,89,0.28)] transition-opacity bg-gradient-brand hover:opacity-90"
                 >
                     {t('backToTheWall')}
                 </button>

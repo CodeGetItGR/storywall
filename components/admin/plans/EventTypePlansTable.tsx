@@ -29,7 +29,7 @@ export function EventTypePlansTable({
         <div className="overflow-x-auto">
             <table className="w-full min-w-[860px] border-collapse text-[13px]">
                 <thead>
-                    <tr className="border-b border-border text-left text-[11px] font-bold uppercase tracking-wide text-ink-faint">
+                    <tr className="border-b border-border text-left text-[11px] font-bold tracking-wide text-ink-faint uppercase">
                         <th className="px-3 py-2 font-bold">{t('columns.plan')}</th>
                         <th className="px-2.5 py-2 font-bold">{t('columns.price')}</th>
                         <th className="px-2.5 py-2 font-bold">{t('columns.storage')}</th>

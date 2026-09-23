@@ -11,11 +11,11 @@ export function StoryCaptionBar({ story }: { story: StoryResponseDto }) {
     if (!story.caption && !story.songUrl) return null;
 
     return (
-        <div className="absolute bottom-0 left-0 right-0 z-20 px-4 pb-6 pt-12 bg-linear-to-t from-black/70 to-transparent flex flex-col gap-2">
-            {story.caption && <p className="text-white text-sm">{story.caption}</p>}
+        <div className="absolute right-0 bottom-0 left-0 z-20 flex flex-col gap-2 bg-linear-to-t from-black/70 to-transparent px-4 pt-12 pb-6">
+            {story.caption && <p className="text-sm text-white">{story.caption}</p>}
             {story.songUrl && (
-                <a href={story.songUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-white/80 text-xs w-fit">
-                    <Music className="w-3.5 h-3.5" />
+                <a href={story.songUrl} target="_blank" rel="noreferrer" className="inline-flex w-fit items-center gap-1.5 text-xs text-white/80">
+                    <Music className="h-3.5 w-3.5" />
                     {t('listenToSong')}
                 </a>
             )}

@@ -90,7 +90,7 @@ export function InvitationRow({
                         <span
                             className={cn(
                                 'shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold',
-                                isUsed ? 'bg-emerald-100 text-emerald-700' : 'bg-surface-muted text-ink-muted'
+                                isUsed ? 'bg-emerald-100 text-emerald-700' : 'bg-surface-muted text-ink-muted',
                             )}
                         >
                             {isUsed ? t('invitations.claimed') : t('invitations.unclaimed')}
@@ -111,13 +111,13 @@ export function InvitationRow({
                             min={1}
                             value={maxGuests}
                             onChange={handleMaxGuestsChange}
-                            className="w-16 rounded-lg bg-surface-muted px-2 py-1 text-sm text-ink outline-none transition focus:ring-2 focus:ring-primary/30"
+                            className="w-16 rounded-lg bg-surface-muted px-2 py-1 text-sm text-ink transition outline-none focus:ring-2 focus:ring-primary/30"
                         />
                     </label>
                     <button
                         onClick={handleSaveEdit}
                         disabled={updateInvitation.isPending}
-                        className="ml-auto rounded-full bg-gradient-brand px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+                        className="ml-auto rounded-full px-3 py-1.5 text-xs font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:opacity-40"
                     >
                         {t('invitations.save')}
                     </button>

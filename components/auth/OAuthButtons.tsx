@@ -31,7 +31,7 @@ export function OAuthButtons({ onSignIn, onError }: OAuthButtonsProps) {
         (credential: string) => {
             void onSignIn('GOOGLE', credential).catch(onError);
         },
-        [onError, onSignIn]
+        [onError, onSignIn],
     );
     const googleButtonRef = useGoogleSignInButton({ clientId: GOOGLE_CLIENT_ID, locale, onCredential: handleGoogleCredential });
 
@@ -64,7 +64,7 @@ export function OAuthButtons({ onSignIn, onError }: OAuthButtonsProps) {
                     type="button"
                     onClick={handleAppleClick}
                     disabled={!appleReady}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-black text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="flex w-full items-center justify-center gap-2 rounded-full bg-black py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                     <AppleLogo className="h-4 w-4" />
                     {t('continueWithApple')}

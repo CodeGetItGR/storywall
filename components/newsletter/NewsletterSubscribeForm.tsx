@@ -58,14 +58,14 @@ export function NewsletterSubscribeForm({ config, tone }: { config: AppNewslette
                     placeholder={t('placeholder')}
                     value={form.email}
                     onChange={form.handleEmailChange}
-                    className={cn('min-h-11 min-w-0 flex-1 rounded-full border px-4 text-sm outline-none transition', styles.input)}
+                    className={cn('min-h-11 min-w-0 flex-1 rounded-full border px-4 text-sm transition outline-none', styles.input)}
                 />
                 <button
                     type="submit"
                     disabled={form.isSubmitting}
                     className={cn(
                         'inline-flex min-h-11 shrink-0 items-center justify-center rounded-full px-5 text-sm font-semibold transition-opacity disabled:cursor-not-allowed disabled:opacity-60',
-                        styles.button
+                        styles.button,
                     )}
                 >
                     {form.isSubmitting ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : t('submit')}

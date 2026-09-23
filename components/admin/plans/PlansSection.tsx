@@ -17,10 +17,10 @@ export function PlansSection() {
     const showingEventType = section.view.view === 'eventType';
 
     return (
-        <div className="mx-auto px-4 pb-16 pt-5 text-[15px] sm:px-6 lg:px-8 lg:pb-10 lg:pt-6">
+        <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
             {/* Header */}
             <header className="mb-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary-dark">{t('eyebrow')}</p>
+                <p className="text-[11px] font-semibold tracking-[0.18em] text-primary-dark uppercase">{t('eyebrow')}</p>
                 <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">{t('plans.sectionTitle')}</h1>
             </header>
 

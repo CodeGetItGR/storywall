@@ -22,7 +22,7 @@ interface GroupStoriesOptions {
 // group them under.
 export function groupStoriesByAuthor(
     stories: StoryResponseDto[],
-    { now = new Date(), filterExpired = true }: GroupStoriesOptions = {}
+    { now = new Date(), filterExpired = true }: GroupStoriesOptions = {},
 ): StoryGroup[] {
     const eligible = filterExpired ? stories.filter((s) => new Date(s.expiresAt) >= now) : stories;
 

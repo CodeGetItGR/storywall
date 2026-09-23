@@ -44,15 +44,7 @@ function decideShouldCelebrate({ eventId, hasFinished, targetTime }: { eventId: 
     return !prefersReducedMotion();
 }
 
-export function useCountdownCelebration({
-    eventId,
-    hasFinished,
-    targetTime,
-}: {
-    eventId: string;
-    hasFinished: boolean;
-    targetTime: number;
-}) {
+export function useCountdownCelebration({ eventId, hasFinished, targetTime }: { eventId: string; hasFinished: boolean; targetTime: number }) {
     const [state, setState] = useState(() => ({
         hasEvaluated: false,
         shouldCelebrate: false,

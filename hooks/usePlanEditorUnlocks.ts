@@ -46,7 +46,7 @@ export function usePlanEditorUnlocks({
 
     const moduleUnlocks = useMemo(
         () => paidServices.filter((service) => service.kind === 'MODULE_UNLOCK' && service.grantsModuleKey && service.isAssignable),
-        [paidServices]
+        [paidServices],
     );
 
     function unlockAppliesToPlan(service: PaidServiceResponseDto) {
@@ -116,7 +116,7 @@ export function usePlanEditorUnlocks({
             values: {
                 code: codeFromName(
                     `unlock ${plan.code} ${unlockDraft.moduleKey}`,
-                    paidServices.map((service) => service.code)
+                    paidServices.map((service) => service.code),
                 ),
                 kind: 'MODULE_UNLOCK',
                 name: unlockDraft.name.trim(),

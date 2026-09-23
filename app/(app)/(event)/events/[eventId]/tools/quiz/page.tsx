@@ -35,7 +35,7 @@ export default function QuizPage() {
             });
             setRevealed(true);
         },
-        [current, revealed]
+        [current, revealed],
     );
 
     function handleNext() {
@@ -59,7 +59,7 @@ export default function QuizPage() {
             const index = Number(event.currentTarget.dataset.answerIndex);
             if (!Number.isNaN(index)) handleSelect(index);
         },
-        [handleSelect]
+        [handleSelect],
     );
 
     const score = answers.filter((a, i) => a === quizQuestions[i].correct).length;
@@ -76,41 +76,41 @@ export default function QuizPage() {
                 backLabel={t('backToTools')}
                 backHref={backHref}
             >
-                <div className="flex flex-col items-center text-center py-10 px-4">
-                    <div className="w-28 h-28 rounded-full bg-gradient-brand flex flex-col items-center justify-center text-white mb-6 shadow-lg">
+                <div className="flex flex-col items-center px-4 py-10 text-center">
+                    <div className="mb-6 flex h-28 w-28 flex-col items-center justify-center rounded-full text-white shadow-lg bg-gradient-brand">
                         <p className="text-3xl font-bold tabular-nums">
                             {score}/{quizQuestions.length}
                         </p>
                         <p className="text-sm opacity-80">{pct}%</p>
                     </div>
-                    <h2 className="text-xl font-bold text-ink mb-2">{t('quizComplete')}</h2>
-                    <p className="text-sm text-ink-muted leading-relaxed max-w-xs">{grade}</p>
+                    <h2 className="mb-2 text-xl font-bold text-ink">{t('quizComplete')}</h2>
+                    <p className="max-w-xs text-sm leading-relaxed text-ink-muted">{grade}</p>
 
                     <button
                         onClick={handleReset}
-                        className="mt-8 flex items-center gap-2 px-6 py-3 rounded-full bg-surface-muted text-ink text-sm font-semibold hover:bg-border transition-colors"
+                        className="mt-8 flex items-center gap-2 rounded-full bg-surface-muted px-6 py-3 text-sm font-semibold text-ink transition-colors hover:bg-border"
                     >
-                        <RefreshCw className="w-4 h-4" />
+                        <RefreshCw className="h-4 w-4" />
                         {t('tryAgain')}
                     </button>
                 </div>
 
                 {/* Answer review */}
-                <h3 className="text-sm font-bold text-ink mb-3">{t('reviewYourAnswers')}</h3>
+                <h3 className="mb-3 text-sm font-bold text-ink">{t('reviewYourAnswers')}</h3>
                 <div className="flex flex-col gap-3">
                     {quizQuestions.map((q, i) => {
                         const userAnswer = answers[i];
                         const correct = userAnswer === q.correct;
                         return (
-                            <div key={q.id} className="bg-card rounded-2xl border border-border/60 shadow-sm p-4">
-                                <p className="text-sm font-semibold text-ink mb-2">{q.question}</p>
+                            <div key={q.id} className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
+                                <p className="mb-2 text-sm font-semibold text-ink">{q.question}</p>
                                 <div className="flex items-start gap-2">
                                     {correct ? (
-                                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
                                     ) : (
-                                        <XCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                                        <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
                                     )}
-                                    <p className="text-xs text-ink-muted leading-snug">
+                                    <p className="text-xs leading-snug text-ink-muted">
                                         {correct
                                             ? t('correctAnswer', { answer: q.options[q.correct] })
                                             : t('yourAnswerVsCorrect', {
@@ -119,7 +119,7 @@ export default function QuizPage() {
                                               })}
                                     </p>
                                 </div>
-                                <p className="text-xs text-ink-faint italic mt-2 leading-snug">{q.explanation}</p>
+                                <p className="mt-2 text-xs leading-snug text-ink-faint italic">{q.explanation}</p>
                             </div>
                         );
                     })}
@@ -131,21 +131,21 @@ export default function QuizPage() {
     return (
         <ModulePageShell title={t('title')} icon={HelpCircle} iconClassName="text-orange-500" backLabel={t('backToTools')} backHref={backHref}>
             {/* Progress bar */}
-            <div className="flex gap-1.5 mb-6">
+            <div className="mb-6 flex gap-1.5">
                 {quizQuestions.map((_, i) => (
                     <div
                         key={i}
                         className={cn(
-                            'flex-1 h-1.5 rounded-full transition-colors',
-                            i < current ? 'bg-primary' : i === current ? 'bg-primary/60' : 'bg-border'
+                            'h-1.5 flex-1 rounded-full transition-colors',
+                            i < current ? 'bg-primary' : i === current ? 'bg-primary/60' : 'bg-border',
                         )}
                     />
                 ))}
             </div>
 
             {/* Question counter */}
-            <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-bold text-ink-muted uppercase tracking-wide">
+            <div className="mb-4 flex items-center justify-between">
+                <span className="text-xs font-bold tracking-wide text-ink-muted uppercase">
                     {t('questionCounter', { current: current + 1, total: quizQuestions.length })}
                 </span>
                 {revealed && (
@@ -156,8 +156,8 @@ export default function QuizPage() {
             </div>
 
             {/* Question card */}
-            <div className="bg-card rounded-2xl border border-border shadow-sm p-6 mb-5">
-                <p className="text-base font-bold text-ink leading-snug mb-5">{question.question}</p>
+            <div className="mb-5 rounded-2xl border border-border bg-card p-6 shadow-sm">
+                <p className="mb-5 text-base leading-snug font-bold text-ink">{question.question}</p>
 
                 <div className="flex flex-col gap-2.5">
                     {question.options.map((option, idx) => {
@@ -178,17 +178,17 @@ export default function QuizPage() {
                                 onClick={handleAnswerClick}
                                 disabled={revealed}
                                 className={cn(
-                                    'w-full text-left px-4 py-3 rounded-xl border-2 text-sm transition-all flex items-center gap-3',
+                                    'flex w-full items-center gap-3 rounded-xl border-2 px-4 py-3 text-left text-sm transition-all',
                                     style,
-                                    revealed ? 'cursor-default' : 'cursor-pointer'
+                                    revealed ? 'cursor-default' : 'cursor-pointer',
                                 )}
                             >
-                                <span className="w-5 h-5 rounded-full border-2 border-current flex items-center justify-center shrink-0 text-[10px] font-bold">
+                                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-current text-[10px] font-bold">
                                     {String.fromCharCode(65 + idx)}
                                 </span>
                                 {option}
-                                {revealed && isCorrect && <CheckCircle2 className="w-4 h-4 text-emerald-500 ml-auto shrink-0" />}
-                                {revealed && isSelected && !isCorrect && <XCircle className="w-4 h-4 text-rose-500 ml-auto shrink-0" />}
+                                {revealed && isCorrect && <CheckCircle2 className="ml-auto h-4 w-4 shrink-0 text-emerald-500" />}
+                                {revealed && isSelected && !isCorrect && <XCircle className="ml-auto h-4 w-4 shrink-0 text-rose-500" />}
                             </button>
                         );
                     })}
@@ -196,8 +196,8 @@ export default function QuizPage() {
 
                 {/* Explanation */}
                 {revealed && (
-                    <div className="mt-4 bg-surface-muted rounded-xl px-4 py-3">
-                        <p className="text-xs text-ink-muted leading-relaxed italic">{question.explanation}</p>
+                    <div className="mt-4 rounded-xl bg-surface-muted px-4 py-3">
+                        <p className="text-xs leading-relaxed text-ink-muted italic">{question.explanation}</p>
                     </div>
                 )}
             </div>
@@ -205,10 +205,10 @@ export default function QuizPage() {
             {revealed && (
                 <button
                     onClick={handleNext}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+                    className="flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
                 >
                     {isLast ? t('seeResults') : t('nextQuestion')}
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="h-4 w-4" />
                 </button>
             )}
         </ModulePageShell>

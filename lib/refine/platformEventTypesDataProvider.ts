@@ -15,7 +15,7 @@ export const platformEventTypesDataProvider: DataProvider = {
     },
     getOne: async <TData extends BaseRecord = BaseRecord>({ id }: Parameters<DataProvider['getOne']>[0]) => ({
         data: (await api.get<PlatformEventTypeResponseDto[]>(endpoints.admin.platformEventTypes.list)).find(
-            (eventType) => eventType.eventTypeKey === String(id)
+            (eventType) => eventType.eventTypeKey === String(id),
         ) as unknown as TData,
     }),
     create: async () => {

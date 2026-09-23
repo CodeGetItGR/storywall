@@ -96,7 +96,7 @@ export function PaidServiceDrawer({
             new FormData(event.currentTarget),
             visibility,
             services.map((item) => item.code),
-            service ?? undefined
+            service ?? undefined,
         );
 
         if (service) {

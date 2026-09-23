@@ -58,7 +58,7 @@ export function CollaboratorOperationsDrawer({
             setEditingCode(code);
             setCodeDrawerOpen(true);
         },
-        [codesQuery.data]
+        [codesQuery.data],
     );
 
     const confirmIssueToken = useCallback(async () => {
@@ -165,7 +165,7 @@ export function CollaboratorOperationsDrawer({
                             {activeCodes.length > 0 && (
                                 <div className="overflow-x-auto rounded-lg bg-card ring-1 ring-border">
                                     <table className="w-full min-w-[820px] text-left text-sm">
-                                        <thead className="bg-surface-muted/70 text-[11px] font-bold uppercase tracking-wide text-ink-faint">
+                                        <thead className="bg-surface-muted/70 text-[11px] font-bold tracking-wide text-ink-faint uppercase">
                                             <tr>
                                                 <th className="px-3 py-2">{t('codes.columns.code')}</th>
                                                 <th className="px-3 py-2">{t('codes.columns.rates')}</th>

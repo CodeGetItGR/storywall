@@ -11,7 +11,7 @@ interface AuthLayoutProps {
 export function AuthLayout({ children, showLanguageSwitcher = false }: AuthLayoutProps) {
     return (
         <div className="h-full overflow-y-auto bg-surface-muted/30">
-            <div className="relative flex min-h-full flex-col justify-center items-center lg:h-full">
+            <div className="relative flex min-h-full flex-col items-center justify-center lg:h-full">
                 {/* Brand panel */}
                 <div className="relative flex shrink-0 items-center justify-center overflow-hidden py-5 lg:w-1/2 lg:py-0">
                     <Logo
@@ -23,13 +23,11 @@ export function AuthLayout({ children, showLanguageSwitcher = false }: AuthLayou
                 </div>
 
                 {/* Language selection */}
-                {showLanguageSwitcher && <LanguageSwitcher variant="auth" className={'mx-auto mt-5'}/>}
+                {showLanguageSwitcher && <LanguageSwitcher variant="auth" className={'mx-auto mt-5'} />}
 
                 {/* Form panel */}
                 <div className="flex flex-col items-center justify-center gap-3">
-                    <div className="w-full max-w-sm rounded-3xl bg-card p-5 shadow-xl shadow-black/10">
-                        {children}
-                    </div>
+                    <div className="w-full max-w-sm rounded-3xl bg-card p-5 shadow-xl shadow-black/10">{children}</div>
                 </div>
             </div>
         </div>

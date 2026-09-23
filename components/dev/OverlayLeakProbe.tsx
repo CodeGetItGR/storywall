@@ -118,7 +118,7 @@ function report(trigger: string) {
                 `control(s) while no overlay is open — the app looks fine and nothing responds.\n  blocker: ${describe(blocker)}`,
             blocker,
             '\n  sample unreachable control:',
-            controls[0]
+            controls[0],
         );
     }
 }

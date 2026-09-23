@@ -85,7 +85,7 @@ export function planChangeSummary(plan: PlanTierResponseDto, patch: PlanTierPatc
     add(
         t('fields.price'),
         moneyLabel(plan.priceAmountMinor, plan.priceCurrency),
-        moneyLabel(patch.priceAmountMinor ?? null, patch.priceCurrency ?? null)
+        moneyLabel(patch.priceAmountMinor ?? null, patch.priceCurrency ?? null),
     );
     add(t('fields.billingPeriod'), textLabel(plan.billingPeriod), textLabel(patch.billingPeriod));
 

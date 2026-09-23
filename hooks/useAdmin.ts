@@ -397,7 +397,7 @@ export function useSetPlanModules() {
             await queryClient.cancelQueries({ queryKey: plansKey });
             const previousPlans = queryClient.getQueryData<PlanTierResponseDto[]>(plansKey);
             queryClient.setQueryData<PlanTierResponseDto[]>(plansKey, (plans = []) =>
-                plans.map((plan) => (plan.id === planId ? { ...plan, moduleKeys } : plan))
+                plans.map((plan) => (plan.id === planId ? { ...plan, moduleKeys } : plan)),
             );
             return { previousPlans };
         },
@@ -406,7 +406,7 @@ export function useSetPlanModules() {
         },
         onSuccess: (updatedPlan) => {
             queryClient.setQueryData<PlanTierResponseDto[]>(plansKey, (plans = []) =>
-                plans.map((plan) => (plan.id === updatedPlan.id ? updatedPlan : plan))
+                plans.map((plan) => (plan.id === updatedPlan.id ? updatedPlan : plan)),
             );
             queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
         },

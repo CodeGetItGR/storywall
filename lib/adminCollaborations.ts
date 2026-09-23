@@ -87,7 +87,7 @@ export function codeRestrictionsFromFormData(formData: FormData): CodeRestrictio
 export function unknownRestrictionValues(
     restrictions: CodeRestrictionsDto | null,
     eventTypeKeys: string[],
-    planTierCodes: string[]
+    planTierCodes: string[],
 ): CodeRestrictionsDto {
     const knownEventTypes = new Set(eventTypeKeys);
     const knownPlans = new Set(planTierCodes);
@@ -99,7 +99,7 @@ export function unknownRestrictionValues(
 
 export function restrictionEventTypesWithPlans(
     restrictions: CodeRestrictionsDto | null,
-    planGroups: { key: string; plans: { value: string }[] }[]
+    planGroups: { key: string; plans: { value: string }[] }[],
 ): string[] {
     const keys = new Set(restrictions?.eventTypeKeys ?? []);
     for (const group of planGroups) {
@@ -142,7 +142,7 @@ export function collaboratorStats(collaborators: CollaboratorResponseDto[]) {
             if (collaborator.portalTokenIssued) stats.portalLinks += 1;
             return stats;
         },
-        { total: 0, active: 0, suspended: 0, portalLinks: 0 }
+        { total: 0, active: 0, suspended: 0, portalLinks: 0 },
     );
 }
 

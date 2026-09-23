@@ -95,7 +95,9 @@ export default function WishbookPage() {
             backLabel={t('goBack')}
             backHref={isDeleted ? routes.events.manage(eventId) : routes.events.feed(eventId)}
             subtitle={subtitle}
-            notice={isDeleted && deletionDate ? <ModuleNotice tone="warning">{t('deletedReadOnly', { date: deletionDate })}</ModuleNotice> : undefined}
+            notice={
+                isDeleted && deletionDate ? <ModuleNotice tone="warning">{t('deletedReadOnly', { date: deletionDate })}</ModuleNotice> : undefined
+            }
         >
             {/* Header art */}
             {showHeaderArt ? (
@@ -122,14 +124,14 @@ export default function WishbookPage() {
                         disabled={createEntry.isPending}
                         aria-label={t('messageAriaLabel')}
                         placeholder={t('currentPlaceholder')}
-                        className="min-h-56 w-full resize-none rounded-[1.5rem] border border-border/70 bg-background px-5 py-4 text-base leading-8 text-ink outline-none transition-shadow focus:border-primary/30 focus:ring-2 focus:ring-primary/20 disabled:opacity-60"
+                        className="min-h-56 w-full resize-none rounded-[1.5rem] border border-border/70 bg-background px-5 py-4 text-base leading-8 text-ink transition-shadow outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/20 disabled:opacity-60"
                     />
                     <div className="flex items-center justify-between gap-3">
                         <span className="text-xs text-ink-faint">{t('charactersLeft', { current: message.length, max: maxMessageLength })}</span>
                         <button
                             type="submit"
                             disabled={!message.trim() || createEntry.isPending}
-                            className="inline-flex min-h-10 items-center gap-2 rounded-full bg-gradient-brand px-4 text-sm font-semibold text-white disabled:opacity-40"
+                            className="inline-flex min-h-10 items-center gap-2 rounded-full px-4 text-sm font-semibold text-white bg-gradient-brand disabled:opacity-40"
                         >
                             {createEntry.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                             {t('addToWishbook')}
@@ -182,7 +184,7 @@ export default function WishbookPage() {
                                     <p className="text-sm font-semibold text-ink">{entry.guestName}</p>
                                     <time className="text-xs text-ink-faint">
                                         {new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(
-                                            new Date(entry.createdAt)
+                                            new Date(entry.createdAt),
                                         )}
                                     </time>
                                 </div>
@@ -198,7 +200,7 @@ export default function WishbookPage() {
                                     </button>
                                 )}
                             </div>
-                            <p className="mt-3 whitespace-pre-wrap wrap-break-word text-sm leading-6 text-ink">{entry.message}</p>
+                            <p className="mt-3 text-sm leading-6 wrap-break-word whitespace-pre-wrap text-ink">{entry.message}</p>
                         </article>
                     ))}
                 </div>

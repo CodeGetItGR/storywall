@@ -20,7 +20,7 @@ export interface CoverageStatus {
  */
 export function getCoverageStatus(
     schedule: Pick<EventScheduleDto, 'galleryOpensAt' | 'coverageEndsAt'>,
-    referenceDate = new Date()
+    referenceDate = new Date(),
 ): CoverageStatus | null {
     const { galleryOpensAt, coverageEndsAt } = schedule;
     if (!galleryOpensAt || !coverageEndsAt) return null;

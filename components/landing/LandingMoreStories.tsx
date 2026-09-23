@@ -12,11 +12,11 @@ type LandingMoreStoriesProps = {
 
 export function LandingMoreStories({ ariaLabel, eyebrow, heading, stories }: LandingMoreStoriesProps) {
     return (
-        <div className="sw-filmstrip-more mt-16 block pt-7 px-5 min-[761px]:px-18 pb-6 min-[761px]:mt-[clamp(74px,8vw,118px)] min-[761px]:grid min-[761px]:grid-cols-[minmax(220px,27%)_minmax(0,1fr)] min-[761px]:items-end min-[761px]:gap-[clamp(26px,4vw,64px)] min-[761px]:py-[clamp(34px,4vw,54px)_0_clamp(18px,2vw,28px)]">
+        <div className="sw-filmstrip-more mt-16 block px-5 pt-7 pb-6 min-[761px]:mt-[clamp(74px,8vw,118px)] min-[761px]:grid min-[761px]:grid-cols-[minmax(220px,27%)_minmax(0,1fr)] min-[761px]:items-end min-[761px]:gap-[clamp(26px,4vw,64px)] min-[761px]:px-18 min-[761px]:py-[clamp(34px,4vw,54px)_0_clamp(18px,2vw,28px)]">
             {/* Eyebrow + heading */}
             <div className="sw-filmstrip-intro pb-5.5 min-[761px]:pb-0">
                 <div className="sw-filmstrip-eyebrow mb-3.5 text-[13px] font-black tracking-[0.16em] text-ink">{eyebrow}</div>
-                <h3 className="m-0 max-w-70 text-[42px] leading-[0.92] font-normal tracking-tighter text-ink [font-family:var(--editorial)] min-[761px]:max-w-75 min-[761px]:text-[clamp(38px,4.5vw,68px)]">
+                <h3 className="m-0 max-w-70 [font-family:var(--editorial)] text-[42px] leading-[0.92] font-normal tracking-tighter text-ink min-[761px]:max-w-75 min-[761px]:text-[clamp(38px,4.5vw,68px)]">
                     {heading}
                 </h3>
             </div>
@@ -39,7 +39,7 @@ export function LandingMoreStories({ ariaLabel, eyebrow, heading, stories }: Lan
                         <ProtectedImage
                             unoptimized
                             alt=""
-                            className="absolute inset-0 h-full w-full object-cover brightness-[0.76] grayscale transition-[filter,transform] duration-650 ease-[cubic-bezier(0.2,0.75,0.2,1)] group-aria-pressed:grayscale-0 group-aria-pressed:brightness-100 min-[761px]:brightness-[0.78] min-[761px]:hover:scale-[1.01] min-[761px]:hover:grayscale-0 min-[761px]:hover:brightness-100"
+                            className="absolute inset-0 h-full w-full object-cover brightness-[0.76] grayscale transition-[filter,transform] duration-650 ease-[cubic-bezier(0.2,0.75,0.2,1)] group-aria-pressed:brightness-100 group-aria-pressed:grayscale-0 min-[761px]:brightness-[0.78] min-[761px]:hover:scale-[1.01] min-[761px]:hover:brightness-100 min-[761px]:hover:grayscale-0"
                             height={1}
                             src={landingMoreStoryMedia[index].src}
                             style={{ objectPosition: landingMoreStoryMedia[index].objectPosition }}

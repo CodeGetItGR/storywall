@@ -50,8 +50,8 @@ export function EventDescription({ eventId, description, className }: { eventId:
                         <Sparkles className="h-4 w-4" aria-hidden="true" />
                     </div>
                     <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-faint">{t('aboutEvent')}</p>
-                        <p className="mt-1 max-w-[65ch] text-[15px] leading-7 text-ink-muted text-balance">{description}</p>
+                        <p className="text-[11px] font-semibold tracking-[0.2em] text-ink-faint uppercase">{t('aboutEvent')}</p>
+                        <p className="mt-1 max-w-[65ch] text-[15px] leading-7 text-balance text-ink-muted">{description}</p>
                     </div>
                 </div>
             </div>

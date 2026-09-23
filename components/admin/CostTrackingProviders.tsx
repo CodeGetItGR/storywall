@@ -27,7 +27,7 @@ export function CostTrackingProviders({ summary }: { summary: CostSummaryRespons
                                         })}
                                     </p>
                                 </div>
-                                <p className="shrink-0 font-mono text-sm font-bold tabular-nums text-ink">
+                                <p className="shrink-0 font-mono text-sm font-bold text-ink tabular-nums">
                                     {provider.amountMinor === null || provider.currency === null
                                         ? t('providers.usageOnly')
                                         : formatMoney(locale, provider.amountMinor, provider.currency)}

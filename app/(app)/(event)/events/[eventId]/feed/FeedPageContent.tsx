@@ -18,7 +18,7 @@ import { PublishQueueCards } from '@/components/feed/PublishQueueCards';
 import { RsvpPrompt } from '@/components/feed/RsvpPrompt';
 import { StoriesRow } from '@/components/feed/StoriesRow';
 import { StoryModal } from '@/components/story/StoryModal';
-import {useGiftAccount, useHideMobileTabBarOnScroll} from '@/hooks';
+import { useGiftAccount, useHideMobileTabBarOnScroll } from '@/hooks';
 import { coverPhotoSettingsHref } from '@/lib/manageSectionTargets';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -104,7 +104,7 @@ export function FeedPageContent() {
 
             {/* RSVP */}
             {shouldShowRSVP && (
-                <section className={'px-4 pb-5 mt-5'}>
+                <section className={'mt-5 px-4 pb-5'}>
                     <RsvpPrompt eventId={eventId} deadline={event.schedule.rsvpDeadline ?? null} />
                 </section>
             )}
@@ -112,7 +112,11 @@ export function FeedPageContent() {
             {/* Posts */}
             <section id="posts">
                 {moduleFlags.posts && (
-                    <div className={cn("flex flex-col px-0 pb-24 lg:pb-10", {"lg:mt-4": (!moduleFlags.stories || !event.description) && !shouldShowRSVP})}>
+                    <div
+                        className={cn('flex flex-col px-0 pb-24 lg:pb-10', {
+                            'lg:mt-4': (!moduleFlags.stories || !event.description) && !shouldShowRSVP,
+                        })}
+                    >
                         <ComposerCard />
                         <PublishQueueCards />
                         <div className="flex flex-col">

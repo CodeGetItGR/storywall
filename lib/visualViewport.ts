@@ -16,7 +16,7 @@ export function isTypingControl(element: Element | null): element is HTMLElement
 export function getVisualViewportMetrics(
     layoutHeight: number,
     viewport: Pick<VisualViewport, 'height' | 'offsetTop'>,
-    typingControlFocused: boolean
+    typingControlFocused: boolean,
 ): VisualViewportMetrics {
     const height = Math.round(viewport.height);
     const offsetTop = Math.round(viewport.offsetTop);

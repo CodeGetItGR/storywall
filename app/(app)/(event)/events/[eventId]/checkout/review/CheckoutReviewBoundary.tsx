@@ -56,7 +56,7 @@ export default function CheckoutReviewBoundary() {
         useCallback(() => {
             upgradeCheckout.reset();
             storageCheckout.reset();
-        }, [upgradeCheckout, storageCheckout])
+        }, [upgradeCheckout, storageCheckout]),
     );
 
     const rawIntent = searchParams.get('intent');
@@ -156,7 +156,7 @@ export default function CheckoutReviewBoundary() {
                         acknowledgesWithdrawalTerms,
                         termsVersion: termsVersion!,
                     }),
-                    targetPlan.code
+                    targetPlan.code,
                 );
             } else if (intent === 'storage' && service) {
                 navigateToCheckout(eventId, await storageCheckout.mutateAsync({ paidServiceCode: service.code }));
@@ -175,7 +175,7 @@ export default function CheckoutReviewBoundary() {
     }
 
     return (
-        <main className="mx-auto max-w-3xl px-4 pb-28 pt-6 sm:pb-12 sm:pt-10">
+        <main className="mx-auto max-w-3xl px-4 pt-6 pb-28 sm:pt-10 sm:pb-12">
             <BackButton href={backHref} label={t('back')} />
 
             {/* Header */}

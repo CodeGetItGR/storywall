@@ -36,7 +36,7 @@ describe('buildPlanUpgradeDiff', () => {
     it('returns only changed limits and module additions', () => {
         const diff = buildPlanUpgradeDiff(
             makePlan(),
-            makePlan({ storageBytes: 50_000, maxMembers: 500, moduleKeys: ['gallery', 'rsvp'], autoDeleteMonths: 3 })
+            makePlan({ storageBytes: 50_000, maxMembers: 500, moduleKeys: ['gallery', 'rsvp'], autoDeleteMonths: 3 }),
         );
 
         expect(diff.limitChanges).toEqual([

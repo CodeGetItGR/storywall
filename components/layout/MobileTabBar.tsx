@@ -35,7 +35,11 @@ export function MobileTabBar() {
     const isDraft = activeEvent?.status === 'DRAFT';
     // Draft and deleted events have no feed to land on; the manage page is home.
     const isDeleted = isEventDeleted(activeEvent);
-    const homeHref = activeEvent ? (isDraft || isDeleted ? routes.events.manage(activeEvent.id) : routes.events.feed(activeEvent.id)) : homeTabItem.href;
+    const homeHref = activeEvent
+        ? isDraft || isDeleted
+            ? routes.events.manage(activeEvent.id)
+            : routes.events.feed(activeEvent.id)
+        : homeTabItem.href;
 
     const homeActive = isPathActive(pathname, homeHref) || isPathActive(pathname, homeTabItem.href);
     const availableModules = new Set(activeEvent?.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey) ?? []);
@@ -89,8 +93,8 @@ export function MobileTabBar() {
                     aria-label={t('eventNavigation')}
                     aria-hidden={isMobileTabBarHidden}
                     className={cn(
-                        'grid h-16 min-w-0 overflow-hiddenborder border-b-0 border-border shadow-[0_-4px_18px_rgba(36,31,26,0.08)] backdrop-blur transition-[opacity,transform,box-shadow] duration-300 ease-out rounded-t-xl',
-                        isMobileTabBarHidden ? 'pointer-events-none translate-y-4 opacity-0 shadow-none' : 'translate-y-0 opacity-100'
+                        'overflow-hiddenborder grid h-16 min-w-0 rounded-t-xl border-b-0 border-border shadow-[0_-4px_18px_rgba(36,31,26,0.08)] backdrop-blur transition-[opacity,transform,box-shadow] duration-300 ease-out',
+                        isMobileTabBarHidden ? 'pointer-events-none translate-y-4 opacity-0 shadow-none' : 'translate-y-0 opacity-100',
                     )}
                     style={{
                         backgroundImage:
@@ -157,7 +161,7 @@ export function MobileTabBar() {
                             <span
                                 className={cn(
                                     'flex h-10 w-10 items-center justify-center transition-all duration-200',
-                                    accountActive ? 'scale-105 opacity-100' : 'scale-100 opacity-50'
+                                    accountActive ? 'scale-105 opacity-100' : 'scale-100 opacity-50',
                                 )}
                             >
                                 <MenuIcon className="h-5.5 w-5.5 text-ink transition-all duration-200" aria-hidden="true" />

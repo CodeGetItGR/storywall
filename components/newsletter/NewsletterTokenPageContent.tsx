@@ -61,7 +61,10 @@ export function NewsletterTokenPageContent({ action }: { action: NewsletterToken
 
             {/* Next action */}
             {!isPending && (
-                <Link href="/" className="mt-7 flex w-full items-center justify-center rounded-full bg-surface-muted py-3 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted/70">
+                <Link
+                    href="/"
+                    className="mt-7 flex w-full items-center justify-center rounded-full bg-surface-muted py-3 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted/70"
+                >
                     {t('home')}
                 </Link>
             )}

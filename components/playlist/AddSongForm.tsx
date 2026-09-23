@@ -87,20 +87,20 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmitAction, compact =
 
     return (
         <form onSubmit={handleSubmit} className={`mb-5`}>
-            <div className={'px-4 pt-4 text-ink mb-4'}>
-                <div className={`flex gap-4 items-center`}>
+            <div className={'mb-4 px-4 pt-4 text-ink'}>
+                <div className={`flex items-center gap-4`}>
                     <div
                         className={`flex shrink-0 items-center justify-center rounded-2xl ${compact ? 'h-10 w-10 bg-primary-light text-primary-dark' : 'h-12 w-12 bg-white/15 text-white ring-1 ring-white/15 backdrop-blur-sm'}`}
                     >
                         <BadgePlus className={compact ? 'h-5 w-5' : 'h-6 w-6'} />
                     </div>
-                    <div className="min-w-0 flex items-center">
-                        <h2 className={`mt-1 font-semibold leading-tight text-base text-ink`}>{t('suggestASong')}</h2>
+                    <div className="flex min-w-0 items-center">
+                        <h2 className={`mt-1 text-base leading-tight font-semibold text-ink`}>{t('suggestASong')}</h2>
                     </div>
                 </div>
             </div>
 
-            <div className={compact ? 'space-y-3 px-4 pb-4 pt-4' : 'space-y-4 px-5 py-5'}>
+            <div className={compact ? 'space-y-3 px-4 pt-4 pb-4' : 'space-y-4 px-5 py-5'}>
                 <div className="grid gap-4 md:grid-cols-2">
                     <AddSongFieldShell icon={Music3} label={t('songTitle')} required>
                         <div className="relative">
@@ -110,7 +110,7 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmitAction, compact =
                                 onChange={handleTitleChange}
                                 placeholder={t('songTitlePlaceholder')}
                                 required
-                                className={`w-full rounded-2xl border border-border/70 bg-background/80 px-4 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 ${compact ? 'py-3' : 'py-3.5'}`}
+                                className={`w-full rounded-2xl border border-border/70 bg-background/80 px-4 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 ${compact ? 'py-3' : 'py-3.5'}`}
                             />
                         </div>
                     </AddSongFieldShell>
@@ -122,7 +122,7 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmitAction, compact =
                                 value={artist}
                                 onChange={handleArtistChange}
                                 placeholder={t('artistPlaceholder')}
-                                className={`w-full rounded-2xl border border-border/70 bg-background/80 px-4 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 ${compact ? 'py-3' : 'py-3.5'}`}
+                                className={`w-full rounded-2xl border border-border/70 bg-background/80 px-4 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 ${compact ? 'py-3' : 'py-3.5'}`}
                             />
                         </div>
                     </AddSongFieldShell>
@@ -137,7 +137,7 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmitAction, compact =
                                 onChange={handleYoutubeUrlChange}
                                 placeholder={t('youtubePlaceholder')}
                                 inputMode="url"
-                                className={`w-full rounded-2xl border border-border/70 bg-background/80 px-4 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 ${compact ? 'py-3' : 'py-3.5'}`}
+                                className={`w-full rounded-2xl border border-border/70 bg-background/80 px-4 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 ${compact ? 'py-3' : 'py-3.5'}`}
                             />
                         </div>
                     </AddSongFieldShell>
@@ -150,7 +150,7 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmitAction, compact =
                                 onChange={handleSpotifyUrlChange}
                                 placeholder={t('spotifyPlaceholder')}
                                 inputMode="url"
-                                className={`w-full rounded-2xl border border-border/70 bg-background/80 px-4 text-sm text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 ${compact ? 'py-3' : 'py-3.5'}`}
+                                className={`w-full rounded-2xl border border-border/70 bg-background/80 px-4 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10 ${compact ? 'py-3' : 'py-3.5'}`}
                             />
                         </div>
                     </AddSongFieldShell>
@@ -163,7 +163,7 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmitAction, compact =
                         rows={4}
                         placeholder={t('commentPlaceholder')}
                         maxLength={maxCommentLength}
-                        className="w-full resize-none rounded-2xl border border-border/70 bg-background/80 px-4 py-3.5 text-sm leading-relaxed text-ink outline-none transition placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
+                        className="w-full resize-none rounded-2xl border border-border/70 bg-background/80 px-4 py-3.5 text-sm leading-relaxed text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                     />
                     <p className="mt-1 text-right text-xs text-ink-faint">
                         {comment.length}/{maxCommentLength}
@@ -176,7 +176,7 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmitAction, compact =
                     <button
                         type="submit"
                         disabled={isSubmitting || !canSubmit || !title.trim()}
-                        className={`inline-flex items-center gap-2 rounded-full bg-gradient-brand text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20 disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-40 disabled:hover:shadow-none ${compact ? 'px-4 py-2.5' : 'px-5 py-3'}`}
+                        className={`inline-flex items-center gap-2 rounded-full text-sm font-semibold text-white transition-all bg-gradient-brand hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:shadow-none ${compact ? 'px-4 py-2.5' : 'px-5 py-3'}`}
                     >
                         <Play className="h-4 w-4 fill-current" />
                         {t('addToPlaylist')}

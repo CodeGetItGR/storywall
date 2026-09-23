@@ -73,11 +73,21 @@ export function PlanEditorCard(props: UsePlanEditorCardArgs) {
                     onUnlockAction={editor.handleUnlockAction}
                     isUpdatingUnlocks={editor.updatePaidService.mutation.isPending}
                 />
-                <PlanEditorDangerSection id={`${editorId}-danger`} isDeleting={editor.deletePlan.mutation.isPending} onDeleteOpenAction={editor.handleDeleteOpenClick} />
+                <PlanEditorDangerSection
+                    id={`${editorId}-danger`}
+                    isDeleting={editor.deletePlan.mutation.isPending}
+                    onDeleteOpenAction={editor.handleDeleteOpenClick}
+                />
             </form>
 
             {/* Footer */}
-            <PlanEditorFooter footerSlot={editor.footerSlot} formId={`${editorId}-form`} canSave={editor.canSave} isSaving={editor.isSaving} changeCount={editor.changeCount} />
+            <PlanEditorFooter
+                footerSlot={editor.footerSlot}
+                formId={`${editorId}-form`}
+                canSave={editor.canSave}
+                isSaving={editor.isSaving}
+                changeCount={editor.changeCount}
+            />
 
             {/* Error */}
             {editor.error && <p className="mt-3 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(editor.error)}`)}</p>}

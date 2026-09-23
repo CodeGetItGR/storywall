@@ -160,7 +160,7 @@ export function PlanAssignmentPanel() {
                 body={
                     <>
                         <p>{t('assignments.confirmEventBody', { plan: selectedPlan?.name ?? planTierCode })}</p>
-                        <p className="mt-2 break-all font-mono text-xs text-ink-faint">{trimmedId}</p>
+                        <p className="mt-2 font-mono text-xs break-all text-ink-faint">{trimmedId}</p>
                     </>
                 }
                 cancelLabel={t('cancel')}

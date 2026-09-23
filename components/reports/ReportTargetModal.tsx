@@ -36,15 +36,15 @@ export function ReportTargetModal({ eventId, onCloseAction, open, targetId, targ
             event.preventDefault();
             void submit();
         },
-        [submit]
+        [submit],
     );
     const handleReasonChange = useCallback(
         (event: React.ChangeEvent<HTMLSelectElement>) => setReason(event.target.value as ReportReason | ''),
-        [setReason]
+        [setReason],
     );
     const handleDescriptionChange = useCallback(
         (event: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(event.target.value),
-        [setDescription]
+        [setDescription],
     );
 
     function reasonLabel(value: ReportReason) {
@@ -53,7 +53,7 @@ export function ReportTargetModal({ eventId, onCloseAction, open, targetId, targ
 
     return (
         <Modal open={open} onClose={onCloseAction} size="sm" closeLabel={t('cancel')} ariaLabel={t('title')}>
-            <Modal.Body className="px-4 pb-5 pt-12 sm:px-5">
+            <Modal.Body className="px-4 pt-12 pb-5 sm:px-5">
                 {/* Report form */}
                 <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
                     <div>
@@ -68,7 +68,7 @@ export function ReportTargetModal({ eventId, onCloseAction, open, targetId, targ
                             onChange={handleReasonChange}
                             required
                             disabled={supportedReasons.length === 0 || isSubmitting}
-                            className="min-h-11 rounded-xl border border-border bg-background px-3 text-sm font-normal text-ink outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="min-h-11 rounded-xl border border-border bg-background px-3 text-sm font-normal text-ink transition-colors outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                             <option value="">{t('chooseReason')}</option>
                             {supportedReasons.map((value) => (
@@ -87,7 +87,7 @@ export function ReportTargetModal({ eventId, onCloseAction, open, targetId, targ
                             maxLength={maxDescriptionLength}
                             disabled={isSubmitting}
                             rows={4}
-                            className="resize-none rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-normal text-ink outline-none transition-colors placeholder:text-ink-faint focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="resize-none rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-normal text-ink transition-colors outline-none placeholder:text-ink-faint focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60"
                             placeholder={t('detailsPlaceholder')}
                         />
                     </label>

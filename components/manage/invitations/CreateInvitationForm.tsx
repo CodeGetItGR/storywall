@@ -168,7 +168,7 @@ export function CreateInvitationForm({
             <button
                 type="submit"
                 disabled={createInvitation.isPending}
-                className="mt-4 flex items-center justify-center gap-2 rounded-full bg-gradient-brand py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 px-4"
+                className="mt-4 flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             >
                 {createInvitation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : t('invitations.create.submit')}
             </button>

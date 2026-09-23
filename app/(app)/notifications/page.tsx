@@ -82,7 +82,7 @@ export default function NotificationsPage() {
                             onClick={handleFilterClick}
                             className={cn(
                                 'rounded-full px-3 py-1 text-xs font-semibold transition',
-                                filter === key ? 'bg-ink text-white' : 'bg-surface-muted text-ink-muted hover:text-ink'
+                                filter === key ? 'bg-ink text-white' : 'bg-surface-muted text-ink-muted hover:text-ink',
                             )}
                         >
                             {t(`filters.${key}`)}

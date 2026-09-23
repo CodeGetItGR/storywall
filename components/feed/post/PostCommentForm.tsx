@@ -48,11 +48,11 @@ export function PostCommentForm({
     return (
         <form
             onSubmit={onSubmit}
-            className="bg-background/95 backdrop-blur-sm border-t border-border px-4 py-3 flex flex-col items-center gap-3 shrink-0"
+            className="flex shrink-0 flex-col items-center gap-3 border-t border-border bg-background/95 px-4 py-3 backdrop-blur-sm"
         >
-            {error && <p className="text-xs text-destructive px-4">{error}</p>}
+            {error && <p className="px-4 text-xs text-destructive">{error}</p>}
             {replyingToLabel && (
-                <div className="w-full flex items-center justify-between px-4 text-xs text-ink-faint">
+                <div className="flex w-full items-center justify-between px-4 text-xs text-ink-faint">
                     <span className="min-w-0 truncate" title={replyingToLabel}>
                         {replyingToLabel}
                     </span>
@@ -63,13 +63,13 @@ export function PostCommentForm({
                             aria-label={cancelReplyAriaLabel}
                             className="shrink-0 text-ink-faint hover:text-ink"
                         >
-                            <X className="w-3.5 h-3.5" />
+                            <X className="h-3.5 w-3.5" />
                         </button>
                     )}
                 </div>
             )}
             <div className="w-full space-y-2">
-                <section className="flex gap-3 w-full">
+                <section className="flex w-full gap-3">
                     <input
                         ref={inputRef}
                         type="text"
@@ -79,15 +79,15 @@ export function PostCommentForm({
                         placeholder={placeholder}
                         aria-label={inputAriaLabel}
                         maxLength={maxLength}
-                        className="relative flex-1 bg-surface-muted rounded-full px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint outline-none focus:ring-2 focus:ring-primary/30 transition disabled:cursor-not-allowed disabled:opacity-60"
+                        className="relative flex-1 rounded-full bg-surface-muted px-4 py-2.5 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:ring-2 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60"
                     />
                     <button
                         type="submit"
                         disabled={submitDisabled}
                         aria-label={submitAriaLabel}
-                        className="text-primary disabled:text-ink-faint transition-colors"
+                        className="text-primary transition-colors disabled:text-ink-faint"
                     >
-                        <Send className="w-4 h-4" />
+                        <Send className="h-4 w-4" />
                     </button>
                 </section>
                 <p className="text-right text-xs text-ink-faint">

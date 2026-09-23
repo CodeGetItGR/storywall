@@ -98,7 +98,7 @@ export function useMarkStoryViewed() {
                     exact: false,
                     predicate: (query) => query.queryKey[2] === 'stories',
                 },
-                (old) => old?.map((story) => (story.id === storyId ? { ...story, viewedByCurrentUser: true } : story))
+                (old) => old?.map((story) => (story.id === storyId ? { ...story, viewedByCurrentUser: true } : story)),
             );
         },
     });

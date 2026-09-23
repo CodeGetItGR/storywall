@@ -5,7 +5,7 @@ export function BannerOverlay({ title, actions, glowVisible }: { title: string; 
         <div className="absolute inset-0 overflow-hidden rounded-[1.5rem]">
             {/* Image frame */}
             <div
-                className="absolute inset-0 rounded-[1.5rem] ring-1 ring-black/5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                className="absolute inset-0 rounded-[1.5rem] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] ring-1 ring-black/5"
                 aria-hidden="true"
             />
             <div
@@ -19,7 +19,7 @@ export function BannerOverlay({ title, actions, glowVisible }: { title: string; 
             {glowVisible && (
                 <div
                     aria-hidden="true"
-                    className="banner-light-ray pointer-events-none absolute -top-20 z-20 h-[200%] w-48 rotate-24 bg-linear-to-r from-transparent via-[#fff2a8]/55 to-transparent blur-md mix-blend-screen"
+                    className="banner-light-ray pointer-events-none absolute -top-20 z-20 h-[200%] w-48 rotate-24 bg-linear-to-r from-transparent via-[#fff2a8]/55 to-transparent mix-blend-screen blur-md"
                 />
             )}
             {/* Actions */}
@@ -27,9 +27,9 @@ export function BannerOverlay({ title, actions, glowVisible }: { title: string; 
                 <div className="flex h-full flex-col items-end justify-between gap-2">{actions}</div>
             </div>
             {/* Title */}
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-4 pb-4 pt-16">
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 px-4 pt-16 pb-4">
                 <div className="inline-flex max-w-[calc(100%-4rem)] px-1">
-                    <h1 className="text-2xl alegreya-light text-white drop-shadow-[0_1px_10px_rgba(0,0,0,0.32)]">{title}</h1>
+                    <h1 className="alegreya-light text-2xl text-white drop-shadow-[0_1px_10px_rgba(0,0,0,0.32)]">{title}</h1>
                 </div>
             </div>
         </div>

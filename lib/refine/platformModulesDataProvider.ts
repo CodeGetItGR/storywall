@@ -15,7 +15,7 @@ export const platformModulesDataProvider: DataProvider = {
     },
     getOne: async <TData extends BaseRecord = BaseRecord>({ id }: Parameters<DataProvider['getOne']>[0]) => ({
         data: (await api.get<PlatformModuleResponseDto[]>(endpoints.admin.platformModules.list)).find(
-            (module_) => module_.moduleKey === String(id)
+            (module_) => module_.moduleKey === String(id),
         ) as unknown as TData,
     }),
     create: async () => {

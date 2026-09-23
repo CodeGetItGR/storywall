@@ -18,7 +18,7 @@ export function ReactionSummary({ counts = {}, reactionTypes = [], className, ma
                 .filter((type) => type.count > 0)
                 .sort((left, right) => right.count - left.count || left.sortOrder - right.sortOrder)
                 .slice(0, maxReactions),
-        [counts, maxReactions, reactionTypes]
+        [counts, maxReactions, reactionTypes],
     );
 
     const totalCount = Object.values(counts).reduce((sum, count) => sum + count, 0);
@@ -37,7 +37,7 @@ export function ReactionSummary({ counts = {}, reactionTypes = [], className, ma
                     </span>
                 ))}
             </span>
-            <p className={'tabular-nums pb-1'}>{totalCount}</p>
+            <p className={'pb-1 tabular-nums'}>{totalCount}</p>
         </div>
     );
 }

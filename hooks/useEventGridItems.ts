@@ -15,7 +15,7 @@ export interface EventGridItem {
 export function useEventGridItems(memberships: EventMemberResponseDto[], eventQueries: ReturnType<typeof useEventDetails>): EventGridItem[] {
     return useMemo(
         () => memberships.map((member, i) => ({ member, event: eventQueries[i]?.data, isLoading: eventQueries[i]?.isLoading ?? false })),
-        [memberships, eventQueries]
+        [memberships, eventQueries],
     );
 }
 

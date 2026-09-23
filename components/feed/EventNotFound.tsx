@@ -19,14 +19,14 @@ export function EventNotFound() {
 
     return (
         <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 py-16 text-center">
-            <div className="w-16 h-16 rounded-full bg-gradient-brand flex items-center justify-center mb-6">
-                <HeartCrack className="w-7 h-7 text-white" />
+            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-brand">
+                <HeartCrack className="h-7 w-7 text-white" />
             </div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-ink mb-3 text-balance">{t('title')}</h1>
-            <p className="text-sm text-ink-muted max-w-sm mb-8 leading-relaxed">{t('description')}</p>
+            <h1 className="mb-3 text-2xl font-bold text-balance text-ink lg:text-3xl">{t('title')}</h1>
+            <p className="mb-8 max-w-sm text-sm leading-relaxed text-ink-muted">{t('description')}</p>
             <Link
                 href={href}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+                className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
             >
                 {cta}
             </Link>

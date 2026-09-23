@@ -35,7 +35,7 @@ export default function CheckoutSuccessPage() {
             Boolean(orderId) &&
             billing.data?.orders.some((order) => order.id === orderId && order.status === 'PAID') &&
             (!targetPlanTierCode || billing.data.planTierCode === targetPlanTierCode),
-        [billing.data, orderId, targetPlanTierCode]
+        [billing.data, orderId, targetPlanTierCode],
     );
     useEffect(() => {
         const timer = window.setTimeout(() => setTimedOut(true), 30000);
@@ -68,7 +68,7 @@ export default function CheckoutSuccessPage() {
         <main className="mx-auto max-w-xl px-4 py-10 text-center sm:py-16">
             <div className="rounded-2xl border border-border bg-card p-5 sm:p-8">
                 {/* Payment status */}
-                <p className="text-xs font-semibold uppercase tracking-wide text-primary-dark">{t('eyebrow')}</p>
+                <p className="text-xs font-semibold tracking-wide text-primary-dark uppercase">{t('eyebrow')}</p>
                 <h1 className="mt-2 text-2xl font-bold text-ink">{paid ? t('paidTitle') : t('processingTitle')}</h1>
                 <p className="mt-3 text-sm text-ink-muted">{paid ? t('paidBody') : timedOut ? t('timedOutBody') : t('processingBody')}</p>
                 {orderId && <p className="mt-3 text-xs text-ink-faint">{t('orderId', { orderId })}</p>}

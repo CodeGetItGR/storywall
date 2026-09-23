@@ -51,7 +51,7 @@ export function Modal({
         (nextOpen: boolean) => {
             if (!nextOpen) requestClose();
         },
-        [requestClose]
+        [requestClose],
     );
 
     return (
@@ -78,22 +78,22 @@ export function Modal({
                             ? 'inset-x-0 top-(--visual-viewport-offset-top) h-(--visual-viewport-height) max-h-(--visual-viewport-height) w-screen rounded-none data-ending-style:opacity-0 data-starting-style:opacity-0'
                             : isDrawer
                               ? cn(
-                                    'left-0 top-(--visual-viewport-offset-top) h-(--visual-viewport-height) w-[min(88vw,22.5rem)] overflow-hidden rounded-r-[1.75rem] shadow-[18px_0_50px_rgba(36,31,26,0.18)]',
-                                    'data-ending-style:-translate-x-full data-ending-style:opacity-0 data-starting-style:-translate-x-full data-starting-style:opacity-0'
+                                    'top-(--visual-viewport-offset-top) left-0 h-(--visual-viewport-height) w-[min(88vw,22.5rem)] overflow-hidden rounded-r-[1.75rem] shadow-[18px_0_50px_rgba(36,31,26,0.18)]',
+                                    'data-ending-style:-translate-x-full data-ending-style:opacity-0 data-starting-style:-translate-x-full data-starting-style:opacity-0',
                                 )
                               : isSheet
                                 ? cn(
-                                      'inset-x-0 bottom-(--visual-viewport-bottom-inset) mx-auto w-[calc(100vw-1rem)] max-h-[calc(var(--visual-viewport-height)-0.5rem)] overflow-hidden rounded-t-[1.75rem] rounded-b-none shadow-[0_-18px_50px_rgba(36,31,26,0.18)]',
+                                      'inset-x-0 bottom-(--visual-viewport-bottom-inset) mx-auto max-h-[calc(var(--visual-viewport-height)-0.5rem)] w-[calc(100vw-1rem)] overflow-hidden rounded-t-[1.75rem] rounded-b-none shadow-[0_-18px_50px_rgba(36,31,26,0.18)]',
                                       'data-ending-style:translate-y-full data-ending-style:opacity-0 data-starting-style:translate-y-full data-starting-style:opacity-0',
-                                      'sm:bottom-[calc(var(--visual-viewport-bottom-inset)+1.5rem)] sm:max-h-[calc(var(--visual-viewport-height)-3rem)] sm:max-w-2xl sm:rounded-b-3xl sm:rounded-t-3xl sm:shadow-[0_24px_60px_rgba(36,31,26,0.22)]'
+                                      'sm:bottom-[calc(var(--visual-viewport-bottom-inset)+1.5rem)] sm:max-h-[calc(var(--visual-viewport-height)-3rem)] sm:max-w-2xl sm:rounded-t-3xl sm:rounded-b-3xl sm:shadow-[0_24px_60px_rgba(36,31,26,0.22)]',
                                   )
                                 : cn(
                                       'top-(--visual-viewport-center-y) left-1/2 -translate-x-1/2 -translate-y-1/2',
-                                      'w-[calc(100vw-2rem)] max-h-[calc(var(--visual-viewport-height)-2rem)] overflow-hidden rounded-2xl',
+                                      'max-h-[calc(var(--visual-viewport-height)-2rem)] w-[calc(100vw-2rem)] overflow-hidden rounded-2xl',
                                       'scale-100 data-ending-style:scale-[0.96] data-ending-style:opacity-0 data-starting-style:scale-[0.96] data-starting-style:opacity-0',
-                                      sizeMap[size]
+                                      sizeMap[size],
                                   ),
-                        className
+                        className,
                     )}
                 >
                     {/* Close */}
@@ -102,10 +102,10 @@ export function Modal({
                             aria-label={closeLabel}
                             className={cn(
                                 `absolute top-3 ${closeButtonPosition}-3 z-20 flex h-8 w-8 items-center justify-center rounded-full transition-colors`,
-                                isFull ? 'bg-black/40 hover:bg-black/60 text-white' : 'hover:bg-surface-muted text-ink-muted'
+                                isFull ? 'bg-black/40 text-white hover:bg-black/60' : 'text-ink-muted hover:bg-surface-muted',
                             )}
                         >
-                            <X className="w-5 h-5" />
+                            <X className="h-5 w-5" />
                         </Dialog.Close>
                     )}
                     {children}
@@ -119,7 +119,7 @@ export function Modal({
 // scroll container (see usePostCommentThread's lastPostedCommentId).
 const ModalBody = forwardRef<HTMLDivElement, { className?: string; children: ReactNode }>(function ModalBody({ className, children }, ref) {
     return (
-        <div ref={ref} className={cn('flex-1 min-h-0 overflow-y-auto', className)}>
+        <div ref={ref} className={cn('min-h-0 flex-1 overflow-y-auto', className)}>
             {children}
         </div>
     );

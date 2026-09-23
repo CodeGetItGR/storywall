@@ -73,7 +73,7 @@ export function useImageZoomPan(containerRef: RefObject<HTMLElement | null>) {
                 y: clampAxis(offsetY, rect.height, clampedScale),
             });
         },
-        [containerRef]
+        [containerRef],
     );
 
     const handleTouchStart = useCallback(
@@ -116,7 +116,7 @@ export function useImageZoomPan(containerRef: RefObject<HTMLElement | null>) {
                 translateStartRef.current = translate;
             }
         },
-        [applyZoom, isZoomed, scale, translate]
+        [applyZoom, isZoomed, scale, translate],
     );
 
     const handleTouchMove = useCallback(
@@ -139,7 +139,7 @@ export function useImageZoomPan(containerRef: RefObject<HTMLElement | null>) {
                 });
             }
         },
-        [applyZoom, containerRef, isZoomed, scale]
+        [applyZoom, containerRef, isZoomed, scale],
     );
 
     const handleTouchEnd = useCallback(
@@ -154,7 +154,7 @@ export function useImageZoomPan(containerRef: RefObject<HTMLElement | null>) {
                 }
             }
         },
-        [scale]
+        [scale],
     );
 
     return {

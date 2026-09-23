@@ -154,7 +154,7 @@ export function formatTimeRange(
     startAt: string | null,
     endAt: string | null,
     fallbackLabel: string,
-    options: Intl.DateTimeFormatOptions = defaultTimeFormat
+    options: Intl.DateTimeFormatOptions = defaultTimeFormat,
 ): string {
     const start = formatTime(locale, startAt, options);
     const end = formatTime(locale, endAt, options);

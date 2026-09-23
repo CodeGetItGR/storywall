@@ -94,7 +94,7 @@ export function EventProvider({ children }: { children: ReactNode }) {
             isHost,
             isLoading,
         }),
-        [memberships, routeEventId, activeEvent, activeMember, isHost, isLoading]
+        [memberships, routeEventId, activeEvent, activeMember, isHost, isLoading],
     );
 
     return <EventContext.Provider value={value}>{children}</EventContext.Provider>;

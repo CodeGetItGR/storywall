@@ -66,7 +66,7 @@ describe('api.publicPostForm', () => {
             new Response(JSON.stringify({ errorCode: 2005, detail: 'not available' }), {
                 status: 409,
                 headers: { 'content-type': 'application/problem+json' },
-            })
+            }),
         );
         vi.stubGlobal('fetch', fetchMock);
 

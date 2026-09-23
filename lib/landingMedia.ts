@@ -44,7 +44,6 @@ export const landingStoryMedia: LandingStoryMedia[] = [
             { src: '/landing/guests-mingling-with-champagne-at-an-elegant-formal-vip-social-e.webp', width: 1536, height: 1024 },
         ],
     },
-
 ];
 
 export const landingMoreStoryMedia = [

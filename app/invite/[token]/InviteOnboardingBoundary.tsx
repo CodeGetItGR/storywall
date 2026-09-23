@@ -58,7 +58,7 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
                     action={
                         <Link
                             href={routes.login}
-                            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+                            className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
                         >
                             {t('haveAccount')}
                         </Link>
@@ -89,11 +89,11 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
                         eventSubtitle={activePreview.eventSubtitle}
                     >
                         {activePreview.eventDescription && (
-                            <p className="text-sm text-ink-muted mb-7 leading-relaxed">{activePreview.eventDescription}</p>
+                            <p className="mb-7 text-sm leading-relaxed text-ink-muted">{activePreview.eventDescription}</p>
                         )}
 
                         {acceptError && (
-                            <p role="alert" className="text-xs text-red-500 mb-3">
+                            <p role="alert" className="mb-3 text-xs text-red-500">
                                 {acceptError}
                             </p>
                         )}
@@ -104,14 +104,14 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
                                     type="button"
                                     onClick={handleAcceptAsExistingUser}
                                     disabled={acceptInvitation.isPending}
-                                    className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
+                                    className="flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {acceptInvitation.isPending ? (
-                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        <Loader2 className="h-4 w-4 animate-spin" />
                                     ) : (
                                         <>
                                             {t('haveAccount')}
-                                            <ArrowRight className="w-4 h-4" />
+                                            <ArrowRight className="h-4 w-4" />
                                         </>
                                     )}
                                 </button>
@@ -119,14 +119,14 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
                                 <>
                                     <Link
                                         href={loginHref}
-                                        className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+                                        className="flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
                                     >
                                         {t('haveAccount')}
-                                        <ArrowRight className="w-4 h-4" />
+                                        <ArrowRight className="h-4 w-4" />
                                     </Link>
                                     <Link
                                         href={registerHref}
-                                        className="w-full flex items-center justify-center gap-2 py-3 rounded-full bg-surface-muted text-ink text-sm font-semibold hover:bg-surface-muted/70 transition-colors"
+                                        className="flex w-full items-center justify-center gap-2 rounded-full bg-surface-muted py-3 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted/70"
                                     >
                                         {t('createAccount')}
                                     </Link>

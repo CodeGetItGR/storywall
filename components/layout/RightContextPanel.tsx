@@ -15,9 +15,9 @@ export function RightContextPanel() {
     return (
         <aside
             aria-label={panel.isHost ? t('hostConsole') : t('eventTools')}
-            className="sticky top-0 hidden h-screen w-75 shrink-0 flex-col overflow-y-auto border-l border-border bg-background no-scrollbar lg:flex"
+            className="sticky top-0 no-scrollbar hidden h-screen w-75 shrink-0 flex-col overflow-y-auto border-l border-border bg-background lg:flex"
         >
-            <div className="p-5 flex flex-col h-full">
+            <div className="flex h-full flex-col p-5">
                 {panel.isHost ? <HostContextSections panel={panel} /> : <MemberActionsSection items={panel.actionItems} />}
             </div>
         </aside>

@@ -38,6 +38,6 @@ export function useHelpProgress({
             schedule: sessions.some((session) => !session.deletedAt),
             invitations: (qrLinks.data ?? []).some((link) => link.status !== 'REVOKED'),
         }),
-        [title, schedule, location, sessions, giftAccount.data, qrLinks.data]
+        [title, schedule, location, sessions, giftAccount.data, qrLinks.data],
     );
 }

@@ -65,7 +65,7 @@ export function MembersPanel({
     const coHostsAvailable = eventModules.find((module_) => module_.moduleKey === 'co_hosts')?.isAvailable ?? false;
     const namedInvitesAvailable = eventModules.find((module_) => module_.moduleKey === 'named_invites')?.isAvailable ?? false;
     const [tab, setTab] = useState<MembersSubTab>(
-        requestedTab === 'invites' || (requestedTab === 'coHosts' && coHostsAvailable) ? requestedTab : 'members'
+        requestedTab === 'invites' || (requestedTab === 'coHosts' && coHostsAvailable) ? requestedTab : 'members',
     );
     const [showCreate, setShowCreate] = useState(false);
     const [limitNotice, setLimitNotice] = useState<string | null>(null);
@@ -81,7 +81,7 @@ export function MembersPanel({
             { key: 'invites', icon: UserPlus, label: t('invitations.panels.invites') },
             ...(coHostsAvailable ? [{ key: 'coHosts' as const, icon: UserCog, label: t('invitations.panels.coHosts') }] : []),
         ],
-        [t, tMembers, coHostsAvailable]
+        [t, tMembers, coHostsAvailable],
     );
 
     const memberLimit = eventUsage?.memberLimit ?? null;
@@ -202,7 +202,7 @@ export function MembersPanel({
                             <button
                                 type="button"
                                 onClick={handleShowCreate}
-                                className="flex items-center gap-1.5 rounded-full bg-gradient-brand px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+                                className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
                             >
                                 <Plus className="h-3.5 w-3.5" />
                                 {showCoHosts ? t('invitations.coHosts.cta') : t('invitations.create.cta')}

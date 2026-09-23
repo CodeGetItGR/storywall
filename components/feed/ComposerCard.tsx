@@ -20,9 +20,9 @@ export function ComposerCard() {
     if (!canComposePost) return null;
 
     return (
-        <article className="relative isolate mx-2 mb-2 rounded-xl story-ring-50 p-px!">
+        <article className="story-ring-50 relative isolate mx-2 mb-2 rounded-xl p-px!">
             {/* Composer shell */}
-            <div className="rounded-2xl bg-card/95 p-1 w-full">
+            <div className="w-full rounded-2xl bg-card/95 p-1">
                 {/* Compose row */}
                 <div className="flex items-center gap-3">
                     <Avatar src={profile.user?.profilePictureUrl} initials={initials} size="md" alt={activeMember?.displayName} />

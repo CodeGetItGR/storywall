@@ -40,7 +40,7 @@ export function MobileChromeProvider({ children }: { children: ReactNode }) {
             hideMobileTabBar,
             showMobileTabBar,
         }),
-        [hiddenReasons, hideMobileTabBar, showMobileTabBar]
+        [hiddenReasons, hideMobileTabBar, showMobileTabBar],
     );
 
     return <MobileChromeContext.Provider value={value}>{children}</MobileChromeContext.Provider>;

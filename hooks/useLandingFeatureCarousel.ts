@@ -54,7 +54,8 @@ export function useLandingFeatureCarousel(landingRef: RefObject<HTMLElement | nu
             if (tweenFrame) cancelAnimationFrame(tweenFrame);
             tweenFrame = 0;
         };
-        const shouldAuto = () => !pausedRef.current && mobileQuery.matches && visible && !interacting && !reduceMotionQuery.matches && !document.hidden && !tweenFrame;
+        const shouldAuto = () =>
+            !pausedRef.current && mobileQuery.matches && visible && !interacting && !reduceMotionQuery.matches && !document.hidden && !tweenFrame;
 
         const autoTick = (timestamp: number) => {
             if (!shouldAuto()) {
@@ -157,7 +158,7 @@ export function useLandingFeatureCarousel(landingRef: RefObject<HTMLElement | nu
                 event.preventDefault();
                 arrowStep(-1);
             },
-            { signal }
+            { signal },
         );
         right.addEventListener(
             'click',
@@ -165,7 +166,7 @@ export function useLandingFeatureCarousel(landingRef: RefObject<HTMLElement | nu
                 event.preventDefault();
                 arrowStep(1);
             },
-            { signal }
+            { signal },
         );
         track.addEventListener('touchstart', pause, { passive: true, signal });
         track.addEventListener('touchend', () => resumeSoon(), { passive: true, signal });
@@ -177,7 +178,7 @@ export function useLandingFeatureCarousel(landingRef: RefObject<HTMLElement | nu
                 pause();
                 resumeSoon();
             },
-            { passive: true, signal }
+            { passive: true, signal },
         );
 
         const observer = new IntersectionObserver(
@@ -193,7 +194,7 @@ export function useLandingFeatureCarousel(landingRef: RefObject<HTMLElement | nu
                     stopTween();
                 }
             },
-            { root: null, threshold: [0, 0.18, 0.35] }
+            { root: null, threshold: [0, 0.18, 0.35] },
         );
         observer.observe(section);
 

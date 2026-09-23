@@ -29,7 +29,7 @@ function PostMediaCaption({ content }: { content: string }) {
 
     return (
         <button type="button" onClick={toggleExpanded} aria-expanded={expanded} className="mt-2 block w-full text-left">
-            <p className={cn('whitespace-pre-wrap text-sm leading-relaxed text-white', expanded ? 'max-h-40 overflow-y-auto' : 'line-clamp-3')}>
+            <p className={cn('text-sm leading-relaxed whitespace-pre-wrap text-white', expanded ? 'max-h-40 overflow-y-auto' : 'line-clamp-3')}>
                 {content}
             </p>
         </button>
@@ -53,7 +53,7 @@ export function PostMediaViewerInfo({ post }: PostMediaViewerInfoProps) {
     }
 
     return (
-        <div className="media-viewer-overlay w-full bg-gradient-to-t from-black/85 via-black/55 to-transparent px-4 pb-4 pt-10">
+        <div className="media-viewer-overlay w-full bg-gradient-to-t from-black/85 via-black/55 to-transparent px-4 pt-10 pb-4">
             {/* Author */}
             <PostAuthorAvatar avatarUrl={memberAvatarUrl(post.authorMemberId, post.author?.avatarUrl)} name={authorName} timeAgo={timeAgo} />
 

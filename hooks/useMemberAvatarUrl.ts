@@ -14,6 +14,6 @@ export function useMemberAvatarUrl() {
             if (memberId && memberId === activeMember?.id) return user?.profilePictureUrl ?? avatarUrl ?? null;
             return avatarUrl ?? null;
         },
-        [activeMember?.id, user?.profilePictureUrl]
+        [activeMember?.id, user?.profilePictureUrl],
     );
 }

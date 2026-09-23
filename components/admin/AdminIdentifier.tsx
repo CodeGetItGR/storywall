@@ -21,7 +21,7 @@ export function AdminIdentifier({ label, value, className }: { label: string; va
 
     return (
         <div className={cn('min-w-0', className)}>
-            <p className="text-[10px] font-bold uppercase tracking-wide text-ink-faint">{label}</p>
+            <p className="text-[10px] font-bold tracking-wide text-ink-faint uppercase">{label}</p>
             <div className="flex items-center gap-1.5">
                 <code className="min-w-0 truncate font-mono text-xs text-ink-muted" title={value}>
                     {value}

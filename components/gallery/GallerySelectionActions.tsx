@@ -32,7 +32,7 @@ export function GallerySelectionActions({
         <div
             className={cn(
                 'mx-auto flex w-full max-w-3xl items-center justify-between gap-2 rounded-2xl',
-                floating && 'border border-border/70 bg-background/96 px-3 py-2.5 shadow-[0_10px_28px_rgba(36,31,26,0.12)] backdrop-blur'
+                floating && 'border border-border/70 bg-background/96 px-3 py-2.5 shadow-[0_10px_28px_rgba(36,31,26,0.12)] backdrop-blur',
             )}
         >
             <Button

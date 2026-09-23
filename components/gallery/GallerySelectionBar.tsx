@@ -31,19 +31,19 @@ export function GallerySelectionBar({
     if (!visible) return null;
 
     return (
-        <div className="fixed inset-x-0 bottom-0 z-60 px-4 pb-4 lg:static lg:px-0 lg:pb-0 lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-60 px-4 pb-4 lg:static lg:hidden lg:px-0 lg:pb-0">
             <button
                 type="button"
                 onClick={onScrollToTop}
                 aria-label={t('top')}
-                className="ml-3 my-4 inline-flex min-h-9 items-center justify-center rounded-full bg-surface-muted px-3 text-xs font-semibold text-ink-muted transition-colors hover:bg-card hover:text-ink"
+                className="my-4 ml-3 inline-flex min-h-9 items-center justify-center rounded-full bg-surface-muted px-3 text-xs font-semibold text-ink-muted transition-colors hover:bg-card hover:text-ink"
             >
                 <ArrowUp className="h-3.5 w-3.5" />
             </button>
             {/* Selection actions */}
             <div className="rounded-2xl border border-border/70 bg-background/96 px-3 py-2.5 shadow-[0_10px_28px_rgba(36,31,26,0.12)] backdrop-blur lg:border-0 lg:bg-surface-muted lg:shadow-none">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="w-full flex flex-wrap items-center gap-2 justify-between lg:hidden">
+                    <div className="flex w-full flex-wrap items-center justify-between gap-2 lg:hidden">
                         <button
                             type="button"
                             onClick={onSelectAll}

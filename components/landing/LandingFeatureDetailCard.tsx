@@ -27,7 +27,7 @@ export function LandingFeatureDetailCard({ description, imageAlt, imagePath, ite
 
             {/* Feature details */}
             <div className="flex flex-1 flex-col px-7 pt-7 pb-8">
-                <h3 className="max-w-[19rem] font-(--editorial) text-[clamp(40px,3.2vw,55px)] leading-[0.9] tracking-[-0.045em] text-white">
+                <h3 className="max-w-[19rem] text-[clamp(40px,3.2vw,55px)] leading-[0.9] font-(--editorial) tracking-[-0.045em] text-white">
                     {title}
                 </h3>
                 <p className="mt-5 text-[16px] leading-[1.35] font-black text-[#f2c66a]">{subtitle}</p>

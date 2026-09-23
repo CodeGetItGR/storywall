@@ -70,16 +70,16 @@ export function GiftAccountPage() {
                     >
                         <div className="space-y-3">
                             <div>
-                                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-faint">{t('fields.bankName')}</p>
+                                <p className="text-xs font-semibold tracking-[0.16em] text-ink-faint uppercase">{t('fields.bankName')}</p>
                                 <p className="mt-1 text-xl leading-6 font-semibold text-ink">{account.data.bankName}</p>
                             </div>
                             <div>
-                                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-faint">{t('fields.accountHolder')}</p>
+                                <p className="text-xs font-semibold tracking-[0.16em] text-ink-faint uppercase">{t('fields.accountHolder')}</p>
                                 <p className="mt-1 text-base leading-6 font-semibold text-ink">{account.data.accountHolder}</p>
                             </div>
                             <div>
-                                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-faint">{t('fields.iban')}</p>
-                                <p className="mt-1.5 break-all font-mono text-md leading-7 font-semibold tracking-widest text-ink">{formattedIban}</p>
+                                <p className="text-xs font-semibold tracking-[0.12em] text-ink-faint uppercase">{t('fields.iban')}</p>
+                                <p className="text-md mt-1.5 font-mono leading-7 font-semibold tracking-widest break-all text-ink">{formattedIban}</p>
                             </div>
                             <button
                                 type="button"
@@ -115,7 +115,7 @@ export function GiftAccountPage() {
                         isHost && event?.id ? (
                             <Link
                                 href={giftAccountSetupHref(event.id)}
-                                className="inline-flex min-h-11 items-center justify-center rounded-full bg-gradient-brand px-5 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(255,122,89,0.28)]"
+                                className="inline-flex min-h-11 items-center justify-center rounded-full px-5 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(255,122,89,0.28)] bg-gradient-brand"
                             >
                                 {t('setupCta')}
                             </Link>

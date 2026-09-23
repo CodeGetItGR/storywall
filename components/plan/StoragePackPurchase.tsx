@@ -55,7 +55,7 @@ export function StoragePackPurchase({ eventId, services }: { eventId: string; se
                                 onClick={handleSelect}
                                 className={cn(
                                     'min-w-24 rounded-full px-4 py-2 text-center transition-colors',
-                                    isSelected ? 'bg-ink text-white' : 'bg-background text-ink hover:bg-surface-muted'
+                                    isSelected ? 'bg-ink text-white' : 'bg-background text-ink hover:bg-surface-muted',
                                 )}
                             >
                                 <span className="block text-sm font-bold">

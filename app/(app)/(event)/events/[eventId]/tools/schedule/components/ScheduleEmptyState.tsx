@@ -22,7 +22,7 @@ export function ScheduleEmptyState({ isHost, canWrite, canAddSession, onAddSessi
                 <button
                     type="button"
                     onClick={onAddSession}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-gradient-brand px-3 py-1.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20"
+                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-white transition-all bg-gradient-brand hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20"
                 >
                     <Plus className="h-4 w-4" />
                     {t('host.submit')}

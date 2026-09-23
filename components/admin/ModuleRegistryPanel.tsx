@@ -31,7 +31,7 @@ export function ModuleRegistryPanel() {
             const found = modules.find((item) => item.moduleKey === moduleKey);
             if (found) setSelectedModule(found);
         },
-        [modules]
+        [modules],
     );
 
     return (
@@ -53,7 +53,7 @@ export function ModuleRegistryPanel() {
                     <div className="overflow-x-auto">
                         <table className="w-full min-w-140 border-collapse text-sm">
                             <thead>
-                                <tr className="border-b border-border text-left text-[11px] font-bold uppercase tracking-wide text-ink-faint">
+                                <tr className="border-b border-border text-left text-[11px] font-bold tracking-wide text-ink-faint uppercase">
                                     <th className="px-4 py-2.5 font-bold">{t('fields.name')}</th>
                                     <th className="px-3 py-2.5 font-bold">{t('modules.enabled')}</th>
                                     <th className="px-3 py-2.5" />
@@ -72,13 +72,13 @@ export function ModuleRegistryPanel() {
                                                     'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold',
                                                     module.isEnabled
                                                         ? 'bg-status-good-wash text-status-good'
-                                                        : 'bg-status-neutral-wash text-status-neutral'
+                                                        : 'bg-status-neutral-wash text-status-neutral',
                                                 )}
                                             >
                                                 <span
                                                     className={cn(
                                                         'h-1.5 w-1.5 rounded-full',
-                                                        module.isEnabled ? 'bg-status-good' : 'bg-status-neutral'
+                                                        module.isEnabled ? 'bg-status-good' : 'bg-status-neutral',
                                                     )}
                                                 />
                                                 {module.isEnabled ? t('modules.enabled') : t('modules.disabled')}

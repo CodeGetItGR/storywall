@@ -55,7 +55,7 @@ export function ScheduleScreen() {
     const defaultStartAt = activeEvent ? toDatetimeLocalValue(activeEvent.schedule.startAt) : '';
     const editingSession = useMemo(
         () => (editingSessionId ? (sessions.find((session) => session.id === editingSessionId) ?? null) : null),
-        [editingSessionId, sessions]
+        [editingSessionId, sessions],
     );
 
     function openCreateEditor() {
@@ -157,13 +157,13 @@ export function ScheduleScreen() {
             {deleteError && <p className="mb-4 text-xs font-medium text-rose-500">{deleteError}</p>}
 
             {isHost && (
-                <div className="mb-5 flex rounded-full bg-surface-muted p-1 mx-auto w-fit">
+                <div className="mx-auto mb-5 flex w-fit rounded-full bg-surface-muted p-1">
                     <button
                         type="button"
                         onClick={showEditView}
                         className={cn(
                             'rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors',
-                            viewMode === 'edit' ? 'bg-background text-ink shadow-sm' : 'text-ink-muted'
+                            viewMode === 'edit' ? 'bg-background text-ink shadow-sm' : 'text-ink-muted',
                         )}
                     >
                         {t('views.edit')}
@@ -173,7 +173,7 @@ export function ScheduleScreen() {
                         onClick={showPublicView}
                         className={cn(
                             'rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors',
-                            viewMode === 'public' ? 'bg-background text-ink shadow-sm' : 'text-ink-muted'
+                            viewMode === 'public' ? 'bg-background text-ink shadow-sm' : 'text-ink-muted',
                         )}
                     >
                         {t('views.public')}

@@ -26,7 +26,7 @@ export function PlatformMetricsPanel() {
         <section className="space-y-5">
             <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border pb-4">
                 <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary-dark">{t('metrics.eyebrow')}</p>
+                    <p className="text-[11px] font-semibold tracking-[0.18em] text-primary-dark uppercase">{t('metrics.eyebrow')}</p>
                     <h2 className="mt-1 text-xl font-semibold tracking-tight text-ink">{t('metrics.title')}</h2>
                     <p className="mt-2 max-w-2xl text-base leading-7 text-ink-muted">{t('metrics.subtitle')}</p>
                 </div>
@@ -76,7 +76,7 @@ export function PlatformMetricsPanel() {
                             ).map(([key, value]) => (
                                 <div key={key} className="border-b border-border pb-3">
                                     <dt className="text-xs text-ink-muted">{t(`metrics.storage.${key}`)}</dt>
-                                    <dd className="mt-1 text-sm font-bold tabular-nums text-ink">{value}</dd>
+                                    <dd className="mt-1 text-sm font-bold text-ink tabular-nums">{value}</dd>
                                 </div>
                             ))}
                         </dl>
@@ -88,7 +88,7 @@ export function PlatformMetricsPanel() {
                                 {(['confirmed', 'pending', 'unsubscribed', 'rewardsIssued'] as const).map((key) => (
                                     <div key={key} className="border-b border-border pb-3">
                                         <dt className="text-xs text-ink-muted">{t(`metrics.newsletter.${key}`)}</dt>
-                                        <dd className="mt-1 text-sm font-bold tabular-nums text-ink">{formatCount(metrics.newsletter[key])}</dd>
+                                        <dd className="mt-1 text-sm font-bold text-ink tabular-nums">{formatCount(metrics.newsletter[key])}</dd>
                                     </div>
                                 ))}
                             </dl>

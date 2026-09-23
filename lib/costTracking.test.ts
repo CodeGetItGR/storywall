@@ -17,7 +17,7 @@ describe('cost tracking helpers', () => {
                 { planTierCode: 'PRO', weekStart: '2026-09-07T00:00:00Z', eventCount: 1 },
             ],
             4,
-            now
+            now,
         );
 
         expect(chart.planTiers).toEqual(['BASIC', 'PRO']);

@@ -70,7 +70,7 @@ export function PlansRail({
 
             {/* Settings */}
             <nav aria-label={t('rail.settings')} className="border-t border-border pt-3">
-                <p className="mb-1.5 px-2.5 text-[10.5px] font-bold uppercase tracking-[0.08em] text-ink-faint">{t('rail.settings')}</p>
+                <p className="mb-1.5 px-2.5 text-[10.5px] font-bold tracking-[0.08em] text-ink-faint uppercase">{t('rail.settings')}</p>
                 <div className="space-y-px">
                     <button
                         type="button"

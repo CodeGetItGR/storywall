@@ -147,7 +147,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'billingOps', label: t('billingOps'), icon: Receipt },
             { key: 'withdrawals', label: t('withdrawals'), icon: Undo2 },
         ],
-        [t]
+        [t],
     );
 
     const value = useMemo(
@@ -159,7 +159,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             setTab,
             sendTo,
         }),
-        [focus, sendTo, setTab, tab, tabs]
+        [focus, sendTo, setTab, tab, tabs],
     );
 
     return <AdminNavigationContext.Provider value={value}>{children}</AdminNavigationContext.Provider>;

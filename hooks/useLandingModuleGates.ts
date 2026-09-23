@@ -9,12 +9,12 @@ export function useLandingModuleGates() {
     const { data } = useAppConfig();
     const enabledModuleKeys = useMemo(
         () => new Set(data?.modules.filter((module_) => module_.isEnabled).map((module_) => module_.moduleKey)),
-        [data?.modules]
+        [data?.modules],
     );
 
     const isAvailable = useCallback(
         (moduleKey: ModuleKeyConvention | null) => moduleKey === null || enabledModuleKeys.has(moduleKey),
-        [enabledModuleKeys]
+        [enabledModuleKeys],
     );
 
     return { isAvailable };

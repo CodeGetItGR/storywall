@@ -20,7 +20,7 @@ export function BannerFallback({ actionHref, actionLabel }: BannerFallbackProps)
             {actionHref && actionLabel && (
                 <Link
                     href={actionHref}
-                    className="absolute left-4 top-4 z-10 inline-flex min-h-9 items-center gap-2 rounded-full bg-background/80 px-3 text-xs font-semibold text-ink-muted shadow-[0_10px_24px_rgba(36,31,26,0.12)] backdrop-blur-md transition-colors hover:bg-background hover:text-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    className="absolute top-4 left-4 z-10 inline-flex min-h-9 items-center gap-2 rounded-full bg-background/80 px-3 text-xs font-semibold text-ink-muted shadow-[0_10px_24px_rgba(36,31,26,0.12)] backdrop-blur-md transition-colors hover:bg-background hover:text-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                     <ImagePlus className="h-4 w-4" aria-hidden="true" />
                     {actionLabel}

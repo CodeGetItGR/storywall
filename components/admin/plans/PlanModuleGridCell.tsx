@@ -42,11 +42,15 @@ export function PlanModuleGridCell({
                 aria-label={cell.kind === 'included' ? t('included') : t('notIncluded')}
                 className={cn(
                     'flex min-h-11 w-full flex-col items-start gap-1 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-canvas',
-                    cell.kind === 'excluded' && 'text-ink-faint'
+                    cell.kind === 'excluded' && 'text-ink-faint',
                 )}
             >
                 <span className="inline-flex items-center gap-1 text-[11px] font-bold">
-                    {cell.kind === 'included' ? <Check className="h-3.5 w-3.5 text-status-good" aria-hidden="true" /> : <span aria-hidden="true">—</span>}
+                    {cell.kind === 'included' ? (
+                        <Check className="h-3.5 w-3.5 text-status-good" aria-hidden="true" />
+                    ) : (
+                        <span aria-hidden="true">—</span>
+                    )}
                     {cell.kind === 'included' ? t('included') : (unlockLabel ?? t('notIncluded'))}
                 </span>
                 {cell.kind === 'included' && tokens.length > 0 && (

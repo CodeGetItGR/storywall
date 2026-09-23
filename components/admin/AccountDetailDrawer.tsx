@@ -26,7 +26,7 @@ export function AccountDetailDrawer({
             {/* Account */}
             <section aria-labelledby="account-detail-heading" className="space-y-4">
                 <div className="flex items-center justify-between gap-3">
-                    <h3 id="account-detail-heading" className="text-xs font-bold uppercase tracking-wide text-ink-faint">
+                    <h3 id="account-detail-heading" className="text-xs font-bold tracking-wide text-ink-faint uppercase">
                         {t('account')}
                     </h3>
                     <AccountStatusPill status={account.status} />

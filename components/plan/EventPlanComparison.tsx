@@ -12,7 +12,13 @@ import { PlanModuleGuideModal } from '@/components/plan/PlanModuleGuideModal';
 import { PlanModuleIcons } from '@/components/plan/PlanModuleIcons';
 import { PlanPriceLabel } from '@/components/plan/PlanPriceLabel';
 import { PlanUpgradeButton } from '@/components/plan/PlanUpgradeButton';
-import type { AppMediaConfigDto, PaidServiceResponseDto, PlanTierResponseDto, PlatformModuleResponseDto, UpgradeOptionResponseDto } from '@/lib/api/types';
+import type {
+    AppMediaConfigDto,
+    PaidServiceResponseDto,
+    PlanTierResponseDto,
+    PlatformModuleResponseDto,
+    UpgradeOptionResponseDto,
+} from '@/lib/api/types';
 import { mediaEstimate, PLAN_COMPARISON_EMPTY } from '@/lib/planComparison';
 import { formatLimitValue } from '@/lib/planTiers';
 

@@ -40,7 +40,7 @@ export function useWithdrawalConsent() {
             void appConfig.refetch();
             return true;
         },
-        [appConfig]
+        [appConfig],
     );
 
     return {

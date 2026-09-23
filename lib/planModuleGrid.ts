@@ -37,7 +37,7 @@ function unlockFor(unlocks: PaidServiceResponseDto[], planId: string, moduleKey:
                 service.kind === 'MODULE_UNLOCK' &&
                 service.isAssignable &&
                 service.grantsModuleKey === moduleKey &&
-                (service.planTierIds.length === 0 || service.planTierIds.includes(planId))
+                (service.planTierIds.length === 0 || service.planTierIds.includes(planId)),
         ) ?? null
     );
 }

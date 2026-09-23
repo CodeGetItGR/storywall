@@ -33,14 +33,14 @@ export function ContextMenuTab({ active, TriggerIcon = MenuIcon, items, label, p
                     className={cn(
                         'relative flex h-10 w-10 items-center justify-center transition-all duration-200',
                         active ? 'scale-105 opacity-100' : 'scale-100 opacity-50',
-                        'group-data-popup-open:scale-105 group-data-popup-open:opacity-100'
+                        'group-data-popup-open:scale-105 group-data-popup-open:opacity-100',
                     )}
                 >
                     <TriggerIcon
                         className={cn(
                             'absolute h-5.5 w-5.5 transition-all duration-200',
                             active ? 'text-ink opacity-100' : 'text-ink opacity-100',
-                            'group-data-popup-open:scale-90 group-data-popup-open:opacity-0'
+                            'group-data-popup-open:scale-90 group-data-popup-open:opacity-0',
                         )}
                         aria-hidden="true"
                     />
@@ -71,7 +71,7 @@ export function ContextMenuTab({ active, TriggerIcon = MenuIcon, items, label, p
                                     data-href={item.href}
                                     className={cn(
                                         'motion-menu-item flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-1.5 outline-none',
-                                        itemActive ? 'bg-surface-muted' : 'hover:bg-surface-muted'
+                                        itemActive ? 'bg-surface-muted' : 'hover:bg-surface-muted',
                                     )}
                                 >
                                     <Icon className="h-4 w-4 shrink-0 text-ink-muted" aria-hidden="true" />

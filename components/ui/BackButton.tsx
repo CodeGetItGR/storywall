@@ -23,7 +23,7 @@ export function BackButton({ href, label, variant = 'link', className, onClick }
                 aria-label={label}
                 className={cn(
                     'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-surface-muted',
-                    className
+                    className,
                 )}
             >
                 <ArrowLeft className="h-5 w-5" />

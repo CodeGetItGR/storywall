@@ -75,7 +75,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                         size="full"
                         closeLabel={t('layout.closeMenu') ?? 'Close'}
                     >
-                        <Modal.Body className="px-4 pb-4 pt-12">
+                        <Modal.Body className="px-4 pt-12 pb-4">
                             <AdminShellNav
                                 mobile
                                 email={user?.email}

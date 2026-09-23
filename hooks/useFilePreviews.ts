@@ -16,7 +16,7 @@ export function useFilePreviews(files: File[]): FilePreview[] {
                 url: URL.createObjectURL(file),
                 isVideo: file.type.startsWith('video/'),
             })),
-        [files]
+        [files],
     );
 
     useEffect(() => {

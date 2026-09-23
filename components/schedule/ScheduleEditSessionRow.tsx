@@ -37,7 +37,8 @@ export function ScheduleEditSessionRow({
 }: ScheduleEditSessionRowProps) {
     const t = useTranslations('SchedulePage.host.sessionManagement');
     const isManaged = Boolean(definition || session?.isMain || session?.isSecondary);
-    const Icon = definition?.role === 'main' || session?.isMain ? Church : definition?.role === 'secondary' || session?.isSecondary ? Martini : CalendarClock;
+    const Icon =
+        definition?.role === 'main' || session?.isMain ? Church : definition?.role === 'secondary' || session?.isSecondary ? Martini : CalendarClock;
     const title = session?.title ?? (definition ? t(`${definition.titleKey}.title`) : t('untitled'));
     const time = session?.startAt ? formatTimeRange(locale, session.startAt, session.endAt, t('notSet')) : t('notSet');
     const location = session?.locationName || t('notSet');

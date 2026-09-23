@@ -45,8 +45,22 @@ const modules: PlatformModuleResponseDto[] = [
 ];
 
 const matrix: EventTypeModuleResponseDto[] = [
-    { eventTypeKey: 'WEDDING', moduleKey: 'gallery', applicability: 'DEFAULT_ON', defaultConfig: { qrUploadEnabled: true }, sortOrder: 0, includedInPlan: null },
-    { eventTypeKey: 'WEDDING', moduleKey: 'schedule', applicability: 'DEFAULT_OFF', defaultConfig: { maxSections: 3 }, sortOrder: 1, includedInPlan: null },
+    {
+        eventTypeKey: 'WEDDING',
+        moduleKey: 'gallery',
+        applicability: 'DEFAULT_ON',
+        defaultConfig: { qrUploadEnabled: true },
+        sortOrder: 0,
+        includedInPlan: null,
+    },
+    {
+        eventTypeKey: 'WEDDING',
+        moduleKey: 'schedule',
+        applicability: 'DEFAULT_OFF',
+        defaultConfig: { maxSections: 3 },
+        sortOrder: 1,
+        includedInPlan: null,
+    },
     { eventTypeKey: 'WEDDING', moduleKey: 'wishlist', applicability: 'UNSUPPORTED', defaultConfig: {}, sortOrder: 2, includedInPlan: null },
 ];
 
@@ -54,8 +68,20 @@ const basic = plan({ id: 'p1', code: 'BASIC', name: 'Basic', sortOrder: 0, modul
 const plus = plan({ id: 'p2', code: 'PLUS', name: 'Plus', sortOrder: 1, moduleKeys: ['gallery', 'schedule'] });
 
 const configs = new Map<string, PlanTierModuleConfigDto[]>([
-    ['p1', [{ moduleKey: 'gallery', defaultConfig: { qrUploadEnabled: false } }, { moduleKey: 'schedule', defaultConfig: { maxSections: 3 } }]],
-    ['p2', [{ moduleKey: 'gallery', defaultConfig: { qrUploadEnabled: true } }, { moduleKey: 'schedule', defaultConfig: { maxSections: 10 } }]],
+    [
+        'p1',
+        [
+            { moduleKey: 'gallery', defaultConfig: { qrUploadEnabled: false } },
+            { moduleKey: 'schedule', defaultConfig: { maxSections: 3 } },
+        ],
+    ],
+    [
+        'p2',
+        [
+            { moduleKey: 'gallery', defaultConfig: { qrUploadEnabled: true } },
+            { moduleKey: 'schedule', defaultConfig: { maxSections: 10 } },
+        ],
+    ],
 ]);
 
 const unlocks: PaidServiceResponseDto[] = [

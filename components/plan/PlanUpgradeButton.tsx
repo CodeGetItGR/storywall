@@ -31,7 +31,9 @@ export function PlanUpgradeButton({ option, isCheckoutPending, isPending, onUpgr
         >
             {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5" />}
             <span className="min-w-0 truncate">
-                {retryIn > 0 ? t('actions.retryIn', { seconds: retryIn }) : t('compare.upgradeButton', { plan: option.planTierName, amount: dueLabel })}
+                {retryIn > 0
+                    ? t('actions.retryIn', { seconds: retryIn })
+                    : t('compare.upgradeButton', { plan: option.planTierName, amount: dueLabel })}
             </span>
             {listDueLabel && <span className="shrink-0 text-white/65 line-through">{listDueLabel}</span>}
         </button>

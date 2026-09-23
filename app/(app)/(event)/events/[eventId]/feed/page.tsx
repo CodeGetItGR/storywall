@@ -25,7 +25,7 @@ export default async function Page({ params }: PageProps) {
         try {
             const firstPage = await serverGet<Page<PostResponseDto>>(
                 `${endpoints.events.posts(eventId)}?page=0&size=${POSTS_PAGE_SIZE}`,
-                accessToken
+                accessToken,
             );
             queryClient.setQueryData(postKeys.list(eventId), { pages: [firstPage], pageParams: [0] });
         } catch {

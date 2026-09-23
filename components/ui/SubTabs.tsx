@@ -27,7 +27,7 @@ export function SubTabs<T extends string>({
             const next = event.currentTarget.dataset.subtab;
             if (next) onSelectAction(next as T);
         },
-        [onSelectAction]
+        [onSelectAction],
     );
 
     return (
@@ -45,7 +45,7 @@ export function SubTabs<T extends string>({
                         aria-pressed={isActive}
                         className={cn(
                             'flex min-h-9 items-center gap-1.5 border-b-2 px-1 text-xs font-semibold transition-colors',
-                            isActive ? 'border-primary text-ink' : 'border-transparent text-ink-muted hover:text-ink'
+                            isActive ? 'border-primary text-ink' : 'border-transparent text-ink-muted hover:text-ink',
                         )}
                     >
                         <Icon className="h-3.5 w-3.5" />

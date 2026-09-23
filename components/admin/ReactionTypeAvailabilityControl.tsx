@@ -38,7 +38,7 @@ export function ReactionTypeAvailabilityControl({
                         aria-pressed={value === option}
                         className={cn(
                             'flex-1 rounded-md px-2 py-1.5 text-[12.5px] font-bold transition-colors',
-                            value === option ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted'
+                            value === option ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted',
                         )}
                     >
                         {labels[option]}

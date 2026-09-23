@@ -37,7 +37,7 @@ export function useMarketingPlanOptions({
                 moduleName,
                 copy,
                 priceFallback,
-                plans.slice(0, index).flatMap((previousPlan) => previousPlan.moduleKeys)
+                plans.slice(0, index).flatMap((previousPlan) => previousPlan.moduleKeys),
             );
             return presentation ? [{ config: plan, featured: index === 1, presentation }] : [];
         });

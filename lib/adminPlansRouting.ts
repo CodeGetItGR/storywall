@@ -1,7 +1,5 @@
 export type PlansView =
-    | { view: 'eventType'; key: string | null }
-    | { view: 'settingsModules'; key: null }
-    | { view: 'settingsEventTypes'; key: null };
+    { view: 'eventType'; key: string | null } | { view: 'settingsModules'; key: null } | { view: 'settingsEventTypes'; key: null };
 
 export const PLANS_HASH_ROOT = '#plans';
 

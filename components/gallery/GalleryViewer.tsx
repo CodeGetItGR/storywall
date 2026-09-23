@@ -63,7 +63,7 @@ export function GalleryViewer({
         () => () => {
             if (navigationTimerRef.current !== null) window.clearTimeout(navigationTimerRef.current);
         },
-        []
+        [],
     );
 
     const triggerPrevious = useCallback(() => {
@@ -111,7 +111,7 @@ export function GalleryViewer({
             const resistance = (goingPrevious && !hasPrevious) || (!goingPrevious && !hasNext) ? SWIPE_RESISTANCE : 1;
             setDragX(deltaX * resistance);
         },
-        [hasNext, hasPrevious]
+        [hasNext, hasPrevious],
     );
 
     const handleSwipeEnd = useCallback(() => {
@@ -159,7 +159,7 @@ export function GalleryViewer({
             zoom.handleTouchStart(event);
             if (event.touches.length === 1 && !zoom.isZoomed) handleSwipeStart(event);
         },
-        [handleSwipeStart, isImage, zoom]
+        [handleSwipeStart, isImage, zoom],
     );
 
     const handleTouchMove = useCallback(
@@ -175,7 +175,7 @@ export function GalleryViewer({
             }
             handleSwipeMove(event);
         },
-        [handleSwipeMove, isImage, zoom]
+        [handleSwipeMove, isImage, zoom],
     );
 
     const handleTouchEnd = useCallback(
@@ -189,7 +189,7 @@ export function GalleryViewer({
             zoom.handleTouchEnd(event);
             if (!wasZoomed) handleSwipeEnd();
         },
-        [handleSwipeEnd, isImage, zoom]
+        [handleSwipeEnd, isImage, zoom],
     );
 
     const handleTouchCancel = useCallback(() => {
@@ -210,7 +210,7 @@ export function GalleryViewer({
             <button
                 type="button"
                 onClick={requestClose}
-                className="absolute right-4 top-4 z-10 rounded-full bg-black/50 p-2 text-white"
+                className="absolute top-4 right-4 z-10 rounded-full bg-black/50 p-2 text-white"
                 aria-label={t('closeViewer')}
             >
                 <X className="h-5 w-5" />
@@ -220,7 +220,7 @@ export function GalleryViewer({
                 <button
                     type="button"
                     onClick={triggerPrevious}
-                    className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white sm:left-4"
+                    className="absolute top-1/2 left-2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white sm:left-4"
                     aria-label={t('previousMedia')}
                 >
                     <ChevronLeft className="h-5 w-5" />
@@ -230,7 +230,7 @@ export function GalleryViewer({
                 <button
                     type="button"
                     onClick={triggerNext}
-                    className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white sm:right-4"
+                    className="absolute top-1/2 right-2 z-10 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white sm:right-4"
                     aria-label={t('nextMedia')}
                 >
                     <ChevronRight className="h-5 w-5" />

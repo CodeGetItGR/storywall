@@ -15,7 +15,7 @@ export function HomeEmptyState({ canCreateEvent }: { canCreateEvent: boolean }) 
         (event: MouseEvent<HTMLAnchorElement>) => {
             if (!canCreateEvent) event.preventDefault();
         },
-        [canCreateEvent]
+        [canCreateEvent],
     );
 
     return (
@@ -30,7 +30,7 @@ export function HomeEmptyState({ canCreateEvent }: { canCreateEvent: boolean }) 
                 onClick={onClick}
                 className={cn('group flex flex-col items-center gap-2', !canCreateEvent && 'pointer-events-none opacity-40')}
             >
-                <span className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-brand shadow-[0_10px_28px_rgba(255,122,89,0.28)] transition-transform group-hover:scale-105">
+                <span className="flex h-20 w-20 items-center justify-center rounded-full shadow-[0_10px_28px_rgba(255,122,89,0.28)] transition-transform bg-gradient-brand group-hover:scale-105">
                     <Plus className="h-7 w-7 text-white" strokeWidth={2.2} />
                 </span>
                 <span className="text-sm font-semibold text-ink">{t('createEventCta')}</span>

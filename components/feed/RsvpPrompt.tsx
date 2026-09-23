@@ -25,27 +25,27 @@ export function RsvpPrompt({ eventId, deadline, className }: { eventId: string; 
         (attending: 'attending' | 'not-attending') => {
             router.push(routes.events.tools.rsvpSubmit(eventId, attending));
         },
-        [eventId, router]
+        [eventId, router],
     );
 
     const handleClick = useCallback(
         (status: 'attending' | 'not-attending') => () => {
             go(status);
         },
-        [go]
+        [go],
     );
 
     return (
-        <div className={cn('flex items-center justify-between gap-2 bg-orangish py-3 px-4 rounded-full', className)}>
+        <div className={cn('flex items-center justify-between gap-2 rounded-full bg-orangish px-4 py-3', className)}>
             <div className={'pl-2'}>
                 <p className="text-sm font-bold text-ink">{t('willYouAttend')}</p>
-                {formattedDeadline && <p className="text-xs text-ink-muted mt-0.5">{t('until', { date: formattedDeadline })}</p>}
+                {formattedDeadline && <p className="mt-0.5 text-xs text-ink-muted">{t('until', { date: formattedDeadline })}</p>}
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex shrink-0 items-center gap-2">
                 <button
                     type="button"
                     onClick={handleClick('attending')}
-                    className="flex gap-2 px-4 py-2 rounded-full bg-gradient-brand text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+                    className="flex gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
                 >
                     <Image src="/icons/yes.svg" alt={t('yes')} width={15} height={15} unoptimized />
                     {t('yes')}
@@ -53,7 +53,7 @@ export function RsvpPrompt({ eventId, deadline, className }: { eventId: string; 
                 <button
                     type="button"
                     onClick={handleClick('not-attending')}
-                    className="flex gap-2 px-4 py-2 rounded-full border border-border text-ink-muted text-sm font-semibold hover:border-primary/40 hover:text-ink transition-colors"
+                    className="flex gap-2 rounded-full border border-border px-4 py-2 text-sm font-semibold text-ink-muted transition-colors hover:border-primary/40 hover:text-ink"
                 >
                     <Image src="/icons/no.svg" alt={t('no')} width={12} height={12} unoptimized />
                     {t('no')}

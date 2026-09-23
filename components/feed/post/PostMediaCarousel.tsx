@@ -57,11 +57,11 @@ export function PostMediaCarousel({ media, initialIndex, onIndexChange, alt, cla
     }, [emblaApi]);
 
     return (
-        <div className={cn('relative w-full h-full overflow-hidden', className)}>
-            <div className="w-full h-full overflow-hidden" ref={emblaRef}>
+        <div className={cn('relative h-full w-full overflow-hidden', className)}>
+            <div className="h-full w-full overflow-hidden" ref={emblaRef}>
                 <div className="flex h-full">
                     {media.map((item, index) => (
-                        <div key={item.id} className="relative shrink-0 grow-0 basis-full h-full">
+                        <div key={item.id} className="relative h-full shrink-0 grow-0 basis-full">
                             {item.mediaType === 'VIDEO' && item.status === 'PROCESSING' ? (
                                 <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-sm font-semibold text-white/75">
                                     <Loader2 className="h-7 w-7 animate-spin" aria-hidden="true" />
@@ -100,18 +100,18 @@ export function PostMediaCarousel({ media, initialIndex, onIndexChange, alt, cla
                         onClick={scrollPrev}
                         disabled={!canScrollPrev}
                         aria-label={t('previousMedia')}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 hover:bg-black/70 disabled:opacity-30 disabled:hover:bg-black/50 text-white flex items-center justify-center transition-colors"
+                        className="absolute top-1/2 left-2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/70 disabled:opacity-30 disabled:hover:bg-black/50"
                     >
-                        <ChevronLeft className="w-5 h-5" />
+                        <ChevronLeft className="h-5 w-5" />
                     </button>
                     <button
                         type="button"
                         onClick={scrollNext}
                         disabled={!canScrollNext}
                         aria-label={t('nextMedia')}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 hover:bg-black/70 disabled:opacity-30 disabled:hover:bg-black/50 text-white flex items-center justify-center transition-colors"
+                        className="absolute top-1/2 right-2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/70 disabled:opacity-30 disabled:hover:bg-black/50"
                     >
-                        <ChevronRight className="w-5 h-5" />
+                        <ChevronRight className="h-5 w-5" />
                     </button>
                 </>
             )}

@@ -42,7 +42,7 @@ export function ComposerFab({ hidden }: ComposerFabProps) {
             () => {
                 setLowered(isMobileTabBarHidden);
             },
-            isMobileTabBarHidden ? 100 : 0
+            isMobileTabBarHidden ? 100 : 0,
         );
 
         return () => window.clearTimeout(timeoutId);

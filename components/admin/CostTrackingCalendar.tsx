@@ -81,7 +81,7 @@ export function CostTrackingCalendar({
                 <div className="overflow-x-auto pb-1">
                     <div className="min-w-[720px]">
                         {/* Weekday headings */}
-                        <div className="grid grid-cols-7 gap-px pb-1 text-center text-[11px] font-bold uppercase tracking-wide text-ink-faint">
+                        <div className="grid grid-cols-7 gap-px pb-1 text-center text-[11px] font-bold tracking-wide text-ink-faint uppercase">
                             {days.slice(0, 7).map((day) => (
                                 <span key={utcDateKey(day)}>{weekdayFormatter.format(day)}</span>
                             ))}
@@ -172,8 +172,10 @@ function CalendarDay({
             <span className="font-mono text-[11px] font-bold tabular-nums">{dayLabel}</span>
             {summary && (
                 <span className="mt-3 block">
-                    <strong className="block font-mono text-sm font-extrabold tabular-nums">{t('eventCount', { count: formatCount(eventCount) })}</strong>
-                    <span className="mt-1 block truncate text-[11px] font-semibold uppercase tracking-wide">{formatPlanMix(summary.planMix)}</span>
+                    <strong className="block font-mono text-sm font-extrabold tabular-nums">
+                        {t('eventCount', { count: formatCount(eventCount) })}
+                    </strong>
+                    <span className="mt-1 block truncate text-[11px] font-semibold tracking-wide uppercase">{formatPlanMix(summary.planMix)}</span>
                     <span className="mt-2 block text-[11px] leading-4 opacity-80">
                         {t('quotaSummary', {
                             storage: quotaValue(summary.storageBytesTotal, summary.hasUnlimitedStorageQuota, formatBytes),

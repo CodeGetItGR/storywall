@@ -78,10 +78,14 @@ export function InvitationsQrScreen() {
 
                     <p className="mb-3 text-xs text-ink-muted">{t('qr.summary', { count: shareQrLinks.length })}</p>
 
-                    {!canWrite && <p className="mb-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('qr.readOnly')}</p>}
+                    {!canWrite && (
+                        <p className="mb-3 rounded-2xl bg-surface-muted px-4 py-3 text-sm leading-relaxed text-ink-muted">{t('qr.readOnly')}</p>
+                    )}
 
                     {limitNotice && (
-                        <p className="mb-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900">{limitNotice}</p>
+                        <p className="mb-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900">
+                            {limitNotice}
+                        </p>
                     )}
 
                     <div className="flex flex-col divide-y divide-border">

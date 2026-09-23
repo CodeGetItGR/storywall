@@ -33,7 +33,7 @@ export function EventCreationAccessControl({
                     onClick={allowAccountCreation}
                     className={cn(
                         'rounded-md px-3 py-2 text-sm font-bold transition-colors disabled:cursor-wait disabled:opacity-60',
-                        !locked ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted'
+                        !locked ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted',
                     )}
                 >
                     {t('enabled')}
@@ -45,7 +45,7 @@ export function EventCreationAccessControl({
                     onClick={limitToAdmins}
                     className={cn(
                         'rounded-md px-3 py-2 text-sm font-bold transition-colors disabled:cursor-wait disabled:opacity-60',
-                        locked ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted'
+                        locked ? 'bg-card text-ink shadow-sm' : 'text-ink-faint hover:text-ink-muted',
                     )}
                 >
                     {t('disabled')}

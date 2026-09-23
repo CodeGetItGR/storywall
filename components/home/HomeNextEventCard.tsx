@@ -32,7 +32,7 @@ export function HomeNextEventCard({ items }: { items: EventGridItem[] }) {
 
     return (
         <section aria-labelledby="home-next-event-heading" className="flex flex-col gap-3">
-            <h2 id="home-next-event-heading" className="px-1 text-xs font-semibold uppercase tracking-wide text-ink-faint">
+            <h2 id="home-next-event-heading" className="px-1 text-xs font-semibold tracking-wide text-ink-faint uppercase">
                 {t('nextEvent.title')}
             </h2>
             <Link

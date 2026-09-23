@@ -85,7 +85,7 @@ export default function HelpTab({
     ].filter((step): step is HelpStepEntry => Boolean(step));
 
     return (
-        <div className="pb-6 flex flex-col">
+        <div className="flex flex-col pb-6">
             {/* Welcome */}
             <div className="mb-8 text-center">
                 <p className="text-sm font-semibold text-ink">{t('welcome.greeting')}</p>
@@ -94,7 +94,7 @@ export default function HelpTab({
             </div>
 
             {/* Section heading */}
-            <div className="mb-5 border-t border-border/70 pt-6 text-center sm:text-left sm:pl-8">
+            <div className="mb-5 border-t border-border/70 pt-6 text-center sm:pl-8 sm:text-left">
                 <h2 className="text-base font-semibold text-ink">{t('steps.section.title')}</h2>
                 <p className="mt-1 text-sm text-ink-muted">{t('steps.section.body')}</p>
             </div>

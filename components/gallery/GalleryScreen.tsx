@@ -113,7 +113,7 @@ export function GalleryScreen() {
                                 onExitSelection={exitSelectionMode}
                             />
                         ) : (
-                            <div className={'w-full flex justify-between gap-2'}>
+                            <div className={'flex w-full justify-between gap-2'}>
                                 <Button
                                     type="button"
                                     size="sm"
@@ -132,7 +132,7 @@ export function GalleryScreen() {
                                         variant="outline"
                                         onClick={openArchiveDownload}
                                         disabled={!media.length}
-                                        className="rounded-full border-border bg-background px-3 text-xs font-semibold text-ink-muted hover:text-ink inline-flex"
+                                        className="inline-flex rounded-full border-border bg-background px-3 text-xs font-semibold text-ink-muted hover:text-ink"
                                     >
                                         <Download className="h-3.5 w-3.5" />
                                         {t('downloadGallery')}

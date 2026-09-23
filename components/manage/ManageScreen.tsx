@@ -60,7 +60,7 @@ export function ManageScreen() {
     const membersTabLoading = membersLoading || invitationsLoading || usageLoading;
 
     const [daysToGo, setDaysToGo] = useState(() =>
-        Math.max(0, activeEvent ? Math.ceil((new Date(activeEvent.schedule.startAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0)
+        Math.max(0, activeEvent ? Math.ceil((new Date(activeEvent.schedule.startAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0),
     );
 
     const navigateToSection = useCallback(
@@ -73,7 +73,7 @@ export function ManageScreen() {
             const manageRoot = routes.events.manage(eventId);
             router.replace(query ? `${manageRoot}?${query}` : manageRoot);
         },
-        [eventId, router, searchParams]
+        [eventId, router, searchParams],
     );
 
     const openSwitcher = useCallback(() => setSwitcherOpen(true), []);
@@ -179,9 +179,9 @@ export function ManageScreen() {
         <div className="mx-auto w-full max-w-6xl pb-28 lg:pb-10">
             {/* Header */}
             <div className="sticky top-0 z-20 border-b border-border/60 bg-background/95 backdrop-blur lg:static lg:bg-transparent lg:backdrop-blur-none">
-                <div className="flex items-start justify-between gap-3 px-4 pb-3 pt-4 lg:px-6 lg:pb-5 lg:pt-6">
+                <div className="flex items-start justify-between gap-3 px-4 pt-4 pb-3 lg:px-6 lg:pt-6 lg:pb-5">
                     <div className="min-w-0">
-                        <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+                        <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-ink-faint uppercase">
                             <LayoutDashboard className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                             {t('title')}
                         </p>
@@ -190,7 +190,7 @@ export function ManageScreen() {
                     <span
                         className={cn(
                             'shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold whitespace-nowrap',
-                            eventStatusBadgeTone[activeEvent.status] ?? eventStatusBadgeTone.ACTIVE
+                            eventStatusBadgeTone[activeEvent.status] ?? eventStatusBadgeTone.ACTIVE,
                         )}
                     >
                         {t.has(`status.${activeEvent.status}`) ? t(`status.${activeEvent.status}`) : t('hostView')}
@@ -230,12 +230,12 @@ export function ManageScreen() {
                 <div
                     className={cn(
                         'min-w-0',
-                        isDraft && 'flex min-h-[60svh] flex-col justify-center lg:col-span-2 lg:min-h-0 lg:max-w-4xl lg:justify-start'
+                        isDraft && 'flex min-h-[60svh] flex-col justify-center lg:col-span-2 lg:min-h-0 lg:max-w-4xl lg:justify-start',
                     )}
                 >
                     {/* Section heading (desktop) */}
                     {!isDraft && (
-                        <h2 className="mb-4 hidden text-sm font-bold uppercase tracking-wide text-ink-muted lg:block">{t(`sections.${section}`)}</h2>
+                        <h2 className="mb-4 hidden text-sm font-bold tracking-wide text-ink-muted uppercase lg:block">{t(`sections.${section}`)}</h2>
                     )}
                     {renderedSection}
                 </div>
@@ -243,7 +243,7 @@ export function ManageScreen() {
 
             {/* Section sheet (small screens) */}
             <Modal open={switcherOpen} onClose={closeSwitcher} variant="sheet" ariaLabel={t('sectionSwitcher')} closeLabel={t('sectionSwitcher')}>
-                <Modal.Body className="px-3 pb-6 pt-5">
+                <Modal.Body className="px-3 pt-5 pb-6">
                     <ManageSectionNav active={section} onSelectAction={navigateToSection} visibleSections={visibleSections} />
                 </Modal.Body>
             </Modal>

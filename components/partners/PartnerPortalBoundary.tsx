@@ -31,13 +31,7 @@ export function PartnerPortalBoundary({ token }: { token: string }) {
     }
 
     if (portal.error || !portal.data) {
-        return (
-            <PageErrorState
-                title={t('unavailable.title')}
-                description={t('unavailable.description')}
-                onRetryAction={handleRetry}
-            />
-        );
+        return <PageErrorState title={t('unavailable.title')} description={t('unavailable.description')} onRetryAction={handleRetry} />;
     }
 
     return (
@@ -57,18 +51,18 @@ export function PartnerPortalBoundary({ token }: { token: string }) {
                 {/* Summary */}
                 <section className="grid gap-3 py-6 sm:grid-cols-2" aria-label={t('summary')}>
                     <div className="rounded-lg bg-surface-muted/55 p-4">
-                        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                        <div className="flex items-center gap-2 text-xs font-semibold tracking-wide text-ink-muted uppercase">
                             <CalendarCheck2 className="h-4 w-4" aria-hidden="true" />
                             {t('eventsReferred')}
                         </div>
-                        <p className="mt-3 text-3xl font-bold tabular-nums text-ink">{portal.data.eventsReferred}</p>
+                        <p className="mt-3 text-3xl font-bold text-ink tabular-nums">{portal.data.eventsReferred}</p>
                     </div>
                     <div className="rounded-lg bg-surface-muted/55 p-4">
-                        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                        <div className="flex items-center gap-2 text-xs font-semibold tracking-wide text-ink-muted uppercase">
                             <Banknote className="h-4 w-4" aria-hidden="true" />
                             {t('currencies')}
                         </div>
-                        <p className="mt-3 text-3xl font-bold tabular-nums text-ink">{portal.data.totals.length}</p>
+                        <p className="mt-3 text-3xl font-bold text-ink tabular-nums">{portal.data.totals.length}</p>
                     </div>
                 </section>
 
@@ -82,7 +76,7 @@ export function PartnerPortalBoundary({ token }: { token: string }) {
                     ) : (
                         <div className="mt-4 overflow-x-auto rounded-lg bg-card shadow-sm ring-1 ring-border">
                             <table className="w-full min-w-[560px] text-left text-sm">
-                                <thead className="bg-surface-muted/70 text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                                <thead className="bg-surface-muted/70 text-xs font-semibold tracking-wide text-ink-muted uppercase">
                                     <tr>
                                         <th scope="col" className="px-4 py-3">
                                             {t('totals.currency')}
@@ -102,13 +96,13 @@ export function PartnerPortalBoundary({ token }: { token: string }) {
                                     {portal.data.totals.map((total) => (
                                         <tr key={total.currency}>
                                             <td className="px-4 py-3 font-mono text-xs font-semibold text-ink">{total.currency}</td>
-                                            <td className="px-4 py-3 text-right font-semibold tabular-nums text-ink">
+                                            <td className="px-4 py-3 text-right font-semibold text-ink tabular-nums">
                                                 {formatMoney(locale, total.accruedMinor, total.currency)}
                                             </td>
-                                            <td className="px-4 py-3 text-right tabular-nums text-ink-muted">
+                                            <td className="px-4 py-3 text-right text-ink-muted tabular-nums">
                                                 {formatMoney(locale, total.paidMinor, total.currency)}
                                             </td>
-                                            <td className="px-4 py-3 text-right font-semibold tabular-nums text-ink">
+                                            <td className="px-4 py-3 text-right font-semibold text-ink tabular-nums">
                                                 {formatMoney(locale, balanceMinor(total), total.currency)}
                                             </td>
                                         </tr>

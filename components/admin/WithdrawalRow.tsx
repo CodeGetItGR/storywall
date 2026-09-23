@@ -52,7 +52,7 @@ export function WithdrawalRow({ row }: { row: WithdrawalAdminDto }) {
             else await withhold.mutateAsync({ requestId: request.id, note: note.trim() });
             setConfirming(null);
         },
-        [note, release, request.id, withhold]
+        [note, release, request.id, withhold],
     );
 
     const runConfirmed = useCallback(async () => {
@@ -67,16 +67,16 @@ export function WithdrawalRow({ row }: { row: WithdrawalAdminDto }) {
                         <span
                             className={cn(
                                 'rounded-full px-2 py-0.5 text-[11px] font-bold',
-                                held ? 'bg-status-warn-wash text-status-warn' : 'bg-surface-muted text-ink-muted'
+                                held ? 'bg-status-warn-wash text-status-warn' : 'bg-surface-muted text-ink-muted',
                             )}
                         >
                             {t(`withdrawals.status.${request.status}`)}
                         </span>
                     </div>
-                    {request.reason && <p className="mt-1 whitespace-pre-line text-xs text-ink-muted">{request.reason}</p>}
+                    {request.reason && <p className="mt-1 text-xs whitespace-pre-line text-ink-muted">{request.reason}</p>}
                 </div>
                 <div className="text-right">
-                    <p className="text-sm font-semibold tabular-nums text-ink">{amount ?? t('withdrawals.noAmount')}</p>
+                    <p className="text-sm font-semibold text-ink tabular-nums">{amount ?? t('withdrawals.noAmount')}</p>
                     <p className="text-[11px] text-ink-muted">
                         {t('withdrawals.requestedAt', { date: new Date(request.createdAt).toLocaleString() })}
                     </p>
@@ -99,7 +99,7 @@ export function WithdrawalRow({ row }: { row: WithdrawalAdminDto }) {
             {/* Usage facts */}
             {usageFacts.length > 0 && (
                 <div className="mt-3 border-t border-border pt-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{t('withdrawals.usageFacts')}</p>
+                    <p className="text-[11px] font-semibold tracking-wide text-ink-faint uppercase">{t('withdrawals.usageFacts')}</p>
                     <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
                         {usageFacts.map(([key, value]) => (
                             <AdminEvidenceTile key={key} label={key} value={value} />

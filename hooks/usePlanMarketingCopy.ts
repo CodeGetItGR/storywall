@@ -11,7 +11,7 @@ export function usePlanMarketingCopy() {
 
     const moduleName = useCallback(
         (moduleKey: string) => (tModules.has(`${moduleKey}.name`) ? tModules(`${moduleKey}.name`) : moduleKey),
-        [tModules]
+        [tModules],
     );
     const copy = useMemo<LandingPlanCopy>(
         () => ({
@@ -24,7 +24,7 @@ export function usePlanMarketingCopy() {
             mediaUnlimited: t('mediaUnlimited'),
             storageUnlimited: t('storageUnlimited'),
         }),
-        [t]
+        [t],
     );
 
     return { copy, moduleName };

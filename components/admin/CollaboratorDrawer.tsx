@@ -39,7 +39,11 @@ export function CollaboratorDrawer({
             subtitle={collaborator ? t('drawer.editSubtitle') : t('drawer.createSubtitle')}
             footer={
                 <div className="ml-auto flex items-center gap-2">
-                    <button type="button" onClick={onCloseAction} className="min-h-9 rounded-md border border-border px-3.5 text-sm font-semibold text-ink-muted">
+                    <button
+                        type="button"
+                        onClick={onCloseAction}
+                        className="min-h-9 rounded-md border border-border px-3.5 text-sm font-semibold text-ink-muted"
+                    >
                         {tAdmin('cancel')}
                     </button>
                     <button
@@ -60,13 +64,7 @@ export function CollaboratorDrawer({
                     <input name="name" required maxLength={140} defaultValue={collaborator?.name} className={adminInputClass()} />
                 </AdminField>
                 <AdminField label={t('fields.contactEmail')} required>
-                    <input
-                        name="contactEmail"
-                        required
-                        type="email"
-                        defaultValue={collaborator?.contactEmail}
-                        className={adminInputClass()}
-                    />
+                    <input name="contactEmail" required type="email" defaultValue={collaborator?.contactEmail} className={adminInputClass()} />
                 </AdminField>
 
                 {/* Status */}
@@ -86,7 +84,9 @@ export function CollaboratorDrawer({
                         className={adminInputClass('min-h-28 resize-y')}
                     />
                 </AdminField>
-                {saveCollaborator.error && <p className="text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(saveCollaborator.error)}`)}</p>}
+                {saveCollaborator.error && (
+                    <p className="text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(saveCollaborator.error)}`)}</p>
+                )}
             </form>
         </AdminDrawer>
     );

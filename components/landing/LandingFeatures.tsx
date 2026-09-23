@@ -26,7 +26,7 @@ export function LandingFeatures() {
     const labels = t.raw('items') as string[];
     const { isAvailable } = useLandingModuleGates();
     const features = labels.flatMap((label, index) =>
-        isAvailable(LANDING_FEATURE_MODULE_KEYS[index] ?? null) ? [{ iconPath: FEATURE_ICONS[index]!, label, position: index }] : []
+        isAvailable(LANDING_FEATURE_MODULE_KEYS[index] ?? null) ? [{ iconPath: FEATURE_ICONS[index]!, label, position: index }] : [],
     );
 
     return (
@@ -38,14 +38,12 @@ export function LandingFeatures() {
             <div className="m-0 text-[13px] font-black tracking-[0.15em] text-white/62 uppercase min-[761px]:col-start-2 min-[761px]:row-start-1 min-[761px]:mb-5.5 min-[761px]:pt-0">
                 {t('eyebrow')}
             </div>
-            <h2 className="m-0 mt-6.5 text-[clamp(46px,12vw,66px)] leading-[0.89] font-normal tracking-normal text-white [font-family:var(--editorial)] min-[761px]:col-start-2 min-[761px]:row-start-2 min-[761px]:mt-0 min-[761px]:max-w-245 min-[761px]:text-[clamp(43.5px,4.8vw,81px)]">
+            <h2 className="m-0 mt-6.5 [font-family:var(--editorial)] text-[clamp(46px,12vw,66px)] leading-[0.89] font-normal tracking-normal text-white min-[761px]:col-start-2 min-[761px]:row-start-2 min-[761px]:mt-0 min-[761px]:max-w-245 min-[761px]:text-[clamp(43.5px,4.8vw,81px)]">
                 {t('heading')}
             </h2>
             {/* Feature icon strip */}
             <div className="sw-feature-block mt-10.5 w-full min-[761px]:col-span-2 min-[761px]:row-start-3 min-[761px]:mx-auto min-[761px]:mt-[clamp(52px,5.2vw,76px)] min-[761px]:w-[min(88%,1480px)] min-[761px]:max-w-370">
-                <div
-                    className="relative w-full overflow-hidden pb-2 max-[760px]:ml-[calc(50%-50vw)] max-[760px]:mr-[calc(50%-50vw)] max-[760px]:w-screen max-[760px]:max-w-none min-[761px]:overflow-visible"
-                >
+                <div className="relative w-full overflow-hidden pb-2 max-[760px]:mr-[calc(50%-50vw)] max-[760px]:ml-[calc(50%-50vw)] max-[760px]:w-screen max-[760px]:max-w-none min-[761px]:overflow-visible">
                     <div
                         aria-hidden="true"
                         className="pointer-events-none absolute top-0 bottom-3 left-0 z-3 hidden w-8.5 bg-[linear-gradient(90deg,#171419_0%,rgba(23,20,25,0)_100%)] max-[760px]:block"
@@ -55,7 +53,7 @@ export function LandingFeatures() {
                         className="pointer-events-none absolute top-0 right-0 bottom-3 z-3 hidden w-8.5 bg-[linear-gradient(270deg,#0b0b0f_0%,rgba(11,11,15,0)_100%)] max-[760px]:block"
                     />
                     <div
-                        className="sw-feature-track flex items-start gap-4.5 overflow-x-auto overflow-y-hidden px-5 pt-2 pb-5 [-webkit-overflow-scrolling:touch] scroll-auto snap-none [touch-action:pan-x] min-[761px]:w-full min-[761px]:max-w-none min-[761px]:flex-wrap min-[761px]:justify-center min-[761px]:gap-[clamp(34px,3vw,48px)_clamp(24px,2.2vw,34px)] min-[761px]:overflow-visible min-[761px]:px-0 min-[761px]:py-0"
+                        className="sw-feature-track flex [touch-action:pan-x] snap-none items-start gap-4.5 overflow-x-auto overflow-y-hidden scroll-auto px-5 pt-2 pb-5 [-webkit-overflow-scrolling:touch] min-[761px]:w-full min-[761px]:max-w-none min-[761px]:flex-wrap min-[761px]:justify-center min-[761px]:gap-[clamp(34px,3vw,48px)_clamp(24px,2.2vw,34px)] min-[761px]:overflow-visible min-[761px]:px-0 min-[761px]:py-0"
                         aria-label={t('label')}
                         role="list"
                     >
