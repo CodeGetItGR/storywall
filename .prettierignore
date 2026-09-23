@@ -5,3 +5,5 @@ coverage
 dist
 package-lock.json
 docs
+.claude
+next-env.d.ts

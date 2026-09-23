@@ -8,8 +8,10 @@ const config = {
     printWidth: 150,
     bracketSpacing: true,
     arrowParens: 'always',
+    endOfLine: 'auto',
 
     plugins: ['prettier-plugin-tailwindcss'],
+    tailwindStylesheet: './app/globals.css',
     tailwindFunctions: ['cn', 'clsx', 'cva'],
 };
 
