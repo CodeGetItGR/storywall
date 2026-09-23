@@ -27,7 +27,7 @@ export function MarketingPlanCard({
     }
 
     const cardClassName = cn(
-        'flex h-full min-h-155 w-full flex-col justify-between rounded-[22px] border px-5 pt-5 pb-4 text-left text-[#151313] transition-colors min-[761px]:min-h-13 min-[761px]:px-5',
+        'flex h-full w-full flex-col justify-between rounded-[22px] border px-5 pt-5 pb-4 text-left text-[#151313] transition-colors min-[761px]:px-5',
         onSelectAction &&
             !selected &&
             'hover:border-[#151313]/25 focus-ring focus-visible:outline-offset-2',
