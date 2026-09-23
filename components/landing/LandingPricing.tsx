@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
+import { LandingPricingCta } from '@/components/landing/LandingPricingCta';
 import { MarketingPlanCard } from '@/components/plan/MarketingPlanCard';
 import { useLandingPricingCategory } from '@/hooks/useLandingPricingCategory';
 import { useLandingPricingPlans } from '@/hooks/useLandingPricingPlans';
@@ -85,12 +86,19 @@ export function LandingPricing() {
                     categories[category].plans.map((plan, index) => (
                         <MarketingPlanCard
                             featured={index === 1}
+                            footer={<LandingPricingCta className="mt-5 flex w-full min-[761px]:hidden" label={t('cta')} />}
                             key={`${category}-${plan.name}`}
                             plan={plan}
                             popularLabel={t('popular')}
                             storageLabel={t('storageLabel')}
                         />
                 ))}
+            </div>
+
+            {/* Create CTA */}
+            <div className="mx-auto mt-8 flex max-w-331 flex-col items-center gap-3 min-[761px]:mt-12">
+                <LandingPricingCta className="hidden min-[761px]:flex" label={t('cta')} />
+                <p className="text-center text-[12px] text-[#151313]/65">{t('verifyNotice')}</p>
             </div>
         </section>
     );

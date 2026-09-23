@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import type { LandingPlan } from '@/lib/landingPricing';
 import { cn } from '@/lib/utils';
 
@@ -10,6 +12,7 @@ type MarketingPlanCardProps = {
     selected?: boolean;
     selectionLabel?: string;
     onSelectAction?: (planCode: string) => void;
+    footer?: ReactNode;
 };
 
 export function MarketingPlanCard({
@@ -21,13 +24,14 @@ export function MarketingPlanCard({
     selected = false,
     selectionLabel,
     onSelectAction,
+    footer,
 }: MarketingPlanCardProps) {
     function handleSelect() {
         if (planCode) onSelectAction?.(planCode);
     }
 
     const cardClassName = cn(
-        'flex h-full min-h-155 w-full flex-col justify-between rounded-[22px] border px-5 pt-5 pb-4 text-left text-[#151313] transition-colors min-[761px]:min-h-13 min-[761px]:px-5',
+        'flex h-full w-full flex-col justify-between rounded-[22px] border px-5 pt-5 pb-4 text-left text-[#151313] transition-colors min-[761px]:px-5',
         onSelectAction &&
             !selected &&
             'hover:border-[#151313]/25 focus-ring focus-visible:outline-offset-2',
@@ -86,6 +90,7 @@ export function MarketingPlanCard({
                         {selectionLabel}
                     </p>
                 )}
+                {footer}
             </div>
         </>
     );

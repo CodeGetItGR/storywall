@@ -17,9 +17,9 @@ const PROTECTED_PREFIXES = ['/admin', '/feed', '/home', '/notifications', '/prof
 
 function isProtectedPath(pathname: string): boolean {
     if (PROTECTED_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix))) return true;
-    // /events/[eventId]/... (checkout, settings) needs a session; /events/new
-    // has its own client-side gate and must not match this prefix.
-    return pathname.startsWith('/events/') && !pathname.startsWith('/events/new');
+    // Every /events/... route (new, checkout, settings) needs a session. The
+    // client gate on /events/new only adds role and email-verification checks.
+    return pathname.startsWith('/events/');
 }
 
 interface CookieWrite {

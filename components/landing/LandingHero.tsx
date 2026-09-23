@@ -162,7 +162,7 @@ export function LandingHero() {
                         <div className={'flex'}>
                             <LandingHeroCta
                                 className="mx-auto  md:ml-44 lg:ml-68 hidden min-[761px]:mt-6.5 min-[761px]:flex min-[761px]:h-15.5 min-[761px]:w-[min(228px,52%)]"
-                                href={isSignedIn ? routes.home : routes.register}
+                                href={isSignedIn ? routes.home : routes.events.new()}
                                 lines={cta}
                             />
                         </div>
@@ -187,7 +187,7 @@ export function LandingHero() {
                     <LandingHeroVisual motionPaused={paused} />
                     <LandingHeroCta
                         className="order-3 mx-auto mt-[34vw] h-23 w-[min(415px,78vw)] flex min-[421px]:h-28 min-[761px]:hidden"
-                        href={isSignedIn ? routes.home : routes.register}
+                        href={isSignedIn ? routes.home : routes.events.new()}
                         lines={cta}
                     />
                 </div>

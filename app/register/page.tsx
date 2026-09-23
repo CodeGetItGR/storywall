@@ -14,7 +14,7 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppNewsletterConfig } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthPageRedirect } from '@/hooks/useAuthPageRedirect';
-import { AUTH_RETURN_PATH_PARAM, getPostAuthRedirectPath, getSafeReturnPath } from '@/lib/auth/returnPath';
+import { AUTH_RETURN_PATH_PARAM, getPostRegisterRedirectPath, getSafeReturnPath } from '@/lib/auth/returnPath';
 import { routes } from '@/lib/routes';
 
 export default function RegisterPage() {
@@ -52,7 +52,7 @@ export default function RegisterPage() {
                 inviteToken: inviteToken ?? undefined,
                 subscribeToNewsletter: newsletterConfig ? subscribeToNewsletter : undefined,
             });
-            router.replace(getPostAuthRedirectPath(auth.role, returnPath));
+            router.replace(getPostRegisterRedirectPath(auth.role, Boolean(inviteToken)));
         } catch (err) {
             setError(toErrorMessage(err));
         } finally {
@@ -64,9 +64,9 @@ export default function RegisterPage() {
         async (provider: 'GOOGLE' | 'APPLE', idToken: string) => {
             setError(null);
             const auth = await oauth(provider, { idToken, inviteToken: inviteToken ?? undefined });
-            router.replace(getPostAuthRedirectPath(auth.role, returnPath));
+            router.replace(getPostRegisterRedirectPath(auth.role, Boolean(inviteToken)));
         },
-        [inviteToken, oauth, returnPath, router]
+        [inviteToken, oauth, router]
     );
 
     const handleOAuthError = useCallback(
