@@ -292,7 +292,14 @@ export const DEMO_BANNER_MEDIA_ID = 'demo-media-banner';
 
 export function buildSeedMedia(): MediaResponseDto[] {
     const entries: { id: string; label: string; filename: string; uploaderId: string; daysAgo: number; kind: 'portrait' | 'landscape' }[] = [
-        { id: 'demo-media-first-look', label: 'First Look', filename: 'first-look.png', uploaderId: DEMO_HOST_MEMBER_ID, daysAgo: -14, kind: 'portrait' },
+        {
+            id: 'demo-media-first-look',
+            label: 'First Look',
+            filename: 'first-look.png',
+            uploaderId: DEMO_HOST_MEMBER_ID,
+            daysAgo: -14,
+            kind: 'portrait',
+        },
         {
             id: 'demo-media-ceremony',
             label: 'Ceremony Kiss',
@@ -321,9 +328,23 @@ export function buildSeedMedia(): MediaResponseDto[] {
             daysAgo: -10,
             kind: 'landscape',
         },
-        { id: 'demo-media-confetti', label: 'Grand Exit', filename: 'confetti-exit.png', uploaderId: DEMO_HOST_MEMBER_ID, daysAgo: -10, kind: 'portrait' },
+        {
+            id: 'demo-media-confetti',
+            label: 'Grand Exit',
+            filename: 'confetti-exit.png',
+            uploaderId: DEMO_HOST_MEMBER_ID,
+            daysAgo: -10,
+            kind: 'portrait',
+        },
         { id: 'demo-media-family', label: 'Family Portrait', filename: 'family-portrait.png', uploaderId: G6, daysAgo: -13, kind: 'landscape' },
-        { id: 'demo-media-getting-ready-bride', label: 'Getting Ready', filename: 'getting-ready-bride.png', uploaderId: DEMO_HOST_MEMBER_ID, daysAgo: -1, kind: 'portrait' },
+        {
+            id: 'demo-media-getting-ready-bride',
+            label: 'Getting Ready',
+            filename: 'getting-ready-bride.png',
+            uploaderId: DEMO_HOST_MEMBER_ID,
+            daysAgo: -1,
+            kind: 'portrait',
+        },
         {
             id: 'demo-media-getting-ready-groom',
             label: 'Getting Ready',
@@ -332,7 +353,14 @@ export function buildSeedMedia(): MediaResponseDto[] {
             daysAgo: -1,
             kind: 'portrait',
         },
-        { id: 'demo-media-venue', label: 'Willowbrook Gardens', filename: 'venue-sunset.png', uploaderId: DEMO_HOST_MEMBER_ID, daysAgo: -20, kind: 'landscape' },
+        {
+            id: 'demo-media-venue',
+            label: 'Willowbrook Gardens',
+            filename: 'venue-sunset.png',
+            uploaderId: DEMO_HOST_MEMBER_ID,
+            daysAgo: -20,
+            kind: 'landscape',
+        },
         { id: 'demo-media-rehearsal', label: 'Rehearsal Dinner', filename: 'rehearsal-dinner.png', uploaderId: G4, daysAgo: -14, kind: 'landscape' },
     ];
 
@@ -626,7 +654,7 @@ function buildPostSeeds(): PostSeed[] {
             id: 'demo-post-thankyou',
             authorId: DEMO_COHOST_MEMBER_ID,
             type: 'TEXT',
-            content: "Still processing how lucky we are to have all of you in our lives. Thank you for making our wedding weekend unforgettable 🥹",
+            content: 'Still processing how lucky we are to have all of you in our lives. Thank you for making our wedding weekend unforgettable 🥹',
             mediaIds: [],
             isPinned: false,
             daysAgo: -8,
@@ -754,8 +782,20 @@ export function buildSeedWishbookEntries(): WishbookEntryResponseDto[] {
             message: 'From the whole family — welcome, Alex. We already love you like our own.',
             daysAgo: -13,
         },
-        { id: 'demo-wishbook-5', authorId: G5, guestName: 'Nina Kowalski', message: 'Still can\'t believe my college roommate found her person. So happy for you! 💕', daysAgo: -11 },
-        { id: 'demo-wishbook-6', authorId: null, guestName: 'The Ramirez Family', message: 'Congratulations on your beautiful wedding — wishing you endless joy!', daysAgo: -10 },
+        {
+            id: 'demo-wishbook-5',
+            authorId: G5,
+            guestName: 'Nina Kowalski',
+            message: "Still can't believe my college roommate found her person. So happy for you! 💕",
+            daysAgo: -11,
+        },
+        {
+            id: 'demo-wishbook-6',
+            authorId: null,
+            guestName: 'The Ramirez Family',
+            message: 'Congratulations on your beautiful wedding — wishing you endless joy!',
+            daysAgo: -10,
+        },
     ];
 
     return entries.map((entry) => ({
@@ -772,7 +812,14 @@ export function buildSeedWishbookEntries(): WishbookEntryResponseDto[] {
 // --- RSVPs ---
 
 export function buildSeedRsvps(): RsvpResponseDto[] {
-    const entries: { id: string; memberId: string; status: RsvpResponseDto['attendanceStatus']; adults: number; children: number; daysAgo: number }[] = [
+    const entries: {
+        id: string;
+        memberId: string;
+        status: RsvpResponseDto['attendanceStatus'];
+        adults: number;
+        children: number;
+        daysAgo: number;
+    }[] = [
         { id: 'demo-rsvp-1', memberId: G1, status: 'ATTENDING', adults: 2, children: 0, daysAgo: -35 },
         { id: 'demo-rsvp-2', memberId: G2, status: 'ATTENDING', adults: 1, children: 0, daysAgo: -33 },
         { id: 'demo-rsvp-3', memberId: G3, status: 'ATTENDING', adults: 1, children: 0, daysAgo: -50 },
@@ -801,7 +848,13 @@ export function buildSeedStories(): StoryResponseDto[] {
     const entries: { id: string; authorId: string; mediaId: string; caption: string; seen: boolean }[] = [
         { id: 'demo-story-1', authorId: DEMO_HOST_MEMBER_ID, mediaId: 'demo-media-getting-ready-bride', caption: 'Getting ready! 💄', seen: true },
         { id: 'demo-story-2', authorId: DEMO_HOST_MEMBER_ID, mediaId: 'demo-media-venue', caption: 'Almost time 🥂', seen: true },
-        { id: 'demo-story-3', authorId: DEMO_COHOST_MEMBER_ID, mediaId: 'demo-media-getting-ready-groom', caption: 'Nervous but so ready', seen: false },
+        {
+            id: 'demo-story-3',
+            authorId: DEMO_COHOST_MEMBER_ID,
+            mediaId: 'demo-media-getting-ready-groom',
+            caption: 'Nervous but so ready',
+            seen: false,
+        },
         { id: 'demo-story-4', authorId: G3, mediaId: 'demo-media-rings', caption: 'Maid of honor duties ✅', seen: false },
         { id: 'demo-story-5', authorId: G4, mediaId: 'demo-media-toast', caption: 'Speech rehearsal round 12', seen: false },
         { id: 'demo-story-6', authorId: G1, mediaId: 'demo-media-dancefloor', caption: 'This party though 🔥', seen: true },
@@ -825,12 +878,57 @@ export function buildSeedStories(): StoryResponseDto[] {
 // --- Playlist suggestions ---
 
 export function buildSeedPlaylistSuggestions(): PlaylistSuggestionResponseDto[] {
-    const entries: { id: string; authorId: string; title: string; artist: string; comment: string | null; up: number; down: number; daysAgo: number }[] = [
-        { id: 'demo-suggestion-1', authorId: G1, title: 'Perfect', artist: 'Ed Sheeran', comment: 'Great for the first dance!', up: 8, down: 0, daysAgo: -20 },
-        { id: 'demo-suggestion-2', authorId: G3, title: "Can't Help Falling in Love", artist: 'Elvis Presley', comment: null, up: 6, down: 0, daysAgo: -18 },
-        { id: 'demo-suggestion-3', authorId: G4, title: 'Uptown Funk', artist: 'Mark Ronson ft. Bruno Mars', comment: 'This will get everyone on the floor', up: 10, down: 1, daysAgo: -15 },
-        { id: 'demo-suggestion-4', authorId: G5, title: "September", artist: 'Earth, Wind & Fire', comment: null, up: 7, down: 0, daysAgo: -12 },
-        { id: 'demo-suggestion-5', authorId: G2, title: 'Dancing Queen', artist: 'ABBA', comment: 'A classic wedding must-have', up: 5, down: 1, daysAgo: -10 },
+    const entries: {
+        id: string;
+        authorId: string;
+        title: string;
+        artist: string;
+        comment: string | null;
+        up: number;
+        down: number;
+        daysAgo: number;
+    }[] = [
+        {
+            id: 'demo-suggestion-1',
+            authorId: G1,
+            title: 'Perfect',
+            artist: 'Ed Sheeran',
+            comment: 'Great for the first dance!',
+            up: 8,
+            down: 0,
+            daysAgo: -20,
+        },
+        {
+            id: 'demo-suggestion-2',
+            authorId: G3,
+            title: "Can't Help Falling in Love",
+            artist: 'Elvis Presley',
+            comment: null,
+            up: 6,
+            down: 0,
+            daysAgo: -18,
+        },
+        {
+            id: 'demo-suggestion-3',
+            authorId: G4,
+            title: 'Uptown Funk',
+            artist: 'Mark Ronson ft. Bruno Mars',
+            comment: 'This will get everyone on the floor',
+            up: 10,
+            down: 1,
+            daysAgo: -15,
+        },
+        { id: 'demo-suggestion-4', authorId: G5, title: 'September', artist: 'Earth, Wind & Fire', comment: null, up: 7, down: 0, daysAgo: -12 },
+        {
+            id: 'demo-suggestion-5',
+            authorId: G2,
+            title: 'Dancing Queen',
+            artist: 'ABBA',
+            comment: 'A classic wedding must-have',
+            up: 5,
+            down: 1,
+            daysAgo: -10,
+        },
     ];
 
     return entries.map((entry) => ({
@@ -859,7 +957,7 @@ export function buildSeedGiftAccount(): EventGiftAccountResponseDto {
         iban: 'GR1601101250000000012300695',
         accountHolder: 'Alex Rivera & Riley Chen',
         bankName: 'Willowbrook National Bank',
-        note: 'Your presence is the best gift of all — but if you\'d like to help us start our new home, a contribution here means the world to us. Thank you! 🤍',
+        note: "Your presence is the best gift of all — but if you'd like to help us start our new home, a contribution here means the world to us. Thank you! 🤍",
         updatedAt: DAYS(-20),
     };
 }
@@ -1016,6 +1114,7 @@ export function buildSeedQrLinkStats(): QrLinkStatsDto[] {
         {
             qrLinkId: 'demo-qr-1',
             label: 'Table QR code',
+            labelKey: null,
             targetType: 'MEDIA_UPLOAD',
             status: 'ACTIVE',
             joinCount: 6,
@@ -1043,7 +1142,7 @@ export function buildSeedUsage(): EventUsageResponseDto {
 }
 
 export function buildSeedBilling(): EventBillingResponseDto {
-    return { eventStatus: 'ACTIVE', planTierCode: 'FREE', planTierName: 'Free', orders: [], addons: [] };
+    return { eventStatus: 'ACTIVE', planTierCode: 'FREE', planTierName: 'Free', orders: [], addons: [], discount: null };
 }
 
 export function buildSeedAppConfig(): AppConfigResponseDto {

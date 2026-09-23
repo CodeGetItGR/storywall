@@ -6,8 +6,8 @@ import { useTranslations } from 'next-intl';
 import { AdminSection } from '@/components/admin/AdminSection';
 import { CostTrackingCalendar } from '@/components/admin/CostTrackingCalendar';
 import { CostTrackingDayDrawer } from '@/components/admin/CostTrackingDayDrawer';
+import { CostTrackingProviders } from '@/components/admin/CostTrackingProviders';
 import { CostTrackingRangeControl } from '@/components/admin/CostTrackingRangeControl';
-import { CostTrackingSummary } from '@/components/admin/CostTrackingSummary';
 import { CostTrackingTrends } from '@/components/admin/CostTrackingTrends';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useCostTrackingDashboard } from '@/hooks/useCostTrackingDashboard';
@@ -16,7 +16,8 @@ import { adminErrorMessageKey } from '@/lib/adminUtils';
 export function CostTrackingPanel() {
     const t = useTranslations('AdminPage');
     const state = useCostTrackingDashboard();
-    const isRefreshing = state.summaryQuery.isFetching || state.timelineQuery.isFetching || state.calendarQuery.isFetching || state.dayEventsQuery.isFetching;
+    const isRefreshing =
+        state.summaryQuery.isFetching || state.timelineQuery.isFetching || state.calendarQuery.isFetching || state.dayEventsQuery.isFetching;
     const error = state.summaryQuery.error ?? state.timelineQuery.error;
     const selectedDate = state.selectedDate;
     const selectedDay = selectedDate ? state.calendarQuery.data?.days.find((day) => day.date.startsWith(selectedDate)) : undefined;
@@ -46,15 +47,15 @@ export function CostTrackingPanel() {
 
             {error && <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(error)}`)}</p>}
 
-            {/* Cost summary */}
+            {/* Provider snapshots */}
             {state.summaryQuery.isLoading ? <LoadingState label={t('costTracking.loading')} className="justify-start" /> : null}
-            {state.summaryQuery.data && <CostTrackingSummary summary={state.summaryQuery.data} />}
+            {state.summaryQuery.data && <CostTrackingProviders summary={state.summaryQuery.data} />}
 
-            {/* Cost trends */}
+            {/* Volume trends */}
             {state.timelineQuery.isLoading ? (
                 <LoadingState label={t('costTracking.trends.loading')} className="justify-start" />
-            ) : state.summaryQuery.data ? (
-                <CostTrackingTrends data={state.chart.data} planTiers={state.chart.planTiers} currency={state.summaryQuery.data.currency} />
+            ) : state.timelineQuery.data ? (
+                <CostTrackingTrends data={state.chart.data} planTiers={state.chart.planTiers} />
             ) : null}
 
             {/* Event calendar */}

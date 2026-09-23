@@ -1,7 +1,7 @@
 import { useTranslations } from 'next-intl';
 
 import Section from '@/components/manage/Section';
-import { useBillingPlanFacts } from '@/hooks/useBillingPlanFacts';
+import { useBillingDiscountLine, useBillingPlanFacts } from '@/hooks/useBillingPlanFacts';
 import type { BillingData } from '@/hooks/useEventBillingPanel';
 import type { EventScheduleDto, EventUsageResponseDto } from '@/lib/api/types';
 
@@ -20,12 +20,16 @@ export function BillingPlanSummary({
 }) {
     const t = useTranslations('EventPlanSettingsPage');
     const facts = useBillingPlanFacts(schedule, usage);
+    const discountLine = useBillingDiscountLine(data.discount);
 
     return (
         <Section title={t('yourPlan.title')}>
             {/* Plan */}
             <p className="text-xl font-bold text-ink">{data.planTierName}</p>
             {data.eventStatus === 'DRAFT' && <p className="mt-1 text-sm text-ink-muted">{t('summary.DRAFT')}</p>}
+
+            {/* Discount */}
+            {discountLine && <p className="mt-1 text-sm font-semibold text-emerald-700">{discountLine}</p>}
 
             {/* Facts */}
             {facts.length > 0 && (

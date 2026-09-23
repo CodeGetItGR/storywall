@@ -1422,7 +1422,8 @@
             "retryIn": "Δοκιμάστε ξανά σε {seconds} δευτ."
         },
         "yourPlan": {
-            "title": "Το πλάνο σας"
+            "title": "Το πλάνο σας",
+            "discount": "{label} · έκπτωση {discount}%"
         },
         "upgrade": {
             "button": "Αναβάθμιση · {amount}",
@@ -1515,7 +1516,8 @@
             "PENDING": "Σε αναμονή",
             "PAID": "Πληρωμένη",
             "FAILED": "Απέτυχε",
-            "CANCELLED": "Ακυρώθηκε"
+            "CANCELLED": "Ακυρώθηκε",
+            "REFUNDED": "Επιστράφηκε"
         },
         "subscriptionStatus": {
             "ACTIVE": "Ενεργή",
@@ -1637,6 +1639,7 @@
         "continueToCheckout": "Συνέχεια στην πληρωμή",
         "openingCheckout": "Άνοιγμα ασφαλούς πληρωμής...",
         "autoDiscountApplied": "{label} · έκπτωση {discount}%, εφαρμόζεται αυτόματα",
+        "autoDiscountAppliedNoLabel": "Έκπτωση {discount}%, εφαρμόζεται αυτόματα",
         "collaboration": {
             "title": "Κωδικός έκπτωσης",
             "field": "Κωδικός έκπτωσης",
@@ -1910,13 +1913,7 @@
         "addToWishbook": "Προσθήκη ευχής",
         "wishSentTitle": "Η ευχή σας στάλθηκε",
         "wishSentBody": "Ευχαριστούμε που αφιερώσατε χρόνο να γράψετε κάτι τόσο τρυφερό. Φυλάσσεται πλέον με ασφάλεια στο βιβλίο ευχών.",
-        "messageCount": "{count, plural, one {# Μήνυμα} other {# Μηνύματα}}",
-        "timeAgo": {
-            "hours": "πριν {count} ώ",
-            "days": "πριν {count} η"
-        },
-        "unlikeMessage": "Αναίρεση μου αρέσει",
-        "likeMessage": "Μου αρέσει"
+        "messageCount": "{count, plural, one {# Μήνυμα} other {# Μηνύματα}}"
     },
     "PlaylistPage": {
         "backToFeed": "Πίσω στη ροή",
@@ -2095,10 +2092,8 @@
             "copy": "Αντιγραφή: {label}",
             "copied": "Αντιγράφηκε",
             "eventId": "ID εκδήλωσης",
-            "orderId": "ID παραγγελίας",
             "requestId": "ID αιτήματος",
-            "providerEventId": "ID συμβάντος παρόχου",
-            "deliveryId": "ID παράδοσης"
+            "providerEventId": "ID συμβάντος παρόχου"
         },
         "layout": {
             "console": "Κέντρο ελέγχου",
@@ -2430,40 +2425,40 @@
             "sharedGroup": {
                 "label": "Διατίθεται και για"
             },
-                "grid": {
-                    "title": "Ενότητες",
-                    "count": "{supported} υποστηρίζονται · {unsupported} δεν υποστηρίζονται",
-                    "showHidden": "Εμφάνιση κρυφών πλάνων",
-                    "noPlans": "Δεν υπάρχουν πλάνα.",
-                    "columnError": "Δεν ήταν δυνατή η φόρτωση των ρυθμίσεων ενοτήτων του πλάνου.",
-                    "included": "Περιλαμβάνεται",
-                    "notIncluded": "Δεν περιλαμβάνεται",
-                    "unlockOnce": "+{price} εφάπαξ",
-                    "unlockMonthly": "+{price}/μήνα",
-                    "applicability": {
-                        "label": "Διαθεσιμότητα για αυτόν τον τύπο",
-                        "UNSUPPORTED": "Μη διαθέσιμη",
-                        "DEFAULT_OFF": "Ανενεργή",
-                        "DEFAULT_ON": "Ενεργή",
-                        "confirmTitle": "Αλλαγή της ενότητας {module} για {eventType};",
-                        "confirmBody": "{before} → {after}",
-                        "unsupportedWarning": "Η ενότητα αφαιρείται από κάθε εκδήλωση αυτού του τύπου.",
-                        "confirm": "Εφαρμογή"
-                    },
-                    "cell": {
-                        "title": "{module} · {plan}",
-                        "includedSwitch": "Περιλαμβάνεται στο πλάνο",
-                        "resetToDefault": "Επαναφορά στην προεπιλογή τύπου",
-                        "otherKeys": "Άλλες ρυθμίσεις (JSON)",
-                        "invalidJson": "Εισάγετε ένα αντικείμενο JSON.",
-                        "invalidNumber": "Εισάγετε ακέραιο αριθμό τουλάχιστον {min}.",
-                        "confirmTitle": "Αποθήκευση αλλαγών στην ενότητα {module} για το πλάνο {plan};",
-                        "included": "Περιλαμβάνεται",
-                        "yes": "Ναι",
-                        "no": "Όχι",
-                        "noChanges": "Δεν υπάρχουν αλλαγές."
-                    }
+            "grid": {
+                "title": "Ενότητες",
+                "count": "{supported} υποστηρίζονται · {unsupported} δεν υποστηρίζονται",
+                "showHidden": "Εμφάνιση κρυφών πλάνων",
+                "noPlans": "Δεν υπάρχουν πλάνα.",
+                "columnError": "Δεν ήταν δυνατή η φόρτωση των ρυθμίσεων ενοτήτων του πλάνου.",
+                "included": "Περιλαμβάνεται",
+                "notIncluded": "Δεν περιλαμβάνεται",
+                "unlockOnce": "+{price} εφάπαξ",
+                "unlockMonthly": "+{price}/μήνα",
+                "applicability": {
+                    "label": "Διαθεσιμότητα για αυτόν τον τύπο",
+                    "UNSUPPORTED": "Μη διαθέσιμη",
+                    "DEFAULT_OFF": "Ανενεργή",
+                    "DEFAULT_ON": "Ενεργή",
+                    "confirmTitle": "Αλλαγή της ενότητας {module} για {eventType};",
+                    "confirmBody": "{before} → {after}",
+                    "unsupportedWarning": "Η ενότητα αφαιρείται από κάθε εκδήλωση αυτού του τύπου.",
+                    "confirm": "Εφαρμογή"
                 },
+                "cell": {
+                    "title": "{module} · {plan}",
+                    "includedSwitch": "Περιλαμβάνεται στο πλάνο",
+                    "resetToDefault": "Επαναφορά στην προεπιλογή τύπου",
+                    "otherKeys": "Άλλες ρυθμίσεις (JSON)",
+                    "invalidJson": "Εισάγετε ένα αντικείμενο JSON.",
+                    "invalidNumber": "Εισάγετε ακέραιο αριθμό τουλάχιστον {min}.",
+                    "confirmTitle": "Αποθήκευση αλλαγών στην ενότητα {module} για το πλάνο {plan};",
+                    "included": "Περιλαμβάνεται",
+                    "yes": "Ναι",
+                    "no": "Όχι",
+                    "noChanges": "Δεν υπάρχουν αλλαγές."
+                }
+            },
             "search": {
                 "placeholder": "Αναζήτηση με όνομα ή κωδικό"
             },
@@ -2769,6 +2764,7 @@
                     "code": "Κωδικός",
                     "rates": "Ποσοστά",
                     "redemptions": "Ενεργές χρήσεις",
+                    "appliesTo": "Ισχύει για",
                     "status": "Κατάσταση"
                 },
                 "status": {
@@ -2778,12 +2774,26 @@
                 },
                 "fields": {
                     "code": "Κωδικός",
-                    "label": "Ετικέτα διοργανωτή",
+                    "codeHint": "Αυτό πληκτρολογεί ο διοργανωτής στην πληρωμή. Δεν αλλάζει αργότερα.",
+                    "label": "Όνομα έκπτωσης",
+                    "labelHint": "Εμφανίζεται στον διοργανωτή στην πληρωμή και στη σελίδα του πλάνου του.",
                     "discountPercent": "Έκπτωση %",
                     "commissionPercent": "Προμήθεια %",
+                    "commissionPercentHint": "Τι κερδίζει ο συνεργάτης. Βάλτε 0 για καμία προμήθεια.",
                     "startsAt": "Έναρξη",
                     "endsAt": "Λήξη",
-                    "maxRedemptions": "Μέγιστες χρήσεις"
+                    "maxRedemptions": "Μέγιστες χρήσεις",
+                    "maxRedemptionsHint": "Αφήστε κενό για απεριόριστες."
+                },
+                "restrictions": {
+                    "eventTypes": "Τύποι εκδήλωσης",
+                    "eventTypesHint": "Αφήστε τα όλα κενά για να ισχύει σε κάθε τύπο εκδήλωσης.",
+                    "plans": "Πλάνα",
+                    "plansHint": "Αφήστε τα όλα κενά για να ισχύει σε κάθε πλάνο των επιλεγμένων τύπων.",
+                    "plansPickTypeFirst": "Επιλέξτε τύπο εκδήλωσης για να περιορίσετε πλάνα.",
+                    "loading": "Φόρτωση επιλογών...",
+                    "all": "Όλες οι εκδηλώσεις",
+                    "more": "+{count}"
                 }
             },
             "linkCode": {
@@ -2878,8 +2888,6 @@
             "sweepSuccess": "Ο έλεγχος ολοκληρώθηκε: {result}",
             "orderIdField": "UUID παραγγελίας",
             "settle": "Διακανονισμός",
-            "settleThis": "Διακανονισμός",
-            "settled": "Ολοκληρώθηκε",
             "settleSuccess": "Η παραγγελία {orderId} διακανονίστηκε. Η εκδήλωση είναι πλέον ενεργή.",
             "webhooksTitle": "Ανεπεξέργαστα webhooks",
             "webhooksSubtitle": "Παραδόσεις που ελήφθησαν αλλά δεν επεξεργάστηκαν ποτέ — πιθανές χαμένες πληρωμές.",
@@ -2887,8 +2895,6 @@
             "webhooksEmpty": "Δεν υπάρχει τίποτα ανεπεξέργαστο.",
             "refresh": "Ανανέωση",
             "receivedAt": "Ελήφθη {date}",
-            "noOrderRef": "Χωρίς αναφορά παραγγελίας",
-            "unknownEventType": "Άγνωστο συμβάν",
             "confirmSettleTitle": "Διακανονισμός παραγγελίας {orderId};",
             "confirmSettleBody": "Αυτό καταχωρίζει την παραγγελία ως πληρωμένη χωρίς πληρωμή από πάροχο και μπορεί να ενεργοποιήσει την εκδήλωση. Επιβεβαιώστε μόνο αφού ελέγξετε την πληρωμή ή τη δωρεάν παροχή.",
             "confirmSweepTitle": "Να γίνει έλεγχος ειδοποιήσεων;",
@@ -2987,16 +2993,10 @@
         "costTracking": {
             "eyebrow": "Κόστος και όγκος",
             "title": "Παρακολούθηση κόστους",
-            "subtitle": "Τρέχουσα κίνηση εκδηλώσεων, εκτιμώμενο κόστος και στιγμιότυπα παρόχων.",
+            "subtitle": "Τρέχουσα κίνηση εκδηλώσεων και στιγμιότυπα παρόχων.",
             "loading": "Φόρτωση παρακολούθησης κόστους...",
             "refresh": "Ανανέωση",
             "range": { "label": "Χρονικό διάστημα", "WEEK": "7 ημέρες", "MONTH": "30 ημέρες" },
-            "summary": {
-                "title": "Εκτιμώμενο κόστος",
-                "description": "Τρέχουσες εκτιμήσεις, όχι σύνολα τιμολογίων.",
-                "week": "Αυτή την εβδομάδα",
-                "month": "Αυτόν τον μήνα"
-            },
             "providers": {
                 "title": "Στιγμιότυπα παρόχων",
                 "description": "Κάθε πάροχος εμφανίζεται για τη δική του τελευταία περίοδο συμφωνίας.",
@@ -3007,12 +3007,10 @@
             },
             "trends": {
                 "title": "Τάσεις",
-                "description": "Εβδομαδιαίος όγκος εκδηλώσεων ανά πλάνο και εκτιμώμενο κόστος κάθε εβδομάδας.",
+                "description": "Εβδομαδιαίος όγκος εκδηλώσεων ανά πλάνο.",
                 "loading": "Φόρτωση τάσεων...",
                 "empty": "Δεν υπάρχει όγκος εκδηλώσεων σε αυτό το διάστημα.",
-                "volume": "Όγκος εκδηλώσεων",
-                "cost": "Εκτιμώμενο κόστος",
-                "estimated": "Εκτιμώμενο κόστος"
+                "volume": "Όγκος εκδηλώσεων"
             },
             "traffic": {
                 "title": "Κίνηση εκδηλώσεων",
@@ -3239,6 +3237,7 @@
         "planCurrencyMismatch": "Αυτό το πλάνο δεν είναι διαθέσιμο για την εκδήλωσή σας.",
         "checkoutSessionUnresolved": "Η τελευταία πληρωμή σας ολοκληρώνεται ακόμη. Δοκιμάστε ξανά σε λίγο.",
         "collaborationCodeNotValid": "Αυτός ο κωδικός δεν ισχύει για αυτήν την εκδήλωση.",
+        "discountNotApplicableToUpgrade": "Οι κωδικοί δεν ισχύουν για αναβαθμίσεις.",
         "collaborationAlreadyRedeemed": "Αυτή η εκδήλωση έχει ήδη άλλον κωδικό έκπτωσης.",
         "collaborationEarningNotPayable": "Αυτή η αμοιβή δεν μπορεί να σημειωθεί ως πληρωμένη.",
         "invalidCredentials": "Το email ή ο κωδικός πρόσβασης δεν είναι σωστός.",
@@ -3440,7 +3439,10 @@
             "steps": [
                 { "title": "Δημιουργείς", "description": "Φτιάχνεις το StoryWall του event σου πανεύκολα, μέσα σε λίγα λεπτά." },
                 { "title": "Μοιράζεσαι", "description": "Μοιράζεσαι το link ή το QR και όλοι μπαίνουν αμέσως. Χωρίς app." },
-                { "title": "Ξεκινά η ιστορία", "description": "Posts, stories, φωτογραφίες, ευχές και reactions — πριν, κατά τη διάρκεια και μετά το event." }
+                {
+                    "title": "Ξεκινά η ιστορία",
+                    "description": "Posts, stories, φωτογραφίες, ευχές και reactions — πριν, κατά τη διάρκεια και μετά το event."
+                }
             ]
         },
         "transition": {

@@ -74,6 +74,13 @@ photo/video counts, and `planComparison.ts`'s hardcoded `4MB`/`90MB`). These are
 assumptions, unrelated to `maxImageBytes`/`maxVideoBytes` which are real upload-time validation
 ceilings.
 
+**2026-09-23:** no backend change — this guide was swept field-by-field against
+`AppConfigResponseDto` and had fallen behind on five blocks that were already being served:
+`modules`, `eventTypes`, `eventTypeKeys`, `translations` and `withdrawal`. `withdrawal` is the one
+most likely to have bitten: [`billing-fe-guide.md`](billing-fe-guide.md) §9 tells you to source
+`termsVersion` from `/api/config`, and until now this document did not list it. The
+`eventModuleKeys` union below was also three keys short of the canonical set.
+
 ## GET /api/config
 
 Public — no `Authorization` header needed, safe to call before login (e.g. to gate the login
@@ -104,9 +111,15 @@ interface AppConfigResponseDto {
   pagination: { defaultPageSize: number; maxPageSize: number };
   planTiers: PlanTierResponseDto[];   // was Record<'FREE'|'PLUS'|'PRO', {...}> — see plan-tiers-fe-integration.md
   paidServices: PaidServiceResponseDto[];   // "keep originals" add-on, storage packs, module unlocks — see billing-fe-guide.md §5
-  eventModuleKeys: ('posts' | 'rsvp' | 'playlist' | 'stories' | 'gallery' | 'wishlist' | 'wishbook')[];
+  modules: PlatformModuleResponseDto[];  // enabled registry rows, ordered by sortOrder
+  eventModuleKeys: ModuleKey[];          // the keys of `modules`, same order
+  eventTypes: AppEventTypeDto[];         // enabled event-type registry rows, ordered by sortOrder
+  eventTypeKeys: string[];               // the keys of `eventTypes`, same order
+  translations: { eventTypes: Record<string, AppEventTypeTranslationDto> }; // locale copy, keyed by eventTypeKey
   rsvp: { minAdults: number; maxAdults: number; minChildren: number; maxChildren: number };
+  withdrawal: { termsVersion: string; windowDays: number; holdDays: number }; // see billing-fe-guide.md §9
   coverage: { maxLeadDays: number; maxPreEventDays: number; defaultHostingMonths: number; defaultEventDurationHours: number }; // added 2026-09-21 — see event-coverage-window-fe-integration.md
+  newsletter: { enabled: boolean; discountPercent: number; rewardValidityMonths: number }; // added 2026-09-23 — see newsletter-fe-integration.md
   contentLimits: AppContentLimitsDto;   // added 2026-08-23 — see below
   reactionTypesByEventType: Record<string, ReactionTypeResponseDto[]>; // added 2026-08-30 — see below
   rateLimits: AppRateLimitConfigDto[];  // added 2026-08-23 — see below
@@ -128,6 +141,16 @@ operator flips a feature flag or a deploy changes a limit. Fetch it once at app 
 long-`staleTime` query) and read from that cache everywhere you'd otherwise hardcode a limit.
 
 ### What to actually do with each field
+
+- **`newsletter`** (added 2026-09-23) — `enabled` is the newsletter's kill switch. It is a
+  deploy-time property rather than a row in `featureFlags`, which is exactly why it is published
+  here: while it is `false` every `/api/newsletter/**` route returns `404`, so hide the signup form,
+  the registration checkbox and the account-settings toggle rather than rendering a form that fails.
+  `discountPercent` and `rewardValidityMonths` are there so the signup copy ("10% off your next
+  event, valid 12 months") is served rather than hardcoded. They describe the offer made to whoever
+  subscribes **next** — a reward somebody already holds keeps the terms it was minted with, so
+  describe an existing code from `GET /api/me/newsletter`'s `rewardExpiresAt` instead. Full contract
+  in [`newsletter-fe-integration.md`](newsletter-fe-integration.md).
 
 - **`featureFlags`** — same shape as the existing `GET /api/platform-feature-flags` response,
   just bundled in here too so you don't need a second round-trip at boot. Both endpoints stay
@@ -219,6 +242,24 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
 - **`coverage`** — the event date-picker bound (`maxLeadDays`) and the coverage-window constants.
   Constants only; the dates for a given event come from the event itself. See
   [`event-coverage-window-fe-integration.md`](event-coverage-window-fe-integration.md).
+- **`modules`** / **`eventModuleKeys`** — the module registry as it stands right now.
+  `eventModuleKeys` is just the keys of `modules`, in the same order, and is the list
+  `EventModuleRequestDto.moduleKey` is validated against. A module an operator switches off
+  platform-wide disappears from both — which is why `named_invites` is in the canonical enum but
+  not in this response. Drive module gating from here rather than from a hardcoded union.
+- **`eventTypes`** / **`eventTypeKeys`** — the event-type registry, same arrangement: the full
+  rows and then just their keys. `eventTypeKeys` is exactly what `EventRequestDto.eventType` may be
+  set to right now, so build the type picker from it. Each row carries only what you need before a
+  locale is chosen (`icon`, `accentToken`, `sortOrder`); the name and tagline live in `translations`.
+- **`translations`** — locale copy, namespaced by kind. Today the only namespace is `eventTypes`,
+  keyed by `eventTypeKey` and covering every entry in `eventTypes`. Each entry holds `name`,
+  `tagline` and the ten-key `voice` pack, each of those keyed by locale (`en`, `el`). Look copy up
+  as `translations.eventTypes[key].name[locale]` and fall back to `en` for a locale you get no
+  entry for.
+- **`withdrawal`** — the automated right-of-withdrawal terms: the current `termsVersion` and the
+  deadline constants. `termsVersion` is the one to be careful with — it is what a withdrawal request
+  must echo back, and [`billing-fe-guide.md`](billing-fe-guide.md) §9 points here as its source.
+  Read it from this response at boot; never hardcode it.
 - **`contentLimits`** / **`rateLimits`** — see the two new sections below.
 - **`reactionTypesByEventType`** — active post-reaction options, keyed by `eventTypeKey`, each list
   pre-sorted by `sortOrder`. Build the reaction picker from
@@ -236,8 +277,11 @@ just store it. It no longer does.
 ```
 
 now returns **`400`** with `errorCode: 3006` / `errorKey: "INVALID_MODULE_KEY"` for anything
-outside the canonical keys — as of 2026-08-16 those are
-`posts | rsvp | playlist | stories | gallery | wishlist | wishbook`. This only
+outside the canonical keys — as of V82 those are
+`posts | rsvp | playlist | stories | gallery | wishlist | wishbook | co_hosts | named_invites |
+schedule`. Note that the canonical set and what `eventModuleKeys` returns are not the same list:
+a key an operator has disabled platform-wide is still canonical but is not offered, and
+`named_invites` is in exactly that state today. Validate against `eventModuleKeys`. This only
 affects **creating** a module (`POST /api/event-modules`) — `PATCH` doesn't take `moduleKey` at
 all (never did), so existing modules can't be renamed into an invalid state.
 

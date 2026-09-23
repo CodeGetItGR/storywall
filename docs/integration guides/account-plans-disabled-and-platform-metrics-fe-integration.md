@@ -146,6 +146,13 @@ GET /api/admin/metrics
     "purchasedExtraBytes": 55000000000,
     "estimatedMonthlyCostMinor": 1218,
     "costCurrency": "EUR"
+  },
+
+  "newsletter": {
+    "pending": 412,
+    "confirmed": 3180,
+    "unsubscribed": 260,
+    "rewardsIssued": 3244
   }
 }
 ```
@@ -153,6 +160,9 @@ GET /api/admin/metrics
 **2026-08-13:** the response gained a `storage` block, added alongside the media-compression and
 paid-storage work — see `billing-fe-guide.md` §5–§7b for the "keep originals" add-on and storage
 packs that feed into these numbers.
+
+**2026-09-23:** the response gained a `newsletter` block — see
+`newsletter-fe-integration.md` §7.
 
 ### Field notes
 
@@ -171,6 +181,14 @@ packs that feed into these numbers.
   four keys are always present.
 - **`eventsByPlanTier`** — every non-soft-deleted event grouped by its `EVENT`-scope plan code.
   Same "not a fixed key set" caveat as `usersByAccountPlan`.
+- **`newsletter.pending` / `.confirmed` / `.unsubscribed`** — subscriber counts by status.
+  `confirmed` is the mailing list itself and should match Brevo's own count for the list; a
+  persistent gap means contact syncs are failing. The ratio of `unsubscribed` to `confirmed` is the
+  figure worth watching.
+- **`newsletter.rewardsIssued`** — signup discount codes ever minted, whether or not they have been
+  spent and whether or not their owner is still subscribed. **It can exceed `confirmed`**, because a
+  code survives unsubscribing; that is not a bug, and a dashboard should not present it as a subset
+  of the list.
 - **`storage.usedBytes`** — bytes of non-deleted media (display derivative + archival original
   where the "keep originals" add-on applies). This is what the per-event storage quota counts.
 - **`storage.pendingPurgeBytes`** — bytes of soft-deleted media still sitting in R2, awaiting the

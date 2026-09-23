@@ -78,11 +78,13 @@ export function newestBillingOrder(orders: OrderSummaryDto[], kind?: OrderSummar
 }
 
 export function paidBillingTotal(orders: OrderSummaryDto[]): number {
-    return orders.filter((order) => order.status === 'PAID').reduce((sum, order) => sum + order.amountMinor, 0);
+    return orders.filter((order) => order.status === 'PAID').reduce((sum, order) => sum + (order.amountMinor ?? 0), 0);
 }
 
 export function billingCurrency(orders: OrderSummaryDto[], fallback = 'EUR'): string {
-    return orders.find((order) => order.status === 'PAID')?.currency ?? orders[0]?.currency ?? fallback;
+    return (
+        orders.find((order) => order.status === 'PAID' && order.currency)?.currency ?? orders.find((order) => order.currency)?.currency ?? fallback
+    );
 }
 
 export function isPlanDiscountActive(plan: PlanTierResponseDto, now = new Date()): boolean {

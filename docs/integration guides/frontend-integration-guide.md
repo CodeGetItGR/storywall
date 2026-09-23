@@ -3,8 +3,10 @@
 Master reference for what's wireable against the backend today, what isn't, and where FE
 assumptions have drifted from actual backend behavior. Companion to
 [`frontend-api-types.ts`](../frontend-api-types.ts) (the wire-shape source of truth — read that
-file alongside this one, don't duplicate its interfaces from memory) and the feature-specific
-guides it links out to:
+file alongside this one, don't duplicate its interfaces from memory). **As of 2026-09-23 that file
+covers every DTO the backend has**, so a shape missing from it means a shape missing from the
+backend rather than one nobody wrote up; see §0 for where each area lives in it. The
+feature-specific guides this one links out to:
 [`stories-fe-integration-guide.md`](stories-fe-integration-guide.md),
 [`invite-onboarding-fe-integration.md`](invite-onboarding-fe-integration.md),
 [`multi-image-post-upload-fe-integration.md`](multi-image-post-upload-fe-integration.md),
@@ -97,6 +99,26 @@ implemented and tested but had never been written up here. It's the single endpo
   `GET /api/telemetry-events`, and `GET /api/posts/{postId}/comments` (the last one sorts
   oldest-first — every other paginated endpoint sorts newest-first). Every other list
   endpoint below returns a plain `T[]`. Don't assume one shape across all list endpoints.
+- **Finding a shape.** [`frontend-api-types.ts`](../frontend-api-types.ts) is organised by
+  domain, and three of its sections cover ground this guide only summarises. Go there first for
+  exact fields rather than inferring them from an example payload:
+  - *Billing — checkout, orders, upgrades, withdrawals*: the three checkout request bodies,
+    `CheckoutResponseDto`, `EventBillingResponseDto` and its `OrderSummary`/`DiscountSummary`,
+    `UpgradeOptionResponseDto`, and the whole withdrawal set (preview, request, the host-facing
+    response, the admin facts sheet, the refusal and line shapes). Narrative in
+    [`billing-fe-guide.md`](billing-fe-guide.md).
+  - *Collaborations, partner codes and house discount codes*: the two code-preview bodies and
+    `CodePreviewResponseDto`, the collaborator and code admin CRUD, the partner ledger
+    (`EarningResponseDto`, `EarningTotalDto`, `PartnerPageDto`), and the house-code admin set.
+    Narrative in [`collaborations-fe-integration.md`](collaborations-fe-integration.md).
+  - *Admin catalog and metrics*: the plan-tier, paid-service, module-registry and event-type
+    admin bodies, plus the dashboard rows behind `/api/admin/metrics/**`
+    (`EventDashboardRowDto`, `PlanTimelineRowDto`, the calendar summary, `CostSummaryResponseDto`).
+
+  Nine enums that used to appear only as prose are declared there now — `OrderKind`,
+  `OrderStatus`, `RefundRequestStatus`, `RefundBasis`, `CollaboratorStatus`, `DiscountCodeStatus`,
+  `EarningEntryType`, `EarningStatus`, `ModuleApplicability` — so a status union does not have
+  to be retyped from an example response.
 - **Media URLs are not permanent.** `MediaResponseDto.mediaUrl` is a presigned, time-limited
   Cloudflare R2 GET URL. Don't persist it client-side beyond the current session/cache window
   — re-fetch the parent resource to get a fresh URL once it expires. This applies everywhere
@@ -500,11 +522,14 @@ reference** for all of this. Summary of what it covers:
   hosted page, never an iframe/popup. **Landing on `/checkout/success` does not mean paid** — poll
   `GET /api/events/{id}/billing` for the order's own status; a lost webhook is reconciled within ~15
   minutes by a scheduled sweep.
-- **Refunds**: host-requested, admin-decided, activation-only, gated on the event being genuinely
-  unused (no other members ever, no content ever, inside the refund window, not yet started).
-  Approval reverses the activation charge (and any settled upgrade charge on the same event) and
-  drops the event back to `DRAFT`. A storage pack is never reversed by a refund, under any
-  circumstance.
+- **Withdrawal** (replaced the old refund request; this entry was stale until 2026-09-23): fully
+  automated and **terminal**. The host asks, the server computes what is owed under Directive
+  2011/83/EU from the three-line price split on each order, and either refunds immediately and
+  **soft-deletes the event** — there is no `DRAFT` return path any more — or marks the request
+  `HELD` for a human when a fraud signal fires, auto-releasing after 10 days if nobody acts.
+  `GET .../withdrawal-preview` persists nothing, so poll it freely while the host reads the
+  confirmation dialog. Full flow in [`billing-fe-guide.md`](billing-fe-guide.md) §9; exact
+  shapes under *Billing* in [`frontend-api-types.ts`](../frontend-api-types.ts).
 - **Rate limiting is global**: every `/api/**` endpoint has a request budget (default 300/min);
   tighter limits on auth, checkout, and refund/admin-money routes. A `3010 RATE_LIMITED` / `429` with
   `Retry-After` — handle it once in the API client, never auto-retry a checkout or approval.
@@ -523,6 +548,24 @@ Fully covered in [`app-config-fe-integration.md`](app-config-fe-integration.md).
 `GET /api/config` (public, no auth) bundles feature flags, upload/pagination limits, plan-tier
 quotas, the canonical `eventModuleKeys` list, and RSVP guest-count bounds into one fetch-once,
 cache-it response — the single place to source values previously hardcoded on the FE.
+
+### Newsletter — new (2026-09-23)
+
+Fully covered in [`newsletter-fe-integration.md`](newsletter-fe-integration.md). Double opt-in
+mailing-list signup from three places — a public form (`POST /api/newsletter/subscribe`), a
+`subscribeToNewsletter` checkbox on registration, and an account-settings toggle (`GET`/`PUT
+/api/me/newsletter`) — where confirming earns one single-use discount code off the subscriber's next
+event activation.
+
+Two pages you have to build, because the emailed links must land on the frontend rather than hitting
+a mutating `GET`: `/newsletter/confirm?token=` and `/newsletter/unsubscribe?token=`, each POSTing the
+token to the matching endpoint.
+
+**Gate the whole feature on `GET /api/config`'s `newsletter.enabled`** — it is off by default, and
+while off every `/api/newsletter/**` route returns `404`.
+
+This does not change the rule below: campaigns are composed and sent in Brevo, and there is still no
+endpoint here that sends an arbitrary email to users.
 
 ### Admin — notification sweep
 
@@ -544,6 +587,27 @@ There is deliberately no admin endpoint to send an arbitrary notification or ema
 each now returns a `Page<T>` instead, 50/page by default (max 100), newest first. Full details,
 example response, and a migration checklist in
 [`admin-list-endpoints-pagination-fe-integration.md`](admin-list-endpoints-pagination-fe-integration.md).
+
+### Admin — catalog, collaborations and metrics
+
+Real controllers, all `ROLE_ADMIN`, all under `/api/admin` except the feature-flag and user routes.
+Nothing here is summarised in this guide because none of it is host-facing; it is listed so an
+admin panel can be built without reading the controllers.
+
+| Area | Routes | Shapes |
+|---|---|---|
+| Plan tiers | `/api/admin/plan-tiers` CRUD, `/{id}/modules`, `/{id}/duplicate`, `/api/admin/{users,events}/{id}/plan-tier` | `PlanTierRequestDto`, `PlanTierPatchDto`, `PlanTierDuplicateRequestDto`, `PlanModulesRequestDto`, `PlanAssignmentRequestDto`, `PlanTierModuleConfig*` |
+| Paid services | `/api/admin/paid-services` CRUD | `PaidServiceRequestDto`, `PaidServicePatchDto` |
+| Registries | `/api/admin/platform-modules/{moduleKey}`, `/api/admin/platform-event-types/{key}`, `/api/admin/event-types/{key}/modules/{moduleKey}`, `/api/platform-feature-flags/{id}` | `PlatformModulePatchDto`, `PlatformEventType{Response,Patch}Dto`, `PlatformEventTypeModule{Response,Patch}Dto`, `PlatformFeatureFlagPatchDto` |
+| Partners & codes | `/api/admin/collaborators/**`, `/api/admin/collaboration-codes/{id}`, `/api/admin/collaboration-earnings/mark-paid`, `/api/admin/discount-codes/**` | the *Collaborations* section of the type file |
+| Money operations | `/api/admin/withdrawals` (+ `/release`, `/withhold`), `/api/admin/webhooks/unprocessed`, `/api/admin/orders/{id}/settle` | `WithdrawalAdminDto`, `WithdrawalWithholdDto`, `UnprocessedWebhookDto` |
+| Metrics | `/api/admin/metrics`, `/events`, `/timeline`, `/calendar`, `/calendar/{date}/events`, `/cost-summary` | `PlatformMetricsResponseDto`, `EventDashboardRowDto`, `PlanTimelineRowDto`, `CalendarSummaryResponseDto`, `CostSummaryResponseDto` |
+| Provisioning | `POST /api/users/provisioned`, `POST /api/admin/events` | `AdminUserProvisionRequestDto`, `AdminEventProvisionRequestDto` |
+
+Two things worth knowing before wiring any of it: `PortalTokenResponseDto.token` is returned once
+at issue and never again, so the screen that rotates a partner's portal token is the only place it
+can ever be shown; and `PartnerPageDto` (`GET /api/partners/{token}`, no auth) is deliberately
+aggregate-only, because anyone holding a forwarded link reaches it.
 
 ### Other endpoints with hooks already built, but no UI wired to them yet
 

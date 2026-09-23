@@ -2,9 +2,12 @@
  * TypeScript type schema for the event_social_media API.
  *
  * Generated directly from the current backend DTOs/entities (not from prose docs) as of
- * 2026-07-30, last extended 2026-09-12 (CommentResponseDto, StoryResponseDto gained
- * authorAvatarUrl, and EventMemberResponseDto gained avatarUrl — presigned member/author
- * avatar image URLs, resolved the same way PostResponseDto.author.avatarUrl already was).
+ * 2026-07-30. Swept field-by-field against every DTO under src/main/java/event_social_media/dto
+ * on 2026-09-23: first to close the drift that had accumulated since (see the per-field notes for
+ * what changed and when), then to add the ~65 DTOs that had never been documented here at all --
+ * the admin catalog, checkout and withdrawal bodies, the collaboration and discount-code
+ * endpoints, and the admin metrics dashboard. Every DTO in that package now has an interface of
+ * the same name, so a type missing from this file means a type missing from the backend.
  * Companion reference to docs/fe-guides/frontend-integration-guide.md, which covers
  * endpoints, auth rules, and error codes — this file is just the shapes.
  *
@@ -67,6 +70,7 @@ type PlatformRole = "USER" | "ADMIN" | "GUEST";
 
 type EventRole = "HOST" | "ATTENDEE";
 type EventVisibility = "PUBLIC" | "PRIVATE"; // default PRIVATE server-side, but required on EventRequestDto
+type EventStatus = "DRAFT" | "ACTIVE"; // DRAFT until the chosen plan is paid for. DB CHECK enforces the pair
 type AttendanceStatus = "ATTENDING" | "DECLINED" | "MAYBE";
 
 type PostType = "TEXT" | "MEDIA" | "ANNOUNCEMENT" | "PLAYLIST"; // server-enforced via @Pattern + DB CHECK
@@ -78,8 +82,27 @@ type PostType = "TEXT" | "MEDIA" | "ANNOUNCEMENT" | "PLAYLIST"; // server-enforc
 interface RegisterRequestDto {
   email: string; password: string; // password 8-100 chars
   firstName: string; lastName: string; // both required, max 100
+  /**
+   * UUID from an event invite link. When present and valid, the new account is also joined to that
+   * invitation's event, with the invitation's own role (ATTENDEE unless it says otherwise).
+   * Redemption is best-effort: an invalid, expired or exhausted token is ignored rather than
+   * failing registration, and nothing in the response says whether it took. Check the user's
+   * memberships afterwards rather than assuming they are in the event.
+   */
+  inviteToken?: string;
+  /**
+   * Join the mailing list. Added 2026-09-23. The account's own verification email doubles as the
+   * newsletter confirmation, so there is no second email and no extra step in this flow.
+   * Ignored (never rejected) while the newsletter is off — see AppNewsletterConfigDto.enabled.
+   */
+  subscribeToNewsletter?: boolean;
 }
-interface LoginRequestDto { email: string; password: string; }
+interface LoginRequestDto {
+  email: string; password: string;
+  /** Same contract as on RegisterRequestDto, for someone who followed an invite link but already
+   *  has an account: best-effort join, never a reason for the login itself to fail. */
+  inviteToken?: string;
+}
 interface RefreshRequestDto { refreshToken: string; } // also the body for /logout
 interface GuestLoginRequestDto {
   inviteToken: string;   // UUID
@@ -100,7 +123,54 @@ interface AuthResponseDto {
   email: string | null;        // null for anonymous guests
   firstName: string | null;    // null for anonymous guests
   lastName: string | null;     // null for anonymous guests
+  profilePictureUrl: string | null; // presigned, time-limited — re-fetch on expiry, don't cache long-term
+  authProvider: AuthProvider;
+  isGuestAccount: boolean;
+  status: AccountStatus;
+  createdAt: string;
   role: PlatformRole;
+  /** Identifies this guest's membership under a *shared* invite link. Null on every other auth
+   *  response, including guest logins to a single-use invitation. Persist it (local storage) and
+   *  send it back unchanged as `guestKey` on every later POST /api/auth/guest-login from the same
+   *  device, or that device is issued a brand-new membership instead of being recognised. */
+  guestKey: string | null;
+}
+
+/** POST /api/auth/oauth/{provider} — provider is 'google' or 'apple'. Answers AuthResponseDto,
+ *  the same shape a password login does. */
+interface OAuthLoginRequestDto {
+  /** The raw ID token from the provider's own client-side SDK. Never a code or an access token. */
+  idToken: string;
+  /** Same best-effort invite redemption as on RegisterRequestDto. */
+  inviteToken?: string;
+}
+
+/** POST /api/auth/verify-email — 204. */
+interface VerifyEmailRequestDto {
+  /** The raw token from the emailed link; 43 chars in practice, rejected above 200. The bound is
+   *  deliberately loose so a mangled link fails the lookup rather than validation — the caller
+   *  cannot tell the two apart, which is the point. */
+  token: string;
+}
+
+/** POST /api/auth/resend-verification — 204 whether or not the address has an account.
+ *  Takes an address rather than the authenticated principal, because the person who most needs
+ *  this is the one who mistyped theirs and cannot receive anything at it. */
+interface ResendVerificationRequestDto {
+  email: string;   // required, max 255
+}
+
+/** POST /api/auth/forgot-password — always 204. Whether the address has an account is never
+ *  reported back, so there is nothing to branch on: show "if that address is registered, check
+ *  your inbox" and stop. */
+interface ForgotPasswordRequestDto {
+  email: string;   // required, max 255
+}
+
+/** POST /api/auth/reset-password — 204. */
+interface ResetPasswordRequestDto {
+  token: string;       // raw token from the emailed link, max 200
+  newPassword: string; // 8-100, the same bounds registration applies
 }
 
 // ---------------------------------------------------------------------------
@@ -114,16 +184,53 @@ interface UserRequestDto {
   isGuestAccount?: boolean;
   status?: AccountStatus;
   platformRole?: PlatformRole;
+  /** Admin-only. True bars the account from creating events of its own — used for
+   *  promoter-provisioned accounts whose events are created for them. See
+   *  fe-guides/promoter-account-provisioning-fe-integration.md. */
+  eventCreationLocked?: boolean;
 } // no password field — passwords only ever set via /api/auth/register
 
 interface UserResponseDto {
   id: string; email: string; firstName: string; lastName: string;
+  profilePictureUrl: string | null; // presigned, time-limited — re-fetch on expiry, don't cache long-term
   authProvider: AuthProvider; isGuestAccount: boolean;
+  emailVerified: boolean;
   status: AccountStatus; platformRole: PlatformRole;
+  locale: string | null;        // BCP-47; the account's chosen UI/mail language, null = none set
+  eventCreationLocked: boolean; // true = this account may not create events; see UserRequestDto
   createdAt: string; updatedAt: string; deletedAt: string | null;
 }
 // GET /api/users now returns Page<UserResponseDto>, not UserResponseDto[].
 // Default 50/page, max 100 (?page=&size=), sorted createdAt desc then id desc (newest first).
+
+/**
+ * POST /api/users/provisioned — admin only. Creates an account with no self-registration step,
+ * for a promoter running events on somebody's behalf. Deliberately has no password field: the
+ * account is created with a random one, marked email-verified, and sent a password-reset mail
+ * immediately, so the admin never handles a credential.
+ * See fe-guides/promoter-account-provisioning-fe-integration.md.
+ */
+interface AdminUserProvisionRequestDto {
+  email: string;      // required, max 255
+  firstName: string;  // required, max 100
+  lastName: string;   // required, max 100
+}
+
+/** PATCH /api/me — the fields a user may change about themselves. Anything account-level (email,
+ *  role, status) goes through the admin UserRequestDto instead. Omitted fields are left alone. */
+interface MeUpdateRequestDto {
+  firstName?: string;  // max 100
+  lastName?: string;   // max 100
+  /** 'en' or 'el' — anything else is a 400. Drives server-rendered content: notification mail and
+   *  the notification feed. See fe-guides/backend-localization-fe-integration.md. */
+  locale?: string;
+}
+
+/** POST /api/me/change-password — 204. */
+interface ChangePasswordRequestDto {
+  currentPassword: string; // required — proves the caller holds the account
+  newPassword: string;     // 8-100, the same bounds registration applies
+}
 
 /** Read-only — no request DTO. POST /api/sessions was removed entirely. */
 interface SessionResponseDto {
@@ -216,7 +323,9 @@ interface EventUsageResponseDto {
    */
   planTier: string;
   storageBytes: number;
-  storageLimitBytes: number;
+  planStorageBytes: number | null;  // the plan's own ceiling, before anything purchased. null = unlimited
+  extraStorageBytes: number;        // bytes added by settled storage-pack purchases
+  storageLimitBytes: number | null; // the effective ceiling: planStorageBytes + extraStorageBytes
   storagePercent: number;
   memberCount: number;
   memberLimit: number;
@@ -246,6 +355,10 @@ interface EventRequestDto {
   coverMediaId?: string;
   brandingSettings: Record<string, unknown>; // required — send {} if none
   rsvpDeadline?: string;
+  planTierCode: string;           // required, max 30 — the EVENT-scope plan being bought for
+                                   // this event. There is no free plan, so there is no default to
+                                   // fall back to; resolved server-side against the public catalog,
+                                   // so the client's word on price or availability is never taken.
   initialSessionTitle?: string;   // max 255 — when set, seeds an EventSession anchored to
                                    // startAt/endAt (displayOrder 0) in the same transaction; see
                                    // fe-guides/event-creation-initial-session-fe-integration.md
@@ -260,8 +373,17 @@ interface EventResponseDto {
   coverMediaId: string | null;
   brandingSettings: Record<string, unknown>;
   rsvpDeadline: string | null;
+  galleryOpensAt: string | null; coverageEndsAt: string | null;    // null while DRAFT — added 2026-09-21
+  projectedCoverage: ProjectedCoverageDto | null;                   // DRAFT only — added 2026-09-21
+  status: EventStatus;
   createdAt: string; updatedAt: string; deletedAt: string | null;
+  // Computed, not stored: deletedAt + app.billing.event-retention-days. Null unless the event is
+  // pending deletion. See fe-guides/event-deletion-fe-integration.md.
+  deletionScheduledFor: string | null;
 }
+
+/** The window a DRAFT would be pinned to if paid for right now. See fe-guides/event-coverage-window-fe-integration.md. */
+interface ProjectedCoverageDto { galleryOpensAt: string; coverageEndsAt: string; hostingMonths: number; }
 
 interface CoHostInviteRequestDto { userId: string; } // required
 
@@ -273,18 +395,42 @@ interface EventPatchDto {
   locationName?: string; locationAddress?: string; mapsUrl?: string;
   coverMediaId?: string; brandingSettings?: Record<string, unknown>;
   rsvpDeadline?: string;
+  /** Opts the event into the recurring "keep originals" add-on. Only `true` means anything —
+   *  there is no un-opting — and only while the event is still DRAFT. */
+  keepOriginals?: boolean;
 } // no eventType — not editable via PATCH
+
+/**
+ * POST /api/admin/events — admin only. Creates a fully scaffolded, already-live event owned by
+ * `hostUserId` rather than by the caller, skipping checkout. The nested body is the ordinary
+ * EventRequestDto, validated the same way.
+ */
+interface AdminEventProvisionRequestDto {
+  hostUserId: string;
+  event: EventRequestDto;
+}
+
+/**
+ * POST /api/events/{eventId}/deletion-requests — the second step of deleting an event. The first
+ * step (POST .../deletion-requests/otp) emails a code; this submits it. A password is deliberately not
+ * accepted here. See fe-guides/event-deletion-fe-integration.md.
+ */
+interface EventDeletionRequestDto {
+  otpCode: string;   // exactly 6 digits — anything else is a 400 before the code is even checked
+}
 
 // --- GET /api/events/{id} detail response (grouped/enriched — added 2026-07-30) ---
 
 interface EventScheduleDto {
   startAt: string; endAt: string; timezone: string; rsvpDeadline: string | null;
+  galleryOpensAt: string | null; coverageEndsAt: string | null;    // null while DRAFT — added 2026-09-21
+  projectedCoverage: ProjectedCoverageDto | null;                   // DRAFT only — added 2026-09-21
 }
 interface EventLocationDto {
   name: string | null; address: string | null; mapsUrl: string | null;
 }
 interface EventRsvpSummaryDto {
-  totalMembers: number; attending: number; declined: number; maybe: number; noResponse: number;
+  totalMembers: number; attending: number; declined: number; noResponse: number;
 }
 /**
  * Returned by GET /api/events/{id} only (not the list endpoint). Everything that scales
@@ -295,6 +441,7 @@ interface EventRsvpSummaryDto {
 interface EventDetailResponseDto {
   id: string; title: string; subtitle: string | null; description: string | null;
   eventType: string; visibility: EventVisibility;
+  status: EventStatus;
   schedule: EventScheduleDto;
   location: EventLocationDto;
   coverMedia: MediaResponseDto | null; // resolved, with a fresh presigned mediaUrl — not just an id
@@ -304,6 +451,7 @@ interface EventDetailResponseDto {
   sessions: EventSessionResponseDto[]; // bounded agenda items
   rsvpSummary: EventRsvpSummaryDto;    // aggregate counts only, not the individual RSVPs
   createdAt: string; updatedAt: string; deletedAt: string | null;
+  deletionScheduledFor: string | null; // same contract as on EventResponseDto
 }
 
 // --- Event Hosts ---
@@ -317,13 +465,13 @@ interface EventHostPatchDto { displayOrder?: number; } // the only editable fiel
 interface EventInvitationRequestDto {
   eventId: string;
   inviteCode: string;    // required, max 100 chars
-  inviteToken?: string;  // server generates a UUID if omitted
   email?: string;        // must be a well-formed email, max 255
   firstName?: string;    // max 100
   lastName?: string;     // max 100
   maxGuests: number;     // required
   expiresAt?: string;
-  usedAt?: string;       // system-managed; set on accept
+  // inviteToken and usedAt were removed 2026-09-21: the token is always server-minted and usedAt
+  // is stamped on accept. Sending either now fails the request with 400 (unknown property).
 }
 interface EventInvitationResponseDto {
   id: string; eventId: string; inviteCode: string; inviteToken: string;
@@ -354,6 +502,28 @@ interface EventInvitationPatchDto { // every field optional
   firstName?: string; lastName?: string; email?: string;
   maxGuests?: number; expiresAt?: string;
 } // no inviteCode/inviteToken (immutable), no usedAt (system-managed)
+
+/**
+ * GET /api/event-invitations/{inviteToken}/preview — public, no auth. Renders the invite landing
+ * page before the visitor has decided to join as a guest, log in, or register.
+ *
+ * `expired` and `alreadyUsed` are the two states worth rendering differently; a token that never
+ * existed is a 404. Carries no member list and no host contact details.
+ */
+interface EventInvitationPreviewDto {
+  inviteToken: string;
+  eventId: string;
+  eventTitle: string;
+  eventSubtitle: string | null;
+  eventDescription: string | null;
+  coverMediaId: string | null;
+  /** Prefill hints from the invitation, when it named somebody. Null on a shared/QR invitation. */
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  expired: boolean;
+  alreadyUsed: boolean;
+}
 
 // --- Event Members ---
 
@@ -468,9 +638,13 @@ interface RsvpSessionResponsResponseDto {
  * uploaded with `context: 'STORY'` is checked against the tighter `maxStoryVideoBytes` /
  * `maxStoryVideoDurationSeconds` caps (see `AppMediaConfigDto`) instead of `maxVideoBytes` —
  * pass it whenever the upload is destined for a story, even from a generic "add media" picker.
+ *
+ * `uploaderMemberId` is no longer accepted as a form field (2026-09-21): the uploader is the
+ * caller's own membership. The response field of the same name still reports who uploaded it.
  */
 interface MediaResponseDto {
   id: string; eventId: string; uploaderMemberId: string | null;
+  anonymousUploaderName: string | null; // free-text attribution an anonymous scanner typed in, max 100; null for every member upload
   storageKey: string;
   mediaUrl: string; // presigned, time-limited R2 GET URL — re-fetch on expiry, don't cache long-term
   status: 'PROCESSING' | 'READY' | 'FAILED'; // added 2026-08-30 — see § Async video processing
@@ -557,14 +731,36 @@ interface PostRequestDto {
   // every id must belong to this same eventId (404 otherwise).
   mediaIds?: string[];
 }
-interface PostAuthorDto {
+/** PATCH /api/posts/{id} — author or host. Omitted fields are left unchanged; there is no way to
+ *  change a post's media or type after creation. */
+interface PostPatchDto {
+  content?: string;   // max TextLimits.POST_CONTENT_MAX — read the real bound off /api/config
+  isPinned?: boolean;
+}
+
+/**
+ * POST /api/events/{eventId}/stream-token — authenticated. A short-lived token for opening one SSE
+ * connection to GET /api/events/{eventId}/stream.
+ *
+ * It exists because EventSource cannot set an Authorization header and this API sends no cookies,
+ * so the token travels as a query parameter instead. Fetch one per connection, not once per
+ * session. See fe-guides/posts-feed-push-and-etag-fe-integration.md.
+ */
+interface StreamTokenResponseDto {
+  token: string;
+  expiresInMs: number;
+}
+
+// Renamed from PostAuthorDto on 2026-09-15: posts, comments and stories all carry this same
+// shape now. The wire fields are unchanged; only the type name is.
+interface AuthorDto {
   memberId: string; displayName: string; nickname: string | null;
   role: EventRole;
   avatarUrl: string | null; // presigned, resolved from the account's profilePictureKey — null for an account-less author or one with no profile picture
 }
 interface PostResponseDto {
   id: string; eventId: string; authorMemberId: string | null;
-  author: PostAuthorDto | null; // null if the post has no author, or the author left the event
+  author: AuthorDto | null; // null if the post has no author, or the author left the event
   type: string; content: string | null; isPinned: boolean;
   media: MediaResponseDto[]; // ordered by displayOrder, presigned URLs already resolved
   commentCount: number;
@@ -588,7 +784,11 @@ interface CommentRequestDto {
 }
 interface CommentResponseDto {
   id: string; postId: string; authorMemberId: string | null;
-  authorAvatarUrl: string | null; // short-lived presigned URL resolved from the author's account profilePictureKey; null if no author or no profile picture. Do not cache.
+  // Replaced authorAvatarUrl on 2026-09-15 — the same AuthorDto posts already carried, so a
+  // comment can be rendered with a name, nickname and role without a second lookup. Null when the
+  // comment has no author. avatarUrl inside it is presigned and short-lived; do not cache it.
+  // See fe-guides/comment-story-author-fe-integration.md.
+  author: AuthorDto | null;
   parentCommentId: string | null;
   content: string; createdAt: string; updatedAt: string; deletedAt: string | null;
 }
@@ -637,7 +837,7 @@ interface StoryRequestDto {
 // status flips to 'READY' — poll GET /api/medias/{id} rather than letting the user hit this.
 interface StoryResponseDto {
   id: string; eventId: string; authorMemberId: string | null;
-  authorAvatarUrl: string | null; // short-lived presigned URL resolved from the author's account profilePictureKey; null if no author or no profile picture. Do not cache.
+  author: AuthorDto | null; // replaced authorAvatarUrl on 2026-09-15 — see CommentResponseDto
   mediaId: string;
   caption: string | null; songUrl: string | null; expiresAt: string;
   createdAt: string; deletedAt: string | null;
@@ -797,6 +997,13 @@ interface PlatformFeatureFlagResponseDto {
   id: string; featureKey: string; description: string | null; isEnabled: boolean;
   configuration: Record<string, unknown>; createdAt: string; updatedAt: string;
 }
+/** PATCH /api/platform-feature-flags/{id} — admin only. Omitted fields unchanged. `featureKey`
+ *  is absent because it is the identifier application code checks against. */
+interface PlatformFeatureFlagPatchDto {
+  description?: string;   // max 100
+  isEnabled?: boolean;
+  configuration?: Record<string, unknown>;
+}
 
 // ---------------------------------------------------------------------------
 // App config — GET /api/config (public, no auth) — added 2026-08-05
@@ -805,7 +1012,11 @@ interface PlatformFeatureFlagResponseDto {
 /** Canonical event module keys — see EventModuleRequestDto.moduleKey, now server-validated against
  *  this set. `wishlist` and `wishbook` were added 2026-08-16; prefer sourcing this union from
  *  `eventModuleKeys` at runtime rather than maintaining the literal list by hand. */
-type ModuleKey = 'posts' | 'rsvp' | 'playlist' | 'stories' | 'gallery' | 'wishlist' | 'wishbook';
+// All ten canonical keys as of V82. `eventModuleKeys` on /api/config carries only the ones
+// currently enabled platform-wide, which is a subset: `named_invites` was switched off in V87 and
+// does not appear there today. Gate on what the config returns, not on this union.
+type ModuleKey = 'posts' | 'rsvp' | 'playlist' | 'stories' | 'gallery' | 'wishlist' | 'wishbook'
+  | 'co_hosts' | 'named_invites' | 'schedule';
 
 interface AppMediaConfigDto {
   maxFileSizeBytes: number;
@@ -829,6 +1040,26 @@ interface AppPaginationConfigDto { defaultPageSize: number; maxPageSize: number;
 interface AppRsvpConfigDto { minAdults: number; maxAdults: number; minChildren: number; maxChildren: number; }
 
 /** Automated right-of-withdrawal settings — see fe-guides/billing-fe-guide.md §9. Added 2026-09-18. */
+interface AppEventTypeDto {
+  id: string;
+  eventTypeKey: string;
+  icon: string;                 // a single emoji
+  accentToken: string;          // a design-token name (rose | sky | amber), not a colour value
+  isEnabled: boolean;           // always true in this list — disabled rows are not published
+  sortOrder: number;
+}
+
+interface AppEventTypeTranslationDto {
+  name: Record<string, string>;                      // keyed by locale: { en: '...', el: '...' }
+  tagline: Record<string, string>;
+  voice: Record<string, Record<string, string>>;     // locale — the ten-key UI voice pack
+}
+
+interface AppTranslationsDto {
+  /** Keyed by eventTypeKey, covering every entry in `eventTypes`. */
+  eventTypes: Record<string, AppEventTypeTranslationDto>;
+}
+
 interface AppWithdrawalConfigDto {
   /** Pass back verbatim as the checkout request's `termsVersion`; a stale value is a 400. */
   termsVersion: string;
@@ -836,6 +1067,27 @@ interface AppWithdrawalConfigDto {
   windowDays: number;
   /** How long a HELD withdrawal waits for an admin before it is released automatically. */
   holdDays: number;
+}
+
+/** Event coverage-window constants — see fe-guides/event-coverage-window-fe-integration.md. Added 2026-09-21. */
+interface AppCoverageConfigDto {
+  maxLeadDays: number;               // 548 — picker max is today + this
+  maxPreEventDays: number;           // 90  — gallery opens this many days before startAt
+  defaultHostingMonths: number;      // 12  — retention term when the plan sets none
+  defaultEventDurationHours: number; // 24  — endAt defaults to startAt + this when omitted
+}
+
+/** The newsletter's public terms — see fe-guides/newsletter-fe-integration.md. Added 2026-09-23. */
+interface AppNewsletterConfigDto {
+  /** False means every /api/newsletter/** route 404s. Hide the form, the signup checkbox and the
+   *  account-settings toggle rather than rendering something that fails. */
+  enabled: boolean;
+  /** Percentage off the next event's ACTIVATION. Describes the offer made to whoever subscribes
+   *  next — a code somebody already holds keeps its own terms, so use
+   *  NewsletterStatusResponseDto.rewardExpiresAt to describe an existing one, never this. */
+  discountPercent: number;
+  /** How long a reward stays redeemable, counted from confirmation. */
+  rewardValidityMonths: number;
 }
 
 /** Server-enforced `@Size(max=...)` on free-text fields — added 2026-08-23. Mirror these in form
@@ -884,6 +1136,11 @@ export interface PlanTierResponseDto {
                                      // the event's endAt before it is soft-deleted (same lifecycle
                                      // as a host-requested deletion — undoable, then hard-purged
                                      // after the platform's retention window).
+  setupPercent: number | null;      // share of the price kept as the non-refundable setup line on
+                                     // withdrawal; null = the platform default published under
+                                     // /api/config `withdrawal`. See billing-fe-guide.md §9.
+  eventDayPercent: number | null;   // share kept as the event-day line once the event has taken
+                                     // place; null = the same platform default.
   priceAmountMinor: number | null;  // minor units (cents)
   priceCurrency: string | null;     // ISO 4217
   billingPeriod: BillingPeriod | null;
@@ -912,6 +1169,100 @@ export interface PlanTierResponseDto {
   paidModules: PaidServiceResponseDto[];
 }
 
+/**
+ * POST /api/admin/plan-tiers — admin only. `code` is upper-case letters, digits and underscores,
+ * unique per scope, and immutable after creation. `eventTypeKey` is required for EVENT scope and
+ * must be omitted for ACCOUNT scope; it is also immutable, which is why the duplicate action below
+ * exists instead of an edit.
+ */
+export interface PlanTierRequestDto {
+  code: string;                    // required, max 30, ^[A-Z0-9_]+$
+  scope: PlanScope;                // required
+  eventTypeKey?: string;           // max 50 — required for EVENT, rejected for ACCOUNT
+  name: string;                    // required, max 100
+  description?: string;
+  sortOrder: number;               // required, >= 0
+  isDefault: boolean;              // required
+  isAssignable: boolean;           // required
+  isPublic: boolean;               // required
+  storageBytes?: number;           // omit for "no limit enforced"
+  maxMembers?: number;             // omit for "no limit enforced"
+  autoDeleteMonths?: number;       // >= 1; omit for "never auto-deleted"
+  priceAmountMinor?: number;
+  priceCurrency?: string;          // exactly 3 chars, ISO 4217
+  billingPeriod?: BillingPeriod;
+  discountPercent?: number;        // 0-100
+  discountLabel?: string;          // max 100
+  discountStartsAt?: string;
+  discountEndsAt?: string;
+}
+
+/** PATCH /api/admin/plan-tiers/{id} — omitted fields are left unchanged. `code`, `scope` and
+ *  `eventTypeKey` are absent because they are immutable, not because they are optional. */
+export interface PlanTierPatchDto {
+  name?: string;
+  description?: string;
+  sortOrder?: number;
+  isDefault?: boolean;
+  isAssignable?: boolean;          // false archives the plan
+  isPublic?: boolean;
+  storageBytes?: number;
+  maxMembers?: number;
+  autoDeleteMonths?: number;
+  /** The withdrawal split. Both 0-100; omit to fall back to the platform defaults published on
+   *  /api/config under `withdrawal`. Editable here but not settable at create. */
+  setupPercent?: number;
+  eventDayPercent?: number;
+  priceAmountMinor?: number;
+  priceCurrency?: string;
+  billingPeriod?: BillingPeriod;
+  discountPercent?: number;
+  discountLabel?: string;
+  discountStartsAt?: string;
+  discountEndsAt?: string;
+}
+
+/**
+ * POST /api/admin/plan-tiers/{id}/duplicate — copies one plan into other event types in a single
+ * call, since a plan belongs to exactly one type and `eventTypeKey` cannot be edited afterwards.
+ * Every plan created by one call shares a `sharedGroupKey`, which is how a landing page groups
+ * "the same offer" across types.
+ */
+export interface PlanTierDuplicateRequestDto {
+  clones: PlanTierDuplicateTarget[];   // required, non-empty
+}
+export interface PlanTierDuplicateTarget {
+  eventTypeKey: string;
+  code: string;          // required, max 30, ^[A-Z0-9_]+$
+  name?: string;         // defaults to the source plan's
+  description?: string;  // defaults to the source plan's
+}
+
+/** PUT /api/admin/plan-tiers/{id}/modules — replace semantics: whatever is absent is removed. */
+export interface PlanModulesRequestDto {
+  moduleKeys: ModuleKey[];   // required; send [] to strip every module
+}
+
+/** PATCH /api/admin/users/{id}/plan-tier and PATCH /api/admin/events/{id}/plan-tier. The scope is
+ *  implied by the target, so the code alone is unambiguous even though it is unique only per
+ *  scope. */
+export interface PlanAssignmentRequestDto {
+  planTierCode: string;   // required, max 30
+}
+
+/** GET /api/admin/plan-tiers/{planTierId}/modules — one row per module configured for the plan. */
+export interface PlanTierModuleConfigResponseDto {
+  moduleKey: string;
+  defaultConfig: Record<string, unknown>;
+}
+
+/** PATCH /api/admin/plan-tiers/{planTierId}/modules/{moduleKey}. Only `defaultConfig` is editable
+ *  here — whether a module applies at all stays governed by the event-type matrix and the plan's
+ *  own `moduleKeys`. */
+export interface PlanTierModuleConfigPatchDto {
+  defaultConfig?: Record<string, unknown>;
+}
+
 export interface PlatformModuleResponseDto {
   id: string;
   moduleKey: string;
@@ -919,6 +1270,70 @@ export interface PlatformModuleResponseDto {
   description: string | null;
   isEnabled: boolean;
   sortOrder: number;
+}
+
+/** PATCH /api/admin/platform-modules/{moduleKey} — admin only. Omitted fields are left unchanged.
+ *  `moduleKey` is absent because it is the identifier application code branches on and cannot be
+ *  renamed. Disabling a row here removes the key from /api/config's `eventModuleKeys`
+ *  platform-wide. */
+export interface PlatformModulePatchDto {
+  name?: string;          // max 100
+  description?: string;
+  isEnabled?: boolean;
+  sortOrder?: number;
+}
+
+// ---- Event-type registry (admin) ----
+
+/** GET /api/admin/platform-event-types — the full registry row, including disabled ones and the
+ *  locale copy that /api/config splits into `translations`. */
+export interface PlatformEventTypeResponseDto {
+  id: string;
+  eventTypeKey: string;
+  name: Record<string, string>;                    // keyed by locale
+  tagline: Record<string, string>;
+  icon: string;
+  accentToken: string;
+  voice: Record<string, Record<string, string>>;   // field name -> locale -> copy
+  isEnabled: boolean;
+  sortOrder: number;
+}
+
+/** PATCH /api/admin/platform-event-types/{eventTypeKey}. Only these two are editable: the copy
+ *  (name/tagline/icon/accentToken/voice) is synced from code, and the key itself cannot be
+ *  renamed. */
+export interface PlatformEventTypePatchDto {
+  isEnabled?: boolean;
+  sortOrder?: number;
+}
+
+export type ModuleApplicability = 'UNSUPPORTED' | 'DEFAULT_OFF' | 'DEFAULT_ON';
+
+/**
+ * One row of the event-type/module applicability matrix.
+ * GET /api/event-types/{eventTypeKey}/modules (public) and
+ * GET /api/admin/event-types/{eventTypeKey}/modules (admin).
+ *
+ * UNSUPPORTED rows are omitted rather than returned, so a row you receive is one this type can
+ * have. See fe-guides/event-type-feature-toggles-quotas-fe-integration.md.
+ */
+export interface PlatformEventTypeModuleResponseDto {
+  eventTypeKey: string;
+  moduleKey: string;
+  applicability: ModuleApplicability;
+  defaultConfig: Record<string, unknown>;
+  sortOrder: number;
+  /** Whether an event bought on the plan named by the request's `planTierCode` would start with
+   *  this module switched on. Null when the request named no plan — which is the difference
+   *  between "what can this type have" and "what do I get if I buy this". */
+  includedInPlan: boolean | null;
+}
+
+/** PATCH /api/admin/event-types/{eventTypeKey}/modules/{moduleKey} — omitted fields unchanged. */
+export interface PlatformEventTypeModulePatchDto {
+  applicability?: ModuleApplicability;
+  defaultConfig?: Record<string, unknown>;
+  sortOrder?: number;
 }
 
 // ---- Paid services ----
@@ -951,6 +1366,44 @@ export interface PaidServiceResponseDto {
   grantsModuleKey: ModuleKey | null;
   /** Plan tiers this service is offered on. **Empty means every plan**, not none. */
   planTierIds: string[];
+}
+
+/** POST /api/admin/paid-services — admin only. `code` and `kind` are immutable after creation. */
+export interface PaidServiceRequestDto {
+  code: string;                 // required, max 30, ^[A-Z0-9_]+$
+  kind: PaidServiceKind;        // required
+  name: string;                 // required, max 100
+  description?: string;
+  sortOrder: number;            // required, >= 0
+  isAssignable: boolean;        // required
+  isPublic: boolean;            // required
+  priceAmountMinor: number;     // required, >= 0
+  priceCurrency: string;        // required, exactly 3 chars
+  billingPeriod: BillingPeriod; // required
+  /** Required for STORAGE_PACK, rejected for every other kind. */
+  grantsStorageBytes?: number;
+  /** Required for MODULE_UNLOCK, rejected for every other kind. Must name a registered module. */
+  grantsModuleKey?: ModuleKey;
+  /** Plan tiers to restrict this service to. **Omit or send [] for every plan**, which is what
+   *  every entry in the catalog wants today. */
+  planTierIds?: string[];
+}
+
+/** PATCH /api/admin/paid-services/{id}. `code` and `kind` are absent because they are immutable. */
+export interface PaidServicePatchDto {
+  name?: string;
+  description?: string;
+  sortOrder?: number;
+  isAssignable?: boolean;
+  isPublic?: boolean;
+  priceAmountMinor?: number;
+  priceCurrency?: string;
+  billingPeriod?: BillingPeriod;
+  grantsStorageBytes?: number;
+  grantsModuleKey?: ModuleKey;
+  /** Replaces the offered-on set wholesale when present. `[]` lifts every restriction (back to
+   *  "every plan"); omit to leave it alone. The two are not the same thing. */
+  planTierIds?: string[];
 }
 
 /** POST /api/events/{eventId}/addons — host only, DRAFT events only. */
@@ -987,6 +1440,14 @@ interface AppConfigResponseDto {
   modules: PlatformModuleResponseDto[];
   /** Module keys of the entries in `modules` — a globally disabled module disappears from this. */
   eventModuleKeys: ModuleKey[];
+  /** Enabled rows of the event-type registry, ordered by sortOrder. Carries no copy: the name and
+   *  tagline live in `translations.eventTypes`, keyed by the same eventTypeKey. */
+  eventTypes: AppEventTypeDto[];
+  /** The keys of `eventTypes`, same order. This is exactly what `EventRequestDto.eventType` may
+   *  be set to right now — build the picker from this, not from a hard-coded list. */
+  eventTypeKeys: string[];
+  /** Locale copy, namespaced by kind. Currently only event types. */
+  translations: AppTranslationsDto;
   rsvp: AppRsvpConfigDto;
   /** Added 2026-08-23. */
   contentLimits: AppContentLimitsDto;
@@ -995,11 +1456,20 @@ interface AppConfigResponseDto {
   reactionTypesByEventType: Record<string, ReactionTypeResponseDto[]>;
   /** Every distinct `@RateLimit` bucket currently in effect. Added 2026-08-23. */
   rateLimits: AppRateLimitConfigDto[];
+  /** What `ReportRequestDto.targetType` may be set to. Enum names, not free text — see
+   *  fe-guides/rsvp-report-types-fe-integration.md. */
+  reportTargetTypes: string[];
+  /** What `ReportRequestDto.reason` may be set to. Same contract as reportTargetTypes. */
+  reportReasons: string[];
   /** Budget for any endpoint not listed in `rateLimits`. Added 2026-08-23. */
   defaultRateLimit: number;
   defaultRateLimitWindowSeconds: number;
   /** Added 2026-09-18. See fe-guides/billing-fe-guide.md §9 (withdrawal). */
   withdrawal: AppWithdrawalConfigDto;
+  /** Added 2026-09-21. See fe-guides/event-coverage-window-fe-integration.md. */
+  coverage: AppCoverageConfigDto;
+  /** Added 2026-09-23. See fe-guides/newsletter-fe-integration.md §6. */
+  newsletter: AppNewsletterConfigDto;
 }
 
 /**
@@ -1028,6 +1498,114 @@ export interface PlatformMetricsResponseDto {
   eventsByStatus: Record<string, number>;
   /** Keyed by EVENT-scope plan code, e.g. 'BASIC'. Missing key = 0. */
   eventsByPlanTier: Record<string, number>;
+
+  /** What R2 actually holds, versus what quota has promised. The two must not be conflated:
+   *  read each field's note before putting a number on a dashboard. */
+  storage: {
+    /** Bytes of non-deleted media (derivatives + originals) — what the quota counts. */
+    usedBytes: number;
+    /** Bytes of soft-deleted media still in R2 awaiting the retention purge. Cloudflare bills for
+     *  these; the quota does not. This is the gap between `usedBytes` and an R2 invoice. */
+    pendingPurgeBytes: number;
+    /** Sum of the storage ceilings sold across every event: headroom promised, not spend. It sits
+     *  far above `usedBytes` by design — never label it as cost. */
+    committedBytes: number;
+    /** `usedBytes` held by events with at least one settled activation. */
+    paidUsedBytes: number;
+    /** `usedBytes` held by events that have never been activated. */
+    freeUsedBytes: number;
+    /** Total bytes ever granted platform-wide by settled storage-pack purchases. */
+    purchasedExtraBytes: number;
+    /** Approximate monthly storage spend, modelling `usedBytes` only. R2 charges no egress, which
+     *  is why this is close to the whole bill, but Class A/B operations are billed and are not
+     *  modelled — label it an approximation wherever it is shown. */
+    estimatedMonthlyCostMinor: number;
+    costCurrency: string;
+  };
+
+  /** Added 2026-09-23. Counts only — no endpoint lists subscribers. */
+  newsletter: {
+    /** Subscribed, not yet confirmed: on no list and holding no reward. */
+    pending: number;
+    /** The mailing list itself; should match Brevo's own count. */
+    confirmed: number;
+    unsubscribed: number;
+    /** Codes ever minted. Can exceed `confirmed` — a reward outlives its owner's subscription. */
+    rewardsIssued: number;
+  };
+}
+
+/**
+ * GET /api/admin/metrics/events and GET /api/admin/metrics/calendar/{date}/events — both
+ * `Page<EventDashboardRowDto>`, newest first.
+ *
+ * Deliberately carries no title and no host. This is the privacy-safe "how much traffic is on
+ * which day" view, not an event lookup: an operator sizing capacity does not need to know whose
+ * wedding it is.
+ */
+export interface EventDashboardRowDto {
+  eventId: string;
+  planTierCode: string;
+  eventType: string;
+  startAt: string;
+  /** Bytes of non-deleted media this event's plan allows. Null = unenforced, not zero. */
+  storageQuotaBytes: number | null;
+  /** Non-deleted members this event's plan allows. Null = unenforced, not zero. */
+  guestQuotaMax: number | null;
+}
+
+/** GET /api/admin/metrics/timeline?weeks=12 — one row per (plan, week). */
+export interface PlanTimelineRowDto {
+  planTierCode: string;
+  weekStart: string;
+  eventCount: number;
+}
+
+/** GET /api/admin/metrics/calendar — the daily summaries plus the thresholds that colour them,
+ *  so the legend always matches the deployed configuration instead of a frontend env var. */
+export interface CalendarSummaryResponseDto {
+  days: CalendarDaySummaryDto[];
+  thresholds: CalendarLoadThresholdsDto;
+}
+
+export interface CalendarDaySummaryDto {
+  date: string;
+  eventCount: number;
+  /** Event count on that day, keyed by plan tier code. A missing key is 0. */
+  planMix: Record<string, number>;
+  /**
+   * Sum of that day's events' plan quotas. Events on an unenforced (null-limit) plan contribute
+   * nothing rather than being counted as zero or as infinite, so when the matching
+   * `hasUnlimited*` flag is true these are **floors**: render "50 GiB+", never an exact total.
+   */
+  storageBytesTotal: number;
+  guestCapTotal: number;
+  hasUnlimitedStorageQuota: boolean;
+  hasUnlimitedGuestCap: boolean;
+}
+
+/** The event-count bands behind the calendar's low/medium/high colouring. */
+export interface CalendarLoadThresholdsDto {
+  lowMax: number;
+  mediumMax: number;
+  highMax: number;
+}
+
+/** GET /api/admin/metrics/cost-summary — the latest reconciled reading per provider. A provider
+ *  that has never been reconciled is **absent from the list**, not present with zeros. See
+ *  fe-guides/cost-tracking-fe-integration.md. */
+export interface CostSummaryResponseDto {
+  providerActuals: CostProviderActualDto[];
+}
+export interface CostProviderActualDto {
+  provider: string;
+  periodStart: string;
+  periodEnd: string;
+  /** Null when the provider's API exposes no monetary figure — read `detail` instead. */
+  amountMinor: number | null;
+  currency: string | null;
+  detail: Record<string, unknown>;
+  fetchedAt: string;
 }
 
 // ---- Dynamic QR links ----
@@ -1077,9 +1655,16 @@ export interface QrLinkResponseDto {
    *  which also makes the code resolve as TARGET_UNAVAILABLE. */
   maxGuests: number | null;
   label: string | null;
+  /** Null for host-created links. When present, look it up in your own translation catalog and
+   *  render that instead of `label`, so a platform-minted link shows in the viewer's language
+   *  rather than whichever one it happened to be minted in. */
+  labelKey: string | null;
   metadata: Record<string, unknown>;
   expiresAt: string | null;   // null = never expires
   revokedAt: string | null;   // non-null = dead; revocation is one-way
+  /** True for the links the platform minted itself when the event went live. Lets the host UI say
+   *  "we set this up for you" instead of implying the host configured it. */
+  autoGenerated: boolean;
   createdByUserId: string | null;
   createdAt: string;
   updatedAt: string;
@@ -1094,6 +1679,8 @@ export interface QrLinkResponseDto {
 export interface QrLinkStatsDto {
   qrLinkId: string;
   label: string | null;
+  /** Same contract as QrLinkResponseDto.labelKey. */
+  labelKey: string | null;
   targetType: QrTargetType;
   status: QrLinkStatus;
   /** Guests who joined through this code and have not been removed since. */
@@ -1189,4 +1776,570 @@ export interface WishbookEntryResponseDto {
   /** Server-computed: the caller's own wish, or anything if they host. Read this rather than
    *  deriving it from authorMemberId, which cannot tell you about the host case. */
   canDelete: boolean;
+}
+
+// ---- Newsletter ----
+// Full contract: fe-guides/newsletter-fe-integration.md. Added 2026-09-23.
+
+/** POST /api/newsletter/subscribe — unauthenticated. Always 202 with an empty body, for a new
+ *  address, one already pending, one that confirmed months ago and one that unsubscribed alike.
+ *  There is nothing in the response to branch on: show "check your inbox" and nothing else. */
+export interface NewsletterSubscribeRequestDto {
+  email: string;    // required, max 255, must be an address
+  /** BCP-47. An unrecognised tag falls back to English rather than failing the signup. */
+  locale?: string;  // max 10
+}
+
+/** Body for POST /api/newsletter/confirm and POST /api/newsletter/unsubscribe — both
+ *  unauthenticated, both 204 whatever happened, including for a token that never existed. POST
+ *  rather than GET so inbox and antivirus link-prefetchers cannot fire them: the emailed links
+ *  point at your /newsletter/confirm and /newsletter/unsubscribe pages, which issue the POST. */
+export interface NewsletterTokenRequestDto {
+  token: string;    // required, max 64 (real tokens are 43)
+}
+
+/** GET /api/me/newsletter — USER or ADMIN; guests get 403. Someone who never subscribed gets
+ *  `{subscribed: false}` with nulls, not a 404. */
+export interface NewsletterStatusResponseDto {
+  /** True only while CONFIRMED. */
+  subscribed: boolean;
+  confirmedAt: string | null;
+  /**
+   * The code to type at checkout, e.g. "NL-7QK2MX9WVB" — non-null ONLY while checkout would still
+   * accept it. Spent, lapsed or disabled codes come back null, so render the code block from this
+   * field rather than from a copy held in local state.
+   */
+  rewardCode: string | null;
+  rewardExpiresAt: string | null;
+}
+
+/** PUT /api/me/newsletter — 204. A verified address is confirmed and rewarded immediately; an
+ *  unverified one goes through the ordinary double opt-in, so re-fetch rather than assuming the
+ *  toggle stuck. */
+export interface NewsletterToggleRequestDto {
+  /** Required. An absent field is a 400, not "unsubscribe". */
+  subscribed: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// Billing — checkout, orders, upgrades, withdrawals
+// Full contract: fe-guides/billing-fe-guide.md.
+// ---------------------------------------------------------------------------
+
+export type OrderKind = 'ACTIVATION' | 'UPGRADE' | 'STORAGE_PACK';
+
+/**
+ * PENDING is chased by the reconciliation sweep, so it is not a dead end. REFUNDED is
+ * deliberately distinct from FAILED: that order *was* paid, and the row records that it stopped
+ * being so.
+ */
+export type OrderStatus = 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED' | 'REFUNDED';
+
+/**
+ * POST /api/events/{eventId}/checkout — opens the one activation charge that makes a DRAFT event
+ * live.
+ *
+ * The two booleans are the express request and acknowledgement Directive 2011/83/EU art. 14(3)
+ * and 14(4)(a) require before a service may begin inside the withdrawal period. **Both must be
+ * literally `true`**; a checkout without them is refused with 400 rather than opened without
+ * consent, so they cannot be defaulted or hidden — the host has to see the terms and agree.
+ * `termsVersion` ties that agreement to the wording they actually saw: read it from
+ * /api/config's `withdrawal.termsVersion`, never hardcode it.
+ */
+export interface ActivationCheckoutRequestDto {
+  /** A partner or house code the host typed. Max 40. Omit when there is none. */
+  collaborationCode?: string;
+  requestsImmediateStart: true;
+  acknowledgesWithdrawalTerms: true;
+  termsVersion: string;   // required, max 40
+}
+
+/** POST /api/events/{eventId}/upgrade-checkout — charges the gap to a more expensive plan. Same
+ *  consent fields as above: an upgrade is a new paid service. Note there is no code field — since
+ *  2026-09-22 no discount code prices anything but an activation, and the event's own code is
+ *  inherited automatically. */
+export interface UpgradeCheckoutRequestDto {
+  planTierCode: string;   // required, max 50
+  requestsImmediateStart: true;
+  acknowledgesWithdrawalTerms: true;
+  termsVersion: string;   // required, max 40
+}
+
+/** POST /api/events/{eventId}/storage-checkout — buys one storage pack for a live event. A code,
+ *  not a price and not a byte count: both are looked up from the catalog row it names, which is
+ *  re-checked as purchasable and as a STORAGE_PACK. */
+export interface StorageCheckoutRequestDto {
+  paidServiceCode: string;   // required, max 30
+}
+
+/**
+ * The answer to all three checkout endpoints.
+ *
+ * `redirectUrl` is where to send the browser. `orderId` is what to watch afterwards: the
+ * provider's success URL means "the payment page finished", not "the money arrived" — the webhook
+ * decides that, and it can land either side of the redirect. So poll
+ * GET /api/events/{eventId}/billing and watch that order's status rather than trusting the URL
+ * you were returned to.
+ */
+export interface CheckoutResponseDto {
+  orderId: string;
+  redirectUrl: string;
+}
+
+/** GET /api/events/{eventId}/billing — everything a host needs to understand what they paid for,
+ *  and the frontend's polling target after a checkout redirect. */
+export interface EventBillingResponseDto {
+  eventStatus: EventStatus;
+  planTierCode: string;
+  planTierName: string;
+  orders: OrderSummary[];   // newest first
+  addons: AddonSummary[];
+  /** The event's active discount code, or null. Shown here rather than only at the moment it was
+   *  applied because a future upgrade inherits it without the host retyping anything. */
+  discount: DiscountSummary | null;
+}
+
+/** Deliberately carries no provider session or payment id: they are the provider's identifiers,
+ *  not ours to hand out, and the host has no use for them. */
+export interface OrderSummary {
+  id: string;
+  kind: OrderKind;
+  status: OrderStatus;
+  amountMinor: number | null;
+  /** The part of `amountMinor` that was active add-ons, or null when the order carried none. */
+  addonAmountMinor: number | null;
+  currency: string | null;
+  paidAt: string | null;
+  createdAt: string;
+  /** The withdrawal split this order would refund against. Null on orders predating it. */
+  setupAmountMinor: number | null;
+  eventDayAmountMinor: number | null;
+  hostingAmountMinor: number | null;
+}
+
+/** Carries no raw code, no partner identity and no redemption id — the host is shown the label the
+ *  code's owner chose to display, never who they are or what we pay them. */
+export interface DiscountSummary {
+  label: string;
+  /** The snapshot taken at redemption, not the code's current rate: a rate changed since must not
+   *  silently reprice an event that already redeemed the old one. */
+  discountPercent: number | null;
+  appliedAt: string;
+}
+
+/**
+ * GET /api/events/{eventId}/upgrade-options — every valid upgrade target, fully priced. Nothing
+ * here is for the frontend to recompute: `payableAmountMinor` already folds in the target plan's
+ * own promotion and any code bound to the event, combined and clamped exactly as checkout will
+ * charge it, so a screen built from this list cannot quote a figure checkout then disagrees with.
+ */
+export interface UpgradeOptionResponseDto {
+  planTierCode: string;
+  planTierName: string;
+  currency: string;
+  /** The undiscounted difference between the two plans. Good for a "was" strike-through, but not
+   *  what checkout will charge. */
+  gapAmountMinor: number;
+  payableAmountMinor: number;
+  /** The combined percent applied to reach `payableAmountMinor`, or null when nothing discounted
+   *  this target. */
+  discountPercent: number | null;
+  /** The applied code's display label, or null when the discount is only the plan's own
+   *  promotion. */
+  discountLabel: string | null;
+}
+
+// ---- Withdrawals (the automated right of withdrawal) ----
+
+/** PENDING/APPROVED/REJECTED are legacy states kept for rows that predate the automated flow;
+ *  nothing produces them now. A live request lands on REFUSED (refused at the gate, nothing
+ *  changed), HELD (computed, but a fraud signal fired or the platform is in manual mode),
+ *  REFUNDED, or WITHHELD (an admin refused a held request; the host's account is suspended). */
+export type RefundRequestStatus =
+  | 'PENDING' | 'APPROVED' | 'REJECTED'
+  | 'REFUSED' | 'HELD' | 'REFUNDED' | 'WITHHELD';
+
+/** Which article the refund is computed under. CONSENTED_PRO_RATA: the host asked for an
+ *  immediate start, so setup is retained and the rest is pro-rated. NO_CONSENT_FULL_REFUND: no
+ *  express request to begin, so no cost may be charged at all. */
+export type RefundBasis = 'CONSENTED_PRO_RATA' | 'NO_CONSENT_FULL_REFUND';
+
+/** POST /api/events/{eventId}/withdrawals — the body is optional. Nothing in `reason` is parsed;
+ *  an admin reads it if the request is held. */
+export interface WithdrawalRequestCreateDto {
+  reason?: string;   // max 1000
+}
+
+/** GET /api/events/{eventId}/withdrawal-preview — what a withdrawal would do right now, without
+ *  doing it. Nothing is persisted by a preview, so call it freely to render the confirmation
+ *  screen. */
+export interface WithdrawalPreviewDto {
+  eligible: boolean;
+  /** Why not, when `eligible` is false. Show these; they are the whole explanation. */
+  refusals: WithdrawalRefusalDto[];
+  windowClosesAt: string | null;
+  totalRefundMinor: number;
+  currency: string;
+  lines: WithdrawalLineDto[];
+}
+
+/** One withdrawal attempt as the host sees it. Fraud signals and the reviewer's recommendation are
+ *  deliberately absent — those live on WithdrawalAdminDto. */
+export interface WithdrawalResponseDto {
+  id: string;
+  eventId: string;
+  status: RefundRequestStatus;
+  reason: string | null;
+  createdAt: string;
+  decidedAt: string | null;
+  /** The admin's words on a WITHHELD request. The host is shown exactly this text. */
+  decisionNote: string | null;
+  /** When a HELD request releases itself if no admin acts. */
+  holdUntil: string | null;
+  totalRefundMinor: number | null;
+  currency: string | null;
+  refusals: WithdrawalRefusalDto[];
+  lines: WithdrawalLineDto[];
+}
+
+export interface WithdrawalRefusalDto {
+  code: string;
+  message: string;
+  detail: string | null;
+}
+
+/** One order's contribution to the refund. `components` is the arithmetic, kept open-ended so the
+ *  breakdown can be shown without the frontend recomputing it. */
+export interface WithdrawalLineDto {
+  orderId: string;
+  orderKind: OrderKind;
+  basis: RefundBasis;
+  hostingStart: string | null;
+  hostingEnd: string | null;
+  usedSeconds: number | null;
+  totalSeconds: number | null;
+  eventPerformed: boolean;
+  refundMinor: number;
+  /** Whether the money actually left the provider, as opposed to the line merely being computed. */
+  providerRefunded: boolean;
+  components: Record<string, unknown>;
+}
+
+/** GET /api/admin/withdrawals — the facts sheet for each held request. Everything here was
+ *  computed and stored at request time, so what the reviewer reads is exactly what the automated
+ *  decision was based on; nothing is recalculated live. */
+export interface WithdrawalAdminDto {
+  request: WithdrawalResponseDto;
+  usageFacts: Record<string, unknown>;
+  fraudSignals: WithdrawalSignalDto[];
+  recommendation: string;
+}
+export interface WithdrawalSignalDto {
+  code: string;
+  fired: boolean;
+  observed: string | null;
+  threshold: string | null;
+}
+
+/** POST /api/admin/withdrawals/{requestId}/withhold. The note is mandatory: withholding is only
+ *  lawful with a stated reason, and the host is shown this text verbatim.
+ *  (POST .../release takes no body and answers the same WithdrawalResponseDto.) */
+export interface WithdrawalWithholdDto {
+  note: string;   // required, max 1000
+}
+
+/**
+ * GET /api/admin/webhooks/unprocessed — deliveries that were received and never finished
+ * processing. Each one is a moment where money moved and the platform did not react.
+ *
+ * The webhook endpoint answers 200 and swallows the failure on purpose (a deterministic failure
+ * retried forever helps nobody), so this list is the only trace. Sort an operator's attention by
+ * `eventType`: an unhandled `invoice.*` is noise, a lost `checkout.session.completed` is a charged
+ * customer with nothing to show for it.
+ */
+export interface UnprocessedWebhookDto {
+  provider: string;
+  providerEventId: string;
+  eventType: string;
+  receivedAt: string;
+  /** Whether the delivery's body was kept, and so whether the replay endpoint can run it again.
+   *  False only for deliveries received before the ledger stored one — those need a human. */
+  replayable: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// Collaborations, partner codes and house discount codes
+// Full contract: fe-guides/collaborations-fe-integration.md.
+// ---------------------------------------------------------------------------
+
+export type CollaboratorStatus = 'ACTIVE' | 'SUSPENDED';
+export type DiscountCodeStatus = 'ACTIVE' | 'DISABLED';
+export type EarningEntryType = 'ACCRUAL' | 'CLAWBACK';
+export type EarningStatus = 'ACCRUED' | 'PAID' | 'REVERSED';
+
+// ---- Previewing a code before checkout ----
+
+/**
+ * POST /api/events/{eventId}/checkout/preview-code — try a code against an event that already
+ * exists.
+ *
+ * Send a blank `collaborationCode` to preview the event's own already-applied code instead: the
+ * one a plan upgrade would inherit unretyped. Refused if the event carries neither.
+ */
+export interface CodePreviewRequestDto {
+  collaborationCode?: string;   // max 40
+  /** Omit for an activation preview (priced against the event's own plan). Naming an EVENT-scope
+   *  plan prices the discounted gap to that plan instead. */
+  targetPlanTierCode?: string;  // max 50
+}
+
+/** POST /api/checkout/preview-code — try a code while the host is still filling in the creation
+ *  form, before the event exists. Priced against the type and plan picked on that form, which is
+ *  why both travel with the code instead of an event id. */
+export interface NewEventCodePreviewRequestDto {
+  eventType: string;          // required, max 50
+  planTierCode: string;       // required, max 50
+  collaborationCode: string;  // required, max 40
+}
+
+/**
+ * What a valid code would do to this checkout. Carries no commission rate and no partner identity
+ * beyond the label they chose to show: what we pay a venue is between us and the venue, and a host
+ * who can read it can negotiate against it.
+ */
+export interface CodePreviewResponseDto {
+  label: string;
+  /** The code's headline figure. */
+  discountPercent: number;
+  /** What will actually come off, after the plan's own promotion is added in and the total
+   *  clamped. May be **lower** than `discountPercent` during a plan promotion — show this one. */
+  combinedDiscountPercent: number;
+  /** The plan price after that discount, excluding any add-ons. */
+  payableAmountMinor: number;
+  currency: string;
+}
+
+// ---- Partners (admin) ----
+
+/** POST /api/admin/collaborators and PATCH /api/admin/collaborators/{id}. */
+export interface CollaboratorRequestDto {
+  name: string;          // required, max 200
+  contactEmail: string;  // required, max 320
+  notes?: string;        // max 2000
+  /** Null on create means ACTIVE; null on update means "leave it alone". Suspending a partner is
+   *  the only reason this field exists. */
+  status?: CollaboratorStatus;
+}
+
+/** Never carries the portal token — only whether one has been issued, and when. */
+export interface CollaboratorResponseDto {
+  id: string;
+  name: string;
+  contactEmail: string;
+  status: CollaboratorStatus;
+  portalTokenIssued: boolean;
+  portalTokenIssuedAt: string | null;
+  notes: string | null;
+}
+
+/** POST /api/admin/collaborators/{collaboratorId}/portal-token — rotates and returns the token.
+ *  Returned once at issue and never again: show it, and tell the admin to send it now. */
+export interface PortalTokenResponseDto {
+  token: string;
+  portalUrl: string;
+}
+
+/** POST /api/admin/collaborators/{collaboratorId}/codes. */
+export interface CollaborationCodeRequestDto {
+  /** Alphanumeric and dashes only, stored uppercase: anything a host has to read off a printed
+   *  card, and nothing that needs URL-escaping. Max 40. */
+  code: string;
+  label: string;              // required, max 200 — what the host sees at checkout
+  discountPercent: number;    // required, 0-99
+  commissionPercent: number;  // required, 0-100 — admin-only, never shown to a host
+  startsAt?: string;
+  endsAt?: string;
+  maxRedemptions?: number;    // >= 1; omit for unlimited
+  /** Event types this code may be redeemed against. Omit or send [] for every type. */
+  eventTypeKeys?: string[];
+  /** EVENT-scope plan codes this code may be redeemed against. Omit or send [] for every plan. */
+  planTierCodes?: string[];
+}
+
+/**
+ * PATCH /api/admin/collaboration-codes/{codeId}.
+ *
+ * There is no `code` field, deliberately rather than by oversight: the string is already printed
+ * on the partner's brochures and changing it would orphan every card in circulation. Retiring a
+ * string means setting `status` to DISABLED and issuing a new code.
+ *
+ * Rate changes take effect on future redemptions only — existing redemptions snapshot their
+ * percentages, so nothing already earned moves.
+ */
+export interface CollaborationCodePatchDto {
+  label: string;              // required
+  discountPercent: number;    // required, 0-99
+  commissionPercent: number;  // required, 0-100
+  status: DiscountCodeStatus; // required
+  startsAt?: string;
+  endsAt?: string;
+  maxRedemptions?: number;
+  /** Both replace the restriction wholesale. Null or [] means "every". */
+  eventTypeKeys?: string[];
+  planTierCodes?: string[];
+}
+
+/** Admin-only, so it holds back nothing — the commission rate included. */
+export interface CollaborationCodeResponseDto {
+  id: string;
+  collaboratorId: string;
+  code: string;
+  label: string;
+  discountPercent: number;
+  commissionPercent: number;
+  status: DiscountCodeStatus;
+  startsAt: string | null;
+  endsAt: string | null;
+  maxRedemptions: number | null;   // null = unlimited
+  /** Redemptions that still count against `maxRedemptions` — voided ones are excluded, which is
+   *  why this is served rather than left to be counted client-side. */
+  liveRedemptions: number;
+  /** Empty means every event type / every plan, not none. */
+  eventTypeKeys: string[];
+  planTierCodes: string[];
+}
+
+/** POST /api/admin/collaborators/{collaboratorId}/codes/link — attaches an existing house code to
+ *  a partner, promoting it to a partner code. */
+export interface LinkDiscountCodeRequestDto {
+  discountCodeId: string;
+  commissionPercent: number;   // required, 0-100
+}
+
+/** POST /api/admin/events/{eventId}/collaboration-redemption/void and
+ *  POST /api/admin/discount-codes/events/{eventId}/redemption/void. A reason is mandatory:
+ *  voiding an attribution takes money off a partner, so it needs a record. */
+export interface VoidRedemptionRequestDto {
+  reason: string;   // required, max 1000
+}
+
+// ---- The partner's own ledger ----
+
+/** GET /api/admin/collaborators/{collaboratorId}/earnings — amounts are **signed**: a clawback is
+ *  negative. Sum them, don't take absolute values. */
+export interface EarningResponseDto {
+  id: string;
+  eventId: string;
+  orderId: string;
+  codeId: string;
+  entryType: EarningEntryType;
+  amountMinor: number;
+  currency: string;
+  /** The rate snapshotted at accrual, not the code's rate today. */
+  commissionPercent: number;
+  basisAmountMinor: number;
+  status: EarningStatus;
+  accruedAt: string;
+  paidAt: string | null;
+  payoutReference: string | null;
+}
+
+/** GET /api/admin/collaborators/{collaboratorId}/earnings/totals — one row per currency. Never
+ *  sum across rows: adding EUR to SEK is a correctness bug, not a display one. */
+export interface EarningTotalDto {
+  currency: string;
+  accruedMinor: number;
+  paidMinor: number;
+}
+
+/** POST /api/admin/collaboration-earnings/mark-paid — settles a batch and stamps them all with the
+ *  same reference. */
+export interface MarkPaidRequestDto {
+  earningIds: string[];      // required, non-empty
+  payoutReference: string;   // required, max 200
+}
+
+/**
+ * GET /api/partners/{token} — the partner's own page, reachable by anyone holding the link.
+ *
+ * Deliberately aggregate-only for that reason: a forwarded email, a screenshot or a bookmark on a
+ * shared machine all reach it, so it carries no host names, no host emails, no event titles and no
+ * event ids. A partner learns how much they have earned, not who our customers are.
+ *
+ * It reports commission accrued rather than "discount delivered", because the combined-discount
+ * ceiling can swallow part of a code's headline percentage during a plan promotion — the second
+ * number would be a promise we cannot keep.
+ */
+export interface PartnerPageDto {
+  name: string;
+  eventsReferred: number;
+  totals: EarningTotalDto[];
+}
+
+// ---- House discount codes (admin, no partner attached) ----
+
+/** POST /api/admin/discount-codes. Same code rules as a partner code, minus the commission. */
+export interface DiscountCodeRequestDto {
+  code: string;              // required, max 40, alphanumeric and dashes, stored uppercase
+  label: string;             // required, max 200
+  discountPercent: number;   // required, 0-99
+  startsAt?: string;
+  endsAt?: string;
+  maxRedemptions?: number;   // >= 1; omit for unlimited
+  eventTypeKeys?: string[];  // omit or [] for every type
+  planTierCodes?: string[];  // omit or [] for every plan
+}
+
+/** PATCH /api/admin/discount-codes/{codeId}. No `code` field, for the same reason as
+ *  CollaborationCodePatchDto. Both restriction sets replace wholesale. */
+export interface DiscountCodePatchDto {
+  label: string;               // required
+  discountPercent: number;     // required, 0-99
+  status: DiscountCodeStatus;  // required
+  startsAt?: string;
+  endsAt?: string;
+  maxRedemptions?: number;
+  eventTypeKeys?: string[];
+  planTierCodes?: string[];
+}
+
+/** GET /api/admin/discount-codes. `planTierCodes` carries codes, never plan-tier ids, so an admin
+ *  screen never has to resolve a UUID. Empty means "every". */
+export interface DiscountCodeResponseDto {
+  id: string;
+  code: string;
+  label: string;
+  discountPercent: number;
+  status: DiscountCodeStatus;
+  startsAt: string | null;
+  endsAt: string | null;
+  maxRedemptions: number | null;
+  liveRedemptions: number;
+  eventTypeKeys: string[];
+  planTierCodes: string[];
+}
+
+/**
+ * The newsletter's slice of the GDPR data export.
+ *
+ * **Nothing serves this today** — the export endpoint it belongs to was specified and never built.
+ * It is here because the shape is defined and tested, not because there is a response to type
+ * against; do not build a screen on it without checking that an endpoint exists.
+ *
+ * Consent IP and User-Agent are included on purpose: they are facts held about the subscriber, and
+ * an export that omitted them would be incomplete in exactly the way the right of access exists to
+ * prevent. The confirmation and unsubscribe tokens are not — those are credentials, not facts.
+ */
+export interface NewsletterSubscriptionExportDto {
+  email: string | null;
+  status: string;
+  source: string;
+  locale: string | null;
+  subscribedAt: string;
+  confirmedAt: string | null;
+  unsubscribedAt: string | null;
+  consentIp: string | null;
+  consentUserAgent: string | null;
+  rewardCode: string | null;
+  rewardExpiresAt: string | null;
 }

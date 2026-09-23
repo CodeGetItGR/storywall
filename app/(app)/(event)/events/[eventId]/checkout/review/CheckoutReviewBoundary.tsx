@@ -140,8 +140,7 @@ export default function CheckoutReviewBoundary() {
     const requiresConsent = intent === 'upgrade';
     const termsVersion = appConfig.data?.withdrawal.termsVersion ?? null;
     const consentSatisfied = !requiresConsent || (requestsImmediateStart && acknowledgesWithdrawalTerms && Boolean(termsVersion));
-    const backHref =
-        intent === 'storage' ? routes.events.settingsAddons(eventId) : routes.events.manage(eventId, { tab: 'billing' });
+    const backHref = intent === 'storage' ? routes.events.settingsAddons(eventId) : routes.events.manage(eventId, { tab: 'billing' });
 
     async function continueToCheckout() {
         if (!valid || !consentSatisfied) return;
@@ -219,9 +218,11 @@ export default function CheckoutReviewBoundary() {
                         <p className="text-sm font-semibold text-ink">{lines.length === 1 ? lines[0]?.label : t('dueNow')}</p>
                         <p className="shrink-0 text-xl font-bold text-ink">{formatMoney(locale, totalMinor, currency)}</p>
                     </div>
-                    {intent === 'upgrade' && upgradeOption?.discountLabel && upgradeOption.discountPercent !== undefined && (
+                    {intent === 'upgrade' && upgradeOption && upgradeOption.discountPercent !== null && (
                         <p className="mt-3 text-sm font-semibold text-emerald-700">
-                            {t('autoDiscountApplied', { label: upgradeOption.discountLabel, discount: upgradeOption.discountPercent })}
+                            {upgradeOption.discountLabel
+                                ? t('autoDiscountApplied', { label: upgradeOption.discountLabel, discount: upgradeOption.discountPercent })
+                                : t('autoDiscountAppliedNoLabel', { discount: upgradeOption.discountPercent })}
                         </p>
                     )}
                 </div>

@@ -24,6 +24,7 @@ const billingData: EventBillingResponseDto = {
     planTierName: 'SIGNATURE',
     orders: [],
     addons: [],
+    discount: null,
 };
 
 const upgradeOption: UpgradeOptionResponseDto = {
@@ -32,6 +33,8 @@ const upgradeOption: UpgradeOptionResponseDto = {
     currency: 'EUR',
     gapAmountMinor: 10_000,
     payableAmountMinor: 8_000,
+    discountPercent: null,
+    discountLabel: null,
 };
 
 function queryResult<T>(data: T, overrides: Record<string, unknown> = {}) {

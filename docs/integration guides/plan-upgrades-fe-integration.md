@@ -5,7 +5,8 @@ reference — this doc only covers what upgrades add on top, and **its §12 erro
 do not yet include the changes below**.
 
 **2026-09-01 update:** §3's picker-building guidance is superseded — a new endpoint now returns
-every upgrade target already fully priced, discount codes included. See §3.
+every upgrade target already fully priced. See §3. (As of 2026-09-22 "fully priced" means the target
+plan's own promotion and nothing else: a discount code no longer reaches an upgrade at all.)
 
 **The headline change: there is now a third purchase.** Until now an event's plan was fixed at
 creation and could only be changed by an admin, bypassing billing entirely. A host on `BASIC` who
@@ -94,10 +95,14 @@ paying the `PLUS` order would have moved the event to `PRO`.
 
 **2026-09-01 update: don't compute the picker's prices yourself any more.** Everything below this
 line describes the *old* approach and is kept only so you recognise it if you find it in existing
-code — a client-side `target - current` subtraction predates discount codes and was already wrong
-about plan promotions; now that a partner/house code bound at activation also carries over to an
-upgrade unretyped (see `collaborations-fe-integration.md` for that feature), it can be wrong by more
-than a rounding cent.
+code — a client-side `target - current` subtraction is wrong about the target plan's own promotion,
+which does come off an upgrade.
+
+**2026-09-22:** a discount code bound at activation no longer reaches an upgrade at all, so the
+target plan's promotion is now the only thing moving this price. That makes the gap easier to
+compute by hand, and it is still the wrong thing to do: promotions start and end on the server, and
+`upgrade-options` is the only number guaranteed to match what checkout charges. See
+`collaborations-fe-integration.md` (2026-09-22 note) for the behaviour change.
 
 Use `GET /api/events/{eventId}/upgrade-options` instead — one call, host-only, no code involved:
 
@@ -108,8 +113,8 @@ Use `GET /api/events/{eventId}/upgrade-options` instead — one call, host-only,
     "planTierCode": "PRO", "planTierName": "Pro", "currency": "EUR",
     "gapAmountMinor": 10000,      // undiscounted difference — fine for a "was €100" strike-through
     "payableAmountMinor": 8000,   // what upgrade-checkout will actually charge — render this as the price
-    "discountPercent": 20,        // combined plan-promo + bound-code percent; absent when nothing discounts this target
-    "discountLabel": "Barn Venue partner rate"  // absent when discountPercent is absent
+    "discountPercent": 20,        // the target plan's own promotion; absent when it has none
+    "discountLabel": "Autumn launch offer"      // absent when discountPercent is absent
   }
 ]
 ```

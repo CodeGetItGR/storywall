@@ -90,7 +90,7 @@ export function WithdrawalRow({ row }: { row: WithdrawalAdminDto }) {
                     <AdminEvidenceTile
                         key={signal.code}
                         label={`${signal.code}${signal.fired ? ` · ${t('withdrawals.signalFired')}` : ''}`}
-                        value={signal.observed}
+                        value={signal.observed ?? '—'}
                         muted={!signal.fired}
                     />
                 ))}

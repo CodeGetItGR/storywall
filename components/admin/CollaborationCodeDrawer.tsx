@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
+import { CodeRestrictionFields } from '@/components/admin/CodeRestrictionFields';
 import { useSaveCollaborationCode } from '@/hooks/useAdmin';
 import { collaborationCodeCreateFromFormData, collaborationCodePatchFromFormData, instantToLocalInput } from '@/lib/adminCollaborations';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
@@ -43,7 +44,11 @@ export function CollaborationCodeDrawer({
             subtitle={collaborator?.name}
             footer={
                 <div className="ml-auto flex items-center gap-2">
-                    <button type="button" onClick={onCloseAction} className="min-h-9 rounded-md border border-border px-3.5 text-sm font-semibold text-ink-muted">
+                    <button
+                        type="button"
+                        onClick={onCloseAction}
+                        className="min-h-9 rounded-md border border-border px-3.5 text-sm font-semibold text-ink-muted"
+                    >
                         {tAdmin('cancel')}
                     </button>
                     <button
@@ -60,7 +65,7 @@ export function CollaborationCodeDrawer({
         >
             <form id="collaboration-code-form" onSubmit={handleSubmit} className="space-y-5">
                 {/* Code identity */}
-                <AdminField label={t('codes.fields.code')} required>
+                <AdminField label={t('codes.fields.code')} required hint={t('codes.fields.codeHint')}>
                     <input
                         name="code"
                         required
@@ -71,7 +76,7 @@ export function CollaborationCodeDrawer({
                         className={adminInputClass('font-mono uppercase disabled:bg-surface-muted disabled:text-ink-faint')}
                     />
                 </AdminField>
-                <AdminField label={t('codes.fields.label')} required>
+                <AdminField label={t('codes.fields.label')} required hint={t('codes.fields.labelHint')}>
                     <input name="label" required maxLength={140} defaultValue={code?.label} className={adminInputClass()} />
                 </AdminField>
 
@@ -88,7 +93,7 @@ export function CollaborationCodeDrawer({
                             className={adminInputClass()}
                         />
                     </AdminField>
-                    <AdminField label={t('codes.fields.commissionPercent')} required>
+                    <AdminField label={t('codes.fields.commissionPercent')} required hint={t('codes.fields.commissionPercentHint')}>
                         <input
                             name="commissionPercent"
                             type="number"
@@ -104,13 +109,23 @@ export function CollaborationCodeDrawer({
                 {/* Availability */}
                 <div className="grid grid-cols-2 gap-3">
                     <AdminField label={t('codes.fields.startsAt')} optional>
-                        <input name="startsAt" type="datetime-local" defaultValue={instantToLocalInput(code?.startsAt ?? null)} className={adminInputClass()} />
+                        <input
+                            name="startsAt"
+                            type="datetime-local"
+                            defaultValue={instantToLocalInput(code?.startsAt ?? null)}
+                            className={adminInputClass()}
+                        />
                     </AdminField>
                     <AdminField label={t('codes.fields.endsAt')} optional>
-                        <input name="endsAt" type="datetime-local" defaultValue={instantToLocalInput(code?.endsAt ?? null)} className={adminInputClass()} />
+                        <input
+                            name="endsAt"
+                            type="datetime-local"
+                            defaultValue={instantToLocalInput(code?.endsAt ?? null)}
+                            className={adminInputClass()}
+                        />
                     </AdminField>
                 </div>
-                <AdminField label={t('codes.fields.maxRedemptions')} optional>
+                <AdminField label={t('codes.fields.maxRedemptions')} optional hint={t('codes.fields.maxRedemptionsHint')}>
                     <input name="maxRedemptions" type="number" min={1} defaultValue={code?.maxRedemptions ?? ''} className={adminInputClass()} />
                 </AdminField>
                 {code && (
@@ -121,6 +136,8 @@ export function CollaborationCodeDrawer({
                         </select>
                     </AdminField>
                 )}
+                {/* Restrictions */}
+                <CodeRestrictionFields restrictions={code} />
                 {saveCode.error && <p className="text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(saveCode.error)}`)}</p>}
             </form>
         </AdminDrawer>

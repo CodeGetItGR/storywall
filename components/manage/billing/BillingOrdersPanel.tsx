@@ -2,7 +2,7 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { type BillingData, type BillingDerived, type BillingInsights, useBillingDate } from '@/hooks/useEventBillingPanel';
 import type { EventBillingResponseDto } from '@/lib/api/types';
-import { formatMoney } from '@/lib/billing';
+import { formatMoney, formatOptionalMoney } from '@/lib/billing';
 import { cn } from '@/lib/utils';
 
 type Order = EventBillingResponseDto['orders'][number];
@@ -13,7 +13,8 @@ function orderStatusClassName(status: Order['status']) {
         status === 'PAID' && 'bg-emerald-50 text-emerald-700',
         status === 'PENDING' && 'bg-amber-50 text-amber-700',
         status === 'FAILED' && 'bg-red-50 text-red-700',
-        status === 'CANCELLED' && 'bg-surface-muted text-ink-muted'
+        status === 'CANCELLED' && 'bg-surface-muted text-ink-muted',
+        status === 'REFUNDED' && 'bg-sky-50 text-sky-700'
     );
 }
 
@@ -42,10 +43,10 @@ export function BillingOrdersPanel({
 
     const amountCell = (order: Order) => (
         <>
-            {formatMoney(locale, order.amountMinor, order.currency)}
+            {formatOptionalMoney(order.amountMinor, order.currency, locale) ?? '—'}
             {order.addonAmountMinor ? (
                 <span className="block text-[10px] font-normal text-ink-muted">
-                    {t('orders.addonAmount', { amount: formatMoney(locale, order.addonAmountMinor, order.currency) })}
+                    {t('orders.addonAmount', { amount: formatOptionalMoney(order.addonAmountMinor, order.currency, locale) ?? '' })}
                 </span>
             ) : null}
         </>

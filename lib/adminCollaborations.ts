@@ -1,4 +1,5 @@
 import type {
+    CodeRestrictionsDto,
     CollaborationCodePatchDto,
     CollaborationCodeRequestDto,
     CollaborationCodeResponseDto,
@@ -32,6 +33,7 @@ export function collaborationCodeCreateFromFormData(formData: FormData): Collabo
         startsAt: localDateTimeOrNull(formData.get('startsAt')),
         endsAt: localDateTimeOrNull(formData.get('endsAt')),
         maxRedemptions: numberOrNull(formData.get('maxRedemptions')),
+        ...codeRestrictionsFromFormData(formData),
     };
 }
 
@@ -44,6 +46,7 @@ export function collaborationCodePatchFromFormData(formData: FormData, code: Col
         startsAt: localDateTimeOrNull(formData.get('startsAt')),
         endsAt: localDateTimeOrNull(formData.get('endsAt')),
         maxRedemptions: numberOrNull(formData.get('maxRedemptions')),
+        ...codeRestrictionsFromFormData(formData),
     };
 }
 
@@ -55,6 +58,7 @@ export function discountCodeCreateFromFormData(formData: FormData): DiscountCode
         startsAt: localDateTimeOrNull(formData.get('startsAt')),
         endsAt: localDateTimeOrNull(formData.get('endsAt')),
         maxRedemptions: numberOrNull(formData.get('maxRedemptions')),
+        ...codeRestrictionsFromFormData(formData),
     };
 }
 
@@ -66,7 +70,42 @@ export function discountCodePatchFromFormData(formData: FormData, code: Discount
         startsAt: localDateTimeOrNull(formData.get('startsAt')),
         endsAt: localDateTimeOrNull(formData.get('endsAt')),
         maxRedemptions: numberOrNull(formData.get('maxRedemptions')),
+        ...codeRestrictionsFromFormData(formData),
     };
+}
+
+// Unticked boxes mean "every", so an empty list is sent on purpose.
+export function codeRestrictionsFromFormData(formData: FormData): CodeRestrictionsDto {
+    return {
+        eventTypeKeys: formData.getAll('eventTypeKeys').map(String).filter(Boolean),
+        planTierCodes: formData.getAll('planTierCodes').map(String).filter(Boolean),
+    };
+}
+
+// Stored values the option lists don't know about, kept as hidden inputs so an edit
+// never silently drops them.
+export function unknownRestrictionValues(
+    restrictions: CodeRestrictionsDto | null,
+    eventTypeKeys: string[],
+    planTierCodes: string[]
+): CodeRestrictionsDto {
+    const knownEventTypes = new Set(eventTypeKeys);
+    const knownPlans = new Set(planTierCodes);
+    return {
+        eventTypeKeys: (restrictions?.eventTypeKeys ?? []).filter((key) => !knownEventTypes.has(key)),
+        planTierCodes: (restrictions?.planTierCodes ?? []).filter((code) => !knownPlans.has(code)),
+    };
+}
+
+export function restrictionEventTypesWithPlans(
+    restrictions: CodeRestrictionsDto | null,
+    planGroups: { key: string; plans: { value: string }[] }[]
+): string[] {
+    const keys = new Set(restrictions?.eventTypeKeys ?? []);
+    for (const group of planGroups) {
+        if (group.plans.some((plan) => restrictions?.planTierCodes.includes(plan.value))) keys.add(group.key);
+    }
+    return [...keys];
 }
 
 export function linkDiscountCodeFromFormData(formData: FormData): LinkDiscountCodeRequestDto {

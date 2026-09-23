@@ -22,6 +22,14 @@ it (§1, "Blank code"); and a new §1c, `GET /upgrade-options`, returns every va
 already fully priced — **use it instead of computing an upgrade's price client-side**, which
 `plan-upgrades-fe-integration.md` §3 also now says.
 
+**2026-09-22 — behaviour change, read this if you built against the paragraph above.** A discount
+code now reaches an event's **activation and nothing else**. It no longer carries into a plan
+upgrade or a storage pack, and a partner is credited commission on the activation only. Prices
+quoted by `upgrade-options` (§1c) and charged by `upgrade-checkout` (§2) therefore rise for events
+carrying a code and are unchanged for everyone else — the *plan's own* promotion still applies, the
+code no longer does. Sending `collaborationCode` together with `targetPlanTierCode` to
+`preview-code` is now refused outright with the new `5076` (§1).
+
 ## Why
 
 Wedding venues and event organisers send us hosts. A code at checkout is how we both give that
@@ -77,22 +85,44 @@ code's redemption count is untouched until they actually start a checkout.
 ### Upgrade preview: pass `targetPlanTierCode`
 
 The upgrade screen (§2's `upgrade-checkout`) prices the **difference** between the event's current
-plan and a more expensive target, not the target's full price. Previewing that gap now takes one
-more, optional field:
+plan and a more expensive target, not the target's full price. Previewing that gap takes one more,
+optional field:
 
 ```jsonc
 POST /api/events/{eventId}/checkout/preview-code
-{ "collaborationCode": "barn-2026", "targetPlanTierCode": "PREMIUM" }
+{ "targetPlanTierCode": "PREMIUM" }   // no collaborationCode — see below
 
 → 200
 {
-  "label": "Barn Venue partner rate",
-  "discountPercent": 10,
-  "combinedDiscountPercent": 10,
-  "payableAmountMinor": 4500,   // the discounted GAP to PREMIUM, not PREMIUM's own price
+  "label": null,                // always null here: these two describe the CODE,
+  "discountPercent": 0,         // and no code priced this
+  "combinedDiscountPercent": 10,  // the TARGET PLAN's own promotion — the only discount in play
+  "payableAmountMinor": 4500,     // the GAP to PREMIUM, not PREMIUM's own price
   "currency": "EUR"
 }
 ```
+
+**Read `combinedDiscountPercent`, not `discountPercent`, on this response.** On an upgrade the two
+code-describing fields are always empty even when a real discount came off, because the discount is
+the plan's, not a code's. A client that renders "10% off" from `discountPercent` will show nothing
+while charging a discounted price. `payableAmountMinor` is always the number to charge. If you want
+a label for the plan's promotion, `upgrade-options` (§1c) carries one per target; this endpoint
+does not.
+
+**Send no code alongside `targetPlanTierCode` (changed 2026-09-22).** A code buys a discount on the
+event's *activation* and reaches nothing after it, so there is no answer to give for one here.
+Sending both fields is refused:
+
+```jsonc
+→ 409
+{ "status": 409, "errorCode": 5076, "errorKey": "DISCOUNT_NOT_APPLICABLE_TO_UPGRADE",
+  "detail": "Discount codes apply to an event's activation, not to a plan upgrade." }
+```
+
+This is deliberately **not** the masked `5060`. It says nothing about whether the code exists — only
+that upgrades aren't discounted, which is a published rule, not a secret. Telling a host their
+perfectly good code was invalid would be the worse error. There is no code field on the upgrade
+screen, so a client that follows §1c never hits this; it exists for the one that doesn't.
 
 Omit `targetPlanTierCode` (or send it blank) for the activation-style preview from the section
 above — that behaviour is unchanged. A `targetPlanTierCode` that isn't purchasable, or isn't
@@ -135,20 +165,26 @@ An over-long (>40 char) code fails validation with a `400` before reaching any o
 
 ### Blank code: preview what's already applied
 
-**2026-09-01:** `collaborationCode` may now be omitted or sent blank/whitespace. That previews the
-event's **own already-applied code** instead of one being typed — the same code an upgrade already
-inherits without a retype (§2). Use this on a screen that has no code field at all, such as the
-upgrade picker in §1c.
+**2026-09-01:** `collaborationCode` may now be omitted or sent blank/whitespace. On an
+**activation** preview that prices the event's **own already-applied code** instead of one being
+typed, so a screen with no code field doesn't have to ask the host to retype what they already
+redeemed.
 
 ```jsonc
 POST /api/events/{eventId}/checkout/preview-code
-{ "targetPlanTierCode": "PREMIUM" }   // collaborationCode omitted entirely
+{ }                                   // collaborationCode omitted entirely
 
-→ 200   // the event's own code, priced against PREMIUM's gap — same shape as a typed preview
+→ 200   // the event's own code — same shape as a typed preview
 ```
 
-If the event carries no code at all, this is refused — distinctly from a bad-code guess, since there
-is no code being guessed:
+**With `targetPlanTierCode`, a blank code means something different (2026-09-22):** it is the upgrade
+picker asking for a price, and it returns the gap with the target plan's own promotion and nothing
+else — exactly what `upgrade-checkout` will charge. The event's code is not read, so this succeeds
+whether or not the event carries one, and never returns `5063`. §1c answers the same question for
+every target in one call and is the better fit for a picker.
+
+If an **activation** preview falls back to the event's code and the event carries none, it is
+refused — distinctly from a bad-code guess, since there is no code being guessed:
 
 ```jsonc
 → 409
@@ -200,14 +236,12 @@ GET /api/events/{eventId}/upgrade-options
     "gapAmountMinor": 10000,
     "payableAmountMinor": 8000,
     "discountPercent": 20,
-    "discountLabel": "Barn Venue partner rate"
+    "discountLabel": "Autumn launch offer"
   },
   {
     "planTierCode": "PREMIUM", "planTierName": "Premium", "currency": "EUR",
     "gapAmountMinor": 25000,
-    "payableAmountMinor": 20000,
-    "discountPercent": 20,
-    "discountLabel": "Barn Venue partner rate"
+    "payableAmountMinor": 25000        // no promotion on this one — discount fields absent
   }
 ]
 ```
@@ -226,13 +260,13 @@ currency), in catalog order. An event with no valid target returns `[]`, not a `
 | Field | Meaning |
 |---|---|
 | `gapAmountMinor` | The undiscounted difference between the two plans. Fine for a "was €100" strike-through, never for the price you charge. |
-| `payableAmountMinor` | **The number to render as the price**, and what `POST /upgrade-checkout` will actually charge for this `planTierCode`. Already includes the target plan's own promotion and any code bound to the event, combined and clamped at the platform ceiling — same arithmetic `preview-code` (§1) and checkout itself both use. |
-| `discountPercent` | The combined percent behind `payableAmountMinor`. **Absent** (not zero) when nothing discounts this particular target — check for its presence, don't compare to `0`. |
-| `discountLabel` | Display text for whichever discount applied — the bound code's label if there is one, else the plan's own promotion label. Absent whenever `discountPercent` is absent. Carries no raw code and no partner identity, same rule as §1's `label`. |
+| `payableAmountMinor` | **The number to render as the price**, and what `POST /upgrade-checkout` will actually charge for this `planTierCode`. Includes the target plan's own promotion — and, since 2026-09-22, **only** that: a code bound to the event does not reach an upgrade. Same arithmetic `preview-code` (§1) and checkout itself both use. |
+| `discountPercent` | The target plan's own promotion percent, behind `payableAmountMinor`. **Absent** (not zero) when this target has no live promotion — check for its presence, don't compare to `0`. |
+| `discountLabel` | Display text for the target plan's promotion. Absent whenever `discountPercent` is absent. Carries no raw code and no partner identity, same rule as §1's `label`. |
 
-A plan's own promotion and a bound code can both contribute to the same entry — `discountPercent` is
-already their sum-then-clamp, and `discountLabel` shows only the more specific of the two (the code's,
-when there is one) rather than trying to render both as if they stack into separate line items.
+**Changed 2026-09-22:** these fields used to fold in the event's bound code as well, combined and
+clamped at the platform ceiling. They no longer do — one plan, one promotion, nothing to combine and
+nothing to clamp. An event carrying a code now sees the same upgrade prices as one that doesn't.
 
 Nothing here binds or previews a specific code — this endpoint never touches redemption state, and
 calling it does not count against §1's rate limit or affect anything a subsequent `preview-code` or
@@ -256,13 +290,14 @@ The same `5060` applies here, on the same terms.
 Once an activation checkout carries a code, that partner is attached to the **event**. Consequences
 the UI has to reflect:
 
-- **Upgrades inherit it.** `POST /api/events/{eventId}/upgrade-checkout` applies the same discount
-  automatically and accrues the partner further commission. Do not ask for the code again — there
-  is no field for it on that request. Build the picker from §1c rather than guessing at the price,
-  and show the applied code anywhere the event's billing is displayed via `GET
-  /api/events/{eventId}/billing`'s `discount` field (`billing-fe-guide.md` §8) — a host has no other
-  way to be reminded a code is still active on their event.
-- **Storage packs do not.** Add-on pricing is unaffected.
+- **Upgrades do not inherit it (changed 2026-09-22).** `POST
+  /api/events/{eventId}/upgrade-checkout` prices the gap from the catalog alone — the target plan's
+  own promotion and nothing else — and accrues the partner no further commission. There is no code
+  field on that request and never was. Build the picker from §1c rather than guessing at the price.
+  Still show the applied code anywhere the event's billing is displayed, via `GET
+  /api/events/{eventId}/billing`'s `discount` field (`billing-fe-guide.md` §8): it is a record of
+  what the activation was priced at, not a rate that keeps applying.
+- **Storage packs do not either.** Add-on pricing is unaffected.
 - **It cannot be changed or removed from the host side.** There is no host-facing "remove code"
   endpoint, by design. Attaching a *different* code to an event that already has a live one fails:
 
@@ -665,4 +700,5 @@ A stale link cannot confirm it was ever real.
 | `5060` | `COLLABORATION_CODE_NOT_VALID` | The code cannot be used here. No further detail, by design. |
 | `5061` | `COLLABORATION_ALREADY_REDEEMED` | This event already has a different discount code (house or partner). |
 | `5062` | `COLLABORATION_EARNING_NOT_PAYABLE` | That ledger row is not in `ACCRUED` state. |
-| `5063` | `NO_DISCOUNT_TO_PREVIEW` | A blank `collaborationCode` was previewed (§1) and the event carries no code to fall back to. |
+| `5063` | `NO_DISCOUNT_TO_PREVIEW` | A blank `collaborationCode` was previewed (§1) and the event carries no code to fall back to. Activation previews only — an upgrade preview never falls back to a code. |
+| `5076` | `DISCOUNT_NOT_APPLICABLE_TO_UPGRADE` | A `collaborationCode` was previewed together with a `targetPlanTierCode` (§1). Codes price an activation, not an upgrade. Says nothing about the code itself. |

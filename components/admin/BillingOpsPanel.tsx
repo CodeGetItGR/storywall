@@ -132,7 +132,7 @@ export function BillingOpsPanel() {
                 )}
                 <div>
                     {webhooks.map((webhook) => (
-                        <BillingOpsWebhookRow key={webhook.id} webhook={webhook} />
+                        <BillingOpsWebhookRow key={`${webhook.provider}:${webhook.providerEventId}`} webhook={webhook} />
                     ))}
                 </div>
             </div>

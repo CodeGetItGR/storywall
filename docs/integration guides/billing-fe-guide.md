@@ -913,13 +913,15 @@ upgrade" endpoint on its own — but approving a refund on the event's `ACTIVATI
 finds and reverses any settled `UPGRADE` order on that event before reverting the event to `DRAFT`.
 Outside of that path, an upgrade is as permanent as activation itself.
 
-**A partner or house code bound to the event at activation carries over to an upgrade unretyped** —
-the host never sees a code field on this screen at all. That means the difference the host actually
-pays can be lower than a naive `target.priceAmountMinor - current.priceAmountMinor`, and computing
-it client-side is no longer safe even for display: it silently ignores both the target plan's own
-promotion and any bound code. **Don't compute this number yourself; render `GET
-/api/events/{eventId}/upgrade-options` as-is** — see `collaborations-fe-integration.md` §1c, which
-returns every valid target already fully priced.
+**Discount codes do not reach an upgrade (changed 2026-09-22).** A code buys a discount on the
+event's *activation* and stops there: the code bound at activation is deliberately not read when an
+upgrade is priced, and there is no code field on this screen. The target plan's own catalog promotion
+still comes off the difference, so computing the number client-side is still not safe for display —
+a naive `target.priceAmountMinor - current.priceAmountMinor` ignores it. **Don't compute this number
+yourself; render `GET /api/events/{eventId}/upgrade-options` as-is** — see
+`collaborations-fe-integration.md` §1c, which returns every valid target already fully priced.
+Sending a code to the preview endpoint with an upgrade target is refused with `409
+DISCOUNT_NOT_APPLICABLE_TO_UPGRADE` (5076).
 
 ## 8. The billing read endpoint
 
@@ -963,8 +965,9 @@ more, that is an admin question.
 
 `discount` is what makes the code the host typed at activation visible anywhere after the fact —
 show it on this settings page so a host who redeemed a code once doesn't have to remember it applied.
-It also silently carries over to any future upgrade (§7d) — the `discount` block does not change when
-an upgrade settles, because the code is bound to the event, not to one order.
+It is a record of what the activation was priced at, not a standing rate: it does not reach upgrades
+or storage packs (§7d). The block does not change when an upgrade settles either, because the code is
+bound to the event rather than to one order.
 
 **`setupAmountMinor` / `eventDayAmountMinor` / `hostingAmountMinor` (added 2026-09-18) are the
 three-line withdrawal split**, snapshotted on the order at checkout time and summing to

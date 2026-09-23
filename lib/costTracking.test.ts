@@ -13,8 +13,8 @@ describe('cost tracking helpers', () => {
     it('fills missing plan and week combinations with zeroes', () => {
         const chart = timelineChartData(
             [
-                { planTierCode: 'BASIC', weekStart: '2026-08-24T00:00:00Z', eventCount: 4, estimatedCostMinor: 1200, currency: 'EUR' },
-                { planTierCode: 'PRO', weekStart: '2026-09-07T00:00:00Z', eventCount: 1, estimatedCostMinor: 900, currency: 'EUR' },
+                { planTierCode: 'BASIC', weekStart: '2026-08-24T00:00:00Z', eventCount: 4 },
+                { planTierCode: 'PRO', weekStart: '2026-09-07T00:00:00Z', eventCount: 1 },
             ],
             4,
             now
@@ -22,10 +22,10 @@ describe('cost tracking helpers', () => {
 
         expect(chart.planTiers).toEqual(['BASIC', 'PRO']);
         expect(chart.data).toEqual([
-            { weekStart: '2026-08-17T00:00:00.000Z', estimatedCostMinor: 0, BASIC: 0, PRO: 0 },
-            { weekStart: '2026-08-24T00:00:00.000Z', estimatedCostMinor: 1200, BASIC: 4, PRO: 0 },
-            { weekStart: '2026-08-31T00:00:00.000Z', estimatedCostMinor: 0, BASIC: 0, PRO: 0 },
-            { weekStart: '2026-09-07T00:00:00.000Z', estimatedCostMinor: 900, BASIC: 0, PRO: 1 },
+            { weekStart: '2026-08-17T00:00:00.000Z', BASIC: 0, PRO: 0 },
+            { weekStart: '2026-08-24T00:00:00.000Z', BASIC: 4, PRO: 0 },
+            { weekStart: '2026-08-31T00:00:00.000Z', BASIC: 0, PRO: 0 },
+            { weekStart: '2026-09-07T00:00:00.000Z', BASIC: 0, PRO: 1 },
         ]);
     });
 

@@ -8,6 +8,7 @@ import { AdminCodeStatusPill } from '@/components/admin/AdminCodeStatusPill';
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { adminInputClass } from '@/components/admin/AdminField';
 import { AdminSection } from '@/components/admin/AdminSection';
+import { CodeRestrictionPills } from '@/components/admin/CodeRestrictionPills';
 import { CollaborationCodeDrawer } from '@/components/admin/CollaborationCodeDrawer';
 import { CollaborationEarningsPanel } from '@/components/admin/CollaborationEarningsPanel';
 import { LinkPartnerDiscountCodeDrawer } from '@/components/admin/LinkPartnerDiscountCodeDrawer';
@@ -158,15 +159,18 @@ export function CollaboratorOperationsDrawer({
                             {codesQuery.error && (
                                 <p className="py-3 text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(codesQuery.error)}`)}</p>
                             )}
-                            {!codesQuery.isLoading && !codesQuery.error && activeCodes.length === 0 && <p className="py-3 text-sm text-ink-muted">{t('codes.empty')}</p>}
+                            {!codesQuery.isLoading && !codesQuery.error && activeCodes.length === 0 && (
+                                <p className="py-3 text-sm text-ink-muted">{t('codes.empty')}</p>
+                            )}
                             {activeCodes.length > 0 && (
                                 <div className="overflow-x-auto rounded-lg bg-card ring-1 ring-border">
-                                    <table className="w-full min-w-[680px] text-left text-sm">
+                                    <table className="w-full min-w-[820px] text-left text-sm">
                                         <thead className="bg-surface-muted/70 text-[11px] font-bold uppercase tracking-wide text-ink-faint">
                                             <tr>
                                                 <th className="px-3 py-2">{t('codes.columns.code')}</th>
                                                 <th className="px-3 py-2">{t('codes.columns.rates')}</th>
                                                 <th className="px-3 py-2">{t('codes.columns.redemptions')}</th>
+                                                <th className="px-3 py-2">{t('codes.columns.appliesTo')}</th>
                                                 <th className="px-3 py-2">{t('codes.columns.status')}</th>
                                                 <th className="px-3 py-2" />
                                             </tr>
@@ -184,6 +188,9 @@ export function CollaboratorOperationsDrawer({
                                                     <td className="px-3 py-2 font-mono text-ink">
                                                         {code.liveRedemptions}
                                                         {code.maxRedemptions !== null ? ` / ${code.maxRedemptions}` : ''}
+                                                    </td>
+                                                    <td className="px-3 py-2">
+                                                        <CodeRestrictionPills restrictions={code} />
                                                     </td>
                                                     <td className="px-3 py-2">
                                                         <AdminCodeStatusPill status={code.status} />

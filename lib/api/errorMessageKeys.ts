@@ -20,6 +20,7 @@ export type ApiErrorMessageKey =
     | 'collaborationCodeNotValid'
     | 'collaborationEarningNotPayable'
     | 'conflict'
+    | 'discountNotApplicableToUpgrade'
     | 'duplicateMediaIdInRequest'
     | 'duplicateMembership'
     | 'duplicateReaction'
@@ -131,6 +132,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.COLLABORATION_CODE_NOT_VALID]: 'collaborationCodeNotValid',
     [ERROR_CODES.COLLABORATION_EARNING_NOT_PAYABLE]: 'collaborationEarningNotPayable',
     [ERROR_CODES.CONFLICT]: 'conflict',
+    [ERROR_CODES.DISCOUNT_NOT_APPLICABLE_TO_UPGRADE]: 'discountNotApplicableToUpgrade',
     [ERROR_CODES.DUPLICATE_MEDIA_ID_IN_REQUEST]: 'duplicateMediaIdInRequest',
     [ERROR_CODES.DUPLICATE_MEMBERSHIP]: 'duplicateMembership',
     [ERROR_CODES.DUPLICATE_REACTION]: 'duplicateReaction',

@@ -346,7 +346,8 @@ export interface AuthResponseDto {
     isGuestAccount: boolean;
     status: AccountStatus;
     createdAt: string;
-    guestKey?: string;
+    // Only set for a guest joining through a shared invite link; null otherwise.
+    guestKey: string | null;
 }
 
 // What the browser actually gets back from our own /api/auth/* BFF routes —
@@ -481,8 +482,8 @@ export interface UserResponseDto {
     deletedAt: string | null;
     // Stored preference for anything localized outside a request (notification
     // emails, invitation emails) — independent of Accept-Language. See
-    // docs/integration guides/backend-localization-fe-integration.md §5.
-    locale: Locale;
+    // docs/integration guides/backend-localization-fe-integration.md §5. null = none set.
+    locale: Locale | null;
 }
 
 export interface MeUpdateRequestDto {
@@ -500,7 +501,8 @@ export interface ChangePasswordRequestDto {
 
 export interface EventRequestDto {
     title: string;
-    planTierCode?: PlanTierCode;
+    // Required — there is no free plan to fall back to.
+    planTierCode: PlanTierCode;
     subtitle?: string;
     description?: string;
     eventType: EventTypeConvention;
@@ -682,7 +684,14 @@ export interface CollaboratorPortalTokenResponseDto {
     token: string;
     portalUrl: string;
 }
-export interface CollaborationCodeRequestDto {
+// Which events a code may be redeemed against. Keys and plan codes, never ids.
+// An empty array means every event type / every plan, not none. On PATCH both
+// replace the stored sets wholesale, so an edit must send the current values back.
+export interface CodeRestrictionsDto {
+    eventTypeKeys: string[];
+    planTierCodes: string[];
+}
+export interface CollaborationCodeRequestDto extends CodeRestrictionsDto {
     code: string;
     label: string;
     discountPercent: number;
@@ -700,7 +709,7 @@ export interface CollaborationCodeResponseDto extends CollaborationCodeRequestDt
     status: CollaborationCodeStatus;
     liveRedemptions: number;
 }
-export interface DiscountCodeRequestDto {
+export interface DiscountCodeRequestDto extends CodeRestrictionsDto {
     code: string;
     label: string;
     discountPercent: number;
@@ -759,19 +768,24 @@ export interface UpgradeOptionResponseDto {
     gapAmountMinor: number;
     // What upgrade-checkout will actually charge for this planTierCode.
     payableAmountMinor: number;
-    // Combined plan-promo + bound-code percent. Absent (not 0) when nothing discounts this target.
-    discountPercent?: number;
-    discountLabel?: string;
+    // The target plan's own promotion — the only discount an upgrade gets since
+    // 2026-09-22 (a discount code prices the activation only). Sent as null, not
+    // left out, when the target has no live promotion.
+    discountPercent: number | null;
+    // null whenever discountPercent is, and also for a promotion set up without a label.
+    discountLabel: string | null;
 }
 export type OrderKind = 'ACTIVATION' | 'UPGRADE' | 'STORAGE_PACK';
+// REFUNDED: the order was paid and the money went back (a withdrawal or a lost dispute).
+export type OrderStatus = 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED' | 'REFUNDED';
 
 export interface OrderSummaryDto {
     id: string;
     kind: OrderKind;
-    status: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED';
-    amountMinor: number;
+    status: OrderStatus;
+    amountMinor: number | null;
     addonAmountMinor: number | null;
-    currency: string;
+    currency: string | null;
     paidAt: string | null;
     createdAt: string;
     // Added 2026-09-18 — the three-line withdrawal split (billing-fe-guide.md §8/§9),
@@ -793,12 +807,22 @@ export interface EventAddonDto {
 export interface EventAddonRequestDto {
     paidServiceCode: string;
 }
+// The code the event's activation was priced with. A record of that purchase,
+// not a standing rate — no upgrade or storage pack reads it. Carries the label
+// the code's owner chose, never the raw code or who the partner is.
+export interface DiscountSummaryDto {
+    label: string;
+    // Snapshot at redemption, not the code's current rate.
+    discountPercent: number | null;
+    appliedAt: string;
+}
 export interface EventBillingResponseDto {
     eventStatus: EventStatus;
     planTierCode: string;
     planTierName: string;
     orders: OrderSummaryDto[];
     addons: EventAddonDto[];
+    discount: DiscountSummaryDto | null;
 }
 
 // --- Withdrawal (billing-fe-guide.md §9) — replaces the old admin-approved refund flow ---
@@ -835,7 +859,7 @@ export interface WithdrawalLine {
 export interface WithdrawalPreviewResponseDto {
     eligible: boolean;
     refusals: WithdrawalRefusal[];
-    windowClosesAt: string;
+    windowClosesAt: string | null;
     totalRefundMinor: number;
     currency: string;
     lines: WithdrawalLine[];
@@ -872,8 +896,8 @@ export interface WithdrawalRequestDto {
 export interface WithdrawalFraudSignalDto {
     code: string;
     fired: boolean;
-    observed: string;
-    threshold: string;
+    observed: string | null;
+    threshold: string | null;
 }
 
 // GET /api/admin/withdrawals — admin. The facts sheet behind each HELD request.
@@ -941,12 +965,11 @@ export interface CalendarSummaryResponseDto {
     thresholds: CalendarLoadThresholdsDto;
 }
 
+// Volume only — the backend dropped the estimated cost fields (cost-tracking-fe-integration.md §4).
 export interface PlanTimelineRowDto {
     planTierCode: string;
     weekStart: string;
     eventCount: number;
-    estimatedCostMinor: number;
-    currency: string;
 }
 
 export interface ProviderActualDto {
@@ -959,10 +982,8 @@ export interface ProviderActualDto {
     fetchedAt: string;
 }
 
+// Only reconciled providers — one that never reconciled is absent, not zero.
 export interface CostSummaryResponseDto {
-    weekEstimatedCostMinor: number;
-    monthEstimatedCostMinor: number;
-    currency: string;
     providerActuals: ProviderActualDto[];
 }
 
@@ -1015,6 +1036,7 @@ export interface EventStreamTokenDto {
 export interface QrLinkStatsDto {
     qrLinkId: string;
     label: string | null;
+    labelKey: string | null; // same contract as QrLinkResponseDto.labelKey
     targetType: QrTargetType;
     status: QrLinkStatus;
     joinCount: number;
@@ -1037,15 +1059,13 @@ export interface QrLinkResolutionDto {
     requiresGuestKey?: boolean;
 }
 
+// provider + providerEventId identify a delivery; there is no separate id.
 export interface UnprocessedWebhookDto {
-    id: string;
-    provider: string | null;
-    providerEventId: string | null;
-    eventType: string | null;
-    payloadSummary?: string | null;
+    provider: string;
+    providerEventId: string;
+    eventType: string;
     receivedAt: string;
-    processedAt: string | null;
-    orderId: string | null;
+    // False only for deliveries stored before bodies were kept — those need a human.
     replayable: boolean;
 }
 

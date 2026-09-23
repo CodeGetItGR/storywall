@@ -9,7 +9,6 @@ export type CostTrackingRange = keyof typeof COST_TRACKING_RANGES;
 
 export type TimelineChartRow = Record<string, number | string> & {
     weekStart: string;
-    estimatedCostMinor: number;
 };
 
 export type CalendarLoadTier = 'empty' | 'low' | 'medium' | 'high' | 'peak';
@@ -78,10 +77,9 @@ export function timelineChartData(rows: PlanTimelineRowDto[], weeks: number, now
         data: weeklyBuckets(weeks, now).map((weekStart) => {
             const rowsForWeek = rowByWeek.get(weekStart) ?? [];
             const byPlan = new Map(rowsForWeek.map((row) => [row.planTierCode, row]));
-            const estimatedCostMinor = rowsForWeek.reduce((sum, row) => sum + row.estimatedCostMinor, 0);
             const values = Object.fromEntries(planTiers.map((planTierCode) => [planTierCode, byPlan.get(planTierCode)?.eventCount ?? 0]));
 
-            return { weekStart, estimatedCostMinor, ...values };
+            return { weekStart, ...values };
         }),
     };
 }

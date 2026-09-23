@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useMemo } from 'react';
 
 import { useBillingDate } from '@/hooks/useEventBillingPanel';
-import type { EventScheduleDto, EventUsageResponseDto } from '@/lib/api/types';
+import type { DiscountSummaryDto, EventScheduleDto, EventUsageResponseDto } from '@/lib/api/types';
 import { formatBytes } from '@/lib/format';
 
 export type BillingPlanFact = { key: string; label: string; value: string };
@@ -14,6 +14,13 @@ export type BillingPlanFact = { key: string; label: string; value: string };
  * limits that actually gate uploads and guests. Limits come from usage, not the
  * plan, because storage packs raise the storage limit above the plan's own.
  */
+/** The event's active code, which later upgrades inherit too. Null when it has none. */
+export function useBillingDiscountLine(discount: DiscountSummaryDto | null): string | null {
+    const t = useTranslations('EventPlanSettingsPage');
+    if (!discount) return null;
+    return discount.discountPercent === null ? discount.label : t('yourPlan.discount', { label: discount.label, discount: discount.discountPercent });
+}
+
 export function useBillingPlanFacts(schedule: EventScheduleDto, usage: EventUsageResponseDto | null): BillingPlanFact[] {
     const t = useTranslations('EventPlanSettingsPage');
     const locale = useLocale();

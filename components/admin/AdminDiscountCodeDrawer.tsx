@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
+import { CodeRestrictionFields } from '@/components/admin/CodeRestrictionFields';
 import { useSaveDiscountCode } from '@/hooks/useAdmin';
 import { discountCodeCreateFromFormData, discountCodePatchFromFormData, instantToLocalInput } from '@/lib/adminCollaborations';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
@@ -63,7 +64,7 @@ export function AdminDiscountCodeDrawer({
         >
             <form id="discount-code-form" onSubmit={handleSubmit} className="space-y-5">
                 {/* Code identity */}
-                <AdminField label={tCodes('fields.code')} required>
+                <AdminField label={tCodes('fields.code')} required hint={tCodes('fields.codeHint')}>
                     <input
                         name="code"
                         required
@@ -74,7 +75,7 @@ export function AdminDiscountCodeDrawer({
                         className={adminInputClass('font-mono uppercase disabled:bg-surface-muted disabled:text-ink-faint')}
                     />
                 </AdminField>
-                <AdminField label={tCodes('fields.label')} required>
+                <AdminField label={tCodes('fields.label')} required hint={tCodes('fields.labelHint')}>
                     <input name="label" required maxLength={140} defaultValue={code?.label} className={adminInputClass()} />
                 </AdminField>
 
@@ -110,7 +111,7 @@ export function AdminDiscountCodeDrawer({
                         />
                     </AdminField>
                 </div>
-                <AdminField label={tCodes('fields.maxRedemptions')} optional>
+                <AdminField label={tCodes('fields.maxRedemptions')} optional hint={tCodes('fields.maxRedemptionsHint')}>
                     <input name="maxRedemptions" type="number" min={1} defaultValue={code?.maxRedemptions ?? ''} className={adminInputClass()} />
                 </AdminField>
                 {code && (
@@ -121,6 +122,8 @@ export function AdminDiscountCodeDrawer({
                         </select>
                     </AdminField>
                 )}
+                {/* Restrictions */}
+                <CodeRestrictionFields restrictions={code} />
                 {saveCode.error && <p className="text-sm text-status-danger">{tAdmin(`errors.${adminErrorMessageKey(saveCode.error)}`)}</p>}
             </form>
         </AdminDrawer>

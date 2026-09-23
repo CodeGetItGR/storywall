@@ -8,6 +8,7 @@ import { AdminCodeStatusPill } from '@/components/admin/AdminCodeStatusPill';
 import { AdminDiscountCodeDrawer } from '@/components/admin/AdminDiscountCodeDrawer';
 import { adminInputClass } from '@/components/admin/AdminField';
 import { AdminStatTile } from '@/components/admin/AdminStatTile';
+import { CodeRestrictionPills } from '@/components/admin/CodeRestrictionPills';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useAdminDiscountCodes } from '@/hooks/useAdmin';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
@@ -138,7 +139,7 @@ export function AdminDiscountCodesPanel() {
                 )}
                 {visibleCodes.length > 0 && (
                     <div className="overflow-x-auto">
-                        <table className="w-full min-w-[680px] border-collapse text-left text-sm">
+                        <table className="w-full min-w-[820px] border-collapse text-left text-sm">
                             <thead>
                                 <tr>
                                     <th className="border-b border-border px-4 py-2.5 text-[11px] font-bold uppercase tracking-wide text-ink-faint">
@@ -149,6 +150,9 @@ export function AdminDiscountCodesPanel() {
                                     </th>
                                     <th className="border-b border-border px-3 py-2.5 text-[11px] font-bold uppercase tracking-wide text-ink-faint">
                                         {tCodes('columns.redemptions')}
+                                    </th>
+                                    <th className="border-b border-border px-3 py-2.5 text-[11px] font-bold uppercase tracking-wide text-ink-faint">
+                                        {tCodes('columns.appliesTo')}
                                     </th>
                                     <th className="border-b border-border px-3 py-2.5 text-[11px] font-bold uppercase tracking-wide text-ink-faint">
                                         {tCodes('columns.status')}
@@ -167,6 +171,9 @@ export function AdminDiscountCodesPanel() {
                                         <td className="px-3 py-2.5 font-mono text-ink">
                                             {code.liveRedemptions}
                                             {code.maxRedemptions !== null ? ` / ${code.maxRedemptions}` : ''}
+                                        </td>
+                                        <td className="px-3 py-2.5">
+                                            <CodeRestrictionPills restrictions={code} />
                                         </td>
                                         <td className="px-3 py-2.5">
                                             <AdminCodeStatusPill status={code.status} />
