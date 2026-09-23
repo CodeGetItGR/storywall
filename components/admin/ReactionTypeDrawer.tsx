@@ -1,6 +1,6 @@
 'use client';
 
-import { useCreate, useDelete, useUpdate } from '@refinedev/core';
+import { useCreate, useDelete, useInvalidate, useUpdate } from '@refinedev/core';
 import { useQueryClient } from '@tanstack/react-query';
 import { Loader2, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -71,7 +71,9 @@ export function ReactionTypeDrawer({
     const [availability, setAvailability] = useState<ReactionTypeAvailability>(reactionType?.isAssignable === false ? 'ARCHIVED' : 'AVAILABLE');
     const [deleteOpen, setDeleteOpen] = useState(false);
 
+    const invalidate = useInvalidate();
     const invalidateCatalogs = () => {
+        invalidate({ resource: 'reaction-types', dataProviderName: 'reaction-types', invalidates: ['list', 'many', 'detail'] });
         queryClient.invalidateQueries({ queryKey: ['admin', 'reaction-types'] });
         queryClient.invalidateQueries({ queryKey: appConfigKeys.all });
     };
