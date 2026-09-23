@@ -49,7 +49,7 @@ export async function LandingFinalCta() {
                 </p>
                 <a
                     className="motion-final-cta-btn mt-7 flex min-h-15 w-full items-center justify-between gap-7.5 rounded-full bg-white pr-5 pl-5.5 text-[11px] font-black tracking-[0.08em] text-[#151313] uppercase no-underline shadow-[0_12px_34px_rgba(21,19,19,0.1)] transition-transform duration-280 ease-[ease] hover:-translate-y-0.5 motion-reduce:transition-none min-[761px]:mt-8.5 min-[761px]:min-h-14.5 min-[761px]:w-max min-[761px]:justify-center min-[761px]:px-5.5 min-[761px]:text-[13px] min-[761px]:tracking-widest min-[761px]:shadow-none"
-                    href={routes.register}
+                    href={routes.events.new()}
                 >
                     <span>{t('cta')}</span>
                     <span aria-hidden="true" className="motion-final-cta-arrow inline-block text-[22px] transition-transform duration-280 ease-[ease] group-hover:translate-x-0.75 group-hover:-translate-y-0.75 min-[761px]:inline-flex min-[761px]:items-center min-[761px]:justify-center min-[761px]:text-[21px] min-[761px]:leading-none">
