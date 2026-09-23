@@ -13,8 +13,8 @@ vi.mock('@/lib/auth/springAuth', async (importOriginal) => {
     return { ...actual, springAuth: { ...actual.springAuth, refresh: (...a: unknown[]) => refresh(...a) } };
 });
 
-function request(cookies: Partial<Record<keyof typeof AUTH_COOKIES, string>> = {}) {
-    const req = new NextRequest('http://localhost/feed');
+function request(cookies: Partial<Record<keyof typeof AUTH_COOKIES, string>> = {}, url = 'http://localhost/feed') {
+    const req = new NextRequest(url);
     if (cookies.accessToken) req.cookies.set(AUTH_COOKIES.accessToken, cookies.accessToken);
     if (cookies.refreshToken) req.cookies.set(AUTH_COOKIES.refreshToken, cookies.refreshToken);
     return req;
@@ -65,5 +65,13 @@ describe('proxy', () => {
         const res = await proxy(request());
         expect(refresh).not.toHaveBeenCalled();
         expect(res.status).toBe(307);
+    });
+
+    it('redirects a signed-out visit to /events/new to login with the destination in next', async () => {
+        const res = await proxy(request({}, 'http://localhost/events/new?step=plan'));
+        expect(res.status).toBe(307);
+        const location = new URL(res.headers.get('location') ?? '');
+        expect(location.pathname).toBe('/login');
+        expect(location.searchParams.get('next')).toBe('/events/new?step=plan');
     });
 });
