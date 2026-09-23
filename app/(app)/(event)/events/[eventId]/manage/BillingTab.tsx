@@ -2,14 +2,16 @@
 
 import { useTranslations } from 'next-intl';
 
-import { BillingCoveragePanel } from '@/components/manage/billing/BillingCoveragePanel';
+import { BillingAddonsSection } from '@/components/manage/billing/BillingAddonsSection';
 import { BillingOrdersPanel } from '@/components/manage/billing/BillingOrdersPanel';
-import { BillingPlanPanel } from '@/components/manage/billing/BillingPlanPanel';
-import { BillingStatusHeader } from '@/components/manage/billing/BillingStatusHeader';
+import { BillingPlanSummary } from '@/components/manage/billing/BillingPlanSummary';
+import { BillingUpgradeSection } from '@/components/manage/billing/BillingUpgradeSection';
+import Section from '@/components/manage/Section';
 import { useEventBillingPanel } from '@/hooks/useEventBillingPanel';
 import type { EventScheduleDto } from '@/lib/api/types';
 
 export default function BillingTab({ eventId, schedule, isDeleted = false }: { eventId: string; schedule: EventScheduleDto; isDeleted?: boolean }) {
+    const tBilling = useTranslations('EventPlanSettingsPage');
     const tPageError = useTranslations('PageErrorState.billing');
     const tPageErrorCommon = useTranslations('PageErrorState');
     const panel = useEventBillingPanel(eventId, { isDeleted });
@@ -41,28 +43,26 @@ export default function BillingTab({ eventId, schedule, isDeleted = false }: { e
     }
 
     return (
-        <div className="flex flex-col gap-5">
-            {/* Status */}
-            <BillingStatusHeader data={data} derived={derived} insights={insights} />
+        <div className="flex flex-col gap-6">
+            {/* Your plan */}
+            <BillingPlanSummary data={data} schedule={schedule} usage={panel.usage} />
 
-            {/* Coverage window */}
-            <BillingCoveragePanel schedule={schedule} insights={insights} currentPlan={panel.currentPlan} />
-
-            {/* Plan */}
-            <BillingPlanPanel
+            {/* Upgrade */}
+            <BillingUpgradeSection
                 eventId={eventId}
-                data={data}
-                derived={derived}
-                insights={insights}
+                targets={panel.upgradeTargets}
                 currentPlan={panel.currentPlan}
-                nextUpgradeOption={panel.nextUpgradeOption}
-                nextUpgradePlan={panel.nextUpgradePlan}
-                platformModules={panel.platformModules}
-                paidAddonOffers={panel.paidAddonOffers}
+                extraStorageBytes={panel.usage?.extraStorageBytes ?? 0}
+                modules={panel.platformModules}
             />
 
-            {/* Orders */}
-            <BillingOrdersPanel data={data} derived={derived} insights={insights} onShowAllOrders={panel.handleShowAllOrders} />
+            {/* Add-ons */}
+            <BillingAddonsSection eventId={eventId} addons={data.addons} currency={insights.orderCurrency} canManage={derived.canManageAddons} />
+
+            {/* Payments */}
+            <Section title={tBilling('orders.title')} divider>
+                <BillingOrdersPanel data={data} derived={derived} insights={insights} onShowAllOrders={panel.handleShowAllOrders} />
+            </Section>
         </div>
     );
 }

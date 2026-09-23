@@ -5,6 +5,7 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventBilling, useUpgradeOptions } from '@/hooks/useBilling';
+import { useEventUsage } from '@/hooks/useUsage';
 import { billingCurrency, formatBillingDate, newestBillingOrder, paidBillingTotal } from '@/lib/billing';
 import { scopedPlans } from '@/lib/planTiers';
 
@@ -21,18 +22,23 @@ export function useEventBillingPanel(eventId: string, { isDeleted = false }: { i
     const [showAllOrders, setShowAllOrders] = useState(false);
 
     const data = billing.data;
-    const planTiers = useMemo(() => appConfigQuery.data?.planTiers ?? [], [appConfigQuery.data?.planTiers]);
-    const currentPlan = useMemo(
-        () => scopedPlans(planTiers, 'EVENT').find((plan) => plan.code === data?.planTierCode) ?? null,
-        [data?.planTierCode, planTiers]
-    );
+    const eventPlans = useMemo(() => scopedPlans(appConfigQuery.data?.planTiers ?? [], 'EVENT'), [appConfigQuery.data?.planTiers]);
+    const currentPlan = useMemo(() => eventPlans.find((plan) => plan.code === data?.planTierCode) ?? null, [data?.planTierCode, eventPlans]);
     // upgrade-options 404s on purpose for a deleted event, and nothing can be
     // bought for it — keep billing (the refund shows there) and drop the rest.
+    // Usage is skipped too: a deleted event has no limits left to show.
     const upgradeOptions = useUpgradeOptions(eventId, !isDeleted);
-    const firstUpgradeOption = upgradeOptions.data?.[0] ?? null;
-    const nextUpgradePlan = useMemo(
-        () => (firstUpgradeOption ? (scopedPlans(planTiers, 'EVENT').find((plan) => plan.code === firstUpgradeOption.planTierCode) ?? null) : null),
-        [firstUpgradeOption, planTiers]
+    const usageQuery = useEventUsage(isDeleted ? null : eventId);
+    // Every target the server offers, not just the next tier: a host can jump
+    // straight to the top plan and pay the difference once. The server option
+    // stays the source of truth even when the catalog can't resolve its plan.
+    const upgradeTargets = useMemo(
+        () =>
+            (upgradeOptions.data ?? []).map((option) => ({
+                option,
+                plan: eventPlans.find((plan) => plan.code === option.planTierCode) ?? null,
+            })),
+        [eventPlans, upgradeOptions.data]
     );
     const paidAddonOffers = useMemo(
         () =>
@@ -59,39 +65,34 @@ export function useEventBillingPanel(eventId: string, { isDeleted = false }: { i
         void appConfigQuery.refetch();
         void billing.refetch();
         void upgradeOptions.refetch();
-    }, [appConfigQuery, billing, upgradeOptions]);
+        void usageQuery.refetch();
+    }, [appConfigQuery, billing, upgradeOptions, usageQuery]);
 
     const derived = useMemo(() => {
         if (!data || !insights) return null;
-
-        const addonTotal = data.addons.reduce((sum, addon) => sum + addon.priceAmountMinor, 0);
 
         // A renewal writes an order every month, so a long-running event's history
         // grows without bound. Show a recent window until the host asks for the rest.
         const visibleOrders = showAllOrders ? data.orders : data.orders.slice(0, ORDER_PREVIEW_COUNT);
 
         return {
-            addonTotal,
-            isRiskState: data.eventStatus === 'DRAFT',
-            upgradeListAmount: firstUpgradeOption?.gapAmountMinor ?? null,
-            upgradeAmount: firstUpgradeOption?.payableAmountMinor ?? null,
-            upgradeCurrency: firstUpgradeOption?.currency ?? currentPlan?.priceCurrency ?? insights.orderCurrency,
-            upgradeDiscountLabel: firstUpgradeOption?.discountLabel ?? null,
+            canManageAddons: data.eventStatus === 'ACTIVE' && paidAddonOffers.length > 0,
             visibleOrders,
             hiddenOrderCount: data.orders.length - visibleOrders.length,
         };
-    }, [currentPlan, data, firstUpgradeOption, insights, showAllOrders]);
+    }, [data, insights, paidAddonOffers.length, showAllOrders]);
 
     return {
         data,
         insights,
         derived,
         currentPlan,
-        nextUpgradeOption: firstUpgradeOption,
-        nextUpgradePlan,
+        upgradeTargets,
+        // A usage failure only hides the limit facts; it never blocks billing.
+        usage: usageQuery.data ?? null,
         platformModules: appConfigQuery.data?.modules ?? [],
         paidAddonOffers,
-        isLoading: appConfigQuery.isLoading || billing.isLoading || upgradeOptions.isLoading,
+        isLoading: appConfigQuery.isLoading || billing.isLoading || upgradeOptions.isLoading || usageQuery.isLoading,
         hasError: Boolean(appConfigQuery.error || billing.error || upgradeOptions.error) || !data || !insights || !derived,
         handleRetry,
         // Orders
@@ -104,6 +105,7 @@ export type EventBillingPanel = ReturnType<typeof useEventBillingPanel>;
 export type BillingData = NonNullable<EventBillingPanel['data']>;
 export type BillingInsights = NonNullable<EventBillingPanel['insights']>;
 export type BillingDerived = NonNullable<EventBillingPanel['derived']>;
+export type BillingUpgradeTarget = EventBillingPanel['upgradeTargets'][number];
 
 /** Billing dates render as a localised date, or the section's "not set" dash. */
 export function useBillingDate() {

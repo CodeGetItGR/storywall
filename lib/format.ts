@@ -10,6 +10,11 @@ export function formatBytes(bytes: number): string {
     return `${value >= 10 ? Math.round(value) : value.toFixed(1)} ${units[unitIndex]}`;
 }
 
+/** A signed change such as "+10 GB" or "−5", with the magnitude formatted by the caller. */
+export function formatSignedDelta(delta: number, formatMagnitude: (value: number) => string): string {
+    return `${delta < 0 ? '−' : '+'}${formatMagnitude(Math.abs(delta))}`;
+}
+
 export function getInitials(value: string): string {
     const parts = value.trim().split(/\s+/).filter(Boolean);
     if (parts.length === 0) return '?';

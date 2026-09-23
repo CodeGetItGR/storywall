@@ -36,17 +36,18 @@ export function BillingOrdersPanel({
     const coverageLabel = (order: Order) => {
         if (order.kind === 'UPGRADE') return t('orders.upgradeCoverage');
         if (order.kind === 'STORAGE_PACK') return t('orders.storageCoverage');
-        return t('orders.recordedCharge');
+        return null;
     };
+    const totalPaidLabel = formatMoney(locale, insights.paidTotalMinor, insights.orderCurrency);
 
     const amountCell = (order: Order) => (
         <>
             {formatMoney(locale, order.amountMinor, order.currency)}
-            {order.addonAmountMinor !== null && (
+            {order.addonAmountMinor ? (
                 <span className="block text-[10px] font-normal text-ink-muted">
                     {t('orders.addonAmount', { amount: formatMoney(locale, order.addonAmountMinor, order.currency) })}
                 </span>
-            )}
+            ) : null}
         </>
     );
 
@@ -56,10 +57,6 @@ export function BillingOrdersPanel({
 
     return (
         <div>
-            {insights.lastOrder && (
-                <p className="mb-3 text-xs text-ink-muted">{t('orders.lastOrder', { date: formatDate(insights.lastOrder.createdAt) })}</p>
-            )}
-
             {/* Orders (small screens) */}
             <div className="divide-y divide-ink/10 md:hidden">
                 {visibleOrders.map((order) => (
@@ -74,9 +71,14 @@ export function BillingOrdersPanel({
                             </div>
                             <p className="shrink-0 text-right font-semibold text-ink">{amountCell(order)}</p>
                         </div>
-                        <p className="mt-1.5 text-xs leading-relaxed text-ink-muted">{coverageLabel(order)}</p>
+                        {coverageLabel(order) && <p className="mt-1.5 text-xs leading-relaxed text-ink-muted">{coverageLabel(order)}</p>}
                     </article>
                 ))}
+                {/* Total (small screens) */}
+                <div className="flex items-center justify-between gap-3 py-3 text-sm">
+                    <p className="text-ink-muted">{t('facts.totalPaid')}</p>
+                    <p className="font-semibold text-ink tabular-nums">{totalPaidLabel}</p>
+                </div>
             </div>
 
             {/* Orders (desktop) */}
@@ -95,7 +97,7 @@ export function BillingOrdersPanel({
                             <tr key={order.id} className="align-top odd:bg-card/40" title={order.id}>
                                 <td className="px-3 py-2.5">
                                     <p className="font-medium text-ink">{t(`orders.kind.${order.kind}`)}</p>
-                                    <p className="mt-0.5 truncate text-xs text-ink-muted">{coverageLabel(order)}</p>
+                                    {coverageLabel(order) && <p className="mt-0.5 truncate text-xs text-ink-muted">{coverageLabel(order)}</p>}
                                 </td>
                                 <td className="px-3 py-2.5">
                                     <span className={orderStatusClassName(order.status)}>{t(`orderStatus.${order.status}`)}</span>
@@ -105,6 +107,15 @@ export function BillingOrdersPanel({
                             </tr>
                         ))}
                     </tbody>
+                    {/* Total */}
+                    <tfoot className="border-t border-ink/10">
+                        <tr>
+                            <td colSpan={3} className="px-3 py-2.5 text-ink-muted">
+                                {t('facts.totalPaid')}
+                            </td>
+                            <td className="px-3 py-2.5 text-right font-semibold text-ink tabular-nums">{totalPaidLabel}</td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
 

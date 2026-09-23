@@ -8,11 +8,6 @@ export const eventStatusBadgeTone: Record<EventStatus, string> = {
     ACTIVE: 'bg-primary-light text-primary-dark',
 };
 
-export function getEventBillingStatusTone(status: EventStatus): string {
-    if (status === 'ACTIVE') return 'bg-emerald-50 text-emerald-700 ring-emerald-200';
-    return 'bg-sky-50 text-sky-700 ring-sky-200';
-}
-
 export const rsvpStatusOrder: Record<RsvpDisplayStatus, number> = {
     ATTENDING: 0,
     DECLINED: 1,

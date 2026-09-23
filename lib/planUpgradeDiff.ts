@@ -1,6 +1,6 @@
 import type { PlanTierResponseDto } from '@/lib/api/types';
 
-export type PlanUpgradeLimitKey = 'storage' | 'members' | 'retention';
+export type PlanUpgradeLimitKey = 'storage' | 'members';
 
 export type PlanUpgradeLimitChange = {
     key: PlanUpgradeLimitKey;
@@ -14,11 +14,12 @@ export type PlanUpgradeDiff = {
     removedModuleKeys: string[];
 };
 
+// An upgrade widens storage and members only. Coverage stays where activation
+// pinned it, so a longer term on the target plan is never listed as a change.
 export function buildPlanUpgradeDiff(currentPlan: PlanTierResponseDto, targetPlan: PlanTierResponseDto): PlanUpgradeDiff {
     const limitChanges: PlanUpgradeLimitChange[] = [
         { key: 'storage', current: currentPlan.storageBytes, target: targetPlan.storageBytes },
         { key: 'members', current: currentPlan.maxMembers, target: targetPlan.maxMembers },
-        { key: 'retention', current: currentPlan.autoDeleteMonths, target: targetPlan.autoDeleteMonths },
     ].filter((change) => change.current !== change.target) as PlanUpgradeLimitChange[];
 
     const currentModuleKeys = new Set(currentPlan.moduleKeys);

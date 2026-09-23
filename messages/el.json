@@ -1385,13 +1385,8 @@
     },
     "EventPlanSettingsPage": {
         "coverage": {
-            "title": "Κάλυψη",
-            "activatedOn": "Ενεργοποιήθηκε στις",
             "galleryOpens": "Η γκαλερί ανοίγει",
-            "keptUntil": "Φωτογραφίες έως",
-            "planTerm": "Διάρκεια πλάνου",
-            "planTermUnlimited": "Δεν λήγει ποτέ",
-            "fixedNote": "Οι ημερομηνίες αυτές κλειδώθηκαν κατά την πληρωμή. Η αλλαγή της ημερομηνίας της εκδήλωσης δεν τις μετακινεί."
+            "keptUntil": "Φωτογραφίες έως"
         },
         "back": "Πίσω",
         "emptyDate": "Δεν έχει οριστεί",
@@ -1400,15 +1395,13 @@
             "title": "Κάλυψη"
         },
         "addons": {
-            "title": "Ενεργά πρόσθετα",
             "item": "{name} · {price} εφάπαξ",
             "itemOnce": "{name} · {price} εφάπαξ",
             "monthlyTotal": "{amount} εφάπαξ.",
             "renewalTotal": "{amount} εφάπαξ.",
-            "ownedTotal": "{amount} εφάπαξ.",
             "manageTitle": "Πρόσθετες υπηρεσίες",
-            "manageBody": "Προσθέστε ή αφαιρέστε υπηρεσίες.",
-            "manageAction": "Διαχείριση"
+            "manageAction": "Διαχείριση",
+            "empty": "Κανένα πρόσθετο"
         },
         "storagePacks": {
             "title": "Προσθήκη χώρου",
@@ -1428,16 +1421,25 @@
             "openingCheckout": "Μετάβαση στην πληρωμή...",
             "retryIn": "Δοκιμάστε ξανά σε {seconds} δευτ."
         },
+        "yourPlan": {
+            "title": "Το πλάνο σας"
+        },
+        "upgrade": {
+            "button": "Αναβάθμιση · {amount}",
+            "whatChanges": "Τι αλλάζει",
+            "storage": "Χώρος {value}",
+            "storageUnlimited": "Απεριόριστος χώρος",
+            "members": "{count, plural, one {# καλεσμένος} other {# καλεσμένοι}}",
+            "membersUnlimited": "Απεριόριστοι καλεσμένοι",
+            "features": "{count, plural, one {+# λειτουργία} other {+# λειτουργίες}}",
+            "withDelta": "{value} ({delta})"
+        },
         "compare": {
             "title": "Σύγκριση πλάνων",
-            "upgradeTitle": "Τι αλλάζει με το {plan}",
             "subtitle": "Δείτε τις διαφορές πριν προχωρήσετε στην πληρωμή.",
-            "upgradeSubtitle": "Σε σχέση με το πλάνο {plan} που έχετε τώρα.",
             "upgradeCharge": "{amount} για την αναβάθμιση. Η κάλυψη ισχύει έως {date}.",
             "upgradeChargeUnlimited": "{amount} για την αναβάθμιση. Η κάλυψη παραμένει απεριόριστη.",
             "upgradeChargeNoDate": "{amount} για την αναβάθμιση.",
-            "upgradeChargeUnavailable": "Η τιμή της αναβάθμισης δεν είναι διαθέσιμη αυτή τη στιγμή.",
-            "upgradePriceLabel": "Ποσό για την αναβάθμιση",
             "upgradeOptions": "Επιλογές αναβάθμισης",
             "upgradeOptionsTitle": "Διαθέσιμες από το {plan}",
             "upgradeCoverageThrough": "Η κάλυψη συνεχίζεται έως {date}.",
@@ -1451,7 +1453,6 @@
             "current": "Τωρινό",
             "recommended": "Προτεινόμενο",
             "fromTo": "Αναβάθμιση",
-            "to": "σε",
             "code": "Κωδικός",
             "name": "Όνομα",
             "scope": "Εύρος",
@@ -1463,8 +1464,6 @@
             "perMonthSuffix": "",
             "noMonthlyPrice": "Χωρίς ανανέωση",
             "billing": "Χρέωση",
-            "includedMonths": "Περιλαμβανόμενη κάλυψη",
-            "monthCount": "{count, plural, one {# μήνας} other {# μήνες}}",
             "moduleLegendOpen": "Οδηγός λειτουργιών",
             "moduleLegendClose": "Κλείσιμο οδηγού λειτουργιών",
             "moduleLegendTitle": "Λειτουργίες εκδήλωσης",
@@ -1490,7 +1489,6 @@
             "removedModules": "Δεν περιλαμβάνονται πλέον",
             "moduleCount": "{count, plural, one {# λειτουργία} other {# λειτουργίες}}",
             "noModuleChanges": "Δεν προστίθενται νέες λειτουργίες. Η αναβάθμιση αυξάνει κυρίως τα όρια.",
-            "noChanges": "Δεν αναφέρονται αλλαγές σε όρια ή λειτουργίες για αυτό το πλάνο.",
             "allPlansTitle": "Όλα τα πλάνα",
             "mediaCapacity": "Χωρητικότητα αρχείων",
             "mediaAssumption": "Υπολογισμός με φωτογραφίες περίπου 4 MB και βίντεο περίπου 90 MB.",
@@ -1513,12 +1511,6 @@
             "YEARLY": "Ετησίως",
             "ONE_TIME": "Μία φορά"
         },
-        "eventStatus": {
-            "DRAFT": "Πρόχειρη",
-            "ACTIVE": "Ενεργή",
-            "FROZEN": "Παγωμένη",
-            "PURGED": "Διαγραμμένη"
-        },
         "orderStatus": {
             "PENDING": "Σε αναμονή",
             "PAID": "Πληρωμένη",
@@ -1537,7 +1529,6 @@
         },
         "summary": {
             "DRAFT": "Δεν έχει δημοσιευτεί ακόμη. Η πληρωμή γίνεται όταν οριστούν οι ημερομηνίες.",
-            "ACTIVE": "Πληρωμένη και ενεργή.",
             "ACTIVE_UNLIMITED": "Πληρωμένη και ενεργή.",
             "FROZEN": "Η κάλυψη έληξε στις {date}. Μόνο για ανάγνωση μέχρι να ανανεωθεί.",
             "PURGED": "Η περίοδος διατήρησης έχει λήξει. Η ανανέωση επανενεργοποιεί την εκδήλωση, αλλά τα διαγραμμένα αρχεία δεν επανέρχονται."
@@ -1595,7 +1586,6 @@
         },
         "orders": {
             "title": "Ιστορικό παραγγελιών",
-            "lastOrder": "Τελευταία παραγγελία {date}",
             "coverageRange": "{from} έως {until}",
             "empty": "Δεν υπάρχουν παραγγελίες ακόμη. Η ενεργοποίηση θα εμφανιστεί εδώ μόλις ξεκινήσει η πληρωμή.",
             "columns": {
@@ -1615,7 +1605,6 @@
             "upgradeCoverage": "Αναβάθμιση πλάνου. Η διάρκεια κάλυψης δεν αλλάζει.",
             "storageCoverage": "Μόνιμη αύξηση χώρου.",
             "addonAmount": "Περιλαμβάνει {amount} για πρόσθετα",
-            "recordedCharge": "Καταχωρημένη χρέωση",
             "coverageThrough": "Κάλυψη έως {date}"
         },
         "panels": {

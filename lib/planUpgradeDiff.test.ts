@@ -47,10 +47,16 @@ describe('buildPlanUpgradeDiff', () => {
         expect(diff.removedModuleKeys).toEqual([]);
     });
 
-    it('reports unlimited retention and removed modules accurately', () => {
-        const diff = buildPlanUpgradeDiff(makePlan({ moduleKeys: ['gallery', 'stories'] }), makePlan({ autoDeleteMonths: null }));
+    it('never lists a coverage term change, since an upgrade does not move coverage', () => {
+        const diff = buildPlanUpgradeDiff(makePlan(), makePlan({ autoDeleteMonths: 12 }));
 
-        expect(diff.limitChanges).toContainEqual({ key: 'retention', current: 3, target: null });
+        expect(diff.limitChanges).toEqual([]);
+    });
+
+    it('reports unlimited limits and removed modules accurately', () => {
+        const diff = buildPlanUpgradeDiff(makePlan({ moduleKeys: ['gallery', 'stories'] }), makePlan({ maxMembers: null }));
+
+        expect(diff.limitChanges).toContainEqual({ key: 'members', current: 100, target: null });
         expect(diff.removedModuleKeys).toEqual(['stories']);
     });
 });
