@@ -13,6 +13,7 @@ import { EventTypeStep } from '@/components/event/create/EventTypeStep';
 import { EventPlanSelector } from '@/components/plan/EventPlanSelector';
 import { BackButton } from '@/components/ui/BackButton';
 import { useAuth } from '@/hooks/useAuth';
+import { useCurrentReturnPath } from '@/hooks/useCurrentReturnPath';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
@@ -21,6 +22,7 @@ import { CreateEventFormProvider } from '@/providers/CreateEventFormProvider';
 export default function CreateEventPage() {
     const router = useRouter();
     const { user, isAuthenticated, isBootstrapping } = useAuth();
+    const returnPath = useCurrentReturnPath();
     // Confirmed unverified (not just "not yet known") — the home screen is
     // where this is explained and where the flow should have been blocked
     // from starting in the first place; a direct visit to this URL must not
@@ -29,8 +31,10 @@ export default function CreateEventPage() {
 
     useEffect(() => {
         if (isBootstrapping) return;
+        // The proxy normally redirects signed-out requests before this
+        // renders; this branch only runs when Spring was unreachable there.
         if (!isAuthenticated) {
-            router.replace(routes.login);
+            router.replace(routes.auth.login({ next: returnPath }));
             return;
         }
         if (user?.role === 'ADMIN') {
@@ -38,7 +42,7 @@ export default function CreateEventPage() {
             return;
         }
         if (isConfirmedUnverified) router.replace(routes.home);
-    }, [isAuthenticated, isBootstrapping, isConfirmedUnverified, router, user?.role]);
+    }, [isAuthenticated, isBootstrapping, isConfirmedUnverified, returnPath, router, user?.role]);
 
     return (
         <CreateEventRouteState
