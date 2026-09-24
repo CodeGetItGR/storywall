@@ -16,8 +16,7 @@ function makePlan(overrides: Partial<PlanTierResponseDto> = {}): PlanTierRespons
         isPublic: true,
         storageBytes: 10_000,
         maxMembers: 100,
-        autoDeleteMonths: 3,
-        priceAmountMinor: 5_000,
+        priceAmountMinor: null,
         priceCurrency: 'EUR',
         billingPeriod: 'ONE_TIME',
         discountPercent: null,
@@ -28,16 +27,15 @@ function makePlan(overrides: Partial<PlanTierResponseDto> = {}): PlanTierRespons
         paidModules: [],
         eventTypeKey: 'WEDDING',
         sharedGroupKey: null,
+        initialOptions: [],
+        extensionOptions: [],
         ...overrides,
     };
 }
 
 describe('buildPlanUpgradeDiff', () => {
     it('returns only changed limits and module additions', () => {
-        const diff = buildPlanUpgradeDiff(
-            makePlan(),
-            makePlan({ storageBytes: 50_000, maxMembers: 500, moduleKeys: ['gallery', 'rsvp'], autoDeleteMonths: 3 }),
-        );
+        const diff = buildPlanUpgradeDiff(makePlan(), makePlan({ storageBytes: 50_000, maxMembers: 500, moduleKeys: ['gallery', 'rsvp'] }));
 
         expect(diff.limitChanges).toEqual([
             { key: 'storage', current: 10_000, target: 50_000 },
@@ -45,12 +43,6 @@ describe('buildPlanUpgradeDiff', () => {
         ]);
         expect(diff.addedModuleKeys).toEqual(['rsvp']);
         expect(diff.removedModuleKeys).toEqual([]);
-    });
-
-    it('never lists a coverage term change, since an upgrade does not move coverage', () => {
-        const diff = buildPlanUpgradeDiff(makePlan(), makePlan({ autoDeleteMonths: 12 }));
-
-        expect(diff.limitChanges).toEqual([]);
     });
 
     it('reports unlimited limits and removed modules accurately', () => {

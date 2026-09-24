@@ -279,6 +279,8 @@ export const endpoints = {
             modules: (id: string) => `/api/admin/plan-tiers/${id}/modules`,
             moduleConfig: (id: string, moduleKey: string) => `/api/admin/plan-tiers/${id}/modules/${encodeURIComponent(moduleKey)}`,
             duplicate: (id: string) => `/api/admin/plan-tiers/${id}/duplicate`,
+            coverageOptions: (id: string) => `/api/admin/plan-tiers/${id}/coverage-options`,
+            coverageOption: (id: string, optionId: string) => `/api/admin/plan-tiers/${id}/coverage-options/${optionId}`,
         },
         eventTypes: {
             modules: (eventTypeKey: string) => `/api/admin/event-types/${encodeURIComponent(eventTypeKey)}/modules`,

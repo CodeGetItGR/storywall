@@ -20,6 +20,10 @@ export type ApiErrorMessageKey =
     | 'collaborationCodeNotValid'
     | 'collaborationEarningNotPayable'
     | 'conflict'
+    | 'coverageOptionDuplicate'
+    | 'coverageOptionInvalid'
+    | 'coverageOptionLastInitial'
+    | 'coverageOptionUnavailable'
     | 'discountNotApplicableToUpgrade'
     | 'duplicateMediaIdInRequest'
     | 'duplicateMembership'
@@ -38,6 +42,7 @@ export type ApiErrorMessageKey =
     | 'eventHostDisplayOrderReserved'
     | 'eventHostPrimaryCannotBeRemoved'
     | 'eventHostTransferNotPrimaryHost'
+    | 'hostTransferWithdrawalOpen'
     | 'eventNotActive'
     | 'eventNotDraft'
     | 'eventModuleCompositionLocked'
@@ -82,6 +87,7 @@ export type ApiErrorMessageKey =
     | 'planIsOnlyDefault'
     | 'planNotAnUpgrade'
     | 'planNotPriced'
+    | 'purchaseNotPrimaryHost'
     | 'planNotPurchasable'
     | 'planTierNotAvailableForEventType'
     | 'postMediaLimitExceeded'
@@ -99,7 +105,6 @@ export type ApiErrorMessageKey =
     | 'resourceNotFound'
     | 'storageLimit'
     | 'storageUploadFailed'
-    | 'originalsAddonNotActive'
     | 'requestTooLarge'
     | 'unsupportedMediaFormat'
     | 'tooManyFiles'
@@ -132,6 +137,10 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.COLLABORATION_CODE_NOT_VALID]: 'collaborationCodeNotValid',
     [ERROR_CODES.COLLABORATION_EARNING_NOT_PAYABLE]: 'collaborationEarningNotPayable',
     [ERROR_CODES.CONFLICT]: 'conflict',
+    [ERROR_CODES.COVERAGE_OPTION_DUPLICATE]: 'coverageOptionDuplicate',
+    [ERROR_CODES.COVERAGE_OPTION_INVALID]: 'coverageOptionInvalid',
+    [ERROR_CODES.COVERAGE_OPTION_LAST_INITIAL]: 'coverageOptionLastInitial',
+    [ERROR_CODES.COVERAGE_OPTION_UNAVAILABLE]: 'coverageOptionUnavailable',
     [ERROR_CODES.DISCOUNT_NOT_APPLICABLE_TO_UPGRADE]: 'discountNotApplicableToUpgrade',
     [ERROR_CODES.DUPLICATE_MEDIA_ID_IN_REQUEST]: 'duplicateMediaIdInRequest',
     [ERROR_CODES.DUPLICATE_MEMBERSHIP]: 'duplicateMembership',
@@ -150,6 +159,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.EVENT_HOST_DISPLAY_ORDER_RESERVED]: 'eventHostDisplayOrderReserved',
     [ERROR_CODES.EVENT_HOST_PRIMARY_CANNOT_BE_REMOVED]: 'eventHostPrimaryCannotBeRemoved',
     [ERROR_CODES.EVENT_HOST_TRANSFER_NOT_PRIMARY_HOST]: 'eventHostTransferNotPrimaryHost',
+    [ERROR_CODES.HOST_TRANSFER_WITHDRAWAL_OPEN]: 'hostTransferWithdrawalOpen',
     [ERROR_CODES.WITHDRAWAL_NOT_PRIMARY_HOST]: 'withdrawalNotPrimaryHost',
     [ERROR_CODES.EVENT_MEMBER_LIMIT_EXCEEDED]: 'memberLimit',
     [ERROR_CODES.EVENT_NOT_ACTIVE]: 'eventNotActive',
@@ -192,6 +202,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.PLAN_TIER_IS_ONLY_DEFAULT]: 'planIsOnlyDefault',
     [ERROR_CODES.PLAN_TIER_NOT_AN_UPGRADE]: 'planNotAnUpgrade',
     [ERROR_CODES.PLAN_TIER_NOT_PRICED]: 'planNotPriced',
+    [ERROR_CODES.PURCHASE_NOT_PRIMARY_HOST]: 'purchaseNotPrimaryHost',
     [ERROR_CODES.PLAN_TIER_NOT_PURCHASABLE]: 'planNotPurchasable',
     [ERROR_CODES.PLAN_TIER_NOT_AVAILABLE_FOR_EVENT_TYPE]: 'planTierNotAvailableForEventType',
     [ERROR_CODES.POST_MEDIA_LIMIT_EXCEEDED]: 'postMediaLimitExceeded',
@@ -209,7 +220,6 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.REACTION_TYPE_NOT_USABLE]: 'reactionTypeNotUsable',
     [ERROR_CODES.RESOURCE_NOT_FOUND]: 'resourceNotFound',
     [ERROR_CODES.STORAGE_UPLOAD_FAILED]: 'storageUploadFailed',
-    [ERROR_CODES.ORIGINALS_ADDON_NOT_ACTIVE]: 'originalsAddonNotActive',
     [ERROR_CODES.REQUEST_TOO_LARGE]: 'requestTooLarge',
     [ERROR_CODES.UNSUPPORTED_MEDIA_FORMAT]: 'unsupportedMediaFormat',
     [ERROR_CODES.TOO_MANY_FILES]: 'tooManyFiles',

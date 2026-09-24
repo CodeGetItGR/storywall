@@ -1,4 +1,4 @@
-import type { EventTypeConvention, ModuleKey, PlanScope, PlanTierResponseDto } from '@/lib/api/types';
+import type { CoverageOptionResponseDto, EventTypeConvention, ModuleKey, PlanScope, PlanTierResponseDto } from '@/lib/api/types';
 import { discountedAmountMinor, isPlanDiscountActive } from '@/lib/billing';
 import { formatBytes } from '@/lib/format';
 
@@ -14,12 +14,56 @@ export interface PlanPriceDetails {
     discountLabel: string | null;
 }
 
+// The durations an EVENT plan is on sale at, in display order. Admin responses
+// also carry retired ones; public responses only ever list live ones.
+export function liveInitialOptions(plan: PlanTierResponseDto): CoverageOptionResponseDto[] {
+    return plan.initialOptions
+        .filter((option) => option.active)
+        .toSorted((left, right) => left.sortOrder - right.sortOrder || left.months - right.months);
+}
+
+// The duration a host has picked on this plan, or the shortest when they
+// haven't picked one (or picked one that is no longer on sale).
+export function resolveInitialOption(plan: PlanTierResponseDto, optionId: string | null | undefined): CoverageOptionResponseDto | null {
+    return liveInitialOptions(plan).find((option) => option.id === optionId) ?? shortestInitialOption(plan);
+}
+
+export function cheapestInitialOption(plan: PlanTierResponseDto): CoverageOptionResponseDto | null {
+    return liveInitialOptions(plan).reduce<CoverageOptionResponseDto | null>(
+        (cheapest, option) => (!cheapest || option.priceAmountMinor < cheapest.priceAmountMinor ? option : cheapest),
+        null,
+    );
+}
+
+// What the server falls back to when an event is created without a duration.
+export function shortestInitialOption(plan: PlanTierResponseDto): CoverageOptionResponseDto | null {
+    return liveInitialOptions(plan).reduce<CoverageOptionResponseDto | null>(
+        (shortest, option) => (!shortest || option.months < shortest.months ? option : shortest),
+        null,
+    );
+}
+
 export function formatPlanMoney(plan: PlanTierResponseDto, locale?: string): string | null {
     return formatPlanAmount(plan, locale);
 }
 
+// One duration's price, after the plan's own promotion. Every option is priced
+// in the plan's currency.
+export function getOptionPriceDetails(plan: PlanTierResponseDto, option: CoverageOptionResponseDto): PlanPriceDetails | null {
+    return priceDetails(plan, option.priceAmountMinor);
+}
+
+// An EVENT plan has no price of its own: this is its cheapest live duration,
+// for "from" labels. An ACCOUNT plan still carries a single price.
 export function getPlanPriceDetails(plan: PlanTierResponseDto): PlanPriceDetails | null {
-    const listAmountMinor = plan.priceAmountMinor;
+    if (plan.scope === 'EVENT') {
+        const cheapest = cheapestInitialOption(plan);
+        return cheapest ? priceDetails(plan, cheapest.priceAmountMinor) : null;
+    }
+    return priceDetails(plan, plan.priceAmountMinor);
+}
+
+function priceDetails(plan: PlanTierResponseDto, listAmountMinor: number | null): PlanPriceDetails | null {
     if (listAmountMinor === null || !plan.priceCurrency) return null;
 
     const discountActive = isPlanDiscountActive(plan);
@@ -59,16 +103,26 @@ export function findPlanByCode(plans: PlanTierResponseDto[], scope: PlanScope, c
     return publicAssignablePlans(plans, scope).find((plan) => plan.code === code);
 }
 
+// The plan an "upgrade to X" hint names. An EVENT plan has no price of its own,
+// so it is the next plan of the same event type in catalog order that is on
+// sale. An ACCOUNT plan is the first dearer one in the same currency.
 export function findNextPlan(plans: PlanTierResponseDto[], scope: PlanScope, code: string): PlanTierResponseDto | undefined {
     const currentPlan = scopedPlans(plans, scope).find((plan) => plan.code === code);
-    if (!currentPlan || currentPlan.priceAmountMinor === null || !currentPlan.priceCurrency) return undefined;
+    if (!currentPlan) return undefined;
+
+    if (scope === 'EVENT') {
+        return publicAssignablePlans(plans, 'EVENT').find(
+            (plan) => plan.eventTypeKey === currentPlan.eventTypeKey && plan.sortOrder > currentPlan.sortOrder && liveInitialOptions(plan).length > 0,
+        );
+    }
+
     const currentPriceAmountMinor = currentPlan.priceAmountMinor;
     const currentPriceCurrency = currentPlan.priceCurrency;
+    if (currentPriceAmountMinor === null || !currentPriceCurrency) return undefined;
 
     return publicAssignablePlans(plans, scope).find(
         (plan) =>
             plan.code !== currentPlan.code &&
-            (scope !== 'EVENT' || plan.eventTypeKey === currentPlan.eventTypeKey) &&
             plan.priceCurrency === currentPriceCurrency &&
             plan.priceAmountMinor !== null &&
             plan.priceAmountMinor > currentPriceAmountMinor,

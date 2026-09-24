@@ -1026,7 +1026,6 @@ export function buildSeedEvent(): EventDetailResponseDto {
         schedule: {
             startAt: DAYS(14),
             endAt: DAYS(14),
-            galleryOpensAt: DAYS(-7),
             coverageEndsAt: DAYS(14 + 365),
             projectedCoverage: null,
             timezone: 'UTC',
@@ -1142,7 +1141,16 @@ export function buildSeedUsage(): EventUsageResponseDto {
 }
 
 export function buildSeedBilling(): EventBillingResponseDto {
-    return { eventStatus: 'ACTIVE', planTierCode: 'FREE', planTierName: 'Free', orders: [], addons: [], discount: null };
+    return {
+        eventStatus: 'ACTIVE',
+        planTierCode: 'FREE',
+        planTierName: 'Free',
+        coverageOptionId: 'demo-coverage-12',
+        coverageMonths: 12,
+        orders: [],
+        addons: [],
+        discount: null,
+    };
 }
 
 export function buildSeedAppConfig(): AppConfigResponseDto {
@@ -1180,8 +1188,8 @@ export function buildSeedAppConfig(): AppConfigResponseDto {
                 isPublic: true,
                 storageBytes: 5 * 1024 * 1024 * 1024,
                 maxMembers: 100,
-                autoDeleteMonths: null,
-                priceAmountMinor: 0,
+                // An EVENT plan is priced per duration.
+                priceAmountMinor: null,
                 priceCurrency: 'USD',
                 billingPeriod: null,
                 discountPercent: null,
@@ -1192,6 +1200,8 @@ export function buildSeedAppConfig(): AppConfigResponseDto {
                 paidModules: [],
                 eventTypeKey: 'WEDDING',
                 sharedGroupKey: null,
+                initialOptions: [{ id: 'demo-coverage-12', kind: 'INITIAL', months: 12, priceAmountMinor: 0, sortOrder: 0, active: true }],
+                extensionOptions: [],
             },
         ],
         paidServices: [],
@@ -1209,7 +1219,7 @@ export function buildSeedAppConfig(): AppConfigResponseDto {
         translations: { eventTypes: {} },
         rsvp: { minAdults: 0, maxAdults: 10, minChildren: 0, maxChildren: 10 },
         withdrawal: { termsVersion: 'demo-1', windowDays: 14, holdDays: 7 },
-        coverage: { maxLeadDays: 548, maxPreEventDays: 90, defaultHostingMonths: 12, defaultEventDurationHours: 24 },
+        coverage: { maxLeadDays: 548, defaultEventDurationHours: 24 },
         contentLimits: {
             postContentMaxLength: 500,
             commentContentMaxLength: 500,

@@ -1,5 +1,3 @@
-import type { PlanTierResponseDto } from '@/lib/api/types';
-
 export interface MediaEstimateConfig {
     estimateAvgImageBytes: number;
     estimateAvgVideoBytes: number;
@@ -19,9 +17,4 @@ export function mediaEstimate(storageBytes: number | null, config: MediaEstimate
 
 export function formatPlanText(value: string | null): string {
     return value?.trim() ? value : PLAN_COMPARISON_EMPTY;
-}
-
-export function formatPlanDiscount(plan: PlanTierResponseDto): string {
-    if (plan.discountPercent === null && !plan.discountLabel) return PLAN_COMPARISON_EMPTY;
-    return [plan.discountPercent === null ? null : `${plan.discountPercent}%`, plan.discountLabel].filter(Boolean).join(' · ');
 }

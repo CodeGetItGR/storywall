@@ -127,13 +127,10 @@ export interface PlanTierResponseDto {
     isPublic: boolean;
     storageBytes: number | null;
     maxMembers: number | null;
-    // EVENT-scope only; always null on ACCOUNT scope. Months after the event's
-    // startAt before it is soft-deleted (same lifecycle as a host-requested
-    // deletion); pinned as coverageEndsAt at activation. null = never
-    // auto-deleted. See billing-fe-guide.md
-    // "autoDeleteMonths — how long an event's content survives after it starts".
-    autoDeleteMonths: number | null;
+    // ACCOUNT scope only. Always null on an EVENT plan, whose prices are its
+    // initialOptions (coverage-options-and-extensions-fe-integration.md §1).
     priceAmountMinor: number | null;
+    // Also the currency of every coverage option.
     priceCurrency: string | null;
     billingPeriod: BillingPeriod | null;
     discountPercent: number | null;
@@ -155,6 +152,25 @@ export interface PlanTierResponseDto {
     // event types). Null for a plan never duplicated or duplicated from. See
     // plan-tiers-by-event-type-fe-integration.md §3.
     sharedGroupKey: string | null;
+    // The durations this EVENT plan is sold at, in display order. Public
+    // responses list live ones only; admin responses include retired ones
+    // (active: false). Empty = not on sale. Always empty on ACCOUNT scope.
+    initialOptions: CoverageOptionResponseDto[];
+    // Coverage bought after activation. Nothing sells these yet (phase 2).
+    extensionOptions: CoverageOptionResponseDto[];
+}
+
+export type CoverageOptionKind = 'INITIAL' | 'EXTENSION';
+
+// One duration an EVENT plan is sold at. See
+// coverage-options-and-extensions-fe-integration.md.
+export interface CoverageOptionResponseDto {
+    id: string; // what every coverageOptionId field takes
+    kind: CoverageOptionKind;
+    months: number; // 1–120
+    priceAmountMinor: number; // in the plan's priceCurrency, before any promotion or code
+    sortOrder: number;
+    active: boolean; // always true outside the admin endpoints
 }
 
 export interface PlatformModuleResponseDto {
@@ -250,10 +266,6 @@ export interface AppRsvpConfigDto {
 export interface AppCoverageConfigDto {
     // Furthest ahead startAt may be scheduled, in days from now (3032 past it).
     maxLeadDays: number;
-    // Gallery opens this many days before startAt (clamped to activation).
-    maxPreEventDays: number;
-    // Retention after startAt when the plan does not set autoDeleteMonths.
-    defaultHostingMonths: number;
     // endAt the server fills when a request omits it.
     defaultEventDurationHours: number;
 }
@@ -513,6 +525,10 @@ export interface EventRequestDto {
     title: string;
     // Required — there is no free plan to fall back to.
     planTierCode: PlanTierCode;
+    // One of the plan's live initialOptions. Required when a host creates an
+    // event (400 COVERAGE_OPTION_INVALID without it); optional when an admin
+    // provisions one, which then gets the plan's shortest duration.
+    coverageOptionId?: string;
     subtitle?: string;
     description?: string;
     eventType: EventTypeConvention;
@@ -545,7 +561,6 @@ export interface EventResponseDto {
     visibility: EventVisibility;
     startAt: string;
     endAt: string | null;
-    galleryOpensAt: string | null; // null while DRAFT; pinned at activation
     coverageEndsAt: string | null; // null while DRAFT; pinned at activation
     projectedCoverage: ProjectedCoverageDto | null; // set while DRAFT, null once ACTIVE
     timezone: string;
@@ -565,10 +580,9 @@ export interface EventResponseDto {
 export interface EventScheduleDto {
     startAt: string;
     endAt: string | null;
-    // Both null while DRAFT. Computed once at activation and never moved by later
-    // startAt/endAt edits — render the coverage window from these, never from
-    // startAt/endAt arithmetic.
-    galleryOpensAt: string | null;
+    // Null while DRAFT. Computed once at activation and never moved by later
+    // startAt/endAt edits; only a paid upgrade to a longer duration moves it later.
+    // Render the coverage window from this, never from startAt/endAt arithmetic.
     coverageEndsAt: string | null;
     // The mirror image: set while DRAFT, null once ACTIVE. Recomputed on every
     // read, so it follows startAt as the host edits the draft. Exactly one of
@@ -580,9 +594,8 @@ export interface EventScheduleDto {
 
 // The window a DRAFT event would get if activated at the moment of the request.
 export interface ProjectedCoverageDto {
-    galleryOpensAt: string;
     coverageEndsAt: string;
-    hostingMonths: number; // the plan's retention term (12 unless the plan overrides it)
+    hostingMonths: number; // the months of the duration the draft is on
 }
 
 export interface EventLocationDto {
@@ -648,10 +661,14 @@ export interface CheckoutRequestDto extends WithdrawalConsentDto {
 export interface CollaborationCodePreviewRequestDto {
     collaborationCode: string;
     targetPlanTierCode?: string;
+    // Required with targetPlanTierCode since 2026-09-23: the upgrade duration being priced.
+    targetCoverageOptionId?: string;
 }
 export interface CreateEventCodePreviewRequestDto {
     eventType: EventTypeConvention;
     planTierCode: PlanTierCode;
+    // Required since 2026-09-23: the code discounts that duration's price.
+    coverageOptionId: string;
     collaborationCode: string;
 }
 export interface CollaborationCodePreviewResponseDto {
@@ -769,15 +786,28 @@ export interface VoidCollaborationRedemptionRequestDto {
 // POST /api/events/{eventId}/upgrade-checkout — host, ACTIVE only (billing-fe-guide §7d).
 export interface UpgradeCheckoutRequestDto extends WithdrawalConsentDto {
     planTierCode: PlanTierCode;
+    // Required since 2026-09-23: one of that plan's options[].coverageOptionId.
+    coverageOptionId: string;
 }
+// One duration a paid event can move to on the target plan: at least as long as
+// the event's own, and dearer than it.
+export interface UpgradeCoverageOptionDto {
+    coverageOptionId: string;
+    months: number;
+    // How far the upgrade moves coverageEndsAt; 0 for a same-length upgrade.
+    monthsAdded: number;
+    // Undiscounted gap between the two durations' prices. Strike-through display only.
+    gapAmountMinor: number;
+    // What upgrade-checkout will actually charge for this duration.
+    payableAmountMinor: number;
+}
+// GET /api/events/{eventId}/upgrade-options — one entry per target plan since
+// 2026-09-23. options is never empty; a plan with no eligible duration is left out.
 export interface UpgradeOptionResponseDto {
     planTierCode: PlanTierCode;
     planTierName: string;
     currency: string;
-    // Undiscounted difference between the two plans. Strike-through display only.
-    gapAmountMinor: number;
-    // What upgrade-checkout will actually charge for this planTierCode.
-    payableAmountMinor: number;
+    options: UpgradeCoverageOptionDto[];
     // The target plan's own promotion — the only discount an upgrade gets since
     // 2026-09-22 (a discount code prices the activation only). Sent as null, not
     // left out, when the target has no live promotion.
@@ -804,6 +834,10 @@ export interface OrderSummaryDto {
     setupAmountMinor: number | null;
     eventDayAmountMinor: number | null;
     hostingAmountMinor: number | null;
+    // Added 2026-09-23: the months of coverage this order bought (null when it
+    // bought none), and on an UPGRADE how far it moved coverageEndsAt.
+    coverageMonths: number | null;
+    coverageMonthsAdded: number | null;
 }
 export interface EventAddonDto {
     code: string;
@@ -830,6 +864,10 @@ export interface EventBillingResponseDto {
     eventStatus: EventStatus;
     planTierCode: string;
     planTierName: string;
+    // The duration the event is on (added 2026-09-23). The event response
+    // doesn't carry it, so this is where a draft's picker reads it from.
+    coverageOptionId: string;
+    coverageMonths: number;
     orders: OrderSummaryDto[];
     addons: EventAddonDto[];
     discount: DiscountSummaryDto | null;
@@ -869,13 +907,16 @@ export interface WithdrawalLine {
 export interface WithdrawalPreviewResponseDto {
     eligible: boolean;
     refusals: WithdrawalRefusal[];
+    // The first instant withdrawal is no longer possible: the end of the 14th day
+    // after payment, Athens time (end of Monday when that day is a weekend).
+    // Null, like currency, when there is no settled activation.
     windowClosesAt: string | null;
     totalRefundMinor: number;
-    currency: string;
+    currency: string | null;
     lines: WithdrawalLine[];
-    // Not sent by the server yet — requested, see fe-be-open-questions.md. True when
-    // the event's startAt was moved after payment, which forces a HELD outcome.
-    scheduleMovedAfterPayment?: boolean;
+    // True when the event's startAt was moved after payment, which forces a HELD
+    // outcome. False promises nothing: other, undisclosed reasons can hold a request.
+    scheduleMovedAfterPayment: boolean;
 }
 
 // POST /api/events/{eventId}/withdrawals — host. 201 with this shape when the
@@ -1103,7 +1144,10 @@ export interface EventPatchDto {
     coverMediaId?: string;
     brandingSettings?: Record<string, unknown>;
     rsvpDeadline?: string;
-    keepOriginals?: true;
+    // DRAFT only: switches the draft to another of its plan's durations.
+    // Sending the current one back is a no-op. (keepOriginals was removed
+    // 2026-09-23; sending it is a 400.)
+    coverageOptionId?: string;
 }
 
 export interface EventDeletionRequestDto {
@@ -1816,7 +1860,8 @@ export interface PlanTierRequestDto {
     isPublic: boolean;
     storageBytes?: number | null;
     maxMembers?: number | null;
-    autoDeleteMonths?: number | null;
+    // ACCOUNT scope only: an EVENT plan is priced by its coverage options, and
+    // sending a price for one is a 400 INVALID_PLAN_TIER_SCOPE.
     priceAmountMinor?: number | null;
     priceCurrency?: string | null;
     billingPeriod?: BillingPeriod | null;
@@ -1832,9 +1877,10 @@ export interface PlanTierRequestDto {
 
 export type PlanTierPatchDto = Partial<Omit<PlanTierRequestDto, 'code' | 'scope' | 'eventTypeKey'>>;
 
-// POST /api/admin/plan-tiers/{id}/duplicate — clones price/storage/quotas/
-// moduleKeys from the source plan into one or more new plans for other event
-// types in a single call. See plan-tiers-by-event-type-fe-integration.md §5.
+// POST /api/admin/plan-tiers/{id}/duplicate — clones storage/quotas/moduleKeys
+// and every coverage option (retired ones included) from the source plan into
+// one or more new plans for other event types in a single call. See
+// plan-tiers-by-event-type-fe-integration.md §5.
 export interface PlanTierDuplicateRequestDto {
     clones: Array<{
         eventTypeKey: EventTypeConvention;
@@ -1850,6 +1896,27 @@ export interface PlanModulesRequestDto {
 
 export interface PlanAssignmentRequestDto {
     planTierCode: PlanTierCode;
+    // Events only: one of the new plan's initialOptions. Omit to keep the
+    // event's term (the option of the same length, else the plan's shortest).
+    // Either way the event's coverageEndsAt does not move.
+    coverageOptionId?: string;
+}
+
+// POST /api/admin/plan-tiers/{id}/coverage-options — kind and months are fixed
+// once created: to sell a different length, add one and retire the old one.
+export interface CoverageOptionRequestDto {
+    kind: CoverageOptionKind;
+    months: number; // 1–120
+    priceAmountMinor: number; // >= 0, in the plan's priceCurrency
+    sortOrder?: number;
+}
+
+// PATCH /api/admin/plan-tiers/{id}/coverage-options/{optionId} — omitted
+// fields are left unchanged. Nothing is ever deleted: retire with active: false.
+export interface CoverageOptionPatchDto {
+    priceAmountMinor?: number;
+    sortOrder?: number;
+    active?: boolean;
 }
 
 export interface PlatformModulePatchDto {

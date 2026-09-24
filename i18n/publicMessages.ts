@@ -17,6 +17,7 @@ export const PUBLIC_CLIENT_NAMESPACES = [
     'LandingPage.stack',
     'LanguageSwitcher',
     'Modules',
+    'Durations',
     'AccountDrawer',
     'NewsletterForm',
 ] as const;

@@ -9,7 +9,7 @@ function pendingCheckoutKey(eventId: string): string {
     return `storywall.pendingCheckout.${eventId}`;
 }
 
-export function formatMoney(locale: string, minor: number, currency: string): string {
+export function formatMoney(locale: string, minor: number, currency: string | null): string {
     return formatOptionalMoney(minor, currency, locale) ?? '0.00';
 }
 
@@ -24,6 +24,12 @@ export function formatOptionalMoney(minor: number | null, currency: string | nul
     } catch {
         return `${value.toFixed(2)} ${currency}`;
     }
+}
+
+// windowClosesAt is the first instant withdrawal is no longer possible, so the
+// last moment a host can still withdraw is one second before it.
+export function lastWithdrawalMoment(windowClosesAt: string): Date {
+    return new Date(new Date(windowClosesAt).getTime() - 1000);
 }
 
 export function formatBillingDate(locale: string, value: string | null): string | null {

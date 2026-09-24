@@ -22,7 +22,6 @@ function plan(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto {
         isPublic: true,
         storageBytes: null,
         maxMembers: null,
-        autoDeleteMonths: null,
         priceAmountMinor: null,
         priceCurrency: null,
         billingPeriod: null,
@@ -34,6 +33,8 @@ function plan(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto {
         paidModules: null,
         eventTypeKey: 'WEDDING',
         sharedGroupKey: null,
+        initialOptions: [],
+        extensionOptions: [],
         ...overrides,
     };
 }

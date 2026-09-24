@@ -14,8 +14,8 @@ export type PlanUpgradeDiff = {
     removedModuleKeys: string[];
 };
 
-// An upgrade widens storage and members only. Coverage stays where activation
-// pinned it, so a longer term on the target plan is never listed as a change.
+// What the target plan changes: storage, members and modules. Coverage isn't a
+// plan fact any more; the upgrade's own duration says how many months it adds.
 export function buildPlanUpgradeDiff(currentPlan: PlanTierResponseDto, targetPlan: PlanTierResponseDto): PlanUpgradeDiff {
     const limitChanges: PlanUpgradeLimitChange[] = [
         { key: 'storage', current: currentPlan.storageBytes, target: targetPlan.storageBytes },

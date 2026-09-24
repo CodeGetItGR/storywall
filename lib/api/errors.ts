@@ -74,7 +74,6 @@ export const ERROR_CODES = {
     PAID_SERVICE_NOT_ON_PLAN: 5040,
     ADDON_NOT_ACTIVE: 5041,
     ADDON_LOCKED_WHILE_ACTIVE: 5042,
-    ORIGINALS_ADDON_NOT_ACTIVE: 5054,
     CO_HOST_INVITE_NOT_YOURS: 5044,
     INVALID_IBAN: 5045,
     CHECKOUT_AMOUNT_BELOW_MINIMUM: 5046,
@@ -109,6 +108,12 @@ export const ERROR_CODES = {
     WITHDRAWAL_NOT_HELD: 5074,
     EVENT_CREATION_LOCKED: 5075,
     DISCOUNT_NOT_APPLICABLE_TO_UPGRADE: 5076,
+    PURCHASE_NOT_PRIMARY_HOST: 4006,
+    COVERAGE_OPTION_INVALID: 5077,
+    COVERAGE_OPTION_UNAVAILABLE: 5078,
+    COVERAGE_OPTION_LAST_INITIAL: 5079,
+    COVERAGE_OPTION_DUPLICATE: 5080,
+    HOST_TRANSFER_WITHDRAWAL_OPEN: 5081,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the
@@ -150,6 +155,15 @@ export function getQuotaExceededDetails(error: unknown): QuotaExceededDetails | 
         return error.problem.details;
     }
     return undefined;
+}
+
+// 5081 carries the moment the last withdrawal window closes.
+export function getHostTransferUnlocksAt(error: unknown): string | undefined {
+    if (!(error instanceof ApiError)) return undefined;
+    const details = error.problem?.details;
+    if (typeof details !== 'object' || details === null || !('unlocksAt' in details)) return undefined;
+    const { unlocksAt } = details as { unlocksAt: unknown };
+    return typeof unlocksAt === 'string' ? unlocksAt : undefined;
 }
 
 export function isModuleNotAvailableError(error: unknown): boolean {

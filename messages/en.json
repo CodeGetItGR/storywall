@@ -3,7 +3,8 @@
         "optional": "optional",
         "required": "required",
         "yes": "Yes",
-        "no": "No"
+        "no": "No",
+        "primaryHostOnly": "Only the event's main host can make purchases."
     },
     "Demo": {
         "resetDemo": "Reset demo",
@@ -408,22 +409,6 @@
         "subtitle": "Create your own event, or join one you've been invited to.",
         "createEventCta": "Create an event"
     },
-    "PlanCard": {
-        "unlimited": "Unlimited",
-        "noCharge": "No charge",
-        "members": "members",
-        "storage": "storage",
-        "modules": "Event modules",
-        "addonModules": "Available as add-on",
-        "oncePrice": "{price} once",
-        "originalsHighlight": "Full-resolution original photos included",
-        "moreInfo": "More info",
-        "moreInfoTitle": "Plan details",
-        "moreInfoClose": "Close details",
-        "moreInfoDiscount": "Discount",
-        "moreInfoModules": "Included modules",
-        "moreInfoAddons": "Add-ons"
-    },
     "PlansPage": {
         "back": "Back",
         "eyebrow": "All plans",
@@ -791,7 +776,7 @@
         "subtitle": "Add the event details.",
         "detailsHint": "You can add or edit more details after creation.",
         "startAtHint": "Events can be scheduled up to 18 months ahead.",
-        "coverageProjection": "Gallery opens {opensAt} · Photos kept until {endsAt}",
+        "coverageProjection": "Photos kept until {endsAt}",
         "fields": {
             "title": "Event title",
             "startAt": "Starts",
@@ -903,6 +888,7 @@
             "pricing": "Pricing details",
             "pricingHint": "Activation is a one-time payment.",
             "planActivation": "Plan activation",
+            "planActivationFor": "Plan activation · {duration}",
             "discount": "Discount",
             "discountDetail": "{label} · {percent}% off",
             "monthlyForMonths": "Charged at activation",
@@ -917,7 +903,6 @@
     },
     "ManagePage": {
         "coverage": {
-            "opensIn": "Gallery opens in {days, plural, one {# day} other {# days}}",
             "openUntil": "Gallery open · closes {date}",
             "closingIn": "Closing in {days, plural, one {# day} other {# days}} — download your gallery",
             "ended": "Gallery closed on {date}",
@@ -986,6 +971,7 @@
             "openingCheckout": "Opening secure checkout...",
             "addStartDate": "Add a start date to publish",
             "retryIn": "Try again in {seconds}s",
+            "durationUnavailable": "This duration is no longer available. Choose another one.",
             "selectedAddons": {
                 "title": "Selected add-ons",
                 "body": "Chosen during event creation. Add-ons can't be changed until after publishing."
@@ -1325,7 +1311,6 @@
     },
     "EventPlanSettingsPage": {
         "coverage": {
-            "galleryOpens": "Gallery opens",
             "keptUntil": "Photos kept until"
         },
         "back": "Back",
@@ -1367,6 +1352,8 @@
         },
         "upgrade": {
             "button": "Upgrade · {amount}",
+            "buttonAria": "Upgrade to {plan}, {duration}, {amount}",
+            "addsMonths": "+{count, plural, one {# month} other {# months}} of coverage",
             "whatChanges": "What changes",
             "storage": "{value} storage",
             "storageUnlimited": "Unlimited storage",
@@ -1387,11 +1374,8 @@
             "upgradeCoverageUnlimited": "Your coverage stays unlimited.",
             "upgradeCoverageUnchanged": "Your coverage date does not change.",
             "upgradeDueNow": "{amount} now",
-            "upgradeButton": "Upgrade to {plan} - {amount}",
             "nextPlanHint": "Next upgrade: {plan}",
             "highestPlan": "You are on the highest published tier.",
-            "field": "Field",
-            "current": "Current",
             "recommended": "Recommended",
             "fromTo": "Upgrade path",
             "code": "Code",
@@ -1399,19 +1383,10 @@
             "scope": "Scope",
             "sortOrder": "Sort order",
             "price": "Price",
-            "activationPrice": "Activation price",
             "monthlyPrice": "Renewal",
             "perMonthValue": "{amount}",
             "perMonthSuffix": "",
             "noMonthlyPrice": "No renewal",
-            "billing": "Billing",
-            "moduleLegendOpen": "Module guide",
-            "moduleLegendClose": "Close module guide",
-            "moduleLegendTitle": "Event modules",
-            "moduleLegendTitleForPlan": "{plan} modules",
-            "moduleLegendBody": "Each item below comes from the current event module catalog.",
-            "moduleLegendFallback": "Available for events.",
-            "moduleLegendAddon": "Available as an add-on",
             "currencyValue": "Currency: {value}",
             "billingPeriodValue": "Billing: {value}",
             "recurringValue": "Recurring minor: {value}",
@@ -1425,32 +1400,21 @@
             "members": "Members",
             "limits": "Limits",
             "flags": "Flags",
-            "modules": "Included modules",
             "moduleChanges": "New modules",
             "removedModules": "No longer included",
             "moduleCount": "{count} modules",
             "noModuleChanges": "No new modules on this tier. The upgrade mainly increases limits.",
             "allPlansTitle": "All published tiers",
-            "mediaCapacity": "Approx media",
-            "mediaAssumption": "Based on ~4 MB photos and ~90 MB videos.",
-            "mediaEstimate": "~{images} photos or ~{videos} short videos",
             "storageValue": "Storage: {value}",
             "membersValue": "Members: {value}",
             "activeEventsValue": "Active events: {value}",
             "defaultValue": "Default: {value}",
             "assignableValue": "Assignable: {value}",
             "publicValue": "Public: {value}",
-            "noPrice": "Contact us",
             "noBilling": "Custom billing",
             "noCoverageLimit": "No fixed coverage limit",
             "unlimited": "Unlimited",
-            "unlimitedMedia": "Unlimited uploads",
             "same": "No increase"
-        },
-        "billingPeriod": {
-            "MONTHLY": "per month",
-            "YEARLY": "per year",
-            "ONE_TIME": "One time"
         },
         "orderStatus": {
             "PENDING": "Pending",
@@ -1539,6 +1503,7 @@
         "withdrawal": {
             "loading": "Checking...",
             "eligible": "You can withdraw for a refund of {amount}.",
+            "eligibleUntil": "You can withdraw until {date} for a refund of {amount}.",
             "notEligible": "Withdrawal isn't available right now.",
             "reason": "Reason",
             "reasonPlaceholder": "Optional note",
@@ -1591,7 +1556,7 @@
         "items": {
             "planActivation": "{plan} plan activation",
             "planPreservation": "{plan} renewal",
-            "planUpgrade": "Upgrade to {plan}"
+            "planUpgrade": "Upgrade to {plan} · {duration}"
         },
         "intent": {
             "activationCancelled": {
@@ -1620,9 +1585,7 @@
             "activatesTodayTitle": "Activates today",
             "activatesTodayBody": "Your event goes live the moment payment completes.",
             "datesFixedTitle": "Your dates are fixed at payment",
-            "datesFixedBody": "Changing your event date later won't move when the gallery opens or closes.",
-            "galleryOpensTitle": "Gallery opens {date}",
-            "galleryOpensBody": "{days, plural, =0 {Right after payment — upload preparations from then.} one {# day before your event — upload preparations from then.} other {# days before your event — upload preparations from then.}}",
+            "datesFixedBody": "Changing your event date later won't move when the gallery closes.",
             "keptUntilTitle": "Photos kept until {date}",
             "keptUntilBody": "{months, plural, one {# month} other {# months}} after your event date. After that everything is permanently deleted — we'll remind you 7 days and 1 day before."
         },
@@ -2161,6 +2124,7 @@
                 "eventType": "Event type",
                 "plan": "Plan",
                 "choosePlan": "Choose a plan",
+                "duration": "Duration",
                 "internal": "Internal",
                 "noPlans": "No assignable plans are available for this event type.",
                 "memberLimit": "{value} members",
@@ -2187,6 +2151,7 @@
                 "reviewType": "Type",
                 "reviewDate": "Starts",
                 "reviewPlan": "Plan",
+                "reviewDuration": "Duration",
                 "reviewVisibility": "Visibility",
                 "activeNotice": "The event will be active immediately. No payment will be collected.",
                 "back": "Back",
@@ -2210,10 +2175,9 @@
             "storage": "Storage",
             "unit": "Unit",
             "maxMembers": "Members",
-            "autoDeleteMonths": "Keep event content",
-            "autoDeleteMonthsHint": "Months after the event ends. Blank = keep indefinitely.",
             "price": "Price",
             "priceCurrency": "Currency",
+            "priceCurrencyEventHint": "Used for every duration.",
             "billingPeriod": "Billing",
             "recurringPrice": "Monthly price",
             "includedMonths": "Included months",
@@ -2326,6 +2290,7 @@
                 "identity": "Plan identity",
                 "details": "Details",
                 "limits": "Limits",
+                "durations": "Durations",
                 "pricing": "Pricing",
                 "modules": "Modules",
                 "addons": "Add-ons",
@@ -2351,11 +2316,33 @@
                 "price": "Price",
                 "storage": "Storage",
                 "members": "Members",
-                "autoDelete": "Auto-delete",
+                "durations": "Durations",
                 "status": "Status",
                 "sharedGroup": "Shared with",
-                "never": "Never",
-                "months": "{count, plural, one {# month} other {# months}}"
+                "months": "{count, plural, one {# month} other {# months}}",
+                "fromPrice": "from {price}",
+                "durationList": "{months} mo",
+                "noDurations": "None on sale"
+            },
+            "durations": {
+                "hint": "The lengths hosts can buy, each with its own price.",
+                "createHint": "The lengths hosts can buy. Add at least one.",
+                "empty": "No durations yet. Hosts can't buy this plan until you add one.",
+                "live": "On sale",
+                "retired": "Retired",
+                "edit": "Edit {duration}",
+                "newTitle": "New duration",
+                "months": "Months",
+                "monthsHint": "1 to 120. Can't be changed later.",
+                "price": "Price",
+                "priceIn": "Price ({currency})",
+                "sortOrder": "Order",
+                "retire": "Retire",
+                "reactivate": "Put back on sale",
+                "save": "Save duration",
+                "add": "Add duration",
+                "remove": "Remove duration",
+                "duplicateMonths": "Each duration needs a different length."
             },
             "sharedGroup": {
                 "label": "Also offered for"
@@ -2455,8 +2442,10 @@
             "eventSubtitle": "Move one event onto a different event plan. Account-plan assignment is disabled by the backend, so only events can be reassigned here.",
             "eventId": "Event UUID",
             "assignEvent": "Assign event plan",
+            "duration": "Duration",
+            "durationDefault": "Same length if available",
             "freshEventUsage": "Fresh event usage",
-            "noAssignablePlans": "No assignable event plan exists yet. Create one, or restore an archived plan, before assigning.",
+            "noAssignablePlans": "No event plan is ready to assign. Make a plan assignable and add a duration to it.",
             "confirmEventTitle": "Assign a plan to {event}?",
             "confirmEventBody": "This changes the event plan to {plan} and may alter storage, member, and module limits immediately."
         },
@@ -2613,7 +2602,11 @@
             "addonLockedWhileActive": "Paid entitlements cannot be removed while an event is live. They lapse automatically if the event stops paying.",
             "addonNotActive": "That add-on is not active on this event.",
             "subscriptionAlreadyActive": "This event still has a live subscription collecting payments. Cancel or replace it before reassigning the plan.",
-            "invalidPlanTierScope": "Event-type restrictions only apply to event plans.",
+            "invalidPlanTierScope": "That setting doesn't apply to this kind of plan.",
+            "coverageOptionInvalid": "That duration isn't on sale for this plan. Refresh and pick another.",
+            "coverageOptionUnavailable": "This plan has no duration on sale.",
+            "coverageOptionLastInitial": "A plan on sale needs at least one duration. Add another before retiring this one.",
+            "coverageOptionDuplicate": "This plan already sells that length.",
             "reactionTypeInUse": "This reaction is already used on posts. Archive it instead.",
             "reactionTypeLimitExceeded": "This event type already has five available reactions.",
             "reactionTypeNotUsable": "That reaction is no longer available. Refresh and choose another.",
@@ -3052,13 +3045,6 @@
             }
         }
     },
-    "PlanDescriptions": {
-        "BASIC": "Everything you need to get your event started.",
-        "FREE": "The essentials for getting started.",
-        "PLUS": "More space and features for a bigger event.",
-        "PRO": "The highest limits and every available feature.",
-        "fallback": "See the limits and features included with {plan}."
-    },
     "EventVoiceFallback": {
         "titlePlaceholder": "e.g. Rosewood Estate Gathering",
         "locationPlaceholder": "e.g. Rosewood Estate, Napa Valley",
@@ -3112,6 +3098,11 @@
             "name": "Schedule",
             "description": "Plan the event timeline with schedule sections."
         }
+    },
+    "Durations": {
+        "label": "Duration",
+        "short": "{count}m",
+        "months": "{count, plural, one {# month} other {# months}}"
     },
     "PlanUsage": {
         "currentPlan": "Current plan: {plan}",
@@ -3256,7 +3247,12 @@
         "eventNotDraft": "This event has already been published.",
         "planNotPurchasable": "This plan cannot be bought directly. Contact us to switch to it.",
         "planTierNotAvailableForEventType": "This plan is not available for the selected event type. Choose a different plan or event type.",
-        "planNotPriced": "This plan has no price set yet. Please try again later.",
+        "planNotPriced": "This plan can't be bought right now. Please try again later.",
+        "coverageOptionInvalid": "That duration is no longer available. Choose another one.",
+        "coverageOptionUnavailable": "The duration you chose is no longer available. Choose another one.",
+        "coverageOptionLastInitial": "A plan on sale needs at least one duration. Add another before retiring this one.",
+        "coverageOptionDuplicate": "This plan already sells that duration.",
+        "purchaseNotPrimaryHost": "Only the event's main host can make purchases.",
         "planCurrencyUnsupported": "This plan is not available in your currency yet.",
         "planNotAnUpgrade": "These upgrade options are out of date. We refreshed the plan catalog.",
         "planCurrencyMismatch": "This plan is not available for your event.",
@@ -3269,7 +3265,6 @@
         "subscriptionAlreadyActive": "A subscription is already running for this event.",
         "subscriptionNotLive": "There was no active subscription to stop - we have refreshed this page.",
         "subscriptionCancelFailed": "We couldn't stop it just now, so the subscription is still running and will still be charged. Please try again in a moment.",
-        "originalsAddonNotActive": "Original downloads are not available for this event.",
         "invalidCredentials": "The email or password is incorrect.",
         "invalidRefreshToken": "Your session expired. Please sign in again.",
         "accountNotActive": "This account is not active.",
@@ -3329,6 +3324,8 @@
         "eventHostDisplayOrderReserved": "The primary host position is reserved.",
         "eventHostPrimaryCannotBeRemoved": "Transfer ownership before removing the primary host.",
         "eventHostTransferNotPrimaryHost": "Only the primary host can transfer ownership.",
+        "hostTransferWithdrawalOpen": "You can hand this event over once the refund period ends.",
+        "hostTransferWithdrawalOpenFrom": "You can hand this event over from {date}.",
         "qrMediaUploadDisabled": "The QR upload link is turned off for this event's gallery.",
         "eventWithdrawn": "This event's deletion can't be cancelled — it was withdrawn and closed permanently.",
         "withdrawalTermsVersionStale": "These terms were updated. Review them again and try again.",
@@ -3702,8 +3699,6 @@
             "guestsUnlimited": "Unlimited guests",
             "storageUnlimited": "Unlimited storage",
             "mediaUnlimited": "Unlimited",
-            "accessMonths": "Access for {months} months after the event",
-            "accessUnlimited": "Access never expires",
             "everythingIn": "Everything in {plan}"
         },
         "faq": {
