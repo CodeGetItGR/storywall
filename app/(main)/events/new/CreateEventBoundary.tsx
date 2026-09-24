@@ -74,7 +74,7 @@ function CreateEventFormBody() {
 
     return (
         <main className="flex h-full flex-col bg-background">
-            <div className={cn('mx-auto flex min-h-0 w-full flex-1 flex-col px-4', step === 'plan' ? 'max-w-6xl' : 'max-w-2xl')}>
+            <div className={cn('mx-auto flex min-h-0 w-full flex-1 flex-col px-4', step === 'plan' ? 'max-w-304' : 'max-w-2xl')}>
                 {/* Header */}
                 <div className="flex shrink-0 items-center gap-3 py-4">
                     <BackButton variant="icon" href={routes.home} label={t('goBack')} />

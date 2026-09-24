@@ -28,19 +28,23 @@ const plan: LandingPlan = {
     defaultDurationId: 'd9',
 };
 
-function renderCard({ defaultExpanded, onSelectAction }: { defaultExpanded?: boolean; onSelectAction?: (code: string) => void } = {}) {
+function renderCard({
+    defaultExpanded,
+    onSelectAction,
+    selected,
+}: { defaultExpanded?: boolean; onSelectAction?: (code: string) => void; selected?: boolean } = {}) {
     return render(
         <NextIntlClientProvider locale="en" messages={messages}>
             <MarketingPlanCard
                 featured={false}
                 plan={plan}
-                popularLabel="most popular"
-                storageLabel="Storage"
-                durationLabel="Online after your event"
+                popularLabel="Most popular"
+                durationLabel="Stays online for"
                 expandLabel="Show features"
                 collapseLabel="Hide features"
                 defaultExpanded={defaultExpanded}
-                selectionLabel="CHOOSE PLAN"
+                selected={selected}
+                selectionLabel={selected ? 'SELECTED' : 'CHOOSE PLAN'}
                 onSelectAction={onSelectAction}
             />
         </NextIntlClientProvider>,
@@ -56,8 +60,25 @@ afterEach(cleanup);
 describe('MarketingPlanCard', () => {
     it('names the duration switch with its visible label', () => {
         renderCard();
-        expect(screen.getByText('Online after your event')).toBeInTheDocument();
-        expect(screen.getByRole('radiogroup', { name: 'Online after your event' })).toBeInTheDocument();
+        expect(screen.getByText('Stays online for')).toBeInTheDocument();
+        expect(screen.getByRole('radiogroup', { name: 'Stays online for' })).toBeInTheDocument();
+    });
+
+    it('spells out each duration in full', () => {
+        renderCard();
+        expect(screen.getByRole('radio', { name: '6 months' })).toHaveTextContent('6 months');
+        expect(screen.getByRole('radio', { name: '9 months' })).toHaveTextContent('9 months');
+    });
+
+    it('shows members and storage on one line', () => {
+        renderCard();
+        expect(screen.getByText('Up to 300 guests · 25 GB')).toBeInTheDocument();
+    });
+
+    it('marks the selected plan as pressed', () => {
+        renderCard({ onSelectAction: vi.fn(), selected: true });
+        expect(screen.getByRole('button', { name: 'STORY' })).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getByText('SELECTED')).toBeInTheDocument();
     });
 
     it('starts with the feature list collapsed on mobile', () => {

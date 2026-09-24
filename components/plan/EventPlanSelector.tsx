@@ -49,7 +49,6 @@ export function EventPlanSelector({
                                 onDurationChangeAction={onSelectDurationAction}
                                 featured={featured}
                                 popularLabel={tPricing('popular')}
-                                storageLabel={tPricing('storageLabel')}
                                 durationLabel={tPricing('durationLabel')}
                                 expandLabel={tPricing('showFeatures')}
                                 collapseLabel={tPricing('hideFeatures')}

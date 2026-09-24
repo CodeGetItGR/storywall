@@ -94,7 +94,6 @@ export function LandingPricing() {
                             durationId={picks[plan.code]}
                             onDurationChangeAction={pickDuration}
                             popularLabel={t('popular')}
-                            storageLabel={t('storageLabel')}
                             durationLabel={t('durationLabel')}
                             expandLabel={t('showFeatures')}
                             collapseLabel={t('hideFeatures')}

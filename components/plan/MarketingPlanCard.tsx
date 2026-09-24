@@ -4,6 +4,8 @@ import { type ReactNode, useId } from 'react';
 
 import { DurationPicker } from '@/components/plan/DurationPicker';
 import { PlanCardExpandToggle } from '@/components/plan/PlanCardExpandToggle';
+import { PlanCardPopularBadge } from '@/components/plan/PlanCardPopularBadge';
+import { PlanCardSelectionLabel } from '@/components/plan/PlanCardSelectionLabel';
 import { useDisclosure } from '@/hooks/useDisclosure';
 import { type LandingPlan, pickedLandingDuration } from '@/lib/landingPricing';
 import { cn } from '@/lib/utils';
@@ -12,7 +14,6 @@ type MarketingPlanCardProps = {
     featured: boolean;
     plan: LandingPlan;
     popularLabel: string;
-    storageLabel: string;
     durationLabel: string;
     expandLabel: string;
     collapseLabel: string;
@@ -31,7 +32,6 @@ export function MarketingPlanCard({
     featured,
     plan,
     popularLabel,
-    storageLabel,
     durationLabel,
     expandLabel,
     collapseLabel,
@@ -47,6 +47,7 @@ export function MarketingPlanCard({
     const { open, toggle } = useDisclosure(defaultExpanded);
     const durationLabelId = useId();
     const featuresId = useId();
+    const selectable = Boolean(onSelectAction);
 
     function handleSelect() {
         onSelectAction?.(plan.code);
@@ -57,12 +58,14 @@ export function MarketingPlanCard({
     }
 
     const cardClassName = cn(
-        'relative flex h-full w-full flex-col justify-between rounded-[22px] border px-5 pt-5 pb-4 text-left text-[#151313] transition-colors min-[761px]:px-5',
-        onSelectAction && !selected && 'hover:border-[#151313]/25',
+        'group @container relative flex h-full w-full flex-col justify-between rounded-[22px] border px-5 pt-5 pb-5 text-left text-[#151313] transition-colors',
         {
-            'border-transparent': !featured && !selected,
-            'border-[#f29380]': featured && !selected,
-            'border-[#151313]/25 bg-[#fff9f6]': selected,
+            // Landing: the coral outline marks the featured plan.
+            'border-transparent': !selectable && !featured,
+            'border-[#f29380]': !selectable && featured,
+            // Plan step: only the selected plan gets a strong outline.
+            'border-[#151313]/15 hover:border-[#151313]/35': selectable && !selected,
+            'border-[#151313] bg-[#fff9f6] ring-1 ring-[#151313]': selected,
         },
     );
 
@@ -75,34 +78,27 @@ export function MarketingPlanCard({
                     aria-pressed={selected}
                     aria-label={plan.name}
                     onClick={handleSelect}
-                    className="absolute inset-0 z-[1] rounded-[22px] focus-ring focus-visible:outline-offset-2"
+                    className="absolute inset-0 z-1 rounded-[22px] focus-ring focus-visible:outline-offset-2"
                 />
             )}
 
             <div>
-                {/* Plan identity: the text wraps beside the price; the price drops below it only when the name can't fit next to it */}
-                <div className="flex flex-wrap items-start justify-between gap-x-3">
-                    <div className="flex-1 basis-36">
-                        <h3 className="text-[clamp(20px,1.65vw,27px)] leading-[1.05] font-black tracking-[.09em]">
-                            {plan.name}
-                            <span className="ml-2 inline-block align-middle text-[9px] leading-none font-bold tracking-widest normal-case">
-                                {featured ? popularLabel : null}
-                            </span>
-                        </h3>
-                        <p className="mt-1 text-sm text-[#151313]/65">{plan.audience}</p>
-                        <p className="mt-1 text-sm text-[#151313]/65">
-                            {plan.storage} {storageLabel}
-                        </p>
-                    </div>
+                {/* Popular */}
+                <PlanCardPopularBadge label={featured ? popularLabel : null} />
 
-                    {/* Price */}
-                    <p className="shrink-0 bg-[linear-gradient(110deg,#d889a0,#e98778_28%,#f39a63_58%,#f5b967)] bg-clip-text font-[Baskerville,Georgia,serif] text-[clamp(48px,4vw,64px)] leading-[1.1] tracking-[-.06em] text-transparent">
+                {/* Plan identity: name and price scale with the card so they fit side by side; the price drops below only on very narrow cards */}
+                <div className="mt-2 flex flex-wrap items-baseline justify-between gap-x-3">
+                    <h3 className="text-[clamp(18px,7cqi,28px)] leading-[1.05] font-black tracking-[.09em]">{plan.name}</h3>
+                    <p className="bg-[linear-gradient(110deg,#d889a0,#e98778_28%,#f39a63_58%,#f5b967)] bg-clip-text pr-[.06em] font-[Baskerville,Georgia,serif] text-[clamp(36px,16.5cqi,64px)] leading-[1.1] tracking-[-.06em] text-transparent">
                         {duration.price}
                     </p>
                 </div>
+                <p className="mt-1 text-sm text-[#151313]/65">
+                    {plan.audience} · {plan.storage}
+                </p>
 
                 {/* Duration */}
-                <p id={durationLabelId} className="mt-3 text-[13px] text-[#151313]/65">
+                <p id={durationLabelId} className="mt-5 text-sm font-semibold">
                     {durationLabel}
                 </p>
                 <DurationPicker
@@ -111,7 +107,7 @@ export function MarketingPlanCard({
                     onChangeAction={handleDurationChange}
                     variant="marketing"
                     labelledBy={durationLabelId}
-                    className="relative z-10 mt-1.5 mb-2"
+                    className="relative z-10 mb-3"
                 />
 
                 {/* Plan features: collapsible on mobile, always shown on desktop */}
@@ -148,11 +144,7 @@ export function MarketingPlanCard({
 
             {/* Selection and footer */}
             <div>
-                {selectionLabel && (
-                    <p className={cn('mt-4 text-center text-[12px] font-black tracking-[.12em]', selected ? 'text-[#151313]' : 'text-[#151313]/70')}>
-                        {selectionLabel}
-                    </p>
-                )}
+                {selectionLabel && <PlanCardSelectionLabel label={selectionLabel} selected={selected} />}
                 {footer && <div className="relative z-10">{footer}</div>}
             </div>
         </>
