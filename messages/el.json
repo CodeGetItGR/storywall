@@ -2056,6 +2056,8 @@
         "submitError": "Κάτι πήγε στραβά κατά την υποβολή του RSVP. Δοκιμάστε ξανά.",
         "whosComing": "Ποιοι έρχονται",
         "moduleUnavailable": "Το RSVP δεν είναι διαθέσιμο στο τρέχον πλάνο αυτής της εκδήλωσης.",
+        "unavailableTitle": "Το RSVP δεν είναι διαθέσιμο",
+        "unavailableUpgradeBody": "Αναβαθμίστε σε {plans} για να χρησιμοποιήσετε το RSVP.",
         "eventReadOnly": "Η εκδήλωση είναι μόνο για ανάγνωση. Οι αλλαγές RSVP έχουν σταματήσει."
     },
     "RootLayout": {

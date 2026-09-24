@@ -1,12 +1,14 @@
 'use client';
 
+import { Music } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { PlaylistContent } from '@/components/playlist/PlaylistContent';
-import { PlaylistDisabledState } from '@/components/playlist/PlaylistDisabledState';
 import { EventRouteSpinner, useEventRouteContext } from '@/components/routing/EventRouteGate';
+import { ModuleUnavailableState } from '@/components/tools/ModuleUnavailableState';
 import { usePlaylistPageData } from '@/hooks/usePlaylistPageData';
 import { isEventWritable } from '@/lib/eventLifecycle';
+import { routes } from '@/lib/routes';
 
 export function PlaylistScreen() {
     const { activeEvent, eventId } = useEventRouteContext();
@@ -19,10 +21,12 @@ export function PlaylistScreen() {
 
     if (!data.playlistEnabled) {
         return (
-            <PlaylistDisabledState
+            <ModuleUnavailableState
+                backHref={routes.events.feed(eventId)}
                 backLabel={t('backToFeed')}
                 body={data.playlistInRegistry && data.unlockPlanNames ? t('disabledUpgradeBody', { plans: data.unlockPlanNames }) : t('disabledBody')}
-                eventId={eventId}
+                icon={Music}
+                iconClassName="text-violet-500"
                 title={t('disabledTitle')}
             />
         );

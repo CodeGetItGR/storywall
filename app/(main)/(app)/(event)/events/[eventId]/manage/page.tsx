@@ -15,7 +15,7 @@ import type {
     RsvpResponseDto,
 } from '@/lib/api/types';
 import { resolveServerEventContext } from '@/lib/auth/serverEventContext';
-import { isEventDeleted } from '@/lib/eventLifecycle';
+import { isEventDeleted, isModuleAvailable } from '@/lib/eventLifecycle';
 import { makeQueryClient } from '@/lib/queryClient';
 
 import ManagePage from './PageClient';
@@ -24,8 +24,8 @@ type PageProps = { params: Promise<{ eventId: string }> };
 
 // ManageScreen fires four host-only calls in parallel on mount (members,
 // rsvps, invitations, usage) — the biggest single client-side waterfall in
-// the app. Mirrors ManageScreen's own gating (isHost, and isDraft for
-// everything but usage) so a prefetch is never wasted on data the client
+// the app. Mirrors ManageScreen's own gating (isHost, isDraft for everything
+// but usage, and the plan including RSVP for rsvps) so a prefetch is never wasted on data the client
 // wouldn't have requested anyway. QR links have their own dedicated page
 // (manage/qr) with their own prefetch.
 export default async function Page({ params }: PageProps) {
@@ -48,14 +48,15 @@ export default async function Page({ params }: PageProps) {
             queryClient.setQueryData(usageKeys.event(eventId), usage);
 
             if (!isDraft) {
+                const rsvpAvailable = isModuleAvailable(event.modules, 'rsvp');
                 const [members, rsvps, invitations] = await Promise.all([
                     serverGet<EventMemberResponseDto[]>(endpoints.events.members(eventId), accessToken),
-                    serverGet<RsvpResponseDto[]>(endpoints.events.rsvps(eventId), accessToken),
+                    rsvpAvailable ? serverGet<RsvpResponseDto[]>(endpoints.events.rsvps(eventId), accessToken) : null,
                     serverGet<EventInvitationResponseDto[]>(endpoints.events.invitations(eventId), accessToken),
                 ]);
 
                 queryClient.setQueryData(eventMemberKeys.list(eventId), normalizeList(members).items);
-                queryClient.setQueryData(rsvpKeys.list(eventId), normalizeList(rsvps).items);
+                if (rsvps) queryClient.setQueryData(rsvpKeys.list(eventId), normalizeList(rsvps).items);
                 queryClient.setQueryData(eventInvitationKeys.list(eventId), normalizeList(invitations).items);
             }
         } catch {

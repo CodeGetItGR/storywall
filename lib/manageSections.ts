@@ -11,3 +11,8 @@ export const manageSections: ManageSection[] = ['overview', 'settings', 'rsvp', 
 export function parseManageSection(value: string | null): ManageSection {
     return manageSections.find((section) => section === value) ?? 'overview';
 }
+
+// Danger is primary-host only; RSVP exists only when the event's plan includes it.
+export function visibleManageSections({ canDelete, rsvpAvailable }: { canDelete: boolean; rsvpAvailable: boolean }): ManageSection[] {
+    return manageSections.filter((section) => (section !== 'danger' || canDelete) && (section !== 'rsvp' || rsvpAvailable));
+}

@@ -42,3 +42,10 @@ export function readableModuleKeys(event: { deletedAt: string | null; modules: E
     const deleted = isEventDeleted(event);
     return new Set(event.modules.filter((module) => (deleted ? module.isEnabled : module.isAvailable)).map((module) => module.moduleKey));
 }
+
+// Whether a live event's plan includes a module right now. Use this (not
+// readableModuleKeys) for surfaces that only make sense while the event can
+// still be written to, such as RSVP.
+export function isModuleAvailable(modules: EventModuleResponseDto[] | null | undefined, moduleKey: ModuleKey): boolean {
+    return modules?.some((module) => module.moduleKey === moduleKey && module.isAvailable) ?? false;
+}

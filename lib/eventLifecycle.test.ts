@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { EventModuleResponseDto } from '@/lib/api/types';
-import { isDeletedEventRouteAllowed, isEventDeleted, readableModuleKeys } from '@/lib/eventLifecycle';
+import { isDeletedEventRouteAllowed, isEventDeleted, isModuleAvailable, readableModuleKeys } from '@/lib/eventLifecycle';
 
 describe('isEventDeleted', () => {
     it('is true only when deletedAt is set', () => {
@@ -49,5 +49,19 @@ describe('readableModuleKeys', () => {
 
     it('is empty without an event', () => {
         expect(readableModuleKeys(null).size).toBe(0);
+    });
+});
+
+describe('isModuleAvailable', () => {
+    const modules = [
+        { moduleKey: 'rsvp', isEnabled: false, isAvailable: false },
+        { moduleKey: 'gallery', isEnabled: true, isAvailable: true },
+    ] as EventModuleResponseDto[];
+
+    it('is true only for a module the plan currently includes', () => {
+        expect(isModuleAvailable(modules, 'gallery')).toBe(true);
+        expect(isModuleAvailable(modules, 'rsvp')).toBe(false);
+        expect(isModuleAvailable(modules, 'wishbook')).toBe(false);
+        expect(isModuleAvailable(undefined, 'rsvp')).toBe(false);
     });
 });

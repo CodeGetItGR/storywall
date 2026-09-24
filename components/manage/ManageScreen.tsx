@@ -15,8 +15,8 @@ import { useEventInvitations } from '@/hooks/useEventInvitations';
 import { useEventMembers } from '@/hooks/useEventMembers';
 import { useEventRsvps } from '@/hooks/useRsvps';
 import { useEventUsage } from '@/hooks/useUsage';
-import { isEventDeleted, isEventWritable, isPrimaryHost } from '@/lib/eventLifecycle';
-import { type ManageSection, manageSections, parseManageSection } from '@/lib/manageSections';
+import { isEventDeleted, isEventWritable, isModuleAvailable, isPrimaryHost } from '@/lib/eventLifecycle';
+import { type ManageSection, parseManageSection, visibleManageSections } from '@/lib/manageSections';
 import { routes } from '@/lib/routes';
 import { eventStatusBadgeTone } from '@/lib/statusTones';
 import { cn } from '@/lib/utils';
@@ -41,7 +41,8 @@ export function ManageScreen() {
     const activeMember = useActiveMember();
     const isDeleted = isEventDeleted(activeEvent);
     const canDelete = isPrimaryHost(activeEvent.hosts, activeMember?.id);
-    const visibleSections = canDelete ? manageSections : manageSections.filter((entry) => entry !== 'danger');
+    const rsvpAvailable = isModuleAvailable(activeEvent.modules, 'rsvp');
+    const visibleSections = visibleManageSections({ canDelete, rsvpAvailable });
     const section = isDraft ? 'overview' : visibleSections.includes(requestedSection) ? requestedSection : 'overview';
     const [switcherOpen, setSwitcherOpen] = useState(false);
 
@@ -50,7 +51,7 @@ export function ManageScreen() {
     // Deleted events are read-only: no roster, RSVPs, invitations or usage to load.
     const activeHostEventId = isHost && !isDraft && !isDeleted ? eventId : null;
     const { data: members = [], isLoading: membersLoading } = useEventMembers(activeHostEventId);
-    const { data: rsvps = [], isLoading: rsvpsLoading } = useEventRsvps(activeHostEventId);
+    const { data: rsvps = [], isLoading: rsvpsLoading } = useEventRsvps(rsvpAvailable ? activeHostEventId : null);
     const { data: invitations = [], isLoading: invitationsLoading } = useEventInvitations(activeHostEventId);
     const { data: eventUsage = null, isLoading: usageLoading } = useEventUsage(isHost && !isDeleted ? eventId : null);
     const { data: appConfig } = useAppConfig();
@@ -108,7 +109,7 @@ export function ManageScreen() {
                         memberCount={members.length}
                         daysToGo={daysToGo}
                         invitationCount={invitations.length}
-                        seatsClaimed={seatsClaimed}
+                        seatsClaimed={rsvpAvailable ? seatsClaimed : null}
                         eventUsage={eventUsage}
                         planTiers={appConfig?.planTiers ?? []}
                         paidServices={appConfig?.paidServices ?? []}

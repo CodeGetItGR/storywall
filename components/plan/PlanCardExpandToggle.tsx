@@ -2,8 +2,9 @@ import { ChevronDown } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
-// Mobile-only arrow that shows and hides a plan card's feature list. It sits
-// above the card's stretched select button, so tapping it doesn't pick the plan.
+// Mobile-only "show features" link that shows and hides a plan card's feature
+// list. It sits above the card's stretched select button, so tapping it doesn't
+// pick the plan.
 export function PlanCardExpandToggle({
     open,
     controlsId,
@@ -23,11 +24,11 @@ export function PlanCardExpandToggle({
                 type="button"
                 aria-expanded={open}
                 aria-controls={controlsId}
-                aria-label={open ? collapseLabel : expandLabel}
                 onClick={onToggleAction}
-                className="relative z-10 inline-flex size-11 items-center justify-center rounded-full text-[#151313]/70 focus-ring transition-colors hover:text-[#151313]"
+                className="relative z-10 inline-flex min-h-11 items-center gap-1 rounded-sm text-[13px] font-medium text-[#151313]/65 focus-ring transition-colors hover:text-[#151313]"
             >
-                <ChevronDown className={cn('size-5 transition-transform', open && 'rotate-180')} aria-hidden="true" />
+                {open ? collapseLabel : expandLabel}
+                <ChevronDown className={cn('size-4 transition-transform', open && 'rotate-180')} aria-hidden="true" />
             </button>
         </div>
     );

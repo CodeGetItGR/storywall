@@ -5,6 +5,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig, useAppRsvpConfig } from '@/hooks/useAppConfig';
+import { useRsvpAvailability } from '@/hooks/useRsvpAvailability';
 import { setMemberRsvpIdInCaches, useCreateRsvp, useRsvp, useUpdateRsvp } from '@/hooks/useRsvps';
 import { ApiError } from '@/lib/api/client';
 import { isModuleNotAvailableError } from '@/lib/api/errors';
@@ -49,7 +50,9 @@ export function useRsvpSubmitPageData() {
     });
     const [submitted, setSubmitted] = useState(false);
 
-    const { data: existingRsvp, error: existingRsvpError } = useRsvp(rsvpId ?? null);
+    const rsvpAvailability = useRsvpAvailability();
+
+    const { data: existingRsvp, error: existingRsvpError } = useRsvp(rsvpAvailability.isAvailable ? (rsvpId ?? null) : null);
     const isStaleRsvp = existingRsvpError instanceof ApiError && existingRsvpError.status === 404;
     const effectiveRsvpId = isStaleRsvp ? null : rsvpId;
     const hasExistingRsvp = Boolean(existingRsvp && effectiveRsvpId);
@@ -89,7 +92,7 @@ export function useRsvpSubmitPageData() {
     const updateRsvp = useUpdateRsvp(effectiveRsvpId ?? '', eventId ?? undefined);
 
     const isSubmitting = createRsvp.isPending || updateRsvp.isPending;
-    const canSubmitRsvp = isEventWritable(activeEvent?.status);
+    const canSubmitRsvp = rsvpAvailability.isAvailable && isEventWritable(activeEvent?.status);
     const submitError = createRsvp.error ?? updateRsvp.error;
     const submitErrorMessage = submitError
         ? isModuleNotAvailableError(submitError)
@@ -170,6 +173,7 @@ export function useRsvpSubmitPageData() {
         attending,
         backHref,
         canSubmitRsvp,
+        eventId,
         eventType: activeEvent?.eventType ?? null,
         hasExistingRsvp,
         isSubmitting,
@@ -184,6 +188,7 @@ export function useRsvpSubmitPageData() {
         onMessageChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => setMessage(event.target.value.slice(0, maxMessageLength)),
         onSubmit: handleSubmit,
         plusOnes,
+        rsvpAvailability,
         submitErrorMessage,
         submitted,
     };

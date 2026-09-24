@@ -45,7 +45,7 @@ export function MobileTabBar() {
     const availableModules = new Set(activeEvent?.modules.filter((module) => module.isAvailable).map((module) => module.moduleKey) ?? []);
     const playlistAvailable = availableModules.has('playlist') && !isDeleted;
     const playlistActive = playlistAvailable && Boolean(activeEvent) && isPathActive(pathname, routes.events.tools.playlist(activeEvent?.id ?? ''));
-    const rsvpTabAvailable = isHost && !isDraft && !isDeleted;
+    const rsvpTabAvailable = isHost && !isDraft && !isDeleted && availableModules.has('rsvp');
     const rsvpHref = activeEvent ? routes.events.manage(activeEvent.id, { tab: 'rsvp' }) : '';
     const rsvpActive = rsvpTabAvailable && isPathActive(pathname, rsvpHref, searchParams);
     const hostItems = useHostMenuItems();

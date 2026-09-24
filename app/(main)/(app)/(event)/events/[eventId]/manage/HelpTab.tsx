@@ -7,6 +7,7 @@ import { HelpStepper } from '@/components/manage/help/HelpStepper';
 import { useHelpProgress } from '@/hooks/useHelpProgress';
 import type { EventLocationDto, EventModuleResponseDto, EventScheduleDto, EventSessionResponseDto, EventTypeConvention } from '@/lib/api/types';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
+import { isModuleAvailable } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
 
 export default function HelpTab({
@@ -33,6 +34,7 @@ export default function HelpTab({
     const hasVenue = sessions.some((session) => session.isSecondary && !session.deletedAt);
     const enabledModuleKeys = new Set(eventModules.filter((module_) => module_.isEnabled && module_.isAvailable).map((module_) => module_.moduleKey));
     const hasGiftAccountModule = enabledModuleKeys.has('wishlist');
+    const rsvpAvailable = isModuleAvailable(eventModules, 'rsvp');
 
     const detailsActions: HelpStepAction[] = [
         { key: 'settings', href: routes.events.manage(eventId, { tab: 'settings' }), label: t('steps.details.edit') },
@@ -54,7 +56,7 @@ export default function HelpTab({
             complete: progress.details,
             actions: detailsActions,
         },
-        {
+        rsvpAvailable && {
             key: 'rsvp',
             title: t('steps.rsvp.title'),
             complete: progress.rsvp,

@@ -1,21 +1,36 @@
 'use client';
 
-import { AlertCircle, Music } from 'lucide-react';
+import { AlertCircle, type LucideIcon } from 'lucide-react';
 
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
-import { routes } from '@/lib/routes';
 
-export function PlaylistDisabledState({ backLabel, body, eventId, title }: { backLabel: string; body: string; eventId: string; title: string }) {
+/** Full-page replacement for a tool whose module the event's plan doesn't include — renders no part of the tool itself. */
+export function ModuleUnavailableState({
+    backHref,
+    backLabel,
+    body,
+    icon,
+    iconClassName,
+    title,
+}: {
+    backHref: string;
+    backLabel: string;
+    body: string;
+    icon: LucideIcon;
+    iconClassName: string;
+    title: string;
+}) {
     return (
         <ModulePageShell
             maxWidth="2xl"
             title={title}
-            icon={Music}
-            iconClassName="text-violet-500"
+            icon={icon}
+            iconClassName={iconClassName}
             showTitleIcon={false}
             backLabel={backLabel}
-            backHref={routes.events.feed(eventId)}
+            backHref={backHref}
         >
+            {/* Notice */}
             <div className="mt-8 rounded-2xl border border-border bg-card px-5 py-6 shadow-sm">
                 <div className="flex items-start gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-muted text-ink-muted">
