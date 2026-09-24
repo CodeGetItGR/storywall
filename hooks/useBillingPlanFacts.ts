@@ -10,7 +10,7 @@ import { formatBytes } from '@/lib/format';
 export type BillingPlanFact = { key: string; label: string; value: string };
 
 /**
- * The plan summary's facts: the coverage dates pinned at activation, then the
+ * The plan summary's facts: the coverage end pinned at activation, then the
  * limits that actually gate uploads and guests. Limits come from usage, not the
  * plan, because storage packs raise the storage limit above the plan's own.
  */
@@ -28,9 +28,6 @@ export function useBillingPlanFacts(schedule: EventScheduleDto, usage: EventUsag
 
     return useMemo(() => {
         const facts: BillingPlanFact[] = [];
-        if (schedule.galleryOpensAt) {
-            facts.push({ key: 'galleryOpens', label: t('coverage.galleryOpens'), value: formatDate(schedule.galleryOpensAt) });
-        }
         if (schedule.coverageEndsAt) {
             facts.push({ key: 'keptUntil', label: t('coverage.keptUntil'), value: formatDate(schedule.coverageEndsAt) });
         }
@@ -47,5 +44,5 @@ export function useBillingPlanFacts(schedule: EventScheduleDto, usage: EventUsag
             });
         }
         return facts;
-    }, [formatDate, locale, schedule.coverageEndsAt, schedule.galleryOpensAt, t, usage]);
+    }, [formatDate, locale, schedule.coverageEndsAt, t, usage]);
 }

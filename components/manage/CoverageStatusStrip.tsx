@@ -23,13 +23,11 @@ export function CoverageStatusStrip({ eventId, schedule }: { eventId: string; sc
     const closesOn = formatDate(locale, status.coverageEndsAt, { dateStyle: 'medium' });
     const isClosing = status.phase === 'closing' || status.phase === 'ended';
     const label =
-        status.phase === 'beforeOpen'
-            ? t('opensIn', { days: status.daysUntilOpen })
-            : status.phase === 'open'
-              ? t('openUntil', { date: closesOn })
-              : status.phase === 'closing'
-                ? t('closingIn', { days: status.daysUntilEnd })
-                : t('ended', { date: closesOn });
+        status.phase === 'open'
+            ? t('openUntil', { date: closesOn })
+            : status.phase === 'closing'
+              ? t('closingIn', { days: status.daysUntilEnd })
+              : t('ended', { date: closesOn });
 
     return (
         <div

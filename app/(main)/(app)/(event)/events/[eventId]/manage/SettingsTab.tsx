@@ -94,10 +94,7 @@ export default function SettingsTab({
     // While DRAFT the server projects the window on every read; the PATCH reply carries the updated one.
     const projection = event.schedule.projectedCoverage;
     const coverageProjection = projection
-        ? tCreateEvent('coverageProjection', {
-              opensAt: formatDate(locale, projection.galleryOpensAt, { dateStyle: 'medium' }),
-              endsAt: formatDate(locale, projection.coverageEndsAt, { dateStyle: 'medium' }),
-          })
+        ? tCreateEvent('coverageProjection', { endsAt: formatDate(locale, projection.coverageEndsAt, { dateStyle: 'medium' }) })
         : null;
     const maxDescriptionLength = appConfig?.contentLimits.eventDescriptionMaxLength ?? 2000;
     const hasChanges =
