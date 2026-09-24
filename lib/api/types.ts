@@ -432,7 +432,7 @@ export type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 // 2026-09-04: ctaRoute (a literal path) is gone, replaced by ctaTarget + ctaParams — the app
 // resolves the route itself. Closed but growable set; treat an unrecognized value defensively.
 // See docs/integration guides/notification-cta-target-fe-integration.md.
-export type NotificationCtaTarget = 'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS';
+export type NotificationCtaTarget = 'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS' | 'EVENT_COVERAGE_EXTEND';
 
 export interface NotificationResponseDto {
     id: string;
@@ -789,6 +789,92 @@ export interface UpgradeCheckoutRequestDto extends WithdrawalConsentDto {
     // Required since 2026-09-23: one of that plan's options[].coverageOptionId.
     coverageOptionId: string;
 }
+// POST /api/events/{eventId}/extension-checkout — primary host, ACTIVE only
+// (coverage-options-and-extensions-fe-integration.md §11). Never discounted.
+// The consent fields may be omitted only by a VIES-confirmed business buyer.
+export interface ExtensionCheckoutRequestDto {
+    // One of GET extension-options' coverageOptionId.
+    coverageOptionId: string;
+    requestsImmediateStart?: boolean;
+    acknowledgesWithdrawalTerms?: boolean;
+    termsVersion: string;
+}
+// GET /api/events/{eventId}/extension-options — every extension the event's plan
+// sells, priced as the checkout would charge it now. Empty: the plan sells none.
+export interface ExtensionOptionResponseDto {
+    coverageOptionId: string;
+    months: number;
+    // The option's list price: never discounted.
+    amountMinor: number;
+    currency: string;
+    // Where coverage would end if this settled now. An estimate: the real span is
+    // fixed when the payment settles.
+    resultingCoverageEndsAt: string;
+    // Exactly what the checkout will pin: one COVERAGE_EXTENSION item.
+    breakdown: PriceBreakdown;
+}
+
+// --- Price breakdown (withdrawal compliance phase 4, 2026-09-24) ---
+// Every field is always sent; nullable ones are sent as null, never left out.
+export type BuyerType = 'CONSUMER' | 'BUSINESS';
+export type PriceItemCode = 'ACTIVATION' | 'EVENT_DAY' | 'COVERAGE' | 'ADDON' | 'STORAGE_PACK' | 'COVERAGE_EXTENSION';
+export type WithdrawalRule = 'RETAINED_ONCE_STARTED' | 'RETAINED_ONCE_PERFORMED' | 'PRO_RATA_BY_TIME' | 'BUSINESS_NO_RIGHT';
+export type DiscountSource = 'PLAN_PROMOTION' | 'CODE';
+
+export interface PriceBreakdown {
+    kind: OrderKind;
+    currency: string;
+    buyerType: BuyerType;
+    coverage: PriceBreakdownCoverage;
+    items: PriceBreakdownItem[];
+    discounts: PriceBreakdownDiscount[];
+    combinedDiscountPercent: number;
+    discountCapPercent: number;
+    capApplied: boolean;
+    listTotalMinor: number;
+    discountTotalMinor: number;
+    totalMinor: number;
+    vat: PriceBreakdownVat;
+    termsVersion: string;
+    withdrawal: PriceBreakdownWithdrawal;
+}
+export interface PriceBreakdownCoverage {
+    optionId: string;
+    months: number | null;
+    monthsAdded: number | null;
+    endsAt: string | null;
+    endsAtProjected: boolean;
+}
+export interface PriceBreakdownItem {
+    code: PriceItemCode;
+    labelKey: string;
+    name: string;
+    listMinor: number;
+    discountMinor: number;
+    priceMinor: number;
+    withdrawal: WithdrawalRule;
+    performedAt: string | null;
+    months: number | null;
+    monthsAdded: number | null;
+    paidServiceCode: string | null;
+    planTierCode: string | null;
+    storageBytes: number | null;
+}
+export interface PriceBreakdownDiscount {
+    source: DiscountSource;
+    label: string | null;
+    percent: number;
+}
+export interface PriceBreakdownVat {
+    included: boolean;
+    note: string;
+}
+export interface PriceBreakdownWithdrawal {
+    available: boolean;
+    windowDays: number;
+    windowClosesAt: string | null;
+}
+
 // One duration a paid event can move to on the target plan: at least as long as
 // the event's own, and dearer than it.
 export interface UpgradeCoverageOptionDto {
@@ -815,7 +901,7 @@ export interface UpgradeOptionResponseDto {
     // null whenever discountPercent is, and also for a promotion set up without a label.
     discountLabel: string | null;
 }
-export type OrderKind = 'ACTIVATION' | 'UPGRADE' | 'STORAGE_PACK';
+export type OrderKind = 'ACTIVATION' | 'UPGRADE' | 'STORAGE_PACK' | 'EXTENSION';
 // REFUNDED: the order was paid and the money went back (a withdrawal or a lost dispute).
 export type OrderStatus = 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED' | 'REFUNDED';
 
@@ -838,6 +924,11 @@ export interface OrderSummaryDto {
     // bought none), and on an UPGRADE how far it moved coverageEndsAt.
     coverageMonths: number | null;
     coverageMonthsAdded: number | null;
+    // Added 2026-09-24: the span this order's coverage covers. On an EXTENSION,
+    // the months it bought. Null on a storage pack, an unpaid order, or one that
+    // applied nothing. The event's live end is its own coverageEndsAt, not these.
+    coverageStartsAt: string | null;
+    coverageEndsAt: string | null;
 }
 export interface EventAddonDto {
     code: string;

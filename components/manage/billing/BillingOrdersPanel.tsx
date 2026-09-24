@@ -37,6 +37,9 @@ export function BillingOrdersPanel({
     const coverageLabel = (order: Order) => {
         if (order.kind === 'UPGRADE') return t('orders.upgradeCoverage');
         if (order.kind === 'STORAGE_PACK') return t('orders.storageCoverage');
+        // An extension's own span is what the host is looking for.
+        if (order.kind === 'EXTENSION' && order.coverageStartsAt && order.coverageEndsAt)
+            return t('orders.coverageRange', { from: formatDate(order.coverageStartsAt), until: formatDate(order.coverageEndsAt) });
         return null;
     };
     const totalPaidLabel = formatMoney(locale, insights.paidTotalMinor, insights.orderCurrency);

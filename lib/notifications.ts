@@ -6,6 +6,7 @@ const CTA_ROUTES: Record<NotificationCtaTarget, (params: Record<string, string>)
     EVENT_PLAN_SETTINGS: (p) => `/events/${p.eventId}/settings/plan`,
     EVENT_GALLERY: (p) => `/events/${p.eventId}/gallery`,
     EVENT_GUESTS: (p) => `/events/${p.eventId}/guests`,
+    EVENT_COVERAGE_EXTEND: (p) => `/events/${p.eventId}/settings/plan?extend=1`,
 };
 
 export function notificationCtaRoute(notification: NotificationResponseDto): string | null {

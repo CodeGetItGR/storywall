@@ -1,4 +1,4 @@
-import type { CheckoutResponseDto, OrderSummaryDto, PlanTierResponseDto } from '@/lib/api/types';
+import type { CheckoutResponseDto, EventStatus, OrderSummaryDto, PlanTierResponseDto } from '@/lib/api/types';
 
 type PendingCheckout = {
     orderId: string;
@@ -117,4 +117,25 @@ function parseDiscountBoundary(value: string | null): Date | null {
 
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? null : date;
+}
+
+// The billing section `?section=` targets for the coverage-ending notification's CTA.
+export const EXTEND_COVERAGE_SECTION_ID = 'extend-coverage';
+
+// Only the main host of a live event whose coverage has not ended can buy more
+// months (coverage-options-and-extensions-fe-integration.md §11). Whether the plan
+// sells any extension is the server's answer, checked separately.
+export function canExtendCoverage({
+    isPrimaryHost,
+    eventStatus,
+    coverageEndsAt,
+    now = new Date(),
+}: {
+    isPrimaryHost: boolean;
+    eventStatus: EventStatus | null;
+    coverageEndsAt: string | null;
+    now?: Date;
+}): boolean {
+    if (!isPrimaryHost || eventStatus !== 'ACTIVE' || !coverageEndsAt) return false;
+    return new Date(coverageEndsAt).getTime() > now.getTime();
 }

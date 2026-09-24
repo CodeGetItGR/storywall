@@ -108,6 +108,8 @@ export const endpoints = {
         upgradeCheckout: (eventId: string) => `/api/events/${eventId}/upgrade-checkout`,
         upgradeOptions: (eventId: string) => `/api/events/${eventId}/upgrade-options`,
         storageCheckout: (eventId: string) => `/api/events/${eventId}/storage-checkout`,
+        extensionOptions: (eventId: string) => `/api/events/${eventId}/extension-options`,
+        extensionCheckout: (eventId: string) => `/api/events/${eventId}/extension-checkout`,
         withdrawalPreview: (eventId: string) => `/api/events/${eventId}/withdrawal-preview`,
         // GET (history) and POST (submit) both hit this same path.
         withdrawals: (eventId: string) => `/api/events/${eventId}/withdrawals`,
