@@ -10,8 +10,8 @@ guide). This adds three endpoints on top of those, doesn't change any of them.
 into server-planned parts.
 
 Related docs:
-- [`billing-fe-guide.md`](billing-fe-guide.md) §7a — the "keep originals" add-on this feature reads
-  the entitlement from
+- [`billing-fe-guide.md`](billing-fe-guide.md) §7a — "keep originals", which every plan includes
+  since the add-on was retired (2026-09-23)
 - [`frontend-api-types.ts`](../frontend-api-types.ts) — `MediaArchiveManifestDto` /
   `MediaArchivePartDto`, the wire shapes below
 - [`frontend-integration-guide.md`](frontend-integration-guide.md) §0 — auth header, error shape
@@ -56,22 +56,21 @@ GET /api/events/{eventId}/media/archive/manifest?variant=ORIGINAL
 deliberate — render the DISPLAY-vs-ORIGINAL size comparison from one call instead of firing the
 manifest twice. `parts` describes the plan for the `variant` you actually requested.
 
-### Build the picker from this response, not from `keepOriginals` alone
+### Build the picker from this response, not from billing state
 
-- Show the toggle only when `originalsAvailable` is `true`. If it's `false`, don't render the
-  choice at all — asking for `ORIGINAL` on an event without the add-on is a `403` (§4), and the
-  event's `keepOriginals`/billing state can theoretically be stale relative to this call, so treat
-  `originalsAvailable` as the source of truth for whether to show the toggle, not a cached copy of
-  the event.
+- **Since 2026-09-23 `originalsAvailable` is always `true`**: every plan keeps originals, and the
+  add-on that used to gate them is retired. Still read the flag rather than hardcoding the toggle,
+  and never infer it from `ORIGINALS` appearing in the billing `addons` array. Almost no event has
+  that row.
 - **Pre-select `ORIGINAL` when it's available, but show both numbers before the host commits.**
-  They're paying for the originals, so default to giving them the originals — but originals
+  Their plan keeps the originals, so default to giving them the originals — but originals
   routinely run 5–10× the display size, and a host about to pull 38 GB on hotel wifi should see
   that number, not discover it mid-download. Render something like *"38.9 GB (originals) · 4.1 GB
   (compressed)"* with the originals option pre-checked.
 - **Surface `itemsWithoutOriginal` when it's nonzero and `variant=ORIGINAL`.** It counts items
   that have no archival original on file and will silently fall back to their compressed copy in
   the zip — every video (videos are never re-encoded, so there's nothing to keep an original
-  *of*), plus any photo uploaded before the add-on was switched on. A host who paid for originals
+  *of*), plus any photo uploaded before originals were kept for it. A host who expects originals
   and gets a zip with some files smaller than expected should have been told why. One line is
   enough: *"18 videos and 13 older photos will use the compressed copy — no original was kept for
   those."*
@@ -150,7 +149,7 @@ nothing and only costs CPU).
 
 | Code | HTTP | When | FE handling |
 |---|---|---|---|
-| `ORIGINALS_ADDON_NOT_ACTIVE` (5054) | 403 | `variant=ORIGINAL` requested on an event without the "keep originals" add-on | Shouldn't be reachable if you gate the toggle on `originalsAvailable` (§2) — treat as a bug in your gating if it happens, not a state to design a message for |
+| `ORIGINALS_ADDON_NOT_ACTIVE` (5054) | 403 | No longer returned: every plan keeps originals (2026-09-23) | Nothing to design for. Keep the generic error fallback |
 | `MEDIA_ARCHIVE_PART_NOT_FOUND` (3019) | 400 | `part` isn't in the current plan — either out of range, or the gallery is empty | Re-fetch the manifest and rebuild the part list. Reachable without any client bug: parts are recomputed per request rather than stored, so an upload or delete between your manifest call and the download can shift the plan. If you see this, silently re-fetch the manifest once before surfacing anything to the host |
 | Plain `403` (no specific code) | 403 | Caller is a member but not a host of this event | Don't show the bulk-download entry point to non-hosts at all — same rule as every other host-only action in this app |
 | Plain `404` | 404 | Event doesn't exist | Shouldn't be reachable from a live event page |
@@ -171,9 +170,8 @@ confirm it.
 ## 6. Suggested flow
 
 1. Host opens "Download gallery" from the event dashboard (host-only entry point).
-2. Fetch the manifest at your best-guess default variant (`ORIGINAL` if you already know
-   `keepOriginals` is true from the event, `DISPLAY` otherwise — either is fine as a first guess
-   since the response tells you the truth either way).
+2. Fetch the manifest at `ORIGINAL`: every event keeps originals, and the response tells you the
+   truth either way.
 3. Render both totals and the item counts; if `originalsAvailable`, show the toggle (pre-selected
    to `ORIGINAL`) and re-fetch the manifest when it's flipped, since `parts` is variant-specific.
 4. If `itemsWithoutOriginal > 0` and the host is on `ORIGINAL`, show the one-line caveat from §2.

@@ -159,7 +159,8 @@ GET /api/admin/metrics
 
 **2026-08-13:** the response gained a `storage` block, added alongside the media-compression and
 paid-storage work — see `billing-fe-guide.md` §5–§7b for the "keep originals" add-on and storage
-packs that feed into these numbers.
+packs that feed into these numbers. (The add-on was retired on 2026-09-23: every plan keeps
+originals now, see `billing-fe-guide.md` §7a.)
 
 **2026-09-23:** the response gained a `newsletter` block — see
 `newsletter-fe-integration.md` §7.
@@ -189,8 +190,8 @@ packs that feed into these numbers.
   spent and whether or not their owner is still subscribed. **It can exceed `confirmed`**, because a
   code survives unsubscribing; that is not a bug, and a dashboard should not present it as a subset
   of the list.
-- **`storage.usedBytes`** — bytes of non-deleted media (display derivative + archival original
-  where the "keep originals" add-on applies). This is what the per-event storage quota counts.
+- **`storage.usedBytes`** — bytes of non-deleted media (display derivative + archival original,
+  which every plan keeps). This is what the per-event storage quota counts.
 - **`storage.pendingPurgeBytes`** — bytes of soft-deleted media still sitting in R2, awaiting the
   retention purge job. **Cloudflare bills for this; the quota does not** — it's the gap that
   explains an R2 invoice that doesn't match `usedBytes`. Don't fold it into `usedBytes` in a

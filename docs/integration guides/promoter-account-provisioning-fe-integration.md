@@ -88,9 +88,10 @@ Content-Type: application/json
 }
 ```
 
-- `event` is the **exact same shape** as the body of the existing `POST /api/events` — every
-  field, every validation rule (title, eventType, dates, timezone, brandingSettings, planTierCode,
-  etc.) is identical. The only addition is the top-level `hostUserId`.
+- `event` is the same shape as the body of the existing `POST /api/events` — every field, every
+  validation rule (title, eventType, dates, timezone, brandingSettings, planTierCode, etc.) is
+  identical, with one exception: `coverageOptionId` is **optional** here (2026-09-23). Without it the
+  event gets the plan's shortest duration. The only addition is the top-level `hostUserId`.
 - Returns an `EventResponseDto`, same shape as `POST /api/events`'s response — but the event comes
   back with `status: "ACTIVE"` already, not `DRAFT`. There's no payment step to wait for; this is a
   direct grant.
@@ -100,7 +101,10 @@ Content-Type: application/json
   promotional plan tier that a real customer could never buy through checkout still works here, as
   long as it's not archived and its `eventTypeKey` matches `event.eventType`. If you need such a
   plan tier to exist first, create it through the existing plan-tier admin endpoints with
-  `isPublic: false`, `isAssignable: true`.
+  `isPublic: false`, `isAssignable: true`, then give it at least one INITIAL coverage option
+  (`POST /api/admin/plan-tiers/{id}/coverage-options`; a price of 0 is fine for a grant). A plan that
+  sells no duration answers `409 COVERAGE_OPTION_UNAVAILABLE` (5078); a `coverageOptionId` that isn't
+  a live duration of the plan answers `400 COVERAGE_OPTION_INVALID` (5077).
 - Because the event is created `ACTIVE` immediately, everything that normally happens on
   activation happens here too — most notably, default QR links are provisioned right away. The
   event is fully usable the moment this call returns; there's no follow-up "activate" call needed.
@@ -118,8 +122,9 @@ you'd treat an event that just came back live from a real checkout.
 - `POST /api/events` (self-service creation) is unchanged for every account that isn't
   `eventCreationLocked`.
 - `PATCH /api/admin/events/{id}/plan-tier` (moving an *existing* event to a different plan) is
-  unchanged and still available as a separate operation if you need to change plans after the
-  fact — `POST /api/admin/events` is only for creating a brand-new event.
+  still available as a separate operation if you need to change plans after the fact — since
+  2026-09-23 it also takes an optional `coverageOptionId`, and it never moves the event's coverage
+  window. `POST /api/admin/events` is only for creating a brand-new event.
 - Account-scope plans remain disabled; there's no way to give a promoter account its own "plan," on
   purpose.
 
@@ -133,6 +138,7 @@ you'd treat an event that just came back live from a real checkout.
 - [ ] Build "provision an event" around `POST /api/admin/events`, reusing your event-creation form
       plus a host-user picker; treat the response as already-live (`ACTIVE`), not draft.
 - [ ] If admin-only promotional plan tiers don't exist yet, create them via the plan-tier admin
-      endpoints with `isPublic: false` before wiring the event-provisioning form's plan picker.
+      endpoints with `isPublic: false`, and give each at least one INITIAL coverage option, before
+      wiring the event-provisioning form's plan picker.
 - [ ] Don't assume `eventCreationLocked` blocks `POST /api/admin/events` — it only blocks the
       account's own `POST /api/events`.

@@ -8,8 +8,8 @@ plus the handful of behaviours that are genuinely new. If you only read one sect
 Related docs, referenced throughout rather than duplicated:
 - [`multi-image-post-upload-fe-integration.md`](multi-image-post-upload-fe-integration.md) — the
   upload/batch-upload endpoints and their error codes
-- [`billing-fe-guide.md`](billing-fe-guide.md) — plans, checkout, the "keep originals" add-on,
-  storage packs
+- [`billing-fe-guide.md`](billing-fe-guide.md) — plans, checkout, storage packs, and why the
+  "keep originals" add-on is no longer sold (§7a)
 - [`app-config-fe-integration.md`](app-config-fe-integration.md) — `GET /api/config`, the source
   of truth for every limit mentioned below
 - [`frontend-integration-guide.md`](frontend-integration-guide.md) — base setup, auth, error shape
@@ -91,8 +91,10 @@ same event. The error code and response shape are unchanged.
 
 ## 5. Paid storage and add-on changes
 
-Everything about plans, checkout, and the "keep originals" add-on is in `billing-fe-guide.md`
-§5–§7b — this section only covers what's new since that doc was last current.
+Everything about plans, checkout, and storage packs is in `billing-fe-guide.md` §5–§7b — this
+section only covers what's new since that doc was last current. The "keep originals" add-on this
+section used to mention was retired on 2026-09-23: every plan keeps originals (`billing-fe-guide.md`
+§7a).
 
 ### Add-ons can now be restricted to specific plans
 
@@ -103,9 +105,8 @@ endpoints) gained:
 planTierIds: string[];   // EVENT-scope plan tier ids this service is offered on. EMPTY = every plan.
 ```
 
-**Empty/omitted means unrestricted** — this is the state of every service in the catalog today
-(the "keep originals" add-on and all three storage packs), so nothing changes for the current
-purchase UI. If an admin does restrict a service to specific tiers, buying it from an event on a
+**Empty/omitted means unrestricted** — this is the state of every service in the default catalog
+(the three storage packs), so nothing changes for the current purchase UI. If an admin does restrict a service to specific tiers, buying it from an event on a
 different plan now returns `409 PAID_SERVICE_NOT_ON_PLAN` (5040) instead of silently succeeding.
 Filter the purchase UI (opt-in toggle / storage-pack list) against the event's own `planTier` and
 each service's `planTierIds` so this becomes unreachable rather than a runtime error a host has

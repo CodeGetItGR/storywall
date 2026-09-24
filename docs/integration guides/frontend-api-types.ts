@@ -359,6 +359,10 @@ interface EventRequestDto {
                                    // this event. There is no free plan, so there is no default to
                                    // fall back to; resolved server-side against the public catalog,
                                    // so the client's word on price or availability is never taken.
+  coverageOptionId: string;       // required — added 2026-09-23. The id of one of the plan's
+                                   // initialOptions: the duration being bought. 400
+                                   // COVERAGE_OPTION_INVALID (5077) when missing, retired, or
+                                   // another plan's. Optional only on admin provisioning.
   initialSessionTitle?: string;   // max 255 — when set, seeds an EventSession anchored to
                                    // startAt/endAt (displayOrder 0) in the same transaction; see
                                    // fe-guides/event-creation-initial-session-fe-integration.md
@@ -373,7 +377,7 @@ interface EventResponseDto {
   coverMediaId: string | null;
   brandingSettings: Record<string, unknown>;
   rsvpDeadline: string | null;
-  galleryOpensAt: string | null; coverageEndsAt: string | null;    // null while DRAFT — added 2026-09-21
+  coverageEndsAt: string | null;    // null while DRAFT — added 2026-09-21; galleryOpensAt removed 2026-09-23
   projectedCoverage: ProjectedCoverageDto | null;                   // DRAFT only — added 2026-09-21
   status: EventStatus;
   createdAt: string; updatedAt: string; deletedAt: string | null;
@@ -383,7 +387,7 @@ interface EventResponseDto {
 }
 
 /** The window a DRAFT would be pinned to if paid for right now. See fe-guides/event-coverage-window-fe-integration.md. */
-interface ProjectedCoverageDto { galleryOpensAt: string; coverageEndsAt: string; hostingMonths: number; }
+interface ProjectedCoverageDto { coverageEndsAt: string; hostingMonths: number; } // hostingMonths = the draft's coverage option's months; galleryOpensAt removed 2026-09-23
 
 interface CoHostInviteRequestDto { userId: string; } // required
 
@@ -395,15 +399,18 @@ interface EventPatchDto {
   locationName?: string; locationAddress?: string; mapsUrl?: string;
   coverMediaId?: string; brandingSettings?: Record<string, unknown>;
   rsvpDeadline?: string;
-  /** Opts the event into the recurring "keep originals" add-on. Only `true` means anything —
-   *  there is no un-opting — and only while the event is still DRAFT. */
-  keepOriginals?: boolean;
+  // keepOriginals was removed 2026-09-23: every plan keeps originals. Sending it is a 400 (3002).
+  /** Switches a DRAFT to another of its plan's initialOptions (added 2026-09-23). 409
+   *  EVENT_NOT_DRAFT once paid for; sending the current option back is always a no-op. */
+  coverageOptionId?: string;
 } // no eventType — not editable via PATCH
 
 /**
  * POST /api/admin/events — admin only. Creates a fully scaffolded, already-live event owned by
  * `hostUserId` rather than by the caller, skipping checkout. The nested body is the ordinary
- * EventRequestDto, validated the same way.
+ * EventRequestDto, validated the same way, except that `event.coverageOptionId` is optional here
+ * (added 2026-09-23): omitted, the event gets the plan's shortest live duration, and a plan with
+ * none is a 409 COVERAGE_OPTION_UNAVAILABLE (5078).
  */
 interface AdminEventProvisionRequestDto {
   hostUserId: string;
@@ -423,7 +430,7 @@ interface EventDeletionRequestDto {
 
 interface EventScheduleDto {
   startAt: string; endAt: string; timezone: string; rsvpDeadline: string | null;
-  galleryOpensAt: string | null; coverageEndsAt: string | null;    // null while DRAFT — added 2026-09-21
+  coverageEndsAt: string | null;    // null while DRAFT — added 2026-09-21; galleryOpensAt removed 2026-09-23
   projectedCoverage: ProjectedCoverageDto | null;                   // DRAFT only — added 2026-09-21
 }
 interface EventLocationDto {
@@ -691,8 +698,9 @@ interface MediaBatchFailureDto {
  *
  * `variant` defaults to DISPLAY. Offer the ORIGINAL toggle only when `originalsAvailable` is true,
  * and pre-select it when it is — but do not send it silently: originals can be several times the
- * size, and the host should see which number they are committing to. Requesting ORIGINAL without
- * the add-on returns 403/errorCode 5054 ORIGINALS_ADDON_NOT_ACTIVE.
+ * size, and the host should see which number they are committing to. Every plan keeps originals, so
+ * `originalsAvailable` is always true and 403/errorCode 5054 ORIGINALS_ADDON_NOT_ACTIVE is no longer
+ * returned.
  *
  * A `part` outside the current plan returns 400/errorCode 3019 MEDIA_ARCHIVE_PART_NOT_FOUND — the
  * plan is recomputed per request, so an upload or delete since the manifest can shift it. Re-fetch
@@ -703,7 +711,7 @@ interface MediaBatchFailureDto {
 type MediaArchiveVariant = "DISPLAY" | "ORIGINAL";
 interface MediaArchiveManifestDto {
   variant: MediaArchiveVariant;      // the variant `parts` was planned for
-  originalsAvailable: boolean;       // whether the event holds the "keep originals" add-on
+  originalsAvailable: boolean;       // always true: every plan keeps originals
   photoCount: number; videoCount: number;
   displayTotalBytes: number;         // both totals returned on every call, so one request renders
   originalTotalBytes: number;        // the whole choice — ORIGINAL counts the display copy for
@@ -1039,7 +1047,6 @@ interface AppMediaConfigDto {
 interface AppPaginationConfigDto { defaultPageSize: number; maxPageSize: number; }
 interface AppRsvpConfigDto { minAdults: number; maxAdults: number; minChildren: number; maxChildren: number; }
 
-/** Automated right-of-withdrawal settings — see fe-guides/billing-fe-guide.md §9. Added 2026-09-18. */
 interface AppEventTypeDto {
   id: string;
   eventTypeKey: string;
@@ -1060,6 +1067,7 @@ interface AppTranslationsDto {
   eventTypes: Record<string, AppEventTypeTranslationDto>;
 }
 
+/** Automated right-of-withdrawal settings — see fe-guides/billing-fe-guide.md §9. Added 2026-09-18. */
 interface AppWithdrawalConfigDto {
   /** Pass back verbatim as the checkout request's `termsVersion`; a stale value is a 400. */
   termsVersion: string;
@@ -1072,10 +1080,8 @@ interface AppWithdrawalConfigDto {
 /** Event coverage-window constants — see fe-guides/event-coverage-window-fe-integration.md. Added 2026-09-21. */
 interface AppCoverageConfigDto {
   maxLeadDays: number;               // 548 — picker max is today + this
-  maxPreEventDays: number;           // 90  — gallery opens this many days before startAt
-  defaultHostingMonths: number;      // 12  — retention term when the plan sets none
   defaultEventDurationHours: number; // 24  — endAt defaults to startAt + this when omitted
-}
+} // defaultHostingMonths removed 2026-09-23 — the term is the event's coverage option's months; maxPreEventDays removed 2026-09-23
 
 /** The newsletter's public terms — see fe-guides/newsletter-fe-integration.md. Added 2026-09-23. */
 interface AppNewsletterConfigDto {
@@ -1132,17 +1138,14 @@ export interface PlanTierResponseDto {
   isPublic: boolean;
   storageBytes: number | null;      // null = no limit enforced
   maxMembers: number | null;        // null = no limit enforced
-  autoDeleteMonths: number | null;  // EVENT-scope only; null = never auto-deleted. Months after
-                                     // the event's endAt before it is soft-deleted (same lifecycle
-                                     // as a host-requested deletion — undoable, then hard-purged
-                                     // after the platform's retention window).
   setupPercent: number | null;      // share of the price kept as the non-refundable setup line on
                                      // withdrawal; null = the platform default published under
                                      // /api/config `withdrawal`. See billing-fe-guide.md §9.
   eventDayPercent: number | null;   // share kept as the event-day line once the event has taken
                                      // place; null = the same platform default.
-  priceAmountMinor: number | null;  // minor units (cents)
-  priceCurrency: string | null;     // ISO 4217
+  priceAmountMinor: number | null;  // minor units (cents). ACCOUNT scope only — always null on an
+                                     // EVENT plan, whose prices are its initialOptions (2026-09-23).
+  priceCurrency: string | null;     // ISO 4217; also the currency of every coverage option
   billingPeriod: BillingPeriod | null;
   discountPercent: number | null;
   discountLabel: string | null;
@@ -1167,6 +1170,26 @@ export interface PlanTierResponseDto {
    *  `moduleKeys` — full price/billing detail included, not just the key. Always empty for
    *  ACCOUNT-scope plans. Only populated on `GET /api/config`. */
   paidModules: PaidServiceResponseDto[];
+
+  /** The durations this EVENT plan is sold at, in display order — added 2026-09-23. The host picks
+   *  one on the draft (`EventRequestDto.coverageOptionId`). Public responses list live ones only;
+   *  admin responses include retired ones (`active: false`). Empty = the plan is not on sale.
+   *  Always empty for ACCOUNT-scope plans. */
+  initialOptions: CoverageOptionResponseDto[];
+
+  /** Coverage bought after activation — added 2026-09-23; nothing sells these yet. */
+  extensionOptions: CoverageOptionResponseDto[];
+}
+
+/** One duration an EVENT plan is sold at — added 2026-09-23. See
+ *  fe-guides/coverage-options-and-extensions-fe-integration.md. */
+export interface CoverageOptionResponseDto {
+  id: string;                // what every coverageOptionId field takes
+  kind: 'INITIAL' | 'EXTENSION';
+  months: number;            // 1–120
+  priceAmountMinor: number;  // in the plan's priceCurrency, before any promotion or code
+  sortOrder: number;
+  active: boolean;           // always true outside the admin endpoints
 }
 
 /**
@@ -1187,8 +1210,11 @@ export interface PlanTierRequestDto {
   isPublic: boolean;               // required
   storageBytes?: number;           // omit for "no limit enforced"
   maxMembers?: number;             // omit for "no limit enforced"
-  autoDeleteMonths?: number;       // >= 1; omit for "never auto-deleted"
-  priceAmountMinor?: number;
+  priceAmountMinor?: number;       // ACCOUNT scope only. An EVENT plan is priced by its coverage
+                                   // options (2026-09-23), so sending one for EVENT is a 400
+                                   // INVALID_PLAN_TIER_SCOPE. A new EVENT plan has no options and is
+                                   // not on sale until one is added. autoDeleteMonths went the same
+                                   // day; sending it is a 400 like any unknown field.
   priceCurrency?: string;          // exactly 3 chars, ISO 4217
   billingPeriod?: BillingPeriod;
   discountPercent?: number;        // 0-100
@@ -1208,12 +1234,12 @@ export interface PlanTierPatchDto {
   isPublic?: boolean;
   storageBytes?: number;
   maxMembers?: number;
-  autoDeleteMonths?: number;
   /** The withdrawal split. Both 0-100; omit to fall back to the platform defaults published on
    *  /api/config under `withdrawal`. Editable here but not settable at create. */
   setupPercent?: number;
   eventDayPercent?: number;
-  priceAmountMinor?: number;
+  priceAmountMinor?: number;       // ACCOUNT scope only — 400 INVALID_PLAN_TIER_SCOPE on an EVENT
+                                   // plan (2026-09-23). autoDeleteMonths is gone: a 400 too.
   priceCurrency?: string;
   billingPeriod?: BillingPeriod;
   discountPercent?: number;
@@ -1226,7 +1252,8 @@ export interface PlanTierPatchDto {
  * POST /api/admin/plan-tiers/{id}/duplicate — copies one plan into other event types in a single
  * call, since a plan belongs to exactly one type and `eventTypeKey` cannot be edited afterwards.
  * Every plan created by one call shares a `sharedGroupKey`, which is how a landing page groups
- * "the same offer" across types.
+ * "the same offer" across types. Each copy also gets the source plan's coverage options, retired
+ * ones included (2026-09-23).
  */
 export interface PlanTierDuplicateRequestDto {
   clones: PlanTierDuplicateTarget[];   // required, non-empty
@@ -1248,6 +1275,34 @@ export interface PlanModulesRequestDto {
  *  scope. */
 export interface PlanAssignmentRequestDto {
   planTierCode: string;   // required, max 30
+  /** Events only (added 2026-09-23): one of the new plan's initialOptions. Omit to keep the event's
+   *  term — the option of the same length, else the plan's shortest. Either way the event's
+   *  coverageEndsAt does not move. */
+  coverageOptionId?: string;
+}
+
+/** POST /api/admin/plan-tiers/{id}/coverage-options — adds a duration to an EVENT plan (added
+ *  2026-09-23) and answers 200 with it as a CoverageOptionResponseDto. `GET` on the same path lists
+ *  them all, retired ones included. `kind` and `months` are fixed from then on: to sell a different
+ *  length, add an option and retire the old one. 409 COVERAGE_OPTION_DUPLICATE (5080) when the plan
+ *  already sells a live option of that kind and length; 400 INVALID_PLAN_TIER_SCOPE on an ACCOUNT
+ *  plan. */
+export interface CoverageOptionRequestDto {
+  kind: 'INITIAL' | 'EXTENSION';   // required
+  months: number;                  // required, 1-120
+  priceAmountMinor: number;        // required, >= 0, in the plan's priceCurrency
+  sortOrder?: number;              // >= 0
+}
+
+/** PATCH /api/admin/plan-tiers/{id}/coverage-options/{optionId} — omitted fields are left
+ *  unchanged. There is no `kind` or `months`, and sending either is a 400. Nothing is ever deleted:
+ *  retire with `active: false`. 409 COVERAGE_OPTION_LAST_INITIAL (5079) when that would retire the
+ *  last live INITIAL option of a public, assignable plan; 409 COVERAGE_OPTION_DUPLICATE (5080) when
+ *  reactivating would make a second live option of the same kind and length. */
+export interface CoverageOptionPatchDto {
+  priceAmountMinor?: number;       // >= 0; open orders keep the amount they pinned
+  sortOrder?: number;              // >= 0
+  active?: boolean;
 }
 
 /** GET /api/admin/plan-tiers/{planTierId}/modules — one row per module configured for the plan. */
@@ -1854,12 +1909,19 @@ export interface ActivationCheckoutRequestDto {
   termsVersion: string;   // required, max 40
 }
 
-/** POST /api/events/{eventId}/upgrade-checkout — charges the gap to a more expensive plan. Same
- *  consent fields as above: an upgrade is a new paid service. Note there is no code field — since
- *  2026-09-22 no discount code prices anything but an activation, and the event's own code is
- *  inherited automatically. */
+/** POST /api/events/{eventId}/upgrade-checkout — charges the gap between the event's duration and
+ *  one of a more expensive plan's (since 2026-09-23; it used to be plan to plan). Same consent
+ *  fields as above: an upgrade is a new paid service. Note there is no code field — since
+ *  2026-09-22 a discount code prices an activation and nothing else, so neither a new code nor the
+ *  one already on the event reaches an upgrade. Only the target plan's own promotion comes off;
+ *  quote the price from UpgradeOptionResponseDto rather than computing it. */
 export interface UpgradeCheckoutRequestDto {
   planTierCode: string;   // required, max 50
+  /** Required (added 2026-09-23): one of that plan's `options[].coverageOptionId` from
+   *  upgrade-options. 400 COVERAGE_OPTION_INVALID (5077) when it is not a live duration of that
+   *  plan; 409 PLAN_TIER_NOT_AN_UPGRADE (5029) when it is shorter than the event's duration or does
+   *  not cost more. */
+  coverageOptionId: string;
   requestsImmediateStart: true;
   acknowledgesWithdrawalTerms: true;
   termsVersion: string;   // required, max 40
@@ -1892,10 +1954,15 @@ export interface EventBillingResponseDto {
   eventStatus: EventStatus;
   planTierCode: string;
   planTierName: string;
+  /** The INITIAL coverage option the event is on — which of the plan's durations it was sold
+   *  (added 2026-09-23). A settled upgrade or an admin plan assignment replaces it. */
+  coverageOptionId: string;
+  coverageMonths: number;   // that option's months
   orders: OrderSummary[];   // newest first
   addons: AddonSummary[];
-  /** The event's active discount code, or null. Shown here rather than only at the moment it was
-   *  applied because a future upgrade inherits it without the host retyping anything. */
+  /** The code the event's activation was priced with, or null. A record of that one purchase, not
+   *  a standing rate: since 2026-09-22 it reaches no upgrade and no storage pack. Shown here so a
+   *  host doesn't have to remember a code they redeemed once. See billing-fe-guide.md §8. */
   discount: DiscountSummary | null;
 }
 
@@ -1915,6 +1982,12 @@ export interface OrderSummary {
   setupAmountMinor: number | null;
   eventDayAmountMinor: number | null;
   hostingAmountMinor: number | null;
+  /** The months of coverage the order bought (added 2026-09-23): the option's months on an
+   *  ACTIVATION, the target option's on an UPGRADE. Null on an order that buys no coverage. */
+  coverageMonths: number | null;
+  /** UPGRADE only: how many months it added to the event's coverageEndsAt — 0 for a same-length
+   *  upgrade. Null on every other kind. */
+  coverageMonthsAdded: number | null;
 }
 
 /** Carries no raw code, no partner identity and no redemption id — the host is shown the label the
@@ -1928,25 +2001,39 @@ export interface DiscountSummary {
 }
 
 /**
- * GET /api/events/{eventId}/upgrade-options — every valid upgrade target, fully priced. Nothing
- * here is for the frontend to recompute: `payableAmountMinor` already folds in the target plan's
- * own promotion and any code bound to the event, combined and clamped exactly as checkout will
- * charge it, so a screen built from this list cannot quote a figure checkout then disagrees with.
+ * GET /api/events/{eventId}/upgrade-options — every upgrade this event can buy, one entry per
+ * target plan with the durations of it the event may buy, each fully priced (reshaped 2026-09-23).
+ * Nothing here is for the frontend to recompute: each option's `payableAmountMinor` already folds
+ * in the target plan's own promotion exactly as checkout will charge it, so a screen built from
+ * this list cannot quote a figure checkout then disagrees with. That promotion is the only
+ * discount an upgrade gets: since 2026-09-22 a code bound to the event does not reach it.
+ *
+ * The two discount fields are sent as `null`, never left out, when the target has no promotion.
  */
 export interface UpgradeOptionResponseDto {
   planTierCode: string;
   planTierName: string;
   currency: string;
-  /** The undiscounted difference between the two plans. Good for a "was" strike-through, but not
-   *  what checkout will charge. */
+  /** The target plan's own promotion percent, behind every `payableAmountMinor` below, or null when
+   *  it has no live promotion. */
+  discountPercent: number | null;
+  /** The target plan's promotion label. Null whenever `discountPercent` is, and also when the
+   *  promotion was set up without a label — never a code's label. */
+  discountLabel: string | null;
+  /** The plan's durations at least as long as the event's own and dearer than it, in display
+   *  order. Never empty: a plan with none is left out of the list. */
+  options: UpgradeOptionEntry[];
+}
+
+/** One duration of an upgrade target (`UpgradeOptionResponseDto.Option` on the server). */
+export interface UpgradeOptionEntry {
+  coverageOptionId: string;   // what upgrade-checkout takes as coverageOptionId
+  months: number;
+  monthsAdded: number;        // what buying it adds to coverageEndsAt; 0 for a same-length upgrade
+  /** The undiscounted difference between the event's duration and this one. Good for a "was"
+   *  strike-through, but not what checkout will charge. */
   gapAmountMinor: number;
   payableAmountMinor: number;
-  /** The combined percent applied to reach `payableAmountMinor`, or null when nothing discounted
-   *  this target. */
-  discountPercent: number | null;
-  /** The applied code's display label, or null when the discount is only the plan's own
-   *  promotion. */
-  discountLabel: string | null;
 }
 
 // ---- Withdrawals (the automated right of withdrawal) ----
@@ -1977,10 +2064,16 @@ export interface WithdrawalPreviewDto {
   eligible: boolean;
   /** Why not, when `eligible` is false. Show these; they are the whole explanation. */
   refusals: WithdrawalRefusalDto[];
+  /** Null, like `currency`, on an ineligible preview with no settled (PAID) activation. */
   windowClosesAt: string | null;
   totalRefundMinor: number;
-  currency: string;
+  currency: string | null;
   lines: WithdrawalLineDto[];
+  /** True when the event's startAt has moved off the date that was paid for. A withdrawal is then
+   *  always HELD for a person to review, never refunded on the spot — say so in the confirmation
+   *  dialog. False promises nothing: other reasons can hold a request, and those are not
+   *  disclosed. Added 2026-09-23. */
+  scheduleMovedAfterPayment: boolean;
 }
 
 /** One withdrawal attempt as the host sees it. Fraud signals and the reviewer's recommendation are
@@ -2083,22 +2176,33 @@ export type EarningStatus = 'ACCRUED' | 'PAID' | 'REVERSED';
  * POST /api/events/{eventId}/checkout/preview-code — try a code against an event that already
  * exists.
  *
- * Send a blank `collaborationCode` to preview the event's own already-applied code instead: the
- * one a plan upgrade would inherit unretyped. Refused if the event carries neither.
+ * Send a blank `collaborationCode` to preview the event's own already-applied code instead; that
+ * is refused with 5063 NO_DISCOUNT_TO_PREVIEW when the event carries none.
+ *
+ * With `targetPlanTierCode` both halves change, because since 2026-09-22 no code reaches an
+ * upgrade: a typed code is refused with 5076 DISCOUNT_NOT_APPLICABLE_TO_UPGRADE, and a blank one
+ * returns the gap with the target plan's own promotion — whether or not the event carries a code.
  */
 export interface CodePreviewRequestDto {
   collaborationCode?: string;   // max 40
-  /** Omit for an activation preview (priced against the event's own plan). Naming an EVENT-scope
-   *  plan prices the discounted gap to that plan instead. */
+  /** Omit for an activation preview (priced against the event's own duration). Naming an
+   *  EVENT-scope plan prices the gap to one of its durations instead, less that plan's own
+   *  promotion and nothing else. */
   targetPlanTierCode?: string;  // max 50
+  /** Required with `targetPlanTierCode` (added 2026-09-23): the duration of that plan being
+   *  considered. 400 COVERAGE_OPTION_INVALID (5077) when missing or not a live one of that plan.
+   *  Ignored without a target plan. */
+  targetCoverageOptionId?: string;
 }
 
 /** POST /api/checkout/preview-code — try a code while the host is still filling in the creation
- *  form, before the event exists. Priced against the type and plan picked on that form, which is
- *  why both travel with the code instead of an event id. */
+ *  form, before the event exists. Priced against the type, plan and duration picked on that form,
+ *  which is why all three travel with the code instead of an event id. */
 export interface NewEventCodePreviewRequestDto {
   eventType: string;          // required, max 50
   planTierCode: string;       // required, max 50
+  coverageOptionId: string;   // required (added 2026-09-23) — one of the plan's initialOptions;
+                              // 400 COVERAGE_OPTION_INVALID (5077) otherwise
   collaborationCode: string;  // required, max 40
 }
 
@@ -2108,13 +2212,17 @@ export interface NewEventCodePreviewRequestDto {
  * who can read it can negotiate against it.
  */
 export interface CodePreviewResponseDto {
-  label: string;
-  /** The code's headline figure. */
+  /** The code's display label. Null on an upgrade preview (`targetPlanTierCode` sent), where no
+   *  code is priced. */
+  label: string | null;
+  /** The code's headline figure. Always 0 on an upgrade preview, even when the plan's own
+   *  promotion took something off — read `combinedDiscountPercent` there. */
   discountPercent: number;
   /** What will actually come off, after the plan's own promotion is added in and the total
    *  clamped. May be **lower** than `discountPercent` during a plan promotion — show this one. */
   combinedDiscountPercent: number;
-  /** The plan price after that discount, excluding any add-ons. */
+  /** The chosen duration's price (or, on an upgrade preview, the gap) after that discount,
+   *  excluding any add-ons. */
   payableAmountMinor: number;
   currency: string;
 }

@@ -51,6 +51,7 @@ POST /api/events
   "timezone": "Europe/Athens",
   "brandingSettings": {},
   "planTierCode": "EVENT_STANDARD",
+  "coverageOptionId": "2a77…",      // required since 2026-09-23 — see coverage-options-and-extensions-fe-integration.md
   "initialSessionTitle": "Ceremony"
 }
 

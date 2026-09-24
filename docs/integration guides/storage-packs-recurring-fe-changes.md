@@ -1,5 +1,11 @@
 # FE changes: storage packs are now recurring
 
+> **Superseded — kept as change history.** Build against **`billing-fe-guide.md`**. Two later
+> changes make parts of this delta wrong: since 2026-08-26 nothing recurs (every purchase is
+> one-time, there are no renewals), and since 2026-09-23 the "keep originals" add-on (`ORIGINALS`)
+> is no longer sold, because every plan keeps originals (`billing-fe-guide.md` §7a). The
+> `ORIGINALS` rows in the examples below are how the response looked at the time.
+
 **Read this if you have already built against `billing-fe-guide.md`.** That doc has been updated in
 place (§7b, §13, the error table, the TS types) but it is long and most of it is unchanged. This is
 only the delta.

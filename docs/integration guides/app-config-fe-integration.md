@@ -8,7 +8,7 @@ header, error shape) — this doc only covers what's new.
 **2026-08-13:** `media` gained per-kind upload caps (`maxImageBytes`/`maxVideoBytes`) now that
 uploads are validated against the file's real, server-detected type rather than a client-claimed
 one, and the config response gained a `paidServices` array (the "keep originals" add-on and
-storage packs). See `billing-fe-guide.md` §5–§7b for the full purchase flows and
+storage packs; the add-on was retired on 2026-09-23 and is no longer listed). See `billing-fe-guide.md` §5–§7b for the full purchase flows and
 `multi-image-post-upload-fe-integration.md` for the new upload error codes.
 
 **2026-08-16:** `eventModuleKeys` grew from five keys to **seven** — `wishlist` and `wishbook` are
@@ -81,6 +81,12 @@ most likely to have bitten: [`billing-fe-guide.md`](billing-fe-guide.md) §9 tel
 `termsVersion` from `/api/config`, and until now this document did not list it. The
 `eventModuleKeys` union below was also three keys short of the canonical set.
 
+**2026-09-23, later:** `coverage.defaultHostingMonths` is gone. The retention term is now the months
+of the coverage option the host picks, not a platform default. Each `EVENT` plan in `planTiers` now
+has a `null` `priceAmountMinor`, no `autoDeleteMonths`, and two new lists, `initialOptions` and
+`extensionOptions`, holding its durations and their prices. See
+[`coverage-options-and-extensions-fe-integration.md`](coverage-options-and-extensions-fe-integration.md).
+
 ## GET /api/config
 
 Public — no `Authorization` header needed, safe to call before login (e.g. to gate the login
@@ -110,7 +116,7 @@ interface AppConfigResponseDto {
   };
   pagination: { defaultPageSize: number; maxPageSize: number };
   planTiers: PlanTierResponseDto[];   // was Record<'FREE'|'PLUS'|'PRO', {...}> — see plan-tiers-fe-integration.md
-  paidServices: PaidServiceResponseDto[];   // "keep originals" add-on, storage packs, module unlocks — see billing-fe-guide.md §5
+  paidServices: PaidServiceResponseDto[];   // storage packs, module unlocks — see billing-fe-guide.md §7
   modules: PlatformModuleResponseDto[];  // enabled registry rows, ordered by sortOrder
   eventModuleKeys: ModuleKey[];          // the keys of `modules`, same order
   eventTypes: AppEventTypeDto[];         // enabled event-type registry rows, ordered by sortOrder
@@ -118,7 +124,7 @@ interface AppConfigResponseDto {
   translations: { eventTypes: Record<string, AppEventTypeTranslationDto> }; // locale copy, keyed by eventTypeKey
   rsvp: { minAdults: number; maxAdults: number; minChildren: number; maxChildren: number };
   withdrawal: { termsVersion: string; windowDays: number; holdDays: number }; // see billing-fe-guide.md §9
-  coverage: { maxLeadDays: number; maxPreEventDays: number; defaultHostingMonths: number; defaultEventDurationHours: number }; // added 2026-09-21 — see event-coverage-window-fe-integration.md
+  coverage: { maxLeadDays: number; defaultEventDurationHours: number }; // added 2026-09-21, defaultHostingMonths and maxPreEventDays removed 2026-09-23 — see event-coverage-window-fe-integration.md
   newsletter: { enabled: boolean; discountPercent: number; rewardValidityMonths: number }; // added 2026-09-23 — see newsletter-fe-integration.md
   contentLimits: AppContentLimitsDto;   // added 2026-08-23 — see below
   reactionTypesByEventType: Record<string, ReactionTypeResponseDto[]>; // added 2026-08-30 — see below
@@ -209,8 +215,9 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
   selection whose items sum over this, even if under `maxArchiveSelectedItems`, is rejected the
   same way — useful if you want to warn the host before they submit a selection of a few dozen
   `ORIGINAL`-variant videos that's individually small in count but large in bytes.
-- **`paidServices`** — the public catalog for the "keep originals" add-on, storage packs, and
-  module unlocks, filtered to `isPublic && isAssignable` the same way `planTiers` is. Filter by
+- **`paidServices`** — the public catalog for storage packs and module unlocks, filtered to
+  `isPublic && isAssignable` the same way `planTiers` is. The "keep originals" add-on
+  (`ORIGINALS`) was retired on 2026-09-23 and no longer appears: every plan includes it. Filter by
   `kind` (`RECURRING_ADDON` / `STORAGE_PACK` / `MODULE_UNLOCK`) to build the three different
   purchase UIs — the kind decides which endpoint will accept the code, so it is not cosmetic.
   A `MODULE_UNLOCK` entry carries `grantsModuleKey`; match it against `eventModuleKeys` to label
@@ -223,7 +230,9 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
 - **`planTiers`** — the public pricing catalog: every assignable, public plan in both scopes,
   ordered by scope then `sortOrder`. Filter by `scope` to build a pricing table — `EVENT` plans
   are what a host buys for one event, `ACCOUNT` plans govern how many events they may run at once.
-  This is now admin-editable at runtime, so treat it as data and never hardcode a tier name.
+  This is now admin-editable at runtime, so treat it as data and never hardcode a tier name. An
+  `EVENT` plan's prices are in its `initialOptions`, one per duration it is sold at (added
+  2026-09-23); its own `priceAmountMinor` is always `null`.
   Each plan's `moduleKeys` are included for free; `paidModules` (added 2026-08-18) is the list of
   `MODULE_UNLOCK` paid services that plan sells instead, each with full price/billing detail — use
   it to render a pricing table's "included" vs. "available as add-on, $X/mo" module rows without

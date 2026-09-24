@@ -1,5 +1,11 @@
 # FE integration guide: plan upgrades
 
+> **Superseded 2026-09-23 — kept as change history.** Upgrades are now priced duration to duration:
+> the target is one of a higher plan's durations, at least as long as the event's own, and it can
+> move `coverageEndsAt` later. The pricing rules, request body, `upgrade-options` shape, error codes
+> and types below are out of date. Build against [`billing-fe-guide.md`](billing-fe-guide.md) §7d and
+> [`coverage-options-and-extensions-fe-integration.md`](coverage-options-and-extensions-fe-integration.md) §6.
+
 Covers the upgrade work shipped 2026-08-08. See `billing-fe-guide.md` for the consolidated billing
 reference — this doc only covers what upgrades add on top, and **its §12 error table and §14 types
 do not yet include the changes below**.
@@ -113,8 +119,8 @@ Use `GET /api/events/{eventId}/upgrade-options` instead — one call, host-only,
     "planTierCode": "PRO", "planTierName": "Pro", "currency": "EUR",
     "gapAmountMinor": 10000,      // undiscounted difference — fine for a "was €100" strike-through
     "payableAmountMinor": 8000,   // what upgrade-checkout will actually charge — render this as the price
-    "discountPercent": 20,        // the target plan's own promotion; absent when it has none
-    "discountLabel": "Autumn launch offer"      // absent when discountPercent is absent
+    "discountPercent": 20,        // the target plan's own promotion; null (not left out) when it has none
+    "discountLabel": "Autumn launch offer"      // null with no promotion, or a promotion set up without a label
   }
 ]
 ```

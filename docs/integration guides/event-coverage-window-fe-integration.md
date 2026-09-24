@@ -1,9 +1,19 @@
 # FE integration: optional end date and the event coverage window
 
+> **2026-09-23: `galleryOpensAt` and `coverage.maxPreEventDays` were removed.** There is no
+> pre-event gallery gate. Everything below about the gallery opening is historical; see
+> [`withdrawal-compliance-phase1-fe-integration.md`](withdrawal-compliance-phase1-fe-integration.md).
+
 Shipped 2026-09-21. `endAt` is no longer required when creating an event, `startAt` is capped at
 eighteen months out, and every activated event now carries two new dates — when its gallery opens
 and when it is reclaimed. One new error code, no new endpoints. Read this if you touch event
 creation, the event detail page, or anything that tells a host how long their photos are kept.
+
+**2026-09-23:** the retention term is now the months of the **coverage option** the host picks — a
+plan is sold at several durations — not the plan's. `projectedCoverage.hostingMonths` and the pinned
+`coverageEndsAt` use those months, `coverage.defaultHostingMonths` is gone from `/api/config`, and a
+paid upgrade to a longer duration moves `coverageEndsAt` later.
+**`coverage-options-and-extensions-fe-integration.md` has the full reference.**
 
 ## Why
 
@@ -11,7 +21,8 @@ Retention used to be `endAt + plan.autoDeleteMonths` — a clock the host set. A
 could put their event two years out and get two extra years of hosting for the same one-time
 price. Requiring an end date did nothing to stop that; it just made the host invent a finish time.
 
-The clock now belongs to the plan. The gallery opens a fixed span before the event, retention runs
+The clock now belongs to the plan — since 2026-09-23, to the duration of it the host bought. The
+gallery opens a fixed span before the event, retention runs
 from the event itself, and both are pinned at activation. A distant date moves the whole window
 later without stretching it, and the gallery stays shut in the meantime, so there is nothing to
 upload into. That is the entire defence — no rule the FE has to explain or enforce.
@@ -58,8 +69,8 @@ indefinitely. Validate client-side with the same bound so a host gets an inline 
 than a round-trip; the server enforces it regardless.
 
 The bound is published as `coverage.maxLeadDays` on `GET /api/config` (since 2026-09-21, with
-`maxPreEventDays`, `defaultHostingMonths` and `defaultEventDurationHours` beside it). Read it from
-there; do not hard-code 548.
+`maxPreEventDays` and `defaultEventDurationHours` beside it; `defaultHostingMonths` was removed on
+2026-09-23). Read it from there; do not hard-code 548.
 
 ### Two new dates on every event response
 
@@ -80,21 +91,23 @@ interface EventScheduleDto {
 interface ProjectedCoverageDto {
   galleryOpensAt: string;   // what galleryOpensAt would be pinned to if paid for right now
   coverageEndsAt: string;   // likewise
-  hostingMonths: number;    // the plan's retention term (12 unless the plan overrides it)
+  hostingMonths: number;    // the months of the coverage option the draft is on
 }
 ```
 
 - **`galleryOpensAt`** — when uploads become available. `startAt - 90 days`, clamped so it never
   precedes activation. This is the run-up a host shooting preparations gets without asking.
-- **`coverageEndsAt`** — when the event and its media are reclaimed. `startAt + plan retention`
-  (twelve months unless the plan says otherwise), clamped so it never precedes activation.
-- **Both are `null` while the event is `DRAFT`.** They are computed once at activation and never
-  recomputed — editing `startAt` or `endAt` afterwards does not move them. Render "your gallery is
+- **`coverageEndsAt`** — when the event and its media are reclaimed. `startAt + the coverage
+  option's months`, clamped so it never precedes activation.
+- **Both are `null` while the event is `DRAFT`.** They are computed once at activation — editing
+  `startAt` or `endAt` afterwards does not move them. The one thing that does: a paid upgrade to a
+  longer duration moves `coverageEndsAt` later by the months it adds. Render "your gallery is
   open from … until …" from these two, never from `startAt`/`endAt` arithmetic.
 - **`projectedCoverage`** is the mirror image: **set while `DRAFT`, `null` once `ACTIVE`.** It is
   the window the event *would* get if activated at the moment of the request — the same arithmetic
   activation pins, with `now` standing in for the activation instant — and it is recomputed on
-  every read, so it follows `startAt` as the host edits the draft. It is also on the top-level
+  every read, so it follows `startAt` and the chosen duration as the host edits the draft. It is
+  also on the top-level
   `EventResponseDto`, so the `POST /api/events` and `PATCH /api/events/{id}` replies carry it: the
   request that saves a date change returns the new projection, no second fetch needed. Exactly one
   of `projectedCoverage` / `coverageEndsAt` is non-null on any event; render whichever is.
@@ -154,7 +167,7 @@ A "What you're buying" block, in this order. Every line is load-bearing.
 |---|---|---|
 | **Activates today** | "Your event goes live the moment payment completes." | Activation ≠ event date. Hosts assume they are the same. |
 | **Gallery opens [date]** | "[N] days before your event — upload preparations from then." Or "immediately" if inside the run-up. | Sets the prep expectation; explains why a far-out event has a shut gallery. |
-| **Photos kept until [date]** | "[12] months after your event date. After that everything is permanently deleted — we'll remind you 7 days and 1 day before." | The thing they are paying for. |
+| **Photos kept until [date]** | "[N] months after your event date — the duration you chose. After that everything is permanently deleted — we'll remind you 7 days and 1 day before." | The thing they are paying for. |
 | **These dates are fixed at payment** | "Changing your event date later won't move them." | **The support-ticket line.** It is the pinning — the whole abuse defence — and it is counter-intuitive. Place it next to the consent checkbox, not in a tooltip. |
 | Plan limits | Storage, max guests — from the plan tier. | Existing. |
 | Withdrawal terms | 14-day window + consent. | Existing. |
@@ -163,8 +176,8 @@ A "What you're buying" block, in this order. Every line is load-bearing.
 
 - **Status strip** from the two dates: "Gallery opens in N days" → "Gallery open · closes [date]" →
   "Closing in N days — download your gallery" (final 30 days, escalating).
-- **Coverage card**: activated on, gallery opens, kept until, plan term. Same four facts as
-  checkout, now real instead of projected.
+- **Coverage card**: activated on, gallery opens, kept until, plan and duration (`coverageMonths` from
+  `GET /api/events/{id}/billing`). Same four facts as checkout, now real instead of projected.
 - **Download CTA** promoted in the final month. `EVENT_AUTO_DELETE_WARNING` already fires at 7 and
   1 days with `deletionDate` in its payload; render from that, never recompute.
 
@@ -186,8 +199,8 @@ lands it will need a "This gallery opens on [date]" empty state; that is a separ
    above. The live projection and the "Gallery opens / Photos kept until" checkout lines are
    unblocked.
 2. ~~**Coverage constants on `/api/config`**~~ — **shipped 2026-09-21** as `coverage {
-   maxLeadDays, maxPreEventDays, defaultHostingMonths, defaultEventDurationHours }`. Drop the
-   hard-coded 548/90/12.
+   maxLeadDays, maxPreEventDays, defaultEventDurationHours }` (plus `defaultHostingMonths` until
+   2026-09-23). Drop the hard-coded 548/90.
 
 Everything in this section can start now.
 
@@ -195,6 +208,6 @@ Everything in this section can start now.
 
 - `CoverageWindow` — the arithmetic, with the invariants as tests.
 - `EventService#activate` — the one place the window is written.
-- `BillingProperties.Coverage` — the four knobs: `defaultHostingMonths` (12), `maxPreEventDays`
-  (90), `maxLeadDays` (548), `defaultEventDurationHours` (24).
+- `BillingProperties.Coverage` — the three knobs: `maxPreEventDays` (90), `maxLeadDays` (548),
+  `defaultEventDurationHours` (24). The retention term is the event's coverage option's `months`.
 - Plan: [`2026-09-21-event-coverage-window.md`](../superpowers/plans/2026-09-21-event-coverage-window.md).

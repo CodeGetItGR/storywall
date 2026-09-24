@@ -1,5 +1,11 @@
 # FE changes: module unlocks can be sold outright
 
+> **Superseded — kept as change history.** Build against **`billing-fe-guide.md`**. Two later
+> changes make parts of this delta wrong: since 2026-08-26 nothing recurs (every purchase is
+> one-time, there are no renewals), and since 2026-09-23 the "keep originals" add-on (`ORIGINALS`)
+> is no longer sold, because every plan keeps originals (`billing-fe-guide.md` §7a). The
+> `ORIGINALS` rows in the examples below are how the response looked at the time.
+
 **Read this if you have already built against `billing-fe-guide.md`.** That doc is updated in place
 (§7c, §8, §13, the error table, the TS types) but it is long and most of it is unchanged. This is
 only the delta.
@@ -21,7 +27,7 @@ admin restriction.
 | 6 | Admin: the create form should offer a cadence picker **only** for `MODULE_UNLOCK` | §5 |
 | 7 | `POST /api/events/{eventId}/addons` — request shape, rate limit, DRAFT-only rule, every error code | **unchanged** — §6 |
 | 8 | Module availability, the plan-vs-unlock OR gate, `isAvailable` | **unchanged** — §6 |
-| 9 | Storage packs, `ORIGINALS`, plan tiers, renewals, refunds | **unchanged** — §6 |
+| 9 | Storage packs, `ORIGINALS`, plan tiers, renewals, refunds | **unchanged** — §6 (`ORIGINALS` was retired later, on 2026-09-23) |
 
 ---
 
@@ -248,7 +254,7 @@ Listed so they don't cause double-checking.
 - **`PaidServiceResponseDto`** — same fields. Only the range of values `billingPeriod` can hold
   widened, and only on `MODULE_UNLOCK`.
 - **Storage packs and `ORIGINALS`** — untouched. Still `MONTHLY`, still summed into every renewal,
-  still bought through their existing routes.
+  still bought through their existing routes. (`ORIGINALS` stopped being sold on 2026-09-23.)
 - **Plan tiers.** `billingPeriod` on a `PlanTier` is a separate field with separate rules (`ONE_TIME`
   for EVENT scope, `MONTHLY` for ACCOUNT) and is unaffected by any of this.
 - **Refunds, coverage, freeze/purge, subscriptions.** No change. Note one consequence: a refund that

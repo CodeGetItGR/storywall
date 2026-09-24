@@ -52,6 +52,10 @@ same error as event creation uses for the same problem.
 Use this for step 2 of the wizard, after the host has picked a type in step 1. It is a strict
 subset of the full catalog: every plan returned here also appears in `GET /api/config`.
 
+Since 2026-09-23 step 2 also picks a **duration**: each EVENT plan carries its durations and their
+prices in `initialOptions`, and `POST /api/events` needs the chosen one's `id` as `coverageOptionId`.
+See [`coverage-options-and-extensions-fe-integration.md`](coverage-options-and-extensions-fe-integration.md).
+
 ## 2. Field: `PlanTierResponseDto.eventTypeKey`
 
 Present on every `PlanTierResponseDto`, including inside `GET /api/config`'s `planTiers`. The one
@@ -90,7 +94,8 @@ from §1 above so a mismatched plan is never offered for the wrong type in the f
 ## 5. Admin: `POST /api/admin/plan-tiers/{id}/duplicate`
 
 Platform-admin only. Replaces the old `PUT .../event-types`. Clones the source plan (fields like
-price, storage, member cap, module keys) into one or more new plans for other event types in a
+storage, member cap, module keys, and — since 2026-09-23 — every coverage option, retired ones
+included) into one or more new plans for other event types in a
 single call:
 
 ```json

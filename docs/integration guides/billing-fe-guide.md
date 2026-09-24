@@ -1,7 +1,20 @@
 # FE integration guide: plans, payments, refunds
 
 **The complete, current reference for the commercial side of the platform.** Everything a frontend
-needs to sell an event and give money back. Current as of 2026-09-04.
+needs to sell an event and give money back. Current as of 2026-09-23.
+
+**2026-09-23 — breaking:** The "keep originals" add-on is retired. Every plan already kept
+originals, so `ORIGINALS` is no longer sold: it is gone from `paidServices`, the add-on opt-in
+refuses it (`409` 5036), and `PATCH /api/events/{id}` refuses `keepOriginals` (`400` 3002). Drafts
+that had opted in are no longer charged for it. §7, §7a, §7b, §7c, §8, §16 and §17 are updated in
+place; §7a has the table of what changed.
+
+**2026-09-23 — breaking:** EVENT plans are sold at several durations, each with its own price. An
+EVENT plan's `priceAmountMinor` is now always `null` and `autoDeleteMonths` is gone: the prices, and
+the months of coverage each one buys, are in the plan's new `initialOptions`. `POST /api/events`
+needs a `coverageOptionId`, and the upgrade picker and upgrade checkout work per duration. §2, §6,
+§7a, §7d, §8, §12, §13, §14 and §16 are updated in place.
+**`coverage-options-and-extensions-fe-integration.md` has the full reference.**
 
 **2026-09-04:** Notification `ctaRoute` (a literal path the backend guessed at) is gone, replaced by
 `ctaTarget` + `ctaParams` — you resolve the route yourself (§10). This affects every notification
@@ -117,9 +130,11 @@ each its own checkout:
 | purchase | what it buys | when | order kind |
 |---|---|---|---|
 | **Activation** (§6) | the event goes live, permanently | before the event, once, `DRAFT` only | `ACTIVATION` |
-| **Upgrade** (§7d) | moves an already-`ACTIVE` event onto a pricier plan tier | any time after activation | `UPGRADE` |
+| **Upgrade** (§7d) | moves an already-`ACTIVE` event onto a higher plan tier, at a duration at least as long as its own | any time after activation | `UPGRADE` |
 | **Storage pack** (§7b) | permanently raises the storage ceiling | any time after activation | `STORAGE_PACK` |
-| **"Keep originals" / module unlock** (§7a, §7c) | entitlements folded into the activation charge | before activation, `DRAFT` only | *(no order of its own)* |
+| **Module unlock** (§7c) | entitlements folded into the activation charge | before activation, `DRAFT` only | *(no order of its own)* |
+
+"Keep originals" is no longer something to buy: every plan includes it (§7a).
 
 **Nothing is ever auto-charged.** Every one of the four rows above is something the host explicitly
 clicks a button for. There is no dunning, no freeze, no purge — an event that "just sits there" costs
@@ -169,10 +184,9 @@ account plans are disabled (§13, Assignment). Filter a pricing page by `scope =
 
   "storageBytes": 1073741824,
   "maxMembers": 20,
-  "autoDeleteMonths": 3,               // null = never auto-deleted
 
-  "priceAmountMinor": 10000,          // one-time activation charge — 100.00 EUR
-  "priceCurrency": "EUR",             // uppercase ISO 4217
+  "priceAmountMinor": null,           // always null on an EVENT plan — the prices are in initialOptions
+  "priceCurrency": "EUR",             // uppercase ISO 4217; also the currency of every option below
   "billingPeriod": "ONE_TIME",        // always ONE_TIME on an EVENT-scope plan
 
   "discountPercent": null,
@@ -183,7 +197,12 @@ account plans are disabled (§13, Assignment). Filter a pricing page by `scope =
   "moduleKeys": ["gallery", "posts", "rsvp"],
   "eventTypeKey": "WEDDING",     // the one event type this plan may be bought for — see below
   "sharedGroupKey": null,        // set only if this plan was created via the admin "duplicate" action
-  "paidModules": []              // MODULE_UNLOCK upsells for this plan — see §4
+  "paidModules": [],             // MODULE_UNLOCK upsells for this plan — see §4
+  "initialOptions": [            // the durations it is sold at; the host picks one (2026-09-23)
+    { "id": "8f1c…", "kind": "INITIAL", "months": 6,  "priceAmountMinor": 10000, "sortOrder": 0, "active": true },
+    { "id": "2a77…", "kind": "INITIAL", "months": 12, "priceAmountMinor": 14000, "sortOrder": 1, "active": true }
+  ],
+  "extensionOptions": []         // coverage bought after activation — nothing sells these yet
 }
 ```
 
@@ -191,9 +210,11 @@ account plans are disabled (§13, Assignment). Filter a pricing page by `scope =
 
 - **All amounts are minor units** (cents). Divide by 100 for EUR — do not hardcode two decimals if
   you ever add a currency that does not use them.
-- **`priceAmountMinor` is charged exactly once, at activation.** There is no recurring price on a
-  plan tier any more — the whole notion of a monthly or included-months figure is gone.
-- Suggested copy: *"€100 once — no renewal, ever"*.
+- **An EVENT plan is priced per duration (2026-09-23).** Each `initialOptions` entry is a length of
+  coverage and its price, charged exactly once, at activation; the plan's own `priceAmountMinor` is
+  always `null`. There is no recurring price on a plan tier. A pricing card leads with the cheapest
+  option ("from €100"); the creation form lists them all.
+- Suggested copy: *"€100 once for 6 months of coverage — no renewal, ever"*.
 - `storageBytes`/`maxMembers` are always null on `ACCOUNT` plans — there is nothing left to render
   for an account plan's row beyond its price. Hide the quota columns entirely rather than showing
   "0" or "Unlimited" for a scope that grants none.
@@ -217,18 +238,17 @@ plan.storageBytes === null ? 'Unlimited storage' : `${formatBytes(plan.storageBy
 
 An uncapped enterprise plan is a real, intended shape — not missing data.
 
-### `autoDeleteMonths` — how long an event's content survives after it ends
+### Coverage — how long an event's content is kept
 
-`EVENT`-scope only (always `null` on `ACCOUNT` plans). When set, an event on this plan is
-soft-deleted at its `coverageEndsAt` (pinned at activation; see the coverage-window FE guide) — the exact same lifecycle as a
-host-requested deletion (§ the delete-event flow): undoable while soft-deleted, hard-purged after
-`app.billing.event-retention-days`. `null` means the plan never auto-deletes its events.
+Set by the **coverage option** the host picks (2026-09-23), not by the plan: the option's `months`
+count from the event's date. The event is soft-deleted at its `coverageEndsAt` (pinned at activation;
+see the coverage-window FE guide) — the exact same lifecycle as a host-requested deletion (§ the
+delete-event flow): undoable while soft-deleted, hard-purged after `app.billing.event-retention-days`.
+The plan-level `autoDeleteMonths` this section used to describe is gone.
 
 The host gets two warning notifications before it happens — 7 days out and 1 day out — carrying
-`NotificationType: 'EVENT_AUTO_DELETE_WARNING'`, so this is not a silent deletion. Render it on a
-pricing page as e.g. *"Photos kept for 3 months after your event"*; a `null` value should read as
-"kept indefinitely" or be omitted from the row entirely, matching the `storageBytes`/`maxMembers`
-null-handling above.
+`NotificationType: 'EVENT_AUTO_DELETE_WARNING'`, so this is not a silent deletion. Render each option
+on a pricing page as e.g. *"Photos kept for 6 months after your event"*.
 
 ### `code` is not a fixed union
 
@@ -280,7 +300,8 @@ GET /api/plan-tiers?eventType=WEDDING
 An unknown `eventType` → `400` / `errorCode: 3018 INVALID_EVENT_TYPE` — the same error event
 creation uses (`GET /api/config`'s `eventTypeKeys` array is the source of truth for what's valid).
 
-**Use this for the plan-picker step of event creation, once the host has already chosen a type.** It
+**Use this for the plan-picker step of event creation, once the host has already chosen a type** —
+each plan's `initialOptions` are the durations the host picks between in the same step. It
 is a strict subset of the full catalog — every plan it returns also appears in `GET /api/config`,
 just possibly filtered out there if it's a different type. Building a birthday-only catalog or a
 wedding-only catalog is then just: two different `PlanTier` rows with the same `name` ("Basic"),
@@ -407,8 +428,8 @@ nothing. See `soft-deleted-events-fe-integration.md` for the full read/write con
 ## 6. Activation: the first purchase
 
 ```
-1. POST /api/events                      → 201, status: "DRAFT"
-2. host fills in details, incl. endAt    → PATCH /api/events/{id}
+1. POST /api/events                      → 201, status: "DRAFT"   (plan and duration chosen here)
+2. host fills in details, incl. endAt    → PATCH /api/events/{id}  (duration still switchable)
 3. POST /api/events/{id}/checkout        → 200 { orderId, redirectUrl }
 4. window.location.href = redirectUrl    → the provider's hosted page (we never see the card)
 5. provider redirects back to
@@ -419,6 +440,9 @@ nothing. See `soft-deleted-events-fe-integration.md` for the full read/write con
 ### Step 1 — creating the draft
 
 `planTierCode` is required on `POST /api/events` and must be a `code` from the `EVENT`-scope catalog.
+So is `coverageOptionId` (2026-09-23): the `id` of one of that plan's `initialOptions`, the duration
+being bought. A missing, retired or other plan's option → `400 COVERAGE_OPTION_INVALID` (5077). Until
+it is paid for, a draft can switch to another of its plan's durations with `PATCH /api/events/{id}`.
 An archived or non-public plan → `409 PLAN_TIER_NOT_PURCHASABLE`. A plan whose `eventTypeKey` (§2)
 doesn't match the request's `eventType` → `409 PLAN_TIER_NOT_AVAILABLE_FOR_EVENT_TYPE`
 (5053) — this is a server-side backstop for a stale client, not the primary UX; source the plan list
@@ -461,8 +485,8 @@ the express request and acknowledgement Directive 2011/83/EU art. 14(3)/(4)(a) r
 service may begin inside the statutory withdrawal window — both must be sent as `true` or the request
 is rejected with `400 VALIDATION_FAILED`. `termsVersion` ties the acknowledgement to the wording the
 host actually saw; source it from `GET /api/config`'s `withdrawal.termsVersion` (§14) and show that
-wording (or a link to it) before the host confirms. Host-only (co-hosts count; `403` otherwise). Rate
-limited to 10/min.
+wording (or a link to it) before the host confirms. Primary host only: a co-host gets `403`
+`PURCHASE_NOT_PRIMARY_HOST` (4006). Rate limited to 10/min.
 
 **A stale `termsVersion` is refused, not silently accepted.** If the terms changed since the client
 last fetched `/api/config` (e.g. a long-lived tab), the server answers `400
@@ -484,6 +508,13 @@ page sets frame-ancestor headers, and 3DS/SCA needs a real top-level navigation.
 Calling it twice (with the same consent) is safe: our order id is also the provider's idempotency
 key, so a retry returns the same session rather than opening a second one. Still disable the button
 while the request is in flight.
+
+**It charges the draft's duration (2026-09-23).** The amount is the chosen coverage option's price,
+after the plan's promotion and any code. If that duration was retired after the host picked it, the
+call answers `409 COVERAGE_OPTION_UNAVAILABLE` (5078) and nothing is charged: send the host back to
+pick another (`PATCH /api/events/{id}` with a new `coverageOptionId`) and retry. Switching the
+duration after opening checkout cancels the open order on the next call and issues a re-priced one,
+exactly as opting into an add-on does (§7a).
 
 **Tax is not handled by this platform today — flag before launch, not FE work by itself.** Automatic
 VAT/sales tax (Stripe Tax) is off by default (`BillingProperties.automaticTax`); switching it on is a
@@ -540,46 +571,74 @@ again. Nothing needs cleaning up.
 
 ## 7. One-time extras
 
-Beyond activation itself, there are four more things a host can buy — none of them recurring, none
+Beyond activation itself, there are three more things a host can buy — none of them recurring, none
 of them auto-renewing. They fall into two shapes:
 
 | shape | when it's bought | how it's charged | covers |
 |---|---|---|---|
-| **Folds into activation** | `DRAFT` only, before paying | added into the activation order's total — no checkout of its own | §7a "keep originals", §7c module unlocks |
+| **Folds into activation** | `DRAFT` only, before paying | added into the activation order's total — no checkout of its own | §7c module unlocks (§7a has how it is billed) |
 | **Its own checkout** | `ACTIVE` only, any time after | a standalone order, paid immediately | §7b storage packs, §7d plan upgrades |
+
+"Keep originals" used to be a fourth. It is included in every plan now and no longer sold (§7a).
 
 The split exists because a `DRAFT` event hasn't paid anything yet — there's no live order to add a
 charge to — while an `ACTIVE` event already has, so a later purchase has to be its own transaction.
-Nothing here is ever billed twice or billed again: every one of the four is a single charge, once.
+Nothing here is ever billed twice or billed again: every one of the three is a single charge, once.
 
 ---
 
 ## 7a. The "keep originals" add-on
 
-Every plan already gets a compressed, normalized display copy of every photo — that never changes.
-The add-on stores the untouched original **alongside** it, for hosts who want the full-resolution
-file preserved. It costs storage: an add-on event holds derivative + original, so it reaches its
-quota sooner than the same event without it.
+**Retired 2026-09-23: every plan keeps originals.** There is nothing to buy and nothing to toggle.
 
-**Catalog code:** `ORIGINALS`, kind `RECURRING_ADDON`, from the paid-services catalog —
+Every event stores the untouched original of each photo alongside the compressed display copy. The
+backend has done this for every event since 2026-08-26. Until V100, though, the `ORIGINALS` add-on
+was still on sale for €5, so a host could pay for something they already had. It is no longer sold:
+
+| where | before | now |
+|---|---|---|
+| `GET /api/config` → `paidServices` | listed `ORIGINALS` (`RECURRING_ADDON`, 500) | not listed: the row is archived (`isAssignable=false`, `isPublic=false`) |
+| `POST /api/events/{id}/addons` with `ORIGINALS` | created the entitlement, +500 on activation | `409 PAID_SERVICE_NOT_PURCHASABLE` (5036), even if an admin re-enables the row |
+| `PATCH /api/events/{id}` with `keepOriginals` | opted the draft in | `400 MALFORMED_REQUEST_BODY` (3002): the field is gone, and unknown fields are refused |
+| a draft that had opted in | billed 500 at activation | V100 removed its entitlement, so activation no longer includes it |
+| a paid event that bought it | — | keeps its `ORIGINALS` row in `addons[]` and its order's `addonAmountMinor`, as the record of what it paid |
+
+**What to change on the frontend:**
+
+- Remove any "keep originals" toggle or offer, and drop `keepOriginals` from your `PATCH` body type.
+  Sending it is now a `400`.
+- Don't gate original downloads on the event having bought `ORIGINALS`. Every event has originals;
+  see [Retrieving the original](#retrieving-the-original).
+- Don't add the `ORIGINALS` price into any client-side total. Read totals from the order.
+
+Originals count toward the event's storage quota, so every event now uses more of its quota than
+the display copies alone would.
+
+If a host opened an activation checkout before the change, that order was priced with the add-on.
+Their next `POST /api/events/{id}/checkout` sees that the add-on total changed. It cancels the old
+order and issues a new one without the add-on. The one gap: a provider session opened before the
+deploy can still be paid at the old price until it expires (24 h).
+
+### Getting back out — admin only
+
+```http
+DELETE /api/admin/events/{eventId}/addons/{paidServiceCode}
+```
+
+**There is no host-facing way to remove an entitlement**, and no admin-facing way either once the
+event is `ACTIVE`. Once paid for, an entitlement (a §7c unlock or a §7b storage pack, same endpoint,
+same rule) is permanent for the life of the event: `409 ADDON_LOCKED_WHILE_ACTIVE` (5042). This
+endpoint only succeeds on an event that isn't `ACTIVE`, such as a still-`DRAFT` event. It is an
+admin correction tool, not something used on a live, paying event. `409 ADDON_NOT_ACTIVE` (5041) if
+the event has no such entitlement to begin with.
+
+### Opt-ins are billed once, folded into the activation charge
+
+An opted-in extra is **never free, and never billed again**. Its price is added straight into the
+activation order's total:
 
 ```
-GET /api/config → paidServices: PaidServiceResponse[]   // filtered to isPublic && isAssignable
-```
-
-```jsonc
-{
-  "id": "…",
-  "code": "ORIGINALS",
-  "kind": "RECURRING_ADDON",
-  "name": "Keep Originals",
-  "description": "Keeps the original, full-resolution file for every photo alongside the compressed feed copy.",
-  "sortOrder": 0,
-  "priceAmountMinor": 500,        // 5.00 EUR, charged once
-  "priceCurrency": "EUR",
-  "billingPeriod": "ONE_TIME",    // every paid service is ONE_TIME now — see below
-  "grantsStorageBytes": null      // always null for a RECURRING_ADDON
-}
+activation amount = coverage option's price + Σ(active opt-ins' price)   // §7c module unlocks
 ```
 
 **`billingPeriod` is always `'ONE_TIME'` on every paid service, regardless of `kind`.** The field
@@ -588,67 +647,27 @@ catalog no longer accepts anything else here — the admin create/patch endpoint
 `YEARLY` on a `paid_services` row outright (§13). If your code still branches on this field to decide
 "folds into a renewal" vs. "one-time", delete the branch: there is no renewal to fold into any more.
 
-### Opting in — `DRAFT` only
+So opting in before paying adds the unlock's flat price to the activation total, once. **Show this
+in the plan picker**. The toggle changes the price on the "Pay and publish" button, and a host who
+sees the number move only at the payment step will read it as a surprise charge.
 
-```http
-PATCH /api/events/{id}
-{ "keepOriginals": true }
-```
-
-**Only `true` is meaningful — there is no un-opting, and only while the event is `DRAFT`.** Opting
-in later → `409 EVENT_NOT_DRAFT` (5017). This is deliberate: an event never has a mix of
-pre-add-on and post-add-on photos. Show the toggle on the same screen as the plan picker, before
-the "Pay and publish" button — not as a settings-page option on a live event. Opting in twice →
-`409 ADDON_ALREADY_ACTIVE` (5038).
-
-There is no separate add-on checkout. Entitlement is the row created by the `PATCH` above; the price
-folds into whichever purchase happens next.
-
-### Getting back out — admin only
-
-```http
-DELETE /api/admin/events/{eventId}/addons/{paidServiceCode}
-```
-
-**There is no host-facing way to remove an add-on**, and no admin-facing way either once the event is
-`ACTIVE`. Once paid for, an entitlement (this add-on or a §7b storage pack, same endpoint, same rule)
-is permanent for the life of the event: `409 ADDON_LOCKED_WHILE_ACTIVE` (5042). This endpoint only
-ever succeeds on an event that isn't `ACTIVE` — a still-`DRAFT` event, or one reverted to `DRAFT` by
-an approved activation refund — at which point it is purely an admin correction tool, not something
-used on a live, paying event. `409 ADDON_NOT_ACTIVE` (5041) if the event has no such add-on to begin
-with.
-
-### It is billed once, folded into the activation charge
-
-The add-on is **never free, and never billed again**. Its price is added straight into the activation
-order's total:
-
-```
-activation amount = plan.priceAmountMinor + Σ(active recurring add-ons' price)
-                                           + Σ(active module unlocks' price, §7c)
-```
-
-So opting in before paying adds the add-on's flat price to the activation total, once. **Show this in
-the plan picker** — the toggle changes the price on the "Pay and publish" button, and a host who sees
-the number move only at the payment step will read it as a surprise charge.
-
-The `ACTIVATION` order carries the breakdown in `addonAmountMinor` — the summed price of every active
-add-on/unlock folded into that one charge:
+The `ACTIVATION` order carries the breakdown in `addonAmountMinor`, the summed price of every opt-in
+folded into that one charge:
 
 ```jsonc
 { "id": "…", "kind": "ACTIVATION", "status": "PAID",
-  "amountMinor": 10500,       // plan 10000 + add-on 500
-  "addonAmountMinor": 500,    // null when no add-on/unlock is active — the receipt line for it
+  "amountMinor": 10300,       // option 10000 + unlock 300
+  "addonAmountMinor": 300,    // null when nothing is opted in — the receipt line for it
   "currency": "EUR", … }
 ```
 
-Render *"€100 activation + €5 originals = €105"* from `amountMinor` and `addonAmountMinor` rather
-than re-deriving it from the catalog — the order is the historical receipt and the catalog price may
-have changed since.
+Render *"€100 activation + €3 wishlist = €103"* from `amountMinor` and `addonAmountMinor` rather
+than re-deriving it from the catalog. The order is the historical receipt, and the catalog price may
+have changed since. An order paid before 2026-09-23 may still include 500 for `ORIGINALS`.
 
 **If the host opts in after opening checkout**, the open order is cancelled and a re-priced one is
 issued: the `orderId` (and redirect URL) you were holding changes. Re-read the order from the
-checkout response rather than reusing a cached one after any `PATCH` that sets `keepOriginals`.
+checkout response rather than reusing a cached one after any opt-in (§7c).
 
 ### Retrieving the original
 
@@ -656,37 +675,38 @@ checkout response rather than reusing a cached one after any `PATCH` that sets `
 GET /api/medias/{id}/original   → 200 { url: "https://…" }   # presigned, short-lived
 ```
 
-**Host or the uploading member only** — `403` for anyone else, including other guests. `404` if the
-event never opted in (no original was ever kept). This is a separate call from the normal feed URL:
-the feed always serves the small derivative, and this is the only way to reach the full-resolution
-file.
+**Host or the uploading member only**: `403` for anyone else, including other guests. `404` if
+that item has no original on file. That happens only for media uploaded before 2026-08-26 to an
+event that never bought the add-on. This is a separate call from the normal feed URL: the feed always
+serves the small derivative, and this is the only way to reach the full-resolution file.
+
+Offer it on every event. The billing `addons` array says nothing about whether originals exist.
 
 For bulk retrieval of the whole gallery at once (not one item at a time), see
-[`gallery-archive-download-fe-integration.md`](gallery-archive-download-fe-integration.md) — the
-host-only zip-download feature, which reads this same entitlement to decide whether the
-`ORIGINAL` variant is offered.
+[`gallery-archive-download-fe-integration.md`](gallery-archive-download-fe-integration.md), the
+host-only zip-download feature. It offers the `ORIGINAL` variant on every event: the manifest's
+`originalsAvailable` is always `true`.
 
 ### What the billing read endpoint adds
 
-`GET /api/events/{eventId}/billing` (§8) gains an `addons` array:
+`GET /api/events/{eventId}/billing` (§8) has an `addons` array:
 
 ```jsonc
 {
   …,
   "addons": [
-    { "code": "ORIGINALS", "name": "Keep Originals", "priceAmountMinor": 500,
-      "billingPeriod": "ONE_TIME", "activatedAt": "2026-08-01T10:00:00Z" },
     { "code": "UNLOCK_WISHLIST", "name": "Gift Wishlist", "priceAmountMinor": 300,
       "billingPeriod": "ONE_TIME", "activatedAt": "2026-08-01T10:00:00Z" }
   ]
 }
 ```
 
-Every row is `'ONE_TIME'` — it was paid for once at activation and owes nothing further; it appears
+Every row is `'ONE_TIME'`. It was paid for once at activation and owes nothing further; it appears
 here because the host owns it, not because they owe on it. `priceAmountMinor` is what it cost at the
-time, not a recurring figure. Empty array on an event that never opted in. The `ACTIVATION` order
-separately carries its own `addonAmountMinor` — the combined total of everything in this array, per
-the receipt note above.
+time, not a recurring figure. Empty array on an event that never opted in. An event paid before
+2026-09-23 may also list `ORIGINALS`; show it as history, and gate nothing on it. The `ACTIVATION`
+order separately carries its own `addonAmountMinor`: the combined total of the opt-ins in this array,
+per the receipt note above. Storage packs (§7b) are in the array too but were paid by their own order.
 
 ---
 
@@ -719,7 +739,7 @@ POST /api/events/{eventId}/storage-checkout
 { "paidServiceCode": "STORAGE_5GB" }
 ```
 
-Host-only, rate limited 10/min (shared bucket with the other checkout endpoints), same response
+Primary host only (4006 for a co-host), rate limited 10/min (shared bucket with the other checkout endpoints), same response
 shape and same two return routes as activation (§6 steps 3–5) — poll `GET /api/events/{id}/billing`
 and watch the order, exactly the same way. **`ACTIVE`-only**: `409 EVENT_NOT_ACTIVE` (5014) on a
 `DRAFT` event — there's nothing to raise the ceiling of before it's paid for at all; offer a pack only
@@ -728,8 +748,8 @@ after activation, never in the setup wizard alongside §7a/§7c's DRAFT-only tog
 **The body names a catalog code, nothing else** — price and byte grant both come from that row
 server-side, so a tampered body can at worst name a code that doesn't exist at all
 (`404 RESOURCE_NOT_FOUND`, 2001), a real code that's archived or not public
-(`409 PAID_SERVICE_NOT_PURCHASABLE`, 5036), or the wrong kind, e.g. the `ORIGINALS` code sent
-here instead of §7a's endpoint (`400 INVALID_PAID_SERVICE_KIND`, 3015). Buying a pack the event
+(`409 PAID_SERVICE_NOT_PURCHASABLE`, 5036), or the wrong kind, e.g. an unlock code sent
+here instead of §7c's endpoint (`400 INVALID_PAID_SERVICE_KIND`, 3015). Buying a pack the event
 already holds → `409 ADDON_ALREADY_ACTIVE` (5038) — each pack code is one-and-done per event; offer a
 different pack, not the same one again.
 
@@ -761,7 +781,7 @@ purchased storage with no other change on your side. A `null` `planStorageBytes`
 still means unlimited regardless of `extraStorageBytes`.
 
 A settled pack also shows up in §7a's `addons` array on `GET /api/events/{eventId}/billing`, same as
-`ORIGINALS` — it appears there because the host owns it, not because anything is owed on it.
+a §7c unlock — it appears there because the host owns it, not because anything is owed on it.
 
 Storage packs are **final** in every direction. The byte grant is never refunded through the
 refund-request flow in §9 — approving an activation refund reverses the `ACTIVATION` order (and any
@@ -825,21 +845,21 @@ POST /api/events/{eventId}/addons
 { "paidServiceCode": "UNLOCK_WISHLIST" }
 ```
 
-Host-only, rate limited 30/min. Returns the same `AddonSummary` shape as the `addons` array in §8:
+Primary host only (4006 for a co-host), rate limited 30/min. Returns the same `AddonSummary` shape as the `addons` array in §8:
 
 ```jsonc
 { "code": "UNLOCK_WISHLIST", "name": "Gift Wishlist", "priceAmountMinor": 300,
   "billingPeriod": "ONE_TIME", "activatedAt": "…" }
 ```
 
-**Nothing is charged at this moment.** Like §7a's `keepOriginals` toggle, the entitlement is the row
-this creates, and the price folds into the activation payment, per §7a's formula. Render it as a
+**Nothing is charged at this moment.** The entitlement is the row this creates, and the price folds
+into the activation payment, per §7a's formula. Render it as a
 toggle in the draft setup flow next to the plan picker — **not** as a purchase button, and not on any
 live-event screen.
 
-The same endpoint also accepts `RECURRING_ADDON` codes, which is the generic route to what §7a does
-through `PATCH /api/events/{id}` with `keepOriginals`. Both paths create the same row; use whichever
-suits the screen. A `STORAGE_PACK` code sent here is a `400 INVALID_PAID_SERVICE_KIND` (3015) —
+The same endpoint also accepts `RECURRING_ADDON` codes. The default catalog sells none: `ORIGINALS`,
+the only one, is retired and refused here with `409 PAID_SERVICE_NOT_PURCHASABLE` (5036) (§7a). A
+`STORAGE_PACK` code sent here is a `400 INVALID_PAID_SERVICE_KIND` (3015) —
 storage is bought against a *live* event through §7b.
 
 | Status | Code | When | What to do |
@@ -848,9 +868,10 @@ storage is bought against a *live* event through §7b.
 | `409` | `ADDON_ALREADY_ACTIVE` (5038) | already opted in | treat as success and refetch |
 | `400` | `INVALID_PAID_SERVICE_KIND` (3015) | a storage-pack code | refetch `paidServices` |
 | `404` | `RESOURCE_NOT_FOUND` (2001) | no such code | refetch `paidServices` |
-| `409` | `PAID_SERVICE_NOT_PURCHASABLE` (5036) | archived or non-public | hide the offer |
+| `409` | `PAID_SERVICE_NOT_PURCHASABLE` (5036) | archived or non-public, or `ORIGINALS` | hide the offer |
 | `409` | `PAID_SERVICE_NOT_ON_PLAN` (5040) | restricted to plans this event isn't on | filter the picker on `planTierIds` so this is unreachable |
 | `403` | `FORBIDDEN` (4001) | caller isn't a host of the event | — |
+| `403` | `PURCHASE_NOT_PRIMARY_HOST` (4006) | caller is a co-host, not the primary host | — |
 
 ### The limitation to design around
 
@@ -873,40 +894,45 @@ There isn't a host-facing route, deliberately — same rule as §7a and §7b.
 ## 7d. Upgrading plan tier
 
 *Previously undocumented — this endpoint already exists and is live.* Moves an already-`ACTIVE` event
-onto a pricier plan tier, mid-life, for the price of the difference — the one purchase in §7 that
-isn't folded into activation and isn't a flat fixed price.
+onto a higher plan tier, mid-life, at one of that plan's durations, for the price of the difference —
+the one purchase in §7 that isn't folded into activation and isn't a flat fixed price.
 
 ```http
 POST /api/events/{eventId}/upgrade-checkout
 {
   "planTierCode": "PRO",
+  "coverageOptionId": "e9a0…",
   "requestsImmediateStart": true,
   "acknowledgesWithdrawalTerms": true,
   "termsVersion": "2026-09-17"
 }
 ```
 
-Same consent fields as activation (§6 step 3) — an upgrade is a new paid service and the withdrawal
-window reopens on it. Host-only, same response shape (`{ orderId, redirectUrl }`) and same two return
-routes as activation (§6 steps 3–5) — poll `GET /api/events/{id}/billing` and watch the order, same
-as every other checkout here.
+`coverageOptionId` (required since 2026-09-23) is one of the durations `upgrade-options` lists for
+that plan. Same consent fields as activation (§6 step 3) — an upgrade is a new paid service and the
+withdrawal window reopens on it. Primary host only (4006 for a co-host, on `upgrade-options` too), same response shape (`{ orderId, redirectUrl }`) and same
+two return routes as activation (§6 steps 3–5) — poll `GET /api/events/{id}/billing` and watch the
+order, same as every other checkout here.
 
 **`ACTIVE`-only.** A `DRAFT` event hasn't paid anything yet, so there's no "upgrade" to speak of —
 `409 EVENT_NOT_ACTIVE` (5014); use activation (§6) instead, with the target plan chosen up front.
 
-**Priced as the catalog difference, not the target plan's full price.** The charge is the target
-plan's `priceAmountMinor` minus the current plan's, both taken pre-discount, with the *target* plan's
-own discount then applied to that difference:
+**Priced duration to duration (2026-09-23).** The target plan must rank above the event's (plans rank
+by their cheapest duration), and the chosen duration must be **at least as long as the event's own**
+and cost more than it. The charge is the difference between the two durations' current prices, with
+the *target* plan's own discount then applied to that difference:
 
-- The difference must be strictly positive — moving to a cheaper or equally-priced plan is refused
-  with `409 PLAN_TIER_NOT_AN_UPGRADE` (5029). There is no downgrade flow; filter the picker to plans
-  priced above the event's current one.
+- A shorter duration, or one that doesn't cost more, is refused with `409 PLAN_TIER_NOT_AN_UPGRADE`
+  (5029) — "An upgrade keeps at least the N months this event has." There is no downgrade flow.
+- A `coverageOptionId` that isn't a live duration of the target plan → `400 COVERAGE_OPTION_INVALID`
+  (5077).
 - Both plans must share a currency — `409 PLAN_TIER_CURRENCY_MISMATCH` (5030) if they don't. Catalog
   misconfiguration; the host sees a generic failure and support has to fix the catalog.
 
-On settlement, the event's `planTierCode` changes to the target plan immediately — unlike activation,
+On settlement, the event moves onto the target plan and duration immediately, and `coverageEndsAt`
+moves later by the months the new duration adds (none for a same-length upgrade) — unlike activation,
 **this does change something readable elsewhere**: re-read `GET /api/config`'s plan-gated fields
-(`moduleKeys`, quotas) after the order settles, the same way you'd re-read after any plan change.
+(`moduleKeys`, quotas) and the event's `coverageEndsAt` after the order settles.
 
 **Reversible only as a side effect of an activation refund.** There's no "downgrade" or "undo the
 upgrade" endpoint on its own — but approving a refund on the event's `ACTIVATION` order (§9) also
@@ -917,9 +943,9 @@ Outside of that path, an upgrade is as permanent as activation itself.
 event's *activation* and stops there: the code bound at activation is deliberately not read when an
 upgrade is priced, and there is no code field on this screen. The target plan's own catalog promotion
 still comes off the difference, so computing the number client-side is still not safe for display —
-a naive `target.priceAmountMinor - current.priceAmountMinor` ignores it. **Don't compute this number
-yourself; render `GET /api/events/{eventId}/upgrade-options` as-is** — see
-`collaborations-fe-integration.md` §1c, which returns every valid target already fully priced.
+a naive subtraction of the two durations' prices ignores it. **Don't compute this number yourself;
+render `GET /api/events/{eventId}/upgrade-options` as-is** — see `collaborations-fe-integration.md`
+§1c, which returns every valid target plan with each of its eligible durations already fully priced.
 Sending a code to the preview endpoint with an upgrade target is refused with `409
 DISCOUNT_NOT_APPLICABLE_TO_UPGRADE` (5076).
 
@@ -937,14 +963,17 @@ One read, everything about the event's money. This is what the plan-settings pag
   "eventStatus": "ACTIVE",
   "planTierCode": "EVENT_STANDARD",
   "planTierName": "Standard",
+  "coverageOptionId": "2a77…",             // the duration the event is on — added 2026-09-23
+  "coverageMonths": 6,
   "orders": [                              // newest first; every order ever placed on this event
     { "id": "…", "kind": "ACTIVATION", "status": "PAID",
       "amountMinor": 4900, "addonAmountMinor": null,
       "currency": "EUR", "paidAt": "…", "createdAt": "…",
-      "setupAmountMinor": 245, "eventDayAmountMinor": 2940, "hostingAmountMinor": 1715 }
+      "setupAmountMinor": 245, "eventDayAmountMinor": 2940, "hostingAmountMinor": 1715,
+      "coverageMonths": 6, "coverageMonthsAdded": null }
   ],
   "addons": [                              // entitlements the event owns — see §7a
-    { "code": "ORIGINALS", "name": "Keep Originals", "priceAmountMinor": 500,
+    { "code": "UNLOCK_WISHLIST", "name": "Gift Wishlist", "priceAmountMinor": 300,
       "billingPeriod": "ONE_TIME", "activatedAt": "…" }
   ],
   "discount": {                            // null when the event carries no active code — see
@@ -974,6 +1003,11 @@ three-line withdrawal split**, snapshotted on the order at checkout time and sum
 `amountMinor`. They exist on every order, but only carry meaning on `ACTIVATION` and `UPGRADE` —
 they are the same lines a withdrawal computation refunds from (§9). Not worth rendering on this
 screen by themselves; they matter once a withdrawal is in play.
+
+**`coverageOptionId` / `coverageMonths` (added 2026-09-23)** are the duration the event is on today.
+The event response carries neither, so read them here. On each order, `coverageMonths` is the months
+that order bought (`null` on a storage pack) and `coverageMonthsAdded` is how far an `UPGRADE` moved
+`coverageEndsAt` (`null` on every other kind).
 
 ---
 
@@ -1008,20 +1042,23 @@ retention window pinned at activation).
 
 **Changed 2026-09-21 — rescheduled events.** A host may still move `startAt` forward on a live event
 (postponing is ordinary), but the date they paid for is pinned server-side and a withdrawal on an
-event whose `startAt` differs from it is **always `HELD`** for review, never auto-refunded. Two
+event whose `startAt` differs from it is **always `HELD`** for review, never auto-refunded. Three
 things follow for the FE:
 - A new fraud signal code appears in the admin queue: `SCHEDULE_MOVED_AFTER_PAYMENT` (`observed`
   carries both dates, e.g. `"paid for 2026-10-03T18:00Z, now set to 2026-12-01T18:00Z"`). Nothing
   to special-case — the admin screen already renders every signal generically.
 - `usageFacts` gains `activatedStartAt` (ISO string, may be `null` for events activated before this
   change). Display-only, as before.
-- Host copy: the withdrawal confirmation dialog can say "Because this event's date was changed after
-  payment, your request will be reviewed by a person" when the preview's event `startAt` differs from
-  what they originally booked — the preview response does not flag this itself; if you want a flag
-  rather than a comparison, ask and it can be added. A host who never gave consent — which cannot
-currently happen through this API, since `requestsImmediateStart`/`acknowledgesWithdrawalTerms` are
-mandatory on checkout (§6) — would be entitled to a full refund of everything (art. 14(4)(a)); this
-case is theoretical today, not something the FE needs to branch on.
+- Host copy: when the preview's `scheduleMovedAfterPayment` is `true` (added 2026-09-23), the
+  withdrawal confirmation dialog should say "Because this event's date was changed after payment,
+  your request will be reviewed by a person". It is the same check the signal makes when the
+  request is filed. `false` promises nothing — other signals can still hold a request, and those are
+  deliberately not disclosed — so never turn it into "you will be refunded immediately".
+
+A host who never gave consent — which cannot currently happen through this API, since
+`requestsImmediateStart`/`acknowledgesWithdrawalTerms` are mandatory on checkout (§6) — would be
+entitled to a full refund of everything (art. 14(4)(a)); this case is theoretical today, not
+something the FE needs to branch on.
 
 ### `GET /api/events/{eventId}/withdrawal-preview` — primary host
 
@@ -1040,12 +1077,22 @@ it freely as the host reads the confirmation dialog.
       "hostingStart": "…", "hostingEnd": "…", "usedSeconds": 432000, "totalSeconds": 2592000,
       "eventPerformed": false, "refundMinor": 3965, "providerRefunded": false,
       "components": { "setup": { /* … */ }, "eventDay": { /* … */ }, "hosting": { /* … */ } } }
-  ]
+  ],
+  "scheduleMovedAfterPayment": false  // true → a withdrawal will be HELD for review (see above)
 }
 ```
 
 - `refusals[].message` is written to be shown to the host verbatim, same convention as the old
   eligibility reasons.
+- `windowClosesAt` and `currency` are both `null` on an ineligible preview with no settled activation
+  (refusal `NO_SETTLED_ACTIVATION` or `ALREADY_REFUNDED`).
+- `windowClosesAt` is the first instant withdrawal is no longer possible: the end of the 14th day
+  after payment, Athens time, moved to the end of Monday when that day falls on a weekend
+  (2026-09-23; it used to be `paidAt` + 14×24h).
+- `scheduleMovedAfterPayment` (added 2026-09-23) is `true` when `startAt` has moved off the date
+  that was paid for. Show the "reviewed by a person" line from the price-split section above when it
+  is. It is a fact about the event, so it is set on an ineligible preview too, where it has nothing
+  to warn about.
 - `lines` covers every order a withdrawal would touch — the activation and any settled upgrade — one
   line each, each with its own `components` breakdown (JSON, shape-stable but not enumerated here;
   treat it as display-only detail, not something to recompute from).
@@ -1284,7 +1331,7 @@ name, for logs). Branch on `errorCode`.
 | code | HTTP | when | what to show |
 |---|---|---|---|
 | `3001` `VALIDATION_FAILED` | 400 | any bean-validation failure, incl. all plan-tier field rules | field-level errors from `details` |
-| `3007` `INVALID_PLAN_TIER_SCOPE` | 400 | admin sets `eventTypeKey` on an `ACCOUNT`-scope plan (§13), or `planTierIds` names one for a paid service | admin panel only |
+| `3007` `INVALID_PLAN_TIER_SCOPE` | 400 | admin sets `eventTypeKey` on an `ACCOUNT`-scope plan (§13), or `planTierIds` names one for a paid service; since 2026-09-23 also `priceAmountMinor` on an `EVENT`-scope plan, or a coverage option on an `ACCOUNT`-scope one | admin panel only |
 | `3008` `EVENT_DATES_INCOMPLETE` | 400 | checkout with no `startAt`/`endAt`, or `endAt <= startAt` | "Set your event's dates before publishing" — link to the schedule form |
 | `3010` `RATE_LIMITED` | 429 | the caller's budget for the window is spent | §11 |
 | `3018` `INVALID_EVENT_TYPE` | 400 | unknown `eventType` at `GET /api/plan-tiers?eventType=X`, event creation, or admin's `duplicate`/plan create (§2, §13) | refetch `GET /api/config`'s `eventTypeKeys`, the value was stale or mistyped |
@@ -1299,7 +1346,12 @@ name, for logs). Branch on `errorCode`.
 | `5012` `MODULE_NOT_AVAILABLE` | 409 | a module action where `isAvailable` is false | "not included in this plan" — and, if a matching `MODULE_UNLOCK` exists in `paidServices`, the §7c offer |
 | `5013` `PLAN_TIER_IS_ONLY_DEFAULT` | 409 | admin removing the last default plan | admin panel only |
 | `5015` `PLAN_TIER_NOT_PURCHASABLE` | 409 | the plan was archived or hidden since page load | refetch `/api/config`, ask them to pick again |
-| `5019` `PLAN_TIER_NOT_PRICED` | 409 | catalog misconfiguration — no activation price set | generic error + support contact; the host cannot fix this |
+| `5019` `PLAN_TIER_NOT_PRICED` | 409 | catalog misconfiguration — the plan sells no duration (no live coverage option) or has no currency. Before 2026-09-23: no activation price set | generic error + support contact; the host cannot fix this |
+| `5077` `COVERAGE_OPTION_INVALID` | 400 | a `coverageOptionId` (event create/patch, code previews, upgrade checkout, admin assignment) is unknown, retired, the wrong kind, or another plan's; or missing on event create or `targetCoverageOptionId`. Missing on the new-event preview or upgrade checkout is `3001 VALIDATION_FAILED` instead; missing on patch or admin assignment is not an error (unchanged / default duration) | refetch the plan's `initialOptions` and ask them to pick again |
+| `5078` `COVERAGE_OPTION_UNAVAILABLE` | 409 | the draft's duration was retired after it was chosen (activation checkout and its preview); or an admin create/assignment needs a default duration on a plan that sells none | send the host back to pick another duration |
+| `5079` `COVERAGE_OPTION_LAST_INITIAL` | 409 | admin retiring the last duration a public, assignable plan is sold at | admin panel only; add another duration first |
+| `5080` `COVERAGE_OPTION_DUPLICATE` | 409 | admin adding, or reactivating, a duration the plan already sells live | admin panel only; retire the other one first |
+| `5081` `HOST_TRANSFER_WITHDRAWAL_OPEN` | 409 | `POST /api/events/{eventId}/hosts/{id}/primary` while a paid order can still be withdrawn | wait until `details.unlocksAt` |
 | `5021` `PLAN_TIER_CURRENCY_UNSUPPORTED` | 409 | the plan's currency is not supported by the provider | admin-facing; host sees a generic failure |
 | `5034` `ACCOUNT_PLANS_DISABLED` | 409 | admin tries to create an `ACCOUNT`-scope plan, or move a user onto a different one | admin-facing; remove/disable the control (§13) |
 | `3015` `INVALID_PAID_SERVICE_KIND` | 400 | a code sent to an endpoint that doesn't serve its kind — a `STORAGE_PACK` code at the add-on opt-in (§7c), or a `RECURRING_ADDON`/`MODULE_UNLOCK` code at `storage-checkout` (§7b) | refetch `paidServices`, the code was mislabeled client-side |
@@ -1317,10 +1369,10 @@ name, for logs). Branch on `errorCode`.
 | code | HTTP | when | what to show |
 |---|---|---|---|
 | `5014` `EVENT_NOT_ACTIVE` | 409 | upgrade or storage checkout on a `DRAFT` event; or a guest/module action on one | send to activation / "not published yet" |
-| `5017` `EVENT_NOT_DRAFT` | 409 | activation checkout, or a DRAFT-only add-on opt-in, on an event already `ACTIVE` | usually a stale tab; refetch the event |
+| `5017` `EVENT_NOT_DRAFT` | 409 | activation checkout, a DRAFT-only add-on opt-in, or (2026-09-23) a `coverageOptionId` change, on an event already `ACTIVE` | usually a stale tab; refetch the event |
 | `5018` `ORDER_NOT_PENDING` | 409 | admin settling an already-settled order | admin panel only |
 | `5028` `ORDER_AMOUNT_MISMATCH` | 409 | the amount a provider confirms paying doesn't match what the order was opened for | never expected from client action; log and treat as a settlement failure |
-| `5029` `PLAN_TIER_NOT_AN_UPGRADE` (§7d) | 409 | upgrade-checkout's target plan is not priced above the event's current plan | filter the picker to plans priced above the current one |
+| `5029` `PLAN_TIER_NOT_AN_UPGRADE` (§7d) | 409 | upgrade-checkout's target plan doesn't rank above the event's, or the chosen duration is shorter than the event's own or doesn't cost more | build the picker from `upgrade-options` (§7d), which lists only valid durations |
 | `5030` `PLAN_TIER_CURRENCY_MISMATCH` (§7d) | 409 | the current and target plans are priced in different currencies | catalog misconfiguration; host sees a generic failure and support has to fix the catalog |
 | `5031` `CHECKOUT_SESSION_UNRESOLVED` | 409 | a checkout session with the provider couldn't be resolved during reconciliation | internal; surfaces as the generic "still processing" state (§6 step 5), not a distinct UI |
 | `5046` `CHECKOUT_AMOUNT_BELOW_MINIMUM` | 409 | a plan discount cut a checkout's price below what the provider will charge at all | catalog misconfiguration (discount set too steep); host sees a generic failure and support has to fix the discount |
@@ -1334,6 +1386,7 @@ name, for logs). Branch on `errorCode`.
 | `5072` `WITHDRAWAL_TERMS_VERSION_STALE` | 400 | checkout's `termsVersion` (§6, §7d) doesn't match the version currently in force | reload `GET /api/config`, re-show the current terms, let the host retry once |
 | `5073` `WITHDRAWAL_REFUSED` | 409 | the withdrawal was refused at the gate — no settled activation, window closed, already in progress, already refunded (§9) | the `detail` string on the error envelope; for the structured per-reason list, call withdrawal-preview instead |
 | `4005` `WITHDRAWAL_NOT_PRIMARY_HOST` | 403 | the caller is a co-host, not the primary host (`displayOrder: 0` in `GET /api/events/{id}/hosts`) — withdrawal refunds the payer and deletes the event, so it is gated like deletion | hide the withdraw entry point for co-hosts; if reached, "Only the primary host can withdraw this event." |
+| `4006` `PURCHASE_NOT_PRIMARY_HOST` | 403 | a co-host calling a checkout, `upgrade-options`, `checkout/preview-code` or `addons`, or a `PATCH /api/events/{id}` that changes a draft's `coverageOptionId` | only the primary host buys; hide the action |
 | `5074` `WITHDRAWAL_NOT_HELD` | 409 | admin release/withhold on a request that isn't currently `HELD` | double-click or stale admin queue; refetch |
 
 **`5022`–`5025` (`REFUND_NOT_ELIGIBLE`, `REFUND_ALREADY_REQUESTED`, `REFUND_REQUEST_NOT_PENDING`,
@@ -1342,7 +1395,8 @@ deleted along with the admin-approval refund flow; nothing in the API produces t
 remain defined as `ErrorCode` constants so old log lines still resolve, but there is nothing for the
 FE to branch on — remove any handling for them.
 
-`403` on any host endpoint means the caller is not a host. Co-hosts count as hosts.
+`403` on any host endpoint means the caller is not a host, except that buying and
+withdrawing are primary-host-only (4006, 4005).
 
 ---
 
@@ -1372,6 +1426,7 @@ All require `ROLE_ADMIN`; non-admins get `403`.
 | `DELETE /api/admin/plan-tiers/{id}` | `204`, or `409 PLAN_TIER_IN_USE` if assigned to any user or event |
 | `PUT /api/admin/plan-tiers/{id}/modules` | sets `moduleKeys` |
 | `POST /api/admin/plan-tiers/{id}/duplicate` | clones the plan into one or more other event types in one call, stamping `sharedGroupKey` on source + clones — see [`plan-tiers-by-event-type-fe-integration.md`](plan-tiers-by-event-type-fe-integration.md) §5. Replaces the old `PUT .../event-types` (removed 2026-09-13) — `eventTypeKey` is set once at creation and is otherwise immutable, there is no patch endpoint for it |
+| `GET` / `POST /api/admin/plan-tiers/{id}/coverage-options`, `PATCH …/coverage-options/{optionId}` | the durations an `EVENT` plan is sold at, and their prices (2026-09-23). `kind` and `months` are fixed once created; retire with `active: false`, never delete. `duplicate` copies them too. See [`coverage-options-and-extensions-fe-integration.md`](coverage-options-and-extensions-fe-integration.md) §8 |
 
 Create/patch validation (server-enforced, `400` / `3001`):
 
@@ -1379,8 +1434,11 @@ Create/patch validation (server-enforced, `400` / `3001`):
 - `scope`, `name`, `sortOrder`, `isDefault`, `isAssignable`, `isPublic` — required on create.
 - `name` ≤100 chars; `sortOrder >= 0`.
 - `storageBytes`, `maxMembers`, `priceAmountMinor` — if present, `>= 0`.
-- `autoDeleteMonths` — if present, `>= 1`. `EVENT`-scope only; rejected with `400
-  INVALID_PLAN_TIER_SCOPE` (3007) on an `ACCOUNT`-scope plan, same as `storageBytes`/`maxMembers`.
+- `priceAmountMinor` is `ACCOUNT`-scope only since 2026-09-23 — rejected with `400
+  INVALID_PLAN_TIER_SCOPE` (3007) on an `EVENT`-scope plan, whose prices are its coverage options.
+  `storageBytes`/`maxMembers` are the mirror image: `EVENT`-scope only, rejected the same way on an
+  `ACCOUNT`-scope plan. A new `EVENT` plan has no durations and is not on sale until one is added.
+- `autoDeleteMonths` is gone (2026-09-23); sending it is a `400`, like any unknown field.
 - `priceCurrency` — if present, exactly 3 chars (ISO 4217).
 - `discountPercent` — if present, 0–100. `discountLabel` ≤100 chars.
 - `billingPeriod` — `'MONTHLY' | 'YEARLY' | 'ONE_TIME'` or null. In practice always `'ONE_TIME'` on an
@@ -1395,7 +1453,7 @@ catalog visibility. Delete is for a plan created by mistake and never assigned.
 | endpoint | body | returns |
 |---|---|---|
 | `PATCH /api/admin/users/{id}/plan-tier` | `{ "planTierCode": "PRO" }` | **always `409 ACCOUNT_PLANS_DISABLED`** — see below |
-| `PATCH /api/admin/events/{id}/plan-tier` | `{ "planTierCode": "PLUS" }` — must be `EVENT` scope | `EventUsageResponse` |
+| `PATCH /api/admin/events/{id}/plan-tier` | `{ "planTierCode": "PLUS", "coverageOptionId": "…" }` — must be `EVENT` scope; `coverageOptionId` optional (2026-09-23) | `EventUsageResponse` |
 
 **Account plans are disabled as of 2026-08-11** (`account-plans-disabled-and-platform-metrics-fe-integration.md`
 has the full change). `PATCH /api/admin/users/{id}/plan-tier` now unconditionally rejects with
@@ -1408,6 +1466,12 @@ The event-plan assignment endpoint is unaffected: the response is still a fresh 
 against the new plan's limits, so an admin sees immediately whether it's already exceeded — there
 is no proration or commerce flow behind this. `planTierCode` is required, non-blank, ≤30 chars; an
 unknown code or a scope mismatch errors rather than silently no-op'ing.
+
+Since 2026-09-23 it also picks the event's duration on the new plan. `coverageOptionId`, when sent,
+must be a live duration of that plan (`400 COVERAGE_OPTION_INVALID`); without it the event takes the
+new plan's duration of the same length, else its shortest (`409 COVERAGE_OPTION_UNAVAILABLE` if it
+sells none). **The assignment never moves `coverageEndsAt`** — it changes what the event is on, not
+how long it is kept.
 
 ### Modules and flags
 
@@ -1493,10 +1557,9 @@ export interface PlanTierResponse {
 
   storageBytes: number | null;  // null = unlimited
   maxMembers: number | null;    // null = unlimited
-  autoDeleteMonths: number | null;  // EVENT scope only; null = never auto-deleted
 
-  priceAmountMinor: number | null;   // the one-time activation charge on EVENT scope
-  priceCurrency: string | null;
+  priceAmountMinor: number | null;   // ACCOUNT scope only; always null on EVENT scope — see initialOptions
+  priceCurrency: string | null;      // also the currency of every coverage option
   billingPeriod: BillingPeriod | null;  // always 'ONE_TIME' on EVENT scope
 
   discountPercent: number | null;
@@ -1508,6 +1571,18 @@ export interface PlanTierResponse {
   eventTypeKey: string | null;  // the one event type this plan may be bought for; null only on ACCOUNT scope
   sharedGroupKey: string | null;  // UUID; set only by the admin "duplicate" action — see §2
   paidModules: PaidServiceResponse[] | null;  // MODULE_UNLOCK upsells; null only from admin catalog endpoints
+  initialOptions: CoverageOptionResponse[];    // added 2026-09-23 — the durations it is sold at; empty = not on sale
+  extensionOptions: CoverageOptionResponse[];  // added 2026-09-23 — nothing sells these yet
+}
+
+// Added 2026-09-23 — one duration an EVENT plan is sold at.
+export interface CoverageOptionResponse {
+  id: string;                   // what every coverageOptionId field takes
+  kind: 'INITIAL' | 'EXTENSION';
+  months: number;
+  priceAmountMinor: number;     // in the plan's priceCurrency, before any promotion or code
+  sortOrder: number;
+  active: boolean;              // always true outside the admin endpoints
 }
 
 // ---------- Paid services (add-on + storage packs + module unlocks) ----------
@@ -1545,7 +1620,8 @@ export interface EventAddonRequest {
 
 // POST /api/events/{eventId}/upgrade-checkout — host, ACTIVE only (§7d).
 export interface UpgradeCheckoutRequest {
-  planTierCode: string;         // must be priced above the event's current plan
+  planTierCode: string;         // must rank above the event's current plan
+  coverageOptionId: string;     // required since 2026-09-23 — one of upgrade-options' options[].coverageOptionId
 }
 
 // POST /api/events/{eventId}/storage-checkout — host, ACTIVE only (§7b).
@@ -1597,7 +1673,8 @@ export interface ActivationCheckoutRequest extends WithdrawalConsent {
 
 // POST /api/events/{eventId}/upgrade-checkout — host, ACTIVE only (§7d).
 export interface UpgradeCheckoutRequest extends WithdrawalConsent {
-  planTierCode: string;         // must be priced above the event's current plan
+  planTierCode: string;         // must rank above the event's current plan
+  coverageOptionId: string;     // required since 2026-09-23 — one of upgrade-options' options[].coverageOptionId
 }
 
 // ---------- Billing ----------
@@ -1606,6 +1683,8 @@ export interface EventBillingResponse {
   eventStatus: EventStatus;
   planTierCode: string;
   planTierName: string;
+  coverageOptionId: string;     // added 2026-09-23 — the duration the event is on
+  coverageMonths: number;       // added 2026-09-23 — its months
   orders: OrderSummary[];       // newest first
   addons: EventAddon[];         // empty if never opted in
 }
@@ -1625,6 +1704,10 @@ export interface OrderSummary {
   setupAmountMinor: number | null;
   eventDayAmountMinor: number | null;
   hostingAmountMinor: number | null;
+  // Added 2026-09-23. coverageMonths: the months the order bought (null on STORAGE_PACK).
+  // coverageMonthsAdded: UPGRADE only — how far it moved coverageEndsAt; null on every other kind.
+  coverageMonths: number | null;
+  coverageMonthsAdded: number | null;
 }
 
 // ---------- Withdrawal (replaces the old admin-approved Refunds types, 2026-09-18) ----------
@@ -1659,10 +1742,11 @@ export interface WithdrawalLine {
 export interface WithdrawalPreview {
   eligible: boolean;
   refusals: WithdrawalRefusal[];
-  windowClosesAt: string;
+  windowClosesAt: string | null;        // null when there is no settled activation
   totalRefundMinor: number;
-  currency: string;
+  currency: string | null;              // null when there is no settled activation
   lines: WithdrawalLine[];
+  scheduleMovedAfterPayment: boolean;   // true → the withdrawal will be HELD for review; false promises nothing
 }
 
 // POST /api/events/{eventId}/withdrawals — primary host. Body optional: { reason?: string }.
@@ -1778,14 +1862,16 @@ Keep the `orderId` visible in dev builds so testers can settle their own orders.
 
 **Host**
 
-- Pricing / plan picker at event creation — `EVENT`-scope catalog, `sortOrder`, unlimited handling.
+- Pricing / plan picker at event creation — `EVENT`-scope catalog, `sortOrder`, unlimited handling,
+  and each plan's durations (`initialOptions`) to pick from.
 - Draft event view — clearly "not published yet", with the `endAt` gate explained before the pay
-  button. Include the "keep originals" toggle here (§7a) and the module-unlock picker (§7c) — both
-  are only offered while `DRAFT`, and the running total should reflect them before the host pays.
+  button. Include the module-unlock picker here (§7c) — it is only offered while `DRAFT`, and the
+  running total should reflect it before the host pays. There is no "keep originals" toggle: every
+  plan includes it (§7a).
 - A storage-pack purchase UI on the plan-settings page (§7b) — pack picker + checkout button,
   rendering the raised ceiling on the usage bar once it settles.
-- A plan-upgrade purchase UI on the same page (§7d) — picker filtered to plans priced above the
-  current one, each row showing the price difference, not its own sticker price.
+- A plan-upgrade purchase UI on the same page (§7d) — one group per plan `upgrade-options` returns,
+  one row per duration in it, each showing the price difference and the months it adds.
 - Checkout success (polling, never asserting) and cancelled routes — shared by activation, upgrade
   and storage-pack checkout alike.
 - `/events/{id}/settings/plan` — **required**; the destination of both refund notifications. Plan
@@ -1795,7 +1881,8 @@ Keep the `orderId` visible in dev builds so testers can settle their own orders.
 
 **Admin**
 
-- Plan catalog CRUD, with archive preferred over delete.
+- Plan catalog CRUD, with archive preferred over delete, plus each `EVENT` plan's durations
+  (`coverage-options`, §13).
 - Paid-services catalog CRUD (§13) — same archive-first pattern, one screen covering the add-on,
   every storage pack, and every module unlock, filterable by `kind`. The `grantsStorageBytes` and
   `grantsModuleKey` fields appear and disappear with `kind`; drive the module picker from the
@@ -1827,8 +1914,8 @@ Keep the `orderId` visible in dev builds so testers can settle their own orders.
   which is final under every circumstance.
 - **Downsizing storage.** A purchased storage pack never expires and cannot be sold back — the
   ceiling only ever goes up.
-- **Opting into the "keep originals" add-on after activation.** DRAFT-only (§7a); there is no
-  "add originals to an existing event" flow, because it would leave earlier photos without one.
+- **Selling "keep originals".** Retired 2026-09-23 (§7a). Every plan includes it, so there is no
+  toggle, add-on or upsell to build.
 - **Buying a module unlock for a live event.** DRAFT-only for the same structural reason (§7c). Don't
   put a buy-unlock button on a locked module on a live event; the only route open there is a plan
   upgrade (§7d).

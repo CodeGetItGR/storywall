@@ -180,8 +180,8 @@ the two conditions failed. Guest invitations are unchanged and stay forwardable.
 
 | Method | Path | Auth | Notes |
 |---|---|---|---|
-| POST | `/api/events` | `ROLE_USER` | atomically creates the `Event` + host's `EventMember` + `EventHost` + (2026-08-26) an optional initial `EventSession` when `initialSessionTitle` is sent — see [`event-creation-initial-session-fe-integration.md`](event-creation-initial-session-fe-integration.md) |
-| PATCH | `/api/events/{id}` | host of the event | all fields editable **except `eventType`** (see §3) |
+| POST | `/api/events` | `ROLE_USER` | atomically creates the `Event` + host's `EventMember` + `EventHost` + (2026-08-26) an optional initial `EventSession` when `initialSessionTitle` is sent — see [`event-creation-initial-session-fe-integration.md`](event-creation-initial-session-fe-integration.md). `planTierCode` and (2026-09-23) `coverageOptionId` name what the host is buying — see [`coverage-options-and-extensions-fe-integration.md`](coverage-options-and-extensions-fe-integration.md) |
+| PATCH | `/api/events/{id}` | host of the event | all fields editable **except `eventType`** (see §3); `coverageOptionId` only while `DRAFT` |
 | DELETE | `/api/events/{id}` | host of the event | |
 | POST | `/api/events/{eventId}/hosts` | existing host | promote a co-host **immediately** (`{ userId }`) — target must be a registered, non-guest user whose id you already hold |
 | POST | `/api/events/{eventId}/host-invitations` | existing host | new 2026-08-16 — invite a co-host **by email**, pending until they accept; works for people with no account yet. Returns an `EventInvitationResponseDto` with `role: 'HOST'`. See [`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-integration.md) §1 |
@@ -340,7 +340,7 @@ get-by-id, patch (`maxGuests`, `firstName`, `lastName`, `email`, `expiresAt`), d
 ### Event settings
 
 `PATCH /api/events/{id}` — title, subtitle, description, visibility, startAt, endAt, timezone,
-locationName, locationAddress, mapsUrl, coverMediaId, brandingSettings, rsvpDeadline. Cover photo itself goes through the normal media-upload endpoint first
+locationName, locationAddress, mapsUrl, coverMediaId, brandingSettings, rsvpDeadline, and (while `DRAFT`, since 2026-09-23) coverageOptionId. Cover photo itself goes through the normal media-upload endpoint first
 (`POST /api/events/{eventId}/media`), then the returned `mediaId` gets PATCHed onto
 `coverMediaId`. `eventType` is **not** patchable (§3).
 
@@ -511,10 +511,11 @@ purge.
 reference** for all of this. Summary of what it covers:
 
 - **Four one-time purchases, not one**: **activation** (goes live, permanent, `DRAFT` only),
-  **upgrade** (moves an `ACTIVE` event onto a pricier plan for the price of the difference, `ACTIVE`
-  only), a **storage pack** (permanently raises the ceiling, `ACTIVE` only), and the **"keep
-  originals" add-on / a module unlock** (fold straight into the activation charge, `DRAFT` only,
-  no checkout of their own).
+  **upgrade** (moves an `ACTIVE` event onto a higher plan, at a duration at least as long as its own,
+  for the price of the difference, `ACTIVE`
+  only), a **storage pack** (permanently raises the ceiling, `ACTIVE` only), and a **module
+  unlock** (folds straight into the activation charge, `DRAFT` only, no checkout of its own).
+  "Keep originals" is no longer sold: every plan includes it (2026-09-23).
 - **Event lifecycle**: `DRAFT → ACTIVE`, full stop. An approved refund is the only backwards
   transition, and it's a refund decision, never a lapsed payment — there is nothing left to lapse.
 - **Checkout**: `POST /api/events/{id}/checkout` (activation), `.../upgrade-checkout`,
@@ -596,7 +597,7 @@ admin panel can be built without reading the controllers.
 
 | Area | Routes | Shapes |
 |---|---|---|
-| Plan tiers | `/api/admin/plan-tiers` CRUD, `/{id}/modules`, `/{id}/duplicate`, `/api/admin/{users,events}/{id}/plan-tier` | `PlanTierRequestDto`, `PlanTierPatchDto`, `PlanTierDuplicateRequestDto`, `PlanModulesRequestDto`, `PlanAssignmentRequestDto`, `PlanTierModuleConfig*` |
+| Plan tiers | `/api/admin/plan-tiers` CRUD, `/{id}/modules`, `/{id}/duplicate`, `/{id}/coverage-options` (2026-09-23), `/api/admin/{users,events}/{id}/plan-tier` | `PlanTierRequestDto`, `PlanTierPatchDto`, `PlanTierDuplicateRequestDto`, `PlanModulesRequestDto`, `PlanAssignmentRequestDto`, `CoverageOptionRequestDto`, `CoverageOptionPatchDto`, `PlanTierModuleConfig*` |
 | Paid services | `/api/admin/paid-services` CRUD | `PaidServiceRequestDto`, `PaidServicePatchDto` |
 | Registries | `/api/admin/platform-modules/{moduleKey}`, `/api/admin/platform-event-types/{key}`, `/api/admin/event-types/{key}/modules/{moduleKey}`, `/api/platform-feature-flags/{id}` | `PlatformModulePatchDto`, `PlatformEventType{Response,Patch}Dto`, `PlatformEventTypeModule{Response,Patch}Dto`, `PlatformFeatureFlagPatchDto` |
 | Partners & codes | `/api/admin/collaborators/**`, `/api/admin/collaboration-codes/{id}`, `/api/admin/collaboration-earnings/mark-paid`, `/api/admin/discount-codes/**` | the *Collaborations* section of the type file |

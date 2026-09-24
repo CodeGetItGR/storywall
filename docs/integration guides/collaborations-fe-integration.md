@@ -30,6 +30,12 @@ carrying a code and are unchanged for everyone else — the *plan's own* promoti
 code no longer does. Sending `collaborationCode` together with `targetPlanTierCode` to
 `preview-code` is now refused outright with the new `5076` (§1).
 
+**2026-09-23 — breaking.** Plans are sold at several durations, each with its own price. §1b's
+pre-creation preview now requires `coverageOptionId`; an upgrade preview (§1) requires
+`targetCoverageOptionId` alongside `targetPlanTierCode`; and §1c returns one entry per plan, with
+its eligible durations in `options[]`. **`coverage-options-and-extensions-fe-integration.md` has the
+full reference.**
+
 ## Why
 
 Wedding venues and event organisers send us hosts. A code at checkout is how we both give that
@@ -85,19 +91,19 @@ code's redemption count is untouched until they actually start a checkout.
 ### Upgrade preview: pass `targetPlanTierCode`
 
 The upgrade screen (§2's `upgrade-checkout`) prices the **difference** between the event's current
-plan and a more expensive target, not the target's full price. Previewing that gap takes one more,
-optional field:
+duration and one of a more expensive plan's durations, not the target's full price. Previewing that
+gap takes two more fields, sent together:
 
 ```jsonc
 POST /api/events/{eventId}/checkout/preview-code
-{ "targetPlanTierCode": "PREMIUM" }   // no collaborationCode — see below
+{ "targetPlanTierCode": "PREMIUM", "targetCoverageOptionId": "e9a0…" }   // no collaborationCode — see below
 
 → 200
 {
   "label": null,                // always null here: these two describe the CODE,
   "discountPercent": 0,         // and no code priced this
   "combinedDiscountPercent": 10,  // the TARGET PLAN's own promotion — the only discount in play
-  "payableAmountMinor": 4500,     // the GAP to PREMIUM, not PREMIUM's own price
+  "payableAmountMinor": 4500,     // the GAP to that PREMIUM duration, not its own price
   "currency": "EUR"
 }
 ```
@@ -125,9 +131,12 @@ perfectly good code was invalid would be the worse error. There is no code field
 screen, so a client that follows §1c never hits this; it exists for the one that doesn't.
 
 Omit `targetPlanTierCode` (or send it blank) for the activation-style preview from the section
-above — that behaviour is unchanged. A `targetPlanTierCode` that isn't purchasable, or isn't
-actually more expensive than the event's current plan, fails the same way `upgrade-checkout` itself
-would (`404`/`409`, not the code-oracle `5060` — this is about the plan, not the code).
+above — that behaviour is unchanged. With a target plan, `targetCoverageOptionId` is required (since
+2026-09-23) and must be a live duration of that plan, or the response is `400
+COVERAGE_OPTION_INVALID` (5077). A `targetPlanTierCode` that isn't purchasable or doesn't rank above
+the event's current plan, and a duration shorter than the event's own or no dearer than it, fail the
+same way `upgrade-checkout` itself would (`404`/`409`, not the code-oracle `5060` — this is about the
+plan, not the code).
 
 ### `combinedDiscountPercent` is the number to show
 
@@ -203,19 +212,21 @@ to be previewed against the form's own values, not an `eventId`:
 
 ```jsonc
 POST /api/checkout/preview-code
-{ "eventType": "WEDDING", "planTierCode": "PLUS", "collaborationCode": "barn-2026" }
+{ "eventType": "WEDDING", "planTierCode": "PLUS", "coverageOptionId": "2a77…", "collaborationCode": "barn-2026" }
 
 → 200   // same CodePreviewResponseDto shape as §1
 ```
 
 Same rate limit (10/hour), same `5060` masking, same "preview binds nothing" rule as §1. The only
 differences: no `eventId` in the path (`isAuthenticated()` is the whole auth check — there is
-nothing to own yet, so no host check either), and `eventType`/`planTierCode` name what the host
-picked on the form instead of being read off an event row. Both are validated exactly as event
-creation itself validates them — an unknown `eventType`, one that's currently disabled platform-wide,
-or a `planTierCode` not on sale (or not offered for that `eventType`) fails with the same error a
-subsequent `POST /api/events` would give, **not** the masked `5060` — that masking is specific to
-the code, not to the plan/type choice.
+nothing to own yet, so no host check either), and `eventType`/`planTierCode`/`coverageOptionId`
+name what the host picked on the form instead of being read off an event row. `eventType` and
+`planTierCode` are validated exactly as event creation itself validates them — an unknown
+`eventType`, one that's currently disabled platform-wide, or a `planTierCode` not on sale (or not
+offered for that `eventType`) fails with the same error a subsequent `POST /api/events` would give,
+**not** the masked `5060` — that masking is specific to the code, not to the plan/type choice.
+`coverageOptionId` (required since 2026-09-23) must be one of that plan's `initialOptions`, because
+the price being discounted is that duration's; otherwise `400 COVERAGE_OPTION_INVALID` (5077).
 
 Once the host presses "Pay", create the event as normal and open checkout on the returned id — this
 preview does not skip or replace either call, it only lets the UI show the discount before both
@@ -233,18 +244,30 @@ GET /api/events/{eventId}/upgrade-options
 [
   {
     "planTierCode": "PRO", "planTierName": "Pro", "currency": "EUR",
-    "gapAmountMinor": 10000,
-    "payableAmountMinor": 8000,
     "discountPercent": 20,
-    "discountLabel": "Autumn launch offer"
+    "discountLabel": "Autumn launch offer",
+    "options": [
+      { "coverageOptionId": "d41b…", "months": 6,  "monthsAdded": 0,
+        "gapAmountMinor": 10000, "payableAmountMinor": 8000 },
+      { "coverageOptionId": "e9a0…", "months": 12, "monthsAdded": 6,
+        "gapAmountMinor": 14000, "payableAmountMinor": 11200 }
+    ]
   },
   {
     "planTierCode": "PREMIUM", "planTierName": "Premium", "currency": "EUR",
-    "gapAmountMinor": 25000,
-    "payableAmountMinor": 25000        // no promotion on this one — discount fields absent
+    "discountPercent": null,           // no promotion on this one, so both discount
+    "discountLabel": null,             // fields are null — sent, not left out
+    "options": [
+      { "coverageOptionId": "7c55…", "months": 12, "monthsAdded": 6,
+        "gapAmountMinor": 25000, "payableAmountMinor": 25000 }
+    ]
   }
 ]
 ```
+
+**Changed 2026-09-23:** one entry per plan, with its durations in `options[]`; the entry-level
+`gapAmountMinor` / `payableAmountMinor` are gone. Send the chosen row's `coverageOptionId` to
+`upgrade-checkout`.
 
 Host-only, `isAuthenticated()` + host check like every other endpoint on this page — but **no rate
 limit of its own** and no code involved, unlike §1: there is nothing here for a caller to guess, so
@@ -252,17 +275,26 @@ it isn't sharing the 10/hour `collaboration.preview` bucket. Call it as often as
 including once per page view.
 
 Already filtered and sorted — every entry is a real, purchasable, currently-valid upgrade target for
-this event (public, assignable, offered for the event's type, priced above the current plan, same
-currency), in catalog order. An event with no valid target returns `[]`, not a `404`.
+this event (public, assignable, offered for the event's type, ranked above the current plan, same
+currency), in catalog order, and every `options[]` row is a duration of it at least as long as the
+event's own that costs more. A plan with no such duration is left out. An event with no valid target
+returns `[]`, not a `404`.
 
 **Field guide:**
 
 | Field | Meaning |
 |---|---|
-| `gapAmountMinor` | The undiscounted difference between the two plans. Fine for a "was €100" strike-through, never for the price you charge. |
-| `payableAmountMinor` | **The number to render as the price**, and what `POST /upgrade-checkout` will actually charge for this `planTierCode`. Includes the target plan's own promotion — and, since 2026-09-22, **only** that: a code bound to the event does not reach an upgrade. Same arithmetic `preview-code` (§1) and checkout itself both use. |
-| `discountPercent` | The target plan's own promotion percent, behind `payableAmountMinor`. **Absent** (not zero) when this target has no live promotion — check for its presence, don't compare to `0`. |
-| `discountLabel` | Display text for the target plan's promotion. Absent whenever `discountPercent` is absent. Carries no raw code and no partner identity, same rule as §1's `label`. |
+| `discountPercent` | The target plan's own promotion percent, behind every `payableAmountMinor` in the entry. **`null`** (not zero) when this target has no live promotion — test `discountPercent != null`, don't compare to `0`. |
+| `discountLabel` | Display text for the target plan's promotion — the plan's label, never a code's. `null` whenever `discountPercent` is, and also when the promotion was set up without a label, so a percent can arrive with no label to go with it. |
+| `options[].coverageOptionId` | What `POST /upgrade-checkout` takes as `coverageOptionId`. |
+| `options[].months` / `monthsAdded` | The duration's length, and how many months buying it adds to the event's `coverageEndsAt` (0 for a same-length upgrade). |
+| `options[].gapAmountMinor` | The undiscounted difference between the event's duration and this one. Fine for a "was €100" strike-through, never for the price you charge. |
+| `options[].payableAmountMinor` | **The number to render as the price**, and what `POST /upgrade-checkout` will actually charge for this duration. Includes the target plan's own promotion — and, since 2026-09-22, **only** that: a code bound to the event does not reach an upgrade. Same arithmetic `preview-code` (§1) and checkout itself both use. |
+
+**Corrected 2026-09-23:** this section used to say both discount fields are *absent* when a target
+has no promotion. They never were: the server sends every field, `null` included. A presence check
+(`'discountPercent' in option`) is therefore true on every entry and will render a badge for
+nothing — test the value.
 
 **Changed 2026-09-22:** these fields used to fold in the event's bound code as well, combined and
 clamped at the platform ceiling. They no longer do — one plan, one promotion, nothing to combine and
@@ -702,3 +734,4 @@ A stale link cannot confirm it was ever real.
 | `5062` | `COLLABORATION_EARNING_NOT_PAYABLE` | That ledger row is not in `ACCRUED` state. |
 | `5063` | `NO_DISCOUNT_TO_PREVIEW` | A blank `collaborationCode` was previewed (§1) and the event carries no code to fall back to. Activation previews only — an upgrade preview never falls back to a code. |
 | `5076` | `DISCOUNT_NOT_APPLICABLE_TO_UPGRADE` | A `collaborationCode` was previewed together with a `targetPlanTierCode` (§1). Codes price an activation, not an upgrade. Says nothing about the code itself. |
+| `5077` | `COVERAGE_OPTION_INVALID` | Added 2026-09-23. A preview's `coverageOptionId` (§1b) or `targetCoverageOptionId` (§1) is not a live duration of that plan, or `targetCoverageOptionId` is missing. A missing `coverageOptionId` on §1b fails validation first: `400 VALIDATION_FAILED` (3001). Not masked — it is about the plan, not the code. |
