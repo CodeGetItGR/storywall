@@ -1,11 +1,14 @@
 'use client';
 
+import { useLocale } from 'next-intl';
 import type React from 'react';
 import type { ChangeEvent } from 'react';
 import { useCallback, useState } from 'react';
 
 import { useApiErrorMessage, useRetryAfterCountdown } from '@/hooks/useApiErrorMessage';
 import { useEventWithdrawals, useSubmitWithdrawal, useWithdrawalPreview } from '@/hooks/useBilling';
+import { formatMoney, lastWithdrawalMoment } from '@/lib/billing';
+import { formatDate } from '@/lib/datetime';
 
 /**
  * The withdrawal preview/history/submit state, extracted out on its own (Danger zone).
@@ -16,6 +19,12 @@ export function useEventWithdrawalFlow(eventId: string) {
     const withdrawalHistory = useEventWithdrawals(eventId);
     const toErrorMessage = useApiErrorMessage();
     const withdrawalRetryIn = useRetryAfterCountdown(submitWithdrawal.error);
+    const locale = useLocale();
+    const preview = withdrawalPreview.data;
+    const refundAmountLabel = formatMoney(locale, preview?.totalRefundMinor ?? 0, preview?.currency ?? null);
+    const withdrawalDeadlineLabel = preview?.windowClosesAt
+        ? formatDate(locale, lastWithdrawalMoment(preview.windowClosesAt), { dateStyle: 'medium', timeStyle: 'short' })
+        : null;
 
     const [withdrawalReason, setWithdrawalReason] = useState('');
     const [withdrawalError, setWithdrawalError] = useState<string | null>(null);
@@ -53,6 +62,8 @@ export function useEventWithdrawalFlow(eventId: string) {
         withdrawalPreview,
         withdrawalHistory,
         latestWithdrawal,
+        refundAmountLabel,
+        withdrawalDeadlineLabel,
         withdrawalReason,
         withdrawalError,
         withdrawalRetryIn,

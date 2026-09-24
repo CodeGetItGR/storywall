@@ -59,9 +59,9 @@ export function WithdrawalPanel({ panel }: { panel: EventWithdrawalFlow }) {
         <>
             <form onSubmit={panel.askWithdrawalConfirmation} className="space-y-3 text-sm">
                 <p className="text-ink-muted">
-                    {t('withdrawal.eligible', {
-                        amount: formatMoney(locale, withdrawalPreview.data.totalRefundMinor, withdrawalPreview.data.currency),
-                    })}
+                    {panel.withdrawalDeadlineLabel
+                        ? t('withdrawal.eligibleUntil', { date: panel.withdrawalDeadlineLabel, amount: panel.refundAmountLabel })
+                        : t('withdrawal.eligible', { amount: panel.refundAmountLabel })}
                 </p>
                 <label className="block">
                     <span className="text-[11px] font-semibold tracking-wide text-ink-faint uppercase">
