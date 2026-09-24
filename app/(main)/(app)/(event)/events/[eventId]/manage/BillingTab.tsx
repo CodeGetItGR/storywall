@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import { BillingAddonsSection } from '@/components/manage/billing/BillingAddonsSection';
+import { BillingExtensionSection } from '@/components/manage/billing/BillingExtensionSection';
 import { BillingOrdersPanel } from '@/components/manage/billing/BillingOrdersPanel';
 import { BillingPlanSummary } from '@/components/manage/billing/BillingPlanSummary';
 import { BillingUpgradeSection } from '@/components/manage/billing/BillingUpgradeSection';
@@ -70,6 +71,16 @@ export default function BillingTab({
                 extraStorageBytes={panel.usage?.extraStorageBytes ?? 0}
                 modules={panel.platformModules}
             />
+
+            {/* Extend coverage */}
+            {!isDeleted && (
+                <BillingExtensionSection
+                    eventId={eventId}
+                    eventStatus={data.eventStatus}
+                    coverageEndsAt={schedule.coverageEndsAt}
+                    canPurchase={canPurchase}
+                />
+            )}
 
             {/* Add-ons */}
             <BillingAddonsSection eventId={eventId} addons={data.addons} currency={insights.orderCurrency} canManage={derived.canManageAddons} />

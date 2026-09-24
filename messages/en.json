@@ -1469,6 +1469,14 @@
             "cancelConfirmNo": "Keep",
             "noResume": "To continue after that, start a new subscription."
         },
+        "extension": {
+            "title": "Extend coverage",
+            "months": "+{count, plural, one {# month} other {# months}}",
+            "endsAtEstimate": "New end date: {date} (estimate)",
+            "button": "Extend · {amount}",
+            "buttonAria": "Extend coverage by {count, plural, one {# month} other {# months}}, {amount}",
+            "ended": "Coverage for this event has ended."
+        },
         "orders": {
             "title": "Order history",
             "coverageRange": "{from} to {until}",
@@ -1485,7 +1493,8 @@
                 "ACTIVATION": "Activation",
                 "RENEWAL": "Renewal",
                 "UPGRADE": "Upgrade",
-                "STORAGE_PACK": "Storage pack"
+                "STORAGE_PACK": "Storage pack",
+                "EXTENSION": "Coverage extension"
             },
             "upgradeCoverage": "Plan upgrade. Coverage unchanged.",
             "storageCoverage": "Permanent storage increase.",
@@ -1545,6 +1554,8 @@
         "openingCheckout": "Opening secure checkout...",
         "autoDiscountApplied": "{label} · {discount}% off, applied automatically",
         "autoDiscountAppliedNoLabel": "{discount}% off, applied automatically",
+        "extensionEndsAtEstimate": "New end date: {date} (estimate)",
+        "coverageEnded": "Coverage for this event has ended. It can no longer be extended.",
         "collaboration": {
             "title": "Discount code",
             "field": "Discount code",
@@ -1556,7 +1567,8 @@
         "items": {
             "planActivation": "{plan} plan activation",
             "planPreservation": "{plan} renewal",
-            "planUpgrade": "Upgrade to {plan} · {duration}"
+            "planUpgrade": "Upgrade to {plan} · {duration}",
+            "coverageExtension": "Coverage extension · {duration}"
         },
         "intent": {
             "activationCancelled": {
@@ -1573,6 +1585,11 @@
                 "title": "Order preview",
                 "description": "Check the upgrade charge.",
                 "consequence": "The upgraded plan and its limits become available after payment is confirmed."
+            },
+            "extension": {
+                "title": "Order preview",
+                "description": "Check the coverage extension charge.",
+                "consequence": "Your coverage is extended after payment is confirmed."
             },
             "storage": {
                 "title": "Order preview",
@@ -3251,8 +3268,10 @@
         "coverageOptionInvalid": "That duration is no longer available. Choose another one.",
         "coverageOptionUnavailable": "The duration you chose is no longer available. Choose another one.",
         "coverageOptionLastInitial": "A plan on sale needs at least one duration. Add another before retiring this one.",
+        "coverageEnded": "Coverage for this event has ended.",
         "coverageOptionDuplicate": "This plan already sells that duration.",
         "purchaseNotPrimaryHost": "Only the event's main host can make purchases.",
+        "purchaseWithdrawalOpen": "A withdrawal for this event is under review. Purchases are paused until it is decided.",
         "planCurrencyUnsupported": "This plan is not available in your currency yet.",
         "planNotAnUpgrade": "These upgrade options are out of date. We refreshed the plan catalog.",
         "planCurrencyMismatch": "This plan is not available for your event.",

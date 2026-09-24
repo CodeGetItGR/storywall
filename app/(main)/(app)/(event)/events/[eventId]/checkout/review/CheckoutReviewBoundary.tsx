@@ -12,17 +12,18 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventBilling, useStorageCheckout, useUpgradeCheckout, useUpgradeOptions } from '@/hooks/useBilling';
 import { useEvent } from '@/hooks/useEvent';
+import { useExtensionCheckoutReview } from '@/hooks/useExtensionCheckoutReview';
 import { useIsPrimaryHost } from '@/hooks/useIsPrimaryHost';
 import { useResetOnBfcacheRestore } from '@/hooks/useResetOnBfcacheRestore';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
-import { formatMoney, navigateToCheckout } from '@/lib/billing';
+import { formatBillingDate, formatMoney, navigateToCheckout } from '@/lib/billing';
 import { scopedPlans } from '@/lib/planTiers';
 import { type CheckoutIntent, routes } from '@/lib/routes';
 import { linkedUpgradeDuration } from '@/lib/upgradeOptions';
 
 type ReviewLine = { label: string; amountMinor: number };
 
-const CHECKOUT_INTENTS: CheckoutIntent[] = ['upgrade', 'storage'];
+const CHECKOUT_INTENTS: CheckoutIntent[] = ['upgrade', 'storage', 'extension'];
 
 export default function CheckoutReviewBoundary() {
     const { eventId } = useParams<{ eventId: string }>();
@@ -39,6 +40,11 @@ export default function CheckoutReviewBoundary() {
     const storageCheckout = useStorageCheckout(eventId);
     const canPurchase = useIsPrimaryHost();
     const upgradeOptions = useUpgradeOptions(eventId, canPurchase);
+    const rawIntent = searchParams.get('intent');
+    const intent = CHECKOUT_INTENTS.find((value) => value === rawIntent) ?? null;
+    const code = searchParams.get('code');
+    const optionId = searchParams.get('option');
+    const extension = useExtensionCheckoutReview(eventId, intent === 'extension' ? optionId : null, intent === 'extension' && canPurchase);
     const toErrorMessage = useApiErrorMessage();
     const [error, setError] = useState<string | null>(null);
     const [requestsImmediateStart, setRequestsImmediateStart] = useState(false);
@@ -55,19 +61,17 @@ export default function CheckoutReviewBoundary() {
         void billing.refetch();
         void event.refetch();
         void upgradeOptions.refetch();
-    }, [appConfig, billing, event, upgradeOptions]);
+        if (intent === 'extension') void extension.refetch();
+    }, [appConfig, billing, event, upgradeOptions, intent, extension]);
 
     useResetOnBfcacheRestore(
         useCallback(() => {
             upgradeCheckout.reset();
             storageCheckout.reset();
-        }, [upgradeCheckout, storageCheckout]),
+            extension.reset();
+        }, [upgradeCheckout, storageCheckout, extension]),
     );
 
-    const rawIntent = searchParams.get('intent');
-    const intent = CHECKOUT_INTENTS.find((value) => value === rawIntent) ?? null;
-    const code = searchParams.get('code');
-    const optionId = searchParams.get('option');
     const plans = useMemo(() => scopedPlans(appConfig.data?.planTiers ?? [], 'EVENT'), [appConfig.data?.planTiers]);
     const currentPlan = plans.find((plan) => plan.code === billing.data?.planTierCode) ?? null;
     const targetPlan = code ? (plans.find((plan) => plan.code === code) ?? null) : null;
@@ -76,7 +80,13 @@ export default function CheckoutReviewBoundary() {
         intent === 'upgrade' && targetPlan ? (upgradeOptions.data?.find((entry) => entry.planTierCode === targetPlan.code) ?? null) : null;
     const upgradeDuration = upgradeEntry ? linkedUpgradeDuration(upgradeEntry, optionId) : null;
 
-    if (appConfig.isLoading || billing.isLoading || event.isLoading || (intent === 'upgrade' && upgradeOptions.isLoading)) {
+    if (
+        appConfig.isLoading ||
+        billing.isLoading ||
+        event.isLoading ||
+        (intent === 'upgrade' && upgradeOptions.isLoading) ||
+        (intent === 'extension' && extension.isLoading)
+    ) {
         return (
             <main className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
                 <div className="h-8 w-44 animate-pulse rounded bg-surface-muted" />
@@ -92,7 +102,8 @@ export default function CheckoutReviewBoundary() {
         !billing.data ||
         !currentPlan ||
         !intent ||
-        (intent === 'upgrade' && upgradeOptions.error)
+        (intent === 'upgrade' && upgradeOptions.error) ||
+        (intent === 'extension' && extension.error)
     ) {
         return (
             <PageErrorState
@@ -108,7 +119,9 @@ export default function CheckoutReviewBoundary() {
     const currency =
         intent === 'storage'
             ? (service?.priceCurrency ?? currentPlan.priceCurrency ?? 'EUR')
-            : (upgradeEntry?.currency ?? currentPlan.priceCurrency ?? 'EUR');
+            : intent === 'extension'
+              ? (extension.option?.currency ?? currentPlan.priceCurrency ?? 'EUR')
+              : (upgradeEntry?.currency ?? currentPlan.priceCurrency ?? 'EUR');
 
     let title: string;
     let description: string;
@@ -134,6 +147,19 @@ export default function CheckoutReviewBoundary() {
                 },
             ];
         }
+    } else if (intent === 'extension') {
+        title = t('intent.extension.title');
+        description = t('intent.extension.description');
+        consequence = t('intent.extension.consequence');
+        valid = Boolean(extension.option) && !extension.ended;
+        if (extension.option) {
+            lines = [
+                {
+                    label: t('items.coverageExtension', { duration: tDurations('months', { count: extension.option.months }) }),
+                    amountMinor: extension.option.amountMinor,
+                },
+            ];
+        }
     } else {
         title = t('intent.storage.title');
         description = t('intent.storage.description');
@@ -146,8 +172,11 @@ export default function CheckoutReviewBoundary() {
     }
 
     const totalMinor = lines.reduce((sum, line) => sum + line.amountMinor, 0);
-    const isPending = upgradeCheckout.isPending || storageCheckout.isPending;
-    const requiresConsent = intent === 'upgrade';
+    const isPending = upgradeCheckout.isPending || storageCheckout.isPending || extension.isPending;
+    const requiresConsent = intent === 'upgrade' || intent === 'extension';
+    // Never discounted, and only an estimate: the real span is fixed when the payment settles.
+    const extensionEndsAt = intent === 'extension' && extension.option ? formatBillingDate(locale, extension.option.resultingCoverageEndsAt) : null;
+    const coverageEnded = intent === 'extension' && extension.ended;
     const termsVersion = appConfig.data?.withdrawal.termsVersion ?? null;
     const consentSatisfied = !requiresConsent || (requestsImmediateStart && acknowledgesWithdrawalTerms && Boolean(termsVersion));
     const backHref = intent === 'storage' ? routes.events.settingsAddons(eventId) : routes.events.manage(eventId, { tab: 'billing' });
@@ -169,6 +198,8 @@ export default function CheckoutReviewBoundary() {
                     }),
                     targetPlan.code,
                 );
+            } else if (intent === 'extension') {
+                await extension.startCheckout({ requestsImmediateStart, acknowledgesWithdrawalTerms });
             } else if (intent === 'storage' && service) {
                 navigateToCheckout(eventId, await storageCheckout.mutateAsync({ paidServiceCode: service.code }));
             }
@@ -181,10 +212,12 @@ export default function CheckoutReviewBoundary() {
                 setError(t('withdrawalTerms.stale'));
                 return;
             }
+            // The page already explains that coverage has ended and hides the action.
+            const errorCode = getErrorCode(checkoutError);
+            if (errorCode === ERROR_CODES.COVERAGE_ENDED) return;
             // The duration is no longer offered for this upgrade: reload the offers,
             // so the page shows the purchase as unavailable.
-            const errorCode = getErrorCode(checkoutError);
-            if (errorCode === ERROR_CODES.COVERAGE_OPTION_INVALID || errorCode === ERROR_CODES.PLAN_TIER_NOT_AN_UPGRADE)
+            if (intent === 'upgrade' && (errorCode === ERROR_CODES.COVERAGE_OPTION_INVALID || errorCode === ERROR_CODES.PLAN_TIER_NOT_AN_UPGRADE))
                 void upgradeOptions.refetch();
             setError(toErrorMessage(checkoutError));
         }
@@ -234,6 +267,7 @@ export default function CheckoutReviewBoundary() {
                         <p className="text-sm font-semibold text-ink">{lines.length === 1 ? lines[0]?.label : t('dueNow')}</p>
                         <p className="shrink-0 text-xl font-bold text-ink">{formatMoney(locale, totalMinor, currency)}</p>
                     </div>
+                    {extensionEndsAt && <p className="mt-3 text-sm text-ink-muted">{t('extensionEndsAtEstimate', { date: extensionEndsAt })}</p>}
                     {intent === 'upgrade' && upgradeEntry && upgradeEntry.discountPercent !== null && (
                         <p className="mt-3 text-sm font-semibold text-emerald-700">
                             {upgradeEntry.discountLabel
@@ -265,28 +299,30 @@ export default function CheckoutReviewBoundary() {
                 </div>
             )}
 
-            {canPurchase && !valid && <p className="mt-6 text-sm text-rose-600">{t('unavailable')}</p>}
+            {canPurchase && !valid && <p className="mt-6 text-sm text-rose-600">{coverageEnded ? t('coverageEnded') : t('unavailable')}</p>}
             {error && <p className="mt-6 text-sm text-rose-600">{error}</p>}
 
             {/* Co-host note */}
             {!canPurchase && <p className="mt-6 text-xs text-ink-muted">{tCommon('primaryHostOnly')}</p>}
 
             {/* Checkout action */}
-            <div className="mt-8">
-                <button
-                    type="button"
-                    onClick={continueToCheckout}
-                    disabled={!valid || lines.length === 0 || isPending || !consentSatisfied || !canPurchase}
-                    className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-ink px-6 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
-                >
-                    {isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                    ) : (
-                        <LockKeyhole className="h-4 w-4" aria-hidden="true" />
-                    )}
-                    {isPending ? t('openingCheckout') : t('continueToCheckout')}
-                </button>
-            </div>
+            {!coverageEnded && (
+                <div className="mt-8">
+                    <button
+                        type="button"
+                        onClick={continueToCheckout}
+                        disabled={!valid || lines.length === 0 || isPending || !consentSatisfied || !canPurchase}
+                        className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-ink px-6 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+                    >
+                        {isPending ? (
+                            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                        ) : (
+                            <LockKeyhole className="h-4 w-4" aria-hidden="true" />
+                        )}
+                        {isPending ? t('openingCheckout') : t('continueToCheckout')}
+                    </button>
+                </div>
+            )}
         </main>
     );
 }

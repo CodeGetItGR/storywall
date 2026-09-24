@@ -2,7 +2,7 @@ import { DEMO_EVENT_ID } from '@/lib/demo/demoConstants';
 
 type RouteQueryValue = string | number | boolean | null | undefined;
 
-export type CheckoutIntent = 'upgrade' | 'storage';
+export type CheckoutIntent = 'upgrade' | 'storage' | 'extension';
 // 'billing' is kept as an alias for the plan section so existing links keep working.
 export type ManageTab = 'billing' | 'coverage' | 'danger' | 'help' | 'members' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings';
 
@@ -60,7 +60,7 @@ export const routes = {
         location: (eventId: string, role?: 'main' | 'secondary' | null) => `${eventBasePath(eventId)}/location${role ? `/${role}` : ''}`,
         feed: (eventId: string, params: { post?: string | null } = {}) => withQuery(`${eventBasePath(eventId)}/feed`, params),
         settingsAddons: (eventId: string) => `${eventBasePath(eventId)}/settings/addons`,
-        // code: the plan (upgrade) or paid service (storage); option: the upgrade's coverage option id.
+        // code: the plan (upgrade) or paid service (storage); option: the upgrade's or extension's coverage option id.
         checkoutReview: (eventId: string, intent: CheckoutIntent, { code, option }: { code?: string | null; option?: string | null } = {}) =>
             withQuery(`${eventBasePath(eventId)}/checkout/review`, { intent, code, option }),
         checkoutSuccess: (eventId: string, orderId?: string | null) => withQuery(`${eventBasePath(eventId)}/checkout/success`, { orderId }),

@@ -16,6 +16,8 @@ import type {
     EventAddonDto,
     EventAddonRequestDto,
     EventBillingResponseDto,
+    ExtensionCheckoutRequestDto,
+    ExtensionOptionResponseDto,
     StorageCheckoutRequestDto,
     UpgradeCheckoutRequestDto,
     UpgradeOptionResponseDto,
@@ -68,6 +70,20 @@ export function useUpgradeOptions(eventId: string | null, enabled = true) {
     });
 }
 
+export const extensionOptionsKeys = { event: (id: string) => ['events', id, 'extension-options'] as const };
+
+// Priced coverage extensions the event's plan sells, never discounted. An empty
+// list means the plan sells none. Primary host only (403 4006 otherwise).
+export function useExtensionOptions(eventId: string | null, enabled = true) {
+    const { isAuthenticated } = useAuth();
+
+    return useQuery({
+        queryKey: extensionOptionsKeys.event(eventId ?? ''),
+        queryFn: () => api.get<ExtensionOptionResponseDto[]>(endpoints.events.extensionOptions(eventId!)),
+        enabled: Boolean(eventId) && enabled && isAuthenticated,
+    });
+}
+
 export function useCheckout(eventId: string) {
     const queryClient = useQueryClient();
     return useMutation({
@@ -114,6 +130,17 @@ export function useStorageCheckout(eventId: string) {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
             queryClient.invalidateQueries({ queryKey: usageKeys.event(eventId) });
+        },
+    });
+}
+
+export function useExtensionCheckout(eventId: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (input: ExtensionCheckoutRequestDto) => api.post<CheckoutResponseDto>(endpoints.events.extensionCheckout(eventId), input),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
+            queryClient.invalidateQueries({ queryKey: extensionOptionsKeys.event(eventId) });
         },
     });
 }

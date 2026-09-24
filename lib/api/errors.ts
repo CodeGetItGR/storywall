@@ -114,6 +114,8 @@ export const ERROR_CODES = {
     COVERAGE_OPTION_LAST_INITIAL: 5079,
     COVERAGE_OPTION_DUPLICATE: 5080,
     HOST_TRANSFER_WITHDRAWAL_OPEN: 5081,
+    PURCHASE_WITHDRAWAL_OPEN: 5084,
+    COVERAGE_ENDED: 5085,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the
