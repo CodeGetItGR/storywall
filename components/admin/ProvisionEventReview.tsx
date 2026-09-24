@@ -9,6 +9,7 @@ import { formatDate } from '@/lib/datetime';
 
 export function ProvisionEventReview({ form, host }: { form: ProvisionEventForm; host: UserResponseDto }) {
     const t = useTranslations('AdminPage.accounts.provision');
+    const tAdmin = useTranslations('AdminPage');
     const locale = useLocale();
     const localizedText = useLocalizedText();
     const eventType = form.eventTypes.find((item) => item.eventTypeKey === form.selectedEventType);
@@ -20,6 +21,7 @@ export function ProvisionEventReview({ form, host }: { form: ProvisionEventForm;
         [t('reviewType'), eventType ? localizedText(eventType.name, eventType.eventTypeKey) : form.selectedEventType],
         [t('reviewDate'), formatDate(locale, form.startAt, { dateStyle: 'medium', timeStyle: 'short' })],
         [t('reviewPlan'), form.selectedPlan?.name ?? ''],
+        [t('reviewDuration'), form.duration.selectedOption ? tAdmin('plans.columns.months', { count: form.duration.selectedOption.months }) : ''],
         [t('reviewVisibility'), t(`visibilityOption.${form.visibility}`)],
     ];
 

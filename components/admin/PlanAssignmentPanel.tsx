@@ -4,15 +4,17 @@ import { Layers3, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import React, { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 
+import { AdminDurationSelect } from '@/components/admin/AdminDurationSelect';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { UsagePanel } from '@/components/plan/UsagePanel';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useAdminPlanTiers, useAssignEventPlanTier } from '@/hooks/useAdmin';
+import { useAdminDurationPick } from '@/hooks/useAdminDurationPick';
 import { adminErrorMessageKey, isUuid } from '@/lib/adminUtils';
 import type { EventUsageResponseDto } from '@/lib/api/types';
 import { formatBytes } from '@/lib/format';
-import { scopedPlans } from '@/lib/planTiers';
+import { liveInitialOptions, scopedPlans } from '@/lib/planTiers';
 
 function usageItems(usage: EventUsageResponseDto) {
     return [
@@ -47,7 +49,11 @@ export function PlanAssignmentPanel() {
     const [eventUsage, setEventUsage] = useState<EventUsageResponseDto | null>(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [appliedFocus, setAppliedFocus] = useState(focus);
-    const eventPlans = useMemo(() => scopedPlans(plansQuery.data ?? [], 'EVENT').filter((plan) => plan.isAssignable), [plansQuery.data]);
+    // A plan with no duration on sale can't be assigned (409 COVERAGE_OPTION_UNAVAILABLE).
+    const eventPlans = useMemo(
+        () => scopedPlans(plansQuery.data ?? [], 'EVENT').filter((plan) => plan.isAssignable && liveInitialOptions(plan).length > 0),
+        [plansQuery.data],
+    );
 
     // Adjusting during render rather than in an effect: the prefilled id has to be
     // on screen the moment the panel opens, not one paint later.
@@ -77,7 +83,12 @@ export function PlanAssignmentPanel() {
     const idIsValid = isUuid(trimmedId);
     const showIdError = trimmedId.length > 0 && !idIsValid;
     const selectedPlan = eventPlans.find((plan) => plan.code === planTierCode) ?? null;
+    // Without a pick the event keeps its length on the new plan, else gets its shortest.
+    const duration = useAdminDurationPick(selectedPlan);
     const canSubmit = idIsValid && Boolean(planTierCode);
+    const confirmPlanLabel = duration.selectedOption
+        ? `${selectedPlan?.name ?? planTierCode} · ${t('plans.columns.months', { count: duration.selectedOption.months })}`
+        : (selectedPlan?.name ?? planTierCode);
 
     function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -86,20 +97,23 @@ export function PlanAssignmentPanel() {
     }
 
     const confirmAssign = useCallback(async () => {
-        const usage = await assignEvent.mutateAsync({ eventId: trimmedId, input: { planTierCode } });
+        const coverageOptionId = duration.optionId || undefined;
+        const usage = await assignEvent.mutateAsync({ eventId: trimmedId, input: { planTierCode, coverageOptionId } });
         setEventUsage(usage);
         setConfirmOpen(false);
-    }, [assignEvent, planTierCode, trimmedId]);
+    }, [assignEvent, duration.optionId, planTierCode, trimmedId]);
 
     return (
         <section className="space-y-4">
+            {/* Header */}
             <div className="border-b border-border pb-4">
                 <h2 className="text-xl font-semibold tracking-tight text-ink">{t('assignments.eventTitle')}</h2>
                 <p className="mt-1 max-w-2xl text-sm leading-6 text-ink-muted">{t('assignments.eventSubtitle')}</p>
             </div>
 
+            {/* Assignment */}
             <form onSubmit={handleSubmit} className="border-b border-border pb-5">
-                <div className="grid max-w-3xl gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(12rem,0.8fr)_auto] sm:items-end">
+                <div className="grid max-w-4xl gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(10rem,0.7fr)_minmax(10rem,0.7fr)_auto] sm:items-end">
                     <AdminField label={t('assignments.eventId')} required>
                         <input
                             value={eventId}
@@ -126,6 +140,14 @@ export function PlanAssignmentPanel() {
                             ))}
                         </select>
                     </AdminField>
+                    <AdminField label={t('assignments.duration')}>
+                        <AdminDurationSelect
+                            pick={duration}
+                            currency={selectedPlan?.priceCurrency ?? null}
+                            defaultLabel={t('assignments.durationDefault')}
+                            className={adminInputClass()}
+                        />
+                    </AdminField>
                     <button
                         type="submit"
                         disabled={assignEvent.isPending || !canSubmit}
@@ -149,17 +171,19 @@ export function PlanAssignmentPanel() {
                 {assignEvent.error && <p className="mt-2 text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(assignEvent.error)}`)}</p>}
             </form>
 
+            {/* Usage */}
             {eventUsage && (
                 <UsagePanel title={t('assignments.freshEventUsage')} planName={eventUsage.planTier} items={usageItems(eventUsage)} className="mt-1" />
             )}
 
+            {/* Confirm */}
             <ConfirmActionModal
                 open={confirmOpen}
                 onCloseAction={closeConfirm}
                 title={t('assignments.confirmEventTitle', { event: eventTitle ?? trimmedId })}
                 body={
                     <>
-                        <p>{t('assignments.confirmEventBody', { plan: selectedPlan?.name ?? planTierCode })}</p>
+                        <p>{t('assignments.confirmEventBody', { plan: confirmPlanLabel })}</p>
                         <p className="mt-2 font-mono text-xs break-all text-ink-faint">{trimmedId}</p>
                     </>
                 }

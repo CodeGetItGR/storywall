@@ -39,14 +39,14 @@ export function planPatchFromFormData(plan: PlanTierResponseDto, formData: FormD
         sortOrder: Number(formData.get('sortOrder') ?? plan.sortOrder),
         isPublic: flags.isPublic,
         isAssignable: flags.isAssignable,
+        // An EVENT plan is priced by its durations, so it never sends a price of
+        // its own; the server refuses one with 400 INVALID_PLAN_TIER_SCOPE.
         ...(plan.scope === 'EVENT'
             ? {
                   storageBytes: storageInputToBytes(formData.get('storageAmount'), formData.get('storageUnit')),
                   maxMembers: numberOrNull(formData.get('maxMembers')),
-                  autoDeleteMonths: numberOrNull(formData.get('autoDeleteMonths')),
               }
-            : {}),
-        priceAmountMinor: priceInputToMinor(formData.get('price')),
+            : { priceAmountMinor: priceInputToMinor(formData.get('price')) }),
         priceCurrency: emptyToNull(formData.get('priceCurrency'))?.toUpperCase() ?? null,
         billingPeriod: (emptyToNull(formData.get('billingPeriod')) as BillingPeriod | null) ?? null,
         discountPercent: numberOrNull(formData.get('discountPercent')),
@@ -79,14 +79,15 @@ export function planChangeSummary(plan: PlanTierResponseDto, patch: PlanTierPatc
     if (plan.scope === 'EVENT') {
         add(t('fields.storage'), storageLabel(plan.storageBytes), storageLabel(patch.storageBytes ?? null));
         add(t('fields.maxMembers'), countLabel(plan.maxMembers), countLabel(patch.maxMembers ?? null));
-        add(t('fields.autoDeleteMonths'), countLabel(plan.autoDeleteMonths), countLabel(patch.autoDeleteMonths ?? null));
+        add(t('fields.priceCurrency'), textLabel(plan.priceCurrency), textLabel(patch.priceCurrency));
+    } else {
+        add(
+            t('fields.price'),
+            moneyLabel(plan.priceAmountMinor, plan.priceCurrency),
+            moneyLabel(patch.priceAmountMinor ?? null, patch.priceCurrency ?? null),
+        );
     }
 
-    add(
-        t('fields.price'),
-        moneyLabel(plan.priceAmountMinor, plan.priceCurrency),
-        moneyLabel(patch.priceAmountMinor ?? null, patch.priceCurrency ?? null),
-    );
     add(t('fields.billingPeriod'), textLabel(plan.billingPeriod), textLabel(patch.billingPeriod));
 
     // A promotion is money: a change here has to be visible in the confirmation,

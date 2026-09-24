@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 
 import { useAdminPlanTiers, useAdminPlatformEventTypes } from '@/hooks/useAdmin';
 import { useProvisionAdminEventMutation } from '@/hooks/useAdminAccounts';
+import { useAdminDurationPick } from '@/hooks/useAdminDurationPick';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { eligibleProvisioningPlans } from '@/lib/adminAccountProvisioning';
 import { getFieldErrors } from '@/lib/api/errors';
@@ -42,6 +43,8 @@ export function useProvisionEventForm(host: UserResponseDto) {
     const selectedEventType = eventType || eventTypes[0]?.eventTypeKey || '';
     const eligiblePlans = useMemo(() => eligibleProvisioningPlans(plansQuery.data ?? [], selectedEventType), [plansQuery.data, selectedEventType]);
     const selectedPlan = eligiblePlans.find((plan) => plan.code === planTierCode) ?? null;
+    // Preselects the plan's shortest duration, which is what the server would pick.
+    const duration = useAdminDurationPick(selectedPlan, { preselectShortest: true });
     const timezoneOptions = useMemo(() => getSupportedTimezones(), []);
     const isTimezoneValid = timezoneOptions.includes(timezone);
     const { startAtMin, startAtMax, endAtMin } = getScheduleDatetimeLocalBounds({ startAt, endAt });
@@ -98,6 +101,7 @@ export function useProvisionEventForm(host: UserResponseDto) {
                     title: title.trim(),
                     eventType: selectedEventType,
                     planTierCode: selectedPlan.code,
+                    coverageOptionId: duration.optionId || undefined,
                     visibility,
                     startAt: startAtIso,
                     endAt: endAtIso,
@@ -138,6 +142,7 @@ export function useProvisionEventForm(host: UserResponseDto) {
         selectedPlan,
         planTierCode,
         setPlanTierCode,
+        duration,
         title,
         setTitle,
         startAt,

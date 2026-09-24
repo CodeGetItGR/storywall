@@ -19,6 +19,10 @@ export type AdminErrorMessageKey =
     | 'reactionTypeNotUsable'
     | 'collaborationEarningNotPayable'
     | 'methodNotAllowed'
+    | 'coverageOptionInvalid'
+    | 'coverageOptionUnavailable'
+    | 'coverageOptionLastInitial'
+    | 'coverageOptionDuplicate'
     | 'generic';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -67,6 +71,10 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.REACTION_TYPE_NOT_USABLE) return 'reactionTypeNotUsable';
     if (code === ERROR_CODES.COLLABORATION_EARNING_NOT_PAYABLE) return 'collaborationEarningNotPayable';
     if (code === ERROR_CODES.METHOD_NOT_ALLOWED) return 'methodNotAllowed';
+    if (code === ERROR_CODES.COVERAGE_OPTION_INVALID) return 'coverageOptionInvalid';
+    if (code === ERROR_CODES.COVERAGE_OPTION_UNAVAILABLE) return 'coverageOptionUnavailable';
+    if (code === ERROR_CODES.COVERAGE_OPTION_LAST_INITIAL) return 'coverageOptionLastInitial';
+    if (code === ERROR_CODES.COVERAGE_OPTION_DUPLICATE) return 'coverageOptionDuplicate';
     return 'generic';
 }
 

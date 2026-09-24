@@ -7,6 +7,7 @@ import { PlanEditorAnchors } from '@/components/admin/PlanEditorAnchors';
 import { PlanEditorAvailabilitySection } from '@/components/admin/PlanEditorAvailabilitySection';
 import { PlanEditorDangerSection } from '@/components/admin/PlanEditorDangerSection';
 import { PlanEditorDetailsSection } from '@/components/admin/PlanEditorDetailsSection';
+import { PlanEditorDurationsSection } from '@/components/admin/PlanEditorDurationsSection';
 import { PlanEditorFooter } from '@/components/admin/PlanEditorFooter';
 import { PlanEditorHeader } from '@/components/admin/PlanEditorHeader';
 import { PlanEditorLimitsSection } from '@/components/admin/PlanEditorLimitsSection';
@@ -51,6 +52,7 @@ export function PlanEditorCard(props: UsePlanEditorCardArgs) {
                     onMakeDefaultAction={editor.handleMakeDefaultClick}
                 />
                 <PlanEditorLimitsSection id={`${editorId}-limits`} plan={plan} />
+                {editor.isEvent && <PlanEditorDurationsSection id={`${editorId}-durations`} editor={editor.durations} />}
                 <PlanEditorPricingSection id={`${editorId}-pricing`} plan={plan} />
                 <PlanEditorModulesSummary
                     id={`${editorId}-modules`}

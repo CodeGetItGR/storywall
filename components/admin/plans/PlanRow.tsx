@@ -7,7 +7,7 @@ import type { MouseEvent } from 'react';
 import { PlanSharedGroupChip } from '@/components/admin/plans/PlanSharedGroupChip';
 import { type Visibility, visibilityOf } from '@/lib/adminVisibility';
 import type { PlanTierResponseDto, PlatformEventTypeResponseDto } from '@/lib/api/types';
-import { formatLimitValue, formatPlanMoney } from '@/lib/planTiers';
+import { formatLimitValue, formatPlanMoney, liveInitialOptions } from '@/lib/planTiers';
 import { cn } from '@/lib/utils';
 
 const STATUS_DOT: Record<Visibility, string> = { LIVE: 'bg-status-good', HIDDEN: 'bg-status-warn', ARCHIVED: 'bg-status-neutral' };
@@ -37,6 +37,10 @@ export function PlanRow({
     const t = useTranslations('AdminPage');
     const locale = useLocale();
     const status = visibilityOf(plan);
+    const price = formatPlanMoney(plan, locale);
+    const liveMonths = liveInitialOptions(plan)
+        .map((option) => option.months)
+        .sort((left, right) => left - right);
 
     return (
         <tr className="border-b border-border last:border-b-0 hover:bg-canvas/60">
@@ -51,11 +55,17 @@ export function PlanRow({
                 </div>
                 <p className="truncate font-mono text-[11px] text-ink-faint">{plan.code}</p>
             </td>
-            <td className="px-2.5 py-2 font-mono text-ink">{formatPlanMoney(plan, locale) ?? t('plans.noPrice')}</td>
+            <td className="px-2.5 py-2 font-mono text-ink">
+                {price === null ? t('plans.noPrice') : liveMonths.length > 1 ? t('plans.columns.fromPrice', { price }) : price}
+            </td>
             <td className="px-2.5 py-2 font-mono text-ink-muted">{formatLimitValue(plan.storageBytes, 'bytes') ?? t('unlimited')}</td>
             <td className="px-2.5 py-2 font-mono text-ink-muted">{formatLimitValue(plan.maxMembers, 'count') ?? t('unlimited')}</td>
             <td className="px-2.5 py-2 font-mono text-ink-muted">
-                {plan.autoDeleteMonths === null ? t('plans.columns.never') : t('plans.columns.months', { count: plan.autoDeleteMonths })}
+                {liveMonths.length > 0 ? (
+                    t('plans.columns.durationList', { months: liveMonths.join(' · ') })
+                ) : (
+                    <span className="font-sans font-semibold text-status-warn">{t('plans.columns.noDurations')}</span>
+                )}
             </td>
             <td className="px-2.5 py-2">
                 <span className={cn('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold', STATUS_PILL[status])}>

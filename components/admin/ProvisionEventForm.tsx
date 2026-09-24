@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import type { ChangeEvent, MouseEvent } from 'react';
 
+import { AdminDurationSelect } from '@/components/admin/AdminDurationSelect';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import type { ProvisionEventForm as ProvisionEventFormState } from '@/hooks/useProvisionEventForm';
@@ -92,6 +93,11 @@ export function ProvisionEventForm({ form }: { form: ProvisionEventFormState }) 
                             ))}
                         </select>
                     </AdminField>
+                    {selectedPlan ? (
+                        <AdminField label={t('duration')} required>
+                            <AdminDurationSelect pick={form.duration} currency={selectedPlan.priceCurrency} className={adminInputClass()} />
+                        </AdminField>
+                    ) : null}
                 </div>
                 {form.selectedEventType && !form.plansQuery.isLoading && form.eligiblePlans.length === 0 ? (
                     <p className="rounded-lg bg-status-warn-wash px-4 py-3 text-sm text-status-warn">{t('noPlans')}</p>

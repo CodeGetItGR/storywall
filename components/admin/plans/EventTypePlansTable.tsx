@@ -34,7 +34,7 @@ export function EventTypePlansTable({
                         <th className="px-2.5 py-2 font-bold">{t('columns.price')}</th>
                         <th className="px-2.5 py-2 font-bold">{t('columns.storage')}</th>
                         <th className="px-2.5 py-2 font-bold">{t('columns.members')}</th>
-                        <th className="px-2.5 py-2 font-bold">{t('columns.autoDelete')}</th>
+                        <th className="px-2.5 py-2 font-bold">{t('columns.durations')}</th>
                         <th className="px-2.5 py-2 font-bold">{t('columns.status')}</th>
                         <th className="px-2.5 py-2 font-bold">{t('columns.sharedGroup')}</th>
                         <th className="px-2.5 py-2" />

@@ -11,24 +11,40 @@ const BILLING_PERIODS: BillingPeriod[] = ['ONE_TIME'];
 
 export function PlanEditorPricingSection({ id, plan }: { id: string; plan: PlanTierResponseDto }) {
     const t = useTranslations('AdminPage');
+    const isEvent = plan.scope === 'EVENT';
 
     return (
         <section id={id} className="scroll-mt-14 pt-6">
             {/* Pricing */}
             <h4 className="mb-3 text-sm font-bold text-ink">{t('plans.sections.pricing')}</h4>
             <div className="grid grid-cols-2 gap-3">
-                <AdminField label={t('fields.price')} optional>
+                {/* An EVENT plan is priced per duration, in the Durations section. */}
+                {!isEvent && (
+                    <AdminField label={t('fields.price')} optional>
+                        <input
+                            name="price"
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            defaultValue={priceMinorToInput(plan.priceAmountMinor)}
+                            className={adminInputClass()}
+                        />
+                    </AdminField>
+                )}
+                {/* Every duration of an EVENT plan is sold in this currency. */}
+                <AdminField
+                    label={t('fields.priceCurrency')}
+                    required={isEvent}
+                    optional={!isEvent}
+                    hint={isEvent ? t('fields.priceCurrencyEventHint') : undefined}
+                >
                     <input
-                        name="price"
-                        type="number"
-                        min={0}
-                        step="0.01"
-                        defaultValue={priceMinorToInput(plan.priceAmountMinor)}
-                        className={adminInputClass()}
+                        name="priceCurrency"
+                        required={isEvent}
+                        maxLength={3}
+                        defaultValue={defaultCurrency(plan)}
+                        className={adminInputClass('max-w-24')}
                     />
-                </AdminField>
-                <AdminField label={t('fields.priceCurrency')} optional>
-                    <input name="priceCurrency" maxLength={3} defaultValue={defaultCurrency(plan)} className={adminInputClass('max-w-24')} />
                 </AdminField>
                 <AdminField label={t('fields.billingPeriod')} optional className="col-span-2">
                     <select name="billingPeriod" defaultValue={plan.billingPeriod ?? ''} className={adminInputClass('max-w-44')}>

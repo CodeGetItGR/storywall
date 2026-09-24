@@ -10,12 +10,14 @@ import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminSection } from '@/components/admin/AdminSection';
 import { PlanCreateAssignments } from '@/components/admin/PlanCreateAssignments';
+import { PlanCreateDurations } from '@/components/admin/PlanCreateDurations';
 import { VisibilitySegmentedControl } from '@/components/admin/VisibilitySegmentedControl';
 import { useDuplicatePlanTier } from '@/hooks/useAdmin';
 import { appConfigKeys } from '@/hooks/useAppConfig';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import { usePlanCreateAssignments } from '@/hooks/usePlanCreateAssignments';
-import { codeFromName, localInputToInstant, priceInputToMinor, STORAGE_UNITS, storageInputToBytes } from '@/lib/adminPlanForm';
+import { usePlanCreateDurations } from '@/hooks/usePlanCreateDurations';
+import { codeFromName, defaultCurrency, localInputToInstant, priceInputToMinor, STORAGE_UNITS, storageInputToBytes } from '@/lib/adminPlanForm';
 import { adminErrorMessageKey, checked, emptyToNull, numberOrNull } from '@/lib/adminUtils';
 import { type Visibility, visibilityFlags } from '@/lib/adminVisibility';
 import { endpoints } from '@/lib/api/endpoints';
@@ -351,6 +353,12 @@ function PlanCreateNewForm({
     const [createdPlanId, setCreatedPlanId] = useState<string | null>(null);
     const nextSortOrder = useMemo(() => Math.max(-1, ...plans.map((plan) => plan.sortOrder)) + 1, [plans]);
     const assignments = usePlanCreateAssignments(eventTypes, modules, initialEventTypeKey);
+    const durations = usePlanCreateDurations();
+    const isEvent = scope === 'EVENT';
+    const isPending = createMutation.isPending || durations.isCreating || modulesMutation.isPending;
+    const mutationError = createMutation.error ?? durations.error ?? modulesMutation.error;
+    // An EVENT plan needs its event type and at least one duration to be on sale.
+    const canSubmit = !isPending && (!isEvent || (Boolean(assignments.eventTypeKey) && durations.isValid));
 
     // The code is an identifier the admin should not have to invent: it follows the
     // name until they deliberately type over it.
@@ -374,6 +382,7 @@ function PlanCreateNewForm({
         setCodeOverride(null);
         setVisibility('LIVE');
         assignments.resetAssignments();
+        durations.reset();
         setCreatedPlanId(null);
     }
 
@@ -384,7 +393,7 @@ function PlanCreateNewForm({
 
     async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
-        if (scope === 'EVENT' && !assignments.eventTypeKey) return;
+        if (!canSubmit) return;
         const formData = new FormData(event.currentTarget);
         const flags = visibilityFlags(visibility);
         const input: PlanTierRequestDto = {
@@ -398,21 +407,20 @@ function PlanCreateNewForm({
             isDefault: checked(formData, 'isDefault'),
             isAssignable: flags.isAssignable,
             isPublic: flags.isPublic,
-            ...(scope === 'EVENT'
+            // An EVENT plan is priced by its durations, created right after it.
+            ...(isEvent
                 ? {
                       storageBytes: storageInputToBytes(formData.get('storageAmount'), formData.get('storageUnit')),
                       maxMembers: numberOrNull(formData.get('maxMembers')),
-                      autoDeleteMonths: numberOrNull(formData.get('autoDeleteMonths')),
                   }
-                : {}),
-            priceAmountMinor: priceInputToMinor(formData.get('price')),
+                : { priceAmountMinor: priceInputToMinor(formData.get('price')) }),
             priceCurrency: emptyToNull(formData.get('priceCurrency'))?.toUpperCase() ?? null,
             billingPeriod: (emptyToNull(formData.get('billingPeriod')) as BillingPeriod | null) ?? null,
             discountPercent: numberOrNull(formData.get('discountPercent')),
             discountLabel: emptyToNull(formData.get('discountLabel')),
             discountStartsAt: localInputToInstant(formData.get('discountStartsAt')),
             discountEndsAt: localInputToInstant(formData.get('discountEndsAt')),
-            eventTypeKey: scope === 'EVENT' ? (assignments.eventTypeKey ?? undefined) : undefined,
+            eventTypeKey: isEvent ? (assignments.eventTypeKey ?? undefined) : undefined,
         };
 
         let planId = createdPlanId;
@@ -421,6 +429,7 @@ function PlanCreateNewForm({
             planId = created.data.id;
             setCreatedPlanId(planId);
         }
+        if (isEvent) await durations.createAll(planId);
         if (assignments.moduleKeys.length > 0) {
             await setPlanModules({
                 url: endpoints.admin.planTiers.modules(planId),
@@ -454,10 +463,10 @@ function PlanCreateNewForm({
                         <button
                             type="submit"
                             form="plan-create-form"
-                            disabled={createMutation.isPending || modulesMutation.isPending || (scope === 'EVENT' && !assignments.eventTypeKey)}
+                            disabled={!canSubmit}
                             className="inline-flex min-h-9 items-center gap-2 rounded-md bg-ink px-3.5 text-sm font-semibold text-white disabled:opacity-50"
                         >
-                            {(createMutation.isPending || modulesMutation.isPending) && <Loader2 className="h-4 w-4 animate-spin" />}
+                            {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                             {t('plans.create.submit')}
                         </button>
                     </div>
@@ -502,7 +511,7 @@ function PlanCreateNewForm({
 
                 <AdminSection title={t('plans.sections.limits')}>
                     <div className="grid grid-cols-2 gap-2.5">
-                        {scope === 'EVENT' ? (
+                        {isEvent ? (
                             <>
                                 <div className="col-span-2 grid grid-cols-[minmax(0,1fr)_6rem] gap-2">
                                     <AdminField label={t('fields.storage')} optional>
@@ -534,32 +543,38 @@ function PlanCreateNewForm({
                                         className={adminInputClass('max-w-28')}
                                     />
                                 </AdminField>
-                                <AdminField
-                                    label={t('fields.autoDeleteMonths')}
-                                    optional
-                                    hint={t('fields.autoDeleteMonthsHint')}
-                                    className="col-span-2"
-                                >
-                                    <input
-                                        name="autoDeleteMonths"
-                                        type="number"
-                                        min={1}
-                                        placeholder={t('fields.blankUnlimited')}
-                                        className={adminInputClass('max-w-28')}
-                                    />
-                                </AdminField>
                             </>
                         ) : null}
                     </div>
                 </AdminSection>
 
+                {/* Durations */}
+                {isEvent && <PlanCreateDurations durations={durations} />}
+
+                {/* Pricing */}
                 <AdminSection title={t('plans.sections.pricing')}>
                     <div className="grid grid-cols-2 gap-2.5">
-                        <AdminField label={t('fields.price')} optional className="col-span-1">
-                            <input name="price" type="number" min={0} step="0.01" placeholder="499" className={adminInputClass('max-w-32')} />
-                        </AdminField>
-                        <AdminField label={t('fields.priceCurrency')} optional className="col-span-1">
-                            <input name="priceCurrency" maxLength={3} placeholder="EUR" className={adminInputClass('max-w-20')} />
+                        {!isEvent && (
+                            <AdminField label={t('fields.price')} optional className="col-span-1">
+                                <input name="price" type="number" min={0} step="0.01" placeholder="499" className={adminInputClass('max-w-32')} />
+                            </AdminField>
+                        )}
+                        {/* Every duration of an EVENT plan is sold in this currency. */}
+                        <AdminField
+                            label={t('fields.priceCurrency')}
+                            required={isEvent}
+                            optional={!isEvent}
+                            hint={isEvent ? t('fields.priceCurrencyEventHint') : undefined}
+                            className="col-span-1"
+                        >
+                            <input
+                                name="priceCurrency"
+                                required={isEvent}
+                                maxLength={3}
+                                defaultValue={isEvent ? defaultCurrency() : undefined}
+                                placeholder="EUR"
+                                className={adminInputClass('max-w-20')}
+                            />
                         </AdminField>
                         <AdminField label={t('fields.billingPeriod')} optional className="col-span-2">
                             <select name="billingPeriod" defaultValue="" className={adminInputClass('max-w-40')}>
@@ -609,7 +624,7 @@ function PlanCreateNewForm({
                     />
                 </AdminSection>
 
-                {scope === 'EVENT' && (
+                {isEvent && (
                     <PlanCreateAssignments
                         eventTypeKey={assignments.eventTypeKey}
                         moduleKeys={assignments.moduleKeys}
@@ -621,9 +636,7 @@ function PlanCreateNewForm({
                     />
                 )}
 
-                {(createMutation.error || modulesMutation.error) && (
-                    <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(createMutation.error ?? modulesMutation.error)}`)}</p>
-                )}
+                {mutationError && <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(mutationError)}`)}</p>}
             </form>
         </AdminDrawer>
     );

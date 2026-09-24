@@ -16,9 +16,8 @@ function plan(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto {
         isPublic: false,
         storageBytes: null,
         maxMembers: null,
-        autoDeleteMonths: null,
         priceAmountMinor: null,
-        priceCurrency: null,
+        priceCurrency: 'EUR',
         billingPeriod: null,
         discountPercent: null,
         discountLabel: null,
@@ -28,6 +27,8 @@ function plan(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto {
         paidModules: null,
         eventTypeKey: 'WEDDING',
         sharedGroupKey: null,
+        initialOptions: [{ id: 'option-6', kind: 'INITIAL', months: 6, priceAmountMinor: 4_900, sortOrder: 0, active: true }],
+        extensionOptions: [],
         ...overrides,
     };
 }
@@ -45,6 +46,13 @@ describe('admin account provisioning', () => {
             plan({ id: 'hidden', isAssignable: false }),
             plan({ id: 'other-type', eventTypeKey: 'BAPTISM' }),
             plan({ id: 'first', sortOrder: 0 }),
+            plan({ id: 'no-durations', initialOptions: [] }),
+            plan({
+                id: 'retired-durations',
+                initialOptions: [
+                    { ...{ id: 'option-6', kind: 'INITIAL', months: 6, priceAmountMinor: 4_900, sortOrder: 0, active: true }, active: false },
+                ],
+            }),
         ];
 
         expect(eligibleProvisioningPlans(plans, 'WEDDING').map(({ id }) => id)).toEqual(['first', 'later']);

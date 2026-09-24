@@ -8,6 +8,7 @@ import { useMemo, useState } from 'react';
 import { useAdminDrawerFooterSlot } from '@/components/admin/AdminDrawer';
 import type { PlanEditorAnchor } from '@/components/admin/PlanEditorAnchors';
 import { appConfigKeys } from '@/hooks/useAppConfig';
+import { usePlanDurationsEditor } from '@/hooks/usePlanDurationsEditor';
 import { usePlanEditorState } from '@/hooks/usePlanEditorState';
 import { usePlanEditorUnlocks } from '@/hooks/usePlanEditorUnlocks';
 import { useScrollSpy } from '@/hooks/useScrollSpy';
@@ -15,7 +16,7 @@ import { type PendingPlanSave, planChangeSummary, planPatchFromFormData } from '
 import { type Visibility } from '@/lib/adminVisibility';
 import type { PaidServiceResponseDto, PlanTierResponseDto, PlatformEventTypeResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 
-const SECTION_KEYS = ['details', 'availability', 'limits', 'pricing', 'modules', 'addons', 'danger'] as const;
+const SECTION_KEYS = ['details', 'availability', 'limits', 'durations', 'pricing', 'modules', 'addons', 'danger'] as const;
 
 export type UsePlanEditorCardArgs = {
     plan: PlanTierResponseDto;
@@ -49,9 +50,11 @@ export function usePlanEditorCard({
     const [deleteOpen, setDeleteOpen] = useState(false);
 
     const editorId = `plan-editor-${plan.id}`;
-    const anchorIds = useMemo(() => SECTION_KEYS.map((key) => `${editorId}-${key}`), [editorId]);
+    // Only EVENT plans are sold at durations.
+    const sectionKeys = useMemo(() => SECTION_KEYS.filter((key) => key !== 'durations' || scope === 'EVENT'), [scope]);
+    const anchorIds = useMemo(() => sectionKeys.map((key) => `${editorId}-${key}`), [editorId, sectionKeys]);
     const activeAnchor = useScrollSpy(anchorIds);
-    const anchors: PlanEditorAnchor[] = SECTION_KEYS.map((key) => ({
+    const anchors: PlanEditorAnchor[] = sectionKeys.map((key) => ({
         id: `${editorId}-${key}`,
         label: t(`plans.sections.${key}`),
         tone: key === 'danger' ? 'danger' : 'default',
@@ -79,6 +82,7 @@ export function usePlanEditorCard({
     const deletePlan = useDelete<PlanTierResponseDto>();
 
     const editor = usePlanEditorState({ plan, modules, eventTypes, scope });
+    const durations = usePlanDurationsEditor(plan);
     const unlocks = usePlanEditorUnlocks({
         plan,
         eventPlans,
@@ -159,6 +163,7 @@ export function usePlanEditorCard({
         onOpenGridAction,
         onOpenSiblingAction,
         visibility: editor.visibility,
+        durations,
         unlockDraft: editor.unlockDraft,
         error,
         canSave: editor.canSave,

@@ -46,16 +46,6 @@ export function PlanEditorLimitsSection({ id, plan }: { id: string; plan: PlanTi
                         className={adminInputClass()}
                     />
                 </AdminField>
-                <AdminField label={t('fields.autoDeleteMonths')} optional hint={t('fields.autoDeleteMonthsHint')} className="col-span-3">
-                    <input
-                        name="autoDeleteMonths"
-                        type="number"
-                        min={1}
-                        defaultValue={plan.autoDeleteMonths ?? ''}
-                        placeholder={t('fields.blankUnlimited')}
-                        className={adminInputClass('max-w-28')}
-                    />
-                </AdminField>
             </div>
         </section>
     );
