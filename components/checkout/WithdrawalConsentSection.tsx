@@ -4,12 +4,15 @@ import { useTranslations } from 'next-intl';
 import type { ChangeEvent } from 'react';
 
 export function WithdrawalConsentSection({
+    bodyKey = 'body',
     requestsImmediateStart,
     acknowledgesWithdrawalTerms,
     staleTerms,
     onRequestsImmediateStartChangeAction,
     onAcknowledgesWithdrawalTermsChangeAction,
 }: {
+    // The intro names what starts immediately: a plan by default, or a storage pack.
+    bodyKey?: 'body' | 'storageBody';
     requestsImmediateStart: boolean;
     acknowledgesWithdrawalTerms: boolean;
     staleTerms: boolean;
@@ -25,7 +28,7 @@ export function WithdrawalConsentSection({
             <h2 id="withdrawal-terms-title" className="text-base font-bold text-ink">
                 {t('withdrawalTerms.title')}
             </h2>
-            <p className="mt-1 text-sm leading-relaxed text-ink-muted">{t('withdrawalTerms.body')}</p>
+            <p className="mt-1 text-sm leading-relaxed text-ink-muted">{t(`withdrawalTerms.${bodyKey}`)}</p>
             <label className="mt-3 flex items-start gap-2.5 text-sm">
                 <input
                     type="checkbox"

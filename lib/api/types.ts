@@ -1542,7 +1542,9 @@ export interface EventUsageResponseDto {
     memberPercent: number;
 }
 
-export interface StorageCheckoutRequestDto {
+// POST /api/events/{eventId}/storage-checkout — host, ACTIVE only (billing-fe-guide §7b).
+// Consent required since 2026-09-23, when storage packs became withdrawable.
+export interface StorageCheckoutRequestDto extends WithdrawalConsentDto {
     paidServiceCode: string;
 }
 
