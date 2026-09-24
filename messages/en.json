@@ -1594,7 +1594,7 @@
             "storage": {
                 "title": "Order preview",
                 "description": "Check the storage pack charge.",
-                "consequence": "The storage allowance is added permanently after payment is confirmed and is non-refundable."
+                "consequence": "The extra storage is added once payment is confirmed. You can withdraw from the pack within 14 days of payment: you are refunded for the time it has left, and the extra storage is removed."
             }
         },
         "activation": {
@@ -1609,6 +1609,7 @@
         "withdrawalTerms": {
             "title": "Right of withdrawal",
             "body": "Under EU consumer law, you normally have 14 days to change your mind about a paid service. To publish and start using this plan right away, you need to ask for immediate start and acknowledge that doing so affects your withdrawal rights.",
+            "storageBody": "Under EU consumer law, you normally have 14 days to change your mind about a paid service. To get the extra storage right away, you need to ask for immediate start and acknowledge that doing so affects your withdrawal rights.",
             "requestsImmediateStartLabel": "Start providing this service immediately",
             "requestsImmediateStartCaption": "Rather than waiting out the 14-day period first.",
             "acknowledgesWithdrawalTermsLabel": "I understand this affects my right to a full refund",

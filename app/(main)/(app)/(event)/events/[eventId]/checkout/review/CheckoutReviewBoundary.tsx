@@ -173,7 +173,7 @@ export default function CheckoutReviewBoundary() {
 
     const totalMinor = lines.reduce((sum, line) => sum + line.amountMinor, 0);
     const isPending = upgradeCheckout.isPending || storageCheckout.isPending || extension.isPending;
-    const requiresConsent = intent === 'upgrade' || intent === 'extension';
+    const requiresConsent = intent === 'upgrade' || intent === 'storage' || intent === 'extension';
     // Never discounted, and only an estimate: the real span is fixed when the payment settles.
     const extensionEndsAt = intent === 'extension' && extension.option ? formatBillingDate(locale, extension.option.resultingCoverageEndsAt) : null;
     const coverageEnded = intent === 'extension' && extension.ended;
@@ -201,7 +201,15 @@ export default function CheckoutReviewBoundary() {
             } else if (intent === 'extension') {
                 await extension.startCheckout({ requestsImmediateStart, acknowledgesWithdrawalTerms });
             } else if (intent === 'storage' && service) {
-                navigateToCheckout(eventId, await storageCheckout.mutateAsync({ paidServiceCode: service.code }));
+                navigateToCheckout(
+                    eventId,
+                    await storageCheckout.mutateAsync({
+                        paidServiceCode: service.code,
+                        requestsImmediateStart,
+                        acknowledgesWithdrawalTerms,
+                        termsVersion: termsVersion!,
+                    }),
+                );
             }
         } catch (checkoutError) {
             if (getErrorCode(checkoutError) === ERROR_CODES.WITHDRAWAL_TERMS_VERSION_STALE) {
@@ -290,6 +298,7 @@ export default function CheckoutReviewBoundary() {
             {requiresConsent && (
                 <div className="mt-6">
                     <WithdrawalConsentSection
+                        bodyKey={intent === 'storage' ? 'storageBody' : 'body'}
                         requestsImmediateStart={requestsImmediateStart}
                         acknowledgesWithdrawalTerms={acknowledgesWithdrawalTerms}
                         staleTerms={staleTerms}
