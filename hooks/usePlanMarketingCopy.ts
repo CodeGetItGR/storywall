@@ -15,8 +15,6 @@ export function usePlanMarketingCopy() {
     );
     const copy = useMemo<LandingPlanCopy>(
         () => ({
-            accessMonths: (months) => t('accessMonths', { months }),
-            accessUnlimited: t('accessUnlimited'),
             baselineFeatures: t.raw('baselineFeatures') as string[],
             everythingIn: (planName) => t('everythingIn', { plan: planName }),
             guestsUnlimited: t('guestsUnlimited'),

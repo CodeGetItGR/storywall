@@ -1,9 +1,15 @@
-import type { AppMediaConfigDto, EventTypeConvention, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import type {
+    AppMediaConfigDto,
+    CoverageOptionResponseDto,
+    EventTypeConvention,
+    PlanTierResponseDto,
+    PlatformModuleResponseDto,
+} from '@/lib/api/types';
 import { discountedAmountMinor } from '@/lib/billing';
 import { formatBytes } from '@/lib/format';
 import { mediaEstimate } from '@/lib/planComparison';
 import { enabledModuleKeys } from '@/lib/planModules';
-import { publicAssignablePlans } from '@/lib/planTiers';
+import { liveInitialOptions, publicAssignablePlans, shortestInitialOption } from '@/lib/planTiers';
 
 export type LandingPricingCategoryKey = 'wedding' | 'vip';
 
@@ -16,20 +22,29 @@ export const LANDING_PRICING_CATEGORY_EVENT_TYPES: Record<LandingPricingCategory
     vip: ['SOCIAL_EVENT'],
 };
 
+// One length a plan is sold at, with its price already formatted for the card.
+export type LandingPlanDuration = {
+    id: string;
+    months: number;
+    price: string;
+};
+
 export type LandingPlan = {
+    code: string;
     audience: string;
     features: string[];
     includedFeatures?: string[];
     name: string;
     photos: string;
-    price: string;
     storage: string;
     videos: string;
+    // In display order. The card shows the price of the one picked, and starts
+    // on defaultDurationId (the shortest).
+    durations: LandingPlanDuration[];
+    defaultDurationId: string;
 };
 
 export interface LandingPlanCopy {
-    accessMonths: (months: number) => string;
-    accessUnlimited: string;
     baselineFeatures: string[];
     everythingIn: (planName: string) => string;
     guestsUnlimited: string;
@@ -49,17 +64,34 @@ export function resolveLandingCategoryPlans(plans: PlanTierResponseDto[], catego
     return [];
 }
 
-// Mirrors the landing page's existing static style exactly: a whole euro
-// amount with a suffixed symbol and no decimals ("79€"), not
-// Intl.NumberFormat's default currency rendering (which would print "€79.00"
-// or add locale-specific spacing/decimals and change the visual design).
-export function formatLandingPlanPrice(plan: PlanTierResponseDto): string | null {
-    if (plan.priceAmountMinor === null || !plan.priceCurrency) return null;
+// One duration's price after the plan's promotion. Mirrors the landing page's
+// existing static style exactly: a whole euro amount with a suffixed symbol and
+// no decimals ("79€"), not Intl.NumberFormat's default currency rendering
+// (which would print "€79.00" or add locale-specific spacing/decimals and
+// change the visual design).
+export function formatLandingOptionPrice(plan: PlanTierResponseDto, option: CoverageOptionResponseDto): string | null {
+    if (!plan.priceCurrency) return null;
 
-    const amount = discountedAmountMinor(plan.priceAmountMinor, plan) / 100;
+    const amount = discountedAmountMinor(option.priceAmountMinor, plan) / 100;
     if (plan.priceCurrency === 'EUR' && Number.isInteger(amount)) return `${amount}€`;
 
     return new Intl.NumberFormat(undefined, { style: 'currency', currency: plan.priceCurrency }).format(amount);
+}
+
+// The duration a card shows: the one picked, else the plan's default.
+export function pickedLandingDuration(plan: LandingPlan, durationId: string | null | undefined): LandingPlanDuration {
+    return (
+        plan.durations.find((duration) => duration.id === durationId) ??
+        plan.durations.find((duration) => duration.id === plan.defaultDurationId) ??
+        plan.durations[0]
+    );
+}
+
+function landingDurations(plan: PlanTierResponseDto): LandingPlanDuration[] {
+    return liveInitialOptions(plan).flatMap((option) => {
+        const price = formatLandingOptionPrice(plan, option);
+        return price === null ? [] : [{ id: option.id, months: option.months, price }];
+    });
 }
 
 function sortedModuleNames(moduleKeys: string[], modules: PlatformModuleResponseDto[], moduleName: (moduleKey: string) => string): string[] {
@@ -75,8 +107,8 @@ function sortedModuleNames(moduleKeys: string[], modules: PlatformModuleResponse
 // resolveLandingCategoryPlans). Each tier after the first rolls up the
 // previous card and lists only its additional modules, so catalog rows do not
 // need to repeat every inherited module. Returns null for a plan with no
-// resolvable price — a pricing card with no price to show doesn't belong on
-// the pricing page.
+// duration on sale — it can't be bought, so it doesn't belong on a pricing
+// card or in the creation picker.
 export function buildLandingPlan(
     plan: PlanTierResponseDto,
     previousPlan: PlanTierResponseDto | undefined,
@@ -84,14 +116,13 @@ export function buildLandingPlan(
     media: AppMediaConfigDto,
     moduleName: (moduleKey: string) => string,
     copy: LandingPlanCopy,
-    priceFallback?: string,
     inheritedModuleKeys?: string[],
 ): LandingPlan | null {
-    const price = formatLandingPlanPrice(plan) ?? priceFallback ?? null;
-    if (price === null) return null;
+    const durations = landingDurations(plan);
+    const defaultDuration = shortestInitialOption(plan);
+    if (durations.length === 0 || !defaultDuration) return null;
 
     const estimate = mediaEstimate(plan.storageBytes, media);
-    const accessBullet = plan.autoDeleteMonths === null ? copy.accessUnlimited : copy.accessMonths(plan.autoDeleteMonths);
     const inheritedKeys = [...new Set(inheritedModuleKeys ?? previousPlan?.moduleKeys ?? [])];
     const features = previousPlan
         ? [
@@ -101,18 +132,19 @@ export function buildLandingPlan(
                   modules,
                   moduleName,
               ),
-              accessBullet,
           ]
-        : [...copy.baselineFeatures, ...sortedModuleNames(plan.moduleKeys, modules, moduleName), accessBullet];
+        : [...copy.baselineFeatures, ...sortedModuleNames(plan.moduleKeys, modules, moduleName)];
 
     return {
+        code: plan.code,
         audience: plan.maxMembers === null ? copy.guestsUnlimited : copy.guestsUpTo(plan.maxMembers),
         features,
         includedFeatures: previousPlan ? [...copy.baselineFeatures, ...sortedModuleNames(inheritedKeys, modules, moduleName)] : undefined,
         name: plan.name,
         photos: estimate?.images ?? copy.mediaUnlimited,
-        price,
         storage: plan.storageBytes === null ? copy.storageUnlimited : formatBytes(plan.storageBytes),
         videos: estimate?.videos ?? copy.mediaUnlimited,
+        durations,
+        defaultDurationId: defaultDuration.id,
     };
 }

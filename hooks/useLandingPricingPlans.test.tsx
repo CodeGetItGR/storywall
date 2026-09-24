@@ -18,8 +18,6 @@ const MESSAGES = {
         pricing: {
             baselineFeatures: ['Countdown', 'Event schedule'],
             categories: { wedding: { label: 'Wedding' }, vip: { label: 'VIP' } },
-            accessMonths: 'Access for {months} months after the event',
-            accessUnlimited: 'Access never expires',
             everythingIn: 'Everything in {plan}',
             guestsUnlimited: 'Unlimited guests',
             guestsUpTo: 'Up to {count} guests',
@@ -65,8 +63,7 @@ function makeConfig(): AppConfigResponseDto {
                 isPublic: true,
                 storageBytes: 16 * 1024 * 1024 * 1024,
                 maxMembers: 150,
-                autoDeleteMonths: 3,
-                priceAmountMinor: 7900,
+                priceAmountMinor: null,
                 priceCurrency: 'EUR',
                 billingPeriod: 'ONE_TIME',
                 discountPercent: null,
@@ -77,6 +74,8 @@ function makeConfig(): AppConfigResponseDto {
                 paidModules: [],
                 eventTypeKey: 'WEDDING',
                 sharedGroupKey: null,
+                initialOptions: [{ id: 'opt-3', kind: 'INITIAL', months: 3, priceAmountMinor: 7900, sortOrder: 0, active: true }],
+                extensionOptions: [],
             },
         ],
         paidServices: [],
@@ -87,7 +86,7 @@ function makeConfig(): AppConfigResponseDto {
         translations: { eventTypes: {} },
         rsvp: { minAdults: 1, maxAdults: 5, minChildren: 0, maxChildren: 4 },
         withdrawal: { termsVersion: '1' } as AppConfigResponseDto['withdrawal'],
-        coverage: { maxLeadDays: 548, maxPreEventDays: 90, defaultHostingMonths: 12, defaultEventDurationHours: 24 },
+        coverage: { maxLeadDays: 548, defaultEventDurationHours: 24 },
         contentLimits: {} as AppConfigResponseDto['contentLimits'],
         reactionTypesByEventType: {},
         rateLimits: [],
@@ -119,7 +118,7 @@ describe('useLandingPricingPlans', () => {
         expect(result.current.categories?.wedding.label).toBe('Wedding');
         expect(result.current.categories?.wedding.plans).toHaveLength(1);
         expect(result.current.categories?.wedding.plans[0].name).toBe('START');
-        expect(result.current.categories?.wedding.plans[0].price).toBe('79€');
+        expect(result.current.categories?.wedding.plans[0].durations).toEqual([{ id: 'opt-3', months: 3, price: '79€' }]);
         expect(result.current.categories?.vip.plans).toHaveLength(0);
     });
 

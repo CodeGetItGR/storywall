@@ -3,6 +3,7 @@ import { useTranslations } from 'next-intl';
 import { HostContextSections } from '@/components/layout/right-context-panel/HostContextSections';
 import { CoverageStatusStrip } from '@/components/manage/CoverageStatusStrip';
 import { OverviewDraftPanel } from '@/components/manage/OverviewDraftPanel';
+import { LoadingState } from '@/components/ui/LoadingState';
 import { MetricStrip } from '@/components/ui/MetricStrip';
 import { useEventOverviewPlan } from '@/hooks/useEventOverviewPlan';
 import { useRightContextPanel } from '@/hooks/useRightContextPanel';
@@ -33,6 +34,7 @@ export default function OverviewTab({
     eventStatus,
     schedule,
     cancelledCheckout,
+    canPurchase,
 }: {
     memberCount: number;
     daysToGo: number;
@@ -49,9 +51,20 @@ export default function OverviewTab({
     eventStatus: EventStatus;
     schedule: EventScheduleDto;
     cancelledCheckout: boolean;
+    canPurchase: boolean;
 }) {
     const t = useTranslations('ManagePage');
-    const { currentPlan, selectedAddons, activationTotal, wishlistAvailable } = useEventOverviewPlan({
+    const {
+        currentPlan,
+        currentOption,
+        savedOptionId,
+        durationOptions,
+        durationUnavailable,
+        selectedAddons,
+        activationTotal,
+        isBillingLoading,
+        wishlistAvailable,
+    } = useEventOverviewPlan({
         eventId,
         eventStatus,
         eventUsage,
@@ -63,6 +76,9 @@ export default function OverviewTab({
     const hostContextPanel = useRightContextPanel({ includeManageLinks: false });
 
     if (eventStatus === 'DRAFT') {
+        // The draft's duration, and so its price, comes from the billing view.
+        if (isBillingLoading) return <LoadingState size="md" className="min-h-64" />;
+
         return (
             <OverviewDraftPanel
                 eventId={eventId}
@@ -71,6 +87,11 @@ export default function OverviewTab({
                 startAt={schedule.startAt}
                 projectedCoverage={schedule.projectedCoverage}
                 currentPlan={currentPlan}
+                currentOption={currentOption}
+                savedOptionId={savedOptionId}
+                durationOptions={durationOptions}
+                durationUnavailable={durationUnavailable}
+                canPurchase={canPurchase}
                 currency={currentPlan?.priceCurrency ?? 'EUR'}
                 selectedAddons={selectedAddons}
                 activationTotal={currentPlan?.priceCurrency ? activationTotal : null}

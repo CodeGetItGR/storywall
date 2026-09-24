@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 
 import { LandingPricingCta } from '@/components/landing/LandingPricingCta';
 import { MarketingPlanCard } from '@/components/plan/MarketingPlanCard';
+import { useDurationPicks } from '@/hooks/useDurationPicks';
 import { useLandingPricingCategory } from '@/hooks/useLandingPricingCategory';
 import { useLandingPricingPlans } from '@/hooks/useLandingPricingPlans';
 import { cn } from '@/lib/utils';
@@ -14,6 +15,7 @@ export function LandingPricing() {
     const t = useTranslations('LandingPage.pricing');
     const { categories } = useLandingPricingPlans();
     const { category, selectCategory, handleCategoryKeyDown } = useLandingPricingCategory();
+    const { picks, pickDuration } = useDurationPicks();
 
     if (!categories) return null;
 
@@ -87,8 +89,10 @@ export function LandingPricing() {
                         <MarketingPlanCard
                             featured={index === 1}
                             footer={<LandingPricingCta className="mt-5 flex w-full min-[761px]:hidden" label={t('cta')} />}
-                            key={`${category}-${plan.name}`}
+                            key={`${category}-${plan.code}`}
                             plan={plan}
+                            durationId={picks[plan.code]}
+                            onDurationChangeAction={pickDuration}
                             popularLabel={t('popular')}
                             storageLabel={t('storageLabel')}
                         />

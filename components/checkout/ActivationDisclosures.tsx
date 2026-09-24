@@ -1,32 +1,25 @@
 'use client';
 
-import { CalendarCheck, Images, Lock, Trash2 } from 'lucide-react';
+import { CalendarCheck, Lock, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import type { ProjectedCoverageDto } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
-import { getGalleryLeadDays } from '@/lib/eventCoverage';
 
 /**
- * What activation means, said before the pay button. The gallery-opens and
- * kept-until lines render from `projectedCoverage` (the server's for a draft,
- * a config-based estimate in the create wizard) and drop out when it is absent.
+ * What activation means, said before the pay button. The kept-until line
+ * renders from `projectedCoverage` (the server's for a draft, an estimate from
+ * the picked duration in the create wizard) and drops out when it is absent.
  */
-export function ActivationDisclosures({ startAt, projectedCoverage }: { startAt: string | null; projectedCoverage: ProjectedCoverageDto | null }) {
+export function ActivationDisclosures({ projectedCoverage }: { projectedCoverage: ProjectedCoverageDto | null }) {
     const t = useTranslations('CheckoutReviewPage.activation');
     const locale = useLocale();
     const dateOf = (value: string) => formatDate(locale, value, { dateStyle: 'medium' });
 
     const lines = [
         { key: 'activatesToday', icon: CalendarCheck, title: t('activatesTodayTitle'), body: t('activatesTodayBody') },
-        ...(projectedCoverage && startAt
+        ...(projectedCoverage
             ? [
-                  {
-                      key: 'galleryOpens',
-                      icon: Images,
-                      title: t('galleryOpensTitle', { date: dateOf(projectedCoverage.galleryOpensAt) }),
-                      body: t('galleryOpensBody', { days: getGalleryLeadDays(projectedCoverage.galleryOpensAt, startAt) }),
-                  },
                   {
                       key: 'keptUntil',
                       icon: Trash2,

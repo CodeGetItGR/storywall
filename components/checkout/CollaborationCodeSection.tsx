@@ -16,8 +16,10 @@ export function CollaborationCodeSection({
     eventId,
     onPreviewChangeAction,
     copyNamespace = 'CheckoutReviewPage.collaboration',
+    disabled = false,
 }: {
     eventId: string;
+    disabled?: boolean;
     copyNamespace?: 'CheckoutReviewPage.collaboration' | 'CreateEventPage.collaboration';
     onPreviewChangeAction: (code: string | null, preview: CollaborationCodePreviewResponseDto | null) => void;
 }) {
@@ -79,11 +81,12 @@ export function CollaborationCodeSection({
                                 maxLength={MAX_COLLABORATION_CODE_LENGTH}
                                 autoComplete="off"
                                 placeholder={t('placeholder')}
-                                className="min-h-11 flex-1 rounded-full border border-border bg-card px-4 text-sm font-semibold text-ink transition outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+                                disabled={disabled}
+                                className="min-h-11 flex-1 rounded-full border border-border bg-card px-4 text-sm font-semibold text-ink transition outline-none focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
                             />
                             <button
                                 type="submit"
-                                disabled={!trimmedCode || previewCode.isPending}
+                                disabled={disabled || !trimmedCode || previewCode.isPending}
                                 className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-card px-5 text-sm font-semibold text-ink shadow-sm ring-1 ring-border transition hover:bg-surface-muted disabled:cursor-not-allowed disabled:opacity-40"
                             >
                                 {previewCode.isPending && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}

@@ -7,6 +7,7 @@ import type {
     AppEventTypeResponseDto,
     AppMediaConfigDto,
     CollaborationCodePreviewResponseDto,
+    CoverageOptionResponseDto,
     EventTypeConvention,
     PlanTierResponseDto,
     PlatformModuleResponseDto,
@@ -36,7 +37,12 @@ export interface CreateEventFormValue {
     media: AppMediaConfigDto | null;
     selectedCode: string;
     selectedPlan: PlanTierResponseDto | undefined;
+    // The selected plan's picked duration (its shortest until one is picked).
+    selectedOption: CoverageOptionResponseDto | null;
+    // The duration picked on each plan card, keyed by plan code.
+    durationPicks: Record<string, string>;
     onSelectPlan: (code: string) => void;
+    onSelectPlanDuration: (code: string, optionId: string) => void;
     isPlansLoading: boolean;
     canContinuePlan: boolean;
 

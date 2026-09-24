@@ -12,14 +12,25 @@ type EventPlanSelectorProps = {
     modules: PlatformModuleResponseDto[];
     media: AppMediaConfigDto | null;
     selectedCode: string;
+    durationPicks: Record<string, string>;
     onSelectAction: (code: string) => void;
+    onSelectDurationAction: (code: string, optionId: string) => void;
     isLoading?: boolean;
 };
 
-export function EventPlanSelector({ plans, modules, media, selectedCode, onSelectAction, isLoading = false }: EventPlanSelectorProps) {
+export function EventPlanSelector({
+    plans,
+    modules,
+    media,
+    selectedCode,
+    durationPicks,
+    onSelectAction,
+    onSelectDurationAction,
+    isLoading = false,
+}: EventPlanSelectorProps) {
     const t = useTranslations('CreateEventPage');
     const tPricing = useTranslations('LandingPage.pricing');
-    const options = useMarketingPlanOptions({ plans, modules, media, priceFallback: t('payment.noCharge') });
+    const options = useMarketingPlanOptions({ plans, modules, media });
     const showLoading = isLoading || !media;
 
     return (
@@ -33,8 +44,9 @@ export function EventPlanSelector({ plans, modules, media, selectedCode, onSelec
                         {options.map(({ config, featured, presentation }) => (
                             <MarketingPlanCard
                                 key={config.id}
-                                planCode={config.code}
                                 plan={presentation}
+                                durationId={durationPicks[config.code]}
+                                onDurationChangeAction={onSelectDurationAction}
                                 featured={featured}
                                 popularLabel={tPricing('popular')}
                                 storageLabel={tPricing('storageLabel')}

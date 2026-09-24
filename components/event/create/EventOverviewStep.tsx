@@ -9,12 +9,13 @@ import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsen
 import { EventOverviewPriceRow } from '@/components/event/create/EventOverviewPriceRow';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
 import { formatMoney } from '@/lib/billing';
-import { getPlanPriceDetails } from '@/lib/planTiers';
+import { getOptionPriceDetails } from '@/lib/planTiers';
 import { cn } from '@/lib/utils';
 import { useCreateEventForm } from '@/providers/createEvent/CreateEventFormContext';
 
 export function EventOverviewStep() {
     const t = useTranslations('CreateEventPage');
+    const tDurations = useTranslations('Durations');
     const locale = useLocale();
     const eventTypeCopy = useLocalizedAppEventTypeCopy();
     const {
@@ -24,6 +25,7 @@ export function EventOverviewStep() {
         startAt,
         projectedCoverage,
         selectedPlan: plan,
+        selectedOption: option,
         error,
         hasDraft,
         checkoutCode,
@@ -40,9 +42,9 @@ export function EventOverviewStep() {
         onAcknowledgesWithdrawalTermsChange: onAcknowledgesWithdrawalTermsChangeAction,
     } = useCreateEventForm();
 
-    if (!plan) return null;
+    if (!plan || !option) return null;
 
-    const planActivation = getPlanPriceDetails(plan);
+    const planActivation = getOptionPriceDetails(plan, option);
     const activationTotalLabel = planActivation ? formatMoney(locale, planActivation.amountMinor, planActivation.currency) : t('payment.noCharge');
     const matchedEventType = eventTypes.find((type) => type.eventTypeKey === eventType);
     const eventTypeName = matchedEventType ? eventTypeCopy(matchedEventType.eventTypeKey).name : eventType;
@@ -76,7 +78,7 @@ export function EventOverviewStep() {
                 <div className="mt-3 divide-y divide-border/70">
                     <EventOverviewPriceRow
                         label={plan.name}
-                        detail={t('overview.planActivation')}
+                        detail={t('overview.planActivationFor', { duration: tDurations('months', { count: option.months }) })}
                         amount={planActivation && formatMoney(locale, planActivation.amountMinor, planActivation.currency)}
                         fallback={t('payment.noCharge')}
                     />
@@ -147,7 +149,7 @@ export function EventOverviewStep() {
 
             {/* Activation disclosures */}
             <div className="border-t border-border/70 py-5">
-                <ActivationDisclosures startAt={startAt || null} projectedCoverage={projectedCoverage} />
+                <ActivationDisclosures projectedCoverage={projectedCoverage} />
             </div>
 
             {/* Withdrawal consent */}

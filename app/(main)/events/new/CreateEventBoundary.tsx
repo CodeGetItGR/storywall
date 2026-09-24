@@ -58,7 +58,19 @@ export default function CreateEventPage() {
 
 function CreateEventFormBody() {
     const t = useTranslations('CreateEventPage');
-    const { step, formId, handleSubmit, eventPlans, modules, media, selectedCode, onSelectPlan, isPlansLoading } = useCreateEventForm();
+    const {
+        step,
+        formId,
+        handleSubmit,
+        eventPlans,
+        modules,
+        media,
+        selectedCode,
+        durationPicks,
+        onSelectPlan,
+        onSelectPlanDuration,
+        isPlansLoading,
+    } = useCreateEventForm();
 
     return (
         <main className="flex h-full flex-col bg-background">
@@ -91,7 +103,9 @@ function CreateEventFormBody() {
                                 modules={modules}
                                 media={media}
                                 selectedCode={selectedCode}
+                                durationPicks={durationPicks}
                                 onSelectAction={onSelectPlan}
+                                onSelectDurationAction={onSelectPlanDuration}
                                 isLoading={isPlansLoading}
                             />
                         )}

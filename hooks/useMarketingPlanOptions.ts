@@ -16,12 +16,10 @@ export function useMarketingPlanOptions({
     plans,
     modules,
     media,
-    priceFallback,
 }: {
     plans: PlanTierResponseDto[];
     modules: PlatformModuleResponseDto[];
     media: AppMediaConfigDto | null;
-    priceFallback: string;
 }): MarketingPlanOption[] {
     const { copy, moduleName } = usePlanMarketingCopy();
 
@@ -36,10 +34,9 @@ export function useMarketingPlanOptions({
                 media,
                 moduleName,
                 copy,
-                priceFallback,
                 plans.slice(0, index).flatMap((previousPlan) => previousPlan.moduleKeys),
             );
             return presentation ? [{ config: plan, featured: index === 1, presentation }] : [];
         });
-    }, [copy, media, moduleName, modules, plans, priceFallback]);
+    }, [copy, media, moduleName, modules, plans]);
 }

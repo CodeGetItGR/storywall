@@ -10,12 +10,23 @@ import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsen
 import { EventOverviewPriceRow } from '@/components/event/create/EventOverviewPriceRow';
 import { GiftAccountSetup } from '@/components/manage/GiftAccountSetup';
 import { TargetedSection } from '@/components/manage/TargetedSection';
+import { DurationPicker } from '@/components/plan/DurationPicker';
 import { useDraftActivationCheckout } from '@/hooks/useDraftActivationCheckout';
+import { useDraftDuration } from '@/hooks/useDraftDuration';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
-import type { EventBillingResponseDto, EventTypeConvention, PlanTierResponseDto, ProjectedCoverageDto } from '@/lib/api/types';
+import type {
+    CoverageOptionResponseDto,
+    EventBillingResponseDto,
+    EventTypeConvention,
+    PlanTierResponseDto,
+    ProjectedCoverageDto,
+} from '@/lib/api/types';
 import { formatMoney } from '@/lib/billing';
 import { GIFT_ACCOUNT_SECTION_ID } from '@/lib/manageSectionTargets';
-import { getPlanPriceDetails } from '@/lib/planTiers';
+import { getOptionPriceDetails } from '@/lib/planTiers';
+
+// Shown where a price can't be worked out yet (the draft's duration is off sale).
+const UNKNOWN_AMOUNT = '—';
 
 export function OverviewDraftPanel({
     eventId,
@@ -24,6 +35,11 @@ export function OverviewDraftPanel({
     startAt,
     projectedCoverage,
     currentPlan,
+    currentOption,
+    savedOptionId,
+    durationOptions,
+    durationUnavailable,
+    canPurchase,
     currency,
     selectedAddons,
     activationTotal,
@@ -36,6 +52,13 @@ export function OverviewDraftPanel({
     startAt: string | null;
     projectedCoverage: ProjectedCoverageDto | null;
     currentPlan: PlanTierResponseDto | undefined;
+    // The draft's duration while it is on sale; null once it was retired.
+    currentOption: CoverageOptionResponseDto | null;
+    savedOptionId: string | null;
+    durationOptions: CoverageOptionResponseDto[];
+    durationUnavailable: boolean;
+    // Only the event's main host can buy.
+    canPurchase: boolean;
     currency: string;
     selectedAddons: EventBillingResponseDto['addons'];
     activationTotal: number | null;
@@ -43,14 +66,17 @@ export function OverviewDraftPanel({
     cancelledCheckout: boolean;
 }) {
     const t = useTranslations('ManagePage');
+    const tCommon = useTranslations('Common');
     const tCreate = useTranslations('CreateEventPage');
     const tCheckoutReview = useTranslations('CheckoutReviewPage');
     const locale = useLocale();
     const eventTypeCopy = useLocalizedAppEventTypeCopy();
     const canPay = Boolean(startAt);
-    const planActivation = currentPlan ? getPlanPriceDetails(currentPlan) : null;
+    const planActivation = currentPlan && currentOption ? getOptionPriceDetails(currentPlan, currentOption) : null;
 
     const { consent, collaborationPreview, handleCollaborationPreviewChange, submit, error, isPending } = useDraftActivationCheckout(eventId);
+    const duration = useDraftDuration({ eventId, options: durationOptions, currentOptionId: savedOptionId });
+    const canCheckout = canPurchase && Boolean(currentOption) && !duration.isSaving;
 
     // activationTotal already bundles the plan's own (non-collaboration-code) price with
     // whichever add-ons count toward activation (see useEventOverviewPlan). A collaboration
@@ -61,7 +87,11 @@ export function OverviewDraftPanel({
             ? activationTotal - planActivation.amountMinor + collaborationPreview.payableAmountMinor
             : activationTotal;
     const dueNowCurrency = collaborationPreview?.currency ?? currency;
-    const dueNowTotalLabel = dueNowMinor !== null ? formatMoney(locale, dueNowMinor, dueNowCurrency) : tCreate('payment.noCharge');
+    const dueNowTotalLabel = !currentOption
+        ? UNKNOWN_AMOUNT
+        : dueNowMinor !== null
+          ? formatMoney(locale, dueNowMinor, dueNowCurrency)
+          : tCreate('payment.noCharge');
 
     return (
         <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-8">
@@ -110,8 +140,19 @@ export function OverviewDraftPanel({
                                 label={currentPlan.name}
                                 detail={tCreate('overview.planActivation')}
                                 amount={planActivation && formatMoney(locale, planActivation.amountMinor, planActivation.currency)}
-                                fallback={tCreate('payment.noCharge')}
-                            />
+                                fallback={currentOption ? tCreate('payment.noCharge') : UNKNOWN_AMOUNT}
+                            >
+                                {/* Duration */}
+                                <DurationPicker
+                                    options={durationOptions}
+                                    value={duration.selectedOptionId}
+                                    onChangeAction={duration.changeDuration}
+                                    disabled={!canPurchase || duration.isSaving}
+                                    className="mt-2"
+                                />
+                                {durationUnavailable && <p className="mt-2 text-xs font-semibold text-amber-700">{t('draft.durationUnavailable')}</p>}
+                                {duration.error && <p className="mt-2 text-xs text-rose-600">{duration.error}</p>}
+                            </EventOverviewPriceRow>
                         )}
                         {selectedAddons.map((addon, index) => (
                             <EventOverviewPriceRow
@@ -137,11 +178,18 @@ export function OverviewDraftPanel({
                     </div>
                 </section>
 
-                {/* Collaboration code */}
-                {canPay && <CollaborationCodeSection eventId={eventId} onPreviewChangeAction={handleCollaborationPreviewChange} />}
+                {/* Collaboration code: a preview prices one duration, so a new pick starts it over */}
+                {canPay && (
+                    <CollaborationCodeSection
+                        key={duration.selectedOptionId}
+                        eventId={eventId}
+                        onPreviewChangeAction={handleCollaborationPreviewChange}
+                        disabled={!canCheckout}
+                    />
+                )}
 
                 {/* Activation disclosures */}
-                {canPay && <ActivationDisclosures startAt={startAt} projectedCoverage={projectedCoverage} />}
+                {canPay && <ActivationDisclosures projectedCoverage={projectedCoverage} />}
 
                 {/* Withdrawal consent */}
                 {canPay && (
@@ -169,12 +217,15 @@ export function OverviewDraftPanel({
 
                 {error && <p className="mt-3 text-sm text-rose-600">{error}</p>}
 
+                {/* Co-host note */}
+                {!canPurchase && <p className="mt-3 text-xs text-ink-muted">{tCommon('primaryHostOnly')}</p>}
+
                 <div className="mt-4">
                     {canPay ? (
                         <button
                             type="button"
                             onClick={submit}
-                            disabled={isPending || !consent.consentSatisfied}
+                            disabled={isPending || !canCheckout || !consent.consentSatisfied}
                             className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             {isPending ? (

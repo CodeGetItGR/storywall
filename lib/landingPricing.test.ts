@@ -1,13 +1,19 @@
 import { describe, expect, it } from 'vitest';
 
-import type { AppMediaConfigDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
+import type { AppMediaConfigDto, CoverageOptionResponseDto, PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 import {
     buildLandingPlan,
-    formatLandingPlanPrice,
+    formatLandingOptionPrice,
     LANDING_PRICING_CATEGORY_EVENT_TYPES,
+    type LandingPlan,
     type LandingPlanCopy,
+    pickedLandingDuration,
     resolveLandingCategoryPlans,
 } from '@/lib/landingPricing';
+
+function makeOption(overrides: Partial<CoverageOptionResponseDto> = {}): CoverageOptionResponseDto {
+    return { id: 'opt-3', kind: 'INITIAL', months: 3, priceAmountMinor: 7900, sortOrder: 0, active: true, ...overrides };
+}
 
 function makePlan(overrides: Partial<PlanTierResponseDto> = {}): PlanTierResponseDto {
     return {
@@ -22,8 +28,7 @@ function makePlan(overrides: Partial<PlanTierResponseDto> = {}): PlanTierRespons
         isPublic: true,
         storageBytes: 16 * 1024 * 1024 * 1024,
         maxMembers: 150,
-        autoDeleteMonths: 3,
-        priceAmountMinor: 7900,
+        priceAmountMinor: null,
         priceCurrency: 'EUR',
         billingPeriod: 'ONE_TIME',
         discountPercent: null,
@@ -34,6 +39,8 @@ function makePlan(overrides: Partial<PlanTierResponseDto> = {}): PlanTierRespons
         paidModules: [],
         eventTypeKey: 'WEDDING',
         sharedGroupKey: null,
+        initialOptions: [makeOption()],
+        extensionOptions: [],
         ...overrides,
     };
 }
@@ -65,8 +72,6 @@ const MEDIA: AppMediaConfigDto = {
 };
 
 const COPY: LandingPlanCopy = {
-    accessMonths: (months) => `Access for ${months} months after the event`,
-    accessUnlimited: 'Access never expires',
     baselineFeatures: ['Countdown', 'Event schedule', 'Download all photos & videos', 'Unique StoryWall link'],
     everythingIn: (planName) => `Everything in ${planName}`,
     guestsUnlimited: 'Unlimited guests',
@@ -119,68 +124,103 @@ describe('resolveLandingCategoryPlans', () => {
     });
 });
 
-describe('formatLandingPlanPrice', () => {
+describe('formatLandingOptionPrice', () => {
     it('renders a whole-euro price in the existing landing style (no decimals, suffixed symbol)', () => {
-        expect(formatLandingPlanPrice(makePlan({ priceAmountMinor: 7900, priceCurrency: 'EUR' }))).toBe('79€');
+        expect(formatLandingOptionPrice(makePlan(), makeOption({ priceAmountMinor: 7900 }))).toBe('79€');
     });
 
-    it('applies an active discount before formatting', () => {
-        const plan = makePlan({ priceAmountMinor: 10000, priceCurrency: 'EUR', discountPercent: 20 });
-        expect(formatLandingPlanPrice(plan)).toBe('80€');
+    it("applies the plan's active discount before formatting", () => {
+        expect(formatLandingOptionPrice(makePlan({ discountPercent: 20 }), makeOption({ priceAmountMinor: 10000 }))).toBe('80€');
     });
 
-    it('returns null when the plan has no price', () => {
-        expect(formatLandingPlanPrice(makePlan({ priceAmountMinor: null }))).toBeNull();
+    it('returns null when the plan has no currency', () => {
+        expect(formatLandingOptionPrice(makePlan({ priceCurrency: null }), makeOption())).toBeNull();
+    });
+});
+
+describe('pickedLandingDuration', () => {
+    const plan: LandingPlan = {
+        code: 'START',
+        audience: '',
+        features: [],
+        name: 'START',
+        photos: '',
+        storage: '',
+        videos: '',
+        durations: [
+            { id: 'opt-3', months: 3, price: '79€' },
+            { id: 'opt-6', months: 6, price: '99€' },
+        ],
+        defaultDurationId: 'opt-3',
+    };
+
+    it('returns the picked duration', () => {
+        expect(pickedLandingDuration(plan, 'opt-6').price).toBe('99€');
+    });
+
+    it('falls back to the default when nothing (or something unknown) is picked', () => {
+        expect(pickedLandingDuration(plan, undefined).id).toBe('opt-3');
+        expect(pickedLandingDuration(plan, 'retired').id).toBe('opt-3');
     });
 });
 
 describe('buildLandingPlan', () => {
     it('builds a full card for a plan with no previous tier', () => {
-        const plan = makePlan({ moduleKeys: ['gallery'], maxMembers: 150, storageBytes: 16 * 1024 * 1024 * 1024, autoDeleteMonths: 3 });
+        const plan = makePlan({ moduleKeys: ['gallery'], maxMembers: 150, storageBytes: 16 * 1024 * 1024 * 1024 });
 
         const card = buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY);
 
         expect(card).not.toBeNull();
+        expect(card?.code).toBe('START');
         expect(card?.name).toBe('START');
-        expect(card?.price).toBe('79€');
+        expect(card?.durations).toEqual([{ id: 'opt-3', months: 3, price: '79€' }]);
+        expect(card?.defaultDurationId).toBe('opt-3');
         expect(card?.audience).toBe('Up to 150 guests');
         expect(card?.storage).toBe('16 GB');
-        expect(card?.features).toEqual([
-            'Countdown',
-            'Event schedule',
-            'Download all photos & videos',
-            'Unique StoryWall link',
-            'Gallery',
-            'Access for 3 months after the event',
-        ]);
+        expect(card?.features).toEqual(['Countdown', 'Event schedule', 'Download all photos & videos', 'Unique StoryWall link', 'Gallery']);
+    });
+
+    it('lists live durations in display order and starts on the shortest', () => {
+        const plan = makePlan({
+            initialOptions: [
+                makeOption({ id: 'opt-6', months: 6, priceAmountMinor: 9900, sortOrder: 0 }),
+                makeOption({ id: 'opt-3', months: 3, priceAmountMinor: 7900, sortOrder: 1 }),
+                makeOption({ id: 'opt-12', months: 12, priceAmountMinor: 14900, sortOrder: 2, active: false }),
+            ],
+        });
+
+        const card = buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY);
+
+        expect(card?.durations.map((duration) => duration.id)).toEqual(['opt-6', 'opt-3']);
+        expect(card?.defaultDurationId).toBe('opt-3');
     });
 
     it('shows an "Everything in X" rollup plus only the additional modules for each later tier', () => {
         const previous = makePlan({ name: 'START', moduleKeys: ['gallery'] });
-        const plan = makePlan({ name: 'STORY', moduleKeys: ['gallery', 'stories', 'rsvp', 'wishbook'], autoDeleteMonths: 6 });
+        const plan = makePlan({ name: 'STORY', moduleKeys: ['gallery', 'stories', 'rsvp', 'wishbook'] });
 
         const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY);
 
-        expect(card?.features).toEqual(['Everything in START', 'RSVP', 'Stories', 'Guestbook', 'Access for 6 months after the event']);
+        expect(card?.features).toEqual(['Everything in START', 'RSVP', 'Stories', 'Guestbook']);
         expect(card?.includedFeatures).toEqual(['Countdown', 'Event schedule', 'Download all photos & videos', 'Unique StoryWall link', 'Gallery']);
     });
 
     it('keeps the prior-tier rollup when catalog rows do not repeat inherited modules', () => {
         const previous = makePlan({ name: 'START', moduleKeys: ['gallery', 'rsvp'] });
-        const plan = makePlan({ name: 'STORY', moduleKeys: ['stories'], autoDeleteMonths: 6 });
+        const plan = makePlan({ name: 'STORY', moduleKeys: ['stories'] });
 
         const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY);
 
-        expect(card?.features).toEqual(['Everything in START', 'Stories', 'Access for 6 months after the event']);
+        expect(card?.features).toEqual(['Everything in START', 'Stories']);
     });
 
     it('uses the cumulative inherited modules for later tiers with sparse catalog rows', () => {
         const previous = makePlan({ name: 'STORY', moduleKeys: ['stories'] });
-        const plan = makePlan({ name: 'SIGNATURE', moduleKeys: ['wishbook'], autoDeleteMonths: 9 });
+        const plan = makePlan({ name: 'SIGNATURE', moduleKeys: ['wishbook'] });
 
-        const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY, undefined, ['gallery', 'rsvp', 'stories', 'gallery']);
+        const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY, ['gallery', 'rsvp', 'stories', 'gallery']);
 
-        expect(card?.features).toEqual(['Everything in STORY', 'Guestbook', 'Access for 9 months after the event']);
+        expect(card?.features).toEqual(['Everything in STORY', 'Guestbook']);
         expect(card?.includedFeatures).toEqual([
             'Countdown',
             'Event schedule',
@@ -192,8 +232,8 @@ describe('buildLandingPlan', () => {
         ]);
     });
 
-    it('renders "Unlimited" copy for null storage, members, and access window', () => {
-        const plan = makePlan({ storageBytes: null, maxMembers: null, autoDeleteMonths: null });
+    it('renders "Unlimited" copy for null storage and members', () => {
+        const plan = makePlan({ storageBytes: null, maxMembers: null });
 
         const card = buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY);
 
@@ -201,16 +241,12 @@ describe('buildLandingPlan', () => {
         expect(card?.audience).toBe('Unlimited guests');
         expect(card?.photos).toBe('Unlimited');
         expect(card?.videos).toBe('Unlimited');
-        expect(card?.features).toContain('Access never expires');
     });
 
-    it('returns null for a plan with no resolvable price', () => {
-        expect(buildLandingPlan(makePlan({ priceAmountMinor: null }), undefined, MODULES, MEDIA, MODULE_NAME, COPY)).toBeNull();
-    });
-
-    it('uses a supplied no-charge label when a selectable configured plan has no price', () => {
-        const card = buildLandingPlan(makePlan({ priceAmountMinor: null }), undefined, MODULES, MEDIA, MODULE_NAME, COPY, 'No charge');
-
-        expect(card?.price).toBe('No charge');
+    it('returns null for a plan with no duration on sale', () => {
+        expect(buildLandingPlan(makePlan({ initialOptions: [] }), undefined, MODULES, MEDIA, MODULE_NAME, COPY)).toBeNull();
+        expect(
+            buildLandingPlan(makePlan({ initialOptions: [makeOption({ active: false })] }), undefined, MODULES, MEDIA, MODULE_NAME, COPY),
+        ).toBeNull();
     });
 });

@@ -34,7 +34,6 @@ export function useLandingPricingPlans(): { categories: LandingPricingCategories
                     data.media,
                     moduleName,
                     copy,
-                    undefined,
                     plans.slice(0, index).flatMap((previousPlan) => previousPlan.moduleKeys),
                 ),
             )

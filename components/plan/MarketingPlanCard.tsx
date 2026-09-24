@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
-import type { LandingPlan } from '@/lib/landingPricing';
+import { DurationPicker } from '@/components/plan/DurationPicker';
+import { type LandingPlan, pickedLandingDuration } from '@/lib/landingPricing';
 import { cn } from '@/lib/utils';
 
 type MarketingPlanCardProps = {
@@ -8,7 +9,9 @@ type MarketingPlanCardProps = {
     plan: LandingPlan;
     popularLabel: string;
     storageLabel: string;
-    planCode?: string;
+    // The duration picked on this card; the plan's default until one is.
+    durationId?: string | null;
+    onDurationChangeAction?: (planCode: string, optionId: string) => void;
     selected?: boolean;
     selectionLabel?: string;
     onSelectAction?: (planCode: string) => void;
@@ -20,19 +23,26 @@ export function MarketingPlanCard({
     plan,
     popularLabel,
     storageLabel,
-    planCode,
+    durationId,
+    onDurationChangeAction,
     selected = false,
     selectionLabel,
     onSelectAction,
     footer,
 }: MarketingPlanCardProps) {
+    const duration = pickedLandingDuration(plan, durationId);
+
     function handleSelect() {
-        if (planCode) onSelectAction?.(planCode);
+        onSelectAction?.(plan.code);
+    }
+
+    function handleDurationChange(optionId: string) {
+        onDurationChangeAction?.(plan.code, optionId);
     }
 
     const cardClassName = cn(
-        'flex h-full w-full flex-col justify-between rounded-[22px] border px-5 pt-5 pb-4 text-left text-[#151313] transition-colors min-[761px]:px-5',
-        onSelectAction && !selected && 'focus-ring hover:border-[#151313]/25 focus-visible:outline-offset-2',
+        'relative flex h-full w-full flex-col justify-between rounded-[22px] border px-5 pt-5 pb-4 text-left text-[#151313] transition-colors min-[761px]:px-5',
+        onSelectAction && !selected && 'hover:border-[#151313]/25',
         {
             'border-transparent': !featured && !selected,
             'border-[#f29380]': featured && !selected,
@@ -42,6 +52,17 @@ export function MarketingPlanCard({
 
     const content = (
         <>
+            {/* Select plan: stretched over the whole card; only the duration picker and footer sit above it */}
+            {onSelectAction && (
+                <button
+                    type="button"
+                    aria-pressed={selected}
+                    aria-label={plan.name}
+                    onClick={handleSelect}
+                    className="absolute inset-0 z-[1] rounded-[22px] focus-ring focus-visible:outline-offset-2"
+                />
+            )}
+
             <div>
                 {/* Plan identity */}
                 <div className="relative min-h-26.5 pr-24">
@@ -56,9 +77,18 @@ export function MarketingPlanCard({
                         {plan.storage} {storageLabel}
                     </p>
                     <div className="absolute top-0 right-0 bg-[linear-gradient(110deg,#d889a0,#e98778_28%,#f39a63_58%,#f5b967)] bg-clip-text font-[Baskerville,Georgia,serif] text-[clamp(48px,4vw,64px)] tracking-[-.06em] text-transparent">
-                        {plan.price}
+                        {duration.price}
                     </div>
                 </div>
+
+                {/* Duration */}
+                <DurationPicker
+                    options={plan.durations}
+                    value={duration.id}
+                    onChangeAction={handleDurationChange}
+                    variant="marketing"
+                    className="relative z-10 mt-3 mb-2"
+                />
 
                 {/* Plan features */}
                 <ul className="mb-0 list-none p-0">
@@ -83,25 +113,19 @@ export function MarketingPlanCard({
                 </ul>
             </div>
 
-            {/* Storage estimate */}
+            {/* Selection and footer */}
             <div>
                 {selectionLabel && (
                     <p className={cn('mt-4 text-center text-[12px] font-black tracking-[.12em]', selected ? 'text-[#151313]' : 'text-[#151313]/70')}>
                         {selectionLabel}
                     </p>
                 )}
-                {footer}
+                {footer && <div className="relative z-10">{footer}</div>}
             </div>
         </>
     );
 
-    if (onSelectAction) {
-        return (
-            <button type="button" aria-pressed={selected} className={cardClassName} onClick={handleSelect}>
-                {content}
-            </button>
-        );
-    }
+    if (onSelectAction) return <div className={cardClassName}>{content}</div>;
 
     return <article className={cardClassName}>{content}</article>;
 }

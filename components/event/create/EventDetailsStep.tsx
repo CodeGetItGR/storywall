@@ -70,10 +70,7 @@ export function EventDetailsStep() {
                         <span className="text-xs text-rose-500">{scheduleError}</span>
                     ) : projectedCoverage ? (
                         <span className="text-xs text-ink-muted">
-                            {t('coverageProjection', {
-                                opensAt: formatDate(locale, projectedCoverage.galleryOpensAt, { dateStyle: 'medium' }),
-                                endsAt: formatDate(locale, projectedCoverage.coverageEndsAt, { dateStyle: 'medium' }),
-                            })}
+                            {t('coverageProjection', { endsAt: formatDate(locale, projectedCoverage.coverageEndsAt, { dateStyle: 'medium' }) })}
                         </span>
                     ) : (
                         <span className="text-xs text-ink-muted">{t('startAtHint')}</span>
