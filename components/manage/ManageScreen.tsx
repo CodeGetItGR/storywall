@@ -120,6 +120,7 @@ export function ManageScreen() {
                         eventStatus={activeEvent.status}
                         schedule={activeEvent.schedule}
                         cancelledCheckout={cancelledCheckout}
+                        canPurchase={canDelete}
                     />
                 ))}
 
@@ -171,7 +172,7 @@ export function ManageScreen() {
 
             {section === 'danger' && <DangerZoneTab event={activeEvent} />}
 
-            {section === 'billing' && <BillingTab eventId={eventId} schedule={activeEvent.schedule} />}
+            {section === 'billing' && <BillingTab eventId={eventId} schedule={activeEvent.schedule} canPurchase={canDelete} />}
         </>
     );
 

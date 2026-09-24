@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
 import { getApiErrorMessageKey } from '@/lib/api/errorMessageKeys';
@@ -8,11 +8,13 @@ import {
     ERROR_CODES,
     getErrorCode,
     getErrorMessage,
+    getHostTransferUnlocksAt,
     getQuotaExceededDetails,
     getRetryAfterSeconds,
     isModuleNotAvailableError,
     isRateLimitedError,
 } from '@/lib/api/errors';
+import { formatDate } from '@/lib/datetime';
 
 // One place that turns an ApiError into copy a person can act on, so the
 // cross-cutting codes from the billing guide (§3 quotas, §11 the
@@ -20,11 +22,18 @@ import {
 // recognise uses localized generic copy instead of backend English detail.
 export function useApiErrorMessage() {
     const t = useTranslations('ApiErrors');
+    const locale = useLocale();
 
     return useCallback(
         (error: unknown, fallback?: string): string => {
             if (getErrorCode(error) === ERROR_CODES.EVENT_NOT_ACTIVE) return t('eventNotActive');
             if (getErrorCode(error) === ERROR_CODES.COLLABORATION_CODE_NOT_VALID) return getErrorMessage(error, t('collaborationCodeNotValid'));
+            if (getErrorCode(error) === ERROR_CODES.HOST_TRANSFER_WITHDRAWAL_OPEN) {
+                const unlocksAt = getHostTransferUnlocksAt(error);
+                if (unlocksAt) {
+                    return t('hostTransferWithdrawalOpenFrom', { date: formatDate(locale, unlocksAt, { dateStyle: 'medium', timeStyle: 'short' }) });
+                }
+            }
 
             if (isRateLimitedError(error)) {
                 const seconds = getRetryAfterSeconds(error);
@@ -45,7 +54,7 @@ export function useApiErrorMessage() {
 
             return fallback ?? t('generic');
         },
-        [t],
+        [locale, t],
     );
 }
 

@@ -12,6 +12,7 @@ import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useUpgradeOptions } from '@/hooks/useBilling';
+import { useIsPrimaryHost } from '@/hooks/useIsPrimaryHost';
 import { useEventQrLinks, useEventQrLinkStats } from '@/hooks/useQrLinks';
 import { useEventUsage } from '@/hooks/useUsage';
 import { isEventWritable } from '@/lib/eventLifecycle';
@@ -25,7 +26,8 @@ export function InvitationsQrScreen() {
     const { data: qrLinks = [], isLoading: qrLinksLoading } = useEventQrLinks(eventId);
     const { data: qrLinkStats = [], isLoading: statsLoading } = useEventQrLinkStats(eventId);
     const { data: eventUsage = null, isLoading: usageLoading } = useEventUsage(eventId);
-    const { data: upgradeOptions = [], isLoading: upgradesLoading } = useUpgradeOptions(eventId);
+    const isPrimaryHost = useIsPrimaryHost();
+    const { data: upgradeOptions = [], isLoading: upgradesLoading } = useUpgradeOptions(eventId, isPrimaryHost);
     const { data: appConfig } = useAppConfig();
     const [limitNotice, setLimitNotice] = useState<string | null>(null);
 

@@ -12,11 +12,13 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventBilling, useStorageCheckout, useUpgradeCheckout, useUpgradeOptions } from '@/hooks/useBilling';
 import { useEvent } from '@/hooks/useEvent';
+import { useIsPrimaryHost } from '@/hooks/useIsPrimaryHost';
 import { useResetOnBfcacheRestore } from '@/hooks/useResetOnBfcacheRestore';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import { formatMoney, navigateToCheckout } from '@/lib/billing';
 import { scopedPlans } from '@/lib/planTiers';
 import { type CheckoutIntent, routes } from '@/lib/routes';
+import { linkedUpgradeDuration } from '@/lib/upgradeOptions';
 
 type ReviewLine = { label: string; amountMinor: number };
 
@@ -27,13 +29,16 @@ export default function CheckoutReviewBoundary() {
     const searchParams = useSearchParams();
     const locale = useLocale();
     const t = useTranslations('CheckoutReviewPage');
+    const tCommon = useTranslations('Common');
+    const tDurations = useTranslations('Durations');
     const tPageError = useTranslations('PageErrorState.billing');
     const appConfig = useAppConfig();
     const billing = useEventBilling(eventId, true);
     const event = useEvent(eventId);
     const upgradeCheckout = useUpgradeCheckout(eventId);
     const storageCheckout = useStorageCheckout(eventId);
-    const upgradeOptions = useUpgradeOptions(eventId);
+    const canPurchase = useIsPrimaryHost();
+    const upgradeOptions = useUpgradeOptions(eventId, canPurchase);
     const toErrorMessage = useApiErrorMessage();
     const [error, setError] = useState<string | null>(null);
     const [requestsImmediateStart, setRequestsImmediateStart] = useState(false);
@@ -62,12 +67,14 @@ export default function CheckoutReviewBoundary() {
     const rawIntent = searchParams.get('intent');
     const intent = CHECKOUT_INTENTS.find((value) => value === rawIntent) ?? null;
     const code = searchParams.get('code');
+    const optionId = searchParams.get('option');
     const plans = useMemo(() => scopedPlans(appConfig.data?.planTiers ?? [], 'EVENT'), [appConfig.data?.planTiers]);
     const currentPlan = plans.find((plan) => plan.code === billing.data?.planTierCode) ?? null;
     const targetPlan = code ? (plans.find((plan) => plan.code === code) ?? null) : null;
     const service = code ? (appConfig.data?.paidServices.find((item) => item.code === code) ?? null) : null;
-    const upgradeOption =
-        intent === 'upgrade' && targetPlan ? (upgradeOptions.data?.find((option) => option.planTierCode === targetPlan.code) ?? null) : null;
+    const upgradeEntry =
+        intent === 'upgrade' && targetPlan ? (upgradeOptions.data?.find((entry) => entry.planTierCode === targetPlan.code) ?? null) : null;
+    const upgradeDuration = upgradeEntry ? linkedUpgradeDuration(upgradeEntry, optionId) : null;
 
     if (appConfig.isLoading || billing.isLoading || event.isLoading || (intent === 'upgrade' && upgradeOptions.isLoading)) {
         return (
@@ -101,7 +108,7 @@ export default function CheckoutReviewBoundary() {
     const currency =
         intent === 'storage'
             ? (service?.priceCurrency ?? currentPlan.priceCurrency ?? 'EUR')
-            : (upgradeOption?.currency ?? currentPlan.priceCurrency ?? 'EUR');
+            : (upgradeEntry?.currency ?? currentPlan.priceCurrency ?? 'EUR');
 
     let title: string;
     let description: string;
@@ -114,13 +121,16 @@ export default function CheckoutReviewBoundary() {
         title = t('intent.upgrade.title');
         description = t('intent.upgrade.description');
         consequence = t('intent.upgrade.consequence');
-        valid = Boolean(targetPlan && upgradeOption);
-        if (targetPlan && upgradeOption) {
-            planLabel = t('planChange', { from: currentPlan.name, to: upgradeOption.planTierName });
+        valid = Boolean(targetPlan && upgradeEntry && upgradeDuration);
+        if (targetPlan && upgradeEntry && upgradeDuration) {
+            planLabel = t('planChange', { from: currentPlan.name, to: upgradeEntry.planTierName });
             lines = [
                 {
-                    label: t('items.planUpgrade', { plan: upgradeOption.planTierName }),
-                    amountMinor: upgradeOption.payableAmountMinor,
+                    label: t('items.planUpgrade', {
+                        plan: upgradeEntry.planTierName,
+                        duration: tDurations('months', { count: upgradeDuration.months }),
+                    }),
+                    amountMinor: upgradeDuration.payableAmountMinor,
                 },
             ];
         }
@@ -143,15 +153,16 @@ export default function CheckoutReviewBoundary() {
     const backHref = intent === 'storage' ? routes.events.settingsAddons(eventId) : routes.events.manage(eventId, { tab: 'billing' });
 
     async function continueToCheckout() {
-        if (!valid || !consentSatisfied) return;
+        if (!valid || !consentSatisfied || !canPurchase) return;
         setError(null);
         setStaleTerms(false);
         try {
-            if (intent === 'upgrade' && targetPlan) {
+            if (intent === 'upgrade' && targetPlan && upgradeDuration) {
                 navigateToCheckout(
                     eventId,
                     await upgradeCheckout.mutateAsync({
                         planTierCode: targetPlan.code,
+                        coverageOptionId: upgradeDuration.coverageOptionId,
                         requestsImmediateStart,
                         acknowledgesWithdrawalTerms,
                         termsVersion: termsVersion!,
@@ -170,6 +181,11 @@ export default function CheckoutReviewBoundary() {
                 setError(t('withdrawalTerms.stale'));
                 return;
             }
+            // The duration is no longer offered for this upgrade: reload the offers,
+            // so the page shows the purchase as unavailable.
+            const errorCode = getErrorCode(checkoutError);
+            if (errorCode === ERROR_CODES.COVERAGE_OPTION_INVALID || errorCode === ERROR_CODES.PLAN_TIER_NOT_AN_UPGRADE)
+                void upgradeOptions.refetch();
             setError(toErrorMessage(checkoutError));
         }
     }
@@ -218,11 +234,11 @@ export default function CheckoutReviewBoundary() {
                         <p className="text-sm font-semibold text-ink">{lines.length === 1 ? lines[0]?.label : t('dueNow')}</p>
                         <p className="shrink-0 text-xl font-bold text-ink">{formatMoney(locale, totalMinor, currency)}</p>
                     </div>
-                    {intent === 'upgrade' && upgradeOption && upgradeOption.discountPercent !== null && (
+                    {intent === 'upgrade' && upgradeEntry && upgradeEntry.discountPercent !== null && (
                         <p className="mt-3 text-sm font-semibold text-emerald-700">
-                            {upgradeOption.discountLabel
-                                ? t('autoDiscountApplied', { label: upgradeOption.discountLabel, discount: upgradeOption.discountPercent })
-                                : t('autoDiscountAppliedNoLabel', { discount: upgradeOption.discountPercent })}
+                            {upgradeEntry.discountLabel
+                                ? t('autoDiscountApplied', { label: upgradeEntry.discountLabel, discount: upgradeEntry.discountPercent })
+                                : t('autoDiscountAppliedNoLabel', { discount: upgradeEntry.discountPercent })}
                         </p>
                     )}
                 </div>
@@ -249,15 +265,18 @@ export default function CheckoutReviewBoundary() {
                 </div>
             )}
 
-            {!valid && <p className="mt-6 text-sm text-rose-600">{t('unavailable')}</p>}
+            {canPurchase && !valid && <p className="mt-6 text-sm text-rose-600">{t('unavailable')}</p>}
             {error && <p className="mt-6 text-sm text-rose-600">{error}</p>}
+
+            {/* Co-host note */}
+            {!canPurchase && <p className="mt-6 text-xs text-ink-muted">{tCommon('primaryHostOnly')}</p>}
 
             {/* Checkout action */}
             <div className="mt-8">
                 <button
                     type="button"
                     onClick={continueToCheckout}
-                    disabled={!valid || lines.length === 0 || isPending || !consentSatisfied}
+                    disabled={!valid || lines.length === 0 || isPending || !consentSatisfied || !canPurchase}
                     className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-ink px-6 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
                 >
                     {isPending ? (

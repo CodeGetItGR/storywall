@@ -36,7 +36,7 @@ export function DeletedEventManageScreen({ event }: { event: EventDetailResponse
                 {/* Billing */}
                 <section>
                     <h2 className="mb-4 text-sm font-bold tracking-wide text-ink-muted uppercase">{t('sections.billing')}</h2>
-                    <BillingTab eventId={event.id} schedule={event.schedule} isDeleted />
+                    <BillingTab eventId={event.id} schedule={event.schedule} canPurchase={false} isDeleted />
                 </section>
             </div>
         </div>

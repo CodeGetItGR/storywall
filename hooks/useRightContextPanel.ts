@@ -3,6 +3,7 @@
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useUpgradeOptions } from '@/hooks/useBilling';
 import { useGalleryArchiveManifest } from '@/hooks/useGalleryArchive';
+import { useIsPrimaryHost } from '@/hooks/useIsPrimaryHost';
 import { useEventQrLinks } from '@/hooks/useQrLinks';
 import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
 import { useEventUsage } from '@/hooks/useUsage';
@@ -21,6 +22,7 @@ import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/E
 export function useRightContextPanel({ includeManageLinks = true }: { includeManageLinks?: boolean } = {}) {
     const activeEvent = useActiveEvent();
     const isHost = useIsHost();
+    const isPrimaryHost = useIsPrimaryHost();
     const isLoading = useEventContextLoading();
     // Deleted events keep no plan, no upgrade path and no live counts —
     // every summary below is a write surface or a number that can't change.
@@ -29,7 +31,8 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
     const { data: appConfig } = useAppConfig();
 
     const isDraft = activeEvent?.status === 'DRAFT';
-    const { data: upgradeOptions = [] } = useUpgradeOptions(isHost && !isDeleted ? (activeEvent?.id ?? null) : null, !isDraft);
+    // Only the main host may list upgrades; the server answers 4006 to anyone else.
+    const { data: upgradeOptions = [] } = useUpgradeOptions(isPrimaryHost && !isDeleted ? (activeEvent?.id ?? null) : null, !isDraft);
     const availableModuleKeys = new Set((activeEvent?.modules ?? []).filter((module) => module.isAvailable).map((module) => module.moduleKey));
 
     const isLiveHost = isHost && !isDraft && !isDeleted;

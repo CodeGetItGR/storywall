@@ -22,6 +22,8 @@ const billingData: EventBillingResponseDto = {
     eventStatus: 'ACTIVE',
     planTierCode: 'WEDDING_SIGNATURE',
     planTierName: 'SIGNATURE',
+    coverageOptionId: 'opt-12',
+    coverageMonths: 12,
     orders: [],
     addons: [],
     discount: null,
@@ -31,8 +33,7 @@ const upgradeOption: UpgradeOptionResponseDto = {
     planTierCode: 'WEDDING_PREMIUM',
     planTierName: 'PREMIUM',
     currency: 'EUR',
-    gapAmountMinor: 10_000,
-    payableAmountMinor: 8_000,
+    options: [{ coverageOptionId: 'premium-12', months: 12, monthsAdded: 0, gapAmountMinor: 10_000, payableAmountMinor: 8_000 }],
     discountPercent: null,
     discountLabel: null,
 };
@@ -56,10 +57,10 @@ describe('useEventBillingPanel', () => {
     });
 
     it('uses the server-provided eligible target even when the global catalog cannot resolve it', () => {
-        const { result } = renderHook(() => useEventBillingPanel('event-1'));
+        const { result } = renderHook(() => useEventBillingPanel('event-1', { canPurchase: true }));
 
         expect(result.current.currentPlan).toBeNull();
-        expect(result.current.upgradeTargets).toEqual([{ option: upgradeOption, plan: null }]);
+        expect(result.current.upgradeTargets).toEqual([{ entry: upgradeOption, plan: null }]);
         expect(result.current.hasError).toBe(false);
     });
 
@@ -68,19 +69,19 @@ describe('useEventBillingPanel', () => {
             ...upgradeOption,
             planTierCode: 'WEDDING_ELITE',
             planTierName: 'ELITE',
-            payableAmountMinor: 20_000,
+            options: [{ coverageOptionId: 'elite-12', months: 12, monthsAdded: 0, gapAmountMinor: 20_000, payableAmountMinor: 20_000 }],
         };
         mocks.useUpgradeOptions.mockReturnValue(queryResult([upgradeOption, topOption]));
 
-        const { result } = renderHook(() => useEventBillingPanel('event-1'));
+        const { result } = renderHook(() => useEventBillingPanel('event-1', { canPurchase: true }));
 
-        expect(result.current.upgradeTargets.map((target) => target.option.planTierCode)).toEqual(['WEDDING_PREMIUM', 'WEDDING_ELITE']);
+        expect(result.current.upgradeTargets.map((target) => target.entry.planTierCode)).toEqual(['WEDDING_PREMIUM', 'WEDDING_ELITE']);
     });
 
     it('keeps billing usable when usage fails, with no limits to show', () => {
         mocks.useEventUsage.mockReturnValue(queryResult(undefined, { error: new Error('failed') }));
 
-        const { result } = renderHook(() => useEventBillingPanel('event-1'));
+        const { result } = renderHook(() => useEventBillingPanel('event-1', { canPurchase: true }));
 
         expect(result.current.usage).toBeNull();
         expect(result.current.hasError).toBe(false);
@@ -89,7 +90,7 @@ describe('useEventBillingPanel', () => {
     it('keeps the billing screen loading until upgrade eligibility is known', () => {
         mocks.useUpgradeOptions.mockReturnValue(queryResult<UpgradeOptionResponseDto[] | undefined>(undefined, { isLoading: true }));
 
-        const { result } = renderHook(() => useEventBillingPanel('event-1'));
+        const { result } = renderHook(() => useEventBillingPanel('event-1', { canPurchase: true }));
 
         expect(result.current.isLoading).toBe(true);
     });
@@ -97,7 +98,7 @@ describe('useEventBillingPanel', () => {
     it('surfaces an upgrade-options failure through the billing error state', () => {
         mocks.useUpgradeOptions.mockReturnValue(queryResult<UpgradeOptionResponseDto[] | undefined>(undefined, { error: new Error('failed') }));
 
-        const { result } = renderHook(() => useEventBillingPanel('event-1'));
+        const { result } = renderHook(() => useEventBillingPanel('event-1', { canPurchase: true }));
 
         expect(result.current.hasError).toBe(true);
     });
@@ -106,12 +107,22 @@ describe('useEventBillingPanel', () => {
         mocks.useAppConfig.mockReturnValue(queryResult({ planTiers: [], paidServices: [{ id: 'svc-1', planTierIds: [] }] }));
         mocks.useUpgradeOptions.mockReturnValue(queryResult<UpgradeOptionResponseDto[] | undefined>(undefined));
 
-        const { result } = renderHook(() => useEventBillingPanel('event-1', { isDeleted: true }));
+        const { result } = renderHook(() => useEventBillingPanel('event-1', { isDeleted: true, canPurchase: true }));
 
         expect(mocks.useUpgradeOptions).toHaveBeenCalledWith('event-1', false);
         expect(mocks.useEventUsage).toHaveBeenCalledWith(null);
         expect(result.current.upgradeTargets).toEqual([]);
         expect(result.current.paidAddonOffers).toEqual([]);
+    });
+
+    it('never requests upgrade options for a co-host', () => {
+        mocks.useUpgradeOptions.mockReturnValue(queryResult<UpgradeOptionResponseDto[] | undefined>(undefined));
+
+        const { result } = renderHook(() => useEventBillingPanel('event-1', { canPurchase: false }));
+
+        expect(mocks.useUpgradeOptions).toHaveBeenCalledWith('event-1', false);
+        expect(result.current.upgradeTargets).toEqual([]);
+        expect(result.current.hasError).toBe(false);
         expect(result.current.derived?.canManageAddons).toBe(false);
     });
 });

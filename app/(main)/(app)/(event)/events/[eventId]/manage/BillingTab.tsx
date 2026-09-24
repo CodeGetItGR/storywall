@@ -10,11 +10,23 @@ import Section from '@/components/manage/Section';
 import { useEventBillingPanel } from '@/hooks/useEventBillingPanel';
 import type { EventScheduleDto } from '@/lib/api/types';
 
-export default function BillingTab({ eventId, schedule, isDeleted = false }: { eventId: string; schedule: EventScheduleDto; isDeleted?: boolean }) {
+export default function BillingTab({
+    eventId,
+    schedule,
+    canPurchase,
+    isDeleted = false,
+}: {
+    eventId: string;
+    schedule: EventScheduleDto;
+    // Only the event's main host can buy anything for it.
+    canPurchase: boolean;
+    isDeleted?: boolean;
+}) {
     const tBilling = useTranslations('EventPlanSettingsPage');
+    const tCommon = useTranslations('Common');
     const tPageError = useTranslations('PageErrorState.billing');
     const tPageErrorCommon = useTranslations('PageErrorState');
-    const panel = useEventBillingPanel(eventId, { isDeleted });
+    const panel = useEventBillingPanel(eventId, { isDeleted, canPurchase });
 
     if (panel.isLoading) {
         return (
@@ -44,6 +56,9 @@ export default function BillingTab({ eventId, schedule, isDeleted = false }: { e
 
     return (
         <div className="flex flex-col gap-6">
+            {/* Co-host note */}
+            {!canPurchase && !isDeleted && <p className="text-xs text-ink-muted">{tCommon('primaryHostOnly')}</p>}
+
             {/* Your plan */}
             <BillingPlanSummary data={data} schedule={schedule} usage={panel.usage} />
 

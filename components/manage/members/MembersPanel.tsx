@@ -71,7 +71,7 @@ export function MembersPanel({
     const [limitNotice, setLimitNotice] = useState<string | null>(null);
 
     const moderation = useMemberModeration(eventId, canModerate);
-    const { data: upgradeOptions = [] } = useUpgradeOptions(eventId);
+    const { data: upgradeOptions = [] } = useUpgradeOptions(eventId, isPrimaryHost);
     const handleConfirmRemove = useCallback(() => moderation.confirmRemove(tMembers('removeFailed')), [moderation, tMembers]);
     const canReport = canModerate && Boolean(appConfig?.reportTargetTypes?.includes('MEMBER'));
 

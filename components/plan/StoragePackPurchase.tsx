@@ -12,8 +12,20 @@ import { formatBytes } from '@/lib/format';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
-export function StoragePackPurchase({ eventId, services }: { eventId: string; services: PaidServiceResponseDto[] }) {
+const BUY_CLASS_NAME = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-ink px-6 text-sm font-semibold text-white';
+
+export function StoragePackPurchase({
+    eventId,
+    services,
+    canPurchase,
+}: {
+    eventId: string;
+    services: PaidServiceResponseDto[];
+    // Only the event's main host can buy a pack; co-hosts see the offer disabled.
+    canPurchase: boolean;
+}) {
     const t = useTranslations('EventPlanSettingsPage.storagePacks');
+    const tCommon = useTranslations('Common');
     const locale = useLocale();
     const usage = useEventUsage(eventId);
     const { selectedService, handleSelect } = useStoragePackSelection(services);
@@ -77,17 +89,25 @@ export function StoragePackPurchase({ eventId, services }: { eventId: string; se
                                 price: formatMoney(locale, selectedService.priceAmountMinor, selectedService.priceCurrency),
                             })}
                         </p>
-                        <Link
-                            href={routes.events.checkoutReview(eventId, 'storage', selectedService.code)}
-                            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-ink px-6 text-sm font-semibold text-white disabled:opacity-40"
-                        >
-                            {t('buy', {
-                                amount: formatMoney(locale, selectedService.priceAmountMinor, selectedService.priceCurrency),
-                            })}
-                        </Link>
+                        {canPurchase ? (
+                            <Link href={routes.events.checkoutReview(eventId, 'storage', { code: selectedService.code })} className={BUY_CLASS_NAME}>
+                                {t('buy', {
+                                    amount: formatMoney(locale, selectedService.priceAmountMinor, selectedService.priceCurrency),
+                                })}
+                            </Link>
+                        ) : (
+                            <span role="link" aria-disabled="true" className={cn(BUY_CLASS_NAME, 'cursor-not-allowed opacity-40')}>
+                                {t('buy', {
+                                    amount: formatMoney(locale, selectedService.priceAmountMinor, selectedService.priceCurrency),
+                                })}
+                            </span>
+                        )}
                     </div>
                 )}
             </div>
+
+            {/* Co-host note */}
+            {!canPurchase && <p className="mt-3 text-xs text-ink-muted">{tCommon('primaryHostOnly')}</p>}
 
             <p className="mt-2 text-xs text-ink-muted">{t('finalSale')}</p>
         </section>

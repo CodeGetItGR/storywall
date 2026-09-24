@@ -3,12 +3,24 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { PlanUpgradeModules } from '@/components/manage/billing/PlanUpgradeModules';
+import { DurationPicker } from '@/components/plan/DurationPicker';
 import type { BillingUpgradeRow as BillingUpgradeRowData } from '@/hooks/useBillingUpgradeRows';
 import type { PlatformModuleResponseDto } from '@/lib/api/types';
-
-export function BillingUpgradeRow({ row, modules }: { row: BillingUpgradeRowData; modules: PlatformModuleResponseDto[] }) {
+export function BillingUpgradeRow({
+    row,
+    modules,
+    onDurationChangeAction,
+}: {
+    row: BillingUpgradeRowData;
+    modules: PlatformModuleResponseDto[];
+    onDurationChangeAction: (planCode: string, optionId: string) => void;
+}) {
     const t = useTranslations('EventPlanSettingsPage');
     const hasModuleChanges = row.addedModuleKeys.length > 0 || row.removedModuleKeys.length > 0;
+
+    function handleDurationChange(optionId: string) {
+        onDurationChangeAction(row.code, optionId);
+    }
 
     return (
         <li className="py-4 first:pt-0 last:pb-0">
@@ -25,6 +37,13 @@ export function BillingUpgradeRow({ row, modules }: { row: BillingUpgradeRowData
                             ))}
                         </ul>
                     )}
+
+                    {/* Duration */}
+                    <DurationPicker options={row.durations} value={row.durationId} onChangeAction={handleDurationChange} className="mt-3" />
+                    {row.monthsAdded > 0 && (
+                        <p className="mt-2 text-xs font-semibold text-ink-muted">{t('upgrade.addsMonths', { count: row.monthsAdded })}</p>
+                    )}
+
                     {row.listPriceLabel && (
                         <p className="mt-2 text-xs text-ink-muted">
                             <span className="line-through">{row.listPriceLabel}</span>

@@ -9,6 +9,7 @@ import { BackButton } from '@/components/ui/BackButton';
 import { PageErrorState } from '@/components/ui/PageErrorState';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventBilling } from '@/hooks/useBilling';
+import { useIsPrimaryHost } from '@/hooks/useIsPrimaryHost';
 import { scopedPlans } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 
@@ -19,6 +20,7 @@ export default function EventAddonsSettingsBoundary() {
     const tPageError = useTranslations('PageErrorState.billing');
     const appConfig = useAppConfig();
     const billing = useEventBilling(eventId, true);
+    const canPurchase = useIsPrimaryHost();
     const data = billing.data;
     const retry = useCallback(() => {
         void appConfig.refetch();
@@ -72,7 +74,7 @@ export default function EventAddonsSettingsBoundary() {
 
             <div className="mt-6 rounded-lg bg-surface-muted/45 p-4">
                 {data.eventStatus === 'ACTIVE' && storagePacks.length > 0 ? (
-                    <StoragePackPurchase eventId={eventId} services={storagePacks} />
+                    <StoragePackPurchase eventId={eventId} services={storagePacks} canPurchase={canPurchase} />
                 ) : (
                     <div>
                         <h2 className="text-sm font-bold text-ink">{tBilling('storagePacks.title')}</h2>

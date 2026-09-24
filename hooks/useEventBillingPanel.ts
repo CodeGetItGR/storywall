@@ -15,7 +15,7 @@ const ORDER_PREVIEW_COUNT = 6;
  * Every derived fact, mutation and dialog flag the billing section renders.
  * The panels under components/manage/billing stay declarative shells over this.
  */
-export function useEventBillingPanel(eventId: string, { isDeleted = false }: { isDeleted?: boolean } = {}) {
+export function useEventBillingPanel(eventId: string, { isDeleted = false, canPurchase }: { isDeleted?: boolean; canPurchase: boolean }) {
     const appConfigQuery = useAppConfig();
     const billing = useEventBilling(eventId, true);
 
@@ -27,16 +27,18 @@ export function useEventBillingPanel(eventId: string, { isDeleted = false }: { i
     // upgrade-options 404s on purpose for a deleted event, and nothing can be
     // bought for it — keep billing (the refund shows there) and drop the rest.
     // Usage is skipped too: a deleted event has no limits left to show.
-    const upgradeOptions = useUpgradeOptions(eventId, !isDeleted);
+    // It is also 403 (4006) for anyone but the main host, so co-hosts skip it.
+    const upgradeOptions = useUpgradeOptions(eventId, !isDeleted && canPurchase);
     const usageQuery = useEventUsage(isDeleted ? null : eventId);
     // Every target the server offers, not just the next tier: a host can jump
-    // straight to the top plan and pay the difference once. The server option
-    // stays the source of truth even when the catalog can't resolve its plan.
+    // straight to the top plan and pay the difference once. The server entry
+    // (one per plan, with its eligible durations) stays the source of truth even
+    // when the catalog can't resolve its plan.
     const upgradeTargets = useMemo(
         () =>
-            (upgradeOptions.data ?? []).map((option) => ({
-                option,
-                plan: eventPlans.find((plan) => plan.code === option.planTierCode) ?? null,
+            (upgradeOptions.data ?? []).map((entry) => ({
+                entry,
+                plan: eventPlans.find((plan) => plan.code === entry.planTierCode) ?? null,
             })),
         [eventPlans, upgradeOptions.data],
     );

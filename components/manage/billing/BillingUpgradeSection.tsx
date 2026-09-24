@@ -3,6 +3,7 @@ import { useTranslations } from 'next-intl';
 import { BillingUpgradeRow } from '@/components/manage/billing/BillingUpgradeRow';
 import Section from '@/components/manage/Section';
 import { useBillingUpgradeRows } from '@/hooks/useBillingUpgradeRows';
+import { useDurationPicks } from '@/hooks/useDurationPicks';
 import type { BillingUpgradeTarget } from '@/hooks/useEventBillingPanel';
 import type { PlanTierResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 
@@ -20,7 +21,8 @@ export function BillingUpgradeSection({
     modules: PlatformModuleResponseDto[];
 }) {
     const t = useTranslations('EventPlanSettingsPage');
-    const rows = useBillingUpgradeRows({ eventId, targets, currentPlan, extraStorageBytes });
+    const { picks, pickDuration } = useDurationPicks();
+    const rows = useBillingUpgradeRows({ eventId, targets, currentPlan, extraStorageBytes, picks });
 
     if (rows.length === 0) return null;
 
@@ -29,7 +31,7 @@ export function BillingUpgradeSection({
             {/* Plans */}
             <ul className="divide-y divide-ink/10">
                 {rows.map((row) => (
-                    <BillingUpgradeRow key={row.code} row={row} modules={modules} />
+                    <BillingUpgradeRow key={row.code} row={row} modules={modules} onDurationChangeAction={pickDuration} />
                 ))}
             </ul>
         </Section>
