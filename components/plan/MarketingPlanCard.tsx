@@ -1,6 +1,10 @@
-import type { ReactNode } from 'react';
+'use client';
+
+import { type ReactNode, useId } from 'react';
 
 import { DurationPicker } from '@/components/plan/DurationPicker';
+import { PlanCardExpandToggle } from '@/components/plan/PlanCardExpandToggle';
+import { useDisclosure } from '@/hooks/useDisclosure';
 import { type LandingPlan, pickedLandingDuration } from '@/lib/landingPricing';
 import { cn } from '@/lib/utils';
 
@@ -9,6 +13,11 @@ type MarketingPlanCardProps = {
     plan: LandingPlan;
     popularLabel: string;
     storageLabel: string;
+    durationLabel: string;
+    expandLabel: string;
+    collapseLabel: string;
+    // Whether the feature list starts open on mobile. Desktop always shows it.
+    defaultExpanded?: boolean;
     // The duration picked on this card; the plan's default until one is.
     durationId?: string | null;
     onDurationChangeAction?: (planCode: string, optionId: string) => void;
@@ -23,6 +32,10 @@ export function MarketingPlanCard({
     plan,
     popularLabel,
     storageLabel,
+    durationLabel,
+    expandLabel,
+    collapseLabel,
+    defaultExpanded = false,
     durationId,
     onDurationChangeAction,
     selected = false,
@@ -31,6 +44,9 @@ export function MarketingPlanCard({
     footer,
 }: MarketingPlanCardProps) {
     const duration = pickedLandingDuration(plan, durationId);
+    const { open, toggle } = useDisclosure(defaultExpanded);
+    const durationLabelId = useId();
+    const featuresId = useId();
 
     function handleSelect() {
         onSelectAction?.(plan.code);
@@ -52,7 +68,7 @@ export function MarketingPlanCard({
 
     const content = (
         <>
-            {/* Select plan: stretched over the whole card; only the duration picker and footer sit above it */}
+            {/* Select plan: stretched over the whole card; only the duration picker, expand arrow and footer sit above it */}
             {onSelectAction && (
                 <button
                     type="button"
@@ -64,34 +80,42 @@ export function MarketingPlanCard({
             )}
 
             <div>
-                {/* Plan identity */}
-                <div className="relative min-h-26.5 pr-24">
-                    <h3 className="text-[clamp(20px,1.65vw,27px)] leading-[1.05] font-black tracking-[.09em]">
-                        {plan.name}
-                        <span className="ml-2 inline-block align-middle text-[9px] leading-none font-bold tracking-widest normal-case">
-                            {featured ? popularLabel : null}
-                        </span>
-                    </h3>
-                    <p className="mt-1 text-sm text-[#151313]/65">{plan.audience}</p>
-                    <p className="mt-1 text-sm text-[#151313]/65">
-                        {plan.storage} {storageLabel}
-                    </p>
-                    <div className="absolute top-0 right-0 bg-[linear-gradient(110deg,#d889a0,#e98778_28%,#f39a63_58%,#f5b967)] bg-clip-text font-[Baskerville,Georgia,serif] text-[clamp(48px,4vw,64px)] tracking-[-.06em] text-transparent">
-                        {duration.price}
+                {/* Plan identity: the text wraps beside the price; the price drops below it only when the name can't fit next to it */}
+                <div className="flex flex-wrap items-start justify-between gap-x-3">
+                    <div className="flex-1 basis-36">
+                        <h3 className="text-[clamp(20px,1.65vw,27px)] leading-[1.05] font-black tracking-[.09em]">
+                            {plan.name}
+                            <span className="ml-2 inline-block align-middle text-[9px] leading-none font-bold tracking-widest normal-case">
+                                {featured ? popularLabel : null}
+                            </span>
+                        </h3>
+                        <p className="mt-1 text-sm text-[#151313]/65">{plan.audience}</p>
+                        <p className="mt-1 text-sm text-[#151313]/65">
+                            {plan.storage} {storageLabel}
+                        </p>
                     </div>
+
+                    {/* Price */}
+                    <p className="shrink-0 bg-[linear-gradient(110deg,#d889a0,#e98778_28%,#f39a63_58%,#f5b967)] bg-clip-text font-[Baskerville,Georgia,serif] text-[clamp(48px,4vw,64px)] leading-[1.1] tracking-[-.06em] text-transparent">
+                        {duration.price}
+                    </p>
                 </div>
 
                 {/* Duration */}
+                <p id={durationLabelId} className="mt-3 text-[13px] text-[#151313]/65">
+                    {durationLabel}
+                </p>
                 <DurationPicker
                     options={plan.durations}
                     value={duration.id}
                     onChangeAction={handleDurationChange}
                     variant="marketing"
-                    className="relative z-10 mt-3 mb-2"
+                    labelledBy={durationLabelId}
+                    className="relative z-10 mt-1.5 mb-2"
                 />
 
-                {/* Plan features */}
-                <ul className="mb-0 list-none p-0">
+                {/* Plan features: collapsible on mobile, always shown on desktop */}
+                <ul id={featuresId} className={cn('mb-0 list-none p-0', !open && 'hidden min-[761px]:block')}>
                     {plan.features.map((feature, index) => (
                         <li
                             className="relative border-b border-[#151313]/10 py-2.75 pr-1 pl-6 text-[13px] leading-[1.4] before:absolute before:top-2.75 before:left-0 before:content-['✓'] min-[761px]:text-sm"
@@ -111,6 +135,15 @@ export function MarketingPlanCard({
                         </li>
                     ))}
                 </ul>
+
+                {/* Expand (mobile only) */}
+                <PlanCardExpandToggle
+                    open={open}
+                    controlsId={featuresId}
+                    expandLabel={expandLabel}
+                    collapseLabel={collapseLabel}
+                    onToggleAction={toggle}
+                />
             </div>
 
             {/* Selection and footer */}

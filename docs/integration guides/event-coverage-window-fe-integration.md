@@ -122,6 +122,12 @@ guest can still upload before it. Enforcement is a separate change with its own 
 `whenKey`); only the date they describe has moved. Nothing to do unless you compute a deletion
 date yourself, in which case stop and read `coverageEndsAt` off the event instead.
 
+**2026-09-24:** the payload no longer carries `autoDeleteMonths` (once a host buys an extension, the plan's months are
+not the whole coverage). The body is `…autoDeleteWarning.body.extendable` with an `EVENT_COVERAGE_EXTEND`
+CTA when the plan sells an extension, else `…body.final` with the gallery CTA. Notifications stored
+before then keep `body.one`/`body.many` and their `autoDeleteMonths`. See
+[`coverage-options-and-extensions-fe-integration.md`](coverage-options-and-extensions-fe-integration.md) §11.
+
 ## What did not change
 
 - The `events.end_at` column is still `NOT NULL`. Optionality is purely at the API boundary.

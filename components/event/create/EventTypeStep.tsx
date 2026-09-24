@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
-import { useEventTypeStartingPrice } from '@/hooks/useEventTypeStartingPrice';
 import { useLocalizedAppEventTypeCopy } from '@/hooks/useLocalizedAppEventTypeCopy';
 import type { EventTypeAccentToken, EventTypeConvention } from '@/lib/api/types';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
@@ -43,7 +42,6 @@ const FALLBACK_STYLE = {
 export function EventTypeStep() {
     const t = useTranslations('CreateEventPage');
     const eventTypeCopy = useLocalizedAppEventTypeCopy();
-    const startingPrice = useEventTypeStartingPrice();
     const { eventTypes, selectedEventType, onSelectEventType } = useCreateEventForm();
 
     function handleClick(event: MouseEvent<HTMLButtonElement>) {
@@ -64,7 +62,6 @@ export function EventTypeStep() {
                     const isSelected = type.eventTypeKey === selectedEventType;
                     const copy = eventTypeCopy(type.eventTypeKey);
                     const backgroundImageSrc = getCreateEventCatalogEntry(type.eventTypeKey)?.backgroundImageSrc;
-                    const priceLabel = startingPrice(type.eventTypeKey);
 
                     return (
                         <button
@@ -92,12 +89,6 @@ export function EventTypeStep() {
                                     <span className="absolute inset-0 bg-black/10" />
                                     <span className="absolute inset-x-0 bottom-0 h-3/4 bg-linear-to-t from-black/90 via-black/55 to-transparent" />
                                 </>
-                            )}
-                            {/* Price */}
-                            {priceLabel && (
-                                <span className="absolute top-4 left-4 z-10 rounded-full bg-white px-3 py-1 text-xs font-semibold text-ink shadow-sm">
-                                    {priceLabel}
-                                </span>
                             )}
                             {isSelected && (
                                 <span className="absolute top-4 right-4 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-ink text-white shadow-sm">

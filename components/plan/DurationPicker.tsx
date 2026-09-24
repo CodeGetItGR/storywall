@@ -33,6 +33,7 @@ export function DurationPicker({
     onChangeAction,
     variant = 'app',
     disabled = false,
+    labelledBy,
     className,
 }: {
     options: DurationPickerOption[];
@@ -40,6 +41,8 @@ export function DurationPicker({
     onChangeAction: (optionId: string) => void;
     variant?: keyof typeof VARIANT_CLASSES;
     disabled?: boolean;
+    // Id of a visible label that names the switch; falls back to a generic one.
+    labelledBy?: string;
     className?: string;
 }) {
     const t = useTranslations('Durations');
@@ -67,7 +70,8 @@ export function DurationPicker({
     return (
         <div
             role="radiogroup"
-            aria-label={t('label')}
+            aria-label={labelledBy ? undefined : t('label')}
+            aria-labelledby={labelledBy}
             aria-disabled={disabled || undefined}
             onKeyDown={disabled ? undefined : handleKeyDown}
             className={cn('inline-flex max-w-full rounded-full p-0.5', classes.track, disabled && 'opacity-50', className)}

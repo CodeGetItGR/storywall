@@ -216,6 +216,44 @@ interface AdminUserProvisionRequestDto {
   lastName: string;   // required, max 100
 }
 
+/** VIES state of a business profile. Only VALID makes the account a business buyer. PENDING is
+ *  retried after 1 h, 2 h, 4 h, then every 8 h, and becomes INVALID 3 days after the save (the user
+ *  is emailed). While VIES checks are off (the default outside production) nothing is retried and
+ *  PENDING stays PENDING. */
+export type ViesStatus = 'PENDING' | 'VALID' | 'INVALID';
+
+/** PUT /api/me/business-profile. Added 2026-09-24. Only the account holder sets it: guests are 403,
+ *  and admin provisioning takes no business profile. 10 PUTs per hour per user, 400s included.
+ *  See fe-guides/business-buyers-fe-integration.md §2. */
+export interface BusinessProfileRequestDto {
+  legalName: string;             // required, max 200, no control characters
+  /** VIES code: EL for Greece (not GR), XI for Northern Ireland; the 27 EU states and XI only. */
+  countryCode: string;           // required, 2 letters
+  /** With or without the prefix; spaces, dots, dashes and slashes allowed. 2–12 letters/digits/+/*
+   *  once normalised. */
+  vatNumber: string;             // required, max 20
+  addressLine1: string;          // required, max 200, no control characters
+  addressLine2?: string | null;  // max 200, no control characters
+  city: string;                  // required, max 100, no control characters
+  postalCode: string;            // required, max 20, no control characters
+}
+
+/** GET/PUT /api/me/business-profile. GET is 404 when there is none; DELETE is 204 either way. */
+export interface BusinessProfileResponseDto {
+  legalName: string;
+  countryCode: string;
+  vatNumber: string;             // without the prefix
+  addressLine1: string;
+  addressLine2: string | null;
+  city: string;
+  postalCode: string;
+  viesStatus: ViesStatus;
+  viesSubmittedAt: string;
+  viesCheckedAt: string | null;
+  /** True only when viesStatus is VALID: the account buys as a business. */
+  business: boolean;
+}
+
 /** PATCH /api/me — the fields a user may change about themselves. Anything account-level (email,
  *  role, status) goes through the admin UserRequestDto instead. Omitted fields are left alone. */
 interface MeUpdateRequestDto {
@@ -247,6 +285,7 @@ interface SessionResponseDto {
 // WITHDRAWAL_WITHHELD — see billing-fe-guide.md §10, which already asked for these to be added.
 // Pre-existing gap, not part of the 2026-08-24 change below. (REFUND_APPROVED/REFUND_REJECTED,
 // formerly listed here, are dead as of 2026-09-18 — nothing emits them any more.)
+// Also missing: STORAGE_TRIM_SCHEDULED, STORAGE_TRIM_WARNING (2026-09-23, withdrawal-compliance-phase2-fe-integration.md §7).
 type NotificationType =
   | 'STORAGE_LIMIT_WARNING'
   | 'MEMBER_LIMIT_WARNING'
@@ -265,11 +304,12 @@ type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
 //   EVENT_PLAN_SETTINGS -> your event plan/upgrade settings screen, needs params.eventId
 //   EVENT_GALLERY        -> your event gallery screen, needs params.eventId
 //   EVENT_GUESTS          -> your event guest list screen, needs params.eventId
+//   EVENT_COVERAGE_EXTEND -> your plan screen with the extension picker open, needs params.eventId (2026-09-24)
 //
 // ctaTarget is a closed, growable set — treat an unrecognized value defensively (hide the CTA
 // rather than crash) so a future backend addition degrades gracefully instead of breaking the feed.
 // See notification-cta-target-fe-integration.md for the full migration guide.
-type NotificationCtaTarget = 'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS';
+type NotificationCtaTarget = 'EVENT_PLAN_SETTINGS' | 'EVENT_GALLERY' | 'EVENT_GUESTS' | 'EVENT_COVERAGE_EXTEND';
 
 interface NotificationResponseDto {
   id: string;
@@ -1177,7 +1217,7 @@ export interface PlanTierResponseDto {
    *  Always empty for ACCOUNT-scope plans. */
   initialOptions: CoverageOptionResponseDto[];
 
-  /** Coverage bought after activation — added 2026-09-23; nothing sells these yet. */
+  /** Coverage bought after activation — added 2026-09-23; sold since 2026-09-24 via extension-checkout. */
   extensionOptions: CoverageOptionResponseDto[];
 }
 
@@ -1881,7 +1921,11 @@ export interface NewsletterToggleRequestDto {
 // Full contract: fe-guides/billing-fe-guide.md.
 // ---------------------------------------------------------------------------
 
-export type OrderKind = 'ACTIVATION' | 'UPGRADE' | 'STORAGE_PACK';
+export type OrderKind = 'ACTIVATION' | 'UPGRADE' | 'STORAGE_PACK' | 'EXTENSION';
+
+/** What an order was sold as, pinned at checkout (2026-09-24). BUSINESS only with a VIES-confirmed
+ *  business profile; a BUSINESS order has no consumer right of withdrawal. */
+export type BuyerType = 'CONSUMER' | 'BUSINESS';
 
 /**
  * PENDING is chased by the reconciliation sweep, so it is not a dead end. REFUNDED is
@@ -1890,13 +1934,136 @@ export type OrderKind = 'ACTIVATION' | 'UPGRADE' | 'STORAGE_PACK';
  */
 export type OrderStatus = 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED' | 'REFUNDED';
 
+// ---- Price breakdown (withdrawal compliance phase 4, 2026-09-24) ----
+// Full contract: fe-guides/withdrawal-compliance-phase4-fe-integration.md.
+// Server type: event_social_media.model.billing.PriceBreakdown (a model record, not under dto/).
+// Every field below is always sent; nullable ones are sent as null, never left out.
+
+/** `PriceBreakdown.ItemCode` on the server. ACTIVATION is the setup share (on an upgrade too). */
+export type PriceItemCode = 'ACTIVATION' | 'EVENT_DAY' | 'COVERAGE' | 'ADDON' | 'STORAGE_PACK' | 'COVERAGE_EXTENSION';
+
+/** What a withdrawal does to an item, for a consumer who asked for the immediate start. Localize with
+ *  `billing.rule.<value>`. */
+export type WithdrawalRule =
+  | 'RETAINED_ONCE_STARTED'     // the setup share: kept once the service has started
+  | 'RETAINED_ONCE_PERFORMED'   // event day and add-ons: refunded until the event date passes
+  | 'PRO_RATA_BY_TIME'          // coverage, storage packs and coverage extensions: refunded for the unused time
+  | 'BUSINESS_NO_RIGHT';        // every item of a BUSINESS purchase
+
+export type DiscountSource = 'PLAN_PROMOTION' | 'CODE';
+
+/**
+ * What a purchase costs, item by item, and what a withdrawal does to each item. Returned by
+ * POST /api/events/{eventId}/quote, and carried as `breakdown` on CheckoutResponseDto,
+ * CodePreviewResponseDto, UpgradeOptionEntry and OrderSummary. Pinned on the order when its checkout
+ * is opened and never rewritten. All amounts are minor units and exact: items sum to the totals.
+ */
+export interface PriceBreakdown {
+  kind: OrderKind;
+  currency: string;
+  buyerType: BuyerType;
+  coverage: PriceBreakdownCoverage;
+  /** ACTIVATION: ACTIVATION, EVENT_DAY, COVERAGE, then one ADDON per add-on. UPGRADE: the same three
+   *  plan items with upgrade labelKeys. STORAGE_PACK: one STORAGE_PACK item. */
+  items: PriceBreakdownItem[];
+  /** In order: the plan's promotion, then the code. Empty when nothing was discounted, and always on a
+   *  STORAGE_PACK. */
+  discounts: PriceBreakdownDiscount[];
+  /** What came off the plan items, after the cap. Can exceed `discountCapPercent`: a plan's own
+   *  promotion is never cut back, only a code on top of it. */
+  combinedDiscountPercent: number;
+  discountCapPercent: number;
+  /** True when the cap cut the code back. */
+  capApplied: boolean;
+  listTotalMinor: number;
+  discountTotalMinor: number;
+  totalMinor: number;
+  vat: PriceBreakdownVat;
+  /** The terms version in force when this was priced. */
+  termsVersion: string;
+  withdrawal: PriceBreakdownWithdrawal;
+}
+
+/** `PriceBreakdown.Coverage` on the server. */
+export interface PriceBreakdownCoverage {
+  /** The coverage option priced: the event's own for an activation or pack, the target for an upgrade. */
+  optionId: string;
+  months: number | null;
+  /** UPGRADE only: months gained, 0 for a same-length upgrade. Null otherwise. */
+  monthsAdded: number | null;
+  /** When coverage ends. Null in the pre-creation code preview (no event yet), and on an upgrade or
+   *  pack of an event with no coverage end. */
+  endsAt: string | null;
+  /** True on a draft's ACTIVATION breakdown: the end assumes payment now and moves if payment lands
+   *  later. False on a paid event's code preview (its end is pinned), UPGRADE and STORAGE_PACK. */
+  endsAtProjected: boolean;
+}
+
+/** `PriceBreakdown.Item` on the server. Render its label from `labelKey` (see the FE guide §3). */
+export interface PriceBreakdownItem {
+  code: PriceItemCode;
+  labelKey: string;
+  /** The plan's name on the three plan items (the target plan's on an upgrade); the catalog name on
+   *  an ADDON or STORAGE_PACK. Fills `{plan}` and `{name}`. */
+  name: string;
+  listMinor: number;
+  discountMinor: number;
+  /** What this item costs: listMinor - discountMinor. */
+  priceMinor: number;
+  withdrawal: WithdrawalRule;
+  /** The event's start, on EVENT_DAY and ADDON items. Null on the other items and before the event
+   *  exists. */
+  performedAt: string | null;
+  /** COVERAGE only. */
+  months: number | null;
+  /** COVERAGE of an UPGRADE only. */
+  monthsAdded: number | null;
+  /** ADDON and STORAGE_PACK only. */
+  paidServiceCode: string | null;
+  /** The three plan items only. */
+  planTierCode: string | null;
+  /** STORAGE_PACK only. */
+  storageBytes: number | null;
+}
+
+/** `PriceBreakdown.Discount` on the server. */
+export interface PriceBreakdownDiscount {
+  source: DiscountSource;
+  /** The label its owner set, or null when there is none (render "discount code −N%" then). Never
+   *  the raw code string. */
+  label: string | null;
+  /** This discount's own headline percent, before the cap. */
+  percent: number;
+}
+
+/** `PriceBreakdown.Vat` on the server. */
+export interface PriceBreakdownVat {
+  /** Always true: prices include VAT, no reverse charge. */
+  included: boolean;
+  /** A message key: "billing.vat.included". */
+  note: string;
+}
+
+/** `PriceBreakdown.Withdrawal` on the server. */
+export interface PriceBreakdownWithdrawal {
+  /** False for a BUSINESS buyer. */
+  available: boolean;
+  /** The window's length in days. On a PAID order in OrderSummary, the length enforced for it. */
+  windowDays: number;
+  /** When the window closes (exclusive; Athens midnight, weekend-extended). Filled only on a PAID
+   *  consumer order in OrderSummary; null in quotes, previews, upgrade options and checkout responses.
+   *  May be in the past. */
+  windowClosesAt: string | null;
+}
+
 /**
  * POST /api/events/{eventId}/checkout — opens the one activation charge that makes a DRAFT event
  * live.
  *
  * The two booleans are the express request and acknowledgement Directive 2011/83/EU art. 14(3)
- * and 14(4)(a) require before a service may begin inside the withdrawal period. **Both must be
- * literally `true`**; a checkout without them is refused with 400 rather than opened without
+ * and 14(4)(a) require before a service may begin inside the withdrawal period. **A consumer must
+ * send both as literally `true`** (a VIES-confirmed business buyer may omit them, since 2026-09-24);
+ * a consumer checkout without them is refused with 400 rather than opened without
  * consent, so they cannot be defaulted or hidden — the host has to see the terms and agree.
  * `termsVersion` ties that agreement to the wording they actually saw: read it from
  * /api/config's `withdrawal.termsVersion`, never hardcode it.
@@ -1904,8 +2071,10 @@ export type OrderStatus = 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED' | 'REFUNDE
 export interface ActivationCheckoutRequestDto {
   /** A partner or house code the host typed. Max 40. Omit when there is none. */
   collaborationCode?: string;
-  requestsImmediateStart: true;
-  acknowledgesWithdrawalTerms: true;
+  /** Required `true` for a consumer; optional for a VIES-confirmed business buyer (2026-09-24, see
+   *  fe-guides/business-buyers-fe-integration.md §1). */
+  requestsImmediateStart?: boolean;
+  acknowledgesWithdrawalTerms?: boolean;
   termsVersion: string;   // required, max 40
 }
 
@@ -1914,7 +2083,8 @@ export interface ActivationCheckoutRequestDto {
  *  fields as above: an upgrade is a new paid service. Note there is no code field — since
  *  2026-09-22 a discount code prices an activation and nothing else, so neither a new code nor the
  *  one already on the event reaches an upgrade. Only the target plan's own promotion comes off;
- *  quote the price from UpgradeOptionResponseDto rather than computing it. */
+ *  quote the price from UpgradeOptionResponseDto rather than computing it. 409
+ *  PURCHASE_WITHDRAWAL_OPEN (5084) while a withdrawal of the whole event, or of an upgrade, is HELD. */
 export interface UpgradeCheckoutRequestDto {
   planTierCode: string;   // required, max 50
   /** Required (added 2026-09-23): one of that plan's `options[].coverageOptionId` from
@@ -1922,20 +2092,69 @@ export interface UpgradeCheckoutRequestDto {
    *  plan; 409 PLAN_TIER_NOT_AN_UPGRADE (5029) when it is shorter than the event's duration or does
    *  not cost more. */
   coverageOptionId: string;
-  requestsImmediateStart: true;
-  acknowledgesWithdrawalTerms: true;
+  /** Required `true` for a consumer; optional for a VIES-confirmed business buyer (2026-09-24, see
+   *  fe-guides/business-buyers-fe-integration.md §1). */
+  requestsImmediateStart?: boolean;
+  acknowledgesWithdrawalTerms?: boolean;
   termsVersion: string;   // required, max 40
+}
+
+/** POST /api/events/{eventId}/extension-checkout (2026-09-24) — buys more months of coverage for a
+ *  live event at one of its plan's extension options. Never discounted. Primary host only (403
+ *  4006). 409 EVENT_NOT_ACTIVE (5014) on a draft, 409 COVERAGE_ENDED (5085) once coverage has ended,
+ *  409 PURCHASE_WITHDRAWAL_OPEN (5084) while a whole-event withdrawal is under review. See
+ *  fe-guides/coverage-options-and-extensions-fe-integration.md §11. */
+export interface ExtensionCheckoutRequestDto {
+  /** Required: one of GET extension-options' `coverageOptionId`. 400 COVERAGE_OPTION_INVALID (5077)
+   *  when it is not a live EXTENSION option of the event's current plan. */
+  coverageOptionId: string;
+  /** Required `true` for a consumer; optional for a VIES-confirmed business buyer. */
+  requestsImmediateStart?: boolean;
+  acknowledgesWithdrawalTerms?: boolean;
+  termsVersion: string;   // required, max 40
+}
+
+/** GET /api/events/{eventId}/extension-options (2026-09-24) — every extension the event's plan sells,
+ *  priced as the checkout would charge it now. An empty array: the plan sells none; hide the action.
+ *  Same errors as the checkout, minus 5077 and 5084. */
+export interface ExtensionOptionResponseDto {
+  coverageOptionId: string;
+  months: number;
+  /** The option's list price: never discounted. */
+  amountMinor: number;
+  currency: string;
+  /** Where coverage would end if this settled now. Informational; the span is fixed at settlement. */
+  resultingCoverageEndsAt: string;
+  /** Exactly what the checkout will pin: one COVERAGE_EXTENSION item. */
+  breakdown: PriceBreakdown;
 }
 
 /** POST /api/events/{eventId}/storage-checkout — buys one storage pack for a live event. A code,
  *  not a price and not a byte count: both are looked up from the catalog row it names, which is
- *  re-checked as purchasable and as a STORAGE_PACK. */
+ *  re-checked as purchasable and as a STORAGE_PACK. Since 2026-09-23 a pack can be withdrawn, so the
+ *  checkout takes the same consent as activation and upgrade. 409 PURCHASE_WITHDRAWAL_OPEN (5084)
+ *  while a withdrawal of the whole event is HELD. */
 export interface StorageCheckoutRequestDto {
   paidServiceCode: string;   // required, max 30
+  /** Required `true` for a consumer; optional for a VIES-confirmed business buyer (2026-09-24, see
+   *  fe-guides/business-buyers-fe-integration.md §1). */
+  requestsImmediateStart?: boolean;
+  acknowledgesWithdrawalTerms?: boolean;
+  termsVersion: string;      // required, max 40
+}
+
+/** POST /api/events/{eventId}/quote (2026-09-24) — prices an activation or a storage pack before
+ *  checkout; answers a PriceBreakdown. Primary host only (403 4006), 60 per minute. Any other field
+ *  is a 400. See fe-guides/withdrawal-compliance-phase4-fe-integration.md §4. */
+export interface QuoteRequestDto {
+  /** Required. 'UPGRADE' and 'EXTENSION' are a 400: upgrades are quoted by GET upgrade-options, extensions by GET extension-options. */
+  kind: 'ACTIVATION' | 'STORAGE_PACK';
+  /** Required for STORAGE_PACK, refused (400) for ACTIVATION. Max 64, [A-Z0-9_]+. */
+  paidServiceCode?: string;
 }
 
 /**
- * The answer to all three checkout endpoints.
+ * The answer to every checkout endpoint: activation, upgrade, storage pack and extension.
  *
  * `redirectUrl` is where to send the browser. `orderId` is what to watch afterwards: the
  * provider's success URL means "the payment page finished", not "the money arrived" — the webhook
@@ -1946,6 +2165,10 @@ export interface StorageCheckoutRequestDto {
 export interface CheckoutResponseDto {
   orderId: string;
   redirectUrl: string;
+  buyerType: BuyerType;   // added 2026-09-24
+  /** The order's pinned breakdown (2026-09-24): exactly what the payment page charges, the same on a
+   *  reissued order as on the first attempt. Never null. `withdrawal.windowClosesAt` is null. */
+  breakdown: PriceBreakdown;
 }
 
 /** GET /api/events/{eventId}/billing — everything a host needs to understand what they paid for,
@@ -1964,6 +2187,11 @@ export interface EventBillingResponseDto {
    *  a standing rate: since 2026-09-22 it reaches no upgrade and no storage pack. Shown here so a
    *  host doesn't have to remember a code they redeemed once. See billing-fe-guide.md §8. */
   discount: DiscountSummary | null;
+  /** When the media above the storage limit will be deleted, newest first, after a withdrawal or a
+   *  lost chargeback lowered the limit below what the event holds. Null when nothing is scheduled.
+   *  Buying a pack or an upgrade clears it at once; deleting files clears it at the next hourly
+   *  check, and nothing is deleted while usage fits. Added 2026-09-23. */
+  storageTrimDueAt: string | null;
 }
 
 /** Deliberately carries no provider session or payment id: they are the provider's identifiers,
@@ -1972,22 +2200,36 @@ export interface OrderSummary {
   id: string;
   kind: OrderKind;
   status: OrderStatus;
-  amountMinor: number | null;
+  amountMinor: number;   // never null (NOT NULL column)
   /** The part of `amountMinor` that was active add-ons, or null when the order carried none. */
   addonAmountMinor: number | null;
-  currency: string | null;
+  currency: string;      // never null (NOT NULL column)
   paidAt: string | null;
   createdAt: string;
-  /** The withdrawal split this order would refund against. Null on orders predating it. */
+  /** The withdrawal split this order would refund against. Null on orders predating it, and always null on a STORAGE_PACK (it has none since 2026-09-23). */
   setupAmountMinor: number | null;
   eventDayAmountMinor: number | null;
   hostingAmountMinor: number | null;
   /** The months of coverage the order bought (added 2026-09-23): the option's months on an
-   *  ACTIVATION, the target option's on an UPGRADE. Null on an order that buys no coverage. */
+   *  ACTIVATION, the target option's on an UPGRADE, the extension's on an EXTENSION. Null on an
+   *  order that buys no coverage. */
   coverageMonths: number | null;
   /** UPGRADE only: how many months it added to the event's coverageEndsAt — 0 for a same-length
    *  upgrade. Null on every other kind. */
   coverageMonthsAdded: number | null;
+  /** When the coverage this order bought begins, and where it ends (2026-09-24). An EXTENSION's are the
+   *  months it covers, which move when an upgrade inserts months before it or an earlier extension is
+   *  withdrawn. Null on a storage pack, an unpaid order, and one that applied nothing. The event's live
+   *  end is the event's coverageEndsAt, not any order's. */
+  coverageStartsAt: string | null;
+  coverageEndsAt: string | null;
+  /** CONSUMER or BUSINESS (2026-09-24). Hide "Withdraw" on BUSINESS orders. */
+  buyerType: BuyerType;
+  /** The breakdown pinned when the order's checkout was opened (2026-09-24). Null on orders from
+   *  before V106. While the order is PAID, `withdrawal.windowClosesAt` is filled (null for a
+   *  BUSINESS order) and `withdrawal.windowDays` is the length enforced; in any other status both are
+   *  as pinned, with `windowClosesAt` null. */
+  breakdown: PriceBreakdown | null;
 }
 
 /** Carries no raw code, no partner identity and no redemption id — the host is shown the label the
@@ -2033,7 +2275,11 @@ export interface UpgradeOptionEntry {
   /** The undiscounted difference between the event's duration and this one. Good for a "was"
    *  strike-through, but not what checkout will charge. */
   gapAmountMinor: number;
+  /** What upgrade-checkout will charge. Read from `breakdown.totalMinor` since 2026-09-24. */
   payableAmountMinor: number;
+  /** What upgrade-checkout would pin for this option, item by item (2026-09-24). Never null;
+   *  `withdrawal.windowClosesAt` is null. */
+  breakdown: PriceBreakdown;
 }
 
 // ---- Withdrawals (the automated right of withdrawal) ----
@@ -2041,18 +2287,25 @@ export interface UpgradeOptionEntry {
 /** PENDING/APPROVED/REJECTED are legacy states kept for rows that predate the automated flow;
  *  nothing produces them now. A live request lands on REFUSED (refused at the gate, nothing
  *  changed), HELD (computed, but a fraud signal fired or the platform is in manual mode),
- *  REFUNDED, or WITHHELD (an admin refused a held request; the host's account is suspended). */
+ *  REFUNDED. WITHHELD is legacy too: admins could refuse a held request until 2026-09-23. */
 export type RefundRequestStatus =
   | 'PENDING' | 'APPROVED' | 'REJECTED'
   | 'REFUSED' | 'HELD' | 'REFUNDED' | 'WITHHELD';
 
 /** Which article the refund is computed under. CONSENTED_PRO_RATA: the host asked for an
  *  immediate start, so setup is retained and the rest is pro-rated. NO_CONSENT_FULL_REFUND: no
- *  express request to begin, so no cost may be charged at all. */
-export type RefundBasis = 'CONSENTED_PRO_RATA' | 'NO_CONSENT_FULL_REFUND';
+ *  express request to begin, so no cost may be charged at all. PRO_RATA_BY_TIME (2026-09-23): a
+ *  consented storage pack, retained in proportion to the time from its payment to coverageEndsAt;
+ *  it has no setup or event-day share. A pack bought before 2026-09-23 carries no consent and is
+ *  NO_CONSENT_FULL_REFUND. Since 2026-09-24 also a consented coverage extension, retained in
+ *  proportion to the time run of its own span. */
+export type RefundBasis = 'CONSENTED_PRO_RATA' | 'NO_CONSENT_FULL_REFUND' | 'PRO_RATA_BY_TIME';
 
-/** POST /api/events/{eventId}/withdrawals — the body is optional. Nothing in `reason` is parsed;
- *  an admin reads it if the request is held. */
+/** EVENT: the whole event (it is deleted). ORDER: one upgrade with every newer one, or one storage
+ *  pack (the event stays). Added 2026-09-23. */
+export type WithdrawalScope = 'EVENT' | 'ORDER';
+
+/** POST /api/events/{eventId}/withdrawals and POST /api/events/{eventId}/orders/{orderId}/withdrawals — the body is optional. Nothing in `reason` is parsed; an admin reads it if the request is held. */
 export interface WithdrawalRequestCreateDto {
   reason?: string;   // max 1000
 }
@@ -2064,16 +2317,51 @@ export interface WithdrawalPreviewDto {
   eligible: boolean;
   /** Why not, when `eligible` is false. Show these; they are the whole explanation. */
   refusals: WithdrawalRefusalDto[];
-  /** Null, like `currency`, on an ineligible preview with no settled (PAID) activation. */
+  /** Null, like `currency`, only on an EVENT preview refused for having no settled (PAID)
+   *  activation. An ORDER preview takes both from the order in the path. */
   windowClosesAt: string | null;
   totalRefundMinor: number;
   currency: string | null;
   lines: WithdrawalLineDto[];
-  /** True when the event's startAt has moved off the date that was paid for. A withdrawal is then
-   *  always HELD for a person to review, never refunded on the spot — say so in the confirmation
-   *  dialog. False promises nothing: other reasons can hold a request, and those are not
-   *  disclosed. Added 2026-09-23. */
+  /** True when the event's startAt has moved off the date that was paid for, on a withdrawal that is
+   *  screened. It is then always HELD for a person to review, never refunded on the spot — say so
+   *  in the confirmation dialog. Always false for a storage pack or a coverage extension, which are
+   *  never screened. False
+   *  promises nothing: other reasons can hold a request, and those are not disclosed. Added
+   *  2026-09-23. */
   scheduleMovedAfterPayment: boolean;
+  /** Added 2026-09-23. EVENT from /withdrawal-preview, ORDER from /orders/{orderId}/withdrawal-preview. */
+  scope: WithdrawalScope;
+  /** The order the request would name: the activation (null when there is no PAID one), or the
+   *  order in the path. */
+  orderId: string | null;
+  /** True only for a storage pack or a coverage extension in automatic mode: refunded on the spot.
+   *  False promises nothing either way, so say nothing about timing. */
+  instant: boolean;
+  /** ORDER only: where the withdrawal leaves the event's storage. Null for EVENT, for a coverage
+   *  extension (it changes no storage), and on a refusal. */
+  storageAfter: WithdrawalStorageAfterDto | null;
+  /** EVENT only (2026-09-24): business-bought upgrades and packs this withdrawal leaves unrefunded.
+   *  They go with the event. Empty on ORDER previews and on refusals. */
+  excludedOrders: WithdrawalExcludedOrderDto[];
+}
+
+export interface WithdrawalStorageAfterDto {
+  newLimitBytes: number | null;   // null = the plan underneath is unlimited
+  usageBytes: number;
+  overLimitBytes: number;         // 0 when it fits
+  /** When the newest media above the new limit would be deleted if nothing is freed first. Null
+   *  when nothing is over. */
+  trimDueAt: string | null;
+}
+
+/** An order an EVENT withdrawal leaves unrefunded because it was bought as a business (2026-09-24). */
+export interface WithdrawalExcludedOrderDto {
+  orderId: string;
+  orderKind: OrderKind;
+  amountMinor: number;
+  currency: string;
+  reason: 'BUSINESS_PURCHASE';
 }
 
 /** One withdrawal attempt as the host sees it. Fraud signals and the reviewer's recommendation are
@@ -2081,11 +2369,15 @@ export interface WithdrawalPreviewDto {
 export interface WithdrawalResponseDto {
   id: string;
   eventId: string;
+  scope: WithdrawalScope;      // added 2026-09-23
+  /** The order the request named: the activation for EVENT, the target for ORDER. Null on an
+   *  EVENT request refused for having no PAID activation (NO_SETTLED_ACTIVATION, ALREADY_REFUNDED). */
+  orderId: string | null;
   status: RefundRequestStatus;
   reason: string | null;
   createdAt: string;
   decidedAt: string | null;
-  /** The admin's words on a WITHHELD request. The host is shown exactly this text. */
+  /** Shown to the host as is: a reviewer's note on a release, what the evidence rule found on an auto-release of a moved event, or (legacy) why a request was withheld. */
   decisionNote: string | null;
   /** When a HELD request releases itself if no admin acts. */
   holdUntil: string | null;
@@ -2093,6 +2385,9 @@ export interface WithdrawalResponseDto {
   currency: string | null;
   refusals: WithdrawalRefusalDto[];
   lines: WithdrawalLineDto[];
+  /** What an EVENT withdrawal left unrefunded because it was bought as a business, as it stood when
+   *  the request was filed. Empty otherwise, and on a refusal. Added 2026-09-24. */
+  excludedOrders: WithdrawalExcludedOrderDto[];
 }
 
 export interface WithdrawalRefusalDto {
@@ -2106,16 +2401,26 @@ export interface WithdrawalRefusalDto {
 export interface WithdrawalLineDto {
   orderId: string;
   orderKind: OrderKind;
+  windowClosesAt: string | null;   // this order's own window (2026-09-23)
   basis: RefundBasis;
+  /** The span the time-based share is measured over (2026-09-24): an ACTIVATION or UPGRADE from its
+   *  payment to the plan's end, extensions not counted; a STORAGE_PACK to the event's coverageEndsAt;
+   *  an EXTENSION its own span. */
   hostingStart: string | null;
   hostingEnd: string | null;
   usedSeconds: number | null;
   totalSeconds: number | null;
   eventPerformed: boolean;
+  /** A reviewer, or the evidence rule, kept the event-day share. Always false on a preview. Added 2026-09-23. */
+  keepEventDay: boolean;
+  /** 0 on a released line whose order had already been refunded another way (2026-09-23). */
   refundMinor: number;
   /** Whether the money actually left the provider, as opposed to the line merely being computed. */
   providerRefunded: boolean;
   components: Record<string, unknown>;
+  /** 2026-09-24. BUSINESS only on a newer business upgrade taken along by a consumer upgrade's
+   *  withdrawal; it is refunded pro rata like a consented order. */
+  buyerType: BuyerType;
 }
 
 /** GET /api/admin/withdrawals — the facts sheet for each held request. Everything here was
@@ -2123,7 +2428,9 @@ export interface WithdrawalLineDto {
  *  decision was based on; nothing is recalculated live. */
 export interface WithdrawalAdminDto {
   request: WithdrawalResponseDto;
-  usageFacts: Record<string, unknown>;
+  /** Null, with fraudSignals empty, on a storage-pack request: it is never screened, and is only
+   *  held in MANUAL mode. */
+  usageFacts: Record<string, unknown> | null;
   fraudSignals: WithdrawalSignalDto[];
   recommendation: string;
 }
@@ -2134,11 +2441,15 @@ export interface WithdrawalSignalDto {
   threshold: string | null;
 }
 
-/** POST /api/admin/withdrawals/{requestId}/withhold. The note is mandatory: withholding is only
- *  lawful with a stated reason, and the host is shown this text verbatim.
- *  (POST .../release takes no body and answers the same WithdrawalResponseDto.) */
-export interface WithdrawalWithholdDto {
-  note: string;   // required, max 1000
+/** POST /api/admin/withdrawals/{requestId}/release — the body is optional; without it the request is
+ *  refunded as computed. With it, keepEventDay is required. true keeps the event-day share because
+ *  the event took place on the date paid for: 409 5083 unless that date had passed when the host
+ *  withdrew, and a note is then required. The note is shown to the host. Answers
+ *  WithdrawalResponseDto; a second release is 409 5074. The withhold endpoint and
+ *  WithdrawalWithholdDto were removed on 2026-09-23. */
+export interface WithdrawalReleaseDto {
+  keepEventDay: boolean;
+  note?: string;   // max 1000; required when keepEventDay is true
 }
 
 /**
@@ -2158,6 +2469,18 @@ export interface UnprocessedWebhookDto {
   /** Whether the delivery's body was kept, and so whether the replay endpoint can run it again.
    *  False only for deliveries received before the ledger stored one — those need a human. */
   replayable: boolean;
+}
+
+// ---- Legal texts (2026-09-24) ----
+
+/** GET /api/legal/withdrawal-terms and GET /api/legal/withdrawal-terms/{version}, `?locale=en|el`.
+ *  Public (no auth). 404 for a version with no texts. An unknown or missing locale falls back to
+ *  `en`, and `locale` says which one was served. */
+export interface WithdrawalTermsDto {
+  version: string;               // "2026-09-24"
+  locale: string;                // "en" | "el"
+  withdrawalInformation: string; // Markdown
+  modelForm: string;             // Markdown
 }
 
 // ---------------------------------------------------------------------------
@@ -2225,6 +2548,9 @@ export interface CodePreviewResponseDto {
    *  excluding any add-ons. */
   payableAmountMinor: number;
   currency: string;
+  /** The whole purchase this previews, item by item, add-ons included (2026-09-24). Never null. On the
+   *  pre-creation preview it has no add-ons and no dates (`coverage.endsAt` and `performedAt` null). */
+  breakdown: PriceBreakdown;
 }
 
 // ---- Partners (admin) ----

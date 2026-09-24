@@ -87,6 +87,11 @@ has a `null` `priceAmountMinor`, no `autoDeleteMonths`, and two new lists, `init
 `extensionOptions`, holding its durations and their prices. See
 [`coverage-options-and-extensions-fe-integration.md`](coverage-options-and-extensions-fe-integration.md).
 
+**2026-09-24:** `withdrawal.termsVersion` is now `2026-09-25` (coverage extensions). A client that
+reads it from this response needs no change; one that hardcoded `2026-09-24` gets `400` 5072 at
+checkout. Each EVENT plan's `extensionOptions` is now sold: see
+[`coverage-options-and-extensions-fe-integration.md`](coverage-options-and-extensions-fe-integration.md) §11.
+
 ## GET /api/config
 
 Public — no `Authorization` header needed, safe to call before login (e.g. to gate the login

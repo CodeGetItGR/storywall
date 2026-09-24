@@ -41,6 +41,7 @@ const CTA_ROUTES: Record<NotificationCtaTarget, (params: Record<string, string>)
   EVENT_PLAN_SETTINGS: (p) => `/events/${p.eventId}/settings/plan`,
   EVENT_GALLERY: (p) => `/events/${p.eventId}/gallery`,
   EVENT_GUESTS: (p) => `/events/${p.eventId}/guests`,
+  EVENT_COVERAGE_EXTEND: (p) => `/events/${p.eventId}/settings/plan?extend=1`,
 };
 
 function resolveCta(n: NotificationResponseDto): string | null {
@@ -51,17 +52,18 @@ function resolveCta(n: NotificationResponseDto): string | null {
 ```
 
 The `else` branch matters as much as the happy path: `ctaTarget` is a closed set today
-(`EVENT_PLAN_SETTINGS`, `EVENT_GALLERY`, `EVENT_GUESTS`), but it is expected to grow as new
+(`EVENT_PLAN_SETTINGS`, `EVENT_GALLERY`, `EVENT_GUESTS`, `EVENT_COVERAGE_EXTEND`), but it is expected to grow as new
 notification types ship. A target this app doesn't recognize yet should degrade to "no CTA shown",
 not a broken link or a thrown error.
 
-### 3. The three current targets, and what each needs in `ctaParams`
+### 3. The current targets, and what each needs in `ctaParams`
 
 | `ctaTarget` | needs | today's suggested route |
 |---|---|---|
 | `EVENT_PLAN_SETTINGS` | `eventId` | `/events/{eventId}/settings/plan` |
 | `EVENT_GALLERY` | `eventId` | `/events/{eventId}/gallery` |
 | `EVENT_GUESTS` | `eventId` | `/events/{eventId}/guests` |
+| `EVENT_COVERAGE_EXTEND` | `eventId` | `/events/{eventId}/settings/plan?extend=1`: the plan screen with the extension picker open (added 2026-09-24) |
 
 These happen to match the old literal `ctaRoute` values exactly, so if your router already has
 routes at those paths, wiring `CTA_ROUTES` above to point at them is a drop-in replacement — the
@@ -81,6 +83,6 @@ only actual behavior change is that *you* now own that mapping instead of trusti
 - [ ] Add a `ctaTarget` → route-builder map (see §2) instead of using the API value as a route
       directly.
 - [ ] Handle an unrecognized `ctaTarget` by hiding the CTA, not by crashing or navigating nowhere.
-- [ ] Confirm the three current targets resolve to working routes in your router (see the table in
+- [ ] Confirm the current targets resolve to working routes in your router (see the table in
       §3) — if your existing routes already lived at those paths, this should require no route
       changes, only the resolution logic itself.

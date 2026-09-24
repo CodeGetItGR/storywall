@@ -95,6 +95,10 @@ export function LandingPricing() {
                             onDurationChangeAction={pickDuration}
                             popularLabel={t('popular')}
                             storageLabel={t('storageLabel')}
+                            durationLabel={t('durationLabel')}
+                            expandLabel={t('showFeatures')}
+                            collapseLabel={t('hideFeatures')}
+                            defaultExpanded={index === 0}
                         />
                     ))}
             </div>

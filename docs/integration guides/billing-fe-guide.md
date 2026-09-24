@@ -1,7 +1,40 @@
 # FE integration guide: plans, payments, refunds
 
 **The complete, current reference for the commercial side of the platform.** Everything a frontend
-needs to sell an event and give money back. Current as of 2026-09-23.
+needs to sell an event and give money back. Current as of 2026-09-24.
+
+**2026-09-24 — coverage extensions (plan coverage options phase 2), breaking:** `termsVersion` is
+now `2026-09-25`; a client still sending `2026-09-24` gets `400` 5072. A primary host can buy more
+coverage for a live event: `GET /api/events/{id}/extension-options` and `POST
+/api/events/{id}/extension-checkout` (§7e). Orders gain the kind `EXTENSION`, price items the code
+`COVERAGE_EXTENSION`, and every billing order gains `coverageStartsAt`/`coverageEndsAt`. An extension is
+withdrawn alone through the one-order withdrawal endpoints (§9). The coverage-ending notification
+gains an "Extend coverage" CTA. §7e, §9 and §12 are updated in place.
+**`coverage-options-and-extensions-fe-integration.md` §11 has the full reference.**
+
+**2026-09-24 — price breakdown, legal texts, emails (phase 4), breaking:** `termsVersion` is now
+`2026-09-24`; a client still sending `2026-09-17` gets `400` 5072. Every price is itemised: the
+checkout response, each billing order, both code previews and each upgrade option gain `breakdown`
+(a `PriceBreakdown`), and the new `POST /api/events/{id}/quote` prices an activation or storage pack
+before checkout. The Stripe page shows one line per item and a localized footer. The withdrawal
+information and model form are served from `GET /api/legal/withdrawal-terms[/{version}]`, and the
+host is emailed a payment confirmation and a withdrawal acknowledgement. §6, §7a, §7b, §7d, §8, §9
+and §14 are updated in place.
+**`withdrawal-compliance-phase4-fe-integration.md` has the full reference.**
+
+**2026-09-24 — business buyers (phase 3), breaking:** An account with a VIES-confirmed EU VAT
+number buys as a business. Its checkouts may omit the two consent booleans, its purchases have no
+consumer right of withdrawal, and `buyerType` appears on checkout responses, orders and withdrawal
+lines. EVENT withdrawals list the business orders they leave unrefunded in `excludedOrders`. §6, §7b,
+§7d, §8, §9, §12 and §14 are updated in place.
+**`business-buyers-fe-integration.md` has the full reference.**
+
+**2026-09-23 — breaking:** One upgrade or one storage pack can be withdrawn on its own, and the
+event stays. Storage packs can now be withdrawn at all, so their checkout needs the same consent as
+activation. The admin "withhold" is gone: a held withdrawal is released, optionally keeping the
+event day. A pack or upgrade checkout is refused while a withdrawal it would miss is under review
+(`409` 5084). §7b, §7d, §8, §9, §10, §12, §13 and §14 are updated in place.
+**`withdrawal-compliance-phase2-fe-integration.md` has the full reference.**
 
 **2026-09-23 — breaking:** The "keep originals" add-on is retired. Every plan already kept
 originals, so `ORIGINALS` is no longer sold: it is gone from `paidServices`, the add-on opt-in
@@ -103,6 +136,7 @@ and `app-config-fe-integration.md` for the rest of `GET /api/config`.
 7b. [Storage packs](#7b-storage-packs)
 7c. [Module unlocks](#7c-module-unlocks)
 7d. [Upgrading plan tier](#7d-upgrading-plan-tier)
+7e. [Coverage extensions](#7e-coverage-extensions)
 8. [The billing read endpoint](#8-the-billing-read-endpoint)
 9. [Withdrawal](#9-withdrawal)
 10. [Notifications](#10-notifications)
@@ -202,7 +236,7 @@ account plans are disabled (§13, Assignment). Filter a pricing page by `scope =
     { "id": "8f1c…", "kind": "INITIAL", "months": 6,  "priceAmountMinor": 10000, "sortOrder": 0, "active": true },
     { "id": "2a77…", "kind": "INITIAL", "months": 12, "priceAmountMinor": 14000, "sortOrder": 1, "active": true }
   ],
-  "extensionOptions": []         // coverage bought after activation — nothing sells these yet
+  "extensionOptions": []         // coverage bought after activation — sold since 2026-09-24 (§7e)
 }
 ```
 
@@ -430,7 +464,7 @@ nothing. See `soft-deleted-events-fe-integration.md` for the full read/write con
 ```
 1. POST /api/events                      → 201, status: "DRAFT"   (plan and duration chosen here)
 2. host fills in details, incl. endAt    → PATCH /api/events/{id}  (duration still switchable)
-3. POST /api/events/{id}/checkout        → 200 { orderId, redirectUrl }
+3. POST /api/events/{id}/checkout        → 200 { orderId, redirectUrl, buyerType, breakdown }
 4. window.location.href = redirectUrl    → the provider's hosted page (we never see the card)
 5. provider redirects back to
    /events/{id}/checkout/success|cancelled
@@ -474,16 +508,20 @@ Content-Type: application/json
 
 {
   "collaborationCode": "BARNVENUE",              // optional, max 40 chars
-  "requestsImmediateStart": true,                // required, must be true
-  "acknowledgesWithdrawalTerms": true,            // required, must be true
-  "termsVersion": "2026-09-17"                    // required — from GET /api/config's withdrawal.termsVersion
+  "requestsImmediateStart": true,                // a consumer: required, must be true
+  "acknowledgesWithdrawalTerms": true,            // a consumer: required, must be true
+  "termsVersion": "2026-09-25"                    // required — from GET /api/config's withdrawal.termsVersion
 }
 ```
 
+A buyer whose `GET /api/me/business-profile` says `business: true` may omit both booleans (§9,
+Business buyers). For a consumer, missing or false is still `400 VALIDATION_FAILED` (3001), now
+without per-field `errors`, and it comes after the 4006 and 5072 checks.
+
 **A body is required as of 2026-09.** `requestsImmediateStart` and `acknowledgesWithdrawalTerms` are
 the express request and acknowledgement Directive 2011/83/EU art. 14(3)/(4)(a) require before a paid
-service may begin inside the statutory withdrawal window — both must be sent as `true` or the request
-is rejected with `400 VALIDATION_FAILED`. `termsVersion` ties the acknowledgement to the wording the
+service may begin inside the statutory withdrawal window — for a consumer, both must be sent as
+`true` or the request is rejected with `400 VALIDATION_FAILED`. `termsVersion` ties the acknowledgement to the wording the
 host actually saw; source it from `GET /api/config`'s `withdrawal.termsVersion` (§14) and show that
 wording (or a link to it) before the host confirms. Primary host only: a co-host gets `403`
 `PURCHASE_NOT_PRIMARY_HOST` (4006). Rate limited to 10/min.
@@ -498,9 +536,47 @@ version, and do not loop.
 // 200
 {
   "orderId": "1f3c…",     // our order id — worth logging for support
-  "redirectUrl": "https://checkout.stripe.com/c/pay/cs_test_…"
+  "redirectUrl": "https://checkout.stripe.com/c/pay/cs_test_…",
+  "buyerType": "CONSUMER", // or "BUSINESS" — added 2026-09-24; what this order is sold as
+  "breakdown": {           // added 2026-09-24 (phase 4): the order's pinned PriceBreakdown, never null here
+    "kind": "ACTIVATION", "currency": "EUR", "buyerType": "CONSUMER",
+    "coverage": { "optionId": "2a77…", "months": 12, "monthsAdded": null,
+                  "endsAt": "2027-12-05T18:00:00Z", "endsAtProjected": true },
+    "items": [
+      { "code": "ACTIVATION", "labelKey": "billing.item.activation", "name": "Plus",
+        "listMinor": 500, "discountMinor": 100, "priceMinor": 400, "withdrawal": "RETAINED_ONCE_STARTED",
+        "performedAt": null, "months": null, "monthsAdded": null,
+        "paidServiceCode": null, "planTierCode": "PLUS", "storageBytes": null },
+      { "code": "EVENT_DAY", "labelKey": "billing.item.eventDay", "name": "Plus",
+        "listMinor": 6000, "discountMinor": 1200, "priceMinor": 4800, "withdrawal": "RETAINED_ONCE_PERFORMED",
+        "performedAt": "2026-12-05T18:00:00Z", /* … */ },
+      { "code": "COVERAGE", "labelKey": "billing.item.coverage", "name": "Plus",
+        "listMinor": 3500, "discountMinor": 700, "priceMinor": 2800, "withdrawal": "PRO_RATA_BY_TIME",
+        "months": 12, /* … */ },
+      { "code": "ADDON", "labelKey": "billing.item.addon", "name": "Gift Wishlist",
+        "listMinor": 300, "discountMinor": 0, "priceMinor": 300, "withdrawal": "RETAINED_ONCE_PERFORMED",
+        "paidServiceCode": "UNLOCK_WISHLIST", /* … */ }
+    ],
+    "discounts": [ { "source": "PLAN_PROMOTION", "label": "Launch offer", "percent": 10 },
+                   { "source": "CODE", "label": "Barn Venue partner rate", "percent": 10 } ],
+    "combinedDiscountPercent": 20, "discountCapPercent": 30, "capApplied": false,
+    "listTotalMinor": 10300, "discountTotalMinor": 2000, "totalMinor": 8300,
+    "vat": { "included": true, "note": "billing.vat.included" },
+    "termsVersion": "2026-09-25",
+    "withdrawal": { "available": true, "windowDays": 14, "windowClosesAt": null }
+  }
 }
 ```
+
+**Show `breakdown` on the review page (2026-09-24).** It is what the order stores and what the Stripe
+page lists, item by item, so render it rather than any earlier figure. Before checkout is opened,
+`POST /api/events/{eventId}/quote` (`{ "kind": "ACTIVATION" }`) returns the same shape for the draft,
+including a code it has already redeemed. **An open checkout keeps its first price** until its session
+expires (24 h): a plan repriced meanwhile doesn't change it, and the quote returns that open order's
+pinned breakdown whenever checkout would hand the order back. Changing what is bought (the duration,
+an add-on, a newly redeemed code, the event date, the buyer) still replaces the order. Every field, the label keys and the
+quote's errors are in
+[withdrawal-compliance-phase4-fe-integration.md](withdrawal-compliance-phase4-fe-integration.md).
 
 Then `window.location.href = redirectUrl`. **Do not open it in an iframe or a popup** — the hosted
 page sets frame-ancestor headers, and 3DS/SCA needs a real top-level navigation.
@@ -664,6 +740,8 @@ folded into that one charge:
 Render *"€100 activation + €3 wishlist = €103"* from `amountMinor` and `addonAmountMinor` rather
 than re-deriving it from the catalog. The order is the historical receipt, and the catalog price may
 have changed since. An order paid before 2026-09-23 may still include 500 for `ORIGINALS`.
+Since 2026-09-24 the order's `breakdown` (§8) lists each add-on as its own `ADDON` item, never
+discounted; prefer it where it isn't `null` (it is on orders from before then).
 
 **If the host opts in after opening checkout**, the open order is cancelled and a re-priced one is
 issued: the `orderId` (and redirect URL) you were holding changes. Re-read the order from the
@@ -736,12 +814,21 @@ expires and is never refunded, and the price is a single flat charge, never repe
 
 ```http
 POST /api/events/{eventId}/storage-checkout
-{ "paidServiceCode": "STORAGE_5GB" }
+{ "paidServiceCode": "STORAGE_5GB", "requestsImmediateStart": true,
+  "acknowledgesWithdrawalTerms": true, "termsVersion": "2026-09-25" }
 ```
+
+**Consent is required since 2026-09-23**, with the same fields and rules as §6: a pack can be
+withdrawn (§9), so the host must ask for it to start at once. A business buyer may omit it (§6). See [withdrawal-compliance-phase2-fe-integration.md](withdrawal-compliance-phase2-fe-integration.md) §1.
+While a withdrawal of the whole event is `HELD`, a pack checkout is `409 PURCHASE_WITHDRAWAL_OPEN`
+(5084): that release deletes the event, and a pack bought meanwhile would be left paid for on it
+([withdrawal-compliance-phase2-fe-integration.md](withdrawal-compliance-phase2-fe-integration.md) §9).
 
 Primary host only (4006 for a co-host), rate limited 10/min (shared bucket with the other checkout endpoints), same response
 shape and same two return routes as activation (§6 steps 3–5) — poll `GET /api/events/{id}/billing`
-and watch the order, exactly the same way. **`ACTIVE`-only**: `409 EVENT_NOT_ACTIVE` (5014) on a
+and watch the order, exactly the same way. Its `breakdown` has one `STORAGE_PACK` item; to show it
+before checkout, `POST /api/events/{eventId}/quote` with `{ "kind": "STORAGE_PACK", "paidServiceCode":
+"STORAGE_5GB" }` (2026-09-24). **`ACTIVE`-only**: `409 EVENT_NOT_ACTIVE` (5014) on a
 `DRAFT` event — there's nothing to raise the ceiling of before it's paid for at all; offer a pack only
 after activation, never in the setup wizard alongside §7a/§7c's DRAFT-only toggles.
 
@@ -759,7 +846,7 @@ own concurrency slot, so a second pack never silently reuses the first one's che
 ### What it changes
 
 Once the order settles, the event's effective storage ceiling rises immediately and stays raised
-forever. `GET /api/events/{eventId}/usage` (§3) now separates the plan's own limit from purchased
+until the pack is withdrawn or lost to a chargeback (below). `GET /api/events/{eventId}/usage` (§3) now separates the plan's own limit from purchased
 extra:
 
 ```jsonc
@@ -783,13 +870,12 @@ still means unlimited regardless of `extraStorageBytes`.
 A settled pack also shows up in §7a's `addons` array on `GET /api/events/{eventId}/billing`, same as
 a §7c unlock — it appears there because the host owns it, not because anything is owed on it.
 
-Storage packs are **final** in every direction. The byte grant is never refunded through the
-refund-request flow in §9 — approving an activation refund reverses the `ACTIVATION` order (and any
-`UPGRADE` order, §7d) but explicitly never a `STORAGE_PACK` order — and it survives that refund: an
-event returned to `DRAFT` and later re-activated keeps its purchased storage. And once bought, a pack
-cannot be removed by anyone, admin included, while the event is `ACTIVE` — paying for it is permanent
-for the life of the event. Say so at the point of purchase, since a host who expects a pack to unwind
-with a refund has no way to find out otherwise until they ask.
+**Storage packs are withdrawable since 2026-09-23.** A pack can be withdrawn on its own within 14
+days of its payment (§9, "one order"). It is refunded at once, pro rata by time, its bytes come off
+the limit, and the pack can be bought again. An event withdrawal refunds its packs with it. A lost
+chargeback on a pack takes its bytes back too. Either way, if the event then holds more than its
+new limit, the host has 7 days to download before the newest files above the limit are deleted
+(`storageTrimDueAt` on §8's billing read, and two notifications in §10).
 
 ---
 
@@ -904,18 +990,22 @@ POST /api/events/{eventId}/upgrade-checkout
   "coverageOptionId": "e9a0…",
   "requestsImmediateStart": true,
   "acknowledgesWithdrawalTerms": true,
-  "termsVersion": "2026-09-17"
+  "termsVersion": "2026-09-25"
 }
 ```
 
 `coverageOptionId` (required since 2026-09-23) is one of the durations `upgrade-options` lists for
-that plan. Same consent fields as activation (§6 step 3) — an upgrade is a new paid service and the
-withdrawal window reopens on it. Primary host only (4006 for a co-host, on `upgrade-options` too), same response shape (`{ orderId, redirectUrl }`) and same
+that plan. Same consent fields as activation, optional for a business buyer (§6 step 3) — an upgrade is a new paid service and the
+withdrawal window reopens on it. Primary host only (4006 for a co-host, on `upgrade-options` too), same response shape (`{ orderId, redirectUrl, buyerType, breakdown }`) and same
 two return routes as activation (§6 steps 3–5) — poll `GET /api/events/{id}/billing` and watch the
 order, same as every other checkout here.
 
 **`ACTIVE`-only.** A `DRAFT` event hasn't paid anything yet, so there's no "upgrade" to speak of —
 `409 EVENT_NOT_ACTIVE` (5014); use activation (§6) instead, with the target plan chosen up front.
+
+**Not while a withdrawal is under review (2026-09-23).** While a withdrawal of the whole event, or
+of an upgrade, is `HELD`, this checkout is `409 PURCHASE_WITHDRAWAL_OPEN` (5084): a new upgrade would
+be priced on the plan under review and outlive its release. See [withdrawal-compliance-phase2-fe-integration.md](withdrawal-compliance-phase2-fe-integration.md) §9.
 
 **Priced duration to duration (2026-09-23).** The target plan must rank above the event's (plans rank
 by their cheapest duration), and the chosen duration must be **at least as long as the event's own**
@@ -934,10 +1024,10 @@ moves later by the months the new duration adds (none for a same-length upgrade)
 **this does change something readable elsewhere**: re-read `GET /api/config`'s plan-gated fields
 (`moduleKeys`, quotas) and the event's `coverageEndsAt` after the order settles.
 
-**Reversible only as a side effect of an activation refund.** There's no "downgrade" or "undo the
-upgrade" endpoint on its own — but approving a refund on the event's `ACTIVATION` order (§9) also
-finds and reverses any settled `UPGRADE` order on that event before reverting the event to `DRAFT`.
-Outside of that path, an upgrade is as permanent as activation itself.
+**Withdrawable on its own (2026-09-23).** Within 14 days of its payment an upgrade can be withdrawn
+by itself (§9, "one order"). It takes every upgrade bought after it with it, and the event goes
+back to the plan and duration underneath; `coverageEndsAt` moves back by the months they added. A
+withdrawal of the whole event refunds every upgrade too. There is no other downgrade.
 
 **Discount codes do not reach an upgrade (changed 2026-09-22).** A code buys a discount on the
 event's *activation* and stops there: the code bound at activation is deliberately not read when an
@@ -946,8 +1036,26 @@ still comes off the difference, so computing the number client-side is still not
 a naive subtraction of the two durations' prices ignores it. **Don't compute this number yourself;
 render `GET /api/events/{eventId}/upgrade-options` as-is** — see `collaborations-fe-integration.md`
 §1c, which returns every valid target plan with each of its eligible durations already fully priced.
+Since 2026-09-24 each option also carries `breakdown`: exactly what `upgrade-checkout` will store
+for it, item by item (`billing.item.upgrade.*` labels). Its `payableAmountMinor` and `gapAmountMinor`
+are read from that breakdown's `totalMinor` and `listTotalMinor`.
 Sending a code to the preview endpoint with an upgrade target is refused with `409
 DISCOUNT_NOT_APPLICABLE_TO_UPGRADE` (5076).
+
+## 7e. Coverage extensions
+
+Added 2026-09-24. A live event's primary host buys more months of coverage at one of the plan's
+`extensionOptions`. `GET /api/events/{eventId}/extension-options` lists them priced, and is empty
+when the plan sells none. `POST /api/events/{eventId}/extension-checkout` takes
+`{ coverageOptionId, requestsImmediateStart, acknowledgesWithdrawalTerms, termsVersion }` and
+answers a `CheckoutResponseDto`.
+- Never discounted.
+- Refused with `409` 5085 once coverage has ended.
+- Each settled extension moves `coverageEndsAt` out by its months.
+- Refunded by time over its own span (§9).
+
+The full contract is in
+[coverage-options-and-extensions-fe-integration.md](coverage-options-and-extensions-fe-integration.md) §11.
 
 ## 8. The billing read endpoint
 
@@ -970,7 +1078,9 @@ One read, everything about the event's money. This is what the plan-settings pag
       "amountMinor": 4900, "addonAmountMinor": null,
       "currency": "EUR", "paidAt": "…", "createdAt": "…",
       "setupAmountMinor": 245, "eventDayAmountMinor": 2940, "hostingAmountMinor": 1715,
-      "coverageMonths": 6, "coverageMonthsAdded": null }
+      "coverageMonths": 6, "coverageMonthsAdded": null, "buyerType": "CONSUMER",
+      "breakdown": { /* PriceBreakdown as §6 step 3, with withdrawal.windowClosesAt filled
+                        while the order is PAID; null on orders from before 2026-09-24 */ } }
   ],
   "addons": [                              // entitlements the event owns — see §7a
     { "code": "UNLOCK_WISHLIST", "name": "Gift Wishlist", "priceAmountMinor": 300,
@@ -981,11 +1091,13 @@ One read, everything about the event's money. This is what the plan-settings pag
     "label": "Barn Venue partner rate",
     "discountPercent": 15,
     "appliedAt": "…"
-  }
+  },
+  "storageTrimDueAt": null                 // set while media over the storage limit is scheduled
+                                            // for deletion — §7b, §9
 }
 ```
 
-**That's the whole shape**, `discount` included. There is no `coverage` block and no `subscription`
+**That's the whole shape**, `discount` and `storageTrimDueAt` included. There is no `coverage` block and no `subscription`
 block — nothing to compute a paid-through date or a freeze date from, because nothing lapses. If your
 code still reads `billing.coverage` or `billing.subscription`, delete it; those fields do not exist
 on the response any more. No provider session or payment ids are returned either, and `discount`
@@ -1009,6 +1121,16 @@ The event response carries neither, so read them here. On each order, `coverageM
 that order bought (`null` on a storage pack) and `coverageMonthsAdded` is how far an `UPGRADE` moved
 `coverageEndsAt` (`null` on every other kind).
 
+**`buyerType` (added 2026-09-24)** is `CONSUMER` or `BUSINESS`, pinned at checkout. Hide Withdraw
+on `BUSINESS` orders (§9, Business buyers).
+
+**`breakdown` (added 2026-09-24, phase 4)** is the price breakdown pinned on the order when its
+checkout was opened: the same object the checkout response returned. The billing view fills
+`withdrawal.windowClosesAt` from `paidAt` while the order is `PAID` (the date may already be past);
+it stays `null` before payment and once the order is refunded or reversed. `null` on an order
+created before V106. On an activation or upgrade, the three split fields above are copied from its
+`ACTIVATION`, `EVENT_DAY` and `COVERAGE` items, so the two always agree.
+
 ---
 
 ## 9. Withdrawal
@@ -1028,9 +1150,47 @@ host confirms POST /withdrawals
    computed + fraud-checked
         │
         ├─ clean ──► REFUNDED immediately: money back per line, event soft-deleted
-        └─ flagged ──► HELD for an admin (or always, in MANUAL mode) — released or withheld
+        └─ flagged ──► HELD for an admin (or always, in MANUAL mode) — released (optionally keeping the event day)
                         within 10 days, auto-released if nobody acts
 ```
+
+### Business buyers (added 2026-09-24)
+
+A business purchase (an order with `buyerType: BUSINESS`) has no consumer right of withdrawal.
+- A business **activation** refuses the EVENT withdrawal with `BUSINESS_PURCHASE`.
+- A business **upgrade or pack** refuses its ORDER withdrawal with `BUSINESS_PURCHASE`.
+- An EVENT withdrawal of a consumer activation leaves business upgrades and packs unrefunded. The
+  preview lists them in `excludedOrders`, and so does the filed request, as they stood when it was
+  filed.
+- A consumer upgrade's ORDER withdrawal still takes every newer upgrade with it. A newer business
+  upgrade there is refunded pro rata like a consented order (setup kept), and its line says
+  `buyerType: BUSINESS`.
+- Business orders don't count for the primary-host transfer lock (5081).
+
+Details: [business-buyers-fe-integration.md](business-buyers-fe-integration.md) §4.
+
+### Price breakdown, legal texts and emails (added 2026-09-24)
+
+Phase 4. Full reference:
+[withdrawal-compliance-phase4-fe-integration.md](withdrawal-compliance-phase4-fe-integration.md).
+
+- **Terms version `2026-09-24`** (superseded by `2026-09-25` on the same day, when coverage extensions
+  shipped). Checkout bodies must send the current version from `/api/config`.
+- **Each item carries its withdrawal rule.** `breakdown.items[].withdrawal` is
+  `RETAINED_ONCE_STARTED` (setup), `RETAINED_ONCE_PERFORMED` (event day and add-ons),
+  `PRO_RATA_BY_TIME` (coverage, storage packs) or `BUSINESS_NO_RIGHT` (every item of a business
+  order). These are the lines this section refunds from.
+- **Where to show the withdrawal button.** On each order while `breakdown.withdrawal.available` and
+  now is before `breakdown.withdrawal.windowClosesAt` (§8). The label and placement rules for the
+  Art. 11a "Withdraw from contract here" function are in the phase 4 guide.
+- **Legal texts.** `GET /api/legal/withdrawal-terms?locale=en|el` (current version) and
+  `GET /api/legal/withdrawal-terms/{version}?locale=` (the version an order was bought under) return
+  `{ version, locale, withdrawalInformation, modelForm }`, both Markdown. Public, no auth. An unknown
+  version is `404`; an unknown locale falls back to `en`.
+- **Emails the host now gets.** A payment confirmation for every settled order (items, total,
+  coverage end, window close, and for a consumer the withdrawal information and model form of the
+  order's terms version). A withdrawal acknowledgement for every submission, `REFUSED` included,
+  with when it was received, what it covers and the outcome. Don't send your own copies.
 
 ### The price split and what each line does
 
@@ -1042,8 +1202,9 @@ retention window pinned at activation).
 
 **Changed 2026-09-21 — rescheduled events.** A host may still move `startAt` forward on a live event
 (postponing is ordinary), but the date they paid for is pinned server-side and a withdrawal on an
-event whose `startAt` differs from it is **always `HELD`** for review, never auto-refunded. Three
-things follow for the FE:
+event whose `startAt` differs from it is **always `HELD`** for review, never auto-refunded. (Except
+a storage pack withdrawn on its own, which is never screened, 2026-09-23.) Three things follow for
+the FE:
 - A new fraud signal code appears in the admin queue: `SCHEDULE_MOVED_AFTER_PAYMENT` (`observed`
   carries both dates, e.g. `"paid for 2026-10-03T18:00Z, now set to 2026-12-01T18:00Z"`). Nothing
   to special-case — the admin screen already renders every signal generically.
@@ -1073,12 +1234,15 @@ it freely as the host reads the confirmation dialog.
   "totalRefundMinor": 3965,
   "currency": "EUR",
   "lines": [
-    { "orderId": "…", "orderKind": "ACTIVATION", "basis": "CONSENTED_PRO_RATA",
+    { "orderId": "…", "orderKind": "ACTIVATION", "windowClosesAt": "…", "basis": "CONSENTED_PRO_RATA",
       "hostingStart": "…", "hostingEnd": "…", "usedSeconds": 432000, "totalSeconds": 2592000,
-      "eventPerformed": false, "refundMinor": 3965, "providerRefunded": false,
-      "components": { "setup": { /* … */ }, "eventDay": { /* … */ }, "hosting": { /* … */ } } }
+      "eventPerformed": false, "keepEventDay": false, "refundMinor": 3965, "providerRefunded": false,
+      "components": { "setup": { /* … */ }, "eventDay": { /* … */ }, "hosting": { /* … */ } },
+      "buyerType": "CONSUMER" }        // added 2026-09-24
   ],
-  "scheduleMovedAfterPayment": false  // true → a withdrawal will be HELD for review (see above)
+  "scheduleMovedAfterPayment": false, // true → a withdrawal will be HELD for review (see above)
+  "scope": "EVENT", "orderId": "…", "instant": false, "storageAfter": null,
+  "excludedOrders": []                // added 2026-09-24: business orders left unrefunded (§9, Business buyers)
 }
 ```
 
@@ -1090,12 +1254,16 @@ it freely as the host reads the confirmation dialog.
   after payment, Athens time, moved to the end of Monday when that day falls on a weekend
   (2026-09-23; it used to be `paidAt` + 14×24h).
 - `scheduleMovedAfterPayment` (added 2026-09-23) is `true` when `startAt` has moved off the date
-  that was paid for. Show the "reviewed by a person" line from the price-split section above when it
+  that was paid for, on a withdrawal that is screened: always `false` on a storage pack's preview. Show the "reviewed by a person" line from the price-split section above when it
   is. It is a fact about the event, so it is set on an ineligible preview too, where it has nothing
   to warn about.
-- `lines` covers every order a withdrawal would touch — the activation and any settled upgrade — one
-  line each, each with its own `components` breakdown (JSON, shape-stable but not enumerated here;
-  treat it as display-only detail, not something to recompute from).
+- `lines` covers every order a withdrawal would touch, one line each with its own `components`
+  breakdown (JSON, shape-stable but not enumerated here; display-only, never recompute from it).
+  For the event: every settled consumer-bought upgrade, every settled consumer-bought storage pack
+  (business-bought ones are in `excludedOrders` instead; basis `PRO_RATA_BY_TIME`,
+  since 2026-09-23; `NO_CONSENT_FULL_REFUND` for a pack bought before then), then the activation. Each line carries its own order's `windowClosesAt`.
+- `scope`, `orderId`, `instant`, `storageAfter` (2026-09-23): see "one order" below. On this
+  endpoint `scope` is `EVENT`, `instant` is `false` and `storageAfter` is `null`.
 
 ### `POST /api/events/{eventId}/withdrawals` — primary host
 
@@ -1117,21 +1285,22 @@ read them from the preview call instead of this response.
 ```jsonc
 // 201 — REFUNDED
 {
-  "id": "…", "eventId": "…", "status": "REFUNDED", "reason": "…",
+  "id": "…", "eventId": "…", "scope": "EVENT", "orderId": "…", "status": "REFUNDED", "reason": "…",
   "createdAt": "…", "decidedAt": null, "decisionNote": null, "holdUntil": null,
   "totalRefundMinor": 3965, "currency": "EUR",
-  "refusals": [], "lines": [ /* same shape as the preview's lines */ ]
+  "refusals": [], "lines": [ /* same shape as the preview's lines */ ],
+  "excludedOrders": []   // added 2026-09-24: as the preview's, recorded when the request was filed
 }
 ```
 
 ```jsonc
 // 201 — HELD
 {
-  "id": "…", "eventId": "…", "status": "HELD", "reason": "…",
+  "id": "…", "eventId": "…", "scope": "EVENT", "orderId": "…", "status": "HELD", "reason": "…",
   "createdAt": "…", "decidedAt": null, "decisionNote": null,
   "holdUntil": "2026-09-27T00:00:00Z",
   "totalRefundMinor": 3965, "currency": "EUR",
-  "refusals": [], "lines": [ /* … */ ]
+  "refusals": [], "lines": [ /* … */ ], "excludedOrders": []
 }
 ```
 
@@ -1147,12 +1316,33 @@ host can still read and do on a withdrawn event.
 A `HELD` withdrawal changes nothing yet — the event stays exactly as it was while an admin (or the
 10-day auto-release) decides it.
 
+### One order: `GET/POST /api/events/{eventId}/orders/{orderId}/withdrawal-preview|withdrawals` — primary host
+
+Added 2026-09-23. Withdraws one storage pack, one coverage extension (since 2026-09-24), or one
+upgrade together with every upgrade bought after it. **The event stays.** Same body, same rate
+limit, same 201/409 answers as the event endpoints. The full contract (refusal codes, `instant`,
+`storageAfter`, the 7-day storage trim) is in
+[withdrawal-compliance-phase2-fe-integration.md](withdrawal-compliance-phase2-fe-integration.md)
+§4–§7.
+
+- An `ACTIVATION` `orderId` is `400` `5082`: use the event endpoints. Another event's order, or an
+  unknown one, is `404` `2001`.
+- A pack or an extension is refunded at once (`instant: true` on its preview) unless the platform
+  is in manual mode. An extension is refunded by time over its own span, and coverage comes in by
+  what it had not yet supplied. An upgrade is screened and may be `HELD`.
+- Each order has its own 14-day window from its own payment.
+
 ### `GET /api/events/{eventId}/withdrawals` — primary host
 
 The event's withdrawal history, newest first — every attempt, including refused ones. Drives a
 "withdrawal history" panel the same way the old refund-request history did.
 
-All three host-side withdrawal endpoints (preview, file, history) answer **403
+Each row carries `scope` and `orderId` (2026-09-23). `decisionNote` is set on released requests:
+the reviewer's note, or what the evidence rule found on an auto-release of a moved event. Show it
+as plain text. A line whose order had already been refunded another way (a chargeback) is released
+with `refundMinor: 0`, and `totalRefundMinor` counts only what the withdrawal itself paid back.
+
+All five host-side withdrawal endpoints (the two previews, the two filings, history) answer **403
 `WITHDRAWAL_NOT_PRIMARY_HOST`** (4005) for a co-host. Withdrawal ends the event and refunds the
 card that paid for it, so it is the primary host's alone — exactly like requesting deletion.
 
@@ -1183,23 +1373,42 @@ as-is, not parsed.
 
 ### `POST /api/admin/withdrawals/{requestId}/release` — admin
 
-No body. Refunds the request exactly as it was computed at request time (prices are not
-re-calculated against today's date) and deletes the event, same outcome as an automatic `REFUNDED`.
-Refused with `409 WITHDRAWAL_NOT_HELD` (5074) if the request isn't currently `HELD` — a double-click
-or a stale queue; refetch.
-
-### `POST /api/admin/withdrawals/{requestId}/withhold` — admin
-
 ```jsonc
-{ "note": "Event has already taken place; withdrawal window closed before this was filed." }
+// body optional
+{ "keepEventDay": true, "note": "The party took place on 3 October; 64 photos from that night." }
 ```
 
-`note` is **required**, max 1000 chars, and is shown to the host verbatim as the reason their
-withdrawal was refused. Withholding also **suspends the host's account** — this is not a soft
-decline, treat the confirmation dialog accordingly. Same `409 WITHDRAWAL_NOT_HELD` (5074) guard as
-release.
+- **No body**, or `keepEventDay: false`, refunds exactly as computed at request time. Prices are not
+  re-calculated against today's date.
+- **`keepEventDay: true`** keeps the event-day share, and any add-on, on each activation and upgrade
+  line, because the event took place on the date that was paid for. Storage packs are untouched, and
+  so is an upgrade bought after that date: it had no part in the day.
+  - It is refused unless that date had passed **when the host withdrew**: `409` `5083`
+    `WITHDRAWAL_KEEP_EVENT_DAY_NOT_DUE`. The host owes only for what was supplied before they
+    withdrew, so a date that passes during the hold doesn't count. Offer it only when
+    `usageFacts.activatedStartAt` is before the request's `createdAt`, and never on a storage-pack
+    request (it changes nothing there, and its `usageFacts` is `null`).
+  - It needs a `note`: `400` `3001` otherwise.
+- With a body, `keepEventDay` is required (`400` `3001` without it). `note` is at most 1000 chars and
+  is **shown to the host** as `decisionNote`.
+- An EVENT request is deleted, as with an automatic `REFUNDED`. An ORDER request's event stays.
+- `409` `WITHDRAWAL_NOT_HELD` (5074) if the request isn't currently `HELD`: a double click, a stale
+  queue, or the auto-release got there first. Refetch.
 
-Both admin endpoints are rate limited to **30/min per admin**, shared with `POST /orders/{id}/settle`.
+**There is no withhold** (removed 2026-09-23, together with the account suspension it caused). The
+law requires no reason to withdraw, and a stolen card goes through the provider's dispute process.
+`WITHHELD` rows from before stay readable.
+
+**Auto-release on evidence.** A request held because the event's date moved after payment is
+auto-released after 10 days. If the date that was paid for had passed when the host withdrew, and
+at least 20 uploads (never fewer than 1, whatever the setting), deleted ones included, landed in
+the 24 hours from that date, it is released with the event day kept, as a reviewer would. What the
+rule found goes into `decisionNote`. Each held request is released on its own, so one that fails
+stays `HELD` for the next sweep without holding up the others.
+
+The release endpoint is rate limited to **30/min per admin**, in the `admin.money` bucket it shares
+with `POST /orders/{id}/settle`, webhook replay, add-on removal and the collaboration and
+discount-code admin writes.
 
 ---
 
@@ -1227,16 +1436,20 @@ produced; remove any handling that expects to see them going forward.
 
 | `type` | severity | when |
 |---|---|---|
-| `WITHDRAWAL_REFUNDED` | `CRITICAL` | the withdrawal was executed: money is on its way back and the event is soft-deleted |
+| `WITHDRAWAL_REFUNDED` | `CRITICAL` (`INFO` for one order) | the withdrawal was executed: money is on its way back and, for the whole event, the event is soft-deleted. Since 2026-09-24 the whole-event body also says how many business purchases, for how much, are not refunded |
 | `WITHDRAWAL_HELD` | `INFO` | a fraud signal fired (or the platform is in `MANUAL` mode); an admin will decide within 10 days |
-| `WITHDRAWAL_WITHHELD` | `CRITICAL` | an admin refused a held withdrawal; the host's account is also suspended |
+| `WITHDRAWAL_WITHHELD` | `CRITICAL` | legacy: nothing emits it since 2026-09-23 (withhold was removed) |
+| `STORAGE_TRIM_SCHEDULED` | `WARNING` | a withdrawal or chargeback left the event over its storage limit; the newest media above it will be deleted on `trimDueAt` unless space is freed |
+| `STORAGE_TRIM_WARNING` | `CRITICAL` | the same deletion is about 2 days away; sent once |
 
 The payload carries what the UI needs without a second fetch:
 
 ```jsonc
 {
   "withdrawalId": "…",
-  "status": "REFUNDED",         // "REFUNDED" | "HELD" | "WITHHELD"
+  "scope": "EVENT",             // or "ORDER" (2026-09-23): the event stays
+  "orderId": "…",
+  "status": "REFUNDED",         // "REFUNDED" | "HELD"
   "totalRefundMinor": 3965,
   "currency": "EUR",
   "providerRefunded": true
@@ -1247,13 +1460,15 @@ The payload carries what the UI needs without a second fetch:
 by hand — do not tell the host to expect it on their statement in the usual few days.
 
 `WITHDRAWAL_REFUNDED` is the only notification of the three that reports an event *disappearing* —
-give it real weight in the feed, the same way `REFUND_APPROVED` used to. `WITHDRAWAL_WITHHELD`'s body
-includes the admin's note as the entire answer the host gets; show it in full, not truncated.
+give it real weight in the feed, the same way `REFUND_APPROVED` used to. An ORDER-scope `WITHDRAWAL_REFUNDED`
+is `INFO`, not `CRITICAL`: the event stays. Branch on `payload.scope`. The two `STORAGE_TRIM_*`
+types point at `EVENT_GALLERY`, not `EVENT_PLAN_SETTINGS`, and their payload is in
+[withdrawal-compliance-phase2-fe-integration.md](withdrawal-compliance-phase2-fe-integration.md) §7.
 
 ### What to add on your side
 
 Add `BILLING` to any notification-category filter UI, and `WITHDRAWAL_REFUNDED`/`WITHDRAWAL_HELD`/
-`WITHDRAWAL_WITHHELD` to the `NotificationType` union in `frontend-api-types.ts`, in place of
+`STORAGE_TRIM_SCHEDULED`/`STORAGE_TRIM_WARNING` to the `NotificationType` union in `frontend-api-types.ts`, in place of
 `REFUND_APPROVED`/`REFUND_REJECTED`. Unknown types should already render as a generic
 row rather than crashing — if yours does not, fix that before this ships.
 
@@ -1309,6 +1524,7 @@ In your API client interceptor, not at call sites:
 | `POST /api/events/{id}/checkout` | 10 / min | shared with `upgrade-checkout` and `storage-checkout` |
 | `POST /api/events/{id}/addons` | 30 / min | per user; the DRAFT-only opt-in, not a checkout |
 | `POST /api/events/{id}/refund-requests` | 5 / hour | per user, not per event |
+| `PUT /api/me/business-profile` | 10 / hour | per user; 400s count too, so don't retry a validation failure in a loop |
 | admin decisions and settlement | 30 / min | per admin |
 
 **The refresh storm.** If your client fires ten requests, all get a `401`, and all ten independently
@@ -1368,7 +1584,8 @@ name, for logs). Branch on `errorCode`.
 
 | code | HTTP | when | what to show |
 |---|---|---|---|
-| `5014` `EVENT_NOT_ACTIVE` | 409 | upgrade or storage checkout on a `DRAFT` event; or a guest/module action on one | send to activation / "not published yet" |
+| `5014` `EVENT_NOT_ACTIVE` | 409 | upgrade, storage or extension checkout on a `DRAFT` event; or a guest/module action on one | send to activation / "not published yet" |
+| `5085` `COVERAGE_ENDED` (§7e) | 409 | extension options or checkout on a live event whose coverage has already ended | hide "Extend coverage" once `coverageEndsAt` has passed |
 | `5017` `EVENT_NOT_DRAFT` | 409 | activation checkout, a DRAFT-only add-on opt-in, or (2026-09-23) a `coverageOptionId` change, on an event already `ACTIVE` | usually a stale tab; refetch the event |
 | `5018` `ORDER_NOT_PENDING` | 409 | admin settling an already-settled order | admin panel only |
 | `5028` `ORDER_AMOUNT_MISMATCH` | 409 | the amount a provider confirms paying doesn't match what the order was opened for | never expected from client action; log and treat as a settlement failure |
@@ -1384,10 +1601,13 @@ name, for logs). Branch on `errorCode`.
 | code | HTTP | when | what to show |
 |---|---|---|---|
 | `5072` `WITHDRAWAL_TERMS_VERSION_STALE` | 400 | checkout's `termsVersion` (§6, §7d) doesn't match the version currently in force | reload `GET /api/config`, re-show the current terms, let the host retry once |
-| `5073` `WITHDRAWAL_REFUSED` | 409 | the withdrawal was refused at the gate — no settled activation, window closed, already in progress, already refunded (§9) | the `detail` string on the error envelope; for the structured per-reason list, call withdrawal-preview instead |
+| `5073` `WITHDRAWAL_REFUSED` | 409 | the withdrawal was refused at the gate — no settled activation, window closed, already in progress, already refunded, bought as a business (`BUSINESS_PURCHASE`, 2026-09-24: no consumer right of withdrawal); for one order also order not paid, order already withdrawn (§9) | the `detail` string on the error envelope; for the structured per-reason list, call withdrawal-preview instead |
 | `4005` `WITHDRAWAL_NOT_PRIMARY_HOST` | 403 | the caller is a co-host, not the primary host (`displayOrder: 0` in `GET /api/events/{id}/hosts`) — withdrawal refunds the payer and deletes the event, so it is gated like deletion | hide the withdraw entry point for co-hosts; if reached, "Only the primary host can withdraw this event." |
 | `4006` `PURCHASE_NOT_PRIMARY_HOST` | 403 | a co-host calling a checkout, `upgrade-options`, `checkout/preview-code` or `addons`, or a `PATCH /api/events/{id}` that changes a draft's `coverageOptionId` | only the primary host buys; hide the action |
-| `5074` `WITHDRAWAL_NOT_HELD` | 409 | admin release/withhold on a request that isn't currently `HELD` | double-click or stale admin queue; refetch |
+| `5074` `WITHDRAWAL_NOT_HELD` | 409 | admin release on a request that isn't currently `HELD` | double-click or stale admin queue; refetch |
+| `5082` `WITHDRAWAL_ORDER_KIND_NOT_SUPPORTED` | 400 | an ORDER withdrawal named the `ACTIVATION` | use the event's withdrawal endpoints |
+| `5083` `WITHDRAWAL_KEEP_EVENT_DAY_NOT_DUE` | 409 | admin release with `keepEventDay: true` when the date that was paid for hadn't passed when the host withdrew | release as computed |
+| `5084` `PURCHASE_WITHDRAWAL_OPEN` | 409 | a storage pack or upgrade checkout while a withdrawal it would miss is `HELD` (§7b, §7d) | hide the purchase while the withdrawal is under review; the `message` can be shown as is |
 
 **`5022`–`5025` (`REFUND_NOT_ELIGIBLE`, `REFUND_ALREADY_REQUESTED`, `REFUND_REQUEST_NOT_PENDING`,
 `ORDER_NOT_REFUNDABLE`) are dead as of 2026-09-18.** The endpoints that used to throw them are
@@ -1412,7 +1632,7 @@ All require `ROLE_ADMIN`; non-admins get `403`.
 | `GET /api/admin/webhooks/unprocessed` | deliveries received but never processed — settlements the platform may have lost. The remedy is usually `settle` above. |
 | `POST /api/admin/webhooks/{provider}/{providerEventId}/replay` | re-verifies and re-runs one delivery from the list above against the provider's signed payload. For anything `settle` can't express — a refund, a lost dispute — that only ever arrives once. |
 | `GET /api/admin/withdrawals` | the held-withdrawal queue with the full facts sheet (§9) |
-| `POST /api/admin/withdrawals/{id}/release` \| `/withhold` | decide a held withdrawal (§9) |
+| `POST /api/admin/withdrawals/{id}/release` | decide a held withdrawal, optionally keeping the event day (§9) |
 | `DELETE /api/admin/events/{eventId}/addons/{code}` | removes an entitlement (add-on or storage pack). Refuses on any `ACTIVE` event (§7a, §7b) — an admin correction tool, not something used on a live event. |
 
 ### The plan catalog
@@ -1572,7 +1792,7 @@ export interface PlanTierResponse {
   sharedGroupKey: string | null;  // UUID; set only by the admin "duplicate" action — see §2
   paidModules: PaidServiceResponse[] | null;  // MODULE_UNLOCK upsells; null only from admin catalog endpoints
   initialOptions: CoverageOptionResponse[];    // added 2026-09-23 — the durations it is sold at; empty = not on sale
-  extensionOptions: CoverageOptionResponse[];  // added 2026-09-23 — nothing sells these yet
+  extensionOptions: CoverageOptionResponse[];  // added 2026-09-23 — sold since 2026-09-24 (§7e)
 }
 
 // Added 2026-09-23 — one duration an EVENT plan is sold at.
@@ -1618,14 +1838,8 @@ export interface EventAddonRequest {
   paidServiceCode: string;      // a RECURRING_ADDON or MODULE_UNLOCK code
 }
 
-// POST /api/events/{eventId}/upgrade-checkout — host, ACTIVE only (§7d).
-export interface UpgradeCheckoutRequest {
-  planTierCode: string;         // must rank above the event's current plan
-  coverageOptionId: string;     // required since 2026-09-23 — one of upgrade-options' options[].coverageOptionId
-}
-
-// POST /api/events/{eventId}/storage-checkout — host, ACTIVE only (§7b).
-export interface StorageCheckoutRequest {
+// POST /api/events/{eventId}/storage-checkout — host, ACTIVE only (§7b). WithdrawalConsent below.
+export interface StorageCheckoutRequest extends WithdrawalConsent {
   paidServiceCode: string;      // a STORAGE_PACK code
 }
 
@@ -1651,18 +1865,92 @@ export interface EventUsageResponse {
 export type EventStatus = 'DRAFT' | 'ACTIVE';
 
 // ---------- Checkout ----------
+// What an order was sold as, pinned at checkout (2026-09-24). BUSINESS only with a VIES-confirmed
+// business profile; a BUSINESS order has no consumer right of withdrawal.
+export type BuyerType = 'CONSUMER' | 'BUSINESS';
+
 export interface CheckoutResponse {
   orderId: string;
   redirectUrl: string;
+  buyerType: BuyerType;         // added 2026-09-24
+  breakdown: PriceBreakdown;    // added 2026-09-24 (phase 4) — the order's pinned breakdown
 }
 
-// Shared by activation and upgrade checkout — the consent Directive 2011/83/EU art. 14(3)/(4)(a)
-// requires before a paid service may begin inside the withdrawal window. Both booleans MUST be
-// sent true; termsVersion comes from AppConfigResponse.withdrawal.termsVersion (below). Added
-// 2026-09-18 — a body is now required on both checkout endpoints, where none was before.
+// ---------- Price breakdown (added 2026-09-24, phase 4) ----------
+// Full reference: withdrawal-compliance-phase4-fe-integration.md. Snapshots only ever grow: ignore
+// fields you don't know.
+export type PriceItemCode = 'ACTIVATION' | 'EVENT_DAY' | 'COVERAGE' | 'ADDON' | 'STORAGE_PACK';
+export type WithdrawalRule =
+  | 'RETAINED_ONCE_STARTED' | 'RETAINED_ONCE_PERFORMED' | 'PRO_RATA_BY_TIME' | 'BUSINESS_NO_RIGHT';
+export type DiscountSource = 'PLAN_PROMOTION' | 'CODE';
+
+export interface PriceBreakdown {
+  kind: OrderKind;
+  currency: string;
+  buyerType: BuyerType;
+  coverage: {
+    optionId: string | null;
+    months: number | null;
+    monthsAdded: number | null;   // UPGRADE only
+    endsAt: string | null;        // null before the event exists (pre-creation preview)
+    endsAtProjected: boolean;     // true on a draft's activation: assumes payment now
+  } | null;
+  items: PriceItem[];             // plan items first, then add-ons; they sum to the totals exactly
+  discounts: { source: DiscountSource; label: string | null; percent: number }[];
+  combinedDiscountPercent: number;  // may exceed discountCapPercent: a plan promotion is never cut back
+  discountCapPercent: number;
+  capApplied: boolean;              // true when the cap cut the code back
+  listTotalMinor: number;
+  discountTotalMinor: number;
+  totalMinor: number;
+  vat: { included: boolean; note: string };   // note is a message key: 'billing.vat.included'
+  termsVersion: string;
+  withdrawal: {
+    available: boolean;           // false for a business buyer
+    windowDays: number;
+    windowClosesAt: string | null;  // filled only on a PAID order in the billing view
+  };
+}
+
+export interface PriceItem {
+  code: PriceItemCode;
+  labelKey: string;               // e.g. 'billing.item.activation'; localize with {plan}/{name} = name
+  name: string;                   // the plan's name on a plan item, the catalog name on an add-on or pack
+  listMinor: number;              // priceMinor + discountMinor
+  discountMinor: number;
+  priceMinor: number;
+  withdrawal: WithdrawalRule;
+  performedAt: string | null;     // the event's start, on EVENT_DAY and ADDON; null before the event exists
+  months: number | null;          // COVERAGE only
+  monthsAdded: number | null;     // an upgrade's COVERAGE only
+  paidServiceCode: string | null; // ADDON and STORAGE_PACK
+  planTierCode: string | null;    // plan items
+  storageBytes: number | null;    // STORAGE_PACK
+}
+
+// POST /api/events/{eventId}/quote — primary host. Returns a PriceBreakdown.
+export interface QuoteRequest {
+  kind: 'ACTIVATION' | 'STORAGE_PACK';   // upgrades are priced by upgrade-options
+  paidServiceCode?: string;              // required for STORAGE_PACK, refused for ACTIVATION
+}
+
+// GET /api/legal/withdrawal-terms[/{version}]?locale= — public. Both texts are Markdown.
+export interface WithdrawalTerms {
+  version: string;
+  locale: 'en' | 'el';            // en when the requested locale isn't available
+  withdrawalInformation: string;
+  modelForm: string;
+}
+
+// Shared by activation, upgrade and (since 2026-09-23) storage checkout — the consent Directive 2011/83/EU art. 14(3)/(4)(a)
+// requires before a paid service may begin inside the withdrawal window. A consumer MUST send both
+// booleans true; a VIES-confirmed business buyer may omit them (2026-09-24, see
+// business-buyers-fe-integration.md §1). termsVersion is required for everybody and comes from
+// AppConfigResponse.withdrawal.termsVersion (below). Added 2026-09-18 — a body is now required on
+// both checkout endpoints, where none was before.
 interface WithdrawalConsent {
-  requestsImmediateStart: boolean;
-  acknowledgesWithdrawalTerms: boolean;
+  requestsImmediateStart?: boolean;
+  acknowledgesWithdrawalTerms?: boolean;
   termsVersion: string;
 }
 
@@ -1687,12 +1975,20 @@ export interface EventBillingResponse {
   coverageMonths: number;       // added 2026-09-23 — its months
   orders: OrderSummary[];       // newest first
   addons: EventAddon[];         // empty if never opted in
+  discount: DiscountSummary | null;  // the code the activation was priced with — §8
+  storageTrimDueAt: string | null;   // added 2026-09-23 — §7b
+}
+
+export interface DiscountSummary {
+  label: string;
+  discountPercent: number;      // snapshot at redemption, not the code's current rate
+  appliedAt: string;
 }
 
 export interface OrderSummary {
   id: string;
   kind: 'ACTIVATION' | 'UPGRADE' | 'STORAGE_PACK';
-  status: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED';
+  status: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED' | 'REFUNDED';  // REFUNDED: withdrawn or lost dispute
   amountMinor: number;
   addonAmountMinor: number | null;  // the add-on/unlock slice of amountMinor on an
                                      // ACTIVATION order; null on every other kind
@@ -1708,14 +2004,19 @@ export interface OrderSummary {
   // coverageMonthsAdded: UPGRADE only — how far it moved coverageEndsAt; null on every other kind.
   coverageMonths: number | null;
   coverageMonthsAdded: number | null;
+  // Added 2026-09-24. Hide "Withdraw" on BUSINESS orders.
+  buyerType: BuyerType;
+  // Added 2026-09-24 (phase 4). The pinned breakdown; withdrawal.windowClosesAt is filled while the
+  // order is PAID. Null on orders from before V106.
+  breakdown: PriceBreakdown | null;
 }
 
 // ---------- Withdrawal (replaces the old admin-approved Refunds types, 2026-09-18) ----------
-export type WithdrawalStatus = 'REFUSED' | 'HELD' | 'REFUNDED' | 'WITHHELD';
+export type WithdrawalStatus = 'REFUSED' | 'HELD' | 'REFUNDED' | 'WITHHELD'; // WITHHELD: legacy since 2026-09-23
 // 'PENDING' | 'APPROVED' | 'REJECTED' also exist on legacy rows migrated before this flow shipped;
 // treat any status outside the four above as read-only history, never producible by a new request.
 
-export type RefundBasis = 'CONSENTED_PRO_RATA' | 'NO_CONSENT_FULL_REFUND';
+export type RefundBasis = 'CONSENTED_PRO_RATA' | 'NO_CONSENT_FULL_REFUND' | 'PRO_RATA_BY_TIME';
 export type OrderKind = 'ACTIVATION' | 'UPGRADE' | 'STORAGE_PACK';
 
 export interface WithdrawalRefusal {
@@ -1727,26 +2028,49 @@ export interface WithdrawalRefusal {
 export interface WithdrawalLine {
   orderId: string;
   orderKind: OrderKind;
+  windowClosesAt: string | null;  // this order's own window (2026-09-23)
   basis: RefundBasis;
   hostingStart: string | null;
   hostingEnd: string | null;
   usedSeconds: number | null;
   totalSeconds: number | null;
   eventPerformed: boolean;
-  refundMinor: number;
+  keepEventDay: boolean;        // 2026-09-23; always false on a preview
+  refundMinor: number;          // 0 on a released line whose order was already refunded another way
   providerRefunded: boolean;
   components: Record<string, unknown>;  // display-only breakdown; shape not enumerated here
+  // 2026-09-24. BUSINESS only on a newer business upgrade taken along by a consumer upgrade's
+  // withdrawal; it is refunded pro rata like a consented order.
+  buyerType: BuyerType;
+}
+
+// An order an EVENT withdrawal leaves unrefunded because it was bought as a business (2026-09-24).
+export interface WithdrawalExcludedOrder {
+  orderId: string;
+  orderKind: OrderKind;
+  amountMinor: number;
+  currency: string;
+  reason: 'BUSINESS_PURCHASE';
 }
 
 // GET /api/events/{eventId}/withdrawal-preview — primary host. Nothing persisted; safe to call any time.
 export interface WithdrawalPreview {
   eligible: boolean;
   refusals: WithdrawalRefusal[];
-  windowClosesAt: string | null;        // null when there is no settled activation
+  windowClosesAt: string | null;        // null only on an EVENT preview with no settled activation
   totalRefundMinor: number;
-  currency: string | null;              // null when there is no settled activation
+  currency: string | null;              // null only on an EVENT preview with no settled activation
   lines: WithdrawalLine[];
-  scheduleMovedAfterPayment: boolean;   // true → the withdrawal will be HELD for review; false promises nothing
+  scheduleMovedAfterPayment: boolean;   // true → the withdrawal will be HELD for review; false promises nothing; always false on a pack
+  // Added 2026-09-23 (§9, "one order"):
+  scope: 'EVENT' | 'ORDER';
+  orderId: string | null;
+  instant: boolean;                     // true only for a storage pack in automatic mode
+  storageAfter: { newLimitBytes: number | null; usageBytes: number;
+                  overLimitBytes: number; trimDueAt: string | null } | null;   // ORDER only
+  // Added 2026-09-24. EVENT only: business-bought upgrades and packs this withdrawal leaves
+  // unrefunded. They go with the event. Empty on ORDER previews and on refusals.
+  excludedOrders: WithdrawalExcludedOrder[];
 }
 
 // POST /api/events/{eventId}/withdrawals — primary host. Body optional: { reason?: string }.
@@ -1756,6 +2080,8 @@ export interface WithdrawalPreview {
 export interface WithdrawalResponse {
   id: string;
   eventId: string;
+  scope: 'EVENT' | 'ORDER';      // added 2026-09-23
+  orderId: string | null;
   status: WithdrawalStatus;
   reason: string | null;
   createdAt: string;
@@ -1766,6 +2092,9 @@ export interface WithdrawalResponse {
   currency: string | null;
   refusals: WithdrawalRefusal[];
   lines: WithdrawalLine[];
+  // Added 2026-09-24: what an EVENT withdrawal left unrefunded as business purchases, as it stood
+  // when filed. Empty otherwise.
+  excludedOrders: WithdrawalExcludedOrder[];
 }
 
 export interface WithdrawalRequest {
@@ -1782,14 +2111,15 @@ export interface WithdrawalFraudSignal {
 
 export interface WithdrawalAdmin {
   request: WithdrawalResponse;
-  usageFacts: Record<string, unknown>;   // display-only; shape not enumerated here
+  usageFacts: Record<string, unknown> | null;   // display-only; null on a storage-pack request (never screened)
   fraudSignals: WithdrawalFraudSignal[]; // every signal evaluated, fired or not — show them all
   recommendation: string;                // generated plain text, render as-is
 }
 
-// POST /api/admin/withdrawals/{id}/withhold — admin. note is required.
-export interface WithdrawalWithhold {
-  note: string;                  // max 1000 chars
+// POST /api/admin/withdrawals/{id}/release — admin. Body optional; see §9. (withhold removed 2026-09-23)
+export interface WithdrawalRelease {
+  keepEventDay: boolean;
+  note?: string;                 // max 1000 chars; required when keepEventDay is true; shown to the host
 }
 
 // ---------- Admin metrics ----------
@@ -1824,7 +2154,9 @@ export interface PlatformStorageMetrics {
 export type BillingNotificationType =
   | 'WITHDRAWAL_REFUNDED'
   | 'WITHDRAWAL_HELD'
-  | 'WITHDRAWAL_WITHHELD';
+  | 'WITHDRAWAL_WITHHELD'        // legacy since 2026-09-23
+  | 'STORAGE_TRIM_SCHEDULED'     // 2026-09-23, ctaTarget EVENT_GALLERY
+  | 'STORAGE_TRIM_WARNING';
 
 // ---------- Config ----------
 // Part of GET /api/config's aggregate response. Added 2026-09-18.

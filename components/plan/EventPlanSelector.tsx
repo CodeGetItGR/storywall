@@ -41,7 +41,7 @@ export function EventPlanSelector({
                 {!showLoading && options.length === 0 && <p className="rounded-xl bg-rose-50 p-4 text-sm text-rose-600">{t('noPlans')}</p>}
                 {!showLoading && options.length > 0 && (
                     <div className="grid gap-5 min-[761px]:grid-cols-3 min-[761px]:gap-6" role="group" aria-label={t('steps.planSubtitle')}>
-                        {options.map(({ config, featured, presentation }) => (
+                        {options.map(({ config, featured, presentation }, index) => (
                             <MarketingPlanCard
                                 key={config.id}
                                 plan={presentation}
@@ -50,6 +50,10 @@ export function EventPlanSelector({
                                 featured={featured}
                                 popularLabel={tPricing('popular')}
                                 storageLabel={tPricing('storageLabel')}
+                                durationLabel={tPricing('durationLabel')}
+                                expandLabel={tPricing('showFeatures')}
+                                collapseLabel={tPricing('hideFeatures')}
+                                defaultExpanded={index === 0}
                                 selected={selectedCode === config.code}
                                 selectionLabel={selectedCode === config.code ? t('planSelected') : tPricing('choose')}
                                 onSelectAction={onSelectAction}

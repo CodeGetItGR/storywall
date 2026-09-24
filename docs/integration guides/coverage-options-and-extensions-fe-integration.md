@@ -13,15 +13,14 @@ months, €59 for 6 or €69 for 9. The host picks the plan **and** the duration
 how long the event is covered after activation, which used to come from the plan.
 
 Phase 1 (this guide) covers the catalog, choosing a duration on the draft, activation, upgrades
-and the admin screens. Buying *extra* coverage after activation — extensions — is phase 2. Its
-list is already on the catalog (`extensionOptions`), but nothing sells it yet. See section 11.
+and the admin screens. Buying *extra* coverage after activation (extensions) is phase 2, and section 11 covers it.
 
 ## The model
 
 ```
 PlanTier (EVENT scope)
  ├─ initialOptions[]     the durations the plan is sold at; the host picks one on the draft
- └─ extensionOptions[]   extra months bought after activation (phase 2; not sold yet)
+ └─ extensionOptions[]   extra months bought after activation (section 11)
 ```
 
 Every option has the same shape:
@@ -137,7 +136,13 @@ after the plan's promotion and any code.
   (`PATCH … coverageOptionId`, section 3), then retry. The draft's code preview answers the same.
 - **409 `PLAN_TIER_NOT_PRICED` (5019)** now means "this plan has no duration on sale, or no
   currency". Before, it meant "this plan has no price".
-- The Stripe line item's description gains a clause, `Coverage: 6 months`.
+- The Stripe line item's description gains a clause, `Coverage: 6 months`. *Superseded by phase 4
+  (2026-09-24):* the Stripe page now has one line per breakdown item (activation, event day,
+  "Coverage — 6 months", each add-on), each at its discounted price with the list price and discount
+  in its description, then, when anything was discounted, a zero-amount row naming the discounts.
+  The order summary, including
+  `Coverage: 6 months`, is under the first line. See
+  [withdrawal-compliance-phase4-fe-integration.md](withdrawal-compliance-phase4-fe-integration.md).
 - The months are pinned on the order when checkout opens. If an admin reprices or retires the
   option while the host is on Stripe's page, the host still gets the duration and price they saw.
 - **Switching the duration after opening checkout.** The open session was priced for the old
@@ -182,6 +187,10 @@ It now returns one entry per target plan, with that plan's eligible durations in
 - `options` is never empty; a plan with no eligible duration is left out. An empty array means
   there is nothing to upgrade to.
 - **Removed:** the entry-level `gapAmountMinor` and `payableAmountMinor`. They are per option now.
+- *Phase 4 (2026-09-24):* each option also carries `breakdown`, the `PriceBreakdown`
+  `upgrade-checkout` will store for it; the two amounts are read from its `listTotalMinor` and
+  `totalMinor`. The `termsVersion` below is now `2026-09-24`. See
+  [withdrawal-compliance-phase4-fe-integration.md](withdrawal-compliance-phase4-fe-integration.md).
 
 ### `POST /api/events/{eventId}/upgrade-checkout`
 
@@ -295,6 +304,7 @@ duration at all, the response is **409 `COVERAGE_OPTION_UNAVAILABLE`**.
 | 5078 | `COVERAGE_OPTION_UNAVAILABLE` | 409 | The draft's duration was retired since; or a plan sells no duration to default to |
 | 5079 | `COVERAGE_OPTION_LAST_INITIAL` | 409 | Admin: retiring the last duration a plan on sale is sold at |
 | 5080 | `COVERAGE_OPTION_DUPLICATE` | 409 | Admin: the plan already sells a live option of that kind and length |
+| 5085 | `COVERAGE_ENDED` | 409 | Extension options or checkout on a live event whose coverage has already ended |
 | 5019 | `PLAN_TIER_NOT_PRICED` | 409 | *Changed meaning:* the plan has no duration on sale, or no currency |
 | 3007 | `INVALID_PLAN_TIER_SCOPE` | 400 | *Also:* a price set on an EVENT plan, or options on an ACCOUNT plan |
 
@@ -314,9 +324,131 @@ duration at all, the response is **409 `COVERAGE_OPTION_UNAVAILABLE`**.
 Additive: `PATCH /api/events/{id}` `coverageOptionId`; the billing view's new fields;
 `PATCH /api/admin/events/{id}/plan-tier` `coverageOptionId`; the admin coverage-option endpoints.
 
-## 11. Not yet: extensions (phase 2)
+## 11. Coverage extensions (phase 2, 2026-09-24)
 
-`extensionOptions` exists on every plan response and admins can add EXTENSION options now, but
-there is no endpoint that sells one. Don't render an "Extend coverage" button yet. Phase 2 adds the
-purchase, its refunds, and an "Extend coverage" action on the coverage-ending notification. This
-guide will grow a section for it then.
+The primary host of a live event can buy more months of coverage. The plan decides which lengths
+are sold and at what price. They are its `extensionOptions` on `/api/config` and
+`/api/plan-tiers`, and admins manage them like durations (§8) with `kind: "EXTENSION"`.
+
+### How the months add up
+
+- An extension starts where the event's coverage ends when it settles, and moves
+  `coverageEndsAt` out by its months. A second one starts where the first ends.
+- An upgrade bought while extensions exist puts its months in at the **plan's** end, before the
+  extensions. The extensions move out by the same amount, and reversing the upgrade moves them back.
+- The event's live end is always the event's `coverageEndsAt`. Each order's own span is in the
+  billing view (below).
+
+### `GET /api/events/{eventId}/extension-options` — primary host
+
+```json
+[
+  {
+    "coverageOptionId": "3c1f…",
+    "months": 3,
+    "amountMinor": 1500,
+    "currency": "EUR",
+    "resultingCoverageEndsAt": "2027-12-20T21:00:00Z",
+    "breakdown": { "…": "a PriceBreakdown" }
+  }
+]
+```
+
+- **An empty array means the plan sells none.** Hide the "Extend coverage" action.
+- Never discounted. No code applies, and a plan's promotion doesn't either. `amountMinor` is the
+  option's list price.
+- `resultingCoverageEndsAt` is where coverage would end if it were paid now. It is informational:
+  the real span is fixed when the payment settles.
+- `breakdown` is exactly what the checkout will store. It has one item, `COVERAGE_EXTENSION`
+  (label key `billing.item.coverageExtension`), with the withdrawal rule `PRO_RATA_BY_TIME`, or
+  `BUSINESS_NO_RIGHT` for a business buyer.
+- Errors:
+  - `404` 2001: an unknown or deleted event.
+  - `409` 5014 `EVENT_NOT_ACTIVE`: a draft.
+  - `409` 5085 `COVERAGE_ENDED`: coverage has already ended.
+  - `409` 5019 `PLAN_TIER_NOT_PRICED`: the plan has no currency.
+  - `403` 4006: a co-host.
+
+### `POST /api/events/{eventId}/extension-checkout` — primary host
+
+```json
+{
+  "coverageOptionId": "3c1f…",
+  "requestsImmediateStart": true,
+  "acknowledgesWithdrawalTerms": true,
+  "termsVersion": "2026-09-25"
+}
+```
+
+- It answers the same `CheckoutResponseDto` as the other checkouts. Poll the order the same way:
+  the redirect does not mean paid.
+- It has the same rate limit as the other checkouts.
+- An event has at most one open extension checkout. Opening one for another option replaces the
+  first, whose session expires.
+- The consent fields follow the same rules as every checkout: both must be `true` for a consumer,
+  and a VIES-confirmed business may omit them. `termsVersion` must be the current one from
+  `/api/config`.
+- Errors: those of `extension-options`, and also:
+  - `400` 5077 `COVERAGE_OPTION_INVALID`: the option is not a live extension of the event's
+    current plan.
+  - `400` 5072: a stale `termsVersion`.
+  - `409` 5084 `PURCHASE_WITHDRAWAL_OPEN`: a withdrawal of the whole event is under review.
+
+`POST /api/events/{eventId}/quote` does **not** price extensions: `kind: "EXTENSION"` is a `400`
+pointing here. Use `extension-options`.
+
+### What settling does
+
+- The event's `coverageEndsAt` moves out. The order records its own span, `coverageStartsAt` to
+  `coverageEndsAt`.
+- An extension paid after coverage lapsed, while the event had not yet been reclaimed, starts at
+  payment. The host never pays for time already gone.
+- If nothing can be applied (the event was deleted or purged meanwhile), the extension is refunded
+  in full automatically. The one exception is the manual provider, which can't refund; there a
+  person refunds it.
+
+### The billing view
+
+`GET /api/events/{eventId}/billing` lists extensions as orders with `kind: "EXTENSION"`. Every
+order now carries `coverageStartsAt` and `coverageEndsAt`:
+- On an extension, they are the months it covers. Show them, since that is what the host is
+  looking for.
+- On an activation or upgrade, they are the span it was given at settlement.
+- They are `null` on a storage pack, an unpaid order, or one that applied nothing.
+
+### Withdrawing an extension
+
+Use the one-order endpoints from the billing guide §9:
+`GET/POST /api/events/{eventId}/orders/{orderId}/withdrawal-preview|withdrawals`.
+
+- **It is refunded at once** (`instant: true` on the preview) unless the platform is in manual
+  mode. It is never screened.
+- The refund is pro rata by time over **its own span**:
+  - An extension that hasn't started yet is refunded in full.
+  - A running one is refunded for what is left.
+- `storageAfter` is `null`: an extension changes no storage.
+- The event stays. Its `coverageEndsAt` comes in by the time the extension had not yet supplied,
+  and later extensions move up by the same amount. A running extension ends coverage at the moment
+  of withdrawal.
+- A withdrawal of the whole event refunds the extensions first, then the rest. The activation's
+  and upgrades' coverage share is now measured to the **plan's** end, with extensions not counted.
+- Each extension has its own 14-day window from its own payment. A business-bought extension
+  can't be withdrawn.
+
+### The coverage-ending notification
+
+When the event's plan sells an extension, `EVENT_AUTO_DELETE_WARNING` now has:
+- `ctaTarget: "EVENT_COVERAGE_EXTEND"`;
+- `ctaLabelKey: "notification.cta.extend_coverage"`;
+- `bodyKey: "notification.event.autoDeleteWarning.body.extendable"`.
+
+Route `EVENT_COVERAGE_EXTEND` to the plan screen with the extension picker open (suggested:
+`/events/{eventId}/settings/plan?extend=1`). A plan with no extensions keeps the gallery CTA,
+with `bodyKey` `…body.final`. The payload no longer has `autoDeleteMonths`. The warning fires
+again when an extension moves the end.
+
+### Terms
+
+The terms version is now **`2026-09-25`**. It adds a "Coverage extensions" section and says that
+activation and upgrade coverage is measured without extensions. A client still sending
+`2026-09-24` gets `400` 5072. Read the version from `/api/config` and never hardcode it.
