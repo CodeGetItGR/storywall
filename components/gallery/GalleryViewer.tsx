@@ -16,7 +16,7 @@ const SWIPE_RESISTANCE = 0.35;
 
 interface GalleryViewerProps {
     media: MediaResponseDto | null;
-    keepsOriginals: boolean;
+    canDownloadOriginal: boolean;
     originalError: string | null;
     isDownloadingOriginal: boolean;
     hasPrevious: boolean;
@@ -29,7 +29,7 @@ interface GalleryViewerProps {
 
 export function GalleryViewer({
     media,
-    keepsOriginals,
+    canDownloadOriginal,
     originalError,
     isDownloadingOriginal,
     hasPrevious,
@@ -279,7 +279,7 @@ export function GalleryViewer({
                     )}
                 </div>
                 {/* Viewer actions */}
-                {keepsOriginals && (
+                {canDownloadOriginal && (
                     <button
                         type="button"
                         onClick={onDownloadOriginal}

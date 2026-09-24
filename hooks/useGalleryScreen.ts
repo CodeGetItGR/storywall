@@ -7,7 +7,6 @@ import { type ChangeEvent, type MouseEvent, type PointerEvent, useCallback, useE
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
-import { useEventBilling } from '@/hooks/useBilling';
 import { useGallerySelection } from '@/hooks/useGallerySelection';
 import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
 import { useEventMedia, useOriginalMedia, useUploadMediaBatch } from '@/hooks/useMedia';
@@ -43,7 +42,6 @@ export function useGalleryScreen() {
     const uploadMediaBatch = useUploadMediaBatch();
     const originalMedia = useOriginalMedia();
     const { data: appConfig } = useAppConfig();
-    const billing = useEventBilling(eventId, isHost);
 
     const galleryEnabled = readableModuleKeys(activeEvent).has('gallery');
     const isDeleted = isEventDeleted(activeEvent);
@@ -60,7 +58,8 @@ export function useGalleryScreen() {
     const maxFiles = appConfig?.media.maxBatchUploadFiles ?? MAX_FILES_PER_BATCH;
     const maxImageBytes = appConfig?.media.maxImageBytes ?? 25 * 1024 * 1024;
     const maxVideoBytes = appConfig?.media.maxVideoBytes ?? 200 * 1024 * 1024;
-    const keepsOriginals = isHost && (billing.data?.addons.some((addon) => addon.code === 'ORIGINALS') ?? false);
+    // Every event keeps photo originals; videos are never re-encoded, so they have no separate original.
+    const canDownloadOriginal = isHost && selectedMedia !== null && selectedMedia.mediaType !== 'VIDEO';
     const showArchiveDownload = isHost && galleryEnabled;
     const canDownloadSelected =
         gallerySelection.selectedCount > 0 &&
@@ -287,7 +286,7 @@ export function useGalleryScreen() {
         gallerySelection,
         uploadMediaBatch,
         originalMedia,
-        keepsOriginals,
+        canDownloadOriginal,
         canDownloadSelected,
         maxFiles,
         handleFilesChange,

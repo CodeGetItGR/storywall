@@ -19,13 +19,13 @@ interface GalleryArchiveDownloadModalProps {
     eventId: string;
     open: boolean;
     onClose: () => void;
-    preferOriginals?: boolean;
 }
 
-export function GalleryArchiveDownloadModal({ eventId, open, onClose, preferOriginals = false }: GalleryArchiveDownloadModalProps) {
+export function GalleryArchiveDownloadModal({ eventId, open, onClose }: GalleryArchiveDownloadModalProps) {
     const t = useTranslations('GalleryPage');
     const tError = useApiErrorMessage();
-    const [variant, setVariant] = useState<MediaArchiveVariant>(preferOriginals ? 'ORIGINAL' : 'DISPLAY');
+    // Every event keeps originals, so start on them; both sizes show before the host downloads.
+    const [variant, setVariant] = useState<MediaArchiveVariant>('ORIGINAL');
     const [activePart, setActivePart] = useState<number | null>(null);
     const [downloadError, setDownloadError] = useState<string | null>(null);
 

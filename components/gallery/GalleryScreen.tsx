@@ -47,7 +47,7 @@ export function GalleryScreen() {
         gallerySelection,
         uploadMediaBatch,
         originalMedia,
-        keepsOriginals,
+        canDownloadOriginal,
         canDownloadSelected,
         maxFiles,
         handleFilesChange,
@@ -180,7 +180,7 @@ export function GalleryScreen() {
             {/* Viewer */}
             <GalleryViewer
                 media={selectedMedia}
-                keepsOriginals={keepsOriginals}
+                canDownloadOriginal={canDownloadOriginal}
                 originalError={originalError}
                 isDownloadingOriginal={originalMedia.isPending}
                 hasPrevious={hasPreviousMedia}
@@ -193,12 +193,7 @@ export function GalleryScreen() {
 
             {/* Archive download */}
             {showArchiveDownload && eventId && (
-                <GalleryArchiveDownloadModal
-                    eventId={eventId}
-                    open={archiveDownloadOpen}
-                    onClose={closeArchiveDownload}
-                    preferOriginals={keepsOriginals}
-                />
+                <GalleryArchiveDownloadModal eventId={eventId} open={archiveDownloadOpen} onClose={closeArchiveDownload} />
             )}
         </ModulePageShell>
     );
