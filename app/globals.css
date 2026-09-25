@@ -929,3 +929,24 @@ button:not(:disabled):hover {
 button:disabled {
     cursor: default;
 }
+
+/* RSVP report page: print only the report. The rest of the app stays in the
+   layout (visibility, not display), so the report is lifted to the page's top. */
+@media print {
+    body:has([data-print-root]) * {
+        visibility: hidden;
+    }
+
+    [data-print-root],
+    [data-print-root] * {
+        visibility: visible;
+    }
+
+    [data-print-root] {
+        position: absolute;
+        inset: 0 0 auto 0;
+        max-width: none;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+}
