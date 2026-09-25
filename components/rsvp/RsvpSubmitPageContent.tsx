@@ -7,7 +7,13 @@ export type RsvpSubmitPageData = ReturnType<typeof useRsvpSubmitPageData>;
 
 export function RsvpSubmitPageContent({ data }: { data: RsvpSubmitPageData }) {
     if (data.rsvpAvailability.isUnavailable && data.eventId) {
-        return <RsvpUnavailableState eventId={data.eventId} title={data.rsvpAvailability.unavailableTitle} body={data.rsvpAvailability.unavailableBody} />;
+        return (
+            <RsvpUnavailableState
+                eventId={data.eventId}
+                title={data.rsvpAvailability.unavailableTitle}
+                body={data.rsvpAvailability.unavailableBody}
+            />
+        );
     }
 
     // A first-time RSVP whose session answers failed to save already has an

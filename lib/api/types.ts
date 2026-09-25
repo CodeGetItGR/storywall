@@ -19,17 +19,7 @@ export type PlatformRole = 'USER' | 'ADMIN' | 'GUEST';
 export type EventTypeConvention = 'WEDDING' | 'BAPTISM' | 'SOCIAL_EVENT' | 'BIRTHDAY' | 'PRIVATE_PARTY' | 'GENDER_REVEAL' | 'BABY_SHOWER';
 // Post.type / Reaction.reactionType are free strings server-side.
 // moduleKey is now a closed set on the backend and should match the config payload.
-export const EVENT_MODULE_KEYS = [
-    'posts',
-    'rsvp',
-    'playlist',
-    'stories',
-    'gallery',
-    'wishlist',
-    'wishbook',
-    'co_hosts',
-    'schedule',
-] as const;
+export const EVENT_MODULE_KEYS = ['posts', 'rsvp', 'playlist', 'stories', 'gallery', 'wishlist', 'wishbook', 'co_hosts', 'schedule'] as const;
 // Use this (not the raw `ModuleKey` wire type below) whenever code branches on
 // a specific module — it's a closed set and catches typos at compile time.
 // `ModuleKey` stays a plain string because the admin module/plan-tier registry
