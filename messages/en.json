@@ -1230,8 +1230,6 @@
             "adults": "Adults",
             "kids": "Kids",
             "byCategory": "Attendance by category",
-            "attendingNote": "Includes plus-ones",
-            "notGoing": "Not going",
             "deadlineField": "RSVP deadline"
         },
         "rsvpReport": {

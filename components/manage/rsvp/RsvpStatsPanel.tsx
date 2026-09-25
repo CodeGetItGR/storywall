@@ -3,12 +3,14 @@
 import { CalendarClock } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { MetricStrip } from '@/components/ui/MetricStrip';
+import { LoadingState } from '@/components/ui/LoadingState';
+import { useRsvpReport } from '@/hooks/useRsvps';
 import { formatDate, getDaysUntil } from '@/lib/datetime';
 
 import { RsvpDeadlineField } from './RsvpDeadlineField';
-
-const categories = ['GOING', 'NOT_GOING'] as const;
+import { RsvpReportCategories } from './RsvpReportCategories';
+import { RsvpReportSessions } from './RsvpReportSessions';
+import { RsvpReportTiles } from './RsvpReportTiles';
 
 export function RsvpStatsPanel({
     eventId,
@@ -16,32 +18,16 @@ export function RsvpStatsPanel({
     rsvpDeadline,
     countdownTarget,
     isRsvpDeadline,
-    responseCount,
-    seatsClaimed,
-    adultsTotal,
-    kidsTotal,
-    peopleGoing,
-    peopleNotGoing,
 }: {
     eventId: string;
     canWrite: boolean;
     rsvpDeadline: string | null;
     countdownTarget: string;
     isRsvpDeadline: boolean;
-    responseCount: number;
-    seatsClaimed: number;
-    adultsTotal: number;
-    kidsTotal: number;
-    peopleGoing: number;
-    peopleNotGoing: number;
 }) {
     const t = useTranslations('ManagePage');
     const locale = useLocale();
-    const peopleByCategory = { GOING: peopleGoing, NOT_GOING: peopleNotGoing };
-    // "Not going" counts one head per guest who declined or hasn't responded,
-    // since their actual party size is unknown — this total is people known
-    // either way, not the event's full guest list.
-    const peopleTotal = peopleGoing + peopleNotGoing;
+    const { data: report, isLoading, isError } = useRsvpReport(eventId, 'STATISTICS');
     const daysToGo = getDaysUntil(countdownTarget) ?? 0;
     const formattedTargetDate = formatDate(locale, countdownTarget, { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -65,42 +51,27 @@ export function RsvpStatsPanel({
             {/* RSVP deadline */}
             <RsvpDeadlineField eventId={eventId} rsvpDeadline={rsvpDeadline} canWrite={canWrite} />
 
-            {/* Headline numbers */}
-            <MetricStrip
-                items={[
-                    { key: 'responses', label: t('rsvpStats.responses'), value: responseCount },
-                    { key: 'people', label: t('rsvpStats.totalPeople'), value: seatsClaimed },
-                    { key: 'adults', label: t('rsvpStats.adults'), value: adultsTotal },
-                    { key: 'kids', label: t('rsvpStats.kids'), value: kidsTotal },
-                ]}
-            />
+            {/* Report */}
+            {isLoading ? (
+                <LoadingState size="md" className="min-h-32" />
+            ) : isError || !report ? (
+                <p className="text-sm text-rose-600">{t('rsvpReport.loadFailed')}</p>
+            ) : (
+                <>
+                    {/* Headline numbers */}
+                    <RsvpReportTiles totals={report.totals} />
 
-            {/* Attendance by category */}
-            <div className="p-4" hidden={peopleTotal === 0}>
-                <p className="mb-3 text-xs font-bold tracking-wide text-ink-faint uppercase">{t('rsvpStats.byCategory')}</p>
-                <div className="flex flex-col gap-3">
-                    {categories.map((status) => {
-                        const count = peopleByCategory[status];
-                        if (count === 0) return null;
-                        const percent = peopleTotal === 0 ? 0 : Math.round((count / peopleTotal) * 100);
-
-                        return (
-                            <div key={status}>
-                                <div className="mb-1 flex items-baseline justify-between gap-2 text-xs">
-                                    <span className="text-ink-muted">{t(status === 'GOING' ? 'rsvpBreakdown.attending' : 'rsvpStats.notGoing')}</span>
-                                    <span className="font-bold text-ink tabular-nums">
-                                        {count} <span className="font-normal text-ink-faint">{percent}%</span>
-                                    </span>
-                                </div>
-                                <div className="h-2 overflow-hidden rounded-full bg-surface-muted">
-                                    <div className="h-full rounded-full bg-primary" style={{ width: `${percent}%` }} />
-                                </div>
-                                {status === 'GOING' && <p className="mt-1 text-[11px] text-ink-faint">{t('rsvpStats.attendingNote')}</p>}
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
+                    {/* Attendance by category */}
+                    {report.totals.responses === 0 ? (
+                        <p className="text-sm text-ink-muted">{t('rsvpReport.empty')}</p>
+                    ) : (
+                        <>
+                            <RsvpReportCategories categories={report.categories ?? []} />
+                            <RsvpReportSessions sessions={report.sessions ?? []} />
+                        </>
+                    )}
+                </>
+            )}
         </div>
     );
 }

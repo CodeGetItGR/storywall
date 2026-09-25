@@ -17,8 +17,9 @@ export type RosterRsvp = {
 export type RosterFilter = 'all' | RsvpDisplayStatus;
 
 /**
- * Guest roster for the RSVP section: the counts double as the filter control,
- * so the same numbers are never printed twice as a separate stat block.
+ * Guest roster for the RSVP list tab: live guests (see isRsvpGuest), each with
+ * their RSVP status. The counts double as the filter control. Headcounts come
+ * from the RSVP report (useRsvpReport), not from here.
  */
 export function useRsvpRoster(members: RosterMember[], rsvps: RosterRsvp[]) {
     const [filter, setFilter] = useState<RosterFilter>('all');
@@ -54,29 +55,11 @@ export function useRsvpRoster(members: RosterMember[], rsvps: RosterRsvp[]) {
         [filter, guests, statusOf],
     );
 
-    // Adult/child counts only mean anything for guests who are actually attending —
-    // a declined or unanswered RSVP carries no reliable headcount, so it's excluded
-    // rather than summed in as if it were people confirmed to attend.
-    const attendingRsvps = useMemo(() => rsvps.filter((rsvp) => rsvp.attendanceStatus === 'ATTENDING'), [rsvps]);
-    const adultsTotal = useMemo(() => attendingRsvps.reduce((sum, rsvp) => sum + rsvp.adultCount, 0), [attendingRsvps]);
-    const kidsTotal = useMemo(() => attendingRsvps.reduce((sum, rsvp) => sum + rsvp.childCount, 0), [attendingRsvps]);
-    const peopleGoing = adultsTotal + kidsTotal;
-
-    // Guests who declined or never responded don't have a known headcount, so each
-    // one only counts as one person, not their (unknown) family size.
-    const peopleNotGoing = counts.DECLINED + counts.NO_RESPONSE;
-
     return {
         filter,
         setFilter,
         counts,
         guestCount: guests.length,
-        responseCount: counts.ATTENDING + counts.DECLINED,
-        seatsClaimed: peopleGoing,
-        adultsTotal,
-        kidsTotal,
-        peopleGoing,
-        peopleNotGoing,
         visibleGuests,
         rsvpByMember,
         statusOf,
