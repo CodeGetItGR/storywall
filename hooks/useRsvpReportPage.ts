@@ -12,7 +12,7 @@ export function useRsvpReportPage(reportType: RsvpReportType) {
     const { eventId } = useEventRouteContext();
     const router = useRouter();
     const t = useTranslations('ManagePage.rsvpReports');
-    const { data: report, isLoading, isError } = useRsvpReport(eventId, reportType);
+    const { data: report, isError } = useRsvpReport(eventId, reportType);
     const { download, downloadingType, error: downloadError } = useRsvpReportDownload(eventId, t('failed'));
 
     const onPrint = useCallback(() => window.print(), []);
@@ -26,7 +26,6 @@ export function useRsvpReportPage(reportType: RsvpReportType) {
 
     return {
         report,
-        isLoading,
         isError,
         isDownloading: downloadingType !== null,
         downloadError,
