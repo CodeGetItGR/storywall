@@ -1933,6 +1933,7 @@
         "messagePlaceholder": "Optional — share your excitement or a special note...",
         "submitRsvp": "Submit RSVP",
         "submitError": "Something went wrong submitting your RSVP. Please try again.",
+        "sessionsSubmitError": "We couldn't save your answers. Please try again.",
         "moduleUnavailable": "RSVP is not available on this event's current plan.",
         "unavailableTitle": "RSVP is not available",
         "unavailableUpgradeBody": "Upgrade to {plans} to use RSVP.",

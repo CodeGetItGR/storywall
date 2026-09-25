@@ -30,6 +30,8 @@ export const rsvpKeys = {
     report: (eventId: string, reportType: RsvpReportType, locale: string) =>
         ['events', eventId, 'rsvps', 'report', reportType, locale] as const,
     detail: (id: string) => ['rsvps', id] as const,
+    // Must stay nested under detail(id) — every RSVP mutation invalidates by
+    // that prefix, and this key relies on falling under it to refresh too.
     sessionResponses: (rsvpId: string) => ['rsvps', rsvpId, 'session-responses'] as const,
 };
 

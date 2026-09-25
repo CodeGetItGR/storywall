@@ -1,31 +1,41 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useRsvpSessionQuestions } from '@/hooks/useRsvpSessionQuestions';
+import { computeHasUnansweredSessions, useRsvpSessionQuestions } from '@/hooks/useRsvpSessionQuestions';
+import { ApiError } from '@/lib/api/client';
 
 vi.mock('next-intl', () => ({ useLocale: () => 'en' }));
-vi.mock('@/lib/eventLifecycle', () => ({ isModuleAvailable: () => true }));
 
-const sessions = [
+let modulesAvailable = true;
+vi.mock('@/lib/eventLifecycle', () => ({ isModuleAvailable: () => modulesAvailable }));
+
+const defaultSessions = [
     { id: 'reception', title: 'Reception', displayOrder: 1, rsvpEnabled: true, startAt: null },
     { id: 'ceremony', title: 'Ceremony', displayOrder: 0, rsvpEnabled: true, startAt: null },
     { id: 'brunch', title: 'Brunch', displayOrder: 2, rsvpEnabled: false, startAt: null },
 ];
-vi.mock('@/hooks/useEventSessions', () => ({ useEventSessions: () => ({ data: sessions }) }));
+let sessionsData: typeof defaultSessions | undefined = defaultSessions;
+let sessionsLoading = false;
+vi.mock('@/hooks/useEventSessions', () => ({ useEventSessions: () => ({ data: sessionsData, isLoading: sessionsLoading }) }));
 
 let saved: { eventSessionId: string; isAttending: boolean }[] = [];
+let savedLoading = false;
 const requestedRsvpIds: (string | null)[] = [];
 const mutateAsync = vi.fn();
 vi.mock('@/hooks/useRsvps', () => ({
     useCreateRsvpSessionResponse: () => ({ mutateAsync }),
     useRsvpSessionResponses: (rsvpId: string | null) => {
         requestedRsvpIds.push(rsvpId);
-        return { data: rsvpId ? saved : undefined };
+        return { data: rsvpId ? saved : undefined, isLoading: rsvpId ? savedLoading : false };
     },
 }));
 
 beforeEach(() => {
+    modulesAvailable = true;
+    sessionsData = defaultSessions;
+    sessionsLoading = false;
     saved = [];
+    savedLoading = false;
     requestedRsvpIds.length = 0;
     mutateAsync.mockReset().mockResolvedValue({});
 });
@@ -80,5 +90,98 @@ describe('useRsvpSessionQuestions', () => {
         expect(mutateAsync).toHaveBeenCalledTimes(2);
         expect(mutateAsync).toHaveBeenCalledWith({ rsvpId: 'rsvp-1', eventSessionId: 'ceremony', isAttending: true });
         expect(mutateAsync).toHaveBeenCalledWith({ rsvpId: 'rsvp-1', eventSessionId: 'reception', isAttending: true });
+    });
+
+    it('is not answered while the sessions list is still loading', () => {
+        sessionsLoading = true;
+        sessionsData = undefined;
+
+        const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], null));
+
+        expect(result.current.isReady).toBe(false);
+        expect(result.current.allAnswered).toBe(false);
+    });
+
+    it('is not answered while the saved responses are still loading', () => {
+        savedLoading = true;
+
+        const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], 'rsvp-1'));
+
+        expect(result.current.isReady).toBe(false);
+        expect(result.current.allAnswered).toBe(false);
+    });
+
+    it('treats a failed sessions load as ready with no questions, so the guest is never stuck', () => {
+        sessionsLoading = false;
+        sessionsData = undefined;
+
+        const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], null));
+
+        expect(result.current.isReady).toBe(true);
+        expect(result.current.questions).toEqual([]);
+        expect(result.current.allAnswered).toBe(true);
+    });
+
+    it('is fully answered when the modules are unavailable, regardless of load state', () => {
+        modulesAvailable = false;
+        sessionsLoading = true;
+
+        const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], null));
+
+        expect(result.current.questions).toEqual([]);
+        expect(result.current.allAnswered).toBe(true);
+    });
+
+    it('drops a saved answer for a session the host has since closed', async () => {
+        sessionsData = [
+            { id: 'reception', title: 'Reception', displayOrder: 1, rsvpEnabled: false, startAt: null },
+            { id: 'ceremony', title: 'Ceremony', displayOrder: 0, rsvpEnabled: true, startAt: null },
+        ];
+        saved = [
+            { eventSessionId: 'reception', isAttending: true },
+            { eventSessionId: 'ceremony', isAttending: true },
+        ];
+
+        const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], 'rsvp-1'));
+
+        expect(result.current.questions.map((q) => q.id)).toEqual(['ceremony']);
+        expect(result.current.allAnswered).toBe(true);
+
+        await act(() => result.current.submitAnswers('rsvp-1'));
+
+        expect(mutateAsync).toHaveBeenCalledTimes(1);
+        expect(mutateAsync).toHaveBeenCalledWith({ rsvpId: 'rsvp-1', eventSessionId: 'ceremony', isAttending: true });
+    });
+
+    it('swallows a "session closed" or "RSVP not attending" answer failure', async () => {
+        const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], 'rsvp-1'));
+        act(() => result.current.onAnswer('ceremony', true));
+        act(() => result.current.onAnswer('reception', false));
+
+        mutateAsync.mockImplementation(({ eventSessionId }: { eventSessionId: string }) =>
+            eventSessionId === 'ceremony'
+                ? Promise.reject(new ApiError(409, { errorCode: 5086 }))
+                : Promise.reject(new ApiError(409, { errorCode: 5087 })),
+        );
+
+        await expect(result.current.submitAnswers('rsvp-1')).resolves.toBeUndefined();
+    });
+
+    it('rethrows an answer failure that is not one of the expected races', async () => {
+        const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], 'rsvp-1'));
+        act(() => result.current.onAnswer('ceremony', true));
+
+        mutateAsync.mockRejectedValue(new ApiError(500, { errorCode: 9001 }));
+
+        await expect(result.current.submitAnswers('rsvp-1')).rejects.toBeInstanceOf(ApiError);
+    });
+});
+
+describe('computeHasUnansweredSessions', () => {
+    it('is true only when attending and not every question is answered', () => {
+        expect(computeHasUnansweredSessions('attending', false)).toBe(true);
+        expect(computeHasUnansweredSessions('attending', true)).toBe(false);
+        expect(computeHasUnansweredSessions('not-attending', false)).toBe(false);
+        expect(computeHasUnansweredSessions(null, false)).toBe(false);
     });
 });
