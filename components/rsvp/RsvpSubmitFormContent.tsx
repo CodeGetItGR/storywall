@@ -28,7 +28,7 @@ export function RsvpSubmitFormContent({ data }: { data: RsvpSubmitPageData }) {
                 onMessageChange={data.onMessageChange}
                 onSubmit={data.onSubmit}
                 isSubmitting={data.isSubmitting}
-                submitDisabled={!data.attending || !data.memberId || data.isSubmitting || !data.canSubmitRsvp}
+                submitDisabled={!data.attending || !data.memberId || data.isSubmitting || !data.canSubmitRsvp || data.hasUnansweredSessions}
                 submitError={!data.canSubmitRsvp ? t('eventReadOnly') : data.submitErrorMessage}
                 submitLabel={t('submitRsvp')}
             />

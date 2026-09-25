@@ -52,12 +52,14 @@ export function useRsvpSubmitPageData() {
     const [submitted, setSubmitted] = useState(false);
 
     const rsvpAvailability = useRsvpAvailability();
-    const sessionQuestions = useRsvpSessionQuestions(eventId, activeEvent?.modules);
 
     const { data: existingRsvp, error: existingRsvpError } = useRsvp(rsvpAvailability.isAvailable ? (rsvpId ?? null) : null);
     const isStaleRsvp = existingRsvpError instanceof ApiError && existingRsvpError.status === 404;
     const effectiveRsvpId = isStaleRsvp ? null : rsvpId;
     const hasExistingRsvp = Boolean(existingRsvp && effectiveRsvpId);
+    const sessionQuestions = useRsvpSessionQuestions(eventId, activeEvent?.modules, effectiveRsvpId);
+    // Session answers are required when coming; a decline has none.
+    const hasUnansweredSessions = attending === 'attending' && !sessionQuestions.allAnswered;
     const hydratedRef = useRef(false);
 
     useEffect(() => {
@@ -134,7 +136,7 @@ export function useRsvpSubmitPageData() {
         async (event: React.SubmitEvent<HTMLFormElement>) => {
             event.preventDefault();
 
-            if (!attending || !memberId || !canSubmitRsvp) {
+            if (!attending || !memberId || !canSubmitRsvp || hasUnansweredSessions) {
                 return;
             }
 
@@ -173,6 +175,7 @@ export function useRsvpSubmitPageData() {
             canSubmitRsvp,
             createRsvp,
             effectiveRsvpId,
+            hasUnansweredSessions,
             memberId,
             message,
             plusOnes.adultCount,
@@ -189,6 +192,7 @@ export function useRsvpSubmitPageData() {
         eventId,
         eventType: activeEvent?.eventType ?? null,
         hasExistingRsvp,
+        hasUnansweredSessions,
         isSubmitting,
         memberId,
         message,
