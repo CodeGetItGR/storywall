@@ -3355,6 +3355,7 @@
         "eventSessionSecondaryAlreadyAssigned": "Μια άλλη συνεδρία είναι ήδη ορισμένη ως δευτερεύουσα. Κατάργησέ την πρώτα.",
         "eventSessionLimitReached": "Αυτός ο τύπος εκδήλωσης έχει φτάσει στο όριο ενοτήτων προγράμματος.",
         "sessionRsvpNotEnabled": "Αυτή η συνεδρία δεν δέχεται απαντήσεις RSVP.",
+        "rsvpNotAttending": "Αυτό το RSVP δεν θα έρθει πια.",
         "invalidEventType": "Επιλέξτε έναν έγκυρο τύπο εκδήλωσης.",
         "invalidPlanTierScope": "Αυτός ο περιορισμός ισχύει μόνο για πλάνα εκδηλώσεων.",
         "eventDeleteNotPrimaryHost": "Μόνο ο αρχικός διοργανωτής της εκδήλωσης μπορεί να τη διαγράψει.",

@@ -118,6 +118,7 @@ export const ERROR_CODES = {
     PURCHASE_WITHDRAWAL_OPEN: 5084,
     COVERAGE_ENDED: 5085,
     SESSION_RSVP_NOT_ENABLED: 5086,
+    RSVP_NOT_ATTENDING: 5087,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the
@@ -178,6 +179,12 @@ export function isModuleNotAvailableError(error: unknown): boolean {
 // sessions. See plan-owned-modules-fe-integration.md §7.
 export function isSessionRsvpNotEnabledError(error: unknown): boolean {
     return getErrorCode(error) === ERROR_CODES.SESSION_RSVP_NOT_ENABLED;
+}
+
+// A session answer on an RSVP that isn't attending (declining clears the answers).
+// The cached RSVP is stale: someone declined it elsewhere.
+export function isRsvpNotAttendingError(error: unknown): boolean {
+    return getErrorCode(error) === ERROR_CODES.RSVP_NOT_ATTENDING;
 }
 
 // Gallery's QR upload-link toggle is a `configuration` flag, not a module, so

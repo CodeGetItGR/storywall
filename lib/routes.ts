@@ -1,3 +1,4 @@
+import type { RsvpReportType } from '@/lib/api/types';
 import { DEMO_EVENT_ID } from '@/lib/demo/demoConstants';
 
 type RouteQueryValue = string | number | boolean | null | undefined;
@@ -44,6 +45,7 @@ export const routes = {
         // same way the gallery upload code lives on its own page, linked from a
         // compact pointer instead of an embedded panel.
         invitationsQr: (eventId: string) => `${eventBasePath(eventId)}/manage/qr`,
+        rsvpReport: (eventId: string, reportType: RsvpReportType) => `${eventBasePath(eventId)}/manage/rsvp/reports/${reportType}`,
         tools: {
             rsvp: (eventId: string) => `${eventBasePath(eventId)}/tools/rsvp`,
             rsvpSubmit: (eventId: string, attending?: 'attending' | 'not-attending' | null) =>

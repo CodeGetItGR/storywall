@@ -4,7 +4,8 @@ import { FileText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { RsvpReportRow } from '@/components/manage/rsvp/RsvpReportRow';
-import { RSVP_REPORT_TYPES, useRsvpReportDownload } from '@/hooks/useRsvpReportDownload';
+import { useRsvpReportDownload } from '@/hooks/useRsvpReportDownload';
+import { RSVP_REPORT_TYPES } from '@/lib/rsvpReport';
 
 export function RsvpReportsPanel({ eventId }: { eventId: string }) {
     const t = useTranslations('ManagePage.rsvpReports');

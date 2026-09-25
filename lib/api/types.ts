@@ -1553,6 +1553,67 @@ export interface RsvpSessionResponsPatchDto {
     isAttending: boolean;
 }
 
+// GET /api/events/{eventId}/rsvps/report?reportType=… — host-only. Labels arrive in the request
+// language. Sections that don't apply to reportType are null; [] means "applies, nothing to show".
+export interface RsvpReportDto {
+    reportType: RsvpReportType;
+    header: RsvpReportHeaderDto;
+    totals: RsvpReportTotalsDto;
+    categories: RsvpReportCategoryDto[] | null;
+    sessions: RsvpReportSessionDto[] | null;
+    groups: RsvpReportGroupDto[] | null;
+}
+
+export interface RsvpReportHeaderDto {
+    eventTitle: string;
+    eventTypeName: string | null;
+    eventDate: string; // yyyy-MM-dd, already in the event's timezone
+    generatedAt: string;
+}
+
+export interface RsvpReportTotalsDto {
+    responses: number;
+    people: number;
+    adults: number;
+    children: number;
+}
+
+export interface RsvpReportCategoryDto {
+    label: string;
+    attending: boolean;
+    comingSessionIds: string[];
+    noAnswerSessionIds: string[];
+    responses: number;
+    people: number;
+    percentOfPeople: number | null;
+}
+
+export interface RsvpReportSessionDto {
+    sessionId: string;
+    title: string;
+    people: number;
+    noAnswerPeople: number;
+}
+
+export interface RsvpReportGroupDto {
+    label: string;
+    attending: boolean;
+    comingSessionIds: string[];
+    noAnswerSessionIds: string[];
+    responses: number;
+    people: number;
+    rows: RsvpReportRowDto[];
+}
+
+export interface RsvpReportRowDto {
+    rsvpId: string;
+    name: string;
+    phone: string | null;
+    adults: number;
+    children: number;
+    notes: string | null;
+}
+
 // --- §6 Media domain ---
 
 export interface MediaResponseDto {

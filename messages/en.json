@@ -3348,7 +3348,8 @@
         "qrSharedLinkHostManaged": "This shared link is managed automatically.",
         "eventSessionMainLocationReadOnly": "This is the event's main session, so its location always matches the event's own.",
         "eventSessionLimitReached": "This event type has reached its limit of schedule sections.",
-        "sessionRsvpNotEnabled": "This session isn't taking RSVPs."
+        "sessionRsvpNotEnabled": "This session isn't taking RSVPs.",
+        "rsvpNotAttending": "This RSVP isn't attending anymore."
     },
     "LandingPage": {
         "shell": {
