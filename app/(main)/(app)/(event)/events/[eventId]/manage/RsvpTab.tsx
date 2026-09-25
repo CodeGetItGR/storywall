@@ -7,7 +7,8 @@ import { useMemo } from 'react';
 import { RsvpListPanel, RsvpReportsPanel, RsvpStatsPanel } from '@/components/manage/rsvp';
 import { type SubTabItem, SubTabs } from '@/components/ui/SubTabs';
 import type { RosterMember, RosterRsvp } from '@/hooks/useRsvpRoster';
-import { type RsvpSubTab, useRsvpSubTab } from '@/hooks/useRsvpSubTab';
+import { useRsvpSubTab } from '@/hooks/useRsvpSubTab';
+import type { RsvpSubTab } from '@/lib/rsvpReport';
 
 export default function RsvpTab({
     eventId,

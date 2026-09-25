@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { RsvpReportCategoryDto } from '@/lib/api/types';
-import { formatReportDate, isRsvpReportType, reportSectionKey } from '@/lib/rsvpReport';
+import { formatReportDate, isRsvpReportType, reportSectionKey, resolveRsvpSubTab } from '@/lib/rsvpReport';
 
 describe('isRsvpReportType', () => {
     it('accepts the four report types and nothing else', () => {
@@ -26,5 +26,29 @@ describe('reportSectionKey', () => {
         const a = { ...base, attending: true, comingSessionIds: ['s1'], noAnswerSessionIds: [] };
         const b = { ...base, attending: true, comingSessionIds: [], noAnswerSessionIds: ['s1'] };
         expect(reportSectionKey(a)).not.toBe(reportSectionKey(b));
+    });
+});
+
+describe('resolveRsvpSubTab', () => {
+    it('defaults to stats for null or undefined', () => {
+        expect(resolveRsvpSubTab(null)).toBe('stats');
+        expect(resolveRsvpSubTab(undefined)).toBe('stats');
+    });
+
+    it('accepts a known sub-tab', () => {
+        expect(resolveRsvpSubTab('list')).toBe('list');
+        expect(resolveRsvpSubTab('reports')).toBe('reports');
+    });
+
+    it('falls back to stats for a sub-tab it does not know', () => {
+        expect(resolveRsvpSubTab('coHosts')).toBe('stats');
+    });
+
+    it('takes the first element of a repeated query param', () => {
+        expect(resolveRsvpSubTab(['reports', 'list'])).toBe('reports');
+    });
+
+    it('falls back to stats for an empty array', () => {
+        expect(resolveRsvpSubTab([])).toBe('stats');
     });
 });

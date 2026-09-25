@@ -1,19 +1,17 @@
-import { act, renderHook } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useRsvpSubTab } from '@/hooks/useRsvpSubTab';
 
-const replace = vi.fn();
 let search = '';
 vi.mock('next/navigation', () => ({
-    useRouter: () => ({ replace }),
     usePathname: () => '/events/e1/manage',
     useSearchParams: () => new URLSearchParams(search),
 }));
 
 beforeEach(() => {
-    replace.mockReset();
     search = '';
+    vi.spyOn(window.history, 'replaceState').mockImplementation(() => {});
 });
 
 describe('useRsvpSubTab', () => {
@@ -36,17 +34,26 @@ describe('useRsvpSubTab', () => {
         search = 'tab=rsvp';
         const { result } = renderHook(() => useRsvpSubTab());
 
-        act(() => result.current.setSubTab('reports'));
+        result.current.setSubTab('reports');
 
-        expect(replace).toHaveBeenCalledWith('/events/e1/manage?tab=rsvp&section=reports', { scroll: false });
+        expect(window.history.replaceState).toHaveBeenCalledWith(null, '', '/events/e1/manage?tab=rsvp&section=reports');
     });
 
     it('drops the param for the default sub-tab', () => {
         search = 'tab=rsvp&section=list';
         const { result } = renderHook(() => useRsvpSubTab());
 
-        act(() => result.current.setSubTab('stats'));
+        result.current.setSubTab('stats');
 
-        expect(replace).toHaveBeenCalledWith('/events/e1/manage?tab=rsvp', { scroll: false });
+        expect(window.history.replaceState).toHaveBeenCalledWith(null, '', '/events/e1/manage?tab=rsvp');
+    });
+
+    it('does nothing when the sub-tab is already active', () => {
+        search = 'tab=rsvp&section=reports';
+        const { result } = renderHook(() => useRsvpSubTab());
+
+        result.current.setSubTab('reports');
+
+        expect(window.history.replaceState).not.toHaveBeenCalled();
     });
 });

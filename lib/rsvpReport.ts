@@ -7,6 +7,22 @@ export function isRsvpReportType(value: string): value is RsvpReportType {
     return (RSVP_REPORT_TYPES as string[]).includes(value);
 }
 
+// Lives here, not in hooks/useRsvpSubTab, so both the client hook and the
+// server pages' prefetch gate can share one pure resolver without lib/
+// importing from hooks/.
+export type RsvpSubTab = 'stats' | 'list' | 'reports';
+
+const RSVP_SUB_TABS: RsvpSubTab[] = ['stats', 'list', 'reports'];
+
+// Mirrors what URLSearchParams.get('section') returns (a single string or
+// null) and what Next's searchParams gives a repeated query param (an array,
+// taking its first value). Anything else, including a section neither page
+// knows, falls back to the default sub-tab.
+export function resolveRsvpSubTab(section: string | string[] | null | undefined): RsvpSubTab {
+    const value = Array.isArray(section) ? section[0] : section;
+    return typeof value === 'string' && (RSVP_SUB_TABS as string[]).includes(value) ? (value as RsvpSubTab) : 'stats';
+}
+
 // eventDate is a plain yyyy-MM-dd in the event's own timezone. It parses as UTC
 // midnight, so it's formatted in UTC too, or a reader west of UTC sees the day before.
 export function formatReportDate(locale: string, eventDate: string): string {
