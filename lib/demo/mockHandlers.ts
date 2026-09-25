@@ -20,6 +20,7 @@ import type {
 } from '@/lib/api/types';
 import { DEMO_EVENT_ID, DEMO_HOST_MEMBER_ID } from '@/lib/demo/demoConstants';
 import { createMockDb, type MockDb } from '@/lib/demo/mockDb';
+import { buildDemoRsvpReport } from '@/lib/demo/rsvpReport';
 import {
     buildSeedAppConfig,
     buildSeedBilling,
@@ -40,6 +41,7 @@ import {
     buildSeedUsage,
     buildSeedWishbookEntries,
 } from '@/lib/demo/seedData';
+import { isRsvpReportType } from '@/lib/rsvpReport';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 
@@ -292,6 +294,19 @@ export const demoHandlers = [
     ...buildArrayHandlers(demoDb, 'qrLinks', '/api/events/:eventId/qr-links'),
 
     // --- RSVPs ---
+    http.get(`${API_BASE_URL}/api/events/:eventId/rsvps/report`, ({ request }) => {
+        const reportType = new URL(request.url).searchParams.get('reportType') ?? '';
+        if (!isRsvpReportType(reportType)) return new HttpResponse(null, { status: 400 });
+        return HttpResponse.json(
+            buildDemoRsvpReport({
+                members: demoDb.list('members'),
+                rsvps: demoDb.list('rsvps'),
+                event: buildSeedEvent(),
+                reportType,
+                locale: request.headers.get('Accept-Language') ?? 'en',
+            }),
+        );
+    }),
     // RsvpResponseDto has no eventId field (only eventMemberId), so this list can't be
     // filtered by event the way the other collections are.
     ...buildArrayHandlers(demoDb, 'rsvps', '/api/events/:eventId/rsvps', false),
