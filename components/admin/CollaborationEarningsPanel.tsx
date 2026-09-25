@@ -83,8 +83,8 @@ export function CollaborationEarningsPanel({ collaborator }: { collaborator: Col
     }, [canMarkPaid]);
 
     const handleEarningToggle = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-        const id = event.currentTarget.value;
-        setSelectedIds((current) => (event.currentTarget.checked ? [...current, id] : current.filter((item) => item !== id)));
+        const { value: id, checked } = event.currentTarget;
+        setSelectedIds((current) => (checked ? [...current, id] : current.filter((item) => item !== id)));
     }, []);
 
     const handleSelectAll = useCallback(() => {

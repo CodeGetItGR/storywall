@@ -6,6 +6,7 @@ export type AdminErrorMessageKey =
     | 'orderNotPending'
     | 'notFound'
     | 'withdrawalNotHeld'
+    | 'keepEventDayNotDue'
     | 'eventNotActive'
     | 'webhookAlreadyProcessed'
     | 'webhookNotReplayable'
@@ -58,6 +59,7 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     // second one's decision lands on a request that is no longer HELD.
     // "Something went wrong" hides exactly that.
     if (code === ERROR_CODES.WITHDRAWAL_NOT_HELD) return 'withdrawalNotHeld';
+    if (code === ERROR_CODES.WITHDRAWAL_KEEP_EVENT_DAY_NOT_DUE) return 'keepEventDayNotDue';
     if (code === ERROR_CODES.EVENT_NOT_ACTIVE) return 'eventNotActive';
     if (code === ERROR_CODES.WEBHOOK_ALREADY_PROCESSED) return 'webhookAlreadyProcessed';
     if (code === ERROR_CODES.WEBHOOK_NOT_REPLAYABLE) return 'webhookNotReplayable';
@@ -76,15 +78,4 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.COVERAGE_OPTION_LAST_INITIAL) return 'coverageOptionLastInitial';
     if (code === ERROR_CODES.COVERAGE_OPTION_DUPLICATE) return 'coverageOptionDuplicate';
     return 'generic';
-}
-
-/**
- * Flattens a withdrawal's display-only `usageFacts` into label/value pairs. The
- * shape is not enumerated by the guide, so every value is rendered as text.
- */
-export function formatUsageFacts(usageFacts: Record<string, unknown>): Array<[string, string]> {
-    return Object.entries(usageFacts).map(([key, value]) => [
-        key,
-        value === null || value === undefined ? '—' : typeof value === 'object' ? JSON.stringify(value) : String(value),
-    ]);
 }

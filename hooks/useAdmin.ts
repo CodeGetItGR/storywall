@@ -44,8 +44,8 @@ import type {
     UnprocessedWebhookDto,
     VoidCollaborationRedemptionRequestDto,
     WithdrawalAdminDto,
+    WithdrawalReleaseDto,
     WithdrawalResponseDto,
-    WithdrawalWithholdRequestDto,
 } from '@/lib/api/types';
 
 export const adminKeys = {
@@ -308,36 +308,22 @@ export function useAdminWithdrawals() {
     });
 }
 
-// POST /api/admin/withdrawals/{id}/release — no body. Refunds at the price
-// computed at request time and deletes the event, same outcome as an automatic
-// REFUNDED. 409 WITHDRAWAL_NOT_HELD if the request isn't currently HELD.
+// POST /api/admin/withdrawals/{id}/release — without a body, refunds at the price
+// computed at request time. With keepEventDay: true the event-day share is kept
+// and a note is required. An EVENT request also deletes the event. 409
+// WITHDRAWAL_NOT_HELD if the request isn't currently HELD. There is no withhold:
+// the endpoint was removed on 2026-09-23.
 export function useReleaseWithdrawal() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (requestId: string) => api.post<WithdrawalResponseDto>(endpoints.admin.withdrawals.release(requestId)),
+        mutationFn: ({ requestId, body }: { requestId: string; body?: WithdrawalReleaseDto }) =>
+            api.post<WithdrawalResponseDto>(endpoints.admin.withdrawals.release(requestId), body),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: adminKeys.withdrawals });
             queryClient.invalidateQueries({ queryKey: ['events'] });
             queryClient.invalidateQueries({ queryKey: ['billing'] });
             queryClient.invalidateQueries({ queryKey: adminKeys.metrics });
-        },
-    });
-}
-
-// POST /api/admin/withdrawals/{id}/withhold — note is required and shown to the
-// host verbatim. Also suspends the host's account — not a soft decline.
-export function useWithholdWithdrawal() {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: ({ requestId, note }: { requestId: string; note: string }) => {
-            const body: WithdrawalWithholdRequestDto = { note };
-            return api.post<WithdrawalResponseDto>(endpoints.admin.withdrawals.withhold(requestId), body);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: adminKeys.withdrawals });
-            queryClient.invalidateQueries({ queryKey: ['events'] });
         },
     });
 }

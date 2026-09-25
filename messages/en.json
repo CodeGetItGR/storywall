@@ -1000,17 +1000,7 @@
                 "hiddenUntilReady": "Members will not see this tool until the account is set up."
             },
             "editorTitle": "Gift account details",
-            "editorBody": "These details are visible only to event members and are not stored in this browser.",
-            "iban": "IBAN",
-            "accountHolder": "Account holder",
-            "bankName": "Bank name",
-            "note": "Note (optional)",
-            "invalidIban": "Check the IBAN. One or more digits appear to be incorrect.",
-            "save": "Save details",
-            "cancel": "Cancel",
-            "remove": "Remove",
-            "removeTitle": "Remove gift details?",
-            "removeBody": "Members will no longer see this bank account."
+            "editorBody": "These details are visible only to event members and are not stored in this browser."
         },
         "invitations": {
             "panels": {
@@ -1762,7 +1752,6 @@
         "emptyTitle": "No gift account yet",
         "emptyHost": "Add bank details so members can send a gift.",
         "emptyMember": "The hosts have not added gift details yet.",
-        "setupCta": "Add gift account",
         "fields": {
             "iban": "IBAN",
             "accountHolder": "Account holder",
@@ -2486,22 +2475,46 @@
             "empty": "No withdrawals are awaiting review.",
             "noAmount": "No amount recorded",
             "requestedAt": "Submitted {date}",
-            "signalFired": "triggered",
+            "guidance": {
+                "withdrawn": "What is withdrawn",
+                "law": "What the law requires",
+                "refund": "Calculated refund",
+                "decision": "Your decision"
+            },
+            "signalsTitle": "Why this was held",
+            "heldManually": "No signal fired. Held because withdrawal review is set to manual.",
+            "signalFired": "Triggered",
             "usageFacts": "Usage facts",
+            "facts": {
+                "paidAt": "Paid",
+                "activatedStartAt": "Date paid for",
+                "eventStartAt": "Event starts",
+                "eventEndAt": "Event ends",
+                "accountCreatedAt": "Account created",
+                "postsEverCreated": "Posts",
+                "wishesCollected": "Wishes"
+            },
             "sendToAssignments": "Change event plan",
             "sendToPaidServices": "Remove entitlement",
-            "noteLabel": "Decision note",
-            "noteHint": "The host receives this note.",
-            "noteRequiredForWithhold": "required to withhold",
-            "noteRequiredHint": "Withholding requires a note. The host only sees what you write here.",
+            "refundMode": {
+                "title": "Refund",
+                "AS_CALCULATED": "As calculated",
+                "KEEP_EVENT_DAY": "Keep event day"
+            },
+            "refundModeHint": {
+                "AS_CALCULATED": "Refunds the amount above.",
+                "KEEP_EVENT_DAY": "Keeps the event-day share and refunds the rest."
+            },
+            "keepEventDayUnavailable": {
+                "noConsent": "The host didn't agree to an immediate start, so the event day can't be kept.",
+                "notDue": "The event date hadn't passed when the host withdrew, so the event day can't be kept."
+            },
+            "noteLabel": "Note to host",
+            "noteRequiredHint": "Add a note to keep the event day.",
             "release": "Release",
-            "withhold": "Withhold",
             "cancel": "Cancel",
-            "confirmYes": "Confirm",
             "releaseConfirmTitle": "Release this withdrawal?",
-            "withholdConfirmTitle": "Withhold this withdrawal?",
-            "confirmRelease": "The payment will be refunded at the amount calculated when the request was submitted, and the event will be withdrawn. Continue?",
-            "confirmWithhold": "This rejects the withdrawal and suspends the host account. Continue?",
+            "confirmRelease": "{mode, select, keep {The event-day share is kept and the rest is refunded.} other {The calculated amount is refunded.}} {scope, select, ORDER {The event stays.} other {The event is deleted.}}",
             "status": {
                 "HELD": "Awaiting review",
                 "REFUNDED": "Refunded",
@@ -2589,6 +2602,7 @@
             "orderNotPending": "This order has already been settled or cancelled.",
             "notFound": "We could not find that record. Check the id and try again.",
             "withdrawalNotHeld": "This request was already decided. Refresh the list to see its current status.",
+            "keepEventDayNotDue": "The event date hadn't passed when the host withdrew. Release as calculated instead.",
             "eventNotActive": "This event is not live, so that action does not apply.",
             "webhookAlreadyProcessed": "This webhook was already processed. Refresh the list.",
             "webhookNotReplayable": "This webhook cannot be replayed because its body was not stored.",
@@ -3324,6 +3338,7 @@
         "withdrawalTermsVersionStale": "These terms were updated. Review them again and try again.",
         "withdrawalRefused": "This event doesn't currently qualify for a withdrawal.",
         "withdrawalNotHeld": "This request was already decided.",
+        "withdrawalKeepEventDayNotDue": "The event date hadn't passed when the host withdrew. Release as calculated instead.",
         "qrSharedLinkHostManaged": "This shared link is managed automatically.",
         "eventSessionMainLocationReadOnly": "This is the event's main session, so its location always matches the event's own.",
         "eventSessionLimitReached": "This event type has reached its limit of schedule sections.",

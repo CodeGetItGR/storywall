@@ -267,7 +267,6 @@ export const endpoints = {
         withdrawals: {
             list: '/api/admin/withdrawals',
             release: (requestId: string) => `/api/admin/withdrawals/${requestId}/release`,
-            withhold: (requestId: string) => `/api/admin/withdrawals/${requestId}/withhold`,
         },
         planTiers: {
             list: '/api/admin/plan-tiers',

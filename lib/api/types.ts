@@ -975,6 +975,9 @@ export type WithdrawalStatus = 'REFUSED' | 'HELD' | 'REFUNDED' | 'WITHHELD';
 
 export type RefundBasis = 'CONSENTED_PRO_RATA' | 'NO_CONSENT_FULL_REFUND';
 
+// EVENT withdraws the whole event and deletes it; ORDER withdraws one order and the event stays.
+export type WithdrawalScope = 'EVENT' | 'ORDER';
+
 export interface WithdrawalRefusal {
     code: string;
     message: string; // show verbatim
@@ -1019,6 +1022,7 @@ export interface WithdrawalPreviewResponseDto {
 export interface WithdrawalResponseDto {
     id: string;
     eventId: string;
+    scope: WithdrawalScope;
     status: WithdrawalStatus;
     reason: string | null;
     createdAt: string;
@@ -1047,14 +1051,18 @@ export interface WithdrawalFraudSignalDto {
 // GET /api/admin/withdrawals — admin. The facts sheet behind each HELD request.
 export interface WithdrawalAdminDto {
     request: WithdrawalResponseDto;
-    usageFacts: Record<string, unknown>; // display-only; shape not enumerated by the guide
+    usageFacts: Record<string, unknown> | null; // display-only; null on a storage-pack request (never screened)
     fraudSignals: WithdrawalFraudSignalDto[]; // every signal evaluated, fired or not — show them all
-    recommendation: string; // generated plain text, render as-is
+    recommendation: string; // generated plain text: blank-line-separated sections, each opened by an upper-case heading
 }
 
-// POST /api/admin/withdrawals/{id}/withhold — admin. note is required.
-export interface WithdrawalWithholdRequestDto {
-    note: string; // max 1000 chars
+// POST /api/admin/withdrawals/{id}/release — admin. The body is optional; without it
+// the request is refunded as computed. keepEventDay: true keeps the event-day share
+// (409 WITHDRAWAL_KEEP_EVENT_DAY_NOT_DUE unless the date paid for had passed when the
+// host withdrew) and then needs a note. The note is shown to the host.
+export interface WithdrawalReleaseDto {
+    keepEventDay: boolean;
+    note?: string; // max 1000 chars
 }
 
 export interface PlatformMetricsResponseDto {

@@ -118,6 +118,7 @@ export type ApiErrorMessageKey =
     | 'withdrawalTermsVersionStale'
     | 'withdrawalRefused'
     | 'withdrawalNotHeld'
+    | 'withdrawalKeepEventDayNotDue'
     | 'withdrawalNotPrimaryHost'
     | 'oauthEmailUnverified';
 
@@ -237,6 +238,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.WITHDRAWAL_TERMS_VERSION_STALE]: 'withdrawalTermsVersionStale',
     [ERROR_CODES.WITHDRAWAL_REFUSED]: 'withdrawalRefused',
     [ERROR_CODES.WITHDRAWAL_NOT_HELD]: 'withdrawalNotHeld',
+    [ERROR_CODES.WITHDRAWAL_KEEP_EVENT_DAY_NOT_DUE]: 'withdrawalKeepEventDayNotDue',
 } satisfies Record<KnownApiErrorCode, ApiErrorMessageKey>;
 
 export function getApiErrorMessageKey(code: number | string | undefined): ApiErrorMessageKey | undefined {
