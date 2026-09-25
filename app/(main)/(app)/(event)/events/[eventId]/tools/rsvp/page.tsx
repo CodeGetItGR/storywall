@@ -10,6 +10,7 @@ import type { EventDetailResponseDto, EventMemberResponseDto, RsvpReportDto, Rsv
 import { resolveServerEventContext } from '@/lib/auth/serverEventContext';
 import { isModuleAvailable } from '@/lib/eventLifecycle';
 import { makeQueryClient } from '@/lib/queryClient';
+import { resolveRsvpSubTab } from '@/lib/rsvpReport';
 
 import RsvpPage from './PageClient';
 
@@ -24,7 +25,7 @@ export default async function Page({ params, searchParams }: PageProps) {
     const { eventId } = await params;
     const { section } = await searchParams;
     // Mirrors useRsvpSubTab: stats unless the URL asks for list or reports.
-    const opensStats = section !== 'list' && section !== 'reports';
+    const opensStats = resolveRsvpSubTab(section) === 'stats';
     const queryClient = makeQueryClient();
     const context = await resolveServerEventContext(eventId);
 
@@ -38,7 +39,9 @@ export default async function Page({ params, searchParams }: PageProps) {
             const [members, rsvps, rsvpReport] = await Promise.all([
                 serverGet<EventMemberResponseDto[]>(endpoints.events.members(eventId), accessToken),
                 serverGet<RsvpResponseDto[]>(endpoints.events.rsvps(eventId), accessToken),
-                opensStats ? serverGet<RsvpReportDto>(endpoints.events.rsvpReport(eventId, 'STATISTICS'), accessToken) : null,
+                // A failed report fetch alone must not discard the members/rsvps prefetches
+                // above in the same Promise.all — serverGet throws on !res.ok.
+                opensStats ? serverGet<RsvpReportDto>(endpoints.events.rsvpReport(eventId, 'STATISTICS'), accessToken).catch(() => null) : null,
             ]);
             queryClient.setQueryData(eventMemberKeys.list(eventId), normalizeList(members).items);
             queryClient.setQueryData(rsvpKeys.list(eventId), normalizeList(rsvps).items);

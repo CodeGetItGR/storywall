@@ -52,25 +52,27 @@ export function RsvpStatsPanel({
             <RsvpDeadlineField eventId={eventId} rsvpDeadline={rsvpDeadline} canWrite={canWrite} />
 
             {/* Report */}
-            {isLoading ? (
+            {isLoading || (!report && !isError) ? (
                 <LoadingState size="md" className="min-h-32" />
-            ) : isError || !report ? (
+            ) : isError ? (
                 <p className="text-sm text-rose-600">{t('rsvpReport.loadFailed')}</p>
             ) : (
-                <>
-                    {/* Headline numbers */}
-                    <RsvpReportTiles totals={report.totals} />
+                report && (
+                    <>
+                        {/* Headline numbers */}
+                        <RsvpReportTiles totals={report.totals} />
 
-                    {/* Attendance by category */}
-                    {report.totals.responses === 0 ? (
-                        <p className="text-sm text-ink-muted">{t('rsvpReport.empty')}</p>
-                    ) : (
-                        <>
-                            <RsvpReportCategories categories={report.categories ?? []} />
-                            <RsvpReportSessions sessions={report.sessions ?? []} />
-                        </>
-                    )}
-                </>
+                        {/* Attendance by category */}
+                        {report.totals.responses === 0 ? (
+                            <p className="text-sm text-ink-muted">{t('rsvpReport.empty')}</p>
+                        ) : (
+                            <>
+                                <RsvpReportCategories categories={report.categories ?? []} />
+                                <RsvpReportSessions sessions={report.sessions ?? []} />
+                            </>
+                        )}
+                    </>
+                )
             )}
         </div>
     );
