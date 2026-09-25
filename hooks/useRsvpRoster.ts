@@ -2,9 +2,10 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
+import { isRsvpGuest } from '@/lib/rsvpGuests';
 import { type RsvpDisplayStatus, rsvpStatusOrder } from '@/lib/statusTones';
 
-export type RosterMember = { id: string; displayName: string; role: string };
+export type RosterMember = { id: string; displayName: string; role: string; deletedAt: string | null };
 export type RosterRsvp = {
     eventMemberId: string;
     attendanceStatus: 'ATTENDING' | 'DECLINED';
@@ -23,7 +24,7 @@ export function useRsvpRoster(members: RosterMember[], rsvps: RosterRsvp[]) {
     const [filter, setFilter] = useState<RosterFilter>('all');
 
     const rsvpByMember = useMemo(() => new Map(rsvps.map((rsvp) => [rsvp.eventMemberId, rsvp])), [rsvps]);
-    const guests = useMemo(() => members.filter((member) => member.role !== 'HOST'), [members]);
+    const guests = useMemo(() => members.filter(isRsvpGuest), [members]);
 
     const statusOf = useCallback(
         (memberId: string): RsvpDisplayStatus => rsvpByMember.get(memberId)?.attendanceStatus ?? 'NO_RESPONSE',
