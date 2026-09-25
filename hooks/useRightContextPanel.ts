@@ -1,16 +1,20 @@
 'use client';
 
+import { Music4 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useUpgradeOptions } from '@/hooks/useBilling';
 import { useGalleryArchiveManifest } from '@/hooks/useGalleryArchive';
 import { useIsPrimaryHost } from '@/hooks/useIsPrimaryHost';
 import { useEventQrLinks } from '@/hooks/useQrLinks';
-import { useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
+import { type ToolMenuItem, useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
 import { useEventUsage } from '@/hooks/useUsage';
 import { useWishbook } from '@/hooks/useWishbook';
 import { isEventDeleted } from '@/lib/eventLifecycle';
 import { findPlanByCode } from '@/lib/planTiers';
 import { findGalleryQrLink, isGalleryQrFeatureEnabled } from '@/lib/qrLinks';
+import { routes } from '@/lib/routes';
 import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
 // Gathers everything RightContextPanel renders. Draft events hide every
@@ -20,6 +24,7 @@ import { useActiveEvent, useEventContextLoading, useIsHost } from '@/providers/E
 // set MobileTabBar's member context menu shows), so every host-only
 // summary/fetch below is also gated on `isHost`.
 export function useRightContextPanel({ includeManageLinks = true }: { includeManageLinks?: boolean } = {}) {
+    const tTools = useTranslations('ToolsMenu');
     const activeEvent = useActiveEvent();
     const isHost = useIsHost();
     const isPrimaryHost = useIsPrimaryHost();
@@ -58,11 +63,25 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
     let hostItemsForActions = useHostMenuItems().filter((item) => item.key !== 'galleryQr' && item.key !== 'invitationsQr');
     if (!includeManageLinks) hostItemsForActions = hostItemsForActions.filter((item) => item.key !== 'manage' && item.key !== 'help');
     const toolItems = useToolsMenuItems();
+    // The shared tools menu leaves the playlist out because MobileTabBar gives
+    // it its own tab; the desktop host actions have no such tab, so add it here.
+    const playlistItems: ToolMenuItem[] =
+        isLiveHost && activeEvent && availableModuleKeys.has('playlist')
+            ? [
+                  {
+                      key: 'playlist',
+                      href: routes.events.tools.playlist(activeEvent.id),
+                      icon: Music4,
+                      label: tTools('items.playlist.label'),
+                      description: tTools('items.playlist.description'),
+                  },
+              ]
+            : [];
     const actionItems = !isHost
         ? toolItems
         : isDraft
           ? hostItemsForActions.filter((item) => item.key !== 'help')
-          : [...hostItemsForActions, ...toolItems.filter((item) => item.key !== 'rsvp')];
+          : [...hostItemsForActions, ...toolItems.filter((item) => item.key !== 'rsvp'), ...playlistItems];
 
     const currentPlan = eventUsage ? findPlanByCode(appConfig?.planTiers ?? [], 'EVENT', eventUsage.planTier) : undefined;
     const nextUpgradeOption = upgradeOptions[0];
