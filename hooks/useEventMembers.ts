@@ -59,6 +59,11 @@ export function useUpdateEventMember(id: string, eventId: string) {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: eventMemberKeys.detail(id) });
             queryClient.invalidateQueries({ queryKey: eventMemberKeys.list(eventId) });
+            // Same tuple as rsvpKeys.list(eventId) in hooks/useRsvps.ts, inlined
+            // because that file already imports eventMemberKeys from here — importing
+            // rsvpKeys back would create a cycle. The RSVP report is nested under
+            // this key, so this also refreshes it (an edited name/relationship shows there).
+            queryClient.invalidateQueries({ queryKey: ['events', eventId, 'rsvps'] });
         },
     });
 }
@@ -70,6 +75,9 @@ export function useDeleteEventMember(eventId: string) {
         mutationFn: (id: string) => api.del<void>(endpoints.eventMembers.byId(id)),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: eventMemberKeys.list(eventId) });
+            // See the comment in useUpdateEventMember above: same key as
+            // rsvpKeys.list(eventId), inlined to avoid an import cycle with useRsvps.ts.
+            queryClient.invalidateQueries({ queryKey: ['events', eventId, 'rsvps'] });
         },
     });
 }
