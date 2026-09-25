@@ -53,6 +53,24 @@ export async function serverPublicGet<T>(path: string): Promise<T> {
     return res.json() as Promise<T>;
 }
 
+// Server-only: like serverPublicGet, but cached for `revalidateSeconds`. Every
+// server-side call reaches Spring from this server's address, so an uncached
+// public lookup that runs on every page view shares one rate-limit budget
+// across all visitors. Only for responses that are the same for everyone.
+export async function serverPublicCachedGet<T>(path: string, revalidateSeconds: number): Promise<T> {
+    const locale = await getServerLocale();
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+        headers: { 'Accept-Language': locale },
+        next: { revalidate: revalidateSeconds },
+    });
+
+    if (!res.ok) {
+        throw new Error(`Server fetch failed for ${path} with status ${res.status}`);
+    }
+
+    return res.json() as Promise<T>;
+}
+
 // The public configuration controls landing-page feature gates and pricing.
 // It is safe to share between visitors, but is deliberately separate from the
 // generic public helper so future public endpoints do not become cached by

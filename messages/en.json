@@ -1021,6 +1021,7 @@
             "claimed": "Claimed",
             "unclaimed": "Unclaimed",
             "copyLink": "Copy link",
+            "shareLanguageNote": "Links you share open in English.",
             "copied": "Copied!",
             "save": "Save",
             "revoke": "Revoke",
@@ -1923,6 +1924,10 @@
     "RootLayout": {
         "title": "StoryWall",
         "description": "Share memories, RSVP, and celebrate together on StoryWall."
+    },
+    "ShareMetadata": {
+        "uploadDescription": "Share your photos and videos.",
+        "inviteDescription": "You're invited."
     },
     "RightContextPanel": {
         "hostConsole": "Host console",

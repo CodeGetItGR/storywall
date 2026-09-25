@@ -8,6 +8,7 @@ import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCopyText } from '@/hooks/useCopyText';
 import { useRevokeQrLink, useUpdateQrLink } from '@/hooks/useQrLinks';
+import { useShareLink } from '@/hooks/useShareLink';
 import type { QrLinkResponseDto, QrLinkStatsDto } from '@/lib/api/types';
 import { isHostManagedQrLink } from '@/lib/qrLinks';
 import { getQrStatusTone, type QrDisplayStatus } from '@/lib/statusTones';
@@ -35,7 +36,7 @@ export function QrLinkRow({
     const [statsOpen, setStatsOpen] = useState(false);
     const [revokeConfirmOpen, setRevokeConfirmOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const { copied, copy: handleCopy } = useCopyText(qrLink.publicUrl);
+    const { copied, copy: handleCopy } = useCopyText(useShareLink(qrLink.publicUrl));
     const [maxGuests, setMaxGuests] = useState(qrLink.maxGuests ?? stats?.maxGuests ?? 50);
     const revokeQrLink = useRevokeQrLink(eventId);
     const updateQrLink = useUpdateQrLink(eventId, qrLink.id);

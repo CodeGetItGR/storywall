@@ -4,7 +4,7 @@ import { QrCode } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
-import { QrLinkRow } from '@/components/manage/invitations';
+import { QrLinkRow, ShareLanguageNote } from '@/components/manage/invitations';
 import { UsagePanel } from '@/components/plan/UsagePanel';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
@@ -105,6 +105,9 @@ export function InvitationsQrScreen() {
                             );
                         })}
                     </div>
+
+                    {/* Link language */}
+                    {shareQrLinks.length > 0 && <ShareLanguageNote className="mt-2" />}
 
                     {shareQrLinks.length === 0 && (
                         <ToolEmptyState title={t('qr.emptyTitle')} body={t('qr.emptyBody')} icon={QrCode} className="py-8" />

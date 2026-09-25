@@ -1,7 +1,8 @@
 import type { AbstractIntlMessages } from 'next-intl';
 
-// Header the proxy sets on `/` and `/<locale>` requests. i18n/request.ts reads
-// it to render the landing page in that URL's locale.
+// Header the proxy sets on `/` and `/<locale>` requests, and on shared links
+// that carry a language. i18n/request.ts reads it to render the page in that
+// locale.
 export const PUBLIC_LOCALE_HEADER = 'x-storywall-locale';
 
 // Every namespace a client island on the landing page reads. Server-rendered

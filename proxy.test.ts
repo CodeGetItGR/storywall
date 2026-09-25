@@ -122,3 +122,38 @@ describe('proxy landing locale', () => {
         expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('el');
     });
 });
+
+describe('proxy shared link locale', () => {
+    function sharedLinkRequest(url: string, cookie?: string) {
+        const req = new NextRequest(url, { headers: { 'accept-language': 'en-US' } });
+        if (cookie) req.cookies.set(localeCookieName, cookie);
+        return req;
+    }
+
+    it("opens a shared link in the link's language and remembers it", async () => {
+        const res = await proxy(sharedLinkRequest('http://localhost/q/token?lang=el'));
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('el');
+        expect(res.cookies.get(localeCookieName)?.value).toBe('el');
+    });
+
+    it('does the same for invite links', async () => {
+        const res = await proxy(sharedLinkRequest('http://localhost/invite/token?lang=el'));
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('el');
+    });
+
+    it("keeps a visitor's saved language over the link's", async () => {
+        const res = await proxy(sharedLinkRequest('http://localhost/q/token?lang=el', 'en'));
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBeNull();
+        expect(res.cookies.get(localeCookieName)).toBeUndefined();
+    });
+
+    it('ignores an unknown language', async () => {
+        const res = await proxy(sharedLinkRequest('http://localhost/q/token?lang=fr'));
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBeNull();
+    });
+
+    it('ignores the parameter outside shared links', async () => {
+        const res = await proxy(sharedLinkRequest('http://localhost/login?lang=el'));
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBeNull();
+    });
+});

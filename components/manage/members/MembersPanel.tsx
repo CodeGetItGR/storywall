@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 
-import { CoHostInvitationRow, CreateCoHostInvitationForm } from '@/components/manage/invitations';
+import { CoHostInvitationRow, CreateCoHostInvitationForm, ShareLanguageNote } from '@/components/manage/invitations';
 import { UsagePanel } from '@/components/plan/UsagePanel';
 import { ReportTargetModal } from '@/components/reports';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
@@ -216,6 +216,9 @@ export function MembersPanel({
                             <CoHostInvitationRow key={invitation.id} eventId={eventId} invitation={invitation} canWrite={canWrite} />
                         ))}
                     </div>
+
+                    {/* Link language */}
+                    {coHostInvitations.length > 0 && <ShareLanguageNote className="mt-2" />}
 
                     {coHostInvitations.length === 0 && !showCreate && (
                         <ToolEmptyState

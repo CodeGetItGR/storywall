@@ -5,7 +5,9 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
+import { useCopyText } from '@/hooks/useCopyText';
 import { useDeleteEventInvitation } from '@/hooks/useEventInvitations';
+import { useShareLink } from '@/hooks/useShareLink';
 import type { EventInvitationResponseDto } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -21,19 +23,13 @@ export function CoHostInvitationRow({
 }) {
     const t = useTranslations('ManagePage');
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-    const [copied, setCopied] = useState(false);
 
     const deleteInvitation = useDeleteEventInvitation(eventId);
 
     const recipientName = [invitation.firstName, invitation.lastName].filter(Boolean).join(' ');
     const isUsed = Boolean(invitation.usedAt);
-    const inviteLink = typeof window !== 'undefined' ? `${window.location.origin}${routes.inviteToken(invitation.inviteToken)}` : '';
-
-    async function handleCopy() {
-        await navigator.clipboard.writeText(inviteLink);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
-    }
+    const inviteLink = useShareLink(typeof window !== 'undefined' ? `${window.location.origin}${routes.inviteToken(invitation.inviteToken)}` : '');
+    const { copied, copy: handleCopy } = useCopyText(inviteLink);
 
     async function handleDelete() {
         if (!canWrite) return;

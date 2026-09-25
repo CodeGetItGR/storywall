@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { defaultLocale, localeCookieName, locales } from '@/i18n/config';
+import { defaultLocale, type Locale, localeCookieMaxAge, localeCookieName, locales } from '@/i18n/config';
 import { getPublicLandingPath } from '@/i18n/publicLocale';
 import { PUBLIC_LOCALE_HEADER } from '@/i18n/publicMessages';
 import { resolveLocale } from '@/i18n/resolveLocale';
@@ -8,6 +8,7 @@ import { ACCESS_TOKEN_HEADER, ACCESS_TOKEN_MAX_AGE_SECONDS, AUTH_COOKIES, baseCo
 import { AUTH_RETURN_PATH_PARAM } from '@/lib/auth/returnPath';
 import { springAuth, SpringAuthError } from '@/lib/auth/springAuth';
 import { routes } from '@/lib/routes';
+import { isSharedLinkPath, readShareLocale, SHARE_LOCALE_PARAM } from '@/lib/shareLinks';
 
 // Explicit allowlist, not a denylist: every prefix listed here requires a
 // valid session, and everything else passes through untouched. A new
@@ -81,6 +82,14 @@ function preferredLandingRedirect(request: NextRequest): NextResponse | null {
     return NextResponse.redirect(url);
 }
 
+// A shared link opens in the sharer's language, and the rest of the visit
+// stays in it. A visitor who already picked a language keeps theirs.
+function sharedLinkLocale(request: NextRequest): Locale | null {
+    if (!isSharedLinkPath(request.nextUrl.pathname)) return null;
+    if (request.cookies.get(localeCookieName)?.value) return null;
+    return readShareLocale(request.nextUrl.searchParams.get(SHARE_LOCALE_PARAM));
+}
+
 export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
     if (pathname === '/') {
@@ -93,6 +102,14 @@ export async function proxy(request: NextRequest) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(PUBLIC_LOCALE_HEADER, publicLocale);
         return NextResponse.next({ request: { headers: requestHeaders } });
+    }
+    const shareLocale = sharedLinkLocale(request);
+    if (shareLocale) {
+        const requestHeaders = new Headers(request.headers);
+        requestHeaders.set(PUBLIC_LOCALE_HEADER, shareLocale);
+        const response = NextResponse.next({ request: { headers: requestHeaders } });
+        response.cookies.set(localeCookieName, shareLocale, { path: '/', maxAge: localeCookieMaxAge });
+        return response;
     }
     if (!isProtectedPath(pathname)) return NextResponse.next();
 

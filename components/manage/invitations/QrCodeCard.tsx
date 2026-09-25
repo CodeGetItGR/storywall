@@ -6,7 +6,10 @@ import { QRCodeSVG } from 'qrcode.react';
 import { useEffect, useRef, useState } from 'react';
 
 import { useCopyText } from '@/hooks/useCopyText';
+import { useShareLink } from '@/hooks/useShareLink';
 import type { QrLinkResponseDto } from '@/lib/api/types';
+
+import { ShareLanguageNote } from './ShareLanguageNote';
 
 // The QR artwork + copy/download/print/share actions, shared between the
 // manage-page preview modal and the dedicated gallery QR page.
@@ -15,7 +18,9 @@ export function QrCodeCard({ qrLink, size = 240 }: { qrLink: QrLinkResponseDto; 
     const tGlobal = useTranslations();
     const svgRef = useRef<SVGSVGElement | null>(null);
     const [canShare, setCanShare] = useState(false);
-    const { copied, copy: copyLink } = useCopyText(qrLink.publicUrl);
+    // The printed code stays language-neutral; copied and shared links carry the host's language.
+    const shareLink = useShareLink(qrLink.publicUrl);
+    const { copied, copy: copyLink } = useCopyText(shareLink);
 
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time client-only feature detection, not derived from render state.
@@ -71,7 +76,7 @@ export function QrCodeCard({ qrLink, size = 240 }: { qrLink: QrLinkResponseDto; 
 
     async function handleShare() {
         try {
-            await navigator.share({ title: qrLink.labelKey ? tGlobal(qrLink.labelKey) : qrLink.label || undefined, url: qrLink.publicUrl });
+            await navigator.share({ title: qrLink.labelKey ? tGlobal(qrLink.labelKey) : qrLink.label || undefined, url: shareLink });
         } catch {
             // User cancelled the share sheet — nothing to do.
         }
@@ -130,6 +135,9 @@ export function QrCodeCard({ qrLink, size = 240 }: { qrLink: QrLinkResponseDto; 
                     </button>
                 )}
             </div>
+
+            {/* Link language */}
+            <ShareLanguageNote className="mt-3 justify-center text-center" />
         </div>
     );
 }

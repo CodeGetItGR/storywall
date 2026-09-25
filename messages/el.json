@@ -1153,6 +1153,7 @@
             "claimed": "Χρησιμοποιήθηκε",
             "unclaimed": "Διαθέσιμη",
             "copyLink": "Αντιγραφή συνδέσμου",
+            "shareLanguageNote": "Οι σύνδεσμοι που μοιράζεστε ανοίγουν στα Ελληνικά.",
             "copied": "Αντιγράφηκε!",
             "save": "Αποθήκευση",
             "revoke": "Ανάκληση",
@@ -2031,6 +2032,10 @@
     "RootLayout": {
         "title": "StoryWall",
         "description": "Μοιραστείτε αναμνήσεις, κάντε RSVP και γιορτάστε μαζί στο StoryWall."
+    },
+    "ShareMetadata": {
+        "uploadDescription": "Μοιραστείτε τις φωτογραφίες και τα βίντεό σας.",
+        "inviteDescription": "Έχετε πρόσκληση."
     },
     "RightContextPanel": {
         "hostConsole": "Κονσόλα διοργανωτή",
