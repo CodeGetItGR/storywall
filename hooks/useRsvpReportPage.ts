@@ -18,11 +18,10 @@ export function useRsvpReportPage(reportType: RsvpReportType) {
     const onPrint = useCallback(() => window.print(), []);
     const onDownload = useCallback(() => download(reportType), [download, reportType]);
 
-    // Opened from the RSVP Reports sub-tab, which lives in the URL, so going back
-    // lands there. A report opened in a fresh tab has no history to go back to.
+    // Always navigate to the Reports sub-tab instead of router.back(): history.length
+    // also counts entries from other sites, so "go back" can leave the app entirely.
     const onClose = useCallback(() => {
-        if (window.history.length > 1) router.back();
-        else router.push(routes.events.manage(eventId, { tab: 'rsvp', section: 'reports' }));
+        router.push(routes.events.manage(eventId, { tab: 'rsvp', section: 'reports' }));
     }, [eventId, router]);
 
     return {
