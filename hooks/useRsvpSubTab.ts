@@ -3,8 +3,9 @@ import { useCallback } from 'react';
 
 import { resolveRsvpSubTab, type RsvpSubTab } from '@/lib/rsvpReport';
 
-// The RSVP sub-tab lives in ?section= so a report page's Close (history back)
-// returns to the Reports sub-tab. Works on both pages that show RsvpTab.
+// The RSVP sub-tab lives in ?section= so a report page's Close (router.push,
+// see useRsvpReportPage) returns to the Reports sub-tab. Works on both pages
+// that show RsvpTab.
 //
 // Writes go straight through window.history.replaceState instead of
 // router.replace: a router navigation re-runs the server page (and its ~6

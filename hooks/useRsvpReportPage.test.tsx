@@ -28,9 +28,13 @@ vi.mock('@/hooks/useRsvpReportDownload', () => ({
     useRsvpReportDownload: () => ({ download: mocks.download, downloadingType: 'FULL_LIST', error: 'failed' }),
 }));
 
+const moduleReadable = vi.fn((..._args: unknown[]) => true);
+vi.mock('@/hooks/useModuleReadable', () => ({ useModuleReadable: (...a: unknown[]) => moduleReadable(...a) }));
+
 describe('useRsvpReportPage', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        moduleReadable.mockReturnValue(true);
     });
 
     it('closes to the RSVP Reports sub-tab, never back()', () => {
@@ -54,5 +58,19 @@ describe('useRsvpReportPage', () => {
 
         expect(result.current.isDownloading).toBe(true);
         expect(result.current.downloadError).toBe('failed');
+    });
+
+    it('exposes whether the RSVP module is readable', () => {
+        const { result } = renderHook(() => useRsvpReportPage('FULL_LIST'));
+
+        expect(result.current.isModuleReadable).toBe(true);
+    });
+
+    it('reports the module as unreadable so the page can show the unavailable state instead of spinning forever', () => {
+        moduleReadable.mockReturnValue(false);
+
+        const { result } = renderHook(() => useRsvpReportPage('FULL_LIST'));
+
+        expect(result.current.isModuleReadable).toBe(false);
     });
 });

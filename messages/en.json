@@ -1228,7 +1228,7 @@
             "responses": "Responses",
             "totalPeople": "Total people",
             "adults": "Adults",
-            "kids": "Kids",
+            "kids": "Children",
             "byCategory": "Attendance by category",
             "deadlineField": "RSVP deadline"
         },
@@ -1240,6 +1240,8 @@
             "guestList": "Guest list by attendance",
             "empty": "No responses yet",
             "loadFailed": "Couldn't load the report.",
+            "unavailableTitle": "RSVP reports aren't available",
+            "unavailableBody": "RSVP reports aren't available on this event's current plan.",
             "print": "Print",
             "downloadPdf": "Download PDF",
             "close": "Close",
