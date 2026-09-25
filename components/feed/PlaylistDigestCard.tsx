@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import React, { useMemo } from 'react';
 import { PiMusicNotesPlusFill } from 'react-icons/pi';
 
+import { LightRay } from '@/components/feed/LightRay';
 import { CommentsList } from '@/components/feed/post/CommentsList';
 import type { PostResponseDto } from '@/lib/api/types';
 import { formatPlaylistDigestContent } from '@/lib/feed/playlistDigest';
@@ -39,15 +40,12 @@ export function PlaylistDigestCard({ post }: PlaylistDigestCardProps) {
     return (
         <article className="bg-transparent p-2">
             {/* Playlist digest */}
-            <div className="relative isolate overflow-hidden rounded-xl bg-linear-to-br from-[#9d3868] via-primary to-accent-orange px-4 py-4 text-white sm:px-5">
+            <div className="@container relative isolate overflow-hidden rounded-xl bg-linear-to-br from-[#9d3868] via-primary to-accent-orange px-4 py-4 text-white sm:px-5">
                 <div
                     className="pointer-events-none absolute inset-y-0 right-0 z-0 w-1/2 bg-white/10 [clip-path:polygon(24%_0,100%_0,100%_100%,0_100%)]"
                     aria-hidden="true"
                 />
-                <div
-                    className="playlist-light-ray pointer-events-none absolute -top-20 z-20 h-[200%] w-48 rotate-24 bg-linear-to-r from-transparent via-[#fff2a8]/55 to-transparent mix-blend-screen blur-md"
-                    aria-hidden="true"
-                />
+                <LightRay />
                 <PiMusicNotesPlusFill
                     className="playlist-note-drift pointer-events-none absolute top-1/2 left-1/2 z-0 h-28 w-28 -translate-x-1/2 -translate-y-1/2 text-white/10 sm:h-36 sm:w-36"
                     aria-hidden="true"
@@ -86,8 +84,7 @@ export function PlaylistDigestCard({ post }: PlaylistDigestCardProps) {
                 {/* Details */}
                 <div className="relative z-10 mt-4 grid grid-cols-[1fr_5rem] items-center gap-4">
                     <div className="min-w-0">
-                        <p className="text-[0.7rem] leading-none font-normal text-white/75 uppercase">{t('playlistDigest')}</p>
-                        <h2 className="mt-1.5 text-lg leading-tight font-semibold text-white">{formatPlaylistDigestContent(post.content, t)}</h2>
+                        <h2 className="text-lg leading-tight font-semibold text-white">{formatPlaylistDigestContent(post.content, t)}</h2>
                         <p className="mt-1.5 text-xs text-white/75">
                             {timeAgo.unit === 'now' ? t('justNow') : t(`timeAgo.${timeAgo.unit}`, { count: timeAgo.value })}
                         </p>

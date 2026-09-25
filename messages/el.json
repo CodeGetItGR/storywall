@@ -120,7 +120,7 @@
         "unknownAuthor": "Άγνωστος",
         "playlistDigest": "Ενημέρωση λίστας",
         "playlistDigestCount": "{count, plural, one {Προστέθηκε # τραγούδι στη λίστα αναπαραγωγής} other {Προστέθηκαν # τραγούδια στη λίστα αναπαραγωγής}}",
-        "playlistDigestSingle": "Το \"{title}\" του/της {artist} μόλις προστέθηκε στη λίστα αναπαραγωγής",
+        "playlistDigestSingle": "Το \"{song}\" μόλις προστέθηκε στη λίστα αναπαραγωγής",
         "pinned": "Καρφιτσωμένη",
         "pinPost": "Καρφίτσωμα δημοσίευσης",
         "unpinPost": "Ξεκαρφίτσωμα δημοσίευσης",

@@ -712,14 +712,10 @@
     animation: playlist-note-float 3.5s var(--motion-ease-standard) infinite;
 }
 
-.playlist-light-ray {
-    animation: playlist-light-ray 4.8s var(--motion-ease-standard) infinite;
-    filter: drop-shadow(0 0 1.25rem rgb(255 226 115 / 0.35));
-}
-
-.banner-light-ray {
-    animation: playlist-light-ray 14s var(--motion-ease-standard) infinite;
-    filter: drop-shadow(0 0 1.25rem rgb(255 226 115 / 0.35));
+/* Sweeps across its @container's width, not the viewport. */
+.light-ray {
+    animation: light-ray 8s ease-in-out infinite;
+    filter: blur(1.75rem);
 }
 
 @keyframes playlist-note-drift {
@@ -736,21 +732,21 @@
     }
 }
 
-@keyframes playlist-light-ray {
+@keyframes light-ray {
     0% {
         opacity: 0;
-        translate: -9rem 0;
+        translate: -16rem 0;
     }
-    16% {
-        opacity: 0.75;
+    8% {
+        opacity: 0.6;
     }
     42% {
-        opacity: 0.75;
+        opacity: 0.6;
     }
-    58%,
+    50%,
     100% {
         opacity: 0;
-        translate: calc(100vw + 7rem) 0;
+        translate: calc(100cqw + 4rem) 0;
     }
 }
 

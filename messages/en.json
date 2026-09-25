@@ -122,7 +122,7 @@
         "reactionFailed": "Couldn't update your reaction. Please try again.",
         "playlistDigest": "Playlist update",
         "playlistDigestCount": "{count, plural, one {# song was added to the playlist} other {# songs were added to the playlist}}",
-        "playlistDigestSingle": "\"{title}\" by {artist} was just added to the playlist",
+        "playlistDigestSingle": "\"{song}\" was just added to the playlist",
         "openPlaylist": "Open playlist",
         "date": "Date",
         "month": "Month",
