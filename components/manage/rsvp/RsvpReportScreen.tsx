@@ -17,15 +17,19 @@ export function RsvpReportScreen({ reportType }: { reportType: RsvpReportType })
         <div data-print-root className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-6">
             {/* Actions */}
             <RsvpReportActions isDownloading={page.isDownloading} onPrint={page.onPrint} onDownload={page.onDownload} onClose={page.onClose} />
-            {page.downloadError && <p className="text-right text-xs text-rose-600 print:hidden">{page.downloadError}</p>}
+            {page.downloadError && (
+                <p role="alert" className="text-right text-xs text-rose-600 print:hidden">
+                    {page.downloadError}
+                </p>
+            )}
 
             {/* Report */}
-            {page.isLoading ? (
-                <LoadingState size="md" className="min-h-64" />
-            ) : page.isError || !page.report ? (
+            {page.report ? (
+                <RsvpReportView report={page.report} />
+            ) : page.isError ? (
                 <p className="text-sm text-rose-600">{t('loadFailed')}</p>
             ) : (
-                <RsvpReportView report={page.report} />
+                <LoadingState size="md" className="min-h-64" />
             )}
         </div>
     );

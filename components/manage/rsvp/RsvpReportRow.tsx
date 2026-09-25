@@ -13,7 +13,7 @@ export function RsvpReportRow({ eventId, reportType }: { eventId: string; report
     return (
         <Link
             href={routes.events.rsvpReport(eventId, reportType)}
-            className="flex w-full items-center justify-between gap-3 rounded-xl border border-border px-3.5 py-2.5 text-left transition-colors hover:bg-surface-muted"
+            className="flex w-full items-center justify-between gap-3 rounded-xl border border-border px-3.5 py-2.5 text-left transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
             <span className="min-w-0">
                 <span className="block text-sm font-medium text-ink">{t(`types.${reportType}.label`)}</span>
