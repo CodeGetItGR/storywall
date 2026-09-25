@@ -7,7 +7,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { rsvpKeys, useRsvpReport } from '@/hooks/useRsvps';
 
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ isAuthenticated: true }) }));
-vi.mock('@/hooks/useModuleReadable', () => ({ useModuleReadable: () => true }));
+const moduleReadable = vi.fn((..._args: unknown[]) => true);
+vi.mock('@/hooks/useModuleReadable', () => ({ useModuleReadable: (...a: unknown[]) => moduleReadable(...a) }));
 
 const apiGet = vi.fn();
 vi.mock('@/lib/api/client', () => ({
@@ -29,7 +30,10 @@ function newClient() {
     return new QueryClient({ defaultOptions: { queries: { retry: false } } });
 }
 
-beforeEach(() => apiGet.mockReset());
+beforeEach(() => {
+    apiGet.mockReset();
+    moduleReadable.mockReset().mockReturnValue(true);
+});
 
 describe('useRsvpReport', () => {
     it('fetches the requested report type', async () => {
@@ -43,6 +47,14 @@ describe('useRsvpReport', () => {
 
     it('does nothing without an event', () => {
         renderHook(() => useRsvpReport(null, 'STATISTICS'), { wrapper: wrapperFor(newClient(), 'en') });
+
+        expect(apiGet).not.toHaveBeenCalled();
+    });
+
+    it('does nothing when the RSVP module is not readable', () => {
+        moduleReadable.mockReturnValue(false);
+
+        renderHook(() => useRsvpReport('event-1', 'STATISTICS'), { wrapper: wrapperFor(newClient(), 'en') });
 
         expect(apiGet).not.toHaveBeenCalled();
     });
