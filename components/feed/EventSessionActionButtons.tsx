@@ -18,8 +18,10 @@ const sessionButtonClassName =
 export function EventSessionActionButtons({ event }: EventSessionActionButtonsProps) {
     const t = useTranslations('FeedPage');
 
-    const mainSession = event.sessions.find((session) => session.isMain);
-    const secondarySession = event.sessions.find((session) => session.isSecondary);
+    // sessions is null when the event has no schedule module.
+    const sessions = event.sessions ?? [];
+    const mainSession = sessions.find((session) => session.isMain);
+    const secondarySession = sessions.find((session) => session.isSecondary);
 
     return (
         <>

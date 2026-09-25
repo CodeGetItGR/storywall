@@ -46,6 +46,10 @@ export default function CheckoutSuccessPage() {
         if (!paid) return;
         clearPendingCheckout(eventId);
         void queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
+        // Prefix match: the plan decides which modules the event has, so the
+        // detail, the module rows, every module's data and the QR links (the
+        // gallery upload link is minted asynchronously after an upgrade) all
+        // refetch on their next use.
         void queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
         void queryClient.invalidateQueries({ queryKey: myEventsKeys.all });
     }, [eventId, paid, queryClient]);

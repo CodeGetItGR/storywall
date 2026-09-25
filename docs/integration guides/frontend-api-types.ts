@@ -564,6 +564,9 @@ interface EventInvitationPreviewDto {
   eventSubtitle: string | null;
   eventDescription: string | null;
   coverMediaId: string | null;
+  /** NEW 2026-09-25 — the cover with its presigned `url`; null without a cover. Use this instead of
+   *  GET /api/medias/{id}, which the visitor (not a member yet) can't call. */
+  coverMedia: MediaResponseDto | null;
   /** Prefill hints from the invitation, when it named somebody. Null on a shared/QR invitation. */
   firstName: string | null;
   lastName: string | null;
@@ -619,8 +622,8 @@ interface EventModuleResponseDto {
    */
   isAvailable: boolean;
 }
-interface EventModulePatchDto { isEnabled?: boolean; configuration?: Record<string, unknown>; }
-// no moduleKey/eventId on the patch DTO — can't rename a module or move it between events
+// EventModulePatchDto REMOVED 2026-09-24: PATCH /api/event-modules/{id} is gone (405). isEnabled and
+// configuration follow the plan and unlocks — see plan-owned-modules-fe-integration.md.
 
 // --- Event Sessions ---
 
@@ -632,6 +635,7 @@ interface EventSessionRequestDto {
   mapsUrl?: string;
   displayOrder: number;   // required
   isSecondary?: boolean;  // NEW — see event-session-secondary-flag-fe-integration.md. Defaults to false; at most one per event.
+  rsvpEnabled?: boolean;  // NEW 2026-09-24 — guests may answer per session only when true. Defaults to false. See plan-owned-modules-fe-integration.md §7.
 }
 interface EventSessionResponseDto {
   id: string; eventId: string; title: string; description: string | null;
@@ -639,12 +643,14 @@ interface EventSessionResponseDto {
   displayOrder: number;
   isMain: boolean; // NEW — see event-session-main-flag-fe-integration.md. startAt/endAt are read-only when true.
   isSecondary: boolean; // NEW — see event-session-secondary-flag-fe-integration.md. Purely conventional, freely editable.
+  rsvpEnabled: boolean; // NEW 2026-09-24 — see plan-owned-modules-fe-integration.md §7.
   createdAt: string; deletedAt: string | null;
 }
 interface EventSessionPatchDto { // every field optional
   title?: string; description?: string; startAt?: string; endAt?: string;
   locationName?: string; mapsUrl?: string; displayOrder?: number;
   isSecondary?: boolean; // NEW — see event-session-secondary-flag-fe-integration.md
+  rsvpEnabled?: boolean; // NEW 2026-09-24
 }
 
 // --- RSVPs ---
@@ -668,7 +674,11 @@ interface RsvpPatchDto { // every field optional
 
 // --- RSVP Session Responses (per-session attendance) ---
 
+// POST /api/rsvp-session-responses. Since 2026-09-24: the session must be of the RSVP's event (else 400), not deleted
+// (404) and rsvpEnabled (409 SESSION_RSVP_NOT_ENABLED, 5086); rsvp + schedule must be available (5012). Answering the
+// same session again updates the existing answer (same id). See plan-owned-modules-fe-integration.md §7.
 interface RsvpSessionResponsRequestDto { rsvpId: string; eventSessionId: string; isAttending: boolean; } // all required
+interface RsvpSessionResponsPatchDto { isAttending: boolean; } // NEW 2026-09-24 — PATCH /api/rsvp-session-responses/{id}, same checks as create
 interface RsvpSessionResponsResponseDto {
   id: string; rsvpId: string; eventSessionId: string; isAttending: boolean; createdAt: string;
 }
@@ -681,7 +691,12 @@ interface RsvpSessionResponsResponseDto {
  * No request DTO — created only via the multipart upload endpoint (§ Media upload).
  *
  * `POST /api/events/{eventId}/media` and `.../media/batch` both take an additional
- * `context` form field — `'GALLERY' | 'STORY'` (default `'GALLERY'` if omitted). A video
+ * `context` form field — `'GALLERY' | 'STORY' | 'POST' | 'COVER'` (default `'GALLERY'` if omitted). Since
+ * 2026-09-24 the upload needs the context's module (GALLERY→gallery, STORY→stories, POST→posts; else 5012).
+ * COVER (2026-09-25) needs no module and works on a DRAFT, but only a host may send it (else 403).
+ * New rows store the context as `metadata.uploadContext`; rows uploaded before 2026-09-24 have none and
+ * count as GALLERY, so type it optional. Reading a file needs its module too (a COVER file never does)
+ * — see plan-owned-modules-fe-integration.md §4. A video
  * uploaded with `context: 'STORY'` is checked against the tighter `maxStoryVideoBytes` /
  * `maxStoryVideoDurationSeconds` caps (see `AppMediaConfigDto`) instead of `maxVideoBytes` —
  * pass it whenever the upload is destined for a story, even from a generic "add media" picker.
@@ -1402,7 +1417,7 @@ export interface PlatformEventTypePatchDto {
   sortOrder?: number;
 }
 
-export type ModuleApplicability = 'UNSUPPORTED' | 'DEFAULT_OFF' | 'DEFAULT_ON';
+export type ModuleApplicability = 'UNSUPPORTED' | 'DEFAULT_ON'; // DEFAULT_OFF removed 2026-09-24 (V109)
 
 /**
  * One row of the event-type/module applicability matrix.
@@ -1805,6 +1820,9 @@ export interface QrLinkResolutionDto {
   eventTitle?: string;
   eventSubtitle?: string | null;
   coverMediaId?: string | null;
+  /** NEW 2026-09-25 — the cover with its presigned `url` (ACTIVE-only, null without a cover). Use this
+   *  instead of GET /api/medias/{id}, which the scanner (not a member yet) can't call. */
+  coverMedia?: MediaResponseDto | null;
   /** Only ever 'ACTIVE' when present — any other event status resolves as TARGET_UNAVAILABLE
    *  instead, so a draft event's codes simply stop working until it goes live. */
   eventStatus?: 'ACTIVE';

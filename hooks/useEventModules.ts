@@ -1,17 +1,18 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
-import type { EventModulePatchDto, EventModuleRequestDto, EventModuleResponseDto } from '@/lib/api/types';
+import type { EventModuleResponseDto } from '@/lib/api/types';
 
 export const eventModuleKeys = {
     list: (eventId: string) => ['events', eventId, 'modules'] as const,
 };
 
-// GET /api/events/{eventId}/modules — feature toggles per event
-// (e.g. "is the playlist module enabled"). Any member of the event.
+// GET /api/events/{eventId}/modules — which modules the event has. Any
+// member of the event. Read-only: modules follow the plan and unlocks, so
+// there is no host toggle (plan-owned-modules-fe-integration.md).
 export function useEventModules(eventId: string | null) {
     const { isAuthenticated } = useAuth();
 
@@ -22,41 +23,5 @@ export function useEventModules(eventId: string | null) {
             return normalizeList(res).items;
         },
         enabled: Boolean(eventId) && isAuthenticated,
-    });
-}
-
-// POST /api/event-modules — HOST of dto.eventId.
-export function useCreateEventModule() {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: (input: EventModuleRequestDto) => api.post<EventModuleResponseDto>(endpoints.eventModules.create, input),
-        onSuccess: (module_) => {
-            queryClient.invalidateQueries({ queryKey: eventModuleKeys.list(module_.eventId) });
-        },
-    });
-}
-
-// PATCH /api/event-modules/{id} — HOST of the event. This is now how you
-// toggle a module on/off (no more delete + recreate).
-export function useUpdateEventModule(id: string, eventId: string) {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: (input: EventModulePatchDto) => api.patch<EventModuleResponseDto>(endpoints.eventModules.byId(id), input),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: eventModuleKeys.list(eventId) });
-        },
-    });
-}
-
-export function useDeleteEventModule(eventId: string) {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: (id: string) => api.del<void>(endpoints.eventModules.byId(id)),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: eventModuleKeys.list(eventId) });
-        },
     });
 }

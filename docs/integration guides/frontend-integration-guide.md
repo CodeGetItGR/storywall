@@ -14,6 +14,9 @@ feature-specific guides this one links out to:
 [`app-config-fe-integration.md`](app-config-fe-integration.md),
 [`billing-fe-guide.md`](billing-fe-guide.md) (plans, payments, refunds — see the
 "Billing & payments" entry in §1 below),
+[`business-buyers-fe-integration.md`](business-buyers-fe-integration.md) (2026-09-24: an account
+with a VIES-confirmed EU VAT number buys as a business, with optional checkout consent and no right
+of withdrawal; the business profile lives at `/api/me/business-profile`),
 [`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-integration.md),
 [`gallery-archive-download-fe-integration.md`](gallery-archive-download-fe-integration.md)
 (host-only bulk gallery zip download), and
@@ -88,7 +91,8 @@ implemented and tested but had never been written up here. It's the single endpo
 ## 0. Base setup
 
 - **Auth header**: `Authorization: Bearer {accessToken}` on every endpoint except
-  `/api/auth/**`, `GET /api/event-invitations/{inviteToken}/preview`, and `GET /api/config`.
+  `/api/auth/**`, `GET /api/event-invitations/{inviteToken}/preview`, `GET /api/config` and
+  `GET /api/legal/**` (the withdrawal texts, 2026-09-24).
 - **Error shape**: every non-2xx response is an RFC 7807 `ApiError` — see the interface in
   `frontend-api-types.ts`. Validation failures (400) carry `errors.<fieldName>`.
 - **Pagination**: some list endpoints return `Page<T>` (Spring Data shape:
@@ -105,8 +109,12 @@ implemented and tested but had never been written up here. It's the single endpo
   - *Billing — checkout, orders, upgrades, withdrawals*: the three checkout request bodies,
     `CheckoutResponseDto`, `EventBillingResponseDto` and its `OrderSummary`/`DiscountSummary`,
     `UpgradeOptionResponseDto`, and the whole withdrawal set (preview, request, the host-facing
-    response, the admin facts sheet, the refusal and line shapes). Narrative in
-    [`billing-fe-guide.md`](billing-fe-guide.md).
+    response, the admin facts sheet, the refusal and line shapes). Since 2026-09-24 (phase 4) also
+    `PriceBreakdown`, which `CheckoutResponseDto`, `OrderSummary`, `UpgradeOptionResponseDto`'s
+    options and `CodePreviewResponseDto` each carry as `breakdown`, the `POST /api/events/{id}/quote`
+    body and the public legal texts (`GET /api/legal/withdrawal-terms`). Narrative in
+    [`billing-fe-guide.md`](billing-fe-guide.md) and
+    [`withdrawal-compliance-phase4-fe-integration.md`](withdrawal-compliance-phase4-fe-integration.md).
   - *Collaborations, partner codes and house discount codes*: the two code-preview bodies and
     `CodePreviewResponseDto`, the collaborator and code admin CRUD, the partner ledger
     (`EarningResponseDto`, `EarningTotalDto`, `PartnerPageDto`), and the house-code admin set.
@@ -194,7 +202,6 @@ the two conditions failed. Guest invitations are unchanged and stay forwardable.
 | Method | Path | Auth | Notes |
 |---|---|---|---|
 | GET | `/api/events/{eventId}/modules` | authenticated | `EventModuleResponseDto[]` — see §3; 7 keys exist (`posts`, `rsvp`, `playlist`, `stories`, `gallery`, `wishlist`, `wishbook`) |
-| PATCH | `/api/event-modules/{id}` | host | `isEnabled`, `configuration` |
 | GET/POST | `/api/event-sessions`, `/api/events/{eventId}/sessions` | authenticated / `ROLE_USER` | agenda items — bounded list, `displayOrder` |
 | PATCH/DELETE | `/api/event-sessions/{id}` | host | |
 
@@ -528,6 +535,10 @@ reference** for all of this. Summary of what it covers:
   2011/83/EU from the three-line price split on each order, and either refunds immediately and
   **soft-deletes the event** — there is no `DRAFT` return path any more — or marks the request
   `HELD` for a human when a fraud signal fires, auto-releasing after 10 days if nobody acts.
+  Since 2026-09-23 one upgrade (with every newer one) or one storage pack can be withdrawn on its
+  own, and the event stays; storage packs need checkout consent, and a pack or upgrade checkout is
+  `409` 5084 while a withdrawal it would miss is under review. See
+  [`withdrawal-compliance-phase2-fe-integration.md`](withdrawal-compliance-phase2-fe-integration.md).
   `GET .../withdrawal-preview` persists nothing, so poll it freely while the host reads the
   confirmation dialog. Full flow in [`billing-fe-guide.md`](billing-fe-guide.md) §9; exact
   shapes under *Billing* in [`frontend-api-types.ts`](../frontend-api-types.ts).
@@ -601,7 +612,7 @@ admin panel can be built without reading the controllers.
 | Paid services | `/api/admin/paid-services` CRUD | `PaidServiceRequestDto`, `PaidServicePatchDto` |
 | Registries | `/api/admin/platform-modules/{moduleKey}`, `/api/admin/platform-event-types/{key}`, `/api/admin/event-types/{key}/modules/{moduleKey}`, `/api/platform-feature-flags/{id}` | `PlatformModulePatchDto`, `PlatformEventType{Response,Patch}Dto`, `PlatformEventTypeModule{Response,Patch}Dto`, `PlatformFeatureFlagPatchDto` |
 | Partners & codes | `/api/admin/collaborators/**`, `/api/admin/collaboration-codes/{id}`, `/api/admin/collaboration-earnings/mark-paid`, `/api/admin/discount-codes/**` | the *Collaborations* section of the type file |
-| Money operations | `/api/admin/withdrawals` (+ `/release`, `/withhold`), `/api/admin/webhooks/unprocessed`, `/api/admin/orders/{id}/settle` | `WithdrawalAdminDto`, `WithdrawalWithholdDto`, `UnprocessedWebhookDto` |
+| Money operations | `/api/admin/withdrawals` (+ `/release`), `/api/admin/webhooks/unprocessed`, `/api/admin/orders/{id}/settle` | `WithdrawalAdminDto`, `WithdrawalReleaseDto`, `UnprocessedWebhookDto` |
 | Metrics | `/api/admin/metrics`, `/events`, `/timeline`, `/calendar`, `/calendar/{date}/events`, `/cost-summary` | `PlatformMetricsResponseDto`, `EventDashboardRowDto`, `PlanTimelineRowDto`, `CalendarSummaryResponseDto`, `CostSummaryResponseDto` |
 | Provisioning | `POST /api/users/provisioned`, `POST /api/admin/events` | `AdminUserProvisionRequestDto`, `AdminEventProvisionRequestDto` |
 

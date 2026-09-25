@@ -41,7 +41,10 @@ export type ModuleKeyConvention = (typeof EVENT_MODULE_KEYS)[number];
 // + matching DTO validation) — not a free-string convention like the others.
 export type PostType = 'TEXT' | 'MEDIA' | 'ANNOUNCEMENT' | 'PLAYLIST';
 export type MediaTypeConvention = 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT';
-export type MediaUploadContext = 'GALLERY' | 'STORY';
+// Each context needs its own module: GALLERY → gallery, STORY → stories,
+// POST → posts (plan-owned-modules-fe-integration.md §4).
+// COVER needs no module and works on a DRAFT, but only a host may send it.
+export type MediaUploadContext = 'GALLERY' | 'STORY' | 'POST' | 'COVER';
 export type MediaStatus = 'PROCESSING' | 'READY' | 'FAILED';
 export type MediaArchiveVariant = 'DISPLAY' | 'ORIGINAL';
 export type PlanScope = 'ACCOUNT' | 'EVENT';
@@ -627,10 +630,10 @@ export interface EventDetailResponseDto {
     location: EventLocationDto;
     coverMedia: MediaResponseDto | null; // resolved, with a fresh presigned mediaUrl
     brandingSettings: Record<string, unknown>;
-    hosts: EventHostResponseDto[];
+    hosts: EventHostResponseDto[]; // only the primary host when co_hosts is off
     modules: EventModuleResponseDto[];
-    sessions: EventSessionResponseDto[];
-    rsvpSummary: EventRsvpSummaryDto;
+    sessions: EventSessionResponseDto[] | null; // null when schedule is off
+    rsvpSummary: EventRsvpSummaryDto | null; // null when rsvp is off
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
@@ -1203,6 +1206,8 @@ export interface QrLinkResolutionDto {
     eventTitle?: string;
     eventSubtitle?: string | null;
     coverMediaId?: string | null;
+    // Read the cover from here: the scanner isn't a member, so GET /api/medias/{id} refuses them.
+    coverMedia?: MediaResponseDto | null;
     eventStatus?: EventStatus;
     inviteToken?: string;
     requiresAuth?: boolean;
@@ -1343,6 +1348,8 @@ export interface EventInvitationPreviewDto {
     eventSubtitle: string | null;
     eventDescription: string | null;
     coverMediaId: string | null;
+    // Read the cover from here: the visitor isn't a member, so GET /api/medias/{id} refuses them.
+    coverMedia: MediaResponseDto | null;
     firstName: string | null;
     lastName: string | null;
     email: string | null;
@@ -1398,13 +1405,8 @@ export interface EventMemberPatchDto {
     isFeatured?: boolean;
 }
 
-export interface EventModuleRequestDto {
-    eventId: string;
-    moduleKey: ModuleKey;
-    isEnabled: boolean;
-    configuration: Record<string, unknown>;
-}
-
+// isEnabled and configuration follow the event's plan and MODULE_UNLOCKs;
+// hosts can't change them. See plan-owned-modules-fe-integration.md.
 export interface EventModuleResponseDto {
     id: string;
     eventId: string;
@@ -1413,11 +1415,6 @@ export interface EventModuleResponseDto {
     configuration: Record<string, unknown> | null;
     createdAt: string;
     isAvailable: boolean;
-}
-
-export interface EventModulePatchDto {
-    isEnabled?: boolean;
-    configuration?: Record<string, unknown>;
 }
 
 // `EventModuleResponseDto.configuration` is untyped on the wire (it's a free-form
@@ -1435,7 +1432,9 @@ export interface GalleryModuleConfiguration {
 // for `schedule`) when the cap isn't a per-event `EventModule.configuration`
 // value. `applicability` mirrors the admin event-type/module registry
 // (event-lifecycle-locks-and-event-types-fe-integration.md).
-export type EventTypeModuleApplicability = 'UNSUPPORTED' | 'DEFAULT_OFF' | 'DEFAULT_ON';
+// DEFAULT_ON only means "this event type supports the module"; whether it is
+// on for an event is the plan's call.
+export type EventTypeModuleApplicability = 'UNSUPPORTED' | 'DEFAULT_ON';
 
 export interface EventTypeModuleResponseDto {
     eventTypeKey: EventTypeConvention;
@@ -1483,6 +1482,7 @@ export interface EventSessionRequestDto {
     mapsUrl?: string;
     displayOrder: number;
     isSecondary?: boolean; // defaults to false; at most one non-deleted session per event
+    rsvpEnabled?: boolean; // defaults to false; guests may answer for this session only when true
 }
 
 export interface EventSessionResponseDto {
@@ -1497,6 +1497,7 @@ export interface EventSessionResponseDto {
     displayOrder: number;
     isMain: boolean; // system-managed, read-only — set only via initialSessionTitle at event creation
     isSecondary: boolean;
+    rsvpEnabled: boolean;
     createdAt: string;
     deletedAt: string | null;
 }
@@ -1510,6 +1511,7 @@ export interface EventSessionPatchDto {
     mapsUrl?: string | null;
     displayOrder?: number;
     isSecondary?: boolean;
+    rsvpEnabled?: boolean;
 }
 
 export interface RsvpRequestDto {
@@ -1558,8 +1560,9 @@ export interface RsvpSessionResponsResponseDto extends RsvpSessionResponsRequest
     createdAt: string;
 }
 
+// PATCH /api/rsvp-session-responses/{id} — same checks as create.
 export interface RsvpSessionResponsPatchDto {
-    isAttending?: boolean;
+    isAttending: boolean;
 }
 
 // --- §6 Media domain ---
@@ -1580,9 +1583,16 @@ export interface MediaResponseDto {
     width: number | null;
     height: number | null;
     durationSeconds: number | null;
-    metadata: Record<string, unknown>;
+    metadata: MediaMetadata;
     createdAt: string;
     deletedAt: string | null;
+}
+
+// Rows uploaded before 2026-09-24 may lack uploadContext; the backend treats
+// those as GALLERY.
+export interface MediaMetadata {
+    uploadContext?: MediaUploadContext;
+    [key: string]: unknown;
 }
 
 export interface MediaBatchFailedItemDto {

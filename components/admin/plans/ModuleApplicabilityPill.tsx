@@ -6,7 +6,7 @@ import type { MouseEvent } from 'react';
 import type { EventTypeModuleApplicability } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
-const OPTIONS: EventTypeModuleApplicability[] = ['UNSUPPORTED', 'DEFAULT_OFF', 'DEFAULT_ON'];
+const OPTIONS: EventTypeModuleApplicability[] = ['UNSUPPORTED', 'DEFAULT_ON'];
 
 export function ModuleApplicabilityPill({
     moduleKey,

@@ -3,7 +3,7 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { MEDIA_PAGE_SIZE, mediaKeys } from '@/hooks/useMedia';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
-import { serverGet } from '@/lib/api/serverFetch';
+import { serverGet, serverModuleReadable } from '@/lib/api/serverFetch';
 import type { MediaResponseDto } from '@/lib/api/types';
 import { resolveServerEventContext } from '@/lib/auth/serverEventContext';
 import { makeQueryClient } from '@/lib/queryClient';
@@ -24,6 +24,7 @@ export default async function Page({ params }: PageProps) {
 
     if (context?.isHost) {
         try {
+            if (!(await serverModuleReadable(eventId, 'gallery', context.accessToken))) throw new Error('gallery unavailable');
             const firstPage = await serverGet<Page<MediaResponseDto>>(
                 `${endpoints.events.media(eventId)}?page=0&size=${MEDIA_PAGE_SIZE}`,
                 context.accessToken,

@@ -5,6 +5,7 @@ import { type SyntheticEvent, useCallback, useEffect, useMemo, useState } from '
 import { useDeleteStory, useEventStories, useMarkStoryViewed, useMediaItem, useStory } from '@/hooks';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import { ApiError } from '@/lib/api/client';
+import { isModuleNotAvailableError } from '@/lib/api/errors';
 import type { AuthorDto, MediaResponseDto, StoryResponseDto } from '@/lib/api/types';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { findAdjacentGroup, groupStoriesByAuthor, type StoryGroup } from '@/lib/stories';
@@ -18,6 +19,11 @@ type UseStoryModalArgs = {
 
 // How long a story waits for its media before treating it as failed and
 // auto-advancing, and how long the resulting error message stays on screen.
+// Deleted, or the event no longer has stories (409 / 5012).
+function isStoryGone(error: unknown): boolean {
+    return (error instanceof ApiError && error.status === 404) || isModuleNotAvailableError(error);
+}
+
 const MEDIA_LOAD_TIMEOUT_MS = 5000;
 const MEDIA_ERROR_DISPLAY_MS = 1500;
 
@@ -228,7 +234,7 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
 
     useEffect(() => {
         if (!open) return;
-        if (storyError instanceof ApiError && storyError.status === 404) {
+        if (isStoryGone(storyError)) {
             onCloseAction();
         }
     }, [onCloseAction, open, storyError]);
@@ -258,7 +264,7 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mediaError, open]);
 
-    const storyNotFound = storyError instanceof ApiError && storyError.status === 404;
+    const storyNotFound = isStoryGone(storyError);
 
     return {
         onOpenChange,

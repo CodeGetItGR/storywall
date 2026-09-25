@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { commentKeys } from '@/hooks/useComments';
 import { api, ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
+import { isModuleNotAvailableError } from '@/lib/api/errors';
 import { type Page } from '@/lib/api/pagination';
 import type { EventStreamTokenDto, PostResponseDto } from '@/lib/api/types';
 import { postKeys } from '@/lib/postQueries';
@@ -13,10 +14,11 @@ import { postKeys } from '@/lib/postQueries';
 const RECONNECT_DELAY_MS = 1_000;
 const MAX_RECONNECT_DELAY_MS = 30_000;
 
-// The session is gone, the caller is no longer a member, or the event no
-// longer exists — retrying can't change any of those, so stop.
+// The session is gone, the caller is no longer a member, the event no
+// longer exists, or it no longer has posts — retrying can't change any of
+// those, so stop.
 function isPermanentFailure(error: unknown): boolean {
-    return error instanceof ApiError && [401, 403, 404].includes(error.status);
+    return (error instanceof ApiError && [401, 403, 404].includes(error.status)) || isModuleNotAvailableError(error);
 }
 
 function retryAfterMs(error: unknown): number | null {

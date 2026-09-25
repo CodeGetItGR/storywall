@@ -52,7 +52,7 @@ function getSessionForRole(sessions: EventSessionResponseDto[], role: SessionLoc
 }
 
 export function resolveSessionLocation(event: EventDetailResponseDto, role: SessionLocationRole | null): SessionLocationViewModel {
-    const session = getSessionForRole(event.sessions, role);
+    const session = getSessionForRole(event.sessions ?? [], role);
     const kind = resolveLocationKind(event.eventType, role);
 
     return {

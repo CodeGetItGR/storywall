@@ -1,13 +1,24 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '@/hooks/useAuth';
+import { eventKeys } from '@/hooks/useEvent';
 import { eventMemberKeys } from '@/hooks/useEventMembers';
+import { eventSessionKeys } from '@/hooks/useEventSessions';
+import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { myEventsKeys } from '@/hooks/useMyEvents';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
+import { isSessionRsvpNotEnabledError } from '@/lib/api/errors';
 import { normalizeList } from '@/lib/api/pagination';
 import type { EventMemberResponseDto } from '@/lib/api/types';
-import type { RsvpPatchDto, RsvpRequestDto, RsvpResponseDto, RsvpSessionResponsRequestDto, RsvpSessionResponsResponseDto } from '@/lib/api/types';
+import type {
+    RsvpPatchDto,
+    RsvpRequestDto,
+    RsvpResponseDto,
+    RsvpSessionResponsPatchDto,
+    RsvpSessionResponsRequestDto,
+    RsvpSessionResponsResponseDto,
+} from '@/lib/api/types';
 
 export const rsvpKeys = {
     list: (eventId: string) => ['events', eventId, 'rsvps'] as const,
@@ -47,6 +58,7 @@ export function setMemberRsvpIdInCaches(
 // GET /api/events/{eventId}/rsvps — HOST only, lists everyone's phone notes.
 export function useEventRsvps(eventId: string | null) {
     const { isAuthenticated } = useAuth();
+    const rsvpReadable = useModuleReadable(eventId, 'rsvp');
 
     return useQuery({
         queryKey: rsvpKeys.list(eventId ?? ''),
@@ -54,7 +66,7 @@ export function useEventRsvps(eventId: string | null) {
             const res = await api.get<RsvpResponseDto[]>(endpoints.events.rsvps(eventId!));
             return normalizeList(res).items;
         },
-        enabled: Boolean(eventId) && isAuthenticated,
+        enabled: Boolean(eventId) && isAuthenticated && rsvpReadable,
     });
 }
 
@@ -128,13 +140,42 @@ export function useRsvpSessionResponses(rsvpId: string | null) {
     });
 }
 
-export function useCreateRsvpSessionResponse() {
+// Sessions live both on their own list and on the event detail.
+function invalidateEventSessions(queryClient: ReturnType<typeof useQueryClient>, eventId: string) {
+    queryClient.invalidateQueries({ queryKey: eventSessionKeys.list(eventId) });
+    queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId), exact: true });
+}
+
+// POST /api/rsvp-session-responses — upserts: answering the same session
+// again updates the same row. 409 / 5086 means the host closed the session to
+// RSVPs, so the cached sessions are stale.
+export function useCreateRsvpSessionResponse(eventId: string) {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: (input: RsvpSessionResponsRequestDto) => api.post<RsvpSessionResponsResponseDto>(endpoints.rsvpSessionResponses.create, input),
         onSuccess: (response) => {
             queryClient.invalidateQueries({ queryKey: rsvpKeys.sessionResponses(response.rsvpId) });
+        },
+        onError: (error) => {
+            if (isSessionRsvpNotEnabledError(error)) invalidateEventSessions(queryClient, eventId);
+        },
+    });
+}
+
+// PATCH /api/rsvp-session-responses/{id} — the RSVP's own member or a host.
+// Same checks as create.
+export function useUpdateRsvpSessionResponse(eventId: string, rsvpId: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, input }: { id: string; input: RsvpSessionResponsPatchDto }) =>
+            api.patch<RsvpSessionResponsResponseDto>(endpoints.rsvpSessionResponses.byId(id), input),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: rsvpKeys.sessionResponses(rsvpId) });
+        },
+        onError: (error) => {
+            if (isSessionRsvpNotEnabledError(error)) invalidateEventSessions(queryClient, eventId);
         },
     });
 }

@@ -36,14 +36,13 @@ export function isHostManagedQrLink(qrLink: QrLinkResponseDto): boolean {
 
 // Whether the gallery QR feature (the upload link itself, any nav entry
 // pointing at it, and its dedicated page) should exist at all for this event:
-// the gallery module must be available, and the event type's own
-// qrUploadEnabled config flag — a plan/event-type setting, not something a
-// host toggles — must be on. See
-// event-type-feature-toggles-quotas-fe-integration.md §2.
+// the gallery module must be available, and the plan's qrUploadEnabled config
+// flag must be true (a missing key counts as off). Without both, the backend
+// mints no MEDIA_UPLOAD link. See gallery-qr-link-plan-gating-fe-integration.md.
 export function isGalleryQrFeatureEnabled(modules: EventModuleResponseDto[] | undefined): boolean {
     const galleryModule = modules?.find((module_) => module_.moduleKey === 'gallery');
     if (!galleryModule?.isAvailable) return false;
 
     const configuration = galleryModule.configuration as GalleryModuleConfiguration | null;
-    return configuration?.qrUploadEnabled ?? true;
+    return configuration?.qrUploadEnabled === true;
 }

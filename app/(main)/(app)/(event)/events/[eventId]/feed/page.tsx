@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
-import { serverGet } from '@/lib/api/serverFetch';
+import { serverGet, serverModuleReadable } from '@/lib/api/serverFetch';
 import type { PostResponseDto } from '@/lib/api/types';
 import { ACCESS_TOKEN_HEADER } from '@/lib/auth/authCookies';
 import { postKeys, POSTS_PAGE_SIZE } from '@/lib/postQueries';
@@ -23,6 +23,7 @@ export default async function Page({ params }: PageProps) {
 
     if (accessToken) {
         try {
+            if (!(await serverModuleReadable(eventId, 'posts', accessToken))) throw new Error('posts unavailable');
             const firstPage = await serverGet<Page<PostResponseDto>>(
                 `${endpoints.events.posts(eventId)}?page=0&size=${POSTS_PAGE_SIZE}`,
                 accessToken,

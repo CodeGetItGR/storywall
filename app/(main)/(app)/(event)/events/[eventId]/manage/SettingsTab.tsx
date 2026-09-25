@@ -126,7 +126,7 @@ export default function SettingsTab({
         coverObjectUrlRef.current = nextPreviewUrl;
         setCoverPreview(nextPreviewUrl);
         setSaved(false);
-        uploadMedia.mutate({ eventId: event.id, file }, { onSuccess: (media) => setPendingCoverMediaId(media.id) });
+        uploadMedia.mutate({ eventId: event.id, file, context: 'COVER' }, { onSuccess: (media) => setPendingCoverMediaId(media.id) });
     }
 
     function handleRemovePendingCover() {

@@ -157,11 +157,6 @@ export const endpoints = {
         claim: (id: string) => `/api/event-members/${id}/claim`,
     },
 
-    eventModules: {
-        create: '/api/event-modules',
-        byId: (id: string) => `/api/event-modules/${id}`,
-    },
-
     eventSessions: {
         create: '/api/event-sessions',
         byId: (id: string) => `/api/event-sessions/${id}`,

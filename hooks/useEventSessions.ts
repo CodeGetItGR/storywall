@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '@/hooks/useAuth';
 import { eventKeys } from '@/hooks/useEvent';
+import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
@@ -16,6 +17,7 @@ export const eventSessionKeys = {
 // GET /api/events/{eventId}/sessions — any member of the event, non-deleted only.
 export function useEventSessions(eventId: string | null) {
     const { isAuthenticated } = useAuth();
+    const scheduleReadable = useModuleReadable(eventId, 'schedule');
 
     return useQuery({
         queryKey: eventSessionKeys.list(eventId ?? ''),
@@ -23,7 +25,7 @@ export function useEventSessions(eventId: string | null) {
             const res = await api.get<EventSessionResponseDto[]>(endpoints.events.sessions(eventId!));
             return normalizeList(res).items;
         },
-        enabled: Boolean(eventId) && isAuthenticated,
+        enabled: Boolean(eventId) && isAuthenticated && scheduleReadable,
     });
 }
 

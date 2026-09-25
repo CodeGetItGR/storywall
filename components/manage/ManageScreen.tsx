@@ -166,7 +166,7 @@ export function ManageScreen() {
                     eventType={activeEvent.eventType}
                     schedule={activeEvent.schedule}
                     location={activeEvent.location}
-                    sessions={activeEvent.sessions}
+                    sessions={activeEvent.sessions ?? []}
                     eventModules={activeEvent.modules}
                 />
             )}

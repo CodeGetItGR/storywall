@@ -8,6 +8,7 @@ import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { Modal } from '@/components/ui/modal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
+import { useModuleReadable } from '@/hooks/useModuleReadable';
 import type { EventSessionPatchDto, EventSessionRequestDto, EventSessionResponseDto, EventStatus } from '@/lib/api/types';
 import {
     getCurrentDatetimeLocalValue,
@@ -16,6 +17,8 @@ import {
     isDatetimeLocalBefore,
     toDatetimeLocalValue,
 } from '@/lib/datetime';
+
+import { SessionRsvpSwitch } from './SessionRsvpSwitch';
 
 export type CreateScheduleSessionMutator = {
     mutateAsync: (payload: EventSessionRequestDto) => Promise<unknown>;
@@ -56,6 +59,8 @@ export function ScheduleEditorForm({
     const t = useTranslations('SchedulePage');
     const toErrorMessage = useApiErrorMessage();
     const { data: appConfig } = useAppConfig();
+    // Guests can only answer per session when the event also has RSVP.
+    const rsvpReadable = useModuleReadable(eventId, 'rsvp');
 
     const createAsSecondary = !editingSession && Boolean(secondaryPrefillTitle);
     const initialTitle = editingSession?.title ?? secondaryPrefillTitle ?? '';
@@ -64,6 +69,7 @@ export function ScheduleEditorForm({
     const initialEndAt = editingSession?.endAt ? toDatetimeLocalValue(editingSession.endAt) : '';
     const initialLocationName = editingSession?.locationName ?? '';
     const initialMapsUrl = editingSession?.mapsUrl ?? '';
+    const initialRsvpEnabled = editingSession?.rsvpEnabled ?? false;
 
     // Mirrors the event-level schedule lock (SettingsTab's eventHasStarted): once a
     // session's own startAt is in the past on a non-DRAFT event, the backend 409s
@@ -83,6 +89,7 @@ export function ScheduleEditorForm({
     const [endAt, setEndAt] = useState(initialEndAt);
     const [locationName, setLocationName] = useState(initialLocationName);
     const [mapsUrl, setMapsUrl] = useState(initialMapsUrl);
+    const [rsvpEnabled, setRsvpEnabled] = useState(initialRsvpEnabled);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [saved, setSaved] = useState(false);
     const formId = useId();
@@ -106,8 +113,9 @@ export function ScheduleEditorForm({
           (!datesDisabled && startAt !== initialStartAt) ||
           (!isMainSession && endAt !== initialEndAt) ||
           trimmedLocationName !== initialLocationName.trim() ||
-          trimmedMapsUrl !== initialMapsUrl.trim()
-        : Boolean(trimmedTitle || trimmedDescription || startAt || endAt || trimmedLocationName || trimmedMapsUrl);
+          trimmedMapsUrl !== initialMapsUrl.trim() ||
+          rsvpEnabled !== initialRsvpEnabled
+        : Boolean(trimmedTitle || trimmedDescription || startAt || endAt || trimmedLocationName || trimmedMapsUrl || rsvpEnabled);
 
     function handleTitleChange(event: ChangeEvent<HTMLInputElement>) {
         setTitle(event.target.value);
@@ -140,6 +148,7 @@ export function ScheduleEditorForm({
         setEndAt(initialEndAt);
         setLocationName(initialLocationName);
         setMapsUrl(initialMapsUrl);
+        setRsvpEnabled(initialRsvpEnabled);
         setSubmitError(null);
         setSaved(false);
     }
@@ -178,6 +187,7 @@ export function ScheduleEditorForm({
                 if (!isMainSession && endAt !== initialEndAt) payload.endAt = endAt ? new Date(endAt).toISOString() : null;
                 if (trimmedLocationName !== initialLocationName.trim()) payload.locationName = trimmedLocationName;
                 if (trimmedMapsUrl !== initialMapsUrl.trim()) payload.mapsUrl = trimmedMapsUrl || null;
+                if (rsvpEnabled !== initialRsvpEnabled) payload.rsvpEnabled = rsvpEnabled;
 
                 await updateSession.mutateAsync(payload);
             } else {
@@ -193,6 +203,7 @@ export function ScheduleEditorForm({
                 if (trimmedLocationName) payload.locationName = trimmedLocationName;
                 if (trimmedMapsUrl) payload.mapsUrl = trimmedMapsUrl;
                 if (createAsSecondary) payload.isSecondary = true;
+                if (rsvpEnabled) payload.rsvpEnabled = true;
 
                 await createSession.mutateAsync(payload);
             }
@@ -335,6 +346,9 @@ export function ScheduleEditorForm({
                             />
                         </FormFieldLabel>
                     </div>
+
+                    {/* Guest RSVP */}
+                    {rsvpReadable && <SessionRsvpSwitch label={t('host.fields.rsvpEnabled')} checked={rsvpEnabled} onCheckedChangeAction={setRsvpEnabled} />}
 
                     {submitError && <p className="text-xs font-medium text-rose-500">{submitError}</p>}
                     {saved && !submitError && <p className="text-xs font-medium text-emerald-600">{t('saved')}</p>}

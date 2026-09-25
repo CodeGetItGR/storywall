@@ -4,7 +4,8 @@
         "required": "required",
         "yes": "Yes",
         "no": "No",
-        "primaryHostOnly": "Only the event's main host can make purchases."
+        "primaryHostOnly": "Only the event's main host can make purchases.",
+        "seeUpgradeOptions": "See upgrade options"
     },
     "Demo": {
         "resetDemo": "Reset demo",
@@ -1686,7 +1687,8 @@
                 "startAt": "Starts",
                 "endAt": "Ends",
                 "locationName": "Location",
-                "mapsUrl": "Maps link"
+                "mapsUrl": "Maps link",
+                "rsvpEnabled": "Guests can RSVP to this session"
             },
             "placeholders": {
                 "title": "Welcome drinks",
@@ -1784,6 +1786,8 @@
         "accountTitle": "Gift account",
         "accountSubtitle": "Use these bank details if you would like to send a monetary gift.",
         "goBack": "Go back",
+        "unavailableTitle": "Gift account is not available",
+        "unavailableBody": "The gift account is not available on this event's current plan.",
         "loading": "Loading gift details...",
         "loadError": "Gift details could not be loaded.",
         "emptyTitle": "No gift account yet",
@@ -1811,6 +1815,8 @@
         "currentSubtitle": "Leave a message for the hosts.",
         "currentPlaceholder": "Write your wish...",
         "goBack": "Go back",
+        "unavailableTitle": "Wishbook is not available",
+        "unavailableBody": "Wishbook is not available on this event's current plan.",
         "title": "Wishbook",
         "subtitle": "Leave a message for the hosts.",
         "messagePlaceholder": "Write your message...",
@@ -1871,8 +1877,8 @@
         "moduleUnavailable": "Playlist is not available on this event's current plan.",
         "readOnly": "This event is read-only. Playlist changes are paused.",
         "allSongs": "All songs",
-        "disabledTitle": "Playlist is disabled",
-        "disabledBody": "This event has the playlist module turned off, so suggestions and votes are hidden until a host enables it.",
+        "disabledTitle": "Playlist is not available",
+        "disabledBody": "Playlist is not available for this event.",
         "moments": {
             "ceremony": "Ceremony",
             "cocktail": "Cocktail Hour",
@@ -1946,6 +1952,7 @@
         "joyfullyAccept": "Yes",
         "regretfullyDecline": "No",
         "plusOnes": "Plus ones",
+        "sessionsTitle": "Which parts will you attend?",
         "messagePlaceholder": "Optional — share your excitement or a special note...",
         "submitRsvp": "Submit RSVP",
         "submitError": "Something went wrong submitting your RSVP. Please try again.",
@@ -2380,8 +2387,7 @@
                 "applicability": {
                     "label": "Availability for this event type",
                     "UNSUPPORTED": "Unsupported",
-                    "DEFAULT_OFF": "Off",
-                    "DEFAULT_ON": "On",
+                    "DEFAULT_ON": "Supported",
                     "confirmTitle": "Change {module} for {eventType}?",
                     "confirmBody": "{before} → {after}",
                     "unsupportedWarning": "The module is removed from every event of this type.",
@@ -3355,7 +3361,8 @@
         "withdrawalNotHeld": "This request was already decided.",
         "qrSharedLinkHostManaged": "This shared link is managed automatically.",
         "eventSessionMainLocationReadOnly": "This is the event's main session, so its location always matches the event's own.",
-        "eventSessionLimitReached": "This event type has reached its limit of schedule sections."
+        "eventSessionLimitReached": "This event type has reached its limit of schedule sections.",
+        "sessionRsvpNotEnabled": "This session isn't taking RSVPs."
     },
     "LandingPage": {
         "shell": {

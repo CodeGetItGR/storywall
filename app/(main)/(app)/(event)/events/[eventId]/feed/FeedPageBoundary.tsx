@@ -10,6 +10,7 @@ import { useEventFeedStream, useEventPosts } from '@/hooks';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEvent } from '@/hooks/useEvent';
 import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
+import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { setMemberRsvpIdInCaches, useRsvp } from '@/hooks/useRsvps';
 import { ApiError } from '@/lib/api/client';
 import { EVENT_MODULE_KEYS, type ModuleKeyConvention } from '@/lib/api/types';
@@ -29,7 +30,9 @@ export function FeedPageBoundary({ eventId }: { eventId: string }) {
     const { data: appConfig } = useAppConfig();
 
     const { data: event, error, isLoading } = useEvent(eventId);
-    useEventFeedStream(eventId);
+    const postsReadable = useModuleReadable(eventId, 'posts');
+    const rsvpReadable = useModuleReadable(eventId, 'rsvp');
+    useEventFeedStream(postsReadable ? eventId : null);
     const { data: postPages, fetchNextPage, hasNextPage, isFetchingNextPage } = useEventPosts(eventId);
     const posts = useMemo(() => postPages?.pages.flatMap((page) => page.content) ?? [], [postPages?.pages]);
     const loadMoreRef = useInfiniteScrollSentinel(hasNextPage, fetchNextPage, posts.length);
@@ -40,7 +43,7 @@ export function FeedPageBoundary({ eventId }: { eventId: string }) {
         }
     }, [error, event, isLoading, router]);
 
-    const { error: submittedRsvpError } = useRsvp(currentMemberRsvpId ?? null);
+    const { error: submittedRsvpError } = useRsvp(rsvpReadable ? currentMemberRsvpId : null);
     const isStaleRsvp = submittedRsvpError instanceof ApiError && submittedRsvpError.status === 404;
 
     useEffect(() => {

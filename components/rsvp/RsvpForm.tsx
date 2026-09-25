@@ -4,7 +4,9 @@ import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type React from 'react';
 
+import { RsvpSessionQuestions } from '@/components/rsvp/RsvpSessionQuestions';
 import { useEventTypeVoice } from '@/hooks/useEventTypeVoice';
+import type { RsvpSessionQuestion } from '@/hooks/useRsvpSessionQuestions';
 import type { EventTypeConvention, RsvpPlusOnes } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +20,8 @@ interface RsvpFormProps {
     plusOnes: RsvpPlusOnes;
     onIncrementPlusOnes: (type: 'adult' | 'child') => () => void;
     onDecrementPlusOnes: (type: 'adult' | 'child') => () => void;
+    sessionQuestions: RsvpSessionQuestion[];
+    onSessionAnswer: (sessionId: string, isAttending: boolean) => void;
     message: string;
     maxMessageLength: number;
     onMessageChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
@@ -36,6 +40,8 @@ export function RsvpForm({
     plusOnes,
     onIncrementPlusOnes,
     onDecrementPlusOnes,
+    sessionQuestions,
+    onSessionAnswer,
     message,
     maxMessageLength,
     onMessageChange,
@@ -132,6 +138,9 @@ export function RsvpForm({
                                 </div>
                             </div>
                         </div>
+
+                        {/* Sessions */}
+                        {sessionQuestions.length > 0 && <RsvpSessionQuestions questions={sessionQuestions} onAnswerAction={onSessionAnswer} />}
                     </>
                 )}
 

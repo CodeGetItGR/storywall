@@ -7,11 +7,14 @@ import React, { useEffect, useState } from 'react';
 
 import { ModuleNotice } from '@/components/tools/ModuleNotice';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
+import { ModuleUnavailableState } from '@/components/tools/ModuleUnavailableState';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
+import { useModuleReadable } from '@/hooks/useModuleReadable';
+import { usePlanUpgradeHref } from '@/hooks/usePlanUpgradeHref';
 import { useCreateWishbookEntry, useDeleteWishbookEntry, useWishbook, useWishbookExportDownload } from '@/hooks/useWishbook';
 import type { WishbookEntryResponseDto } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
@@ -30,6 +33,8 @@ export default function WishbookPage() {
     const { data: appConfig } = useAppConfig();
     const eventId = event?.id ?? '';
     const wishbook = useWishbook(event?.id ?? null);
+    const wishbookReadable = useModuleReadable(event?.id ?? null, 'wishbook');
+    const upgradeHref = usePlanUpgradeHref(eventId);
     const createEntry = useCreateWishbookEntry(eventId);
     const deleteEntry = useDeleteWishbookEntry(eventId);
     const exportPdf = useWishbookExportDownload(eventId, t('exportFailed'));
@@ -83,6 +88,20 @@ export default function WishbookPage() {
     }
     function handleExportPdf() {
         void exportPdf.download();
+    }
+
+    if (event && !wishbookReadable) {
+        return (
+            <ModuleUnavailableState
+                backHref={routes.events.feed(eventId)}
+                backLabel={t('goBack')}
+                body={t('unavailableBody')}
+                icon={BookHeart}
+                iconClassName="text-pink-500"
+                title={t('unavailableTitle')}
+                upgradeHref={upgradeHref}
+            />
+        );
     }
 
     return (

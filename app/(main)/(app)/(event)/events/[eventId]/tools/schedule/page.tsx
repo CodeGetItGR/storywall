@@ -4,7 +4,7 @@ import { headers } from 'next/headers';
 import { eventSessionKeys } from '@/hooks/useEventSessions';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
-import { serverGet } from '@/lib/api/serverFetch';
+import { serverGet, serverModuleReadable } from '@/lib/api/serverFetch';
 import type { EventSessionResponseDto } from '@/lib/api/types';
 import { ACCESS_TOKEN_HEADER } from '@/lib/auth/authCookies';
 import { makeQueryClient } from '@/lib/queryClient';
@@ -22,6 +22,7 @@ export default async function Page({ params }: PageProps) {
 
     if (accessToken) {
         try {
+            if (!(await serverModuleReadable(eventId, 'schedule', accessToken))) throw new Error('schedule unavailable');
             const sessions = await serverGet<EventSessionResponseDto[]>(endpoints.events.sessions(eventId), accessToken);
             queryClient.setQueryData(eventSessionKeys.list(eventId), normalizeList(sessions).items);
         } catch {

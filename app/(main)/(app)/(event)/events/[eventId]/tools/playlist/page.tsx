@@ -5,7 +5,7 @@ import { eventModuleKeys } from '@/hooks/useEventModules';
 import { playlistKeys } from '@/hooks/usePlaylist';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
-import { serverGet } from '@/lib/api/serverFetch';
+import { serverGet, serverModuleReadable } from '@/lib/api/serverFetch';
 import type { EventModuleResponseDto, PlaylistSuggestionResponseDto } from '@/lib/api/types';
 import { ACCESS_TOKEN_HEADER } from '@/lib/auth/authCookies';
 import { makeQueryClient } from '@/lib/queryClient';
@@ -24,12 +24,13 @@ export default async function Page({ params }: PageProps) {
 
     if (accessToken) {
         try {
-            const [modules, suggestions] = await Promise.all([
-                serverGet<EventModuleResponseDto[]>(endpoints.events.modules(eventId), accessToken),
-                serverGet<PlaylistSuggestionResponseDto[]>(endpoints.events.playlistSuggestions(eventId), accessToken),
-            ]);
+            const modules = await serverGet<EventModuleResponseDto[]>(endpoints.events.modules(eventId), accessToken);
             queryClient.setQueryData(eventModuleKeys.list(eventId), normalizeList(modules).items);
-            queryClient.setQueryData(playlistKeys.suggestions(eventId), normalizeList(suggestions).items);
+
+            if (await serverModuleReadable(eventId, 'playlist', accessToken)) {
+                const suggestions = await serverGet<PlaylistSuggestionResponseDto[]>(endpoints.events.playlistSuggestions(eventId), accessToken);
+                queryClient.setQueryData(playlistKeys.suggestions(eventId), normalizeList(suggestions).items);
+            }
         } catch {
             // Best-effort — the client hooks fetch normally if this fails.
         }

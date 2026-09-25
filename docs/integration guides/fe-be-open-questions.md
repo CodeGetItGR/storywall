@@ -118,14 +118,13 @@ line to the confirmation body. Nothing renders until BE publishes the field.
 
 **Ask BE:** add `scheduleMovedAfterPayment: boolean` to `GET /api/events/{id}/withdrawal-preview`.
 
-## Extra — module gating
+## Extra — module gating — MOOT (2026-09-24)
 
-`ModuleKeyConvention` is typed to exactly the 5 real keys
-(`posts | rsvp | playlist | stories | gallery`), so TypeScript already prevents checking against
-nonexistent keys like `schedule`/`gifts`/`quiz`. The `tools/schedule` page isn't gated by
-modules at all — it just renders mock data unconditionally. Missing vs. explicit
-`isEnabled: false` both resolve to "not rendered," no distinction made — fine given current
-usage.
+Modules are plan-owned by design (`plan-owned-modules-fe-integration.md`): hosts can't switch
+them on or off, `PATCH /api/event-modules/{id}` returns `405`, and there is no module management
+UI to build. The FE gates each module's reads and writes on `GET /api/events/{eventId}/modules`
+(`isAvailable`, so a DRAFT event's modules stay hidden; only a deleted event's download-only
+gallery and wishbook go by `isEnabled`. See `readableModuleKeys` in `lib/eventLifecycle.ts`), and an unavailable module points the main host to the plan upgrade.
 
 ---
 
@@ -139,11 +138,15 @@ invitations management (full CRUD), event settings, playlist suggestions & votes
 them yet:
 
 - **Co-host management** — `useEventHosts` etc. exist, zero UI callers.
-- **Event modules** — read-only in practice; `useUpdateEventModule`/create/delete are all
-  unused, so there's no settings UI to actually enable/disable modules.
+- ~~**Event modules**~~ — moot (2026-09-24): modules follow the plan, so there is nothing for a
+  host to enable or disable. The unused create/update/delete hooks were removed.
 - **Event sessions/agenda** — full CRUD hooks exist but are unused; the real "Schedule" tool
   page uses `lib/mock-data` instead.
-- **RSVP per-session responses** (`rsvp-session-responses`) — hooks exist, no callers.
+- **RSVP per-session responses** (`rsvp-session-responses`) — backend contract since 2026-09-24
+  (`plan-owned-modules-fe-integration.md` §7): hosts opt each session in with `rsvpEnabled`,
+  `POST` upserts, `PATCH /api/rsvp-session-responses/{id}` changes an answer, and `409 / 5086`
+  means the session isn't open to RSVPs. The host session form has the switch and the hooks
+  follow the contract; the guest-facing per-session question has no UI yet.
 
 **Confirmed mock, not wired**:
 
@@ -164,6 +167,6 @@ contract is gone, so that work is a rewrite against a new DTO shape, and its val
 whether host-facing quota messaging is a near-term priority. Note the sweep that produces these
 notifications is disabled by default, so the feed is empty until ops enables it.
 
-Absent that, the biggest "hook exists, nobody calls it" gaps remain the event-modules management UI
-and co-host management UI. Newly available and unwired: the plan/usage screens
+Absent that, the biggest "hook exists, nobody calls it" gap is the co-host management UI (the
+event-modules management UI is moot: modules are plan-owned). Newly available and unwired: the plan/usage screens
 (`GET /api/events/{id}/usage`, `GET /api/me/usage`).

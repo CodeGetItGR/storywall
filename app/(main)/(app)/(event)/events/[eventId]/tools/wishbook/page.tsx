@@ -4,7 +4,7 @@ import { headers } from 'next/headers';
 import { WISHBOOK_PAGE_SIZE, wishbookKeys } from '@/hooks/useWishbook';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
-import { serverGet } from '@/lib/api/serverFetch';
+import { serverGet, serverModuleReadable } from '@/lib/api/serverFetch';
 import type { WishbookEntryResponseDto } from '@/lib/api/types';
 import { ACCESS_TOKEN_HEADER } from '@/lib/auth/authCookies';
 import { makeQueryClient } from '@/lib/queryClient';
@@ -22,6 +22,7 @@ export default async function Page({ params }: PageProps) {
 
     if (accessToken) {
         try {
+            if (!(await serverModuleReadable(eventId, 'wishbook', accessToken))) throw new Error('wishbook unavailable');
             const [firstPage, count] = await Promise.all([
                 serverGet<Page<WishbookEntryResponseDto>>(`${endpoints.events.wishbook(eventId)}?page=0&size=${WISHBOOK_PAGE_SIZE}`, accessToken),
                 serverGet<number>(endpoints.events.wishbookCount(eventId), accessToken),

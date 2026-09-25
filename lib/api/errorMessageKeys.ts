@@ -101,6 +101,7 @@ export type ApiErrorMessageKey =
     | 'invalidPaidServiceKind'
     | 'qrLinkNotFound'
     | 'rateLimited'
+    | 'sessionRsvpNotEnabled'
     | 'reactionTypeInUse'
     | 'reactionTypeLimitExceeded'
     | 'reactionTypeNotUsable'
@@ -218,6 +219,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.QR_LINK_NOT_AVAILABLE]: 'qrLinkNotAvailable',
     [ERROR_CODES.QR_SHARED_LINK_HOST_MANAGED]: 'qrSharedLinkHostManaged',
     [ERROR_CODES.RATE_LIMITED]: 'rateLimited',
+    [ERROR_CODES.SESSION_RSVP_NOT_ENABLED]: 'sessionRsvpNotEnabled',
     [ERROR_CODES.EVENT_SCHEDULE_LOCKED]: 'eventScheduleLocked',
     [ERROR_CODES.REACTION_TYPE_IN_USE]: 'reactionTypeInUse',
     [ERROR_CODES.REACTION_TYPE_LIMIT_EXCEEDED]: 'reactionTypeLimitExceeded',

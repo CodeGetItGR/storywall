@@ -4,6 +4,7 @@ import { type InfiniteData, type QueryClient, useInfiniteQuery, useMutation, use
 import { useRef } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
+import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList, type Page } from '@/lib/api/pagination';
@@ -38,6 +39,7 @@ export function patchPostInCaches(queryClient: QueryClient, eventId: string, pos
 // a feed needs no follow-up requests.
 export function useEventPosts(eventId: string | null) {
     const { isAuthenticated } = useAuth();
+    const postsReadable = useModuleReadable(eventId, 'posts');
     const queryClient = useQueryClient();
     const etags = useRef(new Map<string, string>());
 
@@ -59,7 +61,7 @@ export function useEventPosts(eventId: string | null) {
         },
         initialPageParam: 0,
         getNextPageParam: (lastPage) => (lastPage.page.number + 1 < lastPage.page.totalPages ? lastPage.page.number + 1 : undefined),
-        enabled: Boolean(eventId) && isAuthenticated,
+        enabled: Boolean(eventId) && isAuthenticated && postsReadable,
         refetchInterval: 60_000,
     });
 }

@@ -283,7 +283,6 @@ export const demoHandlers = [
 
     // --- Modules ---
     ...buildArrayHandlers(demoDb, 'modules', '/api/events/:eventId/modules'),
-    ...buildDetailHandlers(demoDb, 'modules', '/api/event-modules/:id', { patch: true, del: true }),
 
     // --- Sessions ---
     ...buildArrayHandlers(demoDb, 'sessions', '/api/events/:eventId/sessions'),

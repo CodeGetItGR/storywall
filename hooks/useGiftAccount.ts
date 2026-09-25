@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '@/hooks/useAuth';
+import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { api, ApiError } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { EventGiftAccountRequestDto, EventGiftAccountResponseDto } from '@/lib/api/types';
@@ -11,6 +12,7 @@ export const giftAccountKeys = { event: (eventId: string) => ['events', eventId,
 
 export function useGiftAccount(eventId: string | null) {
     const { isAuthenticated } = useAuth();
+    const wishlistReadable = useModuleReadable(eventId, 'wishlist');
 
     return useQuery({
         queryKey: giftAccountKeys.event(eventId ?? ''),
@@ -22,7 +24,7 @@ export function useGiftAccount(eventId: string | null) {
                 throw error;
             }
         },
-        enabled: Boolean(eventId) && isAuthenticated,
+        enabled: Boolean(eventId) && isAuthenticated && wishlistReadable,
         staleTime: 0,
         gcTime: 0,
     });

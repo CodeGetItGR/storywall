@@ -156,7 +156,7 @@ features read from here per-plan, not from the type-level matrix.
 Both axes named in the older version of this doc are implemented:
 
 - **Per event type:** `PlatformEventTypeModule` gives every `(eventTypeKey, moduleKey)` pair an
-  `applicability` (`UNSUPPORTED` / `DEFAULT_OFF` / `DEFAULT_ON`). A module `UNSUPPORTED` for a type
+  `applicability` (`UNSUPPORTED` / `DEFAULT_ON`; `DEFAULT_OFF` was removed 2026-09-24). A module `UNSUPPORTED` for a type
   gets no `EventModule` row at all, ever, for events of that type. `PlatformEventTypeModule` also
   carries a `defaultConfig`, but as of 2026-09-13 that's only a seed template — the runtime source
   of truth for config is the per-plan table in §6 above.
@@ -164,11 +164,10 @@ Both axes named in the older version of this doc are implemented:
   or `GET/PATCH /api/admin/event-types/{eventTypeKey}/modules` (admin, sees `UNSUPPORTED` rows
   too) — both documented in
   `docs/fe-guides/event-lifecycle-locks-and-event-types-fe-integration.md`.
-- **Per plan:** `PlanTier.moduleKeys` still decides whether a module the type supports is switched
-  on by default (`isEnabled`) at creation, and gates whether a host can flip a currently-disabled
-  module back on via `PATCH /api/event-modules/{id}` (`ModuleAvailabilityService.requireConfigurable`).
-  A host can always disable one of their own modules; enabling one their plan doesn't include 409s
-  `MODULE_NOT_AVAILABLE` unless they've bought a `MODULE_UNLOCK` add-on for it.
+- **Per plan:** `PlanTier.moduleKeys` (plus any `MODULE_UNLOCK`) decides whether each module the
+  type supports is on (`isEnabled`). Since 2026-09-24 this is re-derived at creation, on every plan
+  change and on an unlock purchase, and hosts can't switch modules themselves (`PATCH
+  /api/event-modules/{id}` is gone). See `plan-owned-modules-fe-integration.md`.
 - Buying a `MODULE_UNLOCK` add-on (`POST /api/events/{eventId}/addons`) is gated by the same
   matrix: a module `UNSUPPORTED` for the event's type 409s `MODULE_NOT_AVAILABLE` even if the
   plan's catalog lists it. This purchase path only exists **before** activation (event still

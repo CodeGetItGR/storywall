@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '@/hooks/useAuth';
+import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
@@ -16,6 +17,7 @@ export const storyKeys = {
 // client-side until confirmed otherwise.
 export function useEventStories(eventId: string | null) {
     const { isAuthenticated } = useAuth();
+    const storiesReadable = useModuleReadable(eventId, 'stories');
 
     return useQuery({
         queryKey: storyKeys.list(eventId ?? ''),
@@ -23,7 +25,7 @@ export function useEventStories(eventId: string | null) {
             const res = await api.get<StoryResponseDto[]>(endpoints.events.stories(eventId!));
             return normalizeList(res).items;
         },
-        enabled: Boolean(eventId) && isAuthenticated,
+        enabled: Boolean(eventId) && isAuthenticated && storiesReadable,
     });
 }
 

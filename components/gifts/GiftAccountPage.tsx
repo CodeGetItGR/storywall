@@ -7,9 +7,12 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
+import { ModuleUnavailableState } from '@/components/tools/ModuleUnavailableState';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useGiftAccount } from '@/hooks/useGiftAccount';
+import { useModuleReadable } from '@/hooks/useModuleReadable';
+import { usePlanUpgradeHref } from '@/hooks/usePlanUpgradeHref';
 import { giftAccountSetupHref } from '@/lib/manageSectionTargets';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -27,6 +30,8 @@ export function GiftAccountPage() {
     const event = useActiveEvent();
     const isHost = useIsHost();
     const account = useGiftAccount(event?.id ?? null);
+    const wishlistReadable = useModuleReadable(event?.id ?? null, 'wishlist');
+    const upgradeHref = usePlanUpgradeHref(event?.id ?? '');
     const [copied, setCopied] = useState(false);
 
     const title = t('accountTitle');
@@ -38,6 +43,20 @@ export function GiftAccountPage() {
         await navigator.clipboard.writeText(formattedIban);
         setCopied(true);
         window.setTimeout(() => setCopied(false), 1500);
+    }
+
+    if (event && !wishlistReadable) {
+        return (
+            <ModuleUnavailableState
+                backHref={routes.events.feed(event.id)}
+                backLabel={t('goBack')}
+                body={t('unavailableBody')}
+                icon={Gift}
+                iconClassName="text-rose-500"
+                title={t('unavailableTitle')}
+                upgradeHref={upgradeHref}
+            />
+        );
     }
 
     // Header

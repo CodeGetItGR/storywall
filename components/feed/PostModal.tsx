@@ -7,7 +7,9 @@ import { PostCommentsPanel } from '@/components/feed/post';
 import { Modal } from '@/components/ui/modal';
 import { usePost, usePostCommentThread, usePostModal } from '@/hooks';
 import { useAppConfig } from '@/hooks/useAppConfig';
+import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { ApiError } from '@/lib/api/client';
+import { isModuleNotAvailableError } from '@/lib/api/errors';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { useActiveEvent, useActiveMember } from '@/providers/EventProvider';
 
@@ -16,7 +18,8 @@ export function PostModal() {
     const { postId, isOpen, close } = usePostModal();
     const activeEvent = useActiveEvent();
     const activeMember = useActiveMember();
-    const { data: post, error, isPending } = usePost(postId);
+    const postsReadable = useModuleReadable(activeEvent?.id ?? null, 'posts');
+    const { data: post, error, isPending } = usePost(postsReadable ? postId : null);
     const { data: appConfig } = useAppConfig();
 
     const canComment = Boolean(activeMember) && isEventWritable(activeEvent?.status);
@@ -79,7 +82,7 @@ export function PostModal() {
 
     return (
         <Modal
-            open={isOpen}
+            open={isOpen && postsReadable}
             onClose={handleClose}
             dismissOnBack={false}
             size="lg"
@@ -89,7 +92,7 @@ export function PostModal() {
         >
             {isPending && <p className="py-16 text-center text-sm text-ink-muted">{t('loading')}</p>}
 
-            {error instanceof ApiError && error.status === 404 && (
+            {((error instanceof ApiError && error.status === 404) || isModuleNotAvailableError(error)) && (
                 <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
                     <p className="mb-1 text-base font-semibold text-ink">{t('notFoundTitle')}</p>
                     <p className="text-sm text-ink-muted">{t('notFoundDescription')}</p>

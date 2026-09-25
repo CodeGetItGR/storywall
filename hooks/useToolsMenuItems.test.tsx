@@ -27,7 +27,12 @@ function event(overrides: Record<string, unknown> = {}) {
         id: 'event-1',
         status: 'ACTIVE',
         deletedAt: null,
-        modules: ['rsvp', 'gallery', 'wishbook', 'wishlist'].map((moduleKey) => ({ moduleKey, isEnabled: true, isAvailable: true })),
+        modules: ['rsvp', 'gallery', 'wishbook', 'wishlist'].map((moduleKey) => ({
+            moduleKey,
+            isEnabled: true,
+            isAvailable: true,
+            configuration: moduleKey === 'gallery' ? { qrUploadEnabled: true } : {},
+        })),
         ...overrides,
     };
 }
@@ -70,5 +75,14 @@ describe('useHostMenuItems', () => {
         mocks.activeEvent = event();
         const { result } = renderHook(() => useHostMenuItems());
         expect(result.current.map((item) => item.key)).toEqual(['manage', 'galleryQr', 'invitationsQr', 'help']);
+    });
+
+    // A missing qrUploadEnabled key counts as off: the backend mints no upload link.
+    it('hides the gallery QR page when the gallery config has no qrUploadEnabled', () => {
+        mocks.activeEvent = event({
+            modules: [{ moduleKey: 'gallery', isEnabled: true, isAvailable: true, configuration: {} }],
+        });
+        const { result } = renderHook(() => useHostMenuItems());
+        expect(result.current.map((item) => item.key)).not.toContain('galleryQr');
     });
 });

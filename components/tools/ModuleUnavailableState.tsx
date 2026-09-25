@@ -1,6 +1,8 @@
 'use client';
 
-import { AlertCircle, type LucideIcon } from 'lucide-react';
+import { AlertCircle, ArrowRight, type LucideIcon } from 'lucide-react';
+import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 
@@ -12,6 +14,7 @@ export function ModuleUnavailableState({
     icon,
     iconClassName,
     title,
+    upgradeHref = null,
 }: {
     backHref: string;
     backLabel: string;
@@ -19,7 +22,10 @@ export function ModuleUnavailableState({
     icon: LucideIcon;
     iconClassName: string;
     title: string;
+    upgradeHref?: string | null;
 }) {
+    const t = useTranslations('Common');
+
     return (
         <ModulePageShell
             maxWidth="2xl"
@@ -39,6 +45,13 @@ export function ModuleUnavailableState({
                     <div className="min-w-0">
                         <h2 className="text-sm font-semibold text-ink">{title}</h2>
                         <p className="mt-1 text-sm leading-relaxed text-ink-muted">{body}</p>
+                        {/* Upgrade */}
+                        {upgradeHref && (
+                            <Link href={upgradeHref} className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary-dark hover:underline">
+                                {t('seeUpgradeOptions')}
+                                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>

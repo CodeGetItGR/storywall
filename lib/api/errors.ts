@@ -116,6 +116,7 @@ export const ERROR_CODES = {
     HOST_TRANSFER_WITHDRAWAL_OPEN: 5081,
     PURCHASE_WITHDRAWAL_OPEN: 5084,
     COVERAGE_ENDED: 5085,
+    SESSION_RSVP_NOT_ENABLED: 5086,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the
@@ -170,6 +171,12 @@ export function getHostTransferUnlocksAt(error: unknown): string | undefined {
 
 export function isModuleNotAvailableError(error: unknown): boolean {
     return getErrorCode(error) === ERROR_CODES.MODULE_NOT_AVAILABLE;
+}
+
+// The session isn't open to RSVPs (rsvpEnabled is false) — refetch the
+// sessions. See plan-owned-modules-fe-integration.md §7.
+export function isSessionRsvpNotEnabledError(error: unknown): boolean {
+    return getErrorCode(error) === ERROR_CODES.SESSION_RSVP_NOT_ENABLED;
 }
 
 // Gallery's QR upload-link toggle is a `configuration` flag, not a module, so

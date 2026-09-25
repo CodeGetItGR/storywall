@@ -21,6 +21,8 @@ export function RsvpSubmitFormContent({ data }: { data: RsvpSubmitPageData }) {
                 plusOnes={data.plusOnes}
                 onIncrementPlusOnes={data.onIncrementPlusOnes}
                 onDecrementPlusOnes={data.onDecrementPlusOnes}
+                sessionQuestions={data.sessionQuestions}
+                onSessionAnswer={data.onSessionAnswer}
                 message={data.message}
                 maxMessageLength={data.maxMessageLength}
                 onMessageChange={data.onMessageChange}

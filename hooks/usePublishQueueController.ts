@@ -114,7 +114,7 @@ export function usePublishQueueController(): PublishQueueContextValue {
                     return preset ? bakeStoryFilter(image.file, preset) : image.file;
                 }),
             );
-            result = await uploadBatch.mutateAsync({ eventId, files });
+            result = await uploadBatch.mutateAsync({ eventId, files, context: 'POST' });
         } catch (error) {
             updateJob(jobId, (current) => ({ ...current, status: 'error', error: getPostErrorMessage(error) }));
             return null;

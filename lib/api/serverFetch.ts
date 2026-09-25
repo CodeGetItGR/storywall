@@ -6,6 +6,9 @@
 // around every call site).
 
 import { getServerLocale } from '@/i18n/serverLocale';
+import { endpoints } from '@/lib/api/endpoints';
+import type { EventDetailResponseDto, ModuleKeyConvention } from '@/lib/api/types';
+import { readableModuleKeys } from '@/lib/eventLifecycle';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 
@@ -24,6 +27,14 @@ export async function serverGet<T>(path: string, accessToken: string): Promise<T
     }
 
     return res.json() as Promise<T>;
+}
+
+// Whether the event has the module, mirroring useModuleReadable, so a prefetch
+// skips a read the backend would answer with 409 / 5012. The event detail
+// fetch is deduped with the (event) layout's own within one render.
+export async function serverModuleReadable(eventId: string, moduleKey: ModuleKeyConvention, accessToken: string): Promise<boolean> {
+    const event = await serverGet<EventDetailResponseDto>(endpoints.events.byId(eventId), accessToken);
+    return readableModuleKeys(event).has(moduleKey);
 }
 
 // Server-only: like serverGet, but for endpoints that don't require auth (e.g.

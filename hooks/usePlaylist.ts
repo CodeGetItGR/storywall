@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useAuth } from '@/hooks/useAuth';
+import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
@@ -21,6 +22,7 @@ export const playlistKeys = {
 // GET /api/events/{eventId}/playlist-suggestions — any member of the event.
 export function usePlaylistSuggestions(eventId: string | null) {
     const { isAuthenticated } = useAuth();
+    const playlistReadable = useModuleReadable(eventId, 'playlist');
 
     return useQuery({
         queryKey: playlistKeys.suggestions(eventId ?? ''),
@@ -28,7 +30,7 @@ export function usePlaylistSuggestions(eventId: string | null) {
             const res = await api.get<PlaylistSuggestionResponseDto[]>(endpoints.events.playlistSuggestions(eventId!));
             return normalizeList(res).items;
         },
-        enabled: Boolean(eventId) && isAuthenticated,
+        enabled: Boolean(eventId) && isAuthenticated && playlistReadable,
     });
 }
 
@@ -78,13 +80,14 @@ export function usePlaylistVotes(suggestionId: string | null, enabled = true) {
 
 export function usePlaylistLeaderboard(eventId: string | null, enabled = true) {
     const { isAuthenticated } = useAuth();
+    const playlistReadable = useModuleReadable(eventId, 'playlist');
 
     return useQuery({
         queryKey: playlistKeys.leaderboard(eventId ?? ''),
         queryFn: async () => {
             return api.get<PlaylistSuggestionLeaderboardDto[]>(endpoints.events.playlistSuggestionsLeaderboard(eventId!));
         },
-        enabled: Boolean(eventId) && enabled && isAuthenticated,
+        enabled: Boolean(eventId) && enabled && isAuthenticated && playlistReadable,
     });
 }
 

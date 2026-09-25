@@ -8,7 +8,6 @@ import { AnonymousQrMediaUploadForm } from '@/components/invite/AnonymousQrMedia
 import { InviteLayout } from '@/components/invite/InviteLayout';
 import { InviteTerminalState } from '@/components/invite/InviteTerminalState';
 import { QrLandingState } from '@/components/invite/QrLandingState';
-import { useMediaItem } from '@/hooks/useMedia';
 import { useQrLinkResolution } from '@/hooks/useQrLinks';
 import { getQrTerminalCopyKey } from '@/lib/qrLinks';
 import { routes } from '@/lib/routes';
@@ -20,7 +19,7 @@ export default function QrCodeLandingBoundary({ token }: { token: string }) {
     const router = useRouter();
 
     const { data: resolution, isLoading, error } = useQrLinkResolution(token);
-    const { data: coverMedia } = useMediaItem(resolution?.status === 'ACTIVE' ? (resolution.coverMediaId ?? null) : null);
+    const coverMedia = resolution?.status === 'ACTIVE' ? (resolution.coverMedia ?? null) : null;
 
     const isRedirectingToInvite = resolution?.status === 'ACTIVE' && resolution.targetType === 'INVITATION';
     const isRedirectingToRegister = resolution?.status === 'ACTIVE' && resolution.targetType === 'EVENT_JOIN';

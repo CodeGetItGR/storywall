@@ -57,7 +57,7 @@ const matrix: EventTypeModuleResponseDto[] = [
     {
         eventTypeKey: 'WEDDING',
         moduleKey: 'schedule',
-        applicability: 'DEFAULT_OFF',
+        applicability: 'DEFAULT_ON',
         defaultConfig: { maxSections: 3 },
         sortOrder: 1,
         includedInPlan: null,

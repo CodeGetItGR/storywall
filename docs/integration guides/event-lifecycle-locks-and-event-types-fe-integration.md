@@ -2,7 +2,7 @@
 
 Covers four related changes, all about what stops being freely editable once an event exists or
 has started: **which modules an event has is locked server-side, but the host can now switch an
-existing one on or off**, **event visibility only supports `PRIVATE`**, **`eventType` is now a
+existing one on or off** (superseded 2026-09-24: modules are plan-owned, see `plan-owned-modules-fe-integration.md`), **event visibility only supports `PRIVATE`**, **`eventType` is now a
 closed, admin-toggleable set that drives which modules an event gets**, and **session
 `startAt`/`endAt` get the same schedule lock the event itself already had**. See
 `frontend-integration-guide.md` §0 for base setup (auth header, error shape) — this doc only
@@ -40,40 +40,12 @@ every `ModuleKey` any more — and there is still no way to add or remove a row 
 with an unknown `moduleKey` still returns the pre-existing `400` /
 `errorCode: 3006 INVALID_MODULE_KEY` first — key validity is checked before the lock.
 
-**`PATCH /api/event-modules/{id}` on `isEnabled` now works, asymmetrically:**
+**Superseded 2026-09-24:** hosts can no longer switch modules on or off. `PATCH
+/api/event-modules/{id}` has been removed (`405`). Each row's `isEnabled` and `configuration` now
+follow the event's plan and unlocks on every change. See `plan-owned-modules-fe-integration.md`.
 
-- **Turning a module off always succeeds (`200`).** No commercial check — a host can switch off
-  any module their event currently has.
-- **Turning a module on is gated the same way availability always has been** — the event's plan
-  must include the module, or the event must hold a `MODULE_UNLOCK` entitlement for it (§ below,
-  and `one-time-module-unlocks-fe-integration.md`). If neither is true: **`409`**,
-  `errorCode: 5012` / `errorKey: "MODULE_NOT_AVAILABLE"`.
-
-```json
-PATCH /api/event-modules/{id}
-{ "isEnabled": true }
-
-→ 409  (event's plan doesn't include this module, and no unlock either)
-{
-  "status": 409,
-  "errorCode": 5012,
-  "errorKey": "MODULE_NOT_AVAILABLE",
-  "detail": "The gallery module is not available for this event."
-}
-```
-
-A module a host switched off can always be switched back on later, as long as the commercial gate
-still passes — the toggle itself never revokes what was paid for. `configuration` still patches
-independently of `isEnabled`, exactly as before.
-
-**Action:** if there's a hidden/disabled module-toggle affordance, it's real again — wire it up
-(or leave it hidden, your call), rendering it as **on/off**, not add/remove: the set of modules
-shown per event doesn't change, only whether each one is live. For a module the plan doesn't
-include, offer the `MODULE_UNLOCK` purchase flow instead of a bare toggle — flipping it straight
-to `true` will 409.
-
-Reading modules is unaffected: `GET /api/events/{eventId}/modules` and the gating pattern
-(`modules.find(m => m.moduleKey === 'posts')?.isEnabled`) work exactly as before.
+Read the gate from `isAvailable` on each row of `GET /api/events/{eventId}/modules`. A module's own
+endpoints now return `5012` when it is off, reads included.
 
 ## 2. Event visibility is now `PRIVATE`-only
 
@@ -212,15 +184,15 @@ GET /api/event-types/WEDDING/modules?planTierCode=EVENT_STANDARD
 [
   { "eventTypeKey": "WEDDING", "moduleKey": "posts", "applicability": "DEFAULT_ON",
     "defaultConfig": {}, "sortOrder": 0, "includedInPlan": true },
-  { "eventTypeKey": "WEDDING", "moduleKey": "wishlist", "applicability": "DEFAULT_OFF",
+  { "eventTypeKey": "WEDDING", "moduleKey": "wishlist", "applicability": "DEFAULT_ON",
     "defaultConfig": {}, "sortOrder": 4, "includedInPlan": false }
 ]
 ```
 
 - **`UNSUPPORTED` rows are omitted entirely** — they're not an offer, the module doesn't exist for
   that type. Don't show them crossed out; just don't render them.
-- **`applicability`** is `DEFAULT_ON` or `DEFAULT_OFF` for every row you get back — it's what the
-  module's toggle starts at when the event is created, before the host touches anything.
+- **`applicability`** is `DEFAULT_ON` for every row you get back: the type supports the module.
+  (`DEFAULT_OFF` was removed on 2026-09-24. Whether the module is on is the plan's call.)
 - **`includedInPlan`** is only present (non-null) when `planTierCode` was passed: `true` means the
   named plan covers it going in; `false` means the row is real for this type but would need a
   `MODULE_UNLOCK` purchase (or a plan upgrade) to switch on. Omit `planTierCode` for a
@@ -250,7 +222,7 @@ New, `ROLE_ADMIN`-only:
 | Method | Path | Notes |
 |---|---|---|
 | GET | `/api/admin/event-types/{eventTypeKey}/modules` | every row, **including `UNSUPPORTED`** — the admin view needs to see and re-enable those, unlike the public preview above |
-| PATCH | `/api/admin/event-types/{eventTypeKey}/modules/{moduleKey}` | body: any of `applicability` (`UNSUPPORTED`\|`DEFAULT_OFF`\|`DEFAULT_ON`), `defaultConfig` (object), `sortOrder` |
+| PATCH | `/api/admin/event-types/{eventTypeKey}/modules/{moduleKey}` | body: any of `applicability` (`UNSUPPORTED`\|`DEFAULT_ON`), `defaultConfig` (object), `sortOrder` |
 
 ```json
 PATCH /api/admin/event-types/WEDDING/modules/gallery
@@ -313,8 +285,8 @@ does), no change needed — this only makes the server agree.
 | Code | Key | Meaning |
 |---|---|---|
 | 3018 | `INVALID_EVENT_TYPE` | `eventType` isn't one of the known keys at all |
-| 5012 | `MODULE_NOT_AVAILABLE` | `PATCH /api/event-modules/{id}` tried to turn a module **on** and the event's plan doesn't include it and no unlock covers it either (§1) — turning one **off** never hits this |
-| 5049 | `EVENT_MODULE_COMPOSITION_LOCKED` | module add or remove attempted after event creation (`POST`/`DELETE` only — `PATCH`'s `isEnabled` is no longer locked, see §1) |
+| 5012 | `MODULE_NOT_AVAILABLE` | a module's endpoint was used (read, create, edit or upload) while the event doesn't have it. See `plan-owned-modules-fe-integration.md` |
+| 5049 | `EVENT_MODULE_COMPOSITION_LOCKED` | module add or remove attempted after event creation (`POST`/`DELETE`; `PATCH` no longer exists, see §1) |
 | 5050 | `EVENT_VISIBILITY_NOT_SUPPORTED` | `visibility: PUBLIC` attempted on create or patch |
 | 5051 | `EVENT_TYPE_NOT_AVAILABLE` | `eventType` is real but currently disabled in the registry |
 | 5052 | `EVENT_SESSION_SCHEDULE_LOCKED` | session `startAt`/`endAt` change attempted after it started/went live |

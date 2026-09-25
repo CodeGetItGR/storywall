@@ -7,6 +7,7 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig, useAppRsvpConfig } from '@/hooks/useAppConfig';
 import { useRsvpAvailability } from '@/hooks/useRsvpAvailability';
 import { setMemberRsvpIdInCaches, useCreateRsvp, useRsvp, useUpdateRsvp } from '@/hooks/useRsvps';
+import { useRsvpSessionQuestions } from '@/hooks/useRsvpSessionQuestions';
 import { ApiError } from '@/lib/api/client';
 import { isModuleNotAvailableError } from '@/lib/api/errors';
 import type { AttendanceStatus, RsvpPlusOnes } from '@/lib/api/types';
@@ -51,6 +52,7 @@ export function useRsvpSubmitPageData() {
     const [submitted, setSubmitted] = useState(false);
 
     const rsvpAvailability = useRsvpAvailability();
+    const sessionQuestions = useRsvpSessionQuestions(eventId, activeEvent?.modules);
 
     const { data: existingRsvp, error: existingRsvpError } = useRsvp(rsvpAvailability.isAvailable ? (rsvpId ?? null) : null);
     const isStaleRsvp = existingRsvpError instanceof ApiError && existingRsvpError.status === 404;
@@ -143,30 +145,41 @@ export function useRsvpSubmitPageData() {
             const childCount = attendanceStatus === 'ATTENDING' ? plusOnes.childCount : 0;
 
             try {
-                if (effectiveRsvpId) {
-                    await updateRsvp.mutateAsync({
-                        attendanceStatus,
-                        adultCount,
-                        childCount,
-                        notes: message || undefined,
-                    });
-                } else {
-                    await createRsvp.mutateAsync({
-                        eventMemberId: memberId,
-                        attendanceStatus,
-                        adultCount,
-                        childCount,
-                        notes: message || undefined,
-                        submittedAt: new Date().toISOString(),
-                    });
-                }
+                const rsvp = effectiveRsvpId
+                    ? await updateRsvp.mutateAsync({
+                          attendanceStatus,
+                          adultCount,
+                          childCount,
+                          notes: message || undefined,
+                      })
+                    : await createRsvp.mutateAsync({
+                          eventMemberId: memberId,
+                          attendanceStatus,
+                          adultCount,
+                          childCount,
+                          notes: message || undefined,
+                          submittedAt: new Date().toISOString(),
+                      });
+                // Guests who decline skip the per-session questions.
+                if (attendanceStatus === 'ATTENDING') await sessionQuestions.submitAnswers(rsvp.id);
             } catch {
                 return;
             }
 
             setSubmitted(true);
         },
-        [attending, canSubmitRsvp, createRsvp, effectiveRsvpId, memberId, message, plusOnes.adultCount, plusOnes.childCount, updateRsvp],
+        [
+            attending,
+            canSubmitRsvp,
+            createRsvp,
+            effectiveRsvpId,
+            memberId,
+            message,
+            plusOnes.adultCount,
+            plusOnes.childCount,
+            sessionQuestions,
+            updateRsvp,
+        ],
     );
 
     return {
@@ -189,6 +202,8 @@ export function useRsvpSubmitPageData() {
         onSubmit: handleSubmit,
         plusOnes,
         rsvpAvailability,
+        sessionQuestions: sessionQuestions.questions,
+        onSessionAnswer: sessionQuestions.onAnswer,
         submitErrorMessage,
         submitted,
     };

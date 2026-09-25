@@ -12,7 +12,6 @@ import { InviteTerminalState } from '@/components/invite/InviteTerminalState';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
 import { useAcceptEventInvitation, useEventInvitationPreview } from '@/hooks/useEventInvitations';
-import { useMediaItem } from '@/hooks/useMedia';
 import { ApiError } from '@/lib/api/client';
 import { routes } from '@/lib/routes';
 
@@ -25,7 +24,7 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
 
     const { isAuthenticated, isBootstrapping } = useAuth();
     const { data: preview, isLoading: isPreviewLoading, error } = useEventInvitationPreview(token);
-    const { data: coverMedia } = useMediaItem(preview?.coverMediaId ?? null);
+    const coverMedia = preview?.coverMedia ?? null;
     const acceptInvitation = useAcceptEventInvitation();
     const [acceptError, setAcceptError] = useState<string | null>(null);
 
