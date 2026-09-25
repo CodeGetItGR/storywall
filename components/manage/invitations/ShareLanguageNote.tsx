@@ -10,8 +10,8 @@ export function ShareLanguageNote({ className }: { className?: string }) {
     const t = useTranslations('ManagePage');
 
     return (
-        <p className={cn('flex items-center gap-1.5 text-xs leading-relaxed text-ink-faint', className)}>
-            <Languages className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+        <p className={cn('text-xs leading-relaxed text-ink-faint', className)}>
+            <Languages className="mr-1.5 inline-block h-3.5 w-3.5 align-[-0.2em]" aria-hidden="true" />
             {t('invitations.shareLanguageNote')}
         </p>
     );

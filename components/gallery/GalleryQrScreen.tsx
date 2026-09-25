@@ -45,8 +45,8 @@ export function GalleryQrScreen() {
                     <div className="w-full max-w-xs">
                         <QrCodeCard qrLink={qrLink} size={280} />
                     </div>
-                    <p className="mt-5 flex items-center gap-1.5 text-center text-xs leading-relaxed text-ink-faint">
-                        <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    <p className="mt-5 text-center text-xs leading-relaxed text-ink-faint">
+                        <Lock className="mr-1.5 inline-block h-3.5 w-3.5 align-[-0.2em]" aria-hidden="true" />
                         {t('permanentNote')}
                     </p>
                 </div>

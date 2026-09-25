@@ -137,7 +137,7 @@ export function QrCodeCard({ qrLink, size = 240 }: { qrLink: QrLinkResponseDto; 
             </div>
 
             {/* Link language */}
-            <ShareLanguageNote className="mt-3 justify-center text-center" />
+            <ShareLanguageNote className="mt-3 text-center" />
         </div>
     );
 }
