@@ -1,20 +1,20 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
+import { useNavigateAfterSignIn } from '@/hooks/useNavigateAfterSignIn';
 import { getPostAuthRedirectPath } from '@/lib/auth/returnPath';
 
 export function useAuthPageRedirect(returnPath: string | null = null) {
-    const router = useRouter();
+    const navigateAfterSignIn = useNavigateAfterSignIn();
     const { isAuthenticated, isBootstrapping, user } = useAuth();
     const authenticatedRedirectPath = user ? getPostAuthRedirectPath(user.role, returnPath) : null;
 
     useEffect(() => {
         if (isBootstrapping || !isAuthenticated || !authenticatedRedirectPath) return;
-        router.replace(authenticatedRedirectPath);
-    }, [authenticatedRedirectPath, isAuthenticated, isBootstrapping, router]);
+        navigateAfterSignIn(authenticatedRedirectPath);
+    }, [authenticatedRedirectPath, isAuthenticated, isBootstrapping, navigateAfterSignIn]);
 
     return {
         shouldRenderAuthPage: !isBootstrapping && !isAuthenticated,

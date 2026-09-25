@@ -2,7 +2,7 @@
 
 import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React, { useCallback, useState } from 'react';
 
@@ -12,12 +12,13 @@ import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthPageRedirect } from '@/hooks/useAuthPageRedirect';
+import { useNavigateAfterSignIn } from '@/hooks/useNavigateAfterSignIn';
 import { AUTH_RETURN_PATH_PARAM, getPostAuthRedirectPath, getSafeReturnPath } from '@/lib/auth/returnPath';
 import { routes } from '@/lib/routes';
 
 export default function LoginPage() {
     const t = useTranslations('LoginPage');
-    const router = useRouter();
+    const navigateAfterSignIn = useNavigateAfterSignIn();
     const searchParams = useSearchParams();
     const inviteToken = searchParams.get('invite');
     const passwordChanged = searchParams.get('passwordChanged') === '1';
@@ -52,7 +53,7 @@ export default function LoginPage() {
 
         try {
             const auth = await login({ email, password, inviteToken: inviteToken ?? undefined });
-            router.replace(getPostAuthRedirectPath(auth.role, returnPath));
+            navigateAfterSignIn(getPostAuthRedirectPath(auth.role, returnPath));
         } catch (err) {
             setError(toErrorMessage(err));
         } finally {
@@ -64,9 +65,9 @@ export default function LoginPage() {
         async (provider: 'GOOGLE' | 'APPLE', idToken: string) => {
             setError(null);
             const auth = await oauth(provider, { idToken, inviteToken: inviteToken ?? undefined });
-            router.replace(getPostAuthRedirectPath(auth.role, returnPath));
+            navigateAfterSignIn(getPostAuthRedirectPath(auth.role, returnPath));
         },
-        [inviteToken, oauth, returnPath, router],
+        [inviteToken, oauth, returnPath, navigateAfterSignIn],
     );
 
     const handleOAuthError = useCallback(

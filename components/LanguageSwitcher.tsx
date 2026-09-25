@@ -6,7 +6,7 @@ import { type MouseEvent, useCallback, useTransition } from 'react';
 
 import { useAuth } from '@/hooks/useAuth';
 import { setLocale } from '@/i18n/actions';
-import { type Locale, localeCookieName, locales } from '@/i18n/config';
+import { type Locale, localeCookieMaxAge, localeCookieName, locales } from '@/i18n/config';
 import { getPublicLandingPath, isPublicLandingPath } from '@/i18n/publicLocale';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
@@ -32,7 +32,7 @@ export function LanguageSwitcher({ className, variant = 'default' }: { className
                 // plain router.push leaves the layout (and its NextIntlClientProvider
                 // messages) mounted with the old locale. router.refresh() forces the server
                 // components, including the layout, to re-render with the new locale.
-                document.cookie = `${localeCookieName}=${encodeURIComponent(next)}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
+                document.cookie = `${localeCookieName}=${encodeURIComponent(next)}; path=/; max-age=${localeCookieMaxAge}; samesite=lax`;
 
                 startTransition(() => {
                     router.push(getPublicLandingPath(next));

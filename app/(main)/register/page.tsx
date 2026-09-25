@@ -2,7 +2,7 @@
 
 import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail, User } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import React, { ChangeEvent, useCallback, useState } from 'react';
 
@@ -14,12 +14,13 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppNewsletterConfig } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthPageRedirect } from '@/hooks/useAuthPageRedirect';
+import { useNavigateAfterSignIn } from '@/hooks/useNavigateAfterSignIn';
 import { AUTH_RETURN_PATH_PARAM, getPostRegisterRedirectPath, getSafeReturnPath } from '@/lib/auth/returnPath';
 import { routes } from '@/lib/routes';
 
 export default function RegisterPage() {
     const t = useTranslations('RegisterPage');
-    const router = useRouter();
+    const navigateAfterSignIn = useNavigateAfterSignIn();
     const searchParams = useSearchParams();
     const inviteToken = searchParams.get('invite');
     const returnPath = getSafeReturnPath(searchParams.get(AUTH_RETURN_PATH_PARAM));
@@ -52,7 +53,7 @@ export default function RegisterPage() {
                 inviteToken: inviteToken ?? undefined,
                 subscribeToNewsletter: newsletterConfig ? subscribeToNewsletter : undefined,
             });
-            router.replace(getPostRegisterRedirectPath(auth.role, Boolean(inviteToken)));
+            navigateAfterSignIn(getPostRegisterRedirectPath(auth.role, Boolean(inviteToken)));
         } catch (err) {
             setError(toErrorMessage(err));
         } finally {
@@ -64,9 +65,9 @@ export default function RegisterPage() {
         async (provider: 'GOOGLE' | 'APPLE', idToken: string) => {
             setError(null);
             const auth = await oauth(provider, { idToken, inviteToken: inviteToken ?? undefined });
-            router.replace(getPostRegisterRedirectPath(auth.role, Boolean(inviteToken)));
+            navigateAfterSignIn(getPostRegisterRedirectPath(auth.role, Boolean(inviteToken)));
         },
-        [inviteToken, oauth, router],
+        [inviteToken, oauth, navigateAfterSignIn],
     );
 
     const handleOAuthError = useCallback(
