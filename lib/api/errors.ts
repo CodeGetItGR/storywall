@@ -187,6 +187,12 @@ export function isRsvpNotAttendingError(error: unknown): boolean {
     return getErrorCode(error) === ERROR_CODES.RSVP_NOT_ATTENDING;
 }
 
+// The target of the request no longer exists — e.g. a session answer posted
+// after the host deleted that session. An expected race, not a real failure.
+export function isNotFoundError(error: unknown): boolean {
+    return error instanceof ApiError && error.status === 404;
+}
+
 // Gallery's QR upload-link toggle is a `configuration` flag, not a module, so
 // it 409s with its own code instead of MODULE_NOT_AVAILABLE — see
 // event-type-feature-toggles-quotas-fe-integration.md §4.

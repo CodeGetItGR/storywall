@@ -7,7 +7,7 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig, useAppRsvpConfig } from '@/hooks/useAppConfig';
 import { useRsvpAvailability } from '@/hooks/useRsvpAvailability';
 import { setMemberRsvpIdInCaches, useCreateRsvp, useRsvp, useUpdateRsvp } from '@/hooks/useRsvps';
-import { computeHasUnansweredSessions, useRsvpSessionQuestions } from '@/hooks/useRsvpSessionQuestions';
+import { type AttendingStatus, computeHasUnansweredSessions, useRsvpSessionQuestions } from '@/hooks/useRsvpSessionQuestions';
 import { ApiError } from '@/lib/api/client';
 import { isModuleNotAvailableError } from '@/lib/api/errors';
 import type { AttendanceStatus, RsvpPlusOnes } from '@/lib/api/types';
@@ -15,7 +15,12 @@ import { isEventWritable } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useActiveMember, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
-export type AttendingStatus = 'attending' | 'not-attending';
+// A retry after an answers failure takes the PATCH path (effectiveRsvpId is
+// already set), so the confirmation only needs to stay hidden while that
+// failure is still showing on a brand-new RSVP.
+export function computeShowConfirmation(submitted: boolean, hasExistingRsvp: boolean, hasSessionAnswersError: boolean): boolean {
+    return submitted || (hasExistingRsvp && !hasSessionAnswersError);
+}
 
 export function useRsvpSubmitPageData() {
     const t = useTranslations('RSVPPage');
@@ -138,6 +143,10 @@ export function useRsvpSubmitPageData() {
         async (event: React.SubmitEvent<HTMLFormElement>) => {
             event.preventDefault();
 
+            if (isSubmitting) {
+                return;
+            }
+
             if (!attending || !memberId || !canSubmitRsvp || hasUnansweredSessions) {
                 return;
             }
@@ -189,6 +198,7 @@ export function useRsvpSubmitPageData() {
             createRsvp,
             effectiveRsvpId,
             hasUnansweredSessions,
+            isSubmitting,
             memberId,
             message,
             plusOnes.adultCount,
@@ -219,6 +229,7 @@ export function useRsvpSubmitPageData() {
         onSubmit: handleSubmit,
         plusOnes,
         rsvpAvailability,
+        sessionAnswersError,
         sessionQuestions: sessionQuestions.questions,
         onSessionAnswer: sessionQuestions.onAnswer,
         submitErrorMessage,

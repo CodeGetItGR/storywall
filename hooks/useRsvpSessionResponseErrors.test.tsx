@@ -3,6 +3,7 @@ import { act, renderHook } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { eventSessionKeys } from '@/hooks/useEventSessions';
 import { rsvpKeys, useCreateRsvpSessionResponse, useUpdateRsvpSessionResponse } from '@/hooks/useRsvps';
 import { ApiError } from '@/lib/api/client';
 import { ERROR_CODES } from '@/lib/api/errors';
@@ -72,6 +73,20 @@ describe('useCreateRsvpSessionResponse', () => {
         });
 
         expect(invalidateSpy).not.toHaveBeenCalledWith({ queryKey: rsvpKeys.detail(RSVP_ID) });
+    });
+
+    it('invalidates the sessions list on 404 (the session was deleted)', async () => {
+        apiPost.mockRejectedValue(apiError(ERROR_CODES.RESOURCE_NOT_FOUND, 404));
+        const client = newClient();
+        const invalidateSpy = vi.spyOn(client, 'invalidateQueries');
+
+        const { result } = renderHook(() => useCreateRsvpSessionResponse(EVENT_ID), { wrapper: wrapperFor(client) });
+
+        await act(async () => {
+            await expect(result.current.mutateAsync({ rsvpId: RSVP_ID, eventSessionId: 'session-1', isAttending: true })).rejects.toThrow();
+        });
+
+        expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: eventSessionKeys.list(EVENT_ID) });
     });
 });
 

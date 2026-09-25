@@ -9,7 +9,7 @@ import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { myEventsKeys } from '@/hooks/useMyEvents';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
-import { isRsvpNotAttendingError, isSessionRsvpNotEnabledError } from '@/lib/api/errors';
+import { isNotFoundError, isRsvpNotAttendingError, isSessionRsvpNotEnabledError } from '@/lib/api/errors';
 import { normalizeList } from '@/lib/api/pagination';
 import type { EventMemberResponseDto } from '@/lib/api/types';
 import type {
@@ -171,7 +171,8 @@ function invalidateEventSessions(queryClient: ReturnType<typeof useQueryClient>,
 // POST /api/rsvp-session-responses — upserts: answering the same session
 // again updates the same row. 409 / 5086 means the host closed the session to
 // RSVPs, so the cached sessions are stale; 409 / 5087 means the RSVP was
-// declined elsewhere, so the cached RSVP is.
+// declined elsewhere, so the cached RSVP is. A 404 means the session itself
+// was deleted meanwhile — the cached sessions are just as stale as for 5086.
 export function useCreateRsvpSessionResponse(eventId: string) {
     const queryClient = useQueryClient();
 
@@ -181,7 +182,7 @@ export function useCreateRsvpSessionResponse(eventId: string) {
             queryClient.invalidateQueries({ queryKey: rsvpKeys.sessionResponses(response.rsvpId) });
         },
         onError: (error, input) => {
-            if (isSessionRsvpNotEnabledError(error)) invalidateEventSessions(queryClient, eventId);
+            if (isSessionRsvpNotEnabledError(error) || isNotFoundError(error)) invalidateEventSessions(queryClient, eventId);
             if (isRsvpNotAttendingError(error)) queryClient.invalidateQueries({ queryKey: rsvpKeys.detail(input.rsvpId) });
         },
     });

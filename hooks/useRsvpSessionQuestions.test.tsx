@@ -15,27 +15,36 @@ const defaultSessions = [
     { id: 'brunch', title: 'Brunch', displayOrder: 2, rsvpEnabled: false, startAt: null },
 ];
 let sessionsData: typeof defaultSessions | undefined = defaultSessions;
-let sessionsLoading = false;
-vi.mock('@/hooks/useEventSessions', () => ({ useEventSessions: () => ({ data: sessionsData, isLoading: sessionsLoading }) }));
+let sessionsIsPending = false;
+let sessionsFetchStatus: 'idle' | 'fetching' | 'paused' = 'idle';
+vi.mock('@/hooks/useEventSessions', () => ({
+    useEventSessions: () => ({ data: sessionsData, isPending: sessionsIsPending, fetchStatus: sessionsFetchStatus }),
+}));
 
 let saved: { eventSessionId: string; isAttending: boolean }[] = [];
-let savedLoading = false;
+let savedIsPending = false;
+let savedFetchStatus: 'idle' | 'fetching' | 'paused' = 'idle';
 const requestedRsvpIds: (string | null)[] = [];
 const mutateAsync = vi.fn();
 vi.mock('@/hooks/useRsvps', () => ({
     useCreateRsvpSessionResponse: () => ({ mutateAsync }),
     useRsvpSessionResponses: (rsvpId: string | null) => {
         requestedRsvpIds.push(rsvpId);
-        return { data: rsvpId ? saved : undefined, isLoading: rsvpId ? savedLoading : false };
+        // A disabled query (no rsvpId) is pending forever but never actually
+        // fetching, mirroring react-query's own behaviour for enabled: false.
+        if (!rsvpId) return { data: undefined, isPending: true, fetchStatus: 'idle' as const };
+        return { data: saved, isPending: savedIsPending, fetchStatus: savedFetchStatus };
     },
 }));
 
 beforeEach(() => {
     modulesAvailable = true;
     sessionsData = defaultSessions;
-    sessionsLoading = false;
+    sessionsIsPending = false;
+    sessionsFetchStatus = 'idle';
     saved = [];
-    savedLoading = false;
+    savedIsPending = false;
+    savedFetchStatus = 'idle';
     requestedRsvpIds.length = 0;
     mutateAsync.mockReset().mockResolvedValue({});
 });
@@ -93,7 +102,8 @@ describe('useRsvpSessionQuestions', () => {
     });
 
     it('is not answered while the sessions list is still loading', () => {
-        sessionsLoading = true;
+        sessionsIsPending = true;
+        sessionsFetchStatus = 'fetching';
         sessionsData = undefined;
 
         const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], null));
@@ -103,7 +113,8 @@ describe('useRsvpSessionQuestions', () => {
     });
 
     it('is not answered while the saved responses are still loading', () => {
-        savedLoading = true;
+        savedIsPending = true;
+        savedFetchStatus = 'fetching';
 
         const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], 'rsvp-1'));
 
@@ -111,8 +122,20 @@ describe('useRsvpSessionQuestions', () => {
         expect(result.current.allAnswered).toBe(false);
     });
 
+    it('is not answered while the sessions query is paused offline', () => {
+        sessionsIsPending = true;
+        sessionsFetchStatus = 'paused';
+        sessionsData = undefined;
+
+        const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], null));
+
+        expect(result.current.isReady).toBe(false);
+        expect(result.current.allAnswered).toBe(false);
+    });
+
     it('treats a failed sessions load as ready with no questions, so the guest is never stuck', () => {
-        sessionsLoading = false;
+        sessionsIsPending = false;
+        sessionsFetchStatus = 'idle';
         sessionsData = undefined;
 
         const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], null));
@@ -124,7 +147,8 @@ describe('useRsvpSessionQuestions', () => {
 
     it('is fully answered when the modules are unavailable, regardless of load state', () => {
         modulesAvailable = false;
-        sessionsLoading = true;
+        sessionsIsPending = true;
+        sessionsFetchStatus = 'fetching';
 
         const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], null));
 
@@ -153,16 +177,15 @@ describe('useRsvpSessionQuestions', () => {
         expect(mutateAsync).toHaveBeenCalledWith({ rsvpId: 'rsvp-1', eventSessionId: 'ceremony', isAttending: true });
     });
 
-    it('swallows a "session closed" or "RSVP not attending" answer failure', async () => {
+    it('swallows a "session closed", "RSVP not attending" or "deleted session" (404) answer failure', async () => {
         const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], 'rsvp-1'));
         act(() => result.current.onAnswer('ceremony', true));
         act(() => result.current.onAnswer('reception', false));
 
-        mutateAsync.mockImplementation(({ eventSessionId }: { eventSessionId: string }) =>
-            eventSessionId === 'ceremony'
-                ? Promise.reject(new ApiError(409, { errorCode: 5086 }))
-                : Promise.reject(new ApiError(409, { errorCode: 5087 })),
-        );
+        mutateAsync.mockImplementation(({ eventSessionId }: { eventSessionId: string }) => {
+            if (eventSessionId === 'ceremony') return Promise.reject(new ApiError(409, { errorCode: 5086 }));
+            return Promise.reject(new ApiError(404, { errorCode: 2001 }));
+        });
 
         await expect(result.current.submitAnswers('rsvp-1')).resolves.toBeUndefined();
     });
