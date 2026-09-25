@@ -4,7 +4,6 @@ import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAppConfig } from '@/hooks/useAppConfig';
-import { useCreatePlaylistSuggestion } from '@/hooks/usePlaylist';
 import { type StoryComposerController, useStoryComposerController } from '@/hooks/useStoryComposerController';
 import type { EventModuleResponseDto } from '@/lib/api/types';
 import { isEventWritable } from '@/lib/eventLifecycle';
@@ -40,7 +39,6 @@ export interface ComposerController {
     fileRef: React.RefObject<HTMLInputElement | null>;
     textareaRef: React.RefObject<HTMLTextAreaElement | null>;
     memberName: string;
-    isSongBusy: boolean;
     canSubmit: boolean;
     canComposePost: boolean;
     canComposeStory: boolean;
@@ -71,7 +69,7 @@ export interface ComposerController {
         youtubeUrl?: string;
         spotifyUrl?: string;
         comment?: string;
-    }) => Promise<void>;
+    }) => void;
 }
 
 function formatBytes(bytes: number): string {
@@ -89,7 +87,6 @@ export function useComposerController(): ComposerController {
     const eventModules = activeEvent?.modules ?? EMPTY_MODULES;
     const { data: appConfig } = useAppConfig();
     const publishQueue = usePublishQueue();
-    const createPlaylistSuggestion = useCreatePlaylistSuggestion();
 
     const [isOpen, setIsOpen] = useState(false);
     const [composerMode, setComposerMode] = useState<ComposerMode>('post');
@@ -122,7 +119,6 @@ export function useComposerController(): ComposerController {
 
     const selectedImageForFilter = images.find((image) => image.key === selectedImageKey && !image.file.type.startsWith('video/')) ?? null;
     const activeMediaPreview = images.find((image) => image.key === mediaPreviewKey) ?? null;
-    const isSongBusy = createPlaylistSuggestion.isPending;
     const canCompose = Boolean(activeMember) && isEventWritable(activeEvent?.status);
     const canComposePost = canCompose && eventModules.some((module) => module.moduleKey === 'posts' && module.isAvailable);
     const canComposeStory = canCompose && eventModules.some((module) => module.moduleKey === 'stories' && module.isAvailable);
@@ -159,7 +155,6 @@ export function useComposerController(): ComposerController {
     }
 
     function closeComposer() {
-        if (isSongBusy) return;
         images.forEach((img) => URL.revokeObjectURL(img.previewUrl));
         setCaption('');
         setImages([]);
@@ -315,17 +310,10 @@ export function useComposerController(): ComposerController {
         closeComposer();
     }
 
-    async function submitPlaylistSuggestion(input: { title: string; artist?: string; youtubeUrl?: string; spotifyUrl?: string; comment?: string }) {
+    function submitPlaylistSuggestion(input: { title: string; artist?: string; youtubeUrl?: string; spotifyUrl?: string; comment?: string }) {
         if (!canComposeSong || !activeEvent || !activeMember) return;
 
-        await createPlaylistSuggestion.mutateAsync({
-            eventId: activeEvent.id,
-            title: input.title,
-            artist: input.artist,
-            youtubeUrl: input.youtubeUrl,
-            spotifyUrl: input.spotifyUrl,
-            comment: input.comment,
-        });
+        publishQueue.enqueueSong({ eventId: activeEvent.id, ...input });
 
         closeComposer();
     }
@@ -361,7 +349,6 @@ export function useComposerController(): ComposerController {
         fileRef,
         textareaRef,
         memberName: activeMember?.displayName ?? '',
-        isSongBusy,
         canSubmit,
         canComposePost,
         canComposeStory,

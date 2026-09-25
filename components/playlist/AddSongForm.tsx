@@ -6,9 +6,7 @@ import React, { type ChangeEvent, useState } from 'react';
 
 import { AddSongFieldShell } from '@/components/playlist/AddSongFieldShell';
 import { SpotifyMark, YouTubeMark } from '@/components/playlist/MusicServiceMarks';
-import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
-import { isModuleNotAvailableError } from '@/lib/api/errors';
 
 type PlaylistSuggestionInput = {
     title: string;
@@ -19,22 +17,19 @@ type PlaylistSuggestionInput = {
 };
 
 type AddSongFormProps = {
-    isSubmitting: boolean;
     canSubmit: boolean;
-    onSubmitAction: (input: PlaylistSuggestionInput) => Promise<void>;
+    onSubmitAction: (input: PlaylistSuggestionInput) => void;
     compact?: boolean;
 };
 
-export function AddSongForm({ isSubmitting, canSubmit, onSubmitAction, compact = false }: AddSongFormProps) {
+export function AddSongForm({ canSubmit, onSubmitAction, compact = false }: AddSongFormProps) {
     const t = useTranslations('PlaylistPage');
-    const toErrorMessage = useApiErrorMessage();
     const { data: appConfig } = useAppConfig();
     const [title, setTitle] = useState('');
     const [artist, setArtist] = useState('');
     const [youtubeUrl, setYoutubeUrl] = useState('');
     const [spotifyUrl, setSpotifyUrl] = useState('');
     const [comment, setComment] = useState('');
-    const [submitError, setSubmitError] = useState<string | null>(null);
     const maxCommentLength = appConfig?.contentLimits.playlistSuggestionCommentMaxLength ?? 300;
 
     function handleTitleChange(event: ChangeEvent<HTMLInputElement>) {
@@ -57,32 +52,19 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmitAction, compact =
         setComment(event.target.value.slice(0, maxCommentLength));
     }
 
-    async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
+    function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
 
         const trimmedTitle = title.trim();
-        const trimmedArtist = artist.trim();
         if (!canSubmit || !trimmedTitle) return;
 
-        setSubmitError(null);
-
-        try {
-            await onSubmitAction({
-                title: trimmedTitle,
-                artist: trimmedArtist || undefined,
-                youtubeUrl: youtubeUrl.trim() || undefined,
-                spotifyUrl: spotifyUrl.trim() || undefined,
-                comment: comment.trim() || undefined,
-            });
-
-            setTitle('');
-            setArtist('');
-            setYoutubeUrl('');
-            setSpotifyUrl('');
-            setComment('');
-        } catch (error) {
-            setSubmitError(isModuleNotAvailableError(error) ? t('moduleUnavailable') : toErrorMessage(error, t('submitFailed')));
-        }
+        onSubmitAction({
+            title: trimmedTitle,
+            artist: artist.trim() || undefined,
+            youtubeUrl: youtubeUrl.trim() || undefined,
+            spotifyUrl: spotifyUrl.trim() || undefined,
+            comment: comment.trim() || undefined,
+        });
     }
 
     return (
@@ -170,12 +152,10 @@ export function AddSongForm({ isSubmitting, canSubmit, onSubmitAction, compact =
                     </p>
                 </AddSongFieldShell>
 
-                {submitError && <p className="text-xs text-destructive">{submitError}</p>}
-
                 <div className="flex flex-wrap items-center justify-end gap-3 pt-1">
                     <button
                         type="submit"
-                        disabled={isSubmitting || !canSubmit || !title.trim()}
+                        disabled={!canSubmit || !title.trim()}
                         className={`inline-flex items-center gap-2 rounded-full text-sm font-semibold text-white transition-all bg-gradient-brand hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:shadow-none ${compact ? 'px-4 py-2.5' : 'px-5 py-3'}`}
                     >
                         <Play className="h-4 w-4 fill-current" />

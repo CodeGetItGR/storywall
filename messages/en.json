@@ -3815,6 +3815,9 @@
         "storyPosted": "{count, plural, one {Story posted} other {Stories posted}}",
         "postFailed": "Couldn't post. Try again.",
         "storyPostFailed": "{failed} of {total} {total, plural, one {story} other {stories}} couldn't post.",
+        "addingSong": "Adding song…",
+        "songAdded": "Song added",
+        "songFailed": "Couldn't add the song. Try again.",
         "retry": "Retry",
         "dismiss": "Dismiss"
     },

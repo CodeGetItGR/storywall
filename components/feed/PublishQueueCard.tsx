@@ -6,7 +6,17 @@ import { useEffect } from 'react';
 
 import type { PublishJob } from '@/providers/publishQueue/PublishQueueContext';
 
-const SUCCESS_DISMISS_DELAY_MS = 1500;
+const SUCCESS_DISMISS_DELAY_MS = 4000;
+
+function getJobLabels(job: PublishJob, t: ReturnType<typeof useTranslations<'PublishQueue'>>) {
+    if (job.kind === 'post') return { pending: t('postingPost'), success: t('posted'), error: job.error ?? t('postFailed') };
+    if (job.kind === 'song') return { pending: t('addingSong'), success: t('songAdded'), error: job.error ?? t('songFailed') };
+    return {
+        pending: t('postingStory', { count: job.totalCount }),
+        success: t('storyPosted', { count: job.postedCount || job.totalCount }),
+        error: t('storyPostFailed', { failed: job.payload.items.length, total: job.totalCount }),
+    };
+}
 
 interface PublishQueueCardProps {
     job: PublishJob;
@@ -23,10 +33,7 @@ export function PublishQueueCard({ job, onRetry, onDismiss }: PublishQueueCardPr
         return () => clearTimeout(timeout);
     }, [job.id, job.status, onDismiss]);
 
-    const pendingLabel = job.kind === 'post' ? t('postingPost') : t('postingStory', { count: job.totalCount });
-    const successLabel = job.kind === 'post' ? t('posted') : t('storyPosted', { count: job.postedCount || job.totalCount });
-    const errorLabel =
-        job.kind === 'post' ? (job.error ?? t('postFailed')) : t('storyPostFailed', { failed: job.payload.items.length, total: job.totalCount });
+    const labels = getJobLabels(job, t);
 
     function handleRetryClick() {
         onRetry(job.id);
@@ -41,7 +48,7 @@ export function PublishQueueCard({ job, onRetry, onDismiss }: PublishQueueCardPr
             {job.status === 'pending' && (
                 <>
                     <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-primary/30 border-t-primary" aria-hidden="true" />
-                    <span className="min-w-0 flex-1 truncate text-ink">{pendingLabel}</span>
+                    <span className="min-w-0 flex-1 truncate text-ink">{labels.pending}</span>
                 </>
             )}
             {job.status === 'success' && (
@@ -49,12 +56,12 @@ export function PublishQueueCard({ job, onRetry, onDismiss }: PublishQueueCardPr
                     <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary text-white" aria-hidden="true">
                         <Check className="h-3 w-3" strokeWidth={3} />
                     </span>
-                    <span className="min-w-0 flex-1 truncate text-ink">{successLabel}</span>
+                    <span className="min-w-0 flex-1 truncate text-ink">{labels.success}</span>
                 </>
             )}
             {job.status === 'error' && (
                 <>
-                    <span className="min-w-0 flex-1 truncate text-destructive">{errorLabel}</span>
+                    <span className="min-w-0 flex-1 truncate text-destructive">{labels.error}</span>
                     <button type="button" onClick={handleRetryClick} className="shrink-0 text-sm font-semibold text-primary underline">
                         {t('retry')}
                     </button>

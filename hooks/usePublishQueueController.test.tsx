@@ -193,3 +193,43 @@ describe('usePublishQueueController — story jobs', () => {
         expect(job.payload.items[0].key).toBe('story-2');
     });
 });
+
+describe('usePublishQueueController — song jobs', () => {
+    const song = { eventId: 'event-1', title: 'Dancing Queen', artist: 'ABBA' };
+
+    it('creates the suggestion and marks the job successful', async () => {
+        apiPost.mockResolvedValue({ id: 'suggestion-1', eventId: 'event-1' });
+
+        const { result } = renderHook(() => usePublishQueueController(), { wrapper });
+
+        act(() => {
+            result.current.enqueueSong(song);
+        });
+
+        expect(result.current.jobs[0]).toMatchObject({ kind: 'song', status: 'pending' });
+
+        await waitFor(() => expect(result.current.jobs[0].status).toBe('success'));
+        expect(apiPost).toHaveBeenCalledWith(expect.stringContaining('playlist-suggestions'), song);
+    });
+
+    it('marks the job as error on failure and succeeds on retry', async () => {
+        apiPost.mockRejectedValueOnce(new Error('network down'));
+
+        const { result } = renderHook(() => usePublishQueueController(), { wrapper });
+
+        act(() => {
+            result.current.enqueueSong(song);
+        });
+
+        await waitFor(() => expect(result.current.jobs[0].status).toBe('error'));
+        expect(result.current.jobs[0].error).toBeTruthy();
+
+        apiPost.mockResolvedValueOnce({ id: 'suggestion-1', eventId: 'event-1' });
+        act(() => {
+            result.current.retryJob(result.current.jobs[0].id);
+        });
+
+        await waitFor(() => expect(result.current.jobs[0].status).toBe('success'));
+        expect(apiPost).toHaveBeenCalledTimes(2);
+    });
+});

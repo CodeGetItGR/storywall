@@ -6,6 +6,7 @@ import { useCallback, useRef, useState } from 'react';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { pollMediaUntilProcessed, useUploadMediaBatch } from '@/hooks/useMedia';
+import { useCreatePlaylistSuggestion } from '@/hooks/usePlaylist';
 import { useCreatePost } from '@/hooks/usePosts';
 import { useCreateStoriesBatch } from '@/hooks/useStories';
 import type { PendingStory } from '@/hooks/useStoryComposerController';
@@ -18,6 +19,8 @@ import type {
     PostPublishPayload,
     PublishJob,
     PublishQueueContextValue,
+    SongPublishJob,
+    SongPublishPayload,
     StoryPublishJob,
     StoryPublishPayload,
 } from '@/providers/publishQueue/PublishQueueContext';
@@ -65,11 +68,13 @@ async function waitForStoryVideos(items: PendingStory[]): Promise<PendingStory[]
 export function usePublishQueueController(): PublishQueueContextValue {
     const tComposer = useTranslations('ComposerCard');
     const tStory = useTranslations('StoryComposer');
+    const tPlaylist = useTranslations('PlaylistPage');
     const toErrorMessage = useApiErrorMessage();
     const { data: appConfig } = useAppConfig();
     const createPost = useCreatePost();
     const uploadBatch = useUploadMediaBatch();
     const createStories = useCreateStoriesBatch();
+    const createPlaylistSuggestion = useCreatePlaylistSuggestion();
 
     const [jobs, setJobs] = useState<PublishJob[]>([]);
     const jobsRef = useRef<PublishJob[]>([]);
@@ -317,18 +322,38 @@ export function usePublishQueueController(): PublishQueueContextValue {
         // eslint-disable-next-line react-hooks/exhaustive-deps -- runStoryJob closes over mutation hooks that are stable across renders in practice
     }, []);
 
+    async function runSongJob(jobId: string, payload: SongPublishPayload) {
+        try {
+            await createPlaylistSuggestion.mutateAsync(payload);
+        } catch (error) {
+            const message = isModuleNotAvailableError(error) ? tPlaylist('moduleUnavailable') : toErrorMessage(error, tPlaylist('submitFailed'));
+            updateJob(jobId, (current) => ({ ...current, status: 'error', error: message }));
+            return;
+        }
+
+        updateJob(jobId, (current) => ({ ...current, status: 'success', error: undefined }));
+    }
+
+    const enqueueSong = useCallback((payload: SongPublishPayload) => {
+        const job: SongPublishJob = { id: nextJobId(), kind: 'song', status: 'pending', createdAt: Date.now(), payload };
+        setJobs((current) => [job, ...current]);
+        void runSongJob(job.id, payload);
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- runSongJob closes over mutation hooks that are stable across renders in practice
+    }, []);
+
     const retryJob = useCallback((jobId: string) => {
         const job = jobsRef.current.find((candidate) => candidate.id === jobId);
         if (!job) return;
         updateJob(jobId, (current) => ({ ...current, status: 'pending', error: undefined }));
-        if (job.kind === 'post') void runPostJob(jobId, (job as PostPublishJob).payload);
-        else void runStoryJob(jobId, (job as StoryPublishJob).payload);
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- runPostJob/runStoryJob close over mutation hooks that are stable across renders in practice
+        if (job.kind === 'post') void runPostJob(jobId, job.payload);
+        else if (job.kind === 'song') void runSongJob(jobId, job.payload);
+        else void runStoryJob(jobId, job.payload);
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- runPostJob/runStoryJob/runSongJob close over mutation hooks that are stable across renders in practice
     }, []);
 
     const dismissJob = useCallback((jobId: string) => {
         setJobs((current) => current.filter((job) => job.id !== jobId));
     }, []);
 
-    return { jobs, enqueuePost, enqueueStory, retryJob, dismissJob };
+    return { jobs, enqueuePost, enqueueStory, enqueueSong, retryJob, dismissJob };
 }

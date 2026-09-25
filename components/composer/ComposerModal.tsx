@@ -28,7 +28,6 @@ export function ComposerModal({
     handleRemoveImageClick,
     images,
     isOpen,
-    isSongBusy,
     maxCaptionLength,
     maxImages,
     selectPostMode,
@@ -184,7 +183,6 @@ export function ComposerModal({
                 <div hidden={composerMode !== 'song'}>
                     <AddSongForm
                         key={songComposerKey}
-                        isSubmitting={isSongBusy}
                         canSubmit={canComposeSong}
                         onSubmitAction={submitPlaylistSuggestion}
                         compact

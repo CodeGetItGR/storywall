@@ -20,6 +20,15 @@ export interface StoryPublishPayload {
     items: PendingStory[];
 }
 
+export interface SongPublishPayload {
+    eventId: string;
+    title: string;
+    artist?: string;
+    youtubeUrl?: string;
+    spotifyUrl?: string;
+    comment?: string;
+}
+
 interface PublishJobCommon {
     id: string;
     status: PublishJobStatus;
@@ -39,12 +48,18 @@ export interface StoryPublishJob extends PublishJobCommon {
     totalCount: number;
 }
 
-export type PublishJob = PostPublishJob | StoryPublishJob;
+export interface SongPublishJob extends PublishJobCommon {
+    kind: 'song';
+    payload: SongPublishPayload;
+}
+
+export type PublishJob = PostPublishJob | StoryPublishJob | SongPublishJob;
 
 export interface PublishQueueContextValue {
     jobs: PublishJob[];
     enqueuePost: (payload: PostPublishPayload) => void;
     enqueueStory: (payload: StoryPublishPayload) => void;
+    enqueueSong: (payload: SongPublishPayload) => void;
     retryJob: (jobId: string) => void;
     dismissJob: (jobId: string) => void;
 }
