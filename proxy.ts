@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { defaultLocale, localeCookieName, locales } from '@/i18n/config';
+import { getPublicLandingPath } from '@/i18n/publicLocale';
 import { PUBLIC_LOCALE_HEADER } from '@/i18n/publicMessages';
 import { resolveLocale } from '@/i18n/resolveLocale';
 import { ACCESS_TOKEN_HEADER, ACCESS_TOKEN_MAX_AGE_SECONDS, AUTH_COOKIES, baseCookieOptions } from '@/lib/auth/authCookies';
@@ -67,8 +68,26 @@ async function resolveSession(request: NextRequest): Promise<SessionResolution> 
     }
 }
 
+// `/` is the default-locale landing page. A visitor whose saved choice or
+// browser language is another locale goes to that locale's page instead.
+// Picking the default locale in the switcher saves the cookie that keeps
+// them on `/`.
+function preferredLandingRedirect(request: NextRequest): NextResponse | null {
+    const locale = resolveLocale(request.cookies.get(localeCookieName)?.value, request.headers.get('accept-language'));
+    if (locale === defaultLocale) return null;
+
+    const url = request.nextUrl.clone();
+    url.pathname = getPublicLandingPath(locale);
+    return NextResponse.redirect(url);
+}
+
 export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
+    if (pathname === '/') {
+        const redirect = preferredLandingRedirect(request);
+        if (redirect) return redirect;
+    }
+
     const publicLocale = pathname === '/' ? defaultLocale : locales.find((locale) => pathname === `/${locale}`);
     if (publicLocale) {
         const requestHeaders = new Headers(request.headers);

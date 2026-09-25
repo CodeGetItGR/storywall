@@ -2,6 +2,8 @@
 import { NextRequest } from 'next/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { localeCookieName } from '@/i18n/config';
+import { PUBLIC_LOCALE_HEADER } from '@/i18n/publicMessages';
 import { AUTH_COOKIES } from '@/lib/auth/authCookies';
 import { SpringAuthError } from '@/lib/auth/springAuth';
 
@@ -73,5 +75,50 @@ describe('proxy', () => {
         const location = new URL(res.headers.get('location') ?? '');
         expect(location.pathname).toBe('/login');
         expect(location.searchParams.get('next')).toBe('/events/new?step=plan');
+    });
+});
+
+describe('proxy landing locale', () => {
+    function landingRequest({ cookie, acceptLanguage, url = 'http://localhost/' }: { cookie?: string; acceptLanguage?: string; url?: string } = {}) {
+        const req = new NextRequest(url, acceptLanguage ? { headers: { 'accept-language': acceptLanguage } } : undefined);
+        if (cookie) req.cookies.set(localeCookieName, cookie);
+        return req;
+    }
+
+    it('sends a Greek browser from / to /el', async () => {
+        const res = await proxy(landingRequest({ acceptLanguage: 'el-GR,el;q=0.9,en;q=0.8' }));
+        expect(res.status).toBe(307);
+        expect(new URL(res.headers.get('location') ?? '').pathname).toBe('/el');
+    });
+
+    it('sends a saved Greek choice from / to /el over an English browser', async () => {
+        const res = await proxy(landingRequest({ cookie: 'el', acceptLanguage: 'en-US' }));
+        expect(res.status).toBe(307);
+        expect(new URL(res.headers.get('location') ?? '').pathname).toBe('/el');
+    });
+
+    it('keeps a saved English choice on / over a Greek browser', async () => {
+        const res = await proxy(landingRequest({ cookie: 'en', acceptLanguage: 'el-GR' }));
+        expect(res.status).toBe(200);
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('en');
+    });
+
+    it('keeps a visitor with no language preference on /', async () => {
+        const res = await proxy(landingRequest());
+        expect(res.status).toBe(200);
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('en');
+    });
+
+    it('keeps the query string when redirecting', async () => {
+        const res = await proxy(landingRequest({ acceptLanguage: 'el', url: 'http://localhost/?utm_source=mail' }));
+        const location = new URL(res.headers.get('location') ?? '');
+        expect(location.pathname).toBe('/el');
+        expect(location.searchParams.get('utm_source')).toBe('mail');
+    });
+
+    it('does not redirect /el for an English browser', async () => {
+        const res = await proxy(landingRequest({ acceptLanguage: 'en-US', url: 'http://localhost/el' }));
+        expect(res.status).toBe(200);
+        expect(res.headers.get(`x-middleware-request-${PUBLIC_LOCALE_HEADER}`)).toBe('el');
     });
 });

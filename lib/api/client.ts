@@ -1,18 +1,18 @@
-import { defaultLocale, localeCookieName, locales } from '@/i18n/config';
+import { defaultLocale, locales } from '@/i18n/config';
 import { endpoints } from '@/lib/api/endpoints';
 import type { AuthSessionDto, ProblemDetail } from '@/lib/api/types';
 import { clearSession, getAccessToken, setSession, subscribeAuthState } from '@/lib/auth/tokenStore';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 
-// Mirrors the NEXT_LOCALE cookie next-intl already renders the UI in, so
-// Spring localizes errors/notifications/PDFs in whatever language the user
-// is actually looking at, not their browser's default Accept-Language.
+// Reads the locale RootDocument rendered into <html lang>, so Spring
+// localizes errors/notifications/PDFs in whatever language the user is
+// actually looking at. That is the fully resolved locale (URL, then cookie,
+// then browser language), which the cookie alone is not.
 function getClientLocale(): string {
     if (typeof document === 'undefined') return defaultLocale;
-    const match = document.cookie.match(new RegExp(`(?:^|; )${localeCookieName}=([^;]*)`));
-    const cookieLocale = match ? decodeURIComponent(match[1]) : undefined;
-    return cookieLocale && (locales as readonly string[]).includes(cookieLocale) ? cookieLocale : defaultLocale;
+    const pageLocale = document.documentElement.lang;
+    return (locales as readonly string[]).includes(pageLocale) ? pageLocale : defaultLocale;
 }
 
 export class ApiError extends Error {
