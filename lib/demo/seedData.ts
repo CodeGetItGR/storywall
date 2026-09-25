@@ -5,7 +5,6 @@ import type {
     EventBillingResponseDto,
     EventDetailResponseDto,
     EventGiftAccountResponseDto,
-    EventInvitationResponseDto,
     EventMemberResponseDto,
     EventModuleResponseDto,
     EventSessionResponseDto,
@@ -143,7 +142,7 @@ export function buildSeedMembers(): EventMemberResponseDto[] {
             id: G1,
             eventId: DEMO_EVENT_ID,
             userId: null,
-            invitationId: 'demo-invitation-1',
+            invitationId: null,
             role: 'ATTENDEE',
             displayName: 'Jordan Lee',
             nickname: null,
@@ -1051,40 +1050,7 @@ export function buildSeedEvent(): EventDetailResponseDto {
     };
 }
 
-// --- Invitations / QR links ---
-
-export function buildSeedInvitations(): EventInvitationResponseDto[] {
-    return [
-        {
-            id: 'demo-invitation-1',
-            eventId: DEMO_EVENT_ID,
-            inviteCode: 'DEMO1234',
-            inviteToken: 'demo-invite-token-1',
-            email: 'jordan@example.com',
-            firstName: 'Jordan',
-            lastName: 'Lee',
-            maxGuests: 2,
-            expiresAt: null,
-            usedAt: DAYS(-40),
-            createdAt: DAYS(-45),
-            role: 'ATTENDEE',
-        },
-        {
-            id: 'demo-invitation-2',
-            eventId: DEMO_EVENT_ID,
-            inviteCode: 'DEMO5678',
-            inviteToken: 'demo-invite-token-2',
-            email: 'nina@example.com',
-            firstName: 'Nina',
-            lastName: 'Kowalski',
-            maxGuests: 1,
-            expiresAt: null,
-            usedAt: null,
-            createdAt: DAYS(-30),
-            role: 'ATTENDEE',
-        },
-    ];
-}
+// --- QR links ---
 
 export function buildSeedQrLinks(): QrLinkResponseDto[] {
     return [

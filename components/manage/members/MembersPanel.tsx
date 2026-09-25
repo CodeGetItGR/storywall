@@ -1,11 +1,11 @@
 'use client';
 
-import { Plus, UserCog, UserPlus, Users } from 'lucide-react';
+import { Plus, UserCog, Users } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 
-import { CreateCoHostInvitationForm, CreateInvitationForm, InvitationRow } from '@/components/manage/invitations';
+import { CoHostInvitationRow, CreateCoHostInvitationForm } from '@/components/manage/invitations';
 import { UsagePanel } from '@/components/plan/UsagePanel';
 import { ReportTargetModal } from '@/components/reports';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
@@ -23,13 +23,14 @@ import type {
     PlanTierResponseDto,
 } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
+import { selectCoHostInvitations } from '@/lib/eventInvitations';
 import { findPlanByCode } from '@/lib/planTiers';
 import { routes } from '@/lib/routes';
 
 import { CoHostManagementList } from './CoHostManagementList';
 import { MemberRow } from './MemberRow';
 
-type MembersSubTab = 'members' | 'invites' | 'coHosts';
+type MembersSubTab = 'members' | 'coHosts';
 
 type MembersPanelProps = {
     canModerate: boolean;
@@ -63,12 +64,8 @@ export function MembersPanel({
     const searchParams = useSearchParams();
     const requestedTab = searchParams.get('section');
     const coHostsAvailable = eventModules.find((module_) => module_.moduleKey === 'co_hosts')?.isAvailable ?? false;
-    const namedInvitesAvailable = eventModules.find((module_) => module_.moduleKey === 'named_invites')?.isAvailable ?? false;
-    const [tab, setTab] = useState<MembersSubTab>(
-        requestedTab === 'invites' || (requestedTab === 'coHosts' && coHostsAvailable) ? requestedTab : 'members',
-    );
+    const [tab, setTab] = useState<MembersSubTab>(requestedTab === 'coHosts' && coHostsAvailable ? 'coHosts' : 'members');
     const [showCreate, setShowCreate] = useState(false);
-    const [limitNotice, setLimitNotice] = useState<string | null>(null);
 
     const moderation = useMemberModeration(eventId, canModerate);
     const { data: upgradeOptions = [] } = useUpgradeOptions(eventId, isPrimaryHost);
@@ -78,7 +75,6 @@ export function MembersPanel({
     const tabs = useMemo<SubTabItem<MembersSubTab>[]>(
         () => [
             { key: 'members', icon: Users, label: tMembers('title') },
-            { key: 'invites', icon: UserPlus, label: t('invitations.panels.invites') },
             ...(coHostsAvailable ? [{ key: 'coHosts' as const, icon: UserCog, label: t('invitations.panels.coHosts') }] : []),
         ],
         [t, tMembers, coHostsAvailable],
@@ -97,7 +93,6 @@ export function MembersPanel({
     const handleTabSelect = useCallback((next: MembersSubTab) => {
         setTab(next);
         setShowCreate(false);
-        setLimitNotice(null);
     }, []);
 
     const handleShowCreate = useCallback(() => {
@@ -109,21 +104,16 @@ export function MembersPanel({
         setShowCreate(false);
     }, []);
 
-    const handleClampNotice = useCallback((message: string) => {
-        setLimitNotice(message);
-    }, []);
-
-    const showInvites = tab === 'invites';
     const showCoHosts = tab === 'coHosts';
-    const visibleInvitations = invitations.filter((invitation) => invitation.role === (showCoHosts ? 'HOST' : 'ATTENDEE'));
+    const coHostInvitations = useMemo(() => selectCoHostInvitations(invitations), [invitations]);
 
     return (
         <div className="flex flex-col">
             {/* Panels */}
-            <SubTabs tabs={tabs} active={tab} onSelectAction={handleTabSelect} className="mb-4" />
+            {tabs.length > 1 && <SubTabs tabs={tabs} active={tab} onSelectAction={handleTabSelect} className="mb-4" />}
 
             {/* Capacity */}
-            {(showInvites || showCoHosts) && eventUsage && (
+            {showCoHosts && eventUsage && (
                 <div className="mb-4">
                     <UsagePanel
                         title={t('invitations.capacity.title')}
@@ -185,19 +175,15 @@ export function MembersPanel({
                 </>
             )}
 
-            {/* Invites / co-hosts */}
-            {(showInvites || showCoHosts) && (
+            {/* Co-hosts */}
+            {showCoHosts && (
                 <>
                     {/* Co-host management */}
-                    {showCoHosts && <CoHostManagementList canManage={isPrimaryHost && canWrite} eventId={eventId} hosts={hosts} members={members} />}
+                    <CoHostManagementList canManage={isPrimaryHost && canWrite} eventId={eventId} hosts={hosts} members={members} />
 
-                    {/* Invitations */}
+                    {/* Co-host invitations */}
                     <div className="mb-3 flex items-center justify-between">
-                        <p className="text-xs text-ink-muted">
-                            {showCoHosts
-                                ? t('invitations.coHosts.summary', { count: visibleInvitations.length })
-                                : t('invitationsCard.summary', { count: visibleInvitations.length })}
-                        </p>
+                        <p className="text-xs text-ink-muted">{t('invitations.coHosts.summary', { count: coHostInvitations.length })}</p>
                         {!showCreate && canCreate && (
                             <button
                                 type="button"
@@ -205,7 +191,7 @@ export function MembersPanel({
                                 className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-white transition-opacity bg-gradient-brand hover:opacity-90"
                             >
                                 <Plus className="h-3.5 w-3.5" />
-                                {showCoHosts ? t('invitations.coHosts.cta') : t('invitations.create.cta')}
+                                {t('invitations.coHosts.cta')}
                             </button>
                         )}
                     </div>
@@ -216,50 +202,26 @@ export function MembersPanel({
                         </p>
                     )}
 
-                    {limitNotice && (
-                        <p className="mb-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900">
-                            {limitNotice}
-                        </p>
-                    )}
-
                     {canCreate && !showCreate && (
                         <div className="mb-4 rounded-md bg-surface-muted/50 px-4 py-3">
-                            <p className="text-sm font-semibold text-ink">
-                                {showCoHosts ? t('invitations.coHosts.guideTitle') : t('invitations.guide.personalTitle')}
-                            </p>
-                            <p className="mt-1 text-xs leading-relaxed text-ink-muted">
-                                {showCoHosts ? t('invitations.coHosts.guideBody') : t('invitations.guide.personalBody')}
-                            </p>
+                            <p className="text-sm font-semibold text-ink">{t('invitations.coHosts.guideTitle')}</p>
+                            <p className="mt-1 text-xs leading-relaxed text-ink-muted">{t('invitations.coHosts.guideBody')}</p>
                         </div>
                     )}
 
-                    {showCreate && canCreate && showInvites && (
-                        <CreateInvitationForm
-                            eventId={eventId}
-                            onDoneAction={handleHideCreate}
-                            onClampNoticeAction={handleClampNotice}
-                            namedInvitesAvailable={namedInvitesAvailable}
-                        />
-                    )}
-                    {showCreate && canCreate && showCoHosts && <CreateCoHostInvitationForm eventId={eventId} onDoneAction={handleHideCreate} />}
+                    {showCreate && canCreate && <CreateCoHostInvitationForm eventId={eventId} onDoneAction={handleHideCreate} />}
 
                     <div className="flex flex-col divide-y divide-border">
-                        {visibleInvitations.map((invitation) => (
-                            <InvitationRow
-                                key={invitation.id}
-                                eventId={eventId}
-                                invitation={invitation}
-                                canWrite={canWrite}
-                                onClampNoticeAction={handleClampNotice}
-                            />
+                        {coHostInvitations.map((invitation) => (
+                            <CoHostInvitationRow key={invitation.id} eventId={eventId} invitation={invitation} canWrite={canWrite} />
                         ))}
                     </div>
 
-                    {visibleInvitations.length === 0 && !showCreate && (
+                    {coHostInvitations.length === 0 && !showCreate && (
                         <ToolEmptyState
-                            title={t(showCoHosts ? 'invitations.coHosts.emptyTitle' : 'invitations.emptyTitle')}
-                            body={t(showCoHosts ? 'invitations.coHosts.emptyBody' : 'invitations.emptyBody')}
-                            icon={showCoHosts ? UserCog : UserPlus}
+                            title={t('invitations.coHosts.emptyTitle')}
+                            body={t('invitations.coHosts.emptyBody')}
+                            icon={UserCog}
                             className="py-8"
                         />
                     )}

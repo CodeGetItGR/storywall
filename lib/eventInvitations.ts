@@ -1,5 +1,9 @@
-export function generateInviteCode(): string {
-    const randomPart = crypto.randomUUID().replaceAll('-', '').slice(0, 10).toUpperCase();
+import type { EventInvitationResponseDto } from '@/lib/api/types';
 
-    return `INV-${randomPart}`;
+export function selectCoHostInvitations(invitations: EventInvitationResponseDto[]): EventInvitationResponseDto[] {
+    return invitations.filter((invitation) => invitation.role === 'HOST');
+}
+
+export function countPendingCoHostInvitations(invitations: EventInvitationResponseDto[]): number {
+    return selectCoHostInvitations(invitations).filter((invitation) => !invitation.usedAt).length;
 }

@@ -15,6 +15,7 @@ import { useEventInvitations } from '@/hooks/useEventInvitations';
 import { useEventMembers } from '@/hooks/useEventMembers';
 import { useEventRsvps } from '@/hooks/useRsvps';
 import { useEventUsage } from '@/hooks/useUsage';
+import { countPendingCoHostInvitations } from '@/lib/eventInvitations';
 import { isEventDeleted, isEventWritable, isModuleAvailable, isPrimaryHost } from '@/lib/eventLifecycle';
 import { type ManageSection, parseManageSection, visibleManageSections } from '@/lib/manageSections';
 import { routes } from '@/lib/routes';
@@ -108,7 +109,7 @@ export function ManageScreen() {
                     <OverviewTab
                         memberCount={members.length}
                         daysToGo={daysToGo}
-                        invitationCount={invitations.length}
+                        pendingCoHostInvitationCount={countPendingCoHostInvitations(invitations)}
                         seatsClaimed={rsvpAvailable ? seatsClaimed : null}
                         eventUsage={eventUsage}
                         planTiers={appConfig?.planTiers ?? []}

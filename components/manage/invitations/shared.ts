@@ -1,7 +1,7 @@
 import type { useTranslations } from 'next-intl';
 
 export type ManageTranslations = ReturnType<typeof useTranslations>;
-export type InvitationPanel = 'invites' | 'coHosts' | 'qr';
+export type InvitationPanel = 'coHosts' | 'qr';
 
 export const formPanelClass = 'mb-4 p-4';
 export const fieldLabelClass = 'flex flex-col gap-1.5';

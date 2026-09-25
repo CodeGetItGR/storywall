@@ -79,10 +79,7 @@ export default function HelpTab({
             title: t('steps.invitations.title'),
             body: t('steps.invitations.body'),
             complete: progress.invitations,
-            actions: [
-                { key: 'qr', href: routes.events.invitationsQr(eventId), label: t('steps.invitations.qr') },
-                { key: 'named', href: routes.events.manage(eventId, { tab: 'members' }), label: t('steps.invitations.named') },
-            ],
+            actions: [{ key: 'qr', href: routes.events.invitationsQr(eventId), label: t('steps.invitations.qr') }],
         },
     ].filter((step): step is HelpStepEntry => Boolean(step));
 

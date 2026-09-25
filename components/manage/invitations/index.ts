@@ -1,6 +1,5 @@
+export * from './CoHostInvitationRow';
 export * from './CreateCoHostInvitationForm';
-export * from './CreateInvitationForm';
-export * from './InvitationRow';
 export * from './QrCodeCard';
 export * from './QrLinkRow';
 export type { InvitationPanel } from './shared';

@@ -5,14 +5,7 @@ import { eventMemberKeys } from '@/hooks/useEventMembers';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
-import type {
-    CoHostInvitationRequestDto,
-    EventInvitationPatchDto,
-    EventInvitationPreviewDto,
-    EventInvitationRequestDto,
-    EventInvitationResponseDto,
-    EventMemberResponseDto,
-} from '@/lib/api/types';
+import type { CoHostInvitationRequestDto, EventInvitationPreviewDto, EventInvitationResponseDto, EventMemberResponseDto } from '@/lib/api/types';
 
 export const eventInvitationKeys = {
     list: (eventId: string) => ['events', eventId, 'invitations'] as const,
@@ -55,39 +48,12 @@ export function useEventInvitation(id: string | null) {
     });
 }
 
-// POST /api/event-invitations — HOST of dto.eventId. Returns the invite
-// containing the inviteToken used to build the shareable /invite/{token} link.
-export function useCreateEventInvitation() {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: (input: EventInvitationRequestDto) => api.post<EventInvitationResponseDto>(endpoints.eventInvitations.create, input),
-        onSuccess: (invitation) => {
-            queryClient.invalidateQueries({
-                queryKey: eventInvitationKeys.list(invitation.eventId),
-            });
-        },
-    });
-}
-
 export function useCreateCoHostInvitation(eventId: string) {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: (input: CoHostInvitationRequestDto) => api.post<EventInvitationResponseDto>(endpoints.events.hostInvitations(eventId), input),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: eventInvitationKeys.list(eventId) }),
-    });
-}
-
-export function useUpdateEventInvitation(id: string, eventId: string) {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: (input: EventInvitationPatchDto) => api.patch<EventInvitationResponseDto>(endpoints.eventInvitations.byId(id), input),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: eventInvitationKeys.detail(id) });
-            queryClient.invalidateQueries({ queryKey: eventInvitationKeys.list(eventId) });
-        },
     });
 }
 

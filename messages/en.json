@@ -961,9 +961,6 @@
             "NO_RESPONSE": "No response yet"
         },
         "noGuestsYet": "No guests have joined yet — share an invite to get started.",
-        "invitationsCard": {
-            "summary": "{count} invitations sent"
-        },
         "draft": {
             "title": "Not published yet",
             "body": "Set a start date before publishing.",
@@ -1017,7 +1014,6 @@
         },
         "invitations": {
             "panels": {
-                "invites": "Invite a guest",
                 "coHosts": "Co-hosts"
             },
             "capacity": {
@@ -1028,47 +1024,21 @@
                 "noticeWithUpgrade": "This event has reached its guest limit. Upgrade to {plan} for {seats, plural, one {# guest seat} other {# guest seats}}.",
                 "noticeWithUnlimitedUpgrade": "This event has reached its guest limit. Upgrade to {plan} for unlimited guest seats."
             },
-            "empty": "No personal invitations yet.",
-            "emptyTitle": "No personal invitations yet",
-            "emptyBody": "Invite one guest by name, or add an email to send it automatically.",
             "guide": {
-                "personalTitle": "Invite someone specific",
-                "personalBody": "Add their name, and add an email if you want us to send the invitation.",
                 "shareTitle": "Share with a group",
                 "shareBody": "Create a link or QR code for group chats, printed cards, posters, or gallery access."
             },
             "claimed": "Claimed",
             "unclaimed": "Unclaimed",
-            "maxGuests": "Up to {count} guests",
-            "cappedToPlan": "Capped to {count, plural, one {# guest} other {# guests}} - that's all your current plan has room for.",
             "copyLink": "Copy link",
             "copied": "Copied!",
-            "edit": "Edit",
             "save": "Save",
             "revoke": "Revoke",
             "confirmRevoke": "Confirm revoke",
             "revokeConfirmTitle": "Revoke this invitation?",
             "revokeConfirmBody": "This invitation link will stop working and can't be restored.",
             "create": {
-                "cta": "Invite guest",
-                "title": "Invite a guest",
-                "subtitle": "Create a personal invite for one person.",
-                "guestTitle": "Guest details",
-                "emailHint": "Add an email to send the invitation automatically. You can still copy the link later.",
-                "allowPlusOnes": "Allow plus ones",
-                "allowPlusOnesHint": "Set this only when this invite should cover more than one person.",
-                "cancel": "Cancel",
-                "submit": "Create invite"
-            },
-            "fields": {
-                "inviteCode": "Invite code",
-                "maxGuests": "Guest limit",
-                "firstName": "First name",
-                "lastName": "Last name",
-                "email": "Email"
-            },
-            "placeholders": {
-                "inviteCode": "e.g. TABLE-7"
+                "cancel": "Cancel"
             },
             "readOnly": "This event is read-only. Invitation changes are paused, but existing invite links can still be copied.",
             "coHosts": {
@@ -1776,9 +1746,8 @@
             },
             "invitations": {
                 "title": "Invitations & QR codes",
-                "body": "Share your QR links, or create named invitations for specific guests.",
-                "qr": "Go to QR links",
-                "named": "Create named invitations"
+                "body": "Share your QR links with guests.",
+                "qr": "Go to QR links"
             }
         }
     },
@@ -3115,10 +3084,6 @@
         "co_hosts": {
             "name": "Co-hosts",
             "description": "Invite co-hosts to help manage the event."
-        },
-        "named_invites": {
-            "name": "Named invitations",
-            "description": "Create invitations for specific guests."
         },
         "schedule": {
             "name": "Schedule",

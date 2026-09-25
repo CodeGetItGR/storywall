@@ -59,9 +59,6 @@ down now. All three touched trees are 0 `react/jsx-no-bind` violations.
 
 ## Low priority / already reasonable
 
-- **`app/(app)/manage/InvitationsTab.tsx`** (292 lines) — already split into
-  `CreateInvitationForm`/`InvitationRow`; `InvitationRow` mixes edit/copy/
-  delete state but is self-contained enough to leave alone for now.
 - **`components/feed/PostCard.tsx`** (148 lines) — borderline; single- vs.
   multi-media rendering branches could become `PostMediaGrid`, not urgent.
 - **`app/(app)/manage/page.tsx`**, **`app/(app)/notifications/page.tsx`** —

@@ -21,7 +21,7 @@ import type {
 export default function OverviewTab({
     memberCount,
     daysToGo,
-    invitationCount,
+    pendingCoHostInvitationCount,
     seatsClaimed,
     eventUsage,
     planTiers,
@@ -38,7 +38,7 @@ export default function OverviewTab({
 }: {
     memberCount: number;
     daysToGo: number;
-    invitationCount: number;
+    pendingCoHostInvitationCount: number;
     seatsClaimed: number | null;
     eventUsage: EventUsageResponseDto | null;
     planTiers: PlanTierResponseDto[];
@@ -116,7 +116,7 @@ export default function OverviewTab({
                 items={[
                     { key: 'members', label: t('stats.totalGuests.label'), value: memberValue },
                     { key: 'days', label: t('stats.daysToGo.label'), value: daysToGo },
-                    { key: 'invitations', label: t('stats.invitations.label'), value: invitationCount },
+                    { key: 'invitations', label: t('stats.invitations.label'), value: pendingCoHostInvitationCount },
                     ...(seatsClaimed === null ? [] : [{ key: 'seats', label: t('stats.seats.label'), value: seatsClaimed }]),
                 ]}
             />

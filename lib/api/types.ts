@@ -28,7 +28,6 @@ export const EVENT_MODULE_KEYS = [
     'wishlist',
     'wishbook',
     'co_hosts',
-    'named_invites',
     'schedule',
 ] as const;
 // Use this (not the raw `ModuleKey` wire type below) whenever code branches on
@@ -1272,17 +1271,6 @@ export interface EventHostPatchDto {
     displayOrder?: number;
 }
 
-export interface EventInvitationRequestDto {
-    eventId: string;
-    inviteCode: string;
-    email?: string;
-    firstName?: string;
-    lastName?: string;
-    maxGuests: number;
-    expiresAt?: string;
-    // inviteToken and usedAt are server-managed; sending either is a 400.
-}
-
 export interface EventInvitationResponseDto {
     id: string;
     eventId: string;
@@ -1355,14 +1343,6 @@ export interface EventInvitationPreviewDto {
     email: string | null;
     expired: boolean;
     alreadyUsed: boolean;
-}
-
-export interface EventInvitationPatchDto {
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    maxGuests?: number;
-    expiresAt?: string;
 }
 
 export interface EventMemberRequestDto {
