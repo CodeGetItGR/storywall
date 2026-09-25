@@ -51,9 +51,7 @@ describe('useCreateRsvpSessionResponse', () => {
         const { result } = renderHook(() => useCreateRsvpSessionResponse(EVENT_ID), { wrapper: wrapperFor(client) });
 
         await act(async () => {
-            await expect(
-                result.current.mutateAsync({ rsvpId: RSVP_ID, eventSessionId: 'session-1', isAttending: true }),
-            ).rejects.toThrow();
+            await expect(result.current.mutateAsync({ rsvpId: RSVP_ID, eventSessionId: 'session-1', isAttending: true })).rejects.toThrow();
         });
 
         expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: rsvpKeys.detail(RSVP_ID) });
@@ -67,9 +65,7 @@ describe('useCreateRsvpSessionResponse', () => {
         const { result } = renderHook(() => useCreateRsvpSessionResponse(EVENT_ID), { wrapper: wrapperFor(client) });
 
         await act(async () => {
-            await expect(
-                result.current.mutateAsync({ rsvpId: RSVP_ID, eventSessionId: 'session-1', isAttending: true }),
-            ).rejects.toThrow();
+            await expect(result.current.mutateAsync({ rsvpId: RSVP_ID, eventSessionId: 'session-1', isAttending: true })).rejects.toThrow();
         });
 
         expect(invalidateSpy).not.toHaveBeenCalledWith({ queryKey: rsvpKeys.detail(RSVP_ID) });
