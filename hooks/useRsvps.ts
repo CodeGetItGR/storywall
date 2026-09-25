@@ -27,8 +27,7 @@ export const rsvpKeys = {
     list: (eventId: string) => ['events', eventId, 'rsvps'] as const,
     // Under list, so every RSVP change that invalidates the list refreshes the reports too.
     // Keyed by language because the labels arrive translated.
-    report: (eventId: string, reportType: RsvpReportType, locale: string) =>
-        ['events', eventId, 'rsvps', 'report', reportType, locale] as const,
+    report: (eventId: string, reportType: RsvpReportType, locale: string) => ['events', eventId, 'rsvps', 'report', reportType, locale] as const,
     detail: (id: string) => ['rsvps', id] as const,
     // Must stay nested under detail(id) — every RSVP mutation invalidates by
     // that prefix, and this key relies on falling under it to refresh too.
