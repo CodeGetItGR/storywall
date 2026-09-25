@@ -15,7 +15,7 @@ export function DeletedEventManageScreen({ event }: { event: EventDetailResponse
     const t = useTranslations('ManagePage');
 
     return (
-        <div className="mx-auto w-full max-w-6xl pb-28 lg:pb-10">
+        <div className="mx-auto w-full max-w-6xl pb-10">
             {/* Header */}
             <div className="px-4 pt-4 pb-3 lg:px-6 lg:pt-6 lg:pb-5">
                 <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-ink-faint uppercase">

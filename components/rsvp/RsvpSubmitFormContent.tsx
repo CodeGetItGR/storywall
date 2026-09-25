@@ -10,7 +10,7 @@ export function RsvpSubmitFormContent({ data }: { data: RsvpSubmitPageData }) {
     const t = useTranslations('RSVPPage');
 
     return (
-        <div className="mx-auto max-w-2xl px-4 pb-24 lg:pb-8">
+        <div className="mx-auto max-w-2xl px-4 pb-8">
             <RsvpHeader backHref={data.backHref} />
 
             <RsvpForm

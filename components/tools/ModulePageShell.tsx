@@ -43,7 +43,7 @@ export function ModulePageShell({
     className,
 }: ModulePageShellProps) {
     return (
-        <div className={cn('mx-auto px-4 pb-24 lg:pb-8', maxWidthClassName[maxWidth], className)}>
+        <div className={cn('mx-auto px-4 pb-8', maxWidthClassName[maxWidth], className)}>
             <ModulePageHeader
                 title={title}
                 icon={icon}

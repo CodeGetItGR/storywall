@@ -51,7 +51,7 @@ export default function NotificationsPage() {
     }
 
     return (
-        <div className="mx-auto max-w-2xl pb-24 lg:pb-8">
+        <div className="mx-auto max-w-2xl pb-8">
             <div className="sticky top-0 z-10 border-b border-border bg-background/90 px-4 py-4 backdrop-blur-sm">
                 <BackButton href={routes.home} label={t('back')} className="mb-3" />
                 <div className="flex items-center justify-between">
