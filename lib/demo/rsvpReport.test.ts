@@ -42,4 +42,19 @@ describe('buildDemoRsvpReport', () => {
             ['Anna'],
         );
     });
+
+    it('breaks ties between same-name guests by rsvpId', () => {
+        const tiedMembers = [
+            { id: 'c', displayName: 'Zoe', role: 'ATTENDEE', deletedAt: null },
+            { id: 'd', displayName: 'Zoe', role: 'ATTENDEE', deletedAt: null },
+        ];
+        const tiedRsvps = [
+            { id: 'rz2', eventMemberId: 'c', attendanceStatus: 'ATTENDING' as const, phone: null, adultCount: 1, childCount: 0, notes: null },
+            { id: 'rz1', eventMemberId: 'd', attendanceStatus: 'ATTENDING' as const, phone: null, adultCount: 1, childCount: 0, notes: null },
+        ];
+
+        const report = buildDemoRsvpReport({ members: tiedMembers, rsvps: tiedRsvps, event, reportType: 'FULL_LIST', locale: 'en' });
+
+        expect(report.groups?.[0].rows.map((r) => r.rsvpId)).toEqual(['rz1', 'rz2']);
+    });
 });

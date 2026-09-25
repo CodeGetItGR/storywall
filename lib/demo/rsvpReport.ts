@@ -66,7 +66,9 @@ export function buildDemoRsvpReport(input: {
         return { ...report, categories, sessions: [] };
     }
 
-    // Sorted by name, then by rsvpId, matching the backend's tie-break for guests who share a name.
+    // Sorted by name, then by rsvpId as a stable tie-break, like the backend's — the backend
+    // compares java.util.UUID, whose order differs from plain string order, so this only matches
+    // the backend's intent (a deterministic order for same-name guests), not its exact ordering.
     const rowsOf = (list: DemoRsvp[]) =>
         list
             .filter((rsvp) => input.reportType !== 'WITH_CHILDREN' || rsvp.childCount > 0)
