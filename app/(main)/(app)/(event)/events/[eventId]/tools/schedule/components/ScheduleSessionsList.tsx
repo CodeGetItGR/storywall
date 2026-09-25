@@ -4,9 +4,10 @@ import { Clock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { ScheduleSessionCard } from '@/app/(main)/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleSessionCard';
+import { ScheduleTimelineItem } from '@/app/(main)/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleTimelineItem';
 import type { EventSessionResponseDto } from '@/lib/api/types';
 import { formatDate, formatTimeRange } from '@/lib/datetime';
-import { groupSessions, sortSessions } from '@/lib/eventSessions';
+import { buildScheduleDays } from '@/lib/eventSessions';
 
 interface ScheduleSessionsListProps {
     sessions: EventSessionResponseDto[];
@@ -15,65 +16,41 @@ interface ScheduleSessionsListProps {
 
 export function ScheduleSessionsList({ sessions, locale }: ScheduleSessionsListProps) {
     const t = useTranslations('SchedulePage');
-    const sortedSessions = sortSessions(sessions);
-    const groupedSessions = groupSessions(sortedSessions);
-    const datedKeys = Object.keys(groupedSessions)
-        .filter((key) => key !== 'unscheduled')
-        .sort();
-    const unscheduledSessions = groupedSessions.unscheduled ?? [];
+    const { days, unscheduled } = buildScheduleDays(sessions);
 
     return (
         <div className="flex flex-col gap-8">
-            {datedKeys.map((date) => (
+            {days.map(({ date, sessions: daySessions }) => (
                 <section key={date}>
-                    <div className="mb-4 flex items-center gap-3">
-                        <div className="flex h-10 w-10 flex-col items-center justify-center rounded-xl border border-border bg-card shadow-sm">
-                            <span className="text-[9px] leading-none font-medium text-ink-muted uppercase">
-                                {formatDate(locale, `${date}T00:00:00`, { month: 'short' })}
-                            </span>
-                            <span className="text-sm leading-none font-bold text-ink">
-                                {formatDate(locale, `${date}T00:00:00`, { day: 'numeric' })}
-                            </span>
-                        </div>
-                        <p className="text-sm font-bold text-ink">
-                            {formatDate(locale, `${date}T00:00:00`, { weekday: 'short', month: 'short', day: 'numeric' })}
-                        </p>
-                    </div>
+                    {/* Day */}
+                    <h2 className="mb-3 text-base font-bold text-ink first-letter:uppercase">
+                        {formatDate(locale, `${date}T00:00:00`, { weekday: 'long', month: 'long', day: 'numeric' })}
+                    </h2>
 
-                    <div className="relative flex flex-col gap-4 pl-5">
-                        <div className="absolute top-2 bottom-2 left-2 w-px bg-border" aria-hidden="true" />
-
-                        {groupedSessions[date].map((session) => (
-                            <div key={session.id} className="relative">
-                                <div
-                                    className="absolute top-3 -left-5 h-3.5 w-3.5 rounded-full border-2 border-background bg-amber-200"
-                                    aria-hidden="true"
-                                />
-                                <ScheduleSessionCard
-                                    session={session}
-                                    timeContent={
-                                        <div className="text-right">
-                                            <p className="text-sm font-semibold text-ink tabular-nums">
-                                                {formatTimeRange(locale, session.startAt, session.endAt, t('timeTba'))}
-                                            </p>
-                                        </div>
-                                    }
-                                />
-                            </div>
+                    {/* Timeline */}
+                    <ol>
+                        {daySessions.map((session, index) => (
+                            <ScheduleTimelineItem
+                                key={session.id}
+                                session={session}
+                                time={formatTimeRange(locale, session.startAt, session.endAt, t('timeTba'))}
+                                isLast={index === daySessions.length - 1}
+                            />
                         ))}
-                    </div>
+                    </ol>
                 </section>
             ))}
 
-            {unscheduledSessions.length > 0 && (
+            {unscheduled.length > 0 && (
                 <section>
-                    <div className="mb-4 flex items-center gap-2">
+                    {/* Unscheduled */}
+                    <div className="mb-3 flex items-center gap-2">
                         <Clock className="h-4 w-4 text-ink-faint" aria-hidden="true" />
-                        <p className="text-sm font-bold text-ink">{t('unscheduled')}</p>
+                        <h2 className="text-base font-bold text-ink">{t('unscheduled')}</h2>
                     </div>
 
                     <div className="flex flex-col gap-4">
-                        {unscheduledSessions.map((session) => (
+                        {unscheduled.map((session) => (
                             <ScheduleSessionCard key={session.id} session={session} />
                         ))}
                     </div>

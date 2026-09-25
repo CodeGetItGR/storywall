@@ -1,6 +1,6 @@
 'use client';
 
-import { buildGoogleMapsEmbedUrl } from '@/lib/maps';
+import { useMapsEmbedUrl } from '@/hooks/useMapsEmbedUrl';
 import { cn } from '@/lib/utils';
 
 interface ScheduleMapPreviewProps {
@@ -12,8 +12,14 @@ interface ScheduleMapPreviewProps {
 }
 
 export function ScheduleMapPreview({ mapsUrl, title, openLabel, previewLabel, unavailableLabel }: ScheduleMapPreviewProps) {
-    const embedUrl = buildGoogleMapsEmbedUrl(mapsUrl);
+    const { embedUrl, isResolving } = useMapsEmbedUrl(mapsUrl);
 
+    // Loading
+    if (isResolving) {
+        return <div className="h-44 animate-pulse rounded-2xl border border-border/70 bg-surface-muted" aria-hidden="true" />;
+    }
+
+    // Fallback
     if (!embedUrl) {
         return (
             <a
@@ -32,6 +38,7 @@ export function ScheduleMapPreview({ mapsUrl, title, openLabel, previewLabel, un
         );
     }
 
+    // Map
     return (
         <div className="group relative overflow-hidden rounded-2xl border border-border/70 bg-surface-muted shadow-[0_10px_24px_rgba(35,28,22,0.08)]">
             <iframe

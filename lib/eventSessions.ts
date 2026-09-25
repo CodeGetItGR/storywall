@@ -22,3 +22,19 @@ export function groupSessions(sessions: EventSessionResponseDto[]): Record<strin
 
     return grouped;
 }
+
+export interface ScheduleDay {
+    date: string;
+    sessions: EventSessionResponseDto[];
+}
+
+// Sessions grouped by calendar day in chronological order, plus the ones
+// without a start time.
+export function buildScheduleDays(sessions: EventSessionResponseDto[]): { days: ScheduleDay[]; unscheduled: EventSessionResponseDto[] } {
+    const { unscheduled = [], ...byDate } = groupSessions(sortSessions(sessions));
+    const days = Object.keys(byDate)
+        .sort()
+        .map((date) => ({ date, sessions: byDate[date] }));
+
+    return { days, unscheduled };
+}
