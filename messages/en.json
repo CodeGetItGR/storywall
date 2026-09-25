@@ -2822,6 +2822,7 @@
                 "confirmBody": "A new link replaces the previous one immediately. The full link is shown once.",
                 "once": "Copy this now. It will not be shown again.",
                 "copy": "Copy portal link",
+                "copied": "Copied",
                 "issuedAt": "Portal issued {date}"
             },
             "codes": {

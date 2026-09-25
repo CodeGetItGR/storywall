@@ -6,7 +6,6 @@ import { useCallback, useState } from 'react';
 
 import { AdminCodeStatusPill } from '@/components/admin/AdminCodeStatusPill';
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
-import { adminInputClass } from '@/components/admin/AdminField';
 import { AdminSection } from '@/components/admin/AdminSection';
 import { CodeRestrictionPills } from '@/components/admin/CodeRestrictionPills';
 import { CollaborationCodeDrawer } from '@/components/admin/CollaborationCodeDrawer';
@@ -15,6 +14,7 @@ import { LinkPartnerDiscountCodeDrawer } from '@/components/admin/LinkPartnerDis
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useCollaboratorCodes, useIssueCollaboratorPortalToken } from '@/hooks/useAdmin';
+import { useCopyText } from '@/hooks/useCopyText';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
 import type { CollaborationCodeResponseDto, CollaboratorResponseDto } from '@/lib/api/types';
 
@@ -68,10 +68,7 @@ export function CollaboratorOperationsDrawer({
         setTokenConfirmOpen(false);
     }, [collaborator, issueToken]);
 
-    const copyPortalUrl = useCallback(async () => {
-        if (!issuedPortalUrl) return;
-        await navigator.clipboard.writeText(issuedPortalUrl);
-    }, [issuedPortalUrl]);
+    const { copied: portalUrlCopied, copy: copyPortalUrl } = useCopyText(issuedPortalUrl ?? '');
 
     return (
         <>
@@ -117,17 +114,14 @@ export function CollaboratorOperationsDrawer({
                             {issuedPortalUrl && (
                                 <div className="mt-3 rounded-lg bg-status-warn-wash p-3 text-sm text-status-warn">
                                     <p className="font-semibold">{t('portal.once')}</p>
-                                    <div className="mt-2 flex gap-2">
-                                        <input readOnly value={issuedPortalUrl} className={adminInputClass('font-mono text-xs')} />
-                                        <button
-                                            type="button"
-                                            onClick={copyPortalUrl}
-                                            aria-label={t('portal.copy')}
-                                            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-card text-ink"
-                                        >
-                                            <Copy className="h-4 w-4" />
-                                        </button>
-                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={copyPortalUrl}
+                                        className="mt-2 inline-flex min-h-9 items-center gap-2 rounded-md bg-card px-3 text-sm font-semibold text-ink"
+                                    >
+                                        <Copy className="h-4 w-4" />
+                                        {portalUrlCopied ? t('portal.copied') : t('portal.copy')}
+                                    </button>
                                 </div>
                             )}
                             {issueToken.error && (

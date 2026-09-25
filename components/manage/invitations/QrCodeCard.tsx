@@ -1,19 +1,21 @@
 'use client';
 
-import { Download, Printer, Share2 } from 'lucide-react';
+import { Copy, Download, Printer, Share2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { QRCodeSVG } from 'qrcode.react';
 import { useEffect, useRef, useState } from 'react';
 
+import { useCopyText } from '@/hooks/useCopyText';
 import type { QrLinkResponseDto } from '@/lib/api/types';
 
-// The QR artwork + url + download/print/share actions, shared between the
+// The QR artwork + copy/download/print/share actions, shared between the
 // manage-page preview modal and the dedicated gallery QR page.
 export function QrCodeCard({ qrLink, size = 240 }: { qrLink: QrLinkResponseDto; size?: number }) {
     const t = useTranslations('ManagePage');
     const tGlobal = useTranslations();
     const svgRef = useRef<SVGSVGElement | null>(null);
     const [canShare, setCanShare] = useState(false);
+    const { copied, copy: copyLink } = useCopyText(qrLink.publicUrl);
 
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time client-only feature detection, not derived from render state.
@@ -91,9 +93,16 @@ export function QrCodeCard({ qrLink, size = 240 }: { qrLink: QrLinkResponseDto; 
                 />
             </div>
 
-            <p className="mt-4 mb-4 rounded-xl bg-surface-muted px-3 py-2 text-xs break-all text-ink-muted">{qrLink.publicUrl}</p>
-
-            <div className="flex flex-wrap gap-2">
+            {/* Actions */}
+            <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                    type="button"
+                    onClick={copyLink}
+                    className="flex min-w-28 flex-1 items-center justify-center gap-2 rounded-full bg-surface-muted px-3 py-2.5 text-xs font-semibold text-ink-muted transition-colors hover:text-ink"
+                >
+                    <Copy className="h-3.5 w-3.5" />
+                    {copied ? t('invitations.copied') : t('invitations.copyLink')}
+                </button>
                 <button
                     type="button"
                     onClick={handleDownloadSvg}

@@ -6,6 +6,7 @@ import { type ChangeEvent, useCallback, useState } from 'react';
 
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useCopyText } from '@/hooks/useCopyText';
 import { useRevokeQrLink, useUpdateQrLink } from '@/hooks/useQrLinks';
 import type { QrLinkResponseDto, QrLinkStatsDto } from '@/lib/api/types';
 import { isHostManagedQrLink } from '@/lib/qrLinks';
@@ -34,7 +35,7 @@ export function QrLinkRow({
     const [statsOpen, setStatsOpen] = useState(false);
     const [revokeConfirmOpen, setRevokeConfirmOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [copied, setCopied] = useState(false);
+    const { copied, copy: handleCopy } = useCopyText(qrLink.publicUrl);
     const [maxGuests, setMaxGuests] = useState(qrLink.maxGuests ?? stats?.maxGuests ?? 50);
     const revokeQrLink = useRevokeQrLink(eventId);
     const updateQrLink = useUpdateQrLink(eventId, qrLink.id);
@@ -80,12 +81,6 @@ export function QrLinkRow({
         setIsEditing(false);
         setMaxGuests(qrLink.maxGuests ?? stats?.maxGuests ?? 50);
     }, [qrLink.maxGuests, stats?.maxGuests]);
-
-    async function handleCopy() {
-        await navigator.clipboard.writeText(qrLink.publicUrl);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
-    }
 
     async function handleRevoke() {
         if (!canWrite) return;
@@ -174,62 +169,60 @@ export function QrLinkRow({
                 </div>
             )}
 
-            <div className="flex flex-wrap items-center gap-2">
-                <p className="min-w-40 flex-1 truncate text-xs text-ink-muted">{qrLink.publicUrl}</p>
-                <div className="flex flex-wrap items-center justify-end gap-1.5">
-                    {stats && (
-                        <button
-                            type="button"
-                            onClick={handleStatsOpen}
-                            className="flex items-center gap-1.5 rounded-full bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-ink"
-                        >
-                            <BarChart3 className="h-3.5 w-3.5" />
-                            {t('qr.stats.cta')}
-                        </button>
-                    )}
+            {/* Actions */}
+            <div className="flex flex-wrap items-center justify-end gap-1.5">
+                {stats && (
                     <button
                         type="button"
-                        onClick={handlePreviewOpen}
+                        onClick={handleStatsOpen}
                         className="flex items-center gap-1.5 rounded-full bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-ink"
                     >
-                        <QrCode className="h-3.5 w-3.5" />
-                        {t('qr.preview')}
+                        <BarChart3 className="h-3.5 w-3.5" />
+                        {t('qr.stats.cta')}
                     </button>
+                )}
+                <button
+                    type="button"
+                    onClick={handlePreviewOpen}
+                    className="flex items-center gap-1.5 rounded-full bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-ink"
+                >
+                    <QrCode className="h-3.5 w-3.5" />
+                    {t('qr.preview')}
+                </button>
+                <button
+                    type="button"
+                    onClick={handleCopy}
+                    className="flex items-center gap-1.5 rounded-full bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-ink"
+                >
+                    <Copy className="h-3.5 w-3.5" />
+                    {copied ? t('invitations.copied') : t('invitations.copyLink')}
+                </button>
+                {canEditLimit && !isEditing && (
                     <button
                         type="button"
-                        onClick={handleCopy}
+                        onClick={handleStartEditing}
                         className="flex items-center gap-1.5 rounded-full bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-ink"
                     >
-                        <Copy className="h-3.5 w-3.5" />
-                        {copied ? t('invitations.copied') : t('invitations.copyLink')}
+                        <Pencil className="h-3.5 w-3.5" />
+                        {t('qr.editLimit')}
                     </button>
-                    {canEditLimit && !isEditing && (
-                        <button
-                            type="button"
-                            onClick={handleStartEditing}
-                            className="flex items-center gap-1.5 rounded-full bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-ink-muted transition-colors hover:text-ink"
-                        >
-                            <Pencil className="h-3.5 w-3.5" />
-                            {t('qr.editLimit')}
-                        </button>
-                    )}
-                    {canWrite && status === 'ACTIVE' && !isLocked && (
-                        <button
-                            type="button"
-                            onClick={handleRevokeConfirmOpen}
-                            className="flex items-center gap-1.5 rounded-full bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-rose-500 transition-colors hover:bg-rose-50"
-                        >
-                            <Trash2 className="h-3.5 w-3.5" />
-                            {t('qr.revoke')}
-                        </button>
-                    )}
-                    {canWrite && status === 'ACTIVE' && isLocked && (
-                        <span className="flex items-center gap-1.5 rounded-full bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-ink-faint">
-                            <Lock className="h-3.5 w-3.5" />
-                            {t('qr.locked')}
-                        </span>
-                    )}
-                </div>
+                )}
+                {canWrite && status === 'ACTIVE' && !isLocked && (
+                    <button
+                        type="button"
+                        onClick={handleRevokeConfirmOpen}
+                        className="flex items-center gap-1.5 rounded-full bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-rose-500 transition-colors hover:bg-rose-50"
+                    >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        {t('qr.revoke')}
+                    </button>
+                )}
+                {canWrite && status === 'ACTIVE' && isLocked && (
+                    <span className="flex items-center gap-1.5 rounded-full bg-surface-muted px-2.5 py-1.5 text-xs font-medium text-ink-faint">
+                        <Lock className="h-3.5 w-3.5" />
+                        {t('qr.locked')}
+                    </span>
+                )}
             </div>
 
             <QrPreviewModal qrLink={qrLink} open={previewOpen} onCloseAction={handlePreviewClose} />
