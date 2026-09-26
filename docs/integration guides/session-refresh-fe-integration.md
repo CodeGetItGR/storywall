@@ -64,5 +64,5 @@ reasons; if it becomes a problem the fix is for the frontend to forward the brow
 - **Signing in on a second device logs the first one out** on its next refresh. Only one session
   is permitted per user; a new login, register, or OAuth sign-in revokes every other session
   (`AuthService#revokeExistingSessions`). This is by design.
-- **The refresh cookie is a session cookie** (no `maxAge`). Closing the browser ends the session.
-  Also by design.
+- **Closing the browser does not end the session.** The refresh cookie's `maxAge` matches the
+  refresh token's 30-day lifetime. Logging out deletes the cookie and revokes the token.

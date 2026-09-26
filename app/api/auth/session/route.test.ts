@@ -1,12 +1,16 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { AUTH_COOKIES } from '@/lib/auth/authCookies';
+import { AUTH_COOKIES, REFRESH_TOKEN_MAX_AGE_SECONDS } from '@/lib/auth/authCookies';
 import { SpringAuthError } from '@/lib/auth/springAuth';
 
 import { GET } from './route';
 
-const { refresh, jar } = vi.hoisted(() => ({ refresh: vi.fn(), jar: new Map<string, string>() }));
+const { refresh, jar, maxAges } = vi.hoisted(() => ({
+    refresh: vi.fn(),
+    jar: new Map<string, string>(),
+    maxAges: new Map<string, number | undefined>(),
+}));
 
 vi.mock('@/lib/auth/springAuth', async (importOriginal) => {
     const actual = await importOriginal<typeof import('@/lib/auth/springAuth')>();
@@ -16,7 +20,10 @@ vi.mock('@/lib/auth/springAuth', async (importOriginal) => {
 vi.mock('next/headers', () => {
     const cookieStore = {
         get: (name: string) => (jar.has(name) ? { name, value: jar.get(name)! } : undefined),
-        set: (name: string, value: string) => void jar.set(name, value),
+        set: (name: string, value: string, options?: { maxAge?: number }) => {
+            jar.set(name, value);
+            maxAges.set(name, options?.maxAge);
+        },
         delete: (name: string) => void jar.delete(name),
     };
     return { cookies: async () => cookieStore, headers: async () => new Headers() };
@@ -25,6 +32,7 @@ vi.mock('next/headers', () => {
 beforeEach(() => {
     refresh.mockReset();
     jar.clear();
+    maxAges.clear();
     jar.set(AUTH_COOKIES.refreshToken, 'rt');
 });
 
@@ -34,6 +42,12 @@ describe('GET /api/auth/session', () => {
         const res = await GET();
         expect(res.status).toBe(200);
         expect(jar.get(AUTH_COOKIES.accessToken)).toBe('at');
+    });
+
+    it('keeps the refresh cookie after the browser closes', async () => {
+        refresh.mockResolvedValue({ accessToken: 'at', refreshToken: 'rt', userId: 'u1' });
+        await GET();
+        expect(maxAges.get(AUTH_COOKIES.refreshToken)).toBe(REFRESH_TOKEN_MAX_AGE_SECONDS);
     });
 
     it('clears cookies and returns 401 when Spring rejects the refresh token', async () => {

@@ -4,7 +4,13 @@ import { defaultLocale, type Locale, localeCookieMaxAge, localeCookieName, local
 import { getPublicLandingPath } from '@/i18n/publicLocale';
 import { PUBLIC_LOCALE_HEADER } from '@/i18n/publicMessages';
 import { resolveLocale } from '@/i18n/resolveLocale';
-import { ACCESS_TOKEN_HEADER, ACCESS_TOKEN_MAX_AGE_SECONDS, AUTH_COOKIES, baseCookieOptions } from '@/lib/auth/authCookies';
+import {
+    ACCESS_TOKEN_HEADER,
+    ACCESS_TOKEN_MAX_AGE_SECONDS,
+    AUTH_COOKIES,
+    baseCookieOptions,
+    REFRESH_TOKEN_MAX_AGE_SECONDS,
+} from '@/lib/auth/authCookies';
 import { AUTH_RETURN_PATH_PARAM } from '@/lib/auth/returnPath';
 import { springAuth, SpringAuthError } from '@/lib/auth/springAuth';
 import { routes } from '@/lib/routes';
@@ -60,7 +66,11 @@ async function resolveSession(request: NextRequest): Promise<SessionResolution> 
             },
         ];
         if (auth.refreshToken) {
-            cookies.push({ name: AUTH_COOKIES.refreshToken, value: auth.refreshToken, options: baseCookieOptions() });
+            cookies.push({
+                name: AUTH_COOKIES.refreshToken,
+                value: auth.refreshToken,
+                options: { ...baseCookieOptions(), maxAge: REFRESH_TOKEN_MAX_AGE_SECONDS },
+            });
         }
         return { kind: 'ok', accessToken: auth.accessToken, cookies };
     } catch (error) {

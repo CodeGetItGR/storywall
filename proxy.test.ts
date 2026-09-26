@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { localeCookieName } from '@/i18n/config';
 import { PUBLIC_LOCALE_HEADER } from '@/i18n/publicMessages';
-import { AUTH_COOKIES } from '@/lib/auth/authCookies';
+import { AUTH_COOKIES, REFRESH_TOKEN_MAX_AGE_SECONDS } from '@/lib/auth/authCookies';
 import { SpringAuthError } from '@/lib/auth/springAuth';
 
 import { proxy } from './proxy';
@@ -40,6 +40,12 @@ describe('proxy', () => {
         expect(refresh).toHaveBeenCalledTimes(1);
         expect(res.headers.get('x-middleware-request-x-storywall-access-token')).toBe('at-2');
         expect(res.cookies.get(AUTH_COOKIES.accessToken)?.value).toBe('at-2');
+    });
+
+    it('keeps the refresh cookie after the browser closes', async () => {
+        refresh.mockResolvedValue({ accessToken: 'at-2', refreshToken: 'rt' });
+        const res = await proxy(request({ refreshToken: 'rt' }));
+        expect(res.cookies.get(AUTH_COOKIES.refreshToken)?.maxAge).toBe(REFRESH_TOKEN_MAX_AGE_SECONDS);
     });
 
     it('logs out only when Spring says the refresh token is invalid', async () => {

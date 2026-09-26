@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 import { localeCookieName } from '@/i18n/config';
 import { resolveLocale } from '@/i18n/resolveLocale';
-import { ACCESS_TOKEN_MAX_AGE_SECONDS, AUTH_COOKIES, baseCookieOptions } from '@/lib/auth/authCookies';
+import { ACCESS_TOKEN_MAX_AGE_SECONDS, AUTH_COOKIES, baseCookieOptions, REFRESH_TOKEN_MAX_AGE_SECONDS } from '@/lib/auth/authCookies';
 import { toSessionDto } from '@/lib/auth/authRouteHelpers';
 import { springAuth, SpringAuthError } from '@/lib/auth/springAuth';
 
@@ -27,7 +27,9 @@ export async function GET() {
         const auth = await springAuth.refresh(refreshToken, locale);
 
         cookieStore.set(AUTH_COOKIES.accessToken, auth.accessToken, { ...baseCookieOptions(), maxAge: ACCESS_TOKEN_MAX_AGE_SECONDS });
-        if (auth.refreshToken) cookieStore.set(AUTH_COOKIES.refreshToken, auth.refreshToken, baseCookieOptions());
+        if (auth.refreshToken) {
+            cookieStore.set(AUTH_COOKIES.refreshToken, auth.refreshToken, { ...baseCookieOptions(), maxAge: REFRESH_TOKEN_MAX_AGE_SECONDS });
+        }
 
         return NextResponse.json(toSessionDto(auth));
     } catch (error) {

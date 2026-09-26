@@ -9,8 +9,9 @@ export const AUTH_COOKIES = {
     // what lets middleware tell "needs a refresh" apart from "still fresh"
     // without decoding anything.
     accessToken: 'storywall_at',
-    // Registered-user refresh token. No maxAge (session cookie) to match the
-    // previous sessionStorage scoping — cleared when the browser closes.
+    // Registered-user refresh token. Persistent (see
+    // REFRESH_TOKEN_MAX_AGE_SECONDS) so closing the browser doesn't sign the
+    // user out — only logout, a 401 from Spring, or expiry clears it.
     refreshToken: 'storywall_rt',
 } as const;
 
@@ -21,6 +22,11 @@ export const AUTH_COOKIES = {
 export const ACCESS_TOKEN_HEADER = 'x-storywall-access-token';
 
 export const ACCESS_TOKEN_MAX_AGE_SECONDS = 15 * 60;
+
+// Spring's refresh-token lifetime. The token isn't rotated on refresh, so a
+// cookie re-written on refresh can outlive it — harmless, since Spring then
+// answers 401 and the cookies are cleared.
+export const REFRESH_TOKEN_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 
 export function baseCookieOptions() {
     return {
