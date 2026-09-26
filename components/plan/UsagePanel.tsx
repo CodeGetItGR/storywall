@@ -34,7 +34,8 @@ export function UsagePanel({ title, planName, items, includedModuleKeys = [], ne
 
     return (
         <section className={cn('space-y-3', className)}>
-            <div className="flex items-start justify-between gap-3">
+            {/* Header */}
+            <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
                 <div className="min-w-0">
                     <p className="text-sm font-semibold text-ink">{title}</p>
                     <p className="mt-0.5 text-xs text-ink-muted">{t('currentPlan', { plan: planName })}</p>
@@ -56,6 +57,7 @@ export function UsagePanel({ title, planName, items, includedModuleKeys = [], ne
                     ))}
             </div>
 
+            {/* Usage bars */}
             <div className="space-y-3">
                 {items.map((item) => {
                     const hasLimit = item.limit !== null;
