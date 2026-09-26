@@ -25,11 +25,11 @@ export function WishbookSummarySection({ eventId, entries, total }: WishbookSumm
             </Link>
             <div className="space-y-2">
                 {total === 0 ? (
-                    <p className="rounded-xl bg-surface-muted/70 px-3 py-2.5 text-sm text-ink-faint">{t('empty')}</p>
+                    <p className="rounded-md bg-surface-muted/70 px-3 py-2.5 text-sm text-ink-faint">{t('empty')}</p>
                 ) : (
                     <>
                         {entries.map((entry) => (
-                            <div key={entry.id} className="rounded-xl bg-surface-muted/70 px-3 py-2.5">
+                            <div key={entry.id} className="rounded-md bg-surface-muted/70 px-3 py-2.5">
                                 <p className="truncate text-sm font-medium text-ink">{entry.guestName}</p>
                                 <p className="mt-0.5 line-clamp-2 text-xs text-ink-muted">{entry.message}</p>
                             </div>

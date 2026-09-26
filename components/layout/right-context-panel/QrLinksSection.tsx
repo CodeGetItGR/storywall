@@ -30,7 +30,7 @@ export function QrLinksSection({ eventId, showGallery, galleryQrLink, showInvita
                 {showGallery && (
                     <Link
                         href={routes.events.tools.galleryQr(eventId)}
-                        className="group flex items-center gap-2 rounded-xl bg-surface-muted/70 px-3 py-2.5"
+                        className="group flex items-center gap-2 rounded-md bg-surface-muted/70 px-3 py-2.5"
                     >
                         <Images className="h-4 w-4 shrink-0 text-ink-faint" aria-hidden="true" />
                         <p className="min-w-0 flex-1 truncate text-xs text-ink-muted">{galleryQrLink ? t('gallery.body') : t('gallery.missing')}</p>
@@ -43,7 +43,7 @@ export function QrLinksSection({ eventId, showGallery, galleryQrLink, showInvita
                 {showInvitations && (
                     <Link
                         href={routes.events.invitationsQr(eventId)}
-                        className="group flex items-center gap-2 rounded-xl bg-surface-muted/70 px-3 py-2.5"
+                        className="group flex items-center gap-2 rounded-md bg-surface-muted/70 px-3 py-2.5"
                     >
                         <QrCode className="h-4 w-4 shrink-0 text-ink-faint" aria-hidden="true" />
                         <p className="min-w-0 flex-1 truncate text-xs text-ink-muted">
