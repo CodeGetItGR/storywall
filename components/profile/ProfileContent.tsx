@@ -4,17 +4,20 @@ import { Camera, CheckCircle2, KeyRound, Loader2, Save } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { ProfileNewsletterSection } from '@/components/profile/ProfileNewsletterSection';
+import { ProfilePictureDialog } from '@/components/profile/ProfilePictureDialog';
 import Avatar from '@/components/ui/avatar';
 import { BackButton } from '@/components/ui/BackButton';
 import { Button } from '@/components/ui/button';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useProfileForm } from '@/hooks/useProfileForm';
+import { PROFILE_PICTURE_ACCEPT, useProfilePictureUpload } from '@/hooks/useProfilePictureUpload';
 import { getInitials } from '@/lib/format';
 import { routes } from '@/lib/routes';
 
 export function ProfileContent() {
     const t = useTranslations('ProfilePage');
     const form = useProfileForm();
+    const picture = useProfilePictureUpload();
     const displayName = form.accountName || t('fallbackName');
 
     return (
@@ -57,14 +60,19 @@ export function ProfileContent() {
                         <input
                             id="profile-picture-input"
                             type="file"
-                            accept="image/jpeg,image/png,image/webp,image/gif"
+                            accept={PROFILE_PICTURE_ACCEPT}
                             className="sr-only"
-                            onChange={form.handleProfilePictureChange}
+                            onChange={picture.handleFileChange}
                         />
                         <div className="min-w-0">
                             <p className="text-sm font-semibold text-ink">{displayName}</p>
                             {form.email && <p className="mt-1 truncate text-sm text-ink-muted">{form.email}</p>}
-                            {form.isSavingProfilePicture && <p className="mt-1 text-sm text-ink-muted">{t('picture.saving')}</p>}
+                            {picture.isUpdated && (
+                                <p className="mt-1 flex items-center gap-2 text-sm text-emerald-700">
+                                    <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
+                                    {t('picture.updated')}
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -139,6 +147,17 @@ export function ProfileContent() {
                         </Button>
                     </div>
                 </form>
+
+                {/* Profile picture dialog */}
+                <ProfilePictureDialog
+                    open={picture.isOpen}
+                    previewUrl={picture.previewUrl}
+                    error={picture.error}
+                    isUploading={picture.isUploading}
+                    onFileChange={picture.handleFileChange}
+                    onConfirm={picture.confirm}
+                    onCancel={picture.cancel}
+                />
 
                 {/* Password */}
                 {form.canChangePassword && (

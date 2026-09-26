@@ -620,9 +620,11 @@
             "hint": "Upload a JPG, PNG, WEBP, or GIF.",
             "clickHint": "Click your avatar to choose a new image.",
             "change": "Change",
-            "save": "Upload photo",
+            "save": "Save",
             "saving": "Uploading…",
-            "updated": "Profile picture updated."
+            "updated": "Profile picture updated.",
+            "cancel": "Cancel",
+            "chooseAnother": "Choose another"
         },
         "password": {
             "title": "Change password",

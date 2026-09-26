@@ -8,6 +8,8 @@ import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { UserResponseDto } from '@/lib/api/types';
 
+export const meQueryKey = ['me'] as const;
+
 // Session/login/oauth don't carry fields that only live on UserResponseDto
 // (e.g. emailVerified) — this fetches /api/me and merges the result into the
 // shared auth state via updateProfile, so every consumer of useAuth().user
@@ -15,7 +17,7 @@ import type { UserResponseDto } from '@/lib/api/types';
 export function useMe(): UseQueryResult<UserResponseDto> {
     const { user, updateProfile } = useAuth();
     const query = useQuery({
-        queryKey: ['me'],
+        queryKey: meQueryKey,
         queryFn: () => api.get<UserResponseDto>(endpoints.me.profile),
         enabled: Boolean(user),
     });

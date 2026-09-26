@@ -1,12 +1,13 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import type { ChangeEvent, SubmitEvent } from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
-import { useMe } from '@/hooks/useMe';
+import { meQueryKey, useMe } from '@/hooks/useMe';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { ERROR_CODES, getErrorCode, getErrorMessage, getFieldErrors } from '@/lib/api/errors';
@@ -34,6 +35,7 @@ function toPasswordFieldErrors(error: unknown): PasswordFieldErrors {
 
 export function useProfileForm() {
     const router = useRouter();
+    const queryClient = useQueryClient();
     const { logout, updateProfile, user } = useAuth();
     const toErrorMessage = useApiErrorMessage();
     const profileQuery = useMe();
@@ -45,8 +47,6 @@ export function useProfileForm() {
 
     const [profileDraft, setProfileDraft] = useState({ firstName: '', lastName: '' });
     const [profileDirty, setProfileDirty] = useState({ firstName: false, lastName: false });
-    const [selectedProfilePicture, setSelectedProfilePicture] = useState<File | null>(null);
-    const [selectedProfilePictureUrl, setSelectedProfilePictureUrl] = useState<string | null>(null);
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -56,18 +56,10 @@ export function useProfileForm() {
     const [profileFieldErrors, setProfileFieldErrors] = useState<ProfileFieldErrors>({});
     const [passwordFieldErrors, setPasswordFieldErrors] = useState<PasswordFieldErrors>({});
     const [isSavingProfile, setIsSavingProfile] = useState(false);
-    const [isSavingProfilePicture, setIsSavingProfilePicture] = useState(false);
     const [isSavingPassword, setIsSavingPassword] = useState(false);
-
-    useEffect(() => {
-        return () => {
-            if (selectedProfilePictureUrl) URL.revokeObjectURL(selectedProfilePictureUrl);
-        };
-    }, [selectedProfilePictureUrl]);
 
     const firstName = profileDirty.firstName ? profileDraft.firstName : sourceFirstName;
     const lastName = profileDirty.lastName ? profileDraft.lastName : sourceLastName;
-    const profilePictureUrl = selectedProfilePictureUrl ?? sourceProfilePictureUrl;
 
     const accountName = useMemo(
         () => [firstName.trim(), lastName.trim()].filter(Boolean).join(' ') || user?.firstName || '',
@@ -75,7 +67,6 @@ export function useProfileForm() {
     );
     const canChangePassword = user?.role === 'USER' || user?.role === 'ADMIN';
     const hasProfileChanges = firstName !== sourceFirstName || lastName !== sourceLastName;
-    const hasProfilePictureChange = Boolean(selectedProfilePicture);
     const passwordMismatch = confirmPassword.length > 0 && newPassword !== confirmPassword;
 
     function handleFirstNameChange(event: ChangeEvent<HTMLInputElement>) {
@@ -86,15 +77,6 @@ export function useProfileForm() {
     function handleLastNameChange(event: ChangeEvent<HTMLInputElement>) {
         setProfileDirty((current) => ({ ...current, lastName: true }));
         setProfileDraft((current) => ({ ...current, lastName: event.target.value }));
-    }
-
-    function handleProfilePictureChange(event: ChangeEvent<HTMLInputElement>) {
-        const file = event.target.files?.[0] ?? null;
-        setProfileError(null);
-        setProfileSuccess(null);
-        if (selectedProfilePictureUrl) URL.revokeObjectURL(selectedProfilePictureUrl);
-        setSelectedProfilePictureUrl(file ? URL.createObjectURL(file) : null);
-        setSelectedProfilePicture(file);
     }
 
     function handleCurrentPasswordChange(event: ChangeEvent<HTMLInputElement>) {
@@ -124,6 +106,10 @@ export function useProfileForm() {
 
         try {
             const updated = await api.patch<UserResponseDto>(endpoints.me.profile, patch);
+            // The fields fall back to the /api/me cache once the draft is cleared,
+            // so it must hold the saved values or the old name reappears.
+            await queryClient.cancelQueries({ queryKey: meQueryKey });
+            queryClient.setQueryData(meQueryKey, updated);
             updateProfile(updated);
             setProfileDraft({ firstName: '', lastName: '' });
             setProfileDirty({ firstName: false, lastName: false });
@@ -135,43 +121,6 @@ export function useProfileForm() {
             setIsSavingProfile(false);
         }
     }
-
-    async function handleProfilePictureSubmit(event: SubmitEvent<HTMLFormElement>) {
-        event.preventDefault();
-        await uploadProfilePicture();
-    }
-
-    async function uploadProfilePicture() {
-        if (!selectedProfilePicture || isSavingProfilePicture) return;
-
-        setIsSavingProfilePicture(true);
-        setProfileError(null);
-        setProfileSuccess(null);
-
-        const formData = new FormData();
-        formData.append('file', selectedProfilePicture);
-
-        try {
-            const updated = await api.postForm<UserResponseDto>(endpoints.me.profilePicture, formData);
-            updateProfile(updated);
-            if (selectedProfilePictureUrl) URL.revokeObjectURL(selectedProfilePictureUrl);
-            setSelectedProfilePicture(null);
-            setSelectedProfilePictureUrl(null);
-            setProfileSuccess('pictureUpdated');
-        } catch (error) {
-            setProfileError(toErrorMessage(error, getErrorMessage(error)));
-        } finally {
-            setIsSavingProfilePicture(false);
-        }
-    }
-
-    useEffect(() => {
-        if (!selectedProfilePicture) return;
-        void uploadProfilePicture();
-        // Deliberately react only to a newly selected file; the upload guard
-        // prevents duplicate submits while the request is in flight.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedProfilePicture]);
 
     async function handlePasswordSubmit(event: SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -224,13 +173,9 @@ export function useProfileForm() {
         handleNewPasswordChange,
         handlePasswordSubmit,
         handlePersonalInfoSubmit,
-        handleProfilePictureChange,
-        handleProfilePictureSubmit,
         hasProfileChanges,
-        hasProfilePictureChange,
         isSavingPassword,
         isSavingProfile,
-        isSavingProfilePicture,
         lastName,
         newPassword,
         passwordError,
@@ -238,8 +183,7 @@ export function useProfileForm() {
         passwordMismatch,
         profileError,
         profileFieldErrors,
-        profilePictureName: selectedProfilePicture?.name ?? null,
-        profilePictureUrl,
+        profilePictureUrl: sourceProfilePictureUrl,
         profileQueryError: profileQuery.error ? toErrorMessage(profileQuery.error) : null,
         profileSuccess,
     };
