@@ -3,6 +3,7 @@ import { type LucideIcon, Menu as MenuIcon, X } from 'lucide-react';
 import { type MouseEvent, useState } from 'react';
 
 import { useRegisterOverlayPresence } from '@/hooks/useOverlayPresence';
+import { usePrefetchRoutes } from '@/hooks/usePrefetchRoutes';
 import { cn } from '@/lib/utils';
 
 import type { ContextNavItem } from './types';
@@ -21,9 +22,15 @@ interface ContextMenuTabProps {
 export function ContextMenuTab({ active, TriggerIcon = MenuIcon, items, label, pathname, searchParams, onItemClick }: ContextMenuTabProps) {
     const [open, setOpen] = useState(false);
     useRegisterOverlayPresence(open);
+    const prefetchItems = usePrefetchRoutes(items.map((item) => item.href));
+
+    function handleOpenChange(nextOpen: boolean) {
+        setOpen(nextOpen);
+        if (nextOpen) prefetchItems();
+    }
 
     return (
-        <Menu.Root open={open} onOpenChange={setOpen}>
+        <Menu.Root open={open} onOpenChange={handleOpenChange}>
             <Menu.Trigger
                 aria-label={label}
                 className="group flex min-w-12 flex-col items-center gap-0.5 px-3 py-1 transition-opacity lg:hidden"

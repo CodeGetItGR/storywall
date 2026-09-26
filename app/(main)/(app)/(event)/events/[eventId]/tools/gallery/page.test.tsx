@@ -3,54 +3,38 @@ import type { ReactElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
-    notFound: vi.fn(() => {
-        throw new Error('NEXT_NOT_FOUND');
-    }),
     resolveServerEventContext: vi.fn(),
     resolveServerEventDetail: vi.fn(),
     serverGet: vi.fn(),
-}));
-
-vi.mock('next/navigation', () => ({
-    notFound: mocks.notFound,
 }));
 
 vi.mock('@/lib/auth/serverEventContext', () => ({
     resolveServerEventContext: mocks.resolveServerEventContext,
     resolveServerEventDetail: mocks.resolveServerEventDetail,
 }));
-
 vi.mock('@/lib/api/serverFetch', () => ({ serverGet: mocks.serverGet }));
-vi.mock('@/i18n/serverLocale', () => ({ getServerLocale: async () => 'en' }));
 vi.mock('./PageClient', () => ({ default: () => null }));
 
 import Page from './page';
 
 const hostContext = { accessToken: 'token-1', memberships: [], activeEventId: 'e1', isHost: true };
-const liveEvent = { id: 'e1', status: 'ACTIVE', deletedAt: null, modules: [{ moduleKey: 'rsvp', isAvailable: true, isEnabled: true }] };
+const liveEvent = { id: 'e1', status: 'ACTIVE', deletedAt: null, modules: [{ moduleKey: 'gallery', isAvailable: true, isEnabled: true }] };
+const firstPage = { content: [], page: 0 };
 
-function visit(reportType = 'STATISTICS') {
-    return Page({ params: Promise.resolve({ eventId: 'e1', reportType }) });
+function visit() {
+    return Page({ params: Promise.resolve({ eventId: 'e1' }) });
 }
 
-function seededKeys(element: ReactElement) {
+function seededQueries(element: ReactElement) {
     const { state } = element.props as { state: DehydratedState };
-    return state.queries.map((query) => query.queryKey);
+    return state.queries.map((query) => ({ key: query.queryKey, data: query.state.data }));
 }
 
-describe('RsvpReportPage (server)', () => {
+describe('GalleryPage (server)', () => {
     beforeEach(() => {
-        mocks.notFound.mockClear();
         mocks.resolveServerEventContext.mockReset().mockResolvedValue(hostContext);
         mocks.resolveServerEventDetail.mockReset().mockResolvedValue(liveEvent);
-        mocks.serverGet.mockReset().mockResolvedValue({ rows: [] });
-    });
-
-    it('404s on an invalid report type before resolving the event context', async () => {
-        await expect(visit('BOGUS')).rejects.toThrow('NEXT_NOT_FOUND');
-        expect(mocks.notFound).toHaveBeenCalledOnce();
-        expect(mocks.resolveServerEventContext).not.toHaveBeenCalled();
-        expect(mocks.resolveServerEventDetail).not.toHaveBeenCalled();
+        mocks.serverGet.mockReset().mockResolvedValue(firstPage);
     });
 
     it('asks for the event while the memberships are still loading', async () => {
@@ -60,28 +44,44 @@ describe('RsvpReportPage (server)', () => {
         await vi.waitFor(() => expect(mocks.resolveServerEventDetail).toHaveBeenCalledWith('e1'));
     });
 
-    it('seeds the report', async () => {
-        expect(seededKeys(await visit())).toEqual([['events', 'e1', 'rsvps', 'report', 'STATISTICS', 'en']]);
+    it("seeds the gallery's first page", async () => {
+        expect(seededQueries(await visit())).toEqual([{ key: ['events', 'e1', 'media'], data: { pages: [firstPage], pageParams: [0] } }]);
+    });
+
+    it("seeds a deleted event's gallery while it's still enabled", async () => {
+        mocks.resolveServerEventDetail.mockResolvedValue({
+            ...liveEvent,
+            deletedAt: '2026-09-01T00:00:00Z',
+            modules: [{ moduleKey: 'gallery', isAvailable: false, isEnabled: true }],
+        });
+
+        expect(seededQueries(await visit())).toHaveLength(1);
     });
 
     it('prefetches nothing for a guest', async () => {
         mocks.resolveServerEventContext.mockResolvedValue({ ...hostContext, isHost: false });
 
-        expect(seededKeys(await visit())).toEqual([]);
+        expect(seededQueries(await visit())).toEqual([]);
         expect(mocks.serverGet).not.toHaveBeenCalled();
     });
 
-    it('prefetches nothing for a deleted event', async () => {
-        mocks.resolveServerEventDetail.mockResolvedValue({ ...liveEvent, deletedAt: '2026-09-01T00:00:00Z' });
+    it("prefetches nothing when the plan doesn't include the gallery", async () => {
+        mocks.resolveServerEventDetail.mockResolvedValue({ ...liveEvent, modules: [{ moduleKey: 'gallery', isAvailable: false, isEnabled: true }] });
 
-        expect(seededKeys(await visit())).toEqual([]);
+        expect(seededQueries(await visit())).toEqual([]);
         expect(mocks.serverGet).not.toHaveBeenCalled();
     });
 
     it("prefetches nothing when Spring can't return the event", async () => {
         mocks.resolveServerEventDetail.mockResolvedValue(null);
 
-        expect(seededKeys(await visit())).toEqual([]);
+        expect(seededQueries(await visit())).toEqual([]);
         expect(mocks.serverGet).not.toHaveBeenCalled();
+    });
+
+    it('prefetches nothing when the media request fails', async () => {
+        mocks.serverGet.mockRejectedValue(new Error('Server prefetch failed'));
+
+        expect(seededQueries(await visit())).toEqual([]);
     });
 });

@@ -31,6 +31,14 @@ const nextConfig = {
         qualities: [75],
     },
     reactCompiler: true,
+    experimental: {
+        // Keep a visited page for 30s so going back to it, or opening it again,
+        // doesn't wait on the server. Signing in or out drops these pages (see
+        // resetSessionCaches in providers/AuthProvider.tsx).
+        staleTimes: {
+            dynamic: 30,
+        },
+    },
 };
 
 export default withNextIntl(nextConfig);

@@ -1,6 +1,7 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { authClient } from '@/lib/api/authClient';
@@ -47,6 +48,7 @@ export const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const queryClient = useQueryClient();
+    const router = useRouter();
     const [authState, setAuthState] = useState(getAuthState());
     const [isBootstrapping, setIsBootstrapping] = useState(true);
 
@@ -105,6 +107,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
     }, []);
 
+    // Every cached query is scoped to whoever was signed in when it was
+    // fetched, and so is every page the router keeps for back/forward and
+    // repeat visits (next.config.mjs staleTimes): each one carries the server
+    // prefetch it was rendered with, which would hydrate straight back into
+    // the cleared query cache. Drop both whenever who is signed in changes.
+    const resetSessionCaches = useCallback(() => {
+        queryClient.clear();
+        router.refresh();
+    }, [queryClient, router]);
+
     const register = useCallback(
         async (input: RegisterRequestDto) => {
             const session = await authClient.register(input);
@@ -112,31 +124,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // still be sitting in cache if the previous account never went through
             // an explicit logout (silent refresh-token expiry, account switch) —
             // clear before setSession so nothing ever renders their data.
-            queryClient.clear();
+            resetSessionCaches();
             setSession(session);
             return session;
         },
-        [queryClient],
+        [resetSessionCaches],
     );
 
     const login = useCallback(
         async (input: { email: string; password: string; inviteToken?: string }) => {
             const session = await authClient.login(input);
-            queryClient.clear();
+            resetSessionCaches();
             setSession(session);
             return session;
         },
-        [queryClient],
+        [resetSessionCaches],
     );
 
     const oauth = useCallback(
         async (provider: 'GOOGLE' | 'APPLE', input: { idToken: string; inviteToken?: string }) => {
             const session = await authClient.oauth(provider, input);
-            queryClient.clear();
+            resetSessionCaches();
             setSession(session);
             return session;
         },
-        [queryClient],
+        [resetSessionCaches],
     );
 
     const logout = useCallback(async () => {
@@ -147,12 +159,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // client state regardless of whether the request succeeded.
         }
         clearSession();
-        // Every cached query is scoped to whoever was signed in when it was
-        // fetched. Without this, the next login (a different account, in the
-        // same SPA session) would render straight from this cache until each
-        // query's staleTime happened to elapse.
-        queryClient.clear();
-    }, [queryClient]);
+        // Without this, the next login (a different account, in the same SPA
+        // session) would render straight from this cache until each query's
+        // staleTime happened to elapse.
+        resetSessionCaches();
+    }, [resetSessionCaches]);
 
     const updateProfile = useCallback((profile: Pick<UserResponseDto, 'firstName' | 'lastName' | 'profilePictureUrl' | 'emailVerified'>) => {
         updateSessionProfile({

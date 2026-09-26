@@ -6,8 +6,8 @@ import { getServerLocale } from '@/i18n/serverLocale';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
 import { serverGet } from '@/lib/api/serverFetch';
-import type { EventDetailResponseDto, EventMemberResponseDto, RsvpReportDto, RsvpResponseDto } from '@/lib/api/types';
-import { resolveServerEventContext } from '@/lib/auth/serverEventContext';
+import type { EventMemberResponseDto, RsvpReportDto, RsvpResponseDto } from '@/lib/api/types';
+import { resolveServerEventContext, resolveServerEventDetail } from '@/lib/auth/serverEventContext';
 import { isModuleAvailable } from '@/lib/eventLifecycle';
 import { makeQueryClient } from '@/lib/queryClient';
 import { resolveRsvpSubTab } from '@/lib/rsvpReport';
@@ -27,15 +27,12 @@ export default async function Page({ params, searchParams }: PageProps) {
     // Mirrors useRsvpSubTab: stats unless the URL asks for list or reports.
     const opensStats = resolveRsvpSubTab(section) === 'stats';
     const queryClient = makeQueryClient();
-    const context = await resolveServerEventContext(eventId);
+    const [context, event] = await Promise.all([resolveServerEventContext(eventId), resolveServerEventDetail(eventId)]);
 
-    if (context?.isHost) {
+    if (context?.isHost && isModuleAvailable(event?.modules, 'rsvp')) {
         const { accessToken } = context;
 
         try {
-            const event = await serverGet<EventDetailResponseDto>(endpoints.events.byId(eventId), accessToken);
-            if (!isModuleAvailable(event.modules, 'rsvp')) throw new Error('rsvp unavailable');
-
             const [members, rsvps, rsvpReport] = await Promise.all([
                 serverGet<EventMemberResponseDto[]>(endpoints.events.members(eventId), accessToken),
                 serverGet<RsvpResponseDto[]>(endpoints.events.rsvps(eventId), accessToken),

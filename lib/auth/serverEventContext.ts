@@ -3,7 +3,7 @@ import { cookies, headers } from 'next/headers';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
 import { serverGet } from '@/lib/api/serverFetch';
-import type { EventMemberResponseDto } from '@/lib/api/types';
+import type { EventDetailResponseDto, EventMemberResponseDto } from '@/lib/api/types';
 import { ACCESS_TOKEN_HEADER } from '@/lib/auth/authCookies';
 import { ACTIVE_EVENT_COOKIE } from '@/lib/storageKeys';
 
@@ -44,6 +44,22 @@ export async function resolveServerEventContext(eventId?: string): Promise<Serve
             activeEventId: activeMembership?.eventId ?? null,
             isHost: activeMembership?.role === 'HOST',
         };
+    } catch {
+        return null;
+    }
+}
+
+// The event's detail, for pages that gate their prefetch on it (plan, status,
+// modules). It doesn't depend on the memberships, so fetch it alongside
+// resolveServerEventContext rather than after it — one Spring round trip
+// instead of two before the page can render. Null without a session or when
+// Spring can't answer; the client hooks fetch normally then.
+export async function resolveServerEventDetail(eventId: string): Promise<EventDetailResponseDto | null> {
+    const accessToken = (await headers()).get(ACCESS_TOKEN_HEADER);
+    if (!accessToken) return null;
+
+    try {
+        return await serverGet<EventDetailResponseDto>(endpoints.events.byId(eventId), accessToken);
     } catch {
         return null;
     }
