@@ -2,6 +2,7 @@
 
 import { notFound, useParams } from 'next/navigation';
 
+import { RsvpReportScreenSkeleton } from '@/components/manage/ManageSkeletons';
 import { RsvpReportScreen } from '@/components/manage/rsvp/RsvpReportScreen';
 import { EventRouteGate } from '@/components/routing/EventRouteGate';
 import { isRsvpReportType } from '@/lib/rsvpReport';
@@ -12,7 +13,7 @@ export default function RsvpReportPage() {
     if (!isRsvpReportType(reportType)) notFound();
 
     return (
-        <EventRouteGate requireHost>
+        <EventRouteGate requireHost fallback={<RsvpReportScreenSkeleton />}>
             <RsvpReportScreen reportType={reportType} />
         </EventRouteGate>
     );

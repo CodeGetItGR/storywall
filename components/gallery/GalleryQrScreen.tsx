@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 
+import { GalleryQrCodeSkeleton } from '@/components/gallery/GallerySkeletons';
 import { QrCodeCard } from '@/components/manage/invitations/QrCodeCard';
 import { ModuleNotice } from '@/components/tools/ModuleNotice';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
-import { LoadingState } from '@/components/ui/LoadingState';
 import { useGalleryQrScreen } from '@/hooks/useGalleryQrScreen';
 import { routes } from '@/lib/routes';
 
@@ -36,7 +36,7 @@ export function GalleryQrScreen() {
             subtitle={t('subtitle')}
         >
             {isLoading ? (
-                <LoadingState size="md" className="min-h-[40vh]" />
+                <GalleryQrCodeSkeleton />
             ) : qrLink ? (
                 <div className="flex flex-col items-center">
                     {qrLink.status !== 'ACTIVE' && (

@@ -14,7 +14,7 @@ import { isEventDeleted, isModuleAvailable } from '@/lib/eventLifecycle';
 import { makeQueryClient } from '@/lib/queryClient';
 import { resolveRsvpSubTab } from '@/lib/rsvpReport';
 
-import ManagePage from './PageClient';
+import ManagePage from '../PageClient';
 
 type PageProps = { params: Promise<{ eventId: string }>; searchParams: Promise<{ tab?: string; section?: string }> };
 

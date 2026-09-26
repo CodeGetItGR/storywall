@@ -1,13 +1,10 @@
-import { Loader2 } from 'lucide-react';
 import type { ReactNode } from 'react';
+
+import { InviteSkeleton } from '@/components/invite/InviteSkeleton';
 
 export function InviteOnboardingState({ content, isLoading, terminalState }: { content: ReactNode; isLoading: boolean; terminalState: ReactNode }) {
     if (isLoading) {
-        return (
-            <div className="flex min-h-screen items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-ink-muted" />
-            </div>
-        );
+        return <InviteSkeleton />;
     }
 
     if (terminalState) {

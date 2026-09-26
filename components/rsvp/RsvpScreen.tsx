@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 import RsvpTab from '@/app/(main)/(app)/(event)/events/[eventId]/manage/RsvpTab';
+import { ManageRsvpSkeleton } from '@/components/manage/ManageSkeletons';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { RsvpUnavailableState } from '@/components/rsvp/RsvpUnavailableState';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
@@ -19,8 +20,8 @@ export function RsvpScreen() {
     const rsvp = useRsvpAvailability();
     const rosterEventId = isHost && rsvp.isAvailable ? eventId : null;
 
-    const { data: members = [] } = useEventMembers(rosterEventId);
-    const { data: rsvps = [] } = useEventRsvps(rosterEventId);
+    const { data: members = [], isLoading: membersLoading } = useEventMembers(rosterEventId);
+    const { data: rsvps = [], isLoading: rsvpsLoading } = useEventRsvps(rosterEventId);
 
     if (!rsvp.isAvailable) {
         return <RsvpUnavailableState eventId={eventId} title={rsvp.unavailableTitle} body={rsvp.unavailableBody} />;
@@ -34,15 +35,19 @@ export function RsvpScreen() {
             backLabel={t('backToTools')}
             backHref={routes.events.feed(eventId)}
         >
-            <RsvpTab
-                eventId={eventId}
-                members={members}
-                rsvps={rsvps}
-                startAt={activeEvent.schedule.startAt}
-                rsvpDeadline={activeEvent.schedule.rsvpDeadline}
-                canWrite={canWrite}
-                origin="tools"
-            />
+            {membersLoading || rsvpsLoading ? (
+                <ManageRsvpSkeleton />
+            ) : (
+                <RsvpTab
+                    eventId={eventId}
+                    members={members}
+                    rsvps={rsvps}
+                    startAt={activeEvent.schedule.startAt}
+                    rsvpDeadline={activeEvent.schedule.rsvpDeadline}
+                    canWrite={canWrite}
+                    origin="tools"
+                />
+            )}
         </ModulePageShell>
     );
 }

@@ -1,3 +1,4 @@
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 export type Metric = {
@@ -33,11 +34,31 @@ export function MetricStrip({ items, className }: { items: Metric[]; className?:
             )}
         >
             {items.map((item) => (
-                <div key={item.key} className="flex flex-col bg-background px-3.5 py-3 text-center gap-2">
+                <div key={item.key} className="flex flex-col gap-2 bg-background px-3.5 py-3 text-center">
                     <dd className={cn('mt-1 text-2xl leading-none font-extrabold text-ink tabular-nums', item.tone)}>{item.value}</dd>
                     <dt className="truncate text-[11px] font-bold tracking-wide text-ink-faint uppercase">{item.label}</dt>
                 </div>
             ))}
         </dl>
+    );
+}
+
+export function MetricStripSkeleton({ count = 4, className }: { count?: number; className?: string }) {
+    return (
+        <div
+            aria-hidden="true"
+            className={cn(
+                'grid gap-px overflow-hidden rounded-md border border-border bg-border',
+                columnClass[count] ?? 'grid-cols-2 sm:grid-cols-4',
+                className,
+            )}
+        >
+            {Array.from({ length: count }).map((_, index) => (
+                <div key={index} className="flex flex-col items-center gap-2 bg-background px-3.5 py-3">
+                    <Skeleton className="mt-1 h-6 w-10 rounded-md" />
+                    <Skeleton className="h-2.5 w-16 rounded-full" />
+                </div>
+            ))}
+        </div>
     );
 }

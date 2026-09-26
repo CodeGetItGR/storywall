@@ -3,7 +3,7 @@
 import { CalendarClock } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { LoadingState } from '@/components/ui/LoadingState';
+import { RsvpReportSkeleton } from '@/components/manage/ManageSkeletons';
 import { useRsvpReport } from '@/hooks/useRsvps';
 import { formatDate, getDaysUntil } from '@/lib/datetime';
 
@@ -53,7 +53,7 @@ export function RsvpStatsPanel({
 
             {/* Report */}
             {isLoading || (!report && !isError) ? (
-                <LoadingState size="md" className="min-h-32" />
+                <RsvpReportSkeleton />
             ) : isError ? (
                 <p className="text-sm text-rose-600">{t('rsvpReport.loadFailed')}</p>
             ) : (

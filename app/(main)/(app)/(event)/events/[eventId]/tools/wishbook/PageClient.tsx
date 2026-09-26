@@ -10,7 +10,7 @@ import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ModuleUnavailableState } from '@/components/tools/ModuleUnavailableState';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { LoadingState } from '@/components/ui/LoadingState';
+import { WishbookEntriesSkeleton } from '@/components/wishbook/WishbookSkeletons';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
@@ -183,7 +183,7 @@ export default function WishbookPage() {
                     </div>
                 )}
                 {exportPdf.error && <p className="mb-3 text-xs text-rose-600">{exportPdf.error}</p>}
-                {wishbook.isLoading && <LoadingState label={t('loading')} className="py-10" />}
+                {wishbook.isLoading && <WishbookEntriesSkeleton />}
                 {wishbook.error && <p className="py-10 text-center text-sm text-rose-600">{toErrorMessage(wishbook.error)}</p>}
                 {showEmptyState && (
                     <ToolEmptyState

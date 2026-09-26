@@ -5,9 +5,9 @@ import { useTranslations } from 'next-intl';
 import { PiMusicNotesPlusDuotone } from 'react-icons/pi';
 
 import { PlaylistItemRow } from '@/components/playlist';
+import { PlaylistListSkeleton } from '@/components/playlist/PlaylistSkeletons';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
-import { LoadingState } from '@/components/ui/LoadingState';
 import type { PlaylistSuggestionResponseDto } from '@/lib/api/types';
 import { PLAYLIST_TOP_RANK_COUNT, shouldShowPlaylistTopRanks } from '@/lib/playlistRanking';
 import { routes } from '@/lib/routes';
@@ -63,7 +63,7 @@ export function PlaylistContent({
 
             {/* Content */}
             {suggestionsLoading ? (
-                <LoadingState label={t('loadingSongs')} className="py-8" />
+                <PlaylistListSkeleton />
             ) : suggestions.length === 0 ? (
                 <ToolEmptyState
                     title={t('emptyTitle')}

@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { type MouseEvent, useCallback, useMemo, useState } from 'react';
 
 import { NotificationRow } from '@/components/notifications/NotificationRow';
+import { NotificationListSkeleton } from '@/components/notifications/NotificationsSkeletons';
 import { BackButton } from '@/components/ui/BackButton';
 import { PageErrorState } from '@/components/ui/PageErrorState';
 import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
@@ -92,10 +93,7 @@ export default function NotificationsPage() {
             </div>
 
             {notificationsQuery.isLoading ? (
-                <div className="space-y-2 px-4 py-6">
-                    <div className="h-16 animate-pulse rounded-lg bg-surface-muted" />
-                    <div className="h-16 animate-pulse rounded-lg bg-surface-muted" />
-                </div>
+                <NotificationListSkeleton />
             ) : visible.length === 0 ? (
                 <div className="flex flex-col items-center justify-center px-4 py-24 text-center">
                     <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-surface-muted">

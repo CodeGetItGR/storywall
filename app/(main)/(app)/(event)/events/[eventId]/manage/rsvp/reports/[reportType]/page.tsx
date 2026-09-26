@@ -19,7 +19,7 @@ type PageProps = { params: Promise<{ eventId: string; reportType: string }> };
 // drawn, gated like useRsvpReport (host, rsvp readable). A deleted event's report
 // prefetch is skipped: DeletedEventRouteGuard redirects this route away for a
 // deleted event's host (it isn't in isDeletedEventRouteAllowed), so the prefetch
-// would be wasted, mirroring manage/page.tsx's own isEventDeleted check.
+// would be wasted, mirroring manage/(root)/page.tsx's own isEventDeleted check.
 export default async function Page({ params }: PageProps) {
     const { eventId, reportType } = await params;
     if (!isRsvpReportType(reportType)) notFound();

@@ -3,8 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo } from 'react';
 
-import { FeedPageSkeleton } from '@/components/feed/FeedPageSkeleton';
 import { SessionLocationPageShell } from '@/components/session-location/SessionLocationPageShell';
+import { SessionLocationPageSkeleton } from '@/components/session-location/SessionLocationPageSkeleton';
 import { useEvent } from '@/hooks/useEvent';
 import { ApiError } from '@/lib/api/client';
 import { routes } from '@/lib/routes';
@@ -29,7 +29,7 @@ export function SessionLocationBoundary({ eventId, role }: { eventId: string; ro
     }, [error, event, isLoading, router]);
 
     if (isLoading) {
-        return <FeedPageSkeleton />;
+        return <SessionLocationPageSkeleton />;
     }
 
     if (!event || !location || (error instanceof ApiError && error.status === 404)) {

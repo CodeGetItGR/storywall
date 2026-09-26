@@ -3,8 +3,8 @@
 import { Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { RsvpReportBodySkeleton } from '@/components/manage/ManageSkeletons';
 import { ModuleUnavailableState } from '@/components/tools/ModuleUnavailableState';
-import { LoadingState } from '@/components/ui/LoadingState';
 import { usePlanUpgradeHref } from '@/hooks/usePlanUpgradeHref';
 import { useRsvpReportPage } from '@/hooks/useRsvpReportPage';
 import type { RsvpReportType } from '@/lib/api/types';
@@ -48,7 +48,7 @@ export function RsvpReportScreen({ reportType }: { reportType: RsvpReportType })
             ) : page.isError ? (
                 <p className="text-sm text-rose-600">{t('loadFailed')}</p>
             ) : (
-                <LoadingState size="md" className="min-h-64" />
+                <RsvpReportBodySkeleton />
             )}
         </div>
     );

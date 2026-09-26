@@ -5,11 +5,11 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
 import { QrLinkRow, ShareLanguageNote } from '@/components/manage/invitations';
+import { QrLinksListSkeleton } from '@/components/manage/ManageSkeletons';
 import { UsagePanel } from '@/components/plan/UsagePanel';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
-import { LoadingState } from '@/components/ui/LoadingState';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useUpgradeOptions } from '@/hooks/useBilling';
 import { useIsPrimaryHost } from '@/hooks/useIsPrimaryHost';
@@ -55,7 +55,7 @@ export function InvitationsQrScreen() {
             subtitle={tPage('subtitle')}
         >
             {isLoading ? (
-                <LoadingState size="md" className="min-h-64" />
+                <QrLinksListSkeleton />
             ) : (
                 <>
                     {eventUsage && (

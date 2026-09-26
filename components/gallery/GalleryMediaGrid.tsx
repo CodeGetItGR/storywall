@@ -6,8 +6,8 @@ import type { MouseEvent, PointerEvent, RefObject } from 'react';
 import { useCallback } from 'react';
 
 import { MediaThumbnail } from '@/components/common/MediaThumbnail';
+import { GalleryMediaGridSkeleton } from '@/components/gallery/GallerySkeletons';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
-import { LoadingState } from '@/components/ui/LoadingState';
 import type { MediaResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
@@ -57,7 +57,7 @@ export function GalleryMediaGrid({
         <section>
             {/* Empty and loading states */}
             {isLoading ? (
-                <LoadingState size="md" className="min-h-48 rounded-2xl bg-card" />
+                <GalleryMediaGridSkeleton />
             ) : items.length === 0 ? (
                 <ToolEmptyState title={t('emptyTitle')} icon={ImagePlus} className="py-12" />
             ) : (

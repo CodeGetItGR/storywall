@@ -27,7 +27,6 @@ export default function PostRedirectPage({ params }: { params: Promise<{ id: str
             errorDescription={notFound ? t('notFoundDescription') : t('loadFailedDescription')}
             errorTitle={notFound ? t('notFoundTitle') : t('loadFailedTitle')}
             errorActionLabel={t('backToFeed')}
-            loadingLabel={t('loading')}
         />
     );
 }

@@ -8,8 +8,9 @@ import { useMemo, useState } from 'react';
 import { ScheduleEditorSheet } from '@/app/(main)/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleEditorSheet';
 import { ScheduleEmptyState } from '@/app/(main)/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleEmptyState';
 import { ScheduleSessionsList } from '@/app/(main)/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleSessionsList';
-import { EventRouteSpinner, useEventRouteContext } from '@/components/routing/EventRouteGate';
+import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ScheduleEditSessionsTable } from '@/components/schedule/ScheduleEditSessionsTable';
+import { SchedulePageSkeleton } from '@/components/schedule/ScheduleSkeletons';
 import { ModuleNotice } from '@/components/tools/ModuleNotice';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
@@ -132,7 +133,7 @@ export function ScheduleScreen() {
         setViewMode('edit');
     }
 
-    if (isLoadingSessions) return <EventRouteSpinner />;
+    if (isLoadingSessions) return <SchedulePageSkeleton />;
 
     const secondarySessionTitleKey = activeEvent ? getCreateEventCatalogEntry(activeEvent.eventType)?.secondarySessionTitleKey : undefined;
     const secondarySessionTitle =

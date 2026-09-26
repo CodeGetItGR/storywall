@@ -1,22 +1,21 @@
+import { FeedPageSkeleton } from '@/components/feed/FeedPageSkeleton';
 import { PostRedirectErrorState } from '@/components/post/PostRedirectErrorState';
-import { PostRedirectLoadingState } from '@/components/post/PostRedirectLoadingState';
 
 export function PostRedirectState({
     error,
     errorDescription,
     errorTitle,
     errorActionLabel,
-    loadingLabel,
 }: {
     error: unknown;
     errorDescription: string;
     errorTitle: string;
     errorActionLabel: string;
-    loadingLabel: string;
 }) {
     if (error) {
         return <PostRedirectErrorState title={errorTitle} description={errorDescription} actionLabel={errorActionLabel} />;
     }
 
-    return <PostRedirectLoadingState label={loadingLabel} />;
+    // The post opens on its event's feed, so the wait looks like that feed loading.
+    return <FeedPageSkeleton />;
 }

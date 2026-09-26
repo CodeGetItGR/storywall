@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 
+import { CheckoutReviewSkeleton } from '@/components/checkout/CheckoutSkeletons';
 import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
 import { BackButton } from '@/components/ui/BackButton';
 import { PageErrorState } from '@/components/ui/PageErrorState';
@@ -87,12 +88,7 @@ export default function CheckoutReviewBoundary() {
         (intent === 'upgrade' && upgradeOptions.isLoading) ||
         (intent === 'extension' && extension.isLoading)
     ) {
-        return (
-            <main className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
-                <div className="h-8 w-44 animate-pulse rounded bg-surface-muted" />
-                <div className="mt-8 h-72 animate-pulse rounded-lg bg-surface-muted" />
-            </main>
-        );
+        return <CheckoutReviewSkeleton />;
     }
 
     if (

@@ -9,7 +9,7 @@ import { resolveServerEventContext, resolveServerEventDetail } from '@/lib/auth/
 import { readableModuleKeys } from '@/lib/eventLifecycle';
 import { makeQueryClient } from '@/lib/queryClient';
 
-import GalleryPage from './PageClient';
+import GalleryPage from '../PageClient';
 
 type PageProps = { params: Promise<{ eventId: string }> };
 

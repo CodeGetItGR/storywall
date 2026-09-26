@@ -1,7 +1,7 @@
 'use client';
 
-import { GiftAccountPage } from '@/components/gifts/GiftAccountPage';
+import GiftsPage from '@/app/(main)/(app)/(event)/events/[eventId]/tools/gifts/PageClient';
 
 export default function DemoGiftsPage() {
-    return <GiftAccountPage />;
+    return <GiftsPage />;
 }

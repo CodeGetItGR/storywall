@@ -3,10 +3,11 @@
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { EventRouteSpinner, useEventRouteContext } from '@/components/routing/EventRouteGate';
+import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { StoryHeader, StoryProgressBar } from '@/components/story';
 import { ScheduleStoryContent } from '@/components/story/ScheduleStoryContent';
 import { ScheduleStoryDateBadge } from '@/components/story/ScheduleStoryDateBadge';
+import { ScheduleStorySkeleton } from '@/components/story/ScheduleStorySkeleton';
 import { useEventSessions } from '@/hooks/useEventSessions';
 import { routes } from '@/lib/routes';
 
@@ -24,11 +25,7 @@ export function ScheduleStoryScreen() {
     }
 
     if (isLoading) {
-        return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink">
-                <EventRouteSpinner />
-            </div>
-        );
+        return <ScheduleStorySkeleton />;
     }
 
     if (sessions.length === 0) {

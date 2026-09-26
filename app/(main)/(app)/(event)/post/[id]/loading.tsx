@@ -1,6 +1,6 @@
-import { EventRouteSpinner } from '@/components/routing/EventRouteGate';
+import { FeedPageSkeleton } from '@/components/feed/FeedPageSkeleton';
 
 // Shown the moment a link here is clicked, while the server renders the page.
 export default function Loading() {
-    return <EventRouteSpinner />;
+    return <FeedPageSkeleton />;
 }

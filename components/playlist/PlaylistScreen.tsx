@@ -4,7 +4,8 @@ import { Music } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { PlaylistContent } from '@/components/playlist/PlaylistContent';
-import { EventRouteSpinner, useEventRouteContext } from '@/components/routing/EventRouteGate';
+import { PlaylistPageSkeleton } from '@/components/playlist/PlaylistSkeletons';
+import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ModuleUnavailableState } from '@/components/tools/ModuleUnavailableState';
 import { usePlanUpgradeHref } from '@/hooks/usePlanUpgradeHref';
 import { usePlaylistPageData } from '@/hooks/usePlaylistPageData';
@@ -18,7 +19,7 @@ export function PlaylistScreen() {
     const upgradeHref = usePlanUpgradeHref(eventId);
 
     if (data.isLoadingModules) {
-        return <EventRouteSpinner />;
+        return <PlaylistPageSkeleton />;
     }
 
     if (!data.playlistEnabled) {

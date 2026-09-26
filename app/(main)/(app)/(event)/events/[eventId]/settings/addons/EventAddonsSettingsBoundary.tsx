@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback, useMemo } from 'react';
 
+import { AddonsSettingsSkeleton } from '@/components/plan/AddonsSettingsSkeleton';
 import { StoragePackPurchase } from '@/components/plan/StoragePackPurchase';
 import { BackButton } from '@/components/ui/BackButton';
 import { PageErrorState } from '@/components/ui/PageErrorState';
@@ -43,12 +44,7 @@ export default function EventAddonsSettingsBoundary() {
     );
 
     if (appConfig.isLoading || billing.isLoading) {
-        return (
-            <main className="mx-auto max-w-3xl px-4 py-10">
-                <div className="h-24 animate-pulse rounded-lg bg-surface-muted" />
-                <div className="mt-6 h-64 animate-pulse rounded-lg bg-surface-muted" />
-            </main>
-        );
+        return <AddonsSettingsSkeleton />;
     }
 
     if (appConfig.error || billing.error || !data) {

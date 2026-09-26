@@ -5,6 +5,7 @@ import { EventsQuickRow } from '@/components/home/EventsQuickRow';
 import { HomeEmptyState } from '@/components/home/HomeEmptyState';
 import { HomeHeader } from '@/components/home/HomeHeader';
 import { HomeNextEventCard } from '@/components/home/HomeNextEventCard';
+import { HOME_SECTION_CLASS_NAME, HomeNextEventCardSkeleton } from '@/components/home/HomeSkeletons';
 import { useAuth } from '@/hooks/useAuth';
 import { useEventGridItems } from '@/hooks/useEventGridItems';
 import { useMe } from '@/hooks/useMe';
@@ -21,7 +22,7 @@ export function HomeContent() {
     const { eventQueries, isLoading, memberships } = useMyEventList();
     const items = useEventGridItems(memberships, eventQueries);
     const hasEvents = memberships.length > 0;
-    const feedSectionClassName = 'px-4 sm:px-8 lg:mx-auto lg:w-[clamp(32rem,40vw,42rem)] lg:px-0';
+    const feedSectionClassName = HOME_SECTION_CLASS_NAME;
 
     return (
         <div className="relative h-full w-full overflow-x-hidden overflow-y-auto">
@@ -52,11 +53,9 @@ export function HomeContent() {
                 ) : (
                     <>
                         {/* Next event */}
-                        {!isLoading && (
-                            <section className={feedSectionClassName}>
-                                <HomeNextEventCard items={items} />
-                            </section>
-                        )}
+                        <section className={feedSectionClassName}>
+                            {isLoading ? <HomeNextEventCardSkeleton /> : <HomeNextEventCard items={items} />}
+                        </section>
 
                         {/* Your events */}
                         <EventsQuickRow items={items} isLoading={isLoading} contentClassName={feedSectionClassName} canCreateEvent={canCreateEvent} />

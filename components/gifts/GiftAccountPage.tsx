@@ -6,35 +6,34 @@ import { useTranslations } from 'next-intl';
 import { GiftAccountDetails } from '@/components/gifts/GiftAccountDetails';
 import { GiftAccountForm } from '@/components/gifts/GiftAccountForm';
 import { GiftAccountSetupForm } from '@/components/gifts/GiftAccountSetupForm';
+import { GiftAccountSkeleton } from '@/components/gifts/GiftsSkeletons';
+import { useEventRouteContext } from '@/components/routing/EventRouteGate';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ModuleUnavailableState } from '@/components/tools/ModuleUnavailableState';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
-import { LoadingState } from '@/components/ui/LoadingState';
 import { useGiftAccount } from '@/hooks/useGiftAccount';
 import { useGiftAccountEditor } from '@/hooks/useGiftAccountEditor';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { usePlanUpgradeHref } from '@/hooks/usePlanUpgradeHref';
 import { routes } from '@/lib/routes';
-import { useActiveEvent, useIsHost } from '@/providers/EventProvider';
 
 export function GiftAccountPage() {
     const t = useTranslations('GiftsPage');
-    const event = useActiveEvent();
-    const eventId = event?.id ?? '';
-    const isHost = useIsHost();
-    const account = useGiftAccount(event?.id ?? null);
+    const { eventId, isHost } = useEventRouteContext();
+    const account = useGiftAccount(eventId);
     const editor = useGiftAccountEditor(eventId);
-    const wishlistReadable = useModuleReadable(event?.id ?? null, 'wishlist');
+    const wishlistReadable = useModuleReadable(eventId, 'wishlist');
     const upgradeHref = usePlanUpgradeHref(eventId);
 
-    const isLoaded = !account.isLoading && !account.error;
-    const canEdit = isHost && Boolean(event?.id);
+    // Only a finished fetch decides between details, setup and the empty state.
+    const isLoaded = account.isSuccess;
+    const canEdit = isHost;
 
-    if (event && !wishlistReadable) {
+    if (!wishlistReadable) {
         return (
             <ModuleUnavailableState
-                backHref={routes.events.feed(event.id)}
+                backHref={routes.events.feed(eventId)}
                 backLabel={t('goBack')}
                 body={t('unavailableBody')}
                 icon={Gift}
@@ -92,7 +91,7 @@ export function GiftAccountPage() {
                 />
             )}
 
-            {account.isLoading && <LoadingState label={t('loading')} className="py-16" />}
+            {account.isLoading && <GiftAccountSkeleton />}
             {account.error && <p className="py-16 text-center text-sm text-rose-600">{t('loadError')}</p>}
 
             {/* Remove confirmation */}

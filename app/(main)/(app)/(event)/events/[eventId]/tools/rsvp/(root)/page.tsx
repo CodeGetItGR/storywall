@@ -12,7 +12,7 @@ import { isModuleAvailable } from '@/lib/eventLifecycle';
 import { makeQueryClient } from '@/lib/queryClient';
 import { resolveRsvpSubTab } from '@/lib/rsvpReport';
 
-import RsvpPage from './PageClient';
+import RsvpPage from '../PageClient';
 
 type PageProps = { params: Promise<{ eventId: string }>; searchParams: Promise<{ section?: string }> };
 

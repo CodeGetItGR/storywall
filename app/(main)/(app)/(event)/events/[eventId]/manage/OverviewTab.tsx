@@ -2,8 +2,8 @@ import { useTranslations } from 'next-intl';
 
 import { HostContextSections } from '@/components/layout/right-context-panel/HostContextSections';
 import { CoverageStatusStrip } from '@/components/manage/CoverageStatusStrip';
+import { ManageDraftOverviewSkeleton } from '@/components/manage/ManageSkeletons';
 import { OverviewDraftPanel } from '@/components/manage/OverviewDraftPanel';
-import { LoadingState } from '@/components/ui/LoadingState';
 import { MetricStrip } from '@/components/ui/MetricStrip';
 import { useEventOverviewPlan } from '@/hooks/useEventOverviewPlan';
 import { useRightContextPanel } from '@/hooks/useRightContextPanel';
@@ -77,7 +77,7 @@ export default function OverviewTab({
 
     if (eventStatus === 'DRAFT') {
         // The draft's duration, and so its price, comes from the billing view.
-        if (isBillingLoading) return <LoadingState size="md" className="min-h-64" />;
+        if (isBillingLoading) return <ManageDraftOverviewSkeleton />;
 
         return (
             <OverviewDraftPanel

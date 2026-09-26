@@ -13,7 +13,7 @@ vi.mock('@/lib/auth/serverEventContext', () => ({
     resolveServerEventDetail: mocks.resolveServerEventDetail,
 }));
 vi.mock('@/lib/api/serverFetch', () => ({ serverGet: mocks.serverGet }));
-vi.mock('./PageClient', () => ({ default: () => null }));
+vi.mock('../PageClient', () => ({ default: () => null }));
 
 import Page from './page';
 

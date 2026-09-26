@@ -7,15 +7,12 @@ import { type MouseEvent, useCallback } from 'react';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { HomeHorizontalScroller } from '@/components/home/HomeHorizontalScroller';
+import { EventQuickCardSkeleton, EventQuickCardsSkeleton } from '@/components/home/HomeSkeletons';
 import type { EventGridItem } from '@/hooks/useEventGridItems';
 import { formatDate, formatEventListDate } from '@/lib/datetime';
 import { isEventDeleted } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
-
-function QuickRowSkeleton() {
-    return <div className="h-52 w-40 shrink-0 animate-pulse rounded-2xl bg-surface-muted lg:h-56 lg:w-40" />;
-}
 
 function EventQuickCard({ member, event }: EventGridItem) {
     const tEvents = useTranslations('EventsPage');
@@ -104,11 +101,17 @@ export function EventsQuickRow({
 
             {/* Event shortcuts */}
             <HomeHorizontalScroller previousLabel={tEvents('previous')} nextLabel={tEvents('next')} className={contentClassName}>
-                {isLoading
-                    ? [0, 1, 2].map((key) => <QuickRowSkeleton key={key} />)
-                    : items.map((item) =>
-                          item.isLoading ? <QuickRowSkeleton key={item.member.eventId} /> : <EventQuickCard key={item.member.eventId} {...item} />,
-                      )}
+                {isLoading ? (
+                    <EventQuickCardsSkeleton />
+                ) : (
+                    items.map((item) =>
+                        item.isLoading ? (
+                            <EventQuickCardSkeleton key={item.member.eventId} />
+                        ) : (
+                            <EventQuickCard key={item.member.eventId} {...item} />
+                        ),
+                    )
+                )}
             </HomeHorizontalScroller>
         </section>
     );

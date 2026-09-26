@@ -7,8 +7,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { DeletedEventManageScreen } from '@/components/manage/DeletedEventManageScreen';
 import { ManageSectionNav, sectionIcons } from '@/components/manage/ManageSectionNav';
+import { ManageMembersSkeleton, ManageOverviewSkeleton, ManageRsvpSkeleton } from '@/components/manage/ManageSkeletons';
 import { useEventRouteContext } from '@/components/routing/EventRouteGate';
-import { LoadingState } from '@/components/ui/LoadingState';
 import { Modal } from '@/components/ui/modal';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventInvitations } from '@/hooks/useEventInvitations';
@@ -105,7 +105,7 @@ export function ManageScreen() {
         <>
             {section === 'overview' &&
                 (overviewLoading ? (
-                    <LoadingState size="md" className="min-h-64" />
+                    <ManageOverviewSkeleton />
                 ) : (
                     <OverviewTab
                         memberCount={members.length}
@@ -129,7 +129,7 @@ export function ManageScreen() {
 
             {section === 'rsvp' &&
                 (rsvpTabLoading ? (
-                    <LoadingState size="md" className="min-h-64" />
+                    <ManageRsvpSkeleton />
                 ) : (
                     <RsvpTab
                         eventId={eventId}
@@ -144,7 +144,7 @@ export function ManageScreen() {
 
             {section === 'members' &&
                 (membersTabLoading ? (
-                    <LoadingState size="md" className="min-h-64" />
+                    <ManageMembersSkeleton />
                 ) : (
                     <MembersTab
                         canModerate={canWrite}

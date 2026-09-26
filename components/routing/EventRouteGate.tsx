@@ -22,9 +22,11 @@ type EventRouteGateProps = {
     missingEventRedirectTo?: string;
     requireHost?: boolean;
     guestRedirectTo?: string;
+    // The page's own skeleton, shown while the event context resolves.
+    fallback?: ReactNode;
 };
 
-export function EventRouteGate({ children, missingEventRedirectTo, requireHost = false, guestRedirectTo }: EventRouteGateProps) {
+export function EventRouteGate({ children, missingEventRedirectTo, requireHost = false, guestRedirectTo, fallback }: EventRouteGateProps) {
     const router = useRouter();
     const { isAuthenticated } = useAuth();
     const activeEvent = useActiveEvent();
@@ -47,7 +49,7 @@ export function EventRouteGate({ children, missingEventRedirectTo, requireHost =
     }, [eventId, guestRedirectTo, isContextLoading, isHost, requireHost, resolvedMissingEventRedirectTo, router]);
 
     if (isContextLoading || !activeEvent || (requireHost && !isHost)) {
-        return <EventRouteSpinner />;
+        return fallback ?? <EventRouteSpinner />;
     }
 
     const value = { activeEvent, eventId: activeEvent.id, isHost };

@@ -5,7 +5,8 @@
         "yes": "Yes",
         "no": "No",
         "primaryHostOnly": "Only the event's main host can make purchases.",
-        "seeUpgradeOptions": "See upgrade options"
+        "seeUpgradeOptions": "See upgrade options",
+        "loading": "Loading…"
     },
     "Demo": {
         "resetDemo": "Reset demo",
@@ -1776,7 +1777,6 @@
         "goBack": "Go back",
         "unavailableTitle": "Gift account is not available",
         "unavailableBody": "The gift account is not available on this event's current plan.",
-        "loading": "Loading gift details...",
         "loadError": "Gift details could not be loaded.",
         "emptyTitle": "No gift account yet",
         "emptyHost": "Add bank details so members can send a gift.",
@@ -1889,7 +1889,6 @@
         "emptyTitle": "No songs yet",
         "emptyBody": "Be the first to suggest one.",
         "playlistEmpty": "No songs have been suggested yet. Be the first to suggest one.",
-        "loadingSongs": "Loading songs...",
         "topSongBadge": "Top {rank}",
         "up": "Up",
         "down": "Down",

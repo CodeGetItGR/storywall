@@ -7,6 +7,7 @@ import { BillingExtensionSection } from '@/components/manage/billing/BillingExte
 import { BillingOrdersPanel } from '@/components/manage/billing/BillingOrdersPanel';
 import { BillingPlanSummary } from '@/components/manage/billing/BillingPlanSummary';
 import { BillingUpgradeSection } from '@/components/manage/billing/BillingUpgradeSection';
+import { BillingTabSkeleton } from '@/components/manage/ManageSkeletons';
 import Section from '@/components/manage/Section';
 import { useEventBillingPanel } from '@/hooks/useEventBillingPanel';
 import type { EventScheduleDto } from '@/lib/api/types';
@@ -30,12 +31,7 @@ export default function BillingTab({
     const panel = useEventBillingPanel(eventId, { isDeleted, canPurchase });
 
     if (panel.isLoading) {
-        return (
-            <div>
-                <div className="h-24 animate-pulse rounded-lg bg-surface-muted" />
-                <div className="mt-6 h-64 animate-pulse rounded-lg bg-surface-muted" />
-            </div>
-        );
+        return <BillingTabSkeleton />;
     }
 
     const { data, insights, derived } = panel;
