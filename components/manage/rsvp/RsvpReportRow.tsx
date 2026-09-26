@@ -6,13 +6,14 @@ import { useTranslations } from 'next-intl';
 
 import type { RsvpReportType } from '@/lib/api/types';
 import { routes } from '@/lib/routes';
+import type { RsvpReportOrigin } from '@/lib/rsvpReport';
 
-export function RsvpReportRow({ eventId, reportType }: { eventId: string; reportType: RsvpReportType }) {
+export function RsvpReportRow({ eventId, reportType, origin }: { eventId: string; reportType: RsvpReportType; origin: RsvpReportOrigin }) {
     const t = useTranslations('ManagePage.rsvpReports');
 
     return (
         <Link
-            href={routes.events.rsvpReport(eventId, reportType)}
+            href={routes.events.rsvpReport(eventId, reportType, origin === 'tools' ? 'tools' : undefined)}
             className="flex w-full items-center justify-between gap-3 rounded-xl border border-border px-3.5 py-2.5 text-left transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
             <span className="min-w-0">

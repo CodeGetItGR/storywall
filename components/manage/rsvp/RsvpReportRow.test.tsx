@@ -11,11 +11,22 @@ describe('RsvpReportRow', () => {
     it('opens the report page instead of downloading', () => {
         render(
             <NextIntlClientProvider locale="en" messages={messages}>
-                <RsvpReportRow eventId="e1" reportType="FULL_LIST" />
+                <RsvpReportRow eventId="e1" reportType="FULL_LIST" origin="manage" />
             </NextIntlClientProvider>,
         );
 
         const link = screen.getByRole('link', { name: /Full list/ });
         expect(link.getAttribute('href')).toBe('/events/e1/manage/rsvp/reports/FULL_LIST');
+    });
+
+    it('carries from=tools only when opened from the tools origin', () => {
+        render(
+            <NextIntlClientProvider locale="en" messages={messages}>
+                <RsvpReportRow eventId="e1" reportType="FULL_LIST" origin="tools" />
+            </NextIntlClientProvider>,
+        );
+
+        const link = screen.getByRole('link', { name: /Full list/ });
+        expect(link.getAttribute('href')).toBe('/events/e1/manage/rsvp/reports/FULL_LIST?from=tools');
     });
 });

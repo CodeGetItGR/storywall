@@ -1,5 +1,6 @@
 import type { RsvpReportCategoryDto, RsvpReportGroupDto, RsvpReportType } from '@/lib/api/types';
 import { formatDate } from '@/lib/datetime';
+import { routes } from '@/lib/routes';
 
 export const RSVP_REPORT_TYPES: RsvpReportType[] = ['STATISTICS', 'FULL_LIST', 'ATTENDING_ONLY', 'WITH_CHILDREN'];
 
@@ -32,4 +33,16 @@ export function formatReportDate(locale: string, eventDate: string): string {
 // A stable React key for a category or group: the answers that define it.
 export function reportSectionKey(section: RsvpReportCategoryDto | RsvpReportGroupDto): string {
     return `${section.attending}|${section.comingSessionIds.join(',')}|${section.noAnswerSessionIds.join(',')}`;
+}
+
+// Which screen RsvpTab (and its Reports list) is rendered from, so a report
+// link can carry it back for Close (see resolveRsvpReportCloseHref).
+export type RsvpReportOrigin = 'manage' | 'tools';
+
+// Where a report page's Close (useRsvpReportPage) sends the host, based on the
+// `from` search param the report link carried (see routes.events.rsvpReport).
+// An allowlist: anything but the known origins falls back to Manage.
+export function resolveRsvpReportCloseHref(eventId: string, from: string | null): string {
+    if (from === 'tools') return routes.events.tools.rsvp(eventId, { section: 'reports' });
+    return routes.events.manage(eventId, { tab: 'rsvp', section: 'reports' });
 }

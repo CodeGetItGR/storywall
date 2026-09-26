@@ -28,11 +28,23 @@ describe('routes.events for the demo event id', () => {
         expect(routes.events.tools.rsvp(DEMO_EVENT_ID)).toBe('/demo/tools/rsvp');
     });
 
+    it('tools.rsvp() with a section param resolves under /demo', () => {
+        expect(routes.events.tools.rsvp(DEMO_EVENT_ID, { section: 'reports' })).toBe('/demo/tools/rsvp?section=reports');
+    });
+
+    it('rsvpReport() with from resolves under /demo', () => {
+        expect(routes.events.rsvpReport(DEMO_EVENT_ID, 'FULL_LIST', 'tools')).toBe('/demo/manage/rsvp/reports/FULL_LIST?from=tools');
+    });
+
     it('a real event id is unaffected', () => {
         expect(routes.events.feed('real-event-id')).toBe('/events/real-event-id/feed');
     });
 
     it('manage() with a tab param includes it in the query string', () => {
         expect(routes.events.manage('real-event-id', { tab: 'help' })).toBe('/events/real-event-id/manage?tab=help');
+    });
+
+    it('rsvpReport() carries no param by default (manage origin)', () => {
+        expect(routes.events.rsvpReport('real-event-id', 'FULL_LIST')).toBe('/events/real-event-id/manage/rsvp/reports/FULL_LIST');
     });
 });

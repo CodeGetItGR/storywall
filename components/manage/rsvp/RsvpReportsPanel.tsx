@@ -4,9 +4,9 @@ import { FileText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { RsvpReportRow } from '@/components/manage/rsvp/RsvpReportRow';
-import { RSVP_REPORT_TYPES } from '@/lib/rsvpReport';
+import { RSVP_REPORT_TYPES, type RsvpReportOrigin } from '@/lib/rsvpReport';
 
-export function RsvpReportsPanel({ eventId }: { eventId: string }) {
+export function RsvpReportsPanel({ eventId, origin }: { eventId: string; origin: RsvpReportOrigin }) {
     const t = useTranslations('ManagePage.rsvpReports');
 
     return (
@@ -23,7 +23,7 @@ export function RsvpReportsPanel({ eventId }: { eventId: string }) {
             {/* Reports */}
             <div className="mt-4 space-y-2">
                 {RSVP_REPORT_TYPES.map((reportType) => (
-                    <RsvpReportRow key={reportType} eventId={eventId} reportType={reportType} />
+                    <RsvpReportRow key={reportType} eventId={eventId} reportType={reportType} origin={origin} />
                 ))}
             </div>
         </div>

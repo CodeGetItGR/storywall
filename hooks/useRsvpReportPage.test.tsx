@@ -8,8 +8,10 @@ const mocks = vi.hoisted(() => ({
     download: vi.fn(),
 }));
 
+let fromParam: string | null = null;
 vi.mock('next/navigation', () => ({
     useRouter: () => ({ push: mocks.push }),
+    useSearchParams: () => new URLSearchParams(fromParam ? { from: fromParam } : {}),
 }));
 
 vi.mock('next-intl', () => ({
@@ -35,9 +37,28 @@ describe('useRsvpReportPage', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         moduleReadable.mockReturnValue(true);
+        fromParam = null;
     });
 
-    it('closes to the RSVP Reports sub-tab, never back()', () => {
+    it('closes to the Manage RSVP Reports sub-tab by default, never back()', () => {
+        const { result } = renderHook(() => useRsvpReportPage('FULL_LIST'));
+
+        result.current.onClose();
+
+        expect(mocks.push).toHaveBeenCalledWith('/events/e1/manage?tab=rsvp&section=reports');
+    });
+
+    it('closes to the Tools RSVP Reports sub-tab when opened from there', () => {
+        fromParam = 'tools';
+        const { result } = renderHook(() => useRsvpReportPage('FULL_LIST'));
+
+        result.current.onClose();
+
+        expect(mocks.push).toHaveBeenCalledWith('/events/e1/tools/rsvp?section=reports');
+    });
+
+    it('falls back to Manage for an unrecognized from value', () => {
+        fromParam = 'not-a-real-origin';
         const { result } = renderHook(() => useRsvpReportPage('FULL_LIST'));
 
         result.current.onClose();

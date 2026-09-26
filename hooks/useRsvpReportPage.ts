@@ -1,4 +1,4 @@
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useCallback } from 'react';
 
@@ -7,11 +7,12 @@ import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { useRsvpReportDownload } from '@/hooks/useRsvpReportDownload';
 import { useRsvpReport } from '@/hooks/useRsvps';
 import type { RsvpReportType } from '@/lib/api/types';
-import { routes } from '@/lib/routes';
+import { resolveRsvpReportCloseHref } from '@/lib/rsvpReport';
 
 export function useRsvpReportPage(reportType: RsvpReportType) {
     const { eventId } = useEventRouteContext();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const t = useTranslations('ManagePage.rsvpReports');
     const isModuleReadable = useModuleReadable(eventId, 'rsvp');
     const { data: report, isError } = useRsvpReport(eventId, reportType);
@@ -22,9 +23,10 @@ export function useRsvpReportPage(reportType: RsvpReportType) {
 
     // Always navigate to the Reports sub-tab instead of router.back(): history.length
     // also counts entries from other sites, so "go back" can leave the app entirely.
+    // Returns to wherever the report was opened from (see resolveRsvpReportCloseHref).
     const onClose = useCallback(() => {
-        router.push(routes.events.manage(eventId, { tab: 'rsvp', section: 'reports' }));
-    }, [eventId, router]);
+        router.push(resolveRsvpReportCloseHref(eventId, searchParams.get('from')));
+    }, [eventId, router, searchParams]);
 
     return {
         eventId,

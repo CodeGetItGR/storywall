@@ -8,7 +8,7 @@ import { RsvpListPanel, RsvpReportsPanel, RsvpStatsPanel } from '@/components/ma
 import { type SubTabItem, SubTabs } from '@/components/ui/SubTabs';
 import type { RosterMember, RosterRsvp } from '@/hooks/useRsvpRoster';
 import { useRsvpSubTab } from '@/hooks/useRsvpSubTab';
-import type { RsvpSubTab } from '@/lib/rsvpReport';
+import type { RsvpReportOrigin, RsvpSubTab } from '@/lib/rsvpReport';
 
 export default function RsvpTab({
     eventId,
@@ -17,6 +17,7 @@ export default function RsvpTab({
     startAt,
     rsvpDeadline,
     canWrite,
+    origin,
 }: {
     eventId: string;
     members: RosterMember[];
@@ -24,6 +25,7 @@ export default function RsvpTab({
     startAt: string;
     rsvpDeadline: string | null;
     canWrite: boolean;
+    origin: RsvpReportOrigin;
 }) {
     const t = useTranslations('ManagePage');
     const { subTab, setSubTab } = useRsvpSubTab();
@@ -56,7 +58,7 @@ export default function RsvpTab({
             {subTab === 'list' && <RsvpListPanel members={members} rsvps={rsvps} />}
 
             {/* Reports */}
-            {subTab === 'reports' && <RsvpReportsPanel eventId={eventId} />}
+            {subTab === 'reports' && <RsvpReportsPanel eventId={eventId} origin={origin} />}
         </div>
     );
 }

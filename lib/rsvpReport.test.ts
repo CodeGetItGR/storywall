@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { RsvpReportCategoryDto } from '@/lib/api/types';
-import { formatReportDate, isRsvpReportType, reportSectionKey, resolveRsvpSubTab } from '@/lib/rsvpReport';
+import { formatReportDate, isRsvpReportType, reportSectionKey, resolveRsvpReportCloseHref, resolveRsvpSubTab } from '@/lib/rsvpReport';
 
 describe('isRsvpReportType', () => {
     it('accepts the four report types and nothing else', () => {
@@ -50,5 +50,19 @@ describe('resolveRsvpSubTab', () => {
 
     it('falls back to stats for an empty array', () => {
         expect(resolveRsvpSubTab([])).toBe('stats');
+    });
+});
+
+describe('resolveRsvpReportCloseHref', () => {
+    it('returns to the Tools RSVP page, on the Reports sub-tab', () => {
+        expect(resolveRsvpReportCloseHref('e1', 'tools')).toBe('/events/e1/tools/rsvp?section=reports');
+    });
+
+    it('returns to Manage for null, the default origin', () => {
+        expect(resolveRsvpReportCloseHref('e1', null)).toBe('/events/e1/manage?tab=rsvp&section=reports');
+    });
+
+    it('falls back to Manage for a garbage value', () => {
+        expect(resolveRsvpReportCloseHref('e1', 'not-a-real-origin')).toBe('/events/e1/manage?tab=rsvp&section=reports');
     });
 });

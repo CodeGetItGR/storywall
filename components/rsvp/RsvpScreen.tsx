@@ -44,6 +44,7 @@ export function RsvpScreen() {
                 startAt={activeEvent.schedule.startAt}
                 rsvpDeadline={activeEvent.schedule.rsvpDeadline}
                 canWrite={canWrite}
+                origin="tools"
             />
         </ModulePageShell>
     );
