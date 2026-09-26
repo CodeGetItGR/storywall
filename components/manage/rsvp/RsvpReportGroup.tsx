@@ -36,7 +36,7 @@ export function RsvpReportGroup({ group }: { group: RsvpReportGroupDto }) {
             <table className="hidden w-full text-left text-sm md:table print:table">
                 <thead>
                     <tr className="bg-surface-muted text-xs text-ink-faint">
-                        <th className="px-2 py-1.5 font-bold whitespace-nowrap">{t('columns.name')}</th>
+                        <th className="min-w-40 px-2 py-1.5 font-bold whitespace-nowrap">{t('columns.name')}</th>
                         <th className="px-2 py-1.5 font-bold whitespace-nowrap">{t('columns.phone')}</th>
                         <th className="px-2 py-1.5 font-bold whitespace-nowrap">{t('columns.adults')}</th>
                         <th className="px-2 py-1.5 font-bold whitespace-nowrap">{t('columns.children')}</th>
