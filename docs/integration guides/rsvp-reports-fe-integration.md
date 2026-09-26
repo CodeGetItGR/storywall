@@ -47,6 +47,9 @@ are `null`, never `[]`; `[]` means "applies, nothing to show".
 ## Categories
 
 The **report sessions** are the event's live sessions with `rsvpEnabled: true`, in `displayOrder`.
+There are none while the `schedule` module isn't readable for the event (not in the plan, switched
+off, or disabled platform-wide): guests can't answer sessions then, so the report falls back to
+Attending / Not attending. Saved answers are kept and count again once the module is back.
 An attending RSVP's category is which of them it said yes to (`comingSessionIds`) and which it left
 unanswered (`noAnswerSessionIds`). With sessions Ceremony and Reception:
 
@@ -77,6 +80,7 @@ Adults/children per session aren't tracked.
 - Reports tab: each row opens a report page drawn from this object; the page's "Download PDF"
   keeps using `/rsvps/export`.
 - RSVP form: every shown session question is required before "coming" can be submitted;
-  pre-fill from `GET /api/rsvps/{rsvpId}/session-responses`; don't send answers for a decline.
+  don't send answers for a decline. Storywall treats an RSVP as final (no edit form), so it
+  doesn't pre-fill; a client with an edit form would read `GET /api/rsvps/{rsvpId}/session-responses`.
   On `5087`, refetch the RSVP.
 - Roster list: drop members with `deletedAt` set.
