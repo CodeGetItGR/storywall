@@ -8,6 +8,7 @@ import React, { useCallback, useState } from 'react';
 
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
+import { AuthLoadingState } from '@/components/layout/AuthLoadingState';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
@@ -78,7 +79,7 @@ export default function LoginPage() {
     );
 
     if (!shouldRenderAuthPage) {
-        return <div className="min-h-screen bg-background" />;
+        return <AuthLoadingState className="min-h-screen" />;
     }
 
     return (

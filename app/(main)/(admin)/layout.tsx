@@ -8,6 +8,7 @@ import { AdminNavigationProvider } from '@/components/admin/AdminNavigationConte
 import { AdminShellNav } from '@/components/admin/AdminShellNav';
 import { AdminTopbar } from '@/components/admin/AdminTopbar';
 import { RefineAdminProvider } from '@/components/admin/RefineAdminProvider';
+import { AuthLoadingState } from '@/components/layout/AuthLoadingState';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { Modal } from '@/components/ui/modal';
 import { useAdminLayoutShell } from '@/hooks/useAdminLayoutShell';
@@ -28,7 +29,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     } = useAdminLayoutShell();
 
     if (isBootstrapping || !user) {
-        return <div className="admin-shell h-full bg-canvas" />;
+        return <AuthLoadingState className="admin-shell bg-canvas" />;
     }
 
     if (user.role !== 'ADMIN') {

@@ -49,12 +49,13 @@ describe('AppShell while the session check is unavailable', () => {
         expect(mocks.replace).not.toHaveBeenCalled();
     });
 
-    it('stays blank while an ordinary bootstrap is in flight', () => {
+    it('shows a spinner, not a blank page, while an ordinary bootstrap is in flight', () => {
         mocks.auth = { user: null, isBootstrapping: true, isSessionUnavailable: false };
 
         renderShell();
 
-        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        expect(screen.getByRole('status')).not.toHaveTextContent("Can't reach StoryWall");
+        expect(screen.queryByText('page')).not.toBeInTheDocument();
         expect(mocks.replace).not.toHaveBeenCalled();
     });
 });
