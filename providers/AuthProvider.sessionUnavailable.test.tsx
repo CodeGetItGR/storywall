@@ -18,6 +18,7 @@ const mocks = vi.hoisted(() => ({
     },
 }));
 
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock('@/lib/api/authClient', () => ({ authClient: mocks.authClient }));
 
 const session: AuthSessionDto = {
