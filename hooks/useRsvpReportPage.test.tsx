@@ -1,0 +1,97 @@
+import { renderHook } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { useRsvpReportPage } from '@/hooks/useRsvpReportPage';
+
+const mocks = vi.hoisted(() => ({
+    push: vi.fn(),
+    download: vi.fn(),
+}));
+
+let fromParam: string | null = null;
+vi.mock('next/navigation', () => ({
+    useRouter: () => ({ push: mocks.push }),
+    useSearchParams: () => new URLSearchParams(fromParam ? { from: fromParam } : {}),
+}));
+
+vi.mock('next-intl', () => ({
+    useTranslations: () => (key: string) => key,
+}));
+
+vi.mock('@/components/routing/EventRouteGate', () => ({
+    useEventRouteContext: () => ({ eventId: 'e1' }),
+}));
+
+vi.mock('@/hooks/useRsvps', () => ({
+    useRsvpReport: () => ({ data: undefined, isLoading: false, isError: false }),
+}));
+
+vi.mock('@/hooks/useRsvpReportDownload', () => ({
+    useRsvpReportDownload: () => ({ download: mocks.download, downloadingType: 'FULL_LIST', error: 'failed' }),
+}));
+
+const moduleReadable = vi.fn((..._args: unknown[]) => true);
+vi.mock('@/hooks/useModuleReadable', () => ({ useModuleReadable: (...a: unknown[]) => moduleReadable(...a) }));
+
+describe('useRsvpReportPage', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        moduleReadable.mockReturnValue(true);
+        fromParam = null;
+    });
+
+    it('closes to the Manage RSVP Reports sub-tab by default, never back()', () => {
+        const { result } = renderHook(() => useRsvpReportPage('FULL_LIST'));
+
+        result.current.onClose();
+
+        expect(mocks.push).toHaveBeenCalledWith('/events/e1/manage?tab=rsvp&section=reports');
+    });
+
+    it('closes to the Tools RSVP Reports sub-tab when opened from there', () => {
+        fromParam = 'tools';
+        const { result } = renderHook(() => useRsvpReportPage('FULL_LIST'));
+
+        result.current.onClose();
+
+        expect(mocks.push).toHaveBeenCalledWith('/events/e1/tools/rsvp?section=reports');
+    });
+
+    it('falls back to Manage for an unrecognized from value', () => {
+        fromParam = 'not-a-real-origin';
+        const { result } = renderHook(() => useRsvpReportPage('FULL_LIST'));
+
+        result.current.onClose();
+
+        expect(mocks.push).toHaveBeenCalledWith('/events/e1/manage?tab=rsvp&section=reports');
+    });
+
+    it('downloads the current report type', () => {
+        const { result } = renderHook(() => useRsvpReportPage('FULL_LIST'));
+
+        result.current.onDownload();
+
+        expect(mocks.download).toHaveBeenCalledWith('FULL_LIST');
+    });
+
+    it('passes through the downloading state and error from useRsvpReportDownload', () => {
+        const { result } = renderHook(() => useRsvpReportPage('FULL_LIST'));
+
+        expect(result.current.isDownloading).toBe(true);
+        expect(result.current.downloadError).toBe('failed');
+    });
+
+    it('exposes whether the RSVP module is readable', () => {
+        const { result } = renderHook(() => useRsvpReportPage('FULL_LIST'));
+
+        expect(result.current.isModuleReadable).toBe(true);
+    });
+
+    it('reports the module as unreadable so the page can show the unavailable state instead of spinning forever', () => {
+        moduleReadable.mockReturnValue(false);
+
+        const { result } = renderHook(() => useRsvpReportPage('FULL_LIST'));
+
+        expect(result.current.isModuleReadable).toBe(false);
+    });
+});

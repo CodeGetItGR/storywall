@@ -5,9 +5,11 @@ import { eventModuleKeys } from '@/hooks/useEventModules';
 import { playlistKeys } from '@/hooks/usePlaylist';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
-import { serverGet, serverModuleReadable } from '@/lib/api/serverFetch';
+import { serverGet } from '@/lib/api/serverFetch';
 import type { EventModuleResponseDto, PlaylistSuggestionResponseDto } from '@/lib/api/types';
 import { ACCESS_TOKEN_HEADER } from '@/lib/auth/authCookies';
+import { resolveServerEventDetail } from '@/lib/auth/serverEventContext';
+import { readableModuleKeys } from '@/lib/eventLifecycle';
 import { makeQueryClient } from '@/lib/queryClient';
 
 import PlaylistPage from './PageClient';
@@ -24,10 +26,14 @@ export default async function Page({ params }: PageProps) {
 
     if (accessToken) {
         try {
-            const modules = await serverGet<EventModuleResponseDto[]>(endpoints.events.modules(eventId), accessToken);
-            queryClient.setQueryData(eventModuleKeys.list(eventId), normalizeList(modules).items);
+            // The modules and the event load together; each seeds on its own.
+            const [modules, event] = await Promise.all([
+                serverGet<EventModuleResponseDto[]>(endpoints.events.modules(eventId), accessToken).catch(() => null),
+                resolveServerEventDetail(eventId),
+            ]);
+            if (modules) queryClient.setQueryData(eventModuleKeys.list(eventId), normalizeList(modules).items);
 
-            if (await serverModuleReadable(eventId, 'playlist', accessToken)) {
+            if (readableModuleKeys(event).has('playlist')) {
                 const suggestions = await serverGet<PlaylistSuggestionResponseDto[]>(endpoints.events.playlistSuggestions(eventId), accessToken);
                 queryClient.setQueryData(playlistKeys.suggestions(eventId), normalizeList(suggestions).items);
             }

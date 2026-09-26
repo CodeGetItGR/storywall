@@ -28,6 +28,7 @@ export function DemoAuthProvider({ children }: { children: ReactNode }) {
                 },
                 isAuthenticated: true,
                 isBootstrapping: false,
+                isSessionUnavailable: false,
                 register: () => Promise.reject(new Error('Not available in the demo')),
                 login: () => Promise.reject(new Error('Not available in the demo')),
                 oauth: () => Promise.reject(new Error('Not available in the demo')),

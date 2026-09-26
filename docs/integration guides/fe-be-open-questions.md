@@ -146,7 +146,9 @@ them yet:
   (`plan-owned-modules-fe-integration.md` §7): hosts opt each session in with `rsvpEnabled`,
   `POST` upserts, `PATCH /api/rsvp-session-responses/{id}` changes an answer, and `409 / 5086`
   means the session isn't open to RSVPs. The host session form has the switch and the hooks
-  follow the contract; the guest-facing per-session question has no UI yet.
+  follow the contract. Since 2026-09-25 answers exist only once given, declining clears them
+  (`409 / 5087` on a declined RSVP), and the form requires one per open session — see
+  `rsvp-reports-fe-integration.md`.
 
 **Confirmed mock, not wired**:
 

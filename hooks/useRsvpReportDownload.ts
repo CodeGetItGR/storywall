@@ -14,8 +14,6 @@ const REPORT_FILENAMES: Record<RsvpReportType, string> = {
     WITH_CHILDREN: 'rsvp-with-children.pdf',
 };
 
-export const RSVP_REPORT_TYPES: RsvpReportType[] = ['STATISTICS', 'FULL_LIST', 'ATTENDING_ONLY', 'WITH_CHILDREN'];
-
 export function useRsvpReportDownload(eventId: string, failedMessage: string) {
     const tError = useApiErrorMessage();
     const [downloadingType, setDownloadingType] = useState<RsvpReportType | null>(null);

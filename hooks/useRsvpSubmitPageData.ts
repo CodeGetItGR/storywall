@@ -7,7 +7,7 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig, useAppRsvpConfig } from '@/hooks/useAppConfig';
 import { useRsvpAvailability } from '@/hooks/useRsvpAvailability';
 import { setMemberRsvpIdInCaches, useCreateRsvp, useRsvp, useUpdateRsvp } from '@/hooks/useRsvps';
-import { useRsvpSessionQuestions } from '@/hooks/useRsvpSessionQuestions';
+import { type AttendingStatus, computeHasUnansweredSessions, useRsvpSessionQuestions } from '@/hooks/useRsvpSessionQuestions';
 import { ApiError } from '@/lib/api/client';
 import { isModuleNotAvailableError } from '@/lib/api/errors';
 import type { AttendanceStatus, RsvpPlusOnes } from '@/lib/api/types';
@@ -15,7 +15,12 @@ import { isEventWritable } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useActiveMember, useEventContextLoading, useIsHost } from '@/providers/EventProvider';
 
-export type AttendingStatus = 'attending' | 'not-attending';
+// A retry after an answers failure takes the PATCH path (effectiveRsvpId is
+// already set), so the confirmation only needs to stay hidden while that
+// failure is still showing on a brand-new RSVP.
+export function computeShowConfirmation(submitted: boolean, hasExistingRsvp: boolean, hasSessionAnswersError: boolean): boolean {
+    return submitted || (hasExistingRsvp && !hasSessionAnswersError);
+}
 
 export function useRsvpSubmitPageData() {
     const t = useTranslations('RSVPPage');
@@ -50,14 +55,17 @@ export function useRsvpSubmitPageData() {
         childCount: minChildCount,
     });
     const [submitted, setSubmitted] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [sessionAnswersError, setSessionAnswersError] = useState<unknown>(null);
 
     const rsvpAvailability = useRsvpAvailability();
-    const sessionQuestions = useRsvpSessionQuestions(eventId, activeEvent?.modules);
 
     const { data: existingRsvp, error: existingRsvpError } = useRsvp(rsvpAvailability.isAvailable ? (rsvpId ?? null) : null);
     const isStaleRsvp = existingRsvpError instanceof ApiError && existingRsvpError.status === 404;
     const effectiveRsvpId = isStaleRsvp ? null : rsvpId;
     const hasExistingRsvp = Boolean(existingRsvp && effectiveRsvpId);
+    const sessionQuestions = useRsvpSessionQuestions(eventId, activeEvent?.modules);
+    const hasUnansweredSessions = computeHasUnansweredSessions(attending, sessionQuestions.allAnswered);
     const hydratedRef = useRef(false);
 
     useEffect(() => {
@@ -93,14 +101,15 @@ export function useRsvpSubmitPageData() {
     const createRsvp = useCreateRsvp(eventId ?? undefined);
     const updateRsvp = useUpdateRsvp(effectiveRsvpId ?? '', eventId ?? undefined);
 
-    const isSubmitting = createRsvp.isPending || updateRsvp.isPending;
     const canSubmitRsvp = rsvpAvailability.isAvailable && isEventWritable(activeEvent?.status);
     const submitError = createRsvp.error ?? updateRsvp.error;
     const submitErrorMessage = submitError
         ? isModuleNotAvailableError(submitError)
             ? t('moduleUnavailable')
             : toErrorMessage(submitError, t('submitError'))
-        : null;
+        : sessionAnswersError
+          ? toErrorMessage(sessionAnswersError, t('sessionsSubmitError'))
+          : null;
 
     // Members cannot access the host-only RSVP overview. Sending them there makes the
     // route gate redirect straight back to this form, leaving the Back control stuck.
@@ -134,7 +143,11 @@ export function useRsvpSubmitPageData() {
         async (event: React.SubmitEvent<HTMLFormElement>) => {
             event.preventDefault();
 
-            if (!attending || !memberId || !canSubmitRsvp) {
+            if (isSubmitting) {
+                return;
+            }
+
+            if (!attending || !memberId || !canSubmitRsvp || hasUnansweredSessions) {
                 return;
             }
 
@@ -144,6 +157,8 @@ export function useRsvpSubmitPageData() {
             const adultCount = attendanceStatus === 'ATTENDING' ? 1 + plusOnes.adultCount : 1;
             const childCount = attendanceStatus === 'ATTENDING' ? plusOnes.childCount : 0;
 
+            setSessionAnswersError(null);
+            setIsSubmitting(true);
             try {
                 const rsvp = effectiveRsvpId
                     ? await updateRsvp.mutateAsync({
@@ -161,9 +176,18 @@ export function useRsvpSubmitPageData() {
                           submittedAt: new Date().toISOString(),
                       });
                 // Guests who decline skip the per-session questions.
-                if (attendanceStatus === 'ATTENDING') await sessionQuestions.submitAnswers(rsvp.id);
+                if (attendanceStatus === 'ATTENDING') {
+                    try {
+                        await sessionQuestions.submitAnswers(rsvp.id);
+                    } catch (error) {
+                        setSessionAnswersError(error);
+                        return;
+                    }
+                }
             } catch {
                 return;
+            } finally {
+                setIsSubmitting(false);
             }
 
             setSubmitted(true);
@@ -173,6 +197,8 @@ export function useRsvpSubmitPageData() {
             canSubmitRsvp,
             createRsvp,
             effectiveRsvpId,
+            hasUnansweredSessions,
+            isSubmitting,
             memberId,
             message,
             plusOnes.adultCount,
@@ -189,6 +215,7 @@ export function useRsvpSubmitPageData() {
         eventId,
         eventType: activeEvent?.eventType ?? null,
         hasExistingRsvp,
+        hasUnansweredSessions,
         isSubmitting,
         memberId,
         message,
@@ -202,6 +229,7 @@ export function useRsvpSubmitPageData() {
         onSubmit: handleSubmit,
         plusOnes,
         rsvpAvailability,
+        sessionAnswersError,
         sessionQuestions: sessionQuestions.questions,
         onSessionAnswer: sessionQuestions.onAnswer,
         submitErrorMessage,

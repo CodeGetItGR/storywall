@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useLocale } from 'next-intl';
 
 import { useAuth } from '@/hooks/useAuth';
 import { eventKeys } from '@/hooks/useEvent';
@@ -8,11 +9,13 @@ import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { myEventsKeys } from '@/hooks/useMyEvents';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
-import { isSessionRsvpNotEnabledError } from '@/lib/api/errors';
+import { isNotFoundError, isRsvpNotAttendingError, isSessionRsvpNotEnabledError } from '@/lib/api/errors';
 import { normalizeList } from '@/lib/api/pagination';
 import type { EventMemberResponseDto } from '@/lib/api/types';
 import type {
     RsvpPatchDto,
+    RsvpReportDto,
+    RsvpReportType,
     RsvpRequestDto,
     RsvpResponseDto,
     RsvpSessionResponsPatchDto,
@@ -22,7 +25,12 @@ import type {
 
 export const rsvpKeys = {
     list: (eventId: string) => ['events', eventId, 'rsvps'] as const,
+    // Under list, so every RSVP change that invalidates the list refreshes the reports too.
+    // Keyed by language because the labels arrive translated.
+    report: (eventId: string, reportType: RsvpReportType, locale: string) => ['events', eventId, 'rsvps', 'report', reportType, locale] as const,
     detail: (id: string) => ['rsvps', id] as const,
+    // Must stay nested under detail(id) — every RSVP mutation invalidates by
+    // that prefix, and this key relies on falling under it to refresh too.
     sessionResponses: (rsvpId: string) => ['rsvps', rsvpId, 'session-responses'] as const,
 };
 
@@ -66,6 +74,20 @@ export function useEventRsvps(eventId: string | null) {
             const res = await api.get<RsvpResponseDto[]>(endpoints.events.rsvps(eventId!));
             return normalizeList(res).items;
         },
+        enabled: Boolean(eventId) && isAuthenticated && rsvpReadable,
+    });
+}
+
+// GET /api/events/{eventId}/rsvps/report — HOST only. One report object for the
+// stats tab, the report page and (server-side) the PDF.
+export function useRsvpReport(eventId: string | null, reportType: RsvpReportType) {
+    const { isAuthenticated } = useAuth();
+    const locale = useLocale();
+    const rsvpReadable = useModuleReadable(eventId, 'rsvp');
+
+    return useQuery({
+        queryKey: rsvpKeys.report(eventId ?? '', reportType, locale),
+        queryFn: () => api.get<RsvpReportDto>(endpoints.events.rsvpReport(eventId!, reportType)),
         enabled: Boolean(eventId) && isAuthenticated && rsvpReadable,
     });
 }
@@ -148,7 +170,9 @@ function invalidateEventSessions(queryClient: ReturnType<typeof useQueryClient>,
 
 // POST /api/rsvp-session-responses — upserts: answering the same session
 // again updates the same row. 409 / 5086 means the host closed the session to
-// RSVPs, so the cached sessions are stale.
+// RSVPs, so the cached sessions are stale; 409 / 5087 means the RSVP was
+// declined elsewhere, so the cached RSVP is. A 404 means the session itself
+// was deleted meanwhile — the cached sessions are just as stale as for 5086.
 export function useCreateRsvpSessionResponse(eventId: string) {
     const queryClient = useQueryClient();
 
@@ -157,8 +181,9 @@ export function useCreateRsvpSessionResponse(eventId: string) {
         onSuccess: (response) => {
             queryClient.invalidateQueries({ queryKey: rsvpKeys.sessionResponses(response.rsvpId) });
         },
-        onError: (error) => {
-            if (isSessionRsvpNotEnabledError(error)) invalidateEventSessions(queryClient, eventId);
+        onError: (error, input) => {
+            if (isSessionRsvpNotEnabledError(error) || isNotFoundError(error)) invalidateEventSessions(queryClient, eventId);
+            if (isRsvpNotAttendingError(error)) queryClient.invalidateQueries({ queryKey: rsvpKeys.detail(input.rsvpId) });
         },
     });
 }
@@ -176,6 +201,7 @@ export function useUpdateRsvpSessionResponse(eventId: string, rsvpId: string) {
         },
         onError: (error) => {
             if (isSessionRsvpNotEnabledError(error)) invalidateEventSessions(queryClient, eventId);
+            if (isRsvpNotAttendingError(error)) queryClient.invalidateQueries({ queryKey: rsvpKeys.detail(rsvpId) });
         },
     });
 }

@@ -2,13 +2,13 @@
 
 import { BarChart3, FileText, List } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { RsvpListPanel, RsvpReportsPanel, RsvpStatsPanel } from '@/components/manage/rsvp';
 import { type SubTabItem, SubTabs } from '@/components/ui/SubTabs';
-import { type RosterMember, type RosterRsvp, useRsvpRoster } from '@/hooks/useRsvpRoster';
-
-type RsvpSubTab = 'stats' | 'list' | 'reports';
+import type { RosterMember, RosterRsvp } from '@/hooks/useRsvpRoster';
+import { useRsvpSubTab } from '@/hooks/useRsvpSubTab';
+import type { RsvpReportOrigin, RsvpSubTab } from '@/lib/rsvpReport';
 
 export default function RsvpTab({
     eventId,
@@ -17,6 +17,7 @@ export default function RsvpTab({
     startAt,
     rsvpDeadline,
     canWrite,
+    origin,
 }: {
     eventId: string;
     members: RosterMember[];
@@ -24,10 +25,10 @@ export default function RsvpTab({
     startAt: string;
     rsvpDeadline: string | null;
     canWrite: boolean;
+    origin: RsvpReportOrigin;
 }) {
     const t = useTranslations('ManagePage');
-    const [subTab, setSubTab] = useState<RsvpSubTab>('stats');
-    const { responseCount, seatsClaimed, adultsTotal, kidsTotal, peopleGoing, peopleNotGoing } = useRsvpRoster(members, rsvps);
+    const { subTab, setSubTab } = useRsvpSubTab();
     const tabs = useMemo<SubTabItem<RsvpSubTab>[]>(
         () => [
             { key: 'stats', icon: BarChart3, label: t('rsvpTabs.stats') },
@@ -42,6 +43,7 @@ export default function RsvpTab({
             {/* Sub-tabs */}
             <SubTabs tabs={tabs} active={subTab} onSelectAction={setSubTab} />
 
+            {/* Stats */}
             {subTab === 'stats' && (
                 <RsvpStatsPanel
                     eventId={eventId}
@@ -49,16 +51,14 @@ export default function RsvpTab({
                     rsvpDeadline={rsvpDeadline}
                     countdownTarget={rsvpDeadline ?? startAt}
                     isRsvpDeadline={Boolean(rsvpDeadline)}
-                    responseCount={responseCount}
-                    seatsClaimed={seatsClaimed}
-                    adultsTotal={adultsTotal}
-                    kidsTotal={kidsTotal}
-                    peopleGoing={peopleGoing}
-                    peopleNotGoing={peopleNotGoing}
                 />
             )}
+
+            {/* List */}
             {subTab === 'list' && <RsvpListPanel members={members} rsvps={rsvps} />}
-            {subTab === 'reports' && <RsvpReportsPanel eventId={eventId} />}
+
+            {/* Reports */}
+            {subTab === 'reports' && <RsvpReportsPanel eventId={eventId} origin={origin} />}
         </div>
     );
 }

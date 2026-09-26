@@ -9,6 +9,7 @@ import React, { ChangeEvent, useCallback, useState } from 'react';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
 import { RegisterNewsletterCheckbox } from '@/components/auth/RegisterNewsletterCheckbox';
+import { AuthLoadingState } from '@/components/layout/AuthLoadingState';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppNewsletterConfig } from '@/hooks/useAppConfig';
@@ -102,7 +103,7 @@ export default function RegisterPage() {
     }, []);
 
     if (!shouldRenderAuthPage) {
-        return <div className="min-h-screen bg-background" />;
+        return <AuthLoadingState className="min-h-screen" />;
     }
 
     return (

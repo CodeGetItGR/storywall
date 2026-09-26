@@ -13,13 +13,15 @@ export function RsvpSessionQuestions({
     onAnswerAction: (sessionId: string, isAttending: boolean) => void;
 }) {
     const t = useTranslations('RSVPPage');
-    const tCommon = useTranslations('Common');
+    const unanswered = questions.some((question) => question.answer === null);
 
     return (
         <div>
-            <p className="mb-2 text-xs font-semibold tracking-wide text-ink-muted uppercase">
-                {t('sessionsTitle')} <span className="text-ink-faint">({tCommon('optional')})</span>
-            </p>
+            {/* Heading */}
+            <p className="mb-2 text-xs font-semibold tracking-wide text-ink-muted uppercase">{t('sessionsTitle')}</p>
+            {unanswered && <p className="mb-2 text-xs text-ink-faint">{t('sessionsRequired')}</p>}
+
+            {/* Questions */}
             <ul className="flex flex-col gap-2">
                 {questions.map((question) => (
                     <RsvpSessionQuestionRow key={question.id} question={question} onAnswerAction={onAnswerAction} />

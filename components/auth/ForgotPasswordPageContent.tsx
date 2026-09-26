@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 import { AuthLayout } from '@/components/auth/AuthLayout';
+import { AuthLoadingState } from '@/components/layout/AuthLoadingState';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useForgotPassword } from '@/hooks/useForgotPassword';
 import { routes } from '@/lib/routes';
@@ -13,7 +14,7 @@ export function ForgotPasswordPageContent() {
     const t = useTranslations('ForgotPasswordPage');
     const { email, error, isSubmitted, isSubmitting, shouldRenderAuthPage, submit, updateEmail } = useForgotPassword();
 
-    if (!shouldRenderAuthPage) return <div className="min-h-screen bg-background" />;
+    if (!shouldRenderAuthPage) return <AuthLoadingState className="min-h-screen" />;
 
     return (
         <AuthLayout>

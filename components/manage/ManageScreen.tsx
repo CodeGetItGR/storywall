@@ -19,6 +19,7 @@ import { countPendingCoHostInvitations } from '@/lib/eventInvitations';
 import { isEventDeleted, isEventWritable, isModuleAvailable, isPrimaryHost } from '@/lib/eventLifecycle';
 import { type ManageSection, parseManageSection, visibleManageSections } from '@/lib/manageSections';
 import { routes } from '@/lib/routes';
+import { attendingGuestPeople } from '@/lib/rsvpGuests';
 import { eventStatusBadgeTone } from '@/lib/statusTones';
 import { cn } from '@/lib/utils';
 import { useActiveMember } from '@/providers/EventProvider';
@@ -92,9 +93,9 @@ export function ManageScreen() {
         if (!isDeleted && requestedSection !== section) router.replace(routes.events.manage(eventId));
     }, [eventId, isDeleted, requestedSection, router, section]);
 
-    // Party sizes belong to the overview's headline numbers, so the RSVP roster
-    // never restates a total that is already visible one section away.
-    const seatsClaimed = useMemo(() => rsvps.reduce((sum, rsvp) => sum + rsvp.adultCount + rsvp.childCount, 0), [rsvps]);
+    // The overview's seats: people coming, counted like the RSVP report (guests
+    // only, attending only), so the two never disagree.
+    const seatsClaimed = useMemo(() => attendingGuestPeople(members, rsvps), [members, rsvps]);
 
     if (isDeleted) return <DeletedEventManageScreen event={activeEvent} />;
 
@@ -137,6 +138,7 @@ export function ManageScreen() {
                         startAt={activeEvent.schedule.startAt}
                         rsvpDeadline={activeEvent.schedule.rsvpDeadline}
                         canWrite={canWrite}
+                        origin="manage"
                     />
                 ))}
 

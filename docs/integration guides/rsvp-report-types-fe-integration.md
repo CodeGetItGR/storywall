@@ -1,5 +1,10 @@
 # Integration Guide: RSVP report types (breaking change to export)
 
+> **2026-09-25:** the report layouts in this guide are replaced. See
+> [`rsvp-reports-fe-integration.md`](rsvp-reports-fe-integration.md) for the session-aware
+> reports, the new JSON endpoint and error 5087. The endpoint, parameters and file names below
+> still hold.
+
 Added 2026-09-04, PDF layout polished same day. Supersedes the "New endpoint: PDF export"
 section of `rsvp-boolean-status-and-export-fe-integration.md` — the endpoint now requires a
 `reportType` parameter.

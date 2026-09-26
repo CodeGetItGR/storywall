@@ -19,17 +19,7 @@ export type PlatformRole = 'USER' | 'ADMIN' | 'GUEST';
 export type EventTypeConvention = 'WEDDING' | 'BAPTISM' | 'SOCIAL_EVENT' | 'BIRTHDAY' | 'PRIVATE_PARTY' | 'GENDER_REVEAL' | 'BABY_SHOWER';
 // Post.type / Reaction.reactionType are free strings server-side.
 // moduleKey is now a closed set on the backend and should match the config payload.
-export const EVENT_MODULE_KEYS = [
-    'posts',
-    'rsvp',
-    'playlist',
-    'stories',
-    'gallery',
-    'wishlist',
-    'wishbook',
-    'co_hosts',
-    'schedule',
-] as const;
+export const EVENT_MODULE_KEYS = ['posts', 'rsvp', 'playlist', 'stories', 'gallery', 'wishlist', 'wishbook', 'co_hosts', 'schedule'] as const;
 // Use this (not the raw `ModuleKey` wire type below) whenever code branches on
 // a specific module — it's a closed set and catches typos at compile time.
 // `ModuleKey` stays a plain string because the admin module/plan-tier registry
@@ -1551,6 +1541,67 @@ export interface RsvpSessionResponsResponseDto extends RsvpSessionResponsRequest
 // PATCH /api/rsvp-session-responses/{id} — same checks as create.
 export interface RsvpSessionResponsPatchDto {
     isAttending: boolean;
+}
+
+// GET /api/events/{eventId}/rsvps/report?reportType=… — host-only. Labels arrive in the request
+// language. Sections that don't apply to reportType are null; [] means "applies, nothing to show".
+export interface RsvpReportDto {
+    reportType: RsvpReportType;
+    header: RsvpReportHeaderDto;
+    totals: RsvpReportTotalsDto;
+    categories: RsvpReportCategoryDto[] | null;
+    sessions: RsvpReportSessionDto[] | null;
+    groups: RsvpReportGroupDto[] | null;
+}
+
+export interface RsvpReportHeaderDto {
+    eventTitle: string;
+    eventTypeName: string | null;
+    eventDate: string; // yyyy-MM-dd, already in the event's timezone
+    generatedAt: string;
+}
+
+export interface RsvpReportTotalsDto {
+    responses: number;
+    people: number;
+    adults: number;
+    children: number;
+}
+
+export interface RsvpReportCategoryDto {
+    label: string;
+    attending: boolean;
+    comingSessionIds: string[];
+    noAnswerSessionIds: string[];
+    responses: number;
+    people: number;
+    percentOfPeople: number | null;
+}
+
+export interface RsvpReportSessionDto {
+    sessionId: string;
+    title: string;
+    people: number;
+    noAnswerPeople: number;
+}
+
+export interface RsvpReportGroupDto {
+    label: string;
+    attending: boolean;
+    comingSessionIds: string[];
+    noAnswerSessionIds: string[];
+    responses: number;
+    people: number;
+    rows: RsvpReportRowDto[];
+}
+
+export interface RsvpReportRowDto {
+    rsvpId: string;
+    name: string;
+    phone: string | null;
+    adults: number;
+    children: number;
+    notes: string | null;
 }
 
 // --- §6 Media domain ---

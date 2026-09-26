@@ -17,6 +17,10 @@
         "ctaAuthenticated": "Go to profile",
         "ctaGuest": "Sign in"
     },
+    "SessionUnavailable": {
+        "title": "Can't reach StoryWall",
+        "description": "You're still signed in. We'll reconnect as soon as the server is back."
+    },
     "PageErrorState": {
         "retry": "Try again",
         "plans": {
@@ -1228,23 +1232,42 @@
             "responses": "Responses",
             "totalPeople": "Total people",
             "adults": "Adults",
-            "kids": "Kids",
+            "kids": "Children",
             "byCategory": "Attendance by category",
-            "attendingNote": "Includes plus-ones",
-            "notGoing": "Not going",
             "deadlineField": "RSVP deadline"
+        },
+        "rsvpReport": {
+            "people": "{count, plural, one {# person} other {# people}}",
+            "responses": "{count, plural, one {# response} other {# responses}}",
+            "noAnswer": "{count} no answer",
+            "perSession": "People per session",
+            "guestList": "Guest list by attendance",
+            "empty": "No responses yet",
+            "loadFailed": "Couldn't load the report.",
+            "unavailableTitle": "RSVP reports aren't available",
+            "unavailableBody": "RSVP reports aren't available on this event's current plan.",
+            "print": "Print",
+            "downloadPdf": "Download PDF",
+            "close": "Close",
+            "columns": {
+                "name": "Full name",
+                "phone": "Phone",
+                "adults": "Adults",
+                "children": "Children",
+                "notes": "Notes"
+            }
         },
         "rsvpReports": {
             "title": "RSVP reports",
-            "description": "Download a PDF report of your guests' responses.",
+            "description": "Open a report to print it or download it as a PDF.",
             "types": {
                 "STATISTICS": {
                     "label": "Statistics report",
-                    "description": "Response counts and a chart. No guest names."
+                    "description": "Attendance by category and per session. No guest names."
                 },
                 "FULL_LIST": {
                     "label": "Full list",
-                    "description": "Every guest who responded, with their status."
+                    "description": "Every guest who responded, grouped by attendance."
                 },
                 "ATTENDING_ONLY": {
                     "label": "Only those attending",
@@ -1912,9 +1935,11 @@
         "regretfullyDecline": "No",
         "plusOnes": "Plus ones",
         "sessionsTitle": "Which parts will you attend?",
+        "sessionsRequired": "Answer each one to send your RSVP.",
         "messagePlaceholder": "Optional — share your excitement or a special note...",
         "submitRsvp": "Submit RSVP",
         "submitError": "Something went wrong submitting your RSVP. Please try again.",
+        "sessionsSubmitError": "We couldn't save your answers. Please try again.",
         "moduleUnavailable": "RSVP is not available on this event's current plan.",
         "unavailableTitle": "RSVP is not available",
         "unavailableUpgradeBody": "Upgrade to {plans} to use RSVP.",
@@ -3348,7 +3373,8 @@
         "qrSharedLinkHostManaged": "This shared link is managed automatically.",
         "eventSessionMainLocationReadOnly": "This is the event's main session, so its location always matches the event's own.",
         "eventSessionLimitReached": "This event type has reached its limit of schedule sections.",
-        "sessionRsvpNotEnabled": "This session isn't taking RSVPs."
+        "sessionRsvpNotEnabled": "This session isn't taking RSVPs.",
+        "rsvpNotAttending": "Session answers are only for guests who are coming."
     },
     "LandingPage": {
         "shell": {

@@ -3,9 +3,10 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { MEDIA_PAGE_SIZE, mediaKeys } from '@/hooks/useMedia';
 import { endpoints } from '@/lib/api/endpoints';
 import type { Page } from '@/lib/api/pagination';
-import { serverGet, serverModuleReadable } from '@/lib/api/serverFetch';
+import { serverGet } from '@/lib/api/serverFetch';
 import type { MediaResponseDto } from '@/lib/api/types';
-import { resolveServerEventContext } from '@/lib/auth/serverEventContext';
+import { resolveServerEventContext, resolveServerEventDetail } from '@/lib/auth/serverEventContext';
+import { readableModuleKeys } from '@/lib/eventLifecycle';
 import { makeQueryClient } from '@/lib/queryClient';
 
 import GalleryPage from './PageClient';
@@ -20,11 +21,10 @@ type PageProps = { params: Promise<{ eventId: string }> };
 export default async function Page({ params }: PageProps) {
     const { eventId } = await params;
     const queryClient = makeQueryClient();
-    const context = await resolveServerEventContext(eventId);
+    const [context, event] = await Promise.all([resolveServerEventContext(eventId), resolveServerEventDetail(eventId)]);
 
-    if (context?.isHost) {
+    if (context?.isHost && readableModuleKeys(event).has('gallery')) {
         try {
-            if (!(await serverModuleReadable(eventId, 'gallery', context.accessToken))) throw new Error('gallery unavailable');
             const firstPage = await serverGet<Page<MediaResponseDto>>(
                 `${endpoints.events.media(eventId)}?page=0&size=${MEDIA_PAGE_SIZE}`,
                 context.accessToken,

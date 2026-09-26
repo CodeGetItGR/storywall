@@ -929,3 +929,35 @@ button:not(:disabled):hover {
 button:disabled {
     cursor: default;
 }
+
+/* RSVP report page: print only the report.
+   A visibility-based rule doesn't work here: `body:has([data-print-root]) *`
+   has specificity (0,1,1), which beats `[data-print-root] *` (0,1,0), so the
+   report kept hiding itself. It also isn't enough to just show it — the
+   report sits inside viewport-height `overflow-hidden` containers (body,
+   AccountPanelShell, .account-panel-page's transform, AppShell's main), which
+   clip it to one page no matter what visibility says. So instead: force every
+   ancestor between <html> and the report to lay out normally (auto height,
+   visible overflow, no transform, static position), then hide every element
+   that isn't one of those ancestors, the report root, or inside it. */
+@media print {
+    html:has([data-print-root]),
+    body:has([data-print-root]),
+    body:has([data-print-root]) :has([data-print-root]) {
+        height: auto !important;
+        overflow: visible !important;
+        transform: none !important;
+        position: static !important;
+        display: block !important;
+    }
+
+    body:has([data-print-root]) :not(:has([data-print-root])):not([data-print-root]):not([data-print-root] *) {
+        display: none !important;
+    }
+
+    [data-print-root] {
+        max-width: none;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+}
