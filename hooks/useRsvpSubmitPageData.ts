@@ -64,7 +64,7 @@ export function useRsvpSubmitPageData() {
     const isStaleRsvp = existingRsvpError instanceof ApiError && existingRsvpError.status === 404;
     const effectiveRsvpId = isStaleRsvp ? null : rsvpId;
     const hasExistingRsvp = Boolean(existingRsvp && effectiveRsvpId);
-    const sessionQuestions = useRsvpSessionQuestions(eventId, activeEvent?.modules, effectiveRsvpId);
+    const sessionQuestions = useRsvpSessionQuestions(eventId, activeEvent?.modules);
     const hasUnansweredSessions = computeHasUnansweredSessions(attending, sessionQuestions.allAnswered);
     const hydratedRef = useRef(false);
 

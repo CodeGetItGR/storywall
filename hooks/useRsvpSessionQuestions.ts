@@ -2,7 +2,7 @@ import { useLocale } from 'next-intl';
 import { useCallback, useMemo, useState } from 'react';
 
 import { useEventSessions } from '@/hooks/useEventSessions';
-import { useCreateRsvpSessionResponse, useRsvpSessionResponses } from '@/hooks/useRsvps';
+import { useCreateRsvpSessionResponse } from '@/hooks/useRsvps';
 import { isNotFoundError, isRsvpNotAttendingError, isSessionRsvpNotEnabledError } from '@/lib/api/errors';
 import type { EventModuleResponseDto } from '@/lib/api/types';
 import { formatShortDateTime } from '@/lib/datetime';
@@ -21,9 +21,8 @@ export type AttendingStatus = 'attending' | 'not-attending';
 // Only sessions the host opened (rsvpEnabled) are asked, and only while both
 // rsvp and schedule are available. See plan-owned-modules-fe-integration.md §7.
 // Every question needs an answer: a missing one is reported as "no answer", so
-// the form doesn't send a "coming" RSVP until all are given. A guest editing
-// their RSVP sees the answers they gave before.
-export function useRsvpSessionQuestions(eventId: string | null, modules: EventModuleResponseDto[] | null | undefined, rsvpId: string | null) {
+// the form doesn't send a "coming" RSVP until all are given.
+export function useRsvpSessionQuestions(eventId: string | null, modules: EventModuleResponseDto[] | null | undefined) {
     const locale = useLocale();
     const isAvailable = isModuleAvailable(modules, 'rsvp') && isModuleAvailable(modules, 'schedule');
     const sessionsQuery = useEventSessions(isAvailable ? eventId : null);
@@ -34,11 +33,6 @@ export function useRsvpSessionQuestions(eventId: string | null, modules: EventMo
         () => (sessionsQuery.data ?? []).filter((session) => session.rsvpEnabled).sort((a, b) => a.displayOrder - b.displayOrder),
         [sessionsQuery.data],
     );
-    const savedQuery = useRsvpSessionResponses(isAvailable && openSessions.length > 0 ? rsvpId : null);
-    const saved = useMemo(
-        () => new Map((savedQuery.data ?? []).map((response) => [response.eventSessionId, response.isAttending])),
-        [savedQuery.data],
-    );
 
     const questions = useMemo<RsvpSessionQuestion[]>(
         () =>
@@ -46,9 +40,9 @@ export function useRsvpSessionQuestions(eventId: string | null, modules: EventMo
                 id: session.id,
                 title: session.title,
                 when: session.startAt ? formatShortDateTime(session.startAt, locale) : null,
-                answer: answers[session.id] ?? saved.get(session.id) ?? null,
+                answer: answers[session.id] ?? null,
             })),
-        [answers, locale, openSessions, saved],
+        [answers, locale, openSessions],
     );
 
     const onAnswer = useCallback((sessionId: string, isAttending: boolean) => {
@@ -83,7 +77,7 @@ export function useRsvpSessionQuestions(eventId: string | null, modules: EventMo
     );
 
     const visibleQuestions = isAvailable ? questions : [];
-    // Until both queries have settled we don't yet know the real question
+    // Until the sessions query has settled we don't yet know the real question
     // list, so treating it as "answered" here would let an ATTENDING RSVP
     // through with none. `isLoading` alone misses a query that's paused
     // offline (fetchStatus 'paused') under the default networkMode: 'online',
@@ -93,8 +87,7 @@ export function useRsvpSessionQuestions(eventId: string | null, modules: EventMo
     // query won't retry forever — so it's treated the same as "no questions"
     // instead of stranding the guest on a form they can never submit.
     const isSessionsSettling = sessionsQuery.isPending && sessionsQuery.fetchStatus !== 'idle';
-    const isSavedSettling = savedQuery.isPending && savedQuery.fetchStatus !== 'idle';
-    const isReady = !isSessionsSettling && !isSavedSettling;
+    const isReady = !isSessionsSettling;
 
     return {
         questions: visibleQuestions,

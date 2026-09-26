@@ -21,20 +21,9 @@ vi.mock('@/hooks/useEventSessions', () => ({
     useEventSessions: () => ({ data: sessionsData, isPending: sessionsIsPending, fetchStatus: sessionsFetchStatus }),
 }));
 
-let saved: { eventSessionId: string; isAttending: boolean }[] = [];
-let savedIsPending = false;
-let savedFetchStatus: 'idle' | 'fetching' | 'paused' = 'idle';
-const requestedRsvpIds: (string | null)[] = [];
 const mutateAsync = vi.fn();
 vi.mock('@/hooks/useRsvps', () => ({
     useCreateRsvpSessionResponse: () => ({ mutateAsync }),
-    useRsvpSessionResponses: (rsvpId: string | null) => {
-        requestedRsvpIds.push(rsvpId);
-        // A disabled query (no rsvpId) is pending forever but never actually
-        // fetching, mirroring react-query's own behaviour for enabled: false.
-        if (!rsvpId) return { data: undefined, isPending: true, fetchStatus: 'idle' as const };
-        return { data: saved, isPending: savedIsPending, fetchStatus: savedFetchStatus };
-    },
 }));
 
 beforeEach(() => {
@@ -42,22 +31,18 @@ beforeEach(() => {
     sessionsData = defaultSessions;
     sessionsIsPending = false;
     sessionsFetchStatus = 'idle';
-    saved = [];
-    savedIsPending = false;
-    savedFetchStatus = 'idle';
-    requestedRsvpIds.length = 0;
     mutateAsync.mockReset().mockResolvedValue({});
 });
 
 describe('useRsvpSessionQuestions', () => {
     it('asks only the open sessions, in display order', () => {
-        const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], null));
+        const { result } = renderHook(() => useRsvpSessionQuestions('e1', []));
 
         expect(result.current.questions.map((q) => q.id)).toEqual(['ceremony', 'reception']);
     });
 
     it('is incomplete until every question is answered', () => {
-        const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], null));
+        const { result } = renderHook(() => useRsvpSessionQuestions('e1', []));
         expect(result.current.allAnswered).toBe(false);
 
         act(() => result.current.onAnswer('ceremony', true));
@@ -67,31 +52,9 @@ describe('useRsvpSessionQuestions', () => {
         expect(result.current.allAnswered).toBe(true);
     });
 
-    it('pre-fills the answers already given', () => {
-        saved = [
-            { eventSessionId: 'ceremony', isAttending: true },
-            { eventSessionId: 'reception', isAttending: false },
-        ];
-
-        const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], 'rsvp-1'));
-
-        expect(requestedRsvpIds).toContain('rsvp-1');
-        expect(result.current.questions.map((q) => q.answer)).toEqual([true, false]);
-        expect(result.current.allAnswered).toBe(true);
-    });
-
-    it('lets the guest change a pre-filled answer', () => {
-        saved = [{ eventSessionId: 'ceremony', isAttending: true }];
-        const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], 'rsvp-1'));
-
-        act(() => result.current.onAnswer('ceremony', false));
-
-        expect(result.current.questions[0].answer).toBe(false);
-    });
-
-    it('sends every answer, the pre-filled ones included', async () => {
-        saved = [{ eventSessionId: 'ceremony', isAttending: true }];
-        const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], 'rsvp-1'));
+    it('sends every answered session', async () => {
+        const { result } = renderHook(() => useRsvpSessionQuestions('e1', []));
+        act(() => result.current.onAnswer('ceremony', true));
         act(() => result.current.onAnswer('reception', true));
 
         await act(() => result.current.submitAnswers('rsvp-1'));
@@ -106,17 +69,7 @@ describe('useRsvpSessionQuestions', () => {
         sessionsFetchStatus = 'fetching';
         sessionsData = undefined;
 
-        const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], null));
-
-        expect(result.current.isReady).toBe(false);
-        expect(result.current.allAnswered).toBe(false);
-    });
-
-    it('is not answered while the saved responses are still loading', () => {
-        savedIsPending = true;
-        savedFetchStatus = 'fetching';
-
-        const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], 'rsvp-1'));
+        const { result } = renderHook(() => useRsvpSessionQuestions('e1', []));
 
         expect(result.current.isReady).toBe(false);
         expect(result.current.allAnswered).toBe(false);
@@ -127,7 +80,7 @@ describe('useRsvpSessionQuestions', () => {
         sessionsFetchStatus = 'paused';
         sessionsData = undefined;
 
-        const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], null));
+        const { result } = renderHook(() => useRsvpSessionQuestions('e1', []));
 
         expect(result.current.isReady).toBe(false);
         expect(result.current.allAnswered).toBe(false);
@@ -138,7 +91,7 @@ describe('useRsvpSessionQuestions', () => {
         sessionsFetchStatus = 'idle';
         sessionsData = undefined;
 
-        const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], null));
+        const { result } = renderHook(() => useRsvpSessionQuestions('e1', []));
 
         expect(result.current.isReady).toBe(true);
         expect(result.current.questions).toEqual([]);
@@ -150,35 +103,14 @@ describe('useRsvpSessionQuestions', () => {
         sessionsIsPending = true;
         sessionsFetchStatus = 'fetching';
 
-        const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], null));
+        const { result } = renderHook(() => useRsvpSessionQuestions('e1', []));
 
         expect(result.current.questions).toEqual([]);
         expect(result.current.allAnswered).toBe(true);
     });
 
-    it('drops a saved answer for a session the host has since closed', async () => {
-        sessionsData = [
-            { id: 'reception', title: 'Reception', displayOrder: 1, rsvpEnabled: false, startAt: null },
-            { id: 'ceremony', title: 'Ceremony', displayOrder: 0, rsvpEnabled: true, startAt: null },
-        ];
-        saved = [
-            { eventSessionId: 'reception', isAttending: true },
-            { eventSessionId: 'ceremony', isAttending: true },
-        ];
-
-        const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], 'rsvp-1'));
-
-        expect(result.current.questions.map((q) => q.id)).toEqual(['ceremony']);
-        expect(result.current.allAnswered).toBe(true);
-
-        await act(() => result.current.submitAnswers('rsvp-1'));
-
-        expect(mutateAsync).toHaveBeenCalledTimes(1);
-        expect(mutateAsync).toHaveBeenCalledWith({ rsvpId: 'rsvp-1', eventSessionId: 'ceremony', isAttending: true });
-    });
-
     it('swallows a "session closed", "RSVP not attending" or "deleted session" (404) answer failure', async () => {
-        const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], 'rsvp-1'));
+        const { result } = renderHook(() => useRsvpSessionQuestions('e1', []));
         act(() => result.current.onAnswer('ceremony', true));
         act(() => result.current.onAnswer('reception', false));
 
@@ -191,7 +123,7 @@ describe('useRsvpSessionQuestions', () => {
     });
 
     it('rethrows an answer failure that is not one of the expected races', async () => {
-        const { result } = renderHook(() => useRsvpSessionQuestions('e1', [], 'rsvp-1'));
+        const { result } = renderHook(() => useRsvpSessionQuestions('e1', []));
         act(() => result.current.onAnswer('ceremony', true));
 
         mutateAsync.mockRejectedValue(new ApiError(500, { errorCode: 9001 }));
