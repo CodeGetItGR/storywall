@@ -960,9 +960,14 @@
             "noResponse": "No response"
         },
         "rsvpStatus": {
-            "ATTENDING": "Attending",
+            "ATTENDING": "Going",
             "DECLINED": "Declined",
-            "NO_RESPONSE": "No response yet"
+            "NO_RESPONSE": "Pending"
+        },
+        "rsvpStatusHint": {
+            "ATTENDING": "Will attend",
+            "DECLINED": "Won't attend",
+            "NO_RESPONSE": "Hasn't replied yet"
         },
         "noGuestsYet": "No guests have joined yet — share an invite to get started.",
         "draft": {

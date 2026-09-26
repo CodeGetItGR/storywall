@@ -1,6 +1,5 @@
 'use client';
 
-import { Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import RsvpTab from '@/app/(main)/(app)/(event)/events/[eventId]/manage/RsvpTab';
@@ -31,11 +30,9 @@ export function RsvpScreen() {
         <ModulePageShell
             maxWidth="3xl"
             title={t('rsvpOverview')}
-            icon={Users}
             iconClassName="text-emerald-500"
             backLabel={t('backToTools')}
             backHref={routes.events.feed(eventId)}
-            subtitle={activeEvent.title}
         >
             <RsvpTab
                 eventId={eventId}

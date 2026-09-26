@@ -5,8 +5,8 @@ import { useTranslations } from 'next-intl';
 import { type ChangeEvent, useCallback } from 'react';
 
 import { type RosterFilter, type RosterMember, type RosterRsvp, useRsvpRoster } from '@/hooks/useRsvpRoster';
-import { rsvpStatusTone } from '@/lib/statusTones';
-import { cn } from '@/lib/utils';
+
+import { RsvpStatusPill } from './RsvpStatusPill';
 
 const filters: { key: RosterFilter; labelKey: string }[] = [
     { key: 'all', labelKey: 'rsvpFilters.all' },
@@ -41,7 +41,6 @@ export function RsvpListPanel({ members, rsvps }: { members: RosterMember[]; rsv
             id: member.id,
             name: member.displayName,
             status,
-            statusLabel: t(`rsvpStatus.${status}`),
             partyLabel: partyParts.length > 0 ? partyParts.join(', ') : t('rsvpParty', { count: 0 }),
             notes: rsvp?.notes ?? null,
         };
@@ -85,11 +84,7 @@ export function RsvpListPanel({ members, rsvps }: { members: RosterMember[]; rsv
                                     <p className="mt-0.5 text-xs text-ink-faint">{row.partyLabel}</p>
                                     {row.notes && <p className="mt-1 text-xs leading-6 text-ink-muted">{row.notes}</p>}
                                 </div>
-                                <span
-                                    className={cn('shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold', rsvpStatusTone[row.status])}
-                                >
-                                    {row.statusLabel}
-                                </span>
+                                <RsvpStatusPill status={row.status} className="shrink-0" />
                             </li>
                         ))}
                     </ul>
@@ -101,7 +96,7 @@ export function RsvpListPanel({ members, rsvps }: { members: RosterMember[]; rsv
                                 <tr className="border-b border-border text-left text-[11px] font-bold tracking-wide text-ink-faint uppercase">
                                     <th className="py-2.5 pr-3 font-bold">{t('rsvpColumns.guest')}</th>
                                     <th className="w-40 px-3 py-2.5 font-bold">{t('rsvpColumns.party')}</th>
-                                    <th className="w-36 px-3 py-2.5 font-bold">{t('rsvpColumns.status')}</th>
+                                    <th className="w-28 px-3 py-2.5 font-bold">{t('rsvpColumns.status')}</th>
                                     <th className="px-3 py-2.5 font-bold">{t('rsvpColumns.note')}</th>
                                 </tr>
                             </thead>
@@ -113,14 +108,7 @@ export function RsvpListPanel({ members, rsvps }: { members: RosterMember[]; rsv
                                         </td>
                                         <td className="px-3 py-2.5 whitespace-nowrap text-ink-muted">{row.partyLabel}</td>
                                         <td className="px-3 py-2.5">
-                                            <span
-                                                className={cn(
-                                                    'inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold',
-                                                    rsvpStatusTone[row.status],
-                                                )}
-                                            >
-                                                {row.statusLabel}
-                                            </span>
+                                            <RsvpStatusPill status={row.status} />
                                         </td>
                                         <td className="max-w-80 px-3 py-2.5 text-ink-muted">
                                             <p className="truncate" title={row.notes ?? undefined}>

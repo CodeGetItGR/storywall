@@ -42,7 +42,7 @@ export function RsvpStatsPanel({
                     <p className="text-xs font-bold tracking-wide text-ink-faint uppercase">
                         {t(isRsvpDeadline ? 'rsvpStats.deadlineLabel' : 'rsvpStats.eventDateLabel')}
                     </p>
-                    <p className="text-sm font-semibold break-words text-ink">
+                    <p className="text-sm font-semibold wrap-break-word text-ink">
                         {t('rsvpStats.daysToGo', { count: daysToGo })} · {formattedTargetDate}
                     </p>
                 </div>

@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 
 interface ModulePageHeaderProps {
     title: string;
-    icon: LucideIcon;
+    icon?: LucideIcon;
     iconClassName?: string;
     showIcon?: boolean;
     backLabel: string;
@@ -21,7 +21,7 @@ export function ModulePageHeader({ title, icon: Icon, iconClassName, showIcon = 
         <div className="sticky top-0 z-10 flex items-center gap-3 bg-background py-4">
             <BackButton variant="icon" href={backHref} label={backLabel} />
             <div className="flex min-w-0 flex-1 items-center justify-center gap-2">
-                {showIcon && <Icon className={cn('h-5 w-5 shrink-0', iconClassName)} aria-hidden="true" />}
+                {showIcon && Icon && <Icon className={cn('h-5 w-5 shrink-0', iconClassName)} aria-hidden="true" />}
                 <h1 className="text-c truncate text-base font-bold text-ink">{title}</h1>
             </div>
             {action ?? <span className="h-9 w-9 shrink-0" aria-hidden="true" />}

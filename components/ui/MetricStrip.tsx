@@ -33,9 +33,9 @@ export function MetricStrip({ items, className }: { items: Metric[]; className?:
             )}
         >
             {items.map((item) => (
-                <div key={item.key} className="bg-background px-3.5 py-3">
-                    <dt className="truncate text-[11px] font-bold tracking-wide text-ink-faint uppercase">{item.label}</dt>
+                <div key={item.key} className="flex flex-col bg-background px-3.5 py-3 text-center gap-2">
                     <dd className={cn('mt-1 text-2xl leading-none font-extrabold text-ink tabular-nums', item.tone)}>{item.value}</dd>
+                    <dt className="truncate text-[11px] font-bold tracking-wide text-ink-faint uppercase">{item.label}</dt>
                 </div>
             ))}
         </dl>

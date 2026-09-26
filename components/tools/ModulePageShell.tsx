@@ -9,7 +9,7 @@ type ModulePageMaxWidth = 'xl' | '2xl' | '3xl' | '5xl';
 interface ModulePageShellProps {
     maxWidth?: ModulePageMaxWidth;
     title: string;
-    icon: LucideIcon;
+    icon?: LucideIcon;
     iconClassName?: string;
     showTitleIcon?: boolean;
     backLabel: string;
