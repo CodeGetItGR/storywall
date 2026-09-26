@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { authClient } from '@/lib/api/authClient';
+import { ApiError } from '@/lib/api/client';
 import type {
     AccountStatus,
     AuthProvider as AuthProviderName,
@@ -16,6 +17,14 @@ import type {
 import { clearSession, getAuthState, getSessionGeneration, setSession, subscribeAuthState, updateSessionProfile } from '@/lib/auth/tokenStore';
 
 const BOOTSTRAP_TIMEOUT_MS = 8000;
+const RETRY_BASE_MS = 1000;
+const RETRY_MAX_MS = 10_000;
+
+// 1s, 2s, 4s, 8s, then every 10s: quick enough to catch a dev-server
+// restart, slow enough not to hammer a Spring that's down for a deploy.
+function retryDelayMs(attempt: number): number {
+    return Math.min(RETRY_BASE_MS * 2 ** attempt, RETRY_MAX_MS);
+}
 
 export interface AuthUser {
     userId: string;
@@ -37,6 +46,9 @@ export interface AuthContextValue {
     user: AuthUser | null;
     isAuthenticated: boolean;
     isBootstrapping: boolean;
+    // True while bootstrapping because the server couldn't be reached, not
+    // because the answer is still on its way. The session is being retried.
+    isSessionUnavailable: boolean;
     register: (input: RegisterRequestDto) => Promise<AuthSessionDto>;
     login: (input: { email: string; password: string; inviteToken?: string }) => Promise<AuthSessionDto>;
     oauth: (provider: 'GOOGLE' | 'APPLE', input: { idToken: string; inviteToken?: string }) => Promise<AuthSessionDto>;
@@ -51,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const router = useRouter();
     const [authState, setAuthState] = useState(getAuthState());
     const [isBootstrapping, setIsBootstrapping] = useState(true);
+    const [isSessionUnavailable, setIsSessionUnavailable] = useState(false);
 
     useEffect(() => subscribeAuthState(setAuthState), []);
 
@@ -64,10 +77,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // with no error state and no way out but a reload. It is bounded by
     // BOOTSTRAP_TIMEOUT_MS and treated as "no session" if it doesn't answer,
     // which lands on the login screen instead of nothing at all.
+    //
+    // The one exception is a 503: the BFF only answers that when it holds a
+    // refresh cookie but Spring couldn't be reached (a restart, a deploy). The
+    // user is still signed in, so ending the bootstrap signed out would bounce
+    // them to the login screen. Instead the probe keeps bootstrapping, flags
+    // `isSessionUnavailable` so AppShell can say why, and retries with backoff
+    // until Spring gives a real answer.
     useEffect(() => {
         let cancelled = false;
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), BOOTSTRAP_TIMEOUT_MS);
+        let controller = new AbortController();
+        let timeoutId: ReturnType<typeof setTimeout> | undefined;
+        let retryId: ReturnType<typeof setTimeout> | undefined;
+        let attempt = 0;
         const startedAt = getSessionGeneration();
 
         // Only apply the probe's verdict if nothing else wrote to the store
@@ -80,22 +102,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         async function bootstrap() {
+            controller = new AbortController();
+            timeoutId = setTimeout(() => controller.abort(), BOOTSTRAP_TIMEOUT_MS);
             try {
                 const session = await authClient.session(controller.signal);
                 applyIfCurrent(() => (session ? setSession(session) : clearSession()));
-            } catch {
+            } catch (error) {
                 // authClient.session() only throws for a non-401 failure (503 from a
                 // rate-limited/unreachable Spring, a network error, or the abort
                 // above) — a real "no session" already resolved via the branch
                 // above without throwing. Only a 401 means the session is gone, so
                 // leave whatever's in the store untouched here rather than log the
                 // user out from a transient failure.
-            } finally {
-                clearTimeout(timeoutId);
-                // Unlike the session verdict, this always applies: the app must
-                // leave its blank bootstrapping state even when the probe was
-                // superseded, aborted, or failed.
-                if (!cancelled) setIsBootstrapping(false);
+                if (!cancelled && error instanceof ApiError && error.status === 503) {
+                    clearTimeout(timeoutId);
+                    setIsSessionUnavailable(true);
+                    retryId = setTimeout(bootstrap, retryDelayMs(attempt++));
+                    return;
+                }
+            }
+            clearTimeout(timeoutId);
+            // Unlike the session verdict, this always applies: the app must
+            // leave its blank bootstrapping state even when the probe was
+            // superseded, aborted, or failed.
+            if (!cancelled) {
+                setIsSessionUnavailable(false);
+                setIsBootstrapping(false);
             }
         }
 
@@ -103,6 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return () => {
             cancelled = true;
             clearTimeout(timeoutId);
+            clearTimeout(retryId);
             controller.abort();
         };
     }, []);
@@ -216,8 +249,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const isAuthenticated = Boolean(accessToken);
 
     const value: AuthContextValue = useMemo(
-        () => ({ user, isAuthenticated, isBootstrapping, register, login, oauth, logout, updateProfile }),
-        [user, isAuthenticated, isBootstrapping, register, login, oauth, logout, updateProfile],
+        () => ({ user, isAuthenticated, isBootstrapping, isSessionUnavailable, register, login, oauth, logout, updateProfile }),
+        [user, isAuthenticated, isBootstrapping, isSessionUnavailable, register, login, oauth, logout, updateProfile],
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

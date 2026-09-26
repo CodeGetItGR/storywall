@@ -17,6 +17,10 @@
         "ctaAuthenticated": "Πίσω στο προφίλ",
         "ctaGuest": "Σύνδεση"
     },
+    "SessionUnavailable": {
+        "title": "Δεν μπορούμε να συνδεθούμε με το StoryWall",
+        "description": "Είστε ακόμα συνδεδεμένοι. Θα επανασυνδεθούμε μόλις επανέλθει ο διακομιστής."
+    },
     "PageErrorState": {
         "retry": "Δοκιμάστε ξανά",
         "plans": {

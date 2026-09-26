@@ -17,6 +17,10 @@
         "ctaAuthenticated": "Go to profile",
         "ctaGuest": "Sign in"
     },
+    "SessionUnavailable": {
+        "title": "Can't reach StoryWall",
+        "description": "You're still signed in. We'll reconnect as soon as the server is back."
+    },
     "PageErrorState": {
         "retry": "Try again",
         "plans": {

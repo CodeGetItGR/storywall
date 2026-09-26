@@ -4,7 +4,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { type ReactNode, useEffect } from 'react';
 
 import { AccountPanelShell } from '@/components/account/AccountPanelShell';
-import { DesktopNavRail, MobileTabBar } from '@/components/layout';
+import { DesktopNavRail, MobileTabBar, SessionUnavailableState } from '@/components/layout';
 import { useAuth } from '@/hooks/useAuth';
 import { routes } from '@/lib/routes';
 import { AccountPanelProvider } from '@/providers/AccountPanelProvider';
@@ -13,7 +13,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    const { user, isBootstrapping } = useAuth();
+    const { user, isBootstrapping, isSessionUnavailable } = useAuth();
     const isAuthenticated = Boolean(user);
 
     useEffect(() => {
@@ -27,6 +27,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             router.replace(routes.admin);
         }
     }, [isAuthenticated, isBootstrapping, pathname, router, searchParams, user?.role]);
+
+    if (isSessionUnavailable) {
+        return <SessionUnavailableState />;
+    }
 
     if (isBootstrapping || !isAuthenticated || user?.role === 'ADMIN') {
         return <div className="h-full bg-background" />;
