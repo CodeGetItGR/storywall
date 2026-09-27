@@ -92,6 +92,21 @@ reads it from this response needs no change; one that hardcoded `2026-09-24` get
 checkout. Each EVENT plan's `extensionOptions` is now sold: see
 [`coverage-options-and-extensions-fe-integration.md`](coverage-options-and-extensions-fe-integration.md) §11.
 
+**2026-09-27:** four gaps closed, all limits the server already enforced (one new) that this
+response didn't publish:
+
+- Each `planTiers` entry gained **`moduleConfigs`**, the plan's per-module quota/config. It holds
+  `schedule.maxSections`, the new `co_hosts.maxCoHosts`, and `gallery.qrUploadEnabled`. See
+  §"Per-plan module config and the co-host cap" below. The co-host cap is new: until now an event
+  could have any number of co-hosts.
+- `contentLimits` gained the form-field bounds that used to be literal `@Size` values: event
+  title/subtitle, session title, location, URLs, member names, first/last name, email, password
+  min/max, QR label, gift account, RSVP phone, wishbook guest name, playlist title/artist,
+  withdrawal reason, business profile.
+- `media` gained `acceptedMimeTypes`, `acceptedProfilePictureMimeTypes`, `maxImagePixels` and
+  `defaultStoryLifetimeHours`.
+- New `eventDeletion` block: the delete-confirmation code's length, lifetime and attempt limit.
+
 ## GET /api/config
 
 Public — no `Authorization` header needed, safe to call before login (e.g. to gate the login
@@ -113,11 +128,15 @@ interface AppConfigResponseDto {
     maxMediaPerPost: number;
     maxArchiveSelectedItems: number; // added 2026-08-25 — see below
     maxArchivePartBytes: number;     // added 2026-08-25 — see below
-    presignedUrlTtlMinutes: number;
+    presignedUrlTtlMinutes: number; // default 60; URLs are re-signed every third of it — see presigned-url-windows-fe-integration.md
     publicHost: string | null; // hostname media URLs are served from
     estimateAvgImageBytes: number;  // added 2026-09-18 — see below
     estimateAvgVideoBytes: number;  // added 2026-09-18 — see below
     estimateImageRatio: number;     // added 2026-09-18 — see below, fraction 0-1
+    acceptedMimeTypes: string[];    // added 2026-09-27 — see below
+    acceptedProfilePictureMimeTypes: string[]; // added 2026-09-27
+    maxImagePixels: number;         // added 2026-09-27
+    defaultStoryLifetimeHours: number; // added 2026-09-27
   };
   pagination: { defaultPageSize: number; maxPageSize: number };
   planTiers: PlanTierResponseDto[];   // was Record<'FREE'|'PLUS'|'PRO', {...}> — see plan-tiers-fe-integration.md
@@ -131,6 +150,7 @@ interface AppConfigResponseDto {
   withdrawal: { termsVersion: string; windowDays: number; holdDays: number }; // see billing-fe-guide.md §9
   coverage: { maxLeadDays: number; defaultEventDurationHours: number }; // added 2026-09-21, defaultHostingMonths and maxPreEventDays removed 2026-09-23 — see event-coverage-window-fe-integration.md
   newsletter: { enabled: boolean; discountPercent: number; rewardValidityMonths: number }; // added 2026-09-23 — see newsletter-fe-integration.md
+  eventDeletion: { codeDigits: number; codeValidMinutes: number; maxCodeAttempts: number }; // added 2026-09-27 — see below
   contentLimits: AppContentLimitsDto;   // added 2026-08-23 — see below
   reactionTypesByEventType: Record<string, ReactionTypeResponseDto[]>; // added 2026-08-30 — see below
   rateLimits: AppRateLimitConfigDto[];  // added 2026-08-23 — see below
@@ -180,9 +200,20 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
   instead of hardcoding `25MB`/`200MB` — an admin can change these via config. See
   [`multi-image-post-upload-fe-integration.md`](multi-image-post-upload-fe-integration.md) for
   the resulting error codes. Client-side rejection is still just UX — the server enforces the
-  real limit regardless. Note there is a second, *dimensional* image limit (50 megapixels) that is
-  deliberately not surfaced here — it only fires on synthetic or extreme-panorama input and is
-  reported as `MEDIA_IMAGE_TOO_MANY_PIXELS` (3016) at upload time.
+  real limit regardless. There is a second, *dimensional* image limit, `maxImagePixels` (50
+  megapixels, width x height). It was left out of this response until 2026-09-27. It only fires on
+  synthetic or extreme-panorama input and is reported as `MEDIA_IMAGE_TOO_MANY_PIXELS` (3016) at
+  upload time.
+- **`media.acceptedMimeTypes`** / **`acceptedProfilePictureMimeTypes`** (added 2026-09-27) — feed
+  these to the file input's `accept` attribute. The server detects the type from the file's bytes,
+  not its name or declared type, so `accept` is only a UX filter. HEIC is not in the list: iOS
+  Safari converts it to JPEG in the picker. Profile pictures take images only.
+- **`media.defaultStoryLifetimeHours`** (24, added 2026-09-27) — how long a story lives when it is
+  posted without `expiresAt`. Use it for "disappears in 24h" copy.
+- **`eventDeletion`** (added 2026-09-27) — the emailed code that confirms deleting an event:
+  `codeDigits` (6) sizes the code input, `codeValidMinutes` (10) is the "expires in" copy, and
+  `maxCodeAttempts` (5) is how many wrong guesses end the code. See
+  [`event-deletion-fe-integration.md`](event-deletion-fe-integration.md).
 - **`media.maxStoryVideoBytes` / `maxStoryVideoDurationSeconds`** (50MB / 60s as of 2026-08-30) —
   tighter caps that apply only when an upload's `context` form field is `"STORY"`. The byte cap is
   enforced synchronously at upload time (`413`/`3013`, same as `maxVideoBytes`); the duration cap
@@ -244,6 +275,8 @@ long-`staleTime` query) and read from that cache everywhere you'd otherwise hard
   cross-referencing `paidServices` yourself. `paidModules[].grantsModuleKey` is the module it
   unlocks. Also populated (as of 2026-08-21) on `GET /api/plan-tiers?eventType=X`'s response —
   null only from the admin catalog endpoints, which don't cross-reference it.
+  `moduleConfigs` (added 2026-09-27) is the plan's per-module quota/config — see §"Per-plan module
+  config and the co-host cap".
 - **`eventModuleKeys`** — the single source of truth for valid module keys, replacing whatever
   hardcoded list (e.g. `ModuleKeyConvention`) the FE currently maintains. See below — this is
   now also enforced server-side, so drift here means requests start failing, not silently
@@ -354,7 +387,36 @@ interface AppContentLimitsDto {
   moderationReasonMaxLength: number;                // 500
   reportDescriptionMaxLength: number;               // 1000
   reportResolutionNotesMaxLength: number;           // 1000
-  catalogDescriptionMaxLength: number;              // 1000
+  catalogDescriptionMaxLength: number;             // 1000
+  // Added 2026-09-27 — see the second table below.
+  eventTitleMaxLength: number;                     // 255
+  eventSubtitleMaxLength: number;                  // 255
+  eventSessionTitleMaxLength: number;              // 255
+  locationNameMaxLength: number;                   // 255
+  locationAddressMaxLength: number;                // 500
+  urlMaxLength: number;                            // 2048
+  memberDisplayNameMaxLength: number;              // 150
+  memberNicknameMaxLength: number;                 // 100
+  memberRelationshipRoleMaxLength: number;         // 50
+  memberCustomRelationshipRoleMaxLength: number;   // 100
+  personNameMaxLength: number;                     // 100
+  emailMaxLength: number;                          // 255
+  passwordMinLength: number;                       // 8
+  passwordMaxLength: number;                       // 100
+  qrLabelMaxLength: number;                        // 100
+  giftAccountHolderMaxLength: number;              // 140
+  giftBankNameMaxLength: number;                   // 140
+  giftNoteMaxLength: number;                       // 500
+  rsvpPhoneMaxLength: number;                      // 50
+  wishbookGuestNameMaxLength: number;              // 120
+  playlistTitleMaxLength: number;                  // 255
+  playlistArtistMaxLength: number;                 // 255
+  withdrawalReasonMaxLength: number;               // 1000
+  businessLegalNameMaxLength: number;              // 200
+  businessVatNumberMaxLength: number;              // 20
+  businessAddressLineMaxLength: number;            // 200
+  businessCityMaxLength: number;                   // 100
+  businessPostalCodeMaxLength: number;             // 20
 }
 ```
 
@@ -382,10 +444,76 @@ field here instead of a hardcoded number, the same way you'd source `rsvp` bound
 only place these numbers exist — the backend constants (`TextLimits.java`) have no other public
 surface, so a mismatched hardcoded FE limit is now a genuine correctness bug, not just staleness.
 
-Not included here: a handful of short fixed-width fields (names, emails, phone numbers, URLs,
-enum-like strings) also gained limits as part of the same pass, but those mirror pre-existing
-sibling-DTO conventions (e.g. `title`/`name` at 255) rather than being new judgment calls — treat
-`255` chars as the safe default for any single-line text input the FE doesn't already constrain.
+**2026-09-27:** the short fields are now published too. This paragraph used to say to treat 255 as
+a safe default for them. It wasn't safe: a member's display name stops at 150, a phone at 50 and a
+QR label at 100. The bounds did not change, they were only published:
+
+| field | maps to |
+|---|---|
+| `eventTitleMaxLength` / `eventSubtitleMaxLength` | `EventRequestDto`/`EventPatchDto.title` / `.subtitle` |
+| `eventSessionTitleMaxLength` | `EventSessionRequestDto`/`Patch.title`, `EventRequestDto.initialSessionTitle` |
+| `locationNameMaxLength` | `locationName` on event and session |
+| `locationAddressMaxLength` | `EventRequestDto`/`EventPatchDto.locationAddress` |
+| `urlMaxLength` | `mapsUrl` (event, session), `PlaylistSuggestionRequestDto.youtubeUrl`/`spotifyUrl`, `StoryRequestDto.songUrl` |
+| `memberDisplayNameMaxLength`, `memberNicknameMaxLength`, `memberRelationshipRoleMaxLength`, `memberCustomRelationshipRoleMaxLength` | `EventMemberRequestDto`/`EventMemberPatchDto` |
+| `personNameMaxLength` | `firstName`/`lastName` on `RegisterRequestDto`, `MeUpdateRequestDto`, `EventInvitationRequestDto`/`Patch`, `CoHostInvitationRequestDto` |
+| `emailMaxLength` | `email` on `RegisterRequestDto`, `EventInvitationRequestDto`/`Patch`, `CoHostInvitationRequestDto` |
+| `passwordMinLength` / `passwordMaxLength` | `RegisterRequestDto.password`, `ChangePasswordRequestDto`/`ResetPasswordRequestDto.newPassword` |
+| `qrLabelMaxLength` | `QrLinkRequestDto`/`QrLinkPatchDto.label` |
+| `giftAccountHolderMaxLength`, `giftBankNameMaxLength`, `giftNoteMaxLength` | `EventGiftAccountRequestDto` |
+| `rsvpPhoneMaxLength` | `RsvpRequestDto`/`RsvpPatchDto.phone` |
+| `wishbookGuestNameMaxLength` | `WishbookEntryRequestDto.guestName` |
+| `playlistTitleMaxLength` / `playlistArtistMaxLength` | `PlaylistSuggestionRequestDto.title` / `.artist` |
+| `withdrawalReasonMaxLength` | `WithdrawalRequestCreateDto.reason` |
+| `businessLegalNameMaxLength`, `businessVatNumberMaxLength`, `businessAddressLineMaxLength`, `businessCityMaxLength`, `businessPostalCodeMaxLength` | `BusinessProfileRequestDto` |
+
+Still not published: the IBAN field. Its 42-character DTO bound allows for spaces, and the real
+limit (34 after normalising) is checked separately, so a single number would mislead.
+
+## Per-plan module config and the co-host cap (2026-09-27)
+
+Each entry in `planTiers` now carries `moduleConfigs`: the plan's config for every module that
+applies to its event type, keyed by module key. Add-on modules are included, since an unlocked
+module still runs on the plan's config. ACCOUNT plans have `{}`.
+
+```jsonc
+"moduleConfigs": {
+  "co_hosts": { "maxCoHosts": 2 },
+  "gallery":  { "qrUploadEnabled": true },
+  "schedule": { "maxSections": 10 },
+  "posts":    {}
+}
+```
+
+| key | meaning | read |
+|---|---|---|
+| `schedule.maxSections` | most schedule sections an event may have, the main session included | live — 409 5067 |
+| `co_hosts.maxCoHosts` | most co-hosts an event may have; the primary host is not counted | live — 409 5088 |
+| `gallery.qrUploadEnabled` | whether the Gallery upload QR link exists; must be `true` | frozen onto the event at creation |
+
+**An absent count key means unlimited, never zero.** `maxCoHosts: 0` is a real value: the plan
+allows no co-hosts.
+
+"Live" means the server reads the plan's current value on every request, so an admin's change
+applies to events that already exist. Look the event's plan up by its code:
+
+```ts
+const plan = config.planTiers.find(p => p.code === event.planTierCode && p.scope === 'EVENT');
+const maxCoHosts = plan?.moduleConfigs?.co_hosts?.maxCoHosts as number | undefined;
+```
+
+A plan that is archived or not public is not in `planTiers`. For an event on such a plan, show no
+cap and rely on the server's 409.
+
+`qrUploadEnabled` here is only what **new** events on the plan start with. For an existing event,
+read that event's own `EventModule.configuration.qrUploadEnabled`.
+
+The co-host cap is new on 2026-09-27. Its rules and the 5088 response are in
+[`wishlist-wishbook-cohost-fe-integration.md`](wishlist-wishbook-cohost-fe-integration.md) §1
+"Co-host cap". No plan sets it yet, so every event stays unlimited until an admin does
+(`PATCH /api/admin/plan-tiers/{id}/modules/co_hosts` with `{"defaultConfig": {"maxCoHosts": N}}`).
+That admin endpoint now returns `400` if `maxSections` or `maxCoHosts` is anything other than a
+whole number of 0 or more.
 
 ## New: per-endpoint rate limits (2026-08-23)
 

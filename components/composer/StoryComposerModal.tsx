@@ -12,6 +12,7 @@ import { Modal } from '@/components/ui/modal';
 import { useStoryCameraController } from '@/hooks/useStoryCameraController';
 import type { StoryComposerController } from '@/hooks/useStoryComposerController';
 import { useStoryFilterSwipe } from '@/hooks/useStoryFilterSwipe';
+import { useUploadAccept } from '@/hooks/useUploadAccept';
 import { STORY_FILTER_PRESETS, type StoryFilterPreset } from '@/lib/story/storyFilters';
 import { cn } from '@/lib/utils';
 
@@ -42,6 +43,7 @@ function FilterLayer({ src, alt, preset }: { src: string; alt: string; preset: S
 
 export function StoryComposerModal({ controller }: { controller: StoryComposerController }) {
     const t = useTranslations('StoryComposer');
+    const uploadAccept = useUploadAccept();
     const [cameraActive, setCameraActive] = useState(true);
     const [showFilterSwipeCue, setShowFilterSwipeCue] = useState(true);
     // Some Android browsers can't decode a locally-picked video's blob: URL preview.
@@ -433,7 +435,7 @@ export function StoryComposerModal({ controller }: { controller: StoryComposerCo
                     <input
                         ref={libraryInputRef}
                         type="file"
-                        accept="image/*,video/*"
+                        accept={uploadAccept.media}
                         multiple
                         className="sr-only"
                         onChange={handleStoryLibraryChange}

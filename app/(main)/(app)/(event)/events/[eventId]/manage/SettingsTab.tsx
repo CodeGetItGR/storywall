@@ -9,8 +9,10 @@ import { TargetedSection } from '@/components/manage/TargetedSection';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
+import { useContentLimits } from '@/hooks/useContentLimits';
 import { useUpdateEvent } from '@/hooks/useEvent';
 import { useUploadMedia } from '@/hooks/useMedia';
+import { useUploadAccept } from '@/hooks/useUploadAccept';
 import { getFieldErrors } from '@/lib/api/errors';
 import type { EventDetailResponseDto, EventPatchDto } from '@/lib/api/types';
 import {
@@ -44,6 +46,8 @@ export default function SettingsTab({
     const locale = useLocale();
     const toErrorMessage = useApiErrorMessage();
     const { data: appConfig } = useAppConfig();
+    const limits = useContentLimits();
+    const uploadAccept = useUploadAccept();
 
     const initial = {
         title: event.title,
@@ -275,7 +279,7 @@ export default function SettingsTab({
                         <input
                             ref={fileRef}
                             type="file"
-                            accept="image/*"
+                            accept={uploadAccept.images}
                             className="sr-only"
                             onChange={handleFile}
                             disabled={disabled || !canUploadCover}
@@ -286,7 +290,15 @@ export default function SettingsTab({
 
                 {/* Basics */}
                 <FormFieldLabel label={t('settings.fields.title')} required labelClassName={labelClass}>
-                    <input type="text" required value={title} onChange={handleTitleChange} disabled={disabled} className={inputClass} />
+                    <input
+                        type="text"
+                        required
+                        maxLength={limits.eventTitleMaxLength}
+                        value={title}
+                        onChange={handleTitleChange}
+                        disabled={disabled}
+                        className={inputClass}
+                    />
                     {fieldErrors?.title && <span className="text-xs text-rose-500">{fieldErrors.title}</span>}
                 </FormFieldLabel>
 
@@ -311,6 +323,7 @@ export default function SettingsTab({
                         <input
                             type="text"
                             required
+                            maxLength={limits.locationNameMaxLength}
                             value={locationName}
                             onChange={handleLocationNameChange}
                             disabled={disabled}
@@ -321,6 +334,7 @@ export default function SettingsTab({
                         <input
                             type="text"
                             required
+                            maxLength={limits.locationAddressMaxLength}
                             value={locationAddress}
                             onChange={handleLocationAddressChange}
                             disabled={disabled}
@@ -333,6 +347,7 @@ export default function SettingsTab({
                 <FormFieldLabel label={t('settings.fields.mapsUrl')} optional labelClassName={labelClass}>
                     <input
                         type="url"
+                        maxLength={limits.urlMaxLength}
                         value={mapsUrl}
                         onChange={handleMapsUrlChange}
                         disabled={disabled}

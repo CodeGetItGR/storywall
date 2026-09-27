@@ -1194,7 +1194,7 @@
                 "otp": {
                     "send": "Send code",
                     "sending": "Sending…",
-                    "verifyBody": "Enter the 6-digit code sent to your email.",
+                    "verifyBody": "Enter the {digits}-digit code sent to your email.",
                     "label": "Confirmation code",
                     "resend": "Send a new code",
                     "resendIn": "Send a new code in {seconds}s",

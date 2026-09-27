@@ -72,6 +72,7 @@ type EventRole = "HOST" | "ATTENDEE";
 type EventVisibility = "PUBLIC" | "PRIVATE"; // default PRIVATE server-side, but required on EventRequestDto
 type EventStatus = "DRAFT" | "ACTIVE"; // DRAFT until the chosen plan is paid for. DB CHECK enforces the pair
 type AttendanceStatus = "ATTENDING" | "DECLINED" | "MAYBE";
+type RsvpReportType = 'STATISTICS' | 'FULL_LIST' | 'ATTENDING_ONLY' | 'WITH_CHILDREN';
 
 type PostType = "TEXT" | "MEDIA" | "ANNOUNCEMENT" | "PLAYLIST"; // server-enforced via @Pattern + DB CHECK
 
@@ -388,7 +389,7 @@ interface EventRequestDto {
   visibility: EventVisibility;    // required on this DTO despite the entity's DB default
   startAt: string;                // required
   endAt: string;                  // required, must be after startAt
-  timezone: string;               // required, max 100
+  timezone: string;               // required, max 100, an IANA zone id Java knows (e.g. "Europe/Athens"); else 400 3001 with errors.timezone
   locationName?: string;          // max 255
   locationAddress?: string;
   mapsUrl?: string;
@@ -431,11 +432,12 @@ interface ProjectedCoverageDto { coverageEndsAt: string; hostingMonths: number; 
 
 interface CoHostInviteRequestDto { userId: string; } // required
 
-/** PATCH /api/events/{id} body — every field optional, no Bean Validation, {} is a valid no-op. */
+/** PATCH /api/events/{id} body — every field optional, {} is a valid no-op. */
 interface EventPatchDto {
   title?: string; subtitle?: string; description?: string;
   visibility?: EventVisibility;
-  startAt?: string; endAt?: string; timezone?: string;
+  startAt?: string; endAt?: string;
+  timezone?: string;              // same IANA zone rule as EventRequestDto; "" is rejected, omit to leave unchanged
   locationName?: string; locationAddress?: string; mapsUrl?: string;
   coverMediaId?: string; brandingSettings?: Record<string, unknown>;
   rsvpDeadline?: string;
@@ -476,6 +478,7 @@ interface EventScheduleDto {
 interface EventLocationDto {
   name: string | null; address: string | null; mapsUrl: string | null;
 }
+/** Guests only: members with role HOST (primary host and co-hosts) are in none of these counts. */
 interface EventRsvpSummaryDto {
   totalMembers: number; attending: number; declined: number; noResponse: number;
 }
@@ -493,10 +496,10 @@ interface EventDetailResponseDto {
   location: EventLocationDto;
   coverMedia: MediaResponseDto | null; // resolved, with a fresh presigned mediaUrl — not just an id
   brandingSettings: Record<string, unknown>;
-  hosts: EventHostResponseDto[];       // small, bounded — co-hosts
+  hosts: EventHostResponseDto[];       // small, bounded — co-hosts; only the primary host without co_hosts
   modules: EventModuleResponseDto[];   // fixed-size — one per module key
-  sessions: EventSessionResponseDto[]; // bounded agenda items
-  rsvpSummary: EventRsvpSummaryDto;    // aggregate counts only, not the individual RSVPs
+  sessions: EventSessionResponseDto[] | null; // bounded agenda items; null when the schedule module is off
+  rsvpSummary: EventRsvpSummaryDto | null;    // aggregate counts only; null when the rsvp module is off
   createdAt: string; updatedAt: string; deletedAt: string | null;
   deletionScheduledFor: string | null; // same contract as on EventResponseDto
 }
@@ -564,7 +567,7 @@ interface EventInvitationPreviewDto {
   eventSubtitle: string | null;
   eventDescription: string | null;
   coverMediaId: string | null;
-  /** NEW 2026-09-25 — the cover with its presigned `url`; null without a cover. Use this instead of
+  /** NEW 2026-09-25 — the cover with its presigned `mediaUrl`; null without a cover. Use this instead of
    *  GET /api/medias/{id}, which the visitor (not a member yet) can't call. */
   coverMedia: MediaResponseDto | null;
   /** Prefill hints from the invitation, when it named somebody. Null on a shared/QR invitation. */
@@ -579,7 +582,8 @@ interface EventInvitationPreviewDto {
 
 interface EventMemberRequestDto {
   eventId: string; userId?: string; invitationId?: string;
-  role: EventRole;
+  role: EventRole;        // 'ATTENDEE' only since 2026-09-27; 'HOST' is a 400. Co-hosts come via
+                          // POST /api/events/{id}/hosts or /host-invitations.
   displayName: string;    // required, max 150
   nickname?: string;      // max 100
   relationshipRole?: string;       // max 50
@@ -677,10 +681,48 @@ interface RsvpPatchDto { // every field optional
 // POST /api/rsvp-session-responses. Since 2026-09-24: the session must be of the RSVP's event (else 400), not deleted
 // (404) and rsvpEnabled (409 SESSION_RSVP_NOT_ENABLED, 5086); rsvp + schedule must be available (5012). Answering the
 // same session again updates the existing answer (same id). See plan-owned-modules-fe-integration.md §7.
+// Since 2026-09-25: a DECLINED RSVP takes no answers (409 RSVP_NOT_ATTENDING, 5087), and declining deletes its answers.
+// Rows exist only once the guest answers: no row for a session means "no answer". See rsvp-reports-fe-integration.md.
 interface RsvpSessionResponsRequestDto { rsvpId: string; eventSessionId: string; isAttending: boolean; } // all required
 interface RsvpSessionResponsPatchDto { isAttending: boolean; } // NEW 2026-09-24 — PATCH /api/rsvp-session-responses/{id}, same checks as create
 interface RsvpSessionResponsResponseDto {
   id: string; rsvpId: string; eventSessionId: string; isAttending: boolean; createdAt: string;
+}
+
+// --- RSVP reports --- NEW 2026-09-25, see fe-guides/rsvp-reports-fe-integration.md
+// GET /api/events/{eventId}/rsvps/report?reportType=… — host-only, 60/60s. Labels arrive localized (Accept-Language).
+interface RsvpReportDto {
+  reportType: RsvpReportType;
+  header: RsvpReportHeaderDto;
+  totals: RsvpReportTotalsDto;                 // always the whole event
+  categories: RsvpReportCategoryDto[] | null;  // STATISTICS only
+  sessions: RsvpReportSessionDto[] | null;     // STATISTICS only
+  groups: RsvpReportGroupDto[] | null;         // FULL_LIST, ATTENDING_ONLY, WITH_CHILDREN only
+}
+interface RsvpReportHeaderDto {
+  eventTitle: string;
+  eventTypeName: string | null; // in the request locale; null if the type has no registry row
+  eventDate: string;            // ISO date (yyyy-MM-dd) of startAt in the event's timezone
+  generatedAt: string;          // ISO date-time, UTC
+}
+interface RsvpReportTotalsDto { responses: number; people: number; adults: number; children: number; }
+interface RsvpReportCategoryDto {
+  label: string; attending: boolean;
+  comingSessionIds: string[]; noAnswerSessionIds: string[];
+  responses: number;
+  people: number;                  // 0 for declined
+  percentOfPeople: number | null;  // attending categories sum to 100; null for declined
+}
+interface RsvpReportSessionDto { sessionId: string; title: string; people: number; noAnswerPeople: number; }
+interface RsvpReportGroupDto {
+  label: string; attending: boolean;
+  comingSessionIds: string[]; noAnswerSessionIds: string[];
+  responses: number; people: number;  // of this group's rows; people is 0 for declined
+  rows: RsvpReportRowDto[];            // sorted by name for the request locale
+}
+interface RsvpReportRowDto {
+  rsvpId: string; name: string; phone: string | null;
+  adults: number; children: number; notes: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -1093,11 +1135,22 @@ interface AppMediaConfigDto {
   maxMediaPerPost: number;
   maxArchiveSelectedItems: number; // added 2026-08-25 — item cap on GET .../media/archive/selected
   maxArchivePartBytes: number;     // added 2026-08-25 — combined-size cap for that request AND one gallery-archive part
-  presignedUrlTtlMinutes: number;
+  presignedUrlTtlMinutes: number; // default 60; URLs are re-signed every third of it, so refresh lists holding them at least that often
   publicHost: string | null; // hostname media URLs are served from — feed into next/image's images.remotePatterns
   estimateAvgImageBytes: number;  // added 2026-09-18 — NOT a validation limit, see maxImageBytes for that
   estimateAvgVideoBytes: number;  // added 2026-09-18 — NOT a validation limit, see maxVideoBytes for that
   estimateImageRatio: number;     // added 2026-09-18 — fraction (0-1) of a quota assumed spent on photos vs video
+  acceptedMimeTypes: string[];    // added 2026-09-27 — gallery/story/post/cover uploads; detected from the bytes, HEIC rejected
+  acceptedProfilePictureMimeTypes: string[]; // added 2026-09-27 — images only
+  maxImagePixels: number;         // added 2026-09-27 — width x height; larger is 3016 MEDIA_IMAGE_TOO_MANY_PIXELS
+  defaultStoryLifetimeHours: number; // added 2026-09-27 — a story posted without expiresAt lives this long
+}
+
+/** The emailed code that confirms DELETE /api/events/{id}. Added 2026-09-27. */
+interface AppEventDeletionConfigDto {
+  codeDigits: number;        // 6 — the request's `code` must be exactly this many digits
+  codeValidMinutes: number;  // 10
+  maxCodeAttempts: number;   // 5 wrong guesses, then a new code is needed
 }
 interface AppPaginationConfigDto { defaultPageSize: number; maxPageSize: number; }
 interface AppRsvpConfigDto { minAdults: number; maxAdults: number; minChildren: number; maxChildren: number; }
@@ -1166,6 +1219,35 @@ interface AppContentLimitsDto {
   reportDescriptionMaxLength: number;
   reportResolutionNotesMaxLength: number;
   catalogDescriptionMaxLength: number;
+  // Added 2026-09-27: the bounds on user-facing form fields that used to be literal @Size values.
+  eventTitleMaxLength: number;                   // 255 — EventRequestDto/EventPatchDto.title
+  eventSubtitleMaxLength: number;                // 255
+  eventSessionTitleMaxLength: number;            // 255 — session title and EventRequestDto.initialSessionTitle
+  locationNameMaxLength: number;                 // 255 — event and session
+  locationAddressMaxLength: number;              // 500
+  urlMaxLength: number;                          // 2048 — mapsUrl, youtubeUrl, spotifyUrl, songUrl
+  memberDisplayNameMaxLength: number;            // 150
+  memberNicknameMaxLength: number;               // 100
+  memberRelationshipRoleMaxLength: number;       // 50
+  memberCustomRelationshipRoleMaxLength: number; // 100
+  personNameMaxLength: number;                   // 100 — firstName/lastName: register, /me, invitations, co-host invitations
+  emailMaxLength: number;                        // 255 — register, invitations, co-host invitations
+  passwordMinLength: number;                     // 8 — register, change, reset
+  passwordMaxLength: number;                     // 100
+  qrLabelMaxLength: number;                      // 100
+  giftAccountHolderMaxLength: number;            // 140
+  giftBankNameMaxLength: number;                 // 140
+  giftNoteMaxLength: number;                     // 500
+  rsvpPhoneMaxLength: number;                    // 50
+  wishbookGuestNameMaxLength: number;            // 120
+  playlistTitleMaxLength: number;                // 255
+  playlistArtistMaxLength: number;               // 255
+  withdrawalReasonMaxLength: number;             // 1000
+  businessLegalNameMaxLength: number;            // 200
+  businessVatNumberMaxLength: number;            // 20 — as typed, before normalising
+  businessAddressLineMaxLength: number;          // 200 — each of addressLine1/addressLine2
+  businessCityMaxLength: number;                 // 100
+  businessPostalCodeMaxLength: number;           // 20
 }
 
 /** One `@RateLimit`-annotated endpoint's budget — added 2026-08-23. See `RATE_LIMITED` (3010) / 429
@@ -1209,6 +1291,13 @@ export interface PlanTierResponseDto {
 
   /** Module keys this plan includes. Always empty for ACCOUNT-scope plans. */
   moduleKeys: string[];
+
+  /** Per-module quota/config, keyed by module key — added 2026-09-27. One entry per module
+   *  applicable to the plan's event type, add-on modules included. Known keys:
+   *  `schedule.maxSections` and `co_hosts.maxCoHosts` (absent = unlimited, never 0) and
+   *  `gallery.qrUploadEnabled`. `{}` for ACCOUNT plans. Populated on GET /api/config and
+   *  GET /api/plan-tiers; null on admin endpoints. */
+  moduleConfigs: Record<string, Record<string, unknown>> | null;
 
   /** The one event type this plan may be bought for — required for EVENT scope, null for
    *  ACCOUNT scope. A plan belongs to exactly one type; there is no restriction-set field.
@@ -1580,10 +1669,12 @@ interface AppConfigResponseDto {
   coverage: AppCoverageConfigDto;
   /** Added 2026-09-23. See fe-guides/newsletter-fe-integration.md §6. */
   newsletter: AppNewsletterConfigDto;
+  /** Added 2026-09-27. */
+  eventDeletion: AppEventDeletionConfigDto;
 }
 
 /**
- * The `details` object on a 409 quota rejection (errorCode 5008/5009). Carries the numbers
+ * The `details` object on a 409 quota rejection (errorCode 5008/5009/5088). Carries the numbers
  * an upgrade prompt needs without a second round-trip to a usage endpoint.
  */
 export interface QuotaExceededDetails {
@@ -1820,7 +1911,7 @@ export interface QrLinkResolutionDto {
   eventTitle?: string;
   eventSubtitle?: string | null;
   coverMediaId?: string | null;
-  /** NEW 2026-09-25 — the cover with its presigned `url` (ACTIVE-only, null without a cover). Use this
+  /** NEW 2026-09-25 — the cover with its presigned `mediaUrl` (ACTIVE-only, null without a cover). Use this
    *  instead of GET /api/medias/{id}, which the scanner (not a member yet) can't call. */
   coverMedia?: MediaResponseDto | null;
   /** Only ever 'ACTIVE' when present — any other event status resolves as TARGET_UNAVAILABLE

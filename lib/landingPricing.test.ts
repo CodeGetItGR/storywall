@@ -72,6 +72,10 @@ const MEDIA: AppMediaConfigDto = {
     estimateAvgImageBytes: 4 * 1024 * 1024,
     estimateAvgVideoBytes: 90 * 1024 * 1024,
     estimateImageRatio: 0.7,
+    acceptedMimeTypes: [],
+    acceptedProfilePictureMimeTypes: [],
+    maxImagePixels: 0,
+    defaultStoryLifetimeHours: 24,
 };
 
 const COPY: LandingPlanCopy = {

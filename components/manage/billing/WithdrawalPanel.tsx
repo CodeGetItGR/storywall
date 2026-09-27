@@ -2,12 +2,14 @@ import { Loader2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
+import { useContentLimits } from '@/hooks/useContentLimits';
 import type { EventWithdrawalFlow } from '@/hooks/useEventWithdrawalFlow';
 import { formatMoney } from '@/lib/billing';
 
 export function WithdrawalPanel({ panel }: { panel: EventWithdrawalFlow }) {
     const t = useTranslations('EventPlanSettingsPage');
     const tCommon = useTranslations('Common');
+    const limits = useContentLimits();
     const locale = useLocale();
     const { withdrawalPreview, withdrawalHistory, latestWithdrawal } = panel;
 
@@ -71,7 +73,7 @@ export function WithdrawalPanel({ panel }: { panel: EventWithdrawalFlow }) {
                         value={panel.withdrawalReason}
                         onChange={panel.handleWithdrawalReasonChange}
                         rows={2}
-                        maxLength={1000}
+                        maxLength={limits.withdrawalReasonMaxLength}
                         className="mt-1 w-full rounded-lg bg-background px-3 py-2 text-sm text-ink transition outline-none focus:ring-2 focus:ring-primary/15"
                         placeholder={t('withdrawal.reasonPlaceholder')}
                     />

@@ -11,9 +11,6 @@ import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type { UserResponseDto } from '@/lib/api/types';
 
-// Formats the backend accepts for a profile picture.
-export const PROFILE_PICTURE_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif';
-
 // Picking a file only opens a preview; nothing is uploaded until confirm().
 export function useProfilePictureUpload() {
     const queryClient = useQueryClient();

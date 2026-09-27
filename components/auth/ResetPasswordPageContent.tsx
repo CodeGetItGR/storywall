@@ -6,11 +6,13 @@ import { useTranslations } from 'next-intl';
 
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
+import { useContentLimits } from '@/hooks/useContentLimits';
 import { useResetPassword } from '@/hooks/useResetPassword';
 import { routes } from '@/lib/routes';
 
 export function ResetPasswordPageContent() {
     const t = useTranslations('ResetPasswordPage');
+    const limits = useContentLimits();
     const {
         confirmation,
         error,
@@ -41,8 +43,8 @@ export function ResetPasswordPageContent() {
                             <input
                                 type={showPassword ? 'text' : 'password'}
                                 required
-                                minLength={8}
-                                maxLength={100}
+                                minLength={limits.passwordMinLength}
+                                maxLength={limits.passwordMaxLength}
                                 autoComplete="new-password"
                                 value={password}
                                 onChange={updatePassword}
@@ -64,8 +66,8 @@ export function ResetPasswordPageContent() {
                             <input
                                 type={showPassword ? 'text' : 'password'}
                                 required
-                                minLength={8}
-                                maxLength={100}
+                                minLength={limits.passwordMinLength}
+                                maxLength={limits.passwordMaxLength}
                                 autoComplete="new-password"
                                 value={confirmation}
                                 onChange={updateConfirmation}

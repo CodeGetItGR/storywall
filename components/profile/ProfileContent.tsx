@@ -9,13 +9,17 @@ import Avatar from '@/components/ui/avatar';
 import { BackButton } from '@/components/ui/BackButton';
 import { Button } from '@/components/ui/button';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
+import { useContentLimits } from '@/hooks/useContentLimits';
 import { useProfileForm } from '@/hooks/useProfileForm';
-import { PROFILE_PICTURE_ACCEPT, useProfilePictureUpload } from '@/hooks/useProfilePictureUpload';
+import { useProfilePictureUpload } from '@/hooks/useProfilePictureUpload';
+import { useUploadAccept } from '@/hooks/useUploadAccept';
 import { getInitials } from '@/lib/format';
 import { routes } from '@/lib/routes';
 
 export function ProfileContent() {
     const t = useTranslations('ProfilePage');
+    const uploadAccept = useUploadAccept();
+    const limits = useContentLimits();
     const form = useProfileForm();
     const picture = useProfilePictureUpload();
     const displayName = form.accountName || t('fallbackName');
@@ -60,7 +64,7 @@ export function ProfileContent() {
                         <input
                             id="profile-picture-input"
                             type="file"
-                            accept={PROFILE_PICTURE_ACCEPT}
+                            accept={uploadAccept.profilePicture}
                             className="sr-only"
                             onChange={picture.handleFileChange}
                         />
@@ -82,7 +86,7 @@ export function ProfileContent() {
                             <input
                                 value={form.firstName}
                                 onChange={form.handleFirstNameChange}
-                                maxLength={100}
+                                maxLength={limits.personNameMaxLength}
                                 required
                                 aria-invalid={Boolean(form.profileFieldErrors.firstName)}
                                 className="min-h-11 rounded-2xl border border-border/70 bg-background px-4 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
@@ -92,7 +96,7 @@ export function ProfileContent() {
                             <input
                                 value={form.lastName}
                                 onChange={form.handleLastNameChange}
-                                maxLength={100}
+                                maxLength={limits.personNameMaxLength}
                                 aria-invalid={Boolean(form.profileFieldErrors.lastName)}
                                 className="min-h-11 rounded-2xl border border-border/70 bg-background px-4 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
                             />
@@ -181,8 +185,8 @@ export function ProfileContent() {
                                     type="password"
                                     value={form.currentPassword}
                                     onChange={form.handleCurrentPasswordChange}
-                                    minLength={8}
-                                    maxLength={100}
+                                    minLength={limits.passwordMinLength}
+                                    maxLength={limits.passwordMaxLength}
                                     required
                                     aria-invalid={Boolean(form.passwordFieldErrors.currentPassword)}
                                     className="min-h-11 rounded-2xl border border-border/70 bg-background px-4 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
@@ -193,8 +197,8 @@ export function ProfileContent() {
                                     type="password"
                                     value={form.newPassword}
                                     onChange={form.handleNewPasswordChange}
-                                    minLength={8}
-                                    maxLength={100}
+                                    minLength={limits.passwordMinLength}
+                                    maxLength={limits.passwordMaxLength}
                                     required
                                     aria-invalid={Boolean(form.passwordFieldErrors.newPassword)}
                                     className="min-h-11 rounded-2xl border border-border/70 bg-background px-4 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
@@ -205,8 +209,8 @@ export function ProfileContent() {
                                     type="password"
                                     value={form.confirmPassword}
                                     onChange={form.handleConfirmPasswordChange}
-                                    minLength={8}
-                                    maxLength={100}
+                                    minLength={limits.passwordMinLength}
+                                    maxLength={limits.passwordMaxLength}
                                     required
                                     aria-invalid={Boolean(form.passwordFieldErrors.confirmPassword)}
                                     className="min-h-11 rounded-2xl border border-border/70 bg-background px-4 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"

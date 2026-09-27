@@ -15,12 +15,14 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppNewsletterConfig } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthPageRedirect } from '@/hooks/useAuthPageRedirect';
+import { useContentLimits } from '@/hooks/useContentLimits';
 import { useNavigateAfterSignIn } from '@/hooks/useNavigateAfterSignIn';
 import { AUTH_RETURN_PATH_PARAM, getPostRegisterRedirectPath, getSafeReturnPath } from '@/lib/auth/returnPath';
 import { routes } from '@/lib/routes';
 
 export default function RegisterPage() {
     const t = useTranslations('RegisterPage');
+    const limits = useContentLimits();
     const navigateAfterSignIn = useNavigateAfterSignIn();
     const searchParams = useSearchParams();
     const inviteToken = searchParams.get('invite');
@@ -119,6 +121,7 @@ export default function RegisterPage() {
                                 type="text"
                                 placeholder={t('placeholders.firstName')}
                                 required
+                                maxLength={limits.personNameMaxLength}
                                 value={firstName}
                                 onChange={onFirstNameChange}
                                 className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-faint"
@@ -132,6 +135,7 @@ export default function RegisterPage() {
                                 type="text"
                                 placeholder={t('placeholders.lastName')}
                                 required
+                                maxLength={limits.personNameMaxLength}
                                 value={lastName}
                                 onChange={onLastNameChange}
                                 className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-faint"
@@ -147,6 +151,7 @@ export default function RegisterPage() {
                             type="email"
                             placeholder={t('placeholders.email')}
                             required
+                            maxLength={limits.emailMaxLength}
                             value={email}
                             onChange={onEmailChange}
                             className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-faint"
@@ -161,7 +166,8 @@ export default function RegisterPage() {
                             type={showPw ? 'text' : 'password'}
                             placeholder="••••••••"
                             required
-                            minLength={8}
+                            minLength={limits.passwordMinLength}
+                            maxLength={limits.passwordMaxLength}
                             value={password}
                             onChange={onPasswordChange}
                             className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-faint"

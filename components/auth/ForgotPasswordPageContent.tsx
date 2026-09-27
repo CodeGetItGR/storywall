@@ -7,11 +7,13 @@ import { useTranslations } from 'next-intl';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { AuthLoadingState } from '@/components/layout/AuthLoadingState';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
+import { useContentLimits } from '@/hooks/useContentLimits';
 import { useForgotPassword } from '@/hooks/useForgotPassword';
 import { routes } from '@/lib/routes';
 
 export function ForgotPasswordPageContent() {
     const t = useTranslations('ForgotPasswordPage');
+    const limits = useContentLimits();
     const { email, error, isSubmitted, isSubmitting, shouldRenderAuthPage, submit, updateEmail } = useForgotPassword();
 
     if (!shouldRenderAuthPage) return <AuthLoadingState className="min-h-screen" />;
@@ -39,6 +41,7 @@ export function ForgotPasswordPageContent() {
                                 type="email"
                                 required
                                 autoComplete="email"
+                                maxLength={limits.emailMaxLength}
                                 placeholder={t('placeholders.email')}
                                 value={email}
                                 onChange={updateEmail}

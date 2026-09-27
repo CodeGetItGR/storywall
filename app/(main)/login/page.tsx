@@ -13,12 +13,14 @@ import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthPageRedirect } from '@/hooks/useAuthPageRedirect';
+import { useContentLimits } from '@/hooks/useContentLimits';
 import { useNavigateAfterSignIn } from '@/hooks/useNavigateAfterSignIn';
 import { AUTH_RETURN_PATH_PARAM, getPostAuthRedirectPath, getSafeReturnPath } from '@/lib/auth/returnPath';
 import { routes } from '@/lib/routes';
 
 export default function LoginPage() {
     const t = useTranslations('LoginPage');
+    const limits = useContentLimits();
     const navigateAfterSignIn = useNavigateAfterSignIn();
     const searchParams = useSearchParams();
     const inviteToken = searchParams.get('invite');
@@ -96,6 +98,7 @@ export default function LoginPage() {
                             type="email"
                             placeholder={t('placeholders.email')}
                             required
+                            maxLength={limits.emailMaxLength}
                             value={email}
                             onChange={handleEmailChange}
                             className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-faint"
@@ -111,7 +114,8 @@ export default function LoginPage() {
                             type={showPw ? 'text' : 'password'}
                             placeholder="••••••••"
                             required
-                            minLength={8}
+                            minLength={limits.passwordMinLength}
+                            maxLength={limits.passwordMaxLength}
                             value={password}
                             onChange={handlePasswordChange}
                             className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-faint"

@@ -61,18 +61,36 @@ GET /api/events/{eventId}/modules
   flag is off, and start working again the moment it's flipped back on.
 - The `EVENT_JOIN` QR link (event invite) is entirely unaffected — this flag only touches
   `MEDIA_UPLOAD`.
+- Since 2026-09-24 the flag must be explicitly `true` (a missing key counts as off), and Gallery
+  itself must be enabled for the event too. See `gallery-qr-link-plan-gating-fe-integration.md`.
 - **To pre-empt:** hide/disable "Create upload link" and "Share upload link" actions in the host
   gallery UI whenever `configuration.qrUploadEnabled === false`. If a link somehow still gets
   created (a stale cache, a race), the server rejects it — see §4.
 
-## 3. Schedule sections — a cap that lives on the event type, not the event
+## 3. Schedule sections — a cap that lives on the plan, not the event
+
+> **Corrected 2026-09-27.** This section used to say the cap lives on the event type and to read it
+> from `GET /api/event-types/{eventTypeKey}/modules` with no query string. Since 2026-09-13 the
+> cap lives on the **plan** (`plan_tier_module_configs`), and that endpoint without
+> `?planTierCode=` returns the type's seed template, not the number the server enforces. Read it
+> from `GET /api/config` instead:
+>
+> ```ts
+> const plan = config.planTiers.find(p => p.code === event.planTierCode && p.scope === 'EVENT');
+> const maxSections = plan?.moduleConfigs.schedule?.maxSections; // undefined = unlimited
+> ```
+>
+> `GET /api/event-types/{eventTypeKey}/modules?planTierCode={code}` also returns the plan's value.
+> The co-host cap (`co_hosts.maxCoHosts`, error 5088) works the same way. See
+> [`app-config-fe-integration.md`](app-config-fe-integration.md) §"Per-plan module config".
 
 Unlike every other per-event setting, the schedule-section cap is **not** copied onto the event at
 creation and does not appear in `EventModule.configuration` for `schedule`. It's read live from the
-event type, every time. Fetch it from the endpoint that already exists for this:
+event's plan, every time. The original instructions follow; pass `?planTierCode=` if you use this
+endpoint:
 
 ```
-GET /api/event-types/{eventTypeKey}/modules
+GET /api/event-types/{eventTypeKey}/modules?planTierCode={planTierCode}
 ```
 
 ```jsonc

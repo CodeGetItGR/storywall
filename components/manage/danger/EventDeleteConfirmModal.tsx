@@ -10,6 +10,7 @@ export function EventDeleteConfirmModal({
     open,
     step,
     otpCode,
+    codeDigits,
     onOtpChangeAction,
     otpInvalid,
     deleteError,
@@ -23,6 +24,7 @@ export function EventDeleteConfirmModal({
     open: boolean;
     step: EventDeletionStep;
     otpCode: string;
+    codeDigits: number;
     onOtpChangeAction: (event: ChangeEvent<HTMLInputElement>) => void;
     otpInvalid: boolean;
     deleteError: string | null;
@@ -46,7 +48,7 @@ export function EventDeleteConfirmModal({
             body={
                 <div className="flex flex-col gap-3">
                     {/* Deletion explanation */}
-                    <p>{isVerifyStep ? t('settings.dangerZone.otp.verifyBody') : t('settings.dangerZone.confirmBody')}</p>
+                    <p>{isVerifyStep ? t('settings.dangerZone.otp.verifyBody', { digits: codeDigits }) : t('settings.dangerZone.confirmBody')}</p>
 
                     {isVerifyStep && (
                         <>
@@ -60,7 +62,7 @@ export function EventDeleteConfirmModal({
                                     inputMode="numeric"
                                     autoComplete="one-time-code"
                                     pattern="[0-9]*"
-                                    maxLength={6}
+                                    maxLength={codeDigits}
                                     value={otpCode}
                                     onChange={onOtpChangeAction}
                                     aria-invalid={otpInvalid}
@@ -102,7 +104,7 @@ export function EventDeleteConfirmModal({
             onCloseAction={onCloseAction}
             onConfirmAction={isVerifyStep ? onConfirmAction : onSendCodeAction}
             isConfirming={isSendingCode || isDeleting}
-            confirmDisabled={isVerifyStep ? otpCode.length !== 6 : resendDisabled}
+            confirmDisabled={isVerifyStep ? otpCode.length !== codeDigits : resendDisabled}
         />
     );
 }

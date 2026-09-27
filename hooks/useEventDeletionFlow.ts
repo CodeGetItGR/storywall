@@ -6,9 +6,11 @@ import { useTranslations } from 'next-intl';
 import { type ChangeEvent, useEffect, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useAppConfig } from '@/hooks/useAppConfig';
 import { eventKeys } from '@/hooks/useEvent';
 import { useRequestEventDeletion, useRequestEventDeletionOtp } from '@/hooks/useEventDeletion';
 import { ERROR_CODES, getErrorCode, getRetryAfterSeconds, isRateLimitedError } from '@/lib/api/errors';
+import { DEFAULT_EVENT_DELETION } from '@/lib/appConfigDefaults';
 import { routes } from '@/lib/routes';
 
 const OTP_RESEND_COOLDOWN_SECONDS = 60;
@@ -20,6 +22,8 @@ export function useEventDeletionFlow(eventId: string) {
     const router = useRouter();
     const t = useTranslations('ManagePage.settings.dangerZone.otp');
     const toErrorMessage = useApiErrorMessage();
+    const { data: appConfig } = useAppConfig();
+    const codeDigits = appConfig?.eventDeletion?.codeDigits ?? DEFAULT_EVENT_DELETION.codeDigits;
 
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [step, setStep] = useState<EventDeletionStep>('send');
@@ -60,7 +64,7 @@ export function useEventDeletionFlow(eventId: string) {
     }
 
     function handleOtpChange(event: ChangeEvent<HTMLInputElement>) {
-        setOtpCode(event.target.value.replace(/\D/g, '').slice(0, 6));
+        setOtpCode(event.target.value.replace(/\D/g, '').slice(0, codeDigits));
         setOtpInvalid(false);
         setDeleteError(null);
     }
@@ -93,7 +97,7 @@ export function useEventDeletionFlow(eventId: string) {
     }
 
     async function confirmDelete() {
-        if (!/^\d{6}$/.test(otpCode)) return;
+        if (otpCode.length !== codeDigits) return;
         setOtpInvalid(false);
         setDeleteError(null);
 
@@ -142,6 +146,7 @@ export function useEventDeletionFlow(eventId: string) {
         openConfirm,
         closeConfirm,
         otpCode,
+        codeDigits,
         handleOtpChange,
         otpInvalid,
         deleteError,

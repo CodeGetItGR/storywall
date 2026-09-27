@@ -68,6 +68,11 @@ export interface AppMediaConfigDto {
     estimateAvgImageBytes: number;
     estimateAvgVideoBytes: number;
     estimateImageRatio: number; // fraction 0-1
+    // Added 2026-09-27. For file inputs' `accept`; the server checks the bytes.
+    acceptedMimeTypes: string[];
+    acceptedProfilePictureMimeTypes: string[];
+    maxImagePixels: number; // width x height; 3016 past it
+    defaultStoryLifetimeHours: number;
 }
 
 export type PaidServiceKind = 'STORAGE_PACK' | 'RECURRING_ADDON' | 'MODULE_UNLOCK';
@@ -291,6 +296,35 @@ export interface AppContentLimitsDto {
     reportDescriptionMaxLength: number;
     reportResolutionNotesMaxLength: number;
     catalogDescriptionMaxLength: number;
+    // Added 2026-09-27: short-field bounds. See app-config-fe-integration.md.
+    eventTitleMaxLength: number;
+    eventSubtitleMaxLength: number;
+    eventSessionTitleMaxLength: number;
+    locationNameMaxLength: number;
+    locationAddressMaxLength: number;
+    urlMaxLength: number;
+    memberDisplayNameMaxLength: number;
+    memberNicknameMaxLength: number;
+    memberRelationshipRoleMaxLength: number;
+    memberCustomRelationshipRoleMaxLength: number;
+    personNameMaxLength: number;
+    emailMaxLength: number;
+    passwordMinLength: number;
+    passwordMaxLength: number;
+    qrLabelMaxLength: number;
+    giftAccountHolderMaxLength: number;
+    giftBankNameMaxLength: number;
+    giftNoteMaxLength: number;
+    rsvpPhoneMaxLength: number;
+    wishbookGuestNameMaxLength: number;
+    playlistTitleMaxLength: number;
+    playlistArtistMaxLength: number;
+    withdrawalReasonMaxLength: number;
+    businessLegalNameMaxLength: number;
+    businessVatNumberMaxLength: number;
+    businessAddressLineMaxLength: number;
+    businessCityMaxLength: number;
+    businessPostalCodeMaxLength: number;
 }
 
 export interface AppRateLimitConfigDto {
@@ -322,10 +356,18 @@ export interface AppConfigResponseDto {
     reportTargetTypes: ReportTargetType[];
     reportReasons: ReportReason[];
     newsletter: AppNewsletterConfigDto;
+    eventDeletion: AppEventDeletionConfigDto;
 }
 
 // GET /api/config → newsletter (newsletter-fe-integration §6). Describes the
 // offer made to whoever subscribes next — an existing reward keeps its own terms.
+// The emailed code that confirms deleting an event. Added 2026-09-27.
+export interface AppEventDeletionConfigDto {
+    codeDigits: number;
+    codeValidMinutes: number;
+    maxCodeAttempts: number;
+}
+
 export interface AppNewsletterConfigDto {
     enabled: boolean;
     discountPercent: number;

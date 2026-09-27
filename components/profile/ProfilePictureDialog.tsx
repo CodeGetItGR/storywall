@@ -7,7 +7,7 @@ import type { ChangeEvent } from 'react';
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
-import { PROFILE_PICTURE_ACCEPT } from '@/hooks/useProfilePictureUpload';
+import { useUploadAccept } from '@/hooks/useUploadAccept';
 
 type ProfilePictureDialogProps = {
     open: boolean;
@@ -21,6 +21,7 @@ type ProfilePictureDialogProps = {
 
 export function ProfilePictureDialog({ open, previewUrl, error, isUploading, onFileChange, onConfirm, onCancel }: ProfilePictureDialogProps) {
     const t = useTranslations('ProfilePage.picture');
+    const uploadAccept = useUploadAccept();
 
     return (
         <Modal open={open} onClose={onCancel} size="sm" closeLabel={t('cancel')} showCloseButton={!isUploading}>
@@ -49,7 +50,7 @@ export function ProfilePictureDialog({ open, previewUrl, error, isUploading, onF
                         <input
                             id="profile-picture-dialog-input"
                             type="file"
-                            accept={PROFILE_PICTURE_ACCEPT}
+                            accept={uploadAccept.profilePicture}
                             className="sr-only"
                             disabled={isUploading}
                             onChange={onFileChange}

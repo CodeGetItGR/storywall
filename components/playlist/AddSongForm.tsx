@@ -7,6 +7,7 @@ import React, { type ChangeEvent, useState } from 'react';
 import { AddSongFieldShell } from '@/components/playlist/AddSongFieldShell';
 import { SpotifyMark, YouTubeMark } from '@/components/playlist/MusicServiceMarks';
 import { useAppConfig } from '@/hooks/useAppConfig';
+import { useContentLimits } from '@/hooks/useContentLimits';
 
 type PlaylistSuggestionInput = {
     title: string;
@@ -25,6 +26,7 @@ type AddSongFormProps = {
 export function AddSongForm({ canSubmit, onSubmitAction, compact = false }: AddSongFormProps) {
     const t = useTranslations('PlaylistPage');
     const { data: appConfig } = useAppConfig();
+    const limits = useContentLimits();
     const [title, setTitle] = useState('');
     const [artist, setArtist] = useState('');
     const [youtubeUrl, setYoutubeUrl] = useState('');
@@ -88,6 +90,7 @@ export function AddSongForm({ canSubmit, onSubmitAction, compact = false }: AddS
                         <div className="relative">
                             <input
                                 type="text"
+                                maxLength={limits.playlistTitleMaxLength}
                                 value={title}
                                 onChange={handleTitleChange}
                                 placeholder={t('songTitlePlaceholder')}
@@ -101,6 +104,7 @@ export function AddSongForm({ canSubmit, onSubmitAction, compact = false }: AddS
                         <div className="relative">
                             <input
                                 type="text"
+                                maxLength={limits.playlistArtistMaxLength}
                                 value={artist}
                                 onChange={handleArtistChange}
                                 placeholder={t('artistPlaceholder')}
@@ -115,6 +119,7 @@ export function AddSongForm({ canSubmit, onSubmitAction, compact = false }: AddS
                         <div className="relative">
                             <input
                                 type="url"
+                                maxLength={limits.urlMaxLength}
                                 value={youtubeUrl}
                                 onChange={handleYoutubeUrlChange}
                                 placeholder={t('youtubePlaceholder')}
@@ -128,6 +133,7 @@ export function AddSongForm({ canSubmit, onSubmitAction, compact = false }: AddS
                         <div className="relative">
                             <input
                                 type="url"
+                                maxLength={limits.urlMaxLength}
                                 value={spotifyUrl}
                                 onChange={handleSpotifyUrlChange}
                                 placeholder={t('spotifyPlaceholder')}

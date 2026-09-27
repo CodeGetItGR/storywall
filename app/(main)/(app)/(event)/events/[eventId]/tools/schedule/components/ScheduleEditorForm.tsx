@@ -8,6 +8,7 @@ import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { Modal } from '@/components/ui/modal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
+import { useContentLimits } from '@/hooks/useContentLimits';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
 import type { EventSessionPatchDto, EventSessionRequestDto, EventSessionResponseDto, EventStatus } from '@/lib/api/types';
 import {
@@ -59,6 +60,7 @@ export function ScheduleEditorForm({
     const t = useTranslations('SchedulePage');
     const toErrorMessage = useApiErrorMessage();
     const { data: appConfig } = useAppConfig();
+    const limits = useContentLimits();
     // Guests can only answer per session when the event also has RSVP.
     const rsvpReadable = useModuleReadable(eventId, 'rsvp');
 
@@ -250,6 +252,7 @@ export function ScheduleEditorForm({
                     >
                         <input
                             type="text"
+                            maxLength={limits.eventSessionTitleMaxLength}
                             value={title}
                             onChange={handleTitleChange}
                             className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
@@ -325,6 +328,7 @@ export function ScheduleEditorForm({
                         >
                             <input
                                 type="text"
+                                maxLength={limits.locationNameMaxLength}
                                 value={locationName}
                                 onChange={handleLocationNameChange}
                                 className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
@@ -339,6 +343,7 @@ export function ScheduleEditorForm({
                         >
                             <input
                                 type="url"
+                                maxLength={limits.urlMaxLength}
                                 value={mapsUrl}
                                 onChange={handleMapsUrlChange}
                                 className="w-full rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:border-primary/40 focus:ring-4 focus:ring-primary/10"
@@ -348,7 +353,9 @@ export function ScheduleEditorForm({
                     </div>
 
                     {/* Guest RSVP */}
-                    {rsvpReadable && <SessionRsvpSwitch label={t('host.fields.rsvpEnabled')} checked={rsvpEnabled} onCheckedChangeAction={setRsvpEnabled} />}
+                    {rsvpReadable && (
+                        <SessionRsvpSwitch label={t('host.fields.rsvpEnabled')} checked={rsvpEnabled} onCheckedChangeAction={setRsvpEnabled} />
+                    )}
 
                     {submitError && <p className="text-xs font-medium text-rose-500">{submitError}</p>}
                     {saved && !submitError && <p className="text-xs font-medium text-emerald-600">{t('saved')}</p>}

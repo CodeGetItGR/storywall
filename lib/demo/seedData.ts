@@ -21,6 +21,12 @@ import type {
     WishbookEntryResponseDto,
 } from '@/lib/api/types';
 import { EVENT_MODULE_KEYS } from '@/lib/api/types';
+import {
+    DEFAULT_ACCEPTED_MIME_TYPES,
+    DEFAULT_CONTENT_LIMITS,
+    DEFAULT_EVENT_DELETION,
+    DEFAULT_PROFILE_PICTURE_MIME_TYPES,
+} from '@/lib/appConfigDefaults';
 import { DEMO_EVENT_ID, DEMO_HOST_MEMBER_ID, DEMO_USER_ID } from '@/lib/demo/demoConstants';
 
 const NOW = () => new Date().toISOString();
@@ -1141,6 +1147,10 @@ export function buildSeedAppConfig(): AppConfigResponseDto {
             estimateAvgImageBytes: 4 * 1024 * 1024,
             estimateAvgVideoBytes: 90 * 1024 * 1024,
             estimateImageRatio: 0.7,
+            acceptedMimeTypes: DEFAULT_ACCEPTED_MIME_TYPES,
+            acceptedProfilePictureMimeTypes: DEFAULT_PROFILE_PICTURE_MIME_TYPES,
+            maxImagePixels: 50_000_000,
+            defaultStoryLifetimeHours: 24,
         },
         pagination: { defaultPageSize: 20, maxPageSize: 100 },
         planTiers: [
@@ -1189,20 +1199,8 @@ export function buildSeedAppConfig(): AppConfigResponseDto {
         rsvp: { minAdults: 0, maxAdults: 10, minChildren: 0, maxChildren: 10 },
         withdrawal: { termsVersion: 'demo-1', windowDays: 14, holdDays: 7 },
         coverage: { maxLeadDays: 548, defaultEventDurationHours: 24 },
-        contentLimits: {
-            postContentMaxLength: 500,
-            commentContentMaxLength: 500,
-            storyCaptionMaxLength: 200,
-            wishbookMessageMaxLength: 2000,
-            playlistSuggestionCommentMaxLength: 300,
-            rsvpNotesMaxLength: 500,
-            eventDescriptionMaxLength: 2000,
-            eventSessionDescriptionMaxLength: 1000,
-            moderationReasonMaxLength: 500,
-            reportDescriptionMaxLength: 1000,
-            reportResolutionNotesMaxLength: 1000,
-            catalogDescriptionMaxLength: 1000,
-        },
+        eventDeletion: DEFAULT_EVENT_DELETION,
+        contentLimits: DEFAULT_CONTENT_LIMITS,
         reactionTypesByEventType: {
             WEDDING: [
                 { id: 'demo-reaction-love', eventTypeKey: 'WEDDING', code: 'LOVE', name: 'Love', emoji: '❤️', sortOrder: 0, isAssignable: true },

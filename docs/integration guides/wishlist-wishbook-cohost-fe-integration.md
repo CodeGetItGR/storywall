@@ -131,6 +131,31 @@ than the guest shortcut. Flagged as a known gap, not a thing you can detect clie
 On success the caller becomes a member with `role: HOST` and gets an `EventHost` row — they appear
 in `EventDetailResponseDto.hosts` immediately.
 
+### Co-host cap (added 2026-09-27)
+
+A plan can cap how many co-hosts an event has: `planTiers[].moduleConfigs.co_hosts.maxCoHosts` on
+`GET /api/config`. If the key is absent, there is no cap. The primary host is not counted. The cap
+is read live, so an admin's change applies to events that already exist. Lowering it removes
+nobody, it only stops new co-hosts. Every path that makes a co-host checks it: promoting by
+`userId`, issuing an emailed invitation, and accepting one. Pending invitations are not counted
+when you issue one, so accepting one can still be refused if other invitations were accepted
+first. Either way the response is:
+
+```jsonc
+// 409
+{ "errorCode": 5088, "errorKey": "EVENT_CO_HOST_LIMIT_EXCEEDED",
+  "detail": "This event's plan allows up to 2 co-hosts.",
+  "details": { "planCode": "BASIC", "used": 2, "limit": 2 } }
+```
+
+To head it off, compare the count of `hosts` with `displayOrder > 0` against the cap, and disable
+the "Invite co-host" action once it is reached.
+
+Also since 2026-09-27, `POST /api/event-members` refuses `role: "HOST"` with a `400`. Before, it
+created a member labelled HOST with no host rights and no place in `hosts`, and that side door
+skipped the `co_hosts` module gate and this cap. Send `ATTENDEE` there. The two endpoints above are
+the only ways to add a co-host.
+
 ### Listing
 
 `GET /api/events/{eventId}/invitations` returns both kinds. Filter on `role` to split "Guests" from
@@ -364,6 +389,7 @@ back from the API — treat it as gone.
 |---|---|---|---|
 | 5044 | `CO_HOST_INVITE_NOT_YOURS` | 403 | accepting a co-host invitation with the wrong or unverified account |
 | 5045 | `INVALID_IBAN` | 400 | saving a gift account whose IBAN fails its check digits |
+| 5088 | `EVENT_CO_HOST_LIMIT_EXCEEDED` | 409 | adding a co-host past the plan's `co_hosts.maxCoHosts` (added 2026-09-27; see §1) |
 
 Both follow the standard envelope — `errorCode` (number) and `errorKey` (string) on the RFC 7807
 body. Existing codes reused by these features: `MODULE_NOT_AVAILABLE`, `EVENT_NOT_ACTIVE`,

@@ -4,6 +4,7 @@ import { Loader2, UploadCloud } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ChangeEvent } from 'react';
 
+import { useUploadAccept } from '@/hooks/useUploadAccept';
 import { formatBytes } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
@@ -31,6 +32,7 @@ export function GalleryUploadSection({
     onUpload,
 }: GalleryUploadSectionProps) {
     const t = useTranslations('GalleryPage');
+    const uploadAccept = useUploadAccept();
 
     return (
         <section className="mb-5 rounded-md border border-border p-4">
@@ -48,7 +50,7 @@ export function GalleryUploadSection({
                 >
                     <UploadCloud className="h-4 w-4" />
                     {t('chooseFiles')}
-                    <input type="file" accept="image/*,video/*" multiple disabled={!canUpload} onChange={onFilesChange} className="sr-only" />
+                    <input type="file" accept={uploadAccept.media} multiple disabled={!canUpload} onChange={onFilesChange} className="sr-only" />
                 </label>
             </div>
 

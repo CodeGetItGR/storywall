@@ -30,6 +30,7 @@ export default function DangerZoneTab({ event }: { event: EventDetailResponseDto
                 open={deletionFlow.confirmOpen}
                 step={deletionFlow.step}
                 otpCode={deletionFlow.otpCode}
+                codeDigits={deletionFlow.codeDigits}
                 onOtpChangeAction={deletionFlow.handleOtpChange}
                 otpInvalid={deletionFlow.otpInvalid}
                 deleteError={deletionFlow.deleteError}

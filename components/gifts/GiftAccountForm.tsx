@@ -3,6 +3,7 @@
 import { Loader2, Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { useContentLimits } from '@/hooks/useContentLimits';
 import type { EventGiftAccountResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 
@@ -20,6 +21,7 @@ interface GiftAccountFormProps {
 
 export function GiftAccountForm({ account, onSubmitAction, isSaving, invalidIban, onCancelAction, onRemoveAction, className }: GiftAccountFormProps) {
     const t = useTranslations('GiftsPage');
+    const limits = useContentLimits();
 
     return (
         <form onSubmit={onSubmitAction} className={cn('space-y-4', className)}>
@@ -31,15 +33,33 @@ export function GiftAccountForm({ account, onSubmitAction, isSaving, invalidIban
             </label>
             <label className="block text-sm font-semibold text-ink">
                 {t('fields.accountHolder')}
-                <input name="accountHolder" required maxLength={140} defaultValue={account?.accountHolder ?? ''} className={inputClassName} />
+                <input
+                    name="accountHolder"
+                    required
+                    maxLength={limits.giftAccountHolderMaxLength}
+                    defaultValue={account?.accountHolder ?? ''}
+                    className={inputClassName}
+                />
             </label>
             <label className="block text-sm font-semibold text-ink">
                 {t('fields.bankName')}
-                <input name="bankName" required maxLength={140} defaultValue={account?.bankName ?? ''} className={inputClassName} />
+                <input
+                    name="bankName"
+                    required
+                    maxLength={limits.giftBankNameMaxLength}
+                    defaultValue={account?.bankName ?? ''}
+                    className={inputClassName}
+                />
             </label>
             <label className="block text-sm font-semibold text-ink">
                 {t('fields.note')}
-                <textarea name="note" maxLength={500} rows={3} defaultValue={account?.note ?? ''} className={cn(inputClassName, 'resize-none')} />
+                <textarea
+                    name="note"
+                    maxLength={limits.giftNoteMaxLength}
+                    rows={3}
+                    defaultValue={account?.note ?? ''}
+                    className={cn(inputClassName, 'resize-none')}
+                />
             </label>
 
             {/* Actions */}

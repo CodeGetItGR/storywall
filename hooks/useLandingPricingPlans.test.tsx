@@ -52,6 +52,10 @@ function makeConfig(): AppConfigResponseDto {
             estimateAvgImageBytes: 4 * 1024 * 1024,
             estimateAvgVideoBytes: 90 * 1024 * 1024,
             estimateImageRatio: 0.7,
+            acceptedMimeTypes: [],
+            acceptedProfilePictureMimeTypes: [],
+            maxImagePixels: 0,
+            defaultStoryLifetimeHours: 24,
         },
         pagination: { defaultPageSize: 20, maxPageSize: 50 },
         planTiers: [
@@ -98,6 +102,7 @@ function makeConfig(): AppConfigResponseDto {
         reportTargetTypes: ['POST'],
         reportReasons: ['SPAM'],
         newsletter: { enabled: false, discountPercent: 10, rewardValidityMonths: 12 },
+        eventDeletion: { codeDigits: 6, codeValidMinutes: 10, maxCodeAttempts: 5 },
     };
 }
 

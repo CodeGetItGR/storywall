@@ -9,6 +9,7 @@ import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useFilePreviews } from '@/hooks/useFilePreviews';
 import { useUploadQrMediaBatch } from '@/hooks/useQrMediaUpload';
+import { useUploadAccept } from '@/hooks/useUploadAccept';
 import { cn } from '@/lib/utils';
 
 interface AnonymousQrMediaUploadFormProps {
@@ -17,6 +18,7 @@ interface AnonymousQrMediaUploadFormProps {
 
 export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadFormProps) {
     const t = useTranslations('QrCodePage');
+    const uploadAccept = useUploadAccept();
     const toErrorMessage = useApiErrorMessage();
     const uploadBatch = useUploadQrMediaBatch();
 
@@ -107,7 +109,7 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
                         {files.length > 0 ? t('anonymousUpload.addMore') : t('anonymousUpload.chooseFiles')}
                     </span>
                     <span className="text-xs text-ink-faint">{t('anonymousUpload.dropHint')}</span>
-                    <input type="file" accept="image/*,video/*" multiple onChange={handleFilesChange} className="hidden" />
+                    <input type="file" accept={uploadAccept.media} multiple onChange={handleFilesChange} className="hidden" />
                 </label>
 
                 {previews.length > 0 && (

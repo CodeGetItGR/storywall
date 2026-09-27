@@ -9,6 +9,7 @@ import { ComposerModeToggle } from '@/components/composer/ComposerModeToggle';
 import { AddSongForm } from '@/components/playlist';
 import { Modal } from '@/components/ui/modal';
 import type { ComposerController } from '@/hooks/useComposerController';
+import { useUploadAccept } from '@/hooks/useUploadAccept';
 import { STORY_FILTER_PRESETS } from '@/lib/story/storyFilters';
 import { cn } from '@/lib/utils';
 
@@ -40,6 +41,7 @@ export function ComposerModal({
     textareaRef,
 }: ComposerController) {
     const t = useTranslations('ComposerCard');
+    const uploadAccept = useUploadAccept();
 
     return (
         <Modal
@@ -159,7 +161,7 @@ export function ComposerModal({
                             <input
                                 ref={fileRef}
                                 type="file"
-                                accept="image/*,video/*"
+                                accept={uploadAccept.media}
                                 multiple
                                 className="sr-only"
                                 onChange={handlePostFilesChange}
@@ -181,12 +183,7 @@ export function ComposerModal({
 
                 {/* Song form */}
                 <div hidden={composerMode !== 'song'}>
-                    <AddSongForm
-                        key={songComposerKey}
-                        canSubmit={canComposeSong}
-                        onSubmitAction={submitPlaylistSuggestion}
-                        compact
-                    />
+                    <AddSongForm key={songComposerKey} canSubmit={canComposeSong} onSubmitAction={submitPlaylistSuggestion} compact />
                 </div>
             </Modal.Body>
         </Modal>

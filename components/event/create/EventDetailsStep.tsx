@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { EventTimezoneField } from '@/components/event/create/EventTimezoneField';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
+import { useContentLimits } from '@/hooks/useContentLimits';
 import { useCreateEventFieldLabels } from '@/hooks/useCreateEventFieldLabels';
 import { useEventTypeVoice } from '@/hooks/useEventTypeVoice';
 import { formatDate } from '@/lib/datetime';
@@ -38,6 +39,7 @@ export function EventDetailsStep() {
     } = useCreateEventForm();
     const voice = useEventTypeVoice(selectedEventType);
     const labels = useCreateEventFieldLabels(selectedEventType);
+    const limits = useContentLimits();
 
     return (
         <div className="flex h-full flex-col gap-4">
@@ -47,6 +49,7 @@ export function EventDetailsStep() {
                     <input
                         type="text"
                         required
+                        maxLength={limits.eventTitleMaxLength}
                         value={title}
                         onChange={onTitleChange}
                         placeholder={voice.titlePlaceholder}
@@ -92,6 +95,7 @@ export function EventDetailsStep() {
                         <input
                             type="text"
                             required
+                            maxLength={limits.locationNameMaxLength}
                             value={locationName}
                             onChange={onLocationNameChange}
                             className="rounded-xl bg-surface-muted px-4 py-3 text-sm text-ink transition outline-none placeholder:text-ink-faint focus:ring-2 focus:ring-primary/30"
@@ -102,6 +106,7 @@ export function EventDetailsStep() {
                         <input
                             type="text"
                             required
+                            maxLength={limits.locationAddressMaxLength}
                             value={locationAddress}
                             onChange={onLocationAddressChange}
                             placeholder={t('placeholders.locationAddress')}
@@ -113,6 +118,7 @@ export function EventDetailsStep() {
                 <FormFieldLabel label={t('fields.mapsUrl')} optional>
                     <input
                         type="url"
+                        maxLength={limits.urlMaxLength}
                         value={mapsUrl}
                         onChange={onMapsUrlChange}
                         placeholder={t('placeholders.mapsUrl')}

@@ -25,6 +25,10 @@ vi.mock('next-intl', () => ({
     useTranslations: () => (key: string) => key,
 }));
 
+vi.mock('@/hooks/useAppConfig', () => ({
+    useAppConfig: () => ({ data: undefined }),
+}));
+
 vi.mock('@/hooks/useApiErrorMessage', () => ({
     useApiErrorMessage: () => () => 'genericError',
 }));

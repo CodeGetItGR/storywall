@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
+import { useContentLimits } from '@/hooks/useContentLimits';
 import { useCreateCoHostInvitation } from '@/hooks/useEventInvitations';
 import { getFieldErrors } from '@/lib/api/errors';
 import { datetimeLocalValueToIso } from '@/lib/datetime';
@@ -13,6 +14,7 @@ import { fieldControlClass, fieldLabelClass, fieldTextClass, formPanelClass } fr
 
 export function CreateCoHostInvitationForm({ eventId, onDoneAction }: { eventId: string; onDoneAction: () => void }) {
     const t = useTranslations('ManagePage.invitations.coHosts');
+    const limits = useContentLimits();
     const create = useCreateCoHostInvitation(eventId);
     const toErrorMessage = useApiErrorMessage();
     const errors = getFieldErrors(create.error);
@@ -51,17 +53,17 @@ export function CreateCoHostInvitationForm({ eventId, onDoneAction }: { eventId:
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
                 <FormFieldLabel label={t('email')} required className={fieldLabelClass} labelClassName={fieldTextClass}>
-                    <input name="email" type="email" required maxLength={255} className={fieldControlClass} />
+                    <input name="email" type="email" required maxLength={limits.emailMaxLength} className={fieldControlClass} />
                     {errors?.email && <span className="text-xs text-rose-600">{errors.email}</span>}
                 </FormFieldLabel>
                 <FormFieldLabel label={t('expiresAt')} optional className={fieldLabelClass} labelClassName={fieldTextClass}>
                     <input name="expiresAt" type="datetime-local" className={fieldControlClass} />
                 </FormFieldLabel>
                 <FormFieldLabel label={t('firstName')} optional className={fieldLabelClass} labelClassName={fieldTextClass}>
-                    <input name="firstName" maxLength={100} className={fieldControlClass} />
+                    <input name="firstName" maxLength={limits.personNameMaxLength} className={fieldControlClass} />
                 </FormFieldLabel>
                 <FormFieldLabel label={t('lastName')} optional className={fieldLabelClass} labelClassName={fieldTextClass}>
-                    <input name="lastName" maxLength={100} className={fieldControlClass} />
+                    <input name="lastName" maxLength={limits.personNameMaxLength} className={fieldControlClass} />
                 </FormFieldLabel>
             </div>
             <p className="mt-3 text-xs text-ink-muted">{t('emailNotice')}</p>

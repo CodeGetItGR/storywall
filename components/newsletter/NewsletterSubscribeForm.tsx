@@ -3,6 +3,7 @@
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { useContentLimits } from '@/hooks/useContentLimits';
 import { useNewsletterSubscribe } from '@/hooks/useNewsletterSubscribe';
 import type { AppNewsletterConfigDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
@@ -28,6 +29,7 @@ const TONE_STYLES = {
 // one success state and no "already subscribed" branch.
 export function NewsletterSubscribeForm({ config, tone }: { config: AppNewsletterConfigDto; tone: keyof typeof TONE_STYLES }) {
     const t = useTranslations('NewsletterForm');
+    const limits = useContentLimits();
     const form = useNewsletterSubscribe();
     const styles = TONE_STYLES[tone];
 
@@ -51,7 +53,7 @@ export function NewsletterSubscribeForm({ config, tone }: { config: AppNewslette
                 <input
                     type="email"
                     required
-                    maxLength={255}
+                    maxLength={limits.emailMaxLength}
                     autoComplete="email"
                     aria-label={t('emailLabel')}
                     aria-invalid={form.error === 'invalid'}
