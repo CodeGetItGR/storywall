@@ -49,12 +49,16 @@ export function useEventPosts(eventId: string | null) {
             const page = pageParam as number;
             const path = `${endpoints.events.posts(eventId!)}?page=${page}&size=${POSTS_PAGE_SIZE}`;
             const etag = etags.current.get(path);
-            const result = await api.conditionalGet<Page<PostResponseDto>>(path, etag ? { headers: { 'If-None-Match': etag } } : undefined);
+            let result = await api.conditionalGet<Page<PostResponseDto>>(path, etag ? { headers: { 'If-None-Match': etag } } : undefined);
             if (result.notModified) {
                 const cached = queryClient
                     .getQueryData<InfiniteData<Page<PostResponseDto>>>(postKeys.list(eventId!))
                     ?.pages.find((item) => item.page.number === page);
                 if (cached) return cached;
+                // The ETag outlived the page it described (the cache was reset or
+                // collected), so a 304 leaves nothing to return. Ask again without it.
+                etags.current.delete(path);
+                result = await api.conditionalGet<Page<PostResponseDto>>(path);
             }
             if (result.etag) etags.current.set(path, result.etag);
             return result.data!;

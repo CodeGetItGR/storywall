@@ -1,5 +1,6 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { usePresignedUrlRefreshMs } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { api } from '@/lib/api/client';
@@ -15,9 +16,11 @@ export const mediaKeys = {
 export const MEDIA_PAGE_SIZE = 30;
 
 // GET /api/events/{eventId}/media — any event member. Paginated, newest first.
+// Refetched once per signing window so the presigned URLs it holds never expire.
 export function useEventMedia(eventId: string | null) {
     const { isAuthenticated } = useAuth();
     const galleryReadable = useModuleReadable(eventId, 'gallery');
+    const refetchInterval = usePresignedUrlRefreshMs();
 
     return useInfiniteQuery({
         queryKey: mediaKeys.list(eventId ?? ''),
@@ -25,11 +28,12 @@ export function useEventMedia(eventId: string | null) {
         initialPageParam: 0,
         getNextPageParam: (lastPage) => (lastPage.page.number + 1 < lastPage.page.totalPages ? lastPage.page.number + 1 : undefined),
         enabled: Boolean(eventId) && isAuthenticated && galleryReadable,
+        refetchInterval,
     });
 }
 
 // GET /api/medias/{id}. `mediaUrl` is a presigned R2 URL that expires
-// (~15min default) — re-fetch rather than caching it long-term.
+// (see lib/presignedUrls.ts) — re-fetch rather than caching it long-term.
 export function useMediaItem(id: string | null) {
     const { isAuthenticated } = useAuth();
 

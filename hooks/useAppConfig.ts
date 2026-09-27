@@ -10,6 +10,7 @@ import type {
     AppRsvpConfigDto,
     PlatformFeatureFlagResponseDto,
 } from '@/lib/api/types';
+import { presignedUrlRefreshMs } from '@/lib/presignedUrls';
 
 export const appConfigKeys = {
     all: ['app-config'] as const,
@@ -29,6 +30,11 @@ export function useAppConfig(options: { enabled?: boolean } = {}) {
 export function useAppMediaConfig(): AppMediaConfigDto | null {
     const { data } = useAppConfig();
     return data?.media ?? null;
+}
+
+// How often a list carrying presigned media URLs must refetch so none of them expire.
+export function usePresignedUrlRefreshMs(): number {
+    return presignedUrlRefreshMs(useAppMediaConfig()?.presignedUrlTtlMinutes);
 }
 
 export function useAppRsvpConfig(): AppRsvpConfigDto | null {

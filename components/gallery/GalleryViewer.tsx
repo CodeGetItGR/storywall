@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import type { CSSProperties, TouchEvent as ReactTouchEvent } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { PresignedVideo } from '@/components/common/PresignedVideo';
 import { ProtectedImage } from '@/components/common/ProtectedImage';
 import { useImageZoomPan } from '@/hooks/useImageZoomPan';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
@@ -265,7 +266,7 @@ export function GalleryViewer({
                             <p>{t('videoFailed')}</p>
                         </div>
                     ) : media.mediaType === 'VIDEO' ? (
-                        <video src={media.mediaUrl} controls playsInline className="h-full w-full object-contain" />
+                        <PresignedVideo src={media.mediaUrl} controls playsInline className="h-full w-full object-contain" />
                     ) : (
                         <div
                             className="h-full w-full"
