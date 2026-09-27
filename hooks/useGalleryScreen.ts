@@ -12,7 +12,6 @@ import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
 import { useEventMedia, useOriginalMedia, useUploadMediaBatch } from '@/hooks/useMedia';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
-import type { MediaResponseDto } from '@/lib/api/types';
 import { downloadBlob } from '@/lib/download';
 import { isEventDeleted, isEventWritable, readableModuleKeys } from '@/lib/eventLifecycle';
 import { useActiveMember } from '@/providers/EventProvider';
@@ -29,7 +28,7 @@ export function useGalleryScreen() {
     const { hideMobileTabBar, showMobileTabBar } = useMobileChrome();
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [uploadNotice, setUploadNotice] = useState<string | null>(null);
-    const [selectedMedia, setSelectedMedia] = useState<MediaResponseDto | null>(null);
+    const [selectedMediaId, setSelectedMediaId] = useState<string | null>(null);
     const [originalError, setOriginalError] = useState<string | null>(null);
     const [selectionDownloadError, setSelectionDownloadError] = useState<string | null>(null);
     const [isDownloadingSelection, setIsDownloadingSelection] = useState(false);
@@ -38,6 +37,9 @@ export function useGalleryScreen() {
 
     const { data: mediaPages, isLoading: isLoadingMedia, fetchNextPage, hasNextPage, isFetchingNextPage } = useEventMedia(eventId);
     const media = useMemo(() => mediaPages?.pages.flatMap((page) => page.content) ?? [], [mediaPages?.pages]);
+    // Looked up from the list rather than held as a copy, so each refetch's fresh
+    // presigned URLs reach the open viewer too.
+    const selectedMedia = useMemo(() => media.find((item) => item.id === selectedMediaId) ?? null, [media, selectedMediaId]);
     const loadMoreRef = useInfiniteScrollSentinel(hasNextPage, fetchNextPage, media.length);
     const uploadMediaBatch = useUploadMediaBatch();
     const originalMedia = useOriginalMedia();
@@ -160,14 +162,14 @@ export function useGalleryScreen() {
     const showPreviousMedia = useCallback(() => {
         if (selectedMediaIndex <= 0) return;
         setOriginalError(null);
-        setSelectedMedia(media[selectedMediaIndex - 1]);
+        setSelectedMediaId(media[selectedMediaIndex - 1].id);
     }, [media, selectedMediaIndex]);
 
     const showNextMedia = useCallback(() => {
         if (selectedMediaIndex === -1) return;
         if (selectedMediaIndex < media.length - 1) {
             setOriginalError(null);
-            setSelectedMedia(media[selectedMediaIndex + 1]);
+            setSelectedMediaId(media[selectedMediaIndex + 1].id);
             return;
         }
         if (hasNextPage) {
@@ -182,7 +184,7 @@ export function useGalleryScreen() {
         if (pendingIndex >= media.length) return;
         pendingAdvanceIndexRef.current = null;
         setOriginalError(null);
-        setSelectedMedia(media[pendingIndex]);
+        setSelectedMediaId(media[pendingIndex].id);
     }, [media]);
 
     const handleMediaClick = useCallback(
@@ -192,9 +194,9 @@ export function useGalleryScreen() {
                 gallerySelection.toggleSelection(id);
                 return;
             }
-            setSelectedMedia(media.find((item) => item.id === id) ?? null);
+            setSelectedMediaId(id);
         },
-        [gallerySelection, isHost, media],
+        [gallerySelection, isHost],
     );
 
     const handleMediaPointerDown = useCallback(
@@ -242,7 +244,7 @@ export function useGalleryScreen() {
     }, [gallerySelection]);
 
     const closeMedia = useCallback(() => {
-        setSelectedMedia(null);
+        setSelectedMediaId(null);
         setOriginalError(null);
     }, []);
 

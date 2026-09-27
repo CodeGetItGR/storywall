@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { usePresignedUrlRefreshMs } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { api } from '@/lib/api/client';
@@ -14,10 +15,12 @@ export const storyKeys = {
 
 // GET /api/events/{eventId}/stories — event member. `expiresAt` is stored
 // but there's no confirmed server-side auto-purge — filter `expiresAt < now`
-// client-side until confirmed otherwise.
+// client-side until confirmed otherwise. Refetched once per signing window so
+// the presigned URLs it holds never expire.
 export function useEventStories(eventId: string | null) {
     const { isAuthenticated } = useAuth();
     const storiesReadable = useModuleReadable(eventId, 'stories');
+    const refetchInterval = usePresignedUrlRefreshMs();
 
     return useQuery({
         queryKey: storyKeys.list(eventId ?? ''),
@@ -26,6 +29,7 @@ export function useEventStories(eventId: string | null) {
             return normalizeList(res).items;
         },
         enabled: Boolean(eventId) && isAuthenticated && storiesReadable,
+        refetchInterval,
     });
 }
 

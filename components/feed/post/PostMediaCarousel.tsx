@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Loader2, VideoOff } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useState } from 'react';
 
+import { PresignedVideo } from '@/components/common/PresignedVideo';
 import { PostMediaImageSlide } from '@/components/feed/post/PostMediaImageSlide';
 import type { MediaResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
@@ -73,7 +74,7 @@ export function PostMediaCarousel({ media, initialIndex, onIndexChange, alt, cla
                                     <p>{t('videoFailed')}</p>
                                 </div>
                             ) : item.mediaType === 'VIDEO' ? (
-                                <video
+                                <PresignedVideo
                                     src={item.mediaUrl}
                                     controls
                                     playsInline
