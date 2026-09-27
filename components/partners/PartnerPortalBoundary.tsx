@@ -31,7 +31,14 @@ export function PartnerPortalBoundary({ token }: { token: string }) {
     }
 
     if (portal.error || !portal.data) {
-        return <PageErrorState title={t('unavailable.title')} description={t('unavailable.description')} onRetryAction={handleRetry} />;
+        return (
+            <PageErrorState
+                title={t('unavailable.title')}
+                description={t('unavailable.description')}
+                onRetryAction={handleRetry}
+                error={portal.error}
+            />
+        );
     }
 
     return (

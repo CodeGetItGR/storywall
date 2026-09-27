@@ -120,6 +120,7 @@ export const ERROR_CODES = {
     COVERAGE_ENDED: 5085,
     SESSION_RSVP_NOT_ENABLED: 5086,
     RSVP_NOT_ATTENDING: 5087,
+    BETA_FEEDBACK_DISABLED: 5100,
 } as const;
 
 // The auth-layer 401/403 short-circuits use string codes instead of the
@@ -170,6 +171,18 @@ export function getHostTransferUnlocksAt(error: unknown): string | undefined {
     if (typeof details !== 'object' || details === null || !('unlocksAt' in details)) return undefined;
     const { unlocksAt } = details as { unlocksAt: unknown };
     return typeof unlocksAt === 'string' ? unlocksAt : undefined;
+}
+
+// The 12-hex-char reference a 500 carries, so a tester can quote it.
+export function getErrorRef(error: unknown): string | undefined {
+    if (!(error instanceof ApiError) || error.status !== 500) return undefined;
+    const ref = error.problem?.errorRef;
+    return typeof ref === 'string' && /^[0-9a-f]{12}$/.test(ref) ? ref : undefined;
+}
+
+// Beta feedback was switched off after the config was read.
+export function isBetaFeedbackDisabledError(error: unknown): boolean {
+    return getErrorCode(error) === ERROR_CODES.BETA_FEEDBACK_DISABLED;
 }
 
 export function isModuleNotAvailableError(error: unknown): boolean {

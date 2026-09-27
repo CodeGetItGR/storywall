@@ -1,7 +1,8 @@
 import { defaultLocale, locales } from '@/i18n/config';
 import { endpoints } from '@/lib/api/endpoints';
-import type { AuthSessionDto, ProblemDetail } from '@/lib/api/types';
+import type { AuthSessionDto, ProblemDetail, RecentErrorDto } from '@/lib/api/types';
 import { clearSession, getAccessToken, setSession, subscribeAuthState } from '@/lib/auth/tokenStore';
+import { redactApiPath } from '@/lib/betaFeedback/routeTemplates';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 
@@ -55,6 +56,44 @@ function isProblemDetail(body: unknown): body is ProblemDetail {
 // +json suffix) get parsed instead of silently falling through to .text().
 function isJsonContentType(contentType: string | null): boolean {
     return contentType !== null && /json/i.test(contentType);
+}
+
+// The last failed API calls, attached to a bug report. Kept whether or not
+// beta feedback is on — it's only memory. Paths are token-free templates.
+const RECENT_ERRORS_MAX = 10;
+const recentErrors: RecentErrorDto[] = [];
+const RECORDABLE_METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']);
+// A failed report must not end up inside the next report.
+const UNRECORDED_PATHS = new Set<string>([endpoints.betaFeedback.bugReports, endpoints.betaFeedback.clientErrors]);
+
+export function recordFailedCall(method: string | undefined, path: string, status: number, body: unknown): void {
+    const templatePath = redactApiPath(path);
+    if (UNRECORDED_PATHS.has(templatePath)) return;
+    if (status < 100 || status > 599) return;
+
+    const upperMethod = (method ?? 'GET').toUpperCase();
+    const problem = isProblemDetail(body) ? body : undefined;
+    const errorCode = problem?.errorCode;
+    const errorRef = problem?.errorRef;
+
+    recentErrors.push({
+        method: RECORDABLE_METHODS.has(upperMethod) ? upperMethod : null,
+        path: templatePath,
+        status,
+        // The 401/403 entrypoints send a string code; the server only takes 0-99999.
+        errorCode: typeof errorCode === 'number' && errorCode >= 0 && errorCode <= 99999 ? errorCode : null,
+        errorRef: typeof errorRef === 'string' && /^[0-9a-f]{12}$/.test(errorRef) ? errorRef : null,
+        at: new Date().toISOString(),
+    });
+    if (recentErrors.length > RECENT_ERRORS_MAX) recentErrors.splice(0, recentErrors.length - RECENT_ERRORS_MAX);
+}
+
+export function getRecentErrors(): RecentErrorDto[] {
+    return recentErrors.map((entry) => ({ ...entry }));
+}
+
+export function clearRecentErrors(): void {
+    recentErrors.length = 0;
 }
 
 type ApiFetchOptions = RequestInit & { allowNotModified?: boolean; skipAuthRetry?: boolean };
@@ -133,6 +172,7 @@ async function rawFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
     const body = await parseResponseBody(res);
 
     if (!res.ok) {
+        recordFailedCall(options.method, path, res.status, body);
         throw new ApiError(res.status, body, undefined, res.headers.get('retry-after'));
     }
 
@@ -156,6 +196,7 @@ async function rawPostForm<T>(path: string, formData: FormData, options: Request
     const body = await parseResponseBody(res);
 
     if (!res.ok) {
+        recordFailedCall('POST', path, res.status, body);
         throw new ApiError(res.status, body, undefined, res.headers.get('retry-after'));
     }
 
@@ -186,6 +227,7 @@ async function apiFetchResponse(path: string, options: ApiFetchOptions = {}): Pr
 
     if (!res.ok && !(allowNotModified && res.status === 304)) {
         const body = await parseResponseBody(res);
+        recordFailedCall(init.method, path, res.status, body);
         throw new ApiError(res.status, body, undefined, res.headers.get('retry-after'));
     }
 

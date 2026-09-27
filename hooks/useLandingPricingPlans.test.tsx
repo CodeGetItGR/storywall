@@ -103,6 +103,7 @@ function makeConfig(): AppConfigResponseDto {
         reportReasons: ['SPAM'],
         newsletter: { enabled: false, discountPercent: 10, rewardValidityMonths: 12 },
         eventDeletion: { codeDigits: 6, codeValidMinutes: 10, maxCodeAttempts: 5 },
+        betaFeedback: { enabled: false, screenshotMaxBytes: 10485760, screenshotMimeTypes: ['image/jpeg', 'image/png', 'image/webp'] },
     };
 }
 

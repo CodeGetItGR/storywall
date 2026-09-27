@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import type {
+    AppBetaFeedbackConfigDto,
     AppConfigResponseDto,
     AppCoverageConfigDto,
     AppMediaConfigDto,
@@ -57,4 +58,11 @@ export function useAppCoverageConfig(): AppCoverageConfigDto | null {
 export function useAppNewsletterConfig(): AppNewsletterConfigDto | null {
     const { data } = useAppConfig();
     return data?.newsletter?.enabled ? data.newsletter : null;
+}
+
+// Null while beta feedback is off (or config hasn't loaded): no report
+// button and no crash reporter.
+export function useAppBetaFeedbackConfig(): AppBetaFeedbackConfigDto | null {
+    const { data } = useAppConfig();
+    return data?.betaFeedback?.enabled ? data.betaFeedback : null;
 }

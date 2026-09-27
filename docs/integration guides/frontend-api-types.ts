@@ -32,6 +32,9 @@ interface ApiError {
   errorCode: number | string; // number for GlobalExceptionHandler errors; string ("AUTHENTICATION_REQUIRED" | "ACCESS_DENIED") for the two auth-entrypoint special cases
   errorKey: string;
   errors?: Record<string, string>; // only present on 400 validation failures, first message per field
+  errorRef?: string | null; // only on 500 / 9001 INTERNAL_ERROR (added 2026-09-27): 12 lowercase hex chars naming the
+                            // grouped error_events row. Sent as null, not omitted, if even the ref couldn't be computed.
+                            // Copy it into RecentErrorDto.errorRef. See fe-guides/beta-feedback-fe-integration.md
 }
 
 // Cross-cutting cases GlobalExceptionHandler now maps to a specific status/errorCode instead of a
@@ -828,9 +831,11 @@ interface MediaArchivePartDto {
 interface PostRequestDto {
   eventId: string;
   authorMemberId?: string;
-  type: PostType;         // required, server-validated against the exact 4-value set
+  type: PostType;         // required, server-validated against the exact 4-value set.
+                          // "ANNOUNCEMENT" is host-only: 403/errorCode 4008 ANNOUNCEMENT_NOT_HOST
   content?: string;
-  isPinned: boolean;       // required — no server-side default, omitting it is a 400
+  isPinned: boolean;       // required — no server-side default, omitting it is a 400.
+                           // true is host-only: 403/errorCode 4007 POST_PIN_NOT_HOST
   // ordered — becomes displayOrder on the created PostMedia rows. Max 10 items
   // (400/errorCode 3001 if exceeded), no duplicates (400/errorCode 3004 DUPLICATE_MEDIA_ID_IN_REQUEST),
   // every id must belong to this same eventId (404 otherwise).
@@ -840,7 +845,8 @@ interface PostRequestDto {
  *  change a post's media or type after creation. */
 interface PostPatchDto {
   content?: string;   // max TextLimits.POST_CONTENT_MAX — read the real bound off /api/config
-  isPinned?: boolean;
+  isPinned?: boolean; // changing it is host-only, author included: 403/errorCode 4007 POST_PIN_NOT_HOST.
+                      // Sending the post's current value back is not a change and is allowed.
 }
 
 /**
@@ -932,7 +938,9 @@ interface ReactionTypeResponseDto {
 interface StoryRequestDto {
   eventId: string; authorMemberId?: string; mediaId: string; // mediaId required, must already exist
   caption?: string; songUrl?: string;
-  expiresAt?: string; // optional — defaults to createdAt + 24h server-side
+  expiresAt?: string; // optional — defaults to createdAt + 24h server-side. If sent, must be in the
+                      // future and at most 24h ahead, else 400/errorCode 3034 STORY_EXPIRY_OUT_OF_RANGE
+                      // (on /batch one such item rejects the whole request)
 }
 // mediaId must resolve to Media with status: 'READY' — added 2026-08-30, see § Async video
 // processing. A video mediaId still 'PROCESSING' or permanently 'FAILED' is rejected with
@@ -1075,6 +1083,104 @@ interface ReportResponseDto {
 }
 // GET /api/reports now returns Page<ReportResponseDto>, not ReportResponseDto[].
 // Default 50/page, max 100 (?page=&size=), sorted createdAt desc then id desc (newest first).
+
+// ---- Beta feedback (added 2026-09-27). See fe-guides/beta-feedback-fe-integration.md ----
+// Both POST routes are gated by config.betaFeedback.enabled: 409 / 5100 BETA_FEEDBACK_DISABLED when off.
+// Both need a Content-Length header (411 / 3001 without one); browsers send it for FormData and string bodies.
+
+// POST /api/bug-reports -- multipart/form-data, any signed-in caller (USER, GUEST, ADMIN):
+//   part "report": a FILE part, i.e. new Blob([JSON.stringify(BugReportRequestDto)], { type: "application/json" }).
+//     Any Content-Type is accepted, but a plain string form field is NOT a file part and gets
+//     400 "Required request part 'report' is missing". Over 64KB -> 413 / 3005 REQUEST_TOO_LARGE.
+//     Invalid JSON or an unknown field -> 400 / 3002.
+//   part "screenshot" (optional): type sniffed from the bytes, must be image/jpeg | image/png | image/webp.
+//     Over config.betaFeedback.screenshotMaxBytes -> 413 / 3013 MEDIA_FILE_TOO_LARGE, or 413 / 3005
+//     REQUEST_TOO_LARGE when the whole body exceeds screenshotMaxBytes + 80KB (checked before parsing).
+// 201 -> BugReportCreatedDto. 5 per hour per user (429 / 3010 + Retry-After).
+interface BugReportRequestDto {
+  description: string;       // required, 10-4000 chars, and still >= 10 after trimming
+  pageUrl?: string | null;   // absolute http(s) URL, <=2048, else 400. Server lowercases the scheme and
+                             // drops userinfo, ?query and #fragment. Send the route TEMPLATE for token routes.
+  eventId?: string | null;   // UUID
+  appVersion?: string | null; // <=64
+  locale?: string | null;    // BCP-47 tag, <=16: "el", "el-GR". "en_US" is rejected
+  timeZone?: string | null;  // IANA zone id, <=64. "" is rejected: send null or omit
+  viewportWidth?: number | null;  // 1-20000
+  viewportHeight?: number | null; // 1-20000
+  displayMode?: "browser" | "standalone" | "minimal-ui" | "fullscreen" | "window-controls-overlay" | null; // exact, lower-case
+  recentErrors?: RecentErrorDto[] | null; // <=10 entries, no null entries
+}
+interface RecentErrorDto {
+  method?: string | null;    // any case; upper-cased server-side, then must be GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS
+  path?: string | null;      // <=2048; query and fragment stripped server-side. Route template for token routes
+  status?: number | null;    // 100-599
+  errorCode?: number | null; // 0-99999, the ApiError.errorCode
+  errorRef?: string | null;  // exactly 12 lowercase hex chars (a 500's ApiError.errorRef), or null
+  at?: string | null;        // ISO-8601 with offset, e.g. new Date().toISOString()
+}
+interface BugReportCreatedDto { id: string; createdAt: string; } // all the reporter gets back
+interface BugReportResponseDto { // admin only
+  id: string;
+  description: string;
+  pageUrl: string | null;
+  eventId: string | null;
+  appVersion: string | null;
+  locale: string | null;
+  timeZone: string | null;
+  viewportWidth: number | null;
+  viewportHeight: number | null;
+  displayMode: string | null;
+  recentErrors: Record<string, unknown>[] | null; // stored RecentErrorDto entries: every key present, null when unset
+  reporterUserId: string | null; // null once the reporter's account is deleted
+  reporterRole: PlatformRole;
+  userAgent: string | null;      // from the request header, truncated to 512
+  screenshotUrl: string | null;  // presigned GET URL; null when the report has no screenshot
+  createdAt: string;
+}
+// GET /api/bug-reports -> Page<BugReportResponseDto>, admin only. Default 50/page, max 100 (?page=&size=).
+//   Always createdAt desc then id desc (newest first); any ?sort= is ignored. Works while switched off.
+// GET /api/bug-reports/{id} -> BugReportResponseDto, admin only.
+
+// POST /api/error-events/client -- JSON body <=32KB (413 / 3005 over it), any signed-in caller.
+// 204, empty body. 20 per hour per user (429 / 3010). Nothing is recorded while switched off (409 / 5100).
+// Fire and forget: never show the user a failure of this call, and never report it.
+interface ClientErrorRequestDto {
+  name: string;              // required, not blank, <=256. Normalized, not rejected: chars outside
+                             // [A-Za-z0-9_$.] become "_" ("My Error: x" -> "My_Error__x"), and a name
+                             // with nothing else left (e.g. non-Latin) becomes "Error"
+  message?: string | null;   // <=1024
+  stack?: string | null;     // <=8192 (append React's componentStack if you have one)
+  pageUrl?: string | null;   // <=2048. Same cleanup as a bug report's, but an invalid URL is stored as null, not refused
+  appVersion?: string | null; // <=64. Chars outside [A-Za-z0-9._+-] become "_"; blank becomes null
+}
+// Only these are 400s: blank or missing name, a field over its cap, an unknown field (3002), invalid JSON (3002).
+type ErrorEventSource = "BACKEND" | "BACKGROUND" | "CLIENT";
+interface ErrorEventResponseDto { // admin only
+  id: string;
+  ref: string;               // 12 lowercase hex chars; what a 500's errorRef and RecentErrorDto.errorRef hold
+  source: ErrorEventSource;
+  errorType: string;         // Java exception class, or the normalized JS error name
+  message: string | null;    // from the latest occurrence
+  stackTrace: string | null; // from the first occurrence
+  occurrenceCount: number;
+  firstSeenAt: string;
+  lastSeenAt: string;
+  lastRequestMethod: string | null; // BACKEND: HTTP method. BACKGROUND: "ASYNC" | "SCHEDULED". CLIENT: null
+  lastRequestPath: string | null;   // BACKEND: route template, or "(unmapped)". BACKGROUND: the task, when known
+  lastUserId: string | null;
+  lastAppVersion: string | null;    // CLIENT only
+  lastPageUrl: string | null;       // CLIENT only
+}
+// GET /api/error-events?source=&ref= -> Page<ErrorEventResponseDto>, admin only. Default 50/page, max 100.
+//   Always lastSeenAt desc then id desc; any ?sort= is ignored. A blank ref means no filter; a ref that
+//   isn't 12 lowercase hex chars, or an unknown source, is 400 / 3001. Works while switched off.
+// GET /api/error-events/{id} -> ErrorEventResponseDto, admin only.
+
+interface AppBetaFeedbackConfigDto {
+  enabled: boolean;              // false: hide the report button and don't install the crash reporter
+  screenshotMaxBytes: number;    // 10MB by default
+  screenshotMimeTypes: string[]; // ["image/jpeg", "image/png", "image/webp"]; use as the file input's accept
+}
 
 interface TelemetryEventRequestDto {
   eventName: string; // required, max 100
@@ -1671,6 +1777,8 @@ interface AppConfigResponseDto {
   newsletter: AppNewsletterConfigDto;
   /** Added 2026-09-27. */
   eventDeletion: AppEventDeletionConfigDto;
+  /** Added 2026-09-27. See fe-guides/beta-feedback-fe-integration.md. */
+  betaFeedback: AppBetaFeedbackConfigDto;
 }
 
 /**

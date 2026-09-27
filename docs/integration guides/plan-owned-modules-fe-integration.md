@@ -54,7 +54,7 @@ These now return `409 / 5012 MODULE_NOT_AVAILABLE` when the event doesn't have t
 | `posts` | `GET /api/events/{eventId}/posts`, `GET /api/posts/{id}`, `GET /api/posts/{postId}/comments`, `GET /api/posts/{postId}/reactions`, `GET /api/posts/{postId}/media`, `GET /api/comments/{id}`, `GET /api/reactions/{id}`, `GET /api/post-medias/{id}`, `POST /api/events/{eventId}/stream-token`, `GET /api/events/{eventId}/stream` |
 | `stories` | `GET /api/events/{eventId}/stories`, `GET /api/stories/{id}`, `GET /api/stories/{id}/views` |
 | `playlist` | `GET /api/events/{eventId}/playlist-suggestions`, `…/leaderboard`, `GET /api/playlist-suggestions/{id}`, `GET /api/playlist-suggestions/{suggestionId}/votes`, `GET /api/playlist-votes/{id}` |
-| `rsvp` | `GET /api/events/{eventId}/rsvps`, `…/rsvps/export`, `GET /api/rsvps/{id}`, `GET /api/rsvps/{rsvpId}/session-responses`, `GET /api/rsvp-session-responses/{id}` |
+| `rsvp` | `GET /api/events/{eventId}/rsvps`, `…/rsvps/report`, `…/rsvps/export`, `GET /api/rsvps/{id}`, `GET /api/rsvps/{rsvpId}/session-responses`, `GET /api/rsvp-session-responses/{id}` |
 | `wishbook` | `GET /api/events/{eventId}/wishbook`, `…/wishbook/count`, `…/wishbook/export` |
 | `wishlist` | `GET /api/events/{eventId}/gift-account` (the `5012` comes before any `404` for a missing account) |
 | `schedule` | `GET /api/events/{eventId}/sessions`, `GET /api/event-sessions/{id}` |
@@ -104,7 +104,7 @@ module-checked. A row with no stored context (uploaded before this change) count
 treat `uploadContext` as optional. Anonymous QR uploads are always `GALLERY`.
 
 The invite preview (`GET /api/event-invitations/{inviteToken}/preview`) and QR resolution
-(`GET /api/qr/{token}`) now carry `coverMedia`, the cover with its presigned `url`, next to
+(`GET /api/qr/{token}`) now carry `coverMedia`, the cover with its presigned `mediaUrl`, next to
 `coverMediaId`. Their visitor isn't a member yet, so `GET /api/medias/{id}` would refuse them; read
 the cover from these responses instead.
 

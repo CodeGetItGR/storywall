@@ -20,3 +20,6 @@ export function setActiveEventCookie(eventId: string) {
     // 1 year — a UX convenience default, not a security boundary.
     document.cookie = `${ACTIVE_EVENT_COOKIE}=${encodeURIComponent(eventId)}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax${secure}`;
 }
+
+// Send times of recent crash reports, for the rolling-hour budget in lib/betaFeedback/crashReporter.ts.
+export const CRASH_REPORT_TIMES_KEY = 'storywall.crashReportTimes';

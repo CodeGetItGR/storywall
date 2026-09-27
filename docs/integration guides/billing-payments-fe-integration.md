@@ -299,6 +299,12 @@ Add `BILLING` to any notification-category filter UI, and `BILLING_EXPIRING` /
 
 ## 8. Types to add
 
+> **Superseded (last by phase 4, 2026-09-24).** These are the 2026-08-06 shapes. `RENEWAL`,
+> `coverage`, `subscription`, `coversFrom`/`coversUntil`, `FROZEN` and `PURGED` no longer exist, and
+> `CheckoutResponseDto` and `OrderSummary` have since gained `buyerType` and `breakdown`. Current
+> types: `billing-fe-guide.md` §14 and `docs/frontend-api-types.ts`; the breakdown is in
+> `withdrawal-compliance-phase4-fe-integration.md`.
+
 ```ts
 // POST /api/events/{eventId}/checkout
 export interface CheckoutResponseDto {

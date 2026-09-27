@@ -6,6 +6,10 @@
 import type { RsvpReportType } from '@/lib/api/types';
 
 export const endpoints = {
+    betaFeedback: {
+        bugReports: '/api/bug-reports',
+        clientErrors: '/api/error-events/client',
+    },
     config: {
         get: '/api/config',
     },

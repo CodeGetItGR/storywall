@@ -4,6 +4,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { usePathname } from 'next/navigation';
 import { type ReactNode, useState } from 'react';
 
+import { BetaFeedback } from '@/components/betaFeedback/BetaFeedback';
 import { useVisualViewportSync } from '@/hooks/useVisualViewportSync';
 import { makeQueryClient } from '@/lib/queryClient';
 import { AppConfigBootstrap } from '@/providers/AppConfigBootstrap';
@@ -30,6 +31,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
             <AuthProvider>
                 <EventProvider>
                     <DocumentTitleSync />
+                    <BetaFeedback />
                     {isDemoRoute ? chrome : <ComposerProvider>{chrome}</ComposerProvider>}
                 </EventProvider>
             </AuthProvider>

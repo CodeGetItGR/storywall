@@ -12,6 +12,7 @@ export type ApiErrorMessageKey =
     | 'addonLockedWhileActive'
     | 'addonNotActive'
     | 'alreadyLinked'
+    | 'betaFeedbackDisabled'
     | 'authenticationRequired'
     | 'checkoutAmountBelowMinimum'
     | 'checkoutSessionUnresolved'
@@ -225,6 +226,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.RATE_LIMITED]: 'rateLimited',
     [ERROR_CODES.SESSION_RSVP_NOT_ENABLED]: 'sessionRsvpNotEnabled',
     [ERROR_CODES.RSVP_NOT_ATTENDING]: 'rsvpNotAttending',
+    [ERROR_CODES.BETA_FEEDBACK_DISABLED]: 'betaFeedbackDisabled',
     [ERROR_CODES.EVENT_SCHEDULE_LOCKED]: 'eventScheduleLocked',
     [ERROR_CODES.REACTION_TYPE_IN_USE]: 'reactionTypeInUse',
     [ERROR_CODES.REACTION_TYPE_LIMIT_EXCEEDED]: 'reactionTypeLimitExceeded',

@@ -85,8 +85,10 @@ await fetch("/api/stories", {
 });
 ```
 
-If you pass `expiresAt` explicitly, it's used as-is (no minimum/maximum enforced) — that path
-is unchanged.
+If you pass `expiresAt` explicitly, it must be in the future and no more than 24 hours ahead
+(since 2026-09-27). Anything else is `400 STORY_EXPIRY_OUT_OF_RANGE` (3034); on the batch endpoint
+one such item rejects the whole request and nothing is saved. You can shorten a story's life, not
+extend it. See [`post-pin-and-story-expiry-bounds-fe-integration.md`](post-pin-and-story-expiry-bounds-fe-integration.md).
 
 **Important: the default is *not* clamped to the event's `endAt`.** A story posted on day 1 of
 a multi-day event still expires 24h later, even though the event (and its feed) is still
@@ -292,7 +294,7 @@ to a real soft delete later, it'll be called out as a breaking change here.
 ## Migration checklist
 
 - [ ] Stop sending `expiresAt` from the create-story form if you want the 24h default — or
-      keep sending it if you need a custom expiry.
+      keep sending it if you need a shorter expiry (the server refuses anything past 24h, 3034).
 - [ ] Do **not** default `expiresAt` client-side to the event's end time — send nothing and
       let the server apply the 24h default, or pick your own value explicitly.
 - [ ] Use `story.viewedByCurrentUser` to render seen/unseen state in the story tray — remove

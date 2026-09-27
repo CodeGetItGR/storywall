@@ -23,6 +23,7 @@ import type {
 import { EVENT_MODULE_KEYS } from '@/lib/api/types';
 import {
     DEFAULT_ACCEPTED_MIME_TYPES,
+    DEFAULT_BETA_FEEDBACK,
     DEFAULT_CONTENT_LIMITS,
     DEFAULT_EVENT_DELETION,
     DEFAULT_PROFILE_PICTURE_MIME_TYPES,
@@ -1200,6 +1201,7 @@ export function buildSeedAppConfig(): AppConfigResponseDto {
         withdrawal: { termsVersion: 'demo-1', windowDays: 14, holdDays: 7 },
         coverage: { maxLeadDays: 548, defaultEventDurationHours: 24 },
         eventDeletion: DEFAULT_EVENT_DELETION,
+        betaFeedback: DEFAULT_BETA_FEEDBACK,
         contentLimits: DEFAULT_CONTENT_LIMITS,
         reactionTypesByEventType: {
             WEDDING: [

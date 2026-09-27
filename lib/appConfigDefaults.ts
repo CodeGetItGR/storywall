@@ -1,4 +1,4 @@
-import type { AppContentLimitsDto, AppEventDeletionConfigDto } from '@/lib/api/types';
+import type { AppBetaFeedbackConfigDto, AppContentLimitsDto, AppEventDeletionConfigDto } from '@/lib/api/types';
 
 // Fallbacks for GET /api/config values, used until the config loads and by
 // the demo seed. They mirror the server's current values; the config wins.
@@ -51,3 +51,10 @@ export const DEFAULT_ACCEPTED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/we
 export const DEFAULT_PROFILE_PICTURE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
 export const DEFAULT_EVENT_DELETION: AppEventDeletionConfigDto = { codeDigits: 6, codeValidMinutes: 10, maxCodeAttempts: 5 };
+
+// Off until the config says otherwise: no report button, no crash reporter.
+export const DEFAULT_BETA_FEEDBACK: AppBetaFeedbackConfigDto = {
+    enabled: false,
+    screenshotMaxBytes: 10 * 1024 * 1024,
+    screenshotMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+};

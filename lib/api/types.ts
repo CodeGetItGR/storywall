@@ -357,6 +357,15 @@ export interface AppConfigResponseDto {
     reportReasons: ReportReason[];
     newsletter: AppNewsletterConfigDto;
     eventDeletion: AppEventDeletionConfigDto;
+    betaFeedback: AppBetaFeedbackConfigDto;
+}
+
+// Bug reports and crash capture (beta-feedback-fe-integration.md). While
+// `enabled` is false both POST routes answer 409 / 5100.
+export interface AppBetaFeedbackConfigDto {
+    enabled: boolean;
+    screenshotMaxBytes: number;
+    screenshotMimeTypes: string[];
 }
 
 // GET /api/config → newsletter (newsletter-fe-integration §6). Describes the
@@ -389,6 +398,9 @@ export interface ProblemDetail {
     errors?: Record<string, string>;
     details?: unknown;
     retryAfterSeconds?: number;
+    // Only on 500 / 9001: 12 lowercase hex chars naming the recorded error.
+    // Sent as null when the server couldn't compute it.
+    errorRef?: string | null;
 }
 
 // --- §3 Auth ---
@@ -2148,4 +2160,48 @@ export interface NewsletterStatusResponseDto {
 // PUT /api/me/newsletter — `subscribed` is required.
 export interface NewsletterUpdateRequestDto {
     subscribed: boolean;
+}
+
+// --- Beta feedback (beta-feedback-fe-integration.md) ---
+
+export type BugReportDisplayMode = 'browser' | 'standalone' | 'minimal-ui' | 'fullscreen' | 'window-controls-overlay';
+
+// POST /api/bug-reports, sent as the multipart `report` part (a Blob, never a
+// string field). Unknown fields are a 400 / 3002.
+export interface BugReportRequestDto {
+    description: string;
+    pageUrl?: string | null;
+    eventId?: string | null;
+    appVersion?: string | null;
+    locale?: string | null;
+    // An IANA id, or omitted. "" is rejected.
+    timeZone?: string | null;
+    viewportWidth?: number | null;
+    viewportHeight?: number | null;
+    displayMode?: BugReportDisplayMode | null;
+    recentErrors?: RecentErrorDto[] | null;
+}
+
+// One failed API call. `path` is a route template for token routes.
+export interface RecentErrorDto {
+    method?: string | null;
+    path?: string | null;
+    status?: number | null;
+    errorCode?: number | null;
+    errorRef?: string | null;
+    at?: string | null;
+}
+
+export interface BugReportCreatedDto {
+    id: string;
+    createdAt: string;
+}
+
+// POST /api/error-events/client — 204, fire and forget.
+export interface ClientErrorRequestDto {
+    name: string;
+    message?: string | null;
+    stack?: string | null;
+    pageUrl?: string | null;
+    appVersion?: string | null;
 }

@@ -110,9 +110,10 @@ placeholder avatar, same as you already do elsewhere for missing avatars.
 ### `media[]` is already ordered and URL-resolved
 
 Ordered by `displayOrder` — render as-is, no client-side sort needed. `mediaUrl` is a
-short-lived presigned R2 URL (currently 15 min TTL) — don't cache it long-term. If a page
-is kept open long enough for URLs to expire, re-fetch the page rather than trying to
-refresh individual media URLs.
+short-lived presigned R2 URL (`presignedUrlTtlMinutes`, default 60) — don't cache it long-term.
+Re-fetch the page rather than trying to refresh individual media URLs; the feed's conditional
+poll does this by itself once the signing window rolls over. See
+[presigned-url-windows-fe-integration.md](presigned-url-windows-fe-integration.md).
 
 ## Pagination UI
 

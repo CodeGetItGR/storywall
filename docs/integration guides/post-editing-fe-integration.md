@@ -35,6 +35,11 @@ already gates `DELETE /api/posts/{id}`. A plain attendee editing someone else's 
 FORBIDDEN`. Gate the edit UI (pencil icon / "Edit post") on `isAuthor || isHost`, the same check you
 already use to show the delete control.
 
+**Changing `isPinned` takes a host, even for the post's author** (since 2026-09-27). A non-host who
+sends an `isPinned` different from the post's current value gets `403 POST_PIN_NOT_HOST` (4007) and
+nothing in the request is applied. Sending the current value back unchanged is allowed. Gate the pin
+toggle on `isHost` alone. See [`post-pin-and-story-expiry-bounds-fe-integration.md`](post-pin-and-story-expiry-bounds-fe-integration.md).
+
 ```jsonc
 // 200 — PostResponse, same shape as GET /api/posts/{id} and POST /api/posts
 {
@@ -60,6 +65,7 @@ with `errors.content` set, same as on create.
 |---|---|---|---|
 | `2001` `RESOURCE_NOT_FOUND` | 404 | post doesn't exist (or was deleted) | refetch the feed / navigate away |
 | `4001` `FORBIDDEN` | 403 | caller is neither the author nor a host | shouldn't be reachable from correctly-gated UI |
+| `4007` `POST_PIN_NOT_HOST` | 403 | a non-host (the author included) tried to change `isPinned` | shouldn't be reachable from a host-gated pin toggle; "Only hosts can pin posts" |
 | `3001` `VALIDATION_FAILED` | 400 | `content` exceeds 500 chars | inline field error, same as the create form |
 
 ## TypeScript types

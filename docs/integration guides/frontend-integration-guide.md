@@ -211,7 +211,7 @@ the two conditions failed. Guest invitations are unchanged and stay forwardable.
 |---|---|---|---|
 | GET | `/api/events/{eventId}/posts` | authenticated | **`Page<PostResponseDto>`**, default 20/page, max 100, sorted pinned-desc then newest-first; `myReactionType`/`reactionCounts` pre-resolved per post in the same batched queries as before |
 | GET | `/api/posts/{id}` | authenticated | |
-| POST | `/api/posts` | `ROLE_USER`, or guest scoped to that event | `type` is server-validated against exactly `TEXT \| MEDIA \| ANNOUNCEMENT \| PLAYLIST`; `mediaIds` max 10, no duplicates, must belong to the same event |
+| POST | `/api/posts` | `ROLE_USER`, or guest scoped to that event | `type` is server-validated against exactly `TEXT \| MEDIA \| ANNOUNCEMENT \| PLAYLIST`; `mediaIds` max 10, no duplicates, must belong to the same event; `isPinned: true` and `ANNOUNCEMENT` are host-only (403/4007, 403/4008) |
 | DELETE | `/api/posts/{id}` | `ROLE_USER` | |
 
 ### Multi-image post upload
@@ -267,7 +267,7 @@ for the read side. Write side:
 
 Fully covered in [`stories-fe-integration-guide.md`](stories-fe-integration-guide.md). Create
 (`POST /api/stories`, `expiresAt` optional → defaults to +24h, **not** clamped to event end —
-see §3), batch-create (`POST /api/stories/batch`, one `StoryRequestDto[]` body, all sharing
+see §3; if sent it must be in the future and at most +24h, else 400/3034), batch-create (`POST /api/stories/batch`, one `StoryRequestDto[]` body, all sharing
 one `eventId`, default cap 5), list (`GET /api/events/{eventId}/stories`), delete
 (author/host), mark-viewed (`POST /api/stories/{id}/views`, idempotent), list viewers (`GET
 /api/stories/{id}/views`, author/host only). No comments/reactions on stories — not
@@ -327,8 +327,9 @@ sessions. Fully covered in [`rsvp-status-fe-integration.md`](rsvp-status-fe-inte
 
 `GET /api/events/{eventId}/rsvps` (host-only, full attendee contact info) +
 `GET /api/events/{eventId}/members` for the member roster. `EventDetailResponseDto.rsvpSummary`
-gives aggregate counts (`totalMembers`/`attending`/`declined`/`maybe`/`noResponse`) cheaply for
-an overview tile without pulling every individual RSVP.
+gives aggregate counts (`totalMembers`/`attending`/`declined`/`noResponse`) cheaply for
+an overview tile without pulling every individual RSVP. The counts cover guests only: hosts and
+co-hosts are left out.
 
 ### Host manage dashboard
 
@@ -350,6 +351,15 @@ get-by-id, patch (`maxGuests`, `firstName`, `lastName`, `email`, `expiresAt`), d
 locationName, locationAddress, mapsUrl, coverMediaId, brandingSettings, rsvpDeadline, and (while `DRAFT`, since 2026-09-23) coverageOptionId. Cover photo itself goes through the normal media-upload endpoint first
 (`POST /api/events/{eventId}/media`), then the returned `mediaId` gets PATCHed onto
 `coverMediaId`. `eventType` is **not** patchable (§3).
+
+**`timezone` must be an IANA zone id** (since 2026-09-25), on `POST /api/events`, `PATCH /api/events/{id}`
+and the nested `event` of `POST /api/admin/events`. The value is matched exactly against Java's zone
+database: `Europe/Athens` passes; `europe/athens`, `Athens`, `+02:00` and `""` do not. A rejected
+value is the standard `400` / `3001 VALIDATION_FAILED` with the message under `errors.timezone`
+(`errors["event.timezone"]` on the admin endpoint), localized per `Accept-Language`. What
+`Intl.DateTimeFormat().resolvedOptions().timeZone` returns is normally accepted as-is (the only
+exception would be a zone newer than the server JVM's tz data); a hand-typed zone field needs a
+picker, not free text.
 
 ### Playlist — voting rework and host leaderboard (2026-08-05) ⚠️ BREAKING
 

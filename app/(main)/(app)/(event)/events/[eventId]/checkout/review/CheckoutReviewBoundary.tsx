@@ -105,6 +105,7 @@ export default function CheckoutReviewBoundary() {
             <PageErrorState
                 title={tPageError('title')}
                 description={t('invalid')}
+                error={billing.error ?? event.error ?? appConfig.error ?? upgradeOptions.error ?? extension.error}
                 onRetryAction={retry}
                 actionHref={routes.events.manage(eventId, { tab: 'billing' })}
                 actionLabel={t('backToBilling')}

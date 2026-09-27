@@ -8,6 +8,7 @@ import {
     ERROR_CODES,
     getErrorCode,
     getErrorMessage,
+    getErrorRef,
     getHostTransferUnlocksAt,
     getQuotaExceededDetails,
     getRetryAfterSeconds,
@@ -24,7 +25,7 @@ export function useApiErrorMessage() {
     const t = useTranslations('ApiErrors');
     const locale = useLocale();
 
-    return useCallback(
+    const describe = useCallback(
         (error: unknown, fallback?: string): string => {
             if (getErrorCode(error) === ERROR_CODES.EVENT_NOT_ACTIVE) return t('eventNotActive');
             if (getErrorCode(error) === ERROR_CODES.COLLABORATION_CODE_NOT_VALID) return getErrorMessage(error, t('collaborationCodeNotValid'));
@@ -55,6 +56,16 @@ export function useApiErrorMessage() {
             return fallback ?? t('generic');
         },
         [locale, t],
+    );
+
+    // A 500 carries a reference testers can quote in a bug report.
+    return useCallback(
+        (error: unknown, fallback?: string): string => {
+            const message = describe(error, fallback);
+            const ref = getErrorRef(error);
+            return ref ? `${message} ${t('errorRef', { ref })}` : message;
+        },
+        [describe, t],
     );
 }
 

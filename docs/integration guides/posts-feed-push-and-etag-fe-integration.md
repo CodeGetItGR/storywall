@@ -136,7 +136,13 @@ If-None-Match: "a1c2...-14-8f3b2e1c"
 ```
 
 **304 response:** empty body, no `content`/`totalElements` — nothing changed since that
-ETag was issued. Keep whatever you last rendered.
+ETag was issued, and the presigned URLs in what you last rendered are still the current ones.
+Keep whatever you last rendered.
+
+The ETag also names the presigned-URL signing window (added 2026-09-27), so it changes when the
+URLs in the body do, about every 20 minutes, even if nobody posted. Before that, a quiet event
+answered `304` indefinitely and clients kept rendering expired URLs. See
+[presigned-url-windows-fe-integration.md](presigned-url-windows-fe-integration.md).
 
 **200 response:** something changed — parse the body as usual and save the new `ETag`
 header for the next round.
@@ -176,6 +182,10 @@ same conditional-GET pattern above. In steady state this costs one extra `304` p
 interval; if the stream is working, you'll almost always see the real update land via
 `changed` first.
 
+Don't poll slower than once per signing window (`presignedUrlTtlMinutes / 3` from
+`GET /api/config`). This poll is also what picks up re-signed media URLs, and the stream never
+signals those.
+
 ## Migration checklist
 
 - [ ] `POST /api/events/{eventId}/stream-token`, then open one `GET
@@ -188,6 +198,7 @@ interval; if the stream is working, you'll almost always see the real update lan
 - [ ] Save the `ETag` response header from feed/comments responses and send it back as
       `If-None-Match` on the next request to the same endpoint+query.
 - [ ] Treat `304` as "no change" — don't clear existing state or show a loading flash.
-- [ ] Keep a 60s+ fallback poll running independently of the stream.
+- [ ] Keep a 60s+ fallback poll running independently of the stream, no slower than once per
+      presigned-URL signing window.
 - [ ] If you had a tighter fixed-interval poll (e.g. every 10–15s) as the sole update
       mechanism, it's safe to remove now that the stream + fallback poll cover it.

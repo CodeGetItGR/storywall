@@ -60,3 +60,15 @@ browser's native print dialog on that view covers "print" for free.
 - Members who haven't submitted an RSVP are never listed by name in any of the four reports —
   in `STATISTICS` they're only counted under "No response"; the three list reports simply
   don't include them (nothing to filter for/against).
+
+## Hosts are not guests (2026-09-25)
+
+Members with `role: "HOST"` — the primary host and every co-host — are left out of all four
+reports and of `rsvpSummary` on `GET /api/events/{id}`. They aren't counted in "Total members",
+"No response", "Attending" or the headcount, and their RSVP (if they submitted one) isn't listed.
+Before this, a host who never RSVPed was a permanent "No response", and a host who did inflated
+the headcount.
+
+This matches the rule storywall's RSVP stats tab already applied (`member.role !== 'HOST'`), so
+the tab and the PDF now agree. `GET /api/events/{eventId}/rsvps` is unchanged and still returns
+every RSVP, a host's included.

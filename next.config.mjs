@@ -1,9 +1,27 @@
+import { execSync } from 'node:child_process';
+
 import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
+// The build's commit, sent as appVersion on bug and crash reports. Vercel
+// provides it; a local build asks git; neither leaves it empty (sent as null).
+function resolveAppVersion() {
+    if (process.env.VERCEL_GIT_COMMIT_SHA) return process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 12);
+    try {
+        return execSync('git rev-parse --short=12 HEAD', { stdio: ['ignore', 'pipe', 'ignore'] })
+            .toString()
+            .trim();
+    } catch {
+        return '';
+    }
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    env: {
+        NEXT_PUBLIC_APP_VERSION: resolveAppVersion(),
+    },
     typescript: {
         ignoreBuildErrors: true,
     },

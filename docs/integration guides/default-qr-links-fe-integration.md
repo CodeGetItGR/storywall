@@ -10,7 +10,10 @@ The moment an event activates (goes live/paid), the backend now mints two QR lin
 automatically, with no host action required:
 
 - One `targetType: "EVENT_JOIN"` — the general invite.
-- One `targetType: "MEDIA_UPLOAD"` — the gallery.
+- One `targetType: "MEDIA_UPLOAD"` — the gallery. Only when the Gallery module is enabled for the
+  event and `gallery.configuration.qrUploadEnabled` is `true`. Otherwise it is minted later, when
+  an upgrade or the host's Gallery switch makes both true. See
+  `gallery-qr-link-plan-gating-fe-integration.md`.
 
 Both come back from `GET /api/events/{eventId}/qr-links` exactly like any other link, with one
 addition:

@@ -52,6 +52,7 @@ export default function EventAddonsSettingsBoundary() {
             <PageErrorState
                 title={tPageError('title')}
                 description={tPageError('description')}
+                error={billing.error ?? appConfig.error}
                 onRetryAction={retry}
                 actionHref={routes.events.manage(eventId, { tab: 'billing' })}
                 actionLabel={t('backToBilling')}

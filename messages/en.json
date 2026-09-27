@@ -23,6 +23,11 @@
         "description": "You're still signed in. We'll reconnect as soon as the server is back."
     },
     "PageErrorState": {
+        "errorRef": "Ref: {ref}",
+        "crash": {
+            "title": "Something went wrong",
+            "description": "This page stopped working. Try again."
+        },
         "retry": "Try again",
         "plans": {
             "title": "Plans are taking a minute",
@@ -3257,7 +3262,33 @@
         "processing": "Processing video",
         "failed": "Video unavailable"
     },
+    "BugReport": {
+        "open": "Report a problem",
+        "title": "Report a problem",
+        "nameNotShown": "Your name isn't shown to the team that reads reports.",
+        "description": "What went wrong?",
+        "descriptionPlaceholder": "What did you do, and what happened?",
+        "descriptionHint": "At least 10 characters.",
+        "screenshot": "Screenshot",
+        "optional": "optional",
+        "addScreenshot": "Add a screenshot (up to {size} MB)",
+        "removeScreenshot": "Remove screenshot",
+        "screenshotPrivacy": "A screenshot may show personal information. Only the team sees it.",
+        "imageTooLargeMax": "The image is too large. The limit is {size} MB.",
+        "imageTooLarge": "The image is too large.",
+        "imageUnsupported": "Use a JPEG, PNG or WebP image.",
+        "rateLimited": "You've sent several reports recently. Try again later.",
+        "rateLimitedWithWait": "You've sent several reports recently. Try again in {minutes} min.",
+        "checkFields": "The report couldn't be sent:",
+        "send": "Send",
+        "sending": "Sending…",
+        "cancel": "Cancel",
+        "close": "Close",
+        "sent": "Thanks, the team will look at it."
+    },
     "ApiErrors": {
+        "errorRef": "Ref: {ref}",
+        "betaFeedbackDisabled": "Reporting problems is turned off.",
         "generic": "Something went wrong. Please try again.",
         "unsupportedMediaFormat": "This file type is not supported.",
         "mediaFileTooLarge": "This file is larger than the allowed limit.",

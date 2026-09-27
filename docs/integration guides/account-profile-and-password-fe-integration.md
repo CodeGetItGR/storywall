@@ -137,8 +137,9 @@ The file goes through the same pipeline as event media uploads:
   location metadata client-side before upload.
 
 **`profilePictureUrl` is a short-lived presigned URL, not a stable link** — same caveat as
-`MediaResponseDto.mediaUrl` in `frontend-integration-guide.md`. It expires (15 minutes by
-default). Don't store it, don't put it in a `<link rel="icon">` or anywhere else that outlives
+`MediaResponseDto.mediaUrl` in `frontend-integration-guide.md`. It expires (60 minutes by
+default, and it can arrive with as little as 40 left — see
+`presigned-url-windows-fe-integration.md`). Don't store it, don't put it in a `<link rel="icon">` or anywhere else that outlives
 the current page load — re-fetch `GET /api/me` (or use the DTO you already got back from the
 upload/patch call, which is fresh) whenever you need to render the picture again, e.g. after a
 page reload.

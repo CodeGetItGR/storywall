@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { ReactNode } from 'react';
 
+import { getErrorRef } from '@/lib/api/errors';
+
 type PageErrorStateProps = {
     title: string;
     description: string;
@@ -13,10 +15,13 @@ type PageErrorStateProps = {
     onRetryAction?: () => void;
     retryLabel?: string;
     icon?: ReactNode;
+    // The failure behind this state; a 500's reference is shown in small print.
+    error?: unknown;
 };
 
-export function PageErrorState({ title, description, actionHref, actionLabel, onRetryAction, retryLabel, icon }: PageErrorStateProps) {
+export function PageErrorState({ title, description, actionHref, actionLabel, onRetryAction, retryLabel, icon, error }: PageErrorStateProps) {
     const t = useTranslations('PageErrorState');
+    const errorRef = getErrorRef(error);
 
     return (
         <main className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 py-16 text-center">
@@ -46,6 +51,9 @@ export function PageErrorState({ title, description, actionHref, actionLabel, on
                     </Link>
                 )}
             </div>
+
+            {/* Reference */}
+            {errorRef && <p className="mt-6 font-mono text-xs text-ink-faint">{t('errorRef', { ref: errorRef })}</p>}
         </main>
     );
 }
