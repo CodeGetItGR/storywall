@@ -16,7 +16,7 @@ import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCreateEventSession, useDeleteEventSession, useEventSessions, useUpdateEventSession } from '@/hooks/useEventSessions';
-import { useEventTypeModules } from '@/hooks/useEventTypeModules';
+import { useScheduleSessionLimit } from '@/hooks/useScheduleSessionLimit';
 import type { EventSessionResponseDto } from '@/lib/api/types';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import { toDatetimeLocalValue } from '@/lib/datetime';
@@ -38,11 +38,8 @@ export function ScheduleScreen() {
     const canManageSchedule = isHost && canWrite && scheduleEnabled;
 
     const { data: sessions = [], isLoading: isLoadingSessions } = useEventSessions(eventId);
-    const { data: eventTypeModules = [] } = useEventTypeModules(activeEvent?.eventType);
-    const maxSections = eventTypeModules.find((module_) => module_.moduleKey === 'schedule')?.defaultConfig.maxSections as number | undefined;
-    const atSessionLimit = typeof maxSections === 'number' && sessions.length >= maxSections;
+    const { atSessionLimit, sessionLimitMessage } = useScheduleSessionLimit(eventId, canManageSchedule, sessions.length);
     const canAddSession = canManageSchedule && !atSessionLimit;
-    const sessionLimitMessage = atSessionLimit ? t('host.sessionManagement.sessionLimitReached', { max: maxSections }) : undefined;
     const createSession = useCreateEventSession();
     const [viewMode, setViewMode] = useState<'public' | 'edit'>(() => (isHost && searchParams.has('section') ? 'edit' : 'public'));
     const [editingSessionId, setEditingSessionId] = useState<string | null>(null);

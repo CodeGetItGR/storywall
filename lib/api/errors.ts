@@ -201,9 +201,9 @@ export function isQrUploadDisabledError(error: unknown): boolean {
     return getErrorCode(error) === ERROR_CODES.QR_MEDIA_UPLOAD_DISABLED;
 }
 
-// The event type's schedule-section cap was reached (`defaultConfig.maxSections`
-// on GET /api/event-types/{eventTypeKey}/modules) — distinct from the module
-// being unavailable at all. See event-type-feature-toggles-quotas-fe-integration.md §3.
+// The event plan's schedule-section cap was reached (`moduleConfigs.schedule.maxSections`
+// on GET /api/config's planTiers) — distinct from the module being unavailable
+// at all. See event-type-feature-toggles-quotas-fe-integration.md §3.
 export function isScheduleLimitReachedError(error: unknown): boolean {
     return getErrorCode(error) === ERROR_CODES.EVENT_SESSION_LIMIT_REACHED;
 }

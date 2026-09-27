@@ -1733,7 +1733,7 @@
                 "editNamed": "Edit {title}",
                 "addNamed": "Add {title}",
                 "deleteNamed": "Delete {title}",
-                "sessionLimitReached": "This event type allows up to {max} schedule sessions."
+                "sessionLimitReached": "This event's plan allows up to {max} schedule sessions."
             }
         },
         "guest": {
@@ -3383,7 +3383,7 @@
         "withdrawalKeepEventDayNotDue": "The event date hadn't passed when the host withdrew. Release as calculated instead.",
         "qrSharedLinkHostManaged": "This shared link is managed automatically.",
         "eventSessionMainLocationReadOnly": "This is the event's main session, so its location always matches the event's own.",
-        "eventSessionLimitReached": "This event type has reached its limit of schedule sections.",
+        "eventSessionLimitReached": "This event's plan doesn't allow more schedule sessions.",
         "eventCoHostLimitExceeded": "This event's plan doesn't allow more co-hosts.",
         "sessionRsvpNotEnabled": "This session isn't taking RSVPs.",
         "rsvpNotAttending": "Session answers are only for guests who are coming."
