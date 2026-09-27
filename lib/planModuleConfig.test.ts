@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
-import { configChangeSummary, formatConfigValue, knownConfigFields, mergeConfigDraft, parseConfigJson, splitConfig } from '@/lib/planModuleConfig';
+import type { PlanTierResponseDto } from '@/lib/api/types';
+import {
+    coHostCapacity,
+    configChangeSummary,
+    formatConfigValue,
+    knownConfigFields,
+    mergeConfigDraft,
+    parseConfigJson,
+    splitConfig,
+} from '@/lib/planModuleConfig';
 
 describe('knownConfigFields', () => {
     it('returns typed fields for documented modules', () => {
@@ -66,5 +75,24 @@ describe('formatConfigValue', () => {
         expect(formatConfigValue(true)).toBe('true');
         expect(formatConfigValue('x')).toBe('"x"');
         expect(formatConfigValue({ a: 1 })).toBe('{"a":1}');
+    });
+});
+
+describe('coHostCapacity', () => {
+    const hosts = [{ displayOrder: 0 }, { displayOrder: 1 }, { displayOrder: 2 }];
+    const planWith = (moduleConfigs: PlanTierResponseDto['moduleConfigs']) => ({ moduleConfigs }) as PlanTierResponseDto;
+
+    it('counts co-hosts but not the primary host', () => {
+        expect(coHostCapacity(hosts, planWith({ co_hosts: { maxCoHosts: 3 } }))).toEqual({ used: 2, limit: 3, isFull: false });
+    });
+
+    it('is full once the cap is reached', () => {
+        expect(coHostCapacity(hosts, planWith({ co_hosts: { maxCoHosts: 2 } })).isFull).toBe(true);
+        expect(coHostCapacity([{ displayOrder: 0 }], planWith({ co_hosts: { maxCoHosts: 0 } })).isFull).toBe(true);
+    });
+
+    it('has no cap when the key is absent or the plan is unknown', () => {
+        expect(coHostCapacity(hosts, planWith({ co_hosts: {} }))).toEqual({ used: 2, limit: null, isFull: false });
+        expect(coHostCapacity(hosts, undefined).limit).toBeNull();
     });
 });

@@ -37,6 +37,7 @@ function makePlan(overrides: Partial<PlanTierResponseDto> = {}): PlanTierRespons
         discountEndsAt: null,
         moduleKeys: ['gallery'],
         paidModules: [],
+        moduleConfigs: null,
         eventTypeKey: 'WEDDING',
         sharedGroupKey: null,
         initialOptions: [makeOption()],
@@ -50,6 +51,8 @@ const MODULES: PlatformModuleResponseDto[] = [
     { id: 'm-rsvp', moduleKey: 'rsvp', name: 'RSVP', description: null, isEnabled: true, sortOrder: 1 },
     { id: 'm-stories', moduleKey: 'stories', name: 'Stories', description: null, isEnabled: true, sortOrder: 2 },
     { id: 'm-wishbook', moduleKey: 'wishbook', name: 'Guestbook', description: null, isEnabled: true, sortOrder: 3 },
+    { id: 'm-co-hosts', moduleKey: 'co_hosts', name: 'Co-hosts', description: null, isEnabled: true, sortOrder: 4 },
+    { id: 'm-schedule', moduleKey: 'schedule', name: 'Schedule', description: null, isEnabled: true, sortOrder: 5 },
 ];
 
 const MEDIA: AppMediaConfigDto = {
@@ -72,10 +75,13 @@ const MEDIA: AppMediaConfigDto = {
 };
 
 const COPY: LandingPlanCopy = {
+    coHosts: (max) => (max === null ? 'Unlimited co-hosts' : `Up to ${max} co-hosts`),
     everythingIn: (planName) => `Everything in ${planName}`,
+    galleryWithQrUpload: 'Gallery with QR upload',
     guestsUnlimited: 'Unlimited guests',
     guestsUpTo: (count) => `Up to ${count} guests`,
     mediaUnlimited: 'Unlimited',
+    scheduleSessions: (max) => (max === null ? 'Unlimited schedule sessions' : `Up to ${max} schedule sessions`),
     storageUnlimited: 'Unlimited storage',
 };
 
@@ -230,6 +236,43 @@ describe('buildLandingPlan', () => {
 
         expect(card?.features).toEqual(['Everything in STORY', 'Guestbook']);
         expect(card?.includedFeatures).toEqual(['Gallery', 'RSVP', 'Stories']);
+    });
+
+    it("labels modules from the plan's own config", () => {
+        const plan = makePlan({
+            moduleKeys: ['gallery', 'co_hosts', 'schedule'],
+            moduleConfigs: { gallery: { qrUploadEnabled: true }, co_hosts: { maxCoHosts: 2 }, schedule: {} },
+        });
+
+        const card = buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY);
+
+        expect(card?.features).toEqual(['Gallery with QR upload', 'Up to 2 co-hosts', 'Unlimited schedule sessions']);
+    });
+
+    it('hides a module whose count cap is 0', () => {
+        const plan = makePlan({ moduleKeys: ['gallery', 'co_hosts'], moduleConfigs: { gallery: {}, co_hosts: { maxCoHosts: 0 } } });
+
+        const card = buildLandingPlan(plan, undefined, MODULES, MEDIA, MODULE_NAME, COPY);
+
+        expect(card?.features).toEqual(['Gallery']);
+    });
+
+    it('lists an inherited module again when the later tier raises its limit', () => {
+        const previous = makePlan({
+            name: 'START',
+            moduleKeys: ['gallery', 'schedule'],
+            moduleConfigs: { gallery: { qrUploadEnabled: false }, schedule: { maxSections: 3 } },
+        });
+        const plan = makePlan({
+            name: 'STORY',
+            moduleKeys: ['gallery', 'schedule', 'rsvp'],
+            moduleConfigs: { gallery: { qrUploadEnabled: false }, schedule: { maxSections: 10 }, rsvp: {} },
+        });
+
+        const card = buildLandingPlan(plan, previous, MODULES, MEDIA, MODULE_NAME, COPY);
+
+        expect(card?.features).toEqual(['Everything in START', 'RSVP', 'Up to 10 schedule sessions']);
+        expect(card?.includedFeatures).toEqual(['Gallery']);
     });
 
     it('renders "Unlimited" copy for null storage and members', () => {

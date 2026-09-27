@@ -134,6 +134,11 @@ export interface PlanTierResponseDto {
     // from the admin catalog endpoints (GET /api/admin/plan-tiers, .../{id}),
     // which don't compute it — never null from /api/config or /api/plan-tiers.
     paidModules: PaidServiceResponseDto[] | null;
+    // The plan's config per module, keyed by module key: schedule.maxSections,
+    // co_hosts.maxCoHosts, gallery.qrUploadEnabled. An absent count key means
+    // unlimited. `{}` for ACCOUNT plans, null from the admin endpoints. See
+    // app-config-fe-integration.md §"Per-plan module config and the co-host cap".
+    moduleConfigs: Record<string, Record<string, unknown>> | null;
     // The one event type this EVENT-scope plan may be bought for; always null
     // for ACCOUNT-scope plans. Immutable after creation — replaces the old
     // many-to-many `eventTypeKeys` restriction set. See

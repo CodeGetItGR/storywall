@@ -1019,7 +1019,8 @@
                 "coHosts": "Co-hosts"
             },
             "capacity": {
-                "title": "Guest capacity"
+                "title": "Guest capacity",
+                "coHostsTitle": "Guests and co-hosts"
             },
             "full": {
                 "notice": "This event has reached its guest limit, so new invitations can't be created.",
@@ -1071,7 +1072,10 @@
                 "transferConfirmTitle": "Transfer ownership to {name}?",
                 "transferConfirmBody": "You will remain a co-host and no longer control ownership.",
                 "removeConfirmTitle": "Remove {name} as co-host?",
-                "removeConfirmBody": "They will no longer be able to manage this event."
+                "removeConfirmBody": "They will no longer be able to manage this event.",
+                "full": "This event has reached its co-host limit.",
+                "fullWithUpgrade": "This event has reached its co-host limit. Upgrade to {plan} for {count, plural, one {# co-host} other {# co-hosts}}.",
+                "fullWithUnlimitedUpgrade": "This event has reached its co-host limit. Upgrade to {plan} for unlimited co-hosts."
             }
         },
         "qr": {
@@ -3153,7 +3157,8 @@
         "items": {
             "storage": "Storage",
             "members": "Members",
-            "activeEvents": "Active events"
+            "activeEvents": "Active events",
+            "coHosts": "Co-hosts"
         },
         "includedModules": "Included modules"
     },
@@ -3379,6 +3384,7 @@
         "qrSharedLinkHostManaged": "This shared link is managed automatically.",
         "eventSessionMainLocationReadOnly": "This is the event's main session, so its location always matches the event's own.",
         "eventSessionLimitReached": "This event type has reached its limit of schedule sections.",
+        "eventCoHostLimitExceeded": "This event's plan doesn't allow more co-hosts.",
         "sessionRsvpNotEnabled": "This session isn't taking RSVPs.",
         "rsvpNotAttending": "Session answers are only for guests who are coming."
     },
@@ -3747,7 +3753,12 @@
             "guestsUnlimited": "Unlimited guests",
             "storageUnlimited": "Unlimited storage",
             "mediaUnlimited": "Unlimited",
-            "everythingIn": "Everything in {plan}"
+            "everythingIn": "Everything in {plan}",
+            "scheduleSessions": "{count, plural, one {Up to # schedule session} other {Up to # schedule sessions}}",
+            "scheduleSessionsUnlimited": "Unlimited schedule sessions",
+            "coHosts": "{count, plural, one {Up to # co-host} other {Up to # co-hosts}}",
+            "coHostsUnlimited": "Unlimited co-hosts",
+            "galleryWithQrUpload": "Gallery with QR upload"
         },
         "faq": {
             "eyebrow": "FAQ",

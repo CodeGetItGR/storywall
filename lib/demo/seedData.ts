@@ -1166,6 +1166,7 @@ export function buildSeedAppConfig(): AppConfigResponseDto {
                 discountEndsAt: null,
                 moduleKeys: [...EVENT_MODULE_KEYS],
                 paidModules: [],
+                moduleConfigs: null,
                 eventTypeKey: 'WEDDING',
                 sharedGroupKey: null,
                 initialOptions: [{ id: 'demo-coverage-12', kind: 'INITIAL', months: 12, priceAmountMinor: 0, sortOrder: 0, active: true }],

@@ -25,6 +25,7 @@ function plan(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto {
         discountEndsAt: null,
         moduleKeys: [],
         paidModules: null,
+        moduleConfigs: null,
         eventTypeKey: 'WEDDING',
         sharedGroupKey: null,
         initialOptions: [{ id: 'option-6', kind: 'INITIAL', months: 6, priceAmountMinor: 4_900, sortOrder: 0, active: true }],

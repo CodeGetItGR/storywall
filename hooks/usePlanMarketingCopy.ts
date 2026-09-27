@@ -15,10 +15,13 @@ export function usePlanMarketingCopy() {
     );
     const copy = useMemo<LandingPlanCopy>(
         () => ({
+            coHosts: (max) => (max === null ? t('coHostsUnlimited') : t('coHosts', { count: max })),
             everythingIn: (planName) => t('everythingIn', { plan: planName }),
+            galleryWithQrUpload: t('galleryWithQrUpload'),
             guestsUnlimited: t('guestsUnlimited'),
             guestsUpTo: (count) => t('guestsUpTo', { count }),
             mediaUnlimited: t('mediaUnlimited'),
+            scheduleSessions: (max) => (max === null ? t('scheduleSessionsUnlimited') : t('scheduleSessions', { count: max })),
             storageUnlimited: t('storageUnlimited'),
         }),
         [t],

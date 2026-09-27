@@ -13,6 +13,7 @@ import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { type SubTabItem, SubTabs } from '@/components/ui/SubTabs';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useUpgradeOptions } from '@/hooks/useBilling';
+import { useCoHostCapacity } from '@/hooks/useCoHostCapacity';
 import { useMemberModeration } from '@/hooks/useMemberModeration';
 import type {
     EventHostResponseDto,
@@ -87,8 +88,9 @@ export function MembersPanel({
     const nextUpgradeOption = upgradeOptions[0];
     const nextPlan = nextUpgradeOption ? findPlanByCode(planTiers, 'EVENT', nextUpgradeOption.planTierCode) : undefined;
     const upgradeHref = routes.events.manage(eventId, { tab: 'billing' });
+    const coHostCapacity = useCoHostCapacity(hosts, currentPlan, nextPlan);
 
-    const canCreate = canWrite && !isFull;
+    const canCreate = canWrite && !isFull && !coHostCapacity.isFull;
 
     const handleTabSelect = useCallback((next: MembersSubTab) => {
         setTab(next);
@@ -116,9 +118,9 @@ export function MembersPanel({
             {showCoHosts && eventUsage && (
                 <div className="mb-4">
                     <UsagePanel
-                        title={t('invitations.capacity.title')}
+                        title={t('invitations.capacity.coHostsTitle')}
                         planName={currentPlan?.name ?? eventUsage.planTier}
-                        nextPlanName={isFull ? nextUpgradeOption?.planTierName : undefined}
+                        nextPlanName={isFull || coHostCapacity.isFull ? nextUpgradeOption?.planTierName : undefined}
                         upgradeHref={upgradeHref}
                         items={[
                             {
@@ -127,6 +129,13 @@ export function MembersPanel({
                                 limit: memberLimit,
                                 percent: eventUsage.memberPercent,
                                 valueLabel: memberLimit === null ? `${memberCount}` : `${memberCount} / ${memberLimit}`,
+                            },
+                            {
+                                key: 'coHosts',
+                                used: coHostCapacity.used,
+                                limit: coHostCapacity.limit,
+                                percent: coHostCapacity.percent,
+                                valueLabel: coHostCapacity.valueLabel,
                             },
                         ]}
                     />
@@ -138,6 +147,9 @@ export function MembersPanel({
                                     : t('invitations.full.noticeWithUpgrade', { plan: nextPlan.name, seats: nextPlan.maxMembers })
                                 : t('invitations.full.notice')}
                         </p>
+                    )}
+                    {canWrite && coHostCapacity.fullNotice && (
+                        <p className="mt-2 text-xs leading-relaxed text-amber-700">{coHostCapacity.fullNotice}</p>
                     )}
                 </div>
             )}

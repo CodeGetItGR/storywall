@@ -1,4 +1,4 @@
-import type { ModuleKey } from '@/lib/api/types';
+import type { ModuleKey, PlanTierResponseDto } from '@/lib/api/types';
 
 // The only per-plan module config keys the backend documents today. Anything
 // else in `defaultConfig` is still editable through the raw JSON field, so a
@@ -8,9 +8,34 @@ export type KnownConfigField = { key: string; type: 'number'; min?: number } | {
 const KNOWN_CONFIG_FIELDS: Record<string, KnownConfigField[]> = {
     schedule: [{ key: 'maxSections', type: 'number', min: 1 }],
     gallery: [{ key: 'qrUploadEnabled', type: 'boolean' }],
+    co_hosts: [{ key: 'maxCoHosts', type: 'number', min: 0 }],
 };
 
 export type ConfigObject = Record<string, unknown>;
+
+// A count cap from one module's config (e.g. maxCoHosts). Null means no cap:
+// the server treats an absent count key as unlimited, never zero.
+export function configCount(config: ConfigObject | undefined, key: string): number | null {
+    const value = config?.[key];
+    return typeof value === 'number' ? value : null;
+}
+
+// A plan's count cap for one module, from GET /api/config's planTiers. Null
+// when the plan sets no cap, or when the plan isn't in the list (archived or
+// not public) — the server's 409 still applies there.
+export function planModuleCount(plan: PlanTierResponseDto | undefined, moduleKey: ModuleKey, key: string): number | null {
+    return configCount(plan?.moduleConfigs?.[moduleKey], key);
+}
+
+export type CoHostCapacity = { used: number; limit: number | null; isFull: boolean };
+
+// Co-hosts against the plan's co_hosts.maxCoHosts. The primary host
+// (displayOrder 0) is not counted. See wishlist-wishbook-cohost-fe-integration.md §1.
+export function coHostCapacity(hosts: { displayOrder: number }[], plan: PlanTierResponseDto | undefined): CoHostCapacity {
+    const used = hosts.filter((host) => host.displayOrder > 0).length;
+    const limit = planModuleCount(plan, 'co_hosts', 'maxCoHosts');
+    return { used, limit, isFull: limit !== null && used >= limit };
+}
 
 export function knownConfigFields(moduleKey: ModuleKey): KnownConfigField[] {
     return KNOWN_CONFIG_FIELDS[moduleKey] ?? [];

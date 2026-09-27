@@ -8,6 +8,7 @@ import type {
 import { discountedAmountMinor } from '@/lib/billing';
 import { formatBytes } from '@/lib/format';
 import { mediaEstimate } from '@/lib/planComparison';
+import { configCount, type ConfigObject } from '@/lib/planModuleConfig';
 import { enabledModuleKeys } from '@/lib/planModules';
 import { liveInitialOptions, publicAssignablePlans, shortestInitialOption } from '@/lib/planTiers';
 
@@ -45,10 +46,13 @@ export type LandingPlan = {
 };
 
 export interface LandingPlanCopy {
+    coHosts: (max: number | null) => string;
     everythingIn: (planName: string) => string;
+    galleryWithQrUpload: string;
     guestsUnlimited: string;
     guestsUpTo: (count: number) => string;
     mediaUnlimited: string;
+    scheduleSessions: (max: number | null) => string;
     storageUnlimited: string;
 }
 
@@ -93,19 +97,46 @@ function landingDurations(plan: PlanTierResponseDto): LandingPlanDuration[] {
     });
 }
 
-function sortedModuleNames(moduleKeys: string[], modules: PlatformModuleResponseDto[], moduleName: (moduleKey: string) => string): string[] {
+function sortedModuleKeys(moduleKeys: string[], modules: PlatformModuleResponseDto[]): string[] {
     const sortOrderByKey = new Map(modules.map((module_) => [module_.moduleKey, module_.sortOrder]));
     return enabledModuleKeys(moduleKeys, modules)
         .slice()
-        .sort((left, right) => (sortOrderByKey.get(left) ?? 0) - (sortOrderByKey.get(right) ?? 0))
-        .map(moduleName);
+        .sort((left, right) => (sortOrderByKey.get(left) ?? 0) - (sortOrderByKey.get(right) ?? 0));
+}
+
+// One module's line on a plan card, from that plan's own config for it. Null
+// hides the module: a count cap of 0 means the plan allows none. Plans without
+// moduleConfigs (null) fall back to the plain module name.
+function moduleFeatureLabel(
+    moduleKey: string,
+    plan: PlanTierResponseDto,
+    moduleName: (moduleKey: string) => string,
+    copy: LandingPlanCopy,
+): string | null {
+    if (!plan.moduleConfigs) return moduleName(moduleKey);
+
+    const config: ConfigObject | undefined = plan.moduleConfigs[moduleKey];
+    switch (moduleKey) {
+        case 'schedule': {
+            const max = configCount(config, 'maxSections');
+            return max === 0 ? null : copy.scheduleSessions(max);
+        }
+        case 'co_hosts': {
+            const max = configCount(config, 'maxCoHosts');
+            return max === 0 ? null : copy.coHosts(max);
+        }
+        case 'gallery':
+            return config?.qrUploadEnabled === true ? copy.galleryWithQrUpload : moduleName(moduleKey);
+        default:
+            return moduleName(moduleKey);
+    }
 }
 
 // Builds one landing pricing card from a plan tier plus the tier directly
 // below it in the same tab (already sorted by sortOrder — see
 // resolveLandingCategoryPlans). Each tier after the first rolls up the
-// previous card and lists only its additional modules, so catalog rows do not
-// need to repeat every inherited module. Returns null for a plan with no
+// previous card and lists only its additional modules and raised limits, so
+// catalog rows do not need to repeat every inherited module. Returns null for a plan with no
 // duration on sale — it can't be bought, so it doesn't belong on a pricing
 // card or in the creation picker.
 export function buildLandingPlan(
@@ -123,17 +154,19 @@ export function buildLandingPlan(
 
     const estimate = mediaEstimate(plan.storageBytes, media);
     const inheritedKeys = [...new Set(inheritedModuleKeys ?? previousPlan?.moduleKeys ?? [])];
-    const features = previousPlan
-        ? [
-              copy.everythingIn(previousPlan.name),
-              ...sortedModuleNames(
-                  plan.moduleKeys.filter((moduleKey) => !inheritedKeys.includes(moduleKey)),
-                  modules,
-                  moduleName,
-              ),
-          ]
-        : sortedModuleNames(plan.moduleKeys, modules, moduleName);
-    const includedFeatures = previousPlan ? sortedModuleNames(inheritedKeys, modules, moduleName) : [];
+    const labelFor = (moduleKey: string, tier: PlanTierResponseDto) => moduleFeatureLabel(moduleKey, tier, moduleName, copy);
+
+    // A later tier lists the modules it adds, plus inherited ones whose limit
+    // or setting changed; unchanged inherited modules go in the rollup.
+    const features: string[] = [];
+    const includedFeatures: string[] = [];
+    for (const moduleKey of sortedModuleKeys([...new Set([...inheritedKeys, ...plan.moduleKeys])], modules)) {
+        const label = labelFor(moduleKey, plan);
+        if (label === null) continue;
+        if (previousPlan && inheritedKeys.includes(moduleKey) && labelFor(moduleKey, previousPlan) === label) includedFeatures.push(label);
+        else features.push(label);
+    }
+    if (previousPlan) features.unshift(copy.everythingIn(previousPlan.name));
 
     return {
         code: plan.code,

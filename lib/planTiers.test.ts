@@ -29,6 +29,7 @@ function makePlan(overrides: Partial<PlanTierResponseDto> = {}): PlanTierRespons
         discountEndsAt: null,
         moduleKeys: [],
         paidModules: [],
+        moduleConfigs: null,
         eventTypeKey: 'WEDDING',
         sharedGroupKey: null,
         initialOptions: [],

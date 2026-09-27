@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
 type UsageItem = {
-    key: 'storage' | 'members' | 'activeEvents';
+    key: 'storage' | 'members' | 'activeEvents' | 'coHosts';
     used: number;
     limit: number | null;
     percent: number;
