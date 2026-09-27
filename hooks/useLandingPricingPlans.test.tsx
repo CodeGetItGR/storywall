@@ -16,7 +16,6 @@ vi.mock('@/lib/api/client', () => ({
 const MESSAGES = {
     LandingPage: {
         pricing: {
-            baselineFeatures: ['Countdown', 'Event schedule'],
             categories: { wedding: { label: 'Wedding' }, vip: { label: 'VIP' } },
             everythingIn: 'Everything in {plan}',
             guestsUnlimited: 'Unlimited guests',

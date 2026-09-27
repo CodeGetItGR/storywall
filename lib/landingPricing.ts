@@ -45,7 +45,6 @@ export type LandingPlan = {
 };
 
 export interface LandingPlanCopy {
-    baselineFeatures: string[];
     everythingIn: (planName: string) => string;
     guestsUnlimited: string;
     guestsUpTo: (count: number) => string;
@@ -133,13 +132,14 @@ export function buildLandingPlan(
                   moduleName,
               ),
           ]
-        : [...copy.baselineFeatures, ...sortedModuleNames(plan.moduleKeys, modules, moduleName)];
+        : sortedModuleNames(plan.moduleKeys, modules, moduleName);
+    const includedFeatures = previousPlan ? sortedModuleNames(inheritedKeys, modules, moduleName) : [];
 
     return {
         code: plan.code,
         audience: plan.maxMembers === null ? copy.guestsUnlimited : copy.guestsUpTo(plan.maxMembers),
         features,
-        includedFeatures: previousPlan ? [...copy.baselineFeatures, ...sortedModuleNames(inheritedKeys, modules, moduleName)] : undefined,
+        includedFeatures: includedFeatures.length > 0 ? includedFeatures : undefined,
         name: plan.name,
         photos: estimate?.images ?? copy.mediaUnlimited,
         storage: plan.storageBytes === null ? copy.storageUnlimited : formatBytes(plan.storageBytes),

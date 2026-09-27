@@ -3743,7 +3743,6 @@
             },
             "note": "Prices shown are indicative and may change.",
             "comingSoon": "Coming soon",
-            "baselineFeatures": ["Countdown", "Event schedule", "Download all photos & videos", "Unique StoryWall link"],
             "guestsUpTo": "Up to {count} guests",
             "guestsUnlimited": "Unlimited guests",
             "storageUnlimited": "Unlimited storage",

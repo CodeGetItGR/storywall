@@ -15,7 +15,6 @@ export function usePlanMarketingCopy() {
     );
     const copy = useMemo<LandingPlanCopy>(
         () => ({
-            baselineFeatures: t.raw('baselineFeatures') as string[],
             everythingIn: (planName) => t('everythingIn', { plan: planName }),
             guestsUnlimited: t('guestsUnlimited'),
             guestsUpTo: (count) => t('guestsUpTo', { count }),
