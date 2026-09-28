@@ -14,7 +14,7 @@ export function BugReportForm({ form, onCancelAction }: BugReportFormProps) {
     const t = useTranslations('BugReport');
 
     return (
-        <form className="flex flex-col gap-5" onSubmit={form.handleSubmit}>
+        <form className="flex flex-col gap-5" onSubmit={form.handleSubmit} onPaste={form.handlePaste}>
             {/* Header */}
             <div>
                 <h2 className="text-base font-semibold text-ink">{t('title')}</h2>

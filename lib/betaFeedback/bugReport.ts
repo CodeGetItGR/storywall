@@ -30,6 +30,12 @@ export function isScreenshotTooLarge(file: File, maxBytes: number): boolean {
     return file.size > maxBytes;
 }
 
+// First image on the clipboard, or null when the paste is text only.
+export function findClipboardImage(clipboard: Pick<DataTransfer, 'files'> | null): File | null {
+    if (!clipboard) return null;
+    return Array.from(clipboard.files).find((file) => file.type.startsWith('image/')) ?? null;
+}
+
 export function currentDisplayMode(matchMedia: ((query: string) => { matches: boolean }) | undefined): BugReportDisplayMode {
     if (!matchMedia) return 'browser';
     return DISPLAY_MODES.find((mode) => matchMedia(`(display-mode: ${mode})`).matches) ?? 'browser';

@@ -3473,7 +3473,7 @@
         "descriptionHint": "At least 10 characters.",
         "screenshot": "Screenshot",
         "optional": "optional",
-        "addScreenshot": "Add a screenshot (up to {size} MB)",
+        "addScreenshot": "Add or paste a screenshot (up to {size} MB)",
         "removeScreenshot": "Remove screenshot",
         "screenshotPrivacy": "A screenshot may show personal information. Only the team sees it.",
         "imageTooLargeMax": "The image is too large. The limit is {size} MB.",
