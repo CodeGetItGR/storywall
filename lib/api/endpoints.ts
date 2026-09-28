@@ -8,7 +8,10 @@ import type { RsvpReportType } from '@/lib/api/types';
 export const endpoints = {
     betaFeedback: {
         bugReports: '/api/bug-reports',
+        bugReportById: (id: string) => `/api/bug-reports/${id}`,
         clientErrors: '/api/error-events/client',
+        errorEvents: '/api/error-events',
+        errorEventById: (id: string) => `/api/error-events/${id}`,
     },
     config: {
         get: '/api/config',
@@ -40,6 +43,7 @@ export const endpoints = {
         changePassword: '/api/me/change-password',
         events: '/api/me/events',
         newsletter: '/api/me/newsletter',
+        businessProfile: '/api/me/business-profile',
     },
 
     newsletter: {
@@ -112,6 +116,10 @@ export const endpoints = {
         withdrawalPreview: (eventId: string) => `/api/events/${eventId}/withdrawal-preview`,
         // GET (history) and POST (submit) both hit this same path.
         withdrawals: (eventId: string) => `/api/events/${eventId}/withdrawals`,
+        // One upgrade (with every newer one), storage pack or extension; the event stays.
+        orderWithdrawalPreview: (eventId: string, orderId: string) => `/api/events/${eventId}/orders/${orderId}/withdrawal-preview`,
+        orderWithdrawals: (eventId: string, orderId: string) => `/api/events/${eventId}/orders/${orderId}/withdrawals`,
+        quote: (eventId: string) => `/api/events/${eventId}/quote`,
         deletionRequests: (eventId: string) => `/api/events/${eventId}/deletion-requests`,
         deletionRequestOtp: (eventId: string) => `/api/events/${eventId}/deletion-requests/otp`,
         posts: (eventId: string) => `/api/events/${eventId}/posts`,
@@ -330,5 +338,11 @@ export const endpoints = {
 
     checkout: {
         previewCode: '/api/checkout/preview-code',
+    },
+
+    // Public. The current version, or one version; locale falls back to en.
+    legal: {
+        withdrawalTerms: ({ version, locale }: { version?: string | null; locale: string }) =>
+            `/api/legal/withdrawal-terms${version ? `/${encodeURIComponent(version)}` : ''}?locale=${encodeURIComponent(locale)}`,
     },
 } as const;

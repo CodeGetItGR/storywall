@@ -475,7 +475,13 @@ export interface LogoutRequestDto {
 // mark read, mark all read, and dismiss them.
 // BREAKING 2026-09-18: REFUND_APPROVED/REFUND_REJECTED replaced by the three
 // WITHDRAWAL_* types — nothing emits the old pair any more (billing-fe-guide §10).
-export type BillingNotificationType = 'WITHDRAWAL_REFUNDED' | 'WITHDRAWAL_HELD' | 'WITHDRAWAL_WITHHELD';
+// STORAGE_TRIM_* (2026-09-23): media above a lowered storage limit will be deleted.
+export type BillingNotificationType =
+    | 'WITHDRAWAL_REFUNDED'
+    | 'WITHDRAWAL_HELD'
+    | 'WITHDRAWAL_WITHHELD'
+    | 'STORAGE_TRIM_SCHEDULED'
+    | 'STORAGE_TRIM_WARNING';
 
 export type NotificationCategory = 'LIMIT' | 'OFFER' | 'TIP' | 'SYSTEM' | 'BILLING' | (string & {});
 export type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
@@ -568,6 +574,37 @@ export interface MeUpdateRequestDto {
 export interface ChangePasswordRequestDto {
     currentPassword: string;
     newPassword: string;
+}
+
+// --- Business profile (business-buyers-fe-integration.md §2, 2026-09-24) ---
+// Only VALID makes the account a business buyer. PENDING and INVALID buy as a consumer.
+export type ViesStatus = 'PENDING' | 'VALID' | 'INVALID';
+
+// PUT /api/me/business-profile — create or replace; every PUT starts a new VIES check.
+export interface BusinessProfileRequestDto {
+    legalName: string;
+    // VIES code: EL for Greece (not GR), XI for Northern Ireland.
+    countryCode: string;
+    vatNumber: string;
+    addressLine1: string;
+    addressLine2?: string | null;
+    city: string;
+    postalCode: string;
+}
+
+// GET/PUT /api/me/business-profile. GET is 404 when there is none.
+export interface BusinessProfileResponseDto {
+    legalName: string;
+    countryCode: string;
+    vatNumber: string; // without the prefix
+    addressLine1: string;
+    addressLine2: string | null;
+    city: string;
+    postalCode: string;
+    viesStatus: ViesStatus;
+    viesSubmittedAt: string;
+    viesCheckedAt: string | null;
+    business: boolean;
 }
 
 // --- §5 Event domain ---
@@ -692,6 +729,10 @@ export interface EventDetailResponseDto {
 export interface CheckoutResponseDto {
     orderId: string;
     redirectUrl: string;
+    // Added 2026-09-24 (business-buyers-fe-integration.md §1).
+    buyerType: BuyerType;
+    // The order's pinned breakdown: exactly what the payment page charges (2026-09-24).
+    breakdown: PriceBreakdown;
 }
 
 // Shared by activation and upgrade checkout — the consent Directive 2011/83/EU
@@ -699,9 +740,11 @@ export interface CheckoutResponseDto {
 // withdrawal window. Both booleans MUST be sent true; termsVersion comes from
 // AppConfigResponseDto.withdrawal.termsVersion. Added 2026-09-18 — a body is now
 // required on both checkout endpoints, where none was required before.
+// Since 2026-09-24 a VIES-confirmed business buyer may omit both booleans
+// (business-buyers-fe-integration.md §1); a consumer must still send both true.
 export interface WithdrawalConsentDto {
-    requestsImmediateStart: boolean;
-    acknowledgesWithdrawalTerms: boolean;
+    requestsImmediateStart?: boolean;
+    acknowledgesWithdrawalTerms?: boolean;
     termsVersion: string;
 }
 
@@ -728,6 +771,9 @@ export interface CollaborationCodePreviewResponseDto {
     combinedDiscountPercent: number;
     payableAmountMinor: number;
     currency: string;
+    // 2026-09-24: the activation with the code applied (add-ons included on an
+    // existing event), or the upgrade on an upgrade preview.
+    breakdown: PriceBreakdown;
 }
 export interface PartnerPortalTotalDto {
     currency: string;
@@ -937,6 +983,8 @@ export interface UpgradeCoverageOptionDto {
     gapAmountMinor: number;
     // What upgrade-checkout will actually charge for this duration.
     payableAmountMinor: number;
+    // What upgrade-checkout would pin for this duration (2026-09-24).
+    breakdown: PriceBreakdown;
 }
 // GET /api/events/{eventId}/upgrade-options — one entry per target plan since
 // 2026-09-23. options is never empty; a plan with no eligible duration is left out.
@@ -980,6 +1028,11 @@ export interface OrderSummaryDto {
     // applied nothing. The event's live end is its own coverageEndsAt, not these.
     coverageStartsAt: string | null;
     coverageEndsAt: string | null;
+    // Added 2026-09-24: hide "Withdraw" on BUSINESS orders.
+    buyerType: BuyerType;
+    // 2026-09-24: pinned when the checkout opened; null on orders from before it.
+    // While PAID, withdrawal.windowClosesAt is filled for a consumer order.
+    breakdown: PriceBreakdown | null;
 }
 export interface EventAddonDto {
     code: string;
@@ -1013,6 +1066,9 @@ export interface EventBillingResponseDto {
     orders: OrderSummaryDto[];
     addons: EventAddonDto[];
     discount: DiscountSummaryDto | null;
+    // When the media above the storage limit will be deleted after a withdrawal
+    // or lost chargeback lowered the limit. Null when nothing is scheduled.
+    storageTrimDueAt: string | null;
 }
 
 // --- Withdrawal (billing-fe-guide.md §9) — replaces the old admin-approved refund flow ---
@@ -1022,7 +1078,9 @@ export type WithdrawalStatus = 'REFUSED' | 'HELD' | 'REFUNDED' | 'WITHHELD';
 // flow shipped; treat any status outside the four above as read-only history, never
 // producible by a new request.
 
-export type RefundBasis = 'CONSENTED_PRO_RATA' | 'NO_CONSENT_FULL_REFUND';
+// PRO_RATA_BY_TIME (2026-09-23): a consented storage pack or coverage extension,
+// kept pro rata by time only.
+export type RefundBasis = 'CONSENTED_PRO_RATA' | 'NO_CONSENT_FULL_REFUND' | 'PRO_RATA_BY_TIME';
 
 // EVENT withdraws the whole event and deletes it; ORDER withdraws one order and the event stays.
 export type WithdrawalScope = 'EVENT' | 'ORDER';
@@ -1036,15 +1094,56 @@ export interface WithdrawalRefusal {
 export interface WithdrawalLine {
     orderId: string;
     orderKind: OrderKind;
+    // This order's own window (2026-09-23).
+    windowClosesAt: string | null;
     basis: RefundBasis;
     hostingStart: string | null;
     hostingEnd: string | null;
     usedSeconds: number | null;
     totalSeconds: number | null;
     eventPerformed: boolean;
+    // A reviewer, or the evidence rule, kept the event-day share. Always false on a preview.
+    keepEventDay: boolean;
+    // 0 on a released line whose order had already been refunded another way (a chargeback).
     refundMinor: number;
     providerRefunded: boolean;
     components: Record<string, unknown>; // display-only breakdown; shape not enumerated by the guide
+    // Added 2026-09-24: BUSINESS on a newer business upgrade taken along by a consumer upgrade.
+    buyerType: BuyerType;
+}
+
+// An order an EVENT withdrawal leaves unrefunded because it was bought as a business (2026-09-24).
+export interface WithdrawalExcludedOrderDto {
+    orderId: string;
+    orderKind: OrderKind;
+    amountMinor: number;
+    currency: string;
+    reason: 'BUSINESS_PURCHASE';
+}
+
+// Where an ORDER withdrawal leaves the event's storage (2026-09-23).
+export interface WithdrawalStorageAfterDto {
+    newLimitBytes: number | null; // null = unlimited
+    usageBytes: number;
+    overLimitBytes: number; // 0 when it fits
+    // When the newest media above the new limit would be deleted. Null when nothing is over.
+    trimDueAt: string | null;
+}
+
+// POST /api/events/{eventId}/quote (2026-09-24) — prices an activation or a
+// storage pack before checkout; answers a PriceBreakdown. Read-only.
+export interface QuoteRequestDto {
+    kind: 'ACTIVATION' | 'STORAGE_PACK';
+    // Required for STORAGE_PACK, refused for ACTIVATION.
+    paidServiceCode?: string;
+}
+
+// GET /api/legal/withdrawal-terms(/{version})?locale=en|el — public (2026-09-24).
+export interface WithdrawalTermsDto {
+    version: string;
+    locale: string; // the locale actually served
+    withdrawalInformation: string; // Markdown
+    modelForm: string; // Markdown
 }
 
 // GET /api/events/{eventId}/withdrawal-preview — host. Nothing persisted; safe to
@@ -1062,6 +1161,17 @@ export interface WithdrawalPreviewResponseDto {
     // True when the event's startAt was moved after payment, which forces a HELD
     // outcome. False promises nothing: other, undisclosed reasons can hold a request.
     scheduleMovedAfterPayment: boolean;
+    // Added 2026-09-23. EVENT from /withdrawal-preview, ORDER from /orders/{orderId}/withdrawal-preview.
+    scope: WithdrawalScope;
+    // The order the request would name: the activation (null when none is PAID), or the order in the path.
+    orderId: string | null;
+    // True only for a storage pack or extension in automatic mode: refunded straight away.
+    // False promises nothing, so say nothing about timing.
+    instant: boolean;
+    // ORDER only: where the withdrawal leaves the event's storage. Null otherwise and on a refusal.
+    storageAfter: WithdrawalStorageAfterDto | null;
+    // EVENT only (2026-09-24): business-bought orders this withdrawal leaves unrefunded.
+    excludedOrders: WithdrawalExcludedOrderDto[];
 }
 
 // POST /api/events/{eventId}/withdrawals — host. 201 with this shape when the
@@ -1072,6 +1182,9 @@ export interface WithdrawalResponseDto {
     id: string;
     eventId: string;
     scope: WithdrawalScope;
+    // The activation for EVENT, the target for ORDER. Null on an EVENT request
+    // refused for having no PAID activation.
+    orderId: string | null;
     status: WithdrawalStatus;
     reason: string | null;
     createdAt: string;
@@ -1082,6 +1195,8 @@ export interface WithdrawalResponseDto {
     currency: string | null;
     refusals: WithdrawalRefusal[];
     lines: WithdrawalLine[];
+    // As they stood when the request was filed (2026-09-24). Empty otherwise.
+    excludedOrders: WithdrawalExcludedOrderDto[];
 }
 
 export interface WithdrawalRequestDto {
@@ -2204,4 +2319,48 @@ export interface ClientErrorRequestDto {
     stack?: string | null;
     pageUrl?: string | null;
     appVersion?: string | null;
+}
+
+// GET /api/bug-reports(/{id}) — admin only, newest first. `recentErrors`
+// holds the stored RecentErrorDto entries with every key present.
+export interface BugReportResponseDto {
+    id: string;
+    description: string;
+    pageUrl: string | null;
+    eventId: string | null;
+    appVersion: string | null;
+    locale: string | null;
+    timeZone: string | null;
+    viewportWidth: number | null;
+    viewportHeight: number | null;
+    displayMode: string | null;
+    recentErrors: Record<string, unknown>[] | null;
+    // null once the reporter's account is deleted.
+    reporterUserId: string | null;
+    reporterRole: PlatformRole;
+    userAgent: string | null;
+    // Presigned GET URL; null when the report has no screenshot.
+    screenshotUrl: string | null;
+    createdAt: string;
+}
+
+export type ErrorEventSource = 'BACKEND' | 'BACKGROUND' | 'CLIENT';
+
+// GET /api/error-events(/{id}) — admin only, newest lastSeenAt first. One row
+// groups every occurrence of the same error; `ref` is what a 500's errorRef holds.
+export interface ErrorEventResponseDto {
+    id: string;
+    ref: string;
+    source: ErrorEventSource;
+    errorType: string;
+    message: string | null;
+    stackTrace: string | null;
+    occurrenceCount: number;
+    firstSeenAt: string;
+    lastSeenAt: string;
+    lastRequestMethod: string | null;
+    lastRequestPath: string | null;
+    lastUserId: string | null;
+    lastAppVersion: string | null;
+    lastPageUrl: string | null;
 }

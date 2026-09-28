@@ -5,6 +5,8 @@ import { useTranslations } from 'next-intl';
 import { AccountsPanel } from '@/components/admin/AccountsPanel';
 import { AdminDiscountCodesPanel } from '@/components/admin/AdminDiscountCodesPanel';
 import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
+import { BugReportsPanel } from '@/components/admin/betaFeedback/BugReportsPanel';
+import { ErrorEventsPanel } from '@/components/admin/betaFeedback/ErrorEventsPanel';
 import { BillingOpsPanel } from '@/components/admin/BillingOpsPanel';
 import { CollaborationsPanel } from '@/components/admin/CollaborationsPanel';
 import { CostTrackingPanel } from '@/components/admin/CostTrackingPanel';
@@ -26,6 +28,13 @@ export function AdminConsole() {
     if (tab === 'discountCodes') return <AdminDiscountCodesPanel />;
     if (tab === 'collaborations') return <CollaborationsPanel />;
     if (tab === 'reactionTypes') return <ReactionTypesCatalogPanel />;
+    if (tab === 'bugReports' || tab === 'errorEvents') {
+        return (
+            <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
+                {tab === 'bugReports' ? <BugReportsPanel /> : <ErrorEventsPanel />}
+            </div>
+        );
+    }
     if (tab === 'accounts') {
         return (
             <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">

@@ -1,5 +1,6 @@
 import { useLocale, useTranslations } from 'next-intl';
 
+import { OrderWithdrawButton } from '@/components/manage/billing/OrderWithdrawButton';
 import { type BillingData, type BillingDerived, type BillingInsights, useBillingDate } from '@/hooks/useEventBillingPanel';
 import type { EventBillingResponseDto } from '@/lib/api/types';
 import { formatMoney, formatOptionalMoney } from '@/lib/billing';
@@ -23,11 +24,16 @@ export function BillingOrdersPanel({
     derived,
     insights,
     onShowAllOrders,
+    withdrawableOrderIds,
+    onWithdrawAction,
 }: {
     data: BillingData;
     derived: BillingDerived;
     insights: BillingInsights;
     onShowAllOrders: () => void;
+    // Orders that get "Withdraw from contract here" (primary host, window open).
+    withdrawableOrderIds?: ReadonlySet<string>;
+    onWithdrawAction?: (order: Order) => void;
 }) {
     const t = useTranslations('EventPlanSettingsPage');
     const locale = useLocale();
@@ -42,6 +48,8 @@ export function BillingOrdersPanel({
             return t('orders.coverageRange', { from: formatDate(order.coverageStartsAt), until: formatDate(order.coverageEndsAt) });
         return null;
     };
+    const withdrawAction = (order: Order) =>
+        onWithdrawAction && withdrawableOrderIds?.has(order.id) ? <OrderWithdrawButton order={order} onWithdrawAction={onWithdrawAction} /> : null;
     const totalPaidLabel = formatMoney(locale, insights.paidTotalMinor, insights.orderCurrency);
 
     const amountCell = (order: Order) => (
@@ -76,6 +84,7 @@ export function BillingOrdersPanel({
                             <p className="shrink-0 text-right font-semibold text-ink">{amountCell(order)}</p>
                         </div>
                         {coverageLabel(order) && <p className="mt-1.5 text-xs leading-relaxed text-ink-muted">{coverageLabel(order)}</p>}
+                        {withdrawAction(order)}
                     </article>
                 ))}
                 {/* Total (small screens) */}
@@ -102,6 +111,7 @@ export function BillingOrdersPanel({
                                 <td className="px-3 py-2.5">
                                     <p className="font-medium text-ink">{t(`orders.kind.${order.kind}`)}</p>
                                     {coverageLabel(order) && <p className="mt-0.5 truncate text-xs text-ink-muted">{coverageLabel(order)}</p>}
+                                    {withdrawAction(order)}
                                 </td>
                                 <td className="px-3 py-2.5">
                                     <span className={orderStatusClassName(order.status)}>{t(`orderStatus.${order.status}`)}</span>

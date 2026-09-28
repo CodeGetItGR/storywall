@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { appConfigKeys } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
@@ -18,6 +18,9 @@ import type {
     EventBillingResponseDto,
     ExtensionCheckoutRequestDto,
     ExtensionOptionResponseDto,
+    OrderSummaryDto,
+    PriceBreakdown,
+    QuoteRequestDto,
     StorageCheckoutRequestDto,
     UpgradeCheckoutRequestDto,
     UpgradeOptionResponseDto,
@@ -156,43 +159,87 @@ export function useAddEventAddon(eventId: string) {
     });
 }
 
-// GET /api/events/{id}/withdrawal-preview — host. Nothing is persisted server-side,
-// so this is safe to poll while a confirmation dialog is open (billing-fe-guide §9).
-export function useWithdrawalPreview(eventId: string | null, enabled = true) {
-    const { isAuthenticated } = useAuth();
-
-    return useQuery({
-        queryKey: ['events', eventId, 'withdrawal-preview'],
-        queryFn: () => api.get<WithdrawalPreviewResponseDto>(endpoints.events.withdrawalPreview(eventId!)),
-        enabled: Boolean(eventId) && enabled && isAuthenticated,
-    });
-}
-
 // GET /api/events/{id}/withdrawals — the host's own history, newest first, so the
 // most recent outcome (and its lines/refusals) survives a reload.
-export function useEventWithdrawals(eventId: string | null) {
+export function useEventWithdrawals(eventId: string | null, enabled = true) {
     const { isAuthenticated } = useAuth();
 
     return useQuery({
         queryKey: ['events', eventId, 'withdrawals'],
         queryFn: () => api.get<WithdrawalResponseDto[]>(endpoints.events.withdrawals(eventId!)),
-        enabled: Boolean(eventId) && isAuthenticated,
+        enabled: Boolean(eventId) && enabled && isAuthenticated,
         select: (withdrawals) => [...withdrawals].sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
     });
 }
 
-// POST /api/events/{id}/withdrawals — terminal on REFUNDED (the event is
-// soft-deleted in the same call). A REFUSED outcome throws a 409 WITHDRAWAL_REFUSED
-// instead of resolving — read structured reasons from the preview, not this call.
-export function useSubmitWithdrawal(eventId: string) {
+export const quoteKeys = {
+    event: (eventId: string, request: QuoteRequestDto) => ['events', eventId, 'quote', request.kind, request.paidServiceCode ?? null] as const,
+};
+
+// POST /api/events/{id}/quote — read-only pricing of an activation or a storage
+// pack for the review page. Redeems nothing and opens nothing, so it is a query.
+// Primary host only (403 4006 otherwise).
+export function useEventQuote(eventId: string, request: QuoteRequestDto | null, enabled = true) {
+    const { isAuthenticated } = useAuth();
+
+    return useQuery({
+        queryKey: request ? quoteKeys.event(eventId, request) : ['events', eventId, 'quote', null],
+        queryFn: () => api.post<PriceBreakdown>(endpoints.events.quote(eventId), request!),
+        enabled: Boolean(eventId && request) && enabled && isAuthenticated,
+    });
+}
+
+// Per-order withdrawal (withdrawal-compliance phase 2 §4). An ACTIVATION is
+// withdrawn through the event endpoints, since withdrawing it withdraws the event.
+export const withdrawalKeys = {
+    preview: (eventId: string, orderId: string | null) => ['events', eventId, 'withdrawal-preview', orderId] as const,
+    history: (eventId: string) => ['events', eventId, 'withdrawals'] as const,
+};
+
+type WithdrawalTarget = Pick<OrderSummaryDto, 'id' | 'kind'>;
+
+function withdrawalPreviewPath(eventId: string, order: WithdrawalTarget): string {
+    return order.kind === 'ACTIVATION'
+        ? endpoints.events.withdrawalPreview(eventId)
+        : endpoints.events.orderWithdrawalPreview(eventId, order.id);
+}
+
+export function useOrderWithdrawalPreview(eventId: string, order: WithdrawalTarget | null) {
+    const { isAuthenticated } = useAuth();
+
+    return useQuery({
+        queryKey: withdrawalKeys.preview(eventId, order ? (order.kind === 'ACTIVATION' ? null : order.id) : null),
+        queryFn: () => api.get<WithdrawalPreviewResponseDto>(withdrawalPreviewPath(eventId, order!)),
+        enabled: Boolean(order) && isAuthenticated,
+    });
+}
+
+// Orders from before V106 carry no breakdown, so only their preview says whether
+// the window is still open (phase 4 §6).
+export function useLegacyOrderWithdrawalPreviews(eventId: string, orders: WithdrawalTarget[], enabled: boolean) {
+    const { isAuthenticated } = useAuth();
+
+    return useQueries({
+        queries: orders.map((order) => ({
+            queryKey: withdrawalKeys.preview(eventId, order.kind === 'ACTIVATION' ? null : order.id),
+            queryFn: () => api.get<WithdrawalPreviewResponseDto>(withdrawalPreviewPath(eventId, order)),
+            enabled: enabled && isAuthenticated,
+        })),
+    });
+}
+
+export function useSubmitOrderWithdrawal(eventId: string) {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (input: WithdrawalRequestDto) => api.post<WithdrawalResponseDto>(endpoints.events.withdrawals(eventId), input),
+        mutationFn: ({ order, input }: { order: WithdrawalTarget; input: WithdrawalRequestDto }) =>
+            api.post<WithdrawalResponseDto>(
+                order.kind === 'ACTIVATION' ? endpoints.events.withdrawals(eventId) : endpoints.events.orderWithdrawals(eventId, order.id),
+                input,
+            ),
         onSuccess: () => {
+            // A withdrawal can move coverage, storage, the plan and the orders.
             queryClient.invalidateQueries({ queryKey: ['events', eventId] });
-            queryClient.invalidateQueries({ queryKey: ['events', eventId, 'withdrawal-preview'] });
-            queryClient.invalidateQueries({ queryKey: ['events', eventId, 'withdrawals'] });
-            queryClient.invalidateQueries({ queryKey: billingKeys.event(eventId) });
+            queryClient.invalidateQueries({ queryKey: usageKeys.event(eventId) });
         },
     });
 }

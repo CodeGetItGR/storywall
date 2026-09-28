@@ -73,6 +73,10 @@ export const routes = {
     },
     admin: '/admin',
     notifications: '/notifications',
+    // Public. No version: the current terms; a paid order links the version it acknowledged.
+    legal: {
+        withdrawalTerms: (version?: string | null) => withQuery('/legal/withdrawal-terms', { version }),
+    },
     inviteToken: (token: string) => `/invite/${token}`,
     auth: {
         login: (params: { invite?: string | null; email?: string | null; passwordChanged?: string | null; next?: string | null } = {}) =>

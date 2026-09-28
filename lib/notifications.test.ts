@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { NotificationResponseDto } from '@/lib/api/types';
 
-import { notificationCtaRoute } from './notifications';
+import { notificationCopyType, notificationCtaRoute, notificationSeverity } from './notifications';
 
 function notification(overrides: Partial<NotificationResponseDto>): NotificationResponseDto {
     return {
@@ -30,5 +30,24 @@ describe('notificationCtaRoute', () => {
         expect(
             notificationCtaRoute(notification({ ctaTarget: 'SOMETHING_NEW' as NotificationResponseDto['ctaTarget'], ctaParams: { eventId: 'e' } })),
         ).toBeNull();
+    });
+});
+
+describe('withdrawal and storage-trim notifications', () => {
+    it('gives a one-order refund its own copy and a calm severity', () => {
+        const refund = notification({ type: 'WITHDRAWAL_REFUNDED', payload: { scope: 'ORDER', orderId: 'o-1' } });
+        expect(notificationCopyType(refund)).toBe('WITHDRAWAL_REFUNDED_ORDER');
+        expect(notificationSeverity(refund)).toBe('INFO');
+    });
+
+    it('keeps the event-deleted treatment for a whole-event refund', () => {
+        const refund = notification({ type: 'WITHDRAWAL_REFUNDED', payload: { scope: 'EVENT' } });
+        expect(notificationCopyType(refund)).toBe('WITHDRAWAL_REFUNDED');
+        expect(notificationSeverity(refund)).toBe('CRITICAL');
+    });
+
+    it('falls back to the storage-trim severities when the server sends none', () => {
+        expect(notificationSeverity(notification({ type: 'STORAGE_TRIM_SCHEDULED' }))).toBe('WARNING');
+        expect(notificationSeverity(notification({ type: 'STORAGE_TRIM_WARNING' }))).toBe('CRITICAL');
     });
 });

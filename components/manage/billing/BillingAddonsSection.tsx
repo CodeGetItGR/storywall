@@ -33,7 +33,7 @@ export function BillingAddonsSection({
                         href={routes.events.settingsAddons(eventId)}
                         className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-full bg-surface-muted px-4 text-xs font-semibold text-ink"
                     >
-                        {t('manageAction')}
+                        {t(addons.length > 0 ? 'manageAction' : 'addStorage')}
                     </Link>
                 )
             }

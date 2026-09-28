@@ -1,6 +1,6 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { BillingOrdersPanel } from '@/components/manage/billing/BillingOrdersPanel';
 import type { BillingData, BillingDerived, BillingInsights } from '@/hooks/useEventBillingPanel';
@@ -24,19 +24,28 @@ function order(overrides: Partial<OrderSummaryDto>): OrderSummaryDto {
         coverageMonthsAdded: null,
         coverageStartsAt: null,
         coverageEndsAt: null,
+        buyerType: 'CONSUMER',
+        breakdown: null,
         ...overrides,
     };
 }
 
 function noop() {}
 
-function renderPanel(orders: OrderSummaryDto[]) {
+function renderPanel(orders: OrderSummaryDto[], withdraw?: { ids: Set<string>; onWithdraw: (order: OrderSummaryDto) => void }) {
     const data = { orders } as BillingData;
     const derived = { visibleOrders: orders, hiddenOrderCount: 0, canManageAddons: false } as BillingDerived;
     const insights = { paidTotalMinor: 1500, orderCurrency: 'EUR' } as BillingInsights;
     return render(
         <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
-            <BillingOrdersPanel data={data} derived={derived} insights={insights} onShowAllOrders={noop} />
+            <BillingOrdersPanel
+                data={data}
+                derived={derived}
+                insights={insights}
+                onShowAllOrders={noop}
+                withdrawableOrderIds={withdraw?.ids}
+                onWithdrawAction={withdraw?.onWithdraw}
+            />
         </NextIntlClientProvider>,
     );
 }
@@ -74,5 +83,17 @@ describe('BillingOrdersPanel', () => {
         expect(screen.getAllByText('Plan upgrade. Coverage unchanged.')).toHaveLength(2);
         expect(screen.getAllByText('Storage pack')).toHaveLength(2);
         expect(screen.getAllByText('Permanent storage increase.')).toHaveLength(2);
+    });
+
+    it('offers the withdrawal function only on the orders that can still be withdrawn', () => {
+        const onWithdraw = vi.fn();
+        const upgrade = order({ id: 'up-1', kind: 'UPGRADE' });
+        renderPanel([upgrade, order({ id: 'pack-1', kind: 'STORAGE_PACK' })], { ids: new Set(['up-1']), onWithdraw });
+
+        const buttons = screen.getAllByRole('button', { name: 'Withdraw from contract here' });
+        // Once for small screens, once for the desktop table.
+        expect(buttons).toHaveLength(2);
+        fireEvent.click(buttons[0]);
+        expect(onWithdraw).toHaveBeenCalledWith(upgrade);
     });
 });

@@ -600,6 +600,38 @@
         "back": "Back",
         "title": "Profile",
         "fallbackName": "Account",
+        "business": {
+            "title": "Business details",
+            "empty": "Add your company's VAT details to buy as a business.",
+            "add": "Add business details",
+            "edit": "Edit",
+            "remove": "Remove",
+            "loading": "Loading business details",
+            "status": {
+                "VALID": "VAT number confirmed. You buy as a business.",
+                "PENDING": "We couldn't check your VAT number yet. We'll keep trying for 3 days and email you if it can't be confirmed. Until then, you buy as a consumer.",
+                "INVALID": "This VAT number isn't registered in VIES. You buy as a consumer. Check the details and save again."
+            },
+            "vat": "VAT {vatNumber}",
+            "fields": {
+                "legalName": "Company name",
+                "countryCode": "Country",
+                "vatNumber": "VAT number",
+                "addressLine1": "Address",
+                "addressLine2": "Address line 2",
+                "city": "City",
+                "postalCode": "Postal code"
+            },
+            "northernIreland": "Northern Ireland",
+            "noWithdrawal": "Business purchases have no right of withdrawal.",
+            "save": "Save",
+            "saving": "Saving…",
+            "cancel": "Cancel",
+            "removeTitle": "Remove business details?",
+            "removeBody": "You'll buy as a consumer from now on.",
+            "removeConfirm": "Remove",
+            "removeCancel": "Keep"
+        },
         "newsletter": {
             "title": "Newsletter",
             "offer": "Subscribe and get {percent}% off your next event.",
@@ -713,6 +745,18 @@
             "WITHDRAWAL_WITHHELD": {
                 "title": "Your withdrawal request was withheld",
                 "body": "Your account has been suspended."
+            },
+            "WITHDRAWAL_REFUNDED_ORDER": {
+                "title": "Your withdrawal was processed",
+                "body": "The purchase was refunded. Your event stays online."
+            },
+            "STORAGE_TRIM_SCHEDULED": {
+                "title": "Your event is over its storage limit",
+                "body": "{over} over the limit. Free up space by {dueDate}, or the newest photos and videos above the limit will be deleted."
+            },
+            "STORAGE_TRIM_WARNING": {
+                "title": "Photos and videos will be deleted soon",
+                "body": "{over} over the limit. Free up space by {dueDate}, or the newest photos and videos above the limit will be deleted."
             }
         }
     },
@@ -940,8 +984,7 @@
             "danger": "Danger zone",
             "rsvp": "RSVP",
             "members": "Members",
-            "billing": "Billing",
-            "withdrawal": "Withdrawal"
+            "billing": "Billing"
         },
         "sectionSwitcher": "Change section",
         "stats": {
@@ -1328,7 +1371,8 @@
             "renewalTotal": "{amount} paid once.",
             "manageTitle": "Paid add-ons",
             "manageAction": "Manage add-ons",
-            "empty": "No add-ons"
+            "empty": "Need more space for photos and videos? Add it here.",
+            "addStorage": "Add storage"
         },
         "storagePacks": {
             "title": "Add storage",
@@ -1336,10 +1380,11 @@
             "breakdown": "{plan} plan + {extra} purchased = {total} total",
             "unlimited": "This plan already has unlimited storage.",
             "selectorLabel": "Choose a storage allowance",
-            "selected": "Add {size} permanently for {price} once",
+            "once": "one-time",
+            "newTotal": "New total: {total}",
             "buy": "Pay {amount}",
             "retryIn": "Try again in {seconds}s",
-            "finalSale": "The storage allowance is permanent and non-refundable."
+            "paused": "Storage packs are paused while your withdrawal is under review."
         },
         "actions": {
             "renew": "Start subscription",
@@ -1353,7 +1398,7 @@
             "discount": "{label} · {discount}% off"
         },
         "upgrade": {
-            "button": "Upgrade · {amount}",
+            "cta": "Upgrade",
             "buttonAria": "Upgrade to {plan}, {duration}, {amount}",
             "addsMonths": "+{count, plural, one {# month} other {# months}} of coverage",
             "whatChanges": "What changes",
@@ -1509,24 +1554,55 @@
         "withdrawalStatus": {
             "HELD": "Under review",
             "REFUNDED": "Refunded",
-            "WITHHELD": "Refused"
+            "WITHHELD": "Refused",
+            "REFUSED": "Refused"
         },
-        "withdrawal": {
+        "orderWithdrawal": {
+            "action": "Withdraw from contract here",
+            "actionHint": "Changed your mind? Get a refund.",
+            "confirm": "Confirm withdrawal",
+            "cancel": "Cancel",
             "loading": "Checking...",
-            "eligible": "You can withdraw for a refund of {amount}.",
-            "eligibleUntil": "You can withdraw until {date} for a refund of {amount}.",
-            "notEligible": "Withdrawal isn't available right now.",
+            "loadError": "We couldn't check this purchase. Try again.",
+            "notEligible": "Withdrawal isn't available for this purchase.",
+            "refund": "Refund: {amount}",
+            "until": "You can withdraw until {date}.",
+            "eventScope": "This permanently takes the event offline and can't be undone. You can still view and download the gallery and wishes until it's deleted.",
+            "upgradeScope": "Any upgrade bought after this one is withdrawn too. Your event stays online.",
+            "orderScope": "Your event stays online.",
+            "instant": "Refunded straight away.",
+            "reviewed": "Because this event's date was changed after payment, your request will be reviewed by a person.",
+            "storageAfter": "Your storage limit goes from {from} to {to}. You hold {usage}.",
+            "storageOver": "{over} will be over the limit. Unless you free space by {date}, the newest photos and videos above it will be deleted. Download the gallery first.",
+            "unlimited": "unlimited",
+            "yourDetails": "Your details",
+            "name": "Name",
+            "email": "Email",
             "reason": "Reason",
             "reasonPlaceholder": "Optional note",
-            "submit": "Request withdrawal",
-            "submitting": "Submitting...",
-            "requestedNoAmount": "Amount will be set once processed.",
-            "confirmBody": "This permanently takes the event offline and can't be undone. You can still view and download the gallery and wishes until it's deleted.",
-            "confirmReviewed": "Because this event's date was changed after payment, your request will be reviewed by a person.",
-            "confirmSubmit": "Yes, withdraw",
-            "confirmCancel": "Cancel",
+            "terms": "Withdrawal terms",
+            "retryIn": "Try again in {seconds}s"
+        },
+        "withdrawalHistory": {
+            "title": "Withdrawals",
+            "wholeEvent": "Whole event",
+            "noAmount": "Amount will be set once processed.",
             "held": "Under review. We'll email you once it's decided.",
-            "refunded": "Refunded. The event has been taken offline."
+            "refundedEvent": "Refunded. The event has been taken offline.",
+            "refundedOrder": "Refunded. Your event stays online.",
+            "keptEventDay": "The event-day share was kept: the event took place on the date you paid for.",
+            "alreadyRefunded": "{kind}: already refunded separately, so nothing more is due for it."
+        },
+        "storageTrim": {
+            "title": "Your event is over its storage limit",
+            "body": "Free up space by {date}, or the newest photos and videos above the limit will be deleted."
+        },
+        "purchasesPaused": {
+            "upgrades": "Upgrades are paused while your withdrawal is under review."
+        },
+        "withdrawal": {
+            "excludedTitle": "Not refunded",
+            "excludedBody": "Bought as a business. These go with the event and aren't refunded."
         }
     },
     "EventAddonsSettingsPage": {
@@ -1554,8 +1630,6 @@
         "whatHappens": "What happens after payment",
         "continueToCheckout": "Continue to checkout",
         "openingCheckout": "Opening secure checkout...",
-        "autoDiscountApplied": "{label} · {discount}% off, applied automatically",
-        "autoDiscountAppliedNoLabel": "{discount}% off, applied automatically",
         "extensionEndsAtEstimate": "New end date: {date} (estimate)",
         "coverageEnded": "Coverage for this event has ended. It can no longer be extended.",
         "collaboration": {
@@ -1596,7 +1670,7 @@
             "storage": {
                 "title": "Order preview",
                 "description": "Check the storage pack charge.",
-                "consequence": "The extra storage is added once payment is confirmed. You can withdraw from the pack within 14 days of payment: you are refunded for the time it has left, and the extra storage is removed."
+                "consequence": "The extra storage is added once payment is confirmed."
             }
         },
         "activation": {
@@ -1616,8 +1690,51 @@
             "requestsImmediateStartCaption": "Rather than waiting out the 14-day period first.",
             "acknowledgesWithdrawalTermsLabel": "I understand this affects my right to a full refund",
             "acknowledgesWithdrawalTermsCaption": "Once the service starts, part of the charge may no longer be refundable if you withdraw later.",
-            "stale": "These terms were updated. Review them again and confirm once more."
+            "stale": "These terms were updated. Review them again and confirm once more.",
+            "link": "Read the withdrawal terms"
+        },
+        "businessPurchase": {
+            "title": "Business purchase",
+            "notice": "Business purchase for {legalName} (VAT {vatNumber}). The consumer right of withdrawal does not apply to business purchases. The price includes VAT; no reverse charge is applied.",
+            "pending": "Your VAT number is still being checked, so this purchase is made as a consumer.",
+            "invalid": "Your VAT number couldn't be confirmed, so this purchase is made as a consumer."
         }
+    },
+    "PriceBreakdown": {
+        "items": {
+            "activation": "Activation — {plan}",
+            "eventDay": "Event day — {plan}",
+            "coverage": "Coverage — {monthsText}",
+            "upgradeSetup": "Upgrade to {plan} — setup",
+            "upgradeEventDay": "Upgrade to {plan} — event day",
+            "upgradeCoverage": "Upgrade to {plan} — {monthsText}{added}",
+            "addon": "Add-on — {name}",
+            "storagePack": "Storage pack — {name}",
+            "coverageExtension": "Coverage extension — {monthsText}"
+        },
+        "months": "{months, plural, one {# month} other {# months}}",
+        "rules": {
+            "RETAINED_ONCE_STARTED": "not refundable",
+            "RETAINED_ONCE_PERFORMED": "not refunded once your event starts or the date you paid for passes",
+            "PRO_RATA_BY_TIME": "refunded pro rata for the unused time",
+            "BUSINESS_NO_RIGHT": "business purchase, no right of withdrawal"
+        },
+        "discounts": {
+            "PLAN_PROMOTION": "promotion \"{label}\" −{percent}%",
+            "PLAN_PROMOTION_unnamed": "plan promotion −{percent}%",
+            "CODE": "discount code \"{label}\" −{percent}%",
+            "CODE_unnamed": "discount code −{percent}%"
+        },
+        "discountsIncluded": "Included in the prices above: {discounts}",
+        "total": "Total",
+        "vatIncluded": "Prices include VAT.",
+        "withdrawWithin": "You can withdraw within {days, plural, one {# day} other {# days}} of payment.",
+        "loadError": "We couldn't load the price. Try again."
+    },
+    "WithdrawalTermsPage": {
+        "title": "Right of withdrawal",
+        "version": "Version {version}",
+        "unavailable": "These terms aren't available right now."
     },
     "CheckoutSuccessPage": {
         "eyebrow": "Checkout",
@@ -2064,7 +2181,92 @@
             "billingOps": "Billing ops",
             "withdrawals": "Withdrawals",
             "accounts": "Accounts",
-            "lifecycle": "Lifecycle"
+            "lifecycle": "Lifecycle",
+            "bugReports": "Bug reports",
+            "errorEvents": "Errors"
+        },
+        "bugReports": {
+            "title": "Bug reports",
+            "loading": "Loading reports",
+            "empty": "No reports yet.",
+            "count": "{count, plural, one {# report} other {# reports}}",
+            "open": "Open report",
+            "hasScreenshot": "Has a screenshot",
+            "columns": {
+                "received": "Received",
+                "description": "Description",
+                "page": "Page",
+                "reporter": "Reporter",
+                "screenshot": "Screenshot"
+            },
+            "detailTitle": "Bug report",
+            "close": "Close",
+            "description": "Description",
+            "screenshot": "Screenshot",
+            "context": "Context",
+            "facts": {
+                "page": "Page",
+                "reporter": "Reporter",
+                "appVersion": "App version",
+                "locale": "Language",
+                "timeZone": "Time zone",
+                "viewport": "Screen size",
+                "displayMode": "Display mode",
+                "userAgent": "Browser"
+            },
+            "recentErrors": "Failed requests before the report",
+            "noRecentErrors": "None.",
+            "errorColumns": {
+                "at": "Time",
+                "request": "Request",
+                "status": "Status",
+                "code": "Code",
+                "ref": "Ref"
+            },
+            "openError": "Open this error",
+            "reportId": "Report ID",
+            "reporterId": "Reporter ID",
+            "eventId": "Event ID"
+        },
+        "errorEvents": {
+            "title": "Errors",
+            "loading": "Loading errors",
+            "empty": "No errors recorded.",
+            "refNotFound": "No error with this ref.",
+            "count": "{count, plural, one {# error} other {# errors}}",
+            "open": "Open error",
+            "sourceLabel": "Source",
+            "sources": {
+                "ALL": "All",
+                "BACKEND": "Server",
+                "BACKGROUND": "Background",
+                "CLIENT": "App"
+            },
+            "refLabel": "Ref",
+            "refPlaceholder": "Ref, e.g. a1b2c3d4e5f6",
+            "refInvalid": "A ref is 12 characters, 0-9 and a-f.",
+            "clearRef": "Clear ref",
+            "columns": {
+                "lastSeen": "Last seen",
+                "source": "Source",
+                "error": "Error",
+                "count": "Count",
+                "ref": "Ref"
+            },
+            "close": "Close",
+            "message": "Message",
+            "details": "Details",
+            "facts": {
+                "firstSeen": "First seen",
+                "lastSeen": "Last seen",
+                "count": "Times seen",
+                "appVersion": "App version",
+                "request": "Last request",
+                "page": "Last page"
+            },
+            "stackTrace": "Stack trace",
+            "ref": "Ref",
+            "lastUserId": "Last user ID"
         },
         "accounts": {
             "title": "Accounts",
@@ -3378,6 +3580,9 @@
         "planInUse": "This plan is assigned to accounts or events, so it cannot be deleted.",
         "planIsOnlyDefault": "Set another default plan before changing this one.",
         "postMediaLimitExceeded": "This post already has the maximum number of photos.",
+        "postPinNotHost": "Only hosts can pin posts.",
+        "announcementNotHost": "Only hosts can post announcements.",
+        "storyExpiryOutOfRange": "A story can last up to 24 hours.",
         "orderNotPending": "This order is no longer pending.",
         "webhookAlreadyProcessed": "This webhook has already been processed.",
         "webhookNotReplayable": "This webhook cannot be replayed.",
@@ -3412,6 +3617,7 @@
         "withdrawalRefused": "This event doesn't currently qualify for a withdrawal.",
         "withdrawalNotHeld": "This request was already decided.",
         "withdrawalKeepEventDayNotDue": "The event date hadn't passed when the host withdrew. Release as calculated instead.",
+        "withdrawalOrderKindNotSupported": "To withdraw the activation, withdraw from the whole event.",
         "qrSharedLinkHostManaged": "This shared link is managed automatically.",
         "eventSessionMainLocationReadOnly": "This is the event's main session, so its location always matches the event's own.",
         "eventSessionLimitReached": "This event's plan doesn't allow more schedule sessions.",

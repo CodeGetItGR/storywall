@@ -6,18 +6,21 @@ import { useLocale, useTranslations } from 'next-intl';
 import { type ChangeEvent, useCallback, useMemo, useState } from 'react';
 
 import { CheckoutReviewSkeleton } from '@/components/checkout/CheckoutSkeletons';
+import { PriceBreakdownSummary } from '@/components/checkout/PriceBreakdownSummary';
 import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
 import { BackButton } from '@/components/ui/BackButton';
 import { PageErrorState } from '@/components/ui/PageErrorState';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
-import { useEventBilling, useStorageCheckout, useUpgradeCheckout, useUpgradeOptions } from '@/hooks/useBilling';
+import { useEventBilling, useEventQuote, useStorageCheckout, useUpgradeCheckout, useUpgradeOptions } from '@/hooks/useBilling';
+import { useBusinessProfile } from '@/hooks/useBusinessProfile';
 import { useEvent } from '@/hooks/useEvent';
 import { useExtensionCheckoutReview } from '@/hooks/useExtensionCheckoutReview';
 import { useIsPrimaryHost } from '@/hooks/useIsPrimaryHost';
 import { useResetOnBfcacheRestore } from '@/hooks/useResetOnBfcacheRestore';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import { formatBillingDate, formatMoney, navigateToCheckout } from '@/lib/billing';
+import { isCheckoutConsentSatisfied } from '@/lib/businessProfile';
 import { scopedPlans } from '@/lib/planTiers';
 import { type CheckoutIntent, routes } from '@/lib/routes';
 import { linkedUpgradeDuration } from '@/lib/upgradeOptions';
@@ -40,12 +43,15 @@ export default function CheckoutReviewBoundary() {
     const upgradeCheckout = useUpgradeCheckout(eventId);
     const storageCheckout = useStorageCheckout(eventId);
     const canPurchase = useIsPrimaryHost();
+    const businessProfile = useBusinessProfile();
     const upgradeOptions = useUpgradeOptions(eventId, canPurchase);
     const rawIntent = searchParams.get('intent');
     const intent = CHECKOUT_INTENTS.find((value) => value === rawIntent) ?? null;
     const code = searchParams.get('code');
     const optionId = searchParams.get('option');
     const extension = useExtensionCheckoutReview(eventId, intent === 'extension' ? optionId : null, intent === 'extension' && canPurchase);
+    // A storage pack is priced by the server's quote; upgrades and extensions carry their own breakdown.
+    const storageQuote = useEventQuote(eventId, intent === 'storage' && code ? { kind: 'STORAGE_PACK', paidServiceCode: code } : null, canPurchase);
     const toErrorMessage = useApiErrorMessage();
     const [error, setError] = useState<string | null>(null);
     const [requestsImmediateStart, setRequestsImmediateStart] = useState(false);
@@ -86,7 +92,8 @@ export default function CheckoutReviewBoundary() {
         billing.isLoading ||
         event.isLoading ||
         (intent === 'upgrade' && upgradeOptions.isLoading) ||
-        (intent === 'extension' && extension.isLoading)
+        (intent === 'extension' && extension.isLoading) ||
+        (intent === 'storage' && storageQuote.isLoading)
     ) {
         return <CheckoutReviewSkeleton />;
     }
@@ -169,13 +176,24 @@ export default function CheckoutReviewBoundary() {
     }
 
     const totalMinor = lines.reduce((sum, line) => sum + line.amountMinor, 0);
+    // The server's own price, item by item. The local lines above stay as the
+    // fallback for a co-host (who can't be quoted) or a failed quote.
+    const breakdown =
+        intent === 'upgrade'
+            ? (upgradeDuration?.breakdown ?? null)
+            : intent === 'extension'
+              ? (extension.option?.breakdown ?? null)
+              : (storageQuote.data ?? null);
+    const quoteError = intent === 'storage' && storageQuote.error ? toErrorMessage(storageQuote.error) : null;
     const isPending = upgradeCheckout.isPending || storageCheckout.isPending || extension.isPending;
     const requiresConsent = intent === 'upgrade' || intent === 'storage' || intent === 'extension';
     // Never discounted, and only an estimate: the real span is fixed when the payment settles.
     const extensionEndsAt = intent === 'extension' && extension.option ? formatBillingDate(locale, extension.option.resultingCoverageEndsAt) : null;
     const coverageEnded = intent === 'extension' && extension.ended;
     const termsVersion = appConfig.data?.withdrawal.termsVersion ?? null;
-    const consentSatisfied = !requiresConsent || (requestsImmediateStart && acknowledgesWithdrawalTerms && Boolean(termsVersion));
+    const consentSatisfied =
+        !requiresConsent ||
+        isCheckoutConsentSatisfied({ isBusiness: businessProfile.isBusiness, requestsImmediateStart, acknowledgesWithdrawalTerms, termsVersion });
     const backHref = intent === 'storage' ? routes.events.settingsAddons(eventId) : routes.events.manage(eventId, { tab: 'billing' });
 
     async function continueToCheckout() {
@@ -258,28 +276,32 @@ export default function CheckoutReviewBoundary() {
                     {t('paymentBreakdown')}
                 </h2>
                 <div className="mt-3 rounded-lg bg-surface-muted/55 p-4">
-                    {lines.length > 1 && (
-                        <div className="space-y-3">
-                            {lines.map((line, index) => (
-                                <div key={`${line.label}-${index}`} className="flex items-start justify-between gap-6 text-sm">
-                                    <span className="text-ink-muted">{line.label}</span>
-                                    <span className="shrink-0 font-semibold text-ink">{formatMoney(locale, line.amountMinor, currency)}</span>
+                    {breakdown ? (
+                        <PriceBreakdownSummary breakdown={breakdown} />
+                    ) : (
+                        <>
+                            {lines.length > 1 && (
+                                <div className="space-y-3">
+                                    {lines.map((line, index) => (
+                                        <div key={`${line.label}-${index}`} className="flex items-start justify-between gap-6 text-sm">
+                                            <span className="text-ink-muted">{line.label}</span>
+                                            <span className="shrink-0 font-semibold text-ink">{formatMoney(locale, line.amountMinor, currency)}</span>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
+                            )}
+                            <div
+                                className={
+                                    lines.length > 1 ? 'mt-5 flex items-center justify-between gap-6' : 'flex items-center justify-between gap-6'
+                                }
+                            >
+                                <p className="text-sm font-semibold text-ink">{lines.length === 1 ? lines[0]?.label : t('dueNow')}</p>
+                                <p className="shrink-0 text-xl font-bold text-ink">{formatMoney(locale, totalMinor, currency)}</p>
+                            </div>
+                        </>
                     )}
-                    <div className={lines.length > 1 ? 'mt-5 flex items-center justify-between gap-6' : 'flex items-center justify-between gap-6'}>
-                        <p className="text-sm font-semibold text-ink">{lines.length === 1 ? lines[0]?.label : t('dueNow')}</p>
-                        <p className="shrink-0 text-xl font-bold text-ink">{formatMoney(locale, totalMinor, currency)}</p>
-                    </div>
                     {extensionEndsAt && <p className="mt-3 text-sm text-ink-muted">{t('extensionEndsAtEstimate', { date: extensionEndsAt })}</p>}
-                    {intent === 'upgrade' && upgradeEntry && upgradeEntry.discountPercent !== null && (
-                        <p className="mt-3 text-sm font-semibold text-emerald-700">
-                            {upgradeEntry.discountLabel
-                                ? t('autoDiscountApplied', { label: upgradeEntry.discountLabel, discount: upgradeEntry.discountPercent })
-                                : t('autoDiscountAppliedNoLabel', { discount: upgradeEntry.discountPercent })}
-                        </p>
-                    )}
+                    {quoteError && <p className="mt-3 text-sm text-rose-600">{quoteError}</p>}
                 </div>
             </section>
 

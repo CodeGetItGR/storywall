@@ -19,6 +19,8 @@ const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operat
     billingOps: 'operations',
     withdrawals: 'operations',
     accounts: 'operations',
+    bugReports: 'operations',
+    errorEvents: 'operations',
 };
 const GROUP_ORDER = ['overview', 'catalog', 'marketing', 'operations'] as const;
 

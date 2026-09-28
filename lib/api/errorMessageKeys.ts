@@ -95,6 +95,9 @@ export type ApiErrorMessageKey =
     | 'planNotPurchasable'
     | 'planTierNotAvailableForEventType'
     | 'postMediaLimitExceeded'
+    | 'postPinNotHost'
+    | 'announcementNotHost'
+    | 'storyExpiryOutOfRange'
     | 'eventScheduleLocked'
     | 'paidServiceCurrencyMismatch'
     | 'paidServiceInUse'
@@ -122,6 +125,7 @@ export type ApiErrorMessageKey =
     | 'withdrawalRefused'
     | 'withdrawalNotHeld'
     | 'withdrawalKeepEventDayNotDue'
+    | 'withdrawalOrderKindNotSupported'
     | 'withdrawalNotPrimaryHost'
     | 'oauthEmailUnverified';
 
@@ -216,6 +220,9 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.PLAN_TIER_NOT_PURCHASABLE]: 'planNotPurchasable',
     [ERROR_CODES.PLAN_TIER_NOT_AVAILABLE_FOR_EVENT_TYPE]: 'planTierNotAvailableForEventType',
     [ERROR_CODES.POST_MEDIA_LIMIT_EXCEEDED]: 'postMediaLimitExceeded',
+    [ERROR_CODES.POST_PIN_NOT_HOST]: 'postPinNotHost',
+    [ERROR_CODES.ANNOUNCEMENT_NOT_HOST]: 'announcementNotHost',
+    [ERROR_CODES.STORY_EXPIRY_OUT_OF_RANGE]: 'storyExpiryOutOfRange',
     [ERROR_CODES.PAID_SERVICE_CURRENCY_MISMATCH]: 'paidServiceCurrencyMismatch',
     [ERROR_CODES.PAID_SERVICE_IN_USE]: 'paidServiceInUse',
     [ERROR_CODES.PAID_SERVICE_NOT_ON_PLAN]: 'paidServiceNotOnPlan',
@@ -245,6 +252,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.WITHDRAWAL_REFUSED]: 'withdrawalRefused',
     [ERROR_CODES.WITHDRAWAL_NOT_HELD]: 'withdrawalNotHeld',
     [ERROR_CODES.WITHDRAWAL_KEEP_EVENT_DAY_NOT_DUE]: 'withdrawalKeepEventDayNotDue',
+    [ERROR_CODES.WITHDRAWAL_ORDER_KIND_NOT_SUPPORTED]: 'withdrawalOrderKindNotSupported',
 } satisfies Record<KnownApiErrorCode, ApiErrorMessageKey>;
 
 export function getApiErrorMessageKey(code: number | string | undefined): ApiErrorMessageKey | undefined {

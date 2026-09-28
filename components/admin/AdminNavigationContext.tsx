@@ -2,11 +2,13 @@
 
 import {
     BarChart3,
+    Bug,
     CalendarDays,
     ChartNoAxesCombined,
     Handshake,
     Layers3,
     type LucideIcon,
+    OctagonAlert,
     PackagePlus,
     Receipt,
     Smile,
@@ -30,7 +32,9 @@ export type AdminTab =
     | 'assignments'
     | 'billingOps'
     | 'withdrawals'
-    | 'accounts';
+    | 'accounts'
+    | 'bugReports'
+    | 'errorEvents';
 
 export type AdminTabItem = {
     key: AdminTab;
@@ -46,6 +50,8 @@ export type AdminFocus = {
     eventId?: string;
     eventTitle?: string;
     orderId?: string;
+    // A 500's reference, carried from a bug report into the Errors list.
+    errorRef?: string;
 };
 
 const HASH_TO_TAB: Record<string, AdminTab> = {
@@ -59,6 +65,8 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#billing-ops': 'billingOps',
     '#withdrawals': 'withdrawals',
     '#accounts': 'accounts',
+    '#bug-reports': 'bugReports',
+    '#errors': 'errorEvents',
 };
 
 const TAB_TO_HASH: Record<AdminTab, string> = {
@@ -73,6 +81,8 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     billingOps: '#billing-ops',
     withdrawals: '#withdrawals',
     accounts: '#accounts',
+    bugReports: '#bug-reports',
+    errorEvents: '#errors',
 };
 
 const AdminNavigationContext = createContext<
@@ -146,6 +156,8 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'assignments', label: t('assignments'), icon: Layers3 },
             { key: 'billingOps', label: t('billingOps'), icon: Receipt },
             { key: 'withdrawals', label: t('withdrawals'), icon: Undo2 },
+            { key: 'bugReports', label: t('bugReports'), icon: Bug },
+            { key: 'errorEvents', label: t('errorEvents'), icon: OctagonAlert },
         ],
         [t],
     );

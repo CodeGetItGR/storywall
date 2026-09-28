@@ -5,19 +5,21 @@ import { useCallback, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { appConfigKeys } from '@/hooks/useAppConfig';
-import { billingKeys, useCheckout } from '@/hooks/useBilling';
+import { billingKeys, useCheckout, useEventQuote } from '@/hooks/useBilling';
 import { useResetOnBfcacheRestore } from '@/hooks/useResetOnBfcacheRestore';
 import { useWithdrawalConsent } from '@/hooks/useWithdrawalConsent';
 import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { CollaborationCodePreviewResponseDto } from '@/lib/api/types';
 import { navigateToCheckout } from '@/lib/billing';
 
+const ACTIVATION_QUOTE = { kind: 'ACTIVATION' } as const;
+
 /**
  * Checkout + consent for an already-created DRAFT event's /manage page —
  * the "come back later and pay" and "returned from a cancelled Stripe
  * session" entry points. Mirrors the wizard's own checkout call.
  */
-export function useDraftActivationCheckout(eventId: string) {
+export function useDraftActivationCheckout(eventId: string, { quoteEnabled }: { quoteEnabled: boolean }) {
     const checkout = useCheckout(eventId);
     const queryClient = useQueryClient();
     const consent = useWithdrawalConsent();
@@ -27,6 +29,11 @@ export function useDraftActivationCheckout(eventId: string) {
     const [error, setError] = useState<string | null>(null);
 
     useResetOnBfcacheRestore(checkout.reset);
+
+    // The server's price for the pay button: a typed code's preview when there
+    // is one, else the activation quote (which already holds a redeemed code).
+    const quote = useEventQuote(eventId, ACTIVATION_QUOTE, quoteEnabled);
+    const breakdown = collaborationPreview?.breakdown ?? (quoteEnabled ? (quote.data ?? null) : null);
 
     const handleCollaborationPreviewChange = useCallback((nextCode: string | null, nextPreview: CollaborationCodePreviewResponseDto | null) => {
         setCollaborationCode(nextCode);
@@ -59,6 +66,7 @@ export function useDraftActivationCheckout(eventId: string) {
     return {
         consent,
         collaborationPreview,
+        breakdown,
         handleCollaborationPreviewChange,
         submit,
         error,

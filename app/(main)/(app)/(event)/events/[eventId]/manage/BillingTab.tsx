@@ -7,9 +7,14 @@ import { BillingExtensionSection } from '@/components/manage/billing/BillingExte
 import { BillingOrdersPanel } from '@/components/manage/billing/BillingOrdersPanel';
 import { BillingPlanSummary } from '@/components/manage/billing/BillingPlanSummary';
 import { BillingUpgradeSection } from '@/components/manage/billing/BillingUpgradeSection';
+import { OrderWithdrawalModal } from '@/components/manage/billing/OrderWithdrawalModal';
+import { StorageTrimNotice } from '@/components/manage/billing/StorageTrimNotice';
+import { WithdrawalHistory } from '@/components/manage/billing/WithdrawalHistory';
 import { BillingTabSkeleton } from '@/components/manage/ManageSkeletons';
 import Section from '@/components/manage/Section';
+import { useBillingWithdrawals } from '@/hooks/useBillingWithdrawals';
 import { useEventBillingPanel } from '@/hooks/useEventBillingPanel';
+import { useOrderWithdrawalFlow } from '@/hooks/useOrderWithdrawalFlow';
 import type { EventScheduleDto } from '@/lib/api/types';
 
 export default function BillingTab({
@@ -29,6 +34,11 @@ export default function BillingTab({
     const tPageError = useTranslations('PageErrorState.billing');
     const tPageErrorCommon = useTranslations('PageErrorState');
     const panel = useEventBillingPanel(eventId, { isDeleted, canPurchase });
+    const withdrawals = useBillingWithdrawals(eventId, panel.data?.orders, {
+        canWithdraw: canPurchase && !isDeleted,
+        canSeeHistory: canPurchase || isDeleted,
+    });
+    const withdrawalFlow = useOrderWithdrawalFlow(eventId, { currentLimitBytes: panel.usage?.storageLimitBytes ?? null });
 
     if (panel.isLoading) {
         return <BillingTabSkeleton />;
@@ -56,13 +66,19 @@ export default function BillingTab({
             {/* Co-host note */}
             {!canPurchase && !isDeleted && <p className="text-xs text-ink-muted">{tCommon('primaryHostOnly')}</p>}
 
+            {/* Storage over the limit */}
+            <StorageTrimNotice dueAt={data.storageTrimDueAt} />
+
             {/* Your plan */}
             <BillingPlanSummary data={data} schedule={schedule} usage={panel.usage} />
 
             {/* Upgrade */}
+            {withdrawals.purchaseBlocks.upgradeBlocked && panel.upgradeTargets.length > 0 && (
+                <p className="text-xs text-ink-muted">{tBilling('purchasesPaused.upgrades')}</p>
+            )}
             <BillingUpgradeSection
                 eventId={eventId}
-                targets={panel.upgradeTargets}
+                targets={withdrawals.purchaseBlocks.upgradeBlocked ? [] : panel.upgradeTargets}
                 currentPlan={panel.currentPlan}
                 extraStorageBytes={panel.usage?.extraStorageBytes ?? 0}
                 modules={panel.platformModules}
@@ -83,8 +99,24 @@ export default function BillingTab({
 
             {/* Payments */}
             <Section title={tBilling('orders.title')} divider>
-                <BillingOrdersPanel data={data} derived={derived} insights={insights} onShowAllOrders={panel.handleShowAllOrders} />
+                <BillingOrdersPanel
+                    data={data}
+                    derived={derived}
+                    insights={insights}
+                    onShowAllOrders={panel.handleShowAllOrders}
+                    withdrawableOrderIds={withdrawals.withdrawableOrderIds}
+                    onWithdrawAction={withdrawalFlow.open}
+                />
             </Section>
+
+            {/* Withdrawals */}
+            {withdrawals.history.length > 0 && (
+                <Section title={tBilling('withdrawalHistory.title')} divider>
+                    <WithdrawalHistory withdrawals={withdrawals.history} />
+                </Section>
+            )}
+
+            <OrderWithdrawalModal flow={withdrawalFlow} />
         </div>
     );
 }

@@ -19,7 +19,21 @@ const BILLING_TYPES: readonly string[] = [
     'WITHDRAWAL_REFUNDED',
     'WITHDRAWAL_HELD',
     'WITHDRAWAL_WITHHELD',
+    'STORAGE_TRIM_SCHEDULED',
+    'STORAGE_TRIM_WARNING',
 ] satisfies readonly BillingNotificationType[];
+
+// A WITHDRAWAL_REFUNDED for one order leaves the event in place, so it must not
+// read as "the event was deleted".
+function isOrderScoped(notification: NotificationResponseDto): boolean {
+    return notification.payload?.scope === 'ORDER';
+}
+
+// The message key under NotificationsPage.types that holds this notification's fallback copy.
+export function notificationCopyType(notification: NotificationResponseDto): string {
+    if (notification.type === 'WITHDRAWAL_REFUNDED' && isOrderScoped(notification)) return 'WITHDRAWAL_REFUNDED_ORDER';
+    return notification.type;
+}
 
 export function isBillingNotification(notification: NotificationResponseDto): boolean {
     return notification.category === 'BILLING' || BILLING_TYPES.includes(notification.type);
@@ -34,7 +48,10 @@ export function notificationSeverity(notification: NotificationResponseDto): Not
     // Both report the event disappearing/the host losing standing — give them the
     // same weight the old REFUND_APPROVED had. WITHDRAWAL_HELD changes nothing yet,
     // so it stays INFO via the fallback below.
+    if (notification.type === 'WITHDRAWAL_REFUNDED' && isOrderScoped(notification)) return 'INFO';
     if (notification.type === 'WITHDRAWAL_REFUNDED' || notification.type === 'WITHDRAWAL_WITHHELD') return 'CRITICAL';
+    if (notification.type === 'STORAGE_TRIM_WARNING') return 'CRITICAL';
+    if (notification.type === 'STORAGE_TRIM_SCHEDULED') return 'WARNING';
     return 'INFO';
 }
 

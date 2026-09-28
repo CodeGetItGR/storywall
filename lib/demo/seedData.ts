@@ -1125,6 +1125,7 @@ export function buildSeedBilling(): EventBillingResponseDto {
         orders: [],
         addons: [],
         discount: null,
+        storageTrimDueAt: null,
     };
 }
 

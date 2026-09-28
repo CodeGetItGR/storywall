@@ -1,10 +1,18 @@
 import { describe, expect, it } from 'vitest';
 
-import type { UpgradeCoverageOptionDto, UpgradeOptionResponseDto } from '@/lib/api/types';
+import type { PriceBreakdown, UpgradeCoverageOptionDto, UpgradeOptionResponseDto } from '@/lib/api/types';
 import { linkedUpgradeDuration, pickedUpgradeDuration, upgradeDurations } from '@/lib/upgradeOptions';
 
 function makeDuration(overrides: Partial<UpgradeCoverageOptionDto> = {}): UpgradeCoverageOptionDto {
-    return { coverageOptionId: 'plus-6', months: 6, monthsAdded: 0, gapAmountMinor: 3_000, payableAmountMinor: 2_700, ...overrides };
+    return {
+        coverageOptionId: 'plus-6',
+        months: 6,
+        monthsAdded: 0,
+        gapAmountMinor: 3_000,
+        payableAmountMinor: 2_700,
+        breakdown: {} as PriceBreakdown,
+        ...overrides,
+    };
 }
 
 const entry: UpgradeOptionResponseDto = {

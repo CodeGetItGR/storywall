@@ -20,6 +20,7 @@ export type BillingUpgradeRow = {
     // How much later coverage ends with the picked duration; 0 for none.
     monthsAdded: number;
     href: string;
+    priceLabel: string;
     buttonLabel: string;
     // Full upgrade name, duration and price, for screen readers: the visible label drops them.
     buttonAriaLabel: string;
@@ -86,7 +87,8 @@ export function useBillingUpgradeRows({
                     durationId: duration.coverageOptionId,
                     monthsAdded: duration.monthsAdded,
                     href: routes.events.checkoutReview(eventId, 'upgrade', { code: entry.planTierCode, option: duration.coverageOptionId }),
-                    buttonLabel: t('upgrade.button', { amount: priceLabel }),
+                    priceLabel,
+                    buttonLabel: t('upgrade.cta'),
                     buttonAriaLabel: t('upgrade.buttonAria', {
                         plan: entry.planTierName,
                         duration: tDurations('months', { count: duration.months }),

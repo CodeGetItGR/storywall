@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ActivationDisclosures } from '@/components/checkout/ActivationDisclosures';
 import { ActivationEventSummary } from '@/components/checkout/ActivationEventSummary';
 import { CollaborationCodeSection } from '@/components/checkout/CollaborationCodeSection';
+import { PriceBreakdownSummary } from '@/components/checkout/PriceBreakdownSummary';
 import { WithdrawalConsentSection } from '@/components/checkout/WithdrawalConsentSection';
 import { EventOverviewPriceRow } from '@/components/event/create/EventOverviewPriceRow';
 import { GiftAccountSetup } from '@/components/manage/GiftAccountSetup';
@@ -74,8 +75,12 @@ export function OverviewDraftPanel({
     const canPay = Boolean(startAt);
     const planActivation = currentPlan && currentOption ? getOptionPriceDetails(currentPlan, currentOption) : null;
 
-    const { consent, collaborationPreview, handleCollaborationPreviewChange, submit, error, isPending } = useDraftActivationCheckout(eventId);
     const duration = useDraftDuration({ eventId, options: durationOptions, currentOptionId: savedOptionId });
+    // Only the main host can be quoted, and only once there is a start date and a duration on sale.
+    const { consent, collaborationPreview, breakdown, handleCollaborationPreviewChange, submit, error, isPending } = useDraftActivationCheckout(
+        eventId,
+        { quoteEnabled: canPay && canPurchase && Boolean(currentOption) && !duration.isSaving },
+    );
     const canCheckout = canPurchase && Boolean(currentOption) && !duration.isSaving;
 
     // activationTotal already bundles the plan's own (non-collaboration-code) price with
@@ -87,11 +92,13 @@ export function OverviewDraftPanel({
             ? activationTotal - planActivation.amountMinor + collaborationPreview.payableAmountMinor
             : activationTotal;
     const dueNowCurrency = collaborationPreview?.currency ?? currency;
-    const dueNowTotalLabel = !currentOption
-        ? UNKNOWN_AMOUNT
-        : dueNowMinor !== null
-          ? formatMoney(locale, dueNowMinor, dueNowCurrency)
-          : tCreate('payment.noCharge');
+    const dueNowTotalLabel = breakdown
+        ? formatMoney(locale, breakdown.totalMinor, breakdown.currency)
+        : !currentOption
+          ? UNKNOWN_AMOUNT
+          : dueNowMinor !== null
+            ? formatMoney(locale, dueNowMinor, dueNowCurrency)
+            : tCreate('payment.noCharge');
 
     return (
         <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-8">
@@ -139,7 +146,7 @@ export function OverviewDraftPanel({
                             <EventOverviewPriceRow
                                 label={currentPlan.name}
                                 detail={tCreate('overview.planActivation')}
-                                amount={planActivation && formatMoney(locale, planActivation.amountMinor, planActivation.currency)}
+                                amount={breakdown ? '' : planActivation && formatMoney(locale, planActivation.amountMinor, planActivation.currency)}
                                 fallback={currentOption ? tCreate('payment.noCharge') : UNKNOWN_AMOUNT}
                             >
                                 {/* Duration */}
@@ -154,16 +161,18 @@ export function OverviewDraftPanel({
                                 {duration.error && <p className="mt-2 text-xs text-rose-600">{duration.error}</p>}
                             </EventOverviewPriceRow>
                         )}
-                        {selectedAddons.map((addon, index) => (
-                            <EventOverviewPriceRow
-                                key={`${addon.code}-${index}`}
-                                label={addon.name}
-                                detail={t('draftModules.once')}
-                                amount={formatMoney(locale, addon.priceAmountMinor, currency)}
-                                fallback={tCreate('payment.noCharge')}
-                            />
-                        ))}
-                        {collaborationPreview && planActivation && (
+                        {/* The server's breakdown lists the add-ons and discounts itself */}
+                        {!breakdown &&
+                            selectedAddons.map((addon, index) => (
+                                <EventOverviewPriceRow
+                                    key={`${addon.code}-${index}`}
+                                    label={addon.name}
+                                    detail={t('draftModules.once')}
+                                    amount={formatMoney(locale, addon.priceAmountMinor, currency)}
+                                    fallback={tCreate('payment.noCharge')}
+                                />
+                            ))}
+                        {!breakdown && collaborationPreview && planActivation && (
                             <EventOverviewPriceRow
                                 label={tCreate('overview.discount')}
                                 detail={tCreate('overview.discountDetail', {
@@ -176,6 +185,13 @@ export function OverviewDraftPanel({
                             />
                         )}
                     </div>
+
+                    {/* Price breakdown */}
+                    {breakdown && (
+                        <div className="mt-3">
+                            <PriceBreakdownSummary breakdown={breakdown} showTotal={false} />
+                        </div>
+                    )}
                 </section>
 
                 {/* Collaboration code: a preview prices one duration, so a new pick starts it over */}
