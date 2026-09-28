@@ -838,7 +838,7 @@
             "title": "Event title",
             "startAt": "Starts",
             "timezone": "Timezone",
-            "locationName": "Location (optional)",
+            "locationName": "Location",
             "visibility": "Visibility",
             "locationAddress": "Address",
             "mapsUrl": "Maps link"
