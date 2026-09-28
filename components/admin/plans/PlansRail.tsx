@@ -3,17 +3,13 @@
 import { useTranslations } from 'next-intl';
 import type { ChangeEvent, MouseEvent } from 'react';
 
-import { PlansRailSearch } from '@/components/admin/plans/PlansRailSearch';
+import { AdminRailItem } from '@/components/admin/AdminRailItem';
+import { AdminRailSearch } from '@/components/admin/AdminRailSearch';
 import { useLocalizedText } from '@/hooks/useLocalizedText';
 import type { PlansView } from '@/lib/adminPlansRouting';
 import type { PlatformEventTypeResponseDto } from '@/lib/api/types';
-import { cn } from '@/lib/utils';
 
 export type PlansRailEventType = { type: PlatformEventTypeResponseDto; liveCount: number };
-
-const ITEM_CLASS = 'flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-[13.3px] font-semibold transition-colors';
-const ACTIVE_CLASS = 'bg-primary-light text-primary-dark';
-const IDLE_CLASS = 'text-ink-muted hover:bg-canvas hover:text-ink';
 
 export function PlansRail({
     view,
@@ -45,26 +41,22 @@ export function PlansRail({
     return (
         <aside className="flex w-full shrink-0 flex-col gap-4 lg:w-52">
             {/* Search */}
-            <PlansRailSearch value={search} onChangeAction={onSearchChangeAction} />
+            <AdminRailSearch value={search} placeholder={t('search.placeholder')} onChangeAction={onSearchChangeAction} />
 
             {/* Event types */}
             <nav aria-label={t('rail.eventTypes')} className="space-y-px">
-                {eventTypes.map(({ type, liveCount }) => {
-                    const active = view.view === 'eventType' && type.eventTypeKey === selectedEventTypeKey;
-                    return (
-                        <button
-                            key={type.eventTypeKey}
-                            type="button"
-                            data-event-type-key={type.eventTypeKey}
-                            aria-current={active ? 'page' : undefined}
-                            onClick={handleTypeClick}
-                            className={cn(ITEM_CLASS, active ? ACTIVE_CLASS : IDLE_CLASS, !type.isEnabled && 'opacity-60')}
-                        >
-                            <span className="truncate">{localizedText(type.name, type.eventTypeKey)}</span>
-                            <span className="shrink-0 font-mono text-[11px] text-ink-faint">{liveCount}</span>
-                        </button>
-                    );
-                })}
+                {eventTypes.map(({ type, liveCount }) => (
+                    <AdminRailItem
+                        key={type.eventTypeKey}
+                        data-event-type-key={type.eventTypeKey}
+                        active={view.view === 'eventType' && type.eventTypeKey === selectedEventTypeKey}
+                        muted={!type.isEnabled}
+                        onClick={handleTypeClick}
+                    >
+                        <span className="truncate">{localizedText(type.name, type.eventTypeKey)}</span>
+                        <span className="shrink-0 font-mono text-[11px] text-ink-faint">{liveCount}</span>
+                    </AdminRailItem>
+                ))}
                 {eventTypes.length === 0 && <p className="px-2.5 py-2 text-xs text-ink-faint">{t('rail.noMatches')}</p>}
             </nav>
 
@@ -72,22 +64,12 @@ export function PlansRail({
             <nav aria-label={t('rail.settings')} className="border-t border-border pt-3">
                 <p className="mb-1.5 px-2.5 text-[10.5px] font-bold tracking-[0.08em] text-ink-faint uppercase">{t('rail.settings')}</p>
                 <div className="space-y-px">
-                    <button
-                        type="button"
-                        aria-current={view.view === 'settingsModules' ? 'page' : undefined}
-                        onClick={onOpenSettingsModulesAction}
-                        className={cn(ITEM_CLASS, view.view === 'settingsModules' ? ACTIVE_CLASS : IDLE_CLASS)}
-                    >
+                    <AdminRailItem active={view.view === 'settingsModules'} onClick={onOpenSettingsModulesAction}>
                         {t('rail.modules')}
-                    </button>
-                    <button
-                        type="button"
-                        aria-current={view.view === 'settingsEventTypes' ? 'page' : undefined}
-                        onClick={onOpenSettingsEventTypesAction}
-                        className={cn(ITEM_CLASS, view.view === 'settingsEventTypes' ? ACTIVE_CLASS : IDLE_CLASS)}
-                    >
+                    </AdminRailItem>
+                    <AdminRailItem active={view.view === 'settingsEventTypes'} onClick={onOpenSettingsEventTypesAction}>
                         {t('rail.eventTypesSettings')}
-                    </button>
+                    </AdminRailItem>
                 </div>
             </nav>
         </aside>

@@ -304,7 +304,6 @@ export const endpoints = {
             codes: (id: string) => `/api/admin/collaborators/${id}/codes`,
             linkCode: (id: string) => `/api/admin/collaborators/${id}/codes/link`,
             earnings: (id: string) => `/api/admin/collaborators/${id}/earnings`,
-            earningsTotals: (id: string) => `/api/admin/collaborators/${id}/earnings/totals`,
         },
         collaborationCodes: {
             byId: (id: string) => `/api/admin/collaboration-codes/${id}`,

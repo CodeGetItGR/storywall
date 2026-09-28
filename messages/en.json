@@ -3029,29 +3029,12 @@
         },
         "collaborations": {
             "title": "Collaborations",
-            "subtitle": "Manage partners and referral codes.",
-            "loading": "Loading collaborators...",
-            "empty": "No collaborators to show.",
+            "loading": "Loading partners...",
+            "empty": "No partners yet.",
             "search": "Search partners",
             "create": "New partner",
             "edit": "Edit",
-            "manage": "Manage partner",
-            "rowCount": "{shown} of {total} partners",
-            "selectPrompt": "Select a partner.",
-            "columns": {
-                "partner": "Partner",
-                "contact": "Contact",
-                "portal": "Portal",
-                "status": "Status"
-            },
-            "stats": {
-                "total": "Partners",
-                "active": "Active",
-                "suspended": "Suspended",
-                "portalLinks": "Portal links"
-            },
             "status": {
-                "ALL": "All",
                 "ACTIVE": "Active",
                 "SUSPENDED": "Suspended"
             },
@@ -3062,27 +3045,24 @@
                 "notes": "Notes"
             },
             "drawer": {
-                "createTitle": "Create partner",
-                "createSubtitle": "Add a partner record.",
-                "editTitle": "Edit {name}",
-                "editSubtitle": "Update partner details."
+                "createTitle": "New partner",
+                "editTitle": "Edit {name}"
             },
             "portal": {
-                "title": "Portal",
-                "description": "Issue the partner page link and copy it while it is visible.",
-                "issue": "Issue portal link",
-                "issued": "Issued",
-                "notIssued": "Not issued",
-                "confirmTitle": "Issue a portal link?",
-                "confirmBody": "A new link replaces the previous one immediately. The full link is shown once.",
-                "once": "Copy this now. It will not be shown again.",
-                "copy": "Copy portal link",
+                "title": "Portal link",
+                "notIssued": "No portal link yet",
+                "confirmTitle": "Replace the portal link?",
+                "confirmBody": "The current link stops working right away.",
+                "once": "Copy this now. It won't be shown again.",
+                "copy": "Copy link",
                 "copied": "Copied",
-                "issuedAt": "Portal issued {date}"
+                "issuedAt": "Link created {date}",
+                "issued": "Link created",
+                "create": "Create link",
+                "replace": "Replace link"
             },
             "codes": {
                 "title": "Codes",
-                "subtitle": "Codes are printed by partners and cannot be renamed later.",
                 "create": "New code",
                 "createTitle": "Create code",
                 "edit": "Edit code",
@@ -3127,8 +3107,8 @@
                 }
             },
             "linkCode": {
-                "open": "Link discount code",
-                "title": "Link discount code",
+                "open": "Link existing code",
+                "title": "Link existing code",
                 "action": "Link code",
                 "loading": "Loading discount codes...",
                 "code": "Discount code",
@@ -3137,38 +3117,29 @@
             },
             "earnings": {
                 "title": "Earnings",
-                "loadingTotals": "Loading totals...",
-                "emptyTotals": "No totals yet.",
-                "paidBalance": "{paid} paid, {balance} balance",
-                "markPaidTitle": "Mark paid",
                 "payoutReference": "Payout reference",
                 "markPaid": "Mark paid",
-                "ledger": "Ledger",
-                "loading": "Loading ledger...",
-                "empty": "No earnings yet.",
-                "details": "View details",
-                "detailTitle": "Earning details",
-                "amount": "Amount",
-                "entryType": "Entry type",
-                "paidAt": "Paid at",
-                "noReference": "Not paid",
-                "selectAccrued": "Select accrued",
-                "clear": "Clear selection",
-                "on": "on",
+                "loading": "Loading earnings...",
+                "empty": "No earnings to show.",
+                "noReference": "—",
+                "clear": "Clear",
                 "confirmTitle": "Mark earnings paid?",
-                "confirmBody": "This marks {count} rows paid for {amount} with reference {reference}.",
-                "confirmBodyMixed": "This marks {count} rows paid. Check each currency before confirming.",
+                "confirmBody": "{count, plural, one {# row} other {# rows}} · {amount}",
                 "columns": {
-                    "select": "Pay",
                     "date": "Date",
                     "amount": "Amount",
-                    "basis": "Basis",
                     "status": "Status",
-                    "reference": "Payout reference"
+                    "reference": "Reference",
+                    "event": "Event",
+                    "code": "Code",
+                    "commission": "Commission"
                 },
                 "filters": {
-                    "open": "Open",
-                    "all": "All"
+                    "OPEN": "Open",
+                    "ACCRUED": "Accrued",
+                    "PAID": "Paid",
+                    "REVERSED": "Reversed",
+                    "ALL": "All"
                 },
                 "status": {
                     "ACCRUED": "Accrued",
@@ -3176,17 +3147,32 @@
                     "REVERSED": "Reversed"
                 },
                 "entryTypes": {
-                    "ACCRUAL": "Commission",
                     "CLAWBACK": "Reversal"
-                }
+                },
+                "owed": "Owed · {currency}",
+                "paid": "{amount} paid",
+                "basis": "{percent}% of {amount}",
+                "select": "Select {event}, {date}",
+                "selectAll": "Select all accrued rows",
+                "selected": "{count} selected"
             },
             "void": {
-                "title": "Void attribution",
                 "reason": "Reason",
                 "action": "Void attribution",
-                "success": "Attribution voided.",
+                "rowAction": "Void attribution for {event}, {date}",
                 "confirmTitle": "Void this attribution?",
                 "confirmBody": "This unwinds commission only. The host keeps the price already charged."
+            },
+            "noMatches": "No matches.",
+            "suspend": {
+                "action": "Suspend",
+                "title": "Suspend {name}?",
+                "body": "Their partner page and all their codes stop working."
+            },
+            "reactivate": {
+                "action": "Reactivate",
+                "title": "Reactivate {name}?",
+                "body": "Their partner page and active codes work again."
             }
         },
         "discountCodes": {

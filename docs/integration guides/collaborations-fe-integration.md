@@ -36,6 +36,11 @@ pre-creation preview now requires `coverageOptionId`; an upgrade preview (§1) r
 its eligible durations in `options[]`. **`coverage-options-and-extensions-fe-integration.md` has the
 full reference.**
 
+**2026-09-28**, non-breaking: every admin collaborator response (list and detail) now carries
+`earningsTotals`, so the partner rail no longer needs a `/earnings/totals` call per partner; and
+ledger rows carry `eventTitle`, which is `null` once the event is purged (§3, "Create / read a
+collaborator" and "The ledger").
+
 ## Why
 
 Wedding venues and event organisers send us hosts. A code at checkout is how we both give that
@@ -389,13 +394,19 @@ POST /api/admin/collaborators
   "status": "ACTIVE",
   "portalTokenIssued": false,
   "portalTokenIssuedAt": null,
-  "notes": null
+  "notes": null,
+  "earningsTotals": []                    // same rows as /earnings/totals; [] when never earned
 }
 ```
 
 `GET /api/admin/collaborators` returns a bare JSON array of the same shape (no pagination
 envelope). `GET /api/admin/collaborators/{id}` returns one. The response never contains a portal
 token — see below.
+
+`earningsTotals` is the per-currency owed/paid summary, the same shape as
+[`/earnings/totals`](#the-ledger) (`[{ "currency": "EUR", "accruedMinor": 3043, "paidMinor": 0 }]`),
+on every collaborator response, including the list. It is always an array, never `null`: `[]`
+means the partner has never earned anything. A list or detail view needs no separate totals call.
 
 ### Updating a collaborator, or suspending one
 
@@ -564,7 +575,8 @@ GET /api/admin/collaborators/{id}/earnings
 [
   {
     "id": "6b2a…",
-    "eventId": "…",
+    "eventId": "…",                // survives the event being purged
+    "eventTitle": "Anna & Nikos",  // null once the event is purged — show a short eventId instead
     "orderId": "…",
     "codeId": "9c1e…",
     "entryType": "ACCRUAL",        // ACCRUAL | CLAWBACK
@@ -591,7 +603,8 @@ GET /api/admin/collaborators/{id}/earnings/totals
 [ { "currency": "EUR", "accruedMinor": 21600, "paidMinor": 18000 } ]
 ```
 
-One row per currency that collaborator has ever earned in; `accruedMinor` is what's currently owed
+The same rows are embedded in every collaborator response as `earningsTotals`. One row per
+currency that collaborator has ever earned in; `accruedMinor` is what's currently owed
 (status `ACCRUED`), `paidMinor` is what has already gone out (status `PAID`). Never sum these
 across the array — a total across currencies is meaningless.
 

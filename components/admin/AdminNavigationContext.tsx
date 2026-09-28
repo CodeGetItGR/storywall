@@ -19,6 +19,7 @@ import {
 import { useTranslations } from 'next-intl';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
+import { COLLABORATIONS_HASH_ROOT, isCollaborationsHash } from '@/lib/adminCollaborationsRouting';
 import { isPlansHash, PLANS_HASH_ROOT } from '@/lib/adminPlansRouting';
 
 export type AdminTab =
@@ -59,7 +60,6 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#cost-tracking': 'costTracking',
     '#paid-services': 'paidServices',
     '#discount-codes': 'discountCodes',
-    '#collaborations': 'collaborations',
     '#reaction-types': 'reactionTypes',
     '#assignments': 'assignments',
     '#billing-ops': 'billingOps',
@@ -75,7 +75,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     plans: PLANS_HASH_ROOT,
     paidServices: '#paid-services',
     discountCodes: '#discount-codes',
-    collaborations: '#collaborations',
+    collaborations: COLLABORATIONS_HASH_ROOT,
     reactionTypes: '#reaction-types',
     assignments: '#assignments',
     billingOps: '#billing-ops',
@@ -97,13 +97,14 @@ const AdminNavigationContext = createContext<
     | undefined
 >(undefined);
 
-// `#plans/...` carries its own sub-route (event type or settings view), parsed
-// by the Plans section itself; legacy `#event-plans`, `#modules`, `#event-types`
-// land there too so old links keep working.
+// `#plans/...` and `#collaborations/...` carry their own sub-route, parsed by
+// the section itself; legacy `#event-plans`, `#modules`, `#event-types` land
+// on Plans too so old links keep working.
 function currentHashTab(): AdminTab {
     if (typeof window === 'undefined') return 'metrics';
     const hash = window.location.hash;
     if (isPlansHash(hash)) return 'plans';
+    if (isCollaborationsHash(hash)) return 'collaborations';
     return HASH_TO_TAB[hash] ?? 'metrics';
 }
 

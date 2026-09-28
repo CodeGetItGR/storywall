@@ -2529,8 +2529,15 @@ export type RefundBasis = 'CONSENTED_PRO_RATA' | 'NO_CONSENT_FULL_REFUND' | 'PRO
 export type WithdrawalScope = 'EVENT' | 'ORDER';
 
 /** POST /api/events/{eventId}/withdrawals and POST /api/events/{eventId}/orders/{orderId}/withdrawals — the body is optional. Nothing in `reason` is parsed; an admin reads it if the request is held. */
+/** Body of POST /api/events/{eventId}/withdrawals and POST /api/events/{eventId}/orders/{orderId}/withdrawals.
+ *  Required since 2026-09-28 (was optional). */
 export interface WithdrawalRequestCreateDto {
-  reason?: string;   // max 1000
+  reason?: string | null;   // max 1000
+  /** The `confirmationToken` of the preview the host confirmed (2026-09-28). Missing, malformed or for
+   *  another event/order/scope/user: 400 WITHDRAWAL_CONFIRMATION_INVALID (5094). Expired (10 min), or
+   *  the amount changed since the preview: 409 WITHDRAWAL_PREVIEW_STALE (5095); re-fetch the preview
+   *  and show it again. Neither files anything or sends an email. */
+  confirmationToken: string;
 }
 
 /** GET /api/events/{eventId}/withdrawal-preview — what a withdrawal would do right now, without
@@ -2567,6 +2574,9 @@ export interface WithdrawalPreviewDto {
   /** EVENT only (2026-09-24): business-bought upgrades and packs this withdrawal leaves unrefunded.
    *  They go with the event. Empty on ORDER previews and on refusals. */
   excludedOrders: WithdrawalExcludedOrderDto[];
+  /** Opaque. Send it back as `confirmationToken` on the matching withdrawal POST when the host clicks
+   *  "Confirm withdrawal". Valid 10 minutes; bound to this preview's amount (2026-09-28). */
+  confirmationToken: string;
 }
 
 export interface WithdrawalStorageAfterDto {
@@ -2797,6 +2807,9 @@ export interface CollaboratorResponseDto {
   portalTokenIssued: boolean;
   portalTokenIssuedAt: string | null;
   notes: string | null;
+  /** Same rows as GET …/earnings/totals, on every collaborator response including the list.
+   *  Always an array; [] when the partner has never earned. */
+  earningsTotals: EarningTotalDto[];
 }
 
 /** POST /api/admin/collaborators/{collaboratorId}/portal-token — rotates and returns the token.
@@ -2887,6 +2900,8 @@ export interface VoidRedemptionRequestDto {
 export interface EarningResponseDto {
   id: string;
   eventId: string;
+  /** Null once the event has been purged; eventId survives it. */
+  eventTitle: string | null;
   orderId: string;
   codeId: string;
   entryType: EarningEntryType;

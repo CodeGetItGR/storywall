@@ -806,6 +806,8 @@ export interface CollaboratorResponseDto {
     portalTokenIssued: boolean;
     portalTokenIssuedAt: string | null;
     notes: string | null;
+    // Same rows as GET …/earnings/totals, on list and detail. [] when never earned.
+    earningsTotals: CollaborationEarningsTotalDto[];
 }
 export interface CollaboratorPortalTokenResponseDto {
     token: string;
@@ -859,6 +861,8 @@ export interface LinkDiscountCodeRequestDto {
 export interface CollaborationEarningResponseDto {
     id: string;
     eventId: string;
+    // Null once the event is purged; eventId survives it.
+    eventTitle: string | null;
     orderId: string;
     codeId: string;
     entryType: CollaborationEarningEntryType;

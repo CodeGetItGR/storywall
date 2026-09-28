@@ -8,7 +8,7 @@ import { useAdminNavigation } from '@/components/admin/AdminNavigationContext';
 import { BugReportsPanel } from '@/components/admin/betaFeedback/BugReportsPanel';
 import { ErrorEventsPanel } from '@/components/admin/betaFeedback/ErrorEventsPanel';
 import { BillingOpsPanel } from '@/components/admin/BillingOpsPanel';
-import { CollaborationsPanel } from '@/components/admin/CollaborationsPanel';
+import { CollaborationsSection } from '@/components/admin/collaborations/CollaborationsSection';
 import { CostTrackingPanel } from '@/components/admin/CostTrackingPanel';
 import { PaidServicesCatalogPanel } from '@/components/admin/PaidServicesCatalogPanel';
 import { PlanAssignmentPanel } from '@/components/admin/PlanAssignmentPanel';
@@ -26,7 +26,7 @@ export function AdminConsole() {
     if (tab === 'paidServices') return <PaidServicesCatalogPanel />;
     if (tab === 'plans') return <PlansSection />;
     if (tab === 'discountCodes') return <AdminDiscountCodesPanel />;
-    if (tab === 'collaborations') return <CollaborationsPanel />;
+    if (tab === 'collaborations') return <CollaborationsSection />;
     if (tab === 'reactionTypes') return <ReactionTypesCatalogPanel />;
     if (tab === 'bugReports' || tab === 'errorEvents') {
         return (
