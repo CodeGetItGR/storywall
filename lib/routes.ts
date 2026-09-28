@@ -26,6 +26,7 @@ function withQuery(pathname: string, params: Record<string, RouteQueryValue>): s
 }
 
 export const routes = {
+    landing: '/',
     feed: '/feed',
     eventNotFound: '/event-not-found',
     login: '/login',

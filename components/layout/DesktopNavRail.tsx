@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
 import { AccountLogoutButton } from '@/components/account/AccountLogoutButton';
+import { AccountSidebarLogo } from '@/components/account/AccountSidebarLogo';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { DesktopAccountNavLink } from '@/components/layout/DesktopAccountNavLink';
 import { isEventRoute, isPathActive } from '@/components/layout/mobile-tab-bar';
@@ -56,6 +57,9 @@ export function DesktopNavRail() {
                 expanded ? 'w-80 px-5 pt-14 pb-7 text-white' : 'w-20 px-3 pt-6 pb-5',
             )}
         >
+            {/* Brand */}
+            <AccountSidebarLogo iconOnly={!expanded} className={expanded ? 'mb-8' : 'mx-auto mb-6'} />
+
             {/* Identity */}
             <div className={cn('border-white/18 transition-[padding,border-color]', expanded ? 'border-b pb-6' : 'border-b-0 pb-0')}>
                 <div className={cn('flex items-center', expanded ? 'gap-4' : 'justify-center')}>
