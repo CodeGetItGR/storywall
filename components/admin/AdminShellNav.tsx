@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { type MouseEvent } from 'react';
 
 import { type AdminTab, useAdminNavigation } from '@/components/admin/AdminNavigationContext';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { cn } from '@/lib/utils';
 
 const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operations'> = {
@@ -103,22 +104,28 @@ export function AdminShellNav({
                 );
             })}
 
-            <div className="mt-auto flex items-center gap-2 border-t border-border px-2.5 pt-3">
-                <div className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-surface-muted text-[10.5px] font-extrabold text-ink-muted">
-                    {initials}
+            <div className="mt-auto flex flex-col gap-3 border-t border-border pt-3">
+                <div className="px-2.5">
+                    <LanguageSwitcher />
                 </div>
-                <div className="min-w-0 flex-1 leading-tight">
-                    <p className="truncate text-[12.3px] font-bold text-ink">{email ?? t('layout.console')}</p>
-                    {userId && <p className="truncate text-[10.8px] text-ink-faint">{userId}</p>}
+
+                <div className="flex items-center gap-2 px-2.5">
+                    <div className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-surface-muted text-[10.5px] font-extrabold text-ink-muted">
+                        {initials}
+                    </div>
+                    <div className="min-w-0 flex-1 leading-tight">
+                        <p className="truncate text-[12.3px] font-bold text-ink">{email ?? t('layout.console')}</p>
+                        {userId && <p className="truncate text-[10.8px] text-ink-faint">{userId}</p>}
+                    </div>
+                    <button
+                        type="button"
+                        onClick={handleLogoutClick}
+                        aria-label={t('layout.signOut')}
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-canvas hover:text-ink"
+                    >
+                        <LogOut className="h-3.5 w-3.5" />
+                    </button>
                 </div>
-                <button
-                    type="button"
-                    onClick={handleLogoutClick}
-                    aria-label={t('layout.signOut')}
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-canvas hover:text-ink"
-                >
-                    <LogOut className="h-3.5 w-3.5" />
-                </button>
             </div>
         </aside>
     );
