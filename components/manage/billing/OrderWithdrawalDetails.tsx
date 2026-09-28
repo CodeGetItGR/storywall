@@ -1,5 +1,6 @@
 import { useTranslations } from 'next-intl';
 
+import { OrderWithdrawalRefund } from '@/components/manage/billing/OrderWithdrawalRefund';
 import { WithdrawalExcludedOrders } from '@/components/manage/billing/WithdrawalExcludedOrders';
 import { useContentLimits } from '@/hooks/useContentLimits';
 import type { OrderWithdrawalFlow } from '@/hooks/useOrderWithdrawalFlow';
@@ -34,23 +35,27 @@ export function OrderWithdrawalDetails({ flow }: { flow: OrderWithdrawalFlow }) 
 
     return (
         <div className="space-y-4 text-left text-sm">
-            {/* Refund */}
-            <div>
-                <p className="font-semibold text-ink">{t('refund', { amount: flow.refundLabel ?? '' })}</p>
-                {flow.deadlineLabel && <p className="mt-0.5 text-xs text-ink-muted">{t('until', { date: flow.deadlineLabel })}</p>}
-                {preview.instant && <p className="mt-0.5 text-xs text-ink-muted">{t('instant')}</p>}
-            </div>
+            {/* Deadline */}
+            {flow.deadlineLabel && <p className="text-xs text-ink-muted">{t('until', { date: flow.deadlineLabel })}</p>}
 
-            {/* What happens */}
-            <div className="space-y-1 text-xs leading-relaxed text-ink-muted">
-                <p>{preview.scope === 'EVENT' ? t('eventScope') : order.kind === 'UPGRADE' ? t('upgradeScope') : t('orderScope')}</p>
-                {preview.scheduleMovedAfterPayment && <p>{t('reviewed')}</p>}
-                {storage && (
-                    <p>{t('storageAfter', { from: storage.from ?? t('unlimited'), to: storage.to ?? t('unlimited'), usage: storage.usage })}</p>
+            {/* Consequences */}
+            <div className="space-y-1.5 leading-relaxed">
+                {preview.scope === 'EVENT' ? (
+                    <p className="font-semibold text-rose-700">{t('eventScope')}</p>
+                ) : order.kind === 'UPGRADE' ? (
+                    <p className="text-ink">{t('upgradeScope')}</p>
+                ) : (
+                    <p className="text-xs text-ink-muted">{t('orderScope')}</p>
                 )}
                 {storage?.over && storage.trimDue && (
-                    <p className="font-semibold text-amber-700">{t('storageOver', { over: storage.over, date: storage.trimDue })}</p>
+                    <p className="font-semibold text-rose-700">{t('storageOver', { over: storage.over, date: storage.trimDue })}</p>
                 )}
+                {storage && (
+                    <p className="text-xs text-ink-muted">
+                        {t('storageAfter', { from: storage.from ?? t('unlimited'), to: storage.to ?? t('unlimited'), usage: storage.usage })}
+                    </p>
+                )}
+                {preview.scheduleMovedAfterPayment && <p className="text-xs text-ink-muted">{t('reviewed')}</p>}
                 <WithdrawalExcludedOrders orders={preview.excludedOrders} />
             </div>
 
@@ -77,7 +82,7 @@ export function OrderWithdrawalDetails({ flow }: { flow: OrderWithdrawalFlow }) 
                     rows={2}
                     maxLength={limits.withdrawalReasonMaxLength}
                     placeholder={t('reasonPlaceholder')}
-                    className="mt-1 w-full rounded-lg bg-background px-3 py-2 text-sm text-ink outline-none focus:ring-2 focus:ring-primary/15"
+                    className="resize-none mt-1 w-full rounded-md bg-background px-3 py-2 text-sm text-ink border border-primary/15"
                 />
             </label>
 
@@ -90,6 +95,9 @@ export function OrderWithdrawalDetails({ flow }: { flow: OrderWithdrawalFlow }) 
             >
                 {t('terms')}
             </a>
+
+            {/* Refund */}
+            <OrderWithdrawalRefund flow={flow} />
 
             {flow.error && <p className="text-xs text-rose-600">{flow.error}</p>}
         </div>

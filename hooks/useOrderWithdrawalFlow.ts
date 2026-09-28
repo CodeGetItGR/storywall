@@ -11,6 +11,7 @@ import type { OrderSummaryDto } from '@/lib/api/types';
 import { formatMoney, lastWithdrawalMoment } from '@/lib/billing';
 import { formatDate } from '@/lib/datetime';
 import { formatBytes } from '@/lib/format';
+import { withdrawalLineReason } from '@/lib/priceBreakdown';
 
 /**
  * One order's withdrawal (phase 4 §6): "Withdraw" opens the preview, the host
@@ -62,6 +63,12 @@ export function useOrderWithdrawalFlow(eventId: string, { currentLimitBytes }: {
         isLoading: preview.isLoading,
         loadFailed: Boolean(preview.error),
         refundLabel: data ? formatMoney(locale, data.totalRefundMinor, data.currency) : null,
+        refundLines: (data?.lines ?? []).map((line) => ({
+            id: line.orderId,
+            kind: line.orderKind,
+            amount: formatMoney(locale, line.refundMinor, data?.currency ?? null),
+            ...withdrawalLineReason(line),
+        })),
         deadlineLabel: data?.windowClosesAt ? dateTime(lastWithdrawalMoment(data.windowClosesAt)) : null,
         storage: storageAfter && {
             from: currentLimitBytes === null ? null : formatBytes(currentLimitBytes),

@@ -4,9 +4,23 @@ import type {
     OrderSummaryDto,
     PriceBreakdownDiscount,
     PriceBreakdownItem,
+    WithdrawalLine,
     WithdrawalPreviewResponseDto,
     WithdrawalResponseDto,
 } from '@/lib/api/types';
+
+const DAY_SECONDS = 86_400;
+
+// Why a withdrawal line pays back what it does: in full, or the unused share of
+// its time (as whole days). `days` is null when the backend sent no times.
+export function withdrawalLineReason(line: Pick<WithdrawalLine, 'basis' | 'usedSeconds' | 'totalSeconds'>) {
+    if (line.basis === 'NO_CONSENT_FULL_REFUND') return { full: true, days: null };
+    if (line.usedSeconds === null || !line.totalSeconds) return { full: false, days: null };
+    return {
+        full: false,
+        days: { used: Math.ceil(line.usedSeconds / DAY_SECONDS), total: Math.round(line.totalSeconds / DAY_SECONDS) },
+    };
+}
 
 // The backend's `labelKey`s (withdrawal-compliance-phase4 §3), mapped onto this
 // app's PriceBreakdown.items messages. An unknown key falls back to item.name.
