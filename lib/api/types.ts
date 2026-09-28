@@ -446,6 +446,9 @@ export interface RegisterRequestDto {
     lastName: string;
     inviteToken?: string;
     subscribeToNewsletter?: boolean;
+    // All-or-nothing: an invalid profile is a 400 and no account is created.
+    // VIES may leave it PENDING, so read GET /api/me/business-profile afterwards.
+    businessProfile?: BusinessProfileRequestDto | null;
 }
 
 export interface LoginRequestDto {

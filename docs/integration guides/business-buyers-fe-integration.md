@@ -82,6 +82,19 @@ Response (`BusinessProfileResponseDto`):
 
 Every `PUT` starts a new check, even when nothing changed.
 
+### At signup (added 2026-09-28)
+
+`POST /api/auth/register` accepts an optional `businessProfile`, the same object as the `PUT` body
+above. Leave it out (or `null`) for a consumer signup; nothing changes.
+
+- **It is all-or-nothing.** A missing required field, a malformed VAT number or a non-VIES country
+  answers `400` and **no account is created** — show the error on the business section and let the
+  user resubmit. (Unlike `inviteToken` and `subscribeToNewsletter`, which never fail signup.)
+- VIES is asked right after the account is created. A VIES outage doesn't fail signup: the profile
+  is saved `PENDING` and the hourly retry confirms it. Read `GET /api/me/business-profile` afterwards
+  for the status; don't assume `business: true` straight from signup.
+- OAuth signup doesn't take it; those users set it in settings as before.
+
 ## 3. What to show at checkout for a business buyer
 
 The Stripe payment page footer for a business order reads:

@@ -8,6 +8,7 @@ import React, { ChangeEvent, useCallback, useState } from 'react';
 
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
+import { RegisterBusinessSection } from '@/components/auth/RegisterBusinessSection';
 import { RegisterNewsletterCheckbox } from '@/components/auth/RegisterNewsletterCheckbox';
 import { AuthLoadingState } from '@/components/layout/AuthLoadingState';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
@@ -17,6 +18,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useAuthPageRedirect } from '@/hooks/useAuthPageRedirect';
 import { useContentLimits } from '@/hooks/useContentLimits';
 import { useNavigateAfterSignIn } from '@/hooks/useNavigateAfterSignIn';
+import { useRegisterBusinessProfile } from '@/hooks/useRegisterBusinessProfile';
 import { AUTH_RETURN_PATH_PARAM, getPostRegisterRedirectPath, getSafeReturnPath } from '@/lib/auth/returnPath';
 import { routes } from '@/lib/routes';
 
@@ -32,6 +34,7 @@ export default function RegisterPage() {
     const { shouldRenderAuthPage } = useAuthPageRedirect(returnPath);
     const toErrorMessage = useApiErrorMessage();
     const newsletterConfig = useAppNewsletterConfig();
+    const business = useRegisterBusinessProfile();
 
     const [showPw, setShowPw] = useState(false);
     const [email, setEmail] = useState(searchParams.get('email') ?? '');
@@ -45,6 +48,8 @@ export default function RegisterPage() {
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
         setError(null);
+        const businessProfile = business.prepareRequest();
+        if (businessProfile === false) return;
         setIsSubmitting(true);
 
         try {
@@ -55,10 +60,11 @@ export default function RegisterPage() {
                 lastName,
                 inviteToken: inviteToken ?? undefined,
                 subscribeToNewsletter: newsletterConfig ? subscribeToNewsletter : undefined,
+                businessProfile: businessProfile ?? undefined,
             });
             navigateAfterSignIn(getPostRegisterRedirectPath(auth.role, Boolean(inviteToken)));
         } catch (err) {
-            setError(toErrorMessage(err));
+            if (!business.handleSignupError(err)) setError(toErrorMessage(err));
         } finally {
             setIsSubmitting(false);
         }
@@ -191,6 +197,9 @@ export default function RegisterPage() {
                         onChangeAction={onSubscribeToNewsletterChange}
                     />
                 )}
+
+                {/* Business */}
+                <RegisterBusinessSection business={business} />
 
                 {error && (
                     <p role="alert" className="-mt-1 text-center text-xs text-red-500">

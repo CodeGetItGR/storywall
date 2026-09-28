@@ -413,6 +413,10 @@
         "newsletter": {
             "label": "Subscribe to the newsletter and get {percent}% off your next event",
             "hint": "We'll send your code after you verify your email."
+        },
+        "business": {
+            "label": "Register as a business",
+            "hint": "Add your company's VAT details to buy as a business."
         }
     },
     "WelcomePage": {
@@ -622,6 +626,7 @@
                 "city": "City",
                 "postalCode": "Postal code"
             },
+            "fieldRequired": "Required",
             "northernIreland": "Northern Ireland",
             "noWithdrawal": "Business purchases have no right of withdrawal.",
             "save": "Save",

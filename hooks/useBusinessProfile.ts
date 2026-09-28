@@ -56,6 +56,19 @@ export function useBusinessProfile() {
 
 type FieldErrors = Partial<Record<BusinessProfileField, string>>;
 
+// VIES countries by localized name, for the business profile country select.
+export function useViesCountryOptions() {
+    const locale = useLocale();
+    const northernIreland = useTranslations('ProfilePage.business')('northernIreland');
+    return useMemo(
+        () =>
+            VIES_COUNTRY_CODES.map((code) => ({ code, name: viesCountryName(locale, code, northernIreland) })).sort((a, b) =>
+                a.name.localeCompare(b.name, locale),
+            ),
+        [locale, northernIreland],
+    );
+}
+
 // Profile settings: read-only summary, an edit dialog, and a remove confirmation.
 export function useBusinessProfileSettings() {
     const { canHaveProfile, isLoading, profile, query } = useBusinessProfile();
@@ -123,13 +136,7 @@ export function useBusinessProfileSettings() {
     const cancelRemove = useCallback(() => setIsConfirmingRemove(false), []);
     const confirmRemove = useCallback(() => remove(), [remove]);
 
-    const countryOptions = useMemo(
-        () =>
-            VIES_COUNTRY_CODES.map((code) => ({ code, name: viesCountryName(locale, code, northernIreland) })).sort((a, b) =>
-                a.name.localeCompare(b.name, locale),
-            ),
-        [locale, northernIreland],
-    );
+    const countryOptions = useViesCountryOptions();
     const countryName = profile ? viesCountryName(locale, profile.countryCode, northernIreland) : null;
 
     return {

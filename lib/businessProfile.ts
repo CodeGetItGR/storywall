@@ -147,3 +147,29 @@ export function isCheckoutConsentSatisfied({
     if (!termsVersion) return false;
     return isBusiness || (requestsImmediateStart && acknowledgesWithdrawalTerms);
 }
+
+const REQUIRED_BUSINESS_PROFILE_FIELDS = ['legalName', 'countryCode', 'vatNumber', 'addressLine1', 'city', 'postalCode'] as const;
+
+function isViesCountryCode(code: string): code is ViesCountryCode {
+    return (VIES_COUNTRY_CODES as readonly string[]).includes(code);
+}
+
+// Fields the backend would refuse as missing, or a country outside VIES.
+// Checked before signup, where every rejected attempt counts against the limit.
+export function invalidBusinessProfileFields(form: BusinessProfileForm): BusinessProfileField[] {
+    const request = toBusinessProfileRequest(form);
+    return REQUIRED_BUSINESS_PROFILE_FIELDS.filter((field) => (field === 'countryCode' ? !isViesCountryCode(request.countryCode) : !request[field]));
+}
+
+const SIGNUP_FIELD_PREFIX = 'businessProfile.';
+
+// Signup names business fields as "businessProfile.<field>"; keep only those.
+export function toSignupBusinessFieldErrors(errors: Record<string, string> | undefined): Partial<Record<BusinessProfileField, string>> {
+    const result: Partial<Record<BusinessProfileField, string>> = {};
+    for (const [key, message] of Object.entries(errors ?? {})) {
+        if (!key.startsWith(SIGNUP_FIELD_PREFIX)) continue;
+        const field = key.slice(SIGNUP_FIELD_PREFIX.length);
+        if (field in EMPTY_BUSINESS_PROFILE_FORM) result[field as BusinessProfileField] = message;
+    }
+    return result;
+}

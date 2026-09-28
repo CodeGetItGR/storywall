@@ -100,6 +100,12 @@ interface RegisterRequestDto {
    * Ignored (never rejected) while the newsletter is off — see AppNewsletterConfigDto.enabled.
    */
   subscribeToNewsletter?: boolean;
+  /**
+   * Optional business details. Added 2026-09-28. Unlike the two fields above this is NOT
+   * best-effort: an invalid profile is a 400 and no account is created. VIES may leave it PENDING;
+   * read GET /api/me/business-profile afterwards. See business-buyers-fe-integration.md §2.
+   */
+  businessProfile?: BusinessProfileRequestDto | null;
 }
 interface LoginRequestDto {
   email: string; password: string;

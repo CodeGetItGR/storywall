@@ -5,9 +5,11 @@ import {
     checkoutBuyerNotice,
     EMPTY_BUSINESS_PROFILE_FORM,
     formatVatNumber,
+    invalidBusinessProfileFields,
     isCheckoutConsentSatisfied,
     toBusinessProfileForm,
     toBusinessProfileRequest,
+    toSignupBusinessFieldErrors,
     VIES_COUNTRY_CODES,
     viesCountryName,
 } from './businessProfile';
@@ -104,5 +106,23 @@ describe('isCheckoutConsentSatisfied', () => {
 
     it('always needs a terms version', () => {
         expect(isCheckoutConsentSatisfied({ ...base, isBusiness: true, termsVersion: null })).toBe(false);
+    });
+});
+
+describe('signup business details', () => {
+    const filled = { ...EMPTY_BUSINESS_PROFILE_FORM, legalName: 'Acme', vatNumber: '123', addressLine1: 'Ermou 1', city: 'Athens', postalCode: '10563' };
+
+    it('accepts a complete form without address line 2', () => {
+        expect(invalidBusinessProfileFields(filled)).toEqual([]);
+    });
+
+    it('flags blank required fields and a non-VIES country', () => {
+        expect(invalidBusinessProfileFields({ ...filled, legalName: '  ', countryCode: 'GR' })).toEqual(['legalName', 'countryCode']);
+    });
+
+    it('keeps only businessProfile field errors, without the prefix', () => {
+        expect(toSignupBusinessFieldErrors({ email: 'taken', 'businessProfile.vatNumber': 'bad', 'businessProfile.other': 'x' })).toEqual({
+            vatNumber: 'bad',
+        });
     });
 });
