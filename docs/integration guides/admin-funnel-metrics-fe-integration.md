@@ -69,7 +69,9 @@ membership is linked to their account. A guest who joined anonymously and later 
 claiming that membership looks like any other signup, so treat these numbers as a floor.
 
 `paidEvents.ended*` only counts events whose `endAt` has passed, because an upcoming event has no
-uploads yet. `endedWithoutUploads` is the "paid but never used" warning sign.
+uploads yet. `endedWithoutUploads` is the "paid but never used" warning sign. `medianGuests` and
+`medianUploads` use ended events only, for the same reason, and are null when `ended` is 0.
+(Until the change on 2026-09-29 they covered upcoming events too.)
 
 `revenue.totals[].grossMinor` includes orders later refunded. `refundedMinor` is the money
 actually returned by refunds decided in the range, partial refunds included, so `netMinor` =
