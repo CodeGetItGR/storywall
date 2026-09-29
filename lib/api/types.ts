@@ -1256,7 +1256,7 @@ export interface PlatformMetricsResponseDto {
  * Two windows: account sections (funnel, stuck, activity, timeToConvert, guestToHost, accounts)
  * cover accounts that SIGNED UP in the range, followed to today; paidEvents and revenue cover
  * orders PAID / refunds DECIDED in the range. An "account" excludes admins and guest users.
- * See docs/fe-guides/admin-funnel-metrics-fe-integration.md for each definition.
+ * See admin-funnel-metrics-fe-integration.md (next to this file in both repos) for each definition.
  */
 export interface FunnelMetricsResponseDto {
     since: string | null;
@@ -1318,7 +1318,9 @@ export interface FunnelMetricsResponseDto {
         ended: number;
         endedWithoutUploads: number;
         endedWithoutGuests: number;
+        /** Over ENDED paid events only (changed 2026-09-29); null when `ended` is 0. */
         medianGuests: number | null;
+        /** Over ENDED paid events only (changed 2026-09-29); null when `ended` is 0. */
         medianUploads: number | null;
         withUpgrade: number;
         withStoragePack: number;
