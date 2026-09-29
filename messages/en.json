@@ -15,7 +15,16 @@
         "addGuestTitle": "Add a guest",
         "guestName": "Name",
         "add": "Add",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "photo": "Photo (optional)",
+        "changePhoto": "Change photo",
+        "removePhoto": "Remove photo",
+        "photoRequired": "Photo",
+        "addPhoto": "Add photo",
+        "uploadPhoto": "Upload photo",
+        "addPhotoFor": "Add photo for {name}",
+        "changePhotoFor": "Change photo for {name}",
+        "photoFailed": "The guest was added, but the photo didn’t upload. Try again."
     },
     "Demo": {
         "resetDemo": "Reset demo",
@@ -3838,6 +3847,7 @@
         "withdrawalOrderKindNotSupported": "To withdraw the activation, withdraw from the whole event.",
         "demoEventLocked": "This is a demo event, so it can’t be joined or changed that way.",
         "demoActAsRefused": "Only admins can post as a demo guest.",
+        "demoPersonaAvatarRefused": "Photos can only be set here for guests without an account on a demo event.",
         "qrSharedLinkHostManaged": "This shared link is managed automatically.",
         "eventSessionMainLocationReadOnly": "This is the event's main session, so its location always matches the event's own.",
         "eventSessionLimitReached": "This event's plan doesn't allow more schedule sessions.",
