@@ -2826,7 +2826,7 @@
                 "weekOf": "Week of {date}",
                 "loading": "Loading cohorts...",
                 "empty": "No weeks yet.",
-                "note": "Grouped by signup week. Recent weeks have had less time to convert."
+                "note": "Grouped by signup week, starting Monday 00:00 UTC. Recent weeks have had less time to convert."
             },
             "paidEvents": {
                 "title": "Paid events",
@@ -2837,6 +2837,7 @@
                 "endedWithoutGuests": "Ended with no guests",
                 "medianGuests": "Median guests",
                 "medianUploads": "Median uploads",
+                "medianScope": "All paid events, ended or not",
                 "attachTitle": "Add-ons, share of paid events",
                 "withUpgrade": "Upgrade",
                 "withStoragePack": "Storage pack",
@@ -2868,6 +2869,7 @@
                 "discountRedemptions": "Discount codes used",
                 "partnerRedemptions": "Partner codes used",
                 "buyerTypes": "Orders by buyer type",
+                "note": "An account that paid in more than one currency is counted in each of those cards.",
                 "buyer": {
                     "CONSUMER": "Consumer",
                     "BUSINESS": "Business"
@@ -2882,7 +2884,10 @@
                     "INVITE": "Invite"
                 },
                 "byLocale": "Language",
-                "empty": "No data yet",
+                "locales": {
+                    "en": "English",
+                    "el": "Greek"
+                },
                 "suspended": "Suspended",
                 "deleted": "Deleted"
             }

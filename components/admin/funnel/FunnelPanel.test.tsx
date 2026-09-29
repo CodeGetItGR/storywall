@@ -113,7 +113,9 @@ describe('FunnelPanel', () => {
         expect(await screen.findByText('-5.0 h')).toBeInTheDocument();
     });
 
-    it('sends the exclusive next-day midnight as until', async () => {
+    it('sends the admin’s exclusive next-day local midnight as until', async () => {
+        const originalTz = process.env.TZ;
+        process.env.TZ = 'Europe/Athens';
         vi.useFakeTimers({ toFake: ['Date'] });
         vi.setSystemTime(new Date('2026-09-30T15:00:00Z'));
         serve(funnelMetricsFixture());
@@ -124,7 +126,10 @@ describe('FunnelPanel', () => {
 
         fireEvent.click(screen.getByRole('button', { name: 'Last 30 days' }));
         await waitFor(() =>
-            expect(apiGet).toHaveBeenCalledWith('/api/admin/metrics/funnel?since=2026-09-01T00%3A00%3A00Z&until=2026-10-01T00%3A00%3A00Z'),
+            expect(apiGet).toHaveBeenCalledWith(
+                '/api/admin/metrics/funnel?since=2026-09-01T00%3A00%3A00%2B03%3A00&until=2026-10-01T00%3A00%3A00%2B03%3A00',
+            ),
         );
+        process.env.TZ = originalTz;
     });
 });

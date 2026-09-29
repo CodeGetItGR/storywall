@@ -13,37 +13,44 @@ export type FunnelCustomRange = { from: string; to: string };
 
 export type FunnelBounds = { since: string | null; until: string | null; isValid: boolean };
 
-const DAY_MS = 24 * 60 * 60 * 1000;
+const pad = (value: number) => String(value).padStart(2, '0');
 
-function utcMidnight(date: string): Date {
-    return new Date(`${date}T00:00:00Z`);
+/** A local calendar date as `YYYY-MM-DD`. */
+function toDateString(date: Date): string {
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
-function toIso(date: Date): string {
-    return date.toISOString().replace('.000Z', 'Z');
+/** Local midnight of `date` plus `days`, as ISO-8601 with that moment's own offset (DST-aware). */
+function localMidnightIso(date: string, days = 0): string {
+    const [year, month, day] = date.split('-').map(Number);
+    const midnight = new Date(year, month - 1, day + days);
+    const offset = -midnight.getTimezoneOffset();
+    const sign = offset >= 0 ? '+' : '-';
+    const zone = `${sign}${pad(Math.floor(Math.abs(offset) / 60))}:${pad(Math.abs(offset) % 60)}`;
+    return `${toDateString(midnight)}T00:00:00${zone}`;
 }
 
-/** Today's calendar date in UTC, the day the backend's windows are counted in. */
-export function utcToday(now: Date): string {
-    return now.toISOString().slice(0, 10);
+/** Today's calendar date for the admin. */
+export function localToday(now: Date): string {
+    return toDateString(now);
 }
 
 /**
- * The `since`/`until` pair for a range. Both are UTC midnights and `until` is exclusive, so a
- * range ending on a day covers all of that day: "up to 30 Sep" is `until=2026-10-01T00:00:00Z`.
+ * The `since`/`until` pair for a range, as the admin's local midnights with their offset. `until` is
+ * exclusive, so a range ending on a day covers all of it: "up to 30 Sep" in Athens is
+ * `until=2026-10-01T00:00:00+03:00`.
  */
 export function funnelRangeBounds(preset: FunnelRangePreset, custom: FunnelCustomRange, today: string): FunnelBounds {
-    const tomorrow = toIso(new Date(utcMidnight(today).getTime() + DAY_MS));
-    const daysBack = (days: number) => toIso(new Date(utcMidnight(today).getTime() - (days - 1) * DAY_MS));
+    const tomorrow = localMidnightIso(today, 1);
 
     if (preset === 'ALL') return { since: null, until: null, isValid: true };
-    if (preset === 'LAST_30') return { since: daysBack(30), until: tomorrow, isValid: true };
-    if (preset === 'LAST_90') return { since: daysBack(90), until: tomorrow, isValid: true };
-    if (preset === 'THIS_YEAR') return { since: `${today.slice(0, 4)}-01-01T00:00:00Z`, until: tomorrow, isValid: true };
+    if (preset === 'LAST_30') return { since: localMidnightIso(today, -29), until: tomorrow, isValid: true };
+    if (preset === 'LAST_90') return { since: localMidnightIso(today, -89), until: tomorrow, isValid: true };
+    if (preset === 'THIS_YEAR') return { since: localMidnightIso(`${today.slice(0, 4)}-01-01`), until: tomorrow, isValid: true };
 
-    const since = custom.from ? toIso(utcMidnight(custom.from)) : null;
-    const until = custom.to ? toIso(new Date(utcMidnight(custom.to).getTime() + DAY_MS)) : null;
-    return { since, until, isValid: !since || !until || since < until };
+    const since = custom.from ? localMidnightIso(custom.from) : null;
+    const until = custom.to ? localMidnightIso(custom.to, 1) : null;
+    return { since, until, isValid: !since || !until || new Date(since) < new Date(until) };
 }
 
 /** part / whole, or null when there is nothing to divide by. */

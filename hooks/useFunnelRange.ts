@@ -2,12 +2,12 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import { type FunnelCustomRange, funnelRangeBounds, type FunnelRangePreset, utcToday } from '@/lib/adminFunnel';
+import { type FunnelCustomRange, funnelRangeBounds, type FunnelRangePreset, localToday } from '@/lib/adminFunnel';
 
 // The range the account and revenue sections are filtered by. Defaults to all time.
 export function useFunnelRange() {
     // Fixed for the page's lifetime so the query key doesn't move under the admin.
-    const [today] = useState(() => utcToday(new Date()));
+    const [today] = useState(() => localToday(new Date()));
     const [preset, setPreset] = useState<FunnelRangePreset>('ALL');
     const [custom, setCustom] = useState<FunnelCustomRange>({ from: '', to: '' });
 

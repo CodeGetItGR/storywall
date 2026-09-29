@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
     cohortChartRows,
@@ -15,30 +15,45 @@ import { endpoints } from '@/lib/api/endpoints';
 const noCustom = { from: '', to: '' };
 
 describe('funnelRangeBounds', () => {
+    const originalTz = process.env.TZ;
+    beforeEach(() => {
+        process.env.TZ = 'Europe/Athens';
+    });
+    afterEach(() => {
+        process.env.TZ = originalTz;
+    });
+
     it('sends nothing for all time', () => {
         expect(funnelRangeBounds('ALL', noCustom, '2026-09-30')).toEqual({ since: null, until: null, isValid: true });
     });
 
-    it('ends presets at the exclusive next-day midnight', () => {
+    it('ends presets at the exclusive next local midnight, with its offset', () => {
         expect(funnelRangeBounds('LAST_30', noCustom, '2026-09-30')).toEqual({
-            since: '2026-09-01T00:00:00Z',
-            until: '2026-10-01T00:00:00Z',
+            since: '2026-09-01T00:00:00+03:00',
+            until: '2026-10-01T00:00:00+03:00',
             isValid: true,
         });
-        expect(funnelRangeBounds('THIS_YEAR', noCustom, '2026-09-30').since).toBe('2026-01-01T00:00:00Z');
+        // Winter time on 1 Jan.
+        expect(funnelRangeBounds('THIS_YEAR', noCustom, '2026-09-30').since).toBe('2026-01-01T00:00:00+02:00');
     });
 
-    it('includes the whole last day of a custom range', () => {
+    it('includes the whole last day of a custom range across a DST change', () => {
         expect(funnelRangeBounds('CUSTOM', { from: '2026-03-01', to: '2026-09-30' }, '2026-10-05')).toEqual({
-            since: '2026-03-01T00:00:00Z',
-            until: '2026-10-01T00:00:00Z',
+            since: '2026-03-01T00:00:00+02:00',
+            until: '2026-10-01T00:00:00+03:00',
             isValid: true,
         });
+    });
+
+    it('writes UTC as +00:00', () => {
+        process.env.TZ = 'UTC';
+        expect(funnelRangeBounds('LAST_30', noCustom, '2026-09-30').until).toBe('2026-10-01T00:00:00+00:00');
     });
 
     it('leaves an open end open and flags an end before the start', () => {
         expect(funnelRangeBounds('CUSTOM', { from: '2026-03-01', to: '' }, '2026-10-05').until).toBeNull();
         expect(funnelRangeBounds('CUSTOM', { from: '2026-03-02', to: '2026-03-01' }, '2026-10-05').isValid).toBe(false);
+        expect(funnelRangeBounds('CUSTOM', { from: '2026-03-01', to: '2026-03-01' }, '2026-10-05').isValid).toBe(true);
     });
 });
 

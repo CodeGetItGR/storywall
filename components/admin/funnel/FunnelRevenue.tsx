@@ -19,7 +19,7 @@ export function FunnelRevenue({ revenue }: { revenue: FunnelMetricsResponseDto['
     const buyerLabels = useMemo(() => Object.fromEntries(BUYER_TYPES.map((key) => [key, t(`buyer.${key}`)])), [t]);
 
     return (
-        <FunnelGroup title={t('title')} window="payment">
+        <FunnelGroup title={t('title')} window="payment" note={revenue.totals.length > 1 ? t('note') : undefined}>
             {/* Totals per currency */}
             {revenue.totals.length === 0 ? (
                 <p className="text-sm text-ink-muted">{t('empty')}</p>

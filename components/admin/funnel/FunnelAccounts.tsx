@@ -7,6 +7,7 @@ import { FunnelBreakdown } from '@/components/admin/funnel/FunnelBreakdown';
 import { FunnelFigures } from '@/components/admin/funnel/FunnelFigures';
 import { FunnelGroup } from '@/components/admin/funnel/FunnelGroup';
 import { useFunnelFormat } from '@/hooks/useFunnelFormat';
+import { locales } from '@/i18n/config';
 import { funnelBreakdown, SIGNUP_PROVIDERS } from '@/lib/adminFunnel';
 import type { FunnelMetricsResponseDto } from '@/lib/api/types';
 
@@ -15,7 +16,8 @@ export function FunnelAccounts({ accounts }: { accounts: FunnelMetricsResponseDt
     const format = useFunnelFormat();
     const providerRows = useMemo(() => funnelBreakdown(accounts.signedUpByProvider, SIGNUP_PROVIDERS), [accounts.signedUpByProvider]);
     const providerLabels = useMemo(() => Object.fromEntries(SIGNUP_PROVIDERS.map((key) => [key, t(`providers.${key}`)])), [t]);
-    const localeRows = useMemo(() => funnelBreakdown(accounts.byLocale), [accounts.byLocale]);
+    const localeRows = useMemo(() => funnelBreakdown(accounts.byLocale, locales), [accounts.byLocale]);
+    const localeLabels = useMemo(() => Object.fromEntries(locales.map((key) => [key, t(`locales.${key}`)])), [t]);
 
     return (
         <FunnelGroup title={t('title')} window="signup">
@@ -24,14 +26,7 @@ export function FunnelAccounts({ accounts }: { accounts: FunnelMetricsResponseDt
                 <FunnelBreakdown title={t('byProvider')} rows={providerRows} labels={providerLabels} />
 
                 {/* Language */}
-                {localeRows.length === 0 ? (
-                    <div>
-                        <h3 className="mb-2 text-xs font-semibold text-ink-muted">{t('byLocale')}</h3>
-                        <p className="text-sm text-ink-faint">{t('empty')}</p>
-                    </div>
-                ) : (
-                    <FunnelBreakdown title={t('byLocale')} rows={localeRows} />
-                )}
+                <FunnelBreakdown title={t('byLocale')} rows={localeRows} labels={localeLabels} />
             </div>
 
             {/* Status */}

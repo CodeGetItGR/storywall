@@ -26,8 +26,8 @@ export function FunnelPaidEvents({ paidEvents }: { paidEvents: FunnelMetricsResp
                         { key: 'count', label: t('count'), value: format.count(paidEvents.count) },
                         { key: 'ended', label: t('ended'), value: format.count(paidEvents.ended) },
                         { key: 'endedWithoutGuests', label: t('endedWithoutGuests'), value: format.count(paidEvents.endedWithoutGuests) },
-                        { key: 'medianGuests', label: t('medianGuests'), value: format.median(paidEvents.medianGuests) },
-                        { key: 'medianUploads', label: t('medianUploads'), value: format.median(paidEvents.medianUploads) },
+                        { key: 'medianGuests', label: t('medianGuests'), value: format.median(paidEvents.medianGuests), hint: t('medianScope') },
+                        { key: 'medianUploads', label: t('medianUploads'), value: format.median(paidEvents.medianUploads), hint: t('medianScope') },
                     ]}
                 />
 

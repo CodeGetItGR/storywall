@@ -240,3 +240,17 @@ event-modules management UI is moot: modules are plan-owned). Newly available an
 6. **Guide path.** The type comments point at `docs/fe-guides/admin-funnel-metrics-fe-integration.md`;
    in this repo the file lives in `docs/integration guides/`. Nothing to change on the BE, noted so
    the next sync doesn't look like a missing file.
+
+**Answered by the backend 2026-09-29:**
+
+1. Add-ons: events whose activation was paid in the range and that have the add-on, bought at any
+   time. A refunded add-on doesn't count, an admin-settled one does. Share of paid events is right.
+2. Medians cover all paid events, ended or not (a change to ended-only is pending approval). The UI
+   labels them "All paid events, ended or not"; update that caption if the change ships.
+3. `payingAccounts` is distinct per currency, so an account can appear in several cards. The UI
+   says so when more than one currency is shown and never adds cards together.
+4. `locale` is NOT NULL, defaults to `en`, and only `en`/`el` exist. The UI always lists both.
+5. Send the admin's local midnight with its offset. Done: `until=2026-10-01T00:00:00+03:00` for
+   "up to 30 Sep" in Athens. Cohort weeks stay Monday 00:00 UTC (stated in the chart caption);
+   the 7/30-day activity windows count back from now.
+6. Noted by the backend.
