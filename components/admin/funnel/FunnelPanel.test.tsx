@@ -3,7 +3,12 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { NextIntlClientProvider } from 'next-intl';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { emptyFunnelMetricsFixture, funnelCohortsFixture, funnelMetricsFixture } from '@/components/admin/funnel/__fixtures__/funnelMetrics';
+import {
+    emptyFunnelMetricsFixture,
+    funnelCohortsFixture,
+    funnelMetricsFixture,
+    noEndedPaidEventsFixture,
+} from '@/components/admin/funnel/__fixtures__/funnelMetrics';
 import { FunnelPanel } from '@/components/admin/funnel/FunnelPanel';
 import type { FunnelMetricsResponseDto } from '@/lib/api/types';
 import messages from '@/messages/en.json';
@@ -77,6 +82,29 @@ describe('FunnelPanel', () => {
         expect(screen.getByText('No payments in this range.')).toBeInTheDocument();
         expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(5);
         expect(screen.getByText('— of 0 signups')).toBeInTheDocument();
+        expectNoBrokenNumbers(container);
+    });
+
+    it('labels the paid-event medians as over ended events', async () => {
+        serve(funnelMetricsFixture());
+        renderPanel();
+
+        const guests = (await screen.findByText('Median guests')).parentElement!;
+        const uploads = screen.getByText('Median uploads').parentElement!;
+        expect(within(guests).getByText('42')).toBeInTheDocument();
+        expect(within(guests).getByText('Over ended events')).toBeInTheDocument();
+        expect(within(uploads).getByText('180.5')).toBeInTheDocument();
+        expect(within(uploads).getByText('Over ended events')).toBeInTheDocument();
+    });
+
+    it('shows — for the medians when no paid event has ended', async () => {
+        serve(noEndedPaidEventsFixture());
+        const { container } = renderPanel();
+
+        const guests = (await screen.findByText('Median guests')).parentElement!;
+        const uploads = screen.getByText('Median uploads').parentElement!;
+        expect(within(guests).getByText('—')).toBeInTheDocument();
+        expect(within(uploads).getByText('—')).toBeInTheDocument();
         expectNoBrokenNumbers(container);
     });
 

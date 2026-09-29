@@ -246,7 +246,7 @@ event-modules management UI is moot: modules are plan-owned). Newly available an
 1. Add-ons: events whose activation was paid in the range and that have the add-on, bought at any
    time. A refunded add-on doesn't count, an admin-settled one does. Share of paid events is right.
 2. Medians now cover ended paid events only (changed 2026-09-29) and are null when none ended.
-   The UI labels them "Ended events only".
+   The UI labels them "Over ended events" and shows "—" when null.
 3. `payingAccounts` is distinct per currency, so an account can appear in several cards. The UI
    says so when more than one currency is shown and never adds cards together.
 4. `locale` is NOT NULL, defaults to `en`, and only `en`/`el` exist. The UI always lists both.

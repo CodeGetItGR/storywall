@@ -2837,7 +2837,7 @@
                 "endedWithoutGuests": "Ended with no guests",
                 "medianGuests": "Median guests",
                 "medianUploads": "Median uploads",
-                "medianScope": "Ended events only",
+                "medianScope": "Over ended events",
                 "attachTitle": "Add-ons, share of paid events",
                 "withUpgrade": "Upgrade",
                 "withStoragePack": "Storage pack",

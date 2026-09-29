@@ -44,6 +44,7 @@ export function funnelMetricsFixture(overrides: Partial<FunnelMetricsResponseDto
             ended: 150,
             endedWithoutUploads: 11,
             endedWithoutGuests: 6,
+            // Medians are over the 150 ended events only; upcoming events are left out.
             medianGuests: 42,
             medianUploads: 180.5,
             withUpgrade: 30,
@@ -122,5 +123,21 @@ export function funnelCohortsFixture(weeks = 12): FunnelCohortDto[] {
             paidHost: Math.round(signedUp * 0.15),
             engagedHost: Math.round(signedUp * 0.12),
         };
+    });
+}
+
+/** Paid events in the range, none ended yet: the medians have nothing to cover and are null. */
+export function noEndedPaidEventsFixture(): FunnelMetricsResponseDto {
+    const base = funnelMetricsFixture();
+    return funnelMetricsFixture({
+        paidEvents: {
+            ...base.paidEvents,
+            count: 12,
+            ended: 0,
+            endedWithoutUploads: 0,
+            endedWithoutGuests: 0,
+            medianGuests: null,
+            medianUploads: null,
+        },
     });
 }
