@@ -8,12 +8,18 @@ import { formatAdminDateTime, splitWithdrawalGuidance } from '@/lib/adminWithdra
 import type { WithdrawalAdminDto } from '@/lib/api/types';
 import { formatOptionalMoney } from '@/lib/billing';
 
-export function useWithdrawalRow(row: WithdrawalAdminDto) {
+export function useWithdrawalDetail(row: WithdrawalAdminDto) {
     const locale = useLocale();
     const { sendTo } = useAdminNavigation();
     const { request } = row;
 
-    const guidance = useMemo(() => splitWithdrawalGuidance(row.recommendation), [row.recommendation]);
+    // The calculated refund stays in view; the rest of the guidance is folded.
+    const guidance = useMemo(() => {
+        const { sections, decision } = splitWithdrawalGuidance(row.recommendation);
+        const refund = sections.find((section) => section.key === 'refund') ?? null;
+        const background = sections.filter((section) => section !== refund);
+        return { refund, background: decision ? [...background, decision] : background };
+    }, [row.recommendation]);
 
     const sendToAssignments = useCallback(() => sendTo('assignments', { eventId: request.eventId }), [request.eventId, sendTo]);
     const sendToPaidServices = useCallback(() => sendTo('paidServices', { eventId: request.eventId }), [request.eventId, sendTo]);

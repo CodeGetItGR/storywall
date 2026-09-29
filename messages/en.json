@@ -2939,6 +2939,19 @@
             "empty": "No withdrawals are awaiting review.",
             "noAmount": "No amount recorded",
             "requestedAt": "Submitted {date}",
+            "columns": {
+                "refund": "Refund",
+                "scope": "Scope",
+                "signals": "Signals",
+                "submitted": "Submitted"
+            },
+            "scope": {
+                "EVENT": "Whole event",
+                "ORDER": "One purchase"
+            },
+            "signalsFired": "{count, plural, one {# triggered} other {# triggered}}",
+            "manualReview": "Manual review",
+            "guidanceToggle": "Guidance",
             "guidance": {
                 "withdrawn": "What is withdrawn",
                 "law": "What the law requires",

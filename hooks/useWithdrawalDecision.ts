@@ -8,7 +8,7 @@ import type { WithdrawalAdminDto, WithdrawalReleaseDto } from '@/lib/api/types';
 
 export type WithdrawalRefundMode = 'AS_CALCULATED' | 'KEEP_EVENT_DAY';
 
-export function useWithdrawalDecision(row: WithdrawalAdminDto) {
+export function useWithdrawalDecision(row: WithdrawalAdminDto, onReleased: () => void) {
     const release = useReleaseWithdrawal();
     const [mode, setMode] = useState<WithdrawalRefundMode>('AS_CALCULATED');
     const [note, setNote] = useState('');
@@ -29,12 +29,13 @@ export function useWithdrawalDecision(row: WithdrawalAdminDto) {
         const body: WithdrawalReleaseDto | undefined = keepEventDay || trimmedNote ? { keepEventDay, note: trimmedNote || undefined } : undefined;
         try {
             await release.mutateAsync({ requestId: row.request.id, body });
+            onReleased();
         } catch {
             // Shown inline from release.error once the modal closes.
         } finally {
             setConfirming(false);
         }
-    }, [keepEventDay, release, row.request.id, trimmedNote]);
+    }, [keepEventDay, onReleased, release, row.request.id, trimmedNote]);
 
     return {
         mode,

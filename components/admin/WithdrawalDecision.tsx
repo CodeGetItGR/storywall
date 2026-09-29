@@ -3,25 +3,20 @@
 import { Check } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { WithdrawalGuidanceBlock } from '@/components/admin/WithdrawalGuidanceBlock';
 import { WithdrawalRefundModeControl } from '@/components/admin/WithdrawalRefundModeControl';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useWithdrawalDecision } from '@/hooks/useWithdrawalDecision';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
-import type { WithdrawalGuidanceSection } from '@/lib/adminWithdrawals';
 import type { WithdrawalAdminDto } from '@/lib/api/types';
 
-export function WithdrawalDecision({ row, guidance }: { row: WithdrawalAdminDto; guidance: WithdrawalGuidanceSection | null }) {
+export function WithdrawalDecision({ row, onReleasedAction }: { row: WithdrawalAdminDto; onReleasedAction: () => void }) {
     const t = useTranslations('AdminPage');
     const tCommon = useTranslations('Common');
-    const decision = useWithdrawalDecision(row);
+    const decision = useWithdrawalDecision(row, onReleasedAction);
     const noteId = `note-${row.request.id}`;
 
     return (
-        <div className="mt-5 space-y-4 border-t border-border pt-4">
-            {/* Guidance */}
-            {guidance && <WithdrawalGuidanceBlock section={guidance} />}
-
+        <div className="space-y-4 border-t border-border pt-5">
             {/* Refund */}
             {decision.keepEventDayAvailability !== 'notApplicable' && (
                 <WithdrawalRefundModeControl

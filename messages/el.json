@@ -3235,6 +3235,19 @@
             "empty": "Καμία απόσυρση υπό εξέταση.",
             "noAmount": "Χωρίς καταχωρισμένο ποσό",
             "requestedAt": "Υποβλήθηκε {date}",
+            "columns": {
+                "refund": "Επιστροφή",
+                "scope": "Εύρος",
+                "signals": "Σήματα",
+                "submitted": "Υποβλήθηκε"
+            },
+            "scope": {
+                "EVENT": "Ολόκληρη εκδήλωση",
+                "ORDER": "Μία αγορά"
+            },
+            "signalsFired": "{count, plural, one {# ενεργοποιήθηκε} other {# ενεργοποιήθηκαν}}",
+            "manualReview": "Χειροκίνητος έλεγχος",
+            "guidanceToggle": "Οδηγίες",
             "guidance": {
                 "withdrawn": "Τι αποσύρεται",
                 "law": "Τι απαιτεί ο νόμος",

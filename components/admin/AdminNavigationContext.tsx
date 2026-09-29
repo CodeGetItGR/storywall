@@ -24,6 +24,7 @@ import { createContext, type ReactNode, useCallback, useContext, useEffect, useM
 import { COLLABORATIONS_HASH_ROOT, isCollaborationsHash } from '@/lib/adminCollaborationsRouting';
 import { DEMO_EVENTS_HASH_ROOT, isDemoEventsHash } from '@/lib/adminDemoEventsRouting';
 import { isPlansHash, PLANS_HASH_ROOT } from '@/lib/adminPlansRouting';
+import { isWithdrawalsHash, WITHDRAWALS_HASH_ROOT } from '@/lib/adminWithdrawalsRouting';
 
 export type AdminTab =
     | 'metrics'
@@ -69,7 +70,6 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
     '#reaction-types': 'reactionTypes',
     '#assignments': 'assignments',
     '#billing-ops': 'billingOps',
-    '#withdrawals': 'withdrawals',
     '#accounts': 'accounts',
     '#bug-reports': 'bugReports',
     '#errors': 'errorEvents',
@@ -87,7 +87,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     demoEvents: DEMO_EVENTS_HASH_ROOT,
     assignments: '#assignments',
     billingOps: '#billing-ops',
-    withdrawals: '#withdrawals',
+    withdrawals: WITHDRAWALS_HASH_ROOT,
     accounts: '#accounts',
     bugReports: '#bug-reports',
     errorEvents: '#errors',
@@ -114,6 +114,7 @@ function currentHashTab(): AdminTab {
     if (isPlansHash(hash)) return 'plans';
     if (isCollaborationsHash(hash)) return 'collaborations';
     if (isDemoEventsHash(hash)) return 'demoEvents';
+    if (isWithdrawalsHash(hash)) return 'withdrawals';
     return HASH_TO_TAB[hash] ?? 'metrics';
 }
 

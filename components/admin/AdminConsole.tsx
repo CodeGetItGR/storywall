@@ -17,7 +17,7 @@ import { PlanAssignmentPanel } from '@/components/admin/PlanAssignmentPanel';
 import { PlansSection } from '@/components/admin/plans/PlansSection';
 import { PlatformMetricsPanel } from '@/components/admin/PlatformMetricsPanel';
 import { ReactionTypesCatalogPanel } from '@/components/admin/ReactionTypesCatalogPanel';
-import { WithdrawalQueuePanel } from '@/components/admin/WithdrawalQueuePanel';
+import { WithdrawalsSection } from '@/components/admin/WithdrawalsSection';
 
 export function AdminConsole() {
     const t = useTranslations('AdminPage');
@@ -33,6 +33,7 @@ export function AdminConsole() {
     if (tab === 'collaborations') return <CollaborationsSection />;
     if (tab === 'reactionTypes') return <ReactionTypesCatalogPanel />;
     if (tab === 'demoEvents') return <DemoEventsSection />;
+    if (tab === 'withdrawals') return <WithdrawalsSection />;
     if (tab === 'bugReports' || tab === 'errorEvents') {
         return (
             <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
@@ -60,7 +61,6 @@ export function AdminConsole() {
                 {tab === 'costTracking' && <CostTrackingPanel />}
                 {tab === 'assignments' && <PlanAssignmentPanel />}
                 {tab === 'billingOps' && <BillingOpsPanel />}
-                {tab === 'withdrawals' && <WithdrawalQueuePanel />}
             </main>
         </div>
     );
