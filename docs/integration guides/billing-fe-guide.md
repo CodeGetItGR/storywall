@@ -1754,6 +1754,7 @@ opened at, per §7a/§7b's "the order is the historical receipt" note.
 | endpoint | notes |
 |---|---|
 | `GET /api/admin/metrics` | dashboard counts: users/events totals, active counts, both grouped by plan/status, and a `storage` block (used/pending-purge/committed/paid-vs-free/purchased-extra bytes plus an estimated monthly cost). No params, computed live on every call. Full field reference in `account-plans-disabled-and-platform-metrics-fe-integration.md`. |
+| `GET /api/admin/metrics/funnel`, `GET /api/admin/metrics/funnel/cohorts` | account conversion funnel (signup → verified → event → paid / engaged host), stuck buckets, activity, time to convert, guest-to-host, paid-event usage and revenue; weekly cohorts. Counts only. Field reference and the two date windows in `admin-funnel-metrics-fe-integration.md`. |
 
 ---
 
