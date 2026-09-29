@@ -6,9 +6,8 @@ import { useAppConfig } from '@/hooks/useAppConfig';
 
 export function AppConfigBootstrap() {
     const pathname = usePathname();
-    // /demo mounts its own MSW-backed useAppConfig() call once mocking is ready (see
-    // app/demo/layout.tsx) — this root bootstrap would otherwise race it and hit the real
-    // backend before the service worker is controlling the page.
+    // /demo loads config into its own query cache while it starts (see lib/demo/demoBootstrap.ts),
+    // so the root bootstrap stays off there.
     useAppConfig({ enabled: !pathname?.startsWith('/demo') });
     return null;
 }

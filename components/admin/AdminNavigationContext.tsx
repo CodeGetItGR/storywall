@@ -8,6 +8,7 @@ import {
     Handshake,
     Layers3,
     type LucideIcon,
+    MonitorPlay,
     OctagonAlert,
     PackagePlus,
     Receipt,
@@ -20,6 +21,7 @@ import { useTranslations } from 'next-intl';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { COLLABORATIONS_HASH_ROOT, isCollaborationsHash } from '@/lib/adminCollaborationsRouting';
+import { DEMO_EVENTS_HASH_ROOT, isDemoEventsHash } from '@/lib/adminDemoEventsRouting';
 import { isPlansHash, PLANS_HASH_ROOT } from '@/lib/adminPlansRouting';
 
 export type AdminTab =
@@ -30,6 +32,7 @@ export type AdminTab =
     | 'discountCodes'
     | 'collaborations'
     | 'reactionTypes'
+    | 'demoEvents'
     | 'assignments'
     | 'billingOps'
     | 'withdrawals'
@@ -77,6 +80,7 @@ const TAB_TO_HASH: Record<AdminTab, string> = {
     discountCodes: '#discount-codes',
     collaborations: COLLABORATIONS_HASH_ROOT,
     reactionTypes: '#reaction-types',
+    demoEvents: DEMO_EVENTS_HASH_ROOT,
     assignments: '#assignments',
     billingOps: '#billing-ops',
     withdrawals: '#withdrawals',
@@ -105,6 +109,7 @@ function currentHashTab(): AdminTab {
     const hash = window.location.hash;
     if (isPlansHash(hash)) return 'plans';
     if (isCollaborationsHash(hash)) return 'collaborations';
+    if (isDemoEventsHash(hash)) return 'demoEvents';
     return HASH_TO_TAB[hash] ?? 'metrics';
 }
 
@@ -153,6 +158,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
             { key: 'discountCodes', label: t('discountCodes'), icon: TicketPercent },
             { key: 'collaborations', label: t('collaborations'), icon: Handshake },
             { key: 'reactionTypes', label: t('reactionTypes'), icon: Smile },
+            { key: 'demoEvents', label: t('demoEvents'), icon: MonitorPlay },
             { key: 'accounts', label: t('accounts'), icon: Users },
             { key: 'assignments', label: t('assignments'), icon: Layers3 },
             { key: 'billingOps', label: t('billingOps'), icon: Receipt },

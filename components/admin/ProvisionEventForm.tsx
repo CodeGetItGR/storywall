@@ -68,7 +68,13 @@ export function ProvisionEventForm({ form }: { form: ProvisionEventFormState }) 
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                     <AdminField label={t('eventType')} required>
-                        <select required value={form.selectedEventType} onChange={handleEventTypeChange} className={adminInputClass()}>
+                        <select
+                            required
+                            value={form.selectedEventType}
+                            onChange={handleEventTypeChange}
+                            disabled={form.isEventTypeFixed}
+                            className={adminInputClass()}
+                        >
                             {form.eventTypes.map((eventType) => (
                                 <option key={eventType.eventTypeKey} value={eventType.eventTypeKey}>
                                     {localizedText(eventType.name, eventType.eventTypeKey)}

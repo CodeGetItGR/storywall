@@ -2,22 +2,26 @@
 
 import type { ReactNode } from 'react';
 
-import { DEMO_USER_ID } from '@/lib/demo/demoConstants';
+import type { DemoSession } from '@/lib/demo/demoSession';
 import { AuthContext } from '@/providers/AuthProvider';
 
 // Renders the real AuthContext (imported, not reimplemented) with a static fake session —
 // every component calling useAuth()/useIsHost()/etc. keeps working completely unmodified.
 // No network bootstrap, no isBootstrapping flicker: the demo is "logged in" the instant this
 // mounts.
-export function DemoAuthProvider({ children }: { children: ReactNode }) {
+export function DemoAuthProvider({ session, children }: { session: DemoSession; children: ReactNode }) {
+    // The visitor is the demo event's primary host. Their photo is never published (avatars are
+    // null in every snapshot), so the normal initials avatar is shown.
+    const hostName = session.db.get('members', session.viewerMemberId)?.displayName ?? '';
+
     return (
         <AuthContext.Provider
             value={{
                 user: {
-                    userId: DEMO_USER_ID,
+                    userId: session.viewerUserId,
                     email: null,
-                    firstName: 'Alex',
-                    lastName: 'Rivera',
+                    firstName: hostName,
+                    lastName: '',
                     profilePictureUrl: null,
                     authProvider: 'LOCAL',
                     isGuestAccount: false,

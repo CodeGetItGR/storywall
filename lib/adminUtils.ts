@@ -24,6 +24,7 @@ export type AdminErrorMessageKey =
     | 'coverageOptionUnavailable'
     | 'coverageOptionLastInitial'
     | 'coverageOptionDuplicate'
+    | 'demoDesignationInvalid'
     | 'generic';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -77,5 +78,6 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.COVERAGE_OPTION_UNAVAILABLE) return 'coverageOptionUnavailable';
     if (code === ERROR_CODES.COVERAGE_OPTION_LAST_INITIAL) return 'coverageOptionLastInitial';
     if (code === ERROR_CODES.COVERAGE_OPTION_DUPLICATE) return 'coverageOptionDuplicate';
+    if (code === ERROR_CODES.DEMO_DESIGNATION_INVALID) return 'demoDesignationInvalid';
     return 'generic';
 }

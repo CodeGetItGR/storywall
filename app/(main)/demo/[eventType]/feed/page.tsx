@@ -1,8 +1,8 @@
 'use client';
 
 import { FeedPageBoundary } from '@/app/(main)/(app)/(event)/events/[eventId]/feed/FeedPageBoundary';
-import { DEMO_EVENT_ID } from '@/lib/demo/demoConstants';
+import { useRouteEventId } from '@/providers/EventProvider';
 
 export default function DemoFeedPage() {
-    return <FeedPageBoundary eventId={DEMO_EVENT_ID} />;
+    return <FeedPageBoundary eventId={useRouteEventId() ?? ''} />;
 }

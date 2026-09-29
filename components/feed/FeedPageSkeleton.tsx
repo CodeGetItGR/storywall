@@ -2,6 +2,7 @@ import { useTranslations } from 'next-intl';
 
 import { PostSkeleton } from '@/components/feed/PostSkeleton';
 import { StorySkeleton } from '@/components/feed/StorySkeleton';
+import { HideComposerFab } from '@/components/layout/mobile-tab-bar/HideComposerFab';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export function FeedPageSkeleton() {
@@ -9,6 +10,8 @@ export function FeedPageSkeleton() {
 
     return (
         <div className="mx-auto flex w-full flex-col lg:max-w-[42rem]" role="status" aria-label={t('loading')}>
+            {/* Keeps the compose button away until the feed is ready */}
+            <HideComposerFab />
             <div className="sticky top-0 z-20 flex w-full items-center justify-between gap-4 bg-background/90 px-4 py-5 backdrop-blur-sm">
                 <Skeleton className="h-8 w-[8.5rem] rounded-full sm:h-12 sm:w-44" />
                 <Skeleton className="h-8 w-24 rounded-full" />

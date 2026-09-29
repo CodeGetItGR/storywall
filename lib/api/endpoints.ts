@@ -320,6 +320,10 @@ export const endpoints = {
             list: '/api/admin/platform-modules',
             byKey: (moduleKey: string) => `/api/admin/platform-modules/${moduleKey}`,
         },
+        demoEvents: {
+            list: '/api/admin/demo-events',
+            byType: (eventTypeKey: string) => `/api/admin/demo-events/${encodeURIComponent(eventTypeKey)}`,
+        },
         platformEventTypes: {
             list: '/api/admin/platform-event-types',
             byKey: (eventTypeKey: string) => `/api/admin/platform-event-types/${eventTypeKey}`,

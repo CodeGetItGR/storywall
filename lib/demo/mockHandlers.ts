@@ -1,46 +1,20 @@
-import { http, HttpResponse } from 'msw';
+import { http, HttpResponse, passthrough } from 'msw';
 
 import type { Page } from '@/lib/api/pagination';
 import type {
     AuthorDto,
-    CommentResponseDto,
+    EventBillingResponseDto,
+    EventDetailResponseDto,
     EventGiftAccountResponseDto,
-    EventInvitationResponseDto,
     EventMemberResponseDto,
-    EventModuleResponseDto,
-    EventSessionResponseDto,
     MediaResponseDto,
-    PlaylistSuggestionResponseDto,
     PostResponseDto,
-    QrLinkResponseDto,
-    ReactionResponseDto,
+    QrLinkStatsDto,
     RsvpResponseDto,
-    StoryResponseDto,
-    WishbookEntryResponseDto,
 } from '@/lib/api/types';
-import { DEMO_EVENT_ID, DEMO_HOST_MEMBER_ID } from '@/lib/demo/demoConstants';
-import { createMockDb, type MockDb } from '@/lib/demo/mockDb';
+import type { DemoSession } from '@/lib/demo/demoSession';
+import { type MockDb } from '@/lib/demo/mockDb';
 import { buildDemoRsvpReport } from '@/lib/demo/rsvpReport';
-import {
-    buildSeedAppConfig,
-    buildSeedBilling,
-    buildSeedComments,
-    buildSeedEvent,
-    buildSeedGiftAccount,
-    buildSeedMedia,
-    buildSeedMembers,
-    buildSeedModules,
-    buildSeedPlaylistSuggestions,
-    buildSeedPosts,
-    buildSeedQrLinks,
-    buildSeedQrLinkStats,
-    buildSeedReactions,
-    buildSeedRsvps,
-    buildSeedSessions,
-    buildSeedStories,
-    buildSeedUsage,
-    buildSeedWishbookEntries,
-} from '@/lib/demo/seedData';
 import { isRsvpReportType } from '@/lib/rsvpReport';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
@@ -145,47 +119,13 @@ export function buildCreateHandler<Schema extends Record<string, { id: string }[
     });
 }
 
-// --- The demo's own schema and seeded singleton store ---
+// --- The demo session's handlers ---
 
-const DEMO_DB_STORAGE_KEY = 'storywall:demo:db:v1';
+// The only requests a demo session may send to the backend (guide §1). Everything else under
+// /api is either served from the session's local store or blocked by the catch-all below.
+export const DEMO_ALLOWED_BACKEND_PATHS = ['/api/config', '/api/demo/:eventTypeKey'] as const;
 
-type DemoSchema = {
-    posts: PostResponseDto[];
-    comments: CommentResponseDto[];
-    reactions: ReactionResponseDto[];
-    media: MediaResponseDto[];
-    members: EventMemberResponseDto[];
-    modules: EventModuleResponseDto[];
-    sessions: EventSessionResponseDto[];
-    rsvps: RsvpResponseDto[];
-    stories: StoryResponseDto[];
-    wishbook: WishbookEntryResponseDto[];
-    invitations: EventInvitationResponseDto[];
-    qrLinks: QrLinkResponseDto[];
-    playlistSuggestions: PlaylistSuggestionResponseDto[];
-    giftAccounts: EventGiftAccountResponseDto[];
-};
-
-function seedDemoSchema(): DemoSchema {
-    return {
-        posts: buildSeedPosts(),
-        comments: buildSeedComments(),
-        reactions: buildSeedReactions(),
-        media: buildSeedMedia(),
-        members: buildSeedMembers(),
-        modules: buildSeedModules(),
-        sessions: buildSeedSessions(),
-        rsvps: buildSeedRsvps(),
-        stories: buildSeedStories(),
-        wishbook: buildSeedWishbookEntries(),
-        invitations: [],
-        qrLinks: buildSeedQrLinks(),
-        playlistSuggestions: buildSeedPlaylistSuggestions(),
-        giftAccounts: [buildSeedGiftAccount()],
-    };
-}
-
-export const demoDb = createMockDb<DemoSchema>(DEMO_DB_STORAGE_KEY, seedDemoSchema);
+export const DEMO_BLOCKED_HEADER = 'x-storywall-demo-blocked';
 
 let nextId = 0;
 function newId(prefix: string): string {
@@ -193,165 +133,80 @@ function newId(prefix: string): string {
     return `${prefix}-${Date.now()}-${nextId}`;
 }
 
-function authorForMember(memberId: string | null): AuthorDto | null {
-    const member = memberId ? demoDb.get('members', memberId) : undefined;
-    if (!member) return null;
-
-    return {
-        memberId: member.id,
-        displayName: member.displayName,
-        nickname: member.nickname,
-        role: member.role,
-        avatarUrl: member.avatarUrl,
-    };
+function nowIso(): string {
+    return new Date().toISOString();
 }
 
-async function fileToDataUrl(file: File): Promise<string> {
-    const buffer = await file.arrayBuffer();
-    const base64 = Buffer.from(buffer).toString('base64');
-    return `data:${file.type};base64,${base64}`;
+function blockedResponse(request: Request) {
+    console.error(`[demo] Blocked ${request.method} ${request.url} — demo sessions stay in this browser.`);
+    return HttpResponse.json({ title: 'Not available in the demo', status: 501 }, { status: 501, headers: { [DEMO_BLOCKED_HEADER]: '1' } });
 }
 
-export const demoHandlers = [
-    // --- Global config (public) ---
-    http.get(`${API_BASE_URL}/api/config`, () => HttpResponse.json(buildSeedAppConfig())),
+// Object URLs keep uploads in this browser (and out of localStorage). Outside a browser
+// (tests) there is no object URL support, so fall back to a placeholder.
+function localMediaUrl(file: File): string {
+    return typeof URL.createObjectURL === 'function' ? URL.createObjectURL(file) : `blob:demo/${file.name}`;
+}
 
-    // --- Auth / me ---
-    http.get(`${API_BASE_URL}/api/me/events`, () => HttpResponse.json([demoDb.list('members').find((m) => m.id === DEMO_HOST_MEMBER_ID)!])),
+// `appOrigin` is this app's own origin, whose /api route handlers also reach the backend.
+export function createDemoHandlers(session: DemoSession, appOrigin: string | null = globalThis.location?.origin ?? null) {
+    const { db, eventId, viewerMemberId } = session;
 
-    // --- Event detail ---
-    http.get(`${API_BASE_URL}/api/events/:eventId`, ({ params }) =>
-        params.eventId === DEMO_EVENT_ID ? HttpResponse.json(buildSeedEvent()) : new HttpResponse(null, { status: 404 }),
-    ),
-    http.get(`${API_BASE_URL}/api/events/:eventId/usage`, () => HttpResponse.json(buildSeedUsage())),
-    http.get(`${API_BASE_URL}/api/events/:eventId/billing`, () => HttpResponse.json(buildSeedBilling())),
-    http.get(`${API_BASE_URL}/api/events/:eventId/upgrade-options`, () => HttpResponse.json([])),
-    http.get(`${API_BASE_URL}/api/events/:eventId/extension-options`, () => HttpResponse.json([])),
-    http.get(`${API_BASE_URL}/api/events/:eventId/qr-links/stats`, () => HttpResponse.json(buildSeedQrLinkStats())),
+    function authorForMember(memberId: string | null): AuthorDto | null {
+        const member = memberId ? db.get('members', memberId) : undefined;
+        if (!member) return null;
+        return { memberId: member.id, displayName: member.displayName, nickname: member.nickname, role: member.role, avatarUrl: null };
+    }
 
-    // --- Gift account (single record per event, not id-keyed like the other collections) ---
-    http.get(`${API_BASE_URL}/api/events/:eventId/gift-account`, ({ params }) => {
-        const account = demoDb.list('giftAccounts').find((a) => a.eventId === params.eventId);
-        return account ? HttpResponse.json(account) : new HttpResponse(null, { status: 404 });
-    }),
-    http.put(`${API_BASE_URL}/api/events/:eventId/gift-account`, async ({ params, request }) => {
-        const body = (await request.json()) as Record<string, unknown>;
-        const eventId = params.eventId as string;
-        const existing = demoDb.list('giftAccounts').find((a) => a.eventId === eventId);
-        const record: EventGiftAccountResponseDto = {
-            id: existing?.id ?? newId('demo-gift-account'),
-            eventId,
-            iban: String(body.iban ?? ''),
-            accountHolder: String(body.accountHolder ?? ''),
-            bankName: String(body.bankName ?? ''),
-            note: (body.note as string) ?? null,
-            updatedAt: new Date().toISOString(),
+    function currentEvent(): EventDetailResponseDto | undefined {
+        const event = db.get('events', eventId);
+        if (!event) return undefined;
+        const sessions = db.list('sessions');
+        // Keep the event's own null when it has no sessions and none were added.
+        return { ...event, modules: db.list('modules'), sessions: event.sessions === null && sessions.length === 0 ? null : sessions };
+    }
+
+    function billing(): EventBillingResponseDto {
+        return {
+            eventStatus: currentEvent()?.status ?? 'ACTIVE',
+            planTierCode: session.usage.planTier,
+            planTierName: session.planTierName,
+            coverageOptionId: '',
+            coverageMonths: 0,
+            orders: [],
+            addons: [],
+            discount: null,
+            storageTrimDueAt: null,
         };
-        if (existing) {
-            demoDb.update('giftAccounts', existing.id, () => record);
-        } else {
-            demoDb.create('giftAccounts', record);
-        }
-        return HttpResponse.json(record);
-    }),
-    http.delete(`${API_BASE_URL}/api/events/:eventId/gift-account`, ({ params }) => {
-        const existing = demoDb.list('giftAccounts').find((a) => a.eventId === params.eventId);
-        if (existing) demoDb.remove('giftAccounts', existing.id);
-        return new HttpResponse(null, { status: 204 });
-    }),
+    }
 
-    // --- Members ---
-    ...buildArrayHandlers(demoDb, 'members', '/api/events/:eventId/members'),
-    ...buildDetailHandlers(demoDb, 'members', '/api/event-members/:id', { patch: true }),
-    buildCreateHandler(demoDb, 'members', '/api/event-members', (body) => ({
-        id: newId('demo-member'),
-        eventId: DEMO_EVENT_ID,
-        userId: null,
-        invitationId: null,
-        role: (body.role as EventMemberResponseDto['role']) ?? 'ATTENDEE',
-        displayName: String(body.displayName ?? 'Guest'),
-        nickname: (body.nickname as string) ?? null,
-        relationshipRole: (body.relationshipRole as string) ?? null,
-        customRelationshipRole: (body.customRelationshipRole as string) ?? null,
-        isFeatured: Boolean(body.isFeatured),
-        avatarUrl: null,
-        joinedAt: new Date().toISOString(),
-        rsvpId: null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        deletedAt: null,
-    })),
+    // The snapshot carries no QR scan stats, so every link starts at zero.
+    function qrLinkStats(): QrLinkStatsDto[] {
+        return db.list('qrLinks').map((link) => ({
+            qrLinkId: link.id,
+            label: link.label,
+            labelKey: link.labelKey,
+            targetType: link.targetType,
+            status: link.status,
+            joinCount: 0,
+            maxGuests: link.maxGuests,
+            remainingSlots: link.maxGuests,
+            lastJoinedAt: null,
+            uploadCount: 0,
+        }));
+    }
 
-    // --- Modules ---
-    ...buildArrayHandlers(demoDb, 'modules', '/api/events/:eventId/modules'),
-
-    // --- Sessions ---
-    ...buildArrayHandlers(demoDb, 'sessions', '/api/events/:eventId/sessions'),
-    ...buildDetailHandlers(demoDb, 'sessions', '/api/event-sessions/:id', { patch: true }),
-
-    // --- Invitations / QR links (read-only in the demo) ---
-    ...buildArrayHandlers(demoDb, 'invitations', '/api/events/:eventId/invitations'),
-    ...buildArrayHandlers(demoDb, 'qrLinks', '/api/events/:eventId/qr-links'),
-
-    // --- RSVPs ---
-    http.get(`${API_BASE_URL}/api/events/:eventId/rsvps/report`, ({ request }) => {
-        const reportType = new URL(request.url).searchParams.get('reportType') ?? '';
-        if (!isRsvpReportType(reportType)) return new HttpResponse(null, { status: 400 });
-        return HttpResponse.json(
-            buildDemoRsvpReport({
-                members: demoDb.list('members'),
-                rsvps: demoDb.list('rsvps'),
-                event: buildSeedEvent(),
-                reportType,
-                locale: request.headers.get('Accept-Language') ?? 'en',
-            }),
-        );
-    }),
-    // RsvpResponseDto has no eventId field (only eventMemberId), so this list can't be
-    // filtered by event the way the other collections are.
-    ...buildArrayHandlers(demoDb, 'rsvps', '/api/events/:eventId/rsvps', false),
-    ...buildDetailHandlers(demoDb, 'rsvps', '/api/rsvps/:id', { patch: true, del: true }),
-    buildCreateHandler(demoDb, 'rsvps', '/api/rsvps', (body) => ({
-        id: newId('demo-rsvp'),
-        eventMemberId: String(body.eventMemberId),
-        attendanceStatus: (body.attendanceStatus as RsvpResponseDto['attendanceStatus']) ?? 'ATTENDING',
-        phone: (body.phone as string) ?? null,
-        adultCount: Number(body.adultCount ?? 0),
-        childCount: Number(body.childCount ?? 0),
-        notes: (body.notes as string) ?? null,
-        submittedAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-    })),
-
-    // --- Wishbook ---
-    ...buildPageHandlers(demoDb, 'wishbook', '/api/events/:eventId/wishbook', 20),
-    http.get(`${API_BASE_URL}/api/events/:eventId/wishbook/count`, () => HttpResponse.json(demoDb.list('wishbook').length)),
-    buildCreateHandler(demoDb, 'wishbook', '/api/events/:eventId/wishbook', (body) => ({
-        id: newId('demo-wishbook'),
-        eventId: DEMO_EVENT_ID,
-        authorMemberId: null,
-        guestName: String(body.guestName ?? 'Guest'),
-        message: String(body.message ?? ''),
-        createdAt: new Date().toISOString(),
-        canDelete: true,
-    })),
-    ...buildDetailHandlers(demoDb, 'wishbook', '/api/wishbook/:id', { del: true }),
-
-    // --- Media ---
-    ...buildPageHandlers(demoDb, 'media', '/api/events/:eventId/media', 30),
-    ...buildDetailHandlers(demoDb, 'media', '/api/medias/:id', { del: true }),
-    http.post(`${API_BASE_URL}/api/events/:eventId/media`, async ({ request }) => {
-        const form = await request.formData();
-        const file = form.get('file') as File;
-        const media = demoDb.create('media', {
-            id: newId('demo-media'),
-            eventId: DEMO_EVENT_ID,
-            uploaderMemberId: DEMO_HOST_MEMBER_ID,
+    function createLocalMedia(file: File): MediaResponseDto {
+        const url = localMediaUrl(file);
+        return db.create('media', {
+            id: newId('demo-local-media'),
+            eventId,
+            uploaderMemberId: viewerMemberId,
             anonymousUploaderName: null,
             storageKey: `demo/${file.name}`,
-            mediaUrl: await fileToDataUrl(file),
+            mediaUrl: url,
             status: 'READY',
-            thumbnailUrl: await fileToDataUrl(file),
+            thumbnailUrl: url,
             originalFilename: file.name,
             mimeType: file.type,
             mediaType: file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE',
@@ -360,157 +215,263 @@ export const demoHandlers = [
             height: null,
             durationSeconds: null,
             metadata: {},
-            createdAt: new Date().toISOString(),
+            createdAt: nowIso(),
             deletedAt: null,
         });
-        return HttpResponse.json(media, { status: 201 });
-    }),
-    http.post(`${API_BASE_URL}/api/events/:eventId/media/batch`, async ({ request }) => {
-        const form = await request.formData();
-        const files = form.getAll('files') as File[];
-        const created = await Promise.all(
-            files.map(async (file) =>
-                demoDb.create('media', {
-                    id: newId('demo-media'),
-                    eventId: DEMO_EVENT_ID,
-                    uploaderMemberId: DEMO_HOST_MEMBER_ID,
-                    anonymousUploaderName: null,
-                    storageKey: `demo/${file.name}`,
-                    mediaUrl: await fileToDataUrl(file),
-                    status: 'READY',
-                    thumbnailUrl: await fileToDataUrl(file),
-                    originalFilename: file.name,
-                    mimeType: file.type,
-                    mediaType: file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE',
-                    fileSize: file.size,
-                    width: null,
-                    height: null,
-                    durationSeconds: null,
-                    metadata: {},
-                    createdAt: new Date().toISOString(),
-                    deletedAt: null,
+    }
+
+    return [
+        // --- Allowed backend calls ---
+        http.get(`${API_BASE_URL}/api/config`, () => passthrough()),
+        http.get(`${API_BASE_URL}/api/demo/:eventTypeKey`, () => passthrough()),
+
+        // --- Me ---
+        http.get(`${API_BASE_URL}/api/me/events`, () => HttpResponse.json(db.list('members').filter((m) => m.id === viewerMemberId))),
+
+        // --- Live feed stream: nothing to stream in a local demo. 404 stops the hook's retries. ---
+        http.post(`${API_BASE_URL}/api/events/:eventId/stream-token`, () => new HttpResponse(null, { status: 404 })),
+
+        // --- Event detail and settings ---
+        http.get(`${API_BASE_URL}/api/events/:eventId`, ({ params }) => {
+            const event = params.eventId === eventId ? currentEvent() : undefined;
+            return event ? HttpResponse.json(event) : new HttpResponse(null, { status: 404 });
+        }),
+        http.patch(`${API_BASE_URL}/api/events/:eventId`, async ({ params, request }) => {
+            if (params.eventId !== eventId) return new HttpResponse(null, { status: 404 });
+            const body = (await request.json()) as Record<string, unknown>;
+            db.update('events', eventId, (event) => {
+                // Only fields the response already has, so request-only keys don't leak into it.
+                const known = Object.fromEntries(Object.entries(body).filter(([key]) => key in event));
+                return { ...event, ...known, updatedAt: nowIso() };
+            });
+            return HttpResponse.json(currentEvent());
+        }),
+        http.get(`${API_BASE_URL}/api/events/:eventId/usage`, () => HttpResponse.json(session.usage)),
+        http.get(`${API_BASE_URL}/api/events/:eventId/billing`, () => HttpResponse.json(billing())),
+        http.get(`${API_BASE_URL}/api/events/:eventId/upgrade-options`, () => HttpResponse.json([])),
+        http.get(`${API_BASE_URL}/api/events/:eventId/extension-options`, () => HttpResponse.json([])),
+        http.get(`${API_BASE_URL}/api/events/:eventId/qr-links/stats`, () => HttpResponse.json(qrLinkStats())),
+
+        // --- Gift account (one per event; absent when the module is off) ---
+        http.get(`${API_BASE_URL}/api/events/:eventId/gift-account`, ({ params }) => {
+            const account = db.list('giftAccounts').find((a) => a.eventId === params.eventId);
+            return account ? HttpResponse.json(account) : new HttpResponse(null, { status: 404 });
+        }),
+        http.put(`${API_BASE_URL}/api/events/:eventId/gift-account`, async ({ params, request }) => {
+            const body = (await request.json()) as Record<string, unknown>;
+            const targetEventId = params.eventId as string;
+            const existing = db.list('giftAccounts').find((a) => a.eventId === targetEventId);
+            const record: EventGiftAccountResponseDto = {
+                id: existing?.id ?? newId('demo-gift-account'),
+                eventId: targetEventId,
+                iban: String(body.iban ?? ''),
+                accountHolder: String(body.accountHolder ?? ''),
+                bankName: String(body.bankName ?? ''),
+                note: (body.note as string) ?? null,
+                updatedAt: nowIso(),
+            };
+            if (existing) db.update('giftAccounts', existing.id, () => record);
+            else db.create('giftAccounts', record);
+            return HttpResponse.json(record);
+        }),
+        http.delete(`${API_BASE_URL}/api/events/:eventId/gift-account`, ({ params }) => {
+            const existing = db.list('giftAccounts').find((a) => a.eventId === params.eventId);
+            if (existing) db.remove('giftAccounts', existing.id);
+            return new HttpResponse(null, { status: 204 });
+        }),
+
+        // --- Members ---
+        ...buildArrayHandlers(db, 'members', '/api/events/:eventId/members'),
+        ...buildDetailHandlers(db, 'members', '/api/event-members/:id', { patch: true }),
+        buildCreateHandler(db, 'members', '/api/event-members', (body) => ({
+            id: newId('demo-member'),
+            eventId,
+            userId: null,
+            invitationId: null,
+            role: (body.role as EventMemberResponseDto['role']) ?? 'ATTENDEE',
+            displayName: String(body.displayName ?? 'Guest'),
+            nickname: (body.nickname as string) ?? null,
+            relationshipRole: (body.relationshipRole as string) ?? null,
+            customRelationshipRole: (body.customRelationshipRole as string) ?? null,
+            isFeatured: Boolean(body.isFeatured),
+            avatarUrl: null,
+            joinedAt: nowIso(),
+            rsvpId: null,
+            createdAt: nowIso(),
+            updatedAt: nowIso(),
+            deletedAt: null,
+        })),
+
+        // --- Modules / sessions ---
+        ...buildArrayHandlers(db, 'modules', '/api/events/:eventId/modules'),
+        ...buildArrayHandlers(db, 'sessions', '/api/events/:eventId/sessions'),
+        ...buildDetailHandlers(db, 'sessions', '/api/event-sessions/:id', { patch: true }),
+
+        // --- Invitations / QR links (read-only in the demo) ---
+        ...buildArrayHandlers(db, 'invitations', '/api/events/:eventId/invitations'),
+        ...buildArrayHandlers(db, 'qrLinks', '/api/events/:eventId/qr-links'),
+
+        // --- RSVPs ---
+        http.get(`${API_BASE_URL}/api/events/:eventId/rsvps/report`, ({ request }) => {
+            const reportType = new URL(request.url).searchParams.get('reportType') ?? '';
+            const event = currentEvent();
+            if (!isRsvpReportType(reportType) || !event) return new HttpResponse(null, { status: 400 });
+            return HttpResponse.json(
+                buildDemoRsvpReport({
+                    members: db.list('members'),
+                    rsvps: db.list('rsvps'),
+                    event,
+                    reportType,
+                    locale: request.headers.get('Accept-Language') ?? 'en',
                 }),
-            ),
-        );
-        return HttpResponse.json({ created, failed: [] });
-    }),
+            );
+        }),
+        // RsvpResponseDto has no eventId field (only eventMemberId), so this list can't be
+        // filtered by event the way the other collections are.
+        ...buildArrayHandlers(db, 'rsvps', '/api/events/:eventId/rsvps', false),
+        ...buildDetailHandlers(db, 'rsvps', '/api/rsvps/:id', { patch: true, del: true }),
+        buildCreateHandler(db, 'rsvps', '/api/rsvps', (body) => ({
+            id: newId('demo-rsvp'),
+            eventMemberId: String(body.eventMemberId),
+            attendanceStatus: (body.attendanceStatus as RsvpResponseDto['attendanceStatus']) ?? 'ATTENDING',
+            phone: (body.phone as string) ?? null,
+            adultCount: Number(body.adultCount ?? 0),
+            childCount: Number(body.childCount ?? 0),
+            notes: (body.notes as string) ?? null,
+            submittedAt: nowIso(),
+            updatedAt: nowIso(),
+        })),
 
-    // --- Posts ---
-    ...buildPageHandlers(demoDb, 'posts', '/api/events/:eventId/posts', 20),
-    ...buildDetailHandlers(demoDb, 'posts', '/api/posts/:id', { patch: true, del: true }),
-    http.get(`${API_BASE_URL}/api/posts/:postId/media`, ({ params }) => {
-        const post = demoDb.get('posts', params.postId as string);
-        return HttpResponse.json(post?.media ?? []);
-    }),
-    buildCreateHandler(demoDb, 'posts', '/api/posts', (body) => {
-        const author = demoDb.list('members').find((m) => m.id === body.authorMemberId) ?? null;
-        const mediaIds = (body.mediaIds as string[] | undefined) ?? [];
-        return {
-            id: newId('demo-post'),
-            eventId: DEMO_EVENT_ID,
-            authorMemberId: (body.authorMemberId as string) ?? null,
-            author: author
-                ? {
-                      memberId: author.id,
-                      displayName: author.displayName,
-                      nickname: author.nickname,
-                      role: author.role,
-                      avatarUrl: null,
-                  }
-                : null,
-            type: (body.type as PostResponseDto['type']) ?? 'TEXT',
-            content: (body.content as string) ?? null,
-            isPinned: Boolean(body.isPinned),
-            media: demoDb.list('media').filter((m) => mediaIds.includes(m.id)),
-            commentCount: 0,
-            recentComments: [],
-            reactionCount: 0,
-            reactionCounts: {},
-            myReactionType: null,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            deletedAt: null,
-        };
-    }),
+        // --- Wishbook ---
+        ...buildPageHandlers(db, 'wishbook', '/api/events/:eventId/wishbook', 20),
+        http.get(`${API_BASE_URL}/api/events/:eventId/wishbook/count`, () => HttpResponse.json(db.list('wishbook').length)),
+        buildCreateHandler(db, 'wishbook', '/api/events/:eventId/wishbook', (body) => ({
+            id: newId('demo-wishbook'),
+            eventId,
+            authorMemberId: null,
+            guestName: String(body.guestName ?? 'Guest'),
+            message: String(body.message ?? ''),
+            createdAt: nowIso(),
+            canDelete: true,
+        })),
+        ...buildDetailHandlers(db, 'wishbook', '/api/wishbook/:id', { del: true }),
 
-    // --- Comments / reactions ---
-    http.get(`${API_BASE_URL}/api/posts/:postId/comments`, ({ request, params }) => {
-        const url = new URL(request.url);
-        const page = Number(url.searchParams.get('page') ?? '0');
-        const items = demoDb.list('comments').filter((c) => c.postId === params.postId);
-        return HttpResponse.json(toPage(items, page, 30));
-    }),
-    buildCreateHandler(demoDb, 'comments', '/api/comments', (body) => {
-        const authorMemberId = typeof body.authorMemberId === 'string' ? body.authorMemberId : null;
-        return {
-            id: newId('demo-comment'),
+        // --- Media (uploads stay in this browser as object URLs) ---
+        ...buildPageHandlers(db, 'media', '/api/events/:eventId/media', 30),
+        ...buildDetailHandlers(db, 'media', '/api/medias/:id', { del: true }),
+        http.post(`${API_BASE_URL}/api/events/:eventId/media`, async ({ request }) => {
+            const form = await request.formData();
+            return HttpResponse.json(createLocalMedia(form.get('file') as File), { status: 201 });
+        }),
+        http.post(`${API_BASE_URL}/api/events/:eventId/media/batch`, async ({ request }) => {
+            const form = await request.formData();
+            const created = (form.getAll('files') as File[]).map(createLocalMedia);
+            return HttpResponse.json({ created, failed: [] });
+        }),
+
+        // --- Posts ---
+        ...buildPageHandlers(db, 'posts', '/api/events/:eventId/posts', 20),
+        ...buildDetailHandlers(db, 'posts', '/api/posts/:id', { patch: true, del: true }),
+        http.get(`${API_BASE_URL}/api/posts/:postId/media`, ({ params }) => HttpResponse.json(db.get('posts', params.postId as string)?.media ?? [])),
+        buildCreateHandler(db, 'posts', '/api/posts', (body) => {
+            const authorMemberId = typeof body.authorMemberId === 'string' ? body.authorMemberId : null;
+            const mediaIds = (body.mediaIds as string[] | undefined) ?? [];
+            return {
+                id: newId('demo-post'),
+                eventId,
+                authorMemberId,
+                author: authorForMember(authorMemberId),
+                type: (body.type as PostResponseDto['type']) ?? 'TEXT',
+                content: (body.content as string) ?? null,
+                isPinned: Boolean(body.isPinned),
+                media: db.list('media').filter((m) => mediaIds.includes(m.id)),
+                commentCount: 0,
+                recentComments: [],
+                reactionCount: 0,
+                reactionCounts: {},
+                myReactionType: null,
+                createdAt: nowIso(),
+                updatedAt: nowIso(),
+                deletedAt: null,
+            };
+        }),
+
+        // --- Comments / reactions ---
+        http.get(`${API_BASE_URL}/api/posts/:postId/comments`, ({ request, params }) => {
+            const page = Number(new URL(request.url).searchParams.get('page') ?? '0');
+            return HttpResponse.json(toPage(db.list('comments').filter((c) => c.postId === params.postId), page, 30));
+        }),
+        buildCreateHandler(db, 'comments', '/api/comments', (body) => {
+            const authorMemberId = typeof body.authorMemberId === 'string' ? body.authorMemberId : null;
+            return {
+                id: newId('demo-comment'),
+                postId: String(body.postId),
+                authorMemberId,
+                author: authorForMember(authorMemberId),
+                parentCommentId: (body.parentCommentId as string) ?? null,
+                content: String(body.content ?? ''),
+                createdAt: nowIso(),
+                updatedAt: nowIso(),
+                deletedAt: null,
+            };
+        }),
+        ...buildDetailHandlers(db, 'comments', '/api/comments/:id', { del: true }),
+        http.get(`${API_BASE_URL}/api/posts/:postId/reactions`, ({ params }) => HttpResponse.json(db.list('reactions').filter((r) => r.postId === params.postId))),
+        buildCreateHandler(db, 'reactions', '/api/reactions', (body) => ({
+            id: newId('demo-reaction'),
             postId: String(body.postId),
-            authorMemberId,
-            author: authorForMember(authorMemberId),
-            parentCommentId: (body.parentCommentId as string) ?? null,
-            content: String(body.content ?? ''),
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            deletedAt: null,
-        };
-    }),
-    ...buildDetailHandlers(demoDb, 'comments', '/api/comments/:id', { del: true }),
-    http.get(`${API_BASE_URL}/api/posts/:postId/reactions`, ({ params }) =>
-        HttpResponse.json(demoDb.list('reactions').filter((r) => r.postId === params.postId)),
-    ),
-    buildCreateHandler(demoDb, 'reactions', '/api/reactions', (body) => ({
-        id: newId('demo-reaction'),
-        postId: String(body.postId),
-        memberId: String(body.memberId),
-        reactionType: String(body.reactionType),
-        createdAt: new Date().toISOString(),
-    })),
-    ...buildDetailHandlers(demoDb, 'reactions', '/api/reactions/:id', { del: true }),
+            memberId: String(body.memberId),
+            reactionType: String(body.reactionType),
+            createdAt: nowIso(),
+        })),
+        ...buildDetailHandlers(db, 'reactions', '/api/reactions/:id', { del: true }),
 
-    // --- Stories ---
-    ...buildArrayHandlers(demoDb, 'stories', '/api/events/:eventId/stories'),
-    ...buildDetailHandlers(demoDb, 'stories', '/api/stories/:id', { del: true }),
-    buildCreateHandler(demoDb, 'stories', '/api/stories', (body) => {
-        const authorMemberId = typeof body.authorMemberId === 'string' ? body.authorMemberId : null;
-        return {
-            id: newId('demo-story'),
-            eventId: DEMO_EVENT_ID,
-            authorMemberId,
-            author: authorForMember(authorMemberId),
-            mediaId: String(body.mediaId),
-            caption: (body.caption as string) ?? null,
-            songUrl: (body.songUrl as string) ?? null,
-            expiresAt: (body.expiresAt as string) ?? new Date(Date.now() + 86_400_000).toISOString(),
-            createdAt: new Date().toISOString(),
-            deletedAt: null,
-            viewedByCurrentUser: false,
-        };
-    }),
-    http.post(`${API_BASE_URL}/api/stories/:id/views`, ({ params }) => {
-        demoDb.update('stories', params.id as string, (story) => ({ ...story, viewedByCurrentUser: true }));
-        return HttpResponse.json({
-            id: newId('demo-story-view'),
-            storyId: params.id,
-            memberId: DEMO_HOST_MEMBER_ID,
-            createdAt: new Date().toISOString(),
-        });
-    }),
+        // --- Stories ---
+        ...buildArrayHandlers(db, 'stories', '/api/events/:eventId/stories'),
+        ...buildDetailHandlers(db, 'stories', '/api/stories/:id', { del: true }),
+        buildCreateHandler(db, 'stories', '/api/stories', (body) => {
+            const authorMemberId = typeof body.authorMemberId === 'string' ? body.authorMemberId : null;
+            return {
+                id: newId('demo-story'),
+                eventId,
+                authorMemberId,
+                author: authorForMember(authorMemberId),
+                mediaId: String(body.mediaId),
+                caption: (body.caption as string) ?? null,
+                songUrl: (body.songUrl as string) ?? null,
+                expiresAt: (body.expiresAt as string) ?? new Date(Date.now() + 86_400_000).toISOString(),
+                createdAt: nowIso(),
+                deletedAt: null,
+                viewedByCurrentUser: false,
+            };
+        }),
+        http.post(`${API_BASE_URL}/api/stories/:id/views`, ({ params }) => {
+            db.update('stories', params.id as string, (story) => ({ ...story, viewedByCurrentUser: true }));
+            return HttpResponse.json({ id: newId('demo-story-view'), storyId: params.id, memberId: viewerMemberId, createdAt: nowIso() });
+        }),
 
-    // --- Playlist suggestions ---
-    ...buildArrayHandlers(demoDb, 'playlistSuggestions', '/api/events/:eventId/playlist-suggestions'),
-    buildCreateHandler(demoDb, 'playlistSuggestions', '/api/playlist-suggestions', (body) => ({
-        id: newId('demo-suggestion'),
-        eventId: DEMO_EVENT_ID,
-        authorMemberId: (body.authorMemberId as string) ?? null,
-        title: String(body.title ?? ''),
-        artist: (body.artist as string) ?? null,
-        youtubeUrl: (body.youtubeUrl as string) ?? null,
-        spotifyUrl: (body.spotifyUrl as string) ?? null,
-        comment: (body.comment as string) ?? null,
-        upvoteCount: 0,
-        downvoteCount: 0,
-        myVote: null,
-        createdAt: new Date().toISOString(),
-        deletedAt: null,
-    })),
-];
+        // --- Playlist suggestions ---
+        ...buildArrayHandlers(db, 'playlistSuggestions', '/api/events/:eventId/playlist-suggestions'),
+        buildCreateHandler(db, 'playlistSuggestions', '/api/playlist-suggestions', (body) => ({
+            id: newId('demo-suggestion'),
+            eventId,
+            authorMemberId: (body.authorMemberId as string) ?? null,
+            title: String(body.title ?? ''),
+            artist: (body.artist as string) ?? null,
+            youtubeUrl: (body.youtubeUrl as string) ?? null,
+            spotifyUrl: (body.spotifyUrl as string) ?? null,
+            comment: (body.comment as string) ?? null,
+            upvoteCount: 0,
+            downvoteCount: 0,
+            myVote: null,
+            createdAt: nowIso(),
+            deletedAt: null,
+        })),
+
+        // --- Guard: anything else aimed at the backend (or at this app's own /api routes, which
+        // talk to the backend) never leaves the browser. Must stay last. ---
+        http.all(`${API_BASE_URL}/api/*`, ({ request }) => blockedResponse(request)),
+        ...(appOrigin && appOrigin !== API_BASE_URL ? [http.all(`${appOrigin}/api/*`, ({ request }) => blockedResponse(request))] : []),
+    ];
+}
+

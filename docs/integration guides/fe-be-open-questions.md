@@ -200,3 +200,22 @@ notifications is disabled by default, so the feed is empty until ops enables it.
 Absent that, the biggest "hook exists, nobody calls it" gap is the co-host management UI (the
 event-modules management UI is moot: modules are plan-owned). Newly available and unwired: the plan/usage screens
 (`GET /api/events/{id}/usage`, `GET /api/me/usage`).
+
+## Demo snapshot (`GET /api/demo/{eventTypeKey}`) — 2026-09-28
+
+1. **ETag vs presigned URLs.** The guide says to re-fetch with `If-None-Match` before
+   `presignedUrlsValidUntil` to get fresh media URLs. If the ETag covers the URLs (and
+   `snapshotAt`), it changes on every request and a 304 never happens. If it doesn't cover them, a
+   304 means "nothing changed" but hands back no new URLs, and the old ones still expire. Which is
+   it? The FE currently treats a 304 as "keep the current URLs" and stops refreshing.
+2. **CORS: expose `ETag`.** The snapshot is fetched cross-origin from the browser. Without
+   `Access-Control-Expose-Headers: ETag`, JS can't read the ETag, so `If-None-Match` is never sent.
+   Local backend doesn't send that header today.
+3. **QR stats and billing aren't in the snapshot.** `GET /qr-links/stats` and `GET /billing` are
+   derived locally (zero scans/uploads; plan name from `/api/config`). Should the snapshot include
+   them?
+4. **Which event types have a demo?** There is no list endpoint that's public, so the FE can only
+   learn about a 404 by opening the demo. A public `GET /api/demo` (keys only) would let the
+   landing page hide the entry point without spending the per-IP budget.
+5. **Wishbook count.** The snapshot caps `wishbookEntries` at 200; `GET /wishbook/count` is
+   computed from that list, so it's wrong for bigger demos. Same for posts (newest 50).

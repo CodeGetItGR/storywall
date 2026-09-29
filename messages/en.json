@@ -10,7 +10,17 @@
     },
     "Demo": {
         "resetDemo": "Reset demo",
-        "exitDemo": "Sign up for real"
+        "exitDemo": "Sign up for real",
+        "banner": "This is a demo. Nothing is saved to StoryWall.",
+        "resetTitle": "Reset the demo?",
+        "resetBody": "Your changes will be removed and the demo will start over.",
+        "resetCancel": "Cancel",
+        "notFoundTitle": "This demo isn’t available.",
+        "notFoundBody": "Try again later.",
+        "rateLimitedTitle": "The demo is busy right now.",
+        "rateLimitedBody": "Try again in a minute.",
+        "failedTitle": "The demo couldn’t start in this browser.",
+        "failedBody": "Try reloading the page, or use a different browser."
     },
     "EventNotFound": {
         "title": "This celebration seems to have wandered off",
@@ -2191,7 +2201,37 @@
             "accounts": "Accounts",
             "lifecycle": "Lifecycle",
             "bugReports": "Bug reports",
-            "errorEvents": "Errors"
+            "errorEvents": "Errors",
+            "demoEvents": "Demo events"
+        },
+        "demoEvents": {
+            "title": "Demo events",
+            "loading": "Loading demo events...",
+            "empty": "No event types yet.",
+            "statusSet": "Live",
+            "statusNone": "No demo",
+            "columns": {
+                "eventType": "Event type",
+                "demoEvent": "Demo event",
+                "status": "Status",
+                "designatedAt": "Set on"
+            },
+            "currentTitle": "Current demo",
+            "designatedOn": "Set on {date}",
+            "openDemo": "Open demo",
+            "setTitle": "Set a demo event",
+            "replaceTitle": "Replace the demo event",
+            "eventIdHint": "The event must be live and hosted by an admin.",
+            "set": "Set demo",
+            "replace": "Replace demo",
+            "removeTitle": "Remove demo",
+            "removeBody": "Visitors will no longer be able to open this demo.",
+            "remove": "Remove demo",
+            "removeConfirmTitle": "Remove the {eventType} demo?",
+            "createTitle": "Create a demo event",
+            "createBody": "You'll be the host. It becomes this type's demo as soon as it's created.",
+            "create": "Create demo event",
+            "editContent": "Add content"
         },
         "bugReports": {
             "title": "Bug reports",
@@ -2352,6 +2392,7 @@
                 "provision": "Provision event"
             },
             "provision": {
+                "openEvent": "Open event",
                 "action": "Provision event",
                 "title": "Provision event",
                 "subtitle": "Create a live event for {host}.",
@@ -2871,6 +2912,7 @@
             "coverageOptionUnavailable": "This plan has no duration on sale.",
             "coverageOptionLastInitial": "A plan on sale needs at least one duration. Add another before retiring this one.",
             "coverageOptionDuplicate": "This plan already sells that length.",
+            "demoDesignationInvalid": "That event can’t be a demo. It must be live, of this type, hosted by an admin, and every other member must be an admin or a guest without an account.",
             "reactionTypeInUse": "This reaction is already used on posts. Archive it instead.",
             "reactionTypeLimitExceeded": "This event type already has five available reactions.",
             "reactionTypeNotUsable": "That reaction is no longer available. Refresh and choose another.",
@@ -3527,6 +3569,7 @@
         "coverageOptionLastInitial": "A plan on sale needs at least one duration. Add another before retiring this one.",
         "coverageEnded": "Coverage for this event has ended.",
         "coverageOptionDuplicate": "This plan already sells that duration.",
+        "demoDesignationInvalid": "That event can’t be a demo. It must be live, of this type, hosted by an admin, and every other member must be an admin or a guest without an account.",
         "purchaseNotPrimaryHost": "Only the event's main host can make purchases.",
         "purchaseWithdrawalOpen": "A withdrawal for this event is under review. Purchases are paused until it is decided.",
         "planCurrencyUnsupported": "This plan is not available in your currency yet.",
@@ -3612,6 +3655,8 @@
         "withdrawalNotHeld": "This request was already decided.",
         "withdrawalKeepEventDayNotDue": "The event date hadn't passed when the host withdrew. Release as calculated instead.",
         "withdrawalOrderKindNotSupported": "To withdraw the activation, withdraw from the whole event.",
+        "demoEventLocked": "This is a demo event, so it can’t be joined or changed that way.",
+        "demoActAsRefused": "Only admins can post as a demo guest.",
         "qrSharedLinkHostManaged": "This shared link is managed automatically.",
         "eventSessionMainLocationReadOnly": "This is the event's main session, so its location always matches the event's own.",
         "eventSessionLimitReached": "This event's plan doesn't allow more schedule sessions.",

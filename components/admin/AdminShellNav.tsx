@@ -16,6 +16,7 @@ const TAB_GROUP: Record<AdminTab, 'overview' | 'catalog' | 'marketing' | 'operat
     discountCodes: 'marketing',
     collaborations: 'operations',
     reactionTypes: 'catalog',
+    demoEvents: 'catalog',
     assignments: 'operations',
     billingOps: 'operations',
     withdrawals: 'operations',

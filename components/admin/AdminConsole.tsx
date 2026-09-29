@@ -10,6 +10,7 @@ import { ErrorEventsPanel } from '@/components/admin/betaFeedback/ErrorEventsPan
 import { BillingOpsPanel } from '@/components/admin/BillingOpsPanel';
 import { CollaborationsSection } from '@/components/admin/collaborations/CollaborationsSection';
 import { CostTrackingPanel } from '@/components/admin/CostTrackingPanel';
+import { DemoEventsSection } from '@/components/admin/demoEvents/DemoEventsSection';
 import { PaidServicesCatalogPanel } from '@/components/admin/PaidServicesCatalogPanel';
 import { PlanAssignmentPanel } from '@/components/admin/PlanAssignmentPanel';
 import { PlansSection } from '@/components/admin/plans/PlansSection';
@@ -28,6 +29,7 @@ export function AdminConsole() {
     if (tab === 'discountCodes') return <AdminDiscountCodesPanel />;
     if (tab === 'collaborations') return <CollaborationsSection />;
     if (tab === 'reactionTypes') return <ReactionTypesCatalogPanel />;
+    if (tab === 'demoEvents') return <DemoEventsSection />;
     if (tab === 'bugReports' || tab === 'errorEvents') {
         return (
             <div className="mx-auto px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">

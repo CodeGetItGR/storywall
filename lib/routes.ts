@@ -1,5 +1,5 @@
 import type { RsvpReportType } from '@/lib/api/types';
-import { DEMO_EVENT_ID } from '@/lib/demo/demoConstants';
+import { demoEventBasePath } from '@/lib/demo/demoRouting';
 
 type RouteQueryValue = string | number | boolean | null | undefined;
 
@@ -10,7 +10,7 @@ export type ManageTab = 'billing' | 'coverage' | 'danger' | 'help' | 'members' |
 // The demo event lives outside the real /events/{eventId} tree (which proxy.ts protects
 // behind a real session) — see docs/superpowers/plans/2026-09-05-demo-event.md, design note 1.
 function eventBasePath(eventId: string): string {
-    return eventId === DEMO_EVENT_ID ? '/demo' : `/events/${eventId}`;
+    return demoEventBasePath(eventId) ?? `/events/${eventId}`;
 }
 
 function withQuery(pathname: string, params: Record<string, RouteQueryValue>): string {
@@ -34,7 +34,7 @@ export const routes = {
     verifyEmail: '/verify-email',
     forgotPassword: '/forgot-password',
     resetPassword: '/reset-password',
-    demo: '/demo/feed',
+    demo: '/demo',
     invite: '/invite',
     home: '/home',
     profile: '/profile',

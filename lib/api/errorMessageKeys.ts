@@ -126,6 +126,9 @@ export type ApiErrorMessageKey =
     | 'withdrawalNotHeld'
     | 'withdrawalKeepEventDayNotDue'
     | 'withdrawalOrderKindNotSupported'
+    | 'demoEventLocked'
+    | 'demoActAsRefused'
+    | 'demoDesignationInvalid'
     | 'withdrawalNotPrimaryHost'
     | 'oauthEmailUnverified';
 
@@ -253,6 +256,9 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.WITHDRAWAL_NOT_HELD]: 'withdrawalNotHeld',
     [ERROR_CODES.WITHDRAWAL_KEEP_EVENT_DAY_NOT_DUE]: 'withdrawalKeepEventDayNotDue',
     [ERROR_CODES.WITHDRAWAL_ORDER_KIND_NOT_SUPPORTED]: 'withdrawalOrderKindNotSupported',
+    [ERROR_CODES.DEMO_EVENT_LOCKED]: 'demoEventLocked',
+    [ERROR_CODES.DEMO_ACT_AS_REFUSED]: 'demoActAsRefused',
+    [ERROR_CODES.DEMO_DESIGNATION_INVALID]: 'demoDesignationInvalid',
 } satisfies Record<KnownApiErrorCode, ApiErrorMessageKey>;
 
 export function getApiErrorMessageKey(code: number | string | undefined): ApiErrorMessageKey | undefined {

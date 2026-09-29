@@ -7,16 +7,23 @@ import { useAdminPlanTiers, useAdminPlatformEventTypes } from '@/hooks/useAdmin'
 import { useProvisionAdminEventMutation } from '@/hooks/useAdminAccounts';
 import { useAdminDurationPick } from '@/hooks/useAdminDurationPick';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import { eligibleProvisioningPlans } from '@/lib/adminAccountProvisioning';
+import { eligibleProvisioningPlans, type ProvisionHost } from '@/lib/adminAccountProvisioning';
 import { getFieldErrors } from '@/lib/api/errors';
-import type { EventTypeConvention, EventVisibility, UserResponseDto } from '@/lib/api/types';
+import type { EventResponseDto, EventTypeConvention, EventVisibility } from '@/lib/api/types';
 import { getCreateEventCatalogEntry } from '@/lib/createEventCatalog';
 import { datetimeLocalValueToIso, getScheduleDatetimeLocalBounds, isDatetimeLocalAfter, isDatetimeLocalBefore } from '@/lib/datetime';
 import { getCurrentTimezone, getSupportedTimezones } from '@/lib/timezones';
 
 export type ProvisionEventStep = 'event' | 'review' | 'success';
 
-export function useProvisionEventForm(host: UserResponseDto) {
+export type ProvisionEventOptions = {
+    // Fixes the event type (the form shows it but can't change it).
+    eventType?: EventTypeConvention;
+    // Runs after the event is created, before the success step shows.
+    onProvisioned?: (event: EventResponseDto) => Promise<unknown>;
+};
+
+export function useProvisionEventForm(host: ProvisionHost, options: ProvisionEventOptions = {}) {
     const tCreate = useTranslations('CreateEventPage');
     const t = useTranslations('AdminPage.accounts.provision');
     const toErrorMessage = useApiErrorMessage();
@@ -25,7 +32,7 @@ export function useProvisionEventForm(host: UserResponseDto) {
     const provisionEvent = useProvisionAdminEventMutation();
 
     const [step, setStep] = useState<ProvisionEventStep>('event');
-    const [eventType, setEventType] = useState<EventTypeConvention | ''>('');
+    const [eventType, setEventType] = useState<EventTypeConvention | ''>(options.eventType ?? '');
     const [planTierCode, setPlanTierCode] = useState('');
     const [title, setTitle] = useState('');
     const [startAt, setStartAt] = useState('');
@@ -95,7 +102,7 @@ export function useProvisionEventForm(host: UserResponseDto) {
         const initialSessionTitle = initialSessionTitleKey && tCreate.has(initialSessionTitleKey) ? tCreate(initialSessionTitleKey) : undefined;
 
         try {
-            await provisionEvent.mutateAsync({
+            const created = await provisionEvent.mutateAsync({
                 hostUserId: host.id,
                 event: {
                     title: title.trim(),
@@ -113,6 +120,8 @@ export function useProvisionEventForm(host: UserResponseDto) {
                     initialSessionTitle,
                 },
             });
+            // A failure here is the caller's to show; the event itself was created.
+            await options.onProvisioned?.(created).catch(() => undefined);
             setStep('success');
         } catch {
             return;
@@ -135,6 +144,7 @@ export function useProvisionEventForm(host: UserResponseDto) {
         setStep,
         eventTypes,
         eventTypesQuery,
+        isEventTypeFixed: Boolean(options.eventType),
         selectedEventType,
         changeEventType,
         eligiblePlans,

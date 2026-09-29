@@ -18,7 +18,7 @@ const EMPTY_MEMBERSHIPS: EventMemberResponseDto[] = [];
 // single source of truth for "which event is active" rather than a value
 // that only a handful of pages remembered to keep in sync. `/events/new`
 // is excluded — that segment is a literal route, not an event id.
-function urlEventId(pathname: string): string | null {
+export function urlEventId(pathname: string): string | null {
     return pathname.match(/^\/events\/(?!new(?:\/|$))([^/]+)/)?.[1] ?? null;
 }
 

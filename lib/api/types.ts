@@ -2371,3 +2371,43 @@ export interface ErrorEventResponseDto {
     lastAppVersion: string | null;
     lastPageUrl: string | null;
 }
+
+// Demo events — see docs/integration guides/demo-event-fe-integration.md.
+// GET /api/demo/{eventTypeKey} — public; 404 when the type has no demo; 429 past 30/min per IP.
+export interface DemoSnapshotDto {
+    snapshotAt: string;
+    // Re-fetch before this to refresh media URLs.
+    presignedUrlsValidUntil: string | null;
+    viewerUserId: string;
+    viewerMemberId: string;
+    event: EventDetailResponseDto;
+    members: EventMemberResponseDto[];
+    posts: PostResponseDto[];
+    comments: CommentResponseDto[];
+    reactions: ReactionResponseDto[];
+    // Includes expired stories.
+    stories: StoryResponseDto[];
+    // phone is always null.
+    rsvps: RsvpResponseDto[];
+    media: MediaResponseDto[];
+    playlistSuggestions: PlaylistSuggestionResponseDto[];
+    wishbookEntries: WishbookEntryResponseDto[];
+    // A fixed fake; null when the wishlist module is off.
+    giftAccount: EventGiftAccountResponseDto | null;
+    // token is a "demo-qr-…" placeholder.
+    qrLinks: QrLinkResponseDto[];
+    usage: EventUsageResponseDto;
+}
+
+// GET/PUT /api/admin/demo-events — admin only.
+export interface DemoEventResponseDto {
+    eventTypeKey: string;
+    eventId: string;
+    eventTitle: string;
+    designatedByUserId: string | null;
+    designatedAt: string;
+}
+
+export interface DemoEventDesignationRequestDto {
+    eventId: string;
+}

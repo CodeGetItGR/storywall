@@ -15,6 +15,7 @@ vi.mock('next/navigation', () => ({
     useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => mocks.auth }));
+vi.mock('@/hooks/useAdminDemoEventAccess', () => ({ useAdminDemoEventAccess: () => ({ isChecking: false, isAdminAllowed: false }) }));
 
 const messages = {
     SessionUnavailable: {
