@@ -81,3 +81,17 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.DEMO_DESIGNATION_INVALID) return 'demoDesignationInvalid';
     return 'generic';
 }
+
+export type MetricShare = { key: string; value: number; ratio: number };
+
+/** A metrics group map as rows sorted largest first, each with its share of the group total. */
+export function toMetricShares(values: Record<string, number>): MetricShare[] {
+    const total = Object.values(values).reduce((sum, value) => sum + value, 0);
+    return Object.entries(values)
+        .sort(([leftKey, left], [rightKey, right]) => right - left || leftKey.localeCompare(rightKey))
+        .map(([key, value]) => ({ key, value, ratio: total > 0 ? value / total : 0 }));
+}
+
+export function ratioOf(part: number, whole: number): number {
+    return whole > 0 ? part / whole : 0;
+}

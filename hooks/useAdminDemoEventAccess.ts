@@ -14,6 +14,7 @@ export function useAdminDemoEventAccess(pathname: string) {
 
     const isDemoEventRoute = Boolean(eventId && demoEvents.data?.some((demo) => demo.eventId === eventId));
     return {
+        eventId,
         isChecking: isAdmin && Boolean(eventId) && demoEvents.isLoading,
         isAdminAllowed: isAdmin && isDemoEventRoute,
     };

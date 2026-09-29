@@ -1,101 +1,54 @@
 'use client';
 
-import { Activity, CalendarDays, RefreshCw, Users } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
-import { AdminSection } from '@/components/admin/AdminSection';
-import { PlatformMetricBreakdown } from '@/components/admin/PlatformMetricBreakdown';
-import { PlatformMetricTile } from '@/components/admin/PlatformMetricTile';
+import { PlatformEventsGroup } from '@/components/admin/PlatformEventsGroup';
+import { PlatformMetricsHeader } from '@/components/admin/PlatformMetricsHeader';
 import { PlatformNeedsAttention } from '@/components/admin/PlatformNeedsAttention';
+import { PlatformNewsletterGroup } from '@/components/admin/PlatformNewsletterGroup';
+import { PlatformStorageGroup } from '@/components/admin/PlatformStorageGroup';
+import { PlatformUsersGroup } from '@/components/admin/PlatformUsersGroup';
 import { LoadingState } from '@/components/ui/LoadingState';
-import { useAdminMetrics } from '@/hooks/useAdmin';
+import { usePlatformMetrics } from '@/hooks/usePlatformMetrics';
 import { adminErrorMessageKey } from '@/lib/adminUtils';
-import { formatMoney } from '@/lib/billing';
-import { formatBytes, formatCount } from '@/lib/format';
 
 export function PlatformMetricsPanel() {
     const t = useTranslations('AdminPage');
-    const locale = useLocale();
-    const metricsQuery = useAdminMetrics();
-    const metrics = metricsQuery.data;
-    function handleRefresh() {
-        metricsQuery.refetch();
-    }
+    const { metrics, shares, updatedAt, isLoading, isFetching, error, refresh } = usePlatformMetrics();
 
     return (
-        <section className="space-y-5">
-            <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border pb-4">
-                <div>
-                    <p className="text-[11px] font-semibold tracking-[0.18em] text-primary-dark uppercase">{t('metrics.eyebrow')}</p>
-                    <h2 className="mt-1 text-xl font-semibold tracking-tight text-ink">{t('metrics.title')}</h2>
-                    <p className="mt-2 max-w-2xl text-base leading-7 text-ink-muted">{t('metrics.subtitle')}</p>
-                </div>
-                <button
-                    type="button"
-                    onClick={handleRefresh}
-                    disabled={metricsQuery.isFetching}
-                    className="inline-flex min-h-10 items-center gap-2 rounded-md border border-border bg-background px-4 text-sm font-semibold text-ink-muted transition hover:border-ink-faint hover:bg-surface-muted disabled:opacity-50"
-                >
-                    <RefreshCw className={metricsQuery.isFetching ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
-                    {t('metrics.refresh')}
-                </button>
+        <div className="mx-auto max-w-6xl px-4 pt-5 pb-16 text-[15px] sm:px-6 lg:px-8 lg:pt-6 lg:pb-10">
+            {/* Header */}
+            <PlatformMetricsHeader updatedAt={updatedAt} isFetching={isFetching} onRefreshAction={refresh} />
+
+            <div className="space-y-5">
+                {/* Needs attention */}
+                <PlatformNeedsAttention />
+
+                {isLoading && <LoadingState label={t('metrics.loading')} className="justify-start" />}
+                {error && <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(error)}`)}</p>}
+
+                {metrics && shares && (
+                    <>
+                        {/* Users and events */}
+                        <div className="grid gap-5 lg:grid-cols-2">
+                            <PlatformUsersGroup total={metrics.totalUsers} active={metrics.activeUsers} byAccountPlan={shares.usersByAccountPlan} />
+                            <PlatformEventsGroup
+                                total={metrics.totalEvents}
+                                active={metrics.activeEvents}
+                                byStatus={shares.eventsByStatus}
+                                byPlanTier={shares.eventsByPlanTier}
+                            />
+                        </div>
+
+                        {/* Storage */}
+                        <PlatformStorageGroup storage={metrics.storage} />
+
+                        {/* Newsletter */}
+                        {metrics.newsletter && <PlatformNewsletterGroup newsletter={metrics.newsletter} />}
+                    </>
+                )}
             </div>
-
-            <PlatformNeedsAttention />
-
-            {metricsQuery.isLoading && <LoadingState label={t('metrics.loading')} className="justify-start" />}
-            {metricsQuery.error && <p className="text-sm text-status-danger">{t(`errors.${adminErrorMessageKey(metricsQuery.error)}`)}</p>}
-            {metrics && (
-                <>
-                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                        <PlatformMetricTile label={t('metrics.totalUsers')} value={metrics.totalUsers} icon={Users} />
-                        <PlatformMetricTile label={t('metrics.activeUsers')} value={metrics.activeUsers} icon={Activity} />
-                        <PlatformMetricTile label={t('metrics.totalEvents')} value={metrics.totalEvents} icon={CalendarDays} />
-                        <PlatformMetricTile label={t('metrics.activeEvents')} value={metrics.activeEvents} icon={Activity} />
-                    </div>
-                    <div className="grid gap-7 lg:grid-cols-3">
-                        <PlatformMetricBreakdown title={t('metrics.usersByAccountPlan')} values={metrics.usersByAccountPlan} />
-                        <PlatformMetricBreakdown title={t('metrics.eventsByStatus')} values={metrics.eventsByStatus} />
-                        <PlatformMetricBreakdown title={t('metrics.eventsByPlanTier')} values={metrics.eventsByPlanTier} />
-                    </div>
-                    <AdminSection title={t('metrics.storage.title')}>
-                        <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
-                            {(
-                                [
-                                    ['usedBytes', formatBytes(metrics.storage.usedBytes)],
-                                    ['pendingPurgeBytes', formatBytes(metrics.storage.pendingPurgeBytes)],
-                                    ['committedBytes', formatBytes(metrics.storage.committedBytes)],
-                                    ['paidUsedBytes', formatBytes(metrics.storage.paidUsedBytes)],
-                                    ['freeUsedBytes', formatBytes(metrics.storage.freeUsedBytes)],
-                                    ['purchasedExtraBytes', formatBytes(metrics.storage.purchasedExtraBytes)],
-                                    [
-                                        'estimatedMonthlyCostMinor',
-                                        formatMoney(locale, metrics.storage.estimatedMonthlyCostMinor, metrics.storage.costCurrency),
-                                    ],
-                                ] as const
-                            ).map(([key, value]) => (
-                                <div key={key} className="border-b border-border pb-3">
-                                    <dt className="text-xs text-ink-muted">{t(`metrics.storage.${key}`)}</dt>
-                                    <dd className="mt-1 text-sm font-bold text-ink tabular-nums">{value}</dd>
-                                </div>
-                            ))}
-                        </dl>
-                    </AdminSection>
-                    {/* Newsletter */}
-                    {metrics.newsletter && (
-                        <AdminSection title={t('metrics.newsletter.title')}>
-                            <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
-                                {(['confirmed', 'pending', 'unsubscribed', 'rewardsIssued'] as const).map((key) => (
-                                    <div key={key} className="border-b border-border pb-3">
-                                        <dt className="text-xs text-ink-muted">{t(`metrics.newsletter.${key}`)}</dt>
-                                        <dd className="mt-1 text-sm font-bold text-ink tabular-nums">{formatCount(metrics.newsletter[key])}</dd>
-                                    </div>
-                                ))}
-                            </dl>
-                        </AdminSection>
-                    )}
-                </>
-            )}
-        </section>
+        </div>
     );
 }

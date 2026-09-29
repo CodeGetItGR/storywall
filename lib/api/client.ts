@@ -3,6 +3,7 @@ import { endpoints } from '@/lib/api/endpoints';
 import type { AuthSessionDto, ProblemDetail, RecentErrorDto } from '@/lib/api/types';
 import { clearSession, getAccessToken, setSession, subscribeAuthState } from '@/lib/auth/tokenStore';
 import { redactApiPath } from '@/lib/betaFeedback/routeTemplates';
+import { demoActAsHeaders } from '@/lib/demo/demoActAs';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
 
@@ -214,6 +215,7 @@ async function apiFetchResponse(path: string, options: ApiFetchOptions = {}): Pr
             ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
             'Accept-Language': getClientLocale(),
             ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+            ...demoActAsHeaders(init.method, path),
             ...init.headers,
         },
     });

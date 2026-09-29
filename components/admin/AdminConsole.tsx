@@ -24,6 +24,7 @@ export function AdminConsole() {
 
     // The Paid Services panel supplies its own page head (title, stat tiles,
     // primary action) — the shared eyebrow/title block would just duplicate it.
+    if (tab === 'metrics') return <PlatformMetricsPanel />;
     if (tab === 'paidServices') return <PaidServicesCatalogPanel />;
     if (tab === 'plans') return <PlansSection />;
     if (tab === 'discountCodes') return <AdminDiscountCodesPanel />;
@@ -54,7 +55,6 @@ export function AdminConsole() {
             </header>
 
             <main className="min-w-0">
-                {tab === 'metrics' && <PlatformMetricsPanel />}
                 {tab === 'costTracking' && <CostTrackingPanel />}
                 {tab === 'assignments' && <PlanAssignmentPanel />}
                 {tab === 'billingOps' && <BillingOpsPanel />}

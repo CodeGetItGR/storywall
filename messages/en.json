@@ -8,6 +8,15 @@
         "seeUpgradeOptions": "See upgrade options",
         "loading": "Loading…"
     },
+    "DemoActAs": {
+        "postingAs": "Posting as",
+        "host": "You (host)",
+        "addGuest": "Add guest",
+        "addGuestTitle": "Add a guest",
+        "guestName": "Name",
+        "add": "Add",
+        "cancel": "Cancel"
+    },
     "Demo": {
         "resetDemo": "Reset demo",
         "exitDemo": "Sign up for real",
@@ -2737,32 +2746,37 @@
                 "unsubscribed": "Unsubscribed",
                 "rewardsIssued": "Discount codes issued"
             },
-            "eyebrow": "Live platform counts",
             "title": "Platform metrics",
-            "subtitle": "Dashboard totals from the admin metrics endpoint. Group keys come from live plan and status data.",
             "loading": "Loading metrics...",
             "refresh": "Refresh",
             "attentionClear": "Nothing is waiting on you. No pending refunds, no unprocessed webhooks.",
             "unprocessedWebhooks": "Provider deliveries never processed",
             "openQueue": "Open",
-            "totalUsers": "Total users",
-            "activeUsers": "Active users",
-            "totalEvents": "Total events",
-            "activeEvents": "Active events",
-            "usersByAccountPlan": "Users by account plan",
-            "eventsByStatus": "Events by status",
-            "eventsByPlanTier": "Events by event plan",
+            "totalUsers": "Total",
+            "activeUsers": "Active",
+            "totalEvents": "Total",
+            "activeEvents": "Active",
+            "usersByAccountPlan": "Account plan",
+            "eventsByStatus": "Status",
+            "eventsByPlanTier": "Event plan",
             "heldWithdrawals": "Withdrawals awaiting review",
             "storage": {
-                "title": "Storage economics",
+                "title": "Storage",
                 "usedBytes": "Active storage used",
                 "pendingPurgeBytes": "Pending purge",
                 "committedBytes": "Committed capacity",
                 "paidUsedBytes": "Paid-event usage",
                 "freeUsedBytes": "Free-event usage",
                 "purchasedExtraBytes": "Purchased extra capacity",
-                "estimatedMonthlyCostMinor": "Estimated monthly storage cost"
-            }
+                "estimatedMonthlyCostMinor": "Estimated monthly storage cost",
+                "usedOfCommitted": "{percent} of {committed} committed",
+                "approx": "≈ {amount}"
+            },
+            "users": "Users",
+            "events": "Events",
+            "activeShare": "{percent} of total",
+            "updatedAt": "Updated {time}",
+            "empty": "No data yet"
         },
         "withdrawals": {
             "title": "Withdrawals",

@@ -31,3 +31,9 @@ export function formatRecordCounts(result: Record<string, number>): string {
     if (entries.length === 0) return '0';
     return entries.map(([rule, count]) => `${rule}: ${count}`).join(', ');
 }
+
+/** A 0–1 ratio as a percent. Tiny non-zero shares keep two decimals so they don't read as 0%. */
+export function formatPercent(locale: string, ratio: number): string {
+    const digits = ratio > 0 && ratio < 0.01 ? 2 : 0;
+    return new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: digits }).format(ratio);
+}

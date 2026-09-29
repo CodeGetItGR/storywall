@@ -8,6 +8,15 @@
         "seeUpgradeOptions": "Δες τις επιλογές αναβάθμισης",
         "loading": "Φόρτωση…"
     },
+    "DemoActAs": {
+        "postingAs": "Δημοσίευση ως",
+        "host": "Εσείς (οικοδεσπότης)",
+        "addGuest": "Προσθήκη καλεσμένου",
+        "addGuestTitle": "Προσθήκη καλεσμένου",
+        "guestName": "Όνομα",
+        "add": "Προσθήκη",
+        "cancel": "Ακύρωση"
+    },
     "Demo": {
         "resetDemo": "Επαναφορά επίδειξης",
         "exitDemo": "Εγγραφή για πραγματικό λογαριασμό",
@@ -3304,32 +3313,37 @@
                 "unsubscribed": "Απεγγραμμένοι",
                 "rewardsIssued": "Κωδικοί έκπτωσης που εκδόθηκαν"
             },
-            "eyebrow": "Τρέχοντα στοιχεία πλατφόρμας",
             "title": "Στατιστικά πλατφόρμας",
-            "subtitle": "Συνολικά στοιχεία χρηστών και εκδηλώσεων, ομαδοποιημένα ανά πλάνο και κατάσταση.",
             "loading": "Φόρτωση στατιστικών...",
             "refresh": "Ανανέωση",
             "attentionClear": "Δεν εκκρεμεί τίποτα. Καμία απόσυρση υπό εξέταση, κανένα ανεπεξέργαστο webhook.",
             "heldWithdrawals": "Αποσύρσεις υπό εξέταση",
             "unprocessedWebhooks": "Παραδόσεις παρόχου που δεν επεξεργάστηκαν",
             "openQueue": "Άνοιγμα",
-            "totalUsers": "Σύνολο χρηστών",
-            "activeUsers": "Ενεργοί χρήστες",
-            "totalEvents": "Σύνολο εκδηλώσεων",
-            "activeEvents": "Ενεργές εκδηλώσεις",
-            "usersByAccountPlan": "Χρήστες ανά πλάνο λογαριασμού",
-            "eventsByStatus": "Εκδηλώσεις ανά κατάσταση",
-            "eventsByPlanTier": "Εκδηλώσεις ανά πλάνο",
+            "totalUsers": "Σύνολο",
+            "activeUsers": "Ενεργοί",
+            "totalEvents": "Σύνολο",
+            "activeEvents": "Ενεργές",
+            "usersByAccountPlan": "Πλάνο λογαριασμού",
+            "eventsByStatus": "Κατάσταση",
+            "eventsByPlanTier": "Πλάνο εκδήλωσης",
             "storage": {
-                "title": "Οικονομικά αποθήκευσης",
+                "title": "Αποθήκευση",
                 "usedBytes": "Ενεργός χρησιμοποιημένος χώρος",
                 "pendingPurgeBytes": "Σε αναμονή διαγραφής",
                 "committedBytes": "Δεσμευμένη χωρητικότητα",
                 "paidUsedBytes": "Χρήση πληρωμένων εκδηλώσεων",
                 "freeUsedBytes": "Χρήση δωρεάν εκδηλώσεων",
                 "purchasedExtraBytes": "Αγορασμένη πρόσθετη χωρητικότητα",
-                "estimatedMonthlyCostMinor": "Εκτιμώμενο μηνιαίο κόστος χώρου"
-            }
+                "estimatedMonthlyCostMinor": "Εκτιμώμενο μηνιαίο κόστος χώρου",
+                "usedOfCommitted": "{percent} από {committed} δεσμευμένα",
+                "approx": "≈ {amount}"
+            },
+            "users": "Χρήστες",
+            "events": "Εκδηλώσεις",
+            "activeShare": "{percent} του συνόλου",
+            "updatedAt": "Ενημέρωση {time}",
+            "empty": "Δεν υπάρχουν δεδομένα"
         },
         "costTracking": {
             "eyebrow": "Κόστος και όγκος",

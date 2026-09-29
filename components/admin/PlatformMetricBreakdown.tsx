@@ -1,23 +1,36 @@
-import { AdminSection } from '@/components/admin/AdminSection';
-import { formatCount } from '@/lib/format';
+'use client';
 
-export function PlatformMetricBreakdown({ title, values }: { title: string; values: Record<string, number> }) {
-    const entries = Object.entries(values).sort(([left], [right]) => left.localeCompare(right));
+import { useLocale, useTranslations } from 'next-intl';
+
+import { PlatformMetricBar } from '@/components/admin/PlatformMetricBar';
+import type { MetricShare } from '@/lib/adminUtils';
+import { formatCount, formatPercent } from '@/lib/format';
+
+export function PlatformMetricBreakdown({ title, shares }: { title: string; shares: MetricShare[] }) {
+    const t = useTranslations('AdminPage.metrics');
+    const locale = useLocale();
 
     return (
-        <AdminSection title={title} className="border-0 pt-0">
-            {entries.length === 0 ? (
-                <p className="text-sm text-ink-muted">0</p>
+        <div>
+            <h3 className="mb-2 text-xs font-semibold text-ink-muted">{title}</h3>
+            {shares.length === 0 ? (
+                <p className="text-sm text-ink-faint">{t('empty')}</p>
             ) : (
-                <dl className="divide-y divide-border">
-                    {entries.map(([key, value]) => (
-                        <div key={key} className="flex items-center justify-between gap-4 py-2">
-                            <dt className="min-w-0 truncate text-sm font-semibold text-ink">{key}</dt>
-                            <dd className="text-sm font-bold text-ink-muted tabular-nums">{formatCount(value)}</dd>
-                        </div>
+                <ul className="space-y-2">
+                    {shares.map((share) => (
+                        <li key={share.key} className="grid grid-cols-[minmax(0,9rem)_minmax(0,1fr)_auto] items-center gap-3">
+                            <span className="truncate font-mono text-xs font-bold text-ink" title={share.key}>
+                                {share.key}
+                            </span>
+                            <PlatformMetricBar ratio={share.ratio} />
+                            <span className="w-20 text-right text-sm tabular-nums">
+                                <span className="font-bold text-ink">{formatCount(share.value)}</span>
+                                <span className="ml-1.5 text-xs text-ink-faint">{formatPercent(locale, share.ratio)}</span>
+                            </span>
+                        </li>
                     ))}
-                </dl>
+                </ul>
             )}
-        </AdminSection>
+        </div>
     );
 }
