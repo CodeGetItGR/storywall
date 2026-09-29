@@ -14,6 +14,7 @@ import {
     Receipt,
     Smile,
     TicketPercent,
+    TrendingUp,
     Undo2,
     Users,
 } from 'lucide-react';
@@ -26,6 +27,7 @@ import { isPlansHash, PLANS_HASH_ROOT } from '@/lib/adminPlansRouting';
 
 export type AdminTab =
     | 'metrics'
+    | 'funnel'
     | 'costTracking'
     | 'plans'
     | 'paidServices'
@@ -60,6 +62,7 @@ export type AdminFocus = {
 
 const HASH_TO_TAB: Record<string, AdminTab> = {
     '#metrics': 'metrics',
+    '#funnel': 'funnel',
     '#cost-tracking': 'costTracking',
     '#paid-services': 'paidServices',
     '#discount-codes': 'discountCodes',
@@ -74,6 +77,7 @@ const HASH_TO_TAB: Record<string, AdminTab> = {
 
 const TAB_TO_HASH: Record<AdminTab, string> = {
     metrics: '#metrics',
+    funnel: '#funnel',
     costTracking: '#cost-tracking',
     plans: PLANS_HASH_ROOT,
     paidServices: '#paid-services',
@@ -152,6 +156,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
     const tabs = useMemo<AdminTabItem[]>(
         () => [
             { key: 'metrics', label: t('metrics'), icon: BarChart3 },
+            { key: 'funnel', label: t('funnel'), icon: TrendingUp },
             { key: 'costTracking', label: t('costTracking'), icon: ChartNoAxesCombined },
             { key: 'plans', label: t('plans'), icon: CalendarDays },
             { key: 'paidServices', label: t('paidServices'), icon: PackagePlus },

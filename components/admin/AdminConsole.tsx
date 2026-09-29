@@ -11,6 +11,7 @@ import { BillingOpsPanel } from '@/components/admin/BillingOpsPanel';
 import { CollaborationsSection } from '@/components/admin/collaborations/CollaborationsSection';
 import { CostTrackingPanel } from '@/components/admin/CostTrackingPanel';
 import { DemoEventsSection } from '@/components/admin/demoEvents/DemoEventsSection';
+import { FunnelPanel } from '@/components/admin/funnel/FunnelPanel';
 import { PaidServicesCatalogPanel } from '@/components/admin/PaidServicesCatalogPanel';
 import { PlanAssignmentPanel } from '@/components/admin/PlanAssignmentPanel';
 import { PlansSection } from '@/components/admin/plans/PlansSection';
@@ -25,6 +26,7 @@ export function AdminConsole() {
     // The Paid Services panel supplies its own page head (title, stat tiles,
     // primary action) — the shared eyebrow/title block would just duplicate it.
     if (tab === 'metrics') return <PlatformMetricsPanel />;
+    if (tab === 'funnel') return <FunnelPanel />;
     if (tab === 'paidServices') return <PaidServicesCatalogPanel />;
     if (tab === 'plans') return <PlansSection />;
     if (tab === 'discountCodes') return <AdminDiscountCodesPanel />;

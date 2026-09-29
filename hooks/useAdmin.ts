@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { appConfigKeys } from '@/hooks/useAppConfig';
 import { notificationKeys } from '@/hooks/useNotifications';
@@ -21,6 +21,8 @@ import type {
     DiscountCodeResponseDto,
     EventDashboardRowDto,
     EventUsageResponseDto,
+    FunnelCohortDto,
+    FunnelMetricsResponseDto,
     LinkDiscountCodeRequestDto,
     MarkCollaborationEarningsPaidRequestDto,
     ModuleKey,
@@ -62,6 +64,8 @@ export const adminKeys = {
     costTimeline: (weeks: number) => ['admin', 'metrics', 'timeline', weeks] as const,
     costCalendar: (since: string, until: string) => ['admin', 'metrics', 'calendar', since, until] as const,
     costCalendarDayEvents: (date: string, page: number, size: number) => ['admin', 'metrics', 'calendar', date, 'events', page, size] as const,
+    funnel: (since: string | null, until: string | null) => ['admin', 'metrics', 'funnel', since, until] as const,
+    funnelCohorts: (weeks: number) => ['admin', 'metrics', 'funnel', 'cohorts', weeks] as const,
     paidServices: (kind?: PaidServiceKind, includeArchived?: boolean) => ['admin', 'paid-services', kind ?? 'ALL', Boolean(includeArchived)] as const,
     collaborators: ['admin', 'collaborators'] as const,
     collaboratorCodes: (id: string) => ['admin', 'collaborators', id, 'codes'] as const,
@@ -216,6 +220,24 @@ export function useAdminCostTimeline(weeks: number) {
     return useQuery({
         queryKey: adminKeys.costTimeline(weeks),
         queryFn: () => api.get<PlanTimelineRowDto[]>(endpoints.admin.metrics.timeline(weeks)),
+    });
+}
+
+// GET /api/admin/metrics/funnel - conversion funnel for accounts that signed up in the range.
+export function useAdminFunnel(since: string | null, until: string | null, options: { enabled?: boolean } = {}) {
+    return useQuery({
+        queryKey: adminKeys.funnel(since, until),
+        queryFn: () => api.get<FunnelMetricsResponseDto>(endpoints.admin.metrics.funnel(since, until)),
+        placeholderData: keepPreviousData,
+        enabled: options.enabled ?? true,
+    });
+}
+
+export function useAdminFunnelCohorts(weeks: number) {
+    return useQuery({
+        queryKey: adminKeys.funnelCohorts(weeks),
+        queryFn: () => api.get<FunnelCohortDto[]>(endpoints.admin.metrics.funnelCohorts(weeks)),
+        placeholderData: keepPreviousData,
     });
 }
 

@@ -2198,6 +2198,7 @@
         },
         "tabs": {
             "metrics": "Metrics",
+            "funnel": "Growth",
             "costTracking": "Cost tracking",
             "plans": "Plans",
             "paidServices": "Paid services",
@@ -2737,6 +2738,154 @@
             "noAssignablePlans": "No event plan is ready to assign. Make a plan assignable and add a duration to it.",
             "confirmEventTitle": "Assign a plan to {event}?",
             "confirmEventBody": "This changes the event plan to {plan} and may alter storage, member, and module limits immediately."
+        },
+        "funnel": {
+            "title": "Growth",
+            "loading": "Loading growth metrics...",
+            "refresh": "Refresh",
+            "updatedAt": "Updated {time}",
+            "hours": "{value} h",
+            "days": "{value} days",
+            "range": {
+                "label": "Date range",
+                "ALL": "All time",
+                "LAST_30": "Last 30 days",
+                "LAST_90": "Last 90 days",
+                "THIS_YEAR": "This year",
+                "CUSTOM": "Custom",
+                "from": "From",
+                "to": "To",
+                "invalid": "The end date must be on or after the start date.",
+                "windows": "Account sections count people who signed up in this range and follow them to today. Revenue and Paid events count what was paid in this range."
+            },
+            "window": {
+                "signup": "By signup date",
+                "payment": "By payment date",
+                "none": "Ignores the date range"
+            },
+            "headline": {
+                "title": "Conversion",
+                "paidHost": "Paid hosts",
+                "paidRate": "{percent} of {signedUp} signups",
+                "engagedHost": "Engaged hosts",
+                "repeatPaidHost": "Paid for 2+ events",
+                "adminSettledHost": "Admin-settled hosts",
+                "adminSettledInfo": "An admin settlement looks the same whether it was a bank transfer or a comp."
+            },
+            "steps": {
+                "title": "Funnel",
+                "signedUp": "Signed up",
+                "emailVerified": "Email verified",
+                "createdEvent": "Created an event",
+                "paidHost": "Paid host",
+                "engagedHost": "Engaged host",
+                "ofPrevious": "{percent} of previous",
+                "ofSignups": "{percent} of signups",
+                "engagedHint": "not a subset of paid hosts"
+            },
+            "stuck": {
+                "title": "Where people stall",
+                "unverifiedOver7Days": "Unverified for over 7 days",
+                "verifiedNoEvent": "Verified, no event",
+                "eventNeverPaid": "Event never paid",
+                "abandonedCheckout": "Abandoned checkout",
+                "abandonedCheckoutHint": "Part of Event never paid",
+                "paidNotEngaged": "Paid, not used yet",
+                "note": "Active accounts only. Abandoned checkout is already counted in Event never paid, so don’t add them up."
+            },
+            "activity": {
+                "title": "Activity",
+                "activeLast7Days": "Active in the last 7 days",
+                "activeLast30Days": "Active in the last 30 days",
+                "inactiveOver30Days": "Inactive for over 30 days",
+                "neverRecorded": "Never recorded",
+                "note": "Activity tracking started on 29 Sep 2026. Never recorded means not signed in since then. It isn’t churn and will shrink over the first weeks."
+            },
+            "time": {
+                "title": "Time to convert",
+                "medianHoursToVerify": "Signup to verified",
+                "medianHoursToFirstEvent": "Signup to first event",
+                "medianHoursFirstEventToPaid": "First event to paid",
+                "note": "Medians. First event to paid can be negative for accounts an admin created with an event."
+            },
+            "guest": {
+                "title": "Guest to host",
+                "attendedFirst": "Joined as a guest first",
+                "thenHosted": "Then hosted",
+                "thenPaid": "Then paid",
+                "ofGuests": "{percent} of those guests",
+                "note": "A lower bound: only guests who linked their membership to an account are counted."
+            },
+            "cohorts": {
+                "title": "Weekly cohorts",
+                "weeksLabel": "Weeks",
+                "weeks": "{count} weeks",
+                "modeLabel": "Show as",
+                "count": "Counts",
+                "percent": "% of signups",
+                "weekOf": "Week of {date}",
+                "loading": "Loading cohorts...",
+                "empty": "No weeks yet.",
+                "note": "Grouped by signup week. Recent weeks have had less time to convert."
+            },
+            "paidEvents": {
+                "title": "Paid events",
+                "count": "Paid events",
+                "ended": "Ended",
+                "endedWithoutUploads": "Ended with no uploads",
+                "endedWithoutUploadsHint": "Paid but unused · {percent} of ended",
+                "endedWithoutGuests": "Ended with no guests",
+                "medianGuests": "Median guests",
+                "medianUploads": "Median uploads",
+                "attachTitle": "Add-ons, share of paid events",
+                "withUpgrade": "Upgrade",
+                "withStoragePack": "Storage pack",
+                "withExtension": "Extension"
+            },
+            "revenue": {
+                "title": "Revenue",
+                "empty": "No payments in this range.",
+                "gross": "Gross",
+                "refunded": "Refunded",
+                "net": "Net",
+                "payingAccounts": "Paying accounts",
+                "netPerPayingAccount": "Net per paying account",
+                "byKindTitle": "By kind",
+                "columns": {
+                    "kind": "Kind",
+                    "currency": "Currency",
+                    "orders": "Orders",
+                    "amount": "Amount"
+                },
+                "kinds": {
+                    "ACTIVATION": "Activation",
+                    "UPGRADE": "Upgrade",
+                    "STORAGE_PACK": "Storage pack",
+                    "EXTENSION": "Extension"
+                },
+                "refunds": "Refunds",
+                "adminSettledOrders": "Admin-settled orders",
+                "discountRedemptions": "Discount codes used",
+                "partnerRedemptions": "Partner codes used",
+                "buyerTypes": "Orders by buyer type",
+                "buyer": {
+                    "CONSUMER": "Consumer",
+                    "BUSINESS": "Business"
+                }
+            },
+            "accounts": {
+                "title": "Accounts",
+                "byProvider": "Signup method",
+                "providers": {
+                    "LOCAL": "Email and password",
+                    "OAUTH": "OAuth",
+                    "INVITE": "Invite"
+                },
+                "byLocale": "Language",
+                "empty": "No data yet",
+                "suspended": "Suspended",
+                "deleted": "Deleted"
+            }
         },
         "metrics": {
             "newsletter": {

@@ -259,6 +259,14 @@ export const endpoints = {
                 `/api/admin/metrics/calendar/${encodeURIComponent(date)}/events?page=${encodeURIComponent(String(page))}&size=${encodeURIComponent(String(size))}`,
             timeline: (weeks: number) => `/api/admin/metrics/timeline?weeks=${encodeURIComponent(String(weeks))}`,
             costSummary: '/api/admin/metrics/cost-summary',
+            funnel: (since?: string | null, until?: string | null) => {
+                const params = [
+                    since ? `since=${encodeURIComponent(since)}` : null,
+                    until ? `until=${encodeURIComponent(until)}` : null,
+                ].filter(Boolean);
+                return `/api/admin/metrics/funnel${params.length ? `?${params.join('&')}` : ''}`;
+            },
+            funnelCohorts: (weeks: number) => `/api/admin/metrics/funnel/cohorts?weeks=${encodeURIComponent(String(weeks))}`,
         },
         orders: {
             settle: (orderId: string) => `/api/admin/orders/${orderId}/settle`,

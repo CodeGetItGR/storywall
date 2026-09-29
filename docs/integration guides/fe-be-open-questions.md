@@ -219,3 +219,24 @@ event-modules management UI is moot: modules are plan-owned). Newly available an
    landing page hide the entry point without spending the per-IP budget.
 5. **Wishbook count.** The snapshot caps `wishbookEntries` at 200; `GET /wishbook/count` is
    computed from that list, so it's wrong for bigger demos. Same for posts (newest 50).
+
+## Admin conversion funnel (`GET /api/admin/metrics/funnel`, `/funnel/cohorts`) — 2026-09-29
+
+1. **`paidEvents` add-on counts.** Is `withUpgrade` (and `withStoragePack`, `withExtension`) "events
+   activated in the range that have that add-on, bought at any time", or "that add-on bought in
+   the range"? The FE shows each as a share of `paidEvents.count`, which is only meaningful for
+   the first reading.
+2. **`paidEvents.medianGuests` / `medianUploads`.** Median over all paid events in the range, or
+   only the ended ones? An upcoming event pulls the median down, so it matters for reading it.
+3. **`revenue.totals[].payingAccounts` across currencies.** An account that paid in EUR and in USD:
+   counted once in each currency's row? The FE shows one card per currency and never adds rows,
+   so a yes is fine, but the admin can't tell from the page.
+4. **`accounts.byLocale` for an account with no locale.** Is it left out, or sent under a key such
+   as `null` or `""`? The FE renders unknown keys as sent, so an empty key would show as a blank
+   row.
+5. **Date ranges are in UTC.** The FE sends `since`/`until` as UTC midnights (`until` exclusive,
+   next day). For an admin in Athens, "30 Sep" therefore ends at 03:00 local time on 1 Oct.
+   Confirm UTC is the intended calendar for these windows (cohort weeks already are).
+6. **Guide path.** The type comments point at `docs/fe-guides/admin-funnel-metrics-fe-integration.md`;
+   in this repo the file lives in `docs/integration guides/`. Nothing to change on the BE, noted so
+   the next sync doesn't look like a missing file.

@@ -1248,6 +1248,121 @@ export interface PlatformMetricsResponseDto {
     newsletter: PlatformNewsletterMetricsDto;
 }
 
+/**
+ * GET /api/admin/metrics/funnel?since=&until= — the account conversion funnel. Added 2026-09-29.
+ * Counts only; nothing identifies an account. Both params optional ISO-8601; omit both for all time.
+ * `until` is exclusive.
+ *
+ * Two windows: account sections (funnel, stuck, activity, timeToConvert, guestToHost, accounts)
+ * cover accounts that SIGNED UP in the range, followed to today; paidEvents and revenue cover
+ * orders PAID / refunds DECIDED in the range. An "account" excludes admins and guest users.
+ * See docs/fe-guides/admin-funnel-metrics-fe-integration.md for each definition.
+ */
+export interface FunnelMetricsResponseDto {
+    since: string | null;
+    until: string | null;
+    generatedAt: string;
+    funnel: {
+        signedUp: number;
+        emailVerified: number;
+        /** Primary host of ≥1 event (drafts and soft-deleted events count). */
+        createdEvent: number;
+        /** THE HEADLINE. Paid via the provider, amount > 0, not refunded, for ≥1 event activation. */
+        paidHost: number;
+        repeatPaidHost: number;
+        /** Hosts an event with ≥1 guest AND ≥1 upload. Shown beside paidHost, not a subset of it. */
+        engagedHost: number;
+        /** Went live only via admin settlement / €0 order (bank transfer and comp look the same). */
+        adminSettledHost: number;
+    };
+    /** ACTIVE accounts only. abandonedCheckout ⊂ eventNeverPaid. */
+    stuck: {
+        unverifiedOver7Days: number;
+        verifiedNoEvent: number;
+        eventNeverPaid: number;
+        abandonedCheckout: number;
+        paidNotEngaged: number;
+    };
+    /** From last_active_at (sign-in / token refresh, 1-day resolution, recorded from 2026-09-29). */
+    activity: {
+        activeLast7Days: number;
+        activeLast30Days: number;
+        inactiveOver30Days: number;
+        /** No sign-in since tracking began — not the same as inactive. */
+        neverRecorded: number;
+    };
+    /** Medians in hours; null when nobody reached the step. firstEventToPaid can be negative. */
+    timeToConvert: {
+        medianHoursToVerify: number | null;
+        medianHoursToFirstEvent: number | null;
+        medianHoursFirstEventToPaid: number | null;
+    };
+    /** Accounts that joined someone else's event as a linked guest before hosting their own. */
+    guestToHost: {
+        attendedFirst: number;
+        thenHosted: number;
+        thenPaid: number;
+    };
+    accounts: {
+        /** Keyed by AuthProvider: LOCAL | OAUTH | INVITE. Missing key = 0. */
+        signedUpByProvider: Record<string, number>;
+        /** Keyed by locale, e.g. 'en', 'el'. */
+        byLocale: Record<string, number>;
+        suspended: number;
+        deleted: number;
+    };
+    /** Events whose provider-paid activation settled in the range. */
+    paidEvents: {
+        count: number;
+        /** endAt has passed — only then is "no uploads" meaningful. */
+        ended: number;
+        endedWithoutUploads: number;
+        endedWithoutGuests: number;
+        medianGuests: number | null;
+        medianUploads: number | null;
+        withUpgrade: number;
+        withStoragePack: number;
+        withExtension: number;
+    };
+    revenue: {
+        /** One entry per currency with sales or refunds in the range. */
+        totals: {
+            currency: string;
+            /** Paid orders, later-refunded ones included. */
+            grossMinor: number;
+            /** Refunds decided in the range, partial ones included. */
+            refundedMinor: number;
+            netMinor: number;
+            payingAccounts: number;
+            netPerPayingAccountMinor: number;
+        }[];
+        byKind: {
+            currency: string;
+            /** OrderKind: ACTIVATION | UPGRADE | STORAGE_PACK | EXTENSION */
+            kind: string;
+            orders: number;
+            amountMinor: number;
+        }[];
+        refunds: number;
+        adminSettledOrders: number;
+        /** Keyed by BuyerType: CONSUMER | BUSINESS. */
+        ordersByBuyerType: Record<string, number>;
+        discountRedemptions: number;
+        partnerRedemptions: number;
+    };
+}
+
+/** GET /api/admin/metrics/funnel/cohorts?weeks=12 (1..104). Oldest first, every week present. */
+export interface FunnelCohortDto {
+    /** Monday 00:00 UTC. */
+    weekStart: string;
+    signedUp: number;
+    emailVerified: number;
+    createdEvent: number;
+    paidHost: number;
+    engagedHost: number;
+}
+
 export interface PlatformNewsletterMetricsDto {
     pending: number;
     confirmed: number;
