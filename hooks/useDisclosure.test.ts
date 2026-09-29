@@ -23,4 +23,14 @@ describe('useDisclosure', () => {
         act(() => result.current.toggle());
         expect(result.current.open).toBe(false);
     });
+
+    it('close only ever closes', () => {
+        const { result } = renderHook(() => useDisclosure(true));
+
+        act(() => result.current.close());
+        expect(result.current.open).toBe(false);
+
+        act(() => result.current.close());
+        expect(result.current.open).toBe(false);
+    });
 });

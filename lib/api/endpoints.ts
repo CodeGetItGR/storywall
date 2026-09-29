@@ -161,6 +161,7 @@ export const endpoints = {
         create: '/api/event-members',
         byId: (id: string) => `/api/event-members/${id}`,
         claim: (id: string) => `/api/event-members/${id}/claim`,
+        demoAvatar: (id: string) => `/api/event-members/${id}/demo-avatar`,
     },
 
     eventSessions: {

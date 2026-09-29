@@ -7,6 +7,8 @@ import { useCallback, useState } from 'react';
 export function useDisclosure(defaultOpen = false) {
     const [open, setOpen] = useState(defaultOpen);
     const toggle = useCallback(() => setOpen((current) => !current), []);
+    // Idempotent, unlike toggle: safe from an async callback that may land after the user closed it.
+    const close = useCallback(() => setOpen(false), []);
 
-    return { open, toggle };
+    return { open, toggle, close };
 }

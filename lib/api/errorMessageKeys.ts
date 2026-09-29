@@ -129,6 +129,7 @@ export type ApiErrorMessageKey =
     | 'demoEventLocked'
     | 'demoActAsRefused'
     | 'demoDesignationInvalid'
+    | 'demoPersonaAvatarRefused'
     | 'withdrawalNotPrimaryHost'
     | 'oauthEmailUnverified';
 
@@ -259,6 +260,7 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.DEMO_EVENT_LOCKED]: 'demoEventLocked',
     [ERROR_CODES.DEMO_ACT_AS_REFUSED]: 'demoActAsRefused',
     [ERROR_CODES.DEMO_DESIGNATION_INVALID]: 'demoDesignationInvalid',
+    [ERROR_CODES.DEMO_PERSONA_AVATAR_REFUSED]: 'demoPersonaAvatarRefused',
 } satisfies Record<KnownApiErrorCode, ApiErrorMessageKey>;
 
 export function getApiErrorMessageKey(code: number | string | undefined): ApiErrorMessageKey | undefined {
