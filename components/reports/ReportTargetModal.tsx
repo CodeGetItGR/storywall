@@ -26,7 +26,12 @@ export function ReportTargetModal({ eventId, onCloseAction, open, targetId, targ
         targetId,
         targetType,
         onSuccessAction: onCloseAction,
-        failedMessage: t('failed'),
+        messages: {
+            failed: t('failed'),
+            ownContent: t('ownContent'),
+            gone: t('gone'),
+            rateLimited: t('rateLimited'),
+        },
     });
     const supportedReasons = appConfig?.reportTargetTypes?.includes(targetType) ? (appConfig.reportReasons ?? []) : [];
     const maxDescriptionLength = appConfig?.contentLimits.reportDescriptionMaxLength ?? 1000;

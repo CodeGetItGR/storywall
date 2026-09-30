@@ -4393,12 +4393,17 @@
         "submitting": "Sending…",
         "cancel": "Cancel",
         "failed": "Couldn't send the report. Please try again.",
+        "ownContent": "You can't report your own content. You can delete it instead.",
+        "gone": "This was already removed.",
+        "rateLimited": "You've sent a lot of reports. Please try again later.",
         "reasons": {
             "SPAM": "Spam",
             "HARASSMENT": "Harassment",
             "INAPPROPRIATE_CONTENT": "Inappropriate content",
             "IMPERSONATION": "Impersonation",
-            "OTHER": "Other"
+            "OTHER": "Other",
+            "ILLEGAL_CONTENT": "Illegal content",
+            "COPYRIGHT": "Copyright infringement"
         }
     },
     "PublishQueue": {
