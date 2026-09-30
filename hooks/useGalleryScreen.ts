@@ -68,15 +68,18 @@ export function useGalleryScreen() {
     // Every event keeps photo originals; videos are never re-encoded, so they have no separate original.
     const canDownloadOriginal = isHost && selectedMedia !== null && selectedMedia.mediaType !== 'VIDEO';
     const showArchiveDownload = isHost && galleryEnabled;
-    // Deletes are not plan-gated on the backend, so a host can still clear out a file after the
-    // gallery module is gone — only a read-only or deleted event stops it.
-    const canDeleteMedia = isHost && selectedMedia !== null && isEventWritable(activeEvent?.status) && !isDeleted;
+    // A host, or the member who uploaded it (the backend enforces the same rule). Deletes are not
+    // plan-gated on the backend, so a file can still be cleared out after the gallery module is
+    // gone — only a read-only or deleted event stops it.
+    const isUploader = Boolean(activeMember && selectedMedia?.uploaderMemberId === activeMember.id);
+    const canDeleteMedia =
+        (isHost || isUploader) && selectedMedia !== null && isEventWritable(activeEvent?.status) && !isDeleted;
     const canReportMedia =
         selectedMedia !== null &&
         !isDeleted &&
         canReportContent({
             isMember: Boolean(activeMember),
-            isAuthor: Boolean(activeMember && selectedMedia.uploaderMemberId === activeMember.id),
+            isAuthor: isUploader,
             canWrite: isEventWritable(activeEvent?.status),
             targetTypeReportable: Boolean(appConfig?.reportTargetTypes?.includes('MEDIA')),
         });
