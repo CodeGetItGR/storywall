@@ -122,6 +122,8 @@ export interface PlanTierResponseDto {
     isDefault: boolean;
     isAssignable: boolean;
     isPublic: boolean;
+    // Added 2026-09-27: whether the plan can be bought as a gift. Also needs co_hosts in moduleKeys.
+    isGiftable: boolean;
     storageBytes: number | null;
     maxMembers: number | null;
     // ACCOUNT scope only. Always null on an EVENT plan, whose prices are its
@@ -480,11 +482,7 @@ export interface LogoutRequestDto {
 // WITHDRAWAL_* types — nothing emits the old pair any more (billing-fe-guide §10).
 // STORAGE_TRIM_* (2026-09-23): media above a lowered storage limit will be deleted.
 export type BillingNotificationType =
-    | 'WITHDRAWAL_REFUNDED'
-    | 'WITHDRAWAL_HELD'
-    | 'WITHDRAWAL_WITHHELD'
-    | 'STORAGE_TRIM_SCHEDULED'
-    | 'STORAGE_TRIM_WARNING';
+    'WITHDRAWAL_REFUNDED' | 'WITHDRAWAL_HELD' | 'WITHDRAWAL_WITHHELD' | 'STORAGE_TRIM_SCHEDULED' | 'STORAGE_TRIM_WARNING';
 
 export type NotificationCategory = 'LIMIT' | 'OFFER' | 'TIP' | 'SYSTEM' | 'BILLING' | (string & {});
 export type NotificationSeverity = 'INFO' | 'WARNING' | 'CRITICAL';
@@ -1040,12 +1038,17 @@ export interface OrderSummaryDto {
     // 2026-09-24: pinned when the checkout opened; null on orders from before it.
     // While PAID, withdrawal.windowClosesAt is filled for a consumer order.
     breakdown: PriceBreakdown | null;
+    // Added 2026-09-27: whether the host reading this paid for the order. On a gift
+    // event, false means the amounts, splits and breakdown are null: show "Gift"
+    // and no Withdraw. Only null on internal views.
+    paidByCaller: boolean | null;
 }
 export interface EventAddonDto {
     code: string;
     name: string;
-    // What this cost when bought.
-    priceAmountMinor: number;
+    // What this cost when bought. Null on a gift event unless the caller paid
+    // the order that bought it (2026-09-27).
+    priceAmountMinor: number | null;
     billingPeriod: BillingPeriod;
     activatedAt: string;
 }
@@ -1179,6 +1182,9 @@ export interface WithdrawalPreviewResponseDto {
     storageAfter: WithdrawalStorageAfterDto | null;
     // EVENT only (2026-09-24): business-bought orders this withdrawal leaves unrefunded.
     excludedOrders: WithdrawalExcludedOrderDto[];
+    // Opaque proof the host saw this preview (2026-09-28). Always present, refusals
+    // included. Send it back on the withdrawal POST; valid for 10 minutes.
+    confirmationToken: string;
 }
 
 // POST /api/events/{eventId}/withdrawals — host. 201 with this shape when the
@@ -1208,6 +1214,9 @@ export interface WithdrawalResponseDto {
 
 export interface WithdrawalRequestDto {
     reason?: string; // max 1000 chars, optional
+    // The confirmationToken of the exact preview the host confirmed (required, 2026-09-28).
+    // 400 5094 when missing or not from this preview; 409 5095 when expired or the refund changed.
+    confirmationToken: string;
 }
 
 // --- Admin withdrawal operations (billing-fe-guide §9/§13) ---
@@ -1639,6 +1648,9 @@ export interface EventInvitationPreviewDto {
     email: string | null;
     expired: boolean;
     alreadyUsed: boolean;
+    // Added 2026-09-27: null on a normal event. While claimed is false the
+    // honorees may not know yet, so guest-facing copy must not spoil it.
+    gift: GiftFramingDto | null;
 }
 
 export interface EventMemberRequestDto {
@@ -2298,6 +2310,8 @@ export interface PlanTierRequestDto {
     isDefault: boolean;
     isAssignable: boolean;
     isPublic: boolean;
+    // Omit for true (added 2026-09-27).
+    isGiftable?: boolean;
     storageBytes?: number | null;
     maxMembers?: number | null;
     // ACCOUNT scope only: an EVENT plan is priced by its coverage options, and
@@ -2527,4 +2541,78 @@ export interface DemoEventResponseDto {
 
 export interface DemoEventDesignationRequestDto {
     eventId: string;
+}
+
+// Gift mode (2026-09-27): gift-mode-fe-integration.md.
+export type GiftHandoverStatus = 'NOT_ISSUED' | 'ISSUED' | 'LOCKED' | 'CLAIMED' | 'COMPLETED' | 'VOID';
+
+// CLAIMABLE doesn't check the event: the claim can still answer 5092. Treat an
+// unknown state as not claimable.
+export type GiftClaimState = 'CLAIMABLE' | 'LOCKED' | 'ALREADY_CLAIMED' | 'VOID';
+
+// PUT /api/events/{eventId}/gift — primary host only (4011). A full replace:
+// omitting recipientEmail clears it.
+export interface GiftHandoverRequestDto {
+    recipientLabel: string; // required, max 120
+    giverDisplayName: string; // required, max 80
+    recipientEmail?: string; // max 255; this verified address claims without the PIN
+}
+
+// PUT and GET /api/events/{eventId}/gift. Never carries the PIN.
+export interface GiftHandoverResponseDto {
+    status: GiftHandoverStatus;
+    recipientLabel: string;
+    giverDisplayName: string;
+    recipientEmail: string | null;
+    // The live card's claim token; null until a card is issued.
+    token: string | null;
+    cardIssuedAt: string | null;
+    claimedByDisplayName: string | null;
+    claimedAt: string | null;
+    // Only while CLAIMED: when the last withdrawal window closes. Also null while
+    // CLAIMED when the handover is paused (a withdrawal under review, the event
+    // deleted or not ACTIVE).
+    ownershipTransfersAt: string | null;
+    ownershipTransferredAt: string | null;
+}
+
+// POST /api/events/{eventId}/gift/card — the only response with the PIN.
+// Reissuing kills the previous token and PIN.
+export interface GiftCardResponseDto {
+    token: string;
+    pin: string; // 6 digits; show once
+}
+
+export interface GiftClaimRequestDto {
+    pin?: string; // exactly 6 digits
+}
+
+// GET /api/gift-claims/{token} — public. 404 for unknown or superseded tokens and deleted events.
+export interface GiftClaimPreviewDto {
+    eventTitle: string;
+    eventSubtitle: string | null;
+    coverMedia: MediaResponseDto | null;
+    giverDisplayName: string;
+    recipientLabel: string;
+    emailBound: boolean;
+    state: GiftClaimState;
+}
+
+// POST /api/gift-claims/{token}/claim. COMPLETED: the caller owns the event now.
+// CLAIMED: co-host now, owner at ownershipTransfersAt (null while a withdrawal is under review).
+export interface GiftClaimResponseDto {
+    status: 'COMPLETED' | 'CLAIMED';
+    ownershipTransfersAt: string | null;
+}
+
+// EventInvitationPreviewDto.gift.
+export interface GiftFramingDto {
+    giverDisplayName: string;
+    recipientLabel: string;
+    claimed: boolean;
+}
+
+// `details` on a 400/3036. 0 means this wrong PIN locked the card.
+export interface GiftPinInvalidDetails {
+    attemptsLeft: number;
 }

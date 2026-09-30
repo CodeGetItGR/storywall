@@ -15,7 +15,7 @@ export function WithdrawalHistory({ withdrawals }: { withdrawals: WithdrawalResp
     return (
         <ul className="divide-y divide-ink/10">
             {withdrawals.map((withdrawal) => {
-                const { orderKind, keptEventDay, alreadyRefundedLines } = withdrawalHistoryFacts(withdrawal);
+                const { heldNote, orderKind, keptEventDay, alreadyRefundedLines } = withdrawalHistoryFacts(withdrawal);
                 const scopeLabel =
                     withdrawal.scope === 'EVENT' ? t('withdrawalHistory.wholeEvent') : orderKind ? t(`orders.kind.${orderKind}`) : null;
                 const statusKey = `withdrawalStatus.${withdrawal.status}`;
@@ -46,7 +46,7 @@ export function WithdrawalHistory({ withdrawals }: { withdrawals: WithdrawalResp
 
                         {/* Outcome */}
                         <div className="space-y-1 text-xs leading-relaxed text-ink-muted">
-                            {withdrawal.status === 'HELD' && <p>{t('withdrawalHistory.held')}</p>}
+                            {heldNote && <p>{t(`withdrawalHistory.${heldNote}`)}</p>}
                             {withdrawal.status === 'REFUNDED' && (
                                 <p>{withdrawal.scope === 'EVENT' ? t('withdrawalHistory.refundedEvent') : t('withdrawalHistory.refundedOrder')}</p>
                             )}

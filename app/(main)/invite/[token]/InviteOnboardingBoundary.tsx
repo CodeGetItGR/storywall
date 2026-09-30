@@ -13,6 +13,7 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
 import { useAcceptEventInvitation, useEventInvitationPreview } from '@/hooks/useEventInvitations';
 import { ApiError } from '@/lib/api/client';
+import { inviteGiftFraming } from '@/lib/gift';
 import { routes } from '@/lib/routes';
 
 const DEFAULT_HERO_IMAGE = '/images/couple-hero.png';
@@ -72,6 +73,7 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
     const terminalState = renderTerminalState();
     const activePreview = terminalState ? null : preview;
 
+    const giftFraming = inviteGiftFraming(activePreview?.gift);
     const loginHref = routes.auth.login({ invite: token, email: activePreview?.email });
     const registerHref = routes.auth.register({ invite: token, email: activePreview?.email });
 
@@ -87,6 +89,13 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
                         eventTitle={activePreview.eventTitle}
                         eventSubtitle={activePreview.eventSubtitle}
                     >
+                        {/* Gift */}
+                        {giftFraming && (
+                            <p className="mb-3 text-sm font-semibold text-ink">
+                                {t('gift', { giver: giftFraming.giverDisplayName, recipient: giftFraming.recipientLabel })}
+                            </p>
+                        )}
+
                         {activePreview.eventDescription && (
                             <p className="mb-7 text-sm leading-relaxed text-ink-muted">{activePreview.eventDescription}</p>
                         )}

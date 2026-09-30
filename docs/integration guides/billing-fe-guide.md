@@ -1,7 +1,29 @@
 # FE integration guide: plans, payments, refunds
 
 **The complete, current reference for the commercial side of the platform.** Everything a frontend
-needs to sell an event and give money back. Current as of 2026-09-24.
+needs to sell an event and give money back. Current as of 2026-09-30.
+
+**2026-09-30 — billing review fixes** (`docs/billing-review-fixes-2026-09.md` has the why of each):
+- **A `HELD` whole-event withdrawal closes the event when it is filed**, not when it is released.
+  The event is soft-deleted at once, and its Undo is refused with `409` 5071 (§9).
+- **`upgrade-options` shows an open upgrade checkout at the price it was opened at**, for the
+  duration that checkout is for, as the payment page charges it (§7d).
+- **`POST /api/events/{eventId}/hosts/{id}/primary` now closes every open checkout on the event
+  first**, and answers `409` 5031 when one may be being paid. Retry in a minute.
+- **An order that bought nothing is refunded in full when it settles**, whatever its kind: a pack
+  paid after its event was deleted, or a second activation. It ends `REFUNDED` with no
+  withdrawal behind it.
+- **Undo on a deleted event is refused with `409` 5085 once its coverage has ended.**
+- **A draft whose date has passed can't be activated:** checkout and its quote answer `400` 3035
+  `EVENT_START_PASSED`. Send the host to move the date.
+- **An upgrade bought after the event has no event-day share** (§7d): its `breakdown` has the
+  `ACTIVATION` (setup) and `COVERAGE` items and no `EVENT_DAY` item. Its footer says so. Withdrawn,
+  it keeps the setup share and refunds the coverage by time. Render the items the breakdown has;
+  don't assume three.
+- An event whose paid activation the provider reversed (refund or lost chargeback) is soft-deleted,
+  with no Undo.
+- The withdrawal POST body has required `confirmationToken` since 2026-09-28; this guide now says
+  so (§9, §12). Tokens issued before this release are refused with `400` 5094: fetch the preview again.
 
 **2026-09-24 — coverage extensions (plan coverage options phase 2), breaking:** `termsVersion` is
 now `2026-09-25`; a client still sending `2026-09-24` gets `400` 5072. A primary host can buy more
@@ -156,10 +178,11 @@ and `app-config-fe-integration.md` for the rest of `GET /api/config`.
 a completed payment turns it into an `ACTIVE` event. There is no free plan — the cheapest plan is the
 default, not a free one.
 
-**Every purchase on this platform is one-time.** There is no subscription, no recurring charge, no
-card held on file, no coverage window that lapses. Once `ACTIVE`, an event stays `ACTIVE` — its media,
-posts and RSVPs are live indefinitely, for as long as the account exists. Four things can be bought,
-each its own checkout:
+**Every purchase on this platform is one-time.** There is no subscription, no recurring charge and no
+card held on file. An event's coverage is bought up front: it runs to the event's `coverageEndsAt`,
+and the event is soft-deleted when that passes (since 2026-09-23;
+[event-coverage-window-fe-integration.md](event-coverage-window-fe-integration.md)). Four things
+can be bought, each its own checkout:
 
 | purchase | what it buys | when | order kind |
 |---|---|---|---|
@@ -1039,6 +1062,13 @@ render `GET /api/events/{eventId}/upgrade-options` as-is** — see `collaboratio
 Since 2026-09-24 each option also carries `breakdown`: exactly what `upgrade-checkout` will store
 for it, item by item (`billing.item.upgrade.*` labels). Its `payableAmountMinor` and `gapAmountMinor`
 are read from that breakdown's `totalMinor` and `listTotalMinor`.
+**After the event (2026-09-30).** An upgrade priced once the event's `startAt` has passed has no
+event-day share: its `breakdown` holds the `ACTIVATION` (setup) and `COVERAGE` items only. The
+setup share is kept on withdrawal; the coverage is refunded by time. An upgrade checkout opened before the event is replaced by a fresh one
+if the host comes back after it.
+Since 2026-09-30, while an upgrade checkout is open, the duration it is for is listed at the
+price that checkout was opened at. That is the price the payment page will charge, even if a
+promotion has started or ended since. Every other duration is priced as of now.
 Sending a code to the preview endpoint with an upgrade target is refused with `409
 DISCOUNT_NOT_APPLICABLE_TO_UPGRADE` (5076).
 
@@ -1150,8 +1180,9 @@ host confirms POST /withdrawals
    computed + fraud-checked
         │
         ├─ clean ──► REFUNDED immediately: money back per line, event soft-deleted
-        └─ flagged ──► HELD for an admin (or always, in MANUAL mode) — released (optionally keeping the event day)
-                        within 10 days, auto-released if nobody acts
+        └─ flagged ──► HELD for an admin (or always, in MANUAL mode) — the event is soft-deleted now;
+                        the refund is released (optionally keeping the event day) within 10 days,
+                        auto-released if nobody acts (not while a chargeback on one of its orders is open)
 ```
 
 ### Business buyers (added 2026-09-24)
@@ -1268,10 +1299,16 @@ it freely as the host reads the confirmation dialog.
 ### `POST /api/events/{eventId}/withdrawals` — primary host
 
 ```jsonc
-// body optional
-{ "reason": "Our venue cancelled and we can't reschedule in time." }
+{ "reason": "Our venue cancelled and we can't reschedule in time.",
+  "confirmationToken": "…" }   // required: the confirmationToken of the preview the host was shown
 ```
 
+`confirmationToken` is required (since 2026-09-28): send back the one from the withdrawal preview
+the host confirmed. It lasts 10 minutes. The refund is computed as of the moment that preview was
+computed, so a confirm a few seconds later refunds exactly what the preview showed. Without a valid
+token the answer is `400` 5094. If it has expired, or the refund would now differ, the answer is
+`409` 5095; nothing is filed in either case. The full contract is in
+[withdrawal-confirmation-and-receipt-fe-integration.md](withdrawal-confirmation-and-receipt-fe-integration.md).
 `reason` is optional (unlike the old mandatory refund reason), max 1000 chars. Rate limited to **5
 per hour per user**, same budget as before.
 
@@ -1313,8 +1350,11 @@ cancel a pending deletion on a withdrawn event (`DELETE /api/events/{eventId}/de
 refused with `409 EVENT_WITHDRAWN` (5071). See `soft-deleted-events-fe-integration.md` for what a
 host can still read and do on a withdrawn event.
 
-A `HELD` withdrawal changes nothing yet — the event stays exactly as it was while an admin (or the
-10-day auto-release) decides it.
+A `HELD` whole-event withdrawal closes the event when it is filed (since 2026-09-30): it is
+soft-deleted at once, exactly as a `REFUNDED` one is, and Undo is refused with `409` 5071. Only the
+refund waits, for an admin or the 10-day auto-release. A held request is only ever released, never
+turned down, so the event does not come back. The auto-release waits while a chargeback on one of
+the event's orders is open. A `HELD` one-order withdrawal leaves the event as it is until released.
 
 ### One order: `GET/POST /api/events/{eventId}/orders/{orderId}/withdrawal-preview|withdrawals` — primary host
 
@@ -1548,6 +1588,7 @@ name, for logs). Branch on `errorCode`.
 |---|---|---|---|
 | `3001` `VALIDATION_FAILED` | 400 | any bean-validation failure, incl. all plan-tier field rules | field-level errors from `details` |
 | `3007` `INVALID_PLAN_TIER_SCOPE` | 400 | admin sets `eventTypeKey` on an `ACCOUNT`-scope plan (§13), or `planTierIds` names one for a paid service; since 2026-09-23 also `priceAmountMinor` on an `EVENT`-scope plan, or a coverage option on an `ACCOUNT`-scope one | admin panel only |
+| `3035` `EVENT_START_PASSED` | 400 | activation checkout or quote on a draft whose `startAt` has passed | "Your event's date has passed. Move it to a future date to pay." — link to the schedule form |
 | `3008` `EVENT_DATES_INCOMPLETE` | 400 | checkout with no `startAt`/`endAt`, or `endAt <= startAt` | "Set your event's dates before publishing" — link to the schedule form |
 | `3010` `RATE_LIMITED` | 429 | the caller's budget for the window is spent | §11 |
 | `3018` `INVALID_EVENT_TYPE` | 400 | unknown `eventType` at `GET /api/plan-tiers?eventType=X`, event creation, or admin's `duplicate`/plan create (§2, §13) | refetch `GET /api/config`'s `eventTypeKeys`, the value was stale or mistyped |
@@ -1588,10 +1629,11 @@ name, for logs). Branch on `errorCode`.
 | `5085` `COVERAGE_ENDED` (§7e) | 409 | extension options or checkout on a live event whose coverage has already ended | hide "Extend coverage" once `coverageEndsAt` has passed |
 | `5017` `EVENT_NOT_DRAFT` | 409 | activation checkout, a DRAFT-only add-on opt-in, or (2026-09-23) a `coverageOptionId` change, on an event already `ACTIVE` | usually a stale tab; refetch the event |
 | `5018` `ORDER_NOT_PENDING` | 409 | admin settling an already-settled order | admin panel only |
+| `5105` `ORDER_NOT_MANUAL` | 409 | admin settling an order a real provider (Stripe) opened | admin panel only; the settle action only makes sense on dev/staging, which run the manual provider |
 | `5028` `ORDER_AMOUNT_MISMATCH` | 409 | the amount a provider confirms paying doesn't match what the order was opened for | never expected from client action; log and treat as a settlement failure |
 | `5029` `PLAN_TIER_NOT_AN_UPGRADE` (§7d) | 409 | upgrade-checkout's target plan doesn't rank above the event's, or the chosen duration is shorter than the event's own or doesn't cost more | build the picker from `upgrade-options` (§7d), which lists only valid durations |
 | `5030` `PLAN_TIER_CURRENCY_MISMATCH` (§7d) | 409 | the current and target plans are priced in different currencies | catalog misconfiguration; host sees a generic failure and support has to fix the catalog |
-| `5031` `CHECKOUT_SESSION_UNRESOLVED` | 409 | a checkout session with the provider couldn't be resolved during reconciliation | internal; surfaces as the generic "still processing" state (§6 step 5), not a distinct UI |
+| `5031` `CHECKOUT_SESSION_UNRESOLVED` | 409 | a checkout session with the provider couldn't be resolved during reconciliation; since 2026-09-30 also `POST /api/events/{eventId}/hosts/{id}/primary` when an open checkout on the event may be being paid right now | on checkout, internal: the generic "still processing" state (§6 step 5); on a host transfer, "A payment on this event is still in progress. Try again in a minute." |
 | `5046` `CHECKOUT_AMOUNT_BELOW_MINIMUM` | 409 | a plan discount cut a checkout's price below what the provider will charge at all | catalog misconfiguration (discount set too steep); host sees a generic failure and support has to fix the discount |
 | `5053` `PLAN_TIER_NOT_AVAILABLE_FOR_EVENT_TYPE` | 409 | `POST /api/events`'s `planTierCode` has restricted itself away from the request's `eventType` (§2, §6) | source the plan list from `GET /api/plan-tiers?eventType=X` instead of a stale/cached one |
 | `5071` `EVENT_WITHDRAWN` | 409 | `DELETE /api/events/{eventId}/deletion-requests` on an event whose activation was refunded via withdrawal (§9) | not fixable — a withdrawn event's deletion cannot be cancelled; point the host at the download-only gallery/wishbook link instead |
@@ -1601,6 +1643,8 @@ name, for logs). Branch on `errorCode`.
 | code | HTTP | when | what to show |
 |---|---|---|---|
 | `5072` `WITHDRAWAL_TERMS_VERSION_STALE` | 400 | checkout's `termsVersion` (§6, §7d) doesn't match the version currently in force | reload `GET /api/config`, re-show the current terms, let the host retry once |
+| `5094` `WITHDRAWAL_CONFIRMATION_INVALID` | 400 | the withdrawal POST has no `confirmationToken`, or one that isn't from this preview (another event, order, scope or user), or one issued before the 2026-09-30 release | fetch the preview again and show it |
+| `5095` `WITHDRAWAL_PREVIEW_STALE` | 409 | the token expired (10 minutes), or the refund would now differ from the preview | fetch the preview again, show the new amount, let the host confirm again |
 | `5073` `WITHDRAWAL_REFUSED` | 409 | the withdrawal was refused at the gate — no settled activation, window closed, already in progress, already refunded, bought as a business (`BUSINESS_PURCHASE`, 2026-09-24: no consumer right of withdrawal); for one order also order not paid, order already withdrawn (§9) | the `detail` string on the error envelope; for the structured per-reason list, call withdrawal-preview instead |
 | `4005` `WITHDRAWAL_NOT_PRIMARY_HOST` | 403 | the caller is a co-host, not the primary host (`displayOrder: 0` in `GET /api/events/{id}/hosts`) — withdrawal refunds the payer and deletes the event, so it is gated like deletion | hide the withdraw entry point for co-hosts; if reached, "Only the primary host can withdraw this event." |
 | `4006` `PURCHASE_NOT_PRIMARY_HOST` | 403 | a co-host calling a checkout, `upgrade-options`, `checkout/preview-code` or `addons`, or a `PATCH /api/events/{id}` that changes a draft's `coverageOptionId` | only the primary host buys; hide the action |
@@ -1628,8 +1672,8 @@ All require `ROLE_ADMIN`; non-admins get `403`.
 
 | endpoint | effect |
 |---|---|
-| `POST /api/admin/orders/{orderId}/settle` | marks an order paid without a provider payment — bank transfer, comped event, lost webhook. Activates the event exactly as a real payment would. |
-| `GET /api/admin/webhooks/unprocessed` | deliveries received but never processed — settlements the platform may have lost. The remedy is usually `settle` above. |
+| `POST /api/admin/orders/{orderId}/settle` | marks a **manual-provider** order paid (dev and staging only). Activates the event exactly as a real payment would. A Stripe order is refused with `409` `5105` `ORDER_NOT_MANUAL`: there is no hand settlement in production — no bank transfers, no settling around a lost webhook. |
+| `GET /api/admin/webhooks/unprocessed` | deliveries received but never processed — settlements the platform may have lost. The remedy is `replay` below; reconciliation also settles a lost checkout on its own within about 15 minutes. |
 | `POST /api/admin/webhooks/{provider}/{providerEventId}/replay` | re-verifies and re-runs one delivery from the list above against the provider's signed payload. For anything `settle` can't express — a refund, a lost dispute — that only ever arrives once. |
 | `GET /api/admin/withdrawals` | the held-withdrawal queue with the full facts sheet (§9) |
 | `POST /api/admin/withdrawals/{id}/release` | decide a held withdrawal, optionally keeping the event day (§9) |
@@ -1989,7 +2033,8 @@ export interface DiscountSummary {
 export interface OrderSummary {
   id: string;
   kind: 'ACTIVATION' | 'UPGRADE' | 'STORAGE_PACK';
-  status: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED' | 'REFUNDED';  // REFUNDED: withdrawn or lost dispute
+  // REFUNDED: withdrawn, a lost chargeback, refunded by the provider, or refunded because it bought nothing
+  status: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED' | 'REFUNDED';
   amountMinor: number;
   addonAmountMinor: number | null;  // the add-on/unlock slice of amountMinor on an
                                      // ACTIVATION order; null on every other kind
@@ -2069,12 +2114,14 @@ export interface WithdrawalPreview {
   instant: boolean;                     // true only for a storage pack in automatic mode
   storageAfter: { newLimitBytes: number | null; usageBytes: number;
                   overLimitBytes: number; trimDueAt: string | null } | null;   // ORDER only
+  confirmationToken: string;            // send back on the withdrawal POST; 10 minutes
   // Added 2026-09-24. EVENT only: business-bought upgrades and packs this withdrawal leaves
   // unrefunded. They go with the event. Empty on ORDER previews and on refusals.
   excludedOrders: WithdrawalExcludedOrder[];
 }
 
-// POST /api/events/{eventId}/withdrawals — primary host. Body optional: { reason?: string }.
+// POST /api/events/{eventId}/withdrawals — primary host.
+// Body: { reason?: string; confirmationToken: string }  — the preview's token, required (5094/5095).
 // 201 with this shape when status is 'REFUNDED' or 'HELD'; a REFUSED outcome is instead a 409
 // WITHDRAWAL_REFUSED with the standard error envelope, NOT this shape — read structured refusal
 // reasons from WithdrawalPreview instead.

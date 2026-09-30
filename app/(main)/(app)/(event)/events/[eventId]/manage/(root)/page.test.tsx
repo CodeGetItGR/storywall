@@ -6,13 +6,14 @@ const mocks = vi.hoisted(() => ({
     resolveServerEventContext: vi.fn(),
     resolveServerEventDetail: vi.fn(),
     serverGet: vi.fn(),
+    serverGetOrNull: vi.fn(),
 }));
 
 vi.mock('@/lib/auth/serverEventContext', () => ({
     resolveServerEventContext: mocks.resolveServerEventContext,
     resolveServerEventDetail: mocks.resolveServerEventDetail,
 }));
-vi.mock('@/lib/api/serverFetch', () => ({ serverGet: mocks.serverGet }));
+vi.mock('@/lib/api/serverFetch', () => ({ serverGet: mocks.serverGet, serverGetOrNull: mocks.serverGetOrNull }));
 vi.mock('@/i18n/serverLocale', () => ({ getServerLocale: async () => 'en' }));
 vi.mock('../PageClient', () => ({ default: () => null }));
 
@@ -35,6 +36,15 @@ describe('ManagePage (server)', () => {
         mocks.resolveServerEventContext.mockReset().mockResolvedValue(hostContext);
         mocks.resolveServerEventDetail.mockReset().mockResolvedValue(liveEvent);
         mocks.serverGet.mockReset().mockResolvedValue([]);
+        mocks.serverGetOrNull.mockReset().mockResolvedValue(null);
+    });
+
+    it('seeds the gift, null when the event is not one', async () => {
+        const element = await visit();
+        const { state } = element.props as { state: DehydratedState };
+        const gift = state.queries.find((query) => query.queryKey.join('/') === 'events/e1/gift');
+        expect(mocks.serverGetOrNull).toHaveBeenCalledWith('/api/events/e1/gift', 'token-1');
+        expect(gift?.state.data).toBeNull();
     });
 
     it('asks for the event while the memberships are still loading', async () => {
@@ -62,12 +72,15 @@ describe('ManagePage (server)', () => {
         );
     });
 
-    it('seeds usage even when a guest list request fails', async () => {
+    it('seeds usage and the gift even when a guest list request fails', async () => {
         mocks.serverGet.mockImplementation((path: string) =>
             path.endsWith('/members') ? Promise.reject(new Error('Server prefetch failed')) : Promise.resolve([]),
         );
 
-        expect(seededKeys(await visit())).toEqual([['events', 'e1', 'usage']]);
+        expect(seededKeys(await visit())).toEqual([
+            ['events', 'e1', 'usage'],
+            ['events', 'e1', 'gift'],
+        ]);
     });
 
     it('prefetches only usage for a draft event', async () => {

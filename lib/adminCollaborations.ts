@@ -140,15 +140,19 @@ export function sortEarningsNewestFirst(earnings: CollaborationEarningResponseDt
     return [...earnings].sort((left, right) => right.accruedAt.localeCompare(left.accruedAt));
 }
 
-// Voiding works per event: an unpaid accrual turns REVERSED, a paid one gets a CLAWBACK row.
-// Either mark means the event is already voided, so none of its rows can be voided again.
+// Voiding works per event: an unpaid accrual turns REVERSED, a paid one gets a CLAWBACK row
+// for all of it. A partial withdrawal also adds a CLAWBACK (2026-09-30), but only for a share,
+// so a clawback alone doesn't mean voided: an event is voided once a row is REVERSED or its
+// rows no longer sum above zero. Then none of its rows can be voided again.
 export function voidableEarningIds(earnings: CollaborationEarningResponseDto[]): Set<string> {
-    const voidedEventIds = new Set(
-        earnings.filter((earning) => earning.entryType === 'CLAWBACK' || earning.status === 'REVERSED').map((earning) => earning.eventId),
-    );
-    return new Set(
-        earnings.filter((earning) => earning.entryType === 'ACCRUAL' && !voidedEventIds.has(earning.eventId)).map((earning) => earning.id),
-    );
+    const netByEvent = new Map<string, number>();
+    const reversedEventIds = new Set<string>();
+    for (const earning of earnings) {
+        netByEvent.set(earning.eventId, (netByEvent.get(earning.eventId) ?? 0) + earning.amountMinor);
+        if (earning.status === 'REVERSED') reversedEventIds.add(earning.eventId);
+    }
+    const voided = (eventId: string) => reversedEventIds.has(eventId) || (netByEvent.get(eventId) ?? 0) <= 0;
+    return new Set(earnings.filter((earning) => earning.entryType === 'ACCRUAL' && !voided(earning.eventId)).map((earning) => earning.id));
 }
 
 export type EarningFilter = 'OPEN' | 'ALL' | CollaborationEarningStatus;
@@ -195,9 +199,7 @@ export function earningCodeText(codes: CollaborationCodeResponseDto[], codeId: s
 export function sumByCurrency(earnings: CollaborationEarningResponseDto[]): CurrencyAmount[] {
     const sums = new Map<string, number>();
     for (const earning of earnings) sums.set(earning.currency, (sums.get(earning.currency) ?? 0) + earning.amountMinor);
-    return [...sums]
-        .map(([currency, amountMinor]) => ({ currency, amountMinor }))
-        .sort((left, right) => left.currency.localeCompare(right.currency));
+    return [...sums].map(([currency, amountMinor]) => ({ currency, amountMinor })).sort((left, right) => left.currency.localeCompare(right.currency));
 }
 
 export function formatCurrencyAmounts(locale: string, amounts: CurrencyAmount[]): string {

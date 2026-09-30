@@ -585,6 +585,9 @@ interface EventInvitationPreviewDto {
   email: string | null;
   expired: boolean;
   alreadyUsed: boolean;
+  /** NEW 2026-09-27 — null unless the event is a gift; then the framing for the landing page
+   *  ("a surprise from Nikos for Maria & Giorgos"). See fe-guides/gift-mode-fe-integration.md §7. */
+  gift: GiftFramingDto | null;
 }
 
 // --- Event Members ---
@@ -605,7 +608,7 @@ interface EventMemberResponseDto {
   role: EventRole; displayName: string; nickname: string | null;
   relationshipRole: string | null; customRelationshipRole: string | null;
   isFeatured: boolean; joinedAt: string;
-  avatarUrl: string | null; // short-lived presigned URL resolved from the account's profilePictureKey; null for an account-less member or one who never uploaded a profile picture. Do not cache.
+  avatarUrl: string | null; // short-lived presigned URL: the account's profile picture (profilePictureKey), or, for a demo event's name-only persona, the picture an admin set (2026-09-29); null otherwise. Do not cache.
   rsvpId: string | null; // NEW 2026-08-26 — this member's own RSVP id, null if not submitted yet; see rsvp-status-fe-integration.md
   createdAt: string; updatedAt: string; deletedAt: string | null;
 }
@@ -873,7 +876,7 @@ interface StreamTokenResponseDto {
 interface AuthorDto {
   memberId: string; displayName: string; nickname: string | null;
   role: EventRole;
-  avatarUrl: string | null; // presigned, resolved from the account's profilePictureKey — null for an account-less author or one with no profile picture
+  avatarUrl: string | null; // presigned: the account's profile picture (profilePictureKey), or, for a demo event's name-only persona, the picture an admin set (2026-09-29); null otherwise
 }
 interface PostResponseDto {
   id: string; eventId: string; authorMemberId: string | null;
@@ -1384,6 +1387,9 @@ export interface PlanTierResponseDto {
   sortOrder: number;
   isDefault: boolean;
   isAssignable: boolean;     // false = archived
+  /** NEW 2026-09-27 — offer "Buy as a gift" only when true AND `moduleKeys` includes `co_hosts`.
+   *  Meaningful on EVENT plans only. See fe-guides/gift-mode-fe-integration.md §2. */
+  isGiftable: boolean;
   isPublic: boolean;
   storageBytes: number | null;      // null = no limit enforced
   maxMembers: number | null;        // null = no limit enforced
@@ -1463,6 +1469,7 @@ export interface PlanTierRequestDto {
   sortOrder: number;               // required, >= 0
   isDefault: boolean;              // required
   isAssignable: boolean;           // required
+  isGiftable?: boolean;            // omit for true (added 2026-09-27)
   isPublic: boolean;               // required
   storageBytes?: number;           // omit for "no limit enforced"
   maxMembers?: number;             // omit for "no limit enforced"
@@ -1487,6 +1494,7 @@ export interface PlanTierPatchDto {
   sortOrder?: number;
   isDefault?: boolean;
   isAssignable?: boolean;          // false archives the plan
+  isGiftable?: boolean;            // added 2026-09-27
   isPublic?: boolean;
   storageBytes?: number;
   maxMembers?: number;
@@ -1727,8 +1735,9 @@ export interface EventAddonRequestDto {
 export interface AddonSummary {
   code: string;
   name: string;
-  /** What this costs, charged once at activation. */
-  priceAmountMinor: number;
+  /** What this costs, charged once at activation. On GET /billing for a gift event: null unless
+   *  the caller paid the storage-pack order that bought it (gift mode, 2026-09-27). */
+  priceAmountMinor: number | null;
   /**
    * Always `'ONE_TIME'` — every add-on is folded into the one-time activation charge and never
    * bills again. Kept as a field rather than dropped so a row from an older catalog entry still
@@ -2526,7 +2535,7 @@ export interface EventBillingResponseDto {
   /** The code the event's activation was priced with, or null. A record of that one purchase, not
    *  a standing rate: since 2026-09-22 it reaches no upgrade and no storage pack. Shown here so a
    *  host doesn't have to remember a code they redeemed once. See billing-fe-guide.md §8. */
-  discount: DiscountSummary | null;
+  discount: DiscountSummary | null; // also null on a gift event unless the caller paid the activation (2026-09-27)
   /** When the media above the storage limit will be deleted, newest first, after a withdrawal or a
    *  lost chargeback lowered the limit below what the event holds. Null when nothing is scheduled.
    *  Buying a pack or an upgrade clears it at once; deleting files clears it at the next hourly
@@ -2540,7 +2549,9 @@ export interface OrderSummary {
   id: string;
   kind: OrderKind;
   status: OrderStatus;
-  amountMinor: number;   // never null (NOT NULL column)
+  /** Null on a gift event when the caller didn't pay this order (2026-09-27; see `paidByCaller`),
+   *  as are addonAmountMinor, the three splits and `breakdown`. Otherwise never null. */
+  amountMinor: number | null;
   /** The part of `amountMinor` that was active add-ons, or null when the order carried none. */
   addonAmountMinor: number | null;
   currency: string;      // never null (NOT NULL column)
@@ -2570,6 +2581,10 @@ export interface OrderSummary {
    *  BUSINESS order) and `withdrawal.windowDays` is the length enforced; in any other status both are
    *  as pinned, with `windowClosesAt` null. */
   breakdown: PriceBreakdown | null;
+  /** NEW 2026-09-27 — whether the host reading this paid for the order. Always set on
+   *  GET /api/events/{eventId}/billing. On a gift event, false means every amount above and
+   *  `breakdown` are null: render "Gift" and hide Withdraw. See gift-mode-fe-integration.md §6. */
+  paidByCaller: boolean | null;
 }
 
 /** Carries no raw code, no partner identity and no redemption id — the host is shown the label the
@@ -3133,6 +3148,88 @@ export interface NewsletterSubscriptionExportDto {
   rewardExpiresAt: string | null;
 }
 
+// ---------------------------------------------------------------------------
+// Gift mode (2026-09-27) — see docs/fe-guides/gift-mode-fe-integration.md
+// Error codes: 3036 GIFT_CLAIM_PIN_INVALID (400, details: GiftPinInvalidDetails),
+// 4009 GIFT_CLAIM_NOT_ALLOWED, 4010 GIFT_ORDER_NOT_YOURS, 4011 GIFT_NOT_PRIMARY_HOST,
+// 4012 GIFT_RECIPIENT_PROTECTED (DELETE /api/event-hosts/{id}) (403),
+// 5089 GIFT_NOT_AVAILABLE_ON_PLAN, 5090 GIFT_ALREADY_CLAIMED, 5091 GIFT_CARD_LOCKED,
+// 5092 GIFT_EVENT_NOT_ACTIVE, 5093 GIFT_HANDOVER_PENDING (POST …/hosts/{id}/primary) (409).
+// ---------------------------------------------------------------------------
+
+export type GiftHandoverStatus = 'NOT_ISSUED' | 'ISSUED' | 'LOCKED' | 'CLAIMED' | 'COMPLETED' | 'VOID';
+
+/** What the public preview says a claim link can do. CLAIMABLE does not check the event: a
+ *  claim can still get 409/5092 if the event isn't ACTIVE. VOID: the claimant stopped being a
+ *  host before the handover; the giver must issue a new card. */
+export type GiftClaimState = 'CLAIMABLE' | 'LOCKED' | 'ALREADY_CLAIMED' | 'VOID';
+
+/** PUT /api/events/{eventId}/gift — primary host only (403/4011); DRAFT or ACTIVE event. A full
+ *  replace: omitting recipientEmail clears it. */
+export interface GiftHandoverRequestDto {
+  recipientLabel: string;     // required, max 120 — "Maria & Giorgos"
+  giverDisplayName: string;   // required, max 80 — "Nikos, your koumbaros"
+  recipientEmail?: string;    // valid email, max 255. This verified address may claim without the PIN
+}
+
+/** PUT and GET /api/events/{eventId}/gift. Never carries the PIN or its hash. */
+export interface GiftHandoverResponseDto {
+  status: GiftHandoverStatus;
+  recipientLabel: string;
+  giverDisplayName: string;
+  recipientEmail: string | null;
+  token: string | null;                  // the live card's claim token; null until a card is issued
+  cardIssuedAt: string | null;
+  claimedByDisplayName: string | null;
+  claimedAt: string | null;
+  ownershipTransfersAt: string | null;   // only while CLAIMED: when the last withdrawal window closes (live).
+                                         // Also null while CLAIMED if paused: a withdrawal under review, or the event deleted / not ACTIVE
+  ownershipTransferredAt: string | null; // set once COMPLETED
+}
+
+/** POST /api/events/{eventId}/gift/card — the ONLY response that ever carries the PIN. Reissuing
+ *  kills the previous token and PIN. */
+export interface GiftCardResponseDto {
+  token: string;
+  pin: string;   // 6 digits; show once
+}
+
+/** POST /api/gift-claims/{token}/claim body — the body itself is optional. */
+export interface GiftClaimRequestDto {
+  pin?: string;  // exactly 6 digits (else 400/3001). Not needed when the caller's verified email is the recipient's
+}
+
+/** GET /api/gift-claims/{token} — public. 404 for unknown/superseded tokens and deleted events.
+ *  Never carries the recipient's address. */
+export interface GiftClaimPreviewDto {
+  eventTitle: string;
+  eventSubtitle: string | null;
+  coverMedia: MediaResponseDto | null;
+  giverDisplayName: string;
+  recipientLabel: string;
+  emailBound: boolean;   // a recipient address is set: "sign in with the invited address to skip the PIN"
+  state: GiftClaimState;
+}
+
+/** POST /api/gift-claims/{token}/claim response. */
+export interface GiftClaimResponseDto {
+  status: 'COMPLETED' | 'CLAIMED';   // COMPLETED: caller is the primary host now. CLAIMED: co-host now, primary later
+  ownershipTransfersAt: string | null; // null when COMPLETED, and when CLAIMED because a withdrawal is under review
+}
+
+/** EventInvitationPreviewDto.gift. */
+export interface GiftFramingDto {
+  giverDisplayName: string;
+  recipientLabel: string;
+  claimed: boolean;   // true once CLAIMED or COMPLETED
+}
+
+/** `details` on a 400/3036. 0 = this wrong PIN locked the card. A missing PIN uses no attempt;
+ *  every supplied PIN (correct or wrong) uses one. */
+export interface GiftPinInvalidDetails {
+  attemptsLeft: number;
+}
+
 // ---------------------------------------------------------------------------------------------
 // Demo events (2026-09-28) — see docs/fe-guides/demo-event-fe-integration.md
 // ---------------------------------------------------------------------------------------------
@@ -3145,6 +3242,7 @@ export interface DemoSnapshotDto {
   viewerUserId: string;
   viewerMemberId: string;
   event: EventDetailResponseDto;
+  /** Here and on every author: avatarUrl is always null for an account; a name-only persona's admin-set picture is kept. */
   members: EventMemberResponseDto[];
   posts: PostResponseDto[];
   comments: CommentResponseDto[];

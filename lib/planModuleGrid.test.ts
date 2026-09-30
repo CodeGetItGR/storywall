@@ -20,6 +20,7 @@ function plan(overrides: Partial<PlanTierResponseDto>): PlanTierResponseDto {
         isDefault: false,
         isAssignable: true,
         isPublic: true,
+        isGiftable: true,
         storageBytes: null,
         maxMembers: null,
         priceAmountMinor: null,

@@ -8,6 +8,7 @@ import type {
     WithdrawalPreviewResponseDto,
     WithdrawalResponseDto,
 } from '@/lib/api/types';
+import { isOrderPaidByAnother } from '@/lib/billing';
 
 const DAY_SECONDS = 86_400;
 
@@ -77,7 +78,7 @@ export function isWithdrawableKind(kind: OrderKind): boolean {
  */
 export function orderWithdrawalWindowOpen(order: OrderSummaryDto, now: Date = new Date()): boolean | null {
     if (order.status !== 'PAID' || !isWithdrawableKind(order.kind)) return false;
-    if (order.buyerType === 'BUSINESS') return false;
+    if (order.buyerType === 'BUSINESS' || isOrderPaidByAnother(order)) return false;
     if (!order.breakdown) return null;
     const { available, windowClosesAt } = order.breakdown.withdrawal;
     if (!available || !windowClosesAt) return false;
@@ -126,9 +127,11 @@ export function withdrawalPurchaseBlocks(
 }
 
 // What a history row says beyond its status: the order it named, whether the
-// event-day share was kept, and which lines paid nothing back (a chargeback).
+// event-day share was kept, which lines paid nothing back (a chargeback), and the
+// held note: a held whole-event request closed the event at filing, only the refund waits.
 export function withdrawalHistoryFacts(withdrawal: WithdrawalResponseDto) {
     return {
+        heldNote: withdrawal.status !== 'HELD' ? null : withdrawal.scope === 'EVENT' ? ('heldEvent' as const) : ('held' as const),
         orderKind: withdrawal.lines.find((line) => line.orderId === withdrawal.orderId)?.orderKind ?? null,
         keptEventDay: withdrawal.lines.some((line) => line.keepEventDay),
         alreadyRefundedLines: withdrawal.lines.filter((line) => isAlreadyRefundedLine(line, withdrawal.status)),
@@ -139,4 +142,21 @@ export function withdrawalHistoryFacts(withdrawal: WithdrawalResponseDto) {
 // refunded another way (a chargeback). Not money still to come.
 export function isAlreadyRefundedLine(line: { refundMinor: number; providerRefunded: boolean }, status: WithdrawalResponseDto['status']): boolean {
     return status === 'REFUNDED' && line.refundMinor === 0 && !line.providerRefunded;
+}
+
+// A preview's confirmation token lives 10 minutes; re-fetch it on confirm once it
+// is older than this so a modal left open doesn't send an expired token.
+export const WITHDRAWAL_PREVIEW_MAX_AGE_MS = 9 * 60 * 1000;
+
+export function isWithdrawalPreviewExpiring(fetchedAt: number, now: number = Date.now()): boolean {
+    return now - fetchedAt > WITHDRAWAL_PREVIEW_MAX_AGE_MS;
+}
+
+// Whether a re-fetched preview differs from what the host was shown. The token
+// is bound to eligibility and the total, so that is what the host confirmed.
+export function withdrawalPreviewChanged(
+    shown: Pick<WithdrawalPreviewResponseDto, 'eligible' | 'totalRefundMinor'>,
+    fresh: Pick<WithdrawalPreviewResponseDto, 'eligible' | 'totalRefundMinor'>,
+): boolean {
+    return shown.eligible !== fresh.eligible || shown.totalRefundMinor !== fresh.totalRefundMinor;
 }

@@ -145,7 +145,10 @@ export function usePlanEditorCard({
     function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
         event.preventDefault();
         if (!editor.canSave) return;
-        const patch = planPatchFromFormData(plan, new FormData(event.currentTarget), editor.visibility);
+        const patch = planPatchFromFormData(plan, new FormData(event.currentTarget), {
+            visibility: editor.visibility,
+            isGiftable: editor.isGiftable,
+        });
         setPendingSave({ patch, changes: planChangeSummary(plan, patch, t), memberships: [], moduleKeys: null });
     }
 
@@ -163,6 +166,8 @@ export function usePlanEditorCard({
         onOpenGridAction,
         onOpenSiblingAction,
         visibility: editor.visibility,
+        isGiftable: editor.isGiftable,
+        handleGiftableChange: editor.handleGiftableChange,
         durations,
         unlockDraft: editor.unlockDraft,
         error,

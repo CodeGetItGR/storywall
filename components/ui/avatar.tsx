@@ -1,4 +1,7 @@
+'use client';
+
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { useImageLoadFailed } from '@/hooks/useImageLoadFailed';
 import { cn } from '@/lib/utils';
 
 type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
@@ -31,14 +34,25 @@ interface AvatarProps {
 }
 
 export default function Avatar({ src, initials = '?', color = '#ff7a59', size = 'md', className, alt }: AvatarProps) {
-    if (src) {
+    // A picture that fails to load (an expired or deleted object) falls back to the initials.
+    const image = useImageLoadFailed(src);
+
+    if (src && !image.failed) {
         return (
             <div
                 role="img"
                 aria-label={alt ?? initials}
                 className={cn('relative shrink-0 overflow-hidden rounded-full select-none', sizeMap[size], className)}
             >
-                <ProtectedImage src={src} alt="" fill className="object-cover" sizes={`${sizePx[size]}px`} loading="lazy" />
+                <ProtectedImage
+                    src={src}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    sizes={`${sizePx[size]}px`}
+                    loading="lazy"
+                    onError={image.handleError}
+                />
             </div>
         );
     }

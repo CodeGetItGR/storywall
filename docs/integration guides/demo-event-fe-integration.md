@@ -1,6 +1,6 @@
 # Demo events — FE integration
 
-2026-09-28. New, nothing breaking.
+2026-09-28. New, nothing breaking. Revised 2026-09-29: persona pictures (§6–§8).
 
 ## Why
 
@@ -92,14 +92,20 @@ and stories look fresh.
 Presigned URLs work until `presignedUrlsValidUntil` (at least 39 minutes after you receive them). Before then, re-fetch
 the snapshot and swap URLs by media id. Media a visitor "uploads" stays local (object URLs).
 
-## 6. No account photos
+## 6. No account photos; persona pictures are published
 
-Every `avatarUrl` in the snapshot is `null` — on `members`, and on every post/comment/story
-`author` — even for members who do have a real profile picture. A demo's hosts are real admin
-accounts, so their photos are never published; clearing every avatar (not just the host's) means
-a departed author who is no longer in `members` doesn't leak one either. Render the app's normal
-placeholder/initials avatar for every person in a demo; don't treat a null `avatarUrl` here as
-"this person set none."
+**Account avatars are always `null`** in the snapshot: on `members`, and on every
+post/comment/story `author`, even for members who do have a real profile picture. A demo's hosts
+are real admin accounts, so their photos are never published.
+
+**A name-only persona's picture is published** (since 2026-09-29). A persona is a member with
+`userId: null`. If an admin set a picture on one (§8), its `avatarUrl` is a presigned URL on its
+`members` row and on everything it authored. Removing a persona (`DELETE /api/event-members/{id}`)
+deletes its row and its picture. What it authored stays, with `author: null`, as on any event.
+
+Render the app's normal placeholder/initials avatar whenever `avatarUrl` is `null`. In a demo that
+is every host and any persona without a picture. Don't read a null `avatarUrl` here as "this
+person set none."
 
 **Display names are NOT redacted.** Member rows and every post/comment/story `author` show that
 member's real `displayName`. For the admin's own member row this is whatever `EventMember` was
@@ -115,6 +121,12 @@ a demo, an admin should either rename their member row (`PATCH /api/event-member
 | 5101 | `DEMO_EVENT_LOCKED` | 403 | Someone tried to join, claim a place on, or anonymously upload to a demo event |
 | 5102 | `DEMO_ACT_AS_REFUSED` | 403 | `X-Demo-Act-As-Member` sent by a non-admin, on a non-demo event, or naming a member with an account |
 | 5103 | `DEMO_DESIGNATION_INVALID` | 409 | The event can't be a demo: not live, wrong type, non-admin primary host, or a non-admin member |
+| 5104 | `DEMO_PERSONA_AVATAR_REFUSED` | 403 | Picture set or cleared on a member that isn't a demo event's name-only, non-removed guest |
+
+A plain 403 with no demo code, on a host screen (adding a guest, listing QR links, editing
+sessions), used to mean the admin's token was stopped by a `hasRole('USER')` gate. Since
+2026-09-29 `ROLE_ADMIN` implies `ROLE_USER`, so an admin who hosts the event gets through like any
+host. A 403 on an event the admin doesn't host is still correct: the host check is unchanged.
 
 ## 8. Admin endpoints (for an admin screen, if one is built)
 
@@ -122,6 +134,28 @@ a demo, an admin should either rename their member row (`PATCH /api/event-member
 - `PUT /api/admin/demo-events/{eventTypeKey}` body `{ "eventId": "…" }` → `DemoEventResponseDto`
 - `DELETE /api/admin/demo-events/{eventTypeKey}` → 204
 - Any content endpoint + header `X-Demo-Act-As-Member: <name-only member id>` → authored as that guest.
+- `POST /api/event-members/{id}/demo-avatar`, multipart `file` → `EventMemberResponseDto` with the
+  new `avatarUrl`. Sets a persona's picture, replacing any earlier one. Same image formats, limits
+  and rejection codes as `/api/me/profile-picture`.
+- `DELETE /api/event-members/{id}/demo-avatar` → `EventMemberResponseDto`. Clears the picture.
+  Clearing a member that has none changes nothing and still returns the member.
+
+Both are admin only: a `ROLE_USER` token gets a 403. The admin must also host the demo event. The
+checks run in this order, and the first that fails answers:
+
+1. Unknown member → 404.
+2. The caller doesn't host the member's event → 403 (4001 `FORBIDDEN`).
+3. The event can't be written to (soft-deleted, or not `ACTIVE`) → 409, 5014 `EVENT_NOT_ACTIVE`.
+4. The event isn't a demo, the member has an account, or the member was removed → 403, 5104.
+
+An upload that fails on the way to storage → 409, 5004 `STORAGE_UPLOAD_FAILED`, as for profile
+pictures. Set and clear share one rate-limit budget of 60 requests an hour per admin
+(`event-member.demo-avatar`); past it, 429.
+
+After a change, the instance that handled it drops its cached snapshot at once. Another instance
+can keep serving the old snapshot until its 60-second cache expires (§1). For up to a minute a
+visitor may get the previous `avatarUrl`, whose object is already deleted, so the image fails to
+load. Fall back to the initials avatar when an avatar image fails to load.
 
 ## 9. Storywall note
 

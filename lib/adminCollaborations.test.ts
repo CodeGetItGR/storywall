@@ -131,11 +131,13 @@ describe('voidableEarningIds', () => {
     });
 
     it('blocks a paid accrual once its event has a clawback', () => {
-        const rows = [
-            earning({ id: 'p', status: 'PAID' }),
-            earning({ id: 'c', entryType: 'CLAWBACK', amountMinor: -1800 }),
-        ];
+        const rows = [earning({ id: 'p', status: 'PAID' }), earning({ id: 'c', entryType: 'CLAWBACK', amountMinor: -1800 })];
         expect(voidableEarningIds(rows).size).toBe(0);
+    });
+
+    it('keeps an accrual voidable after a partial-withdrawal clawback', () => {
+        const rows = [earning({ id: 'a', amountMinor: 1800 }), earning({ id: 'c', entryType: 'CLAWBACK', amountMinor: -600 })];
+        expect([...voidableEarningIds(rows)]).toEqual(['a']);
     });
 
     it('blocks reversed rows and every row of their event', () => {

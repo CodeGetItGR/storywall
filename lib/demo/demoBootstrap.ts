@@ -42,7 +42,7 @@ export async function bootstrapDemo(eventTypeKey: string, eventTypeSlug: string,
     const planTierName = await loadPlanTierName(queryClient, snapshot.usage.planTier);
     const session = createDemoSession(eventTypeKey, snapshot, planTierName);
     // A restored session keeps the visitor's changes but needs this snapshot's media URLs.
-    swapMediaUrls(session.db, snapshot.media);
+    swapMediaUrls(session.db, snapshot);
 
     registerDemoEventRoute(session.eventId, eventTypeSlug);
     try {

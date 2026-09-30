@@ -13,11 +13,12 @@ import { Modal } from '@/components/ui/modal';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useEventInvitations } from '@/hooks/useEventInvitations';
 import { useEventMembers } from '@/hooks/useEventMembers';
+import { useGiftSection } from '@/hooks/useGiftSection';
 import { useEventRsvps } from '@/hooks/useRsvps';
 import { useEventUsage } from '@/hooks/useUsage';
 import { countPendingCoHostInvitations } from '@/lib/eventInvitations';
 import { isEventDeleted, isEventWritable, isModuleAvailable, isPrimaryHost } from '@/lib/eventLifecycle';
-import { type ManageSection, parseManageSection, visibleManageSections } from '@/lib/manageSections';
+import { type ManageSection, parseManageSection, resolveManageSection, visibleManageSections } from '@/lib/manageSections';
 import { routes } from '@/lib/routes';
 import { attendingGuestPeople } from '@/lib/rsvpGuests';
 import { eventStatusBadgeTone } from '@/lib/statusTones';
@@ -26,6 +27,7 @@ import { useActiveMember } from '@/providers/EventProvider';
 
 import BillingTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/BillingTab';
 import DangerZoneTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/DangerZoneTab';
+import GiftTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/GiftTab';
 import HelpTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/HelpTab';
 import MembersTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/MembersTab';
 import OverviewTab from '../../app/(main)/(app)/(event)/events/[eventId]/manage/OverviewTab';
@@ -44,8 +46,18 @@ export function ManageScreen() {
     const isDeleted = isEventDeleted(activeEvent);
     const canDelete = isPrimaryHost(activeEvent.hosts, activeMember?.id);
     const rsvpAvailable = isModuleAvailable(activeEvent.modules, 'rsvp');
-    const visibleSections = visibleManageSections({ canDelete, rsvpAvailable });
-    const section = isDraft ? 'overview' : visibleSections.includes(requestedSection) ? requestedSection : 'overview';
+    const { data: appConfig } = useAppConfig();
+    const giftSection = useGiftSection(isHost && !isDraft && !isDeleted ? eventId : null, {
+        isPrimaryHost: canDelete,
+        eventModules: activeEvent.modules,
+        planTiers: appConfig?.planTiers ?? [],
+    });
+    const visibleSections = visibleManageSections({ canDelete, rsvpAvailable, giftAvailable: giftSection.available });
+    const section = resolveManageSection(requestedSection, {
+        isDraft,
+        visibleSections,
+        pendingSections: giftSection.isLoading ? ['gift'] : [],
+    });
     const [switcherOpen, setSwitcherOpen] = useState(false);
 
     const canWrite = isEventWritable(activeEvent?.status);
@@ -56,7 +68,6 @@ export function ManageScreen() {
     const { data: rsvps = [], isLoading: rsvpsLoading } = useEventRsvps(rsvpAvailable ? activeHostEventId : null);
     const { data: invitations = [], isLoading: invitationsLoading } = useEventInvitations(activeHostEventId);
     const { data: eventUsage = null, isLoading: usageLoading } = useEventUsage(isHost && !isDeleted ? eventId : null);
-    const { data: appConfig } = useAppConfig();
 
     const overviewLoading = membersLoading || invitationsLoading || rsvpsLoading || usageLoading;
     const rsvpTabLoading = membersLoading || rsvpsLoading;
@@ -173,6 +184,18 @@ export function ManageScreen() {
                     eventModules={activeEvent.modules}
                 />
             )}
+
+            {section === 'gift' &&
+                (giftSection.isLoading ? (
+                    <ManageOverviewSkeleton />
+                ) : (
+                    <GiftTab
+                        eventId={eventId}
+                        gift={giftSection.gift}
+                        canManage={canDelete && canWrite}
+                        eventActive={activeEvent.status === 'ACTIVE'}
+                    />
+                ))}
 
             {section === 'danger' && <DangerZoneTab event={activeEvent} />}
 

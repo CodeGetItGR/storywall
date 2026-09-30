@@ -1,13 +1,19 @@
+import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useDeleteEventHost, useTransferPrimaryEventHost } from '@/hooks/useEventHosts';
+import { useEventGift } from '@/hooks/useGift';
+import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import type { EventHostResponseDto } from '@/lib/api/types';
+import { isGiftHandoverPending } from '@/lib/gift';
 
 export function useCoHostManagement(eventId: string) {
     const toErrorMessage = useApiErrorMessage();
+    const tErrors = useTranslations('ApiErrors');
     const transferPrimaryHost = useTransferPrimaryEventHost(eventId);
     const deleteHost = useDeleteEventHost(eventId);
+    const gift = useEventGift(eventId);
     const [transferTarget, setTransferTarget] = useState<EventHostResponseDto | null>(null);
     const [removeTarget, setRemoveTarget] = useState<EventHostResponseDto | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -38,9 +44,11 @@ export function useCoHostManagement(eventId: string) {
             await transferPrimaryHost.mutateAsync(transferTarget.id);
             setTransferTarget(null);
         } catch (error) {
-            setError(toErrorMessage(error));
+            // The transfer closes open checkouts first; one may be being paid right now.
+            if (getErrorCode(error) === ERROR_CODES.CHECKOUT_SESSION_UNRESOLVED) setError(tErrors('hostTransferPaymentInProgress'));
+            else setError(toErrorMessage(error));
         }
-    }, [toErrorMessage, transferPrimaryHost, transferTarget]);
+    }, [tErrors, toErrorMessage, transferPrimaryHost, transferTarget]);
 
     const confirmRemove = useCallback(async () => {
         if (!removeTarget || deleteHost.isPending) return;
@@ -55,6 +63,8 @@ export function useCoHostManagement(eventId: string) {
     }, [deleteHost, removeTarget, toErrorMessage]);
 
     return {
+        // A claimed gift hands the event over by itself (5093 on a manual transfer).
+        canTransfer: !isGiftHandoverPending(gift.data),
         closeRemove,
         closeTransfer,
         confirmRemove,

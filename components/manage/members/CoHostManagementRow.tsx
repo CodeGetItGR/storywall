@@ -9,13 +9,14 @@ import { avatarColorFromId, initialsFromName } from '@/lib/utils';
 
 type CoHostManagementRowProps = {
     canManage: boolean;
+    canTransfer: boolean;
     host: EventHostResponseDto;
     member: EventMemberResponseDto | undefined;
     onRemoveAction: (host: EventHostResponseDto) => void;
     onTransferAction: (host: EventHostResponseDto) => void;
 };
 
-export function CoHostManagementRow({ canManage, host, member, onRemoveAction, onTransferAction }: CoHostManagementRowProps) {
+export function CoHostManagementRow({ canManage, canTransfer, host, member, onRemoveAction, onTransferAction }: CoHostManagementRowProps) {
     const t = useTranslations('ManagePage.invitations.coHosts');
     const memberAvatarUrl = useMemberAvatarUrl();
     const displayName = member?.displayName ?? host.memberId;
@@ -44,14 +45,16 @@ export function CoHostManagementRow({ canManage, host, member, onRemoveAction, o
             ) : (
                 canManage && (
                     <div className="flex shrink-0 items-center gap-1">
-                        <button
-                            type="button"
-                            onClick={handleTransfer}
-                            className="flex min-h-10 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
-                        >
-                            <ArrowRightLeft className="h-3.5 w-3.5" aria-hidden="true" />
-                            <span className="hidden sm:inline">{t('transfer')}</span>
-                        </button>
+                        {canTransfer && (
+                            <button
+                                type="button"
+                                onClick={handleTransfer}
+                                className="flex min-h-10 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
+                            >
+                                <ArrowRightLeft className="h-3.5 w-3.5" aria-hidden="true" />
+                                <span className="hidden sm:inline">{t('transfer')}</span>
+                            </button>
+                        )}
                         <button
                             type="button"
                             onClick={handleRemove}

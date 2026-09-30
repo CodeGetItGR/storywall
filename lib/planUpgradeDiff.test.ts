@@ -14,6 +14,7 @@ function makePlan(overrides: Partial<PlanTierResponseDto> = {}): PlanTierRespons
         isDefault: false,
         isAssignable: true,
         isPublic: true,
+        isGiftable: true,
         storageBytes: 10_000,
         maxMembers: 100,
         priceAmountMinor: null,

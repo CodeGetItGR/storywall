@@ -103,6 +103,9 @@ export const endpoints = {
         billing: (eventId: string) => `/api/events/${eventId}/billing`,
         addons: (eventId: string) => `/api/events/${eventId}/addons`,
         giftAccount: (eventId: string) => `/api/events/${eventId}/gift-account`,
+        // Gift mode: GET/PUT the handover, POST issues (or reissues) its claim card.
+        gift: (eventId: string) => `/api/events/${eventId}/gift`,
+        giftCard: (eventId: string) => `/api/events/${eventId}/gift/card`,
         wishbook: (eventId: string) => `/api/events/${eventId}/wishbook`,
         wishbookCount: (eventId: string) => `/api/events/${eventId}/wishbook/count`,
         wishbookExport: (eventId: string) => `/api/events/${eventId}/wishbook/export`,
@@ -128,6 +131,12 @@ export const endpoints = {
         stories: (eventId: string) => `/api/events/${eventId}/stories`,
         playlistSuggestions: (eventId: string) => `/api/events/${eventId}/playlist-suggestions`,
         playlistSuggestionsLeaderboard: (eventId: string) => `/api/events/${eventId}/playlist-suggestions/leaderboard`,
+    },
+
+    // Public preview; the claim needs a verified, non-guest account.
+    giftClaims: {
+        preview: (token: string) => `/api/gift-claims/${token}`,
+        claim: (token: string) => `/api/gift-claims/${token}/claim`,
     },
 
     eventHosts: {
@@ -261,10 +270,9 @@ export const endpoints = {
             timeline: (weeks: number) => `/api/admin/metrics/timeline?weeks=${encodeURIComponent(String(weeks))}`,
             costSummary: '/api/admin/metrics/cost-summary',
             funnel: (since?: string | null, until?: string | null) => {
-                const params = [
-                    since ? `since=${encodeURIComponent(since)}` : null,
-                    until ? `until=${encodeURIComponent(until)}` : null,
-                ].filter(Boolean);
+                const params = [since ? `since=${encodeURIComponent(since)}` : null, until ? `until=${encodeURIComponent(until)}` : null].filter(
+                    Boolean,
+                );
                 return `/api/admin/metrics/funnel${params.length ? `?${params.join('&')}` : ''}`;
             },
             funnelCohorts: (weeks: number) => `/api/admin/metrics/funnel/cohorts?weeks=${encodeURIComponent(String(weeks))}`,

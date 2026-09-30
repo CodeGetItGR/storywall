@@ -98,6 +98,7 @@ export function AccountsPanel() {
                     account={panel.selectedAccount}
                     onCloseAction={closeAccount}
                     onProvisionAction={panel.provisionFor}
+                    onAccountChangedAction={panel.setSelectedAccount}
                 />
             ) : null}
             {panel.provisionAccount ? (
