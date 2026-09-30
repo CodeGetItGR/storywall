@@ -30,7 +30,7 @@ export function useGalleryScreen() {
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [uploadNotice, setUploadNotice] = useState<string | null>(null);
     const [selectedMediaId, setSelectedMediaId] = useState<string | null>(null);
-    const [reportOpen, setReportOpen] = useState(false);
+    const [reportMediaId, setReportMediaId] = useState<string | null>(null);
     const [originalError, setOriginalError] = useState<string | null>(null);
     const [selectionDownloadError, setSelectionDownloadError] = useState<string | null>(null);
     const [isDownloadingSelection, setIsDownloadingSelection] = useState(false);
@@ -80,6 +80,11 @@ export function useGalleryScreen() {
             canWrite: isEventWritable(activeEvent?.status),
             targetTypeReportable: Boolean(appConfig?.reportTargetTypes?.includes('MEDIA')),
         });
+    // The dialog belongs to the item it was opened for: if the selection moves, the item leaves the list
+    // or reporting stops being allowed, it is closed and stays closed.
+    const reportOpen = reportMediaId !== null && reportMediaId === selectedMedia?.id && canReportMedia;
+    // Forget a dialog that can no longer show, so it doesn't come back when its item or permission does.
+    if (reportMediaId !== null && !reportOpen) setReportMediaId(null);
     const canDownloadSelected =
         gallerySelection.selectedCount > 0 &&
         gallerySelection.selectedCount <= maxArchiveSelectedItems &&
@@ -179,11 +184,14 @@ export function useGalleryScreen() {
     }, [canDeleteMedia]);
 
     const openReport = useCallback(() => {
-        setReportOpen(true);
-    }, []);
+        if (!selectedMedia) return;
+        // A page still loading for a pending Next must not move the selection under the dialog.
+        pendingAdvanceIndexRef.current = null;
+        setReportMediaId(selectedMedia.id);
+    }, [selectedMedia]);
 
     const closeReport = useCallback(() => {
-        setReportOpen(false);
+        setReportMediaId(null);
     }, []);
 
     const closeDeleteConfirm = useCallback(() => {
@@ -292,7 +300,7 @@ export function useGalleryScreen() {
     const closeMedia = useCallback(() => {
         setSelectedMediaId(null);
         setOriginalError(null);
-        setReportOpen(false);
+        setReportMediaId(null);
     }, []);
 
     useEffect(() => {

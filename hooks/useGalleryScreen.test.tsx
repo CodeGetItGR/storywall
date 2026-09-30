@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
     activeMember: null as { id: string } | null,
     reportTargetTypes: ['MEDIA'] as string[],
     writable: true,
+    hasNextPage: false,
     deleteMedia: vi.fn<(id: string) => Promise<void>>(),
 }));
 
@@ -29,7 +30,7 @@ vi.mock('@/hooks/useMedia', () => ({
         data: { pages: [{ content: mocks.media }] },
         isLoading: false,
         fetchNextPage: vi.fn(),
-        hasNextPage: false,
+        hasNextPage: mocks.hasNextPage,
         isFetchingNextPage: false,
     }),
     useOriginalMedia: () => ({}),
@@ -58,6 +59,7 @@ describe('useGalleryScreen', () => {
         mocks.activeMember = null;
         mocks.reportTargetTypes = ['MEDIA'];
         mocks.writable = true;
+        mocks.hasNextPage = false;
         mocks.deleteMedia.mockReset();
     });
 
@@ -152,6 +154,52 @@ describe('useGalleryScreen', () => {
             mocks.activeMember = { id: 'me' };
             mocks.reportTargetTypes = ['POST'];
             expect(openItem('someone-else').result.current.canReportMedia).toBe(false);
+        });
+
+        it('keeps the dialog on its item when a page lands after Next', () => {
+            mocks.activeMember = { id: 'me' };
+            mocks.hasNextPage = true;
+            mocks.media = [{ ...photo('https://r2.example/a.jpg'), uploaderMemberId: 'x' }];
+            const { result, rerender } = renderHook(() => useGalleryScreen());
+            act(() => result.current.handleMediaClick('media-1'));
+            act(() => result.current.showNextMedia());
+            act(() => result.current.openReport());
+
+            mocks.media = [mocks.media[0], { ...photo('https://r2.example/b.jpg'), id: 'media-2', uploaderMemberId: 'x' }];
+            rerender();
+
+            expect(result.current.selectedMedia?.id).toBe('media-1');
+            expect(result.current.reportOpen).toBe(true);
+        });
+
+        it('does not show the dialog for another item after the reported one leaves the list', () => {
+            mocks.activeMember = { id: 'me' };
+            mocks.media = [{ ...photo('https://r2.example/a.jpg'), uploaderMemberId: 'x' }];
+            const { result, rerender } = renderHook(() => useGalleryScreen());
+            act(() => result.current.handleMediaClick('media-1'));
+            act(() => result.current.openReport());
+            expect(result.current.reportOpen).toBe(true);
+
+            mocks.media = [{ ...photo('https://r2.example/b.jpg'), id: 'media-2', uploaderMemberId: 'x' }];
+            rerender();
+            act(() => result.current.handleMediaClick('media-2'));
+
+            expect(result.current.reportOpen).toBe(false);
+        });
+
+        it('hides the dialog when reporting stops being allowed and does not bring it back', () => {
+            mocks.activeMember = { id: 'me' };
+            const { result, rerender } = openItem('someone-else');
+            act(() => result.current.openReport());
+            expect(result.current.reportOpen).toBe(true);
+
+            mocks.writable = false;
+            rerender();
+            expect(result.current.reportOpen).toBe(false);
+
+            mocks.writable = true;
+            rerender();
+            expect(result.current.reportOpen).toBe(false);
         });
 
         it('opens and closes the report dialog', () => {

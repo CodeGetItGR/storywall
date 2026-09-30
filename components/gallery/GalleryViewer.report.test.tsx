@@ -95,3 +95,54 @@ describe('GalleryViewer report action', () => {
         expect(pause).toHaveBeenCalledTimes(1);
     });
 });
+
+describe('GalleryViewer video while reporting', () => {
+    afterEach(() => {
+        cleanup();
+        vi.restoreAllMocks();
+    });
+
+    const props = {
+        media: video,
+        canDownloadOriginal: false,
+        canDelete: false,
+        canReport: true,
+        originalError: null,
+        isDownloadingOriginal: false,
+        hasPrevious: false,
+        hasNext: false,
+        onClose: vi.fn(),
+        onDownloadOriginal: vi.fn(),
+        onDelete: vi.fn(),
+        onReport: vi.fn(),
+        onPrevious: vi.fn(),
+        onNext: vi.fn(),
+    };
+
+    function spyPlayback(paused: boolean) {
+        vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
+        vi.spyOn(HTMLMediaElement.prototype, 'paused', 'get').mockReturnValue(paused);
+        return vi.spyOn(HTMLMediaElement.prototype, 'play').mockImplementation(() => Promise.resolve());
+    }
+
+    it('resumes the video it paused when the dialog closes', () => {
+        const play = spyPlayback(false);
+        const view = render(<GalleryViewer {...props} reportOpen />);
+        view.rerender(<GalleryViewer {...props} reportOpen={false} />);
+        expect(play).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not resume a video the user had already paused', () => {
+        const play = spyPlayback(true);
+        const view = render(<GalleryViewer {...props} reportOpen />);
+        view.rerender(<GalleryViewer {...props} reportOpen={false} />);
+        expect(play).not.toHaveBeenCalled();
+    });
+
+    it('does not start a detached video when unmounted with the dialog open', () => {
+        const play = spyPlayback(false);
+        const view = render(<GalleryViewer {...props} reportOpen />);
+        view.unmount();
+        expect(play).not.toHaveBeenCalled();
+    });
+});

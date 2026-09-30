@@ -96,7 +96,8 @@ export function GalleryViewer({
         if (!element || element.paused) return;
         element.pause();
         return () => {
-            void element.play()?.catch(() => undefined);
+            // On unmount the element is already detached; starting it would play audio off-page.
+            if (element.isConnected) void element.play()?.catch(() => undefined);
         };
     }, [reportOpen]);
 
