@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { type ReactNode, useState } from 'react';
 
 import { BetaFeedback } from '@/components/betaFeedback/BetaFeedback';
+import { GuidelinesAcceptanceGate } from '@/components/legal/GuidelinesAcceptanceGate';
 import { useVisualViewportSync } from '@/hooks/useVisualViewportSync';
 import { makeQueryClient } from '@/lib/queryClient';
 import { AppConfigBootstrap } from '@/providers/AppConfigBootstrap';
@@ -32,7 +33,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
                 <EventProvider>
                     <DocumentTitleSync />
                     <BetaFeedback />
-                    {isDemoRoute ? chrome : <ComposerProvider>{chrome}</ComposerProvider>}
+                    {/* Every signed-in page, composer and publish queue included. Bug
+                        reports stay outside: they're exempt from 4013. */}
+                    <GuidelinesAcceptanceGate>{isDemoRoute ? chrome : <ComposerProvider>{chrome}</ComposerProvider>}</GuidelinesAcceptanceGate>
                 </EventProvider>
             </AuthProvider>
         </QueryClientProvider>

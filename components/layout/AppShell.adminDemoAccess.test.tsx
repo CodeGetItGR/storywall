@@ -28,9 +28,6 @@ vi.mock('@/components/layout', () => ({
 }));
 vi.mock('@/providers/AccountPanelProvider', () => ({ AccountPanelProvider: ({ children }: { children: React.ReactNode }) => children }));
 vi.mock('@/components/account/AccountPanelShell', () => ({ AccountPanelShell: ({ children }: { children: React.ReactNode }) => children }));
-vi.mock('@/components/legal/GuidelinesAcceptanceGate', () => ({
-    GuidelinesAcceptanceGate: ({ children }: { children: React.ReactNode }) => children,
-}));
 
 function renderShell() {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });

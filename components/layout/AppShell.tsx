@@ -6,7 +6,6 @@ import { type ReactNode, useEffect } from 'react';
 import { AccountPanelShell } from '@/components/account/AccountPanelShell';
 import { DemoActAsBar } from '@/components/demo/DemoActAsBar';
 import { AuthLoadingState, DesktopNavRail, MobileTabBar } from '@/components/layout';
-import { GuidelinesAcceptanceGate } from '@/components/legal/GuidelinesAcceptanceGate';
 import { useAdminDemoEventAccess } from '@/hooks/useAdminDemoEventAccess';
 import { useAuth } from '@/hooks/useAuth';
 import { routes } from '@/lib/routes';
@@ -50,10 +49,8 @@ export function AppShell({ children }: { children: ReactNode }) {
     );
 
     return (
-        <GuidelinesAcceptanceGate>
-            <AccountPanelProvider>
-                <AccountPanelShell>{shellContent}</AccountPanelShell>
-            </AccountPanelProvider>
-        </GuidelinesAcceptanceGate>
+        <AccountPanelProvider>
+            <AccountPanelShell>{shellContent}</AccountPanelShell>
+        </AccountPanelProvider>
     );
 }

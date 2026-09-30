@@ -2,36 +2,69 @@
 
 import { Loader2, ScrollText } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { type ReactNode, useCallback } from 'react';
+import { type ReactNode, useCallback, useState } from 'react';
 
 import { useAcceptGuidelines } from '@/hooks/useAcceptGuidelines';
+import { useAuth } from '@/hooks/useAuth';
 import { useMe } from '@/hooks/useMe';
 import { isGuidelinesVersionMismatchError } from '@/lib/api/errors';
 import { routes } from '@/lib/routes';
 
+// Pages that stay reachable while the gate is up. /legal/ holds the guidelines
+// themselves (the Read link below opens them in a new tab). The auth pages and
+// newsletter token links are exempt from 4013 server-side, and gating them would
+// only trap a signed-in user who landed there. Keep this list short.
+const UNGATED_PREFIXES = ['/legal/', '/login', '/register', '/verify-email', '/forgot-password', '/reset-password', '/newsletter/'];
+
+function isUngatedPath(pathname: string | null): boolean {
+    if (!pathname) return false;
+    return UNGATED_PREFIXES.some((prefix) =>
+        prefix.endsWith('/') ? pathname.startsWith(prefix) : pathname === prefix || pathname.startsWith(`${prefix}/`),
+    );
+}
+
+// Mounted once in AppProviders, so it covers every signed-in page under app/(main).
+// Signed out, useMe never runs and this renders children.
+//
 // Blocks the signed-in app once /api/me reports the Community Guidelines in force
 // aren't accepted. Until then (loading, or /api/me failed) the app renders: holding
 // every page load behind /api/me would cost every user a wait for a rare case, and
 // the backend refuses writes (4013) regardless, which reopens this screen.
 export function GuidelinesAcceptanceGate({ children }: { children: ReactNode }) {
     const t = useTranslations('GuidelinesGate');
+    const pathname = usePathname();
+    const router = useRouter();
+    const { logout } = useAuth();
     const { data: me } = useMe();
     const accept = useAcceptGuidelines();
     const version = me?.currentGuidelinesVersion ?? null;
     const { mutate } = accept;
+    const [isSigningOut, setIsSigningOut] = useState(false);
 
     const handleAccept = useCallback(() => {
         if (version) mutate(version);
     }, [mutate, version]);
 
-    if (!me?.guidelinesAcceptanceRequired || !version) return <>{children}</>;
+    // Wrong account, or not willing to accept: logout is exempt from 4013.
+    const handleSignOut = useCallback(async () => {
+        setIsSigningOut(true);
+        try {
+            await logout();
+        } finally {
+            setIsSigningOut(false);
+            router.replace(routes.login);
+        }
+    }, [logout, router]);
+
+    if (!me?.guidelinesAcceptanceRequired || !version || isUngatedPath(pathname)) return <>{children}</>;
 
     const errorMessage = accept.error ? (isGuidelinesVersionMismatchError(accept.error) ? t('changed') : t('failed')) : null;
 
     return (
-        <main className="flex min-h-dvh items-center justify-center bg-background px-4 py-16">
-            <div className="flex w-full max-w-md flex-col gap-5 rounded-2xl border border-border bg-card p-6">
+        <main className="flex h-full overflow-y-auto bg-background px-4 py-16">
+            <div className="m-auto flex w-full max-w-md flex-col gap-5 rounded-2xl border border-border bg-card p-6">
                 {/* Heading */}
                 <div className="flex items-start gap-3">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -63,6 +96,16 @@ export function GuidelinesAcceptanceGate({ children }: { children: ReactNode }) 
                 >
                     {accept.isPending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
                     {accept.isPending ? t('accepting') : t('accept')}
+                </button>
+
+                {/* Sign out */}
+                <button
+                    type="button"
+                    onClick={handleSignOut}
+                    disabled={isSigningOut}
+                    className="text-sm font-semibold text-ink-muted underline hover:text-ink disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                    {t('signOut')}
                 </button>
             </div>
         </main>

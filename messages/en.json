@@ -1808,7 +1808,8 @@
         "accept": "I accept",
         "accepting": "Saving…",
         "failed": "We couldn't save your acceptance. Please try again.",
-        "changed": "The Community Guidelines were just updated again. Please review the latest version."
+        "changed": "The Community Guidelines were just updated again. Please review the latest version.",
+        "signOut": "Sign out"
     },
     "CheckoutSuccessPage": {
         "eyebrow": "Checkout",
