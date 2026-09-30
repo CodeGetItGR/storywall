@@ -107,6 +107,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                             (isVideoStory ? (
                                 <StoryVideo
                                     key={media.id}
+                                    paused={reportOpen}
                                     src={media.mediaUrl}
                                     onLoadedData={handleMediaLoaded}
                                     onTimeUpdate={handleVideoTimeUpdate}
@@ -181,7 +182,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                         eventId={activeStory.eventId}
                         targetType="STORY"
                         targetId={activeStory.id}
-                        targetName={author?.displayName ?? t('storyFallbackName')}
+                        targetName={author?.displayName ?? t('unknownAuthor')}
                         open={reportOpen}
                         onCloseAction={handleCloseReport}
                     />

@@ -1,6 +1,6 @@
 'use client';
 
-import { type SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { type SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useAppConfig, useDeleteStory, useEventStories, useMarkStoryViewed, useMediaItem, useStory } from '@/hooks';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
@@ -74,6 +74,8 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
     const [showMenu, setShowMenu] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [reportOpen, setReportOpen] = useState(false);
+    // A video can finish in the instant before the dialog's pause lands; it then advances on close.
+    const videoEndedUnderReportRef = useRef(false);
     // The order authors appear in when the viewer opens, frozen so that
     // marking an author's last story as viewed (which re-sorts `groups`,
     // unseen-first) can't shift them out from under an in-progress "next
@@ -123,12 +125,14 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
     const canManage = Boolean(activeStory && activeMember && (activeMember.id === activeStory.authorMemberId || isHost));
     const canDeleteStory = canManage && canWrite;
     const { data: appConfig } = useAppConfig();
-    const canReportStory = canReportContent({
-        isMember: Boolean(activeMember),
-        isAuthor: Boolean(activeStory && activeMember && activeStory.authorMemberId === activeMember.id),
-        canWrite,
-        targetTypeReportable: Boolean(appConfig?.reportTargetTypes?.includes('STORY')),
-    });
+    const canReportStory =
+        Boolean(activeStory) &&
+        canReportContent({
+            isMember: Boolean(activeMember),
+            isAuthor: Boolean(activeStory && activeMember && activeStory.authorMemberId === activeMember.id),
+            canWrite,
+            targetTypeReportable: Boolean(appConfig?.reportTargetTypes?.includes('STORY')),
+        });
     const canAdvanceStory = Boolean(activeStory && group && storyIndex >= 0);
 
     function goNext() {
@@ -190,7 +194,10 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
     }
 
     function handleVideoEnded() {
-        if (reportOpen) return;
+        if (reportOpen) {
+            videoEndedUnderReportRef.current = true;
+            return;
+        }
         setProgress(100);
         handleTimerComplete();
     }
@@ -224,11 +231,16 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
     function handleReportRequest() {
         if (!canReportStory) return;
         setShowMenu(false);
+        videoEndedUnderReportRef.current = false;
         setReportOpen(true);
     }
 
     function handleCloseReport() {
         setReportOpen(false);
+        if (videoEndedUnderReportRef.current) {
+            videoEndedUnderReportRef.current = false;
+            goNext();
+        }
     }
 
     const onOpenChange = useCallback(

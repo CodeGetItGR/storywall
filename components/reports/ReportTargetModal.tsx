@@ -63,7 +63,7 @@ export function ReportTargetModal({ eventId, onCloseAction, open, targetId, targ
                 <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
                     <div>
                         <h2 className="text-base font-semibold text-ink">{t('title')}</h2>
-                        <p className="mt-1 text-sm text-ink-muted">{t('body', { name: targetName })}</p>
+                        <p className="mt-1 text-sm text-ink-muted">{targetType === 'MEMBER' ? t('body', { name: targetName }) : t(`bodyByType.${targetType}`)}</p>
                     </div>
 
                     <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">

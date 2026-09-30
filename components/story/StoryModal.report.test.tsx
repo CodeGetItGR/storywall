@@ -90,7 +90,7 @@ describe('StoryModal report dialog', () => {
         render(<StoryModal open storyId="story-1" onCloseAction={vi.fn()} />);
 
         const modal = await screen.findByTestId('report-modal');
-        expect(modal.dataset.targetName).toBe('storyFallbackName');
+        expect(modal.dataset.targetName).toBe('unknownAuthor');
     });
 
     it('renders no report dialog when the viewer cannot report', async () => {

@@ -73,6 +73,7 @@ export function StoryHeader({
                         <button
                             onClick={onToggleMenu}
                             aria-label={t('moreOptions')}
+                            aria-expanded={showMenu}
                             className={cn(
                                 'flex h-8 w-8 items-center justify-center rounded-full transition-colors',
                                 isLight ? 'bg-black/8 text-ink hover:bg-black/12' : 'bg-black/30 text-white hover:bg-black/50',
@@ -107,6 +108,7 @@ export function StoryHeader({
                     )}
                     {canManage && canDelete && (
                         <button
+                            type="button"
                             onClick={onDeleteRequest}
                             className="motion-menu-item px-4 py-2.5 text-left text-sm whitespace-nowrap text-destructive hover:bg-surface-muted disabled:opacity-50"
                         >

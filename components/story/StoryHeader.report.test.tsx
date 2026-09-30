@@ -49,6 +49,12 @@ describe('StoryHeader report', () => {
         expect(screen.queryByRole('button', { name: 'reportStory' })).toBeNull();
     });
 
+    it('marks the options toggle expanded while the menu is open', () => {
+        renderHeader({ showMenu: true });
+
+        expect(screen.getByRole('button', { name: 'moreOptions' }).getAttribute('aria-expanded')).toBe('true');
+    });
+
     it('shows no Report button and no options toggle when the viewer cannot report or manage', () => {
         renderHeader({ canReport: false });
 
@@ -59,8 +65,9 @@ describe('StoryHeader report', () => {
     it('keeps delete, without Report, for a manager who cannot report (own story)', () => {
         const { onDeleteRequest } = renderHeader({ canManage: true, canDelete: true, canReport: false });
 
+        const deleteButton = screen.getByRole('button', { name: 'deleteStory' });
         expect(screen.queryByRole('button', { name: 'reportStory' })).toBeNull();
-        fireEvent.click(screen.getByRole('button', { name: 'deleteStory' }));
+        fireEvent.click(deleteButton);
         expect(onDeleteRequest).toHaveBeenCalledTimes(1);
     });
 

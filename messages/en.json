@@ -862,7 +862,6 @@
         "moreOptions": "More options",
         "deleteStory": "Delete story",
         "reportStory": "Report story",
-        "storyFallbackName": "this story",
         "deleteStoryConfirmTitle": "Delete this story?",
         "deleteStoryConfirmBody": "This story will be removed for everyone and can't be undone.",
         "deleteStoryConfirm": "Delete story",
@@ -4388,6 +4387,14 @@
     "Report": {
         "title": "Report",
         "body": "Report {name} to the platform team.",
+        "bodyByType": {
+            "POST": "Report this post to the platform team.",
+            "COMMENT": "Report this comment to the platform team.",
+            "STORY": "Report this story to the platform team.",
+            "MEDIA": "Report this photo or video to the platform team.",
+            "WISHBOOK_ENTRY": "Report this wish to the platform team.",
+            "PLAYLIST_SUGGESTION": "Report this song suggestion to the platform team."
+        },
         "reason": "Reason",
         "chooseReason": "Choose a reason",
         "details": "Details",

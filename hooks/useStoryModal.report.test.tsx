@@ -8,6 +8,7 @@ let story: StoryResponseDto;
 let activeMemberId: string | null = 'm1';
 let reportTargetTypes: string[] = ['STORY'];
 let eventStatus = 'ACTIVE';
+let mediaType = 'IMAGE';
 
 vi.mock('@/hooks', () => ({
     useStory: () => ({ data: story, error: null }),
@@ -24,7 +25,12 @@ vi.mock('@/providers/EventProvider', () => ({
     useIsHost: () => false,
 }));
 
-const MEDIA = { id: 'media-1', mediaType: 'IMAGE', mediaUrl: 'https://r2.test/media-1.jpg' } as MediaResponseDto;
+// Mirrors MEDIA_ERROR_DISPLAY_MS in useStoryModal (not exported).
+const MEDIA_ERROR_DISPLAY_MS = 1500;
+
+function media(): MediaResponseDto {
+    return { id: 'media-1', mediaType, mediaUrl: 'https://r2.test/media-1.jpg' } as MediaResponseDto;
+}
 
 function storyBy(authorMemberId: string | null): StoryResponseDto {
     return {
@@ -33,7 +39,7 @@ function storyBy(authorMemberId: string | null): StoryResponseDto {
         authorMemberId,
         author: null,
         mediaId: 'media-1',
-        media: MEDIA,
+        media: media(),
         caption: null,
         songUrl: null,
         expiresAt: '2026-10-01T12:00:00Z',
@@ -43,14 +49,18 @@ function storyBy(authorMemberId: string | null): StoryResponseDto {
     };
 }
 
+const onCloseAction = vi.fn();
+
 function mount() {
-    return renderHook(() => useStoryModal({ open: true, storyId: 'story-1', onCloseAction: vi.fn() }));
+    return renderHook(() => useStoryModal({ open: true, storyId: 'story-1', onCloseAction }));
 }
 
 beforeEach(() => {
     activeMemberId = 'm1';
     reportTargetTypes = ['STORY'];
     eventStatus = 'ACTIVE';
+    mediaType = 'IMAGE';
+    onCloseAction.mockClear();
     story = storyBy('m2');
 });
 
@@ -129,5 +139,72 @@ describe('useStoryModal report dialog and the story timer', () => {
         act(() => result.current.handleReportRequest());
 
         expect(result.current.showMenu).toBe(false);
+    });
+});
+
+describe('useStoryModal suppressions under the report dialog', () => {
+    it('proceeds when a video ends with no dialog open (control)', () => {
+        mediaType = 'VIDEO';
+        const { result } = mount();
+        act(() => result.current.handleMediaLoaded());
+
+        act(() => result.current.handleVideoEnded());
+
+        expect(onCloseAction).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not advance or close when a video ends while the dialog is open, and moves on once it closes', () => {
+        mediaType = 'VIDEO';
+        const { result } = mount();
+        act(() => result.current.handleMediaLoaded());
+        act(() => result.current.handleReportRequest());
+
+        act(() => result.current.handleVideoEnded());
+        expect(onCloseAction).not.toHaveBeenCalled();
+        expect(result.current.progress).toBeLessThan(100);
+
+        // not stuck on the last frame: closing the dialog moves on (a single-story group closes the viewer)
+        act(() => result.current.handleCloseReport());
+        expect(onCloseAction).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not close on the media-error timeout while the dialog is open', () => {
+        vi.useFakeTimers();
+        const { result } = mount();
+        act(() => result.current.handleMediaError());
+        act(() => result.current.handleReportRequest());
+
+        act(() => {
+            vi.advanceTimersByTime(MEDIA_ERROR_DISPLAY_MS + 1000);
+        });
+
+        expect(onCloseAction).not.toHaveBeenCalled();
+    });
+
+    it('closes on the media-error timeout once the dialog is gone', () => {
+        vi.useFakeTimers();
+        const { result } = mount();
+        act(() => result.current.handleMediaError());
+        act(() => result.current.handleReportRequest());
+        act(() => result.current.handleCloseReport());
+
+        act(() => {
+            vi.advanceTimersByTime(MEDIA_ERROR_DISPLAY_MS + 1000);
+        });
+
+        expect(onCloseAction).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not advance an image story past 100% while the dialog is open', () => {
+        vi.useFakeTimers();
+        const { result } = mount();
+        act(() => result.current.handleMediaLoaded());
+        act(() => result.current.handleReportRequest());
+
+        act(() => {
+            vi.advanceTimersByTime(20000);
+        });
+
+        expect(onCloseAction).not.toHaveBeenCalled();
     });
 });
