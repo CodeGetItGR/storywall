@@ -8,24 +8,13 @@ import { type ReactNode, useCallback, useState } from 'react';
 
 import { useAcceptGuidelines } from '@/hooks/useAcceptGuidelines';
 import { useAuth } from '@/hooks/useAuth';
+import { useGuidelinesAcceptanceBlocking } from '@/hooks/useGuidelinesAcceptanceBlocking';
 import { useMe } from '@/hooks/useMe';
 import { isGuidelinesVersionMismatchError } from '@/lib/api/errors';
 import { routes } from '@/lib/routes';
 
-// Pages that stay reachable while the gate is up. /legal/ holds the guidelines
-// themselves (the Read link below opens them in a new tab). The auth pages and
-// newsletter token links are exempt from 4013 server-side, and gating them would
-// only trap a signed-in user who landed there. Keep this list short.
-const UNGATED_PREFIXES = ['/legal/', '/login', '/register', '/verify-email', '/forgot-password', '/reset-password', '/newsletter/'];
-
-function isUngatedPath(pathname: string | null): boolean {
-    if (!pathname) return false;
-    return UNGATED_PREFIXES.some((prefix) =>
-        prefix.endsWith('/') ? pathname.startsWith(prefix) : pathname === prefix || pathname.startsWith(`${prefix}/`),
-    );
-}
-
-// Mounted once in AppProviders, so it covers every signed-in page under app/(main).
+// Mounted once in AppProviders around the page itself, inside ComposerProvider,
+// so the publish queue (in memory only) survives the gate opening and closing.
 // Signed out, useMe never runs and this renders children.
 //
 // Blocks the signed-in app once /api/me reports the Community Guidelines in force
@@ -38,10 +27,15 @@ export function GuidelinesAcceptanceGate({ children }: { children: ReactNode }) 
     const router = useRouter();
     const { logout } = useAuth();
     const { data: me } = useMe();
+    const isBlocking = useGuidelinesAcceptanceBlocking();
     const accept = useAcceptGuidelines();
     const version = me?.currentGuidelinesVersion ?? null;
     const { mutate } = accept;
-    const [isSigningOut, setIsSigningOut] = useState(false);
+    // The path sign-out started on. logout() clears /api/me at once, so without
+    // this the hidden page would flash before the redirect lands.
+    const [signingOutFrom, setSigningOutFrom] = useState<string | null>(null);
+    if (signingOutFrom !== null && signingOutFrom !== pathname) setSigningOutFrom(null);
+    const isSigningOut = signingOutFrom !== null;
 
     const handleAccept = useCallback(() => {
         if (version) mutate(version);
@@ -49,16 +43,15 @@ export function GuidelinesAcceptanceGate({ children }: { children: ReactNode }) 
 
     // Wrong account, or not willing to accept: logout is exempt from 4013.
     const handleSignOut = useCallback(async () => {
-        setIsSigningOut(true);
+        setSigningOutFrom(pathname);
         try {
             await logout();
         } finally {
-            setIsSigningOut(false);
             router.replace(routes.login);
         }
-    }, [logout, router]);
+    }, [logout, pathname, router]);
 
-    if (!me?.guidelinesAcceptanceRequired || !version || isUngatedPath(pathname)) return <>{children}</>;
+    if (!isBlocking && !isSigningOut) return <>{children}</>;
 
     const errorMessage = accept.error ? (isGuidelinesVersionMismatchError(accept.error) ? t('changed') : t('failed')) : null;
 

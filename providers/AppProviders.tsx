@@ -22,7 +22,13 @@ export function AppProviders({ children }: { children: ReactNode }) {
     const [queryClient] = useState(makeQueryClient);
     const chrome = (
         <MobileChromeProvider>
-            <ModalProvider>{children}</ModalProvider>
+            <ModalProvider>
+                {/* Every signed-in page. Inside ComposerProvider so the in-memory publish
+                    queue survives the gate opening and closing (failed jobs keep their
+                    files for retry); ComposerProvider hides its own modals meanwhile.
+                    Bug reports stay outside: they're exempt from 4013. */}
+                <GuidelinesAcceptanceGate>{children}</GuidelinesAcceptanceGate>
+            </ModalProvider>
         </MobileChromeProvider>
     );
 
@@ -33,9 +39,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
                 <EventProvider>
                     <DocumentTitleSync />
                     <BetaFeedback />
-                    {/* Every signed-in page, composer and publish queue included. Bug
-                        reports stay outside: they're exempt from 4013. */}
-                    <GuidelinesAcceptanceGate>{isDemoRoute ? chrome : <ComposerProvider>{chrome}</ComposerProvider>}</GuidelinesAcceptanceGate>
+                    {isDemoRoute ? chrome : <ComposerProvider>{chrome}</ComposerProvider>}
                 </EventProvider>
             </AuthProvider>
         </QueryClientProvider>

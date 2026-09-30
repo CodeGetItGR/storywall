@@ -9,7 +9,6 @@ const mocks = vi.hoisted(() => ({
     mutate: vi.fn(),
     isPending: false,
     error: null as unknown,
-    meFailed: false,
     pathname: '/home',
     logout: vi.fn(),
     replace: vi.fn(),
@@ -21,7 +20,7 @@ vi.mock('next/navigation', () => ({
     useRouter: () => ({ replace: mocks.replace }),
 }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ logout: mocks.logout }) }));
-vi.mock('@/hooks/useMe', () => ({ useMe: () => ({ data: mocks.me, isError: mocks.meFailed }) }));
+vi.mock('@/hooks/useMe', () => ({ useMe: () => ({ data: mocks.me }) }));
 vi.mock('@/hooks/useAcceptGuidelines', () => ({
     useAcceptGuidelines: () => ({ mutate: mocks.mutate, isPending: mocks.isPending, error: mocks.error }),
 }));
@@ -31,7 +30,6 @@ describe('GuidelinesAcceptanceGate', () => {
         cleanup();
         mocks.me = undefined;
         mocks.error = null;
-        mocks.meFailed = false;
         mocks.pathname = '/home';
         mocks.mutate.mockReset();
         mocks.logout.mockReset();
@@ -77,9 +75,8 @@ describe('GuidelinesAcceptanceGate', () => {
         expect(screen.getByText('app')).toBeInTheDocument();
     });
 
-    // The backend still enforces; a failed /api/me must not lock the app.
-    it('shows the app when /api/me failed', () => {
-        mocks.meFailed = true;
+    // The backend still enforces; no /api/me data (e.g. it failed) must not lock the app.
+    it('shows the app when there is no /api/me data', () => {
         render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>);
 
         expect(screen.getByText('app')).toBeInTheDocument();
@@ -103,6 +100,23 @@ describe('GuidelinesAcceptanceGate', () => {
         expect(screen.getByText('login')).toBeInTheDocument();
     });
 
+    it('leaves pages below an auth page reachable', () => {
+        mocks.me = { guidelinesAcceptanceRequired: true, currentGuidelinesVersion: '2026-09-30' };
+        mocks.pathname = '/login/x';
+        render(<GuidelinesAcceptanceGate>login</GuidelinesAcceptanceGate>);
+
+        expect(screen.getByText('login')).toBeInTheDocument();
+    });
+
+    // Only pages under /legal/ are exempt, not a bare /legal.
+    it('gates a bare /legal', () => {
+        mocks.me = { guidelinesAcceptanceRequired: true, currentGuidelinesVersion: '2026-09-30' };
+        mocks.pathname = '/legal';
+        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>);
+
+        expect(screen.queryByText('app')).not.toBeInTheDocument();
+    });
+
     // A path that merely starts with an ungated name is still gated.
     it('gates a path that only shares a prefix with an auth page', () => {
         mocks.me = { guidelinesAcceptanceRequired: true, currentGuidelinesVersion: '2026-09-30' };
@@ -123,5 +137,30 @@ describe('GuidelinesAcceptanceGate', () => {
         expect(mocks.logout).toHaveBeenCalledTimes(1);
         await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith('/login'));
         expect(mocks.mutate).not.toHaveBeenCalled();
+    });
+
+    // logout() clears /api/me at once; the hidden page must not flash before the redirect.
+    it('keeps the gate up while signing out, until the login page loads', async () => {
+        mocks.me = { guidelinesAcceptanceRequired: true, currentGuidelinesVersion: '2026-09-30' };
+        mocks.logout.mockImplementation(async () => {
+            mocks.me = undefined;
+        });
+        const { rerender } = render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>);
+
+        fireEvent.click(screen.getByRole('button', { name: 'signOut' }));
+        await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith('/login'));
+        rerender(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>);
+
+        expect(screen.queryByText('app')).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'signOut' })).toBeInTheDocument();
+
+        mocks.pathname = '/login';
+        rerender(<GuidelinesAcceptanceGate>login</GuidelinesAcceptanceGate>);
+        expect(screen.getByText('login')).toBeInTheDocument();
+
+        // Back on the page it started from, signed out: nothing is held any more.
+        mocks.pathname = '/home';
+        rerender(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>);
+        expect(screen.getByText('app')).toBeInTheDocument();
     });
 });
