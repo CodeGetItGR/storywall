@@ -1895,6 +1895,10 @@
         "version": "Έκδοση {version}",
         "unavailable": "Οι όροι δεν είναι διαθέσιμοι αυτή τη στιγμή."
     },
+    "CommunityGuidelinesPage": {
+        "title": "Κανόνες Κοινότητας",
+        "unavailable": "Δεν ήταν δυνατή η φόρτωση των Κανόνων Κοινότητας. Δοκιμάστε ξανά αργότερα."
+    },
     "CheckoutSuccessPage": {
         "eyebrow": "Πληρωμή",
         "paidTitle": "Η πληρωμή ολοκληρώθηκε",

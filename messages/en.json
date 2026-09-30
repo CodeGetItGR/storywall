@@ -1788,6 +1788,10 @@
         "version": "Version {version}",
         "unavailable": "These terms aren't available right now."
     },
+    "CommunityGuidelinesPage": {
+        "title": "Community Guidelines",
+        "unavailable": "The Community Guidelines couldn't be loaded. Please try again later."
+    },
     "CheckoutSuccessPage": {
         "eyebrow": "Checkout",
         "paidTitle": "Payment received",
