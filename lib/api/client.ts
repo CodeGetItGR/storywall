@@ -158,6 +158,34 @@ if (typeof window !== 'undefined') {
     });
 }
 
+type ApiErrorListener = (error: ApiError) => void;
+const apiErrorListeners = new Set<ApiErrorListener>();
+
+// Hears every failed call made through api.*, whether or not it went through
+// React Query. Only the browser subscribes (from an effect), so server-side use of
+// this module never accumulates listeners across requests.
+export function subscribeApiErrors(listener: ApiErrorListener): () => void {
+    apiErrorListeners.add(listener);
+    return () => {
+        apiErrorListeners.delete(listener);
+    };
+}
+
+// Every non-OK response from Spring ends here: record it, build the error, tell the listeners.
+function failedResponseError(method: string | undefined, path: string, res: Response, body: unknown): ApiError {
+    recordFailedCall(method, path, res.status, body);
+    const error = new ApiError(res.status, body, undefined, res.headers.get('retry-after'));
+    for (const listener of apiErrorListeners) {
+        // A listener that throws must neither replace this error nor starve the others.
+        try {
+            listener(error);
+        } catch (listenerError) {
+            console.error('API error listener failed', listenerError);
+        }
+    }
+    return error;
+}
+
 // Bare fetch straight to Spring with no auth header and no retry-on-401 —
 // used by api.publicGet for the handful of endpoints that don't require auth.
 async function rawFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -173,8 +201,7 @@ async function rawFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
     const body = await parseResponseBody(res);
 
     if (!res.ok) {
-        recordFailedCall(options.method, path, res.status, body);
-        throw new ApiError(res.status, body, undefined, res.headers.get('retry-after'));
+        throw failedResponseError(options.method, path, res, body);
     }
 
     return body as T;
@@ -197,8 +224,7 @@ async function rawPostForm<T>(path: string, formData: FormData, options: Request
     const body = await parseResponseBody(res);
 
     if (!res.ok) {
-        recordFailedCall('POST', path, res.status, body);
-        throw new ApiError(res.status, body, undefined, res.headers.get('retry-after'));
+        throw failedResponseError('POST', path, res, body);
     }
 
     return body as T;
@@ -229,8 +255,7 @@ async function apiFetchResponse(path: string, options: ApiFetchOptions = {}): Pr
 
     if (!res.ok && !(allowNotModified && res.status === 304)) {
         const body = await parseResponseBody(res);
-        recordFailedCall(init.method, path, res.status, body);
-        throw new ApiError(res.status, body, undefined, res.headers.get('retry-after'));
+        throw failedResponseError(init.method, path, res, body);
     }
 
     return res;

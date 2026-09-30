@@ -445,6 +445,15 @@
         "business": {
             "label": "Register as a business",
             "hint": "Add your company's VAT details to buy as a business."
+        },
+        "guidelines": {
+            "label": "I accept the Community Guidelines",
+            "read": "Read the Community Guidelines",
+            "opensInNewTab": "(opens in a new tab)",
+            "required": "Please accept the Community Guidelines to create your account.",
+            "loading": "The Community Guidelines are still loading. Please try again in a moment.",
+            "unavailable": "The Community Guidelines couldn't be loaded. Refresh the page and try again.",
+            "changed": "The Community Guidelines were just updated. Please review them and tick the box again."
         }
     },
     "WelcomePage": {
@@ -542,7 +551,9 @@
             "success": "Thanks! Your photos are on their way to the gallery.",
             "addMore": "Add more",
             "dropHint": "or drag and drop",
-            "removeFile": "Remove"
+            "removeFile": "Remove",
+            "guidelinesNotice": "By uploading, you agree to the",
+            "guidelinesLink": "Community Guidelines"
         },
         "unknown": {
             "title": "Code not found",
@@ -1787,6 +1798,21 @@
         "title": "Right of withdrawal",
         "version": "Version {version}",
         "unavailable": "These terms aren't available right now."
+    },
+    "CommunityGuidelinesPage": {
+        "title": "Community Guidelines",
+        "unavailable": "The Community Guidelines couldn't be loaded. Please try again later."
+    },
+    "GuidelinesGate": {
+        "title": "Our Community Guidelines",
+        "body": "To keep using StoryWall, please read and accept our Community Guidelines. They explain what can be shared at an event and how we handle reports.",
+        "read": "Read the Community Guidelines",
+        "opensInNewTab": "(opens in a new tab)",
+        "accept": "I accept",
+        "accepting": "Saving…",
+        "failed": "We couldn't save your acceptance. Please try again.",
+        "changed": "The Community Guidelines were just updated again. Please review the latest version.",
+        "signOut": "Sign out"
     },
     "CheckoutSuccessPage": {
         "eyebrow": "Checkout",
@@ -3894,6 +3920,8 @@
         "giftCardLocked": "This card is locked. Ask the giver for a new one.",
         "giftEventNotActive": "This gift isn't ready yet.",
         "giftHandoverPending": "The gift is being handed over, so ownership can't be transferred yet.",
+        "guidelinesVersionMismatch": "The Community Guidelines have been updated. Please read the current version and accept it.",
+        "guidelinesAcceptanceRequired": "Please accept the Community Guidelines to continue.",
         "withdrawalConfirmationInvalid": "We couldn't confirm this withdrawal. Check the refund and confirm again.",
         "withdrawalPreviewStale": "The refund amount has changed. Check it and confirm again.",
         "orderNotManual": "Only manual orders can be settled by hand.",
@@ -4344,6 +4372,7 @@
             "socialLinks": ["Instagram", "TikTok", "Facebook"],
             "copyright": "© 2026 STORYWALL",
             "legal": ["Privacy Policy", "Terms of Use", "Cookies", "Cookie Settings", "Cancellations & Withdrawal", "Contact"],
+            "communityGuidelines": "Community Guidelines",
             "backToTop": "BACK TO TOP"
         }
     },

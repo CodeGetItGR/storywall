@@ -79,6 +79,7 @@ export const routes = {
     // Public. No version: the current terms; a paid order links the version it acknowledged.
     legal: {
         withdrawalTerms: (version?: string | null) => withQuery('/legal/withdrawal-terms', { version }),
+        communityGuidelines: () => '/legal/community-guidelines',
     },
     inviteToken: (token: string) => `/invite/${token}`,
     // Public: where a gift card's QR leads.

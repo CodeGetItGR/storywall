@@ -70,6 +70,8 @@ export type ApiErrorMessageKey =
     | 'giftNotPrimaryHost'
     | 'giftOrderNotYours'
     | 'giftRecipientProtected'
+    | 'guidelinesAcceptanceRequired'
+    | 'guidelinesVersionMismatch'
     | 'internalError'
     | 'invalidCredentials'
     | 'invalidIban'
@@ -217,6 +219,8 @@ export const API_ERROR_MESSAGE_KEYS = {
     [ERROR_CODES.GIFT_CARD_LOCKED]: 'giftCardLocked',
     [ERROR_CODES.GIFT_EVENT_NOT_ACTIVE]: 'giftEventNotActive',
     [ERROR_CODES.GIFT_HANDOVER_PENDING]: 'giftHandoverPending',
+    [ERROR_CODES.GUIDELINES_VERSION_MISMATCH]: 'guidelinesVersionMismatch',
+    [ERROR_CODES.GUIDELINES_ACCEPTANCE_REQUIRED]: 'guidelinesAcceptanceRequired',
     [ERROR_CODES.INTERNAL_ERROR]: 'internalError',
     [ERROR_CODES.INVALID_CREDENTIALS]: 'invalidCredentials',
     [ERROR_CODES.INVALID_IBAN]: 'invalidIban',

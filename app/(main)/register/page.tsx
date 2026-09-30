@@ -1,5 +1,6 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail, User } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -9,6 +10,7 @@ import React, { ChangeEvent, useCallback, useState } from 'react';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
 import { RegisterBusinessSection } from '@/components/auth/RegisterBusinessSection';
+import { RegisterGuidelinesCheckbox } from '@/components/auth/RegisterGuidelinesCheckbox';
 import { RegisterNewsletterCheckbox } from '@/components/auth/RegisterNewsletterCheckbox';
 import { AuthLoadingState } from '@/components/layout/AuthLoadingState';
 import { FormFieldLabel } from '@/components/ui/FormFieldLabel';
@@ -16,9 +18,11 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppNewsletterConfig } from '@/hooks/useAppConfig';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthPageRedirect } from '@/hooks/useAuthPageRedirect';
+import { communityGuidelinesQueryKey, useCommunityGuidelinesVersion } from '@/hooks/useCommunityGuidelinesVersion';
 import { useContentLimits } from '@/hooks/useContentLimits';
 import { useNavigateAfterSignIn } from '@/hooks/useNavigateAfterSignIn';
 import { useRegisterBusinessProfile } from '@/hooks/useRegisterBusinessProfile';
+import { isGuidelinesVersionMismatchError } from '@/lib/api/errors';
 import { AUTH_RETURN_PATH_PARAM, getPostRegisterRedirectPath, getSafeReturnPath } from '@/lib/auth/returnPath';
 import { routes } from '@/lib/routes';
 
@@ -35,6 +39,8 @@ export default function RegisterPage() {
     const toErrorMessage = useApiErrorMessage();
     const newsletterConfig = useAppNewsletterConfig();
     const business = useRegisterBusinessProfile();
+    const guidelinesVersion = useCommunityGuidelinesVersion();
+    const queryClient = useQueryClient();
 
     const [showPw, setShowPw] = useState(false);
     const [email, setEmail] = useState(searchParams.get('email') ?? '');
@@ -42,12 +48,22 @@ export default function RegisterPage() {
     const [lastName, setLastName] = useState(searchParams.get('lastName') ?? '');
     const [password, setPassword] = useState('');
     const [subscribeToNewsletter, setSubscribeToNewsletter] = useState(false);
+    const [acceptedGuidelines, setAcceptedGuidelines] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
         e.preventDefault();
         setError(null);
+        if (!acceptedGuidelines) {
+            setError(t('guidelines.required'));
+            return;
+        }
+        if (!guidelinesVersion.data) {
+            // Still loading (or retrying) is not the same as failed: only a settled error asks for a refresh.
+            setError(guidelinesVersion.isError ? t('guidelines.unavailable') : t('guidelines.loading'));
+            return;
+        }
         const businessProfile = business.prepareRequest();
         if (businessProfile === false) return;
         setIsSubmitting(true);
@@ -61,10 +77,18 @@ export default function RegisterPage() {
                 inviteToken: inviteToken ?? undefined,
                 subscribeToNewsletter: newsletterConfig ? subscribeToNewsletter : undefined,
                 businessProfile: businessProfile ?? undefined,
+                acceptedGuidelinesVersion: guidelinesVersion.data,
             });
             navigateAfterSignIn(getPostRegisterRedirectPath(auth.role, Boolean(inviteToken)));
         } catch (err) {
-            if (!business.handleSignupError(err)) setError(toErrorMessage(err));
+            if (isGuidelinesVersionMismatchError(err)) {
+                // A newer version went live while the form was open: fetch it and make them tick again.
+                setAcceptedGuidelines(false);
+                await queryClient.invalidateQueries({ queryKey: communityGuidelinesQueryKey });
+                setError(t('guidelines.changed'));
+            } else if (!business.handleSignupError(err)) {
+                setError(toErrorMessage(err));
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -104,6 +128,10 @@ export default function RegisterPage() {
 
     const onSubscribeToNewsletterChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         setSubscribeToNewsletter(e.target.checked);
+    }, []);
+
+    const onAcceptedGuidelinesChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+        setAcceptedGuidelines(e.target.checked);
     }, []);
 
     const onTogglePasswordVisibility = useCallback(() => {
@@ -200,6 +228,9 @@ export default function RegisterPage() {
 
                 {/* Business */}
                 <RegisterBusinessSection business={business} />
+
+                {/* Community Guidelines */}
+                <RegisterGuidelinesCheckbox checked={acceptedGuidelines} onChangeAction={onAcceptedGuidelinesChange} />
 
                 {error && (
                     <p role="alert" className="-mt-1 text-center text-xs text-red-500">

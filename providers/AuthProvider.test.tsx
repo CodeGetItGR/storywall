@@ -76,7 +76,7 @@ describe('AuthProvider', () => {
     it("drops the router's cached pages on register", async () => {
         const { result } = await renderAuth();
 
-        await act(() => result.current.register({ email: 'host@example.test', password: 'test-password', firstName: 'Host', lastName: 'Test' }));
+        await act(() => result.current.register({ email: 'host@example.test', password: 'test-password', firstName: 'Host', lastName: 'Test', acceptedGuidelinesVersion: '2026-09-30' }));
 
         expect(mocks.refresh).toHaveBeenCalledOnce();
     });

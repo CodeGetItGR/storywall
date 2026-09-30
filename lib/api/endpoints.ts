@@ -42,6 +42,7 @@ export const endpoints = {
         profilePicture: '/api/me/profile-picture',
         changePassword: '/api/me/change-password',
         events: '/api/me/events',
+        guidelinesAcceptance: '/api/me/guidelines-acceptance',
         newsletter: '/api/me/newsletter',
         businessProfile: '/api/me/business-profile',
     },
@@ -365,5 +366,7 @@ export const endpoints = {
     legal: {
         withdrawalTerms: ({ version, locale }: { version?: string | null; locale: string }) =>
             `/api/legal/withdrawal-terms${version ? `/${encodeURIComponent(version)}` : ''}?locale=${encodeURIComponent(locale)}`,
+        communityGuidelines: ({ version, locale }: { version?: string | null; locale: string }) =>
+            `/api/legal/community-guidelines${version ? `/${encodeURIComponent(version)}` : ''}?locale=${encodeURIComponent(locale)}`,
     },
 } as const;
