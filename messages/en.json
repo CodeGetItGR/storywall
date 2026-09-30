@@ -445,6 +445,13 @@
         "business": {
             "label": "Register as a business",
             "hint": "Add your company's VAT details to buy as a business."
+        },
+        "guidelines": {
+            "label": "I accept the Community Guidelines",
+            "read": "Read them",
+            "required": "Please accept the Community Guidelines to create your account.",
+            "unavailable": "The Community Guidelines couldn't be loaded. Refresh the page and try again.",
+            "changed": "The Community Guidelines were just updated. Please review them and tick the box again."
         }
     },
     "WelcomePage": {
