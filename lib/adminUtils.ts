@@ -4,6 +4,7 @@ export type AdminErrorMessageKey =
     | 'planInUse'
     | 'onlyDefault'
     | 'orderNotPending'
+    | 'orderNotManual'
     | 'notFound'
     | 'withdrawalNotHeld'
     | 'keepEventDayNotDue'
@@ -55,6 +56,8 @@ export function adminErrorMessageKey(error: unknown): AdminErrorMessageKey {
     if (code === ERROR_CODES.PLAN_TIER_IN_USE) return 'planInUse';
     if (code === ERROR_CODES.PLAN_TIER_IS_ONLY_DEFAULT) return 'onlyDefault';
     if (code === ERROR_CODES.ORDER_NOT_PENDING) return 'orderNotPending';
+    // Settle-by-hand is for manual-provider orders on dev/staging; a Stripe order is refused.
+    if (code === ERROR_CODES.ORDER_NOT_MANUAL) return 'orderNotManual';
     if (code === ERROR_CODES.RESOURCE_NOT_FOUND) return 'notFound';
     // The common concurrent case: two admins open the withdrawal queue and the
     // second one's decision lands on a request that is no longer HELD.

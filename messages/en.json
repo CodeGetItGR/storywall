@@ -525,7 +525,8 @@
         },
         "defaultHeroImageAlt": "Event cover photo",
         "haveAccount": "I have an account",
-        "createAccount": "Create an account"
+        "createAccount": "Create an account",
+        "gift": "A gift from {giver} for {recipient}."
     },
     "QrCodePage": {
         "fallbackTitle": "You're invited",
@@ -989,6 +990,11 @@
         "placeholders": {
             "locationAddress": "e.g. 1842 Silverado Trail, Napa, CA 94558",
             "mapsUrl": "https://maps.google.com/..."
+        },
+        "changeDate": "Change date",
+        "gift": {
+            "toggle": "It's a gift",
+            "toggleHint": "Give the event to someone else after you pay."
         }
     },
     "ManagePage": {
@@ -1017,7 +1023,8 @@
             "danger": "Danger zone",
             "rsvp": "RSVP",
             "members": "Members",
-            "billing": "Billing"
+            "billing": "Billing",
+            "gift": "Given as a gift"
         },
         "sectionSwitcher": "Change section",
         "stats": {
@@ -1066,6 +1073,12 @@
             "selectedAddons": {
                 "title": "Selected add-ons",
                 "body": "Chosen during event creation. Add-ons can't be changed until after publishing."
+            },
+            "startDate": {
+                "action": "Change date",
+                "title": "Change the event date",
+                "save": "Save",
+                "cancel": "Cancel"
             }
         },
         "draftModules": {
@@ -1405,7 +1418,8 @@
             "manageTitle": "Paid add-ons",
             "manageAction": "Manage add-ons",
             "empty": "Need more space for photos and videos? Add it here.",
-            "addStorage": "Add storage"
+            "addStorage": "Add storage",
+            "itemGift": "{name} · Gift"
         },
         "storagePacks": {
             "title": "Add storage",
@@ -1579,7 +1593,8 @@
             "upgradeCoverage": "Plan upgrade. Coverage unchanged.",
             "storageCoverage": "Permanent storage increase.",
             "addonAmount": "Includes {amount} for add-ons",
-            "showAll": "Show {count} older orders"
+            "showAll": "Show {count} older orders",
+            "gift": "Gift"
         },
         "panels": {
             "plan": "Plan & add-ons"
@@ -1627,7 +1642,8 @@
             "refundedEvent": "Refunded. The event has been taken offline.",
             "refundedOrder": "Refunded. Your event stays online.",
             "keptEventDay": "The event-day share was kept: the event took place on the date you paid for.",
-            "alreadyRefunded": "{kind}: already refunded separately, so nothing more is due for it."
+            "alreadyRefunded": "{kind}: already refunded separately, so nothing more is due for it.",
+            "heldEvent": "The event is closed. Your refund is under review, and we'll email you once it's decided."
         },
         "storageTrim": {
             "title": "Your event is over its storage limit",
@@ -2465,6 +2481,16 @@
                 "another": "Provision another",
                 "done": "Done",
                 "unnamedHost": "Unnamed account"
+            },
+            "email": {
+                "title": "Email",
+                "change": "Change email",
+                "label": "New email",
+                "unverifyHint": "The account will need to verify the new email.",
+                "save": "Save email",
+                "cancel": "Cancel",
+                "emailTaken": "Another account already uses this email.",
+                "emailInvalid": "Enter a valid email address."
             }
         },
         "fields": {
@@ -2502,7 +2528,9 @@
             "visibilityLiveHint": "Public and assignable — visible during signup and can be assigned by admins.",
             "visibilityHiddenHint": "Hidden from signup, but admins can still assign it manually.",
             "visibilityArchivedHint": "Not assignable to anyone. Accounts or events already on this plan are unaffected.",
-            "plan": "Plan"
+            "plan": "Plan",
+            "isGiftable": "Can be given as a gift",
+            "isGiftableHint": "Buyers can give events on this plan to someone else."
         },
         "planAvailability": {
             "createTitle": "Event types",
@@ -3107,7 +3135,8 @@
             "reactionTypeLimitExceeded": "This event type already has five available reactions.",
             "reactionTypeNotUsable": "That reaction is no longer available. Refresh and choose another.",
             "collaborationEarningNotPayable": "One or more selected earnings are not payable. Refresh the ledger and choose accrued rows.",
-            "methodNotAllowed": "That action is not available here. Refresh and try again."
+            "methodNotAllowed": "That action is not available here. Refresh and try again.",
+            "orderNotManual": "Only manual orders can be settled here. Stripe orders settle through Stripe."
         },
         "reactionTypes": {
             "title": "Reaction catalog",
@@ -3429,7 +3458,7 @@
         "billingOps": {
             "notice": "Settling an order marks it paid with no provider payment behind it and activates the event exactly as a real payment would. On dev and staging this is the only way an event leaves DRAFT.",
             "settleTitle": "Settle an order",
-            "settleSubtitle": "Use for bank transfers, comped events, and payments whose webhook never arrived.",
+            "settleSubtitle": "Manual-provider orders only. This works on dev and staging, not in production.",
             "sweepTitle": "Notification sweep",
             "sweepSubtitle": "Run the quota notification rules now. The backend deduplicates results, so unchanged data usually creates zero new rows.",
             "runSweep": "Run sweep",
@@ -3853,7 +3882,22 @@
         "eventSessionLimitReached": "This event's plan doesn't allow more schedule sessions.",
         "eventCoHostLimitExceeded": "This event's plan doesn't allow more co-hosts.",
         "sessionRsvpNotEnabled": "This session isn't taking RSVPs.",
-        "rsvpNotAttending": "Session answers are only for guests who are coming."
+        "rsvpNotAttending": "Session answers are only for guests who are coming.",
+        "eventStartPassed": "Your event's date has passed. Move it to a future date to pay.",
+        "giftClaimPinInvalid": "That PIN isn't right.",
+        "giftClaimNotAllowed": "This account can't claim this gift.",
+        "giftOrderNotYours": "Another host paid for this, so you can't withdraw it.",
+        "giftNotPrimaryHost": "Only the primary host can set up the gift.",
+        "giftRecipientProtected": "Only the primary host can remove the person who claimed the gift.",
+        "giftNotAvailableOnPlan": "This plan can't be given as a gift.",
+        "giftAlreadyClaimed": "This gift has already been claimed.",
+        "giftCardLocked": "This card is locked. Ask the giver for a new one.",
+        "giftEventNotActive": "This gift isn't ready yet.",
+        "giftHandoverPending": "The gift is being handed over, so ownership can't be transferred yet.",
+        "withdrawalConfirmationInvalid": "We couldn't confirm this withdrawal. Check the refund and confirm again.",
+        "withdrawalPreviewStale": "The refund amount has changed. Check it and confirm again.",
+        "orderNotManual": "Only manual orders can be settled by hand.",
+        "hostTransferPaymentInProgress": "A payment on this event is still in progress. Try again in a minute."
     },
     "LandingPage": {
         "shell": {
@@ -4415,5 +4459,102 @@
             "eventJoinLabel": "Event Invite",
             "mediaUploadLabel": "Gallery Upload"
         }
+    },
+    "GiftMode": {
+        "form": {
+            "recipientLabel": "Who is it for",
+            "recipientLabelPlaceholder": "Anna & Nikos",
+            "giverDisplayName": "From",
+            "giverDisplayNamePlaceholder": "Aunt Maria",
+            "recipientEmail": "Their email (optional)",
+            "recipientEmailHint": "If they sign in with this email, they won't need the PIN."
+        },
+        "manage": {
+            "intro": "Give this event to someone else. They claim it with a card you print.",
+            "setUp": "Set up gift",
+            "editTitle": "Edit gift",
+            "edit": "Edit",
+            "save": "Save",
+            "cancel": "Cancel",
+            "someone": "Someone",
+            "recipient": "For",
+            "giver": "From",
+            "email": "Email",
+            "none": "None",
+            "status": {
+                "NOT_ISSUED": "No card yet.",
+                "ISSUED": "Card ready. Not claimed yet.",
+                "LOCKED": "Card locked after too many wrong PINs. Create a new card.",
+                "CLAIMED": "Claimed by {name}. They become the owner on {date}.",
+                "CLAIMED_SOON": "Claimed by {name}. They become the owner soon.",
+                "COMPLETED": "{name} owns this event now.",
+                "VOID": "This gift was cancelled."
+            },
+            "issue": "Create card",
+            "reissue": "New card",
+            "print": "Print card",
+            "reissueTitle": "Create a new card?",
+            "reissueBody": "The current card and PIN will stop working.",
+            "reissueConfirm": "Create new card",
+            "pinTitle": "Card PIN",
+            "pinBody": "Write it down. You won't see it again.",
+            "pinLabel": "PIN",
+            "done": "Done"
+        },
+        "card": {
+            "title": "Gift card",
+            "back": "Back",
+            "noCard": "There is no card to print.",
+            "scan": "Scan to claim your gift",
+            "pin": "PIN: {pin}",
+            "email": "Or sign in with {email}",
+            "includePin": "Print the PIN on the card",
+            "pinUnavailable": "The PIN is only shown once, so it can't be printed. Create a new card to print it.",
+            "print": "Print"
+        },
+        "claim": {
+            "coverAlt": "Event cover",
+            "heading": "A gift from {giver} for {recipient}.",
+            "emailBound": "Sign in with the email it was sent to, or use the card's PIN.",
+            "signIn": "Sign in to claim",
+            "register": "Create account",
+            "guest": "Guest accounts can't claim gifts. Sign in with a full account.",
+            "unverified": "Confirm your email to claim this gift.",
+            "pinLabel": "PIN",
+            "attemptsLeft": "{count, plural, one {# try left} other {# tries left}}",
+            "wrongPin": "Wrong PIN.",
+            "pinNeeded": "Enter the PIN from the card.",
+            "claim": "Claim gift",
+            "blocked": {
+                "invalid": {
+                    "title": "Gift not found",
+                    "description": "This link doesn't work. Check the card and try again."
+                },
+                "locked": {
+                    "title": "Card locked",
+                    "description": "Too many wrong PINs. Ask the giver for a new card."
+                },
+                "claimed": {
+                    "title": "Already claimed",
+                    "description": "This gift has already been claimed."
+                },
+                "void": {
+                    "title": "Gift cancelled",
+                    "description": "This gift is no longer available."
+                }
+            },
+            "outcome": {
+                "title": "Gift claimed",
+                "completed": "{title} is yours now.",
+                "claimed": "You are a host now. The event becomes yours on {date}.",
+                "claimedSoon": "You are a host now. The event becomes yours soon.",
+                "open": "Go to my events"
+            }
+        }
+    },
+    "ImageDropInput": {
+        "add": "Add or drop a photo",
+        "change": "Click or drop to change",
+        "remove": "Remove photo"
     }
 }

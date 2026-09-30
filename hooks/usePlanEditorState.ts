@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useMemo, useRef, useState } from 'react';
 
-import { planChangeSummary, planPatchFromFormData, type UnlockDraft } from '@/lib/adminPlanEditor';
+import { planChangeSummary, type PlanEditorControls, planPatchFromFormData, type UnlockDraft } from '@/lib/adminPlanEditor';
 import { type Visibility, visibilityOf } from '@/lib/adminVisibility';
 import type { PlanTierResponseDto, PlatformEventTypeResponseDto, PlatformModuleResponseDto } from '@/lib/api/types';
 
@@ -18,6 +18,7 @@ export function usePlanEditorState({ plan, modules, eventTypes, scope }: UsePlan
     const t = useTranslations('AdminPage');
     const formRef = useRef<HTMLFormElement>(null);
     const [visibility, setVisibility] = useState<Visibility>(visibilityOf(plan));
+    const [isGiftable, setIsGiftable] = useState(plan.isGiftable);
     const [planChangeCount, setPlanChangeCount] = useState(0);
     const [unlockDraft, setUnlockDraft] = useState<UnlockDraft | null>(null);
 
@@ -25,25 +26,31 @@ export function usePlanEditorState({ plan, modules, eventTypes, scope }: UsePlan
     const orderedModules = useMemo(() => [...modules].sort((left, right) => left.sortOrder - right.sortOrder), [modules]);
     const orderedEventTypes = useMemo(() => [...eventTypes].sort((left, right) => left.sortOrder - right.sortOrder), [eventTypes]);
 
-    function recomputePlanChanges(currentVisibility: Visibility) {
+    function recomputePlanChanges(controls: PlanEditorControls) {
         if (!formRef.current) return;
-        const patch = planPatchFromFormData(plan, new FormData(formRef.current), currentVisibility);
+        const patch = planPatchFromFormData(plan, new FormData(formRef.current), controls);
         setPlanChangeCount(planChangeSummary(plan, patch, t).length);
     }
 
     function handleFormChange() {
-        recomputePlanChanges(visibility);
+        recomputePlanChanges({ visibility, isGiftable });
     }
 
     function handleVisibilityChange(next: Visibility) {
         setVisibility(next);
-        recomputePlanChanges(next);
+        recomputePlanChanges({ visibility: next, isGiftable });
+    }
+
+    function handleGiftableChange(next: boolean) {
+        setIsGiftable(next);
+        recomputePlanChanges({ visibility, isGiftable: next });
     }
 
     return {
         formRef,
         visibility,
         setVisibility,
+        isGiftable,
         planChangeCount,
         setPlanChangeCount,
         unlockDraft,
@@ -55,5 +62,6 @@ export function usePlanEditorState({ plan, modules, eventTypes, scope }: UsePlan
         isEvent,
         handleFormChange,
         handleVisibilityChange,
+        handleGiftableChange,
     };
 }

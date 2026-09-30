@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
+import { AdminSwitch } from '@/components/admin/AdminSwitch';
 import { VisibilitySegmentedControl } from '@/components/admin/VisibilitySegmentedControl';
 import type { Visibility } from '@/lib/adminVisibility';
 import type { PlanTierResponseDto } from '@/lib/api/types';
@@ -10,15 +11,19 @@ export function PlanEditorAvailabilitySection({
     id,
     plan,
     visibility,
+    isGiftable,
     isMakingDefault,
     onVisibilityChangeAction,
+    onGiftableChangeAction,
     onMakeDefaultAction,
 }: {
     id: string;
     plan: PlanTierResponseDto;
     visibility: Visibility;
+    isGiftable: boolean;
     isMakingDefault: boolean;
     onVisibilityChangeAction: (next: Visibility) => void;
+    onGiftableChangeAction: (next: boolean) => void;
     onMakeDefaultAction: () => void;
 }) {
     const t = useTranslations('AdminPage');
@@ -38,6 +43,18 @@ export function PlanEditorAvailabilitySection({
                     ARCHIVED: t('fields.visibilityArchivedHint'),
                 }}
             />
+
+            {/* Gifting (EVENT plans only) */}
+            {plan.scope === 'EVENT' && (
+                <div className="mt-4 overflow-hidden rounded-md border border-border/70">
+                    <AdminSwitch
+                        label={t('fields.isGiftable')}
+                        description={t('fields.isGiftableHint')}
+                        checked={isGiftable}
+                        onCheckedChangeAction={onGiftableChangeAction}
+                    />
+                </div>
+            )}
 
             {/* Default */}
             {!plan.isDefault && (

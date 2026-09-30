@@ -49,6 +49,8 @@ export function PlanEditorCard(props: UsePlanEditorCardArgs) {
                     visibility={editor.visibility}
                     isMakingDefault={editor.updatePlan.mutation.isPending}
                     onVisibilityChangeAction={editor.handleVisibilityChange}
+                    isGiftable={editor.isGiftable}
+                    onGiftableChangeAction={editor.handleGiftableChange}
                     onMakeDefaultAction={editor.handleMakeDefaultClick}
                 />
                 <PlanEditorLimitsSection id={`${editorId}-limits`} plan={plan} />

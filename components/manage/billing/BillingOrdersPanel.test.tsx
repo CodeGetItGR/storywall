@@ -26,16 +26,21 @@ function order(overrides: Partial<OrderSummaryDto>): OrderSummaryDto {
         coverageEndsAt: null,
         buyerType: 'CONSUMER',
         breakdown: null,
+        paidByCaller: true,
         ...overrides,
     };
 }
 
 function noop() {}
 
-function renderPanel(orders: OrderSummaryDto[], withdraw?: { ids: Set<string>; onWithdraw: (order: OrderSummaryDto) => void }) {
+function renderPanel(
+    orders: OrderSummaryDto[],
+    withdraw?: { ids: Set<string>; onWithdraw: (order: OrderSummaryDto) => void },
+    paidTotalMinor: number | null = 1500,
+) {
     const data = { orders } as BillingData;
     const derived = { visibleOrders: orders, hiddenOrderCount: 0, canManageAddons: false } as BillingDerived;
-    const insights = { paidTotalMinor: 1500, orderCurrency: 'EUR' } as BillingInsights;
+    const insights = { paidTotalMinor, orderCurrency: 'EUR' } as BillingInsights;
     return render(
         <NextIntlClientProvider locale="en" messages={messages} timeZone="UTC">
             <BillingOrdersPanel
@@ -95,5 +100,13 @@ describe('BillingOrdersPanel', () => {
         expect(buttons).toHaveLength(2);
         fireEvent.click(buttons[0]);
         expect(onWithdraw).toHaveBeenCalledWith(upgrade);
+    });
+
+    it('shows a gift instead of an amount and no total', () => {
+        renderPanel([order({ id: 'gift-1', paidByCaller: false, amountMinor: null })], undefined, null);
+
+        expect(screen.getAllByText('Gift')).toHaveLength(2);
+        expect(screen.queryByText(/€0/)).not.toBeInTheDocument();
+        expect(screen.queryByText(messages.EventPlanSettingsPage.facts.totalPaid)).not.toBeInTheDocument();
     });
 });

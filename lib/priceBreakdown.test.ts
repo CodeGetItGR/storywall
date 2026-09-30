@@ -8,8 +8,11 @@ import {
     breakdownItemLabelValues,
     breakdownItemMessageKey,
     isAlreadyRefundedLine,
+    isWithdrawalPreviewExpiring,
     orderWithdrawalWindowOpen,
     withdrawableOrderIds,
+    withdrawalHistoryFacts,
+    withdrawalPreviewChanged,
     withdrawalPurchaseBlocks,
 } from './priceBreakdown';
 
@@ -71,6 +74,7 @@ function order(overrides: Partial<OrderSummaryDto> = {}): OrderSummaryDto {
         coverageEndsAt: null,
         buyerType: 'CONSUMER',
         breakdown: breakdown({ available: true, windowDays: 14, windowClosesAt: '2026-10-05T21:00:00Z' }),
+        paidByCaller: true,
         ...overrides,
     };
 }
@@ -132,6 +136,11 @@ describe('orderWithdrawalWindowOpen', () => {
         );
     });
 
+    it('is closed on an order someone else paid for', () => {
+        expect(orderWithdrawalWindowOpen(order({ paidByCaller: false, amountMinor: null }), now)).toBe(false);
+        expect(orderWithdrawalWindowOpen(order({ paidByCaller: false, amountMinor: null, breakdown: null }), now)).toBe(false);
+    });
+
     it('defers to the preview for an order with no breakdown', () => {
         expect(orderWithdrawalWindowOpen(order({ breakdown: null }), now)).toBeNull();
     });
@@ -186,5 +195,30 @@ describe('isAlreadyRefundedLine', () => {
         expect(isAlreadyRefundedLine({ refundMinor: 0, providerRefunded: false }, 'REFUNDED')).toBe(true);
         expect(isAlreadyRefundedLine({ refundMinor: 500, providerRefunded: true }, 'REFUNDED')).toBe(false);
         expect(isAlreadyRefundedLine({ refundMinor: 0, providerRefunded: false }, 'HELD')).toBe(false);
+    });
+});
+
+describe('withdrawal preview confirmation', () => {
+    it('treats a preview older than nine minutes as expiring', () => {
+        const now = 1_000_000_000;
+        expect(isWithdrawalPreviewExpiring(now - 8 * 60 * 1000, now)).toBe(false);
+        expect(isWithdrawalPreviewExpiring(now - 9 * 60 * 1000 - 1, now)).toBe(true);
+    });
+
+    it('flags a change in the refund total or eligibility only', () => {
+        const shown = { eligible: true, totalRefundMinor: 5000 };
+        expect(withdrawalPreviewChanged(shown, { eligible: true, totalRefundMinor: 5000 })).toBe(false);
+        expect(withdrawalPreviewChanged(shown, { eligible: true, totalRefundMinor: 4999 })).toBe(true);
+        expect(withdrawalPreviewChanged(shown, { eligible: false, totalRefundMinor: 5000 })).toBe(true);
+    });
+});
+
+describe('withdrawalHistoryFacts', () => {
+    const base = { lines: [], orderId: null } as unknown as WithdrawalResponseDto;
+
+    it('says a held whole-event request closed the event, and a held order only waits', () => {
+        expect(withdrawalHistoryFacts({ ...base, status: 'HELD', scope: 'EVENT' }).heldNote).toBe('heldEvent');
+        expect(withdrawalHistoryFacts({ ...base, status: 'HELD', scope: 'ORDER' }).heldNote).toBe('held');
+        expect(withdrawalHistoryFacts({ ...base, status: 'REFUNDED', scope: 'EVENT' }).heldNote).toBeNull();
     });
 });

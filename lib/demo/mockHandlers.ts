@@ -148,14 +148,18 @@ function localMediaUrl(file: File): string {
     return typeof URL.createObjectURL === 'function' ? URL.createObjectURL(file) : `blob:demo/${file.name}`;
 }
 
+// Content a visitor creates as a member shows that member's picture, like its seeded content.
+export function authorFromMember(member: EventMemberResponseDto | undefined): AuthorDto | null {
+    if (!member) return null;
+    return { memberId: member.id, displayName: member.displayName, nickname: member.nickname, role: member.role, avatarUrl: member.avatarUrl };
+}
+
 // `appOrigin` is this app's own origin, whose /api route handlers also reach the backend.
 export function createDemoHandlers(session: DemoSession, appOrigin: string | null = globalThis.location?.origin ?? null) {
     const { db, eventId, viewerMemberId } = session;
 
     function authorForMember(memberId: string | null): AuthorDto | null {
-        const member = memberId ? db.get('members', memberId) : undefined;
-        if (!member) return null;
-        return { memberId: member.id, displayName: member.displayName, nickname: member.nickname, role: member.role, avatarUrl: null };
+        return authorFromMember(memberId ? db.get('members', memberId) : undefined);
     }
 
     function currentEvent(): EventDetailResponseDto | undefined {
@@ -399,7 +403,13 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
         // --- Comments / reactions ---
         http.get(`${API_BASE_URL}/api/posts/:postId/comments`, ({ request, params }) => {
             const page = Number(new URL(request.url).searchParams.get('page') ?? '0');
-            return HttpResponse.json(toPage(db.list('comments').filter((c) => c.postId === params.postId), page, 30));
+            return HttpResponse.json(
+                toPage(
+                    db.list('comments').filter((c) => c.postId === params.postId),
+                    page,
+                    30,
+                ),
+            );
         }),
         buildCreateHandler(db, 'comments', '/api/comments', (body) => {
             const authorMemberId = typeof body.authorMemberId === 'string' ? body.authorMemberId : null;
@@ -416,7 +426,9 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
             };
         }),
         ...buildDetailHandlers(db, 'comments', '/api/comments/:id', { del: true }),
-        http.get(`${API_BASE_URL}/api/posts/:postId/reactions`, ({ params }) => HttpResponse.json(db.list('reactions').filter((r) => r.postId === params.postId))),
+        http.get(`${API_BASE_URL}/api/posts/:postId/reactions`, ({ params }) =>
+            HttpResponse.json(db.list('reactions').filter((r) => r.postId === params.postId)),
+        ),
         buildCreateHandler(db, 'reactions', '/api/reactions', (body) => ({
             id: newId('demo-reaction'),
             postId: String(body.postId),
@@ -474,4 +486,3 @@ export function createDemoHandlers(session: DemoSession, appOrigin: string | nul
         ...(appOrigin && appOrigin !== API_BASE_URL ? [http.all(`${appOrigin}/api/*`, ({ request }) => blockedResponse(request))] : []),
     ];
 }
-

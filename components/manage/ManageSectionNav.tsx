@@ -1,6 +1,6 @@
 'use client';
 
-import { CreditCard, HelpCircle, LayoutDashboard, type LucideIcon, Settings, Trash2, Users } from 'lucide-react';
+import { CreditCard, Gift, HelpCircle, LayoutDashboard, type LucideIcon, Settings, Trash2, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
@@ -14,6 +14,7 @@ export const sectionIcons: Record<ManageSection, LucideIcon> = {
     danger: Trash2,
     members: Users,
     rsvp: Users,
+    gift: Gift,
     billing: CreditCard,
 };
 

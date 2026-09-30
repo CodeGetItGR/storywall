@@ -224,6 +224,7 @@ The envelope is the usual RFC 7807 `ProblemDetail` with a numeric `errorCode` (s
 | `5014` `EVENT_NOT_ACTIVE` | 409 | a guest/module action on a `DRAFT` | "This event hasn't been published yet" |
 | `5016` `EVENT_FROZEN` | 409 | **any write** on a `FROZEN` or `PURGED` event | "This event is read-only until it's renewed" + link to the plan page |
 | `5018` `ORDER_NOT_PENDING` | 409 | admin settling an order that already settled | admin panel only |
+| `5105` `ORDER_NOT_MANUAL` | 409 | admin settling an order a real provider (Stripe) opened | admin panel only |
 | `5026` `SUBSCRIPTION_NOT_LIVE` | 409 | cancelling on an event with no live subscription | stale tab; refetch `/billing` — it was probably already cancelled |
 | `5027` `SUBSCRIPTION_CANCEL_FAILED` | 502 | the provider would not stop it just now | "Couldn't stop it just now — try again shortly." **Nothing changed and it is still billing**, so do not render it as cancelled |
 | `3010` `RATE_LIMITED` | 429 | any endpoint, once the caller's budget for the window is spent | handle globally — see `refunds-rate-limits-fe-integration.md` §6 |
@@ -454,7 +455,7 @@ All `ROLE_ADMIN`, all under `/api/admin`:
 
 | endpoint | effect |
 |---|---|
-| `POST /orders/{orderId}/settle` | marks an order paid without a provider payment — bank transfer, comped event, or a lost webhook. Activates the event exactly as a real payment would. |
+| `POST /orders/{orderId}/settle` | marks a **manual-provider** order paid (dev and staging only). Activates the event exactly as a real payment would. A Stripe order is refused with `409` `5105` `ORDER_NOT_MANUAL`: no hand settlement in production. |
 | `POST /events/{id}/freeze` | forces an event read-only. Temporary, for testing the frozen state before the sweep is enabled everywhere. |
 | `POST /events/{id}/purge` | **destroys the event's media in storage. Irreversible.** Returns `false` if some files could not be deleted (the event stays `FROZEN` and a later call retries). Needs a confirmation dialog that names the event. |
 | `PATCH /events/{id}/plan-tier` | moves an event between plans; returns the event's usage so an admin sees immediately whether the new limits are already exceeded. |

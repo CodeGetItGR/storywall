@@ -19,8 +19,8 @@ function delayUntil(validUntil: string): number {
     return Math.max(Date.parse(validUntil) - Date.now() - REFRESH_MARGIN_MS, MIN_DELAY_MS);
 }
 
-// Re-fetches the snapshot (If-None-Match) before its presigned media URLs expire and swaps the
-// new URLs in by media id. The visitor's own changes are untouched.
+// Re-fetches the snapshot (If-None-Match) before its presigned URLs expire and swaps the new
+// media and persona picture URLs in. The visitor's own changes are untouched.
 export function useDemoMediaUrlRefresh(session: DemoSession, initialEtag: string | null, initialValidUntil: string | null) {
     const queryClient = useQueryClient();
     const [urls, setUrls] = useState<UrlState>({ etag: initialEtag, validUntil: initialValidUntil, attempt: 0 });
@@ -35,7 +35,7 @@ export function useDemoMediaUrlRefresh(session: DemoSession, initialEtag: string
                 if (cancelled) return;
 
                 if (result.kind === 'ok') {
-                    swapMediaUrls(session.db, result.snapshot.media);
+                    swapMediaUrls(session.db, result.snapshot);
                     void queryClient.invalidateQueries();
                     setUrls({ etag: result.etag, validUntil: result.snapshot.presignedUrlsValidUntil, attempt: 0 });
                 } else if (result.kind === 'not-modified') {

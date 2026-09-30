@@ -3,6 +3,7 @@
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+import { ImageDropInput } from '@/components/common/ImageDropInput';
 import { Modal } from '@/components/ui/modal';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useUploadAccept } from '@/hooks/useUploadAccept';
@@ -42,16 +43,10 @@ export function DemoAddGuestModal({ open, isAdding, error, photoPending, onClose
                     )}
 
                     {/* Photo */}
-                    <label className="flex flex-col gap-1.5 text-sm">
+                    <div className="flex flex-col gap-1.5 text-sm">
                         <span className="font-medium">{photoPending ? t('photoRequired') : t('photo')}</span>
-                        <input
-                            name="photo"
-                            type="file"
-                            accept={uploadAccept.profilePicture}
-                            required={photoPending}
-                            className="text-sm file:mr-3 file:rounded-full file:border-0 file:bg-surface-muted file:px-3 file:py-1.5 file:text-sm file:font-medium"
-                        />
-                    </label>
+                        <ImageDropInput name="photo" accept={uploadAccept.profilePicture} required={photoPending} disabled={isAdding} />
+                    </div>
                     {photoPending && <p className="text-sm text-ink-muted">{t('photoFailed')}</p>}
                     {Boolean(error) && <p className="text-sm text-rose-600">{toErrorMessage(error)}</p>}
 

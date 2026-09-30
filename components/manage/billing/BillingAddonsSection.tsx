@@ -46,10 +46,13 @@ export function BillingAddonsSection({
                             key={`${addon.code}-${addon.activatedAt}-${index}`}
                             className="rounded-full bg-surface-muted px-2.5 py-1 text-xs font-semibold text-ink"
                         >
-                            {t(addon.billingPeriod === 'ONE_TIME' ? 'itemOnce' : 'item', {
-                                name: addon.name,
-                                price: formatMoney(locale, addon.priceAmountMinor, currency),
-                            })}
+                            {/* On a gift event, an add-on another host paid has no price */}
+                            {addon.priceAmountMinor === null
+                                ? t('itemGift', { name: addon.name })
+                                : t(addon.billingPeriod === 'ONE_TIME' ? 'itemOnce' : 'item', {
+                                      name: addon.name,
+                                      price: formatMoney(locale, addon.priceAmountMinor, currency),
+                                  })}
                         </li>
                     ))}
                 </ul>

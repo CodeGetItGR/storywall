@@ -2,13 +2,21 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
 import { eventInvitationKeys } from '@/hooks/useEventInvitations';
 import { eventMemberKeys } from '@/hooks/useEventMembers';
+import { giftKeys } from '@/hooks/useGift';
 import { rsvpKeys } from '@/hooks/useRsvps';
 import { usageKeys } from '@/hooks/useUsage';
 import { getServerLocale } from '@/i18n/serverLocale';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
-import { serverGet } from '@/lib/api/serverFetch';
-import type { EventInvitationResponseDto, EventMemberResponseDto, EventUsageResponseDto, RsvpReportDto, RsvpResponseDto } from '@/lib/api/types';
+import { serverGet, serverGetOrNull } from '@/lib/api/serverFetch';
+import type {
+    EventInvitationResponseDto,
+    EventMemberResponseDto,
+    EventUsageResponseDto,
+    GiftHandoverResponseDto,
+    RsvpReportDto,
+    RsvpResponseDto,
+} from '@/lib/api/types';
 import { resolveServerEventContext, resolveServerEventDetail } from '@/lib/auth/serverEventContext';
 import { isEventDeleted, isModuleAvailable } from '@/lib/eventLifecycle';
 import { makeQueryClient } from '@/lib/queryClient';
@@ -18,8 +26,8 @@ import ManagePage from '../PageClient';
 
 type PageProps = { params: Promise<{ eventId: string }>; searchParams: Promise<{ tab?: string; section?: string }> };
 
-// ManageScreen fires four host-only calls in parallel on mount (members,
-// rsvps, invitations, usage) — the biggest single client-side waterfall in
+// ManageScreen fires five host-only calls in parallel on mount (members,
+// rsvps, invitations, usage, the gift) — the biggest single client-side waterfall in
 // the app. Mirrors ManageScreen's own gating (isHost, isDraft for everything
 // but usage, and the plan including RSVP for rsvps) so a prefetch is never wasted on data the client
 // wouldn't have requested anyway. QR links have their own dedicated page
@@ -44,8 +52,10 @@ export default async function Page({ params, searchParams }: PageProps) {
         try {
             // Usage and the guest lists load together, and each seeds on its own:
             // a failed guest list must not discard usage, or the reverse.
-            const [usage, lists] = await Promise.all([
+            // The gift decides whether the "Given as a gift" section shows (null: not a gift).
+            const [usage, gift, lists] = await Promise.all([
                 serverGet<EventUsageResponseDto>(endpoints.events.usage(eventId), accessToken).catch(() => null),
+                isDraft ? undefined : serverGetOrNull<GiftHandoverResponseDto>(endpoints.events.gift(eventId), accessToken).catch(() => undefined),
                 isDraft
                     ? null
                     : Promise.all([
@@ -61,6 +71,7 @@ export default async function Page({ params, searchParams }: PageProps) {
             ]);
 
             if (usage) queryClient.setQueryData(usageKeys.event(eventId), usage);
+            if (gift !== undefined) queryClient.setQueryData(giftKeys.event(eventId), gift);
             if (lists) {
                 const [members, rsvps, invitations, rsvpReport] = lists;
                 queryClient.setQueryData(eventMemberKeys.list(eventId), normalizeList(members).items);

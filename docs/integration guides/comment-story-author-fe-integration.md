@@ -24,7 +24,7 @@ interface AuthorDto {
   displayName: string;
   nickname: string | null;
   role: "HOST" | "ATTENDEE"; // EventRole
-  avatarUrl: string | null; // short-lived presigned URL, resolved from the author's account profilePictureKey
+  avatarUrl: string | null; // short-lived presigned URL, resolved from the author's account profilePictureKey (or, for a demo event's name-only persona, the picture an admin set; see demo-event-fe-integration.md §6)
 }
 
 interface CommentResponseDto {
@@ -81,7 +81,8 @@ batched-resolution pattern posts already use.
 - [ ] Null-check `author` the same way `post-feed-fe-integration.md` documents for posts: a
       comment/story can have no author (the authoring member left the event — the FK is set
       null, content survives). `author.avatarUrl` can independently be `null` even when
-      `author` itself is present (account-less author, or no profile picture uploaded).
+      `author` itself is present (account-less author, or no profile picture uploaded). The one
+      account-less author who can have a picture is a demo event's persona (2026-09-29).
 
 ```ts
 const authorName = comment.author?.displayName ?? "Unknown";

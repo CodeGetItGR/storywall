@@ -294,7 +294,7 @@ returns `[]`, not a `404`.
 | `options[].coverageOptionId` | What `POST /upgrade-checkout` takes as `coverageOptionId`. |
 | `options[].months` / `monthsAdded` | The duration's length, and how many months buying it adds to the event's `coverageEndsAt` (0 for a same-length upgrade). |
 | `options[].gapAmountMinor` | The undiscounted difference between the event's duration and this one. Fine for a "was €100" strike-through, never for the price you charge. |
-| `options[].payableAmountMinor` | **The number to render as the price**, and what `POST /upgrade-checkout` will actually charge for this duration. Includes the target plan's own promotion — and, since 2026-09-22, **only** that: a code bound to the event does not reach an upgrade. Same arithmetic `preview-code` (§1) and checkout itself both use. |
+| `options[].payableAmountMinor` | **The number to render as the price**, and what `POST /upgrade-checkout` will actually charge for this duration. Includes the target plan's own promotion — and, since 2026-09-22, **only** that: a code bound to the event does not reach an upgrade. Same arithmetic `preview-code` (§1) and checkout itself both use. Since 2026-09-30, while an upgrade checkout is open, its duration shows the price that checkout was opened at, which is what its payment page charges; `discountPercent` still describes the promotion as of now. |
 
 **Corrected 2026-09-23:** this section used to say both discount fields are *absent* when a target
 has no promotion. They never were: the server sends every field, `null` included. A presence check
@@ -592,7 +592,9 @@ GET /api/admin/collaborators/{id}/earnings
 ]
 ```
 
-A payout is a plain sum over `amountMinor`; do not compute it any other way. Sort/filter
+A payout is a plain sum over `amountMinor`; do not compute it any other way. Since 2026-09-30 a
+withdrawal that refunds part of an order adds a `CLAWBACK` row for the commission in that share,
+even while the accrual is still `ACCRUED`; the accrual itself stays as it was. Sort/filter
 client-side — the endpoint returns the full ledger for that collaborator, newest and oldest mixed
 in insertion order.
 

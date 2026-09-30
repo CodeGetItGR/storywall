@@ -25,14 +25,16 @@ stop requesting upgrade options.
 ## 1. How an event becomes soft-deleted
 
 `deletedAt` (and the derived `deletionScheduledFor`) become non-null on `EventResponse` /
-`EventDetailResponse` in exactly three ways. `status` is **not** changed by any of them — a
+`EventDetailResponse` in exactly five ways. `status` is **not** changed by any of them — a
 soft-deleted event still reports `ACTIVE`.
 
 | how | who triggered it | undoable? | how the FE recognises it |
 |---|---|---|---|
 | **Pending deletion** — `POST .../deletion-requests` with an OTP | primary host | yes, any host, `DELETE .../deletion-requests` | `deletedAt` set, and `GET .../billing` has **no** `ACTIVATION` order with `status: "REFUNDED"` |
 | **Withdrawn** — `POST .../withdrawals` came back `REFUNDED` | primary host | **no** — undo → `409 EVENT_WITHDRAWN` (5071) | `deletedAt` set, and `GET .../billing` has an `ACTIVATION` order with `status: "REFUNDED"` |
-| **Coverage expired** — the sweep auto-deleted it at `coverageEndsAt` | nobody | yes, same undo as pending deletion | `deletedAt` set, no refunded activation, and `deletedAt` ≈ `coverageEndsAt` |
+| **Withdrawal under review** (2026-09-30) — `POST .../withdrawals` came back `HELD` | primary host | **no** — undo → `409 EVENT_WITHDRAWN` (5071) | `deletedAt` set, activation still `PAID`, and `GET .../withdrawals` has an `EVENT`-scope request in `HELD` |
+| **Charged back** (2026-09-30) — a lost dispute or a full provider refund of the activation | the cardholder's bank / an admin in Stripe | **no** — undo → `409 EVENT_WITHDRAWN` (5071) | as withdrawn: an `ACTIVATION` order with `status: "REFUNDED"`. Its other orders can still be withdrawn one by one in their own 14 days |
+| **Coverage expired** — the sweep auto-deleted it at `coverageEndsAt` | nobody | **no** (2026-09-30) — undo → `409 COVERAGE_ENDED` (5085): the next sweep would only delete it again | `deletedAt` set, no refunded activation, and `coverageEndsAt` has passed |
 
 Distinguishing pending-deletion from withdrawn is the reason `/billing` had to become readable:
 nothing on the event itself says "the money went back". Read the orders:
@@ -85,8 +87,9 @@ row, not earlier.
 | `POST .../checkout`, `POST .../upgrade-checkout`, `POST .../storage-checkout` | `404 RESOURCE_NOT_FOUND` (2001) | you cannot buy anything for an event that is on its way out |
 | `GET .../upgrade-options` | `404 RESOURCE_NOT_FOUND` (2001) | **intentional** — there is nothing to offer, and listing options that `upgrade-checkout` would then reject is worse than not listing them |
 | `POST .../deletion-requests/otp`, `POST .../deletion-requests` | `409 EVENT_DELETE_ALREADY_PENDING` (5064) | already deleted |
-| `DELETE .../deletion-requests` on a **withdrawn** event | `409 EVENT_WITHDRAWN` (5071) | refunded events do not come back |
-| `DELETE .../deletion-requests` on a pending-deletion or coverage-expired event | `200`, `deletedAt: null` | the undo |
+| `DELETE .../deletion-requests` on a **withdrawn**, under-review or charged-back event | `409 EVENT_WITHDRAWN` (5071) | refunded events do not come back |
+| `DELETE .../deletion-requests` once `coverageEndsAt` has passed | `409 COVERAGE_ENDED` (5085) | coverage can't be extended once ended, so the sweep would delete it again |
+| `DELETE .../deletion-requests` on a pending-deletion event whose coverage still runs | `200`, `deletedAt: null` | the undo |
 
 Host-side edits to the event's own details (`PATCH /api/events/{id}`, sessions, hosts) are not
 gated by `deletedAt` today. Don't rely on that — hide the settings form behind the pending-deletion
@@ -143,4 +146,5 @@ than tightening the heuristic.
 | `5012` `MODULE_NOT_AVAILABLE` | 409 | any module write on a soft-deleted event |
 | `5014` `EVENT_NOT_ACTIVE` | 409 | invite / member / QR writes on a soft-deleted event |
 | `5064` `EVENT_DELETE_ALREADY_PENDING` | 409 | requesting deletion of an already soft-deleted event |
-| `5071` `EVENT_WITHDRAWN` | 409 | undoing the deletion of a withdrawn event |
+| `5071` `EVENT_WITHDRAWN` | 409 | undoing the deletion of a withdrawn, under-review or charged-back event |
+| `5085` `COVERAGE_ENDED` | 409 | undoing the deletion of an event whose coverage has ended |

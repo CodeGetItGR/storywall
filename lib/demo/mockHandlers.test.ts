@@ -1,8 +1,10 @@
 import { HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 
+import type { EventMemberResponseDto } from '@/lib/api/types';
+import { buildFixtureSnapshot } from '@/lib/demo/__fixtures__/demoSnapshot';
 import { createMockDb } from '@/lib/demo/mockDb';
-import { buildArrayHandlers, buildPageHandlers } from '@/lib/demo/mockHandlers';
+import { authorFromMember, buildArrayHandlers, buildPageHandlers } from '@/lib/demo/mockHandlers';
 
 interface Note {
     id: string;
@@ -35,5 +37,22 @@ describe('buildPageHandlers', () => {
         // Exercised end-to-end (real HTTP through the worker) in Task 5's browser check —
         // this test only guards the factory returning handler objects per collection.
         expect(HttpResponse).toBeDefined();
+    });
+});
+
+describe('authorFromMember', () => {
+    it('carries the member’s picture', () => {
+        const member: EventMemberResponseDto = { ...buildFixtureSnapshot().members[0], avatarUrl: 'https://storage.test/a?sig=1' };
+        expect(authorFromMember(member)).toEqual({
+            memberId: member.id,
+            displayName: member.displayName,
+            nickname: member.nickname,
+            role: member.role,
+            avatarUrl: 'https://storage.test/a?sig=1',
+        });
+    });
+
+    it('is null without a member', () => {
+        expect(authorFromMember(undefined)).toBeNull();
     });
 });

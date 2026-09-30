@@ -3,7 +3,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { OrderWithdrawButton } from '@/components/manage/billing/OrderWithdrawButton';
 import { type BillingData, type BillingDerived, type BillingInsights, useBillingDate } from '@/hooks/useEventBillingPanel';
 import type { EventBillingResponseDto } from '@/lib/api/types';
-import { formatMoney, formatOptionalMoney } from '@/lib/billing';
+import { formatOptionalMoney, isOrderPaidByAnother } from '@/lib/billing';
 import { cn } from '@/lib/utils';
 
 type Order = EventBillingResponseDto['orders'][number];
@@ -50,18 +50,21 @@ export function BillingOrdersPanel({
     };
     const withdrawAction = (order: Order) =>
         onWithdrawAction && withdrawableOrderIds?.has(order.id) ? <OrderWithdrawButton order={order} onWithdrawAction={onWithdrawAction} /> : null;
-    const totalPaidLabel = formatMoney(locale, insights.paidTotalMinor, insights.orderCurrency);
+    const totalPaidLabel = formatOptionalMoney(insights.paidTotalMinor, insights.orderCurrency, locale);
 
-    const amountCell = (order: Order) => (
-        <>
-            {formatOptionalMoney(order.amountMinor, order.currency, locale) ?? '—'}
-            {order.addonAmountMinor ? (
-                <span className="block text-[10px] font-normal text-ink-muted">
-                    {t('orders.addonAmount', { amount: formatOptionalMoney(order.addonAmountMinor, order.currency, locale) ?? '' })}
-                </span>
-            ) : null}
-        </>
-    );
+    const amountCell = (order: Order) =>
+        isOrderPaidByAnother(order) ? (
+            t('orders.gift')
+        ) : (
+            <>
+                {formatOptionalMoney(order.amountMinor, order.currency, locale) ?? '—'}
+                {order.addonAmountMinor ? (
+                    <span className="block text-[10px] font-normal text-ink-muted">
+                        {t('orders.addonAmount', { amount: formatOptionalMoney(order.addonAmountMinor, order.currency, locale) ?? '' })}
+                    </span>
+                ) : null}
+            </>
+        );
 
     if (data.orders.length === 0) {
         return <p className="text-sm text-ink-muted">{t('orders.empty')}</p>;
@@ -88,10 +91,12 @@ export function BillingOrdersPanel({
                     </article>
                 ))}
                 {/* Total (small screens) */}
-                <div className="flex items-center justify-between gap-3 py-3 text-sm">
-                    <p className="text-ink-muted">{t('facts.totalPaid')}</p>
-                    <p className="font-semibold text-ink tabular-nums">{totalPaidLabel}</p>
-                </div>
+                {totalPaidLabel && (
+                    <div className="flex items-center justify-between gap-3 py-3 text-sm">
+                        <p className="text-ink-muted">{t('facts.totalPaid')}</p>
+                        <p className="font-semibold text-ink tabular-nums">{totalPaidLabel}</p>
+                    </div>
+                )}
             </div>
 
             {/* Orders (desktop) */}
@@ -122,14 +127,16 @@ export function BillingOrdersPanel({
                         ))}
                     </tbody>
                     {/* Total */}
-                    <tfoot className="border-t border-ink/10">
-                        <tr>
-                            <td colSpan={3} className="px-3 py-2.5 text-ink-muted">
-                                {t('facts.totalPaid')}
-                            </td>
-                            <td className="px-3 py-2.5 text-right font-semibold text-ink tabular-nums">{totalPaidLabel}</td>
-                        </tr>
-                    </tfoot>
+                    {totalPaidLabel && (
+                        <tfoot className="border-t border-ink/10">
+                            <tr>
+                                <td colSpan={3} className="px-3 py-2.5 text-ink-muted">
+                                    {t('facts.totalPaid')}
+                                </td>
+                                <td className="px-3 py-2.5 text-right font-semibold text-ink tabular-nums">{totalPaidLabel}</td>
+                            </tr>
+                        </tfoot>
+                    )}
                 </table>
             </div>
 

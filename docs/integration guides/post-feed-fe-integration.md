@@ -107,6 +107,10 @@ It's resolved from the author's account `profilePictureKey`, not a per-event set
 registered) or one whose account has never uploaded a profile picture. Fall back to a
 placeholder avatar, same as you already do elsewhere for missing avatars.
 
+One exception (2026-09-29): on a demo event, an admin can set a picture on a name-only persona,
+and that persona's `avatarUrl` is then set even though it has no account. See
+`demo-event-fe-integration.md` §6 and §8. Real events are unchanged.
+
 ### `media[]` is already ordered and URL-resolved
 
 Ordered by `displayOrder` — render as-is, no client-side sort needed. `mediaUrl` is a

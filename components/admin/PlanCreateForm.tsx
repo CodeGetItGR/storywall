@@ -9,6 +9,7 @@ import React, { type ChangeEvent, useCallback, useMemo, useRef, useState } from 
 import { AdminDrawer } from '@/components/admin/AdminDrawer';
 import { AdminField, adminInputClass } from '@/components/admin/AdminField';
 import { AdminSection } from '@/components/admin/AdminSection';
+import { AdminSwitch } from '@/components/admin/AdminSwitch';
 import { PlanCreateAssignments } from '@/components/admin/PlanCreateAssignments';
 import { PlanCreateDurations } from '@/components/admin/PlanCreateDurations';
 import { VisibilitySegmentedControl } from '@/components/admin/VisibilitySegmentedControl';
@@ -350,6 +351,7 @@ function PlanCreateNewForm({
     const [name, setName] = useState('');
     const [codeOverride, setCodeOverride] = useState<string | null>(null);
     const [visibility, setVisibility] = useState<Visibility>('LIVE');
+    const [isGiftable, setIsGiftable] = useState(true);
     const [createdPlanId, setCreatedPlanId] = useState<string | null>(null);
     const nextSortOrder = useMemo(() => Math.max(-1, ...plans.map((plan) => plan.sortOrder)) + 1, [plans]);
     const assignments = usePlanCreateAssignments(eventTypes, modules, initialEventTypeKey);
@@ -381,6 +383,7 @@ function PlanCreateNewForm({
         setName('');
         setCodeOverride(null);
         setVisibility('LIVE');
+        setIsGiftable(true);
         assignments.resetAssignments();
         durations.reset();
         setCreatedPlanId(null);
@@ -412,6 +415,7 @@ function PlanCreateNewForm({
                 ? {
                       storageBytes: storageInputToBytes(formData.get('storageAmount'), formData.get('storageUnit')),
                       maxMembers: numberOrNull(formData.get('maxMembers')),
+                      isGiftable,
                   }
                 : { priceAmountMinor: priceInputToMinor(formData.get('price')) }),
             priceCurrency: emptyToNull(formData.get('priceCurrency'))?.toUpperCase() ?? null,
@@ -622,6 +626,17 @@ function PlanCreateNewForm({
                             ARCHIVED: t('fields.visibilityArchivedHint'),
                         }}
                     />
+                    {/* Gifting (EVENT plans only) */}
+                    {isEvent && (
+                        <div className="mt-4 overflow-hidden rounded-md border border-border/70">
+                            <AdminSwitch
+                                label={t('fields.isGiftable')}
+                                description={t('fields.isGiftableHint')}
+                                checked={isGiftable}
+                                onCheckedChangeAction={setIsGiftable}
+                            />
+                        </div>
+                    )}
                 </AdminSection>
 
                 {isEvent && (

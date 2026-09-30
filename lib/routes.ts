@@ -5,7 +5,7 @@ type RouteQueryValue = string | number | boolean | null | undefined;
 
 export type CheckoutIntent = 'upgrade' | 'storage' | 'extension';
 // 'billing' is kept as an alias for the plan section so existing links keep working.
-export type ManageTab = 'billing' | 'coverage' | 'danger' | 'help' | 'members' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings';
+export type ManageTab = 'billing' | 'coverage' | 'danger' | 'gift' | 'help' | 'members' | 'orders' | 'overview' | 'plan' | 'rsvp' | 'settings';
 
 // The demo event lives outside the real /events/{eventId} tree (which proxy.ts protects
 // behind a real session) — see docs/superpowers/plans/2026-09-05-demo-event.md, design note 1.
@@ -46,6 +46,8 @@ export const routes = {
         // same way the gallery upload code lives on its own page, linked from a
         // compact pointer instead of an embedded panel.
         invitationsQr: (eventId: string) => `${eventBasePath(eventId)}/manage/qr`,
+        // The printable gift claim card.
+        giftCard: (eventId: string) => `${eventBasePath(eventId)}/manage/gift/card`,
         // `from` records where the report was opened from so Close (useRsvpReportPage)
         // can return there; omitted (manage) is the default and carries no param.
         rsvpReport: (eventId: string, reportType: RsvpReportType, from?: 'tools') =>
@@ -79,6 +81,8 @@ export const routes = {
         withdrawalTerms: (version?: string | null) => withQuery('/legal/withdrawal-terms', { version }),
     },
     inviteToken: (token: string) => `/invite/${token}`,
+    // Public: where a gift card's QR leads.
+    giftClaim: (token: string) => `/gift/${token}`,
     auth: {
         login: (params: { invite?: string | null; email?: string | null; passwordChanged?: string | null; next?: string | null } = {}) =>
             withQuery('/login', params),
