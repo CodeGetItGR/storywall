@@ -60,7 +60,8 @@ export default function RegisterPage() {
             return;
         }
         if (!guidelinesVersion.data) {
-            setError(t('guidelines.unavailable'));
+            // Still loading (or retrying) is not the same as failed: only a settled error asks for a refresh.
+            setError(guidelinesVersion.isError ? t('guidelines.unavailable') : t('guidelines.loading'));
             return;
         }
         const businessProfile = business.prepareRequest();

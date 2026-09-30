@@ -450,6 +450,7 @@
             "label": "I accept the Community Guidelines",
             "read": "Read them",
             "required": "Please accept the Community Guidelines to create your account.",
+            "loading": "The Community Guidelines are still loading. Please try again in a moment.",
             "unavailable": "The Community Guidelines couldn't be loaded. Refresh the page and try again.",
             "changed": "The Community Guidelines were just updated. Please review them and tick the box again."
         }
