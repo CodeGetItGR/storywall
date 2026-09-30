@@ -25,8 +25,8 @@ vi.mock('@/providers/EventProvider', () => ({
     useIsHost: () => false,
 }));
 vi.mock('@/components/reports', () => ({
-    ReportTargetModal: ({ open, targetType, targetId }: { open: boolean; targetType: string; targetId: string }) =>
-        open ? <div data-testid="report-modal" data-target-type={targetType} data-target-id={targetId} /> : null,
+    ReportTargetModal: ({ open, targetType, targetId, targetName }: { open: boolean; targetType: string; targetId: string; targetName: string }) =>
+        open ? <div data-testid="report-modal" data-target-type={targetType} data-target-id={targetId} data-target-name={targetName} /> : null,
 }));
 
 function suggestion(authorMemberId: string | null): PlaylistSuggestionResponseDto {
@@ -60,26 +60,28 @@ describe('PlaylistItemRow report', () => {
         render(<PlaylistItemRow suggestion={suggestion('m2')} />);
 
         fireEvent.click(screen.getByRole('button', { name: 'moreOptions' }));
-        fireEvent.click(await screen.findByText('report'));
+        fireEvent.click(await screen.findByRole('menuitem', { name: 'report' }));
 
         const modal = await screen.findByTestId('report-modal');
         expect(modal.dataset.targetType).toBe('PLAYLIST_SUGGESTION');
         expect(modal.dataset.targetId).toBe('sug-1');
+        expect(modal.dataset.targetName).toBe('Song');
     });
 
     it('lets a member report an authorless suggestion', async () => {
         render(<PlaylistItemRow suggestion={suggestion(null)} />);
 
         fireEvent.click(screen.getByRole('button', { name: 'moreOptions' }));
-        expect(await screen.findByText('report')).toBeTruthy();
+        expect(await screen.findByRole('menuitem', { name: 'report' })).toBeTruthy();
     });
 
-    it('offers no report on your own suggestion', () => {
+    it('offers no report on your own suggestion', async () => {
         render(<PlaylistItemRow suggestion={suggestion('m1')} />);
 
-        // own suggestion still has delete, so the menu exists; report must not
+        // own suggestion still has delete: wait for the portal menu to open, then report must be absent
         fireEvent.click(screen.getByRole('button', { name: 'moreOptions' }));
-        expect(screen.queryByText('report')).toBeNull();
+        expect(await screen.findByRole('menuitem', { name: 'deleteSuggestion' })).toBeTruthy();
+        expect(screen.queryByRole('menuitem', { name: 'report' })).toBeNull();
     });
 
     it('offers no report when /api/config does not list the type', () => {
