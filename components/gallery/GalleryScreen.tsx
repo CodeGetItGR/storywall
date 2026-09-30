@@ -215,7 +215,6 @@ export function GalleryScreen() {
                     eventId={selectedMedia.eventId}
                     targetType="MEDIA"
                     targetId={selectedMedia.id}
-                    targetName={selectedMedia.anonymousUploaderName ?? t('mediaFallbackName')}
                     open={reportOpen}
                     layer="overStory"
                     onCloseAction={closeReport}

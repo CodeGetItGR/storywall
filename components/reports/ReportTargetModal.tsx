@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import type React from 'react';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import { Modal } from '@/components/ui/modal';
 import { useAppConfig } from '@/hooks/useAppConfig';
@@ -14,7 +14,8 @@ type ReportTargetModalProps = {
     onCloseAction: () => void;
     open: boolean;
     targetId: string;
-    targetName: string;
+    /** Only shown for MEMBER reports; content reports use a generic sentence. */
+    targetName?: string;
     targetType: ReportTargetType;
     layer?: 'default' | 'overStory';
 };
@@ -22,7 +23,7 @@ type ReportTargetModalProps = {
 export function ReportTargetModal({ eventId, onCloseAction, open, targetId, targetName, targetType, layer }: ReportTargetModalProps) {
     const t = useTranslations('Report');
     const { data: appConfig } = useAppConfig();
-    const { description, error, isSubmitting, reason, setDescription, setReason, submit } = useReportSubmission({
+    const { description, error, isSubmitting, reason, reset, setDescription, setReason, submit } = useReportSubmission({
         eventId,
         targetId,
         targetType,
@@ -34,6 +35,12 @@ export function ReportTargetModal({ eventId, onCloseAction, open, targetId, targ
             rateLimited: t('rateLimited'),
         },
     });
+    // Every open starts with an empty form: several callers keep this mounted and toggle `open`.
+    const [wasOpen, setWasOpen] = useState(open);
+    if (open !== wasOpen) {
+        setWasOpen(open);
+        if (open) reset();
+    }
     const supportedReasons = appConfig?.reportTargetTypes?.includes(targetType) ? (appConfig.reportReasons ?? []) : [];
     const maxDescriptionLength = appConfig?.contentLimits.reportDescriptionMaxLength ?? 1000;
 
@@ -64,7 +71,9 @@ export function ReportTargetModal({ eventId, onCloseAction, open, targetId, targ
                 <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
                     <div>
                         <h2 className="text-base font-semibold text-ink">{t('title')}</h2>
-                        <p className="mt-1 text-sm text-ink-muted">{targetType === 'MEMBER' ? t('body', { name: targetName }) : t(`bodyByType.${targetType}`)}</p>
+                        <p className="mt-1 text-sm text-ink-muted">
+                            {targetType === 'MEMBER' ? t('body', { name: targetName ?? '' }) : t(`bodyByType.${targetType}`)}
+                        </p>
                     </div>
 
                     <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">

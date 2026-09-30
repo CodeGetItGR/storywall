@@ -183,7 +183,6 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                         eventId={activeStory.eventId}
                         targetType="STORY"
                         targetId={activeStory.id}
-                        targetName={author?.displayName ?? t('unknownAuthor')}
                         open={reportOpen}
                         layer="overStory"
                         onCloseAction={handleCloseReport}

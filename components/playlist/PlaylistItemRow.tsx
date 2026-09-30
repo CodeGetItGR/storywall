@@ -278,7 +278,6 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
                     eventId={suggestion.eventId}
                     targetType="PLAYLIST_SUGGESTION"
                     targetId={suggestion.id}
-                    targetName={suggestion.title}
                     open={reportOpen}
                     onCloseAction={handleCloseReport}
                 />

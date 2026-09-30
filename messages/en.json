@@ -3706,7 +3706,6 @@
         "deleteMediaConfirmBody": "It will be removed from the event for everyone and can't be undone.",
         "deleteMediaFailed": "We couldn't delete this file. Please try again.",
         "reportMedia": "Report",
-        "mediaFallbackName": "this photo or video",
         "cancelDelete": "Cancel",
         "archiveSummaryTitle": "Gallery summary",
         "archiveTotalsWithOriginals": "{originals} originals · {display} compressed",

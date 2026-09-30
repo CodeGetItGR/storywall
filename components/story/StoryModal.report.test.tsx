@@ -21,20 +21,27 @@ vi.mock('@/components/reports', () => ({
         eventId,
         targetType,
         targetId,
-        targetName,
     }: {
         open: boolean;
         layer?: string;
         eventId: string;
         targetType: string;
         targetId: string;
-        targetName: string;
     }) =>
-        open ? <div data-testid="report-modal" data-layer={layer} data-event-id={eventId} data-target-type={targetType} data-target-id={targetId} data-target-name={targetName} /> : null,
+        open ? (
+            <div data-testid="report-modal" data-layer={layer} data-event-id={eventId} data-target-type={targetType} data-target-id={targetId} />
+        ) : null,
 }));
 vi.mock('@/hooks/useStoryModal', () => ({
     useStoryModal: () => {
-        const activeStory = { id: 'story-1', eventId: 'event-1', authorMemberId: 'm2', author, createdAt: '2026-09-30T12:00:00Z', caption: null } as StoryResponseDto;
+        const activeStory = {
+            id: 'story-1',
+            eventId: 'event-1',
+            authorMemberId: 'm2',
+            author,
+            createdAt: '2026-09-30T12:00:00Z',
+            caption: null,
+        } as StoryResponseDto;
         const noop = vi.fn();
         return {
             onOpenChange: noop,
@@ -80,7 +87,7 @@ beforeEach(() => {
 });
 
 describe('StoryModal report dialog', () => {
-    it('reports the story with its id and the author name', async () => {
+    it('reports the story with its id', async () => {
         render(<StoryModal open storyId="story-1" onCloseAction={vi.fn()} />);
 
         const modal = await screen.findByTestId('report-modal');
@@ -88,7 +95,6 @@ describe('StoryModal report dialog', () => {
         expect(modal.dataset.eventId).toBe('event-1');
         expect(modal.dataset.targetType).toBe('STORY');
         expect(modal.dataset.targetId).toBe('story-1');
-        expect(modal.dataset.targetName).toBe('Alice');
     });
 
     it('lifts the delete confirm above the story viewer too', async () => {
@@ -96,14 +102,6 @@ describe('StoryModal report dialog', () => {
 
         const confirm = await screen.findByTestId('confirm-modal');
         expect(confirm.dataset.layer).toBe('overStory');
-    });
-
-    it('falls back to a neutral label when the story has no author', async () => {
-        author = null;
-        render(<StoryModal open storyId="story-1" onCloseAction={vi.fn()} />);
-
-        const modal = await screen.findByTestId('report-modal');
-        expect(modal.dataset.targetName).toBe('unknownAuthor');
     });
 
     it('renders no report dialog when the viewer cannot report', async () => {

@@ -25,8 +25,8 @@ vi.mock('@/providers/EventProvider', () => ({
     useIsHost: () => false,
 }));
 vi.mock('@/components/reports', () => ({
-    ReportTargetModal: ({ open, targetType, targetId, targetName }: { open: boolean; targetType: string; targetId: string; targetName: string }) =>
-        open ? <div data-testid="report-modal" data-target-type={targetType} data-target-id={targetId} data-target-name={targetName} /> : null,
+    ReportTargetModal: ({ open, targetType, targetId }: { open: boolean; targetType: string; targetId: string }) =>
+        open ? <div data-testid="report-modal" data-target-type={targetType} data-target-id={targetId} /> : null,
 }));
 
 function suggestion(authorMemberId: string | null): PlaylistSuggestionResponseDto {
@@ -65,7 +65,6 @@ describe('PlaylistItemRow report', () => {
         const modal = await screen.findByTestId('report-modal');
         expect(modal.dataset.targetType).toBe('PLAYLIST_SUGGESTION');
         expect(modal.dataset.targetId).toBe('sug-1');
-        expect(modal.dataset.targetName).toBe('Song');
     });
 
     it('lets a member report an authorless suggestion', async () => {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useCreateReport } from '@/hooks/useReports';
 import { ERROR_CODES, getErrorCode, isRateLimitedError } from '@/lib/api/errors';
@@ -25,6 +25,12 @@ export function useReportSubmission({ eventId, targetId, targetType, onSuccessAc
     const [description, setDescription] = useState('');
     const [error, setError] = useState<string | null>(null);
 
+    const reset = useCallback(() => {
+        setReason('');
+        setDescription('');
+        setError(null);
+    }, []);
+
     async function submit() {
         if (!reason || createReport.isPending) return;
 
@@ -48,6 +54,7 @@ export function useReportSubmission({ eventId, targetId, targetType, onSuccessAc
         error,
         isSubmitting: createReport.isPending,
         reason,
+        reset,
         setDescription,
         setReason,
         submit,

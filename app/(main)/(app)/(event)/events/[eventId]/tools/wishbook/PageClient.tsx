@@ -271,7 +271,6 @@ export default function WishbookPage() {
                     eventId={eventId}
                     targetType="WISHBOOK_ENTRY"
                     targetId={reportEntry.id}
-                    targetName={reportEntry.guestName}
                     open
                     onCloseAction={closeReport}
                 />
