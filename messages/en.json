@@ -2083,6 +2083,7 @@
         "downvoteThisSong": "Downvote this song",
         "moreOptions": "More options",
         "deleteSuggestion": "Delete suggestion",
+        "report": "Report",
         "confirmDeleteSuggestion": "Confirm delete suggestion",
         "deleteSuggestionConfirmTitle": "Delete this suggestion?",
         "deleteSuggestionConfirmBody": "This song suggestion will be removed for everyone and can't be undone.",

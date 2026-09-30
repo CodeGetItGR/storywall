@@ -6,11 +6,14 @@ import { useMemo, useState } from 'react';
 
 import { SpotifyMark, YouTubeMark } from '@/components/playlist/MusicServiceMarks';
 import { PlaylistItemActionsMenu } from '@/components/playlist/PlaylistItemActionsMenu';
+import { ReportTargetModal } from '@/components/reports';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
+import { useAppConfig } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useCreatePlaylistVote, useDeletePlaylistSuggestion, useDeletePlaylistVote, usePlaylistVotes } from '@/hooks/usePlaylist';
 import { isModuleNotAvailableError } from '@/lib/api/errors';
 import type { PlaylistSuggestionResponseDto, PlaylistVoteType } from '@/lib/api/types';
+import { canReportContent } from '@/lib/contentPermissions';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { buildSpotifyEmbedUrl, buildYouTubeEmbedUrl } from '@/lib/playlistEmbeds';
 import { cn } from '@/lib/utils';
@@ -34,7 +37,9 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
     const createVote = useCreatePlaylistVote(eventId);
     const deleteVote = useDeletePlaylistVote(eventId, suggestion.id);
     const deleteSuggestion = useDeletePlaylistSuggestion(eventId);
+    const { data: appConfig } = useAppConfig();
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+    const [reportOpen, setReportOpen] = useState(false);
     const [resolvingVote, setResolvingVote] = useState(false);
     const [voteError, setVoteError] = useState<string | null>(null);
 
@@ -44,6 +49,12 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
     const isBusy = createVote.isPending || deleteVote.isPending || resolvingVote;
     const canVote = Boolean(memberId) && canWrite;
     const canDeleteSuggestion = Boolean(memberId && canWrite && (isHost || suggestion.authorMemberId === memberId));
+    const canReportSuggestion = canReportContent({
+        isMember: Boolean(memberId),
+        isAuthor: suggestion.authorMemberId === memberId,
+        canWrite,
+        targetTypeReportable: Boolean(appConfig?.reportTargetTypes?.includes('PLAYLIST_SUGGESTION')),
+    });
 
     const spotifyEmbedUrl = useMemo(() => buildSpotifyEmbedUrl(suggestion.spotifyUrl), [suggestion.spotifyUrl]);
     const youtubeEmbedUrl = useMemo(() => buildYouTubeEmbedUrl(suggestion.youtubeUrl), [suggestion.youtubeUrl]);
@@ -100,6 +111,14 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
         setConfirmDeleteOpen(true);
     }
 
+    function handleOpenReport() {
+        setReportOpen(true);
+    }
+
+    function handleCloseReport() {
+        setReportOpen(false);
+    }
+
     function handleCloseDeleteConfirm() {
         setConfirmDeleteOpen(false);
     }
@@ -117,14 +136,16 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
             )}
         >
             {/* Actions */}
-            {canDeleteSuggestion && (
+            {(canDeleteSuggestion || canReportSuggestion) && (
                 <div className="absolute top-2.5 right-2.5 z-10">
                     <PlaylistItemActionsMenu
-                        deleteLabel={t('deleteSuggestion')}
+                        deleteLabel={canDeleteSuggestion ? t('deleteSuggestion') : undefined}
+                        reportLabel={canReportSuggestion ? t('report') : undefined}
                         disabled={deleteSuggestion.isPending}
                         isDeleting={deleteSuggestion.isPending}
                         moreLabel={t('moreOptions')}
-                        onDeleteAction={handleDeleteRequest}
+                        onDeleteAction={canDeleteSuggestion ? handleDeleteRequest : undefined}
+                        onReportAction={handleOpenReport}
                     />
                 </div>
             )}
@@ -250,6 +271,18 @@ export function PlaylistItemRow({ suggestion, topRank = null }: PlaylistItemRowP
                 cancelLabel={t('cancel')}
                 isConfirming={deleteSuggestion.isPending}
             />
+
+            {/* Report suggestion */}
+            {canReportSuggestion && (
+                <ReportTargetModal
+                    eventId={suggestion.eventId}
+                    targetType="PLAYLIST_SUGGESTION"
+                    targetId={suggestion.id}
+                    targetName={suggestion.title}
+                    open={reportOpen}
+                    onCloseAction={handleCloseReport}
+                />
+            )}
         </article>
     );
 }
