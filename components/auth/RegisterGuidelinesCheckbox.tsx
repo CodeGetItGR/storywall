@@ -37,7 +37,7 @@ export function RegisterGuidelinesCheckbox({
                     rel="noopener"
                     className="text-xs font-semibold text-ink-muted underline hover:text-ink"
                 >
-                    {t('read')}
+                    {t('read')} <span className="sr-only">{t('opensInNewTab')}</span>
                 </Link>
             </span>
         </div>

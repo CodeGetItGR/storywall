@@ -448,7 +448,8 @@
         },
         "guidelines": {
             "label": "I accept the Community Guidelines",
-            "read": "Read them",
+            "read": "Read the Community Guidelines",
+            "opensInNewTab": "(opens in a new tab)",
             "required": "Please accept the Community Guidelines to create your account.",
             "loading": "The Community Guidelines are still loading. Please try again in a moment.",
             "unavailable": "The Community Guidelines couldn't be loaded. Refresh the page and try again.",
@@ -1806,6 +1807,7 @@
         "title": "Our Community Guidelines",
         "body": "To keep using StoryWall, please read and accept our Community Guidelines. They explain what can be shared at an event and how we handle reports.",
         "read": "Read the Community Guidelines",
+        "opensInNewTab": "(opens in a new tab)",
         "accept": "I accept",
         "accepting": "Saving…",
         "failed": "We couldn't save your acceptance. Please try again.",

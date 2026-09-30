@@ -18,10 +18,10 @@ describe('RegisterGuidelinesCheckbox', () => {
         expect(onChange).toHaveBeenCalledTimes(1);
     });
 
-    it('links to the guidelines in a new tab', () => {
+    it('links to the guidelines in a new tab, and says so to screen readers', () => {
         render(<RegisterGuidelinesCheckbox checked={false} onChangeAction={vi.fn()} />);
 
-        const link = screen.getByRole('link', { name: 'read' });
+        const link = screen.getByRole('link', { name: 'read opensInNewTab' });
         expect(link).toHaveAttribute('href', '/legal/community-guidelines');
         expect(link).toHaveAttribute('target', '_blank');
     });

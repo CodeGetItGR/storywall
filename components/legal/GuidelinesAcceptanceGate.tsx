@@ -78,7 +78,7 @@ export function GuidelinesAcceptanceGate({ children }: { children: ReactNode }) 
 
                 {/* Read */}
                 <Link href={routes.legal.communityGuidelines()} target="_blank" rel="noopener" className="text-sm font-semibold text-ink underline">
-                    {t('read')}
+                    {t('read')} <span className="sr-only">{t('opensInNewTab')}</span>
                 </Link>
 
                 {errorMessage && (

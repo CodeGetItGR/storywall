@@ -50,7 +50,7 @@ describe('GuidelinesAcceptanceGate', () => {
         render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>);
 
         expect(screen.queryByText('app')).not.toBeInTheDocument();
-        expect(screen.getByRole('link', { name: 'read' })).toHaveAttribute('href', '/legal/community-guidelines');
+        expect(screen.getByRole('link', { name: 'read opensInNewTab' })).toHaveAttribute('href', '/legal/community-guidelines');
     });
 
     it('accepts the version /api/me reported', () => {
