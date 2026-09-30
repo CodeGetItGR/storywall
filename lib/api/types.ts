@@ -446,6 +446,9 @@ export interface RegisterRequestDto {
     password: string;
     firstName: string;
     lastName: string;
+    // The Community Guidelines version the user ticked (GET /api/legal/community-guidelines).
+    // Not the current one → 400 3037 GUIDELINES_VERSION_MISMATCH, nothing created.
+    acceptedGuidelinesVersion: string;
     inviteToken?: string;
     subscribeToNewsletter?: boolean;
     // All-or-nothing: an invalid profile is a 400 and no account is created.
@@ -564,6 +567,10 @@ export interface UserResponseDto {
     // emails, invitation emails) — independent of Accept-Language. See
     // docs/integration guides/backend-localization-fe-integration.md §5. null = none set.
     locale: Locale | null;
+    // True until the user accepts currentGuidelinesVersion; until then every
+    // write is 403 4013. Null only on admin user endpoints, never on /api/me.
+    guidelinesAcceptanceRequired: boolean | null;
+    currentGuidelinesVersion: string | null;
 }
 
 export interface MeUpdateRequestDto {
@@ -1154,6 +1161,18 @@ export interface WithdrawalTermsDto {
     locale: string; // the locale actually served
     withdrawalInformation: string; // Markdown
     modelForm: string; // Markdown
+}
+
+// GET /api/legal/community-guidelines[/{version}] — public.
+export interface CommunityGuidelinesDto {
+    version: string;
+    locale: string; // the locale actually served
+    markdown: string;
+}
+
+// POST /api/me/guidelines-acceptance → 204.
+export interface GuidelinesAcceptanceRequestDto {
+    version: string;
 }
 
 // GET /api/events/{eventId}/withdrawal-preview — host. Nothing persisted; safe to

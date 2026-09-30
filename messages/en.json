@@ -3894,6 +3894,8 @@
         "giftCardLocked": "This card is locked. Ask the giver for a new one.",
         "giftEventNotActive": "This gift isn't ready yet.",
         "giftHandoverPending": "The gift is being handed over, so ownership can't be transferred yet.",
+        "guidelinesVersionMismatch": "The Community Guidelines have been updated. Please read the current version and accept it.",
+        "guidelinesAcceptanceRequired": "Please accept the Community Guidelines to continue.",
         "withdrawalConfirmationInvalid": "We couldn't confirm this withdrawal. Check the refund and confirm again.",
         "withdrawalPreviewStale": "The refund amount has changed. Check it and confirm again.",
         "orderNotManual": "Only manual orders can be settled by hand.",

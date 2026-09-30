@@ -45,12 +45,14 @@ export const ERROR_CODES = {
     STORY_EXPIRY_OUT_OF_RANGE: 3034,
     EVENT_START_PASSED: 3035,
     GIFT_CLAIM_PIN_INVALID: 3036,
+    GUIDELINES_VERSION_MISMATCH: 3037,
     POST_PIN_NOT_HOST: 4007,
     ANNOUNCEMENT_NOT_HOST: 4008,
     GIFT_CLAIM_NOT_ALLOWED: 4009,
     GIFT_ORDER_NOT_YOURS: 4010,
     GIFT_NOT_PRIMARY_HOST: 4011,
     GIFT_RECIPIENT_PROTECTED: 4012,
+    GUIDELINES_ACCEPTANCE_REQUIRED: 4013,
     EVENT_NOT_ACTIVE: 5014,
     EVENT_NOT_DRAFT: 5017,
     ORDER_NOT_PENDING: 5018,
@@ -264,4 +266,15 @@ export function getErrorMessage(error: unknown, fallback = 'Something went wrong
         return error.message;
     }
     return fallback;
+}
+
+// The caller hasn't accepted the Community Guidelines in force; every write is
+// refused until they do. The query client reopens the acceptance gate on it.
+export function isGuidelinesAcceptanceRequiredError(error: unknown): boolean {
+    return getErrorCode(error) === ERROR_CODES.GUIDELINES_ACCEPTANCE_REQUIRED;
+}
+
+// The version the user accepted is no longer the current one.
+export function isGuidelinesVersionMismatchError(error: unknown): boolean {
+    return getErrorCode(error) === ERROR_CODES.GUIDELINES_VERSION_MISMATCH;
 }
