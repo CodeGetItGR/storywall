@@ -5,18 +5,18 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { type ReactNode, useCallback } from 'react';
 
-import { AuthLoadingState } from '@/components/layout/AuthLoadingState';
 import { useAcceptGuidelines } from '@/hooks/useAcceptGuidelines';
 import { useMe } from '@/hooks/useMe';
 import { isGuidelinesVersionMismatchError } from '@/lib/api/errors';
 import { routes } from '@/lib/routes';
 
-// Blocks the signed-in app until the Community Guidelines in force are accepted.
-// The backend refuses writes (4013) regardless; this is the screen that lets the
-// user fix it. If /api/me fails, the app renders: the backend still enforces.
+// Blocks the signed-in app once /api/me reports the Community Guidelines in force
+// aren't accepted. Until then (loading, or /api/me failed) the app renders: holding
+// every page load behind /api/me would cost every user a wait for a rare case, and
+// the backend refuses writes (4013) regardless, which reopens this screen.
 export function GuidelinesAcceptanceGate({ children }: { children: ReactNode }) {
     const t = useTranslations('GuidelinesGate');
-    const { data: me, isLoading } = useMe();
+    const { data: me } = useMe();
     const accept = useAcceptGuidelines();
     const version = me?.currentGuidelinesVersion ?? null;
     const { mutate } = accept;
@@ -25,8 +25,6 @@ export function GuidelinesAcceptanceGate({ children }: { children: ReactNode }) 
         if (version) mutate(version);
     }, [mutate, version]);
 
-    // useMe is disabled while signed out, and a disabled query never reports isLoading.
-    if (isLoading && !me) return <AuthLoadingState />;
     if (!me?.guidelinesAcceptanceRequired || !version) return <>{children}</>;
 
     const errorMessage = accept.error ? (isGuidelinesVersionMismatchError(accept.error) ? t('changed') : t('failed')) : null;

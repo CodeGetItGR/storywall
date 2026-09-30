@@ -6,24 +6,21 @@ import { ApiError } from '@/lib/api/client';
 
 const mocks = vi.hoisted(() => ({
     me: undefined as { guidelinesAcceptanceRequired: boolean | null; currentGuidelinesVersion: string | null } | undefined,
-    isLoading: false,
     mutate: vi.fn(),
     isPending: false,
     error: null as unknown,
 }));
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
-vi.mock('@/hooks/useMe', () => ({ useMe: () => ({ data: mocks.me, isLoading: mocks.isLoading }) }));
+vi.mock('@/hooks/useMe', () => ({ useMe: () => ({ data: mocks.me }) }));
 vi.mock('@/hooks/useAcceptGuidelines', () => ({
     useAcceptGuidelines: () => ({ mutate: mocks.mutate, isPending: mocks.isPending, error: mocks.error }),
 }));
-vi.mock('@/components/layout/AuthLoadingState', () => ({ AuthLoadingState: () => <div>loading</div> }));
 
 describe('GuidelinesAcceptanceGate', () => {
     afterEach(() => {
         cleanup();
         mocks.me = undefined;
-        mocks.isLoading = false;
         mocks.error = null;
         mocks.mutate.mockReset();
     });
@@ -60,11 +57,11 @@ describe('GuidelinesAcceptanceGate', () => {
         expect(screen.getByRole('alert')).toHaveTextContent('changed');
     });
 
-    it('shows a loading state before /api/me first answers', () => {
-        mocks.isLoading = true;
+    // No extra wait on every load: the app shows until /api/me says otherwise.
+    it('shows the app while /api/me is still loading', () => {
         render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>);
 
-        expect(screen.getByText('loading')).toBeInTheDocument();
+        expect(screen.getByText('app')).toBeInTheDocument();
     });
 
     // The backend still enforces; a failed /api/me must not lock the app.
