@@ -186,7 +186,7 @@
         "failed": "Δεν ήταν δυνατή η αποστολή της αναφοράς. Δοκιμάστε ξανά.",
         "reasons": {
             "SPAM": "Ανεπιθύμητο περιεχόμενο",
-            "HARASSMENT": "Παραβίαση",
+            "HARASSMENT": "Παρενόχληση",
             "INAPPROPRIATE_CONTENT": "Ακατάλληλο περιεχόμενο",
             "IMPERSONATION": "Πλαστοπροσωπία",
             "OTHER": "Άλλο"
@@ -3995,6 +3995,11 @@
         "nextMedia": "Επόμενο",
         "downloadOriginal": "Λήψη",
         "originalUnavailable": "Το πρωτότυπο αρχείο δεν είναι διαθέσιμο.",
+        "deleteMedia": "Διαγραφή",
+        "deleteMediaConfirmTitle": "Διαγραφή αυτού του αρχείου;",
+        "deleteMediaConfirmBody": "Θα αφαιρεθεί από την εκδήλωση για όλους και δεν μπορεί να αναιρεθεί.",
+        "deleteMediaFailed": "Δεν ήταν δυνατή η διαγραφή του αρχείου. Δοκιμάστε ξανά.",
+        "cancelDelete": "Ακύρωση",
         "archiveSummaryTitle": "Σύνοψη συλλογής",
         "archiveTotalsWithOriginals": "{originals} πρωτότυπα · {display} συμπιεσμένα",
         "archiveTotalsDisplayOnly": "{display} συμπιεσμένα",

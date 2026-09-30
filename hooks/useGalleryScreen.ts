@@ -9,7 +9,7 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useGallerySelection } from '@/hooks/useGallerySelection';
 import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
-import { useEventMedia, useOriginalMedia, useUploadMediaBatch } from '@/hooks/useMedia';
+import { useDeleteMedia, useEventMedia, useOriginalMedia, useUploadMediaBatch } from '@/hooks/useMedia';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { downloadBlob } from '@/lib/download';
@@ -33,6 +33,8 @@ export function useGalleryScreen() {
     const [selectionDownloadError, setSelectionDownloadError] = useState<string | null>(null);
     const [isDownloadingSelection, setIsDownloadingSelection] = useState(false);
     const [archiveDownloadOpen, setArchiveDownloadOpen] = useState(false);
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
     const pendingAdvanceIndexRef = useRef<number | null>(null);
 
     const { data: mediaPages, isLoading: isLoadingMedia, fetchNextPage, hasNextPage, isFetchingNextPage } = useEventMedia(eventId);
@@ -43,6 +45,7 @@ export function useGalleryScreen() {
     const loadMoreRef = useInfiniteScrollSentinel(hasNextPage, fetchNextPage, media.length);
     const uploadMediaBatch = useUploadMediaBatch();
     const originalMedia = useOriginalMedia();
+    const deleteMedia = useDeleteMedia(eventId ?? '');
     const { data: appConfig } = useAppConfig();
 
     const galleryEnabled = readableModuleKeys(activeEvent).has('gallery');
@@ -63,6 +66,9 @@ export function useGalleryScreen() {
     // Every event keeps photo originals; videos are never re-encoded, so they have no separate original.
     const canDownloadOriginal = isHost && selectedMedia !== null && selectedMedia.mediaType !== 'VIDEO';
     const showArchiveDownload = isHost && galleryEnabled;
+    // Deletes are not plan-gated on the backend, so a host can still clear out a file after the
+    // gallery module is gone — only a read-only or deleted event stops it.
+    const canDeleteMedia = isHost && selectedMedia !== null && isEventWritable(activeEvent?.status) && !isDeleted;
     const canDownloadSelected =
         gallerySelection.selectedCount > 0 &&
         gallerySelection.selectedCount <= maxArchiveSelectedItems &&
@@ -154,6 +160,27 @@ export function useGalleryScreen() {
             setIsDownloadingSelection(false);
         }
     }, [canDownloadSelected, eventId, gallerySelection, t, toErrorMessage]);
+
+    const requestDeleteMedia = useCallback(() => {
+        if (!canDeleteMedia) return;
+        setDeleteError(null);
+        setConfirmDeleteOpen(true);
+    }, [canDeleteMedia]);
+
+    const closeDeleteConfirm = useCallback(() => {
+        setConfirmDeleteOpen(false);
+    }, []);
+
+    const confirmDeleteMedia = useCallback(async () => {
+        if (!selectedMedia) return;
+        try {
+            await deleteMedia.mutateAsync(selectedMedia.id);
+            setConfirmDeleteOpen(false);
+            setSelectedMediaId(null);
+        } catch (error) {
+            setDeleteError(toErrorMessage(error, t('deleteMediaFailed')));
+        }
+    }, [deleteMedia, selectedMedia, t, toErrorMessage]);
 
     const selectedMediaIndex = useMemo(() => (selectedMedia ? media.findIndex((item) => item.id === selectedMedia.id) : -1), [media, selectedMedia]);
     const hasPreviousMedia = selectedMediaIndex > 0;
@@ -290,6 +317,13 @@ export function useGalleryScreen() {
         originalMedia,
         canDownloadOriginal,
         canDownloadSelected,
+        canDeleteMedia,
+        confirmDeleteOpen,
+        deleteError,
+        deleteMedia,
+        requestDeleteMedia,
+        closeDeleteConfirm,
+        confirmDeleteMedia,
         maxFiles,
         handleFilesChange,
         handleClearSelection,

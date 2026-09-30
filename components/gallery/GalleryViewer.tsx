@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, Download, Loader2, VideoOff, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, Loader2, Trash2, VideoOff, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { CSSProperties, TouchEvent as ReactTouchEvent } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -18,12 +18,14 @@ const SWIPE_RESISTANCE = 0.35;
 interface GalleryViewerProps {
     media: MediaResponseDto | null;
     canDownloadOriginal: boolean;
+    canDelete: boolean;
     originalError: string | null;
     isDownloadingOriginal: boolean;
     hasPrevious: boolean;
     hasNext: boolean;
     onClose: () => void;
     onDownloadOriginal: () => void;
+    onDelete: () => void;
     onPrevious: () => void;
     onNext: () => void;
 }
@@ -31,12 +33,14 @@ interface GalleryViewerProps {
 export function GalleryViewer({
     media,
     canDownloadOriginal,
+    canDelete,
     originalError,
     isDownloadingOriginal,
     hasPrevious,
     hasNext,
     onClose,
     onDownloadOriginal,
+    onDelete,
     onPrevious,
     onNext,
 }: GalleryViewerProps) {
@@ -280,16 +284,30 @@ export function GalleryViewer({
                     )}
                 </div>
                 {/* Viewer actions */}
-                {canDownloadOriginal && (
-                    <button
-                        type="button"
-                        onClick={onDownloadOriginal}
-                        disabled={isDownloadingOriginal}
-                        className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink disabled:opacity-50"
-                    >
-                        {isDownloadingOriginal ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                        {t('downloadOriginal')}
-                    </button>
+                {(canDownloadOriginal || canDelete) && (
+                    <div className="flex items-center gap-2">
+                        {canDownloadOriginal && (
+                            <button
+                                type="button"
+                                onClick={onDownloadOriginal}
+                                disabled={isDownloadingOriginal}
+                                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink disabled:opacity-50"
+                            >
+                                {isDownloadingOriginal ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                                {t('downloadOriginal')}
+                            </button>
+                        )}
+                        {canDelete && (
+                            <button
+                                type="button"
+                                onClick={onDelete}
+                                className="inline-flex items-center gap-2 rounded-full bg-black/50 px-4 py-2 text-sm font-semibold text-white"
+                            >
+                                <Trash2 className="h-4 w-4" aria-hidden="true" />
+                                {t('deleteMedia')}
+                            </button>
+                        )}
+                    </div>
                 )}
                 {originalError && <p className="text-xs text-rose-200">{originalError}</p>}
             </div>
