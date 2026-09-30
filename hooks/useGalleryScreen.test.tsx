@@ -109,12 +109,42 @@ describe('useGalleryScreen', () => {
         expect(result.current.selectedMedia?.id).toBe('media-1');
     });
 
-    it('does not offer delete to a guest', () => {
+    it('does not offer delete to a non-member', () => {
         mocks.media = [photo('https://r2.example/a.jpg')];
         const { result } = renderHook(() => useGalleryScreen());
         act(() => result.current.handleMediaClick('media-1'));
 
         expect(result.current.canDeleteMedia).toBe(false);
+    });
+
+    describe('canDeleteMedia for a guest', () => {
+        function openItem(uploaderMemberId: string | null) {
+            mocks.media = [{ ...photo('https://r2.example/a.jpg'), uploaderMemberId }];
+            const hook = renderHook(() => useGalleryScreen());
+            act(() => hook.result.current.handleMediaClick('media-1'));
+            return hook;
+        }
+
+        it('is true for their own upload', () => {
+            mocks.activeMember = { id: 'me' };
+            expect(openItem('me').result.current.canDeleteMedia).toBe(true);
+        });
+
+        it("is false for another member's upload", () => {
+            mocks.activeMember = { id: 'me' };
+            expect(openItem('someone-else').result.current.canDeleteMedia).toBe(false);
+        });
+
+        it('is false for an anonymous QR upload', () => {
+            mocks.activeMember = { id: 'me' };
+            expect(openItem(null).result.current.canDeleteMedia).toBe(false);
+        });
+
+        it('is false for their own upload when the event is not writable', () => {
+            mocks.activeMember = { id: 'me' };
+            mocks.writable = false;
+            expect(openItem('me').result.current.canDeleteMedia).toBe(false);
+        });
     });
 
     describe('canReportMedia', () => {
