@@ -2,11 +2,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { PendingImage } from '@/hooks/useComposerController';
 import { usePublishQueueController } from '@/hooks/usePublishQueueController';
 import type { PendingStory } from '@/hooks/useStoryComposerController';
+import type { AuthSessionDto } from '@/lib/api/types';
+import { clearSession, setSession } from '@/lib/auth/tokenStore';
 
 const apiPost = vi.fn();
 const apiPostForm = vi.fn();
@@ -72,6 +74,7 @@ describe('usePublishQueueController — post jobs', () => {
         expect(apiPost).toHaveBeenCalledWith(
             expect.stringContaining('posts'),
             expect.objectContaining({ eventId: 'event-1', mediaIds: ['media-1'] }),
+            { signal: expect.any(AbortSignal) },
         );
     });
 
@@ -155,7 +158,7 @@ describe('usePublishQueueController — story jobs', () => {
 
         await waitFor(() => expect(result.current.jobs[0].status).toBe('success'));
         expect(apiPostForm).toHaveBeenCalledTimes(1);
-        expect(apiPost).toHaveBeenCalledWith(expect.stringContaining('stories'), expect.any(Array));
+        expect(apiPost).toHaveBeenCalledWith(expect.stringContaining('stories'), expect.any(Array), { signal: expect.any(AbortSignal) });
     });
 
     it('keeps the job in error state with only the failed items on partial failure', async () => {
@@ -209,7 +212,7 @@ describe('usePublishQueueController — song jobs', () => {
         expect(result.current.jobs[0]).toMatchObject({ kind: 'song', status: 'pending' });
 
         await waitFor(() => expect(result.current.jobs[0].status).toBe('success'));
-        expect(apiPost).toHaveBeenCalledWith(expect.stringContaining('playlist-suggestions'), song);
+        expect(apiPost).toHaveBeenCalledWith(expect.stringContaining('playlist-suggestions'), song, { signal: expect.any(AbortSignal) });
     });
 
     it('marks the job as error on failure and succeeds on retry', async () => {
@@ -231,5 +234,147 @@ describe('usePublishQueueController — song jobs', () => {
 
         await waitFor(() => expect(result.current.jobs[0].status).toBe('success'));
         expect(apiPost).toHaveBeenCalledTimes(2);
+    });
+});
+
+function sessionFor(userId: string, accessToken: string): AuthSessionDto {
+    return {
+        accessToken,
+        userId,
+        email: `${userId}@example.com`,
+        role: 'USER',
+        firstName: userId,
+        lastName: null,
+        profilePictureUrl: null,
+        authProvider: 'LOCAL',
+        isGuestAccount: false,
+        status: 'ACTIVE',
+        createdAt: '2026-09-01T00:00:00Z',
+    };
+}
+
+function deferred<T>() {
+    let resolve!: (value: T) => void;
+    const promise = new Promise<T>((res) => {
+        resolve = res;
+    });
+    return { promise, resolve };
+}
+
+// A job belongs to the account that started it. Its later requests read the
+// global access token, so once the account changes they would run as the new
+// user: A's post, published under B.
+describe('usePublishQueueController — account changes', () => {
+    beforeEach(() => setSession(sessionFor('user-a', 'token-a')));
+    afterEach(() => clearSession());
+
+    function enqueueTextAndImagePost(result: { current: ReturnType<typeof usePublishQueueController> }) {
+        act(() => {
+            result.current.enqueuePost({ eventId: 'event-1', authorMemberId: 'member-a', caption: 'From A', images: [makeImage()] });
+        });
+    }
+
+    it('never sends the post request once another user has signed in between upload and post creation', async () => {
+        const upload = deferred<unknown>();
+        apiPostForm.mockReturnValue(upload.promise);
+        apiPost.mockResolvedValue({ id: 'post-1', eventId: 'event-1' });
+
+        const { result } = renderHook(() => usePublishQueueController(), { wrapper });
+        enqueueTextAndImagePost(result);
+        await waitFor(() => expect(apiPostForm).toHaveBeenCalledTimes(1));
+        const uploadSignal = (apiPostForm.mock.calls[0][2] as RequestInit).signal;
+
+        act(() => {
+            clearSession();
+            setSession(sessionFor('user-b', 'token-b'));
+        });
+        expect(uploadSignal?.aborted).toBe(true);
+
+        await act(async () => {
+            upload.resolve({ created: [{ id: 'media-1', originalFilename: 'photo.jpg' }], failed: [] });
+            await upload.promise;
+        });
+
+        expect(apiPost).not.toHaveBeenCalled();
+        // Nothing for user B to see: the job was abandoned, not failed.
+        expect(result.current.jobs[0].status).toBe('pending');
+        expect(result.current.jobs[0].error).toBeUndefined();
+    });
+
+    it('never sends the post request after the controller unmounts', async () => {
+        const upload = deferred<unknown>();
+        apiPostForm.mockReturnValue(upload.promise);
+
+        const { result, unmount } = renderHook(() => usePublishQueueController(), { wrapper });
+        enqueueTextAndImagePost(result);
+        await waitFor(() => expect(apiPostForm).toHaveBeenCalledTimes(1));
+
+        unmount();
+        expect((apiPostForm.mock.calls[0][2] as RequestInit).signal?.aborted).toBe(true);
+
+        await act(async () => {
+            upload.resolve({ created: [{ id: 'media-1', originalFilename: 'photo.jpg' }], failed: [] });
+            await upload.promise;
+        });
+
+        expect(apiPost).not.toHaveBeenCalled();
+    });
+
+    it('does not surface the aborted upload as an error', async () => {
+        apiPostForm.mockImplementation(
+            (_path: string, _form: FormData, options: RequestInit) =>
+                new Promise((_resolve, reject) =>
+                    options.signal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError'))),
+                ),
+        );
+
+        const { result } = renderHook(() => usePublishQueueController(), { wrapper });
+        enqueueTextAndImagePost(result);
+        await waitFor(() => expect(apiPostForm).toHaveBeenCalledTimes(1));
+
+        await act(async () => {
+            clearSession();
+            await Promise.resolve();
+        });
+
+        expect(result.current.jobs[0].status).toBe('pending');
+        expect(result.current.jobs[0].error).toBeUndefined();
+        expect(apiPost).not.toHaveBeenCalled();
+    });
+
+    it('keeps going through a token refresh for the same user', async () => {
+        const upload = deferred<unknown>();
+        apiPostForm.mockReturnValue(upload.promise);
+        apiPost.mockResolvedValue({ id: 'post-1', eventId: 'event-1' });
+
+        const { result } = renderHook(() => usePublishQueueController(), { wrapper });
+        enqueueTextAndImagePost(result);
+        await waitFor(() => expect(apiPostForm).toHaveBeenCalledTimes(1));
+
+        act(() => setSession(sessionFor('user-a', 'token-a-refreshed')));
+        upload.resolve({ created: [{ id: 'media-1', originalFilename: 'photo.jpg' }], failed: [] });
+
+        await waitFor(() => expect(result.current.jobs[0].status).toBe('success'));
+        expect(apiPost).toHaveBeenCalledTimes(1);
+    });
+
+    it('never creates stories once another user has signed in after the upload', async () => {
+        const upload = deferred<unknown>();
+        apiPostForm.mockReturnValue(upload.promise);
+
+        const { result } = renderHook(() => usePublishQueueController(), { wrapper });
+        act(() => {
+            result.current.enqueueStory({ eventId: 'event-1', authorMemberId: 'member-a', items: [makeStoryItem()] });
+        });
+        await waitFor(() => expect(apiPostForm).toHaveBeenCalledTimes(1));
+
+        act(() => setSession(sessionFor('user-b', 'token-b')));
+        await act(async () => {
+            upload.resolve({ created: [{ id: 'media-1', originalFilename: 'clip.jpg', status: 'READY' }], failed: [] });
+            await upload.promise;
+        });
+
+        expect(apiPost).not.toHaveBeenCalled();
+        expect(result.current.jobs[0].error).toBeUndefined();
     });
 });

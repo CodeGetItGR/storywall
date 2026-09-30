@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAppConfig } from '@/hooks/useAppConfig';
@@ -12,6 +12,7 @@ import { useCreateStoriesBatch } from '@/hooks/useStories';
 import type { PendingStory } from '@/hooks/useStoryComposerController';
 import { ERROR_CODES, getErrorCode, getQuotaExceededDetails, isModuleNotAvailableError } from '@/lib/api/errors';
 import type { MediaBatchUploadResponseDto, MediaResponseDto } from '@/lib/api/types';
+import { getAuthState, subscribeAuthState } from '@/lib/auth/tokenStore';
 import { findNextPlan } from '@/lib/planTiers';
 import { bakeStoryFilter, STORY_FILTER_PRESETS } from '@/lib/story/storyFilters';
 import type {
@@ -24,6 +25,21 @@ import type {
     StoryPublishJob,
     StoryPublishPayload,
 } from '@/providers/publishQueue/PublishQueueContext';
+
+// One attempt at a job, owned by the account that started it. Every request
+// reads the global access token, so a job that outlives its account would carry
+// on as whoever signed in next: A's post, published under B. The attempt is
+// aborted when that account changes (see the effect below) or the controller
+// unmounts, and each step checks before sending anything.
+interface JobRun {
+    controller: AbortController;
+    ownerId: string | null;
+}
+
+function isStopped(run: JobRun): boolean {
+    if (getAuthState().userId !== run.ownerId) run.controller.abort();
+    return run.controller.signal.aborted;
+}
 
 let jobCounter = 0;
 function nextJobId(): string {
@@ -54,11 +70,11 @@ function mapBatchUploads(items: PendingStory[], result: MediaBatchUploadResponse
     });
 }
 
-async function waitForStoryVideos(items: PendingStory[]): Promise<PendingStory[]> {
+async function waitForStoryVideos(items: PendingStory[], signal: AbortSignal): Promise<PendingStory[]> {
     return Promise.all(
         items.map(async (item) => {
             if (!item.mediaId || !item.file.type.startsWith('video/') || item.status === 'failed') return item;
-            const media: MediaResponseDto = await pollMediaUntilProcessed(item.mediaId);
+            const media: MediaResponseDto = await pollMediaUntilProcessed(item.mediaId, signal);
             if (media.status === 'FAILED') return { ...item, status: 'failed' as const, error: undefined };
             return { ...item, status: 'uploaded' as const, remoteUrl: media.mediaUrl, error: undefined };
         }),
@@ -79,6 +95,35 @@ export function usePublishQueueController(): PublishQueueContextValue {
     const [jobs, setJobs] = useState<PublishJob[]>([]);
     const jobsRef = useRef<PublishJob[]>([]);
     jobsRef.current = jobs;
+    const runsRef = useRef(new Map<string, JobRun>());
+
+    // Aborts synchronously inside setSession/clearSession, before the account
+    // change re-renders anything, so no request is sent with the new token.
+    // A token refresh for the same user keeps the job going.
+    useEffect(() => {
+        const runs = runsRef.current;
+        const unsubscribe = subscribeAuthState((state) => {
+            runs.forEach((run, jobId) => {
+                if (run.ownerId === state.userId) return;
+                run.controller.abort();
+                runs.delete(jobId);
+            });
+        });
+        return () => {
+            unsubscribe();
+            runs.forEach((run) => run.controller.abort());
+            runs.clear();
+        };
+    }, []);
+
+    function launch(jobId: string, work: (run: JobRun) => Promise<void>) {
+        runsRef.current.get(jobId)?.controller.abort();
+        const run: JobRun = { controller: new AbortController(), ownerId: getAuthState().userId };
+        runsRef.current.set(jobId, run);
+        void work(run).finally(() => {
+            if (runsRef.current.get(jobId) === run) runsRef.current.delete(jobId);
+        });
+    }
 
     function updateJob(jobId: string, updater: (job: PublishJob) => PublishJob) {
         setJobs((current) => current.map((job) => (job.id === jobId ? updater(job) : job)));
@@ -94,7 +139,7 @@ export function usePublishQueueController(): PublishQueueContextValue {
         return toErrorMessage(error, tComposer('genericSubmitFailed'));
     }
 
-    async function uploadPostImages(jobId: string, payload: PostPublishPayload): Promise<string[] | null> {
+    async function uploadPostImages(jobId: string, payload: PostPublishPayload, run: JobRun): Promise<string[] | null> {
         const { eventId, images } = payload;
         const toUpload = images.filter((img) => img.status === 'pending' || img.status === 'failed');
         const alreadyUploaded = images.filter((img) => img.status === 'uploaded' && img.mediaId);
@@ -119,11 +164,15 @@ export function usePublishQueueController(): PublishQueueContextValue {
                     return preset ? bakeStoryFilter(image.file, preset) : image.file;
                 }),
             );
-            result = await uploadBatch.mutateAsync({ eventId, files, context: 'POST' });
+            if (isStopped(run)) return null;
+            result = await uploadBatch.mutateAsync({ eventId, files, context: 'POST', signal: run.controller.signal });
         } catch (error) {
+            if (isStopped(run)) return null;
             updateJob(jobId, (current) => ({ ...current, status: 'error', error: getPostErrorMessage(error) }));
             return null;
         }
+
+        if (isStopped(run)) return null;
 
         const createdByName = new Map<string, typeof result.created>();
         result.created.forEach((m) => createdByName.set(m.originalFilename, [...(createdByName.get(m.originalFilename) ?? []), m]));
@@ -181,9 +230,9 @@ export function usePublishQueueController(): PublishQueueContextValue {
         ];
     }
 
-    async function runPostJob(jobId: string, payload: PostPublishPayload) {
-        const mediaIds = await uploadPostImages(jobId, payload);
-        if (mediaIds === null) return;
+    async function runPostJob(jobId: string, payload: PostPublishPayload, run: JobRun) {
+        const mediaIds = await uploadPostImages(jobId, payload, run);
+        if (mediaIds === null || isStopped(run)) return;
 
         try {
             await createPost.mutateAsync({
@@ -193,23 +242,26 @@ export function usePublishQueueController(): PublishQueueContextValue {
                 content: payload.caption.trim() || undefined,
                 isPinned: false,
                 mediaIds: mediaIds.length > 0 ? mediaIds : undefined,
+                signal: run.controller.signal,
             });
         } catch (error) {
+            if (isStopped(run)) return;
             updateJob(jobId, (current) => ({ ...current, status: 'error', error: getPostErrorMessage(error) }));
             return;
         }
 
+        if (isStopped(run)) return;
         updateJob(jobId, (current) => ({ ...current, status: 'success', error: undefined }));
     }
 
     const enqueuePost = useCallback((payload: PostPublishPayload) => {
         const job: PostPublishJob = { id: nextJobId(), kind: 'post', status: 'pending', createdAt: Date.now(), payload };
         setJobs((current) => [job, ...current]);
-        void runPostJob(job.id, payload);
+        launch(job.id, (run) => runPostJob(job.id, payload, run));
         // eslint-disable-next-line react-hooks/exhaustive-deps -- runPostJob closes over mutation hooks that are stable across renders in practice
     }, []);
 
-    async function runStoryJob(jobId: string, payload: StoryPublishPayload) {
+    async function runStoryJob(jobId: string, payload: StoryPublishPayload, run: JobRun) {
         let working: PendingStory[] = await Promise.all(
             payload.items.map(async (item) => {
                 if (item.mediaId || item.filterId === 'original' || item.file.type.startsWith('video/')) {
@@ -220,6 +272,7 @@ export function usePublishQueueController(): PublishQueueContextValue {
                 return { ...item, file: bakedFile, status: 'uploading' as const, error: undefined };
             }),
         );
+        if (isStopped(run)) return;
         updateJob(jobId, (current) => ({ ...(current as StoryPublishJob), payload: { ...(current as StoryPublishJob).payload, items: working } }));
 
         const toUpload = working.filter((item) => !item.mediaId);
@@ -229,9 +282,11 @@ export function usePublishQueueController(): PublishQueueContextValue {
                     eventId: payload.eventId,
                     files: toUpload.map((item) => item.file),
                     context: 'STORY',
+                    signal: run.controller.signal,
                 });
                 working = mapBatchUploads(working, result);
             } catch (cause) {
+                if (isStopped(run)) return;
                 const message = toErrorMessage(cause, tStory('uploadFailed'));
                 working = working.map((item) => (!item.mediaId ? { ...item, status: 'failed' as const, error: message } : item));
                 updateJob(jobId, (current) => ({
@@ -242,6 +297,7 @@ export function usePublishQueueController(): PublishQueueContextValue {
                 }));
                 return;
             }
+            if (isStopped(run)) return;
             updateJob(jobId, (current) => ({
                 ...(current as StoryPublishJob),
                 payload: { ...(current as StoryPublishJob).payload, items: working },
@@ -250,7 +306,13 @@ export function usePublishQueueController(): PublishQueueContextValue {
 
         const processing = working.filter((item) => item.status === 'processing');
         if (processing.length > 0) {
-            working = await waitForStoryVideos(working);
+            try {
+                working = await waitForStoryVideos(working, run.controller.signal);
+            } catch (cause) {
+                if (isStopped(run)) return;
+                throw cause;
+            }
+            if (isStopped(run)) return;
             working = working.map((item) =>
                 item.status === 'failed' && item.error === undefined ? { ...item, error: tStory('processingFailed') } : item,
             );
@@ -260,6 +322,7 @@ export function usePublishQueueController(): PublishQueueContextValue {
             }));
         }
 
+        if (isStopped(run)) return;
         const readyToPost = working.filter((item) => item.mediaId && item.status === 'uploaded');
         if (readyToPost.length === 0) {
             updateJob(jobId, (current) => ({ ...current, status: 'error', error: tStory('postFailed') }));
@@ -267,14 +330,16 @@ export function usePublishQueueController(): PublishQueueContextValue {
         }
 
         try {
-            const result = await createStories.mutateAsync(
-                readyToPost.map((item) => ({
+            const result = await createStories.mutateAsync({
+                stories: readyToPost.map((item) => ({
                     eventId: payload.eventId,
                     authorMemberId: payload.authorMemberId,
                     mediaId: item.mediaId!,
                     caption: item.caption.trim() || undefined,
                 })),
-            );
+                signal: run.controller.signal,
+            });
+            if (isStopped(run)) return;
             const failedByMediaId = new Map(result.failed.map((failure) => [failure.mediaId, failure.message]));
             const successfulMediaIds = new Set(result.created.map((story) => story.mediaId));
             const remaining = working
@@ -297,6 +362,7 @@ export function usePublishQueueController(): PublishQueueContextValue {
                 payload: { ...(current as StoryPublishJob).payload, items: remaining },
             }));
         } catch (cause) {
+            if (isStopped(run)) return;
             const message = toErrorMessage(cause, tStory('postFailed'));
             updateJob(jobId, (current) => ({
                 ...(current as StoryPublishJob),
@@ -318,26 +384,28 @@ export function usePublishQueueController(): PublishQueueContextValue {
             totalCount: payload.items.length,
         };
         setJobs((current) => [job, ...current]);
-        void runStoryJob(job.id, payload);
+        launch(job.id, (run) => runStoryJob(job.id, payload, run));
         // eslint-disable-next-line react-hooks/exhaustive-deps -- runStoryJob closes over mutation hooks that are stable across renders in practice
     }, []);
 
-    async function runSongJob(jobId: string, payload: SongPublishPayload) {
+    async function runSongJob(jobId: string, payload: SongPublishPayload, run: JobRun) {
         try {
-            await createPlaylistSuggestion.mutateAsync(payload);
+            await createPlaylistSuggestion.mutateAsync({ ...payload, signal: run.controller.signal });
         } catch (error) {
+            if (isStopped(run)) return;
             const message = isModuleNotAvailableError(error) ? tPlaylist('moduleUnavailable') : toErrorMessage(error, tPlaylist('submitFailed'));
             updateJob(jobId, (current) => ({ ...current, status: 'error', error: message }));
             return;
         }
 
+        if (isStopped(run)) return;
         updateJob(jobId, (current) => ({ ...current, status: 'success', error: undefined }));
     }
 
     const enqueueSong = useCallback((payload: SongPublishPayload) => {
         const job: SongPublishJob = { id: nextJobId(), kind: 'song', status: 'pending', createdAt: Date.now(), payload };
         setJobs((current) => [job, ...current]);
-        void runSongJob(job.id, payload);
+        launch(job.id, (run) => runSongJob(job.id, payload, run));
         // eslint-disable-next-line react-hooks/exhaustive-deps -- runSongJob closes over mutation hooks that are stable across renders in practice
     }, []);
 
@@ -345,9 +413,9 @@ export function usePublishQueueController(): PublishQueueContextValue {
         const job = jobsRef.current.find((candidate) => candidate.id === jobId);
         if (!job) return;
         updateJob(jobId, (current) => ({ ...current, status: 'pending', error: undefined }));
-        if (job.kind === 'post') void runPostJob(jobId, job.payload);
-        else if (job.kind === 'song') void runSongJob(jobId, job.payload);
-        else void runStoryJob(jobId, job.payload);
+        if (job.kind === 'post') launch(jobId, (run) => runPostJob(jobId, job.payload, run));
+        else if (job.kind === 'song') launch(jobId, (run) => runSongJob(jobId, job.payload, run));
+        else launch(jobId, (run) => runStoryJob(jobId, job.payload, run));
         // eslint-disable-next-line react-hooks/exhaustive-deps -- runPostJob/runStoryJob/runSongJob close over mutation hooks that are stable across renders in practice
     }, []);
 
