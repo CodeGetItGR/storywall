@@ -2029,6 +2029,7 @@
         "hostReadOnly": "As the host, you can view wishes but can't add your own.",
         "exportPdf": "Download as PDF",
         "exportFailed": "Couldn't download the wishbook. Please try again.",
+        "reportEntry": "Report",
         "delete": "Delete",
         "deleteTitle": "Delete this wish?",
         "deleteBody": "This removes the wish from the wishbook.",

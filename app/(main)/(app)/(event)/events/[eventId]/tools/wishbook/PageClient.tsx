@@ -5,20 +5,22 @@ import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import React, { useEffect, useState } from 'react';
 
+import { ReportTargetModal } from '@/components/reports';
 import { ModuleNotice } from '@/components/tools/ModuleNotice';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { ModuleUnavailableState } from '@/components/tools/ModuleUnavailableState';
 import { ToolEmptyState } from '@/components/tools/ToolEmptyState';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { WishbookEntriesSkeleton } from '@/components/wishbook/WishbookSkeletons';
+import { useAppConfig } from '@/hooks';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
-import { useAppConfig } from '@/hooks/useAppConfig';
 import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { usePlanUpgradeHref } from '@/hooks/usePlanUpgradeHref';
 import { useCreateWishbookEntry, useDeleteWishbookEntry, useWishbook, useWishbookExportDownload } from '@/hooks/useWishbook';
 import type { WishbookEntryResponseDto } from '@/lib/api/types';
+import { canReportContent } from '@/lib/contentPermissions';
 import { formatDate } from '@/lib/datetime';
-import { isEventDeleted } from '@/lib/eventLifecycle';
+import { isEventDeleted, isEventWritable } from '@/lib/eventLifecycle';
 import { routes } from '@/lib/routes';
 import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
 
@@ -41,10 +43,13 @@ export default function WishbookPage() {
     const toErrorMessage = useApiErrorMessage();
     const [message, setMessage] = useState('');
     const [deleteTarget, setDeleteTarget] = useState<WishbookEntryResponseDto | null>(null);
+    const [reportEntryId, setReportEntryId] = useState<string | null>(null);
     const [showSentConfirmation, setShowSentConfirmation] = useState(false);
     const entries = wishbook.data?.pages.flatMap((page) => page.content) ?? [];
     const total = wishbook.data?.pages[0]?.page.totalElements ?? 0;
     const canWrite = event?.status === 'ACTIVE' && !isHost;
+    const reportable = Boolean(appConfig?.reportTargetTypes?.includes('WISHBOOK_ENTRY'));
+    const reportEntry = reportEntryId ? (entries.find((item) => item.id === reportEntryId) ?? null) : null;
     const wishbookModule = appConfig?.modules.find((module) => module.moduleKey === 'wishbook');
     const title = wishbookModule?.name ?? t('title');
     const subtitle = wishbookModule?.description ?? undefined;
@@ -79,6 +84,20 @@ export default function WishbookPage() {
     function selectDeleteTarget(event_: React.MouseEvent<HTMLButtonElement>) {
         const entry = entries.find((item) => item.id === event_.currentTarget.dataset.entryId);
         if (entry) setDeleteTarget(entry);
+    }
+    function canReportEntry(entry: WishbookEntryResponseDto) {
+        return canReportContent({
+            isMember: Boolean(member),
+            isAuthor: Boolean(member && entry.authorMemberId === member.id),
+            canWrite: isEventWritable(event?.status),
+            targetTypeReportable: reportable,
+        });
+    }
+    function selectReportTarget(event_: React.MouseEvent<HTMLButtonElement>) {
+        setReportEntryId(event_.currentTarget.dataset.entryId ?? null);
+    }
+    function closeReport() {
+        setReportEntryId(null);
     }
     function closeDelete() {
         setDeleteTarget(null);
@@ -207,17 +226,29 @@ export default function WishbookPage() {
                                         )}
                                     </time>
                                 </div>
-                                {entry.canDelete && !isDeleted && (
-                                    <button
-                                        type="button"
-                                        data-entry-id={entry.id}
-                                        onClick={selectDeleteTarget}
-                                        aria-label={t('delete')}
-                                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-faint hover:bg-rose-50 hover:text-rose-600"
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </button>
-                                )}
+                                <div className="flex shrink-0 items-center gap-1">
+                                    {canReportEntry(entry) && (
+                                        <button
+                                            type="button"
+                                            data-entry-id={entry.id}
+                                            onClick={selectReportTarget}
+                                            className="inline-flex h-9 shrink-0 items-center rounded-full px-3 text-xs font-semibold text-ink-faint hover:bg-surface-muted hover:text-ink"
+                                        >
+                                            {t('reportEntry')}
+                                        </button>
+                                    )}
+                                    {entry.canDelete && !isDeleted && (
+                                        <button
+                                            type="button"
+                                            data-entry-id={entry.id}
+                                            onClick={selectDeleteTarget}
+                                            aria-label={t('delete')}
+                                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-faint hover:bg-rose-50 hover:text-rose-600"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                             <p className="mt-3 text-sm leading-6 wrap-break-word whitespace-pre-wrap text-ink">{entry.message}</p>
                         </article>
@@ -234,6 +265,17 @@ export default function WishbookPage() {
                     </button>
                 )}
             </section>
+
+            {reportEntry && (
+                <ReportTargetModal
+                    eventId={eventId}
+                    targetType="WISHBOOK_ENTRY"
+                    targetId={reportEntry.id}
+                    targetName={reportEntry.guestName}
+                    open
+                    onCloseAction={closeReport}
+                />
+            )}
 
             <ConfirmActionModal
                 open={Boolean(deleteTarget)}
