@@ -1799,6 +1799,15 @@
         "title": "Community Guidelines",
         "unavailable": "The Community Guidelines couldn't be loaded. Please try again later."
     },
+    "GuidelinesGate": {
+        "title": "Our Community Guidelines",
+        "body": "To keep using StoryWall, please read and accept our Community Guidelines. They explain what can be shared at an event and how we handle reports.",
+        "read": "Read the Community Guidelines",
+        "accept": "I accept",
+        "accepting": "Saving…",
+        "failed": "We couldn't save your acceptance. Please try again.",
+        "changed": "The Community Guidelines were just updated again. Please review the latest version."
+    },
     "CheckoutSuccessPage": {
         "eyebrow": "Checkout",
         "paidTitle": "Payment received",
