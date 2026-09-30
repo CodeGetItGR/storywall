@@ -18,11 +18,12 @@ import { EventProvider } from '@/providers/EventProvider';
 import { MobileChromeProvider } from '@/providers/MobileChromeProvider';
 import { ModalProvider } from '@/providers/ModalProvider';
 
-// The composer and its publish queue belong to one account. Signing out, or
-// switching account, starts them fresh so the next person on the device never
-// sees the last one's draft. Signing in (null to a user, which is also how
-// bootstrap resolves) and token refreshes keep the same generation, so the
-// page isn't remounted on every load.
+// The composer and its publish queue belong to one account. Any transition from
+// a signed-in user to none, explicit or expiry (a failed refresh clears the
+// session), or to another account, starts them fresh: the next screen is /login,
+// and a surviving draft would be visible to whoever holds the device. Signing
+// in (null to a user, which is also how bootstrap resolves) and token refreshes
+// keep the same generation, so the page isn't remounted on every load.
 function AccountComposerProvider({ children }: { children: ReactNode }) {
     const userId = useAuth().user?.userId ?? null;
     const [lastUserId, setLastUserId] = useState(userId);

@@ -1,11 +1,8 @@
 import type { QueryClient } from '@tanstack/react-query';
 
+import { meQueryKey } from '@/hooks/useMe';
 import { subscribeApiErrors } from '@/lib/api/client';
 import { isGuidelinesAcceptanceRequiredError } from '@/lib/api/errors';
-
-// Same key as hooks/useMe's meQueryKey. Repeated rather than imported because
-// this module is also loaded server-side, and hooks/useMe is a client module.
-const ME_QUERY_KEY = ['me'] as const;
 
 // A request refused with 4013 means the guidelines changed (or were never
 // accepted) during this session. Refetching /api/me flips
@@ -15,7 +12,8 @@ const ME_QUERY_KEY = ['me'] as const;
 export function reopenGuidelinesGateOn4013(client: QueryClient): () => void {
     return subscribeApiErrors((error) => {
         if (isGuidelinesAcceptanceRequiredError(error)) {
-            void client.invalidateQueries({ queryKey: ME_QUERY_KEY });
+            // exact: only /api/me, not every ['me', ...] query (e.g. the user's events).
+            void client.invalidateQueries({ queryKey: meQueryKey, exact: true });
         }
     });
 }

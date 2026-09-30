@@ -161,8 +161,8 @@ if (typeof window !== 'undefined') {
 type ApiErrorListener = (error: ApiError) => void;
 const apiErrorListeners = new Set<ApiErrorListener>();
 
-// Hears every failed response, whether or not the call went through React
-// Query. Only the browser subscribes (from an effect), so server-side use of
+// Hears every failed call made through api.*, whether or not it went through
+// React Query. Only the browser subscribes (from an effect), so server-side use of
 // this module never accumulates listeners across requests.
 export function subscribeApiErrors(listener: ApiErrorListener): () => void {
     apiErrorListeners.add(listener);
@@ -175,7 +175,14 @@ export function subscribeApiErrors(listener: ApiErrorListener): () => void {
 function failedResponseError(method: string | undefined, path: string, res: Response, body: unknown): ApiError {
     recordFailedCall(method, path, res.status, body);
     const error = new ApiError(res.status, body, undefined, res.headers.get('retry-after'));
-    for (const listener of apiErrorListeners) listener(error);
+    for (const listener of apiErrorListeners) {
+        // A listener that throws must neither replace this error nor starve the others.
+        try {
+            listener(error);
+        } catch (listenerError) {
+            console.error('API error listener failed', listenerError);
+        }
+    }
     return error;
 }
 

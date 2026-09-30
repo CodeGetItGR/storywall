@@ -34,7 +34,7 @@ describe('reopenGuidelinesGateOn4013', () => {
         await expect(api.patch('/api/me', { firstName: 'Ada' })).rejects.toMatchObject({ status: 403 });
 
         expect(invalidate).toHaveBeenCalledTimes(1);
-        expect(invalidate).toHaveBeenCalledWith({ queryKey: ['me'] });
+        expect(invalidate).toHaveBeenCalledWith({ queryKey: ['me'], exact: true });
     });
 
     it('ignores any other 403', async () => {
