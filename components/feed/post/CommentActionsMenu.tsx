@@ -37,7 +37,6 @@ export function CommentActionsMenu({ comment, wrapperClassName }: CommentActions
         isMember: Boolean(activeMember),
         isAuthor: isMyComment,
         canWrite,
-        hasAuthor: Boolean(comment.authorMemberId),
         targetTypeReportable: Boolean(appConfig?.reportTargetTypes?.includes('COMMENT')),
     });
 

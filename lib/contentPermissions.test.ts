@@ -27,7 +27,7 @@ describe('canDeleteContent', () => {
 });
 
 describe('canReportContent', () => {
-    const base = { isMember: true, isAuthor: false, canWrite: true, hasAuthor: true, targetTypeReportable: true };
+    const base = { isMember: true, isAuthor: false, canWrite: true, targetTypeReportable: true };
 
     it("lets a member report someone else's content, including a host's", () => {
         expect(canReportContent(base)).toBe(true);
@@ -37,8 +37,16 @@ describe('canReportContent', () => {
         expect(canReportContent({ ...base, isAuthor: true })).toBe(false);
     });
 
-    it('does not offer a report when the author is gone', () => {
-        expect(canReportContent({ ...base, hasAuthor: false })).toBe(false);
+    it('lets a member report content that has no author on record', () => {
+        expect(
+            canReportContent({ isMember: true, isAuthor: false, canWrite: true, targetTypeReportable: true }),
+        ).toBe(true);
+    });
+
+    it('never lets the author report their own content', () => {
+        expect(
+            canReportContent({ isMember: true, isAuthor: true, canWrite: true, targetTypeReportable: true }),
+        ).toBe(false);
     });
 
     it('does not offer a report the platform does not accept', () => {

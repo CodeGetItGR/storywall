@@ -3801,6 +3801,7 @@
         "eventNotActive": "This event is not live yet.",
         "eventPurgedNotRenewable": "This event's media has already been purged, so it cannot be renewed. Create a new event to continue.",
         "rateLimited": "Too many requests. Please wait a moment and try again.",
+        "reportOwnContent": "You can't report your own content.",
         "rateLimitedWithWait": "Too many requests. Try again in {seconds}s.",
         "storageLimit": "Storage limit reached for this event.",
         "storageLimitWithPlan": "Storage limit reached on the {plan} plan. Upgrade to add more.",

@@ -1,4 +1,4 @@
-// Who may delete or report a piece of member content (a post or a comment). Hosts are not
+// Who may delete or report a piece of member content. Hosts are not
 // exempt from reporting: their content is exactly what nobody else in the event can remove,
 // so a report to the platform is the only recourse a guest has against it.
 
@@ -15,15 +15,15 @@ export function canDeleteContent({ isMember, isAuthor, isHost, canWrite }: Conte
 }
 
 /**
- * Anyone in the event except the author, when the content still has an author to report and
- * the platform accepts reports for this target type.
+ * Anyone in the event except the author, when the platform accepts reports for this target type.
+ * Content with no author on record (an anonymous QR upload, or an author who left) is reportable:
+ * the report is about the content.
  */
 export function canReportContent({
     isMember,
     isAuthor,
     canWrite,
-    hasAuthor,
     targetTypeReportable,
-}: Omit<ContentActionContext, 'isHost'> & { hasAuthor: boolean; targetTypeReportable: boolean }): boolean {
-    return isMember && canWrite && hasAuthor && !isAuthor && targetTypeReportable;
+}: Omit<ContentActionContext, 'isHost'> & { targetTypeReportable: boolean }): boolean {
+    return isMember && canWrite && !isAuthor && targetTypeReportable;
 }
