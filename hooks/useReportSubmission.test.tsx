@@ -41,6 +41,16 @@ describe('useReportSubmission', () => {
         expect(onSuccessAction).not.toHaveBeenCalled();
     });
 
+    it('treats a bare 429 with no errorCode as rate-limited', async () => {
+        mutateAsync.mockRejectedValue(new ApiError(429, {}));
+        const { hook, onSuccessAction } = setup();
+
+        await act(() => hook.result.current.submit());
+
+        expect(hook.result.current.error).toBe('slow');
+        expect(onSuccessAction).not.toHaveBeenCalled();
+    });
+
     it('closes on success', async () => {
         mutateAsync.mockResolvedValue({});
         const { hook, onSuccessAction } = setup();

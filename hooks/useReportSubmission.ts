@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import { useCreateReport } from '@/hooks/useReports';
-import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
+import { ERROR_CODES, getErrorCode, isRateLimitedError } from '@/lib/api/errors';
 import type { ReportReason, ReportTargetType } from '@/lib/api/types';
 
 type ReportErrorMessages = {
@@ -55,13 +55,12 @@ export function useReportSubmission({ eventId, targetId, targetType, onSuccessAc
 }
 
 function messageFor(error: unknown, messages: ReportErrorMessages): string {
+    if (isRateLimitedError(error)) return messages.rateLimited;
     switch (getErrorCode(error)) {
         case ERROR_CODES.REPORT_OWN_CONTENT:
             return messages.ownContent;
         case ERROR_CODES.RESOURCE_NOT_FOUND:
             return messages.gone;
-        case ERROR_CODES.RATE_LIMITED:
-            return messages.rateLimited;
         default:
             return messages.failed;
     }
