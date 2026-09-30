@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { useAppConfig } from '@/hooks/useAppConfig';
 import { useUpgradeOptions } from '@/hooks/useBilling';
-import { useGalleryArchiveManifest } from '@/hooks/useGalleryArchive';
+import { useGallerySummary } from '@/hooks/useGalleryArchive';
 import { useIsPrimaryHost } from '@/hooks/useIsPrimaryHost';
 import { useEventQrLinks } from '@/hooks/useQrLinks';
 import { type ToolMenuItem, useHostMenuItems, useToolsMenuItems } from '@/hooks/useToolsMenuItems';
@@ -47,7 +47,7 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
     const showGalleryQr = isLiveHost && isGalleryQrFeatureEnabled(activeEvent?.modules);
     const showInvitationsQr = isLiveHost;
 
-    const galleryManifest = useGalleryArchiveManifest(activeEvent?.id ?? null, 'DISPLAY', showMediaSummary);
+    const gallerySummary = useGallerySummary(activeEvent?.id ?? null, showMediaSummary);
     const wishbook = useWishbook(showWishbookSummary ? (activeEvent?.id ?? null) : null);
     const qrLinks = useEventQrLinks(showGalleryQr || showInvitationsQr ? (activeEvent?.id ?? null) : null);
 
@@ -103,7 +103,7 @@ export function useRightContextPanel({ includeManageLinks = true }: { includeMan
         showRsvpSummary,
         rsvpSummary: activeEvent?.rsvpSummary ?? null,
         showMediaSummary,
-        mediaSummary: galleryManifest.data ?? null,
+        mediaSummary: gallerySummary.data ?? null,
         showGalleryQr,
         galleryQrLink: findGalleryQrLink(qrLinks.data ?? []),
         showInvitationsQr,

@@ -1961,6 +1961,13 @@ export interface MediaArchivePartDto {
     sizeBytes: number;
 }
 
+// GET /api/events/{eventId}/media/summary — hosts only. The manifest's two counts, without
+// planning an archive.
+export interface MediaSummaryDto {
+    photoCount: number;
+    videoCount: number;
+}
+
 export interface MediaArchiveManifestDto {
     variant: MediaArchiveVariant;
     originalsAvailable: boolean;
@@ -2105,6 +2112,8 @@ export interface StoryResponseDto {
     authorMemberId: string | null;
     author: AuthorDto | null;
     mediaId: string;
+    // As GET /api/medias/{mediaId} returns it; null where that endpoint would refuse it.
+    media: MediaResponseDto | null;
     caption: string | null;
     songUrl: string | null;
     expiresAt: string;

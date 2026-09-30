@@ -14,6 +14,7 @@ import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { setMemberRsvpIdInCaches, useRsvp } from '@/hooks/useRsvps';
 import { ApiError } from '@/lib/api/client';
 import { EVENT_MODULE_KEYS, type ModuleKeyConvention } from '@/lib/api/types';
+import { uniqueById } from '@/lib/postQueries';
 import { routes } from '@/lib/routes';
 import { useActiveMember, useIsHost } from '@/providers/EventProvider';
 
@@ -34,7 +35,7 @@ export function FeedPageBoundary({ eventId }: { eventId: string }) {
     const rsvpReadable = useModuleReadable(eventId, 'rsvp');
     useEventFeedStream(postsReadable ? eventId : null);
     const { data: postPages, fetchNextPage, hasNextPage, isFetchingNextPage } = useEventPosts(eventId);
-    const posts = useMemo(() => postPages?.pages.flatMap((page) => page.content) ?? [], [postPages?.pages]);
+    const posts = useMemo(() => uniqueById(postPages?.pages.flatMap((page) => page.content) ?? []), [postPages?.pages]);
     const loadMoreRef = useInfiniteScrollSentinel(hasNextPage, fetchNextPage, posts.length);
 
     useEffect(() => {

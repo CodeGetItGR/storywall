@@ -91,6 +91,7 @@ export const endpoints = {
             `/api/events/${eventId}/rsvps/export?reportType=${encodeURIComponent(reportType)}`,
         media: (eventId: string) => `/api/events/${eventId}/media`,
         mediaBatch: (eventId: string) => `/api/events/${eventId}/media/batch`,
+        mediaSummary: (eventId: string) => `/api/events/${eventId}/media/summary`,
         mediaArchiveManifest: (eventId: string, variant: string = 'DISPLAY') =>
             `/api/events/${eventId}/media/archive/manifest?variant=${encodeURIComponent(variant)}`,
         mediaArchive: (eventId: string, part: number, variant: string = 'DISPLAY') =>

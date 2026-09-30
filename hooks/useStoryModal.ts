@@ -81,7 +81,10 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
     const eventId = story?.eventId ?? activeEvent?.id ?? null;
     const { data: allStories = [] } = useEventStories(eventId);
     const activeStory = story ?? allStories.find((item) => item.id === currentStoryId) ?? null;
-    const { data: media } = useMediaItem(activeStory?.mediaId ?? null);
+    // A story carries its media. It's fetched on its own only when it doesn't: from a server older
+    // than that, or where the server withheld it, in which case this request is refused as well.
+    const { data: fetchedMedia } = useMediaItem(activeStory && !activeStory.media ? activeStory.mediaId : null);
+    const media = activeStory?.media ?? fetchedMedia;
     const markViewed = useMarkStoryViewed();
     const deleteStory = useDeleteStory(eventId ?? '');
 
