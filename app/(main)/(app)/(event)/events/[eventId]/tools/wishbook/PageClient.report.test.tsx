@@ -6,6 +6,7 @@ import WishbookPage from './PageClient';
 let activeMemberId: string | null = 'm1';
 let reportTargetTypes: string[] = ['WISHBOOK_ENTRY'];
 let eventStatus = 'ACTIVE';
+let deletedAt: string | null = null;
 let entries: Array<{ id: string; authorMemberId: string | null; canDelete: boolean }> = [];
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
@@ -41,7 +42,7 @@ vi.mock('@/hooks/useWishbook', () => ({
     useWishbookExportDownload: () => ({ download: vi.fn(), isDownloading: false, error: null }),
 }));
 vi.mock('@/providers/EventProvider', () => ({
-    useActiveEvent: () => ({ id: 'event-1', status: eventStatus }),
+    useActiveEvent: () => ({ id: 'event-1', status: eventStatus, deletedAt, deletionScheduledFor: null }),
     useActiveMember: () => (activeMemberId ? { id: activeMemberId, displayName: 'Me' } : null),
     useIsHost: () => true,
 }));
@@ -56,6 +57,7 @@ beforeEach(() => {
     activeMemberId = 'm1';
     reportTargetTypes = ['WISHBOOK_ENTRY'];
     eventStatus = 'ACTIVE';
+    deletedAt = null;
     entries = [{ id: 'w1', authorMemberId: 'm2', canDelete: true }];
 });
 
@@ -103,6 +105,14 @@ describe('Wishbook entry report', () => {
         activeMemberId = 'm1';
         eventStatus = 'ENDED';
         render(<WishbookPage />);
+        expect(screen.queryByRole('button', { name: 'reportEntry' })).toBeNull();
+    });
+
+    it('offers no report on a soft-deleted event, but still lists the entries', () => {
+        deletedAt = '2026-09-30T12:00:00Z';
+        render(<WishbookPage />);
+
+        expect(screen.getByText('Best wishes')).toBeTruthy();
         expect(screen.queryByRole('button', { name: 'reportEntry' })).toBeNull();
     });
 

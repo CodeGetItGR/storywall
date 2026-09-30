@@ -89,7 +89,7 @@ export default function WishbookPage() {
         return canReportContent({
             isMember: Boolean(member),
             isAuthor: Boolean(member && entry.authorMemberId === member.id),
-            canWrite: isEventWritable(event?.status),
+            canWrite: isEventWritable(event?.status) && !isDeleted,
             targetTypeReportable: reportable,
         });
     }
