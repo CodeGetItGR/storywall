@@ -12,6 +12,7 @@ import { GalleryViewer } from '@/components/gallery/GalleryViewer';
 import { ModuleNotice } from '@/components/tools/ModuleNotice';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { Button } from '@/components/ui/button';
+import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
 import { useGalleryScreen } from '@/hooks/useGalleryScreen';
 import { formatDate } from '@/lib/datetime';
 import { routes } from '@/lib/routes';
@@ -48,6 +49,13 @@ export function GalleryScreen() {
         uploadMediaBatch,
         originalMedia,
         canDownloadOriginal,
+        canDeleteMedia,
+        confirmDeleteOpen,
+        deleteError,
+        deleteMedia,
+        requestDeleteMedia,
+        closeDeleteConfirm,
+        confirmDeleteMedia,
         canDownloadSelected,
         maxFiles,
         handleFilesChange,
@@ -181,14 +189,33 @@ export function GalleryScreen() {
             <GalleryViewer
                 media={selectedMedia}
                 canDownloadOriginal={canDownloadOriginal}
+                canDelete={canDeleteMedia}
                 originalError={originalError}
                 isDownloadingOriginal={originalMedia.isPending}
                 hasPrevious={hasPreviousMedia}
                 hasNext={hasNextMedia}
                 onClose={closeMedia}
                 onDownloadOriginal={downloadOriginal}
+                onDelete={requestDeleteMedia}
                 onPrevious={showPreviousMedia}
                 onNext={showNextMedia}
+            />
+
+            {/* Media delete confirmation */}
+            <ConfirmActionModal
+                open={confirmDeleteOpen}
+                onCloseAction={closeDeleteConfirm}
+                onConfirmAction={confirmDeleteMedia}
+                title={t('deleteMediaConfirmTitle')}
+                body={
+                    <>
+                        {t('deleteMediaConfirmBody')}
+                        {deleteError && <span className="mt-1 block text-destructive">{deleteError}</span>}
+                    </>
+                }
+                confirmLabel={t('deleteMedia')}
+                cancelLabel={t('cancelDelete')}
+                isConfirming={deleteMedia.isPending}
             />
 
             {/* Archive download */}

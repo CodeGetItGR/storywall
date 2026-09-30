@@ -20,6 +20,7 @@ import { useAppConfig, useDeletePost, usePostModal, useUpdatePost } from '@/hook
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useMemberAvatarUrl } from '@/hooks/useMemberAvatarUrl';
 import type { PostResponseDto } from '@/lib/api/types';
+import { canDeleteContent, canReportContent } from '@/lib/contentPermissions';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { cn, timeAgoParts } from '@/lib/utils';
 import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
@@ -55,10 +56,16 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     const updatePost = useUpdatePost(post.eventId);
     const canWrite = isEventWritable(activeEvent?.status);
     const isMyPost = activeMember?.id !== undefined && post.authorMemberId === activeMember.id;
-    const canManagePost = isMyPost && canWrite;
-    const canReportPost = Boolean(
-        activeMember && post.authorMemberId && !isMyPost && !isHostPost && canWrite && appConfig?.reportTargetTypes?.includes('POST'),
-    );
+    // Editing stays with the author; a host may remove another member's post but not reword it.
+    const canEditPost = isMyPost && canWrite;
+    const canDeletePost = canDeleteContent({ isMember: Boolean(activeMember), isAuthor: isMyPost, isHost, canWrite });
+    const canReportPost = canReportContent({
+        isMember: Boolean(activeMember),
+        isAuthor: isMyPost,
+        canWrite,
+        hasAuthor: Boolean(post.authorMemberId),
+        targetTypeReportable: Boolean(appConfig?.reportTargetTypes?.includes('POST')),
+    });
     const canTogglePin = isHost && canWrite;
     const showHostPostBadge = isHostPost && !isHost;
     const reactionTypes = appConfig?.reactionTypesByEventType[post.eventType ?? activeEvent?.eventType ?? ''] ?? [];
@@ -68,7 +75,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     }
 
     function handleDeleteRequest() {
-        if (!canManagePost) return;
+        if (!canDeletePost) return;
         setDeleteError(null);
         setConfirmDeleteOpen(true);
     }
@@ -87,7 +94,7 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
     }
 
     function handleEditRequest() {
-        if (!canManagePost) return;
+        if (!canEditPost) return;
         setEditOpen(true);
     }
 
@@ -166,15 +173,15 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
                         )
                     )}
                     {pinError && <p className="absolute top-full right-0 mt-1 w-48 text-right text-xs text-destructive">{pinError}</p>}
-                    {(canManagePost || canReportPost) && (
+                    {(canEditPost || canDeletePost || canReportPost) && (
                         <PostActionsMenu
-                            deleteLabel={canManagePost ? t('deletePost') : undefined}
+                            deleteLabel={canDeletePost ? t('deletePost') : undefined}
                             disabled={deletePost.isPending}
                             isDeleting={deletePost.isPending}
                             moreLabel={t('moreOptions')}
-                            onDeleteAction={canManagePost ? handleDeleteRequest : undefined}
-                            editLabel={canManagePost ? t('editPost') : undefined}
-                            onEditAction={canManagePost ? handleEditRequest : undefined}
+                            onDeleteAction={canDeletePost ? handleDeleteRequest : undefined}
+                            editLabel={canEditPost ? t('editPost') : undefined}
+                            onEditAction={canEditPost ? handleEditRequest : undefined}
                             reportLabel={t('reportPost')}
                             onReportAction={canReportPost ? handleOpenReport : undefined}
                         />
