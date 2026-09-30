@@ -549,7 +549,9 @@
             "success": "Thanks! Your photos are on their way to the gallery.",
             "addMore": "Add more",
             "dropHint": "or drag and drop",
-            "removeFile": "Remove"
+            "removeFile": "Remove",
+            "guidelinesNotice": "By uploading, you agree to the",
+            "guidelinesLink": "Community Guidelines"
         },
         "unknown": {
             "title": "Code not found",

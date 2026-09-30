@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowRight, ImagePlus, Loader2, Video, X } from 'lucide-react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import React, { useCallback, useState } from 'react';
 
@@ -10,6 +11,7 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useFilePreviews } from '@/hooks/useFilePreviews';
 import { useUploadQrMediaBatch } from '@/hooks/useQrMediaUpload';
 import { useUploadAccept } from '@/hooks/useUploadAccept';
+import { routes } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 
 interface AnonymousQrMediaUploadFormProps {
@@ -161,6 +163,14 @@ export function AnonymousQrMediaUploadForm({ token }: AnonymousQrMediaUploadForm
                     </>
                 )}
             </button>
+
+            <p className="text-center text-xs text-ink-muted">
+                {t('anonymousUpload.guidelinesNotice')}{' '}
+                <Link href={routes.legal.communityGuidelines()} target="_blank" rel="noopener" className="font-semibold text-ink underline">
+                    {t('anonymousUpload.guidelinesLink')}
+                </Link>
+                .
+            </p>
         </form>
     );
 }
