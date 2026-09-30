@@ -4015,6 +4015,8 @@
         "deleteMediaConfirmTitle": "Διαγραφή αυτού του αρχείου;",
         "deleteMediaConfirmBody": "Θα αφαιρεθεί από την εκδήλωση για όλους και δεν μπορεί να αναιρεθεί.",
         "deleteMediaFailed": "Δεν ήταν δυνατή η διαγραφή του αρχείου. Δοκιμάστε ξανά.",
+        "reportMedia": "Αναφορά",
+        "mediaFallbackName": "αυτή τη φωτογραφία ή το βίντεο",
         "cancelDelete": "Ακύρωση",
         "archiveSummaryTitle": "Σύνοψη συλλογής",
         "archiveTotalsWithOriginals": "{originals} πρωτότυπα · {display} συμπιεσμένα",
