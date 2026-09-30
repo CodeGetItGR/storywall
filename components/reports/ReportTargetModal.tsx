@@ -16,9 +16,10 @@ type ReportTargetModalProps = {
     targetId: string;
     targetName: string;
     targetType: ReportTargetType;
+    layer?: 'default' | 'overStory';
 };
 
-export function ReportTargetModal({ eventId, onCloseAction, open, targetId, targetName, targetType }: ReportTargetModalProps) {
+export function ReportTargetModal({ eventId, onCloseAction, open, targetId, targetName, targetType, layer }: ReportTargetModalProps) {
     const t = useTranslations('Report');
     const { data: appConfig } = useAppConfig();
     const { description, error, isSubmitting, reason, setDescription, setReason, submit } = useReportSubmission({
@@ -57,7 +58,7 @@ export function ReportTargetModal({ eventId, onCloseAction, open, targetId, targ
     }
 
     return (
-        <Modal open={open} onClose={onCloseAction} size="sm" closeLabel={t('cancel')} ariaLabel={t('title')}>
+        <Modal open={open} onClose={onCloseAction} size="sm" closeLabel={t('cancel')} ariaLabel={t('title')} layer={layer}>
             <Modal.Body className="px-4 pt-12 pb-5 sm:px-5">
                 {/* Report form */}
                 <form className="flex flex-col gap-5" onSubmit={handleSubmit}>

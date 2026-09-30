@@ -174,6 +174,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                     confirmLabel={t('deleteStoryConfirm')}
                     cancelLabel={t('cancel')}
                     isConfirming={isDeleting}
+                    layer="overStory"
                 />
 
                 {/* Report */}
@@ -184,6 +185,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                         targetId={activeStory.id}
                         targetName={author?.displayName ?? t('unknownAuthor')}
                         open={reportOpen}
+                        layer="overStory"
                         onCloseAction={handleCloseReport}
                     />
                 )}

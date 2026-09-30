@@ -10,22 +10,27 @@ let canReportStory = true;
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
 vi.mock('@/hooks/useMemberAvatarUrl', () => ({ useMemberAvatarUrl: () => () => null }));
 vi.mock('@/components/common/ProtectedImage', () => ({ ProtectedImage: () => null }));
+vi.mock('@/components/ui/ConfirmActionModal', () => ({
+    ConfirmActionModal: ({ layer }: { layer?: string }) => <div data-testid="confirm-modal" data-layer={layer} />,
+}));
 vi.mock('@/components/story/StoryVideo', () => ({ StoryVideo: () => null }));
 vi.mock('@/components/reports', () => ({
     ReportTargetModal: ({
         open,
+        layer,
         eventId,
         targetType,
         targetId,
         targetName,
     }: {
         open: boolean;
+        layer?: string;
         eventId: string;
         targetType: string;
         targetId: string;
         targetName: string;
     }) =>
-        open ? <div data-testid="report-modal" data-event-id={eventId} data-target-type={targetType} data-target-id={targetId} data-target-name={targetName} /> : null,
+        open ? <div data-testid="report-modal" data-layer={layer} data-event-id={eventId} data-target-type={targetType} data-target-id={targetId} data-target-name={targetName} /> : null,
 }));
 vi.mock('@/hooks/useStoryModal', () => ({
     useStoryModal: () => {
@@ -79,10 +84,18 @@ describe('StoryModal report dialog', () => {
         render(<StoryModal open storyId="story-1" onCloseAction={vi.fn()} />);
 
         const modal = await screen.findByTestId('report-modal');
+        expect(modal.dataset.layer).toBe('overStory');
         expect(modal.dataset.eventId).toBe('event-1');
         expect(modal.dataset.targetType).toBe('STORY');
         expect(modal.dataset.targetId).toBe('story-1');
         expect(modal.dataset.targetName).toBe('Alice');
+    });
+
+    it('lifts the delete confirm above the story viewer too', async () => {
+        render(<StoryModal open storyId="story-1" onCloseAction={vi.fn()} />);
+
+        const confirm = await screen.findByTestId('confirm-modal');
+        expect(confirm.dataset.layer).toBe('overStory');
     });
 
     it('falls back to a neutral label when the story has no author', async () => {
