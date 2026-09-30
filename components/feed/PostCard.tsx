@@ -63,7 +63,6 @@ export function PostCard({ post, showCommentLink = true, isLcpCandidate = false 
         isMember: Boolean(activeMember),
         isAuthor: isMyPost,
         canWrite,
-        hasAuthor: Boolean(post.authorMemberId),
         targetTypeReportable: Boolean(appConfig?.reportTargetTypes?.includes('POST')),
     });
     const canTogglePin = isHost && canWrite;

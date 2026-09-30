@@ -9,6 +9,7 @@ import { GallerySelectionActions } from '@/components/gallery/GallerySelectionAc
 import { GallerySelectionBar } from '@/components/gallery/GallerySelectionBar';
 import { GalleryUploadSection } from '@/components/gallery/GalleryUploadSection';
 import { GalleryViewer } from '@/components/gallery/GalleryViewer';
+import { ReportTargetModal } from '@/components/reports/ReportTargetModal';
 import { ModuleNotice } from '@/components/tools/ModuleNotice';
 import { ModulePageShell } from '@/components/tools/ModulePageShell';
 import { Button } from '@/components/ui/button';
@@ -50,6 +51,10 @@ export function GalleryScreen() {
         originalMedia,
         canDownloadOriginal,
         canDeleteMedia,
+        canReportMedia,
+        reportOpen,
+        openReport,
+        closeReport,
         confirmDeleteOpen,
         deleteError,
         deleteMedia,
@@ -190,6 +195,8 @@ export function GalleryScreen() {
                 media={selectedMedia}
                 canDownloadOriginal={canDownloadOriginal}
                 canDelete={canDeleteMedia}
+                canReport={canReportMedia}
+                reportOpen={reportOpen}
                 originalError={originalError}
                 isDownloadingOriginal={originalMedia.isPending}
                 hasPrevious={hasPreviousMedia}
@@ -197,9 +204,22 @@ export function GalleryScreen() {
                 onClose={closeMedia}
                 onDownloadOriginal={downloadOriginal}
                 onDelete={requestDeleteMedia}
+                onReport={openReport}
                 onPrevious={showPreviousMedia}
                 onNext={showNextMedia}
             />
+
+            {/* Media report */}
+            {selectedMedia && canReportMedia && (
+                <ReportTargetModal
+                    eventId={selectedMedia.eventId}
+                    targetType="MEDIA"
+                    targetId={selectedMedia.id}
+                    open={reportOpen}
+                    layer="overStory"
+                    onCloseAction={closeReport}
+                />
+            )}
 
             {/* Media delete confirmation */}
             <ConfirmActionModal

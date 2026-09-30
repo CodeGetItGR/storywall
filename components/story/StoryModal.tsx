@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { ProtectedImage } from '@/components/common/ProtectedImage';
+import { ReportTargetModal } from '@/components/reports';
 import { StoryCaptionBar, StoryHeader, StoryProgressBar } from '@/components/story';
 import { StoryVideo } from '@/components/story/StoryVideo';
 import { ConfirmActionModal } from '@/components/ui/ConfirmActionModal';
@@ -33,6 +34,8 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
         showDeleteConfirm,
         canManage,
         canDeleteStory,
+        canReportStory,
+        reportOpen,
         isVideoStory,
         isDeleting,
         mediaError,
@@ -43,6 +46,8 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
         handleDeleteRequest,
         handleCloseDeleteConfirm,
         handleDelete,
+        handleReportRequest,
+        handleCloseReport,
         handleMediaLoaded,
         handleMediaError,
         handleVideoTimeUpdate,
@@ -88,10 +93,12 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                             timeStr={timeStr}
                             canManage={canManage}
                             canDelete={canDeleteStory}
+                            canReport={canReportStory}
                             showMenu={showMenu}
                             onToggleMenu={handleToggleMenu}
                             onClose={handleCloseStory}
                             onDeleteRequest={handleDeleteRequest}
+                            onReportRequest={handleReportRequest}
                         />
 
                         {/* Media */}
@@ -100,6 +107,7 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                             (isVideoStory ? (
                                 <StoryVideo
                                     key={media.id}
+                                    paused={reportOpen}
                                     src={media.mediaUrl}
                                     onLoadedData={handleMediaLoaded}
                                     onTimeUpdate={handleVideoTimeUpdate}
@@ -166,7 +174,20 @@ export function StoryModal({ open, storyId, onCloseAction }: StoryModalProps) {
                     confirmLabel={t('deleteStoryConfirm')}
                     cancelLabel={t('cancel')}
                     isConfirming={isDeleting}
+                    layer="overStory"
                 />
+
+                {/* Report */}
+                {canReportStory && (
+                    <ReportTargetModal
+                        eventId={activeStory.eventId}
+                        targetType="STORY"
+                        targetId={activeStory.id}
+                        open={reportOpen}
+                        layer="overStory"
+                        onCloseAction={handleCloseReport}
+                    />
+                )}
             </Dialog.Portal>
         </Dialog.Root>
     );

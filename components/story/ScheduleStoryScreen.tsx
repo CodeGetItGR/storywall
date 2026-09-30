@@ -53,11 +53,13 @@ export function ScheduleStoryScreen() {
                     tone="light"
                     canManage={false}
                     canDelete={false}
+                    canReport={false}
                     showMenu={false}
                     leadingVisual={<ScheduleStoryDateBadge date={activeEvent.schedule.startAt} locale={locale} size="sm" />}
                     onToggleMenu={noop}
                     onClose={handleCloseStory}
                     onDeleteRequest={noop}
+                    onReportRequest={noop}
                     showAvatar={false}
                 />
 

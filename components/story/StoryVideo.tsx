@@ -2,7 +2,7 @@
 
 import { Volume2, VolumeX } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { type ReactEventHandler, type SyntheticEvent, useState } from 'react';
+import { type ReactEventHandler, type SyntheticEvent, useEffect, useRef, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -18,17 +18,47 @@ interface StoryVideoProps {
     /** Fires when the browser can't decode/load `src` at all (e.g. some Android
      * browsers can't play a locally-picked video's blob: URL). */
     onLoadError?: () => void;
+    /** Holds playback where it stopped while true, and resumes from there when it turns false. */
+    paused?: boolean;
 }
 
 function preventContextMenu(event: SyntheticEvent<HTMLVideoElement>) {
     event.preventDefault();
 }
 
-export function StoryVideo({ src, className, loop = false, muteToggle = true, onTimeUpdate, onEnded, onLoadedData, onLoadError }: StoryVideoProps) {
+function ignorePlayRejection() {
+    // Autoplay policy can refuse play(); the viewer can still tap the story on.
+}
+
+export function StoryVideo({
+    src,
+    className,
+    loop = false,
+    muteToggle = true,
+    onTimeUpdate,
+    onEnded,
+    onLoadedData,
+    onLoadError,
+    paused = false,
+}: StoryVideoProps) {
     const t = useTranslations('StoryPage');
     // Mobile browsers block autoplay of unmuted video, so playback always
     // starts muted; the viewer can opt into sound via the toggle below.
     const [isMuted, setIsMuted] = useState(true);
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const pausedByUsRef = useRef(false);
+
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+        if (paused) {
+            video.pause();
+            pausedByUsRef.current = true;
+        } else if (pausedByUsRef.current) {
+            pausedByUsRef.current = false;
+            Promise.resolve(video.play()).catch(ignorePlayRejection);
+        }
+    }, [paused]);
 
     function handleToggleMute() {
         setIsMuted((v) => !v);
@@ -37,6 +67,7 @@ export function StoryVideo({ src, className, loop = false, muteToggle = true, on
     return (
         <>
             <video
+                ref={videoRef}
                 src={src}
                 className={cn('absolute inset-0 h-full w-full object-contain', className)}
                 autoPlay

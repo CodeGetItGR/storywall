@@ -12,6 +12,7 @@ import { useInfiniteScrollSentinel } from '@/hooks/useInfiniteScrollSentinel';
 import { useDeleteMedia, useEventMedia, useOriginalMedia, useUploadMediaBatch } from '@/hooks/useMedia';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
+import { canReportContent } from '@/lib/contentPermissions';
 import { downloadBlob } from '@/lib/download';
 import { isEventDeleted, isEventWritable, readableModuleKeys } from '@/lib/eventLifecycle';
 import { useActiveMember } from '@/providers/EventProvider';
@@ -29,6 +30,7 @@ export function useGalleryScreen() {
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [uploadNotice, setUploadNotice] = useState<string | null>(null);
     const [selectedMediaId, setSelectedMediaId] = useState<string | null>(null);
+    const [reportMediaId, setReportMediaId] = useState<string | null>(null);
     const [originalError, setOriginalError] = useState<string | null>(null);
     const [selectionDownloadError, setSelectionDownloadError] = useState<string | null>(null);
     const [isDownloadingSelection, setIsDownloadingSelection] = useState(false);
@@ -69,6 +71,20 @@ export function useGalleryScreen() {
     // Deletes are not plan-gated on the backend, so a host can still clear out a file after the
     // gallery module is gone — only a read-only or deleted event stops it.
     const canDeleteMedia = isHost && selectedMedia !== null && isEventWritable(activeEvent?.status) && !isDeleted;
+    const canReportMedia =
+        selectedMedia !== null &&
+        !isDeleted &&
+        canReportContent({
+            isMember: Boolean(activeMember),
+            isAuthor: Boolean(activeMember && selectedMedia.uploaderMemberId === activeMember.id),
+            canWrite: isEventWritable(activeEvent?.status),
+            targetTypeReportable: Boolean(appConfig?.reportTargetTypes?.includes('MEDIA')),
+        });
+    // The dialog belongs to the item it was opened for: if the selection moves, the item leaves the list
+    // or reporting stops being allowed, it is closed and stays closed.
+    const reportOpen = reportMediaId !== null && reportMediaId === selectedMedia?.id && canReportMedia;
+    // Forget a dialog that can no longer show, so it doesn't come back when its item or permission does.
+    if (reportMediaId !== null && !reportOpen) setReportMediaId(null);
     const canDownloadSelected =
         gallerySelection.selectedCount > 0 &&
         gallerySelection.selectedCount <= maxArchiveSelectedItems &&
@@ -166,6 +182,17 @@ export function useGalleryScreen() {
         setDeleteError(null);
         setConfirmDeleteOpen(true);
     }, [canDeleteMedia]);
+
+    const openReport = useCallback(() => {
+        if (!selectedMedia) return;
+        // A page still loading for a pending Next must not move the selection under the dialog.
+        pendingAdvanceIndexRef.current = null;
+        setReportMediaId(selectedMedia.id);
+    }, [selectedMedia]);
+
+    const closeReport = useCallback(() => {
+        setReportMediaId(null);
+    }, []);
 
     const closeDeleteConfirm = useCallback(() => {
         setConfirmDeleteOpen(false);
@@ -273,6 +300,7 @@ export function useGalleryScreen() {
     const closeMedia = useCallback(() => {
         setSelectedMediaId(null);
         setOriginalError(null);
+        setReportMediaId(null);
     }, []);
 
     useEffect(() => {
@@ -318,6 +346,10 @@ export function useGalleryScreen() {
         canDownloadOriginal,
         canDownloadSelected,
         canDeleteMedia,
+        canReportMedia,
+        reportOpen,
+        openReport,
+        closeReport,
         confirmDeleteOpen,
         deleteError,
         deleteMedia,

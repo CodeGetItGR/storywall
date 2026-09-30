@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import type React from 'react';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import { Modal } from '@/components/ui/modal';
 import { useAppConfig } from '@/hooks/useAppConfig';
@@ -14,20 +14,33 @@ type ReportTargetModalProps = {
     onCloseAction: () => void;
     open: boolean;
     targetId: string;
-    targetName: string;
+    /** Only shown for MEMBER reports; content reports use a generic sentence. */
+    targetName?: string;
     targetType: ReportTargetType;
+    layer?: 'default' | 'overStory';
 };
 
-export function ReportTargetModal({ eventId, onCloseAction, open, targetId, targetName, targetType }: ReportTargetModalProps) {
+export function ReportTargetModal({ eventId, onCloseAction, open, targetId, targetName, targetType, layer }: ReportTargetModalProps) {
     const t = useTranslations('Report');
     const { data: appConfig } = useAppConfig();
-    const { description, error, isSubmitting, reason, setDescription, setReason, submit } = useReportSubmission({
+    const { description, error, isSubmitting, reason, reset, setDescription, setReason, submit } = useReportSubmission({
         eventId,
         targetId,
         targetType,
         onSuccessAction: onCloseAction,
-        failedMessage: t('failed'),
+        messages: {
+            failed: t('failed'),
+            ownContent: t('ownContent'),
+            gone: t('gone'),
+            rateLimited: t('rateLimited'),
+        },
     });
+    // Every open starts with an empty form: several callers keep this mounted and toggle `open`.
+    const [wasOpen, setWasOpen] = useState(open);
+    if (open !== wasOpen) {
+        setWasOpen(open);
+        if (open) reset();
+    }
     const supportedReasons = appConfig?.reportTargetTypes?.includes(targetType) ? (appConfig.reportReasons ?? []) : [];
     const maxDescriptionLength = appConfig?.contentLimits.reportDescriptionMaxLength ?? 1000;
 
@@ -52,13 +65,15 @@ export function ReportTargetModal({ eventId, onCloseAction, open, targetId, targ
     }
 
     return (
-        <Modal open={open} onClose={onCloseAction} size="sm" closeLabel={t('cancel')} ariaLabel={t('title')}>
+        <Modal open={open} onClose={onCloseAction} size="sm" closeLabel={t('cancel')} ariaLabel={t('title')} layer={layer}>
             <Modal.Body className="px-4 pt-12 pb-5 sm:px-5">
                 {/* Report form */}
                 <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
                     <div>
                         <h2 className="text-base font-semibold text-ink">{t('title')}</h2>
-                        <p className="mt-1 text-sm text-ink-muted">{t('body', { name: targetName })}</p>
+                        <p className="mt-1 text-sm text-ink-muted">
+                            {targetType === 'MEMBER' ? t('body', { name: targetName ?? '' }) : t(`bodyByType.${targetType}`)}
+                        </p>
                     </div>
 
                     <label className="flex flex-col gap-1.5 text-sm font-medium text-ink">

@@ -861,6 +861,7 @@
         "next": "Next",
         "moreOptions": "More options",
         "deleteStory": "Delete story",
+        "reportStory": "Report story",
         "deleteStoryConfirmTitle": "Delete this story?",
         "deleteStoryConfirmBody": "This story will be removed for everyone and can't be undone.",
         "deleteStoryConfirm": "Delete story",
@@ -2028,6 +2029,7 @@
         "hostReadOnly": "As the host, you can view wishes but can't add your own.",
         "exportPdf": "Download as PDF",
         "exportFailed": "Couldn't download the wishbook. Please try again.",
+        "reportEntry": "Report",
         "delete": "Delete",
         "deleteTitle": "Delete this wish?",
         "deleteBody": "This removes the wish from the wishbook.",
@@ -2083,6 +2085,7 @@
         "downvoteThisSong": "Downvote this song",
         "moreOptions": "More options",
         "deleteSuggestion": "Delete suggestion",
+        "report": "Report",
         "confirmDeleteSuggestion": "Confirm delete suggestion",
         "deleteSuggestionConfirmTitle": "Delete this suggestion?",
         "deleteSuggestionConfirmBody": "This song suggestion will be removed for everyone and can't be undone.",
@@ -3702,6 +3705,7 @@
         "deleteMediaConfirmTitle": "Delete this file?",
         "deleteMediaConfirmBody": "It will be removed from the event for everyone and can't be undone.",
         "deleteMediaFailed": "We couldn't delete this file. Please try again.",
+        "reportMedia": "Report",
         "cancelDelete": "Cancel",
         "archiveSummaryTitle": "Gallery summary",
         "archiveTotalsWithOriginals": "{originals} originals · {display} compressed",
@@ -3801,6 +3805,7 @@
         "eventNotActive": "This event is not live yet.",
         "eventPurgedNotRenewable": "This event's media has already been purged, so it cannot be renewed. Create a new event to continue.",
         "rateLimited": "Too many requests. Please wait a moment and try again.",
+        "reportOwnContent": "You can't report your own content.",
         "rateLimitedWithWait": "Too many requests. Try again in {seconds}s.",
         "storageLimit": "Storage limit reached for this event.",
         "storageLimitWithPlan": "Storage limit reached on the {plan} plan. Upgrade to add more.",
@@ -4384,6 +4389,14 @@
     "Report": {
         "title": "Report",
         "body": "Report {name} to the platform team.",
+        "bodyByType": {
+            "POST": "Report this post to the platform team.",
+            "COMMENT": "Report this comment to the platform team.",
+            "STORY": "Report this story to the platform team.",
+            "MEDIA": "Report this photo or video to the platform team.",
+            "WISHBOOK_ENTRY": "Report this wish to the platform team.",
+            "PLAYLIST_SUGGESTION": "Report this song suggestion to the platform team."
+        },
         "reason": "Reason",
         "chooseReason": "Choose a reason",
         "details": "Details",
@@ -4392,12 +4405,17 @@
         "submitting": "Sending…",
         "cancel": "Cancel",
         "failed": "Couldn't send the report. Please try again.",
+        "ownContent": "You can't report your own content. You can delete it instead.",
+        "gone": "This was already removed.",
+        "rateLimited": "You've sent a lot of reports. Please try again later.",
         "reasons": {
             "SPAM": "Spam",
             "HARASSMENT": "Harassment",
             "INAPPROPRIATE_CONTENT": "Inappropriate content",
             "IMPERSONATION": "Impersonation",
-            "OTHER": "Other"
+            "OTHER": "Other",
+            "ILLEGAL_CONTENT": "Illegal content",
+            "COPYRIGHT": "Copyright infringement"
         }
     },
     "PublishQueue": {

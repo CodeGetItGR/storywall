@@ -27,6 +27,8 @@ interface ModalProps {
     closeButtonPosition?: 'left' | 'right';
     dismissOnBack?: boolean;
     showCloseButton?: boolean;
+    /** 'overStory' lifts the dialog above the full-screen story viewer (z-60). */
+    layer?: 'default' | 'overStory';
 }
 
 export function Modal({
@@ -41,10 +43,12 @@ export function Modal({
     closeButtonPosition = 'right',
     dismissOnBack = true,
     showCloseButton = true,
+    layer = 'default',
 }: ModalProps) {
     const isFull = size === 'full';
     const isSheet = variant === 'sheet';
     const isDrawer = variant === 'drawer';
+    const isOverStory = layer === 'overStory';
     const { requestClose } = useOverlayHistory(open, onClose, dismissOnBack);
 
     const onOpenChange = useCallback(
@@ -67,13 +71,17 @@ export function Modal({
                     and looks identical to the app having hung. */}
                 <Dialog.Backdrop
                     forceRender
-                    className="motion-overlay fixed inset-0 z-50 bg-ink/60 opacity-100 backdrop-blur-sm data-closed:pointer-events-none data-closed:opacity-0"
+                    className={cn(
+                        'motion-overlay fixed inset-0 bg-ink/60 opacity-100 backdrop-blur-sm data-closed:pointer-events-none data-closed:opacity-0',
+                        isOverStory ? 'z-70' : 'z-50',
+                    )}
                 />
                 {/* Surface */}
                 <Dialog.Popup
                     aria-label={ariaLabel}
                     className={cn(
-                        'motion-surface fixed z-50 flex flex-col bg-background outline-none',
+                        'motion-surface fixed flex flex-col bg-background outline-none',
+                        isOverStory ? 'z-70' : 'z-50',
                         isFull
                             ? 'inset-x-0 top-(--visual-viewport-offset-top) h-(--visual-viewport-height) max-h-(--visual-viewport-height) w-screen rounded-none data-ending-style:opacity-0 data-starting-style:opacity-0'
                             : isDrawer

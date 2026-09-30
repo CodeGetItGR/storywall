@@ -335,8 +335,8 @@ export interface AppRateLimitConfigDto {
     windowSeconds: number;
 }
 
-export type ReportTargetType = 'POST' | 'COMMENT' | 'MEMBER';
-export type ReportReason = 'SPAM' | 'HARASSMENT' | 'INAPPROPRIATE_CONTENT' | 'IMPERSONATION' | 'OTHER';
+export type ReportTargetType = 'POST' | 'COMMENT' | 'MEMBER' | 'STORY' | 'MEDIA' | 'WISHBOOK_ENTRY' | 'PLAYLIST_SUGGESTION';
+export type ReportReason = 'SPAM' | 'HARASSMENT' | 'INAPPROPRIATE_CONTENT' | 'IMPERSONATION' | 'ILLEGAL_CONTENT' | 'COPYRIGHT' | 'OTHER';
 
 export interface AppConfigResponseDto {
     featureFlags: PlatformFeatureFlagResponseDto[];
