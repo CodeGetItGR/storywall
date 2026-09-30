@@ -36,4 +36,17 @@ describe('POST /api/auth/login', () => {
         expect(res.status).toBe(200);
         expect(maxAges.get(AUTH_COOKIES.refreshToken)).toBe(REFRESH_TOKEN_MAX_AGE_SECONDS);
     });
+
+    // Otherwise Spring counts every browser's login against this server's one address.
+    it("passes the browser's address on to Spring", async () => {
+        login.mockResolvedValue({ accessToken: 'at', refreshToken: 'rt', userId: 'u1' });
+        await POST(
+            new Request('http://localhost/api/auth/login', {
+                method: 'POST',
+                headers: { 'x-forwarded-for': '198.51.100.7' },
+                body: JSON.stringify({ email: 'a@b.c', password: 'pw' }),
+            }),
+        );
+        expect(login).toHaveBeenCalledWith(expect.anything(), expect.anything(), '198.51.100.7');
+    });
 });

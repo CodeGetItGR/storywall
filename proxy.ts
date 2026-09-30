@@ -12,7 +12,7 @@ import {
     REFRESH_TOKEN_MAX_AGE_SECONDS,
 } from '@/lib/auth/authCookies';
 import { AUTH_RETURN_PATH_PARAM } from '@/lib/auth/returnPath';
-import { springAuth, SpringAuthError } from '@/lib/auth/springAuth';
+import { clientIpFrom, springAuth, SpringAuthError } from '@/lib/auth/springAuth';
 import { routes } from '@/lib/routes';
 import { isSharedLinkPath, readShareLocale, SHARE_LOCALE_PARAM } from '@/lib/shareLinks';
 
@@ -57,7 +57,7 @@ async function resolveSession(request: NextRequest): Promise<SessionResolution> 
 
     try {
         const locale = resolveLocale(request.cookies.get(localeCookieName)?.value, request.headers.get('accept-language'));
-        const auth = await springAuth.refresh(refreshToken, locale);
+        const auth = await springAuth.refresh(refreshToken, locale, clientIpFrom(request.headers));
         const cookies: CookieWrite[] = [
             {
                 name: AUTH_COOKIES.accessToken,

@@ -5,7 +5,7 @@ import { localeCookieName } from '@/i18n/config';
 import { resolveLocale } from '@/i18n/resolveLocale';
 import { ACCESS_TOKEN_MAX_AGE_SECONDS, AUTH_COOKIES, baseCookieOptions, REFRESH_TOKEN_MAX_AGE_SECONDS } from '@/lib/auth/authCookies';
 import { toSessionDto } from '@/lib/auth/authRouteHelpers';
-import { springAuth, SpringAuthError } from '@/lib/auth/springAuth';
+import { clientIpFrom, springAuth, SpringAuthError } from '@/lib/auth/springAuth';
 
 function clearAuthCookies(cookieStore: Awaited<ReturnType<typeof cookies>>) {
     cookieStore.delete(AUTH_COOKIES.accessToken);
@@ -24,7 +24,7 @@ export async function GET() {
     try {
         const headerStore = await headers();
         const locale = resolveLocale(cookieStore.get(localeCookieName)?.value, headerStore.get('accept-language'));
-        const auth = await springAuth.refresh(refreshToken, locale);
+        const auth = await springAuth.refresh(refreshToken, locale, clientIpFrom(headerStore));
 
         cookieStore.set(AUTH_COOKIES.accessToken, auth.accessToken, { ...baseCookieOptions(), maxAge: ACCESS_TOKEN_MAX_AGE_SECONDS });
         if (auth.refreshToken) {
