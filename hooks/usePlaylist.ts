@@ -38,7 +38,8 @@ export function useCreatePlaylistSuggestion() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (input: PlaylistSuggestionRequestDto) => api.post<PlaylistSuggestionResponseDto>(endpoints.playlistSuggestions.create, input),
+        mutationFn: ({ signal, ...input }: PlaylistSuggestionRequestDto & { signal?: AbortSignal }) =>
+            api.post<PlaylistSuggestionResponseDto>(endpoints.playlistSuggestions.create, input, { signal }),
         onSuccess: (suggestion) => {
             queryClient.invalidateQueries({
                 queryKey: playlistKeys.suggestions(suggestion.eventId),

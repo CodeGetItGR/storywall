@@ -124,7 +124,8 @@ export function useCreatePost() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (input: PostRequestDto) => api.post<PostResponseDto>(endpoints.posts.create, input),
+        mutationFn: ({ signal, ...input }: PostRequestDto & { signal?: AbortSignal }) =>
+            api.post<PostResponseDto>(endpoints.posts.create, input, { signal }),
         onSuccess: (post) => {
             queryClient.invalidateQueries({ queryKey: postKeys.list(post.eventId) });
         },
