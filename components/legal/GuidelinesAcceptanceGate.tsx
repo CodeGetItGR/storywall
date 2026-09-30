@@ -4,14 +4,34 @@ import { Loader2, ScrollText } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { type ReactNode, useCallback, useState } from 'react';
+import { createContext, type Dispatch, type ReactNode, type SetStateAction, useCallback, useContext, useState } from 'react';
 
 import { useAcceptGuidelines } from '@/hooks/useAcceptGuidelines';
 import { useAuth } from '@/hooks/useAuth';
 import { useGuidelinesAcceptanceBlocking } from '@/hooks/useGuidelinesAcceptanceBlocking';
-import { useMe } from '@/hooks/useMe';
 import { isGuidelinesVersionMismatchError } from '@/lib/api/errors';
 import { routes } from '@/lib/routes';
+
+type SignOutHold = { signingOutFrom: string | null; setSigningOutFrom: Dispatch<SetStateAction<string | null>> };
+const SignOutHoldContext = createContext<SignOutHold | null>(null);
+
+// The path a sign-out from the gate started on. logout() clears /api/me at once,
+// so without this the hidden page would flash before the redirect lands. It lives
+// above the gate because logout also remounts the gate (AppProviders starts the
+// composer, and everything under it, fresh for the next account). Released as
+// soon as the path changes.
+export function GuidelinesGateSignOutHold({ children }: { children: ReactNode }) {
+    const pathname = usePathname();
+    const [signingOutFrom, setSigningOutFrom] = useState<string | null>(null);
+    if (signingOutFrom !== null && signingOutFrom !== pathname) setSigningOutFrom(null);
+    return <SignOutHoldContext.Provider value={{ signingOutFrom, setSigningOutFrom }}>{children}</SignOutHoldContext.Provider>;
+}
+
+function useSignOutHold(): SignOutHold {
+    const hold = useContext(SignOutHoldContext);
+    if (!hold) throw new Error('GuidelinesAcceptanceGate must be inside GuidelinesGateSignOutHold');
+    return hold;
+}
 
 // Mounted once in AppProviders around the page itself, inside ComposerProvider,
 // so the publish queue (in memory only) survives the gate opening and closing.
@@ -26,15 +46,10 @@ export function GuidelinesAcceptanceGate({ children }: { children: ReactNode }) 
     const pathname = usePathname();
     const router = useRouter();
     const { logout } = useAuth();
-    const { data: me } = useMe();
-    const isBlocking = useGuidelinesAcceptanceBlocking();
+    const { isBlocking, version } = useGuidelinesAcceptanceBlocking();
     const accept = useAcceptGuidelines();
-    const version = me?.currentGuidelinesVersion ?? null;
     const { mutate } = accept;
-    // The path sign-out started on. logout() clears /api/me at once, so without
-    // this the hidden page would flash before the redirect lands.
-    const [signingOutFrom, setSigningOutFrom] = useState<string | null>(null);
-    if (signingOutFrom !== null && signingOutFrom !== pathname) setSigningOutFrom(null);
+    const { signingOutFrom, setSigningOutFrom } = useSignOutHold();
     const isSigningOut = signingOutFrom !== null;
 
     const handleAccept = useCallback(() => {
@@ -49,7 +64,7 @@ export function GuidelinesAcceptanceGate({ children }: { children: ReactNode }) 
         } finally {
             router.replace(routes.login);
         }
-    }, [logout, pathname, router]);
+    }, [logout, pathname, router, setSigningOutFrom]);
 
     if (!isBlocking && !isSigningOut) return <>{children}</>;
 

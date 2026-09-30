@@ -10,18 +10,20 @@ import { useMe } from '@/hooks/useMe';
 // only trap a signed-in user who landed there. Keep this list short.
 const UNGATED_PREFIXES = ['/legal/', '/login', '/register', '/verify-email', '/forgot-password', '/reset-password', '/newsletter/'];
 
-export function isUngatedPath(pathname: string | null): boolean {
+function isUngatedPath(pathname: string | null): boolean {
     if (!pathname) return false;
     return UNGATED_PREFIXES.some((prefix) =>
         prefix.endsWith('/') ? pathname.startsWith(prefix) : pathname === prefix || pathname.startsWith(`${prefix}/`),
     );
 }
 
-// True while GuidelinesAcceptanceGate is replacing the page. Also read by
+// isBlocking: true while GuidelinesAcceptanceGate is replacing the page.
+// version: the version in force, which the gate's accept sends back. Also read by
 // ComposerProvider, whose modals render beside the page rather than inside it.
 // Signed out, useMe never runs, so this is false.
-export function useGuidelinesAcceptanceBlocking(): boolean {
+export function useGuidelinesAcceptanceBlocking(): { isBlocking: boolean; version: string | null } {
     const pathname = usePathname();
     const { data: me } = useMe();
-    return Boolean(me?.guidelinesAcceptanceRequired && me.currentGuidelinesVersion) && !isUngatedPath(pathname);
+    const version = me?.currentGuidelinesVersion ?? null;
+    return { isBlocking: Boolean(me?.guidelinesAcceptanceRequired && version) && !isUngatedPath(pathname), version };
 }

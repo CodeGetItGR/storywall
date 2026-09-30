@@ -1,30 +1,55 @@
 import { QueryClient } from '@tanstack/react-query';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ApiError } from '@/lib/api/client';
+import { api } from '@/lib/api/client';
 import { reopenGuidelinesGateOn4013 } from '@/lib/guidelinesAcceptance';
 
-function apiError(status: number, errorCode: number) {
-    // A ProblemDetail-shaped body, so the constructor fills `problem` itself.
-    return new ApiError(status, { errorCode });
+function respondWith(status: number, body: unknown) {
+    vi.stubGlobal(
+        'fetch',
+        vi.fn(async () => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/problem+json' } })),
+    );
 }
 
+// Direct api.* calls, the way hooks/useProfileForm saves, not through React Query.
 describe('reopenGuidelinesGateOn4013', () => {
-    it('refetches me on 4013 so the gate reopens', () => {
-        const client = new QueryClient();
-        const invalidate = vi.spyOn(client, 'invalidateQueries');
+    let client: QueryClient;
+    let invalidate: ReturnType<typeof vi.spyOn>;
+    let unsubscribe: () => void;
 
-        reopenGuidelinesGateOn4013(apiError(403, 4013), client);
+    beforeEach(() => {
+        client = new QueryClient();
+        invalidate = vi.spyOn(client, 'invalidateQueries');
+        unsubscribe = reopenGuidelinesGateOn4013(client);
+    });
 
+    afterEach(() => {
+        unsubscribe();
+        vi.unstubAllGlobals();
+    });
+
+    it('refetches me when a write is refused with 4013, so the gate reopens', async () => {
+        respondWith(403, { status: 403, errorCode: 4013 });
+
+        await expect(api.patch('/api/me', { firstName: 'Ada' })).rejects.toMatchObject({ status: 403 });
+
+        expect(invalidate).toHaveBeenCalledTimes(1);
         expect(invalidate).toHaveBeenCalledWith({ queryKey: ['me'] });
     });
 
-    it('ignores every other error', () => {
-        const client = new QueryClient();
-        const invalidate = vi.spyOn(client, 'invalidateQueries');
+    it('ignores any other 403', async () => {
+        respondWith(403, { status: 403, errorCode: 4001 });
 
-        reopenGuidelinesGateOn4013(apiError(403, 4001), client);
-        reopenGuidelinesGateOn4013(new Error('network'), client);
+        await expect(api.patch('/api/me', { firstName: 'Ada' })).rejects.toMatchObject({ status: 403 });
+
+        expect(invalidate).not.toHaveBeenCalled();
+    });
+
+    it('stops listening once unsubscribed', async () => {
+        unsubscribe();
+        respondWith(403, { status: 403, errorCode: 4013 });
+
+        await expect(api.post('/api/events', {})).rejects.toMatchObject({ status: 403 });
 
         expect(invalidate).not.toHaveBeenCalled();
     });

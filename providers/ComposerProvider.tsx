@@ -16,7 +16,7 @@ function ComposerProviderInner({ children }: { children: ReactNode }) {
     // The guidelines gate replaces only the page (children). The modals sit beside
     // it, so they're left out while it's up; their drafts live in the controller
     // and come back once the guidelines are accepted.
-    const isGuidelinesGateUp = useGuidelinesAcceptanceBlocking();
+    const { isBlocking: isGuidelinesGateUp } = useGuidelinesAcceptanceBlocking();
 
     return (
         <ComposerContext.Provider value={contextValue}>

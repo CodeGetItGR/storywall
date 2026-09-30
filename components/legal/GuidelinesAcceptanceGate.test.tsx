@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { GuidelinesAcceptanceGate } from '@/components/legal/GuidelinesAcceptanceGate';
+import { GuidelinesAcceptanceGate, GuidelinesGateSignOutHold } from '@/components/legal/GuidelinesAcceptanceGate';
 import { ApiError } from '@/lib/api/client';
 
 const mocks = vi.hoisted(() => ({
@@ -38,14 +38,14 @@ describe('GuidelinesAcceptanceGate', () => {
 
     it('shows the app when nothing is required', () => {
         mocks.me = { guidelinesAcceptanceRequired: false, currentGuidelinesVersion: '2026-09-30' };
-        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>);
+        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
 
         expect(screen.getByText('app')).toBeInTheDocument();
     });
 
     it('replaces the app with the acceptance screen when required', () => {
         mocks.me = { guidelinesAcceptanceRequired: true, currentGuidelinesVersion: '2026-09-30' };
-        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>);
+        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
 
         expect(screen.queryByText('app')).not.toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'read opensInNewTab' })).toHaveAttribute('href', '/legal/community-guidelines');
@@ -53,7 +53,7 @@ describe('GuidelinesAcceptanceGate', () => {
 
     it('accepts the version /api/me reported', () => {
         mocks.me = { guidelinesAcceptanceRequired: true, currentGuidelinesVersion: '2026-09-30' };
-        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>);
+        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
 
         fireEvent.click(screen.getByRole('button', { name: 'accept' }));
 
@@ -63,21 +63,21 @@ describe('GuidelinesAcceptanceGate', () => {
     it('asks for a re-read when the version changed under the user', () => {
         mocks.me = { guidelinesAcceptanceRequired: true, currentGuidelinesVersion: '2026-09-30' };
         mocks.error = new ApiError(400, { errorCode: 3037 });
-        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>);
+        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
 
         expect(screen.getByRole('alert')).toHaveTextContent('changed');
     });
 
     // No extra wait on every load: the app shows until /api/me says otherwise.
     it('shows the app while /api/me is still loading', () => {
-        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>);
+        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
 
         expect(screen.getByText('app')).toBeInTheDocument();
     });
 
     // The backend still enforces; no /api/me data (e.g. it failed) must not lock the app.
     it('shows the app when there is no /api/me data', () => {
-        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>);
+        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
 
         expect(screen.getByText('app')).toBeInTheDocument();
     });
@@ -86,7 +86,7 @@ describe('GuidelinesAcceptanceGate', () => {
     it('leaves the guidelines page readable while acceptance is required', () => {
         mocks.me = { guidelinesAcceptanceRequired: true, currentGuidelinesVersion: '2026-09-30' };
         mocks.pathname = '/legal/community-guidelines';
-        render(<GuidelinesAcceptanceGate>guidelines</GuidelinesAcceptanceGate>);
+        render(<GuidelinesAcceptanceGate>guidelines</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
 
         expect(screen.getByText('guidelines')).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'accept' })).not.toBeInTheDocument();
@@ -95,7 +95,7 @@ describe('GuidelinesAcceptanceGate', () => {
     it('leaves the auth pages reachable while acceptance is required', () => {
         mocks.me = { guidelinesAcceptanceRequired: true, currentGuidelinesVersion: '2026-09-30' };
         mocks.pathname = '/login';
-        render(<GuidelinesAcceptanceGate>login</GuidelinesAcceptanceGate>);
+        render(<GuidelinesAcceptanceGate>login</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
 
         expect(screen.getByText('login')).toBeInTheDocument();
     });
@@ -103,7 +103,7 @@ describe('GuidelinesAcceptanceGate', () => {
     it('leaves pages below an auth page reachable', () => {
         mocks.me = { guidelinesAcceptanceRequired: true, currentGuidelinesVersion: '2026-09-30' };
         mocks.pathname = '/login/x';
-        render(<GuidelinesAcceptanceGate>login</GuidelinesAcceptanceGate>);
+        render(<GuidelinesAcceptanceGate>login</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
 
         expect(screen.getByText('login')).toBeInTheDocument();
     });
@@ -112,7 +112,7 @@ describe('GuidelinesAcceptanceGate', () => {
     it('gates a bare /legal', () => {
         mocks.me = { guidelinesAcceptanceRequired: true, currentGuidelinesVersion: '2026-09-30' };
         mocks.pathname = '/legal';
-        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>);
+        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
 
         expect(screen.queryByText('app')).not.toBeInTheDocument();
     });
@@ -121,7 +121,7 @@ describe('GuidelinesAcceptanceGate', () => {
     it('gates a path that only shares a prefix with an auth page', () => {
         mocks.me = { guidelinesAcceptanceRequired: true, currentGuidelinesVersion: '2026-09-30' };
         mocks.pathname = '/loginx';
-        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>);
+        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
 
         expect(screen.queryByText('app')).not.toBeInTheDocument();
     });
@@ -130,7 +130,7 @@ describe('GuidelinesAcceptanceGate', () => {
     it('signs out and goes to the login page', async () => {
         mocks.me = { guidelinesAcceptanceRequired: true, currentGuidelinesVersion: '2026-09-30' };
         mocks.logout.mockResolvedValue(undefined);
-        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>);
+        render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
 
         fireEvent.click(screen.getByRole('button', { name: 'signOut' }));
 
@@ -145,7 +145,7 @@ describe('GuidelinesAcceptanceGate', () => {
         mocks.logout.mockImplementation(async () => {
             mocks.me = undefined;
         });
-        const { rerender } = render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>);
+        const { rerender } = render(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
 
         fireEvent.click(screen.getByRole('button', { name: 'signOut' }));
         await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith('/login'));
@@ -162,5 +162,21 @@ describe('GuidelinesAcceptanceGate', () => {
         mocks.pathname = '/home';
         rerender(<GuidelinesAcceptanceGate>app</GuidelinesAcceptanceGate>);
         expect(screen.getByText('app')).toBeInTheDocument();
+    });
+
+    // Logout remounts everything under the composer, the gate included (AppProviders).
+    it('keeps holding after the gate remounts during sign-out', async () => {
+        mocks.me = { guidelinesAcceptanceRequired: true, currentGuidelinesVersion: '2026-09-30' };
+        mocks.logout.mockImplementation(async () => {
+            mocks.me = undefined;
+        });
+        const { rerender } = render(<GuidelinesAcceptanceGate key="u1">app</GuidelinesAcceptanceGate>, { wrapper: GuidelinesGateSignOutHold });
+
+        fireEvent.click(screen.getByRole('button', { name: 'signOut' }));
+        await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith('/login'));
+        rerender(<GuidelinesAcceptanceGate key="signed-out">app</GuidelinesAcceptanceGate>);
+
+        expect(screen.queryByText('app')).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'signOut' })).toBeInTheDocument();
     });
 });

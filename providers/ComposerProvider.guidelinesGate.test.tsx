@@ -5,7 +5,7 @@ import { ComposerProvider } from '@/providers/ComposerProvider';
 
 const mocks = vi.hoisted(() => ({ gateUp: false }));
 
-vi.mock('@/hooks/useGuidelinesAcceptanceBlocking', () => ({ useGuidelinesAcceptanceBlocking: () => mocks.gateUp }));
+vi.mock('@/hooks/useGuidelinesAcceptanceBlocking', () => ({ useGuidelinesAcceptanceBlocking: () => ({ isBlocking: mocks.gateUp, version: null }) }));
 vi.mock('@/hooks/useComposerController', () => ({ useComposerController: () => ({ contextValue: {}, storyComposer: {} }) }));
 vi.mock('@/providers/PublishQueueProvider', () => ({ PublishQueueProvider: ({ children }: { children: unknown }) => children }));
 vi.mock('@/components/composer/ComposerModal', () => ({ ComposerModal: () => <p>post composer</p> }));
