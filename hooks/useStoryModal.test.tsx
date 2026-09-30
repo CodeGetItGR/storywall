@@ -12,6 +12,7 @@ vi.mock('@/hooks', () => ({
     useMediaItem: (id: string | null) => useMediaItem(id),
     useMarkStoryViewed: () => ({ mutate: vi.fn() }),
     useDeleteStory: () => ({ mutateAsync: vi.fn(), isPending: false }),
+    useAppConfig: () => ({ data: { reportTargetTypes: [] } }),
 }));
 vi.mock('@/hooks/useOverlayHistory', () => ({ useOverlayHistory: () => ({ requestClose: vi.fn() }) }));
 vi.mock('@/providers/EventProvider', () => ({

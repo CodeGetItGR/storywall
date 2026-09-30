@@ -2,11 +2,12 @@
 
 import { type SyntheticEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
-import { useDeleteStory, useEventStories, useMarkStoryViewed, useMediaItem, useStory } from '@/hooks';
+import { useAppConfig, useDeleteStory, useEventStories, useMarkStoryViewed, useMediaItem, useStory } from '@/hooks';
 import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import { ApiError } from '@/lib/api/client';
 import { isModuleNotAvailableError } from '@/lib/api/errors';
 import type { AuthorDto, MediaResponseDto, StoryResponseDto } from '@/lib/api/types';
+import { canReportContent } from '@/lib/contentPermissions';
 import { isEventWritable } from '@/lib/eventLifecycle';
 import { findAdjacentGroup, groupStoriesByAuthor, type StoryGroup } from '@/lib/stories';
 import { useActiveEvent, useActiveMember, useIsHost } from '@/providers/EventProvider';
@@ -41,6 +42,8 @@ export interface StoryModalController {
     showDeleteConfirm: boolean;
     canManage: boolean;
     canDeleteStory: boolean;
+    canReportStory: boolean;
+    reportOpen: boolean;
     isVideoStory: boolean;
     isDeleting: boolean;
     mediaError: boolean;
@@ -51,6 +54,8 @@ export interface StoryModalController {
     handleDeleteRequest: () => void;
     handleCloseDeleteConfirm: () => void;
     handleDelete: () => Promise<void>;
+    handleReportRequest: () => void;
+    handleCloseReport: () => void;
     handleMediaLoaded: () => void;
     handleMediaError: () => void;
     handleVideoTimeUpdate: (event: SyntheticEvent<HTMLVideoElement>) => void;
@@ -68,6 +73,7 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
     const [mediaError, setMediaError] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [reportOpen, setReportOpen] = useState(false);
     // The order authors appear in when the viewer opens, frozen so that
     // marking an author's last story as viewed (which re-sorts `groups`,
     // unseen-first) can't shift them out from under an in-progress "next
@@ -101,6 +107,7 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
         setMediaError(false);
         setShowMenu(false);
         setShowDeleteConfirm(false);
+        setReportOpen(false);
         if (!open) {
             setActiveStoryId(null);
         } else if (storyId !== prevStoryState.storyId || open !== prevStoryState.open) {
@@ -115,6 +122,13 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
     const canWrite = isEventWritable(activeEvent?.status);
     const canManage = Boolean(activeStory && activeMember && (activeMember.id === activeStory.authorMemberId || isHost));
     const canDeleteStory = canManage && canWrite;
+    const { data: appConfig } = useAppConfig();
+    const canReportStory = canReportContent({
+        isMember: Boolean(activeMember),
+        isAuthor: Boolean(activeStory && activeMember && activeStory.authorMemberId === activeMember.id),
+        canWrite,
+        targetTypeReportable: Boolean(appConfig?.reportTargetTypes?.includes('STORY')),
+    });
     const canAdvanceStory = Boolean(activeStory && group && storyIndex >= 0);
 
     function goNext() {
@@ -147,6 +161,8 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
     }
 
     function handleTimerComplete() {
+        // The story holds still while the report dialog is open.
+        if (reportOpen) return;
         if (!group || storyIndex < 0) {
             onCloseAction();
             return;
@@ -174,6 +190,7 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
     }
 
     function handleVideoEnded() {
+        if (reportOpen) return;
         setProgress(100);
         handleTimerComplete();
     }
@@ -204,6 +221,16 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
         goNext();
     }
 
+    function handleReportRequest() {
+        if (!canReportStory) return;
+        setShowMenu(false);
+        setReportOpen(true);
+    }
+
+    function handleCloseReport() {
+        setReportOpen(false);
+    }
+
     const onOpenChange = useCallback(
         (nextOpen: boolean) => {
             if (!nextOpen) requestClose();
@@ -218,7 +245,7 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
     }, [currentStoryId, open]);
 
     useEffect(() => {
-        if (!open || !currentStoryId || !canAdvanceStory || !canRunStoryTimer || isVideoStory) return;
+        if (!open || !currentStoryId || !canAdvanceStory || !canRunStoryTimer || isVideoStory || reportOpen) return;
 
         const interval = setInterval(() => {
             setProgress((p) => {
@@ -233,7 +260,7 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
 
         return () => clearInterval(interval);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [canAdvanceStory, canRunStoryTimer, currentStoryId, isVideoStory, open]);
+    }, [canAdvanceStory, canRunStoryTimer, currentStoryId, isVideoStory, open, reportOpen]);
 
     useEffect(() => {
         if (!open) return;
@@ -265,7 +292,7 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
         const timeout = setTimeout(() => handleTimerComplete(), MEDIA_ERROR_DISPLAY_MS);
         return () => clearTimeout(timeout);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [mediaError, open]);
+    }, [mediaError, open, reportOpen]);
 
     const storyNotFound = isStoryGone(storyError);
 
@@ -283,6 +310,8 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
         showDeleteConfirm,
         canManage,
         canDeleteStory,
+        canReportStory,
+        reportOpen,
         isVideoStory,
         isDeleting: deleteStory.isPending,
         mediaError,
@@ -293,6 +322,8 @@ export function useStoryModal({ open, storyId, onCloseAction }: UseStoryModalArg
         handleDeleteRequest,
         handleCloseDeleteConfirm,
         handleDelete,
+        handleReportRequest,
+        handleCloseReport,
         handleMediaLoaded,
         handleMediaError,
         handleVideoTimeUpdate,

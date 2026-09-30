@@ -17,11 +17,13 @@ interface StoryHeaderProps {
     tone?: 'dark' | 'light';
     canManage: boolean;
     canDelete: boolean;
+    canReport: boolean;
     showMenu: boolean;
     leadingVisual?: ReactNode;
     onToggleMenu: () => void;
     onClose: () => void;
     onDeleteRequest: () => void;
+    onReportRequest: () => void;
     showAvatar?: boolean;
 }
 
@@ -33,11 +35,13 @@ export function StoryHeader({
     tone = 'dark',
     canManage,
     canDelete,
+    canReport,
     showMenu,
     leadingVisual,
     onToggleMenu,
     onClose,
     onDeleteRequest,
+    onReportRequest,
     showAvatar,
 }: StoryHeaderProps) {
     const t = useTranslations('StoryPage');
@@ -65,7 +69,7 @@ export function StoryHeader({
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    {canManage && (
+                    {(canManage || canReport) && (
                         <button
                             onClick={onToggleMenu}
                             aria-label={t('moreOptions')}
@@ -90,14 +94,25 @@ export function StoryHeader({
                 </div>
             </div>
 
-            {canManage && showMenu && canDelete && (
-                <div className="motion-popover-enter absolute top-16 right-4 z-30 overflow-hidden rounded-xl bg-background shadow-lg">
-                    <button
-                        onClick={onDeleteRequest}
-                        className="motion-menu-item px-4 py-2.5 text-sm whitespace-nowrap text-destructive hover:bg-surface-muted disabled:opacity-50"
-                    >
-                        {t('deleteStory')}
-                    </button>
+            {showMenu && ((canManage && canDelete) || canReport) && (
+                <div className="motion-popover-enter absolute top-16 right-4 z-30 flex flex-col overflow-hidden rounded-xl bg-background shadow-lg">
+                    {canReport && (
+                        <button
+                            type="button"
+                            onClick={onReportRequest}
+                            className="motion-menu-item px-4 py-2.5 text-left text-sm whitespace-nowrap text-ink hover:bg-surface-muted disabled:opacity-50"
+                        >
+                            {t('reportStory')}
+                        </button>
+                    )}
+                    {canManage && canDelete && (
+                        <button
+                            onClick={onDeleteRequest}
+                            className="motion-menu-item px-4 py-2.5 text-left text-sm whitespace-nowrap text-destructive hover:bg-surface-muted disabled:opacity-50"
+                        >
+                            {t('deleteStory')}
+                        </button>
+                    )}
                 </div>
             )}
         </>

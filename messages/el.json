@@ -973,6 +973,8 @@
         "next": "Επόμενο",
         "moreOptions": "Περισσότερες επιλογές",
         "deleteStory": "Διαγραφή ιστορίας",
+        "reportStory": "Αναφορά ιστορίας",
+        "storyFallbackName": "αυτή η ιστορία",
         "listenToSong": "Ακούστε το τραγούδι",
         "unknownAuthor": "Κάποιος/α",
         "close": "Κλείσιμο",
