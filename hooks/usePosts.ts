@@ -9,7 +9,7 @@ import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList, type Page } from '@/lib/api/pagination';
 import type { MediaResponseDto, PostPatchRequestDto, PostRequestDto, PostResponseDto } from '@/lib/api/types';
-import { postKeys, POSTS_PAGE_SIZE } from '@/lib/postQueries';
+import { feedPagePath, postKeys, withFreshFirstPage } from '@/lib/postQueries';
 
 export { postKeys, POSTS_PAGE_SIZE } from '@/lib/postQueries';
 
@@ -47,7 +47,7 @@ export function useEventPosts(eventId: string | null) {
         queryKey: postKeys.list(eventId ?? ''),
         queryFn: async ({ pageParam }) => {
             const page = pageParam as number;
-            const path = `${endpoints.events.posts(eventId!)}?page=${page}&size=${POSTS_PAGE_SIZE}`;
+            const path = feedPagePath(eventId!, page);
             const etag = etags.current.get(path);
             let result = await api.conditionalGet<Page<PostResponseDto>>(path, etag ? { headers: { 'If-None-Match': etag } } : undefined);
             if (result.notModified) {
@@ -68,6 +68,30 @@ export function useEventPosts(eventId: string | null) {
         enabled: Boolean(eventId) && isAuthenticated && postsReadable,
         refetchInterval: 60_000,
     });
+}
+
+// Brings the feed's first page up to date without refetching the pages after
+// it. The live stream only says that something changed, and every change moves
+// every page's ETag, so invalidating the list re-downloads every page a guest
+// has scrolled through, for every guest, on every change. New posts land on
+// the first page; the later pages catch up on the feed's refetchInterval.
+//
+// A failure is left alone rather than retried by invalidating the whole list:
+// under load that would multiply the requests this exists to save. The next
+// change, or the interval, tries again.
+export async function refreshFeedFirstPage(queryClient: QueryClient, eventId: string) {
+    const key = postKeys.list(eventId);
+    const cached = queryClient.getQueryData<InfiniteData<Page<PostResponseDto>>>(key);
+    if (!cached || cached.pages.length <= 1) {
+        await queryClient.invalidateQueries({ queryKey: key });
+        return;
+    }
+    try {
+        const first = await api.get<Page<PostResponseDto>>(feedPagePath(eventId, 0));
+        queryClient.setQueryData<InfiniteData<Page<PostResponseDto>>>(key, (old) => (old ? withFreshFirstPage(old, first) : old));
+    } catch {
+        // See above.
+    }
 }
 
 export function usePost(id: string | null) {

@@ -6,7 +6,7 @@ import { useModuleReadable } from '@/hooks/useModuleReadable';
 import { api } from '@/lib/api/client';
 import { endpoints } from '@/lib/api/endpoints';
 import { normalizeList } from '@/lib/api/pagination';
-import type { EventSessionPatchDto, EventSessionRequestDto, EventSessionResponseDto } from '@/lib/api/types';
+import type { EventDetailResponseDto, EventSessionPatchDto, EventSessionRequestDto, EventSessionResponseDto } from '@/lib/api/types';
 
 // Sub-events within a multi-day event (e.g. "rehearsal dinner", "ceremony").
 // Not to be confused with the auth device Session in useSessions.ts.
@@ -16,6 +16,7 @@ export const eventSessionKeys = {
 
 // GET /api/events/{eventId}/sessions — any member of the event, non-deleted only.
 export function useEventSessions(eventId: string | null) {
+    const queryClient = useQueryClient();
     const { isAuthenticated } = useAuth();
     const scheduleReadable = useModuleReadable(eventId, 'schedule');
 
@@ -25,6 +26,11 @@ export function useEventSessions(eventId: string | null) {
             const res = await api.get<EventSessionResponseDto[]>(endpoints.events.sessions(eventId!));
             return normalizeList(res).items;
         },
+        // The event detail embeds this same list when the schedule is readable, so a page that has
+        // already loaded the event doesn't fetch it again; it counts as exactly as fresh as the detail.
+        initialData: () =>
+            eventId ? (queryClient.getQueryData<EventDetailResponseDto>(eventKeys.detail(eventId))?.sessions ?? undefined) : undefined,
+        initialDataUpdatedAt: () => (eventId ? queryClient.getQueryState(eventKeys.detail(eventId))?.dataUpdatedAt : undefined),
         enabled: Boolean(eventId) && isAuthenticated && scheduleReadable,
     });
 }

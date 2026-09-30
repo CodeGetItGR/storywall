@@ -2,13 +2,13 @@ import { ChevronRight, Image as ImageIcon, Video } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
-import type { MediaArchiveManifestDto } from '@/lib/api/types';
+import type { MediaSummaryDto } from '@/lib/api/types';
 import { formatCount } from '@/lib/format';
 import { routes } from '@/lib/routes';
 
 type MediaSummarySectionProps = {
     eventId: string;
-    summary: MediaArchiveManifestDto;
+    summary: MediaSummaryDto;
 };
 
 export function MediaSummarySection({ eventId, summary }: MediaSummarySectionProps) {
