@@ -52,13 +52,14 @@ export function useAdminModerationCases(status: ModerationCaseStatus, page: numb
 }
 
 // Every fetch writes a CONTENT_VIEWED audit row, so it happens only when an admin opens the case:
-// never prefetched, never refetched on focus/reconnect/remount, never retried. The deliberate
-// re-reads are the invalidations after a decision or a refused one.
+// never prefetched, never refetched on focus/reconnect while open, never retried. gcTime 0 drops it
+// when the drawer closes, so each opening is exactly one fetch and one logged view (guide §1).
 export function useAdminModerationCase(targetType: ReportTargetType, targetId: string) {
     return useQuery({
         queryKey: adminModerationKeys.case(targetType, targetId),
         queryFn: () => api.get<ModerationCaseDetailDto>(endpoints.adminModeration.case(targetType, targetId)),
         staleTime: Infinity,
+        gcTime: 0,
         refetchOnWindowFocus: false,
         refetchOnReconnect: false,
         retry: false,
@@ -80,10 +81,13 @@ export function useDecideModerationCase() {
     return useMutation({
         mutationFn: ({ targetType, targetId, request }: CaseTarget & { request: ModerationDecisionRequestDto }) =>
             api.post<ModerationDecisionDto>(endpoints.adminModeration.decision(targetType, targetId), request),
+        // The case is only marked stale, not re-read: the drawer closes on success, and a re-read
+        // would log a CONTENT_VIEWED nobody sees. A consumer that keeps the drawer open after
+        // deciding must refetch the case on purpose.
         onSuccess: (_decision, { targetType, targetId }) =>
             Promise.all([
                 queryClient.invalidateQueries({ queryKey: adminModerationKeys.lists }),
-                queryClient.invalidateQueries({ queryKey: adminModerationKeys.case(targetType, targetId) }),
+                queryClient.invalidateQueries({ queryKey: adminModerationKeys.case(targetType, targetId), refetchType: 'none' }),
             ]),
         onError: (error, target) => refreshAfterRefusal(queryClient, error, target),
     });

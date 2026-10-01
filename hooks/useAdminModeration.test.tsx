@@ -77,24 +77,38 @@ describe('useAdminModerationCases', () => {
 });
 
 describe('useAdminModerationCase', () => {
-    it('fetches the case once: every fetch is an audited view', async () => {
+    // Invalidated first, so only the focus/reconnect flags stand between the events and a refetch.
+    it('does not refetch an open case on focus or reconnect: every fetch is an audited view', async () => {
         mocks.get.mockResolvedValue({ targetId: 'c-1' });
         const client = makeClient();
-        const { result, unmount } = renderHook(() => useAdminModerationCase('COMMENT', 'c-1'), { wrapper: wrapperFor(client) });
+        const { result } = renderHook(() => useAdminModerationCase('COMMENT', 'c-1'), { wrapper: wrapperFor(client) });
         await waitFor(() => expect(result.current.isSuccess).toBe(true));
         expect(mocks.get).toHaveBeenCalledWith('/api/admin/moderation/cases/COMMENT/c-1');
 
+        await act(() => client.invalidateQueries({ queryKey: caseKey, refetchType: 'none' }));
         act(() => {
             focusManager.setFocused(false);
             focusManager.setFocused(true);
             onlineManager.setOnline(false);
             onlineManager.setOnline(true);
         });
-        unmount();
-        renderHook(() => useAdminModerationCase('COMMENT', 'c-1'), { wrapper: wrapperFor(client) });
         await new Promise((resolve) => setTimeout(resolve, 20));
 
         expect(mocks.get).toHaveBeenCalledTimes(1);
+    });
+
+    it('fetches once per opening: a closed case is not served from cache', async () => {
+        mocks.get.mockResolvedValue({ targetId: 'c-1' });
+        const client = makeClient();
+        const first = renderHook(() => useAdminModerationCase('COMMENT', 'c-1'), { wrapper: wrapperFor(client) });
+        await waitFor(() => expect(first.result.current.isSuccess).toBe(true));
+        first.unmount();
+        await new Promise((resolve) => setTimeout(resolve, 20));
+
+        const second = renderHook(() => useAdminModerationCase('COMMENT', 'c-1'), { wrapper: wrapperFor(client) });
+        await waitFor(() => expect(second.result.current.isSuccess).toBe(true));
+
+        expect(mocks.get).toHaveBeenCalledTimes(2);
     });
 
     it('does not retry a failed fetch', async () => {
@@ -143,6 +157,22 @@ describe('useDecideModerationCase', () => {
 
         expect(mocks.post).toHaveBeenCalledWith('/api/admin/moderation/cases/COMMENT/c-1/decision', request);
         expect(isInvalidated(client, openKey)).toBe(true);
+        expect(isInvalidated(client, caseKey)).toBe(true);
+    });
+
+    it('does not re-read a mounted case after deciding (the drawer closes; a re-read is a logged view)', async () => {
+        mocks.get.mockResolvedValue({ targetId: 'c-1' });
+        mocks.post.mockResolvedValue({ id: 'd-1' });
+        const client = makeClient();
+        const { result } = renderHook(() => [useAdminModerationCase('COMMENT', 'c-1'), useDecideModerationCase()] as const, {
+            wrapper: wrapperFor(client),
+        });
+        await waitFor(() => expect(result.current[0].isSuccess).toBe(true));
+
+        await act(() => result.current[1].mutateAsync({ targetType: 'COMMENT', targetId: 'c-1', request }));
+        await new Promise((resolve) => setTimeout(resolve, 20));
+
+        expect(mocks.get).toHaveBeenCalledTimes(1);
         expect(isInvalidated(client, caseKey)).toBe(true);
     });
 
