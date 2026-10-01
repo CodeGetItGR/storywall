@@ -13,6 +13,7 @@ import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
 import { useAuth } from '@/hooks/useAuth';
 import { useAcceptEventInvitation, useEventInvitationPreview } from '@/hooks/useEventInvitations';
 import { ApiError } from '@/lib/api/client';
+import { ERROR_CODES, getErrorCode } from '@/lib/api/errors';
 import { inviteGiftFraming } from '@/lib/gift';
 import { routes } from '@/lib/routes';
 
@@ -37,6 +38,11 @@ export default function InviteOnboardingBoundary({ token }: { token: string }) {
             const member = await acceptInvitation.mutateAsync(token);
             router.replace(routes.events.feed(member.eventId));
         } catch (err) {
+            // 409/5001: already a member — someone reopening the shared join link. They're in.
+            if (preview && err instanceof ApiError && err.status === 409 && getErrorCode(err) === ERROR_CODES.CONFLICT) {
+                router.replace(routes.events.feed(preview.eventId));
+                return;
+            }
             setAcceptError(toErrorMessage(err));
         }
     }
