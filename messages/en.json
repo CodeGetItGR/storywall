@@ -2329,7 +2329,55 @@
                 "MEDIA": "Photo or video",
                 "WISHBOOK_ENTRY": "Wish",
                 "PLAYLIST_SUGGESTION": "Song suggestion"
-            }
+            },
+            "close": "Close",
+            "caseTitle": "Report case",
+            "reportsHeading": "{count, plural, one {# report} other {# reports}}",
+            "reporterGone": "Former member",
+            "contentGone": "This item is no longer available. It was deleted before the review.",
+            "noAuthor": "No author on record",
+            "hostBadge": "Host",
+            "targetId": "Item ID",
+            "eventId": "Event ID",
+            "authorUserId": "Author account ID",
+            "form": {
+                "title": "Decision",
+                "dismiss": "No action",
+                "takeAction": "Take action",
+                "removeContent": "Remove the content",
+                "removeMember": "Remove the member from the event",
+                "banFromEvent": "Keep them from rejoining this event",
+                "suspendAccount": "Suspend their account",
+                "alreadyRemovedHint": "The item is gone; taking action closes the case as resolved.",
+                "note": "Note (internal, optional)",
+                "review": "Review decision",
+                "back": "Back",
+                "confirm": "Confirm"
+            },
+            "summary": {
+                "title": "This will:",
+                "dismiss": "Close every report on this item with no action",
+                "alreadyRemoved": "Close every report as resolved (the item is already gone)",
+                "removeContent": "Remove the content for everyone",
+                "removeMember": "Remove the author from the event",
+                "banFromEvent": "Stop their account rejoining this event",
+                "suspendAccount": "Suspend their account. They are signed out within 15 minutes"
+            },
+            "history": {
+                "decisions": "Decisions on this item",
+                "prior": "Earlier actions against this author",
+                "bans": "Bans",
+                "banned": "Banned {date}",
+                "actions": {
+                    "contentRemoved": "Content removed",
+                    "memberRemoved": "Member removed",
+                    "banned": "Banned from the event",
+                    "accountSuspended": "Account suspended",
+                    "none": "Closed as resolved (item already gone)"
+                }
+            },
+            "banLifted": "Lifted {date}",
+            "liftBan": "Lift ban"
         },
         "bugReports": {
             "title": "Bug reports",

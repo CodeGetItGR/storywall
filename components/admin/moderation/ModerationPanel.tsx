@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import type { MouseEvent } from 'react';
 
 import { AdminPagination } from '@/components/admin/betaFeedback/AdminPagination';
+import { ModerationCaseDrawer } from '@/components/admin/moderation/ModerationCaseDrawer';
 import { ModerationCasesTable } from '@/components/admin/moderation/ModerationCasesTable';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { useApiErrorMessage } from '@/hooks/useApiErrorMessage';
@@ -68,8 +69,15 @@ export function ModerationPanel() {
                 ) : null}
             </section>
 
-            {/* Case detail: ModerationCaseDrawer (Task 18) renders here when panel.selected is set,
-                keyed by `${targetType}:${targetId}`. */}
+            {/* Case detail: one mount per opened case */}
+            {panel.selected ? (
+                <ModerationCaseDrawer
+                    key={`${panel.selected.targetType}:${panel.selected.targetId}`}
+                    targetType={panel.selected.targetType}
+                    targetId={panel.selected.targetId}
+                    onCloseAction={panel.closeCase}
+                />
+            ) : null}
         </section>
     );
 }
