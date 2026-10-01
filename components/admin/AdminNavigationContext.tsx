@@ -25,6 +25,7 @@ import { COLLABORATIONS_HASH_ROOT, isCollaborationsHash } from '@/lib/adminColla
 import { DEMO_EVENTS_HASH_ROOT, isDemoEventsHash } from '@/lib/adminDemoEventsRouting';
 import { isPlansHash, PLANS_HASH_ROOT } from '@/lib/adminPlansRouting';
 import { isWithdrawalsHash, WITHDRAWALS_HASH_ROOT } from '@/lib/adminWithdrawalsRouting';
+import { pushPageEntry } from '@/lib/overlayHistory';
 
 export type AdminTab =
     | 'metrics'
@@ -118,6 +119,13 @@ function currentHashTab(): AdminTab {
     return HASH_TO_TAB[hash] ?? 'metrics';
 }
 
+// Each section is its own Back step. Re-selecting the section already shown
+// adds no entry, so Back never lands on the same view twice.
+function navigateToHash(hash: string) {
+    if (window.location.hash !== hash) pushPageEntry(hash);
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+}
+
 export function AdminNavigationProvider({ children }: { children: ReactNode }) {
     const t = useTranslations('AdminPage.tabs');
     const [tab, setTabState] = useState<AdminTab>(currentHashTab);
@@ -141,8 +149,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
     const setTab = useCallback((nextTab: AdminTab) => {
         setFocus(null);
         setTabState(nextTab);
-        window.history.replaceState(null, '', TAB_TO_HASH[nextTab]);
-        window.dispatchEvent(new HashChangeEvent('hashchange'));
+        navigateToHash(TAB_TO_HASH[nextTab]);
     }, []);
 
     // A new object on every call on purpose: handing the same event over twice
@@ -150,8 +157,7 @@ export function AdminNavigationProvider({ children }: { children: ReactNode }) {
     const sendTo = useCallback((nextTab: AdminTab, nextFocus: AdminFocus) => {
         setTabState(nextTab);
         setFocus({ ...nextFocus });
-        window.history.replaceState(null, '', TAB_TO_HASH[nextTab]);
-        window.dispatchEvent(new HashChangeEvent('hashchange'));
+        navigateToHash(TAB_TO_HASH[nextTab]);
     }, []);
 
     const tabs = useMemo<AdminTabItem[]>(

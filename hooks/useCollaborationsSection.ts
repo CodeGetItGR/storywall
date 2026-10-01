@@ -6,6 +6,7 @@ import { useAdminCollaborators } from '@/hooks/useAdmin';
 import { filterCollaborators, sortCollaboratorsByName } from '@/lib/adminCollaborations';
 import { formatCollaborationsHash, parseCollaborationsHash } from '@/lib/adminCollaborationsRouting';
 import type { CollaboratorResponseDto } from '@/lib/api/types';
+import { pushPageEntry } from '@/lib/overlayHistory';
 
 const EMPTY_COLLABORATORS: CollaboratorResponseDto[] = [];
 
@@ -46,7 +47,8 @@ export function useCollaborationsSection() {
 
     const selectCollaborator = useCallback((id: string) => {
         setHashId(id);
-        window.history.replaceState(null, '', formatCollaborationsHash(id));
+        const hash = formatCollaborationsHash(id);
+        if (window.location.hash !== hash) pushPageEntry(hash);
     }, []);
 
     const handleRailClick = useCallback(

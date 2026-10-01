@@ -1,5 +1,6 @@
 const OVERLAY_HISTORY_KEY = '__storywallOverlayStack';
 const OVERLAY_ANCHOR_KEY = '__storywallOverlayAnchor';
+const OVERLAY_BASE_KEY = '__storywallOverlayBase';
 
 type OverlayLayer = {
     id: string;
@@ -141,12 +142,16 @@ export function registerOverlayHistory(layer: OverlayLayer): OverlayHistoryRegis
             ...currentState,
             [OVERLAY_HISTORY_KEY]: [...currentStack, id],
             [OVERLAY_ANCHOR_KEY]: undefined,
+            [OVERLAY_BASE_KEY]: openedHref,
         },
         '',
         openedHref,
     );
 
-    function remove(markAnchorSkippable = false) {
+    // Every close that isn't a Back press — the X button or the owner closing
+    // it after a save — leaves our entry behind on the same page. Arming the
+    // anchor lets the next Back skip it instead of appearing to do nothing.
+    function remove() {
         if (!activeLayer.active) return;
         activeLayer.active = false;
 
@@ -156,7 +161,7 @@ export function registerOverlayHistory(layer: OverlayLayer): OverlayHistoryRegis
         // A controlled close may coincide with route navigation. Removing only
         // our state marker cannot undo or otherwise compete with that navigation.
         removeLayerFromCurrentEntry(id);
-        if (markAnchorSkippable && activeLayer.openedHref === window.location.href) skippableAnchors.add(id);
+        if (activeLayer.openedHref === window.location.href) skippableAnchors.add(id);
         stopListeningWhenIdle();
     }
 
@@ -168,9 +173,33 @@ export function registerOverlayHistory(layer: OverlayLayer): OverlayHistoryRegis
 
         // UI dismissal never traverses history. The URL may have changed while
         // the overlay was open, so only a real browser Back event may go back.
-        remove(true);
+        remove();
         layer.onClose();
     }
 
     return { requestClose, remove };
+}
+
+// A same-page navigation (a hash route) that should be its own Back step.
+// A closed overlay leaves its entry behind; while we are still on it at the
+// URL it opened from, it only duplicates the entry below, so it is reused
+// instead of stacking one more dead Back press on top.
+export function pushPageEntry(url: string) {
+    const currentState = window.history.state && typeof window.history.state === 'object' ? window.history.state : {};
+    const {
+        [OVERLAY_HISTORY_KEY]: stack,
+        [OVERLAY_ANCHOR_KEY]: _anchor,
+        [OVERLAY_BASE_KEY]: base,
+        ...pageState
+    } = currentState as Record<string, unknown>;
+    const isLeftoverOverlayEntry =
+        activeLayers.length === 0 && Array.isArray(stack) && stack.length === 0 && base === window.location.href;
+
+    // An armed skip belongs to the entry we are leaving; carried over, it would
+    // make Back jump past the page the user just navigated away from.
+    skippableAnchors.clear();
+    stopListeningWhenIdle();
+
+    if (isLeftoverOverlayEntry) window.history.replaceState(pageState, '', url);
+    else window.history.pushState(pageState, '', url);
 }

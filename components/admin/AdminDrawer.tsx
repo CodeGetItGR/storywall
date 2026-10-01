@@ -4,6 +4,7 @@ import { Dialog } from '@base-ui/react/dialog';
 import { X } from 'lucide-react';
 import { createContext, type ReactNode, useCallback, useContext, useState } from 'react';
 
+import { useOverlayHistory } from '@/hooks/useOverlayHistory';
 import { cn } from '@/lib/utils';
 
 interface AdminDrawerProps {
@@ -32,11 +33,13 @@ export function useAdminDrawerFooterSlot() {
 // browsing stay visually distinct modes instead of a full-screen modal.
 export function AdminDrawer({ open, onClose, title, subtitle, closeLabel, footer, children, size = 'default' }: AdminDrawerProps) {
     const [footerSlot, setFooterSlot] = useState<HTMLDivElement | null>(null);
+    // Back closes the drawer instead of leaving the section it was opened from.
+    const { requestClose } = useOverlayHistory(open, onClose);
     const onOpenChange = useCallback(
         (nextOpen: boolean) => {
-            if (!nextOpen) onClose();
+            if (!nextOpen) requestClose();
         },
-        [onClose],
+        [requestClose],
     );
 
     return (

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useAdminWithdrawals } from '@/hooks/useAdmin';
 import { formatWithdrawalsHash, parseWithdrawalsHash } from '@/lib/adminWithdrawalsRouting';
+import { pushPageEntry } from '@/lib/overlayHistory';
 
 function currentRequestId(): string | null {
     return typeof window === 'undefined' ? null : parseWithdrawalsHash(window.location.hash);
@@ -24,7 +25,8 @@ export function useWithdrawalsPanel() {
 
     // A released request leaves the queue, so its page has nothing left to show.
     const backToList = useCallback(() => {
-        window.location.hash = formatWithdrawalsHash(null);
+        pushPageEntry(formatWithdrawalsHash(null));
+        window.dispatchEvent(new HashChangeEvent('hashchange'));
     }, []);
 
     const refresh = useCallback(() => {
