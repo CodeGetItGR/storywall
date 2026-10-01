@@ -3,7 +3,7 @@
 import { Church, MapPin, Martini } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-import { ScheduleMapPreview } from '@/app/(main)/(app)/(event)/events/[eventId]/tools/schedule/components/ScheduleMapPreview';
+import { ScheduleMapPreview } from '@/components/schedule/ScheduleMapPreview';
 import type { EventSessionResponseDto } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
 

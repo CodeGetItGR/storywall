@@ -106,7 +106,6 @@
     },
     "SessionLocationPage": {
         "back": "Πίσω",
-        "map": "Χάρτης",
         "locationMissing": "Δεν έχει οριστεί τοποθεσία"
     },
     "FeedScheduleCard": {
