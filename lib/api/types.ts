@@ -2237,26 +2237,6 @@ export interface AuditLogResponseDto {
     createdAt: string;
 }
 
-export interface ModerationActionRequestDto {
-    eventId: string;
-    moderatorMemberId?: string;
-    targetType: string;
-    targetId: string;
-    actionType: string;
-    reason?: string;
-}
-
-export interface ModerationActionResponseDto {
-    id: string;
-    eventId: string;
-    moderatorMemberId: string | null;
-    targetType: string;
-    targetId: string;
-    actionType: string;
-    reason: string | null;
-    createdAt: string;
-}
-
 export interface ReportRequestDto {
     reporterMemberId?: string;
     eventId: string;
@@ -2667,16 +2647,17 @@ export type AdminAuditAction =
     | 'ACCOUNT_DELETED';
 
 // GET /api/admin/moderation/cases?status=&page=&size= (Page<ModerationCaseSummaryDto>).
-// decisionId/outcome/decidedAt are set only on CLOSED cases.
+// decisionId/outcome/decidedAt are set only on CLOSED cases; topReason, firstReportedAt and
+// lastReportedAt are null on CLOSED rows.
 export interface ModerationCaseSummaryDto {
     targetType: ReportTargetType;
     targetId: string;
-    eventId: string | null;
+    eventId: string;
     eventTitle: string | null;
     reportCount: number;
     topReason: ReportReason | null;
-    firstReportedAt: string;
-    lastReportedAt: string;
+    firstReportedAt: string | null;
+    lastReportedAt: string | null;
     status: ModerationCaseStatus;
     decisionId: string | null;
     outcome: ModerationOutcome | null;
@@ -2700,7 +2681,7 @@ export interface ModerationContentDto {
     authorDisplayName: string | null;
     authorIsHost: boolean;
     media: MediaResponseDto[];
-    createdAt: string | null;
+    createdAt: string;
 }
 
 export interface AllowedActionsDto {
@@ -2739,7 +2720,7 @@ export interface EventBanDto {
 export interface ModerationCaseDetailDto {
     targetType: ReportTargetType;
     targetId: string;
-    eventId: string | null;
+    eventId: string;
     eventTitle: string | null;
     status: ModerationCaseStatus;
     reports: ModerationReportDto[];

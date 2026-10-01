@@ -250,11 +250,6 @@ export const endpoints = {
         byId: (id: string) => `/api/audit-logs/${id}`,
     },
 
-    moderationActions: {
-        list: '/api/moderation-actions',
-        byId: (id: string) => `/api/moderation-actions/${id}`,
-    },
-
     reports: {
         list: '/api/reports',
         create: '/api/reports',
